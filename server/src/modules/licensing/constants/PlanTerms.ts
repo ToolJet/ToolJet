@@ -12,6 +12,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
   },
   database: {
     table: LICENSE_LIMIT.UNLIMITED,
+    row: LICENSE_LIMIT.UNLIMITED,
   },
   features: {
     auditLogs: false,
@@ -26,7 +27,9 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     comments: false,
     customThemes: false,
     serverSideGlobalResolve: false,
+    queryFolders: false,
     scim: false,
+    mfa: false,
     observability: false,
   },
   domains: [],
@@ -53,6 +56,8 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
       features: {
         appHeaderAndLogo: false,
         addNavGroup: false,
+        canvasPageHeader: false,
+        canvasPageFooter: false,
       },
     },
     permissions: {
@@ -64,6 +69,9 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
       promote: false,
       release: false,
       history: false,
+      jsLibraries: false,
+      publicApp: false,
+      customComponentLibraries: false,
     },
   },
   modules: {

@@ -1,6 +1,7 @@
 import { DynamicModule } from '@nestjs/common';
 import { EncryptionModule } from '@modules/encryption/module';
 import { UserRepository } from '@modules/users/repositories/repository';
+import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
 import { RolesRepository } from '@modules/roles/repository';
 import { OrganizationUsersRepository } from './repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
@@ -15,6 +16,10 @@ import { SubModule } from '@modules/app/sub-module';
 
 export class OrganizationUsersModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const { OrganizationUsersController, OrganizationUsersService, OrganizationUsersUtilService, UserDetailsService } =
       await this.getProviders(configs, 'organization-users', [
         'controller',
@@ -22,7 +27,7 @@ export class OrganizationUsersModule extends SubModule {
         'util.service',
         'services/user-details.service',
       ]);
-    return {
+    return this.cacheModule(cacheKey, {
       module: OrganizationUsersModule,
       imports: [
         await EncryptionModule.register(configs),
@@ -40,11 +45,12 @@ export class OrganizationUsersModule extends SubModule {
         OrganizationRepository,
         RolesRepository,
         UserRepository,
+        UserBanListRepository,
         UserDetailsService,
         GroupPermissionsRepository,
         FeatureAbilityFactory,
       ],
-      exports: [OrganizationUsersUtilService],
-    };
+      exports: [OrganizationUsersUtilService, UserDetailsService],
+    });
   }
 }

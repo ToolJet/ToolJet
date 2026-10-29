@@ -11,7 +11,8 @@ source "amazon-ebs" "ubuntu" {
   ami_name      = "${var.ami_name}"
   instance_type = "${var.instance_type}"
   region        = "${var.ami_region}"
-  ami_groups    = "${var.ami_groups}"
+  ami_groups      = "${var.ami_groups}"
+  snapshot_groups = "${var.snapshot_groups}"
   
   source_ami_filter {
     filters = {

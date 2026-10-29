@@ -20,6 +20,9 @@ const currentSessionSubject = new BehaviorSubject({
   app_group_permissions: null,
   data_source_group_permissions: null,
   workflow_group_permissions: null,
+  folder_group_permissions: null,
+  workflow_folder_group_permissions: null,
+  module_folder_group_permissions: null,
   role: null,
   organizations: [],
   isUserLoggingIn: false,
@@ -36,6 +39,7 @@ const currentSessionSubject = new BehaviorSubject({
 
 export const authenticationService = {
   login,
+  verifyMfa,
   superAdminLogin,
   signup,
   verifyToken,
@@ -50,6 +54,8 @@ export const authenticationService = {
   },
   signInViaOAuth,
   resetPassword,
+  verifyResetToken,
+  passwordExpiredReset,
   saveLoginOrganizationId,
   getLoginOrganizationId,
   deleteLoginOrganizationId,
@@ -102,6 +108,16 @@ function login(email, password, organizationId) {
     });
 }
 
+function verifyMfa(mfaToken, otp) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify({ mfa_token: mfaToken, otp }),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/authenticate/mfa/verify`, requestOptions).then(handleResponseWithoutValidation);
+}
+
 function superAdminLogin(email, password) {
   const requestOptions = {
     method: 'POST',
@@ -112,7 +128,9 @@ function superAdminLogin(email, password) {
   return fetch(`${config.apiUrl}/authenticate/super-admin`, requestOptions)
     .then(handleResponseWithoutValidation)
     .then((user) => {
-      authenticationService.updateCurrentSession(user);
+      if (!user?.mfa_required) {
+        authenticationService.updateCurrentSession(user);
+      }
       return user;
     });
 }
@@ -176,11 +194,11 @@ function activateAccountWithToken(email, password, organizationToken) {
   return fetch(`${config.apiUrl}/onboarding/activate-account-with-token`, requestOptions).then(handleResponse);
 }
 
-function resendInvite(email, organizationId, redirectTo) {
+function resendInvite(email, organizationId, redirectTo, senderName) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, organizationId, redirectTo }),
+    body: JSON.stringify({ email, organizationId, redirectTo, senderName }),
   };
 
   return fetch(`${config.apiUrl}/onboarding/resend-invite`, requestOptions)
@@ -254,11 +272,11 @@ function verifyToken(token, organizationToken) {
     });
 }
 
-function forgotPassword(email) {
+function forgotPassword(email, redirectTo, orgSlug) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, ...(redirectTo && { redirectTo }), ...(orgSlug && { orgSlug }) }),
   };
 
   return fetch(`${config.apiUrl}/forgot-password`, requestOptions).then(handleResponse);
@@ -276,14 +294,33 @@ function resetPassword(params) {
   return fetch(`${config.apiUrl}/reset-password`, requestOptions).then(handleResponse);
 }
 
-function signInViaOAuth(configId, ssoType, ssoResponse) {
-  const organizationId = getLoginOrganizationId();
-  const signupOrganizationId = getSignupOrganizationId();
-  const invitationToken = getInviteFlowIndetifier();
-  const redirectTo = getCookie('redirectPath');
+function verifyResetToken(token) {
+  const requestOptions = {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  };
+  return fetch(`${config.apiUrl}/reset-password/verify-token?token=${encodeURIComponent(token)}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function passwordExpiredReset(email, redirectTo, orgSlug) {
   const requestOptions = {
     method: 'POST',
-    headers: authHeader(),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, ...(redirectTo && { redirectTo }), ...(orgSlug && { orgSlug }) }),
+  };
+  return fetch(`${config.apiUrl}/password-expired-reset`, requestOptions).then(handleResponse);
+}
+
+function signInViaOAuth(configId, ssoType, ssoResponse, mcpContext) {
+  const organizationId = mcpContext ? mcpContext.organizationId : getLoginOrganizationId();
+  const signupOrganizationId = mcpContext ? undefined : getSignupOrganizationId();
+  const invitationToken = mcpContext ? undefined : getInviteFlowIndetifier();
+  const redirectTo = mcpContext ? mcpContext.redirectTo : getCookie('redirectPath');
+  const requestOptions = {
+    method: 'POST',
+    headers: mcpContext ? authHeader(false, organizationId) : authHeader(),
     credentials: 'include',
     body: JSON.stringify({ ...ssoResponse, organizationId, signupOrganizationId, invitationToken, redirectTo }),
   };

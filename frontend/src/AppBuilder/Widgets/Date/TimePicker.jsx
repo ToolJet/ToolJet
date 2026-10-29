@@ -2,9 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDatetimeInput, useTimeInput } from './hooks';
 import cx from 'classnames';
 import moment from 'moment';
-import { getFormattedSelectTimestamp, getUnixTime, is24HourFormat, isDateValid } from './utils';
+import { getFormattedSelectTimestamp, getUnixTime, is24HourFormat, isDateValid, getTimeSelectionBase } from './utils';
 import { BaseDateComponent } from './BaseDateComponent';
 import './styles.scss';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const TimePicker = ({
   height,
@@ -33,6 +34,8 @@ export const TimePicker = ({
     dateInputRef,
     datePickerRef,
     timeFormat,
+    componentName,
+    id,
   };
   const dateTimeLogic = useDatetimeInput(inputProps);
   const timeLogic = useTimeInput(inputProps);
@@ -47,6 +50,9 @@ export const TimePicker = ({
   );
 
   const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
+  // Unparseable typed text — kept on screen with an error instead of reverting.
+  const [textParseError, setTextParseError] = useState(false);
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
   const [displayTimestamp, setDisplayTimestamp] = useState(
@@ -54,6 +60,7 @@ export const TimePicker = ({
   );
 
   const setInputValue = (date, format, skipFireEvent = false) => {
+    setTextParseError(false);
     const timestamp = getUnixTime(date, format ? format : timeFormat);
     setSelectedTimestamp(timestamp);
     setExposedVariables({
@@ -64,11 +71,12 @@ export const TimePicker = ({
   };
 
   const handleClear = () => {
-    setInputValue(null);
+    setInputValue(null, null, true);
     setDisplayTimestamp('');
   };
 
   const onDateSelect = (date) => {
+    setTextParseError(false);
     const timestamp = getUnixTime(date, timeFormat);
     setSelectedTimestamp(timestamp);
     setExposedVariables({
@@ -78,13 +86,17 @@ export const TimePicker = ({
   };
 
   const onTimeChange = (time, type) => {
-    const updatedSelectedTimestamp = selectedTimestamp ? moment(selectedTimestamp) : moment();
+    // Empty widget: base time edits on today's midnight so unpicked units stay
+    // 00 — see getTimeSelectionBase.
+    const updatedSelectedTimestamp = getTimeSelectionBase(selectedTimestamp);
     updatedSelectedTimestamp.set(type, time);
     const updatedTimestamp = updatedSelectedTimestamp.valueOf();
     setSelectedTimestamp(updatedTimestamp);
     setExposedVariables({
       value: getFormattedSelectTimestamp(updatedTimestamp, timeFormat),
     });
+    // A dropdown pick supersedes typed text held on screen — sync the display.
+    setDisplayTimestamp(getFormattedSelectTimestamp(updatedTimestamp, timeFormat));
     fireEvent('onSelect');
   };
 
@@ -99,9 +111,9 @@ export const TimePicker = ({
   }, [defaultValue, timeFormat]);
 
   useEffect(() => {
-    if (isInitialRender.current || textInputFocus) return;
+    if (isInitialRender.current || textInputFocus || textParseError) return;
     setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, timeFormat) : '');
-  }, [selectedTimestamp, timeFormat, textInputFocus]);
+  }, [selectedTimestamp, timeFormat, textInputFocus, textParseError]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -119,22 +131,36 @@ export const TimePicker = ({
   }, []);
 
   useEffect(() => {
+    // CSAs and clear update state and exposed variables silently — only real user selection fires
+    // onSelect (same contract as DaterangePicker). This also prevents event→action→event loops
+    // when an onSelect handler programmatically sets the value back on this widget.
     setExposedVariables({
       setValue: (value, format) => {
-        setInputValue(value, format);
+        setInputValue(value, format, true);
+      },
+      // Registered in the config as its own action ("Set time") but never
+      // exposed by the runtime, so a button's control-component call hit
+      // `undefined` and silently did nothing. Same semantics as setValue.
+      setTime: (value, format) => {
+        setInputValue(value, format, true);
       },
       clearValue: () => {
-        setInputValue(null);
+        setInputValue(null, null, true);
       },
     });
   }, [selectedTimestamp, timeFormat]);
 
   useEffect(() => {
+    if (textParseError) {
+      setValidationStatus({ isValid: false, validationError: 'Invalid time' });
+      return;
+    }
     setValidationStatus(isDateValid(selectedTimestamp, { minTime, maxTime, customRule, isMandatory, timeFormat }));
-  }, [minTime, maxTime, customRule, isMandatory, selectedTimestamp, timeFormat]);
+  }, [minTime, maxTime, customRule, isMandatory, selectedTimestamp, timeFormat, textParseError]);
+
+  useFormClear(() => setInputValue(null, null, true));
 
   const isTwentyFourHourMode = is24HourFormat(timeFormat);
-  console.log('isTwentyFourHourMode', isTwentyFourHourMode);
 
   const componentProps = {
     popperClassName: cx(
@@ -173,6 +199,7 @@ export const TimePicker = ({
     setDisplayTimestamp,
     setTextInputFocus,
     setShowValidationError,
+    onTextParse: (parsed) => setTextParseError(parsed.hasError),
     showValidationError,
     isValid,
     validationError,

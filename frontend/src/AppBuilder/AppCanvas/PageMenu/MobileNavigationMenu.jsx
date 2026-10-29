@@ -14,7 +14,15 @@ import { RenderPageAndPageGroup } from '@/AppBuilder/AppCanvas/PageMenu/PageGrou
 import { shallow } from 'zustand/shallow';
 import Header from '@/AppBuilder/Viewer/Header';
 
-const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyles, headerHidden, logoHidden }) => {
+const MobileNavigationMenu = ({
+  currentPageId,
+  darkMode,
+  switchDarkMode,
+  bgStyles,
+  headerHidden,
+  logoHidden,
+  canvasContainerRef,
+}) => {
   const { moduleId } = useModuleContext();
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const selectedVersion = useStore((state) => state.selectedVersion, shallow);
@@ -33,6 +41,11 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
 
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
   const { name, style } = properties ?? {};
+  const mobileMenuContainer =
+    canvasContainerRef?.current ||
+    document.querySelector('[data-cy="mobile-nav-sheet-container"]') ||
+    document.querySelector('[data-cy="mobile-canvas-frame"]') ||
+    document.getElementsByClassName('canvas-wrapper')[0];
 
   const pagesVisibilityState = useStore((state) => state.resolvedStore.modules[moduleId]?.others?.pages || {}, shallow);
 
@@ -88,6 +101,9 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
       ? styles.pillSelectedBackgroundColor.value
       : 'var(--cc-appBackground-surface, #F6F6F6)',
     '--nav-item-pill-radius': `${styles.pillRadius.value}px`,
+    '--app-title-color': !styles.appTitleColor?.isDefault
+      ? styles.appTitleColor?.value
+      : 'var(--cc-primary-text, #1B1F24)',
   };
 
   const MenuHeader = () => {
@@ -124,7 +140,7 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
     const { toggleSidebar } = useSidebar();
 
     const switchPageWrapper = (page, currentPageId) => {
-      const isPageSwitched = switchPage(page, currentPageId);
+      const isPageSwitched = switchPage(page, currentPageId, moduleId);
       if (isPageSwitched) {
         toggleSidebar();
       }
@@ -171,14 +187,14 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
       variant={'floating'}
       sidebarWidth="290px"
       sheetProps={{
-        container: document.getElementsByClassName('canvas-wrapper')[0],
-        overlayClassName: 'tw-absolute tw-h-dvh',
-        className: `tw-absolute tw-p-0 mobile-page-menu-popup ${
+        container: mobileMenuContainer,
+        overlayClassName: 'tw-absolute tw-h-dvh tw-pointer-events-auto',
+        className: `tw-absolute tw-p-0 tw-pointer-events-auto mobile-page-menu-popup ${
           isMobilePreviewMode && !isPreviewInEditor
             ? 'tw-h-[calc(100%_-_44px)]' // To account for the preview settings header height
             : currentMode === 'view' && !isMobilePreviewMode
-            ? 'tw-h-dvh' // In released app, the height should equal to mobile browsers viewport height
-            : 'tw-h-full'
+              ? 'tw-h-dvh' // In released app, the height should equal to mobile browsers viewport height
+              : 'tw-h-full'
         }`,
         style: bgStyles,
       }}

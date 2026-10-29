@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import useStore from '@/AppBuilder/_stores/store';
 
 export const DragResizeGhostWidget = () => {
@@ -9,11 +10,11 @@ export const DragResizeGhostWidget = () => {
 
   if (!draggingComponentId && !resizingComponentId && !isGroupDragging && !isGroupResizing) return null;
 
-  return (
+  const ghost = (
     <div
       id="moveable-ghost-widget"
       style={{
-        zIndex: 4,
+        zIndex: 1060,
         position: 'absolute',
         background: '#D9E2FC',
         opacity: '0.7',
@@ -23,4 +24,8 @@ export const DragResizeGhostWidget = () => {
       }}
     />
   );
+
+  const ghostHost = document.getElementsByClassName('tj-canvas-area')?.[0] || document.getElementById('real-canvas');
+
+  return ghostHost ? createPortal(ghost, ghostHost) : ghost;
 };

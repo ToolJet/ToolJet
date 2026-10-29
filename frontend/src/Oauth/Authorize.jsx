@@ -9,6 +9,8 @@ import { onInvitedUserSignUpSuccess, onLoginSuccess } from '@/_helpers/platform/
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { fetchEdition } from '@/modules/common/helpers/utils';
+import { isMcpOAuthConsentPath } from '@/_helpers/routes';
+import { loadMcpOAuthLoginContext, ssoStateRedirect } from '@/McpOAuth/loginContext';
 // import pako from 'pako';
 
 export function Authorize({ navigate }) {
@@ -17,9 +19,20 @@ export function Authorize({ navigate }) {
   const router = useRouter();
   const organizationId = authenticationService.getLoginOrganizationId();
   const organizationSlug = authenticationService.getLoginOrganizationSlug();
-  const redirectUrl = getCookie('redirectPath');
-  const signupOrganizationSlug = authenticationService.getSignupOrganizationSlug();
-  const inviteFlowIdentifier = authenticationService.getInviteFlowIndetifier();
+  const stateRedirect = ssoStateRedirect(
+    new URLSearchParams(window.location.hash.slice(1)).get('state') || router.query.state
+  );
+  const cookieRedirect = getCookie('redirectPath');
+  // An explicit MCP return survives a custom-domain -> canonical callback and
+  // takes precedence over unrelated cookies left on the canonical host.
+  const mcpReturn = isMcpOAuthConsentPath(stateRedirect)
+    ? stateRedirect
+    : !stateRedirect && isMcpOAuthConsentPath(cookieRedirect)
+      ? cookieRedirect
+      : null;
+  const redirectUrl = mcpReturn || cookieRedirect || stateRedirect;
+  const signupOrganizationSlug = mcpReturn ? null : authenticationService.getSignupOrganizationSlug();
+  const inviteFlowIdentifier = mcpReturn ? null : authenticationService.getInviteFlowIndetifier();
 
   useEffect(() => {
     const errorMessage = router.query.error_description || router.query.error;
@@ -67,6 +80,13 @@ export function Authorize({ navigate }) {
     /* If the params has SAMLResponse the SAML auth is success */
     if (router.query.saml_response_id) {
       authParams.samlResponseId = router.query.saml_response_id;
+    }
+
+    if (mcpReturn) {
+      loadMcpOAuthLoginContext(mcpReturn)
+        .then((context) => signIn(authParams, configs, utmParams, context))
+        .catch((err) => setError(err.message));
+      return;
     }
 
     let subsciption;
@@ -259,7 +279,7 @@ export function Authorize({ navigate }) {
       /* empty */
     }
   };
-  const signIn = (authParams, configs, utmParams) => {
+  const signIn = (authParams, configs, utmParams, mcpContext) => {
     const handleAuthResponse = ({ redirect_url, ...restResponse }) => {
       const { organization_id, current_organization_id, email } = restResponse;
       // Submit a lightweight HubSpot form submission with hutk + page context to set Original source from web
@@ -286,7 +306,7 @@ export function Authorize({ navigate }) {
         updateCurrentSession({
           isUserLoggingIn: true,
         });
-        onLoginSuccess(restResponse, navigate);
+        onLoginSuccess(restResponse, navigate, redirectUrl);
       }
       posthogHelper.initPosthog({ redirect_url, ...restResponse });
       posthogHelper.captureEvent(event, {
@@ -323,6 +343,14 @@ export function Authorize({ navigate }) {
       }
     };
 
+    if (mcpContext) {
+      authenticationService
+        .signInViaOAuth(router.query.configId, router.query.origin, authParams, mcpContext)
+        .then(handleAuthResponse)
+        .catch(handleAuthError);
+      return;
+    }
+
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
 
     // FIXME: later create different component/login for cloud and ce/ee
@@ -331,7 +359,11 @@ export function Authorize({ navigate }) {
       const isAiOnboarding =
         hashParams.get('state')?.includes('tj_api_source=ai_onboarding') ||
         router.query.state?.includes('tj_api_source=ai_onboarding');
-      const isNormalFlow = (organizationId || signupOrganizationSlug || inviteFlowIdentifier) && !isAiOnboarding;
+      // A workspace-level configId in the URL (set by the SSO button on a workspace/custom-domain
+      // login page) definitively identifies a workspace login — treat it as a normal flow even when
+      // organizationId is absent (e.g. cookie/localStorage inaccessible across custom-domain → base-domain).
+      const isNormalFlow =
+        (organizationId || signupOrganizationSlug || inviteFlowIdentifier || router.query.configId) && !isAiOnboarding;
       if (isNormalFlow) {
         /* For workspace signup and signin */
         authenticationService

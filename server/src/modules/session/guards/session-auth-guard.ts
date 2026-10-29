@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
@@ -8,9 +8,10 @@ export class SessionAuthGuard extends AuthGuard('jwt') {
     const request = context.switchToHttp().getRequest();
     // ✅ Allow execution only if one of the expected auth methods is present
     const hasJwtCookie = !!request.cookies['tj_auth_token'];
+    const hasOAuthViewerCookie = typeof request.cookies['tj_oauth_viewer'] === 'string';
     const hasPatHeader = !!request.headers['tj_auth_token'];
 
-    if (!hasJwtCookie && !hasPatHeader) {
+    if (!hasJwtCookie && !hasPatHeader && !hasOAuthViewerCookie) {
       return false;
     }
 
@@ -19,7 +20,7 @@ export class SessionAuthGuard extends AuthGuard('jwt') {
 
     try {
       user = await super.canActivate(context);
-    } catch (err) {
+    } catch {
       return false;
     }
     return user;

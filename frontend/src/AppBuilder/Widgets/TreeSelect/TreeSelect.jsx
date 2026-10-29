@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useId } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import CheckboxTree from 'react-checkbox-tree';
 // eslint-disable-next-line import/no-unresolved
@@ -14,6 +14,7 @@ import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import cx from 'classnames';
 import { Triangle } from 'lucide-react';
 import {
+  getLabelFontSize,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
@@ -31,7 +32,6 @@ const TreeSelect = ({
   dataCy,
   id,
   width,
-  adjustComponentPositions,
   currentLayout,
   currentMode,
   subContainerIndex,
@@ -60,11 +60,16 @@ const TreeSelect = ({
     autoLabelWidth,
     labelWidth,
     labelStyle = 'new',
+    labelFontSize,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
 
   const containerRef = useRef(null);
+  const reactId = useId();
+  const inputId = `component-${reactId}`;
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
 
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
@@ -134,8 +139,8 @@ const TreeSelect = ({
   const rawData = !advanced
     ? filterNodes(options)
     : isExpectedDataType(properties.data, 'array')
-    ? filterNodes(properties.data)
-    : [];
+      ? filterNodes(properties.data)
+      : [];
 
   const evaluatedCheckedData = !advanced ? derivedChecked : checkedData;
   const evaluatedExpandedData = !advanced ? derivedExpanded : expandedData;
@@ -261,7 +266,7 @@ const TreeSelect = ({
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
-            if (processedItem.disabled) return;
+            if (processedItem.disabled || isDisabled) return;
             // Always pass actual checked state (not display state) so toggle logic is correct
             handleCustomCheck(item.value, isChecked);
           }}
@@ -274,6 +279,14 @@ const TreeSelect = ({
             uncheckedColor={uncheckedBackground}
             borderColor={borderColor}
             handleColor={checkmarkColor}
+            disabled={processedItem.disabled || isDisabled}
+            ariaLabel={typeof item.label === 'string' ? item.label : undefined}
+            // Keyboard path: focus the checkbox and press Space. Mouse clicks are handled by
+            // the row's onClick above (the input is pointer-events:none), so this won't double-fire.
+            onChange={() => {
+              if (processedItem.disabled || isDisabled) return;
+              handleCustomCheck(item.value, isChecked);
+            }}
           />
           {item.label}
         </div>
@@ -291,7 +304,6 @@ const TreeSelect = ({
     id,
     height,
     value: heightChangeValue,
-    adjustComponentPositions,
     currentLayout,
     width,
     visibility: isVisible,
@@ -312,7 +324,7 @@ const TreeSelect = ({
   if (isLoading) {
     return (
       <div
-        className="custom-checkbox-tree"
+        className="custom-checkbox-tree tw-py-0.5"
         style={{
           height: '100%',
           display: isVisible ? '' : 'none',
@@ -340,7 +352,7 @@ const TreeSelect = ({
       checkModel="all"
       noCascade={true}
       disabled={isDisabled}
-      id={`component-${id}`}
+      id={inputId}
       icons={{
         check: (
           <TreeSelectCheckbox
@@ -411,7 +423,7 @@ const TreeSelect = ({
         aria-disabled={isDisabled}
       >
         <div className="card-title" style={{ marginBottom: '0.5rem' }}>
-          <label htmlFor={`component-${id}`}>{label}</label>
+          <label htmlFor={inputId}>{label}</label>
         </div>
         {renderCheckboxTree()}
         {renderValidationError()}
@@ -422,7 +434,7 @@ const TreeSelect = ({
   return (
     <div
       ref={containerRef}
-      className={cx('custom-checkbox-tree', {
+      className={cx('custom-checkbox-tree tw-py-0.5', {
         [`dynamic-${id}`]: isDynamicHeightEnabled,
       })}
       data-disabled={isDisabled}
@@ -437,7 +449,7 @@ const TreeSelect = ({
       aria-disabled={isDisabled}
     >
       <div
-        className={cx('d-flex', {
+        className={cx('d-flex tw-py-0.5', {
           'flex-column': isTopAlignment && label?.length > 0,
           'flex-row-reverse': isRightDirection && !isTopAlignment,
         })}
@@ -456,7 +468,8 @@ const TreeSelect = ({
           defaultAlignment={defaultAlignment}
           darkMode={darkMode}
           isMandatory={isMandatory}
-          inputId={`component-${id}`}
+          inputId={inputId}
+          fontSize={labelFontSizeValue}
         />
         <div
           style={{

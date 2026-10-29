@@ -1,5 +1,5 @@
 export const RESTRICTED_WIDGETS_CONFIG = {
-  Form: ['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Accordion'],
+  Form: ['Calendar', 'Kanban', 'Tabs', 'Modal', 'Accordion'],
   Kanban_card: ['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container', 'Accordion', 'Table'],
   Calendar: ['Calendar', 'Kanban'],
   Container: ['Calendar', 'Kanban'],
@@ -9,9 +9,30 @@ export const RESTRICTED_WIDGETS_CONFIG = {
   Tabs: ['Calendar', 'Kanban'],
   Kanban_popout: ['Calendar', 'Kanban'],
   Listview: ['Calendar', 'Kanban'],
+  Table: ['Kanban'],
 };
 
-export const RESTRICTED_WIDGET_SLOTS_CONFIG = {
-  header: ['Calendar', 'Kanban', 'Table', 'Listview', 'Container', 'Accordion'],
-  footer: ['Calendar', 'Kanban', 'Table', 'Listview', 'Container', 'Accordion'],
-};
+export const RESTRICTED_WIDGET_SLOTS_CONFIG = [
+  'Form',
+  'Container',
+  'Listview',
+  'Tabs',
+  'Kanban',
+  'Calendar',
+  'Chart',
+  'Accordion',
+  'Map',
+  'IFrame',
+  'KeyValuePair',
+  'RichTextEditor',
+  'Timeline',
+  'JSONExplorer',
+  'JSONEditor',
+  'Html',
+  'CodeEditor',
+  'Chat',
+  'TreeSelect',
+  'PDF',
+  'Camera',
+  'QrScanner',
+];

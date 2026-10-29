@@ -1,10 +1,12 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
+import { workspaceConstantsSelectors } from "Selectors/platform/workspaceConstants";
 import { addAndVerifyConstants } from "Support/utils/workspaceConstants";
-import { groupsSelector } from "Constants/selectors/manageGroups";
+import { groupsSelector } from "Constants/selectors/platform/manageGroups";
 import { navigateToManageGroups } from "Support/utils/common";
-import { versionSwitcherSelectors } from "Constants/selectors/version";
-import { multiEnvSelector } from "Constants/selectors/eeCommon";
+import { versionSwitcherSelectors } from "Constants/selectors/platform/version";
+import { multiEnvSelector } from "Constants/selectors/platform/eeCommon";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
+import { commonText } from "Texts/common";
 
 export const constantsOperations = {
   createConstant: (name, value) => {
@@ -54,13 +56,22 @@ export const getGroupPermissionInput = (isEnterprise, flag) => {
       workflowDelete: flag,
       dataSourceCreate: flag,
       dataSourceDelete: flag,
-      folderCRUD: flag,
+      folderCreate: flag,
+      folderDelete: flag,
       orgConstantCRUD: flag,
+      workflowFolderCreate: flag,
+      workflowFolderDelete: flag,
+      tjdbCRUD: flag,
+      moduleFolderCreate: flag,
+      moduleFolderDelete: flag,
+      moduleCreate: flag,
+      moduleDelete: flag,
     }
     : {
       appCreate: flag,
       appDelete: flag,
-      folderCRUD: flag,
+      folderCreate: flag,
+      folderDelete: flag,
       orgConstantCRUD: flag,
     };
 };
@@ -107,8 +118,8 @@ export const verifyBuilderPermissions = (
 };
 
 export const verifyBasicPermissions = (canCreate = true) => {
-  cy.get(commonSelectors.dashboardAppCreateButton).should(
-    canCreate ? "be.enabled" : "be.disabled"
+  cy.get(commonSelectors.appCreateButton).should(
+    canCreate ? "be.enabled" : "not.exist"
   );
   cy.get(commonSelectors.createNewFolderButton).should(
     canCreate ? "exist" : "not.exist"
@@ -139,7 +150,7 @@ export const verifyEnvironmentTagsInGranularUI = (groupName, environmentTags) =>
   cy.get(groupsSelector.granularLink).click();
 
   cy.get(groupsSelector.granularAccessPermission).within(() => {
-    cy.get(groupsSelector.environmentTags).should('be.visible');
+    cy.get(groupsSelector.environmentTagsContainer).should('be.visible');
     cy.get('.environment-tag').should('have.length', environmentTags.length);
     cy.get('.environment-tag').each(($el, index) => {
       cy.wrap($el).should('have.text', environmentTags[index]);
@@ -282,4 +293,23 @@ export const verifyPreviewURLAccess = (envNames, { appId, componentName, version
         .and('contain.text', 'Restricted access');
     }
   });
+
+};
+
+export const signup = (name, email) => {
+  cy.get(commonSelectors.createAnAccountLink, { timout: 10000 }).click();
+  cy.wait(2000);
+  cy.get(onboardingSelectors.nameInput, { timeout: 1000 }).should(
+    "not.be.disabled",
+  );
+  cy.get(onboardingSelectors.nameInput).clear();
+  cy.get(onboardingSelectors.nameInput).type(name);
+
+  cy.clearAndType(onboardingSelectors.loginEmailInput, email);
+  cy.clearAndType(
+    onboardingSelectors.loginPasswordInput,
+    commonText.password,
+    { timeout: 10000 },
+  );
+  cy.get(commonSelectors.signUpButton).click();
 };

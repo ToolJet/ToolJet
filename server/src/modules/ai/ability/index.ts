@@ -33,9 +33,20 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.LIST_CONVERSATIONS,
           FEATURE_KEY.CREATE_CONVERSATION,
           FEATURE_KEY.GET_CONVERSATION,
+          FEATURE_KEY.AUTO_SORT_QUERIES,
+          FEATURE_KEY.GET_THREAD_TOKEN_USAGE,
+          // Deliberately builder-scoped, unlike the admin-only key settings below:
+          // the whole point of the preference is that it needs no admin involvement.
+          FEATURE_KEY.GET_LLM_PREFERENCE,
+          FEATURE_KEY.UPDATE_LLM_PREFERENCE,
         ],
         AiConversation
       );
+    }
+
+    if (isAdmin || superAdmin) {
+      can([FEATURE_KEY.UPDATE_KEY], AiConversation);
+      can([FEATURE_KEY.GET_KEY_SETTINGS], AiConversation);
     }
   }
 }

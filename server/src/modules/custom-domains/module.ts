@@ -6,24 +6,29 @@ import { SubModule } from '@modules/app/sub-module';
 
 export class CustomDomainsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const { CustomDomainsController, CustomDomainsService, CloudflareProvider } = await this.getProviders(
       configs,
       'custom-domains',
       ['controller', 'service', 'providers/cloudflare-provider']
     );
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: CustomDomainsModule,
       imports: [],
       controllers: isMainImport ? [CustomDomainsController] : [],
       providers: [
         CustomDomainsService,
+        { provide: 'MCP_CUSTOM_DOMAINS', useExisting: CustomDomainsService },
         CustomDomainRepository,
         CustomDomainCacheService,
         FeatureAbilityFactory,
         CloudflareProvider,
       ],
-      exports: [CustomDomainsService, CustomDomainCacheService],
-    };
+      exports: [CustomDomainsService, CustomDomainCacheService, 'MCP_CUSTOM_DOMAINS'],
+    });
   }
 }

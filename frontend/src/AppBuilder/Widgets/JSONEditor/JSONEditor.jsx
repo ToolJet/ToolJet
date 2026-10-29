@@ -11,6 +11,7 @@ import './jsonEditor.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
+import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export async function loadCodeMirrorTheme(theme) {
   const mod = await import('@uiw/codemirror-themes-all');
@@ -38,7 +39,6 @@ export const JSONEditor = function JSONEditor(props) {
     setExposedVariable,
     setExposedVariables,
     darkMode,
-    adjustComponentPositions,
     currentLayout,
     width,
     currentMode,
@@ -70,7 +70,6 @@ export const JSONEditor = function JSONEditor(props) {
     id,
     height,
     value: forceDynamicHeightUpdate,
-    adjustComponentPositions,
     currentLayout,
     width,
     visibility,
@@ -135,6 +134,7 @@ export const JSONEditor = function JSONEditor(props) {
       {
         '.cm-scroller': {
           backgroundColor: backgroundColor,
+          flexGrow: 1,
         },
       },
       { dark: darkMode }
@@ -294,6 +294,8 @@ export const JSONEditor = function JSONEditor(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useFormClear(() => setValue('null'));
+
   // ===== MAIN RENDER =====
   return (
     <div className="json-editor-widget scrollbar-container" style={containerComputedStyles}>
@@ -306,6 +308,7 @@ export const JSONEditor = function JSONEditor(props) {
           }}
           value={exposedVariablesTemporaryState.value}
           onFocus={() => {
+            if (currentMode !== 'edit') return;
             setSelectedComponents([id]);
             setRightSidebarOpen(true);
             setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
@@ -322,6 +325,7 @@ export const JSONEditor = function JSONEditor(props) {
           basicSetup={basicSetup}
           // className={`codehinter-multi-line-input`}
           indentWithTab={true}
+          editable={!exposedVariablesTemporaryState.isDisabled}
         />
       )}
     </div>

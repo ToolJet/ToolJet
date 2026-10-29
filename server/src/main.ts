@@ -16,8 +16,12 @@ import { AppModule } from '@modules/app/module';
 import { GuardValidator } from '@modules/app/validators/feature-guard.validator';
 import { validateEdition } from '@helpers/edition.helper';
 import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
+import { SsoInfoUpdatedInterceptor } from '@modules/session/interceptors/sso-info-updated.interceptor';
+import { shutdownOtelLogs, initializeOtelLogs } from '@otel/logs';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { migrateSchemaBeforeBoot } from './migration-helpers/migrate-before-boot';
+import { MigrationRunsService } from '@modules/app/migration-runs/service';
 
 // Import helper functions
 import {
@@ -31,11 +35,17 @@ import {
   createLogger,
   logStartupInfo,
   logShutdownInfo,
+  onceWithDeadline,
   initSentry,
   initializeOtel,
+  initializeEnvConfigRegistry,
 } from '@helpers/bootstrap.helper';
 
 async function bootstrap() {
+  // Runs before NestFactory even starts, so no early appLogger.* call can miss the OTLP
+  // stream. Idempotent — safe alongside FrontendMetricsModule's own call to this.
+  initializeOtelLogs();
+
   const logger = createLogger('Bootstrap');
   logger.log('🚀 Starting ToolJet application bootstrap...');
 
@@ -119,6 +129,17 @@ async function bootstrap() {
     appLogger.log('Setting up security headers...');
     setSecurityHeaders(app, configService, appLogger);
     appLogger.log('✅ Security headers configured');
+    app.use((req, res, next) => {
+      if (req.path === `${urlPrefix.replace(/\/$/, '')}/mcp/consent`) {
+        res.setHeader('X-Frame-Options', 'DENY');
+        const csp = String(res.getHeader('Content-Security-Policy') || '');
+        res.setHeader(
+          'Content-Security-Policy',
+          `${csp.replace(/frame-ancestors[^;]*(;|$)/, '')}; frame-ancestors 'none'`
+        );
+      }
+      next();
+    });
 
     // Setup static assets
     appLogger.log('Setting up static assets...');
@@ -130,6 +151,8 @@ async function bootstrap() {
     const guardValidator = app.get(GuardValidator);
     await guardValidator.validateJwtGuard();
     appLogger.log('✅ Ability guard validation completed');
+
+    await initializeEnvConfigRegistry(app, appLogger);
 
     // Initialize Sentry
     initSentry(appLogger, configService);
@@ -145,6 +168,11 @@ async function bootstrap() {
     await app.listen(port, listen_addr, async function () {
       logStartupInfo(configService, appLogger);
     });
+    // Tracking is best-effort: a failure here must not take down a serving process.
+    await app
+      .get(MigrationRunsService)
+      .start()
+      .catch((error: Error) => appLogger.error(`Async migrations could not start: ${error.message}`));
   } catch (error) {
     logger.error('❌ Failed to bootstrap application:', error);
     process.exit(1);
@@ -152,25 +180,34 @@ async function bootstrap() {
 }
 
 function setupGracefulShutdown(app: NestExpressApplication, logger: any) {
-  const gracefulShutdown = async (signal: string) => {
-    logShutdownInfo(signal, logger);
-    try {
-      await app.close();
-      logger.log('✅ Application closed successfully');
-      process.exit(0);
-    } catch (error) {
-      logger.error('❌ Error during application shutdown:', error);
-      process.exit(1);
-    }
-  };
+  const gracefulShutdown = onceWithDeadline(
+    async (signal) => {
+      logShutdownInfo(signal, logger);
+      let exitCode = 0;
+      try {
+        await app.close();
+        logger.log('✅ Application closed successfully');
+      } catch (error) {
+        logger.error('❌ Error during application shutdown:', error);
+        exitCode = 1;
+      }
+      // Flush the OTel log queue before exiting, regardless of how app.close() went.
+      await shutdownOtelLogs();
+      return exitCode;
+    },
+    (code) => process.exit(code)
+  );
 
-  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', gracefulShutdown);
+  process.on('SIGTERM', gracefulShutdown);
 }
 
 async function setupApplicationMiddleware(app: NestExpressApplication, appLogger: any) {
   app.useLogger(appLogger);
-  app.useGlobalInterceptors(new ResponseInterceptor(app.get(Reflector), appLogger, app.get(EventEmitter2)));
+  app.useGlobalInterceptors(
+    new ResponseInterceptor(app.get(Reflector), appLogger, app.get(EventEmitter2)),
+    new SsoInfoUpdatedInterceptor()
+  );
   app.useGlobalFilters(new AllExceptionsFilter(appLogger));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
@@ -181,7 +218,7 @@ function configureUrlPrefix() {
   const urlPrefix = hasSubPath ? process.env.SUB_PATH : '';
 
   // Exclude these endpoints from prefix. These endpoints are required for health checks.
-  const pathsToExclude = [];
+  const pathsToExclude = [{ path: '/.well-known/{*path}', method: RequestMethod.GET }];
   if (hasSubPath) {
     pathsToExclude.push({ path: '/', method: RequestMethod.GET });
   }
@@ -215,4 +252,7 @@ function setupBodyParsers(app: NestExpressApplication, configService: ConfigServ
 setupGlobalAgent();
 
 // Main execution
-bootstrap();
+migrateSchemaBeforeBoot().then(bootstrap, (error) => {
+  console.error(error);
+  process.exit(1);
+});

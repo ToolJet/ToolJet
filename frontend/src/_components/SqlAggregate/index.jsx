@@ -29,8 +29,7 @@ const SqlAggregateRow = React.memo(function SqlAggregateRow({
   columnSelectorDependsOn,
   selectedDataSource,
   currentAppEnvironmentId,
-  schema,
-  table,
+  queryOptions,
   queryName,
 }) {
   const selectedAggregateFunction =
@@ -72,7 +71,7 @@ const SqlAggregateRow = React.memo(function SqlAggregateRow({
             dependsOn={columnSelectorDependsOn}
             selectedDataSource={selectedDataSource}
             currentAppEnvironmentId={currentAppEnvironmentId}
-            options={{ schema, table }}
+            options={queryOptions}
             value={typeof columnValue === 'string' ? columnValue : ''}
             propertyKey={aggregateEntryKey}
             optionsChanged={(updatedOptions) => {
@@ -93,6 +92,7 @@ const SqlAggregateRow = React.memo(function SqlAggregateRow({
           variant="ghostBlack"
           className="px-1 rounded-0 border rounded-end sql-aggregate-delete-button"
           onClick={handleRemove}
+          style={{ marginTop: '-4px', borderLeft: '0px !important' }}
         >
           <Trash fill="var(--slate9)" style={{ height: '16px' }} />
         </ButtonSolid>
@@ -117,10 +117,6 @@ const SqlAggregate = React.memo(function SqlAggregate({
   currentAppEnvironmentId,
   queryName,
 }) {
-  const depKeys = Array.isArray(columnSelectorDependsOn) ? columnSelectorDependsOn : [];
-  const schema = depKeys.includes('schema') ? options?.schema ?? '' : '';
-  const table = depKeys.includes('table') ? options?.table ?? '' : '';
-
   const currentAggregates = readValueMapFromOptions(options, getter, parseKey);
   const aggregateEntries = isEmpty(currentAggregates) ? [] : Object.entries(currentAggregates);
 
@@ -188,8 +184,7 @@ const SqlAggregate = React.memo(function SqlAggregate({
           columnSelectorDependsOn={columnSelectorDependsOn}
           selectedDataSource={selectedDataSource}
           currentAppEnvironmentId={currentAppEnvironmentId}
-          schema={schema}
-          table={table}
+          queryOptions={options}
           queryName={queryName}
         />
       ))}

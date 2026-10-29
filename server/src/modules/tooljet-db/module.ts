@@ -23,10 +23,15 @@ export class TooljetDbModule extends SubModule {
   }
 
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       TooljetDbController,
       TooljetDbTableOperationsService,
       TooljetDbBulkUploadService,
+      TooljetDbUtilService,
       TooljetDbDataOperationsService,
       TooljetDbImportExportService,
       PostgrestProxyService,
@@ -34,19 +39,22 @@ export class TooljetDbModule extends SubModule {
       'controller',
       'services/tooljet-db-table-operations.service',
       'services/tooljet-db-bulk-upload.service',
+      'services/tooljet-db-util.service',
       'services/tooljet-db-data-operations.service',
       'services/tooljet-db-import-export.service',
       'services/postgrest-proxy.service',
     ]);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: TooljetDbModule,
-      imports: [TypeOrmModule.forFeature([Credential, InternalTable, AppUser, RolesRepository])],
+      imports: [TypeOrmModule.forFeature([Credential, InternalTable, AppUser])],
       controllers: isMainImport ? [TooljetDbController] : [],
       providers: [
         AbilityUtilService,
+        RolesRepository,
         TooljetDbTableOperationsService,
         TooljetDbBulkUploadService,
+        TooljetDbUtilService,
         TooljetDbDataOperationsService,
         TooljetDbImportExportService,
         PostgrestProxyService,
@@ -56,9 +64,10 @@ export class TooljetDbModule extends SubModule {
       exports: [
         TooljetDbTableOperationsService,
         TooljetDbBulkUploadService,
+        TooljetDbUtilService,
         TooljetDbDataOperationsService,
         TooljetDbImportExportService,
       ],
-    };
+    });
   }
 }

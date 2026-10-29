@@ -53,7 +53,7 @@ export const FieldItem = ({
     (listItem, menuOptionLabel) => {
       if (menuOptionLabel === 'Delete') {
         onRemove(index);
-      } else if (menuOptionLabel === 'copyField') {
+      } else if (menuOptionLabel === 'copyColumn') {
         onDuplicate(index);
       }
     },
@@ -76,7 +76,7 @@ export const FieldItem = ({
             overlay={renderFieldPopover(item, index)}
             onToggle={(show) => onTogglePopover(index, show)}
           >
-            <div className="table-column-lists">
+            <div className="table-column-lists" data-list-item-id={String(item.id ?? '')}>
               <List.Item
                 isDraggable
                 primaryText={resolvedItemName}

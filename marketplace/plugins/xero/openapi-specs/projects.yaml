@@ -1,0 +1,1586 @@
+openapi: 3.0.0
+info:
+  version: 12.0.0
+  title: Xero Projects API
+  description: This is the Xero Projects API
+  termsOfService: https://developer.xero.com/xero-developer-platform-terms-conditions/
+  contact:
+    name: Xero Platform Team
+    email: api@xero.com
+    url: https://developer.xero.com
+  license:
+    name: MIT
+    url: https://github.com/XeroAPI/Xero-OpenAPI/blob/master/LICENSE
+servers:
+  - description: Xero API server for projects
+    url: https://api.xero.com/projects.xro/2.0
+paths:
+  /Projects:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - projects
+            - projects.read
+      tags:
+        - Project
+      summary: Retrieves all projects
+      operationId: getProjects
+      description: Allows you to retrieve, create and update projects.
+      parameters:
+        - name: projectIds
+          x-snake: project_ids
+          in: query
+          required: false
+          description: Search for all projects that match a comma separated list of projectIds
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+        - name: contactID
+          x-snake: contact_id
+          in: query
+          required: false
+          description: Filter for projects for a specific contact
+          schema:
+            type: string
+            format: uuid
+        - name: states
+          in: query
+          required: false
+          description: Filter for projects in a particular state (INPROGRESS or CLOSED)
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          description: set to 1 by default. The requested number of the page in paged response - Must be a number greater than 0.
+          schema:
+            type: integer
+            example: 1
+            default: 1
+        - name: pageSize
+          x-snake: page_size
+          in: query
+          required: false
+          description: Optional, it is set to 50 by default. The number of items to return per page in a paged response - Must be a number between 1 and 500.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 50
+            example: 100
+      responses:
+        "200":
+          description: OK/success, returns a list of project objects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Projects"
+              example:
+                pagination:
+                  page: 1
+                  pageSize: 50
+                  pageCount: 1
+                  itemCount: 9
+                items:
+                  - projectId: b021e7cb-1903-4292-b48b-5b27b4271e3e
+                    contactId: 216830cb-9a68-487e-928b-c1a7ccc4fc81
+                    name: FooProject28916
+                    currencyCode: AUD
+                    minutesLogged: 180
+                    totalTaskAmount:
+                      currency: AUD
+                      value: 60.0
+                    totalExpenseAmount:
+                      currency: AUD
+                      value: 499.0
+                    minutesToBeInvoiced: 180
+                    taskAmountToBeInvoiced:
+                      currency: AUD
+                      value: 60.0
+                    taskAmountInvoiced:
+                      currency: AUD
+                      value: 0.0
+                    expenseAmountToBeInvoiced:
+                      currency: AUD
+                      value: 499.0
+                    expenseAmountInvoiced:
+                      currency: AUD
+                      value: 0.0
+                    projectAmountInvoiced:
+                      currency: AUD
+                      value: 0.0
+                    deposit:
+                      currency: AUD
+                      value: 0.0
+                    depositApplied:
+                      currency: AUD
+                      value: 0.0
+                    creditNoteAmount:
+                      currency: AUD
+                      value: 0.0
+                    totalInvoiced:
+                      currency: AUD
+                      value: 0.0
+                    totalToBeInvoiced:
+                      currency: AUD
+                      value: 559.0
+                    deadlineUtc: "2020-03-03T15:00:00Z"
+                    estimate:
+                      currency: AUD
+                      value: 99.99
+                    status: INPROGRESS
+        "400":
+          $ref: "#/components/responses/400Error"
+    post:
+      security:
+        - OAuth2:
+            - projects
+      tags:
+        - Project
+      summary: Create one or more new projects
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+      operationId: createProject
+      requestBody:
+        required: true
+        description: Create a new project with ProjectCreateOrUpdate object
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectCreateOrUpdate"
+            example: '{ "contactId": "00000000-0000-0000-000-000000000000", "name": "New Kitchen", "deadlineUtc": "2019-12-10T12:59:59Z", "estimateAmount": "99.99" }'
+      responses:
+        "201":
+          description: OK/success, returns the new project object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+              example:
+                projectId: ed957eee-bc6f-4f52-a663-aa42e6af9620
+                contactId: 216830cb-9a68-487e-928b-c1a7ccc4fc81
+                name: New Kitchen
+                currencyCode: AUD
+                minutesLogged: 0
+                totalTaskAmount:
+                  currency: AUD
+                  value: 0.0
+                totalExpenseAmount:
+                  currency: AUD
+                  value: 0.0
+                minutesToBeInvoiced: 0
+                taskAmountToBeInvoiced:
+                  currency: AUD
+                  value: 0.0
+                taskAmountInvoiced:
+                  currency: AUD
+                  value: 0.0
+                expenseAmountToBeInvoiced:
+                  currency: AUD
+                  value: 0.0
+                expenseAmountInvoiced:
+                  currency: AUD
+                  value: 0.0
+                projectAmountInvoiced:
+                  currency: AUD
+                  value: 0.0
+                deposit:
+                  currency: AUD
+                  value: 0.0
+                depositApplied:
+                  currency: AUD
+                  value: 0.0
+                creditNoteAmount:
+                  currency: AUD
+                  value: 0.0
+                totalInvoiced:
+                  currency: AUD
+                  value: 0.0
+                totalToBeInvoiced:
+                  currency: AUD
+                  value: 0.0
+                deadlineUtc: "2020-03-03T15:00:00Z"
+                estimate:
+                  currency: AUD
+                  value: 99.99
+                status: INPROGRESS
+        "400":
+          $ref: "#/components/responses/400Error"
+  /Projects/{projectId}:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - projects
+            - projects.read
+      tags:
+        - Project
+      summary: Retrieves a single project
+      operationId: getProject
+      description: Allows you to retrieve a specific project using the projectId
+      parameters:
+        - name: projectId
+          x-snake: project_id
+          in: path
+          required: true
+          description: You can specify an individual project by appending the projectId to the endpoint
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK/success, returns the specified project object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+              example:
+                projectId: b021e7cb-1903-4292-b48b-5b27b4271e3e
+                contactId: 216830cb-9a68-487e-928b-c1a7ccc4fc81
+                name: Remodeling 2012
+                currencyCode: AUD
+                minutesLogged: 180
+                totalTaskAmount:
+                  currency: AUD
+                  value: 60.0
+                totalExpenseAmount:
+                  currency: AUD
+                  value: 499.0
+                minutesToBeInvoiced: 180
+                taskAmountToBeInvoiced:
+                  currency: AUD
+                  value: 60.0
+                taskAmountInvoiced:
+                  currency: AUD
+                  value: 0.0
+                expenseAmountToBeInvoiced:
+                  currency: AUD
+                  value: 499.0
+                expenseAmountInvoiced:
+                  currency: AUD
+                  value: 0.0
+                projectAmountInvoiced:
+                  currency: AUD
+                  value: 0.0
+                deposit:
+                  currency: AUD
+                  value: 0.0
+                depositApplied:
+                  currency: AUD
+                  value: 0.0
+                creditNoteAmount:
+                  currency: AUD
+                  value: 0.0
+                totalInvoiced:
+                  currency: AUD
+                  value: 0.0
+                totalToBeInvoiced:
+                  currency: AUD
+                  value: 559.0
+                deadlineUtc: "2020-03-03T15:00:00Z"
+                estimate:
+                  currency: AUD
+                  value: 99.99
+                status: INPROGRESS
+        "400":
+          $ref: "#/components/responses/400Error"
+    put:
+      security:
+        - OAuth2:
+            - projects
+      tags:
+        - Project
+      summary: Updates a specific project
+      operationId: updateProject
+      description: Allows you to update a specific projects.
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+        - name: projectId
+          x-snake: project_id
+          in: path
+          required: true
+          description: You can specify an individual project by appending the projectId to the endpoint
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        description: Request of type ProjectCreateOrUpdate
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectCreateOrUpdate"
+            example: '{ "name": "New Kitchen", "deadlineUtc": "2017-04-23T18:25:43.511Z", "estimateAmount": 99.99 }'
+      responses:
+        "204":
+          description: Success - return response 204 no content
+          x-isEmpty: true
+        "400":
+          $ref: "#/components/responses/400Error"
+    patch:
+      security:
+        - OAuth2:
+            - projects
+      tags:
+        - Project
+      summary: creates a project for the specified contact
+      operationId: patchProject
+      description: Allows you to update a specific projects.
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+        - name: projectId
+          x-snake: project_id
+          in: path
+          required: true
+          description: You can specify an individual project by appending the projectId to the endpoint
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        description: Update the status of an existing Project
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectPatch"
+            example: '{ "status": "INPROGRESS" }'
+      responses:
+        "204":
+          description: Success - return response 204 no content
+          x-isEmpty: true
+        "400":
+          $ref: "#/components/responses/400Error"
+  /ProjectsUsers:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - projects
+            - projects.read
+      tags:
+        - Project
+      summary: Retrieves a list of all project users
+      operationId: getProjectUsers
+      description: Allows you to retrieve the users on a projects.
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: set to 1 by default. The requested number of the page in paged response - Must be a number greater than 0.
+          schema:
+            type: integer
+            example: 1
+            default: 1
+        - name: pageSize
+          x-snake: page_size
+          in: query
+          required: false
+          description: Optional, it is set to 50 by default. The number of items to return per page in a paged response - Must be a number between 1 and 500.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 50
+            example: 100
+      responses:
+        "200":
+          description: OK/success, returns a list of project users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectUsers"
+              example:
+                pagination:
+                  page: 1
+                  pageSize: 50
+                  pageCount: 1
+                  itemCount: 2
+                items:
+                  - userId: 740add2a-a703-4b8a-a670-1093919c2040
+                    name: Test User
+                    email: test@xero.com
+                  - userId: 00000000-0000-0000-0000-000000000000
+                    name: API Team
+                    email: api@xero.com
+        "400":
+          $ref: "#/components/responses/400Error"
+  /Projects/{projectId}/Tasks:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - projects
+            - projects.read
+      tags:
+        - Project
+      summary: Retrieves all project tasks
+      operationId: getTasks
+      description: Allows you to retrieve a specific project
+      parameters:
+        - name: projectId
+          x-snake: project_id
+          in: path
+          required: true
+          description: You can specify an individual project by appending the projectId to the endpoint
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          description: Set to 1 by default. The requested number of the page in paged response - Must be a number greater than 0.
+          schema:
+            type: integer
+            example: 1
+        - name: pageSize
+          x-snake: page_size
+          in: query
+          description: Optional, it is set to 50 by default. The number of items to return per page in a paged response - Must be a number between 1 and 500.
+          schema:
+            type: integer
+            example: 10
+        - name: taskIds
+          x-snake: task_ids
+          in: query
+          description: Search for all tasks that match a comma separated list of taskIds, i.e. GET https://.../tasks?taskIds={taskID},{taskID}
+          schema:
+            type: string
+        - name: chargeType
+          $ref: "#/components/parameters/chargeType"
+      responses:
+        "200":
+          description: OK/success, returns a list of task objects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tasks"
+              example:
+                pagination:
+                  page: 1
+                  pageSize: 50
+                  pageCount: 1
+                  itemCount: 1
+                items:
+                  - name: Demolition
+                    rate:
+                      currency: AUD
+                      value: 20.0
+                    chargeType: TIME
+                    status: ACTIVE
+                    estimateMinutes: 12000
+                    taskId: 7be77337-feec-4458-bb1b-dbaa5a4aafce
+                    projectId: b021e7cb-1903-4292-b48b-5b27b4271e3e
+                    totalMinutes: 180
+                    totalAmount:
+                      currency: AUD
+                      value: 60.0
+                    minutesToBeInvoiced: 180
+                    minutesInvoiced: 0
+                    nonChargeableMinutes: 0
+                    fixedMinutes: 0
+                    amountToBeInvoiced:
+                      currency: AUD
+                      value: 60.0
+                    amountInvoiced:
+                      currency: AUD
+                      value: 0.0
+        "400":
+          $ref: "#/components/responses/400Error"
+    post:
+      security:
+        - OAuth2:
+            - projects
+      tags:
+        - Project
+      summary: Allows you to create a task
+      operationId: createTask
+      description: Allows you to create a specific task
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+        - name: projectId
+          x-snake: project_id
+          in: path
+          required: true
+          description: You can create a task on a specified projectId
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        description: The task object you are creating
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskCreateOrUpdate"
+            example: '{ "status": "INPROGRESS" }'
+      responses:
+        "201":
+          description: OK/success, returns the new task object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+              example:
+                name: Demolition
+                rate:
+                  currency: AUD
+                  value: 20
+                chargeType: TIME
+                status: ACTIVE
+                estimateMinutes: 12000
+                taskId: 00000000-0000-0000-0000-000000000000
+                projectId: 00000000-0000-0000-0000-000000000000
+                totalMinutes: 300
+                totalAmount:
+                  currency: AUD
+                  value: 100
+                minutesToBeInvoiced: 300
+                minutesInvoiced: 0
+                nonChargeableMinutes: 0
+                fixedMinutes: 0
+                amountToBeInvoiced:
+                  currency: AUD
+                  value: 100
+                amountInvoiced:
+                  currency: AUD
+                  value: 0
+        "400":
+          $ref: "#/components/responses/400Error"
+  /Projects/{projectId}/Tasks/{taskId}:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - projects
+            - projects.read
+      tags:
+        - Project
+      summary: Retrieves a single project task
+      operationId: getTask
+      description: Allows you to retrieve a specific project
+      parameters:
+        - name: projectId
+          x-snake: project_id
+          in: path
+          required: true
+          description: You can specify an individual project by appending the projectId to the endpoint
+          schema:
+            type: string
+            format: uuid
+        - name: taskId
+          x-snake: task_id
+          in: path
+          required: true
+          description: You can specify an individual task by appending the taskId to the endpoint, i.e. GET https://.../tasks/{taskID}
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK/success, returns the specified task object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+              example:
+                name: Demolition
+                rate:
+                  currency: AUD
+                  value: 20
+                chargeType: TIME
+                status: ACTIVE
+                estimateMinutes: 12000
+                taskId: 7be77337-feec-4458-bb1b-dbaa5a4aafce
+                projectId: b021e7cb-1903-4292-b48b-5b27b4271e3e
+                totalMinutes: 300
+                totalAmount:
+                  currency: AUD
+                  value: 100
+                minutesToBeInvoiced: 300
+                minutesInvoiced: 0
+                nonChargeableMinutes: 0
+                fixedMinutes: 0
+                amountToBeInvoiced:
+                  currency: AUD
+                  value: 100
+                amountInvoiced:
+                  currency: AUD
+                  value: 0
+        "400":
+          $ref: "#/components/responses/400Error"
+    put:
+      security:
+        - OAuth2:
+            - projects
+      tags:
+        - Project
+      summary: Allows you to update a task
+      operationId: updateTask
+      description: Allows you to update a specific task
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+        - name: projectId
+          x-snake: project_id
+          in: path
+          required: true
+          description: You can specify an individual project by appending the projectId to the endpoint
+          schema:
+            type: string
+            format: uuid
+        - name: taskId
+          x-snake: task_id
+          in: path
+          required: true
+          description: You can specify an individual task by appending the id to the endpoint
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        description: The task object you are updating
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskCreateOrUpdate"
+            example: ""
+      responses:
+        "204":
+          description: OK/Success - return response 204 no content
+          x-isEmpty: true
+        "400":
+          $ref: "#/components/responses/400Error"
+    delete:
+      security:
+        - OAuth2:
+            - projects
+      tags:
+        - Project
+      summary: Allows you to delete a task
+      operationId: deleteTask
+      description: Allows you to delete a specific task
+      parameters:
+        - name: projectId
+          x-snake: project_id
+          in: path
+          required: true
+          description: You can specify an individual project by appending the projectId to the endpoint
+          schema:
+            type: string
+            format: uuid
+        - name: taskId
+          x-snake: task_id
+          in: path
+          required: true
+          description: You can specify an individual task by appending the id to the endpoint
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Success - return response 204 no content
+          x-isEmpty: true
+        "400":
+          $ref: "#/components/responses/400Error"
+  /Projects/{projectId}/Time:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - projects
+            - projects.read
+      tags:
+        - Project
+      summary: Retrieves all time entries associated with a specific project
+      operationId: getTimeEntries
+      description: Allows you to retrieve the time entries associated with a specific project
+      parameters:
+        - name: projectId
+          x-snake: project_id
+          in: path
+          required: true
+          description: Identifier of the project, that the task (which the time entry is logged against) belongs to.
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          x-snake: user_id
+          in: query
+          description: The xero user identifier of the person who logged time.
+          schema:
+            type: string
+            format: uuid
+        - name: taskId
+          x-snake: task_id
+          in: query
+          description: Identifier of the task that time entry is logged against.
+          schema:
+            type: string
+            format: uuid
+        - name: invoiceId
+          x-snake: invoice_id
+          in: query
+          description: Finds all time entries for this invoice.
+          schema:
+            type: string
+            format: uuid
+        - name: contactId
+          x-snake: contact_id
+          in: query
+          description: Finds all time entries for this contact identifier.
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          description: Set to 1 by default. The requested number of the page in paged response - Must be a number greater than 0.
+          schema:
+            type: integer
+            example: 1
+        - name: pageSize
+          x-snake: page_size
+          in: query
+          description: Optional, it is set to 50 by default. The number of items to return per page in a paged response - Must be a number between 1 and 500.
+          schema:
+            type: integer
+            example: 10
+        - name: states
+          in: query
+          description: Comma-separated list of states to find. Will find all time entries that are in the status of whatever is specified.
+          schema:
+            type: array
+            items:
+              type: string
+        - name: isChargeable
+          x-snake: is_chargeable
+          in: query
+          description: Finds all time entries which relate to tasks with the charge type `TIME` or `FIXED`.
+          schema:
+            type: boolean
+        - name: dateAfterUtc
+          x-snake: date_after_utc
+          in: query
+          description: ISO 8601 UTC date. Finds all time entries on or after this date filtered on the `dateUtc` field.
+          schema:
+            type: string
+            format: date-time
+        - name: dateBeforeUtc
+          x-snake: date_before_utc
+          in: query
+          description: ISO 8601 UTC date. Finds all time entries on or before this date filtered on the `dateUtc` field.
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: OK/success, returns a list of time entry objects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeEntries"
+              example:
+                pagination:
+                  page: 1
+                  pageSize: 50
+                  pageCount: 1
+                  itemCount: 9
+                items:
+                  - timeEntryId: 3cd35eca-704f-4bca-b258-236028ae8ed1
+                    userId: 740add2a-a703-4b8a-a670-1093919c2040
+                    projectId: b021e7cb-1903-4292-b48b-5b27b4271e3e
+                    taskId: 7be77337-feec-4458-bb1b-dbaa5a4aafce
+                    dateUtc: "2020-02-27T15:00:00Z"
+                    dateEnteredUtc: "2020-02-28T03:24:29.2215641Z"
+                    duration: 45
+                    description: My description
+                    status: ACTIVE
+                  - timeEntryId: 00000000-0000-0000-0000-000000000000
+                    userId: 00000000-0000-0000-0000-000000000000
+                    projectId: 00000000-0000-0000-0000-000000000000
+                    taskId: 00000000-0000-0000-0000-000000000000
+                    dateUtc: "2020-02-26T15:00:00Z"
+                    dateEnteredUtc: "2020-02-28T03:24:29.2215641Z"
+                    duration: 30
+                    description: My description
+                    status: ACTIVE
+        "400":
+          $ref: "#/components/responses/400Error"
+    post:
+      security:
+        - OAuth2:
+            - projects
+      tags:
+        - Project
+      summary: Creates a time entry for a specific project
+      operationId: createTimeEntry
+      description: Allows you to create a specific task
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+        - name: projectId
+          x-snake: project_id
+          in: path
+          required: true
+          description: You can specify an individual project by appending the projectId to the endpoint
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        description: The time entry object you are creating
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TimeEntryCreateOrUpdate"
+            example:
+              userId: 00000000-0000-0000-0000-000000000000
+              taskId: 00000000-0000-0000-0000-000000000000
+              dateUtc: "2020-02-26T15:00:00Z"
+              duration: 30
+              description: My description
+      responses:
+        "200":
+          description: OK/success, returns the newly created time entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeEntry"
+              example:
+                timeEntryId: c6539534-f1d2-43a6-80df-3bd1f8aca24d
+                userId: c6539534-f1d2-43a6-80df-3bd1f8aca24d
+                projectId: b021e7cb-1903-4292-b48b-5b27b4271e3e
+                taskId: 7be77337-feec-4458-bb1b-dbaa5a4aafce
+                dateUtc: "2020-02-26T15:00:00Z"
+                dateEnteredUtc: "2020-02-28T20:37:42.8652832Z"
+                duration: 30
+                description: My description
+                status: ACTIVE
+        "400":
+          $ref: "#/components/responses/400Error"
+  /Projects/{projectId}/Time/{timeEntryId}:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - projects
+            - projects.read
+      tags:
+        - Project
+      summary: Retrieves a single time entry for a specific project
+      operationId: getTimeEntry
+      description: Allows you to get a single time entry in a project
+      parameters:
+        - name: projectId
+          x-snake: project_id
+          in: path
+          required: true
+          description: You can specify an individual project by appending the projectId to the endpoint
+          schema:
+            type: string
+            format: uuid
+        - name: timeEntryId
+          x-snake: time_entry_id
+          in: path
+          required: true
+          description: You can specify an individual time entry by appending the id to the endpoint
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK/success, returns the specified time entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeEntry"
+              example:
+                timeEntryId: 3cd35eca-704f-4bca-b258-236028ae8ed1
+                userId: 740add2a-a703-4b8a-a670-1093919c2040
+                projectId: b021e7cb-1903-4292-b48b-5b27b4271e3e
+                taskId: 7be77337-feec-4458-bb1b-dbaa5a4aafce
+                dateUtc: "2020-02-27T15:00:00Z"
+                dateEnteredUtc: "2020-02-21T21:41:22.2642727Z"
+                duration: 45
+                description: My description
+                status: ACTIVE
+        "400":
+          $ref: "#/components/responses/400Error"
+    put:
+      security:
+        - OAuth2:
+            - projects
+      tags:
+        - Project
+      summary: Updates a time entry for a specific project
+      operationId: updateTimeEntry
+      description: Allows you to update time entry in a project
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+        - name: projectId
+          x-snake: project_id
+          in: path
+          required: true
+          description: You can specify an individual project by appending the projectId to the endpoint
+          schema:
+            type: string
+            format: uuid
+        - name: timeEntryId
+          x-snake: time_entry_id
+          in: path
+          required: true
+          description: You can specify an individual time entry by appending the id to the endpoint
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        description: The time entry object you are updating
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TimeEntryCreateOrUpdate"
+            example:
+              userId: 00000000-0000-0000-0000-000000000000
+              taskId: 00000000-0000-0000-0000-000000000000
+              dateUtc: "2020-02-27T15:00:00Z"
+              duration: 45
+              description: My UPDATED description
+      responses:
+        "204":
+          description: Success - return response 204 no content
+          x-isEmpty: true
+        "400":
+          $ref: "#/components/responses/400Error"
+    delete:
+      security:
+        - OAuth2:
+            - projects
+      tags:
+        - Project
+      summary: Deletes a time entry for a specific project
+      operationId: deleteTimeEntry
+      description: Allows you to delete a specific time entry
+      parameters:
+        - name: projectId
+          x-snake: project_id
+          in: path
+          required: true
+          description: You can specify an individual project by appending the projectId to the endpoint
+          schema:
+            type: string
+            format: uuid
+        - name: timeEntryId
+          x-snake: time_entry_id
+          in: path
+          required: true
+          description: You can specify an individual task by appending the id to the endpoint
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Success - return response 204 no content
+          x-isEmpty: true
+        "400":
+          $ref: "#/components/responses/400Error"
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: For more information
+      flows:
+        authorizationCode:
+          authorizationUrl: https://login.xero.com/identity/connect/authorize
+          tokenUrl: https://identity.xero.com/connect/token
+          scopes:
+            email: Grant read-only access to your email
+            openid: Grant read-only access to your open id
+            profile: your profile information
+            projects: Grant read-write access to projects
+            projects.read: Grant read-only access to projects
+  parameters:
+    requiredHeader:
+      in: header
+      name: Xero-Tenant-Id
+      x-snake: xero_tenant_id
+      description: Xero identifier for Tenant
+      schema:
+        type: string
+      required: true
+    chargeType:
+      in: query
+      name: chargeType
+      x-snake: charge_type
+      schema:
+        $ref: "#/components/schemas/ChargeType"
+    idempotencyKey:
+      in: header
+      name: Idempotency-Key
+      x-snake: idempotency_key
+      description: This allows you to safely retry requests without the risk of duplicate processing. 128 character max.
+      example: KEY_VALUE
+      schema:
+        type: string
+  schemas:
+    Projects:
+      externalDocs:
+        url: https://developer.xero.com/documentation/projects/projects
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Project"
+    ProjectCreateOrUpdate:
+      externalDocs:
+        url: https://developer.xero.com/documentation/projects/projects
+      type: object
+      properties:
+        contactId:
+          externalDocs:
+            url: https://developer.xero.com/documentation/api/contacts
+          type: string
+          format: uuid
+          example: 01234567-89ab-cdef-0123-456789abcdef
+          description: Identifier of the contact this project was created for.
+        name:
+          type: string
+          example: New Kitchen
+          description: Name of the project.
+        estimateAmount:
+          type: number
+          format: double
+          x-is-money: true
+          example: 1.00
+        deadlineUtc:
+          type: string
+          format: date-time
+          example: "2019-12-10T12:59:59Z"
+          description: Deadline for the project. UTC Date Time in ISO-8601 format.
+      required:
+        - name
+    ProjectPatch:
+      externalDocs:
+        url: https://developer.xero.com/documentation/projects/projects
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/ProjectStatus"
+          type: string
+      required:
+        - status
+    Project:
+      externalDocs:
+        url: https://developer.xero.com/documentation/projects/projects
+      type: object
+      properties:
+        projectId:
+          type: string
+          format: uuid
+          example: 254553fa-2be8-4991-bd5e-70a97ea12ef8
+          description: Identifier of the project.
+        contactId:
+          externalDocs:
+            url: https://developer.xero.com/documentation/api/contacts
+          type: string
+          format: uuid
+          example: 01234567-89ab-cdef-0123-456789abcdef
+          description: Identifier of the contact this project was created for.
+        name:
+          type: string
+          example: New Kitchen
+          description: Name of the project.
+        currencyCode:
+          $ref: "#/components/schemas/CurrencyCode"
+          type: string
+        minutesLogged:
+          type: integer
+          example: 0
+          description: A total of minutes logged against all tasks on the Project.
+        totalTaskAmount:
+          $ref: "#/components/schemas/Amount"
+        totalExpenseAmount:
+          $ref: "#/components/schemas/Amount"
+        estimateAmount:
+          $ref: "#/components/schemas/Amount"
+        minutesToBeInvoiced:
+          type: integer
+          example: 0
+          description: Minutes which have not been invoiced across all chargeable tasks in the project.
+        taskAmountToBeInvoiced:
+          $ref: "#/components/schemas/Amount"
+        taskAmountInvoiced:
+          $ref: "#/components/schemas/Amount"
+        expenseAmountToBeInvoiced:
+          $ref: "#/components/schemas/Amount"
+        expenseAmountInvoiced:
+          $ref: "#/components/schemas/Amount"
+        projectAmountInvoiced:
+          $ref: "#/components/schemas/Amount"
+        deposit:
+          $ref: "#/components/schemas/Amount"
+        depositApplied:
+          $ref: "#/components/schemas/Amount"
+        creditNoteAmount:
+          $ref: "#/components/schemas/Amount"
+        deadlineUtc:
+          type: string
+          format: date-time
+          example: "2019-12-10T12:59:59Z"
+          description: Deadline for the project. UTC Date Time in ISO-8601 format.
+        totalInvoiced:
+          $ref: "#/components/schemas/Amount"
+        totalToBeInvoiced:
+          $ref: "#/components/schemas/Amount"
+        estimate:
+          $ref: "#/components/schemas/Amount"
+        status:
+          type: string
+          $ref: "#/components/schemas/ProjectStatus"
+      required:
+        - name
+    Pagination:
+      properties:
+        page:
+          type: integer
+          example: 1
+          description: Set to 1 by default. The requested number of the page in paged response - Must be a number greater than 0.
+        pageSize:
+          type: integer
+          example: 10
+          description: Optional, it is set to 50 by default. The number of items to return per page in a paged response - Must be a number between 1 and 500.
+        pageCount:
+          type: integer
+          example: 1
+          description: Number of pages available
+        itemCount:
+          type: integer
+          example: 2
+          description: Number of items returned
+    ProjectUsers:
+      externalDocs:
+        url: https://developer.xero.com/documentation/projects/users
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectUser"
+    ProjectUser:
+      externalDocs:
+        url: https://developer.xero.com/documentation/projects/users
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+          example: 254553fa-2be8-4991-bd5e-70a97ea12ef8
+          description: Identifier of the user of the project.
+        name:
+          type: string
+          example: Sidney Allen
+          description: Full name of the user.
+        email:
+          type: string
+          example: sidneyallen@xero.com
+          description: Email address of the user.
+    Amount:
+      type: object
+      properties:
+        currency:
+          $ref: "#/components/schemas/CurrencyCode"
+          type: string
+        value:
+          type: number
+          format: double
+          x-is-money: true
+          example: 1.00
+    ProjectStatus:
+      description: Status for project
+      example: INPROGRESS
+      type: string
+      enum:
+        - INPROGRESS
+        - CLOSED
+    CurrencyCode:
+      description: 3 letter alpha code for the ISO-4217 currency code, e.g. USD, AUD.
+      example: AUD
+      type: string
+      enum:
+        - AED
+        - AFN
+        - ALL
+        - AMD
+        - ANG
+        - AOA
+        - ARS
+        - AUD
+        - AWG
+        - AZN
+        - BAM
+        - BBD
+        - BDT
+        - BGN
+        - BHD
+        - BIF
+        - BMD
+        - BND
+        - BOB
+        - BRL
+        - BSD
+        - BTN
+        - BWP
+        - BYN
+        - BZD
+        - CAD
+        - CDF
+        - CHF
+        - CLP
+        - CNY
+        - COP
+        - CRC
+        - CUC
+        - CUP
+        - CVE
+        - CZK
+        - DJF
+        - DKK
+        - DOP
+        - DZD
+        - EGP
+        - ERN
+        - ETB
+        - EUR
+        - FJD
+        - FKP
+        - GBP
+        - GEL
+        - GGP
+        - GHS
+        - GIP
+        - GMD
+        - GNF
+        - GTQ
+        - GYD
+        - HKD
+        - HNL
+        - HRK
+        - HTG
+        - HUF
+        - IDR
+        - ILS
+        - IMP
+        - INR
+        - IQD
+        - IRR
+        - ISK
+        - JEP
+        - JMD
+        - JOD
+        - JPY
+        - KES
+        - KGS
+        - KHR
+        - KMF
+        - KPW
+        - KRW
+        - KWD
+        - KYD
+        - KZT
+        - LAK
+        - LBP
+        - LKR
+        - LRD
+        - LSL
+        - LYD
+        - MAD
+        - MDL
+        - MGA
+        - MKD
+        - MMK
+        - MNT
+        - MOP
+        - MRU
+        - MUR
+        - MVR
+        - MWK
+        - MXN
+        - MYR
+        - MZN
+        - NAD
+        - NGN
+        - NIO
+        - NOK
+        - NPR
+        - NZD
+        - OMR
+        - PAB
+        - PEN
+        - PGK
+        - PHP
+        - PKR
+        - PLN
+        - PYG
+        - QAR
+        - RON
+        - RSD
+        - RUB
+        - RWF
+        - SAR
+        - SBD
+        - SCR
+        - SDG
+        - SEK
+        - SGD
+        - SHP
+        - SLL
+        - SOS
+        - SPL
+        - SRD
+        - STN
+        - SVC
+        - SYP
+        - SZL
+        - THB
+        - TJS
+        - TMT
+        - TND
+        - TOP
+        - TRY
+        - TTD
+        - TVD
+        - TWD
+        - TZS
+        - UAH
+        - UGX
+        - USD
+        - UYU
+        - UZS
+        - VEF
+        - VND
+        - VUV
+        - WST
+        - XAF
+        - XCD
+        - XDR
+        - XOF
+        - XPF
+        - YER
+        - ZAR
+        - ZMW
+        - ZMK
+        - ZWD
+    Error:
+      externalDocs:
+        url: https://developer.xero.com/documentation/projects/projects-response-codes
+      type: object
+      properties:
+        message:
+          type: string
+          description: Exception message
+        modelState:
+          type: object
+          description: Array of Elements of validation Errors
+    Tasks:
+      externalDocs:
+        url: https://developer.xero.com/documentation/projects/projects
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Task"
+    Task:
+      externalDocs:
+        url: https://developer.xero.com/documentation/projects/projects
+      type: object
+      properties:
+        taskId:
+          type: string
+          format: uuid
+          example: 00000000-0000-0000-000-000000000000
+          description: Identifier of the task.
+        name:
+          type: string
+          description: Name of the task.
+        rate:
+          $ref: "#/components/schemas/Amount"
+          type: number
+        chargeType:
+          $ref: "#/components/schemas/ChargeType"
+          type: string
+        estimateMinutes:
+          type: integer
+          description: An estimated time to perform the task
+        projectId:
+          type: string
+          format: uuid
+          example: 00000000-0000-0000-000-000000000000
+          description: Identifier of the project task belongs to.
+        totalMinutes:
+          type: integer
+          description: Total minutes which have been logged against the task. Logged by assigning a time entry to a task
+        totalAmount:
+          $ref: "#/components/schemas/Amount"
+          type: number
+        minutesInvoiced:
+          type: integer
+          description: Minutes on this task which have been invoiced.
+        minutesToBeInvoiced:
+          type: integer
+          description: Minutes on this task which have not been invoiced.
+        fixedMinutes:
+          type: integer
+          description: Minutes logged against this task if its charge type is `FIXED`.
+        nonChargeableMinutes:
+          type: integer
+          description: Minutes logged against this task if its charge type is `NON_CHARGEABLE`.
+        amountToBeInvoiced:
+          $ref: "#/components/schemas/Amount"
+          type: number
+        amountInvoiced:
+          $ref: "#/components/schemas/Amount"
+          type: number
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INVOICED
+            - LOCKED
+          description: Status of the task. When a task of ChargeType is `FIXED` and the rate amount is invoiced the status will be set to `INVOICED` and can't be modified. A task with ChargeType of `TIME` or `NON_CHARGEABLE` cannot have a status of `INVOICED`. A `LOCKED` state indicates that the task is currently changing state (for example being invoiced) and can't be modified.
+    ChargeType:
+      description: Can be `TIME`, `FIXED` or `NON_CHARGEABLE`, defines how the task will be charged. Use `TIME` when you want to charge per hour and `FIXED` to charge as a fixed amount. If the task will not be charged use `NON_CHARGEABLE`.
+      type: string
+      enum:
+        - TIME
+        - FIXED
+        - NON_CHARGEABLE
+    TaskCreateOrUpdate:
+      externalDocs:
+        url: https://developer.xero.com/documentation/projects/projects
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the task. Max length 100 characters.
+          maximum: 100
+        rate:
+          $ref: "#/components/schemas/Amount"
+          type: number
+        chargeType:
+          $ref: "#/components/schemas/ChargeType"
+          type: string
+        estimateMinutes:
+          type: integer
+          description: An estimated time to perform the task
+      required:
+        - name
+        - rate
+        - chargeType
+    TimeEntries:
+      externalDocs:
+        url: https://developer.xero.com/documentation/projects/time
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimeEntry"
+    TimeEntry:
+      externalDocs:
+        url: https://developer.xero.com/documentation/projects/time
+      type: object
+      properties:
+        timeEntryId:
+          type: string
+          format: uuid
+          example: 00000000-0000-0000-000-000000000000
+          description: Identifier of the time entry.
+        userId:
+          type: string
+          format: uuid
+          example: 00000000-0000-0000-000-000000000000
+          description: The xero user identifier of the person who logged time.
+        projectId:
+          type: string
+          format: uuid
+          example: 00000000-0000-0000-000-000000000000
+          description: Identifier of the project, that the task (which the time entry is logged against) belongs to.
+        taskId:
+          type: string
+          format: uuid
+          example: 00000000-0000-0000-000-000000000000
+          description: Identifier of the task that time entry is logged against.
+        dateUtc:
+          type: string
+          format: date-time
+          description: The date time that time entry is logged on. UTC Date Time in ISO-8601 format.
+        dateEnteredUtc:
+          type: string
+          format: date-time
+          description: The date time that time entry is created. UTC Date Time in ISO-8601 format. By default it is set to server time.
+        duration:
+          type: integer
+          description: The duration of logged minutes.
+        description:
+          type: string
+          description: A description of the time entry.
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - LOCKED
+            - INVOICED
+          description: Status of the time entry. By default a time entry is created with status of `ACTIVE`. A `LOCKED` state indicates that the time entry is currently changing state (for example being invoiced). Updates are not allowed when in this state. It will have a status of INVOICED once it is invoiced.
+    TimeEntryCreateOrUpdate:
+      externalDocs:
+        url: https://developer.xero.com/documentation/projects/time
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+          example: 00000000-0000-0000-000-000000000000
+          description: The xero user identifier of the person logging the time.
+        taskId:
+          type: string
+          format: uuid
+          example: 00000000-0000-0000-000-000000000000
+          description: Identifier of the task that time entry is logged against.
+        dateUtc:
+          type: string
+          format: date-time
+          description: Date time entry is logged on. UTC Date Time in ISO-8601 format.
+        duration:
+          type: integer
+          description: Number of minutes to be logged. Duration is between 1 and 59940 inclusively.
+        description:
+          type: string
+          description: An optional description of the time entry, will be set to null if not provided during update.
+      required:
+        - userId
+        - taskId
+        - dateUtc
+        - duration
+  responses:
+    400Error:
+      description: A failed request due to validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

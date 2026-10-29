@@ -11,16 +11,16 @@ const OptionDetailsPopover = forwardRef(
       darkMode,
       onOptionChange,
       onDeleteOption,
+      onDefaultChange,
       getResolvedValue,
-      fields,
-      dataCyPrefix = '',
-      popoverClassName = 'pm-option-popover',
+      config,
       componentType,
       ...restProps
     },
     ref
   ) => {
     const iconVisibility = item?.iconVisibility;
+    const { dataCy: dataCyPrefix, popoverFields, popoverClassName, popoverTitle } = config;
 
     // Common CodeHinter props
     const commonCodeHinterProps = {
@@ -39,7 +39,7 @@ const OptionDetailsPopover = forwardRef(
       type: 'fxEditor',
     };
 
-    const showField = (fieldName) => fields.includes(fieldName);
+    const showField = (fieldName) => popoverFields.includes(fieldName);
 
     return (
       <Popover
@@ -54,7 +54,7 @@ const OptionDetailsPopover = forwardRef(
           <div data-cy={`${dataCyPrefix}-option-details-container`}>
             <div data-cy={`${dataCyPrefix}-option-details-header`} className="pm-option-header">
               <span data-cy={`${dataCyPrefix}-option-details-title`} className="pm-option-header-title">
-                Option details
+                {popoverTitle}
               </span>
               <div data-cy={`${dataCyPrefix}-option-details-actions`} className="pm-option-details-actions">
                 <ButtonComponent
@@ -184,7 +184,7 @@ const OptionDetailsPopover = forwardRef(
                     paramLabel={['ButtonGroupV2'].includes(componentType) ? 'Selected' : 'Default option'}
                     paramName={'optionDefault'}
                     onChange={(value) => {
-                      restProps.onDefaultChange(value, index);
+                      onDefaultChange(value, index);
                     }}
                     onFxPress={(active) => onOptionChange('default.fxActive', active, index)}
                     fxActive={item?.default?.fxActive}

@@ -1,0 +1,220 @@
+export const containerConfig = {
+  name: 'Container',
+  displayName: 'Container',
+  description: 'Group components',
+  defaultSize: {
+    width: 15,
+    height: 450,
+  },
+  component: 'Container',
+  others: {
+    showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+    showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+  },
+  properties: {
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    showHeader: {
+      type: 'toggle',
+      displayName: 'Show header',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
+  },
+  defaultChildren: [
+    {
+      componentName: 'Text',
+      slotName: 'header',
+      layout: {
+        top: 10,
+        left: 1,
+        height: 40,
+        width: 20,
+      },
+      displayName: 'ContainerText',
+      properties: ['text'],
+      accessorKey: 'text',
+      styles: ['fontWeight', 'textSize', 'textColor', 'boxShadow', 'verticalAlignment'],
+      defaultValue: {
+        text: 'Container title',
+        fontWeight: 'bold',
+        textSize: 16,
+        textColor: 'var(--cc-primary-text)',
+        boxShadow: '0px 0px 0px 0px #00000090',
+        verticalAlignment: 'center',
+      },
+    },
+  ],
+  events: {},
+  styles: {
+    headerBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'header',
+    },
+
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'container',
+    },
+    headerDividerColor: {
+      type: 'colorSwatches',
+      displayName: 'Divider',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-default-border)',
+      },
+      accordian: 'header',
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-weak-border)',
+      },
+      accordian: 'container',
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [{ type: 'string' }, { type: 'number' }],
+        },
+        defaultValue: 6,
+      },
+      accordian: 'container',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      accordian: 'container',
+    },
+  },
+  exposedVariables: {
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
+  },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
+  definition: {
+    others: {
+      showOnDesktop: { value: '{{true}}' },
+      showOnMobile: { value: '{{false}}' },
+    },
+    properties: {
+      showHeader: { value: `{{true}}` },
+      loadingState: { value: `{{false}}` },
+      visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
+      headerHeight: { value: `{{60}}` },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
+    },
+    events: [],
+    styles: {
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      headerDividerColor: { value: 'var(--cc-weak-border)' },
+      borderRadius: { value: '6' },
+      borderColor: { value: 'var(--cc-weak-border)' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
+    },
+  },
+};

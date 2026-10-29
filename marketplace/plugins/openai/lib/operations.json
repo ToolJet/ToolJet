@@ -27,6 +27,12 @@
 				"type": "dropdown-component-flip",
 				"description": "Select OpenAI Model",
 				"list": [
+					{ "value": "gpt-6-astra", "name": "GPT-6 Astra" },
+					{ "value": "gpt-6-sol", "name": "GPT-6 Sol" },
+					{ "value": "gpt-6-luna", "name": "GPT-6 Luna" },
+					{ "value": "gpt-5.6-terra", "name": "GPT-5.6 Terra" },
+					{ "value": "gpt-5.6-sol", "name": "GPT-5.6 Sol" },
+					{ "value": "gpt-5.6-luna", "name": "GPT-5.6 Luna" },
 					{ "value": "gpt-5.2", "name": "GPT-5.2" },
 					{ "value": "gpt-5.1", "name": "GPT-5.1" },
 					{ "value": "gpt-5", "name": "GPT-5" },
@@ -46,9 +52,371 @@
 					{ "value": "gpt-3.5-turbo-0125", "name": "GPT-3.5 Turbo" }
 				]
 			},
-			"gpt-5.2": {
+			"gpt-6-astra": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
+					"key": "prompt",
+					"type": "codehinter",
+					"description": "Enter message",
+					"placeholder": "Draft an email or other piece of writing",
+					"height": "150px"
+				},
+				"max_tokens": {
+					"label": "Max Tokens",
+					"key": "max_tokens",
+					"type": "codehinter",
+					"description": "Maximum tokens used in response",
+					"width": "320px",
+					"height": "36px",
+					"mandatory": false
+				},
+				"stop_sequence": {
+					"label": "Stop Sequence",
+					"key": "stop_sequence",
+					"type": "codehinter",
+					"description": "Enter stop sequence",
+					"mandatory": false,
+					"width": "320px",
+					"height": "36px"
+				},
+				"suffix": {
+					"label": "Suffix",
+					"key": "suffix",
+					"type": "codehinter",
+					"description": "Enter suffix",
+					"mandatory": false,
+					"width": "320px",
+					"height": "36px"
+				}
+			},
+			"gpt-6-sol": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
+				"prompt": {
+					"label": "User message",
+					"key": "prompt",
+					"type": "codehinter",
+					"description": "Enter message",
+					"placeholder": "Draft an email or other piece of writing",
+					"height": "150px"
+				},
+				"max_tokens": {
+					"label": "Max Tokens",
+					"key": "max_tokens",
+					"type": "codehinter",
+					"description": "Maximum tokens used in response",
+					"width": "320px",
+					"height": "36px",
+					"mandatory": false
+				},
+				"stop_sequence": {
+					"label": "Stop Sequence",
+					"key": "stop_sequence",
+					"type": "codehinter",
+					"description": "Enter stop sequence",
+					"mandatory": false,
+					"width": "320px",
+					"height": "36px"
+				},
+				"suffix": {
+					"label": "Suffix",
+					"key": "suffix",
+					"type": "codehinter",
+					"description": "Enter suffix",
+					"mandatory": false,
+					"width": "320px",
+					"height": "36px"
+				}
+			},
+			"gpt-6-luna": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
+				"prompt": {
+					"label": "User message",
+					"key": "prompt",
+					"type": "codehinter",
+					"description": "Enter message",
+					"placeholder": "Draft an email or other piece of writing",
+					"height": "150px"
+				},
+				"max_tokens": {
+					"label": "Max Tokens",
+					"key": "max_tokens",
+					"type": "codehinter",
+					"description": "Maximum tokens used in response",
+					"width": "320px",
+					"height": "36px",
+					"mandatory": false
+				},
+				"stop_sequence": {
+					"label": "Stop Sequence",
+					"key": "stop_sequence",
+					"type": "codehinter",
+					"description": "Enter stop sequence",
+					"mandatory": false,
+					"width": "320px",
+					"height": "36px"
+				},
+				"suffix": {
+					"label": "Suffix",
+					"key": "suffix",
+					"type": "codehinter",
+					"description": "Enter suffix",
+					"mandatory": false,
+					"width": "320px",
+					"height": "36px"
+				}
+			},
+			"gpt-5.6-terra": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
+				"prompt": {
+					"label": "User message",
+					"key": "prompt",
+					"type": "codehinter",
+					"description": "Enter message",
+					"placeholder": "Draft an email or other piece of writing",
+					"height": "150px"
+				},
+				"max_tokens": {
+					"label": "Max Tokens",
+					"key": "max_tokens",
+					"type": "codehinter",
+					"description": "Maximum tokens used in response",
+					"width": "320px",
+					"height": "36px",
+					"mandatory": false
+				},
+				"stop_sequence": {
+					"label": "Stop Sequence",
+					"key": "stop_sequence",
+					"type": "codehinter",
+					"description": "Enter stop sequence",
+					"mandatory": false,
+					"width": "320px",
+					"height": "36px"
+				},
+				"suffix": {
+					"label": "Suffix",
+					"key": "suffix",
+					"type": "codehinter",
+					"description": "Enter suffix",
+					"mandatory": false,
+					"width": "320px",
+					"height": "36px"
+				}
+			},
+			"gpt-5.6-sol": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
+				"prompt": {
+					"label": "User message",
+					"key": "prompt",
+					"type": "codehinter",
+					"description": "Enter message",
+					"placeholder": "Draft an email or other piece of writing",
+					"height": "150px"
+				},
+				"max_tokens": {
+					"label": "Max Tokens",
+					"key": "max_tokens",
+					"type": "codehinter",
+					"description": "Maximum tokens used in response",
+					"width": "320px",
+					"height": "36px",
+					"mandatory": false
+				},
+				"stop_sequence": {
+					"label": "Stop Sequence",
+					"key": "stop_sequence",
+					"type": "codehinter",
+					"description": "Enter stop sequence",
+					"mandatory": false,
+					"width": "320px",
+					"height": "36px"
+				},
+				"suffix": {
+					"label": "Suffix",
+					"key": "suffix",
+					"type": "codehinter",
+					"description": "Enter suffix",
+					"mandatory": false,
+					"width": "320px",
+					"height": "36px"
+				}
+			},
+"gpt-5.6-luna": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
+				"prompt": {
+					"label": "User message",
+					"key": "prompt",
+					"type": "codehinter",
+					"description": "Enter message",
+					"placeholder": "Draft an email or other piece of writing",
+					"height": "150px"
+				},
+				"max_tokens": {
+					"label": "Max Tokens",
+					"key": "max_tokens",
+					"type": "codehinter",
+					"description": "Maximum tokens used in response",
+					"width": "320px",
+					"height": "36px",
+					"mandatory": false
+				},
+				"stop_sequence": {
+					"label": "Stop Sequence",
+					"key": "stop_sequence",
+					"type": "codehinter",
+					"description": "Enter stop sequence",
+					"mandatory": false,
+					"width": "320px",
+					"height": "36px"
+				},
+				"suffix": {
+					"label": "Suffix",
+					"key": "suffix",
+					"type": "codehinter",
+					"description": "Enter suffix",
+					"mandatory": false,
+					"width": "320px",
+					"height": "36px"
+				}
+			},
+			"gpt-5.2": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
+				"prompt": {
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -61,13 +429,15 @@
 					"type": "codehinter",
 					"description": "Enter from 1 to 2048",
 					"width": "320px",
-					"height": "36px"
+					"height": "36px",
+					"mandatory": false
 				},
 				"temperature": {
 					"label": "Temperature",
 					"key": "temperature",
 					"type": "codehinter",
 					"description": "Enter from 0 to 1",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				},
@@ -76,6 +446,7 @@
 					"key": "stop_sequence",
 					"type": "codehinter",
 					"description": "Enter stop sequence",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				},
@@ -84,13 +455,34 @@
 					"key": "suffix",
 					"type": "codehinter",
 					"description": "Enter suffix",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				}
 			},
             "gpt-5.1": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -102,6 +494,7 @@
 					"key": "max_tokens",
 					"type": "codehinter",
 					"description": "Enter from 1 to 2048",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				},
@@ -110,6 +503,7 @@
 					"key": "temperature",
 					"type": "codehinter",
 					"description": "Enter from 0 to 1",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				},
@@ -118,6 +512,7 @@
 					"key": "stop_sequence",
 					"type": "codehinter",
 					"description": "Enter stop sequence",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				},
@@ -126,13 +521,34 @@
 					"key": "suffix",
 					"type": "codehinter",
 					"description": "Enter suffix",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				}
 			},
             "gpt-5": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -144,6 +560,7 @@
 					"key": "max_tokens",
 					"type": "codehinter",
 					"description": "Enter from 1 to 2048",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				},
@@ -152,6 +569,7 @@
 					"key": "temperature",
 					"type": "codehinter",
 					"description": "Enter from 0 to 1",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				},
@@ -160,6 +578,7 @@
 					"key": "stop_sequence",
 					"type": "codehinter",
 					"description": "Enter stop sequence",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				},
@@ -168,13 +587,34 @@
 					"key": "suffix",
 					"type": "codehinter",
 					"description": "Enter suffix",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				}
 			},
             "gpt-5-mini": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -186,6 +626,7 @@
 					"key": "max_tokens",
 					"type": "codehinter",
 					"description": "Enter from 1 to 2048",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				},
@@ -194,6 +635,7 @@
 					"key": "temperature",
 					"type": "codehinter",
 					"description": "Enter from 0 to 1",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				},
@@ -202,6 +644,7 @@
 					"key": "stop_sequence",
 					"type": "codehinter",
 					"description": "Enter stop sequence",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				},
@@ -210,13 +653,34 @@
 					"key": "suffix",
 					"type": "codehinter",
 					"description": "Enter suffix",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				}
 			},
 			"gpt-5-nano": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -228,6 +692,7 @@
 					"key": "max_tokens",
 					"type": "codehinter",
 					"description": "Enter from 1 to 2048",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				},
@@ -235,6 +700,7 @@
 					"label": "Temperature",
 					"key": "temperature",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 0 to 1",
 					"width": "320px",
 					"height": "36px"
@@ -243,6 +709,7 @@
 					"label": "Stop Sequence",
 					"key": "stop_sequence",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter stop sequence",
 					"width": "320px",
 					"height": "36px"
@@ -250,6 +717,7 @@
 				"suffix": {
 					"label": "Suffix",
 					"key": "suffix",
+					"mandatory": false,
 					"type": "codehinter",
 					"description": "Enter suffix",
 					"width": "320px",
@@ -257,8 +725,28 @@
 				}
 			},
             "o4-mini": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -269,6 +757,7 @@
 					"label": "Max Tokens",
 					"key": "max_tokens",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 1 to 2048",
 					"width": "320px",
 					"height": "36px"
@@ -277,6 +766,7 @@
 					"label": "Temperature",
 					"key": "temperature",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 0 to 1",
 					"width": "320px",
 					"height": "36px"
@@ -285,6 +775,7 @@
 					"label": "Stop Sequence",
 					"key": "stop_sequence",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter stop sequence",
 					"width": "320px",
 					"height": "36px"
@@ -293,14 +784,35 @@
 					"label": "Suffix",
 					"key": "suffix",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter suffix",
 					"width": "320px",
 					"height": "36px"
 				}
 			},
             "o3": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -311,6 +823,7 @@
 					"label": "Max Tokens",
 					"key": "max_tokens",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 1 to 2048",
 					"width": "320px",
 					"height": "36px"
@@ -319,6 +832,7 @@
 					"label": "Temperature",
 					"key": "temperature",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 0 to 1",
 					"width": "320px",
 					"height": "36px"
@@ -327,6 +841,7 @@
 					"label": "Stop Sequence",
 					"key": "stop_sequence",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter stop sequence",
 					"width": "320px",
 					"height": "36px"
@@ -335,14 +850,35 @@
 					"label": "Suffix",
 					"key": "suffix",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter suffix",
 					"width": "320px",
 					"height": "36px"
 				}
 			},
             "o3-mini": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -353,6 +889,7 @@
 					"label": "Max Tokens",
 					"key": "max_tokens",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 1 to 2048",
 					"width": "320px",
 					"height": "36px"
@@ -361,6 +898,7 @@
 					"label": "Temperature",
 					"key": "temperature",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 0 to 1",
 					"width": "320px",
 					"height": "36px"
@@ -369,6 +907,7 @@
 					"label": "Stop Sequence",
 					"key": "stop_sequence",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter stop sequence",
 					"width": "320px",
 					"height": "36px"
@@ -377,14 +916,35 @@
 					"label": "Suffix",
 					"key": "suffix",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter suffix",
 					"width": "320px",
 					"height": "36px"
 				}
 			},
             "o1": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -396,6 +956,7 @@
 					"key": "max_tokens",
 					"type": "codehinter",
 					"description": "Enter from 1 to 2048",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				},
@@ -404,6 +965,7 @@
 					"key": "temperature",
 					"type": "codehinter",
 					"description": "Enter from 0 to 1",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				},
@@ -411,6 +973,7 @@
 					"label": "Stop Sequence",
 					"key": "stop_sequence",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter stop sequence",
 					"width": "320px",
 					"height": "36px"
@@ -419,14 +982,35 @@
 					"label": "Suffix",
 					"key": "suffix",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter suffix",
 					"width": "320px",
 					"height": "36px"
 				}
 			},
             "gpt-4.1": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -436,6 +1020,7 @@
 				"max_tokens": {
 					"label": "Max Tokens",
 					"key": "max_tokens",
+					"mandatory": false,
 					"type": "codehinter",
 					"description": "Enter from 1 to 2048",
 					"width": "320px",
@@ -445,6 +1030,7 @@
 					"label": "Temperature",
 					"key": "temperature",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 0 to 1",
 					"width": "320px",
 					"height": "36px"
@@ -453,6 +1039,7 @@
 					"label": "Stop Sequence",
 					"key": "stop_sequence",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter stop sequence",
 					"width": "320px",
 					"height": "36px"
@@ -461,14 +1048,35 @@
 					"label": "Suffix",
 					"key": "suffix",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter suffix",
 					"width": "320px",
 					"height": "36px"
 				}
 			},
             "gpt-4.1-mini": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -479,6 +1087,7 @@
 					"label": "Max Tokens",
 					"key": "max_tokens",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 1 to 2048",
 					"width": "320px",
 					"height": "36px"
@@ -487,6 +1096,7 @@
 					"label": "Temperature",
 					"key": "temperature",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 0 to 1",
 					"width": "320px",
 					"height": "36px"
@@ -495,6 +1105,7 @@
 					"label": "Stop Sequence",
 					"key": "stop_sequence",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter stop sequence",
 					"width": "320px",
 					"height": "36px"
@@ -503,14 +1114,35 @@
 					"label": "Suffix",
 					"key": "suffix",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter suffix",
 					"width": "320px",
 					"height": "36px"
 				}
 			},
 			"gpt-4.1-nano": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -521,6 +1153,7 @@
 					"label": "Max Tokens",
 					"key": "max_tokens",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 1 to 2048",
 					"width": "320px",
 					"height": "36px"
@@ -529,6 +1162,7 @@
 					"label": "Temperature",
 					"key": "temperature",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 0 to 1",
 					"width": "320px",
 					"height": "36px"
@@ -537,6 +1171,7 @@
 					"label": "Stop Sequence",
 					"key": "stop_sequence",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter stop sequence",
 					"width": "320px",
 					"height": "36px"
@@ -545,14 +1180,35 @@
 					"label": "Suffix",
 					"key": "suffix",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter suffix",
 					"width": "320px",
 					"height": "36px"
 				}
 			},
             "gpt-4": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -563,6 +1219,7 @@
 					"label": "Max Tokens",
 					"key": "max_tokens",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 1 to 2048",
 					"width": "320px",
 					"height": "36px"
@@ -570,6 +1227,7 @@
 				"temperature": {
 					"label": "Temperature",
 					"key": "temperature",
+					"mandatory": false,
 					"type": "codehinter",
 					"description": "Enter from 0 to 1",
 					"width": "320px",
@@ -579,6 +1237,7 @@
 					"label": "Stop Sequence",
 					"key": "stop_sequence",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter stop sequence",
 					"width": "320px",
 					"height": "36px"
@@ -587,14 +1246,35 @@
 					"label": "Suffix",
 					"key": "suffix",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter suffix",
 					"width": "320px",
 					"height": "36px"
 				}
 			},
             "gpt-4-turbo": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -605,6 +1285,7 @@
 					"label": "Max Tokens",
 					"key": "max_tokens",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 1 to 2048",
 					"width": "320px",
 					"height": "36px"
@@ -613,6 +1294,7 @@
 					"label": "Temperature",
 					"key": "temperature",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 0 to 1",
 					"width": "320px",
 					"height": "36px"
@@ -621,6 +1303,7 @@
 					"label": "Stop Sequence",
 					"key": "stop_sequence",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter stop sequence",
 					"width": "320px",
 					"height": "36px"
@@ -629,14 +1312,35 @@
 					"label": "Suffix",
 					"key": "suffix",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter suffix",
 					"width": "320px",
 					"height": "36px"
 				}
 			},
             "gpt-4o": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -648,14 +1352,17 @@
 					"key": "max_tokens",
 					"type": "codehinter",
 					"description": "Enter from 1 to 2048",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
+					
 				},
 				"temperature": {
 					"label": "Temperature",
 					"key": "temperature",
 					"type": "codehinter",
 					"description": "Enter from 0 to 1",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				},
@@ -664,6 +1371,7 @@
 					"key": "stop_sequence",
 					"type": "codehinter",
 					"description": "Enter stop sequence",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				},
@@ -672,13 +1380,34 @@
 					"key": "suffix",
 					"type": "codehinter",
 					"description": "Enter suffix",
+					"mandatory": false,
 					"width": "320px",
 					"height": "36px"
 				}
 			},
 			"gpt-4o-mini": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -689,6 +1418,7 @@
 					"label": "Max Tokens",
 					"key": "max_tokens",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 1 to 2048",
 					"width": "320px",
 					"height": "36px"
@@ -696,6 +1426,7 @@
 				"temperature": {
 					"label": "Temperature",
 					"key": "temperature",
+					"mandatory": false,
 					"type": "codehinter",
 					"description": "Enter from 0 to 1",
 					"width": "320px",
@@ -705,6 +1436,7 @@
 					"label": "Stop Sequence",
 					"key": "stop_sequence",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter stop sequence",
 					"width": "320px",
 					"height": "36px"
@@ -713,14 +1445,35 @@
 					"label": "Suffix",
 					"key": "suffix",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter suffix",
 					"width": "320px",
 					"height": "36px"
 				}
 			},
             "gpt-3.5-turbo-0125": {
+				"system_prompt": {
+					"label": "System Prompt",
+					"key": "system_prompt",
+					"type": "codehinter",
+					"description": "Defines role, context, and behavior of the model",
+					"placeholder": "You are a helpful assistant.",
+					"height": "100px",
+					"mandatory": false,
+					"tooltip": "Instructions to guide the behavior of the model"
+				},
+				"message_history": {
+					"label": "Message History",
+					"key": "message_history",
+					"type": "codehinter",
+					"description": "Record of previous conversation context",
+					"placeholder": "[\n  { \"role\": \"user\", \"content\": \"Hello\" },\n  { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n]",
+					"height": "150px",
+					"mandatory": false,
+					"tooltip": "Provide an array of previous message objects for context. (Optional)"
+				},
 				"prompt": {
-					"label": "Message",
+					"label": "User message",
 					"key": "prompt",
 					"type": "codehinter",
 					"description": "Enter message",
@@ -731,6 +1484,7 @@
 					"label": "Max Tokens",
 					"key": "max_tokens",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 1 to 2048",
 					"width": "320px",
 					"height": "36px"
@@ -739,6 +1493,7 @@
 					"label": "Temperature",
 					"key": "temperature",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter from 0 to 1",
 					"width": "320px",
 					"height": "36px"
@@ -747,6 +1502,7 @@
 					"label": "Stop Sequence",
 					"key": "stop_sequence",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter stop sequence",
 					"width": "320px",
 					"height": "36px"
@@ -755,6 +1511,7 @@
 					"label": "Suffix",
 					"key": "suffix",
 					"type": "codehinter",
+					"mandatory": false,
 					"description": "Enter suffix",
 					"width": "320px",
 					"height": "36px"
@@ -768,12 +1525,88 @@
     			"type": "dropdown-component-flip",
     			"description": "Select OpenAI Model",
     			"list": [
-      				{ "value": "gpt-image-1", "name": "GPT Image 1" },
-					{ "value": "dall-e-3", "name": "DALL-E 3" },
-					{ "value": "dall-e-2", "name": "DALL-E 2" }
+      				{ "value": "gpt-image-2.5-sunburst", "name": "GPT Image 2.5 Sunburst" },
+      				{ "value": "gpt-image-2.5-flare", "name": "GPT Image 2.5 Flare" },
+      				{ "value": "gpt-image-2",      "name": "GPT Image 2" },
+      				{ "value": "gpt-image-1.5",    "name": "GPT Image 1.5" },
+      				{ "value": "gpt-image-1",      "name": "GPT Image 1" },
+      				{ "value": "gpt-image-1-mini", "name": "GPT Image 1 Mini" },
+					{ "value": "dall-e-3",         "name": "DALL-E 3 (Deprecated)" },
+					{ "value": "dall-e-2",         "name": "DALL-E 2 (Deprecated)" }
     			],
-    			"disabled": true,
-    			"default": "dall-e-3"
+    			"default": "gpt-image-2.5-flare"
+  			},
+			"gpt-image-2.5-sunburst": {
+   				"prompt": {
+      				"label": "Prompt",
+      				"key": "prompt",
+      				"type": "codehinter",
+      				"description": "Enter prompt for image generation",
+      				"height": "150px"
+    			},
+    			"size": {
+					"label": "Size (in pixels)",
+					"key": "size",
+					"type": "codehinter",
+					"description": "Enter image size in pixels (e.g., 1024x1024)",
+					"placeholder": "Any WIDTHxHEIGHT with both sides a multiple of 16, up to 3840px and between 1:3 and 3:1 (e.g. 1920x1088), or 1024x1024 / 1536x1024 / 1024x1536 / auto. By default 1024x1024 is used",
+					"width": "320px",
+					"height": "36px"
+    			}
+  			},
+"gpt-image-2.5-flare": {
+   				"prompt": {
+      				"label": "Prompt",
+      				"key": "prompt",
+      				"type": "codehinter",
+      				"description": "Enter prompt for image generation",
+      				"height": "150px"
+    			},
+    			"size": {
+					"label": "Size (in pixels)",
+					"key": "size",
+					"type": "codehinter",
+					"description": "Enter image size in pixels (e.g., 1024x1024)",
+					"placeholder": "Any WIDTHxHEIGHT with both sides a multiple of 16, up to 3840px and between 1:3 and 3:1 (e.g. 1920x1088), or 1024x1024 / 1536x1024 / 1024x1536 / auto. By default 1024x1024 is used",
+					"width": "320px",
+					"height": "36px"
+    			}
+  			},
+"gpt-image-2": {
+   				"prompt": {
+      				"label": "Prompt",
+      				"key": "prompt",
+      				"type": "codehinter",
+      				"description": "Enter prompt for image generation",
+      				"height": "150px"
+    			},
+    			"size": {
+					"label": "Size (in pixels)",
+					"key": "size",
+					"type": "codehinter",
+					"description": "Enter image size in pixels (e.g., 1024x1024)",
+					"placeholder": "Any WIDTHxHEIGHT up to 3840x2160 (e.g. 1920x1080), or 1024x1024 / 1536x1024 / 1024x1536 / auto. By default 1024x1024 is used",
+					"width": "320px",
+					"height": "36px"
+    			}
+  			},
+			"gpt-image-1.5": {
+   				"prompt": {
+      				"label": "Prompt",
+      				"key": "prompt",
+      				"type": "codehinter",
+      				"description": "Enter prompt for image generation",
+      				"height": "150px"
+    			},
+    			"size": {
+					"label": "Size (in pixels)",
+					"key": "size",
+					"type": "codehinter",
+					"description": "Enter image size in pixels (e.g., 1024x1024)",
+					"placeholder": "1024x1024, 1536x1024, 1024x1536 or auto. By default 1024x1024 sized image is generated",
+					"width": "320px",
+					"height": "36px"
+    			}
   			},
 			"gpt-image-1": {
    				"prompt": {
@@ -788,7 +1621,25 @@
 					"key": "size",
 					"type": "codehinter",
 					"description": "Enter image size in pixels (e.g., 1024x1024)",
-                    "placeholder": "1024x1024, 1792x1024 or 1024x1792. By default 1024x1024 sized image is generated",
+					"placeholder": "1024x1024, 1536x1024, 1024x1536 or auto. By default 1024x1024 sized image is generated",
+					"width": "320px",
+					"height": "36px"
+    			}
+  			},
+			"gpt-image-1-mini": {
+   				"prompt": {
+      				"label": "Prompt",
+      				"key": "prompt",
+      				"type": "codehinter",
+      				"description": "Enter prompt for image generation",
+      				"height": "150px"
+    			},
+    			"size": {
+					"label": "Size (in pixels)",
+					"key": "size",
+					"type": "codehinter",
+					"description": "Enter image size in pixels (e.g., 1024x1024)",
+					"placeholder": "1024x1024, 1536x1024, 1024x1536 or auto. By default 1024x1024 sized image is generated",
 					"width": "320px",
 					"height": "36px"
     			}

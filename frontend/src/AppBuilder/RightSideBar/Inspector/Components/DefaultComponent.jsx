@@ -1,5 +1,6 @@
 import React from 'react';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
 // eslint-disable-next-line import/no-unresolved
@@ -9,9 +10,9 @@ import { resolveReferences } from '@/_helpers/utils';
 import { AllComponents } from '@/AppBuilder/_helpers/editorHelpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-
 const SHOW_ADDITIONAL_ACTIONS = [
   'Text',
+  'Pagination',
   'Container',
   'TextInput',
   'TextArea',
@@ -54,7 +55,10 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'IFrame',
   'Accordion',
   'ReorderableList',
+  'ColorPicker',
   'FileButton',
+  'FlexContainer',
+  'Timeline',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -84,7 +88,9 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Accordion: 'Data',
   JSONExplorer: 'Data',
   JSONEditor: 'Data',
+  ColorPicker: 'Data',
   FileButton: 'Data',
+  FlexContainer: 'Layout',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -98,6 +104,7 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     apps,
     components,
     pages,
+    selectedComponentId,
   } = restProps;
 
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
@@ -114,7 +121,7 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   for (const [key] of Object.entries(componentMeta?.properties)) {
     if (componentMeta?.properties[key]?.section === 'additionalActions') {
       additionalActions.push(key);
-    } else {
+    } else if (componentMeta?.properties[key]?.section !== 'deprecatedStyles') {
       properties.push(key);
     }
   }
@@ -134,7 +141,8 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     validations,
     darkMode,
     pages,
-    additionalActions
+    additionalActions,
+    selectedComponentId
   );
 
   return <Accordion items={accordionItems} />;
@@ -155,7 +163,8 @@ export const baseComponentProperties = (
   validations,
   darkMode,
   pages,
-  additionalActions
+  additionalActions,
+  selectedComponentId
 ) => {
   // Add widget title to section key to filter that property section from specified widgets' settings
   const accordionFilters = {
@@ -167,6 +176,7 @@ export const baseComponentProperties = (
     ),
     General: [
       'Modal',
+      'Pagination',
       'TextInput',
       'PasswordInput',
       'TextArea',
@@ -193,6 +203,7 @@ export const baseComponentProperties = (
       'StarRating',
       'CircularProgressBar',
       'Kanban',
+      'Html',
       'ProgressBar',
       'AudioRecorder',
       'Camera',
@@ -200,7 +211,13 @@ export const baseComponentProperties = (
       'JSONEditor',
       'IFrame',
       'Accordion',
+      'ColorPicker',
       'FileButton',
+      'Listview',
+      'FlexContainer',
+      'ModalV2',
+      'Container',
+      'Timeline',
     ],
     Layout: [],
   };
@@ -293,6 +310,7 @@ export const baseComponentProperties = (
   });
 
   items.push({
+    id: ADDITIONAL_ACTIONS_ACCORDION_ID,
     title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
     isOpen: true,
     children: additionalActions?.map((property) => {
@@ -340,6 +358,7 @@ export const baseComponentProperties = (
       </>
     ),
   });
+
   return items.filter(
     (item) => !(item.title in accordionFilters && accordionFilters[item.title].includes(componentMeta.component))
   );

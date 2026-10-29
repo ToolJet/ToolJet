@@ -17,14 +17,13 @@ export function useModalEventSideEffects({
   useEffect(() => {
     // Select the DOM element
     const canvasElement = document.querySelector('.page-container.canvas-container');
-
     if (!canvasElement) return; // Ensure the element exists
-
     // Create a ResizeObserver
     const resizeObserver = new ResizeObserver((entries) => {
+      if (!showModal) return;
       for (let entry of entries) {
         // Update the height state when the element's height changes
-        onShowSideEffects();
+        onShowSideEffects(id);
 
         // When modal is in fullscreen and width of browser changes, update the modal width
         if (size === 'fullscreen') {
@@ -41,7 +40,8 @@ export function useModalEventSideEffects({
       // Cleanup observer on component unmount
       resizeObserver.disconnect();
     };
-  }, [size, onShowSideEffects]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showModal, size, onShowSideEffects]);
 
   useEffect(() => {
     if (showModal && parentRef.current) {

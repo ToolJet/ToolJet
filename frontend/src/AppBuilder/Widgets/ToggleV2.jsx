@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useId } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
 const Switch = ({
@@ -17,9 +18,10 @@ const Switch = ({
   visibility,
   isMandatory,
   isValid,
-  id,
+  inputId,
 }) => {
   const handleToggleChange = () => {
+    if (disabledState) return;
     setOn(!on);
     fireEvent('onChange');
     setUserInteracted(true);
@@ -65,7 +67,7 @@ const Switch = ({
       <div className="d-flex" style={switchStyle} onClick={handleToggleChange}>
         <input
           type="checkbox"
-          id={`component-${id}`}
+          id={inputId}
           style={{
             opacity: 0,
             width: 0,
@@ -75,17 +77,23 @@ const Switch = ({
             marginLeft: alignment === 'left' && '-2rem',
             border: `1 px solid ${borderColor}`,
           }}
+          // native disabled: removes the (hidden, focusable) input from the tab
+          // order + blocks Space; the wrapper div's onClick is guarded separately
+          disabled={disabledState}
           aria-disabled={disabledState}
           aria-hidden={!visibility}
           aria-required={isMandatory}
           aria-invalid={!isValid}
-          className="form-check-input "
+          className="form-check-input tw-peer"
           checked={on}
           onChange={onChange}
           onClick={onClick}
         />
 
-        <span style={sliderStyle}>
+        <span
+          className="peer-focus-visible:tw-ring-2 peer-focus-visible:tw-ring-interactive-focus-outline peer-focus-visible:tw-ring-offset-1"
+          style={sliderStyle}
+        >
           <span style={circleStyle}></span>
         </span>
       </div>
@@ -105,9 +113,10 @@ export const ToggleSwitchV2 = ({
   componentName,
   validate,
   width,
-  id,
 }) => {
   const isInitialRender = useRef(true);
+  const reactId = useId();
+  const inputId = `component-${reactId}`;
   const defaultValue = properties.defaultValue ?? false;
   const [on, setOn] = useState(Boolean(defaultValue));
   const label = properties.label;
@@ -118,6 +127,7 @@ export const ToggleSwitchV2 = ({
   const [disable, setDisable] = useState(properties.disabledState || properties.loadingState);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [userInteracted, setUserInteracted] = useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
 
   const { toggleSwitchColor, boxShadow, alignment, borderColor } = styles;
   const textColor = styles.textColor === '#1B1F24' ? 'var(--text-primary)' : styles.textColor;
@@ -241,6 +251,8 @@ export const ToggleSwitchV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [on]);
 
+  useFormClear(() => setInputValue(false));
+
   const renderInput = () => (
     <div
       data-disabled={properties.disabledState}
@@ -272,7 +284,7 @@ export const ToggleSwitchV2 = ({
             whiteSpace="normal"
             width={width - 20}
           >
-            <label htmlFor={`component-${id}`}>{label}</label>
+            <label htmlFor={inputId}>{label}</label>
             {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>}
           </OverflowTooltip>
 
@@ -292,7 +304,7 @@ export const ToggleSwitchV2 = ({
             setUserInteracted={setUserInteracted}
             visibility={visibility}
             isMandatory={isMandatory}
-            id={id}
+            inputId={inputId}
           />
         </>
       )}

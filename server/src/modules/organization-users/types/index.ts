@@ -35,6 +35,7 @@ export type FetchUserResponse = {
   avatarId?: string;
   groups?: any;
   roleGroup?: any;
+  adminGroups?: { id: string; name: string }[];
 };
 
 export type UserFilterOptions = { searchText?: string; status?: string };
@@ -43,6 +44,7 @@ export type InvitedUserType = Partial<User> & {
   invitedOrganizationId?: string;
   organizationStatus?: string;
   organizationUserSource?: string;
+  orgUserInvitationTokenExpiry?: Date | null;
 };
 
 export type RoleUpdate = {

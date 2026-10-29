@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsUUID, IsString, IsOptional, IsNotEmpty, IsDefined } from 'class-validator';
+import { IsUUID, IsString, IsOptional, IsNotEmpty, IsDefined, Matches } from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
@@ -17,6 +17,7 @@ export class CreateDataSourceDto {
   @IsString()
   @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
+  @Matches(/^[^/\\]*$/, { message: "Name should not contain '/' or '\\'" })
   name: string;
 
   @IsDefined()
@@ -27,7 +28,7 @@ export class CreateDataSourceDto {
   environment_id: string;
 }
 
-export class UpdateDataSourceDto extends PartialType(CreateDataSourceDto) { }
+export class UpdateDataSourceDto extends PartialType(CreateDataSourceDto) {}
 export class TestDataSourceDto extends PartialType(CreateDataSourceDto) {
   @IsString()
   @IsOptional()
@@ -99,7 +100,21 @@ export class InvokeDataSourceMethodDto {
 
   @IsOptional()
   args?: any;
+
+  @IsOptional()
+  resolvedOptions?: object;
 }
 
 export type InvokeDataSourceMethodResponseDto = QueryResult;
 
+export class ValidateOptionsDto {
+  @IsDefined()
+  options: Record<string, any>;
+
+  @IsDefined()
+  schema: Record<string, any>;
+
+  @IsUUID()
+  @IsOptional()
+  environment_id?: string;
+}

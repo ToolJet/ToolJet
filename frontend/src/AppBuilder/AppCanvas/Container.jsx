@@ -10,13 +10,21 @@ import {
   getSubContainerWidthAfterPadding,
   getSubContainerHeightAfterPadding,
 } from './appCanvasUtils';
-import { NO_OF_GRIDS, GRID_HEIGHT, HOVER_CLICK_OUTLINE_BORDER } from './appCanvasConstants';
+import {
+  NO_OF_GRIDS,
+  GRID_HEIGHT,
+  HOVER_CLICK_OUTLINE_BORDER,
+  PAGE_CANVAS_HEADER_FOOTER_PADDING,
+  ROW_SCOPED_WIDGET_TYPES,
+} from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
 import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveableGhost';
-import { findNewParentIdFromMousePosition } from './Grid/gridUtils';
+import { findNewParentIdFromMousePosition, isPointerOverCanvasArea } from './Grid/gridUtils';
+import { computeFlexInsertIndex } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { FlexContainerDropIndicator } from '@/AppBuilder/Widgets/FlexContainer/FlexContainerDropIndicator';
 
 // Lazy load editor-only component to reduce viewer bundle size
 const ModuleContainerBlank = lazy(() =>
@@ -42,68 +50,157 @@ const Container = React.memo(
     listViewMode = 'list',
     columns,
     darkMode,
-    canvasMaxWidth,
+    canvasMaxWidth: _canvasMaxWidth,
     componentType,
     appType,
     hasNoScroll = false,
+    flexEffectiveDirection,
+    flexShouldStack = false,
   }) => {
-    const { moduleId, isModuleEditor } = useModuleContext();
+    const { moduleId, isModuleEditor, isModuleMode } = useModuleContext();
     const realCanvasRef = useRef(null);
     const components = useStore((state) => state.getContainerChildrenMapping(id, moduleId), shallow);
     const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
+    const isEmbeddedModule = appType === 'module' && isModuleMode;
     const canvasBgColor = useStore(
       (state) => (id === 'canvas' ? state.getCanvasBackgroundColor('canvas', darkMode) : ''),
       shallow
     );
     const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
+    const isMobileMainCanvas = currentLayout === 'mobile' && id === 'canvas';
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
     const isWidgetInSubContainerDragging = useStore(
       (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
       shallow
     );
+    const isFlexContainer = componentType === 'FlexContainer';
+    const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
+    const setFlexContainerDropTarget = useStore((state) => state.setFlexContainerDropTarget, shallow);
+    const flexDirection = useStore(
+      (state) => (isFlexContainer ? (state.getResolvedComponent?.(id)?.properties?.direction ?? 'column') : 'column'),
+      shallow
+    );
+    const flexDirectionForFlex = isFlexContainer ? (flexEffectiveDirection ?? flexDirection) : flexDirection;
+
+    function getContainerCanvasWidth() {
+      if (canvasWidth !== undefined) {
+        if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
+        if (id === 'canvas') return canvasWidth;
+        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
+      }
+      if (componentType === 'canvas-header' || componentType === 'canvas-footer') {
+        return realCanvasRef?.current?.offsetWidth - 2 * PAGE_CANVAS_HEADER_FOOTER_PADDING;
+      }
+      return realCanvasRef?.current?.offsetWidth;
+    }
+
+    const containerCanvasWidth = getContainerCanvasWidth();
+    const gridWidth = containerCanvasWidth / NO_OF_GRIDS;
 
     // Initialize ghost moveable hook
-    const { activateMoveableGhost, deactivateMoveableGhost } = useDropVirtualMoveableGhost();
+    const { activateMoveableGhost, deactivateMoveableGhost, updateGhostSize } = useDropVirtualMoveableGhost();
+
+    // rAF ref to throttle FlexContainer drop-target updates
+    const flexRafRef = useRef(null);
 
     // // Monitor drag layer to update ghost position continuously
-    const { isDragging } = useDragLayer((monitor) => ({
+    const { isDragging, clientOffset, draggedItem } = useDragLayer((monitor) => ({
       isDragging: monitor.isDragging(),
+      clientOffset: monitor.getClientOffset(),
+      draggedItem: monitor.getItem(),
     }));
     // // // Cleanup ghost when drag ends
     useEffect(() => {
       if (!isDragging) {
+        if (flexRafRef.current) {
+          cancelAnimationFrame(flexRafRef.current);
+          flexRafRef.current = null;
+        }
         deactivateMoveableGhost();
+        if (isFlexContainer) {
+          setFlexContainerDropTarget(null);
+        }
       }
-    }, [id, isDragging, deactivateMoveableGhost]);
+    }, [id, isDragging, deactivateMoveableGhost, isFlexContainer, setFlexContainerDropTarget]);
+
+    useEffect(() => {
+      if (id !== 'canvas' || !isDragging || !clientOffset || !draggedItem?.component?.defaultSize) return;
+
+      if (!isPointerOverCanvasArea(clientOffset.x, clientOffset.y)) return;
+
+      const hoveredCanvasId = findNewParentIdFromMousePosition(clientOffset.x, clientOffset.y, id);
+      if (hoveredCanvasId) {
+        setCurrentDragCanvasId(hoveredCanvasId);
+      } else {
+        setCurrentDragCanvasId('canvas');
+      }
+
+      // Constant pixel width based on the main canvas grid (see hover handler note).
+      const mainCanvasGridWidth = useGridStore.getState().subContainerWidths.canvas || gridWidth;
+      const componentSize = {
+        width: mainCanvasGridWidth * draggedItem.component.defaultSize.width,
+        height: draggedItem.component.defaultSize.height,
+      };
+
+      activateMoveableGhost(componentSize, clientOffset, realCanvasRef);
+      updateGhostSize(componentSize);
+    }, [
+      id,
+      isDragging,
+      clientOffset,
+      draggedItem,
+      activateMoveableGhost,
+      updateGhostSize,
+      gridWidth,
+      setCurrentDragCanvasId,
+    ]);
 
     const isContainerReadOnly = useMemo(() => {
-      return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
+      return (index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || currentMode === 'view';
     }, [index, componentType, currentMode]);
-
-    const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
+      canDrop: () => !isContainerReadOnly,
       hover: (item, monitor) => {
+        if (isContainerReadOnly) return;
         const clientOffset = monitor.getClientOffset();
-
-        const appCanvasWidth = realCanvasRef?.current?.offsetWidth || 0;
 
         if (clientOffset) {
           const canvasId = findNewParentIdFromMousePosition(clientOffset.x, clientOffset.y, id);
           if (canvasId === id) {
             setCurrentDragCanvasId(id);
+
+            // FlexContainer: compute and publish insertion index (rAF-throttled)
+            if (componentType === 'FlexContainer') {
+              if (!flexRafRef.current) {
+                flexRafRef.current = requestAnimationFrame(() => {
+                  flexRafRef.current = null;
+                  const index = computeFlexInsertIndex(id, clientOffset.x, clientOffset.y, flexDirectionForFlex);
+                  setFlexContainerDropTarget({ flexContainerId: id, index });
+                });
+              }
+            }
           }
         }
-        // Calculate width based on the app canvas's grid
-        let width = (appCanvasWidth * item.component?.defaultSize?.width) / NO_OF_GRIDS;
+        // Size the ghost using the MAIN canvas grid width so the ghost keeps a
+        // (near) constant pixel width regardless of which subcontainer the cursor is
+        // over. A button that is ~40px on the main canvas should stay ~40px inside a
+        // subcontainer. onDrag re-snaps this px width to the current canvas's grid via
+        // getDraggingWidgetWidth, matching the drop math in addNewWidgetToTheEditor.
+        const mainCanvasGridWidth = useGridStore.getState().subContainerWidths.canvas || gridWidth;
         const componentSize = {
-          width,
+          width: mainCanvasGridWidth * (item.component?.defaultSize?.width ?? 0),
           height: item.component?.defaultSize?.height,
         };
-        if (clientOffset && id === 'canvas') {
+        // Activate ghost from any container (main canvas OR modal/sub-canvas) so that
+        // dropping a new widget directly into an open modal still produces a visible
+        // drag preview - main canvas hover never fires when its drop region is covered
+        // by the modal backdrop.
+        if (clientOffset) {
           activateMoveableGhost(componentSize, clientOffset, realCanvasRef);
+          updateGhostSize(componentSize);
         }
       },
     });
@@ -114,25 +211,15 @@ const Container = React.memo(
       components.length === 0 &&
       !isDragging;
 
-    function getContainerCanvasWidth() {
-      if (canvasWidth !== undefined) {
-        if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
-        if (id === 'canvas') return canvasWidth;
-        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
-      }
-      return realCanvasRef?.current?.offsetWidth;
-    }
-
-    const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canvasWidth, listViewMode, columns, id]);
+    }, [gridWidth, listViewMode, columns, id]);
 
     const handleCanvasClick = useCallback(
       (e) => {
         const realCanvas = e.target.closest('.real-canvas');
-        const canvasId = realCanvas?.getAttribute('id')?.split('canvas-')[1];
+        const canvasId = realCanvas?.getAttribute('data-parentId');
         setFocusedParentId(canvasId);
         if (realCanvas) {
           const rect = realCanvas.getBoundingClientRect();
@@ -143,7 +230,7 @@ const Container = React.memo(
           setLastCanvasClickPosition({ x, y });
         }
       },
-      [setLastCanvasClickPosition]
+      [setFocusedParentId, setLastCanvasClickPosition]
     );
 
     /* Due to some reason react-dnd does not identify the dragover element if this element is dynamically removed on drag. 
@@ -169,7 +256,8 @@ const Container = React.memo(
         </div>
       );
     };
-    const sortedComponents = useSortedComponents(components, currentLayout, id, moduleId);
+    const sortedComponents = useSortedComponents(components, currentLayout, id, moduleId, isFlexContainer);
+
     return (
       <div
         ref={(el) => {
@@ -179,17 +267,19 @@ const Container = React.memo(
         style={{
           height: id === 'canvas' ? `${canvasHeight}` : getSubContainerHeightAfterPadding(componentType),
           backgroundSize: `${gridWidth}px ${GRID_HEIGHT}px`,
-          padding: `${HOVER_CLICK_OUTLINE_BORDER}px`, // This is required to prevent the hover click outline from being cut off
+          // Stops the hover outline being clipped. Skipped on mobile, where widget widths come from
+          // the unpadded outer width and this would push them past the content box.
+          padding: isMobileMainCanvas ? 0 : `${HOVER_CLICK_OUTLINE_BORDER}px`,
           backgroundColor:
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
-              ? canvasBgColor
-              : '#f0f0f0',
+                ? canvasBgColor
+                : '#f0f0f0',
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas
-            if (id === 'canvas') {
+            if (id === 'canvas' || componentType === 'canvas-header' || componentType === 'canvas-footer') {
               return '100%';
             }
             // For Subcontainers
@@ -200,6 +290,7 @@ const Container = React.memo(
           // Prevent the scroll when dragging a widget inside the container or moving out of the container
           overflow: isWidgetInSubContainerDragging ? 'hidden' : undefined,
           ...(id !== 'canvas' && appType !== 'module' && { backgroundColor: 'transparent' }), // Ensure the container's background isn't overridden by the canvas background color.
+          ...(isEmbeddedModule && id === moduleId && { backgroundColor: 'transparent' }), // Embedded module root canvas inherits host app background
         }}
         className={cx('real-canvas', {
           'sub-canvas': id !== 'canvas' && appType !== 'module',
@@ -208,6 +299,7 @@ const Container = React.memo(
           'is-module-editor': isModuleEditor,
           'has-no-scroll': hasNoScroll,
           'is-child-being-dragged': !hasNoScroll && isWidgetInSubContainerDragging,
+          'flex-container-canvas': isFlexContainer,
         })}
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}
         data-cy="real-canvas"
@@ -216,34 +308,63 @@ const Container = React.memo(
         onClick={handleCanvasClick}
         component-type={componentType}
       >
-        <div
-          className={cx('container-fluid rm-container p-0', {
-            'drag-container-parent': id !== 'canvas',
-          })}
-          id={allowContainerSelect ? 'select-container' : 'rm-container'}
-          component-id={id}
-          data-parent-type={id === 'canvas' ? 'canvas' : componentType}
-          style={{ height: !showEmptyContainer ? '100%' : 'auto' }} //TODO: remove hardcoded height & canvas condition
-        >
-          {sortedComponents.map((componentId) => (
-            <WidgetWrapper
-              id={componentId}
-              key={componentId}
-              gridWidth={gridWidth}
-              subContainerIndex={index}
-              onOptionChange={onOptionChange}
-              onOptionsChange={onOptionsChange}
-              inCanvas={true}
-              readOnly={isContainerReadOnly}
-              mode={currentMode}
-              currentLayout={currentLayout}
-              darkMode={darkMode}
-              moduleId={moduleId}
-              parentId={id}
-            />
-          ))}
-        </div>
-        {renderEmptyContainer()}
+        {isFlexContainer ? (
+          <>
+            {sortedComponents.map((componentId) => (
+              <WidgetWrapper
+                id={componentId}
+                key={componentId}
+                currentLayout={currentLayout}
+                gridWidth={gridWidth}
+                subContainerIndex={index}
+                onOptionChange={onOptionChange}
+                onOptionsChange={onOptionsChange}
+                inCanvas={true}
+                readOnly={isContainerReadOnly}
+                mode={currentMode}
+                darkMode={darkMode}
+                moduleId={moduleId}
+                parentId={id}
+                layoutMode="flex"
+                containerWidth={containerCanvasWidth}
+                flexDirection={flexDirectionForFlex}
+                flexShouldStack={flexShouldStack}
+              />
+            ))}
+            <FlexContainerDropIndicator flexContainerId={id} direction={flexDirectionForFlex} />
+          </>
+        ) : (
+          <>
+            <div
+              className={cx('container-fluid rm-container p-0', {
+                'drag-container-parent': id !== 'canvas',
+              })}
+              id={allowContainerSelect ? 'select-container' : 'rm-container'}
+              component-id={id}
+              data-parent-type={id === 'canvas' ? 'canvas' : componentType}
+              style={{ height: !showEmptyContainer ? '100%' : 'auto' }} //TODO: remove hardcoded height & canvas condition
+            >
+              {sortedComponents.map((componentId) => (
+                <WidgetWrapper
+                  id={componentId}
+                  key={componentId}
+                  gridWidth={gridWidth}
+                  subContainerIndex={index}
+                  onOptionChange={onOptionChange}
+                  onOptionsChange={onOptionsChange}
+                  inCanvas={true}
+                  readOnly={isContainerReadOnly}
+                  mode={currentMode}
+                  currentLayout={currentLayout}
+                  darkMode={darkMode}
+                  moduleId={moduleId}
+                  parentId={id}
+                />
+              ))}
+            </div>
+            {renderEmptyContainer()}
+          </>
+        )}
       </div>
     );
   }

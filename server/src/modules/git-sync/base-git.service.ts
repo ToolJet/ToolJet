@@ -1,30 +1,15 @@
 /**
- * Base service for all source control implementations to share common Git synchronization methods.
+ * Marker base for all source-control implementations. Provider-specific logic
+ * lives in the concrete services; this class is intentionally empty after the
+ * Phase-2 cleanup (the previous getProviderConfigs + getAppVersionById stubs
+ * had no live callers).
  *
- * @remarks
- * DEPENDENCY INJECTION CONSTRAINT: Only platform-common services can be injected here
- * (Licensing, Import/Export, etc.).
- * Provider-specific implementations (SSH/HTTPS GitHub,
- * GitLab, etc.) must be injected at the concrete service level, not in this base class.
+ * Kept as an `abstract` class so the provider hierarchy keeps a shared parent
+ * type — future cross-provider shared behavior can land here.
  *
- * METHOD CONSTRAINT: Only methods that are identical across all source control providers
- * should be implemented in this base class. Provider-specific logic should be moved to
- * the respective concrete implementations.
+ * DEPENDENCY INJECTION CONSTRAINT: Only platform-common services may be
+ * injected here. Provider-specific implementations stay at the concrete level.
  */
-
-import { IBaseGitSyncInterface } from './base-git.interface';
-import { AppGitPushDto } from '@modules/app-git/dto';
-import { AppVersion } from '@entities/app_version.entity';
-
-export abstract class BaseGitSyncService implements IBaseGitSyncInterface {
+export abstract class BaseGitSyncService {
   constructor() {}
-  async getAppVersionByVersionId(appGitPushBody: AppGitPushDto): Promise<AppVersion> {
-    throw new Error('Method not implemented.');
-  }
-  async getAppVersionById(versionId: string): Promise<AppVersion> {
-    throw new Error('Method not implemented.');
-  }
-  async getProviderConfigs(userOrganizationId: string, organizationId: string): Promise<any> {
-    throw new Error('Method not implemented.');
-  }
 }

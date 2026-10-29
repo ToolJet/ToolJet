@@ -4,8 +4,8 @@ import {
   commonWidgetSelector,
   cyParamName,
 } from "Selectors/common";
-import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
-import { profileSelector } from "Selectors/profile";
+import { commonEeSelectors, multiEnvSelector } from "Selectors/platform/eeCommon";
+import { profileSelector } from "Selectors/platform/profile";
 import { appPromote } from "Support/utils/platform/multiEnv";
 import { commonText, path } from "Texts/common";
 
@@ -103,15 +103,18 @@ export const navigateToAppEditor = (appName) => {
 
 export const viewAppCardOptions = (appName) => {
   if (Cypress.env("environment") !== "Community") {
-    cy.waitForElement('[data-cy="ai-icon"]');
+    // waitForElement's 2nd arg is a plain number, not an options object —
+    // passing { timeout } nests it and Cypress rejects `[object Object]`.
+    cy.waitForElement('[data-cy="icon-home"]', 10000);
   }
+  const cardSelector = `[data-cy="${cyParamName(appName)}-card"]`;
   cy.contains(".homepage-app-card", appName, { timeout: 20000 }).within(() => {
-    cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).parent().realHover();
+    cy.get(cardSelector).parent().realHover();
     cy.get('[data-cy="app-card-menu-icon"]')
       .should("be.visible")
       .should("not.be.disabled");
     // .click({ timeout: 10000 });
-    cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).click().realHover();
+    cy.get(cardSelector).click().realHover();
     cy.get('[data-cy="app-card-menu-icon"]').click();
   });
 };
@@ -272,5 +275,20 @@ export const navigateToSettingPage = () => {
   cy.get(commonEeSelectors.instanceSettingIcon).click();
   cy.get(commonSelectors.pageSectionHeader).should("be.visible");
 };
+
+export const apiUpdateInstanceSettings = (variables) => {
+  cy.getAuthHeaders().then((headers) => {
+    cy.request({
+      method :"PATCH", 
+      url:`${Cypress.env("server_host")}/api/login-configs/instance-general`,
+      headers: headers,
+      body: {
+        ...variables
+      }
+    }).then((response) => {
+      expect(response.status).to.equal(200);
+    });
+  })
+}
 
 export const sanitize = (str) => str.toLowerCase().replace(/[^A-Za-z]/g, "");

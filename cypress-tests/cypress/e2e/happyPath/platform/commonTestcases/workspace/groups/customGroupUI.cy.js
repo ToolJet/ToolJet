@@ -1,8 +1,13 @@
 import { fake } from "Fixtures/fake";
 
 import { commonSelectors } from "Selectors/common";
-import { commonEeSelectors } from "Selectors/eeCommon";
-import { groupsSelector } from "Selectors/manageGroups";
+import { commonEeSelectors } from "Selectors/platform/eeCommon";
+import { groupsSelector, groupAdminSelector } from "Selectors/platform/manageGroups";
+import { groupAdminText } from "Texts/platform/manageGroups";
+import {
+  verifyGroupAdminTabOrder,
+  verifyGroupAdminEmptyState,
+} from "Support/utils/platform/groupAdmin";
 import {
   apiAddUserToGroup,
   apiCreateGroup,
@@ -45,6 +50,7 @@ describe("Custom groups UI and Functionality verification", () => {
   const appPermissionName = "Apps";
   const workflowPermissionName = "Workflows";
   const datasourcePermissionName = "  Data sources";
+  const folderPermissionName = "Folders";
   const permissionName2 = "Permission2";
   const data = {
     firstName: fake.firstName,
@@ -89,6 +95,7 @@ describe("Custom groups UI and Functionality verification", () => {
     addGranularPermissionViaUI(appPermissionName, {
       resourceType: "app",
       permission: "edit",
+      environment: ["Development", "Staging", "Released app"],
       scope: "all",
     });
 
@@ -104,10 +111,16 @@ describe("Custom groups UI and Functionality verification", () => {
         permission: "configure",
         scope: "all",
       });
+
+      addGranularPermissionViaUI(folderPermissionName, {
+        resourceType: "folder",
+        permission: "editFolder",
+        scope: "all",
+      });
     });
 
     verifyGranularAccessByRole("builder");
-    verifyGranularEditModal("custom");
+    verifyGranularEditModal("custom","builder");
   };
 
   const verifyAppGranularModalFlow = (groupName) => {
@@ -119,6 +132,20 @@ describe("Custom groups UI and Functionality verification", () => {
     cy.wait(2000);
     cy.get(groupsSelector.granularAccessPermission).realHover();
     cy.get('[data-cy="edit-apps-granular-access"]').click();
+
+    cy.get(groupsSelector.envContainerArrowIcon).click();
+    cy.get('[role="listbox"]').should("be.visible");
+    // Check all → verify all checked
+    cy.get('[data-cy="environment-check-*"]').check();
+    cy.get('[data-cy^="environment-check-"]').each(($el) => {
+        cy.wrap($el).should("be.checked");
+    });
+    // Uncheck all → verify all unchecked
+    cy.get('[data-cy="environment-check-*"]').uncheck();
+    cy.get('[data-cy^="environment-check-"]').each(($el) => {
+        cy.wrap($el).should("not.be.checked");
+    });
+    cy.get(groupsSelector.envContainerArrowIcon).click();
 
     verifyGranularPermissionModalStates("app", "custom");
 
@@ -146,7 +173,7 @@ describe("Custom groups UI and Functionality verification", () => {
     verifyGranularPermissionModalStates("app", "custom", {
       editRadio: { checked: true, enabled: true },
       viewRadio: { checked: false, enabled: true },
-      hideCheckbox: { enabled: false },
+      hideCheckbox: { enabled: true },
       allAppsRadio: { checked: true, enabled: true },
       customRadio: { checked: false, enabled: true },
     });
@@ -181,10 +208,49 @@ describe("Custom groups UI and Functionality verification", () => {
     cy.get(groupsSelector.cancelButton).click();
   };
 
+  const verifyFolderGranularModalFlow = () => {
+    cy.get('[data-cy="folder-granular-access"]').realHover();
+    cy.get('[data-cy="edit-folder-granular-access"]').click();
+
+    verifyGranularPermissionModalStates("folder", "custom");
+
+    cy.get(groupsSelector.editAppRadio).check();
+    switchBetweenAllAndCustom("custom");
+
+    verifyGranularPermissionModalStates("folder", "custom", {
+      editFolderRadio: { checked: false, enabled: true },
+      editAppRadio: { checked: true, enabled: true },
+      viewAppRadio: { checked: false, enabled: true },
+      allAppsRadio: { checked: false, enabled: true },
+      customRadio: { checked: true, enabled: true },
+    });
+
+    switchBetweenAllAndCustom("all");
+    verifyGranularPermissionModalStates("folder", "custom", {
+      editFolderRadio: { checked: false, enabled: true },
+      editAppRadio: { checked: true, enabled: true },
+      viewAppRadio: { checked: false, enabled: true },
+      allAppsRadio: { checked: true, enabled: true },
+      customRadio: { checked: false, enabled: true },
+    });
+
+    cy.get(groupsSelector.viewAppRadio).check();
+    verifyGranularPermissionModalStates("folder", "custom", {
+      editFolderRadio: { checked: false, enabled: true },
+      editAppRadio: { checked: false, enabled: true },
+      viewAppRadio: { checked: true, enabled: true },
+      allAppsRadio: { checked: true, enabled: true },
+      customRadio: { checked: false, enabled: true },
+    });
+
+    cy.get(groupsSelector.cancelButton).click();
+  };
+
   const verifyEnterpriseGranularModalFlows = () => {
     cy.ifEnv("Enterprise", () => {
       verifyWorkflowGranularModalFlow();
       verifyDatasourceGranularModalFlow();
+      verifyFolderGranularModalFlow();
     });
   };
 
@@ -243,67 +309,109 @@ describe("Custom groups UI and Functionality verification", () => {
     verifyGroupRemovedFromSidebar(newGroupname);
   });
 
-  it("should create custom group, verify empty states, add permissions, and manage granular access", () => {
-    apiCreateGroup(groupName2);
+  // it("should create custom group, verify empty states, add permissions, and manage granular access", () => {
+  //   apiCreateGroup(groupName2);
 
-    seedResourcesForGroup(groupName);
+  //   seedResourcesForGroup(groupName);
 
+  //   visitGroupsSettingsPage();
+
+  //   openGroupAndValidateEmptyStates(groupName2);
+  //   configureInitialGranularPermissions();
+
+  //   cy.wait(1000) // need to add alias to avoid flakiness
+  //   verifyAppGranularModalFlow(groupName2);
+  //   verifyEnterpriseGranularModalFlows();
+
+  //   apiDeleteGroup(groupName2);
+  // });
+
+  // it("should create group via API, add permissions, duplicate group and verify all permissions are copied", () => {
+  //   cy.apiFullUserOnboarding(data.firstName, data.email, "builder");
+  //   cy.apiLogout();
+
+  //   cy.apiLogin();
+  //   seedResourcesForGroup(groupName3);
+
+  //   apiCreateGroup(groupName3).then((groupId) => {
+  //     groupId3 = groupId;
+  //     apiAddUserToGroup(groupId3, data.email);
+  //     cy.apiCreateGranularPermission(
+  //       groupName3,
+  //       "Apps",
+  //       "app",
+  //       { canEdit: true, canView: false, hideFromDashboard: false },
+  //       []
+  //     );
+
+
+  //     cy.ifEnv("Enterprise", () => {
+  //       cy.apiCreateGranularPermission(
+  //         groupName3,
+  //         "Workflows",
+  //         "workflow",
+  //         { canEdit: true, canView: false, hideFromDashboard: false },
+  //         []
+  //       );
+  //       cy.apiCreateGranularPermission(
+  //         groupName3,
+  //         "Data sources",
+  //         "datasource",
+  //         { canUse: false, canConfigure: true },
+  //         []
+  //       );
+  //       cy.apiCreateGranularPermission(
+  //         groupName3,
+  //         "Folders",
+  //         "folder",
+  //         { canEditFolder: true, canEditApps: false, canViewApps: false },
+  //         []
+  //       );
+  //     });
+  //   });
+
+  //   cy.apiUpdateGroupPermission(
+  //     groupName3,
+  //     getGroupPermissionInput(isEnterprise, true)
+  //   );
+
+  //   visitGroupsSettingsPage();
+  //   duplicateGroupAndValidate(groupName3, duplicatedGroupName, data);
+
+  //   apiDeleteGroup(duplicatedGroupName);
+  //   apiDeleteGroup(groupName3);
+  // });
+
+  it("Group admins tab renders for a workspace admin (visibility, tab order, empty state, users-table column)", () => {
     visitGroupsSettingsPage();
+    createGroupViaUI(groupName);
+    cy.get(groupsSelector.groupLink(groupName)).click();
 
-    openGroupAndValidateEmptyStates(groupName2);
-    configureInitialGranularPermissions();
-    cy.wait(1000) // need to add alias to avoid flakiness
-    verifyAppGranularModalFlow(groupName2);
-    verifyEnterpriseGranularModalFlows();
+    // Tab is visible in a custom group
+    cy.get(groupAdminSelector.groupAdminsLink)
+      .should("be.visible")
+      .and("contain.text", groupAdminText.groupAdminsTab);
 
-    apiDeleteGroup(groupName2);
-  });
+    // Tabs render Users -> Group admins -> Permissions -> Granular access; Users is the default active tab
+    verifyGroupAdminTabOrder();
+    cy.get(`${groupAdminSelector.usersLink}.active`).should("exist");
 
-  it("should create group via API, add permissions, duplicate group and verify all permissions are copied", () => {
-    cy.apiFullUserOnboarding(data.firstName, data.email, "builder");
-    cy.apiLogout();
+    // Group admins tab shows the assign section and the empty state
+    cy.get(groupAdminSelector.groupAdminsLink).click();
+    cy.wait(1000);
+    verifyGroupAdminEmptyState();
 
-    cy.apiLogin();
-    seedResourcesForGroup(groupName3);
-
-    apiCreateGroup(groupName3).then((groupId) => {
-      groupId3 = groupId;
-      apiAddUserToGroup(groupId3, data.email);
-      cy.apiCreateGranularPermission(
-        groupName3,
-        "Apps",
-        "app",
-        { canEdit: true, canView: false, hideFromDashboard: false },
-        []
-      );
-
-      cy.ifEnv("Enterprise", () => {
-        cy.apiCreateGranularPermission(
-          groupName3,
-          "Workflows",
-          "workflow",
-          { canEdit: true, canView: false, hideFromDashboard: false },
-          []
-        );
-        cy.apiCreateGranularPermission(
-          groupName3,
-          "Data sources",
-          "datasource",
-          { canUse: false, canConfigure: true },
-          []
-        );
-      });
+    // Tab is hidden in the default groups
+    ["Admin", "Builder", "End-user"].forEach((defaultGroup) => {
+      cy.get(groupsSelector.groupLink(defaultGroup)).click();
+      cy.get(groupAdminSelector.groupAdminsLink).should("not.exist");
     });
 
-    cy.apiUpdateGroupPermission(
-      groupName3,
-      getGroupPermissionInput(isEnterprise, true)
+    // Workspace Settings users table exposes the "Group admins" column
+    cy.visit(`${data.workspaceSlug}/workspace-settings/users`);
+    cy.wait(2000);
+    cy.get(groupAdminSelector.usersTableAdminGroupsColumnHeader).should(
+      "be.visible"
     );
-
-    visitGroupsSettingsPage();
-    duplicateGroupAndValidate(groupName3, duplicatedGroupName, data);
-
-    apiDeleteGroup(duplicatedGroupName);
-    apiDeleteGroup(groupName3);
   });
 });

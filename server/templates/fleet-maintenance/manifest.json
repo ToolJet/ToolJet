@@ -1,0 +1,20 @@
+{
+  "name": "Fleet maintenance",
+  "description": "Keep vehicles roadworthy. Track service due dates, odometer thresholds and workshop work orders.",
+  "widgets": [
+    "Table",
+    "Listview"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "fleet-maintenance",
+  "category": "inventory-orders-and-fleet"
+}

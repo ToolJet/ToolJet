@@ -1,16 +1,32 @@
+/**
+ * @jest-config-loader ts-node
+ *
+ * Node >= 22.18 strips TypeScript natively, so Jest would import this file as ESM
+ * and fail on the extensionless relative import below. Keep the ts-node loader.
+ */
 import type { Config } from '@jest/types';
+import { existsSync } from 'fs';
+import { join } from 'path';
+import { coverageConfig } from './test/jest-coverage.config';
+import { editionProjects } from './test/jest-projects.config';
 
-const config: Config.InitialOptions = {
-  verbose: true,
+// CE when asked for, or when the private test tree is absent (public clone).
+const isCE = process.env.TOOLJET_EDITION === 'ce' || !existsSync(join(__dirname, 'ee/test'));
+
+// Per-tree options. `roots`, `rootDir` and the `test-helper` mapping are set per project by editionProjects().
+const shared: Config.InitialProjectOptions = {
   moduleFileExtensions: ['js', 'json', 'ts', 'node'],
-  rootDir: '.',
   testEnvironment: 'node',
-  testRegex: '.spec.ts$',
+  globalSetup: '<rootDir>/test/jest-global-setup.ts',
+  setupFiles: ['<rootDir>/test/jest-setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/test/jest-transaction-setup.ts'],
+  testRegex: 'test/modules/.*/unit/.*spec\\.ts$',
   transform: {
     '^.+\\.(t|j)s$': [
       'ts-jest',
       {
         tsconfig: 'tsconfig.json',
+        diagnostics: false,
       },
     ],
   },
@@ -31,13 +47,24 @@ const config: Config.InitialOptions = {
     '@licensing/(.*)': '<rootDir>/ee/licensing/$1',
     '@instance-settings/(.*)': '<rootDir>/ee/instance-settings/$1',
     '@otel/(.*)': '<rootDir>/src/otel/$1',
+    // Mock mariadb — v3.5.0+ is ESM-only, Jest can't require() it (jestjs/jest#15275)
+    '^mariadb$': '<rootDir>/test/__mocks__/mariadb.ts',
   },
   runner: 'groups',
-  testTimeout: 30000,
-  forceExit: true,
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
   transformIgnorePatterns: [
-    'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object)/)',
+    'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object)/)(?!(thrift/node_modules/)?uuid/dist-node/)',
   ],
+};
+
+const config: Config.InitialOptions = {
+  rootDir: '.',
+  projects: editionProjects(__dirname, isCE, shared),
+  // Global-only options: Jest ignores these inside a project.
+  verbose: true,
+  testTimeout: 30000,
+  ...coverageConfig(isCE),
+  coverageDirectory: '<rootDir>/coverage-unit',
 };
 
 export default config;

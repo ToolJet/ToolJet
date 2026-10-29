@@ -25,7 +25,8 @@ export const handleAppAccess = async (componentType, slug, version_id, environme
   if (componentType === 'editor' || isLocalPreview || isOldLocalPreview) {
     /* Editor or app preview */
     return appsService.validatePrivateApp(slug, apiQueryParams).catch((error) => {
-      handleError(componentType, error, slug, redirectPath);
+      const editPermission = error?.error?.editPermission;
+      handleError(componentType, error, redirectPath, editPermission, slug);
     });
   } else {
     /* Released app link [launch/sharable link] */
@@ -59,6 +60,18 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
         case 403: {
           const errorObj = safelyParseJSON(error.data?.message);
           const currentSessionValue = authenticationService.currentSessionValue;
+
+          if (errorObj?.errorType === 'WORKSPACE_BANNED') {
+            redirectToErrorPage(ERROR_TYPES.WORKSPACE_SUSPENDED, {
+              workspaceName: errorObj.workspaceName || 'This workspace',
+            });
+            return;
+          }
+          if (errorObj?.errorType === 'WORKSPACE_ARCHIVED') {
+            redirectToErrorPage(ERROR_TYPES.WORKSPACE_ARCHIVED);
+            return;
+          }
+
           if (
             errorObj?.organizationId &&
             currentSessionValue.current_user &&
@@ -75,12 +88,35 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
             redirectToErrorPage(ERROR_TYPES.RESTRICTED_PREVIEW);
             return;
           }
-          redirectToErrorPage(ERROR_TYPES.RESTRICTED);
+          if (error?.data?.message === ERROR_TYPES.PUBLIC_APP_PLAN_RESTRICTED) {
+            redirectToErrorPage(ERROR_TYPES.PUBLIC_APP_PLAN_RESTRICTED);
+            return;
+          }
+          redirectToErrorPage(ERROR_TYPES.RESTRICTED, appSlug ? { appSlug } : {});
           return;
         }
         case 401: {
           const errorObj = safelyParseJSON(error.data?.message);
-          window.location = `${getSubpath() ?? ''}/login/${errorObj?.organizationId}?redirectTo=${redirectPath}`;
+          const subpath = getSubpath() ?? '';
+          const currentSession = authenticationService.currentSessionValue;
+          // If user is already authenticated but still got 401, they lack app-level access.
+          // Show restricted error page instead of redirecting to login (which would loop).
+          if (currentSession?.current_user?.id) {
+            redirectToErrorPage(ERROR_TYPES.RESTRICTED, appSlug ? { appSlug } : {});
+            return;
+          }
+          // For unauthenticated app viewer URLs, redirect to app-scoped login preserving the original URL
+          if (appSlug && componentType === 'viewer') {
+            const redirectParam =
+              redirectPath && redirectPath !== `/applications/${appSlug}`
+                ? `?redirectTo=${encodeURIComponent(redirectPath)}`
+                : '';
+            window.location = `${subpath}/applications/${appSlug}/login${redirectParam}`;
+            return;
+          }
+          window.location = `${subpath}/login/${errorObj?.organizationId}?redirectTo=${encodeURIComponent(
+            redirectPath
+          )}`;
           return;
         }
         case 501: {
@@ -93,6 +129,10 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
           return;
         }
         case 404: {
+          if (error?.data?.message === ERROR_TYPES.APP_NOT_READY) {
+            redirectToErrorPage(ERROR_TYPES.APP_NOT_READY, {});
+            return;
+          }
           redirectToErrorPage(ERROR_TYPES.INVALID, {});
           return;
         }

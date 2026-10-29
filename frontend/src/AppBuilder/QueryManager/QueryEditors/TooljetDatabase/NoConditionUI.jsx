@@ -1,7 +1,7 @@
 import React from 'react';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import { generateCypressDataCy } from '../../../../modules/common/helpers/cypressHelpers.js';
-export const NoCondition = ({ text = 'There are no condition' }) => {
+export const NoCondition = ({ text = 'There are no conditions' }) => {
   return (
     <div className="border-dashed d-flex justify-content-center align-items-center h-32 border-radius-6">
       <Information width="14" />

@@ -21,6 +21,128 @@ export const mongodbUIConfig = {
             type: "input",
             fieldName: "Host",
             validations: {
+                isRequired: true,
+                placeholder: "Enter host",
+                defaultValue: "",
+                disabled: false
+            }
+        },
+        {
+            type: "input",
+            fieldName: "Port",
+            validations: {
+                isRequired: true,
+                placeholder: "Enter port",
+                defaultValue: "",
+                disabled: false
+            }
+        },
+        {
+            type: "input",
+            fieldName: "Database",
+            validations: {
+                isRequired: false,
+                placeholder: "Enter name of the database",
+                defaultValue: "",
+                disabled: false
+            }
+        },
+
+        {
+            type: "input",
+            fieldName: "Username",
+            validations: {
+                isRequired: false,
+                placeholder: "Enter username",
+                defaultValue: "",
+                disabled: false
+            }
+        },
+
+        {
+            type: "encrypted",
+            fieldName: "Password",
+            validations: {
+                isRequired: false,
+                placeholder: "**************",
+                defaultValue: "",
+                disabled: true,
+                hasEditButton: true,
+                showEncrypted: true
+            }
+        },
+
+        {
+            type: "keyValue",
+            fieldName: "Connection options",
+            validations: {
+                hasAddButton: true,
+                rows: [
+                    {
+                        key: "",
+                        value: "",
+                        keyPlaceholder: "Key",
+                        valuePlaceholder: "Value",
+                        hasDeleteButton: true
+                    }
+                ]
+            }
+        },
+
+        {
+            type: "toggle",
+            fieldName: "SSL/TLS",
+            validations: {
+                defaultValue: false,
+                disabled: false
+            }
+        },
+
+        {
+            type: "toggle",
+            fieldName: "SSH tunnel",
+            validations: {
+                defaultValue: false,
+                disabled: false
+            }
+        },
+
+    ],
+
+    defaultFieldsConnectionString: [
+        {
+            type: "dropdown",
+            fieldName: "Connection type",
+            validations: {
+                defaultValue: 'Connect using connection string',
+                disabled: false
+            }
+        },
+        {
+            type: "encrypted",
+            fieldName: "Connection string",
+            validations: {
+                isRequired: true,
+                placeholder: "**************",
+                defaultValue: "",
+                disabled: true,
+                hasEditButton: true,
+                showEncrypted: true
+            }
+        },
+        {
+            type: "dropdown",
+            fieldName: "Connection format",
+            validations: {
+                defaultValue: 'Standard (mongodb)',
+                disabled: false
+            }
+        },
+
+        {
+            type: "input",
+            fieldName: "Host",
+            validations: {
                 isRequired: false,
                 placeholder: "Enter host",
                 defaultValue: "",
@@ -39,7 +161,7 @@ export const mongodbUIConfig = {
         },
         {
             type: "input",
-            fieldName: "Database name",
+            fieldName: "Database",
             validations: {
                 isRequired: false,
                 placeholder: "Name of the database",
@@ -68,99 +190,39 @@ export const mongodbUIConfig = {
                 defaultValue: "",
                 disabled: true,
                 hasEditButton: true,
-                showEncrypted: true,
-                hasEyeIcon: true
+                showEncrypted: true
             }
         },
 
         {
-            type: "dropdown",
-            fieldName: "TLS/SSL certificate",
+            type: "keyValue",
+            fieldName: "Connection options",
             validations: {
-                defaultValue: 'None',
-                disabled: false
-            }
-        },
-
-    ],
-
-    defaultFieldsConnectionString: [
-        {
-            type: "dropdown",
-            fieldName: "Connection type",
-            validations: {
-                defaultValue: 'Connect using connection string',
-                disabled: false
-            }
-        },
-        {
-            type: "dropdown",
-            fieldName: "Connection format",
-            validations: {
-                defaultValue: 'Standard (mongodb)',
-                disabled: false
+                hasAddButton: true,
+                rows: [
+                    {
+                        key: "",
+                        value: "",
+                        keyPlaceholder: "Key",
+                        valuePlaceholder: "Value",
+                        hasDeleteButton: true
+                    }
+                ]
             }
         },
 
         {
-            type: "input",
-            fieldName: "Host",
+            type: "toggle",
+            fieldName: "SSL/TLS",
             validations: {
-                isRequired: false,
-                placeholder: "prod-db-1.company.com",
-                defaultValue: "",
-                disabled: false
-            }
-        },
-        {
-            type: "input",
-            fieldName: "Port",
-            validations: {
-                isRequired: false,
-                placeholder: "27017",
-                defaultValue: "",
-                disabled: false
-            }
-        },
-        {
-            type: "input",
-            fieldName: "Database name",
-            validations: {
-                isRequired: false,
-                placeholder: "customer_data",
-                defaultValue: "",
+                defaultValue: false,
                 disabled: false
             }
         },
 
         {
-            type: "input",
-            fieldName: "Username",
-            validations: {
-                isRequired: false,
-                placeholder: "admin",
-                defaultValue: "",
-                disabled: false
-            }
-        },
-
-        {
-            type: "encrypted",
-            fieldName: "Password",
-            validations: {
-                isRequired: false,
-                placeholder: "**************",
-                defaultValue: "",
-                disabled: true,
-                hasEditButton: true,
-                showEncrypted: true,
-                hasEyeIcon: true
-            }
-        },
-
-        {
-            type: "checkbox",
-            fieldName: "Use SSL/TLS",
+            type: "toggle",
+            fieldName: "SSH tunnel",
             validations: {
                 defaultValue: false,
                 disabled: false
@@ -189,7 +251,7 @@ export const mongodbFormConfig = {
         },
         {
             type: "input",
-            fieldName: "Database name",
+            fieldName: "Database",
             text: `${Cypress.env('mongodb_database')}`
         },
         {

@@ -5,6 +5,7 @@ import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
 import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 
 import { getModifiedColor } from './utils';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const DropDown = function DropDown({
   height,
@@ -24,6 +25,7 @@ export const DropDown = function DropDown({
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent, boxShadow } = styles;
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
   const [validationStatus, setValidationStatus] = useState(validate(value));
   const { isValid, validationError } = validationStatus;
   function findDefaultItem(schema) {
@@ -193,6 +195,8 @@ export const DropDown = function DropDown({
     setExposedVariable('isValid', validationStatus?.isValid);
   };
 
+  useFormClear(() => setInputValue(undefined));
+
   const customStyles = {
     control: (provided, state) => ({
       ...provided,
@@ -242,11 +246,11 @@ export const DropDown = function DropDown({
               backgroundColor: state.isDisabled
                 ? 'transparent'
                 : state.value === currentValue
-                ? hoverBgColorValue
-                : getModifiedColor(
-                    state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
-                    'hover'
-                  ),
+                  ? hoverBgColorValue
+                  : getModifiedColor(
+                      state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
+                      'hover'
+                    ),
             },
             maxWidth: 'auto',
             minWidth: 'max-content',
@@ -258,11 +262,11 @@ export const DropDown = function DropDown({
               backgroundColor: state.isDisabled
                 ? 'transparent'
                 : state.value === currentValue
-                ? hoverBgColorValue
-                : getModifiedColor(
-                    state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
-                    'hover'
-                  ),
+                  ? hoverBgColorValue
+                  : getModifiedColor(
+                      state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
+                      'hover'
+                    ),
             },
             maxWidth: 'auto',
             minWidth: 'max-content',

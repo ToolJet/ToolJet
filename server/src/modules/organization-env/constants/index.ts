@@ -1,0 +1,93 @@
+export const GIT_ENV_KEYS = {
+  // Workspace-level branching mode — provider-agnostic (mirrors is_branching_enabled in the
+  // git-sync config form). Value is a boolean string ('true' / 'false'); defaults to true
+  // (multi-branch). Set to 'false' for single-branch mode.
+  BRANCHING_ENABLED: 'GIT_BRANCHING_ENABLED',
+  HTTPS: {
+    URL: 'GITHUB_URL',
+    BRANCH: 'GITHUB_BRANCH',
+    APP_ID: 'GITHUB_APP_ID',
+    INSTALLATION_ID: 'GITHUB_INSTALLATION_ID',
+    PRIVATE_KEY: 'GITHUB_PRIVATE_KEY',
+    ENTERPRISE_URL: 'GITHUB_ENTERPRISE_URL', // optional
+    ENTERPRISE_API_URL: 'GITHUB_ENTERPRISE_API_URL', // optional
+  },
+  GITLAB: {
+    URL: 'GITLAB_URL',
+    BRANCH: 'GITLAB_BRANCH',
+    PROJECT_ID: 'GITLAB_PROJECT_ID',
+    PROJECT_ACCESS_TOKEN: 'GITLAB_PROJECT_ACCESS_TOKEN',
+    ENTERPRISE_URL: 'GITLAB_ENTERPRISE_URL',
+  },
+} as const;
+
+export const SAML_ENV_KEYS = {
+  IDP_METADATA: 'SAML_IDP_METADATA',
+  NAME: 'SAML_NAME',
+  GROUP_ATTRIBUTE: 'SAML_GROUP_SYNC_GROUP_ATTRIBUTE', // optional
+  GROUP_SYNC_ENABLED: 'SAML_ENABLE_GROUP_SYNC', // optional — defaults to false when absent
+} as const;
+
+export const LDAP_ENV_KEYS = {
+  HOST_NAME: 'LDAP_HOST_NAME',
+  PORT: 'LDAP_PORT',
+  BASE_DN: 'LDAP_BASE_DN',
+  NAME: 'LDAP_NAME',
+  SSL: 'LDAP_SSL', // optional — 'true' | 'false'
+  // Only read when LDAP_SSL_CERTIFICATE is present and equal to 'Certificates' — if 'None'
+  // (or absent), these three are ignored entirely even if set in .env.
+  SSL_CERTIFICATE: 'LDAP_SSL_CERTIFICATE', // optional — 'Certificates' | 'None'
+  CLIENT_KEY: 'LDAP_CLIENT_KEY', // optional
+  CLIENT_CERTIFICATE: 'LDAP_CLIENT_CERTIFICATE', // optional
+  SERVER_CERTIFICATE: 'LDAP_SERVER_CERTIFICATE', // optional
+  ENABLE_GROUP_SYNC: 'LDAP_ENABLE_GROUP_SYNC', // optional — 'true' | 'false'
+} as const;
+
+export const REQUIRED_KEYS = {
+  HTTPS: [
+    GIT_ENV_KEYS.HTTPS.URL,
+    GIT_ENV_KEYS.HTTPS.BRANCH,
+    GIT_ENV_KEYS.HTTPS.APP_ID,
+    GIT_ENV_KEYS.HTTPS.INSTALLATION_ID,
+    GIT_ENV_KEYS.HTTPS.PRIVATE_KEY,
+  ],
+  GITLAB: [GIT_ENV_KEYS.GITLAB.URL, GIT_ENV_KEYS.GITLAB.BRANCH, GIT_ENV_KEYS.GITLAB.PROJECT_ID],
+  SAML: [SAML_ENV_KEYS.IDP_METADATA, SAML_ENV_KEYS.NAME],
+  LDAP: [LDAP_ENV_KEYS.HOST_NAME, LDAP_ENV_KEYS.PORT, LDAP_ENV_KEYS.BASE_DN, LDAP_ENV_KEYS.NAME],
+} as const;
+
+/**
+ * Env-config provider descriptors — the SINGLE data registration point for env-var-based git config.
+ * Order is the getActiveProvider priority (HTTPS → GitLab). A new provider adds one entry here;
+ * the env-registry service scans this list instead of per-provider `if`/`switch` branches, so no edits
+ * to that service are needed. (Per-provider config *builders* still map env values → each provider's
+ * config shape — those are additive methods, not edits to existing ones.)
+ */
+export const GIT_ENV_PROVIDER_DESCRIPTORS: ReadonlyArray<{
+  provider: string;
+  envKeys: readonly string[];
+  requiredKeys: readonly string[];
+}> = [
+  { provider: 'github_https', envKeys: Object.values(GIT_ENV_KEYS.HTTPS), requiredKeys: REQUIRED_KEYS.HTTPS },
+  { provider: 'gitlab', envKeys: Object.values(GIT_ENV_KEYS.GITLAB), requiredKeys: REQUIRED_KEYS.GITLAB },
+];
+
+export const OIDC_ENV_KEYS = {
+  CLIENT_ID: 'OIDC_CLIENT_ID',
+  CLIENT_SECRET: 'OIDC_CLIENT_SECRET', // optional — not needed when GRANT_TYPE is 'pkce'
+  WELL_KNOWN_URL: 'OIDC_WELL_KNOWN_URL',
+  NAME: 'OIDC_NAME',
+  CUSTOM_SCOPES: 'OIDC_CUSTOM_SCOPES', // optional
+  CLAIM_NAME: 'OIDC_CLAIM_NAME', // optional
+  ENABLE_GROUP_SYNC: 'OIDC_ENABLE_GROUP_SYNC', // optional
+  GROUP_MAPPING: 'OIDC_GROUP_MAPPING', // optional — JSON object string, IdP group name -> ToolJet group name
+  GRANT_TYPE: 'OIDC_GRANT_TYPE', // required — 'authorization_code' | 'pkce'
+  CODE_VERIFIER: 'OIDC_CODE_VERIFIER', // optional — only used for pkce grant type
+} as const;
+
+export const REQUIRED_OIDC_KEYS = [
+  OIDC_ENV_KEYS.CLIENT_ID,
+  OIDC_ENV_KEYS.WELL_KNOWN_URL,
+  OIDC_ENV_KEYS.NAME,
+  OIDC_ENV_KEYS.GRANT_TYPE,
+] as const;

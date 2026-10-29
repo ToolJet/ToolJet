@@ -33,6 +33,7 @@ const KeyValueRow = ({
   field,
   value,
   onChange,
+  onFieldClick,
   labelColor,
   textColor,
   accentColor,
@@ -163,7 +164,7 @@ const KeyValueRow = ({
   };
 
   return (
-    <div className="kv-row-container">
+    <div className="kv-row-container" onClick={() => onFieldClick && onFieldClick()}>
       <div className={rowClassName}>
         <Label
           label={displayLabel}
@@ -177,7 +178,6 @@ const KeyValueRow = ({
           style={autoLabelWidth && maxLabelWidth > 0 ? { minWidth: `${maxLabelWidth}px` } : {}}
           classes={{
             labelContainer: cn({
-              'tw-self-center': alignment !== 'top',
               'tw-flex-shrink-0': alignment === 'top',
               'key-value-label': true,
             }),

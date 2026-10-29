@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { renderElement } from '../Utils';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
 import List from '@/ToolJetUI/List/List';
 import ListGroup from 'react-bootstrap/ListGroup';
@@ -16,6 +17,9 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { resolveReferences } from '@/_helpers/utils';
+
+// Code search names a tag by its id, else its title.
+const tagIdentity = (tag) => String([tag?.id, tag?.title].find((v) => v != null && v !== ''));
 
 export const Tags = ({
   component,
@@ -200,8 +204,8 @@ export const Tags = ({
       item?.iconVisibility?.value !== undefined
         ? getResolvedValue(item?.iconVisibility?.value)
         : item?.iconVisibility !== undefined
-        ? item?.iconVisibility
-        : false;
+          ? item?.iconVisibility
+          : false;
 
     return (
       <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
@@ -323,6 +327,7 @@ export const Tags = ({
                       {(provided, snapshot) => (
                         <div
                           key={index}
+                          data-list-item-id={tagIdentity(item)}
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
@@ -440,6 +445,7 @@ export const Tags = ({
   });
 
   items.push({
+    id: ADDITIONAL_ACTIONS_ACCORDION_ID,
     title: `Additional Actions`,
     isOpen: true,
     children: additionalActions.map((property) => {

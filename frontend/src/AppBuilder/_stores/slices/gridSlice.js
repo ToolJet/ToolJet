@@ -1,14 +1,35 @@
-import {
-  NO_OF_GRIDS,
-  HIDDEN_COMPONENT_HEIGHT,
-  CONTAINER_FORM_CANVAS_PADDING,
-  BOX_PADDING,
-  SUBCONTAINER_CANVAS_BORDER_WIDTH,
-} from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { debounce } from 'lodash';
-import { isProperNumber } from '../utils';
-import { isTruthyOrZero } from '@/_helpers/appUtils';
-import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
+import {
+  bindModuleAwareGetResolvedComponent,
+  buildReflowPatch,
+  getDynamicElementSelector,
+  getDynamicLayoutKey,
+  getNextBubbleContext,
+  getNextBubbleTargetId,
+  normalizeLayoutContext,
+  resolveContainerHeight,
+  resolveWidgetMeasuredHeight,
+  resolveWidgetVisibility,
+  shouldBubbleToParent,
+} from '../utils/dynamicHeightReflow';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Grid slice — owns the mutable reflow state for dynamic-height layout.
+//
+// State kept here:
+//   - temporaryLayouts: per-widget override layouts (top/height) that the reflow
+//     engine writes after every pass. WidgetWrapper reads these to override
+//     canonical layouts during render. Cleared lazily (not on every reflow).
+//   - draggingComponentId / resizingComponentId / isGroupDragging / isGroupResizing:
+//     coarse UI flags consumed by mouse/keyboard handlers to decide whether to
+//     select, reflow, or noop.
+//   - reorderContainerChildren: incremented to trigger Tab-panel children to
+//     re-order on tab switches.
+//
+// The meat of dynamic-height reflow lives in `flushReflows` below, fed by the
+// `scheduleReflow` batcher.
+// ─────────────────────────────────────────────────────────────────────────────
 
 const initialState = {
   triggerCanvasUpdater: 0,
@@ -23,546 +44,525 @@ const initialState = {
     containerId: null,
     triggerUpdate: 0,
   },
+  flexContainerDropTarget: null,
 };
 
-export const createGridSlice = (set, get) => ({
-  ...initialState,
-  checkHoveredComponentDynamicHeight: (id) => {
-    const { getResolvedComponent } = get();
-    const resolvedProperties = getResolvedComponent(id)?.properties;
-    const { dynamicHeight } = resolvedProperties || {};
-    return dynamicHeight;
-  },
-  incrementCanvasUpdater: () =>
-    set((state) => ({ triggerCanvasUpdater: state.triggerCanvasUpdater + 1 }), false, {
-      type: 'incrementCanvasUpdater',
-    }),
-  debouncedIncrementCanvasUpdater: debounce(() => {
-    get().incrementCanvasUpdater();
-  }, 200),
-  setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
-  setResizingComponentId: (id) => set(() => ({ resizingComponentId: id })),
-  setIsGroupDragging: (isGroupDragging) => set(() => ({ isGroupDragging: isGroupDragging })),
-  setIsGroupResizing: (isGroupResizing) => set(() => ({ isGroupResizing: isGroupResizing })),
-  moveComponentPosition: (direction) => {
-    const { setComponentLayout, currentLayout, getSelectedComponentsDefinition, debouncedIncrementCanvasUpdater } =
-      get();
-    let layouts = {};
-    const selectedComponents = getSelectedComponentsDefinition();
-    selectedComponents.forEach((selectedComponent) => {
-      const componentId = selectedComponent?.id;
+export const createGridSlice = (set, get) => {
+  // Batch reflow scheduler. Collects adjustComponentPositions requests that
+  // arrive in the same JS tick (e.g. 50 Tables in a ListView all reporting
+  // height changes on data load), fires them in one shared rAF, and lets
+  // flushReflows process them together — one setTemporaryLayouts write and
+  // one incrementCanvasUpdater instead of N×2.
+  const _pendingReflows = new Map();
+  let _reflowRafId = null;
 
-      let top = selectedComponent.layouts?.[currentLayout].top;
-      let left = selectedComponent?.layouts?.[currentLayout].left;
-      const width = selectedComponent?.layouts?.[currentLayout]?.width;
-
-      switch (direction) {
-        case 'ArrowLeft':
-          left = left - 1;
-          break;
-        case 'ArrowRight':
-          left = left + 1;
-          break;
-        case 'ArrowDown':
-          top = top + 10;
-          break;
-        case 'ArrowUp':
-          top = top - 10;
-          break;
-      }
-
-      if (left < 0 || top < 0 || left + width > NO_OF_GRIDS) {
-        return;
-      }
-
-      const movedElement = document.getElementById(componentId);
-      const parentElm = movedElement.closest('.real-canvas');
-      if (selectedComponent?.component?.parent && parentElm.scrollHeight < top + movedElement.clientHeight) {
-        return;
-      }
-      layouts = {
-        ...layouts,
-        [componentId]: {
-          top,
-          left,
-        },
-      };
-    });
-    setComponentLayout(layouts);
-    debouncedIncrementCanvasUpdater();
-  },
-  setLastCanvasIdClick: (id) => set(() => ({ lastCanvasIdClick: id })),
-  setLastCanvasClickPosition: (position) => {
-    set({ lastCanvasClickPosition: position });
-  },
-  setTemporaryLayouts: (layouts) => set((state) => ({ temporaryLayouts: { ...state.temporaryLayouts, ...layouts } })),
-  getTemporaryLayouts: () => get().temporaryLayouts,
-  clearTemporaryLayouts: () => set(() => ({ temporaryLayouts: {} })),
-  deleteTemporaryLayouts: (componentId) => {
-    const { temporaryLayouts } = get();
-    const newLayouts = { ...temporaryLayouts };
-    delete newLayouts[componentId];
-    set(() => ({ temporaryLayouts: newLayouts }));
-  },
-  deleteContainerTemporaryLayouts: (containerId) => {
-    const { deleteTemporaryLayouts, getCurrentPageComponents, currentLayout = 'desktop' } = get();
-    deleteTemporaryLayouts(containerId);
-    const currentPageComponents = getCurrentPageComponents();
-    const height = currentPageComponents?.[containerId].layouts[currentLayout].height;
-    const element = document.querySelector(`.ele-${containerId}`);
-    if (element) {
-      element.style.height = `${height}px`;
+  const scheduleReflow = (id, layout, isContainer, contextIndices, moduleId) => {
+    const ctxKey = contextIndices ? contextIndices.join('.') : '';
+    const key = `${id}|${layout}|${isContainer ? '1' : '0'}|${ctxKey}|${moduleId || 'canvas'}`;
+    _pendingReflows.set(key, { id, layout, isContainer, contextIndices, moduleId: moduleId || 'canvas' });
+    if (_reflowRafId === null) {
+      _reflowRafId = requestAnimationFrame(() => {
+        _reflowRafId = null;
+        const pending = [..._pendingReflows.values()];
+        _pendingReflows.clear();
+        get().flushReflows(pending);
+      });
     }
-  },
+  };
 
-  adjustComponentPositions: (componentId, currentLayout = 'desktop', isContainer = false, subContainerIndex = null) => {
-    const {
-      getResolvedValue,
-      getCurrentPageComponents,
-      setTemporaryLayouts,
-      incrementCanvasUpdater,
-      temporaryLayouts,
-      adjustComponentPositions,
-      getResolvedComponent,
-      getComponentTypeFromId,
-      getComponentDefinition,
-      getExposedPropertyForAdditionalActions,
-    } = get();
-
-    try {
-      // Getting all the components on the current page
-      const currentPageComponents = getCurrentPageComponents();
-
-      // This is done in order to modify the component id if the sub container index exists
-      const doesSubContainerIndexExist = isTruthyOrZero(subContainerIndex);
-
-      // If the component parent is a subcontainer, we need to transform the component id and use this id when we are dealing with temporary layouts everywhere
-      let transformedComponentId = doesSubContainerIndexExist ? `${componentId}-${subContainerIndex}` : componentId;
-
-      // If the component is a container, we need to calculate the height of the container
-      let containerHeight = currentPageComponents?.[componentId]?.layouts[currentLayout]?.height;
-      const componentType = getComponentTypeFromId(componentId);
-
-      // If the component is a modal, change id further to include the body
-      if (componentType === 'ModalV2') {
-        transformedComponentId = `${transformedComponentId}-body`;
-      }
-
-      // Determine component visibility by checking multiple sources in priority order
-      const component = getResolvedComponent(componentId, isContainer ? null : subContainerIndex);
-      const displayProperty = currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop';
-      const componentDisplay = component?.others?.[displayProperty];
-
-      if (componentType === 'Listview' && doesSubContainerIndexExist) {
-        const rowHeight = component?.properties.rowHeight;
-        containerHeight = rowHeight;
-      }
-
-      // Priority: exposed visibility > component properties > component styles
-      const componentExposedVisibility = getExposedPropertyForAdditionalActions(
-        componentId,
-        subContainerIndex,
-        'isVisible'
-      );
-      let visibility = componentExposedVisibility ?? component?.properties?.visibility ?? component?.styles?.visibility;
-
-      // Override visibility if component is set to not display on current layout
-      if (componentDisplay === false) {
-        visibility = false;
-      }
-
-      // If the component is a container, we go to each and every child component and calculate the height of the container
-      if (isContainer && (componentType !== 'Listview' || doesSubContainerIndexExist)) {
-        let contentHeight = 0;
-
-        const isAccordionExpanded =
-          getExposedPropertyForAdditionalActions(componentId, subContainerIndex, 'isExpanded') ?? true;
-
-        // Special handling for Accordion: check if it's collapsed first
-        if (componentType === 'Accordion') {
-          const { properties = {} } = component || {};
-          const { showHeader, headerHeight } = properties;
-
-          if (!isAccordionExpanded) {
-            // Accordion is collapsed - height should be just header height (or minimal if no header)
-            if (visibility) {
-              if (showHeader && isProperNumber(headerHeight)) {
-                contentHeight = headerHeight + CONTAINER_FORM_CANVAS_PADDING + 3 + 2; // 3 for bottom padding and 2 for top-bottom border
-              } else {
-                contentHeight = 0;
-              }
-            } else {
-              contentHeight = HIDDEN_COMPONENT_HEIGHT;
-            }
-            containerHeight = contentHeight;
-            // Skip the rest of the container height calculation for collapsed accordion
-          } else {
-            // Accordion is expanded - continue with normal calculation below
-          }
-        }
-
-        // Only proceed with normal calculation if component is not an accordion or accordion is expanded
-        if (componentType !== 'Accordion' || isAccordionExpanded) {
-          const dynamicSelector =
-            doesSubContainerIndexExist && componentType !== 'Listview'
-              ? `.ele-${componentId}[subcontainer-id="${subContainerIndex}"] .dynamic-${componentId}`
-              : `.dynamic-${componentId}`;
-          const element = document.querySelector(dynamicSelector);
-          // If the component is not a dynamic component, we use the height of the component from the layouts
-          if (!element) {
-            contentHeight = visibility
-              ? currentPageComponents?.[componentId]?.layouts[currentLayout]?.height
-              : HIDDEN_COMPONENT_HEIGHT;
-          } else {
-            // If component is not visible, we set the height to HIDDEN_COMPONENT_HEIGHT (10px)
-            if (!visibility) {
-              contentHeight = HIDDEN_COMPONENT_HEIGHT;
-            } else {
-              let skipContentHeightCalculation = false; // flag to skip content height calculation (eg. for accordion with dynamic height disabled)
-
-              // If the component is a tabs, we need to get the active tab
-              let modifiedComponentId = componentId;
-              if (componentType === 'Tabs') {
-                const activeTab = element?.getAttribute('activetab');
-                modifiedComponentId = `${componentId}-${activeTab}`;
-              }
-
-              // The normal component layouts
-              const componentLayouts = get()
-                .getContainerChildrenMapping(modifiedComponentId)
-                .reduce((acc, id) => {
-                  const component = currentPageComponents[id];
-                  if (!component) return acc;
-                  return {
-                    ...acc,
-                    [id]: component.layouts[currentLayout],
-                  };
-                }, {});
-
-              // Dynamic height layouts
-              const filteredTemporaryLayouts = Object.keys(componentLayouts).reduce((acc, id) => {
-                const transformedId = doesSubContainerIndexExist ? `${id}-${subContainerIndex}` : id;
-                return {
-                  ...acc,
-                  ...(temporaryLayouts[transformedId] && { [id]: temporaryLayouts[transformedId] }),
-                };
-              }, {});
-
-              const mergedLayouts = { ...componentLayouts, ...filteredTemporaryLayouts };
-
-              // Calculate the height of the container
-              let currentMax = Object.values(mergedLayouts).reduce((max, layout) => {
-                if (!layout) {
-                  return max;
-                }
-                const sum = layout.top + layout.height;
-                return Math.max(max, sum);
-              }, 0);
-              let extraHeight = 0;
-
-              // If the component is a container, we need to get the header height
-              if (componentType === 'Container' || componentType === 'Accordion') {
-                const { properties = {} } = getResolvedComponent(modifiedComponentId) || {};
-                const { showHeader, headerHeight, dynamicHeight } = properties;
-
-                // Account for layers between the wrapper element and the inner canvas:
-                // BOX_PADDING*2 (RenderWidget), SUBCONTAINER_CANVAS_BORDER_WIDTH*2 (container border),
-                // CONTAINER_FORM_CANVAS_PADDING*2 (content div padding)
-                extraHeight +=
-                  BOX_PADDING * 2 + SUBCONTAINER_CANVAS_BORDER_WIDTH * 2 + CONTAINER_FORM_CANVAS_PADDING * 2;
-
-                if (showHeader && isProperNumber(headerHeight)) {
-                  // Header area: headerHeight + top/bottom padding + border-bottom divider
-                  extraHeight += headerHeight + CONTAINER_FORM_CANVAS_PADDING + 3 + 1;
-                }
-
-                // Special handling for Accordion when expanded
-                if (componentType === 'Accordion') {
-                  // Calculate height normally, but respect dynamicHeight setting
-                  if (!dynamicHeight) {
-                    // If dynamicHeight is not enabled, use fixed height from layouts instead of calculating from children
-                    // So skip the rest of the content height calculation for fixed height accordion
-                    skipContentHeightCalculation = true;
-                  }
-                }
-
-                // If the component is a form, we need to get the header and footer height
-              } else if (componentType === 'Form') {
-                const { properties = {}, styles = {} } = getResolvedComponent(modifiedComponentId) || {};
-                const { component } = getComponentDefinition(modifiedComponentId);
-                const generateFormFrom = component?.definition?.properties?.generateFormFrom?.value;
-                const resolvedGenerateFormFrom = getResolvedValue(generateFormFrom);
-                const { showHeader, showFooter, headerHeight, footerHeight } = properties;
-                if (resolvedGenerateFormFrom === 'jsonSchema') {
-                  //Inside element go inside fieldset and then find the last element and get the height
-                  const lastElement = element.querySelector('fieldset:last-child');
-                  if (lastElement) {
-                    currentMax = lastElement.offsetHeight;
-                  }
-                } else {
-                  if (showHeader && isProperNumber(headerHeight)) {
-                    extraHeight += headerHeight;
-                  }
-                  if (showFooter && isProperNumber(footerHeight)) {
-                    extraHeight += footerHeight;
-                  }
-                  extraHeight += 20;
-                }
-
-                // If the component is a tabs, we add 20px for the bottom
-              } else if (componentType === 'Tabs') {
-                extraHeight = 40;
-              } else if (componentType === 'Listview' && isTruthyOrZero(subContainerIndex)) {
-                extraHeight -= 40;
-              }
-
-              // Calculate contentHeight only if it hasn't been set already (e.g., for accordion with dynamic height disabled its already calculated)
-              if (!skipContentHeightCalculation) {
-                if (['Container', 'Accordion'].includes(componentType)) {
-                  contentHeight = currentMax + extraHeight;
-                } else {
-                  contentHeight = currentMax + 50 + extraHeight;
-                }
-              }
-            }
-          }
-        }
-        if (visibility) {
-          containerHeight = Math.max(contentHeight, containerHeight);
-        } else {
-          containerHeight = HIDDEN_COMPONENT_HEIGHT;
-        }
-      }
-
-      // Get all the component layouts
-      const boxList = Object.keys(currentPageComponents).map((key) => {
-        const widget = currentPageComponents[key];
-        return {
-          id: key,
-          ...widget,
-          height: widget?.layouts?.[currentLayout]?.height,
-          left: widget?.layouts?.[currentLayout]?.left,
-          top: widget?.layouts?.[currentLayout]?.top,
-          width: widget?.layouts?.[currentLayout]?.width,
-          parent: widget?.component?.parent,
-          component: widget?.component,
-        };
-      });
-
-      // If the component is not found in the box list, we return
-      const changedComponent = boxList.find((box) => box.id === componentId);
-      if (!changedComponent) return;
-
-      const componentElement =
-        doesSubContainerIndexExist && componentType !== 'Listview'
-          ? document.querySelector(`.ele-${componentId}[subcontainer-id="${subContainerIndex}"]`)
-          : document.querySelector(`.ele-${componentId}`);
-
-      if (!componentElement) return;
-
-      // Get the actual new height from the DOM
-      // If the component is a container, we use the container height calculated above
-      // If the component is not a container, we use the offset height of the component
-      const newHeight =
-        isContainer && (componentType !== 'Listview' || isTruthyOrZero(subContainerIndex))
-          ? containerHeight
-          : visibility
-          ? componentElement.offsetHeight
-          : HIDDEN_COMPONENT_HEIGHT;
-
-      // Get the old height of the component either from the temporary layout if exists (moved previously) or from the layouts
-      const oldHeight = temporaryLayouts?.[componentId]?.height ?? changedComponent.layouts[currentLayout].height;
-      const dynamicHeightDifference = newHeight - oldHeight;
-
-      // If the dynamic height difference is 0 and the component is not a container, we return
-      if (dynamicHeightDifference === 0 && !isContainer) return;
-
-      // Update the changed component's height in layouts
-      const updatedLayouts = {
-        [transformedComponentId]: {
-          ...changedComponent.layouts[currentLayout],
-          ...temporaryLayouts?.[transformedComponentId],
-          height: newHeight,
-        },
-      };
-
-      // Calculate the new top, bottom, left, right of the changed component
-      // Left and Width are always the same as normal component layouts
-      const changedCompLeft = changedComponent.layouts[currentLayout].left;
-      const changedCompWidth = changedComponent.layouts[currentLayout].width;
-      const changedCompRight = changedCompLeft + changedCompWidth;
-      const changedCompTop =
-        temporaryLayouts?.[transformedComponentId]?.top ?? changedComponent.layouts[currentLayout].top;
-      const changedCompBottom = changedCompTop + newHeight;
-      const oldChangedCompTop =
-        temporaryLayouts?.[transformedComponentId]?.top ?? changedComponent.layouts[currentLayout].top;
-      const oldChangedCompHeight =
-        temporaryLayouts?.[transformedComponentId]?.height ?? changedComponent.layouts[currentLayout].height;
-      const oldChangedCompBottom = oldChangedCompTop + oldChangedCompHeight;
-
-      //Fetch all the components that are below the changed component
-      const componentsToAdjust = boxList.filter((box) => {
-        if (box.id === componentId) return false;
-
-        // Only checking components below that have the same parent
-        const sameParent = box.component?.parent === changedComponent.component?.parent;
-
-        // Checking if changed component initial bottom is below the initial box top
-        const transformedBoxId = doesSubContainerIndexExist ? `${box.id}-${subContainerIndex}` : box.id;
-        const boxTop = temporaryLayouts?.[transformedBoxId]?.top ?? box.layouts[currentLayout].top;
-        const isBelow = oldChangedCompBottom <= boxTop;
-        return sameParent && isBelow;
-      });
-
-      const isHorizontallyOverlapping = (element1Left, element1Right, element2Left, element2Right) => {
-        return (
-          (element1Left <= element2Left && element1Right >= element2Right) || // Completely contains
-          (element1Left >= element2Left && element1Right <= element2Right) || // Completely contained
-          (element1Left < element2Left && element1Right > element2Left) || // Left edge of dynamic height component overlaps
-          (element1Left < element2Right && element1Right > element2Right) // Right edge of dynamic height component overlaps
-        );
-      };
-
-      let currentLeft = changedCompLeft;
-      let currentRight = changedCompRight;
-      let currentBottom = changedCompBottom;
-
-      const componentsToAdjustSorted = componentsToAdjust.sort((a, b) => {
-        const transformedAId = doesSubContainerIndexExist ? `${a.id}-${subContainerIndex}` : a.id;
-        const transformedBId = subContainerIndex !== null ? `${b.id}-${subContainerIndex}` : b.id;
-        return (
-          (temporaryLayouts?.[transformedAId]?.top ?? a.layouts[currentLayout].top) -
-          (temporaryLayouts?.[transformedBId]?.top ?? b.layouts[currentLayout].top)
-        );
-      });
-
-      const targetComponents = componentsToAdjustSorted.filter((component) => {
-        const compLeft = component.layouts[currentLayout].left;
-        const compWidth = component.layouts[currentLayout].width;
-        const compRight = compLeft + compWidth;
-        const hasHorizontalOverlap = isHorizontallyOverlapping(compLeft, compRight, currentLeft, currentRight);
-        if (hasHorizontalOverlap) {
-          if (compLeft < currentLeft) {
-            currentLeft = compLeft;
-          }
-          if (compRight > currentRight) {
-            currentRight = compRight;
-          }
-        }
-        return hasHorizontalOverlap;
-      });
-
-      for (let index = 0; index < targetComponents.length; index++) {
-        const component = targetComponents[index];
-        const targetSelector = doesSubContainerIndexExist
-          ? `.ele-${component.id}[subcontainer-id="${subContainerIndex}"]`
-          : `.ele-${component.id}`;
-        const element = document.querySelector(targetSelector);
-        if (!element) continue;
-        const transformedTargetComponentId = doesSubContainerIndexExist
-          ? `${component.id}-${subContainerIndex}`
-          : component.id;
-
-        const verticalGap =
-          (temporaryLayouts?.[transformedTargetComponentId]?.top ?? component.layouts[currentLayout].top) -
-          oldChangedCompBottom;
-        const newTop = changedCompBottom + verticalGap;
-
-        updatedLayouts[transformedTargetComponentId] = {
-          ...component.layouts[currentLayout],
-          ...temporaryLayouts?.[transformedTargetComponentId],
-          top: newTop,
-        };
-        const newBottom =
-          newTop +
-          (temporaryLayouts?.[transformedTargetComponentId]?.height ?? component.layouts[currentLayout].height);
-        if (newBottom > currentBottom) {
-          currentBottom = newBottom;
-        }
-      }
-
-      if (isContainer) {
-        if (componentType !== 'Listview' && componentType !== 'ModalV2') {
-          const containerSelector = doesSubContainerIndexExist
-            ? `.ele-${componentId}[subcontainer-id="${subContainerIndex}"]`
-            : `.ele-${componentId}`;
-          const element = document.querySelector(containerSelector);
-          if (element) element.style.height = `${newHeight}px`;
-        }
-      }
-
-      setTemporaryLayouts(updatedLayouts);
-
-      incrementCanvasUpdater();
-
-      if (changedComponent.component?.parent || (componentType === 'Listview' && doesSubContainerIndexExist)) {
-        // Bubble the height change up to the parent container.
-        // For a Listview row instance, the next container to adjust is the Listview widget itself.
-        const parentComponentId =
-          componentType === 'Listview' && doesSubContainerIndexExist
-            ? componentId
-            : changedComponent.component?.parent?.slice(0, 36);
-
-        // Once the Listview widget is reached, continue upward outside the row scope.
-        const parentSubContainerIndex = componentType === 'Listview' ? null : subContainerIndex;
-
-        // Prevent no-progress recursion on the same target.
+  return {
+    ...initialState,
+    scheduleReflow,
+    setFlexContainerDropTarget: (payload) =>
+      set((state) => {
+        const current = state.flexContainerDropTarget;
         if (
-          parentComponentId &&
-          !(parentComponentId === componentId && parentSubContainerIndex === subContainerIndex)
+          current === payload ||
+          (current?.flexContainerId === payload?.flexContainerId && current?.index === payload?.index)
         ) {
-          adjustComponentPositions(parentComponentId, currentLayout, true, parentSubContainerIndex);
+          return;
         }
+
+        state.flexContainerDropTarget = payload;
+      }),
+    checkHoveredComponentDynamicHeight: (id) => {
+      const { getResolvedComponent } = get();
+      const resolvedProperties = getResolvedComponent(id)?.properties;
+      const { dynamicHeight } = resolvedProperties || {};
+      return dynamicHeight;
+    },
+    incrementCanvasUpdater: () =>
+      set((state) => ({ triggerCanvasUpdater: state.triggerCanvasUpdater + 1 }), false, {
+        type: 'incrementCanvasUpdater',
+      }),
+    debouncedIncrementCanvasUpdater: debounce(() => {
+      get().incrementCanvasUpdater();
+    }, 200),
+    setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
+    setResizingComponentId: (id) => set(() => ({ resizingComponentId: id })),
+    setIsGroupDragging: (isGroupDragging) => set(() => ({ isGroupDragging: isGroupDragging })),
+    setIsGroupResizing: (isGroupResizing) => set(() => ({ isGroupResizing: isGroupResizing })),
+    moveComponentPosition: (direction) => {
+      const { setComponentLayout, currentLayout, getSelectedComponentsDefinition, debouncedIncrementCanvasUpdater } =
+        get();
+      let layouts = {};
+      const selectedComponents = getSelectedComponentsDefinition();
+      selectedComponents.forEach((selectedComponent) => {
+        const componentId = selectedComponent?.id;
+
+        let top = selectedComponent.layouts?.[currentLayout].top;
+        let left = selectedComponent?.layouts?.[currentLayout].left;
+        const width = selectedComponent?.layouts?.[currentLayout]?.width;
+
+        switch (direction) {
+          case 'ArrowLeft':
+            left = left - 1;
+            break;
+          case 'ArrowRight':
+            left = left + 1;
+            break;
+          case 'ArrowDown':
+            top = top + 10;
+            break;
+          case 'ArrowUp':
+            top = top - 10;
+            break;
+        }
+
+        if (left < 0 || top < 0 || left + width > NO_OF_GRIDS) {
+          return;
+        }
+
+        const movedElement = document.getElementById(componentId);
+        const parentElm = movedElement.closest('.real-canvas');
+        if (selectedComponent?.component?.parent && parentElm.scrollHeight < top + movedElement.clientHeight) {
+          return;
+        }
+        layouts = {
+          ...layouts,
+          [componentId]: {
+            top,
+            left,
+          },
+        };
+      });
+      setComponentLayout(layouts);
+      debouncedIncrementCanvasUpdater();
+    },
+    setLastCanvasIdClick: (id) => set(() => ({ lastCanvasIdClick: id })),
+    setLastCanvasClickPosition: (position) => {
+      set({ lastCanvasClickPosition: position });
+    },
+    setTemporaryLayouts: (layouts) => set((state) => ({ temporaryLayouts: { ...state.temporaryLayouts, ...layouts } })),
+    getTemporaryLayouts: () => get().temporaryLayouts,
+    clearTemporaryLayouts: () => set(() => ({ temporaryLayouts: {} })),
+    deleteTemporaryLayouts: (componentId) => {
+      const { temporaryLayouts } = get();
+      const newLayouts = { ...temporaryLayouts };
+      delete newLayouts[componentId];
+      set(() => ({ temporaryLayouts: newLayouts }));
+    },
+    deleteContainerTemporaryLayouts: (containerId) => {
+      const { deleteTemporaryLayouts, getCurrentPageComponents, currentLayout = 'desktop' } = get();
+      deleteTemporaryLayouts(containerId);
+      const currentPageComponents = getCurrentPageComponents();
+      const height = currentPageComponents?.[containerId].layouts[currentLayout].height;
+      const element = document.querySelector(`.ele-${containerId}`);
+      if (element) {
+        element.style.height = `${height}px`;
+      }
+    },
+
+    // Clear temp layouts for a single container across all its subcontainer
+    // contexts (widget-level key + every row-index / slot-suffixed key). Used
+    // on dynamic-height toggle-off so the container's own inflated height
+    // override is dropped and WidgetWrapper immediately reads canonical.
+    //
+    // Descendants' own temps are NOT cleared — a TextArea inside the container
+    // keeps its own grown height (it's still grown), and a Button shifted to
+    // accommodate that TextArea stays shifted (the shift is still accurate).
+    // Descendants overflow/clip inside the now-canonical-sized container,
+    // which is the expected non-dynamic semantics.
+    //
+    // `contextPrefix` scopes to a branch (e.g., a Listview nested inside a
+    // parent row passes the parent row context so sibling rows stay untouched).
+    // `null`/empty matches the container's key at any context.
+    clearContainerTempLayouts: (containerId, contextPrefix = null, moduleId = 'canvas') => {
+      const normalizedPrefix = normalizeLayoutContext(contextPrefix);
+      const prefix = normalizedPrefix ? normalizedPrefix.join('.') : null;
+      // Keys are moduleId-scoped for embedded modules;
+      // build the same scoped base so a module container's temps are matched (an unscoped base would never match).
+      const base = getDynamicLayoutKey(containerId, null, '', moduleId);
+      const matches = (key) => {
+        if (!prefix) {
+          return key === base || key.startsWith(`${base}-`);
+        }
+        return key === `${base}-${prefix}` || key.startsWith(`${base}-${prefix}.`);
+      };
+
+      set((state) => {
+        const next = {};
+        let changed = false;
+        for (const [key, value] of Object.entries(state.temporaryLayouts || {})) {
+          if (matches(key)) {
+            changed = true;
+            continue;
+          }
+          next[key] = value;
+        }
+        return changed ? { temporaryLayouts: next } : {};
+      });
+    },
+
+    // ───────────────────────────────────────────────────────────────────────────
+    // flushReflows — the single entry point for dynamic-height reflow. Fed by the
+    // `scheduleReflow` batcher, which coalesces requests from `useDynamicHeight`
+    // (widget size/visibility/content/mount changes) into one animation frame.
+    //
+    // Processes a batch of requests together: `processOne` handles each widget and
+    // queues bubble targets into nextBubbles (not immediate recursive store calls).
+    // The while loop walks the entire bubble chain to completion before writing the
+    // store — one setTemporaryLayouts + one incrementCanvasUpdater for the whole
+    // reflow tree (instead of N×2).
+    //
+    // Per-widget flow (processOne):
+    //   1. Resolve the changed widget's visibility and target height.
+    //      - For container-like widgets (Container, Form, Tabs, Accordion,
+    //        Listview, Modal body) `resolveContainerHeight` computes the target
+    //        height from child layouts.
+    //      - For leaf widgets `resolveWidgetMeasuredHeight` reads the rendered
+    //        DOM `offsetHeight`; falls back to the last temp layout or canonical.
+    //   2. Short-circuit for ModalV2 bodies: write a synthetic `-body` key into
+    //      mergedPatch and return. Modal bodies aren't grid siblings, so the
+    //      usual sibling-reflow path doesn't apply.
+    //   3. Collect siblings (same `parent` id) and build visibility + resolved-
+    //      height maps. `resolvedHeights[componentId]` is the changed widget's
+    //      new target height; siblings use `calculateMoveableBoxHeightWithId` so
+    //      top-label inputs keep their bumped height.
+    //   4. Call `buildReflowPatch` (in dynamicHeightReflow.js) to produce
+    //      `temporaryLayoutPatch`: per-sibling {top, height} overrides, merged
+    //      into mergedPatch.
+    //   5. Queue the parent context as a bubble target if appropriate, so child
+    //      growth propagates upward (container / tab / listview row / form /
+    //      accordion / canvas) on the next pass of the while loop.
+    // ───────────────────────────────────────────────────────────────────────────
+    flushReflows: (requests) => {
+      const {
+        getCurrentPageComponents,
+        setTemporaryLayouts,
+        incrementCanvasUpdater,
+        getResolvedComponent,
+        getComponentTypeFromId,
+        getComponentDefinition,
+        getExposedPropertyForAdditionalActions,
+        getResolvedValue,
+        getContainerChildrenMapping,
+        getBaseParentId,
+        calculateMoveableBoxHeightWithId,
+      } = get();
+
+      const baseTemporaryLayouts = get().temporaryLayouts;
+      const mergedPatch = {};
+
+      const processOne = (componentId, currentLayout, isContainer, contextIndices, nextBubbles, moduleId) => {
+        try {
+          const temporaryLayouts = { ...baseTemporaryLayouts, ...mergedPatch };
+          const currentPageComponents = getCurrentPageComponents(moduleId);
+          const componentType = getComponentTypeFromId(componentId, moduleId);
+          const changedComponent = currentPageComponents?.[componentId];
+
+          if (!changedComponent) return;
+
+          const boundGetResolvedComponent = bindModuleAwareGetResolvedComponent(
+            getResolvedComponent,
+            getComponentTypeFromId,
+            moduleId
+          );
+          const boundGetComponentDefinition = (id) => getComponentDefinition(id, moduleId);
+          const boundGetExposedPropertyForAdditionalActions = (id, ctx, prop) =>
+            getExposedPropertyForAdditionalActions(id, ctx, prop, moduleId);
+          const boundCalculateMoveableBoxHeightWithId = (id, layout, stylesDef) =>
+            calculateMoveableBoxHeightWithId(id, layout, stylesDef, moduleId);
+          const boundGetResolvedValue = (value, customVars) => getResolvedValue(value, customVars, moduleId);
+
+          const visibility = resolveWidgetVisibility({
+            componentId,
+            contextIndices,
+            currentLayout,
+            getResolvedComponent: boundGetResolvedComponent,
+            getExposedPropertyForAdditionalActions: boundGetExposedPropertyForAdditionalActions,
+          });
+
+          const containerHeight = resolveContainerHeight({
+            componentId,
+            componentType,
+            currentLayout,
+            currentPageComponents,
+            temporaryLayouts,
+            contextIndices,
+            visibility,
+            getResolvedComponent: boundGetResolvedComponent,
+            getResolvedValue: boundGetResolvedValue,
+            getComponentDefinition: boundGetComponentDefinition,
+            getContainerChildrenMapping,
+            getExposedPropertyForAdditionalActions: boundGetExposedPropertyForAdditionalActions,
+            calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
+            moduleId,
+          });
+
+          const newHeight = resolveWidgetMeasuredHeight({
+            componentId,
+            componentType,
+            currentLayout,
+            currentPageComponents,
+            temporaryLayouts,
+            contextIndices,
+            isContainer,
+            visibility,
+            containerHeight,
+            calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
+            moduleId,
+          });
+
+          if (componentType === 'ModalV2' && isContainer) {
+            mergedPatch[getDynamicLayoutKey(componentId, contextIndices, '-body', moduleId)] = {
+              ...changedComponent.layouts[currentLayout],
+              ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices, '-body', moduleId)],
+              height: newHeight,
+            };
+            return;
+          }
+
+          if (componentType === 'Listview' && contextIndices && isContainer) {
+            const scopedElement = document.querySelector(
+              getDynamicElementSelector(componentId, contextIndices, moduleId)
+            );
+            if (!scopedElement) {
+              mergedPatch[getDynamicLayoutKey(componentId, contextIndices, '', moduleId)] = {
+                ...changedComponent.layouts[currentLayout],
+                ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices, '', moduleId)],
+                height: newHeight,
+              };
+              const nextCtx = contextIndices.length > 1 ? contextIndices.slice(0, -1) : null;
+              const selfKey = `${componentId}|${currentLayout}|${nextCtx ? nextCtx.join('.') : ''}`;
+              nextBubbles.set(selfKey, { id: componentId, layout: currentLayout, contextIndices: nextCtx, moduleId });
+              return;
+            }
+          }
+
+          const parentId = changedComponent?.component?.parent ?? null;
+          const siblingIds = Object.keys(currentPageComponents).filter(
+            (id) => (currentPageComponents[id]?.component?.parent ?? null) === parentId
+          );
+
+          const visibleMap = siblingIds.reduce((acc, siblingId) => {
+            acc[siblingId] = resolveWidgetVisibility({
+              componentId: siblingId,
+              contextIndices,
+              currentLayout,
+              getResolvedComponent: boundGetResolvedComponent,
+              getExposedPropertyForAdditionalActions: boundGetExposedPropertyForAdditionalActions,
+            });
+            return acc;
+          }, {});
+
+          const inFlowMap = siblingIds.reduce((acc, siblingId) => {
+            if (visibleMap[siblingId]) {
+              acc[siblingId] = true;
+              return acc;
+            }
+            const resolved = boundGetResolvedComponent(siblingId, contextIndices);
+            acc[siblingId] = !(resolved?.properties?.collapseWhenHidden ?? false);
+            return acc;
+          }, {});
+
+          const collapseWhenHiddenMap = siblingIds.reduce((acc, siblingId) => {
+            const resolved = boundGetResolvedComponent(siblingId, contextIndices);
+            acc[siblingId] = resolved?.properties?.collapseWhenHidden === true;
+            return acc;
+          }, {});
+
+          const resolvedHeights = siblingIds.reduce((acc, siblingId) => {
+            const existingTemp = temporaryLayouts?.[getDynamicLayoutKey(siblingId, contextIndices, '', moduleId)];
+            if (existingTemp?.height != null && existingTemp.height > 0) {
+              acc[siblingId] = existingTemp.height;
+              return acc;
+            }
+            const siblingDef = boundGetComponentDefinition(siblingId);
+            acc[siblingId] = boundCalculateMoveableBoxHeightWithId(
+              siblingId,
+              currentLayout,
+              siblingDef?.component?.definition?.styles
+            );
+            return acc;
+          }, {});
+          resolvedHeights[componentId] = newHeight;
+
+          const { temporaryLayoutPatch } = buildReflowPatch({
+            changedComponentId: componentId,
+            componentIds: siblingIds,
+            currentLayout,
+            currentPageComponents,
+            temporaryLayouts,
+            contextIndices,
+            inFlowMap,
+            resolvedHeights,
+            collapseWhenHiddenMap,
+            calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
+            getComponentDefinition: boundGetComponentDefinition,
+            moduleId,
+          });
+
+          if (Object.keys(temporaryLayoutPatch).length === 0) return;
+
+          if (isContainer && componentType !== 'Listview') {
+            const element = document.querySelector(getDynamicElementSelector(componentId, contextIndices, moduleId));
+            if (element && visibility) element.style.height = `${newHeight}px`;
+          }
+
+          // Embedded ModuleContainer renders flush (WidgetWrapper forces top:0);
+          // pin its temp top to 0 so the transform & canvas-height math match.
+          // moduleId === 'canvas' is the module editor, where it keeps canonical top.
+          if (componentType === 'ModuleContainer' && moduleId !== 'canvas') {
+            const moduleContainerKey = getDynamicLayoutKey(componentId, contextIndices, '', moduleId);
+            if (temporaryLayoutPatch[moduleContainerKey]) {
+              temporaryLayoutPatch[moduleContainerKey] = { ...temporaryLayoutPatch[moduleContainerKey], top: 0 };
+            }
+          }
+
+          Object.assign(mergedPatch, temporaryLayoutPatch);
+
+          const scopedElement = contextIndices
+            ? document.querySelector(getDynamicElementSelector(componentId, contextIndices, moduleId))
+            : null;
+          const nextBubbleTargetId = getNextBubbleTargetId({
+            componentId,
+            componentType,
+            parentId,
+            contextIndices,
+            getBaseParentId,
+            isScopedContextRenderable: !!scopedElement,
+            currentPageComponents,
+          });
+          const nextBubbleContext = getNextBubbleContext(
+            componentType,
+            contextIndices,
+            componentId,
+            nextBubbleTargetId
+          );
+          const nextBubbleResolved = nextBubbleTargetId
+            ? boundGetResolvedComponent(nextBubbleTargetId, nextBubbleContext)
+            : null;
+          const nextBubbleHasDynamicHeight = nextBubbleResolved?.properties?.dynamicHeight !== false;
+
+          if (
+            nextBubbleHasDynamicHeight &&
+            shouldBubbleToParent({
+              currentComponentId: componentId,
+              nextComponentId: nextBubbleTargetId,
+              currentContextIndices: contextIndices,
+              nextContextIndices: nextBubbleContext,
+            })
+          ) {
+            const bubbleKey = `${nextBubbleTargetId}|${currentLayout}|${
+              nextBubbleContext ? nextBubbleContext.join('.') : ''
+            }`;
+            nextBubbles.set(bubbleKey, {
+              id: nextBubbleTargetId,
+              layout: currentLayout,
+              contextIndices: nextBubbleContext,
+              moduleId,
+            });
+          }
+        } catch (error) {
+          console.error('flushReflows: error processing component', componentId, error);
+        }
+      };
+
+      const initialBubbles = new Map();
+      for (const { id, layout, isContainer, contextIndices, moduleId } of requests) {
+        processOne(id, layout, isContainer, contextIndices, initialBubbles, moduleId);
       }
 
-      return updatedLayouts;
-    } catch (error) {
-      console.error('Error adjusting component positions:', error);
-      return null;
-    }
-  },
+      let bubblesToProcess = initialBubbles;
+      while (bubblesToProcess.size > 0) {
+        const nextBubbles = new Map();
+        for (const { id, layout, contextIndices, moduleId } of bubblesToProcess.values()) {
+          processOne(id, layout, true, contextIndices, nextBubbles, moduleId);
+        }
+        bubblesToProcess = nextBubbles;
+      }
 
-  setReorderContainerChildren: (containerId) => {
-    // Function to trigger reordering of specific container for tab navigation
-    set((state) => ({
-      reorderContainerChildren: { containerId, triggerUpdate: state.reorderContainerChildren.triggerUpdate + 1 },
-    }));
-  },
-  handleCanvasContainerMouseUp: (e) => {
-    const { clearSelectedComponents, isGroupResizing, isGroupDragging } = get();
-    const selectedText = window.getSelection().toString();
-    const isClickedOnSubcontainer =
-      e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
+      if (Object.keys(mergedPatch).length > 0) {
+        setTemporaryLayouts(mergedPatch);
+        incrementCanvasUpdater();
+      }
+    },
 
-    // Check if any inspector popover is currently open
-    const isInspectorPopoverOpen = () => {
-      const selector = [
-        '#codehinter-preview-box-popover',
-        '.inspector-select-options-popover',
-        '.inspector-event-manager-popover',
-        '.inspector-steps-options-popover',
-        '.table-column-popover',
-        '.table-action-popover',
-        '.codebuilder-color-swatches-popover',
-        '.boxshadow-picker-popover',
-        '.color-picker-popover',
-        '.dropdown-menu-container',
-        '.inspector-select.react-select__menu-list',
-        '.icon-widget-popover',
-        '.inspector-header-actions-menu',
-      ].join(',');
-      return !!document.querySelector(selector);
-    };
+    setReorderContainerChildren: (containerId) => {
+      // Function to trigger reordering of specific container for tab navigation
+      set((state) => ({
+        reorderContainerChildren: { containerId, triggerUpdate: state.reorderContainerChildren.triggerUpdate + 1 },
+      }));
+    },
+    handleCanvasContainerMouseUp: (e) => {
+      const {
+        clearSelectedComponents,
+        isGroupResizing,
+        isGroupDragging,
+        setCanvasHeaderSelected,
+        setCanvasFooterSelected,
+        draggingComponentId,
+        resizingComponentId,
+      } = get();
+      const selectedText = window.getSelection().toString();
+      const isClickedOnSubcontainer =
+        e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
 
-    if (
-      !isClickedOnSubcontainer &&
-      ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
-      !selectedText &&
-      !isInspectorPopoverOpen() &&
-      !isGroupResizing &&
-      !isGroupDragging
-    ) {
-      clearSelectedComponents();
-    }
-  },
-});
+      const isClickedOnCanvasHeader = e.target.getAttribute('component-id') === 'canvas-header';
+      const isClickedOnCanvasFooter = e.target.getAttribute('component-id') === 'canvas-footer';
+
+      const isMovingComponent = draggingComponentId || resizingComponentId || isGroupDragging || isGroupResizing;
+
+      if (!isMovingComponent && isClickedOnCanvasHeader) {
+        setCanvasHeaderSelected(true);
+      } else if (!isMovingComponent && isClickedOnCanvasFooter) {
+        setCanvasFooterSelected(true);
+      }
+
+      // Check if any inspector popover is currently open
+      const isInspectorPopoverOpen = () => {
+        const selector = [
+          '#codehinter-preview-box-popover',
+          '.inspector-select-options-popover',
+          '.inspector-event-manager-popover',
+          '.inspector-steps-options-popover',
+          '.table-column-popover',
+          '.table-action-popover',
+          '.codebuilder-color-swatches-popover',
+          '.boxshadow-picker-popover',
+          '.color-picker-popover',
+          '.dropdown-menu-container',
+          '.inspector-select.react-select__menu-list',
+          '.icon-widget-popover',
+          '.inspector-header-actions-menu',
+          '.nav-item-popover',
+          '.nav-item-actions-popover',
+          '.nav-add-menu-popover',
+        ].join(',');
+        return !!document.querySelector(selector);
+      };
+
+      if (
+        !isClickedOnSubcontainer &&
+        ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
+        !selectedText &&
+        !isInspectorPopoverOpen() &&
+        !isGroupResizing &&
+        !isGroupDragging
+      ) {
+        clearSelectedComponents();
+      }
+    },
+  };
+};

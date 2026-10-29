@@ -28,8 +28,24 @@ export class EmailListener {
           await this.emailService.sendPasswordResetEmail(payload);
           break;
 
+        case EMAIL_EVENTS.SEND_PASSWORD_EXPIRED_RESET_EMAIL:
+          await this.emailService.sendPasswordExpiredResetEmail(payload);
+          break;
+
         case EMAIL_EVENTS.SEND_COMMENT_MENTION_EMAIL:
           await this.emailService.sendCommentMentionEmail(payload);
+          break;
+
+        case EMAIL_EVENTS.SEND_USER_BANNED_EMAIL:
+          await this.emailService.sendUserBannedEmail(payload);
+          break;
+
+        case EMAIL_EVENTS.SEND_WORKSPACE_BANNED_EMAIL:
+          await this.emailService.sendWorkspaceBannedEmail(payload);
+          break;
+
+        case EMAIL_EVENTS.SEND_APP_BUILD_COMPLETED_EMAIL:
+          await this.emailService.sendAppBuildCompletedEmail(payload);
           break;
 
         default:

@@ -1,376 +1,1518 @@
 name: CI
-# Controls when the workflow will run
+
 on:
   push:
-    branches: [develop, main]
+    branches: [develop, main, 'release/**']
   pull_request:
-    types: [labeled, unlabeled, closed]
-
-  # Allows you to run this workflow manually from the Actions tab
+    # labeled = manual trigger (any base); the rest auto-run full CI on PRs into main
+    types: [labeled, opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
-env:
-  FORCE_COLOR: true
-  NODE_OPTIONS: "--max-old-space-size=4096"
-  LOCKBOX_MASTER_KEY: lockbox-master-key
-  SECRET_KEY_BASE: secrret-key-base
-  NODE_ENV: test
-  PG_HOST: postgres
-  PG_PORT: 5432
-  PG_USER: postgres
-  PG_PASS: postgres
-  PG_DB: tooljet_test
+concurrency:
+  # no-op runs (other labels, non-main pushes) get their own group so they never cancel a real run
+  group: >-
+    ci-${{ github.event.pull_request.number || github.ref }}${{
+      (github.event_name == 'pull_request'
+        && !(github.event.action == 'labeled' && contains(fromJSON('["run-ci", "run-ci-changed"]'), github.event.label.name))
+        && !(github.event.action != 'labeled' && github.event.pull_request.base.ref == 'main'))
+      && format('-noop-{0}', github.run_id) || '' }}${{ github.run_attempt > 1 && format('-rerun-{0}', github.run_id) || '' }}
+  # cancel superseded PR runs (last label wins); never kill a push-validation run
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  build:
+  # ---------------------------------------------------------------------------
+  # 1. Detect which directories changed — gates all downstream jobs
+  # ---------------------------------------------------------------------------
+  detect-changes:
     runs-on: ubuntu-latest
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-ci' }}
-
+    if: >-
+      github.event_name == 'push'
+      || github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'pull_request'
+          && github.event.action == 'labeled'
+          && contains(fromJSON('["run-ci", "run-ci-changed"]'), github.event.label.name))
+      || (github.event_name == 'pull_request'
+          && github.event.action != 'labeled'
+          && github.event.pull_request.base.ref == 'main'
+          && !github.event.pull_request.draft
+          && github.event.pull_request.head.repo.full_name == github.repository)
+    outputs:
+      server: ${{ (steps.filter.outputs.server == 'true' || steps.filter.outputs.root == 'true' || steps.sub.outputs.server == 'true') && 'true' || 'false' }}
+      frontend: ${{ (steps.filter.outputs.frontend == 'true' || steps.filter.outputs.validation_catalog == 'true' || steps.filter.outputs.root == 'true' || steps.sub.outputs.frontend == 'true') && 'true' || 'false' }}
+      plugins: ${{ steps.filter.outputs.plugins }}
+      marketplace: ${{ steps.filter.outputs.marketplace }}
+      migrations: ${{ steps.filter.outputs.migrations }}
+      # secrets aren't allowed in job-level if:, so expose only whether the snapshot is configured
+      snapshot: ${{ secrets.MIGRATION_SNAPSHOT_BUCKET != '' }}
+      # changed = fast lane (run-ci-changed label): lint+build always, changed tests only,
+      # no CI Gate commit status. full = merge truth (run-ci label / push / dispatch).
+      mode: ${{ (github.event_name == 'pull_request' && github.event.label.name == 'run-ci-changed') && 'changed' || 'full' }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Use Node.js 18.18.2
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v7
         with:
-          node-version: 18.18.2
-
-      # Cache server node modules to speed up subsequent builds
-      - name: Cache server node modules
-        uses: actions/cache@v3
+          fetch-depth: 2
+      - uses: dorny/paths-filter@v4
+        id: filter
         with:
-          path: server/node_modules
-          key: ${{ runner.os }}-node-server-${{ hashFiles('server/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-server-
-
-      # Cache frontend node modules to speed up subsequent builds
-      - name: Cache frontend node modules
-        uses: actions/cache@v3
-        with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-node-frontend-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-frontend-
-
-      # Cache plugins node modules to speed up subsequent builds
-      - name: Cache plugins node modules
-        uses: actions/cache@v3
-        with:
-          path: plugins/node_modules
-          key: ${{ runner.os }}-node-plugins-${{ hashFiles('plugins/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-plugins-
-
-      - name: Setup Python 3
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
-
-      - name: Install Python dependencies
+          # every: a file counts only if it matches ALL patterns of a filter, so the
+          # '!**/*.md' line drops docs-only edits (AGENTS.md, docs/) from triggering suites,
+          # and the .version excludes treat a release version bump the same way (the root
+          # .version matches no filter, so it needs no exclude)
+          predicate-quantifier: 'every'
+          filters: |
+            server:
+              - 'server/**'
+              - '!**/*.md'
+              - '!server/.version'
+              - '!server/ee'
+            frontend:
+              - 'frontend/**'
+              - '!**/*.md'
+              - '!frontend/.version'
+              - '!frontend/ee'
+            # the frontend parity spec (validationCatalogParity.spec.js) reads these server
+            # files, so a server-only catalog edit must still run the frontend suite
+            validation_catalog:
+              - 'server/src/modules/{app-validation/catalog,apps/services/widget-config}/**'
+              - '!**/*.md'
+            plugins:
+              - 'plugins/**'
+              - '!**/*.md'
+            marketplace:
+              - 'marketplace/**'
+              - '!**/*.md'
+            # one brace pattern: with 'every', two positive patterns could never both match
+            migrations:
+              - 'server/{migrations,data-migrations}/**'
+              - '!**/*.md'
+            # toolchain / workflow changes affect every suite
+            root:
+              - '{package.json,package-lock.json,.nvmrc,.node-version,.github/workflows/**}'
+      # a submodule bump counts only if the EE diff touches more than docs/skills;
+      # any lookup failure counts as changed
+      - name: Detect EE submodule changes
+        id: sub
+        env:
+          GH_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          python -m pip install --upgrade pip
-          pip install setuptools
+          mark() { echo "$1=$2" >> "$GITHUB_OUTPUT"; }
+          if [[ -z "$BASE" || "$BASE" =~ ^0+$ ]] \
+            || ! base=$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE...$HEAD" --jq .merge_base_commit.sha); then
+            mark server true; mark frontend true; exit 0
+          fi
+          pin() { gh api "repos/$GITHUB_REPOSITORY/contents/$1?ref=$2" --jq .sha; }
+          check() {
+            local old new files
+            old=$(pin "$1" "$base") && new=$(pin "$1" "$HEAD") || { mark "$3" true; return; }
+            [[ "$old" == "$new" ]] && { mark "$3" false; return; }
+            # compare is three-dot: a pin that isn't strictly ahead hides the commits it drops
+            files=$(gh api "repos/ToolJet/$2/compare/$old...$new" --jq 'select(.status == "ahead") | .files[].filename') || { mark "$3" true; return; }
+            # compare API caps at 300 files
+            if [[ $(grep -c . <<<"$files") -ge 300 ]] || grep -qvE '\.md$|^\.agents/' <<<"$files"; then
+              mark "$3" true
+            else
+              mark "$3" false
+            fi
+          }
+          check server/ee ee-server server
+          check frontend/ee ee-frontend frontend
 
-      - name: Install Node.js dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Frontend ci
+  # ---------------------------------------------------------------------------
+  # 2. Build-check jobs — lint + build per folder
+  #    Plugins runs first (produces artifact), then server + frontend in parallel
+  # ---------------------------------------------------------------------------
+  build-plugins:
+    name: 'Lint & Build · plugins'
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: >-
+      needs.detect-changes.outputs.server == 'true'
+      || needs.detect-changes.outputs.plugins == 'true'
+      || needs.detect-changes.outputs.frontend == 'true'
+    steps:
+      - uses: actions/checkout@v7
+      - name: Checkout EE submodules
         run: |
-          npm --prefix frontend ci
-
-      - name: Server ci
-        run: npm --prefix server ci
-    
-      - name: plugins ci
-        run: npm --prefix plugins ci
-
-      # Upload plugins build artifacts
-      - name: Archive specific plugins files and folders
-        uses: actions/upload-artifact@v4
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - uses: actions/setup-node@v7
         with:
-          name: plugins-files
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'plugins/package-lock.json'
+      - run: npm ci --prefix plugins
+      - run: set -o pipefail; mkdir -p /tmp/buildlog; npm run --prefix plugins lint 2>&1 | tee -a /tmp/buildlog/plugins.log
+      - run: set -o pipefail; npm run --prefix plugins build 2>&1 | tee -a /tmp/buildlog/plugins.log
+      - name: Upload lint/build log for the PR comment
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: buildlog-plugins
+          path: /tmp/buildlog/
+          retention-days: 1
+      - uses: actions/upload-artifact@v7
+        with:
+          name: plugins-dist
           path: |
-            plugins/dist
+            plugins/dist/
             plugins/client.js
-            plugins/node_modules
-            plugins/packages/common
+            plugins/packages/common/
+            plugins/packages/*/dist/
             plugins/package.json
+            plugins/node_modules/
+          compression-level: 1
+          retention-days: 1
 
-      # Upload server build artifacts
-      - name: Archive specific server files and folders
-        uses: actions/upload-artifact@v4
-        with:
-          name: server-files
-          path: |
-            server/dist
-
-      # Upload frontend build artifacts
-      - name: Archive specific frontend files and folders
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-files
-          path: |
-            frontend/build
-
-  lint-for-plugins:
+  build-server:
+    name: 'Lint & Build · server'
     runs-on: ubuntu-latest
-    needs: build
-
+    needs: [detect-changes, build-plugins, build-marketplace]
+    # result guards: a path-skipped marketplace build must not auto-skip this job
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.server == 'true'
+      && needs.build-plugins.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Use Node.js 18.18.2
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.18.2
-
-      # Cache server node modules to speed up subsequent builds
-      - name: Cache server node modules
-        uses: actions/cache@v3
-        with:
-          path: server/node_modules
-          key: ${{ runner.os }}-node-server-${{ hashFiles('server/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-server-
-
-      # Cache frontend node modules to speed up subsequent builds
-      - name: Cache frontend node modules
-        uses: actions/cache@v3
-        with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-node-frontend-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-frontend-
-
-      # Cache plugins node modules to speed up subsequent builds
-      - name: Cache plugins node modules
-        uses: actions/cache@v3
-        with:
-          path: plugins/node_modules
-          key: ${{ runner.os }}-node-plugins-${{ hashFiles('plugins/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-plugins-
-
-      - name: Setup Python 3
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
-
-      - name: Install Python dependencies
+      - uses: actions/checkout@v7
+      - name: Checkout EE submodules
         run: |
-          python -m pip install --upgrade pip
-          pip install setuptools
-
-      # Download plugins build artifacts
-      - name: Download plugins files and folders
-        uses: actions/download-artifact@v4
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - uses: actions/download-artifact@v8
         with:
-          name: plugins-files
+          name: plugins-dist
+          path: plugins/
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'server/package-lock.json'
+      - run: npm ci --prefix server
+      - run: set -o pipefail; mkdir -p /tmp/buildlog; npm run --prefix server lint 2>&1 | tee -a /tmp/buildlog/server.log
+      - run: set -o pipefail; npm run --prefix server build 2>&1 | tee -a /tmp/buildlog/server.log
+      - run: set -o pipefail; bash server/scripts/check-ee-leak.sh 2>&1 | tee -a /tmp/buildlog/server.log
+      - name: Upload lint/build log for the PR comment
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: buildlog-server
+          path: /tmp/buildlog/
+          retention-days: 1
 
-      - name: Running for plugins
-        run: |
-          npm --prefix plugins run lint
-
-
-  lint-for-frontend:
+  build-frontend:
+    name: 'Lint & Build · frontend'
     runs-on: ubuntu-latest
-    needs: build
-
+    needs: [detect-changes, build-plugins, build-marketplace]
+    # result guards: a path-skipped marketplace build must not auto-skip this job
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.frontend == 'true'
+      && needs.build-plugins.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Use Node.js 18.18.2
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.18.2
-
-      # Cache server node modules to speed up subsequent builds
-      - name: Cache server node modules
-        uses: actions/cache@v3
-        with:
-          path: server/node_modules
-          key: ${{ runner.os }}-node-server-${{ hashFiles('server/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-server-
-
-      # Cache frontend node modules to speed up subsequent builds
-      - name: Cache frontend node modules
-        uses: actions/cache@v3
-        with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-node-frontend-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-frontend-
-
-      # Cache plugins node modules to speed up subsequent builds
-      - name: Cache plugins node modules
-        uses: actions/cache@v3
-        with:
-          path: plugins/node_modules
-          key: ${{ runner.os }}-node-plugins-${{ hashFiles('plugins/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-plugins-
-
-      - name: Setup Python 3
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
-
-      - name: Install Python dependencies
+      - uses: actions/checkout@v7
+      - name: Checkout EE submodules
         run: |
-          python -m pip install --upgrade pip
-          pip install setuptools
-
-      # Download frontend build artifacts
-      - name: Download frontend files and folders
-        uses: actions/download-artifact@v4
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - uses: actions/download-artifact@v8
         with:
-          name: frontend-files
+          name: plugins-dist
+          path: plugins/
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+      - run: npm ci --prefix frontend
+      - run: set -o pipefail; mkdir -p /tmp/buildlog; npm run --prefix frontend lint 2>&1 | tee -a /tmp/buildlog/frontend.log
+      - run: set -o pipefail; npm run --prefix frontend build 2>&1 | tee -a /tmp/buildlog/frontend.log
+      - name: Upload lint/build log for the PR comment
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: buildlog-frontend
+          path: /tmp/buildlog/
+          retention-days: 1
 
-      - name: Running for frontend
-        run: |
-          npm --prefix frontend run lint
-
-  lint-for-server:
+  build-marketplace:
+    name: 'Lint & Build · marketplace'
     runs-on: ubuntu-latest
-    needs: build
-
+    needs: detect-changes
+    if: needs.detect-changes.outputs.marketplace == 'true'
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Use Node.js 18.18.2
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 18.18.2
-
-      # Cache server node modules to speed up subsequent builds
-      - name: Cache server node modules
-        uses: actions/cache@v3
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'marketplace/package-lock.json'
+      - run: npm ci --prefix marketplace
+      # eslint 8's flat-config auto-detect trips over frontend/eslint.config.mjs;
+      # force eslintrc mode until marketplace migrates to a flat config of its own
+      - run: set -o pipefail; mkdir -p /tmp/buildlog; ESLINT_USE_FLAT_CONFIG=false npm run --prefix marketplace lint 2>&1 | tee -a /tmp/buildlog/marketplace.log
+      # `npm run build --workspaces` builds alphabetically; plugins import
+      # @tooljet-marketplace/common's dist, so build common first
+      - run: set -o pipefail; npm run --prefix marketplace build --workspace=@tooljet-marketplace/common 2>&1 | tee -a /tmp/buildlog/marketplace.log
+      - run: set -o pipefail; npm run --prefix marketplace build 2>&1 | tee -a /tmp/buildlog/marketplace.log
+      - name: Upload lint/build log for the PR comment
+        if: failure()
+        uses: actions/upload-artifact@v7
         with:
-          path: server/node_modules
-          key: ${{ runner.os }}-node-server-${{ hashFiles('server/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-server-
+          name: buildlog-marketplace
+          path: /tmp/buildlog/
+          retention-days: 1
 
-      # Cache frontend node modules to speed up subsequent builds
-      - name: Cache frontend node modules
-        uses: actions/cache@v3
-        with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-node-frontend-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-frontend-
-
-      # Cache plugins node modules to speed up subsequent builds
-      - name: Cache plugins node modules
-        uses: actions/cache@v3
-        with:
-          path: plugins/node_modules
-          key: ${{ runner.os }}-node-plugins-${{ hashFiles('plugins/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-plugins-
-
-      - name: Setup Python 3
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
-
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools
-
-      # Download server build artifacts
-      - name: Download server files and folders
-        uses: actions/download-artifact@v4
-        with:
-          name: server-files
-
-      - name: Running for server
-        run: |
-          npm --prefix server run lint
-
-  unit-test:
+  # ---------------------------------------------------------------------------
+  # 3. Test jobs — need plugins build artifact
+  # ---------------------------------------------------------------------------
+  # Frontend jest suite — needs no build artifact, so it runs parallel to the builds.
+  # Runs in both lanes: the whole suite takes seconds, and scoping it to changed
+  # files let PRs pass green without running a test.
+  test-frontend:
+    name: 'Test Suite · frontend'
     runs-on: ubuntu-latest
-    timeout-minutes: 30 # Set a timeout of 30 minutes
-    needs: build
-    container: node:18.18.2-bullseye
-    services:
+    timeout-minutes: 30
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      # Widget testing contracts and EE specs live in the private frontend/ee submodule;
+      # without it the contract validator cannot read them and jest falls back to CE.
+      - name: Checkout EE submodules
+        working-directory: .
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+      - run: npm ci
+      # Layout first: a misfiled or *.test.* spec silently never runs, so this
+      # must fail the build before the suite reports a misleading green.
+      - name: Validate test layout
+        run: npm run test:layout
+      # Widget testing contracts are validated in the separate `widget-contracts` job below.
+      - name: Run full test suite with coverage
+        run: npm run test:ci
+      # Fails if an App Builder source file is not assigned to a subsystem in
+      # app-builder-coverage-manifest.json. The harness contract spec already
+      # runs in the full suite above via testMatch.
+      - name: Validate App Builder coverage manifest
+        run: npm run validate:app-builder-coverage-manifest
+
+  # Separate job, and therefore a separate status check, so a contract violation can't
+  # hide the frontend test result. Ported from lts-3.16 (#18166), where it replaced the
+  # step that was disabled here to unblock the lts-3.16 -> main merge (#18058).
+  #
+  # Label-gated rather than path-gated: the changed-file rules (production_changes,
+  # new-widget contracts) only mean something on a PR a person authored, so back-merge
+  # and release PRs don't carry the label. Without the label it never runs and reports
+  # nothing, so it is deliberately not in ci-gate's needs and must not be a required check.
+  # It also doesn't need detect-changes, which skips on any label other than run-ci.
+  widget-contracts:
+    name: 'Widget contracts'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: >-
+      github.event_name != 'pull_request' ||
+      contains(github.event.pull_request.labels.*.name, 'run-validate-widget-contracts')
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      # Contracts live in the private frontend/ee submodule.
+      - name: Checkout EE submodules
+        working-directory: .
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+      - run: npm ci
+      # Existing untouched widgets remain a report-only backfill. New widget
+      # definitions and modified widget tests must already have an approved
+      # behavior contract before CI accepts them.
+      - name: Validate widget testing contracts
+        # explicit bash = pipefail; a failed gh api must not feed the validator empty stdin
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
+              --paginate --jq '.[] | [.status, .filename] | @tsv' | \
+              npm run validate:widget-testing-contracts -- --changed-files-stdin
+          else
+            npm run validate:widget-testing-contracts
+          fi
+
+  # Server unit tests and each of the 3 e2e shards run on their own machine, in
+  # parallel. Running the shards side by side on one machine (run-e2e.sh --ci) ran
+  # it out of memory. test-server-coverage merges their coverage once all pass.
+  test-server:
+    name: 'Test Suite · server'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    needs:
+      - detect-changes
+      - build-plugins
+      - build-marketplace
+      - build-server
+      - build-frontend
+    # explicit result guards: a path-skipped build need must not auto-skip this
+    # job (GitHub's implicit success() on needs), only a FAILED build should
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.mode == 'full'
+      && needs.detect-changes.outputs.server == 'true'
+      && needs.build-plugins.result == 'success'
+      && needs.build-server.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
+      && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
+    outputs:
+      unit: ${{ steps.unit.outcome }}
+    container: node:22.23.4-bookworm
+    services: &server-test-services
       postgres:
-        image: postgres
+        image: postgres:16
         env:
           POSTGRES_PASSWORD: postgres
-        # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
+          --health-interval 3s
+          --health-timeout 3s
           --health-retries 5
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 5
+    env: &server-test-env
+      FORCE_COLOR: true
+      NODE_OPTIONS: '--max-old-space-size=8192'
+      NODE_ENV: test
+      LOCKBOX_MASTER_KEY: lockbox-master-key
+      SECRET_KEY_BASE: secret-key-base
+      PG_HOST: postgres
+      PG_PORT: 5432
+      PG_USER: postgres
+      PG_PASS: postgres
+      PG_DB: tooljet_test
+      TOOLJET_DB_USER: postgres
+      TOOLJET_DB_PASS: postgres
+      TOOLJET_DB_HOST: postgres
+      TOOLJET_DB_PORT: 5432
+      TOOLJET_DB: tooljet_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      WORKFLOW_TIMEOUT_SECONDS: '60'
+      PGRST_JWT_SECRET: 'r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj'
+      ENABLE_TOOLJET_DB: 'true'
+      ENABLE_EXTERNAL_API: 'true'
+      EXTERNAL_API_ACCESS_TOKEN: test-external-api-token
+      # NOTE: git-sync tests do NOT run in this job. They need the external git simulator and
+      # are isolated in the dedicated `test-gitsync` job below. The unit + e2e steps here
+      # exclude them via `--group=-gitsync` (all git-sync specs carry `@group gitsync`).
     steps:
-      - uses: actions/checkout@v3
-      - name: Cache node modules
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-node-modules
+      - uses: actions/checkout@v7
+      - name: Checkout EE submodules
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - uses: actions/download-artifact@v8
         with:
-          # npm cache files are stored in `~/.npm` on Linux/macOS
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-      - run: apt update && apt install -y postgresql-client
-      - run: npm --prefix plugins ci
-      - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
-      - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
-      - run: npm --prefix server ci
-      - run: npm --prefix server run db:create
-      - run: npm --prefix server run db:migrate
-      - run: npm --prefix server run test
+          name: plugins-dist
+          path: plugins/
+      - uses: actions/cache@v6
+        id: server-nm
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
+      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
+      - run: npm ci --prefix server
+        if: steps.server-nm.outputs.cache-hit != 'true'
+      - run: NODE_ENV= npm run --prefix server db:create
+      - run: NODE_ENV= npm run --prefix server db:migrate
+      - name: Unit tests
+        id: unit
+        # --group=-gitsync excludes the git-sync unit specs (they run in the test-gitsync job).
+        run: >-
+          npm run --prefix server test --
+          --group=-gitsync
+          --coverage --coverageReporters=json
+          --json --outputFile /tmp/tj-unit-results.json
+      - name: Strip coverage map from results JSON
+        # --coverage attaches a full coverageMap to the --json output (~12MB for this
+        # suite) — coverage-unit/coverage-final.json below is the report that matters.
+        if: ${{ !cancelled() }}
+        run: node server/scripts/strip-coverage-map.mjs /tmp/tj-unit-results.json
+      - name: Upload unit results for the PR comment
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: full-unit-results
+          path: /tmp/tj-unit-results.json
+          if-no-files-found: ignore
+          retention-days: 1
+      - name: Upload unit coverage for the merge
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-raw-unit
+          path: server/coverage-unit/coverage-final.json
+          retention-days: 1
 
-  e2e-test:
+  test-server-e2e:
+    name: 'Test Suite · server e2e'
     runs-on: ubuntu-latest
-    timeout-minutes: 30 # Set a timeout of 30 minutes
-    needs: build
-    container: node:18.18.2-bullseye
+    timeout-minutes: 90
+    needs:
+      - detect-changes
+      - build-plugins
+      - build-marketplace
+      - build-server
+      - build-frontend
+    # explicit result guards: a path-skipped build need must not auto-skip this
+    # job (GitHub's implicit success() on needs), only a FAILED build should
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.mode == 'full'
+      && needs.detect-changes.outputs.server == 'true'
+      && needs.build-plugins.result == 'success'
+      && needs.build-server.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
+      && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    container: node:22.23.4-bookworm
+    services: *server-test-services
+    env: *server-test-env
+    steps:
+      - uses: actions/checkout@v7
+      - name: Checkout EE submodules
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - uses: actions/download-artifact@v8
+        with:
+          name: plugins-dist
+          path: plugins/
+      - uses: actions/cache@v6
+        id: server-nm
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
+      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
+      - run: npm ci --prefix server
+        if: steps.server-nm.outputs.cache-hit != 'true'
+      - run: NODE_ENV= npm run --prefix server db:create
+      - run: NODE_ENV= npm run --prefix server db:migrate
+      - name: E2E tests
+        # --group=-gitsync excludes the git-sync e2e specs (they run in the test-gitsync job).
+        run: >-
+          mkdir -p /tmp/tj-e2e-json &&
+          npm run --prefix server test:e2e:cov -- --only-shard ${{ matrix.shard }} --group=-gitsync --testTimeout=60000 --json-output-dir /tmp/tj-e2e-json
+      - name: Upload e2e results for the PR comment
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: full-e2e-results-${{ matrix.shard }}
+          path: /tmp/tj-e2e-json/
+          if-no-files-found: ignore
+          retention-days: 1
+      - name: Upload e2e coverage for the merge
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-raw-e2e-${{ matrix.shard }}
+          path: server/coverage-e2e/coverage-final.json
+          retention-days: 1
+
+  # Merges unit + e2e coverage for ci-gate's coverage gate. No continue-on-error: a
+  # failed merge must fail the gate, not silently skip it. Runs only when every suite
+  # passed — a report merged from a failing/incomplete suite would misrepresent coverage.
+  test-server-coverage:
+    name: 'Coverage · server'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs:
+      - detect-changes
+      - test-server
+      - test-server-e2e
+    if: >-
+      !cancelled()
+      && needs.test-server.result == 'success'
+      && needs.test-server-e2e.result == 'success'
+    # same container as the test jobs, so the absolute paths in the coverage files match
+    container: node:22.23.4-bookworm
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2   # HEAD^1 = PR base, for the coverage gate diff
+      - name: Checkout EE submodules
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - uses: actions/cache@v6
+        id: server-nm
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
+      - run: npm ci --prefix server
+        if: steps.server-nm.outputs.cache-hit != 'true'
+      - uses: actions/download-artifact@v8
+        with:
+          name: coverage-raw-unit
+          path: server/coverage-unit
+      # one subfolder per shard; merge-coverage.mjs finds coverage-final.json recursively
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: coverage-raw-e2e-*
+          path: server/coverage-e2e
+      - name: Merge coverage
+        run: npm run --prefix server test:cov:merge
+      - name: Upload combined coverage report
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report-html
+          path: server/coverage-combined/
+          compression-level: 9
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload coverage summary for the PR comment
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-summary
+          path: server/coverage-combined/coverage-summary.json
+          if-no-files-found: ignore
+      # Inputs for ci-gate's coverage gate (scripts/coverage-gate.sh). The diff is built
+      # here, not in ci-gate, because only this job has the private submodules checked
+      # out. HEAD is the PR merge commit, so HEAD^1..HEAD is exactly the PR's changes.
+      - name: Prepare PR diff for the coverage gate
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          mkdir -p /tmp/cov
+          cp server/coverage-combined/lcov.info /tmp/cov/server.info
+          # diff-cover can't see inside submodules: append their diffs with prefixed paths
+          git diff --no-color HEAD^1 HEAD -- . ':(exclude)server/ee' ':(exclude)frontend/ee' > /tmp/cov/pr.diff
+          old=$(git rev-parse HEAD^1:server/ee) new=$(git rev-parse HEAD:server/ee)
+          if [ "$old" != "$new" ]; then
+            git -C server/ee cat-file -e "$old" 2>/dev/null || git -C server/ee fetch --no-tags --depth=1 origin "$old"
+            git -C server/ee diff --no-color "$old" "$new" --src-prefix=a/server/ee/ --dst-prefix=b/server/ee/ -- . ':(exclude)test/**' >> /tmp/cov/pr.diff
+          fi
+      - name: Upload coverage gate inputs
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-lcov-server
+          path: /tmp/cov/
+          if-no-files-found: ignore
+          retention-days: 1
+
+  # ---------------------------------------------------------------------------
+  # 3a-bis. git-sync suite — isolated because it depends on an EXTERNAL git simulator
+  # (secret-gated). Runs the git-sync unit + e2e specs via --group=gitsync, INCLUDING the
+  # GitLab suite (TEST_GITLAB_TOKEN). Parallel to test-server, so no added wall-clock on the
+  # critical path; feeds ci-gate. Isolating it keeps simulator flakiness/outages from failing
+  # the core suite. In `changed` mode the fast lane (test-changed) runs git-sync when touched.
+  # ---------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
+  # 3a-ter. CE suite without the private submodules — what a public clone sees.
+  # Catches public specs that need EE code, and CE boot paths that only work
+  # when ee/ is on disk. No coverage: test-server already reports it.
+  # ---------------------------------------------------------------------------
+  test-server-ce:
+    name: 'Test Suite · server (CE, no submodules)'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs:
+      - detect-changes
+      - build-plugins
+      - build-marketplace
+      - build-server
+      - build-frontend
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.mode == 'full'
+      && needs.detect-changes.outputs.server == 'true'
+      && needs.build-plugins.result == 'success'
+      && needs.build-server.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
+      && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
+    container: node:22.23.4-bookworm
+    services: *server-test-services
+    env: *server-test-env
+    steps:
+      - uses: actions/checkout@v7   # no submodule checkout, on purpose
+      - uses: actions/download-artifact@v8
+        with:
+          name: plugins-dist
+          path: plugins/
+      - uses: actions/cache@v6
+        id: server-nm
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
+      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
+      - run: npm ci --prefix server
+        if: steps.server-nm.outputs.cache-hit != 'true'
+      - run: NODE_ENV= npm run --prefix server db:create
+      - run: NODE_ENV= npm run --prefix server db:migrate
+      - name: Unit tests
+        id: unit
+        continue-on-error: true
+        run: TOOLJET_EDITION=ce npm run --prefix server test -- --group=-gitsync
+      - name: E2E tests
+        id: e2e
+        run: TOOLJET_EDITION=ce npm run --prefix server test:e2e -- --group=-gitsync --testTimeout=60000
+      - name: Fail job if unit or e2e failed
+        if: ${{ steps.unit.outcome == 'failure' || steps.e2e.outcome == 'failure' }}
+        run: exit 1
+
+  test-gitsync:
+    name: 'Test Suite · git-sync'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs:
+      - detect-changes
+      - build-plugins
+      - build-marketplace
+      - build-server
+      - build-frontend
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.mode == 'full'
+      && needs.detect-changes.outputs.server == 'true'
+      && needs.build-plugins.result == 'success'
+      && needs.build-server.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
+      && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
+    outputs:
+      unit: ${{ steps.gitsync-unit.outcome }}
+      e2e: ${{ steps.gitsync-e2e.outcome || 'skipped' }}
+    container: node:22.23.4-bookworm
     services:
       postgres:
-        image: postgres
+        image: postgres:16
         env:
           POSTGRES_PASSWORD: postgres
-        # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
+          --health-interval 3s
+          --health-timeout 3s
           --health-retries 5
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 5
+    env:
+      FORCE_COLOR: true
+      NODE_OPTIONS: '--max-old-space-size=8192'
+      NODE_ENV: test
+      LOCKBOX_MASTER_KEY: lockbox-master-key
+      SECRET_KEY_BASE: secret-key-base
+      PG_HOST: postgres
+      PG_PORT: 5432
+      PG_USER: postgres
+      PG_PASS: postgres
+      PG_DB: tooljet_test
+      TOOLJET_DB_USER: postgres
+      TOOLJET_DB_PASS: postgres
+      TOOLJET_DB_HOST: postgres
+      TOOLJET_DB_PORT: 5432
+      TOOLJET_DB: tooljet_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      WORKFLOW_TIMEOUT_SECONDS: '60'
+      PGRST_JWT_SECRET: 'r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj'
+      ENABLE_TOOLJET_DB: 'true'
+      ENABLE_EXTERNAL_API: 'true'
+      EXTERNAL_API_ACCESS_TOKEN: test-external-api-token
+      # git-sync simulator (real Gitea/GitHub-Enterprise + GitLab-shaped host). Repo paths are
+      # namespaced per run (must start with "run-ci/" per simulator owner) so concurrent runs
+      # don't collide on the shared repo.
+      TEST_GIT_BASE_URL: ${{ secrets.GIT_SYNC_SIMULATOR_BASE_URL }}
+      TEST_GIT_REPO_PATH: run-ci/${{ github.run_id }}-${{ github.run_attempt }}
+      TEST_GITLAB_REPO_PATH: run-ci/${{ github.run_id }}-${{ github.run_attempt }}-gitlab
+      TOOLJET_GIT_ADMIN_USER: ${{ secrets.GIT_SYNC_SIMULATOR_ADMIN_USER }}
+      TOOLJET_GIT_ADMIN_PASSWORD: ${{ secrets.GIT_SYNC_SIMULATOR_ADMIN_PASSWORD }}
+      TOOLJET_GITHUB_APP_ID: ${{ secrets.GIT_SYNC_GITHUB_APP_ID }}
+      TOOLJET_GITHUB_INSTALLATION_ID: ${{ secrets.GIT_SYNC_GITHUB_INSTALLATION_ID }}
+      TOOLJET_GITHUB_APP_PRIVATE_KEY: ${{ secrets.GIT_SYNC_GITHUB_APP_PRIVATE_KEY }}
+      # NEW secret — enables the un-quarantined GitLab suite. When unset the GitLab spec
+      # self-skips (prints "[git-sync-gitlab] SKIPPED"), so the job stays green without it.
+      TEST_GITLAB_TOKEN: ${{ secrets.GIT_SYNC_GITLAB_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Cache node modules
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-node-modules
+      - uses: actions/checkout@v7
+      - name: Checkout EE submodules
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - uses: actions/download-artifact@v8
         with:
-          # npm cache files are stored in `~/.npm` on Linux/macOS
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-      - run: apt update && apt install -y postgresql-client
-      - run: npm --prefix plugins ci
-      - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
-      - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
-      - run: npm --prefix server ci
-      - run: npm --prefix server run db:create
-      - run: npm --prefix server run db:migrate
-      - run: NODE_OPTIONS=--max_old_space_size=8096 npm --prefix server run test:e2e -- --silent --testTimeout=20000
+          name: plugins-dist
+          path: plugins/
+      - uses: actions/cache@v6
+        id: server-nm
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
+      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
+      - run: npm ci --prefix server
+        if: steps.server-nm.outputs.cache-hit != 'true'
+      - run: NODE_ENV= npm run --prefix server db:create
+      - run: NODE_ENV= npm run --prefix server db:migrate
+      - name: git-sync unit tests
+        id: gitsync-unit
+        continue-on-error: true
+        # json reporter: merged with the e2e coverage below for ci-gate's coverage gate.
+        # Instrumentation doesn't change pass/fail.
+        run: >-
+          npm run --prefix server test:gitsync:unit --
+          --coverage --coverageReporters=json --coverageDirectory=coverage-gitsync-unit
+      # No `if:` — runs regardless of the unit outcome (unit's continue-on-error keeps the job
+      # alive), so both suites always get a full run; the fail-guard below sets the conclusion.
+      - name: git-sync e2e tests
+        id: gitsync-e2e
+        run: npm run --prefix server test:gitsync:e2e -- --coverage
+      # git-sync code is only exercised by this suite (test-server excludes it), so the
+      # coverage gate needs unit + e2e merged — unit alone reads e2e-only lines as uncovered.
+      - name: Merge git-sync coverage
+        if: >-
+          ${{ !cancelled() && github.event_name == 'pull_request'
+          && steps.gitsync-unit.outcome == 'success' && steps.gitsync-e2e.outcome == 'success' }}
+        run: |
+          cd server && node scripts/merge-coverage.mjs --out coverage-gitsync-combined --reporters lcovonly coverage-gitsync-unit coverage-e2e
+          mkdir -p /tmp/cov && cp coverage-gitsync-combined/lcov.info /tmp/cov/gitsync.info
+      - name: Upload git-sync coverage gate input
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-lcov-gitsync
+          path: /tmp/cov/gitsync.info
+          if-no-files-found: ignore
+          retention-days: 1
+      - name: Fail job if unit or e2e failed
+        if: ${{ steps.gitsync-unit.outcome == 'failure' || steps.gitsync-e2e.outcome == 'failure' }}
+        run: exit 1
+
+  # ---------------------------------------------------------------------------
+  # 3b. Fast lane (run-ci-changed) — only the jest modules the PR touches.
+  #     Lint & Build still run above; this job never feeds the CI Gate status.
+  # ---------------------------------------------------------------------------
+  test-changed:
+    name: 'Changed OK'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs:
+      - detect-changes
+      - build-plugins
+      - build-marketplace
+      - build-server
+      - build-frontend
+    if: >-
+      !cancelled()
+      && needs.detect-changes.outputs.mode == 'changed'
+      && needs.detect-changes.outputs.server == 'true'
+      && needs.build-plugins.result == 'success'
+      && needs.build-server.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
+      && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
+    container: node:22.23.4-bookworm
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 5
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 5
+    env:
+      FORCE_COLOR: true
+      # env parity with test-server's e2e step — this job runs the same e2e specs
+      NODE_OPTIONS: '--max-old-space-size=8192'
+      NODE_ENV: test
+      LOCKBOX_MASTER_KEY: lockbox-master-key
+      SECRET_KEY_BASE: secret-key-base
+      PG_HOST: postgres
+      PG_PORT: 5432
+      PG_USER: postgres
+      PG_PASS: postgres
+      PG_DB: tooljet_test
+      TOOLJET_DB_USER: postgres
+      TOOLJET_DB_PASS: postgres
+      TOOLJET_DB_HOST: postgres
+      TOOLJET_DB_PORT: 5432
+      TOOLJET_DB: tooljet_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      WORKFLOW_TIMEOUT_SECONDS: '60'
+      PGRST_JWT_SECRET: 'r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj'
+      ENABLE_TOOLJET_DB: 'true'
+      ENABLE_EXTERNAL_API: 'true'
+      EXTERNAL_API_ACCESS_TOKEN: test-external-api-token
+      # git-sync e2e: real Gitea/GitHub-Enterprise-shaped simulator. Repo path is
+      # namespaced per run (must start with "run-ci/" per simulator owner) so
+      # concurrent CI runs don't collide on the same shared repo.
+      TEST_GIT_BASE_URL: ${{ secrets.GIT_SYNC_SIMULATOR_BASE_URL }}
+      TEST_GIT_REPO_PATH: run-ci/${{ github.run_id }}-${{ github.run_attempt }}
+      TEST_GITLAB_REPO_PATH: run-ci/${{ github.run_id }}-${{ github.run_attempt }}-gitlab
+      TOOLJET_GIT_ADMIN_USER: ${{ secrets.GIT_SYNC_SIMULATOR_ADMIN_USER }}
+      TOOLJET_GIT_ADMIN_PASSWORD: ${{ secrets.GIT_SYNC_SIMULATOR_ADMIN_PASSWORD }}
+      TOOLJET_GITHUB_APP_ID: ${{ secrets.GIT_SYNC_GITHUB_APP_ID }}
+      TOOLJET_GITHUB_INSTALLATION_ID: ${{ secrets.GIT_SYNC_GITHUB_INSTALLATION_ID }}
+      TOOLJET_GITHUB_APP_PRIVATE_KEY: ${{ secrets.GIT_SYNC_GITHUB_APP_PRIVATE_KEY }}
+      # GitLab suite runs here too when a git-sync file is touched in `changed` mode.
+      TEST_GITLAB_TOKEN: ${{ secrets.GIT_SYNC_GITLAB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Checkout EE submodules
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - name: Fetch base branch for merge-base
+        run: git fetch origin ${{ github.base_ref }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: plugins-dist
+          path: plugins/
+      - uses: actions/cache@v6
+        id: server-nm
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
+      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
+      - run: npm ci --prefix server
+        if: steps.server-nm.outputs.cache-hit != 'true'
+      - run: NODE_ENV= npm run --prefix server db:create
+      - run: NODE_ENV= npm run --prefix server db:migrate
+      - name: Run changed tests (unit + e2e)
+        # container default shell is dash — PIPESTATUS needs bash
+        shell: bash
+        run: |
+          mkdir -p /tmp/tj-e2e-json
+          BASE_BRANCH="${{ github.base_ref }}" bash scripts/test-changed.sh 2>&1 | tee /tmp/tj-run.log
+          exit "${PIPESTATUS[0]}"
+      - name: Capture scope for the PR comment
+        if: always()
+        run: |
+          scope=$(grep -m1 -E 'Changed modules:|Running all server tests|No server files changed' /tmp/tj-run.log || true)
+          case "$scope" in
+            "Changed modules:"*) mods=$(echo "${scope#Changed modules: }" | sed 's/[^ ]*/`&`/g; s/ /, /g')
+                                 echo "modules ${mods}" > /tmp/tj-scope.txt;;
+            "Running all"*)      echo "all modules (cross-cutting change)" > /tmp/tj-scope.txt;;
+            "No server files"*)  echo "no server changes — lint & build only" > /tmp/tj-scope.txt;;
+            *)                   echo "not recorded" > /tmp/tj-scope.txt;;
+          esac
+      - name: Upload fast-run results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: fast-test-results
+          path: |
+            /tmp/tj-unit-results.json
+            /tmp/tj-e2e-json/
+            /tmp/tj-scope.txt
+          if-no-files-found: ignore
+          retention-days: 1
+
+  # ---------------------------------------------------------------------------
+  # 3c-bis. Migration import check — new or edited migrations must be self-contained:
+  # typeorm and Node built-ins only, no entities/helpers/modules. Those follow today's code,
+  # so importing them lets a later change silently alter an old migration. Use
+  # queryRunner.query() with SQL; a needed import stays if its line has
+  # '// migration-import-allowed: <reason>'. Existing migrations aren't checked until edited.
+  # ---------------------------------------------------------------------------
+  migration-import-check:
+    name: 'Migration import check'
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: github.event_name == 'pull_request' && needs.detect-changes.outputs.migrations == 'true'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2   # HEAD^1 = PR base
+      - name: Test the import checker
+        run: node --test scripts/check-migration-imports.test.mjs
+      - name: Fail if a new or edited migration imports project code
+        shell: bash
+        run: |
+          mapfile -t files < <(git diff --name-only --diff-filter=AMR HEAD^1 HEAD -- server/migrations server/data-migrations)
+          [ ${#files[@]} -eq 0 ] && exit 0
+          node scripts/check-migration-imports.mjs "${files[@]}"
+
+  # ---------------------------------------------------------------------------
+  # 3c. Migration timing — times pending migrations
+  # ---------------------------------------------------------------------------
+  migration-timing:
+    name: 'Migration timing'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: [detect-changes, build-plugins, migration-import-check]
+    if: >-
+      !cancelled()
+      && github.event_name == 'pull_request'
+      && needs.migration-import-check.result == 'success'
+      && needs.detect-changes.outputs.snapshot == 'true'
+      && needs.detect-changes.outputs.mode == 'full'
+      && needs.detect-changes.outputs.migrations == 'true'
+      && needs.build-plugins.result == 'success'
+    container: node:22.15.1-bookworm
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 5
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 5
+    env:
+      # key the snapshot's stored credentials were encrypted with; data migrations decrypt them
+      LOCKBOX_MASTER_KEY: ${{ secrets.MIGRATION_SNAPSHOT_LOCKBOX_MASTER_KEY || 'lockbox-master-key' }}
+      SECRET_KEY_BASE: secret-key-base
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PG_HOST: postgres
+      PG_PORT: 5432
+      PG_USER: postgres
+      PG_PASS: postgres
+      PG_DB: tooljet_migration_timing
+      TOOLJET_DB_USER: postgres
+      TOOLJET_DB_PASS: postgres
+      TOOLJET_DB_HOST: postgres
+      TOOLJET_DB_PORT: 5432
+      TOOLJET_DB: tooljet_db
+      PGRST_JWT_SECRET: 'r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj'
+      ENABLE_TOOLJET_DB: 'true'
+      # libpq vars for psql / createdb
+      PGHOST: postgres
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      MIGRATION_TIME_LIMIT_SECONDS: ${{ secrets.MIGRATION_TIME_LIMIT_SECONDS || '30' }}
+      # db:migrate's runner logs nothing per migration by default; 'all' makes TypeORM print the
+      # "<n> migrations are new" / "Migration X has been executed successfully." lines the timer reads
+      ORM_LOGGING: all
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2   # HEAD^1 = PR base, to find the migration files this PR adds
+      - name: Checkout EE submodules
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - uses: actions/download-artifact@v8
+        with:
+          name: plugins-dist
+          path: plugins/
+      - uses: actions/cache@v6
+        id: server-nm
+        with:
+          path: server/node_modules
+          key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
+      - run: npm ci --prefix server
+        if: steps.server-nm.outputs.cache-hit != 'true'
+      - name: Test the timing reporter
+        run: node --test scripts/time-migrations.test.mjs
+      # bookworm ships pg 15 clients; match the pg 16 server (PGDG repo)
+      - name: Install Postgres 16 client and AWS CLI
+        run: |
+          apt-get update && apt-get install -y postgresql-common awscli
+          /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          apt-get install -y postgresql-client-16
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-1
+      - name: Restore snapshot
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          # lts-* bases use lts.sql, everything else main.sql
+          case "$BASE" in lts*) name=lts ;; *) name=main ;; esac
+          uri="${{ secrets.MIGRATION_SNAPSHOT_BUCKET }}/$name.sql"
+          aws s3 cp "$uri" /tmp/snapshot.sql || { echo "::error::No snapshot at $uri"; exit 1; }
+          createdb "$PG_DB" && createdb "$TOOLJET_DB"
+          psql -q -v ON_ERROR_STOP=1 -d "$PG_DB" -f /tmp/snapshot.sql
+      - name: Run pending migrations with timing
+        shell: bash
+        run: |
+          set -o pipefail
+          # TypeORM records the class name's timestamp, which differs from the filename's in
+          # some older files, so read it from the class declaration of each added file
+          JUDGE=$(git diff --name-only --diff-filter=A HEAD^1 HEAD -- server/migrations server/data-migrations \
+            | xargs -r grep -ohE 'class [A-Za-z0-9_]+[0-9]{13}' | grep -oE '[0-9]{13}$' | paste -sd, - || true)
+          export JUDGE
+          echo "This PR's migrations: ${JUDGE:-none}"
+          NODE_ENV='' npm run --prefix server db:migrate 2>&1 | node scripts/time-migrations.mjs
+      - name: List empty tables in the snapshot
+        if: ${{ !cancelled() }}
+        run: |
+          {
+            echo '### Empty tables in the snapshot'
+            echo 'Migrations on these tables were timed against zero rows. Top up the snapshot if that matters.'
+            echo
+            psql -d "$PG_DB" -At -c "
+              select '- ' || table_name from information_schema.tables
+              where table_schema = 'public' and table_type = 'BASE TABLE'
+                and (xpath('/row/c/text()', query_to_xml(format('select count(*) as c from (select 1 from %I.%I limit 1) s',
+                     table_schema, table_name), false, true, '')))[1]::text::int = 0
+              order by table_name"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ---------------------------------------------------------------------------
+  # 4. Cypress E2E — reusable workflows, run after server tests pass
+  # ---------------------------------------------------------------------------
+  # Builds and pushes the EE image once for all cypress-platform shards. Needs only
+  # detect-changes, so it overlaps lint & build instead of waiting for them. Built
+  # from this checkout with a registry layer cache: dependency installs are reused
+  # until a lockfile changes; only the frontend/server builds rerun per PR.
+  build-cypress-image:
+    name: 'Build image · cypress'
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: >-
+      (github.base_ref || github.ref_name) == 'main'
+      && needs.detect-changes.outputs.mode == 'full'
+      && (needs.detect-changes.outputs.server == 'true'
+      || needs.detect-changes.outputs.frontend == 'true')
+    outputs:
+      # only the digest: GitHub drops a job output that contains a secret's value,
+      # and the image name contains the Docker Hub username. The shards pull by
+      # digest, not by the branch tag: the tag is shared with the label-triggered
+      # cypress-platform run and with overlapping main pushes, so a shard pulling
+      # it could get another run's image.
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Free up disk space
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+      - uses: actions/checkout@v7
+      - name: Checkout EE submodules
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
+      - name: Image tag
+        id: tag
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: echo "tag=${BRANCH//\//-}-ee" >> "$GITHUB_OUTPUT"
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        id: build
+        with:
+          context: .
+          file: cypress-tests/cypress-ci.Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: tooljet/tj-osv:${{ steps.tag.outputs.tag }}
+          cache-from: type=registry,ref=tooljet/tj-osv:cypress-ci-buildcache
+          cache-to: type=registry,ref=tooljet/tj-osv:cypress-ci-buildcache,mode=max
+
+  cypress-platform:
+    name: 'Test Suite · cypress-platform'
+    needs:
+      - detect-changes
+      - build-plugins
+      - build-marketplace
+      - build-server
+      - build-frontend
+      - build-cypress-image
+    if: >-
+      !cancelled()
+      && (github.base_ref || github.ref_name) == 'main'
+      && needs.detect-changes.outputs.mode == 'full'
+      && (needs.detect-changes.outputs.server == 'true'
+      || needs.detect-changes.outputs.frontend == 'true')
+      && needs.build-plugins.result == 'success'
+      && needs.build-server.result == 'success'
+      && needs.build-cypress-image.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
+      && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
+    uses: ./.github/workflows/cypress-platform.yml
+    with:
+      edition: 'ee'
+      image: tooljet/tj-osv@${{ needs.build-cypress-image.outputs.digest }}
+      # specs split across 4 machines, each with its own ToolJet (see cypress-tests/ci-shard.js)
+      shards: '[1,2,3,4]'
+    secrets: inherit
+
+  cypress-marketplace:
+    name: 'Test Suite · cypress-marketplace'
+    needs:
+      - detect-changes
+      - build-plugins
+      - build-server
+      - build-frontend
+      - build-marketplace
+    if: >-
+      !cancelled()
+      && (github.base_ref || github.ref_name) == 'main'
+      && needs.detect-changes.outputs.mode == 'full'
+      && needs.detect-changes.outputs.marketplace == 'true'
+      && needs.build-plugins.result == 'success'
+      && needs.build-server.result == 'success'
+      && needs.build-marketplace.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
+    uses: ./.github/workflows/cypress-marketplace.yml
+    with:
+      edition: 'ee'
+    secrets: inherit
+
+  # Repo-wide Dependabot-alert policy (not PR-diff scoped) — full lane only, feeds ci-gate.
+  vulnerability-gate:
+    needs: detect-changes
+    if: needs.detect-changes.result == 'success' && needs.detect-changes.outputs.mode == 'full'
+    uses: ./.github/workflows/release-vulnerability-gate.yml
+    secrets:
+      DEPENDABOT_ALERTS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN }}
+
+  # ---------------------------------------------------------------------------
+  # 5. Gate — aggregates results, posts PR comment, removes label
+  # ---------------------------------------------------------------------------
+  ci-gate:
+    name: 'Gate'
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+      actions: read   # jobs API — step links in the PR comment
+    needs:
+      - detect-changes
+      - build-server
+      - build-frontend
+      - build-plugins
+      - build-marketplace
+      - test-changed
+      - test-frontend
+      - test-server
+      - test-server-e2e
+      - test-server-coverage
+      - test-server-ce
+      - test-gitsync
+      - build-cypress-image
+      - cypress-platform
+      - cypress-marketplace
+      - vulnerability-gate
+      - migration-import-check
+      - migration-timing
+    steps:
+      # Comment pipeline — one path for both lanes: download jest JSONs,
+      # render markdown via scripts/render-ci-comment.sh, upsert by marker.
+      # Downloads come before "Evaluate results", which runs the coverage gate on them.
+      - uses: actions/checkout@v7
+        if: github.event_name == 'pull_request' && needs.detect-changes.result != 'skipped'
+
+      - name: Download changed-run test results
+        if: >-
+          github.event_name == 'pull_request' && needs.detect-changes.result != 'skipped' && needs.detect-changes.outputs.mode == 'changed'
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: fast-test-results
+          path: /tmp/ci-results
+
+      - name: Download full-run unit results
+        if: >-
+          github.event_name == 'pull_request' && needs.detect-changes.result != 'skipped' && needs.detect-changes.outputs.mode == 'full'
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: full-unit-results
+          path: /tmp/ci-results
+
+      - name: Download full-run e2e results
+        if: >-
+          github.event_name == 'pull_request' && needs.detect-changes.result != 'skipped' && needs.detect-changes.outputs.mode == 'full'
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          pattern: full-e2e-results-*
+          path: /tmp/ci-results/tj-e2e-json
+          merge-multiple: true
+
+      - name: Download build logs
+        if: >-
+          github.event_name == 'pull_request' && needs.detect-changes.result != 'skipped'
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          pattern: buildlog-*
+          path: /tmp/ci-results/buildlogs
+          merge-multiple: true
+
+      - name: Download coverage summary
+        if: >-
+          github.event_name == 'pull_request' && needs.detect-changes.result != 'skipped' && needs.detect-changes.outputs.mode == 'full'
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-summary
+          path: /tmp/ci-results/coverage
+
+      - name: Download coverage gate inputs
+        if: >-
+          github.event_name == 'pull_request' && needs.detect-changes.result != 'skipped' && needs.detect-changes.outputs.mode == 'full'
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          pattern: coverage-lcov-*
+          path: /tmp/ci-results/lcov
+          merge-multiple: true
+
+      - name: Evaluate results
+        id: eval
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BASE_REF: ${{ github.base_ref }}
+          CI_RESULTS: /tmp/ci-results
+          COVERAGE_ARTIFACT_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts
+        run: |
+          # Merge enforcement lives in the 'CI Gate' COMMIT STATUS (posted below,
+          # full mode only) — not in this job's conclusion. An unposted status
+          # blocks protected branches; fast runs and unrelated labels stay silent
+          # and never mint a mergeable state.
+          MODE="${{ needs.detect-changes.outputs.mode }}"
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+
+          if [[ "${{ needs.detect-changes.result }}" == "skipped" ]]; then
+            echo "Unrelated label event — nothing ran, nothing to report."
+            echo "verdict=noop" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "${{ needs.detect-changes.result }}" == "failure" ]]; then
+            echo "::error::detect-changes failed — CI infrastructure broken"
+            echo "verdict=fail" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          failed=false
+          builds=(
+            "build-server:${{ needs.build-server.result }}"
+            "build-frontend:${{ needs.build-frontend.result }}"
+            "build-plugins:${{ needs.build-plugins.result }}"
+            "build-marketplace:${{ needs.build-marketplace.result }}"
+            "test-frontend:${{ needs.test-frontend.result }}"
+            "migration-import-check:${{ needs.migration-import-check.result }}"
+          )
+          if [[ "$MODE" == "changed" ]]; then
+            results=("${builds[@]}" "test-changed:${{ needs.test-changed.result }}")
+          else
+            results=(
+              "${builds[@]}"
+              "test-server:${{ needs.test-server.result }}"
+              "test-server-e2e:${{ needs.test-server-e2e.result }}"
+              "test-server-coverage:${{ needs.test-server-coverage.result }}"
+              "test-server-ce:${{ needs.test-server-ce.result }}"
+              "test-gitsync:${{ needs.test-gitsync.result }}"
+              "build-cypress-image:${{ needs.build-cypress-image.result }}"
+              "cypress-platform:${{ needs.cypress-platform.result }}"
+              "cypress-marketplace:${{ needs.cypress-marketplace.result }}"
+              "vulnerability-gate:${{ needs.vulnerability-gate.result }}"
+              "migration-timing:${{ needs.migration-timing.result }}"
+            )
+          fi
+
+          for entry in "${results[@]}"; do
+            job="${entry%%:*}"
+            result="${entry##*:}"
+            echo "$job: $result"
+            if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
+              failed=true
+            fi
+          done
+
+          # Coverage gate — full PR runs with server changes whose suites all passed
+          # (a failed suite already fails the gate and leaves no coverage to judge).
+          # Writes the comment section rendered by render-ci-comment.sh.
+          if [[ "$MODE" == "full" && "$failed" == "false" && "${{ github.event_name }}" == "pull_request" \
+                && "${{ needs.detect-changes.outputs.server }}" == "true" ]]; then
+            mkdir -p /tmp/ci-results
+            if ! bash scripts/coverage-gate.sh > /tmp/ci-results/coverage.md; then
+              echo "coverage gate: fail"
+              failed=true
+            fi
+          fi
+
+          if [[ "$failed" == "true" ]]; then
+            echo "verdict=fail" >> "$GITHUB_OUTPUT"
+          else
+            echo "verdict=pass" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Render PR comment
+        if: >-
+          github.event_name == 'pull_request'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILDLOG_DIR: /tmp/ci-results/buildlogs
+          MODE: ${{ steps.eval.outputs.mode }}
+          VERDICT: ${{ steps.eval.outputs.verdict }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          BASE_REF: ${{ github.base_ref }}
+          UNIT_JSON: /tmp/ci-results/tj-unit-results.json
+          E2E_JSON_DIR: /tmp/ci-results/tj-e2e-json
+          COVERAGE_MD: /tmp/ci-results/coverage.md
+          RESULT_BUILD_SERVER: ${{ needs.build-server.result }}
+          RESULT_BUILD_PLUGINS: ${{ needs.build-plugins.result }}
+          RESULT_BUILD_FRONTEND: ${{ needs.build-frontend.result }}
+          RESULT_BUILD_MARKETPLACE: ${{ needs.build-marketplace.result }}
+          # test-server.outputs.{unit,e2e} are step outcomes and read as empty
+          # strings when the whole job is skipped (server=='false') — fall back to
+          # the job result itself so the comment shows "skipped", not "❓".
+          RESULT_UNIT: ${{ needs.test-server.outputs.unit || needs.test-server.result }}
+          RESULT_E2E: ${{ needs.test-server-e2e.result }}
+          RESULT_CHANGED: ${{ needs.test-changed.result }}
+          RESULT_FRONTEND: ${{ needs.test-frontend.result }}
+          RESULT_CYPRESS_PLATFORM: ${{ needs.cypress-platform.result }}
+          RESULT_CYPRESS_MARKETPLACE: ${{ needs.cypress-marketplace.result }}
+          RESULT_VULN_GATE: ${{ needs.vulnerability-gate.result }}
+        run: |
+          jobs_json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs?per_page=100" 2>/dev/null || echo '{}')
+          job_url() { echo "$jobs_json" | jq -r --arg n "$1" '.jobs[]? | select(.name | contains($n)) | .html_url' | head -1; }
+          if [ "$MODE" = "changed" ]; then
+            export UNIT_STEP_URL=$(job_url "Changed OK")
+            export E2E_STEP_URL="$UNIT_STEP_URL"
+            export SCOPE=$(cat /tmp/ci-results/tj-scope.txt 2>/dev/null || echo "not recorded")
+          else
+            export UNIT_STEP_URL=$(job_url "Test Suite · server")
+            export E2E_STEP_URL=$(job_url "Test Suite · server e2e")
+          fi
+          bash scripts/render-ci-comment.sh "$MODE" > /tmp/ci-comment.md
+          cat /tmp/ci-comment.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post PR comment
+        if: >-
+          github.event_name == 'pull_request'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+        continue-on-error: true
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const prNumber = context.payload.pull_request?.number || context.issue?.number;
+            if (!prNumber) return;
+            const body = fs.readFileSync('/tmp/ci-comment.md', 'utf8');
+            const marker = body.split('\n')[0];   // ci-gate-comment or ci-fast-comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner, repo: context.repo.repo, issue_number: prNumber,
+            });
+            const existing = comments.find(c => c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                comment_id: existing.id, body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: prNumber, body,
+              });
+            }
+
+      - name: Post CI Gate commit status
+        # merge enforcement: only full runs ever touch this status; branch
+        # protection on develop/main/release/* requires context 'CI Gate'
+        if: >-
+          steps.eval.outputs.mode == 'full'
+          && contains(fromJSON('["pass","fail"]'), steps.eval.outputs.verdict)
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const verdict = '${{ steps.eval.outputs.verdict }}';
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.payload.pull_request?.head?.sha || context.sha,
+              state: verdict === 'pass' ? 'success' : 'failure',
+              context: 'CI Gate',
+              description: verdict === 'pass' ? 'Full CI green' : 'Full CI failed',
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+
+      - name: Remove triggering label
+        if: >-
+          github.event_name == 'pull_request'
+          && contains(fromJSON('["run-ci", "run-ci-changed"]'), github.event.label.name)
+        continue-on-error: true
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const prNumber = context.payload.pull_request?.number || context.issue?.number;
+            if (!prNumber) return;
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                name: context.payload.label.name,
+              });
+            } catch (e) {
+              if (e.status !== 404) throw e;
+            }
+
+      - name: Fail gate if checks failed
+        if: steps.eval.outputs.verdict == 'fail'
+        run: |
+          echo "::error::One or more CI jobs failed"
+          exit 1

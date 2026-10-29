@@ -32,6 +32,18 @@ export class ComponentLayoutDto {
   @IsNumber()
   @IsOptional()
   height?: number;
+
+  /**
+   * Flex layout sizing (pixel/auto-fill semantics).
+   * These are persisted on the `layouts` table for FlexContainer children.
+   */
+  @IsNumber()
+  @IsOptional()
+  widthPx?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  fillWidth?: boolean;
 }
 
 export class LayoutData {

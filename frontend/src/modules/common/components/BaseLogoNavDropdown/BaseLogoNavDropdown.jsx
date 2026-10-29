@@ -2,24 +2,26 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { authenticationService } from '@/_services';
-import { getPrivateRoute, redirectToDashboard, redirectToWorkflows } from '@/_helpers/routes';
+import { getPrivateRoute, redirectToDashboard, routes } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AppLogo from '@/_components/AppLogo';
-import { hasBuilderRole } from '@/_helpers/utils';
+import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 
-const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'apps' }) => {
+const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'front-end' }) => {
   const { admin } = authenticationService?.currentSessionValue ?? {};
-  const isWorkflows = type === 'workflows';
+  const isWorkflows = type === 'workflow';
   const workflowsEnabled = admin && isWorkflowsFeatureEnabled();
+  const goBackRouteKey = type === 'front-end' ? 'dashboard' : `${type}s`;
+  const goBackToPageText = `Back to ${type === 'front-end' ? 'apps' : `${type}s`}`;
 
   const handleBackClick = (e) => {
     e.preventDefault();
     // Force a reload for clearing interval triggers
-    isWorkflows ? redirectToWorkflows() : redirectToDashboard();
+    redirectToDashboard(undefined, routes[goBackRouteKey]);
   };
 
-  const backToLinkProps = { to: getPrivateRoute(isWorkflows ? 'workflows' : 'dashboard') };
+  const backToLinkProps = { to: getPrivateRoute(goBackRouteKey) };
 
   const getOverlay = () => {
     const { admin } = authenticationService?.currentSessionValue ?? {};
@@ -31,7 +33,6 @@ const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'apps' })
       data_source_group_permissions?.is_all_usable ||
       data_source_group_permissions?.configurable_data_source_id?.length ||
       data_source_group_permissions?.is_all_configurable;
-    const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
 
     return (
       <div className={`logo-nav-card settings-card card ${darkMode && 'dark-theme'}`}>
@@ -42,7 +43,7 @@ const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'apps' })
           {...backToLinkProps}
         >
           <SolidIcon name="arrowbackdown" width="20" viewBox="0 0 20 20" fill="#C1C8CD" />
-          <span>Back to {isWorkflows ? 'workflows' : 'apps'}</span>
+          <span>{goBackToPageText}</span>
         </Link>
         <div className="divider"></div>
         {isWorkflows || !showWorkflows
@@ -55,7 +56,7 @@ const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'apps' })
                 <span>{'Workflows'}</span>
               </Link>
             )}
-        {(admin || isBuilder) && (
+        {canAccessTooljetDbDashboard() && (
           <Link
             target="_blank"
             to={getPrivateRoute('database')}

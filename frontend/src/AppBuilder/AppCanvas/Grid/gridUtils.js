@@ -3,6 +3,100 @@ import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { getTabId, getSubContainerIdWithSlots } from '../appCanvasUtils';
 import { NO_OF_GRIDS } from '../appCanvasConstants';
+
+export const MOBILE_GRID_COLUMNS = NO_OF_GRIDS;
+// Vertical breathing room between stacked mobile items (top/height are in px).
+const MOBILE_STACK_GAP_PX = 10;
+// Side inset in grid columns; keeps the gutter on the components instead of the canvas padding.
+const MOBILE_SIDE_INSET_COLUMNS = 1;
+
+// Backstop for compactItem's move-down loop, which has no structural exit if a top goes NaN.
+const MAX_COMPACTION_STEPS = 10000;
+
+// Stack each parent's children into a full-width mobile column, bottom-up. Returns { [id]: box }.
+export function computeAutoMobileLayout(currentPageComponents) {
+  const ids = Object.keys(currentPageComponents);
+
+  // Bucket ids by parent key: ROOT for top-level, `${id}` / `${id}-${slot}` for children.
+  const ROOT = '__root__';
+  const childrenByParent = {};
+  ids.forEach((id) => {
+    const parent = currentPageComponents[id]?.component?.parent ?? ROOT;
+    (childrenByParent[parent] = childrenByParent[parent] || []).push(id);
+  });
+
+  const updatedBoxes = {};
+  const visited = new Set(); // guard against cyclic parent refs (corrupt data)
+
+  // Raw definition, not the resolved cache — the cache is empty in the viewer on first compute.
+  const getResolvedValue = useStore.getState().getResolvedValue;
+  const isVisibleOnMobile = (id) =>
+    getResolvedValue(currentPageComponents[id]?.component?.definition?.others?.showOnMobile?.value);
+
+  // Stack against the rendered height but store the unbumped one, or WidgetWrapper's re-applied
+  // 20px label bump doubles and overlaps the next sibling.
+  const calculateMoveableBoxHeightWithId = useStore.getState().calculateMoveableBoxHeightWithId;
+  const labelBumpById = {};
+  const renderedHeight = (id, desktop) => {
+    const base = desktop.height ?? 0;
+    const rendered =
+      calculateMoveableBoxHeightWithId(id, 'desktop', currentPageComponents[id]?.component?.definition?.styles) ?? base;
+    labelBumpById[id] = rendered - base;
+    return rendered;
+  };
+
+  // Stack a parent's direct children into one full-width column (children recursed first).
+  const stackGroup = (parentKey) => {
+    // Inset the root column only — a nested container already sits inside the root's inset.
+    const sideInset = parentKey === ROOT ? MOBILE_SIDE_INSET_COLUMNS : 0;
+    const layouts = (childrenByParent[parentKey] || []).filter(isVisibleOnMobile).map((id) => {
+      const desktop = currentPageComponents[id]?.layouts?.desktop || {};
+      const nestedExtent = stackContainer(id);
+      const height = renderedHeight(id, desktop);
+      return {
+        i: id,
+        top: desktop.top ?? 0,
+        left: sideInset,
+        width: MOBILE_GRID_COLUMNS - sideInset * 2,
+        height: nestedExtent != null ? Math.max(height, nestedExtent) : height,
+      };
+    });
+
+    // Not via correctBounds: it triples widths and resets left=1 to 0, both undoing the inset.
+    const stacked = compact(layouts, 'vertical', MOBILE_GRID_COLUMNS);
+
+    // compact() packs items flush; offset each by a cumulative 10px gap (top/height are in px).
+    let extent = 0;
+    [...stacked]
+      .sort((a, b) => a.top - b.top)
+      .forEach((l, idx) => {
+        // Leading gap at the root replaces the removed canvas top padding.
+        const top = l.top + (idx + (sideInset ? 1 : 0)) * MOBILE_STACK_GAP_PX;
+        // Spacing uses the rendered height; the stored height drops the bump the renderer re-adds.
+        updatedBoxes[l.i] = { left: l.left, top, width: l.width, height: l.height - (labelBumpById[l.i] ?? 0) };
+        extent = Math.max(extent, top + l.height);
+      });
+    return extent;
+  };
+
+  // Stack a component's own groups (direct + slots); returns max extent, or null if a leaf.
+  const stackContainer = (id) => {
+    if (visited.has(id)) return null;
+    visited.add(id);
+    const groupKeys = Object.keys(childrenByParent).filter((k) => k === id || k.startsWith(`${id}-`));
+    if (groupKeys.length === 0) return null;
+    return groupKeys.reduce((max, key) => Math.max(max, stackGroup(key)), 0);
+  };
+
+  stackGroup(ROOT);
+
+  // Fallback: anything not reached keeps its desktop layout.
+  ids.forEach((id) => {
+    if (!updatedBoxes[id]) updatedBoxes[id] = currentPageComponents[id]?.layouts?.desktop ?? {};
+  });
+
+  return updatedBoxes;
+}
 import {
   RESTRICTED_WIDGETS_CONFIG,
   RESTRICTED_WIDGET_SLOTS_CONFIG,
@@ -138,8 +232,14 @@ function compactItem(compareWith, l, compactType, cols, fullLayout, allowOverlap
 
   // Move it down, and keep moving it down if it's colliding.
   let collides;
+  let steps = 0;
   // Checking the compactType null value to avoid breaking the layout when overlapping is allowed.
   while ((collides = getFirstCollision(compareWith, l)) && !(compactType === null && allowOverlap)) {
+    if (++steps > MAX_COMPACTION_STEPS) {
+      // eslint-disable-next-line no-console
+      console.error('compactItem: compaction did not converge, bailing out', { item: l.i, top: l.top });
+      break;
+    }
     if (compactH) {
       resolveCompactionCollision(fullLayout, l, collides.left + collides.width, 'x');
     } else {
@@ -200,7 +300,8 @@ function resolveCompactionCollision(layout, item, moveToCoord, axis) {
   item[axis] = moveToCoord;
 }
 
-const heightWidth = { x: 'width', y: 'height' };
+// Keyed by the axis names callers pass ('x' | 'top'), not react-grid-layout's ('x' | 'y').
+const heightWidth = { x: 'width', top: 'height' };
 
 function sortLayoutItems(layout, compactType) {
   if (compactType === 'horizontal') return sortLayoutItemsByColRow(layout);
@@ -291,11 +392,13 @@ export const handleWidgetResize = (e, list, boxes, gridWidth) => {
   e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
 };
 
-export function getMouseDistanceFromParentDiv(event, id, parentWidgetType) {
+export function getMouseDistanceFromParentDiv(event, id, parentWidgetType, frozenTargetRect) {
   let parentDiv = document.getElementById('canvas-' + id) || document.getElementById('real-canvas');
   // Get the bounding rectangle of the parent div.
   const parentDivRect = parentDiv.getBoundingClientRect();
-  const targetDivRect = event.target.getBoundingClientRect();
+  // Use the pre-snapshotted rect when available (e.g. after async stub hydration the
+  // ghost element is already detached and getBoundingClientRect returns all-zeros).
+  const targetDivRect = frozenTargetRect ?? event.target.getBoundingClientRect();
 
   const mouseX = targetDivRect.left - parentDivRect.left;
   const mouseY = targetDivRect.top - parentDivRect.top;
@@ -320,17 +423,24 @@ export function findHighestLevelofSelection(_selectedComponents) {
   return result;
 }
 
+const collectChildrenAndGrandchildren = (parentId, widgets, visited) => {
+  if (visited.has(parentId)) return [];
+  visited.add(parentId);
+  const children = widgets.filter((widget) => widget?.component?.parent?.startsWith(parentId));
+  let result = [];
+  for (const child of children) {
+    if (visited.has(child.id)) continue;
+    result.push(child.id);
+    result = result.concat(...collectChildrenAndGrandchildren(child.id, widgets, visited));
+  }
+  return result;
+};
+
 export function findChildrenAndGrandchildren(parentId, widgets) {
   if (isEmpty(widgets)) {
     return [];
   }
-  const children = widgets.filter((widget) => widget?.component?.parent?.startsWith(parentId));
-  let result = [];
-  for (const child of children) {
-    result.push(child.id);
-    result = result.concat(...findChildrenAndGrandchildren(child.id, widgets));
-  }
-  return result;
+  return collectChildrenAndGrandchildren(parentId, widgets, new Set());
 }
 
 export function adjustWidth(width, posX, gridWidth) {
@@ -469,7 +579,16 @@ export const clearNonDraggingComponentsCache = () => {
 };
 
 export const handleActivateTargets = (parentId) => {
-  const WIDGETS_WITH_CANVAS_OUTLINE = ['Container', 'Modal', 'Form', 'Listview', 'Kanban', 'ModalV2', 'Accordion'];
+  const WIDGETS_WITH_CANVAS_OUTLINE = [
+    'Container',
+    'Modal',
+    'Form',
+    'Listview',
+    'Kanban',
+    'ModalV2',
+    'Accordion',
+    'Table',
+  ];
 
   const newParentType = document.getElementById('canvas-' + parentId)?.getAttribute('component-type');
   let _parentId = parentId;
@@ -542,7 +661,9 @@ export const getDraggingWidgetWidth = (widgetWidth, gridWidth) => {
 };
 
 /**
- * Positions a ghost/feedback element relative to the main canvas
+ * Positions a ghost/feedback element relative to its offset parent
+ * Uses the ghost's own offsetParent to align correctly with the DOM structure
+ * (header + canvas wrapper are siblings under the same positioned ancestor)
  * @param {HTMLElement} targetElement - The element being dragged/resized
  * @param {string} ghostElementId - The ID of the ghost element to position
  */
@@ -551,15 +672,15 @@ export const positionGhostElement = (targetElement, ghostElementId) => {
 
   if (!ghostElement || !targetElement) return;
 
-  const mainCanvas = document.getElementById('real-canvas');
-  if (!mainCanvas) return;
+  const referenceElement = ghostElement.offsetParent;
+  if (!referenceElement) return;
 
-  const mainCanvasRect = mainCanvas.getBoundingClientRect();
+  const referenceRect = referenceElement.getBoundingClientRect();
   const targetRect = targetElement.getBoundingClientRect();
 
-  // Calculate position relative to main canvas
-  const relativeLeft = targetRect.left - mainCanvasRect.left;
-  const relativeTop = targetRect.top - mainCanvasRect.top;
+  // Calculate position relative to the ghost's offset parent
+  const relativeLeft = targetRect.left - referenceRect.left;
+  const relativeTop = targetRect.top - referenceRect.top;
 
   // Apply the position
   ghostElement.style.left = `${relativeLeft}px`;
@@ -571,15 +692,16 @@ export const positionGhostElement = (targetElement, ghostElementId) => {
 /**
  * Calculates the unified bounding box for a group of elements
  * @param {HTMLElement[]} targetElements - Array of elements being dragged as a group
- * @returns {Object} - Bounding box with left, top, width, height relative to main canvas
+ * @param {HTMLElement} ghostElement - The ghost element to use as positioning reference
+ * @returns {Object} - Bounding box with left, top, width, height relative to ghost's offset parent
  */
-export const calculateGroupBoundingBox = (targetElements) => {
+export const calculateGroupBoundingBox = (targetElements, ghostElement) => {
   if (!targetElements || targetElements.length === 0) return null;
 
-  const mainCanvas = document.getElementById('real-canvas');
-  if (!mainCanvas) return null;
+  const referenceElement = ghostElement?.offsetParent || document.getElementById('real-canvas');
+  if (!referenceElement) return null;
 
-  const mainCanvasRect = mainCanvas.getBoundingClientRect();
+  const referenceRect = referenceElement.getBoundingClientRect();
 
   // Initialize with extreme values
   let minLeft = Infinity;
@@ -592,8 +714,8 @@ export const calculateGroupBoundingBox = (targetElements) => {
     if (!element) return;
 
     const rect = element.getBoundingClientRect();
-    const relativeLeft = rect.left - mainCanvasRect.left;
-    const relativeTop = rect.top - mainCanvasRect.top;
+    const relativeLeft = rect.left - referenceRect.left;
+    const relativeTop = rect.top - referenceRect.top;
     const relativeRight = relativeLeft + rect.width;
     const relativeBottom = relativeTop + rect.height;
 
@@ -619,15 +741,30 @@ export const calculateGroupBoundingBox = (targetElements) => {
 export const positionGroupGhostElement = (events, ghostElementId, gridWidth) => {
   if (!events || events.length === 0) return;
 
-  const boundingBox = calculateGroupBoundingBox(events.map((e) => e.target));
   const ghostElement = document.getElementById(ghostElementId);
+  if (!ghostElement) return;
 
-  if (!ghostElement || !boundingBox) return;
+  const boundingBox = calculateGroupBoundingBox(
+    events.map((e) => e.target),
+    ghostElement
+  );
+
+  if (!boundingBox) return;
   ghostElement.style.width = `${boundingBox.width}px`;
   ghostElement.style.height = `${boundingBox.height}px`;
   ghostElement.style.willChange = 'transform';
 
   ghostElement.style.transform = `translate(${boundingBox.left}px, ${boundingBox.top}px)`;
+};
+
+export const isPointerOverCanvasArea = (clientX, clientY) => {
+  const canvasArea = document.getElementsByClassName('tj-canvas-area')?.[0];
+  if (!canvasArea) return false;
+
+  // Hit-test instead of comparing against the canvas area's rect: when the canvas is scrolled
+  // under an open right sidebar, the rect extends beneath the sidebar even though it is hidden.
+  const hitElement = document.elementFromPoint(clientX, clientY);
+  return !!hitElement && canvasArea.contains(hitElement);
 };
 
 /**
@@ -711,8 +848,20 @@ export const updateDashedBordersOnDragResize = (targetId, moveableControlBoxClas
 
 export const isDroppingRestrictedWidget = (target, dragged) => {
   const restrictedWidgetsOnTarget = RESTRICTED_WIDGETS_CONFIG?.[target.widgetType] || [];
-  const restrictedWidgetsOnTargetSlot = RESTRICTED_WIDGET_SLOTS_CONFIG?.[target.slotType] || [];
+  const restrictedWidgetsOnTargetSlot = ['header', 'footer'].includes(target.slotType)
+    ? RESTRICTED_WIDGET_SLOTS_CONFIG
+    : [];
 
   const restrictedWidgets = [...restrictedWidgetsOnTarget, ...restrictedWidgetsOnTargetSlot];
   return restrictedWidgets.includes(dragged.widgetType);
 };
+
+export function getCanvasBottomBound() {
+  const footerElement = document.querySelector('[component-id="canvas-footer"]');
+  const realCanvas = document.getElementById('real-canvas');
+  if (!footerElement || !realCanvas) return Infinity;
+
+  const footerRect = footerElement.getBoundingClientRect();
+  const realCanvasRect = realCanvas.getBoundingClientRect();
+  return footerRect.top - realCanvasRect.top;
+}

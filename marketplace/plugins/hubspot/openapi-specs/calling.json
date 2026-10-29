@@ -1,0 +1,445 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "Calling Extensions API",
+    "description" : "Provides a way for apps to add custom calling options to a contact record. This works in conjunction with the [Calling SDK](#), which is used to build your phone/calling UI. The endpoints here allow your service to appear as an option to HubSpot users when they access the *Call* action on a contact record. Once accessed, your custom phone/calling UI will be displayed in an iframe at the specified URL with the specified dimensions on that record.",
+    "version" : "v3"
+  },
+  "servers" : [ {
+    "url" : "https://api.hubapi.com/"
+  } ],
+  "tags" : [ {
+    "name" : "Settings",
+    "description" : "Operations to manage app-level calling extension settings"
+  } ],
+  "paths" : {
+    "/crm/v3/extensions/calling/{appId}/settings" : {
+      "get" : {
+        "tags" : [ "Settings" ],
+        "summary" : "Get calling settings",
+        "description" : "Returns the calling extension settings configured for your app.",
+        "operationId" : "get-/crm/v3/extensions/calling/{appId}/settings_getById",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "The ID of the target app.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SettingsResponse"
+                },
+                "example" : {
+                  "createdAt" : "2019-10-30T03:30:17.883Z",
+                  "supportsCustomObjects" : true,
+                  "isReady" : true,
+                  "name" : "HubPhone",
+                  "width" : 200,
+                  "url" : "https://www.example.com/hubspot/iframe",
+                  "height" : 350,
+                  "updatedAt" : "2019-11-30T03:30:17.883Z"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Settings" ],
+        "summary" : "Configure a calling extension",
+        "description" : "Used to set the menu label, target iframe URL, and dimensions for your calling extension.",
+        "operationId" : "post-/crm/v3/extensions/calling/{appId}/settings_create",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "The ID of the target app.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "description" : "Settings state to create with.",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SettingsRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SettingsResponse"
+                },
+                "example" : {
+                  "createdAt" : "2019-10-30T03:30:17.883Z",
+                  "supportsCustomObjects" : true,
+                  "isReady" : true,
+                  "name" : "HubPhone",
+                  "width" : 200,
+                  "url" : "https://www.example.com/hubspot/iframe",
+                  "height" : 350,
+                  "updatedAt" : "2019-11-30T03:30:17.883Z"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Settings" ],
+        "summary" : "Delete calling settings",
+        "description" : "Deletes this calling extension. This will remove your service as an option for all connected accounts.",
+        "operationId" : "delete-/crm/v3/extensions/calling/{appId}/settings_archive",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "The ID of the target app.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No content",
+            "content" : { }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      },
+      "patch" : {
+        "tags" : [ "Settings" ],
+        "summary" : "Update settings",
+        "description" : "Updates existing calling extension settings.",
+        "operationId" : "patch-/crm/v3/extensions/calling/{appId}/settings_update",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "The ID of the target app.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "description" : "Updated details for the settings.",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SettingsPatchRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SettingsResponse"
+                },
+                "example" : {
+                  "createdAt" : "2019-10-30T03:30:17.883Z",
+                  "supportsCustomObjects" : true,
+                  "isReady" : true,
+                  "name" : "HubPhone",
+                  "width" : 200,
+                  "url" : "https://www.example.com/hubspot/iframe",
+                  "height" : 350,
+                  "updatedAt" : "2019-11-30T03:30:17.883Z"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ErrorDetail" : {
+        "required" : [ "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate"
+          },
+          "in" : {
+            "type" : "string",
+            "description" : "The name of the field or parameter in which the error was found."
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "The status code associated with the error detail"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          }
+        }
+      },
+      "Error" : {
+        "required" : [ "category", "correlationId", "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate",
+            "example" : "An error occurred"
+          },
+          "correlationId" : {
+            "type" : "string",
+            "description" : "A unique identifier for the request. Include this value with any error reports or support tickets",
+            "format" : "uuid",
+            "example" : "aeb5f871-7f07-4993-9211-075dc63e7cbf"
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "The error category"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "errors" : {
+            "type" : "array",
+            "description" : "further information about the error",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "invalidPropertyName" : [ "propertyValue" ],
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A map of link names to associated URIs containing documentation about the error or recommended remediation steps"
+          }
+        },
+        "example" : {
+          "message" : "Invalid input (details will vary based on the error)",
+          "correlationId" : "aeb5f871-7f07-4993-9211-075dc63e7cbf",
+          "category" : "VALIDATION_ERROR",
+          "links" : {
+            "knowledge-base" : "https://www.hubspot.com/products/service/knowledge-base"
+          }
+        }
+      },
+      "SettingsPatchRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "The name of your calling service to display to users."
+          },
+          "url" : {
+            "type" : "string",
+            "description" : "The URL to your phone/calling UI, built with the [Calling SDK](#)."
+          },
+          "height" : {
+            "type" : "integer",
+            "description" : "The target height of the iframe that will contain your phone/calling UI.",
+            "format" : "int32"
+          },
+          "width" : {
+            "type" : "integer",
+            "description" : "The target width of the iframe that will contain your phone/calling UI.",
+            "format" : "int32"
+          },
+          "isReady" : {
+            "type" : "boolean",
+            "description" : "When true, your service will appear as an option under the *Call* action in contact records of connected accounts."
+          },
+          "supportsCustomObjects" : {
+            "type" : "boolean",
+            "description" : "When true, you are indicating that your service is compatible with engagement v2 service and can be used with custom objects."
+          }
+        },
+        "description" : "Settings update request"
+      },
+      "SettingsRequest" : {
+        "required" : [ "name", "url" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "The name of your calling service to display to users."
+          },
+          "url" : {
+            "type" : "string",
+            "description" : "The URL to your phone/calling UI, built with the [Calling SDK](#)."
+          },
+          "height" : {
+            "type" : "integer",
+            "description" : "The target height of the iframe that will contain your phone/calling UI.",
+            "format" : "int32"
+          },
+          "width" : {
+            "type" : "integer",
+            "description" : "The target width of the iframe that will contain your phone/calling UI.",
+            "format" : "int32"
+          },
+          "isReady" : {
+            "type" : "boolean",
+            "description" : "When true, your service will appear as an option under the *Call* action in contact records of connected accounts."
+          },
+          "supportsCustomObjects" : {
+            "type" : "boolean",
+            "description" : "When true, you are indicating that your service is compatible with engagement v2 service and can be used with custom objects."
+          }
+        },
+        "description" : "Settings create request",
+        "example" : {
+          "supportsCustomObjects" : true,
+          "isReady" : true,
+          "name" : "HubPhone",
+          "width" : 200,
+          "url" : "https://www.example.com/hubspot/iframe",
+          "height" : 350
+        }
+      },
+      "SettingsResponse" : {
+        "required" : [ "createdAt", "height", "isReady", "name", "supportsCustomObjects", "updatedAt", "url", "width" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "The name of your calling service to display to users."
+          },
+          "url" : {
+            "type" : "string",
+            "description" : "The URL to your phone/calling UI, built with the [Calling SDK](#)."
+          },
+          "height" : {
+            "type" : "integer",
+            "description" : "The target height of the iframe that will contain your phone/calling UI.",
+            "format" : "int32"
+          },
+          "width" : {
+            "type" : "integer",
+            "description" : "The target width of the iframe that will contain your phone/calling UI.",
+            "format" : "int32"
+          },
+          "isReady" : {
+            "type" : "boolean",
+            "description" : "When true, your service will appear as an option under the *Call* action in contact records of connected accounts."
+          },
+          "supportsCustomObjects" : {
+            "type" : "boolean",
+            "description" : "When true, you are indicating that your service is compatible with engagement v2 service and can be used with custom objects."
+          },
+          "createdAt" : {
+            "type" : "string",
+            "description" : "When this calling extension was created.",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "description" : "The last time the settings for this calling extension were modified.",
+            "format" : "date-time"
+          }
+        },
+        "description" : "Current settings state"
+      }
+    },
+    "responses" : {
+      "Error" : {
+        "description" : "An error occurred.",
+        "content" : {
+          "*/*" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "developer_hapikey" : {
+        "type" : "apiKey",
+        "name" : "hapikey",
+        "in" : "query"
+      }
+    }
+  },
+  "x-hubspot-available-client-libraries" : [ "PHP", "Node", "Python", "Ruby" ]
+}

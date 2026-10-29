@@ -4,9 +4,11 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import SubcontainerContext, { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
+import { getDynamicLayoutKey } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
 export const ListviewSubcontainer = ({
   index,
+  moduleId,
   mode,
   rowHeight,
   positiveColumns,
@@ -15,7 +17,6 @@ export const ListviewSubcontainer = ({
   computeCanvasBackgroundColor,
   darkMode,
   id,
-  adjustComponentPositions,
   isDynamicHeightEnabled,
   data,
   width,
@@ -30,19 +31,26 @@ export const ListviewSubcontainer = ({
     () => ({ contextPath: [...parentContext.contextPath, { containerId: id, index }] }),
     [parentContext.contextPath, id, index]
   );
+  const contextIndices = useMemo(
+    () => [...parentContext.contextPath.map((segment) => segment.index), index],
+    [parentContext.contextPath, index]
+  );
 
-  const temporaryLayout = useStore((state) => state.temporaryLayouts?.[`${id}-${index}`], shallow);
-  const transformedRowHeight = isDynamicHeightEnabled ? temporaryLayout?.height ?? rowHeight : rowHeight;
+  const temporaryLayout = useStore(
+    (state) => state.temporaryLayouts?.[getDynamicLayoutKey(id, contextIndices, '', moduleId)],
+    shallow
+  );
+  const transformedRowHeight = isDynamicHeightEnabled ? (temporaryLayout?.height ?? rowHeight) : rowHeight;
 
   useDynamicHeight({
     isDynamicHeightEnabled,
     id,
     value: data,
-    adjustComponentPositions,
     currentLayout,
     visibility,
     isContainer: true,
     subContainerIndex: index,
+    isRowSubcontainer: true,
     height: parentHeight,
     componentType,
   });
@@ -61,7 +69,7 @@ export const ListviewSubcontainer = ({
         }}
         key={index}
         data-cy={`${String(dataCy).toLowerCase()}-row-${index}`}
-        onClickCapture={(event) => {
+        onClickCapture={(_event) => {
           onRecordOrRowClicked(index);
         }}
       >

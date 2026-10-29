@@ -1,16 +1,16 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { versionModalSelector } from "Selectors/eeCommon";
-import { appVersionSelectors } from "Selectors/exportImport";
+import { versionModalSelector } from "Selectors/platform/eeCommon";
+import { appVersionSelectors } from "Selectors/platform/exportImport";
 import {
   confirmVersionModalSelectors,
   editVersionSelectors,
   versionSwitcherSelectors,
-} from "Selectors/version";
+} from "Selectors/platform/version";
 import { closeModal } from "Support/utils/common";
 import { appPromote } from "Support/utils/platform/multiEnv";
 import { commonText } from "Texts/common";
-import { appVersionText } from "Texts/exportImport";
-import { deleteVersionText, releasedVersionText } from "Texts/version";
+import { appVersionText } from "Texts/platform/exportImport";
+import { deleteVersionText, releasedVersionText } from "Texts/platform/version";
 
 export const navigateToCreateNewVersionModal = (value) => {
   cy.get(versionSwitcherSelectors.versionName).click();
@@ -171,4 +171,32 @@ export const openPreviewSettings = () => {
   cy.get(commonSelectors.previewSettings).should("be.visible").click();
   cy.wait(1000);
   // Note: add alias wait for version and env load
+};
+
+export const createDraftVersion = (versionName, fromVersion) => {
+  openCreateDraftVersionModal();
+  cy.wait(500);
+
+  cy.get(
+    versionModalSelector.createDraftVersionModal.createDraftVersionFromInput
+  ).click();
+  cy.waitForElement(`[id*="react-select-"]`);
+  cy.contains(`[id*="react-select-"]`, fromVersion).click();
+
+  cy.waitForElement(versionModalSelector.versionNameInput);
+  cy.get(versionModalSelector.versionNameInput).clear().type(versionName);
+
+  cy.get(versionModalSelector.createDraftVersionModal.createButton).click();
+};
+
+export const openVersionSwitcher = () => {
+  cy.get(versionSwitcherSelectors.versionName)
+    .eq(0)
+    .should("be.visible")
+    .click();
+  cy.wait(300);
+};
+export const openCreateDraftVersionModal = () => {
+  cy.get('[data-cy="create-draft-version-button"]').should("be.visible").click();
+  cy.wait(300);
 };

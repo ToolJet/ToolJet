@@ -5,7 +5,7 @@
   "type": "api",
   "defaults": {
     "operation": "text_generation",
-    "model": "models/gemini-1.5-flash"
+    "model": "models/gemini-3.8-flash"
   },
   "properties": {
     "operation": {
@@ -25,6 +25,13 @@
         "type": "dropdown-component-flip",
         "description": "Select Gemini Model",
         "list": [
+          { "value": "models/gemini-3.6-flash", "name": "Gemini 3.6 Flash" },
+          { "value": "models/gemini-3.8-flash", "name": "Gemini 3.8 Flash" },
+          { "value": "models/gemini-3.7-flash", "name": "Gemini 3.7 Flash" },
+          { "value": "models/gemini-3.5-flash", "name": "Gemini 3.5 Flash" },
+          { "value": "models/gemini-3.5-flash-lite", "name": "Gemini 3.5 Flash Lite" },
+          { "value": "models/gemini-3.1-pro-preview", "name": "Gemini 3.1 Pro Preview" },
+          { "value": "models/gemini-3.1-flash-lite", "name": "Gemini 3.1 Flash Lite" },
           { "value": "models/gemini-3-pro-preview", "name": "Gemini 3 Pro Preview" },
           { "value": "models/gemini-3-flash-preview", "name": "Gemini 3 Flash Preview" },
           { "value": "models/gemini-2.5-pro", "name": "Gemini 2.5 Pro" },
@@ -39,7 +46,7 @@
         
         ]
       },
-      "models/gemini-3-pro-preview": {
+      "models/gemini-3.6-flash": {
         "system_prompt": {
           "label": "System prompt",
           "key": "system_prompt",
@@ -50,7 +57,266 @@
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
         "prompt": {
-          "label": "Prompt",
+          "label": "User message",
+          "key": "prompt",
+          "type": "codehinter",
+          "description": "Enter your prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "mandatory": true
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }     
+    },
+"models/gemini-3.8-flash": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "prompt": {
+          "label": "User message",
+          "key": "prompt",
+          "type": "codehinter",
+          "description": "Enter your prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "mandatory": true
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }     
+    },
+"models/gemini-3.7-flash": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "prompt": {
+          "label": "User message",
+          "key": "prompt",
+          "type": "codehinter",
+          "description": "Enter your prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "mandatory": true
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }     
+    },
+"models/gemini-3.5-flash": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "prompt": {
+          "label": "User message",
+          "key": "prompt",
+          "type": "codehinter",
+          "description": "Enter your prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "mandatory": true
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }     
+    },
+"models/gemini-3.5-flash-lite": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "prompt": {
+          "label": "User message",
+          "key": "prompt",
+          "type": "codehinter",
+          "description": "Enter your prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "mandatory": true
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }     
+    },
+"models/gemini-3.1-pro-preview": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "prompt": {
+          "label": "User message",
+          "key": "prompt",
+          "type": "codehinter",
+          "description": "Enter your prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "mandatory": true
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }     
+    },
+"models/gemini-3.1-flash-lite": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "prompt": {
+          "label": "User message",
+          "key": "prompt",
+          "type": "codehinter",
+          "description": "Enter your prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "mandatory": true
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }     
+    },
+"models/gemini-3-pro-preview": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "prompt": {
+          "label": "User message",
           "key": "prompt",
           "type": "codehinter",
           "description": "Enter your prompt",
@@ -87,7 +353,7 @@
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
         "prompt": {
-          "label": "Prompt",
+          "label": "User message",
           "key": "prompt",
           "type": "codehinter",
           "description": "Enter your prompt",
@@ -124,7 +390,7 @@
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
         "prompt": {
-          "label": "Prompt",
+          "label": "User message",
           "key": "prompt",
           "type": "codehinter",
           "description": "Enter your prompt",
@@ -161,7 +427,7 @@
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
         "prompt": {
-          "label": "Prompt",
+          "label": "User message",
           "key": "prompt",
           "type": "codehinter",
           "description": "Enter your prompt",
@@ -198,7 +464,7 @@
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
       "prompt": {
-        "label": "Prompt",
+        "label": "User message",
         "key": "prompt",
         "type": "codehinter",
         "description": "Enter your prompt",
@@ -235,7 +501,7 @@
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
       "prompt": {
-        "label": "Prompt",
+        "label": "User message",
         "key": "prompt",
         "type": "codehinter",
         "description": "Enter your prompt",
@@ -272,7 +538,7 @@
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
       "prompt": {
-        "label": "Prompt",
+        "label": "User message",
         "key": "prompt",
         "type": "codehinter",
         "description": "Enter your prompt",
@@ -309,7 +575,7 @@
       "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
     },
     "prompt": {
-      "label": "Prompt",
+      "label": "User message",
       "key": "prompt",
       "type": "codehinter",
       "description": "Enter your prompt",
@@ -346,7 +612,7 @@
       "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
     },
     "prompt": {
-      "label": "Prompt",
+      "label": "User message",
       "key": "prompt",
       "type": "codehinter",
       "description": "Enter your prompt",
@@ -383,7 +649,7 @@
       "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
     },
     "prompt": {
-      "label": "Prompt",
+      "label": "User message",
       "key": "prompt",
       "type": "codehinter",
       "description": "Enter your prompt",
@@ -420,7 +686,7 @@
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
       "prompt": {
-        "label": "Prompt",
+        "label": "User message",
         "key": "prompt",
         "type": "codehinter",
         "description": "Enter your prompt",
@@ -454,6 +720,13 @@
         "type": "dropdown-component-flip",
         "description": "Select Gemini Model",
         "list": [
+          { "value": "models/gemini-3.6-flash", "name": "Gemini 3.6 Flash" },
+          { "value": "models/gemini-3.8-flash", "name": "Gemini 3.8 Flash" },
+          { "value": "models/gemini-3.7-flash", "name": "Gemini 3.7 Flash" },
+          { "value": "models/gemini-3.5-flash", "name": "Gemini 3.5 Flash" },
+          { "value": "models/gemini-3.5-flash-lite", "name": "Gemini 3.5 Flash Lite" },
+          { "value": "models/gemini-3.1-pro-preview", "name": "Gemini 3.1 Pro Preview" },
+          { "value": "models/gemini-3.1-flash-lite", "name": "Gemini 3.1 Flash Lite" },
           { "value": "models/gemini-3-pro-preview", "name": "Gemini 3 Pro Preview" },
           { "value": "models/gemini-3-flash-preview", "name": "Gemini 3 Flash Preview" },
           { "value": "models/gemini-2.5-pro", "name": "Gemini 2.5 Pro" },
@@ -467,6 +740,335 @@
           { "value": "models/gemini-1.5-pro", "name": "Gemini 1.5 Pro (Deprecated)" }
         ]
       },
+"models/gemini-3.6-flash": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "history": {
+          "label": "Message History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Record of the conversation between the user and the model",
+          "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+          "mandatory": false,
+          "tooltip": "Record of the conversation between the user and the model"
+        },
+        "user_prompt": {
+          "label": "User message",
+          "key": "user_prompt",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "tooltip":"User response/reply to previous chat"
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }     
+    },
+"models/gemini-3.8-flash": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "history": {
+          "label": "Message History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Record of the conversation between the user and the model",
+          "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+          "mandatory": false,
+          "tooltip": "Record of the conversation between the user and the model"
+        },
+        "user_prompt": {
+          "label": "User message",
+          "key": "user_prompt",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "tooltip":"User response/reply to previous chat"
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }     
+    },
+"models/gemini-3.7-flash": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "history": {
+          "label": "Message History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Record of the conversation between the user and the model",
+          "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+          "mandatory": false,
+          "tooltip": "Record of the conversation between the user and the model"
+        },
+        "user_prompt": {
+          "label": "User message",
+          "key": "user_prompt",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "tooltip":"User response/reply to previous chat"
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }     
+    },
+"models/gemini-3.5-flash": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "history": {
+          "label": "Message History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Record of the conversation between the user and the model",
+          "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+          "mandatory": false,
+          "tooltip": "Record of the conversation between the user and the model"
+        },
+        "user_prompt": {
+          "label": "User message",
+          "key": "user_prompt",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "tooltip":"User response/reply to previous chat"
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }     
+    },
+"models/gemini-3.5-flash-lite": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "history": {
+          "label": "Message History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Record of the conversation between the user and the model",
+          "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+          "mandatory": false,
+          "tooltip": "Record of the conversation between the user and the model"
+        },
+        "user_prompt": {
+          "label": "User message",
+          "key": "user_prompt",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "tooltip":"User response/reply to previous chat"
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }     
+    },
+"models/gemini-3.1-pro-preview": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "history": {
+          "label": "Message History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Record of the conversation between the user and the model",
+          "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+          "mandatory": false,
+          "tooltip": "Record of the conversation between the user and the model"
+        },
+        "user_prompt": {
+          "label": "User message",
+          "key": "user_prompt",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "tooltip":"User response/reply to previous chat"
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }     
+    },
+"models/gemini-3.1-flash-lite": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "history": {
+          "label": "Message History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Record of the conversation between the user and the model",
+          "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+          "mandatory": false,
+          "tooltip": "Record of the conversation between the user and the model"
+        },
+        "user_prompt": {
+          "label": "User message",
+          "key": "user_prompt",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "tooltip":"User response/reply to previous chat"
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }     
+    },
 "models/gemini-3-pro-preview": {
         "system_prompt": {
           "label": "System prompt",
@@ -478,7 +1080,7 @@
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
         "history": {
-          "label": "History",
+          "label": "Message History",
           "key": "history",
           "type": "codehinter",
           "description": "Record of the conversation between the user and the model",
@@ -487,7 +1089,7 @@
           "tooltip": "Record of the conversation between the user and the model"
         },
         "user_prompt": {
-          "label": "User prompt",
+          "label": "User message",
           "key": "user_prompt",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
@@ -525,7 +1127,7 @@
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
         "history": {
-          "label": "History",
+          "label": "Message History",
           "key": "history",
           "type": "codehinter",
           "description": "Record of the conversation between the user and the model",
@@ -534,7 +1136,7 @@
           "tooltip": "Record of the conversation between the user and the model"
         },
         "user_prompt": {
-          "label": "User prompt",
+          "label": "User message",
           "key": "user_prompt",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
@@ -572,7 +1174,7 @@
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
         "history": {
-          "label": "History",
+          "label": "Message History",
           "key": "history",
           "type": "codehinter",
           "description": "Record of the conversation between the user and the model",
@@ -581,7 +1183,7 @@
           "tooltip": "Record of the conversation between the user and the model"
         },
         "user_prompt": {
-          "label": "User prompt",
+          "label": "User message",
           "key": "user_prompt",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
@@ -619,7 +1221,7 @@
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
         "history": {
-          "label": "History",
+          "label": "Message History",
           "key": "history",
           "type": "codehinter",
           "description": "Record of the conversation between the user and the model",
@@ -628,7 +1230,7 @@
           "tooltip": "Record of the conversation between the user and the model"
         },
         "user_prompt": {
-          "label": "User prompt",
+          "label": "User message",
           "key": "user_prompt",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
@@ -666,7 +1268,7 @@
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
       "history": {
-        "label": "History",
+        "label": "Message History",
         "key": "history",
         "type": "codehinter",
         "description": "Record of the conversation between the user and the model",
@@ -675,7 +1277,7 @@
         "tooltip": "Record of the conversation between the user and the model"
       },
       "user_prompt": {
-          "label": "User prompt",
+          "label": "User message",
           "key": "user_prompt",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
@@ -713,7 +1315,7 @@
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
       "history": {
-        "label": "History",
+        "label": "Message History",
         "key": "history",
         "type": "codehinter",
         "description": "Record of the conversation between the user and the model",
@@ -722,7 +1324,7 @@
         "tooltip": "Record of the conversation between the user and the model"
       },
       "user_prompt": {
-          "label": "User prompt",
+          "label": "User message",
           "key": "user_prompt",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
@@ -760,7 +1362,7 @@
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
       "history": {
-        "label": "History",
+        "label": "Message History",
         "key": "history",
         "type": "codehinter",
         "description": "Record of the conversation between the user and the model",
@@ -769,7 +1371,7 @@
         "tooltip": "Record of the conversation between the user and the model"
       },
       "user_prompt": {
-        "label": "User prompt",
+        "label": "User message",
         "key": "user_prompt",
         "type": "codehinter",
         "description": "User response/reply to previous chat",
@@ -807,7 +1409,7 @@
       "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
     },
     "history": {
-      "label": "History",
+      "label": "Message History",
       "key": "history",
       "type": "codehinter",
       "description": "Record of the conversation between the user and the model",
@@ -816,7 +1418,7 @@
       "tooltip": "Record of the conversation between the user and the model"
     },
     "user_prompt": {
-      "label": "User prompt",
+      "label": "User message",
       "key": "user_prompt",
       "type": "codehinter",
       "description": "User response/reply to previous chat",
@@ -854,7 +1456,7 @@
       "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
     },
     "history": {
-      "label": "History",
+      "label": "Message History",
       "key": "history",
       "type": "codehinter",
       "description": "Record of the conversation between the user and the model",
@@ -863,7 +1465,7 @@
       "tooltip": "Record of the conversation between the user and the model"
     },
     "user_prompt": {
-      "label": "User prompt",
+      "label": "User message",
       "key": "user_prompt",
       "type": "codehinter",
       "description": "User response/reply to previous chat",
@@ -901,7 +1503,7 @@
       "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
     },
     "history": {
-      "label": "History",
+      "label": "Message History",
       "key": "history",
       "type": "codehinter",
       "description": "Record of the conversation between the user and the model",
@@ -910,7 +1512,7 @@
       "tooltip": "Record of the conversation between the user and the model"
     },
     "user_prompt": {
-      "label": "User prompt",
+      "label": "User message",
       "key": "user_prompt",
       "type": "codehinter",
       "description": "User response/reply to previous chat",
@@ -948,7 +1550,7 @@
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
       "history": {
-        "label": "History",
+        "label": "Message History",
         "key": "history",
         "type": "codehinter",
         "description": "Record of the conversation between the user and the model",
@@ -957,7 +1559,7 @@
         "tooltip": "Record of the conversation between the user and the model"
       },
       "user_prompt": {
-        "label": "User prompt",
+        "label": "User message",
         "key": "user_prompt",
         "type": "codehinter",
         "description": "User response/reply to previous chat",

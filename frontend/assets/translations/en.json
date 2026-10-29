@@ -150,7 +150,7 @@
             "deleteVersion": "Do you really want to delete this version ({{version}})?",
             "enterVersionName": "Enter version name",
             "enterVersionDescription": "Enter version description",
-            "versionNameHelper": "Version name must be unique and max 25 characters",
+            "versionNameHelper": "Version name cannot contain spaces, special characters or exceed 25 characters",
             "versionDescriptionHelper": "Description must be max 500 characters",
             "versionAlreadyReleased": "You cannot make changes to a version that has already been released. \n Create a new version or switch to a different version if you want to make changes."
         },
@@ -194,6 +194,7 @@
             "runQueryOnApplicationLoad": "Run this query on application load",
             "confirmBeforeQueryRun": "Request confirmation before running query",
             "notificationOnSuccess": "Show notification on success",
+            "runOnDependencyChange": "Run this query on dependency change",
             "successMessage": "Success Message",
             "queryRanSuccessfully": "Query ran successfully",
             "notificationDuration": "Notification duration (s)",
@@ -312,8 +313,9 @@
                         "email": "email",
                         "resource": "Resource",
                         "createUpdateDelete": "Create/Update/Delete",
-                        "folder": "Folder",
-                        "dataSource": "Data sources"
+                        "folder": "App folder",
+                        "dataSource": "Data sources",
+                        "tooljetDatabase": "ToolJet Database"
                     },
                     "groupOptions": {
                         "deleteGroup": "Delete Group",
@@ -438,7 +440,8 @@
         "header": {
             "createNewApplication": "Create an app",
             "import": "Import from device",
-            "chooseFromTemplate": "Choose from template"
+            "chooseFromTemplate": "Choose from template",
+            "generateWithAi": "Generate with AI"
         },
         "pagination": {
             "showing": "Showing",
@@ -1064,5 +1067,12 @@
             "november": "November",
             "december": "December"
         }
+    },
+    "notifications": {
+        "empty": "No notifications",
+        "markAllRead": "Mark all as read",
+        "technicalDetails": "Technical details",
+        "copy": "Copy",
+        "copied": "Copied"
     }
 }

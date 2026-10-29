@@ -1,0 +1,551 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "Subscriptions",
+    "description" : "Subscriptions allow contacts to control what forms of communications they receive. Contacts can decide whether they want to receive communication pertaining to a specific topic, brand, or an entire HubSpot account.",
+    "version" : "v3"
+  },
+  "servers" : [ {
+    "url" : "https://api.hubapi.com/"
+  } ],
+  "tags" : [ {
+    "name" : "Status",
+    "description" : "Whether a contact has subscribed or unsubscribed from a given subscription type."
+  }, {
+    "name" : "Definition",
+    "description" : "The different subscription types that are defined in a portal."
+  } ],
+  "paths" : {
+    "/communication-preferences/v3/definitions" : {
+      "get" : {
+        "tags" : [ "Definition" ],
+        "summary" : "Get subscription definitions",
+        "description" : "Get a list of all subscription definitions for the portal",
+        "operationId" : "get-/communication-preferences/v3/definitions_getPage",
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SubscriptionDefinitionsResponse"
+                },
+                "example" : {
+                  "subscriptionDefinitions" : [ {
+                    "id" : "1805677",
+                    "name" : "Default HubSpot Blog Subscription",
+                    "description" : "Receive timely updates with the latest blog posts.",
+                    "isActive" : true,
+                    "isDefault" : false,
+                    "isInternal" : false,
+                    "createdAt" : "2019-08-05T13:01:15.875Z",
+                    "updatedAt" : "2019-08-05T13:01:15.875Z"
+                  }, {
+                    "id" : "1805669",
+                    "name" : "Customer Service Communication",
+                    "description" : "Receive feedback requests and customer service information.",
+                    "purpose" : "Service",
+                    "communicationMethod" : "Email",
+                    "isActive" : true,
+                    "isDefault" : true,
+                    "isInternal" : true,
+                    "createdAt" : "2019-08-05T13:01:15.875Z",
+                    "updatedAt" : "2019-08-05T13:01:15.875Z"
+                  }, {
+                    "id" : "1805670",
+                    "name" : "One to One",
+                    "description" : "One to One emails",
+                    "purpose" : "Sales",
+                    "communicationMethod" : "Email",
+                    "isActive" : true,
+                    "isDefault" : true,
+                    "isInternal" : true,
+                    "createdAt" : "2019-08-05T13:01:15.875Z",
+                    "updatedAt" : "2019-08-05T13:01:15.875Z"
+                  } ]
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "hapikey" : [ ]
+        }, {
+          "private_apps_legacy" : [ "communication_preferences.read" ]
+        }, {
+          "oauth2_legacy" : [ "communication_preferences.read_write" ]
+        }, {
+          "private_apps_legacy" : [ "communication_preferences.read_write" ]
+        }, {
+          "oauth2_legacy" : [ "communication_preferences.read" ]
+        } ]
+      }
+    },
+    "/communication-preferences/v3/status/email/{emailAddress}" : {
+      "get" : {
+        "tags" : [ "Status" ],
+        "summary" : "Get subscription statuses for a contact",
+        "description" : "Returns a list of subscriptions and their status for a given contact.",
+        "operationId" : "get-/communication-preferences/v3/status/email/{emailAddress}_getEmailStatus",
+        "parameters" : [ {
+          "name" : "emailAddress",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PublicSubscriptionStatusesResponse"
+                },
+                "example" : {
+                  "recipient" : "example@example.com",
+                  "subscriptionStatuses" : [ {
+                    "id" : "7148714",
+                    "name" : "Default HubSpot Blog Subscription",
+                    "description" : "Receive timely updates with the latest blog posts.",
+                    "status" : "SUBSCRIBED",
+                    "sourceOfStatus" : "SUBSCRIPTION_STATUS",
+                    "preferenceGroupName" : "Initial Group",
+                    "legalBasis" : "CONSENT_WITH_NOTICE",
+                    "legalBasisExplanation" : "At users request, we opted them in"
+                  }, {
+                    "id" : "7148715",
+                    "name" : "One to One",
+                    "description" : "One to One emails",
+                    "status" : "NOT_SUBSCRIBED",
+                    "sourceOfStatus" : "SUBSCRIPTION_STATUS",
+                    "legalBasis" : "CONSENT_WITH_NOTICE",
+                    "legalBasisExplanation" : "User has requested to be opted out"
+                  } ]
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "hapikey" : [ ]
+        }, {
+          "private_apps_legacy" : [ "communication_preferences.read" ]
+        }, {
+          "oauth2_legacy" : [ "communication_preferences.read_write" ]
+        }, {
+          "private_apps_legacy" : [ "communication_preferences.read_write" ]
+        }, {
+          "oauth2_legacy" : [ "communication_preferences.read" ]
+        } ]
+      }
+    },
+    "/communication-preferences/v3/subscribe" : {
+      "post" : {
+        "tags" : [ "Status" ],
+        "summary" : "Subscribe a contact",
+        "description" : "Subscribes a contact to the given subscription type. This API is not valid to use for subscribing a contact at a brand or portal level and will return an error.",
+        "operationId" : "post-/communication-preferences/v3/subscribe_subscribe",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PublicUpdateSubscriptionStatusRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PublicSubscriptionStatus"
+                },
+                "example" : {
+                  "id" : "7148714",
+                  "name" : "Default HubSpot Blog Subscription",
+                  "description" : "Receive timely updates with the latest blog posts.",
+                  "status" : "SUBSCRIBED",
+                  "sourceOfStatus" : "SUBSCRIPTION_STATUS",
+                  "preferenceGroupName" : "Initial Group",
+                  "legalBasis" : "CONSENT_WITH_NOTICE",
+                  "legalBasisExplanation" : "At users request, we opted them in"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "communication_preferences.write" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2_legacy" : [ "communication_preferences.read_write" ]
+        }, {
+          "private_apps_legacy" : [ "communication_preferences.write" ]
+        }, {
+          "private_apps_legacy" : [ "communication_preferences.read_write" ]
+        } ]
+      }
+    },
+    "/communication-preferences/v3/unsubscribe" : {
+      "post" : {
+        "tags" : [ "Status" ],
+        "summary" : "Unsubscribe a contact",
+        "description" : "Unsubscribes a contact from the given subscription type. This API is not valid to use for unsubscribing a contact at a brand or portal level and will return an error.",
+        "operationId" : "post-/communication-preferences/v3/unsubscribe_unsubscribe",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PublicUpdateSubscriptionStatusRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PublicSubscriptionStatus"
+                },
+                "example" : {
+                  "id" : "7148714",
+                  "name" : "Default HubSpot Blog Subscription",
+                  "description" : "Receive timely updates with the latest blog posts.",
+                  "status" : "NOT_SUBSCRIBED",
+                  "sourceOfStatus" : "SUBSCRIPTION_STATUS",
+                  "preferenceGroupName" : "Initial Group",
+                  "legalBasis" : "CONSENT_WITH_NOTICE",
+                  "legalBasisExplanation" : "At users request, we opted them out"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "communication_preferences.write" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2_legacy" : [ "communication_preferences.read_write" ]
+        }, {
+          "private_apps_legacy" : [ "communication_preferences.write" ]
+        }, {
+          "private_apps_legacy" : [ "communication_preferences.read_write" ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ErrorDetail" : {
+        "required" : [ "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate"
+          },
+          "in" : {
+            "type" : "string",
+            "description" : "The name of the field or parameter in which the error was found."
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "The status code associated with the error detail"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          }
+        }
+      },
+      "PublicUpdateSubscriptionStatusRequest" : {
+        "required" : [ "emailAddress", "subscriptionId" ],
+        "type" : "object",
+        "properties" : {
+          "emailAddress" : {
+            "type" : "string",
+            "description" : "Contact's email address."
+          },
+          "subscriptionId" : {
+            "type" : "string",
+            "description" : "ID of the subscription being updated for the contact."
+          },
+          "legalBasis" : {
+            "type" : "string",
+            "description" : "Legal basis for updating the contact's status (required for GDPR enabled portals).",
+            "enum" : [ "LEGITIMATE_INTEREST_PQL", "LEGITIMATE_INTEREST_CLIENT", "PERFORMANCE_OF_CONTRACT", "CONSENT_WITH_NOTICE", "NON_GDPR", "PROCESS_AND_STORE", "LEGITIMATE_INTEREST_OTHER" ]
+          },
+          "legalBasisExplanation" : {
+            "type" : "string",
+            "description" : "A more detailed explanation to go with the legal basis (required for GDPR enabled portals)."
+          }
+        },
+        "description" : "A request to change the status of a contact's subscription."
+      },
+      "PublicSubscriptionStatusesResponse" : {
+        "required" : [ "recipient", "subscriptionStatuses" ],
+        "type" : "object",
+        "properties" : {
+          "recipient" : {
+            "type" : "string",
+            "description" : "Email address of the contact."
+          },
+          "subscriptionStatuses" : {
+            "type" : "array",
+            "description" : "A list of all of the contact's subscriptions statuses.",
+            "items" : {
+              "$ref" : "#/components/schemas/PublicSubscriptionStatus"
+            }
+          }
+        },
+        "description" : "A collection of subscription statuses for a contact."
+      },
+      "SubscriptionDefinitionsResponse" : {
+        "required" : [ "subscriptionDefinitions" ],
+        "type" : "object",
+        "properties" : {
+          "subscriptionDefinitions" : {
+            "type" : "array",
+            "description" : "A list of all subscription definitions.",
+            "items" : {
+              "$ref" : "#/components/schemas/SubscriptionDefinition"
+            }
+          }
+        },
+        "description" : "A collection of subscription definitions for the portal."
+      },
+      "SubscriptionDefinition" : {
+        "required" : [ "createdAt", "description", "id", "isActive", "isDefault", "isInternal", "name", "updatedAt" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "The ID of the definition."
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "The name of the subscription."
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "A description of the subscription."
+          },
+          "purpose" : {
+            "type" : "string",
+            "description" : "The purpose of this subscription or the department in your organization that uses it."
+          },
+          "communicationMethod" : {
+            "type" : "string",
+            "description" : "The method or technology used to contact."
+          },
+          "isActive" : {
+            "type" : "boolean",
+            "description" : "Whether the definition is active or archived."
+          },
+          "isDefault" : {
+            "type" : "boolean",
+            "description" : "A subscription definition created by HubSpot."
+          },
+          "isInternal" : {
+            "type" : "boolean",
+            "description" : "A default description that is used by some HubSpot tools and cannot be edited."
+          },
+          "createdAt" : {
+            "type" : "string",
+            "description" : "Time at which the definition was created.",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "description" : "Time at which the definition was last updated.",
+            "format" : "date-time"
+          }
+        }
+      },
+      "PublicSubscriptionStatus" : {
+        "required" : [ "description", "id", "name", "sourceOfStatus", "status" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "The ID for the subscription."
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "The name of the subscription."
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "A description of the subscription."
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "Whether the contact is subscribed.",
+            "enum" : [ "SUBSCRIBED", "NOT_SUBSCRIBED" ]
+          },
+          "sourceOfStatus" : {
+            "type" : "string",
+            "description" : "Where the status is determined from e.g. PORTAL_WIDE_STATUS if the contact opted out from the portal.",
+            "enum" : [ "PORTAL_WIDE_STATUS", "BRAND_WIDE_STATUS", "SUBSCRIPTION_STATUS" ]
+          },
+          "brandId" : {
+            "type" : "integer",
+            "description" : "The ID of the brand that the subscription is associated with, if there is one.",
+            "format" : "int64"
+          },
+          "preferenceGroupName" : {
+            "type" : "string",
+            "description" : "The name of the preferences group that the subscription is associated with."
+          },
+          "legalBasis" : {
+            "type" : "string",
+            "description" : "The legal reason for the current status of the subscription.",
+            "enum" : [ "LEGITIMATE_INTEREST_PQL", "LEGITIMATE_INTEREST_CLIENT", "PERFORMANCE_OF_CONTRACT", "CONSENT_WITH_NOTICE", "NON_GDPR", "PROCESS_AND_STORE", "LEGITIMATE_INTEREST_OTHER" ]
+          },
+          "legalBasisExplanation" : {
+            "type" : "string",
+            "description" : "A more detailed explanation to go with the legal basis."
+          }
+        },
+        "description" : "The status of a subscription for a contact."
+      },
+      "Error" : {
+        "required" : [ "category", "correlationId", "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate",
+            "example" : "An error occurred"
+          },
+          "correlationId" : {
+            "type" : "string",
+            "description" : "A unique identifier for the request. Include this value with any error reports or support tickets",
+            "format" : "uuid",
+            "example" : "aeb5f871-7f07-4993-9211-075dc63e7cbf"
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "The error category"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "errors" : {
+            "type" : "array",
+            "description" : "further information about the error",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "invalidPropertyName" : [ "propertyValue" ],
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A map of link names to associated URIs containing documentation about the error or recommended remediation steps"
+          }
+        },
+        "example" : {
+          "message" : "Invalid input (details will vary based on the error)",
+          "correlationId" : "aeb5f871-7f07-4993-9211-075dc63e7cbf",
+          "category" : "VALIDATION_ERROR",
+          "links" : {
+            "knowledge-base" : "https://www.hubspot.com/products/service/knowledge-base"
+          }
+        }
+      }
+    },
+    "responses" : {
+      "Error" : {
+        "description" : "An error occurred.",
+        "content" : {
+          "*/*" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "oauth2_legacy" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "https://app.hubspot.com/oauth/authorize",
+            "tokenUrl" : "https://api.hubapi.com/oauth/v1/token",
+            "scopes" : {
+              "communication_preferences.read" : "Read contact subscription preferences",
+              "communication_preferences.read_write" : "Update contact subscription preferences",
+              "communication_preferences.write" : "Update contact subscription preferences"
+            }
+          }
+        }
+      },
+      "hapikey" : {
+        "type" : "apiKey",
+        "name" : "hapikey",
+        "in" : "query"
+      },
+      "private_apps_legacy" : {
+        "type" : "apiKey",
+        "name" : "private-app-legacy",
+        "in" : "header"
+      }
+    }
+  },
+  "x-hubspot-available-client-libraries" : [ "PHP", "Node", "Python", "Ruby" ]
+}

@@ -51,7 +51,7 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
     );
 
     return new Fuse(allMethods, {
-      keys: ['serviceLabel'], // Only search service names
+      keys: ['serviceLabel', 'label'],
       threshold: 0.3,
       shouldSort: true,
     });
@@ -139,7 +139,7 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
     // Use pre-computed search index
     const results = searchIndex.search(debouncedSearchTerm).map((r) => r.item);
 
-    // Group by service and include all methods
+    // Group by service, including only matched methods
     const grouped = {};
     results.forEach((method) => {
       const serviceKey = method.serviceValue;
@@ -151,9 +151,10 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
           value: originalService.value,
           type: originalService.type,
           service: originalService.service,
-          methods: originalService.methods, // Include all methods from the service
+          methods: [],
         };
       }
+      grouped[serviceKey].methods.push(method);
     });
 
     return Object.values(grouped);
@@ -335,7 +336,7 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
   }, [options?.metadata, queryName]);
 
   const loadServices = React.useCallback(async () => {
-    if (!selectedDataSource?.id) return;
+    if (!selectedDataSource?.id || selectedDataSource?.kind !== 'grpcv2') return;
 
     if (!selectedDataSource?.options?.url?.value) {
       toast.error('Please configure the server URL in your data source settings');
@@ -552,10 +553,10 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
                   options?.service && options?.method
                     ? `${options.service} → ${options.method}`
                     : isLoadingServices
-                    ? 'Loading services...'
-                    : hierarchicalOptions.length === 0
-                    ? 'No services found'
-                    : 'Select service'
+                      ? 'Loading services...'
+                      : hierarchicalOptions.length === 0
+                        ? 'No services found'
+                        : 'Select service'
                 }
                 disabled={
                   (!options?.service || !options?.method) && (isLoadingServices || hierarchicalOptions.length === 0)

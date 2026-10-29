@@ -2,7 +2,7 @@ export const NO_OF_GRIDS = 43;
 
 export const GRID_HEIGHT = 10;
 
-export const HIDDEN_COMPONENT_HEIGHT = 10;
+export const HIDDEN_COMPONENT_HEIGHT = 0;
 
 export const CANVAS_WIDTHS = Object.freeze({
   deviceWindowWidth: 450,
@@ -37,7 +37,16 @@ export const PAGES_SIDEBAR_WIDTH_EXPANDED = 256;
 
 export const PAGES_SIDEBAR_WIDTH_COLLAPSED = 54;
 
-export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 'Form', 'Accordion'];
+export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 'Form', 'Accordion', 'FlexContainer'];
+
+// Subcontainer widget types that use per-row resolution (customResolvables)
+export const ROW_SCOPED_WIDGET_TYPES = ['Listview', 'Kanban', 'Table'];
+
+// Maps per-row subcontainer type → custom resolvable key used inside {{ }} expressions
+export const ROW_SCOPED_RESOLVABLE_KEY_MAP = { Listview: 'listItem', Kanban: 'cardData', Table: 'rowData' };
+
+// Max allowed nesting levels per widget type. Add a new entry to restrict any future widget.
+export const NESTING_LEVEL_LIMITS = { Listview: 2, Table: 3 };
 
 export const CONTAINER_FORM_CANVAS_PADDING = 7;
 
@@ -59,6 +68,7 @@ export const DROPPABLE_PARENTS = new Set([
   'Accordion',
   'Table',
   'ModuleContainer',
+  'FlexContainer',
 ]);
 export const TAB_CANVAS_PADDING = 8;
 
@@ -71,3 +81,9 @@ export const HOVER_CLICK_OUTLINE_BORDER = 1;
 export const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
 export const TOP_ALIGNMENT_HEIGHT_INCREMENT = 20;
+
+export const PAGE_CANVAS_HEADER_HEIGHT = 60;
+
+export const PAGE_CANVAS_FOOTER_HEIGHT = 60;
+
+export const PAGE_CANVAS_HEADER_FOOTER_PADDING = 5;

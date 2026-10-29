@@ -13,6 +13,7 @@ export interface Terms {
   };
   database?: {
     table?: number | string;
+    row?: number | string;
   };
   domains?: Array<{ hostname?: string; subpath?: string }>;
   features?: {
@@ -25,6 +26,8 @@ export interface Terms {
     multiEnvironment?: boolean;
     multiPlayerEdit?: boolean;
     gitSync?: boolean;
+    gitSyncMultiBranch?: boolean;
+    workspaceEnv?: boolean;
     comments?: boolean;
     customThemes?: boolean;
     serverSideGlobalResolve?: boolean;
@@ -32,10 +35,12 @@ export interface Terms {
     externalApi?: boolean;
     appWhiteLabelling?: boolean;
     scim?: boolean;
+    mfa?: boolean;
     customDomains?: boolean;
     google?: boolean;
     github?: boolean;
     observability?: boolean;
+    queryFolders?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {
@@ -52,6 +57,8 @@ export interface Terms {
       features: {
         appHeaderAndLogo: boolean;
         addNavGroup: boolean;
+        canvasPageHeader?: boolean;
+        canvasPageFooter?: boolean;
       };
     };
     permissions: {
@@ -63,6 +70,12 @@ export interface Terms {
       promote: boolean;
       release: boolean;
       history: boolean;
+      jsLibraries: boolean;
+      publicApp: boolean;
+      customComponentLibraries?: boolean;
+    };
+    components?: {
+      navigation: boolean;
     };
   };
   modules?: {
@@ -96,5 +109,6 @@ export interface Terms {
   };
   ai?: {
     apiKey?: string;
+    plan?: 'byok' | 'selfhostai' | 'credits';
   };
 }

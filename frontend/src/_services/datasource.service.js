@@ -1,6 +1,7 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 import { constructSearchParams } from '../_helpers/utils';
+import { appendBranchParam } from '@/_helpers/active-branch';
 
 export const datasourceService = {
   create,
@@ -11,17 +12,17 @@ export const datasourceService = {
   save,
   fetchOauth2BaseUrl,
   testSampleDb,
-  getDecryptedOptions,
+  validateOptions,
 };
 
-function getDecryptedOptions(options) {
+function validateOptions(dataSourceId, options, schema, environmentId) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify(options),
+    body: JSON.stringify({ options, schema, environment_id: environmentId }),
   };
-  return fetch(`${config.apiUrl}/data-sources/decrypt`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-sources/${dataSourceId}/validate-options`, requestOptions).then(handleResponse);
 }
 
 function getAll(appVersionId, environment_id, includeStaticSources = false) {
@@ -69,7 +70,9 @@ function deleteDataSource(id) {
 function test(body) {
   const id = body.dataSourceId;
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data-sources/${id}/test-connection`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/data-sources/${id}/test-connection`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function testSampleDb(body) {

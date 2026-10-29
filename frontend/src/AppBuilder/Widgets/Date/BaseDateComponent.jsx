@@ -9,7 +9,13 @@ import DatePickerComponent from 'react-datepicker';
 import CustomDatePickerHeader from './CustomDatePickerHeader';
 import { flip, offset } from '@floating-ui/dom';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
-import { getLabelWidthOfInput, getWidthTypeOfComponentStyles } from '../BaseComponents/hooks/useInput';
+import { TOP_ALIGNMENT_HEIGHT_INCREMENT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import {
+  getLabelFontSize,
+  getLabelHeight,
+  getLabelWidthOfInput,
+  getWidthTypeOfComponentStyles,
+} from '../BaseComponents/hooks/useInput';
 import { getDateLocale } from './localeUtils';
 
 const tinycolor = require('tinycolor2');
@@ -45,7 +51,7 @@ export const BaseDateComponent = ({
     labelColor,
     alignment,
     direction,
-    iconDirection,
+    iconDirection: iconDirectionRaw,
     fieldBorderColor,
     fieldBackgroundColor,
     labelWidth,
@@ -56,37 +62,52 @@ export const BaseDateComponent = ({
     padding,
     errTextColor,
     widthType,
+    labelFontSize,
   } = styles;
+
+  // Icon position supports only 'left' | 'right'; any other value (e.g. set via fx) falls back to 'left'
+  const iconDirection = iconDirectionRaw === 'right' ? 'right' : 'left';
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
+
+  const isLabelOnTop =
+    alignment === 'top' &&
+    ((labelWidth != 0 && label?.length != 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0));
+  const baseInputHeight = height == 36 ? (padding == 'default' ? 36 : 40) : padding == 'default' ? height : height + 4;
 
   const rightPaddingBase = iconVisibility && iconDirection === 'right' ? '30px' : undefined;
   const paddingRight = showClearBtn ? (rightPaddingBase ? '52px' : '32px') : rightPaddingBase;
   const computedStyles = {
-    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
+    // The canvas adds TOP_ALIGNMENT_HEIGHT_INCREMENT (sized for the default 12px label) to the box when the
+    // label is on top, so only the label height in excess of that increment shrinks the field (see Label)
+    height: isLabelOnTop
+      ? baseInputHeight - (getLabelHeight(labelFontSize) - TOP_ALIGNMENT_HEIGHT_INCREMENT)
+      : baseInputHeight,
     borderColor: focus
       ? accentColor != '#4368E3'
         ? accentColor
         : 'var(--primary-accent-strong)'
       : fieldBorderColor != '#CCD1D5'
-      ? fieldBorderColor
-      : disable || loading
-      ? '1px solid var(--borders-disabled-on-white)'
-      : 'var(--borders-default)',
+        ? fieldBorderColor
+        : disable || loading
+          ? '1px solid var(--borders-disabled-on-white)'
+          : 'var(--borders-default)',
     '--tblr-input-border-color-darker': getModifiedColor(fieldBorderColor, 24),
     borderRadius: `${fieldBorderRadius || borderRadius}px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(selectedTextColor)
       ? selectedTextColor
       : disable || loading
-      ? 'var(--text-disabled)'
-      : 'var(--text-primary)',
+        ? 'var(--text-disabled)'
+        : 'var(--text-primary)',
     boxShadow: boxShadow,
     backgroundColor:
       fieldBackgroundColor != '#fff'
         ? fieldBackgroundColor
         : disable || loading
-        ? darkMode
-          ? 'var(--surfaces-app-bg-default)'
-          : 'var(--surfaces-surface-03)'
-        : 'var(--surfaces-surface-01)',
+          ? darkMode
+            ? 'var(--surfaces-app-bg-default)'
+            : 'var(--surfaces-surface-03)'
+          : 'var(--surfaces-surface-01)',
     paddingLeft: '10px',
     ...(iconVisibility && {
       ...(iconDirection === 'left' ? { paddingLeft: '30px' } : { paddingRight: '30px' }),
@@ -133,10 +154,7 @@ export const BaseDateComponent = ({
   return (
     <div
       className={cx('d-flex datetimepicker-component', {
-        [alignment === 'top' &&
-        ((labelWidth != 0 && label?.length != 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
-          ? 'flex-column'
-          : 'align-items-center']: true,
+        [isLabelOnTop ? 'flex-column' : 'align-items-center']: true,
         'flex-row-reverse': direction === 'right' && alignment === 'side',
         'text-right': direction === 'right' && alignment === 'top',
         invisible: !visibility,
@@ -161,6 +179,7 @@ export const BaseDateComponent = ({
         widthType={widthType}
         inputId={`component-${id}`}
         dataCy={dataCy}
+        fontSize={labelFontSizeValue}
       />
       <div
         className="px-0 h-100"

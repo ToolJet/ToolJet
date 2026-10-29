@@ -11,7 +11,7 @@ import { PythonBundleGenerationService } from './python-bundle-generation.servic
 export class BundleServiceFactory {
   constructor(
     protected readonly jsBundleService: JavaScriptBundleGenerationService,
-    protected readonly pythonBundleService: PythonBundleGenerationService,
+    protected readonly pythonBundleService: PythonBundleGenerationService
   ) {}
 
   getService(language: BundleLanguage): JavaScriptBundleGenerationService | PythonBundleGenerationService {

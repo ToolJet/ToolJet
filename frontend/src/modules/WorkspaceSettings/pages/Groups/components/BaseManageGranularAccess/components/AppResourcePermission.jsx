@@ -75,7 +75,6 @@ function AppResourcePermissions({
                       updateOnlyGranularPermissions(permissions, {
                         canEdit: !appsPermissions.canEdit,
                         canView: appsPermissions.canEdit,
-                        ...(!appsPermissions.canEdit && { hideFromDashboard: false }),
                       });
                   }}
                   checked={appsPermissions.canEdit}
@@ -123,16 +122,7 @@ function AppResourcePermissions({
               </span>
             </label>
           </div>
-          <OverlayTrigger
-            overlay={
-              !appsPermissions.canView ? (
-                <Tooltip id="tooltip-disable-edit-update">Can be configured only with view permission</Tooltip>
-              ) : (
-                <span></span>
-              )
-            }
-            placement="top"
-          >
+          <OverlayTrigger overlay={<span></span>} placement="top">
             <div
               onMouseEnter={() => {
                 setNotClickable(true);
@@ -151,7 +141,7 @@ function AppResourcePermissions({
                     });
                   }}
                   checked={appsPermissions.hideFromDashboard}
-                  disabled={isRoleGroup || !appsPermissions.canView || !isEditable}
+                  disabled={isRoleGroup || (!appsPermissions.canView && !appsPermissions.canEdit) || !isEditable}
                   data-cy="app-hide-from-dashboard-radio"
                 />
                 <span className="form-check-label" data-cy="app-hide-from-dashboard-label">

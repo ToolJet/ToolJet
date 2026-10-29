@@ -23,7 +23,6 @@ describe("License - Multi-Environment Flow", () => {
     cy.intercept("GET", "/api/apps/*").as("getAppData");
 
     multiEnvAppSetup(appName);
-
     cy.apiUpdateLicense("expired");
     cy.apiLogout();
   });
@@ -49,9 +48,6 @@ describe("License - Multi-Environment Flow", () => {
     navigateToAppEditor(appName);
     cy.wait(3000);
 
-    cy.apiReleaseApp(appName);
-    cy.apiAddAppSlug(appName, data.slug);
-
     // Verify app shows development environment data
     cy.get(commonWidgetSelector.draggableWidget("text1")).verifyVisibleElement(
       "have.text",
@@ -60,6 +56,7 @@ describe("License - Multi-Environment Flow", () => {
 
     // Preview app and verify
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    cy.wait(3000);
     cy.get(commonWidgetSelector.draggableWidget("text1")).verifyVisibleElement(
       "have.text",
       "Development environment testing"

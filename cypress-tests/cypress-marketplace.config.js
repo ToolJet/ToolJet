@@ -15,17 +15,24 @@ module.exports = defineConfig({
       require("./cypress/config/tasks")(on);
       require("./cypress/config/browserConfig")(on);
 
-      return require("./cypress/plugins/index.js")(on, config);
+      config = require("./cypress/plugins/index.js")(on, config);
+      // cypress-live-reporter — self-disables when no CLR sink is set in cypress env.
+      return require("cypress-live-reporter/plugin").livePlugin(on, config);
     },
 
-    baseUrl: "http://localhost:8082",
+    env: {
+      CLR_PROJECT_ID: "marketplace",
+    },
+
+    baseUrl: "http://localhost:8082/",
     specPattern: [
-      "cypress/e2e/happyPath/marketplace/commonTestcases/**/*.cy.js",
+      "cypress/e2e/happyPath/platform/eeTestcases/licensing/updateLicense.cy.js",
+      "cypress/e2e/happyPath/marketplace/commonTestcases/datasources/*.cy.js",
     ],
 
     testIsolation: true,
     retries: {
-      runMode: 2,
+      runMode: 0,
       openMode: 0,
     },
     redirectionLimit: 7,
@@ -33,10 +40,7 @@ module.exports = defineConfig({
     numTestsKeptInMemory: 1,
     experimentalMemoryManagement: true,
 
-    experimentalRunAllSpecs: true,
     experimentalModifyObstructiveThirdPartyCode: true,
-    experimentalOriginDependencies: true,
-    experimentalSkipDomainInjection: ['localhost'],
 
     downloadsFolder: "cypress/downloads",
     trashAssetsBeforeRuns: true,

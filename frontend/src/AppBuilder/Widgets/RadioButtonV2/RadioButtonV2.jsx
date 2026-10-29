@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef, useId } from 'react';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import './radioButtonV2.scss';
@@ -7,8 +7,12 @@ import { has, isObject } from 'lodash';
 import { getSafeRenderableValue } from '../utils';
 import {
   getWidthTypeOfComponentStyles,
+  getLabelFontSize,
   getLabelWidthOfInput,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const RadioButtonV2 = ({
   properties,
@@ -21,8 +25,13 @@ export const RadioButtonV2 = ({
   validate,
   validation,
   id,
-  subContainerIndex,
   dataCy,
+  height,
+  width,
+  currentLayout,
+  currentMode,
+  subContainerIndex,
+  componentType,
 }) => {
   const { label, options, disabledState, advanced, schema, optionsLoadingState, layout, loadingState } = properties;
 
@@ -39,9 +48,13 @@ export const RadioButtonV2 = ({
     labelColor,
     alignment,
     widthType,
+    labelFontSize,
   } = styles;
 
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
+
   const isInitialRender = useRef(true);
+  const reactId = useId();
 
   const [checkedValue, setCheckedValue] = useState(findDefaultItem(advanced ? schema : options));
   const [visibility, setVisibility] = useState(properties.visibility);
@@ -54,6 +67,23 @@ export const RadioButtonV2 = ({
 
   const labelRef = useRef();
   const radioBtnRef = useRef();
+
+  // The options container grows when options stack (column) or wrap to new rows;
+  // the observer fires on those height changes for dynamic height
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const heightChangeValue = useHeightObserver(radioBtnRef, isDynamicHeightEnabled);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: heightChangeValue,
+    currentLayout,
+    width,
+    visibility,
+    subContainerIndex,
+    componentType,
+  });
 
   const selectOptions = useMemo(() => {
     let _options = advanced ? schema : options;
@@ -189,12 +219,19 @@ export const RadioButtonV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useFormClear(() => onSelect(null));
+
   const _width = getLabelWidthOfInput(widthType, labelWidth);
 
   const computedLayoutStyles = {
+    height: isDynamicHeightEnabled ? 'max-content' : '100%',
     flexDirection: layout === 'wrap' ? 'row' : layout,
-    ...(layout === 'wrap' && { flexWrap: 'wrap' }),
-    overflow: layout === 'row' ? 'auto hidden' : 'hidden auto',
+    ...(layout === 'wrap' && {
+      flexWrap: 'wrap',
+      maxHeight: isDynamicHeightEnabled ? 'none' : '100%',
+      height: 'max-content',
+    }),
+    overflow: layout === 'row' ? 'auto hidden' : isDynamicHeightEnabled ? 'visible' : 'hidden auto',
   };
 
   return (
@@ -215,7 +252,8 @@ export const RadioButtonV2 = ({
         style={{
           position: 'relative',
           width: '100%',
-          height: '100%',
+          height: isDynamicHeightEnabled ? 'auto' : '100%',
+          ...(isDynamicHeightEnabled && { minHeight: height }),
           paddingLeft: '0px',
         }}
         role="radiogroup"
@@ -242,13 +280,14 @@ export const RadioButtonV2 = ({
           top={alignment !== 'top' && '2px'}
           widthType={widthType}
           inputId={`component-${id}`}
+          fontSize={labelFontSizeValue}
         />
 
         {isLoading || optionsLoadingState ? (
           <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
         ) : (
           <div
-            className="d-flex px-0 h-100"
+            className="d-flex tw-items-center tw-px-0"
             ref={radioBtnRef}
             style={{
               ...computedLayoutStyles,
@@ -257,9 +296,7 @@ export const RadioButtonV2 = ({
           >
             {selectOptions.map((option, index) => {
               const isChecked = checkedValue == option.value;
-              const inputId = `${id}${
-                subContainerIndex !== null || subContainerIndex !== undefined ? `-${subContainerIndex}` : ''
-              }-option-${index}`;
+              const inputId = `${reactId}-option-${index}`;
 
               return (
                 <label key={index} className="radio-button-container" htmlFor={inputId}>
@@ -270,30 +307,35 @@ export const RadioButtonV2 = ({
                         optionsTextColor !== '#1B1F24'
                           ? optionsTextColor
                           : isDisabled || isLoading
-                          ? 'var(--text-disabled)'
-                          : 'var(--text-primary)',
+                            ? 'var(--text-disabled)'
+                            : 'var(--text-primary)',
                     }}
                   >
                     {String(option.label)}
                   </span>
                   <input
                     data-cy={`${dataCy}-option-input-${index}`}
+                    className="tw-peer"
                     style={{
                       marginTop: '1px',
                       backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
                     }}
                     checked={checkedValue == option.value}
                     type="radio"
+                    name={`radio-group-${id}`}
                     value={option.value}
                     onChange={() => {
                       onSelect(option.value);
                       fireEvent('onSelectionChange');
                     }}
-                    disabled={option.isDisabled}
+                    // widget-level Disable/Loading must disable every option, not
+                    // just the per-option flag — native disabled also drops it from
+                    // the tab order + blocks Space/arrow selection
+                    disabled={isDisabled || isLoading || option.isDisabled}
                     id={inputId}
                   />
                   <span
-                    className="checkmark"
+                    className="checkmark peer-focus-visible:tw-ring-2 peer-focus-visible:tw-ring-interactive-focus-outline peer-focus-visible:tw-ring-offset-1"
                     style={{
                       backgroundColor:
                         !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : switchOffBackgroundColor),

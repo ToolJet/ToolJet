@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { resolveReferences } from '@/_helpers/utils';
 import { v4 as uuidv4 } from 'uuid';
 import { generateUniqueName, reorderArray, duplicateWithNewId, checkAllEditable, getPopoverSource } from '../utils';
+import useStore from '@/AppBuilder/_stores/store';
 
 /**
  * Generic hook for managing list items (columns, fields, etc.)
@@ -17,6 +18,7 @@ import { generateUniqueName, reorderArray, duplicateWithNewId, checkAllEditable,
  * @param {Object} params.config.defaultItemProps - Additional default properties for new items
  * @param {Function} params.config.onPropertyChange - Callback before property change (item, property, value) => modifiedItem
  * @param {Function} params.config.onRemove - Callback after item removal (removedItems, index) => Promise
+ * @param {Function} params.config.onRemoveUpdates - Properties saved with the removal (removedItems, index) => [{ name, value }]
  */
 export const useListItemManager = ({ component, paramUpdated, currentState, config }) => {
   const {
@@ -27,8 +29,11 @@ export const useListItemManager = ({ component, paramUpdated, currentState, conf
     defaultItemProps = {},
     onPropertyChange,
     onRemove,
+    onRemoveUpdates,
   } = config;
 
+  const setComponentProperty = useStore((state) => state.setComponentProperty);
+  const saveComponentPropertyChangesBatch = useStore((state) => state.saveComponentPropertyChangesBatch);
   const [isAllEditable, setIsAllEditable] = useState(false);
 
   // Get items from component definition - wrapped in useMemo to avoid dependency issues
@@ -44,10 +49,14 @@ export const useListItemManager = ({ component, paramUpdated, currentState, conf
     [propertyName, typeProp, nonEditableTypes, currentState]
   );
 
-  // Sync isAllEditable state with items changes
+  // Sync isAllEditable state with items changes.
+  // Skip when list is empty so the user's manual toggle choice persists
+  // (every() returns true on [], which would otherwise force the toggle on
+  // and block toggling it off).
   useEffect(() => {
+    if (items.length === 0) return;
     setIsAllEditable(checkIfAllEditable(component));
-  }, [component, checkIfAllEditable]);
+  }, [component, checkIfAllEditable, items.length]);
 
   // Add new item
   const addItem = useCallback(() => {
@@ -73,7 +82,27 @@ export const useListItemManager = ({ component, paramUpdated, currentState, conf
       try {
         const newValue = [...items];
         const removedItems = newValue.splice(index, 1);
-        await paramUpdated({ name: propertyName }, 'value', newValue, 'properties', true);
+        const bookkeepingUpdates = onRemoveUpdates?.(removedItems, index) ?? [];
+
+        if (bookkeepingUpdates.length > 0) {
+          // Saved and broadcast as one unit - separate ones can be applied out of order
+          const batch = [{ name: propertyName, value: newValue }, ...bookkeepingUpdates].map(({ name, value }) => ({
+            property: name,
+            value,
+            paramType: 'properties',
+            attr: 'value',
+          }));
+
+          for (const { property, value, paramType, attr } of batch) {
+            setComponentProperty(component.id, property, value, paramType, attr, false, 'canvas', {
+              saveAfterAction: false,
+            });
+          }
+
+          saveComponentPropertyChangesBatch(component.id, batch);
+        } else {
+          await paramUpdated({ name: propertyName }, 'value', newValue, 'properties', true);
+        }
 
         // Call custom onRemove callback if provided
         if (onRemove) {
@@ -83,7 +112,16 @@ export const useListItemManager = ({ component, paramUpdated, currentState, conf
         console.error(`Error removing ${propertyName}:`, error);
       }
     },
-    [items, paramUpdated, propertyName, onRemove]
+    [
+      items,
+      paramUpdated,
+      propertyName,
+      onRemove,
+      onRemoveUpdates,
+      setComponentProperty,
+      saveComponentPropertyChangesBatch,
+      component.id,
+    ]
   );
 
   // Duplicate item by index

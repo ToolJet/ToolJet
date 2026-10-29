@@ -16,13 +16,33 @@ const config = {
   },
 
   webpackFinal: async (storybookConfig) => {
-    // Filter out the babel-loader rule from custom config to avoid conflicts
-    const customRules = customWebpackConfig.module.rules.filter((rule) => {
-      if (rule.test && rule.test.toString().includes("js|jsx")) {
-        return false; // Skip the babel-loader rule that includes react-refresh
-      }
-      return true;
-    });
+    // Filter out the babel-loader rule from custom config to avoid conflicts.
+    // Also replace MiniCssExtractPlugin.loader with style-loader: Storybook
+    // doesn't include the MiniCssExtractPlugin in its webpack plugins, so the
+    // loader throws when NODE_ENV=production (e.g. during build-storybook).
+    const customRules = customWebpackConfig.module.rules
+      .filter((rule) => {
+        if (rule.test && rule.test.toString().includes("js|jsx")) {
+          return false; // Skip babel-loader rule that includes react-refresh
+        }
+        return true;
+      })
+      .map((rule) => {
+        if (!rule.use) return rule;
+        const use = Array.isArray(rule.use) ? rule.use : [rule.use];
+        const isMiniCssEntry = (u) => {
+          if (typeof u === "string") return u.includes("mini-css-extract-plugin");
+          if (typeof u === "object" && u !== null) {
+            return (u.loader ?? "").includes("mini-css-extract-plugin");
+          }
+          return false;
+        };
+        if (!use.some(isMiniCssEntry)) return rule;
+        return {
+          ...rule,
+          use: use.map((u) => (isMiniCssEntry(u) ? { loader: "style-loader" } : u)),
+        };
+      });
 
     // Add a custom babel-loader rule for JSX files without react-refresh
     const babelRule = {

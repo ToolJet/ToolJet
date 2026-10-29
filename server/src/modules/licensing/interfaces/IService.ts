@@ -25,10 +25,29 @@ export interface ILicenseOrganizationService {
 }
 
 export abstract class LicenseInitService {
+  /**
+   * IMPORTANT: Do not modify this function signature - it is used in data migrations.
+   * Used in migrations:
+   * - 1720434737529-MigrateCustomGroupToNewUserGroup.ts
+   * - 1742369617678-EnforceNewBasicPlanLimits.ts
+   * - 1720352990850-CreateDefaultGroupInExistingWorkspace.ts
+   */
   abstract initForMigration(manager?: EntityManager): Promise<{ isValid: boolean }>;
+  /**
+   * Migration-only plan resolution. These wrap license loading so a data migration can make
+   * plan-gated decisions WITHOUT importing the edition-specific `License` static or booting extra
+   * services. Both read through the passed `manager` (the migration's shared queryRunner).
+   * - getPlanForMigration: instance-level plan (self-hosted CE/EE); reuses initForMigration.
+   * - getPlanForMigrationCloud: per-organization plan from organization_license (Cloud).
+   */
+  abstract getPlanForMigration(manager?: EntityManager): Promise<string>;
+  abstract getPlanForMigrationCloud(manager: EntityManager, organizationId: string): Promise<string>;
   abstract init(): Promise<void>;
   abstract initForCloud(): Promise<void>;
   abstract getLicenseFieldValue(type: any, licenseInstance: LicenseBase): any;
+  abstract isEnvConfigured(): boolean;
+  abstract isUsingEnvLicense(): boolean;
+  abstract setUseEnvLicense(value: boolean): void;
 }
 
 export interface ILicenseDecryptService {

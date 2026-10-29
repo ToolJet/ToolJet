@@ -1,6 +1,8 @@
 import React, { memo, useRef, useState, useCallback } from 'react';
 import cx from 'classnames';
 import * as Icons from '@tabler/icons-react';
+import { AlertTriangle } from 'lucide-react';
+import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
 import Home from '@/_ui/Icon/solidIcons/Home';
@@ -33,6 +35,10 @@ export const PageMenuItem = withRouter(
     const isSelected = page.id === currentPageId;
     const isHidden = useStore((state) => state.getPagesVisibility('canvas', page?.id));
     const isDisabled = page?.disabled ?? false;
+    const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
+    const linkedAppValidation = page?.type === 'app' ? isLinkedAppValid(page?.targetCorelationId, linkedAppsMap) : null;
+    const linkedAppErrorMessage =
+      linkedAppValidation && !linkedAppValidation.isValid ? linkedAppValidation.errorMessage : null;
     const [isHovered, setIsHovered] = useState(false);
     const shouldFreeze = useStore((state) => state.getShouldFreeze());
     const hasAppPermissionPages = useStore((state) => state.license?.featureAccess?.appPermissionPages);
@@ -53,6 +59,7 @@ export const PageMenuItem = withRouter(
     const switchPageWrapper = useStore((state) => state.switchPageWrapper);
     const [showPageOptions, toggleShowPageOptions] = useState(false);
     const [showEditPopover, setShowEditPopover] = useState(false);
+    const [nestedPopoverOpen, setNestedPopoverOpen] = useState(false);
 
     const openPageEditPopover = useStore((state) => state.openPageEditPopover);
     const toggleEditPageNameInput = useStore((state) => state.toggleEditPageNameInput);
@@ -188,6 +195,7 @@ export const PageMenuItem = withRouter(
           className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${
             (showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
           }`}
+          data-page-id={page?.id}
           style={{
             position: 'relative',
             width: '100%',
@@ -203,6 +211,16 @@ export const PageMenuItem = withRouter(
               {page.name}
             </OverflowTooltip>
             <span className="color-slate09 meta-text d-flex align-items-center justify-content-center">
+              {linkedAppErrorMessage && (
+                <ToolTip message={linkedAppErrorMessage} maxWidth="360px">
+                  <div className="d-flex align-items-center justify-content-center">
+                    <AlertTriangle
+                      className="tw-h-[14px] tw-w-[14px] tw-shrink-0 tw-text-[var(--icon-warning)]"
+                      data-cy="page-row-broken-link-warning"
+                    />
+                  </div>
+                </ToolTip>
+              )}
               {PAGE_TYPES[page?.type] && ( // If 'page' object has a 'type' property like 'URL'
                 <span className="page-type-text">{PAGE_TYPES[page?.type]}</span>
               )}
@@ -384,7 +402,7 @@ export const PageMenuItem = withRouter(
                   target={optionBtnRef.current}
                   show={showEditPopover && newPagePopupConfig?.mode == 'edit' && isEditingPage}
                   placement="left-start"
-                  rootClose
+                  rootClose={!nestedPopoverOpen}
                   onHide={() => {
                     setEditingPage(null);
                     setNewPagePopupConfig({ show: false, mode: null, type: null });
@@ -392,7 +410,7 @@ export const PageMenuItem = withRouter(
                     setShowEditPopover(false);
                   }}
                 >
-                  <AddEditPagePopup darkMode={darkMode} />
+                  <AddEditPagePopup darkMode={darkMode} onNestedPopoverOpenChange={setNestedPopoverOpen} />
                 </Overlay>
               </div>
             )}

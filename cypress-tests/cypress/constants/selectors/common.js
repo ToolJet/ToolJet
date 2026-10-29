@@ -7,7 +7,7 @@ export const commonSelectors = {
   globalWorkFlowsIcon: '[data-cy="icon-workflows"]',
   createWorkFlowsButton: '[data-cy="+-create-workflow"]',
   workFlowNameInputField: '[data-cy="app-name-input"]',
-  toastMessage: ".go3958317564",
+  toastMessage: ".go4109123758",
   oldToastMessage: ".go318386747",
   appSlugAccept: '[data-cy="app-slug-accepted-label"]',
   newToastMessage:
@@ -39,7 +39,6 @@ export const commonSelectors = {
   loginButton: '[data-cy="login-button"]',
   dropdown: "[data-cy=workspace-dropdown]",
   backButton: "[data-cy=left-sidebar-back-button]",
-  dashboardAppCreateButton: '[data-cy="button-new-application-from-scratch"]',
   appCreateButton: "[data-cy=create-new-apps-button]",
   createButton: "[data-cy=create-button]",
   appNameInput: "[data-cy=app-name-input]",
@@ -116,7 +115,7 @@ export const commonSelectors = {
   emptyNotificationIcon: '[data-cy="empty-notification-icon"]',
   emptyNotificationTitle: '[data-cy="empty-notification-title"]',
   emptyNotificationSubtitle: '[data-cy="empty-notification-subtitle"]',
-  notificationsCardFooter: '[data-cy="notifications-card-footer"]',
+  loadMoreNotifications: '[data-cy="load-more-notifications"]',
   allApplicationLink: '[data-cy="all-applications-link"]',
   logoutLink: "[data-cy=logout-link]",
   exportAllButton: '[data-cy="export-all-button"]',
@@ -272,6 +271,9 @@ export const commonSelectors = {
   appNameInfoLabel: '[data-cy="app-name-info-label"]',
   createAppButton: '[data-cy="create-app"]',
   renameApptitle: '[data-cy="rename-app-title"]',
+  // Opens the Rename app modal in the editor header
+  // (frontend/src/AppBuilder/Header/EditAppName.jsx:55).
+  editAppNameButton: '[data-cy="edit-app-name-button"]',
   renameAppButton: '[data-cy="rename-app"]',
   cloneAppTitle: '[data-cy="clone-app-title"]',
   cloneAppButton: '[data-cy="clone-app"]',
@@ -340,11 +342,21 @@ export const commonWidgetSelector = {
   },
 
   widgetConfigHandle: (widgetName) => {
-    return `[data-cy="${cyParamName(widgetName)}-config-handle"]`;
+    // The old `<name>-config-handle` button no longer exists. The button that
+    // opens the right Inspector (Properties/Styles/Events) is
+    // `<name>-properties-styles-button`
+    // (frontend/src/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle.jsx:285).
+    return `[data-cy="${cyParamName(widgetName)}-properties-styles-button"]`;
   },
 
   accordion: (accordionName, index = 0) => {
-    return `[data-cy="widget-accordion-${accordionName.toLowerCase()}"]:eq(${index})`;
+    // AccordionItem.js:38 builds the data-cy as
+    // `widget-accordion-${title.toLowerCase().replace(/\s+/g,'-')}` — spaces
+    // become hyphens, so multi-word titles like "Additional actions" →
+    // `widget-accordion-additional-actions` (the old space form is stale).
+    return `[data-cy="widget-accordion-${accordionName
+      .toLowerCase()
+      .replace(/\s+/g, "-")}"]:eq(${index})`;
   },
 
   nodeComponent: (componentName) => {
@@ -372,13 +384,25 @@ export const commonWidgetSelector = {
     return `[data-cy="${widgetName.toLowerCase()}-invalid-feedback"]`;
   },
 
-  buttonCloseEditorSideBar: "[data-cy='inspector-close-icon']",
-  buttonStylesEditorSideBar: "#inspector-tab-styles",
+  // Right-Inspector close control is now `inspector-close-button`
+  // (Inspector.jsx:707) — was `inspector-close-icon`.
+  buttonCloseEditorSideBar: "[data-cy='inspector-close-button']",
+  // The right-Inspector tabs are now a custom ToolJetUI <Tabs id="inspector">
+  // (frontend/src/ToolJetUI/Tabs/Tabs.jsx) — each tab is a `button[role="tab"]`
+  // with NO id/data-cy, only a `.tab-label` span. The old `#inspector-tab-styles`
+  // (react-bootstrap id) no longer exists. There are exactly two tabs
+  // (Properties, Styles — Inspector.jsx:594-599); Styles is the 2nd nav-link,
+  // scoped to the `#inspector` Tabs wrapper.
+  buttonStylesEditorSideBar: "#inspector .nav-link:eq(1)",
   WidgetNameInputField: "[data-cy=edit-widget-name]",
   constantInspectorIcon: '[data-cy="inspector-constants-expand-button"]',
   inspectorIcon: '[data-cy="left-sidebar-inspector-button"]',
   tooltipInputField: "[data-cy='tooltip-input-field']",
   tooltipLabel: "[id=button-tooltip]",
+  togglrButton: (value) => `[data-cy="togglr-button-${value}"]`,
+  // Radix, not bootstrap's `.tooltip-inner`. Renders its content twice (once
+  // VisuallyHidden), so scope every match with .first() or `have.text` sees it doubled.
+  widgetTooltip: '[data-cy="widget-tooltip"]',
   homePageLogo: '[data-cy="home-page-logo"]',
 
   noEventHandlerMessage: "[data-cy='no-items-banner']",
@@ -397,7 +421,16 @@ export const commonWidgetSelector = {
   changeLayoutToMobileButton: '[data-cy="button-change-layout-to-mobile"]',
   changeLayoutToDesktopButton: '[data-cy="button-change-layout-to-desktop"]',
 
-  sidebarinspector: "[data-cy='left-sidebar-inspector']",
+   sidebarinspector: "[data-cy='left-sidebar-inspector-button']",
+
+  appHistoryButton: "[data-cy='left-sidebar-app-history-button']",
+  appHistoryCloseButton: "[data-cy='left-sidebar-close-button']",
+  appHistoryHeaderTitle: ".app-history-header-title",
+  historyTimeline: ".history-timeline",
+  historyDateGroup: ".history-date",
+  historyEntry: ".history-entry",
+  historyEntryName: ".entry-name",
+
   inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",
   nodeComponentValue: "[data-cy='inspector-node-value']> .mx-2",
   nodeComponentValues: "[data-cy='inspector-node-values']> .node-key",

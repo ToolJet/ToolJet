@@ -10,13 +10,7 @@ import { cva } from 'class-variance-authority';
 // eslint-disable-next-line import/no-unresolved
 import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 import './Button.scss';
-import {
-  getDefaultIconFillColor,
-  getLucideIconClassName,
-  defaultButtonFillColour,
-  getIconSize,
-  getLucideIconSize,
-} from './ButtonUtils.jsx';
+import { getDefaultIconFillColor, defaultButtonFillColour, getIconSize, getLucideIconSize } from './ButtonUtils.jsx';
 
 const buttonVariants = cva(
   'tw-flex tw-justify-center tw-items-center tw-font-medium tw-whitespace-nowrap tw-transition-colors focus-visible:tw-outline-none tw-disabled:tw-pointer-events-none tw-disabled:tw-opacity-50',
@@ -148,14 +142,14 @@ const Button = forwardRef(
   ) => {
     const iconFillColor =
       !defaultButtonFillColour.includes(fill) && fill ? fill : getDefaultIconFillColor(variant, iconOnly);
-    const lucideIconClassName = getLucideIconClassName(variant, iconOnly);
+
     const Comp = asChild ? Slot : component;
     const iconSize = isLucid ? getLucideIconSize(size) : getIconSize(size);
 
     const leadingIconElement = leadingIcon && (
       <div className="tw-flex tw-justify-center tw-items-center" style={{ width: iconSize, height: iconSize }}>
         {isLucid ? (
-          <DynamicIcon name={leadingIcon} size={iconSize} className={lucideIconClassName} />
+          <DynamicIcon name={leadingIcon} size={iconSize} color={iconFillColor} />
         ) : (
           <SolidIcon name={leadingIcon} fill={iconFillColor} />
         )}
@@ -164,7 +158,7 @@ const Button = forwardRef(
     const trailingIconElement = trailingIcon && (
       <div className="tw-flex tw-justify-center tw-items-center" style={{ width: iconSize, height: iconSize }}>
         {isLucid ? (
-          <DynamicIcon name={trailingIcon} size={iconSize} className={lucideIconClassName} />
+          <DynamicIcon name={trailingIcon} size={iconSize} color={iconFillColor} />
         ) : (
           <SolidIcon name={trailingIcon} fill={iconFillColor} />
         )}

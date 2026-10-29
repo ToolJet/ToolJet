@@ -9,7 +9,7 @@ import './resources/styles/forgot-password-form.styles.scss';
 import { Alert } from '@/_ui/Alert';
 import SepratorComponent from '@/modules/common/components/SepratorComponent';
 import { fetchEdition } from '@/modules/common/helpers/utils';
-const ForgotPasswordForm = ({ onSubmit }) => {
+const ForgotPasswordForm = ({ onSubmit, appSlug }) => {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -50,10 +50,10 @@ const ForgotPasswordForm = ({ onSubmit }) => {
           <p className="forgot-password-form-signup-redirect" data-cy="signup-redirect-text">
             {t('forgotPasswordPage.newTo', 'New to')} {whiteLabelText}?{' '}
             <Link
-              to="/signup"
+              to={appSlug ? `/applications/${appSlug}/signup` : '/signup'}
               className="signup-link"
               data-cy="create-an-account-link"
-              state={{ from: '/forgot-password' }}
+              state={{ from: appSlug ? `/applications/${appSlug}/forgot-password` : '/forgot-password' }}
             >
               {t('forgotPasswordPage.createAnAccount', 'Create an account')}
             </Link>

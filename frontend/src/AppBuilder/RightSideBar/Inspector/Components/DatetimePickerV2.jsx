@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import Accordion from '@/_ui/Accordion';
-import { renderElement } from '../Utils';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
+import { renderElement, getInvalidFormatError } from '../Utils';
 import { EventManager } from '../EventManager';
 import Select from '@/_ui/Select';
 import CodeHinter from '@/AppBuilder/CodeEditor';
@@ -29,6 +30,22 @@ export const DATE_FORMAT_OPTIONS = [
     label: 'YYYY/MM/DD',
     value: 'YYYY/MM/DD',
   },
+  {
+    label: 'DD-MM-YYYY',
+    value: 'DD-MM-YYYY',
+  },
+  {
+    label: 'MM-DD-YYYY',
+    value: 'MM-DD-YYYY',
+  },
+  {
+    label: 'YYYY-DD-MM',
+    value: 'YYYY-DD-MM',
+  },
+  {
+    label: 'YYYY-MM-DD',
+    value: 'YYYY-MM-DD',
+  },
 ];
 
 export const TIME_FORMAT_OPTIONS = [
@@ -55,6 +72,7 @@ export const TIMEZONE_OPTIONS = [
   { name: '-12:00', value: 'Etc/GMT+12' },
   { name: '-11:00', value: 'Etc/GMT+11' },
   { name: '-10:00', value: 'Pacific/Honolulu' },
+  { name: '-09:30', value: 'Pacific/Marquesas' },
   { name: '-09:00', value: 'America/Anchorage' },
   { name: '-08:00', value: 'America/Santa_Isabel' },
   { name: '-07:00', value: 'America/Chihuahua' },
@@ -69,6 +87,7 @@ export const TIMEZONE_OPTIONS = [
   { name: '+01:00', value: 'Europe/Berlin' },
   { name: '+02:00', value: 'Africa/Gaborone' },
   { name: '+03:00', value: 'Asia/Baghdad' },
+  { name: '+03:30', value: 'Asia/Tehran' },
   { name: '+04:00', value: 'Asia/Muscat' },
   { name: '+04:30', value: 'Asia/Kabul' },
   { name: '+05:00', value: 'Asia/Tashkent' },
@@ -90,6 +109,14 @@ export const TIMEZONE_OPTIONS_MAP = TIMEZONE_OPTIONS.reduce((acc, curr) => {
   acc[curr.name] = curr.value;
   return acc;
 }, {});
+
+// Region-name options for the Display in / Store in dropdowns: zones sharing an
+// offset (Asia/Colombo vs Asia/Kolkata, both +05:30) must stay distinguishable.
+// Values are IANA ids — exactly what existing apps already store, because the
+// old offset-labelled options also persisted IANA values.
+export const TIMEZONE_REGION_OPTIONS = moment.tz
+  .names()
+  .map((zone) => ({ name: `${zone} (UTC${moment.tz(zone).format('Z')})`, value: zone }));
 
 const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...restProps }) => {
   const { t } = useTranslation();
@@ -118,6 +145,17 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
   const isTimezoneEnabled = resolvedProperties?.isTimezoneEnabled;
   const displayTimezone = resolvedProperties?.displayTimezone;
   const storeTimezone = resolvedProperties?.storeTimezone;
+
+  // Tokenless formats are flagged on the Format field (CodeHinter preview
+  // popover + red error state). The widget still uses the format verbatim.
+  const dateFormatValidationFn = (value) => {
+    const message = getInvalidFormatError(value, 'date');
+    return [!message, message];
+  };
+  const timeFormatValidationFn = (value) => {
+    const message = getInvalidFormatError(value, 'time');
+    return [!message, message];
+  };
 
   const dateValidator = useMemo(() => {
     return (date) => {
@@ -217,6 +255,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
             mode="javascript"
             lineNumbers={false}
             onChange={(value) => paramUpdated({ name: 'timeFormat' }, 'value', value, 'properties')}
+            validationFn={timeFormatValidationFn}
           />
         ) : (
           <Select
@@ -273,6 +312,23 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
       children: (
         <>
           {properties?.map((property) => {
+            // DaterangePicker's Format is a generic code property — a tokenless
+            // value is flagged inside its CodeHinter preview popover.
+            if (property === 'format') {
+              return renderElement(
+                component,
+                componentMeta,
+                paramUpdated,
+                dataQueries,
+                property,
+                'properties',
+                currentState,
+                allComponents,
+                darkMode,
+                '',
+                dateFormatValidationFn
+              );
+            }
             if (['isTimezoneEnabled', 'customDateFormat'].includes(property)) {
               return (
                 <>
@@ -307,6 +363,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
                           mode="javascript"
                           lineNumbers={false}
                           onChange={(value) => paramUpdated({ name: 'dateFormat' }, 'value', value, 'properties')}
+                          validationFn={dateFormatValidationFn}
                         />
                       ) : (
                         <Select
@@ -353,7 +410,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
                               {t('widget.commonProperties.displayIn', 'Display in')}
                             </label>
                             <Select
-                              options={TIMEZONE_OPTIONS}
+                              options={TIMEZONE_REGION_OPTIONS}
                               value={displayTimezone || 'UTC'}
                               search={true}
                               closeOnSelect={true}
@@ -375,7 +432,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
                               {t('widget.commonProperties.storeIn', 'Store in')}
                             </label>
                             <Select
-                              options={TIMEZONE_OPTIONS}
+                              options={TIMEZONE_REGION_OPTIONS}
                               value={storeTimezone || 'UTC'}
                               search={true}
                               closeOnSelect={true}
@@ -461,6 +518,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
   });
 
   items.push({
+    id: ADDITIONAL_ACTIONS_ACCORDION_ID,
     title: t('widget.common.additionalActions', 'Additional Actions'),
     isOpen: true,
     children: additionalActions.map((property) => {

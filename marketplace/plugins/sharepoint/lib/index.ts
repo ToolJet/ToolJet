@@ -32,6 +32,7 @@ export default class Sharepoint implements QueryService {
     let sp_client_id = '';
     let sp_client_secret = '';
     let tenant = '';
+    let redirectHost = '';
 
     for (const item of sourceOptions) {
       if (item.key === 'sp_client_id') {
@@ -43,10 +44,13 @@ export default class Sharepoint implements QueryService {
       if (item.key === 'sp_tenant_id') {
         tenant = item.value;
       }
+      if (item.key === 'tj_redirect_host') {
+        redirectHost = item.value;
+      }
     }
 
     const accessTokenUrl = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`;
-    const host = process.env.TOOLJET_HOST;
+    const host = redirectHost || process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;
@@ -86,7 +90,7 @@ export default class Sharepoint implements QueryService {
         authDetails.push(['refresh_token', result['refresh_token']]);
       }
     } catch (error) {
-      throw Error(`Could not connect to Sharepoint:\n${error?.message}`);
+      throw Error(`Could not connect to SharePoint:\n${error?.message}`);
     }
 
     return authDetails;
@@ -345,8 +349,8 @@ export default class Sharepoint implements QueryService {
         );
       }
     } catch (error) {
-      console.error(`Error while Sharepoint refresh token call. ${JSON.stringify(error)}`);
-      throw new QueryError('could not connect to Sharepoint', JSON.stringify(error), {});
+      console.error(`Error while SharePoint refresh token call. ${JSON.stringify(error)}`);
+      throw new QueryError('could not connect to SharePoint', JSON.stringify(error), {});
     }
     return accessTokenDetails;
   }

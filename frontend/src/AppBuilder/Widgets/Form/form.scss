@@ -69,7 +69,7 @@
 
   .resize-handle {
     position: absolute;
-    bottom: -4px;
+    bottom: -3px;
     left: 50%;
     /* Center horizontally */
     transform: translateX(-50%);
@@ -100,6 +100,11 @@
   min-height: 100px;
   background-color: inherit;
 }
+
+/* Dynamic-height flash suppression is applied inline to the form body's OWN
+ * canvas (overflowY in Form.jsx's SubContainer styles). No CSS rule here: a
+ * `.jet-form-body[class*="dynamic-"] .real-canvas` descendant selector also hit
+ * nested widgets' canvases (e.g. an embedded module) and killed their scroll. */
 
 .jet-form-footer {
   min-height: 10px;

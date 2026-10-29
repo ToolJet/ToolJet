@@ -1,8 +1,10 @@
+import { invalidateUserCredentials } from '@modules/mcp-oauth/revocation';
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from '@modules/users/repositories/repository';
-import { ProfileUpdateDto } from '@modules/profile/dto';
+import { ProfilePreferencesDto, ProfileUpdateDto } from '@modules/profile/dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager } from 'typeorm';
+import { EntityManager, Not } from 'typeorm';
+import { UserSessions } from '@entities/user_sessions.entity';
 import { ProfileUtilService } from '@modules/profile/util.service';
 import { User } from '@entities/user.entity';
 import { IProfileService } from '@modules/profile/interfaces/IService';
@@ -13,16 +15,21 @@ import { validatePasswordServer } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class ProfileService implements IProfileService {
-  constructor(protected userRepository: UserRepository, protected serviceUtils: ProfileUtilService) {}
+  constructor(
+    protected userRepository: UserRepository,
+    protected serviceUtils: ProfileUtilService
+  ) {}
 
   getSessionUserDetails(user: User): Partial<User> {
-    const { firstName, lastName, avatarId, email, id } = user;
+    const { firstName, lastName, avatarId, email, id, mfaEnabled, aiBuildNotificationsEnabled } = user;
     return {
       firstName,
       lastName,
       avatarId,
       email,
       id,
+      mfaEnabled,
+      aiBuildNotificationsEnabled,
     };
   }
 
@@ -51,20 +58,30 @@ export class ProfileService implements IProfileService {
     });
   }
 
-  async updateUserPassword(userId: string, password: string): Promise<void> {
+  async updateUserPassword(userId: string, password: string, currentSessionId?: string): Promise<void> {
     validatePasswordServer(password);
     return dbTransactionWrap(async (manager: EntityManager) => {
       const user = await manager.findOneOrFail(User, {
         where: { id: userId },
       });
+      const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
+      const passwordExpiry =
+        !isNaN(rawExpiryDays) && rawExpiryDays > 0 ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000) : null;
       await this.userRepository.updateOne(
         userId,
         {
           password,
           passwordRetryCount: 0,
+          passwordExpiry,
         },
         manager
       );
+      await invalidateUserCredentials(manager, userId);
+      // Sign the user out everywhere else, keeping the session that made this change
+      await manager.delete(UserSessions, {
+        userId,
+        ...(currentSessionId ? { id: Not(currentSessionId) } : {}),
+      });
       const auditLogEntry = {
         userId: user.id,
         organizationId: user.defaultOrganizationId,
@@ -95,6 +112,31 @@ export class ProfileService implements IProfileService {
           updated_user_details: {
             first_name: firstName,
             last_name: lastName,
+          },
+        },
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogData);
+    });
+  }
+
+  async updatePreferences(userId: string, preferencesDto: ProfilePreferencesDto): Promise<void> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const user = await manager.findOneOrFail(User, {
+        where: { id: userId },
+      });
+      const { ai_build_notifications_enabled: aiBuildNotificationsEnabled } = preferencesDto;
+      await this.userRepository.updateOne(userId, { aiBuildNotificationsEnabled }, manager);
+      const auditLogData = {
+        userId: user.id,
+        organizationId: user.defaultOrganizationId,
+        resourceId: user.id,
+        resourceName: user.email,
+        resourceData: {
+          previous_user_details: {
+            ai_build_notifications_enabled: user.aiBuildNotificationsEnabled,
+          },
+          updated_user_details: {
+            ai_build_notifications_enabled: aiBuildNotificationsEnabled,
           },
         },
       };

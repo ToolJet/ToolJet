@@ -141,23 +141,39 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
 
   public buildConfigs(config: any, configId: string) {
     if (!config) return config;
+    const safeConfigs = Object.fromEntries(
+      Object.entries(config?.configs || {}).filter(([key]) => !key.toLowerCase().includes('secret'))
+    );
     return {
       ...config,
-      configs: {
-        ...(config?.configs || {}),
-        ...(config?.configs ? { clientSecret: '' } : {}),
-      },
+      configs: safeConfigs,
       configId,
     };
   }
 
-  async encryptSecret(configs) {
+  async encryptSecret(configs, previousConfigs?: Record<string, any>) {
     if (!configs || typeof configs !== 'object') return configs;
     await Promise.all(
       Object.keys(configs).map(async (key) => {
         if (key.toLowerCase().includes('secret')) {
           if (configs[key]) {
-            configs[key] = await this.encryptionService.encryptColumnValue('ssoConfigs', key, configs[key]);
+            // Preserve the randomized ciphertext only when the plaintext is unchanged.
+            // Real rotations still change the policy fingerprint and fire revocation hooks.
+            const previous = previousConfigs?.[key];
+            let unchanged = false;
+            if (previous) {
+              try {
+                unchanged =
+                  (await this.encryptionService.decryptColumnValue('ssoConfigs', key, previous)) === configs[key];
+              } catch {
+                /* A replacement secret also repairs unreadable legacy ciphertext. */
+              }
+            }
+            if (unchanged) {
+              configs[key] = previous;
+            } else {
+              configs[key] = await this.encryptionService.encryptColumnValue('ssoConfigs', key, configs[key]);
+            }
           }
         }
       })

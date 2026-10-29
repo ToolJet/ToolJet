@@ -1,9 +1,11 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { getActiveBranchId } from '@/_helpers/active-branch';
 
 export const globalDatasourceService = {
   create,
   getAll,
+  getAiTaggableDataSources,
   save,
   deleteDataSource,
   convertToGlobal,
@@ -13,19 +15,36 @@ export const globalDatasourceService = {
   getQueriesLinkedToMarketplacePlugin,
 };
 
+function appendBranchId(url) {
+  const branchId = getActiveBranchId();
+  if (!branchId) return url;
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}branch_id=${branchId}`;
+}
+
+// Datasources the current user may tag in the AI prompt — RBAC-filtered server-side to the AI
+// use/configure gate (organization is derived from the session). Returns [{ id, name, kind }].
+function getAiTaggableDataSources() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+
+  return fetch(`${config.apiUrl}/ai/taggable-datasources`, requestOptions).then(handleResponse);
+}
+
 function getForApp(organizationId, appVersionId, environmentId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
 
   return fetch(
-    `${config.apiUrl}/data-sources/${organizationId}/environments/${environmentId}/versions/${appVersionId}`,
+    appendBranchId(
+      `${config.apiUrl}/data-sources/${organizationId}/environments/${environmentId}/versions/${appVersionId}`
+    ),
     requestOptions
   ).then(handleResponse);
 }
 
-function getAll(organizationId, appVersionId, environmentId) {
+function getAll(organizationId, _appVersionId, _environmentId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
 
-  return fetch(`${config.apiUrl}/data-sources/${organizationId}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchId(`${config.apiUrl}/data-sources/${organizationId}`), requestOptions).then(handleResponse);
 }
 
 function create({ plugin_id, name, kind, options, scope, environment_id }) {
@@ -39,7 +58,7 @@ function create({ plugin_id, name, kind, options, scope, environment_id }) {
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
-  return fetch(`${config.apiUrl}/data-sources`, requestOptions).then(handleResponse);
+  return fetch(appendBranchId(`${config.apiUrl}/data-sources`), requestOptions).then(handleResponse);
 }
 
 function save({ id, name, options, environment_id }) {
@@ -49,14 +68,15 @@ function save({ id, name, options, environment_id }) {
   };
 
   const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
-  return fetch(`${config.apiUrl}/data-sources/${id}?environment_id=${environment_id}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    appendBranchId(`${config.apiUrl}/data-sources/${id}?environment_id=${environment_id}`),
+    requestOptions
+  ).then(handleResponse);
 }
 
 function deleteDataSource(id) {
   const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/data-sources/${id}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchId(`${config.apiUrl}/data-sources/${id}`), requestOptions).then(handleResponse);
 }
 
 function convertToGlobal(id) {
@@ -66,9 +86,10 @@ function convertToGlobal(id) {
 
 function getDataSourceByEnvironmentId(dataSourceId, environmentId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/data-sources/${dataSourceId}/environment/${environmentId}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    appendBranchId(`${config.apiUrl}/data-sources/${dataSourceId}/environment/${environmentId}`),
+    requestOptions
+  ).then(handleResponse);
 }
 
 function getQueriesLinkedToMarketplacePlugin(pluginId) {
@@ -80,5 +101,7 @@ function getQueriesLinkedToMarketplacePlugin(pluginId) {
 
 function getQueriesLinkedToDatasource(dataSourceId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/data-sources/dependent-queries/${dataSourceId}`, requestOptions).then(handleResponse);
+  return fetch(appendBranchId(`${config.apiUrl}/data-sources/dependent-queries/${dataSourceId}`), requestOptions).then(
+    handleResponse
+  );
 }

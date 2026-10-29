@@ -1,6 +1,6 @@
 import { commonSelectors } from "Selectors/common";
-import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
+import { groupsSelector } from "Selectors/platform/manageGroups";
+import { groupsText } from "Texts/platform/manageGroups";
 
 export const verifyAdminHelperText = (index = 0) => {
     cy.get(groupsSelector.helperTextAdminAppAccess)
@@ -14,7 +14,10 @@ export const verifyAdminHelperText = (index = 0) => {
         .should("be.visible")
         .and("have.text", "read documentation")
         .and("have.attr", "href")
-        .and("include", "docs.tooljet.com/docs/tutorial/manage-users-groups");
+        .and(
+            "include",
+            "docs.tooljet.com/docs/user-management/role-based-access/user-roles"
+        );
 };
 
 export const verifyEditUserRoleModal = (userEmail) => {
@@ -74,7 +77,60 @@ export const verifyDeleteConfirmationModal = () => {
     cy.get(groupsSelector.cancelButton).should("be.visible").and("be.enabled");
 };
 
-export const verifyGranularEditModal = (role) => {
+
+export const verifyEnvironmentSelectionStateInModal = (role,userType, envOptionList) => {
+    const builderEnvOptions = [
+        { label: "All environments", checked: false },
+        { label: "Development", checked: true },
+        { label: "Staging", checked: true },
+        { label: "Production", checked: false },
+        { label: "Released app", checked: true },
+    ];
+    const enduserEnvOptions = [
+        { label: "All environments", checked: false },
+        { label: "Development", checked: false },
+        { label: "Staging", checked: false },
+        { label: "Production", checked: false },
+        { label: "Released app", checked: true },
+    ];
+
+    const envOptionsMap = {
+        builder: builderEnvOptions,
+        enduser: enduserEnvOptions,
+        custom: userType === "builder" ? builderEnvOptions : enduserEnvOptions,
+    };
+
+    const options = envOptionList ?? envOptionsMap[role];
+
+    cy.get(groupsSelector.envContainerArrowIcon).click();
+    cy.get('[role="listbox"]').should("be.visible");
+
+    options.forEach(({ label, checked }) => {
+        cy.get('[role="listbox"] [role="option"]')
+            .contains(label)
+            .closest('[role="option"]')
+            .find('input[type="checkbox"]')
+            .should(checked ? "be.checked" : "not.be.checked");
+    });
+
+    cy.get(groupsSelector.envContainerArrowIcon).click();
+    cy.get('[role="listbox"]').should("not.exist");
+
+};
+
+export const selectEnvironments = (envs) => {
+    cy.get(groupsSelector.envContainerArrowIcon).click();
+    envs.forEach((env) => {
+        cy.get('[role="listbox"] [role="option"]')
+            .contains(label)
+            .closest('[role="option"]')
+            .find('input[type="checkbox"]')
+            .check();
+    });
+};
+
+export const verifyGranularEditModal = (role, userType) => {
+
     cy.get(groupsSelector.permissionsLink).should("be.visible").click();
     cy.get(groupsSelector.granularLink).should("be.visible").click();
     cy.get(groupsSelector.granularAccessPermission, { timeout: 15000 }).realHover();
@@ -93,6 +149,10 @@ export const verifyGranularEditModal = (role) => {
     } else {
         cy.get(groupsSelector.customRadio).should("be.enabled");
     }
+
+    verifyEnvironmentsTags(groupsSelector.selectedEnvironments,role, userType);
+    verifyEnvironmentSelectionStateInModal(role,userType);
+
     cy.verifyElement(groupsSelector.customLabel, groupsText.customLabel);
     cy.verifyElement(
         groupsSelector.customHelperText,
@@ -145,6 +205,10 @@ export const verifyGranularAddModal = (role) => {
     } else {
         cy.get(groupsSelector.customRadio).should("be.enabled");
     }
+
+    verifyEnvironmentsTags(groupsSelector.selectedEnvironments, role);
+    verifyEnvironmentSelectionStateInModal(role);
+
     cy.verifyElement(groupsSelector.customLabel, groupsText.customLabel);
     cy.verifyElement(
         groupsSelector.customHelperText,
@@ -156,6 +220,7 @@ export const verifyGranularAddModal = (role) => {
     cy.verifyElement(groupsSelector.cancelButton, groupsText.cancelButton);
     cy.get(groupsSelector.cancelButton).click();
 };
+
 
 export const verifyEnduserHelperText = (index = 0) => {
     cy.get(groupsSelector.helperTextAdminAppAccess)
@@ -169,7 +234,10 @@ export const verifyEnduserHelperText = (index = 0) => {
         .should("be.visible")
         .and("have.text", "read documentation")
         .and("have.attr", "href")
-        .and("include", "docs.tooljet.com/docs/tutorial/manage-users-groups");
+        .and(
+            "include",
+            "docs.tooljet.com/docs/user-management/role-based-access/user-roles"
+        );
 };
 
 export const verifyGranularPermissionModalUI = (
@@ -237,9 +305,9 @@ export const verifyGranularPermissionModalUI = (
     }
 
     if (resourceType === "workflow") {
-        cy.verifyElement(groupsSelector.workflowsBuildLabel, "Build");
+        cy.verifyElement(groupsSelector.workflowsEditLabel, "Edit");
         cy.verifyElement(
-            groupsSelector.workflowsBuildHelperText,
+            groupsSelector.workflowsEditHelperText,
             "Access to workflow builder"
         );
         cy.verifyElement(groupsSelector.workflowsExecuteLabel, "Execute");
@@ -307,7 +375,7 @@ export const verifyGranularPermissionModalStates = (
             builder: {
                 editRadio: { checked: true, enabled: true },
                 viewRadio: { checked: false, enabled: true },
-                hideCheckbox: { enabled: false },
+                hideCheckbox: { enabled: true },
                 allAppsRadio: { checked: true, enabled: false },
                 customRadio: { checked: false, enabled: false },
             },
@@ -321,7 +389,7 @@ export const verifyGranularPermissionModalStates = (
             custom: {
                 editRadio: { checked: true, enabled: true },
                 viewRadio: { checked: false, enabled: true },
-                hideCheckbox: { enabled: false },
+                hideCheckbox: { enabled: true },
                 allAppsRadio: { checked: true, enabled: true },
                 customRadio: { checked: false, enabled: true },
             },
@@ -360,6 +428,30 @@ export const verifyGranularPermissionModalStates = (
                 customRadio: { checked: false, enabled: true },
             },
         },
+        folder: {
+            builder: {
+                editFolderRadio: { checked: true, enabled: true },
+                editAppRadio: { checked: false, enabled: true },
+                viewAppRadio: { checked: false, enabled: true },
+                allAppsRadio: { checked: true, enabled: false },
+                customRadio: { checked: false, enabled: false },
+            },
+            enduser: {
+                editFolderRadio: { checked: false, enabled: false },
+                editAppRadio: { checked: false, enabled: false },
+                viewAppRadio: { checked: true, enabled: true },
+                allAppsRadio: { checked: true, enabled: false },
+                customRadio: { checked: false, enabled: false },
+            },
+            custom: {
+                editFolderRadio: { checked: true, enabled: true },
+                editAppRadio: { checked: false, enabled: true },
+                viewAppRadio: { checked: false, enabled: true },
+                allAppsRadio: { checked: true, enabled: true },
+                customRadio: { checked: false, enabled: true },
+            },
+
+        }
     };
 
     // Get the base config
@@ -408,6 +500,23 @@ export const verifyGranularPermissionModalStates = (
             .should("be.visible")
             .and(config.buildWithRadio.checked ? "be.checked" : "not.be.checked")
             .and(config.buildWithRadio.enabled ? "be.enabled" : "be.disabled");
+    }
+
+    if (resourceType === "folder") {
+        cy.get(groupsSelector.editFolderRadio)
+            .should("be.visible")
+            .and(config.editFolderRadio.checked ? "be.checked" : "not.be.checked")
+            .and(config.editFolderRadio.enabled ? "be.enabled" : "be.disabled");
+
+        cy.get(groupsSelector.editAppRadio)
+            .should("be.visible")
+            .and(config.editAppRadio.checked ? "be.checked" : "not.be.checked")
+            .and(config.editAppRadio.enabled ? "be.enabled" : "be.disabled");
+
+        cy.get(groupsSelector.viewAppRadio)
+            .should("be.visible")
+            .and(config.viewAppRadio.checked ? "be.checked" : "not.be.checked")
+            .and(config.viewAppRadio.enabled ? "be.enabled" : "be.disabled");
     }
 
     cy.get(groupsSelector.allAppsRadio)
@@ -486,6 +595,7 @@ export const permissions =
             groupsSelector.appsCreateCheck,
             groupsSelector.appsDeleteCheck,
             groupsSelector.foldersCreateCheck,
+            groupsSelector.foldersDeleteCheck,
             groupsSelector.workspaceVarCheckbox,
         ]
         : [
@@ -498,6 +608,7 @@ export const permissions =
             groupsSelector.datasourcesCreateCheck,
             groupsSelector.datasourcesDeleteCheck,
             groupsSelector.foldersCreateCheck,
+            groupsSelector.foldersDeleteCheck,
             groupsSelector.workspaceVarCheckbox,
         ];
 
@@ -545,8 +656,16 @@ export const verifyPermissionCheckBoxLabelsAndHelperTexts = () => {
             text: groupsText.folderCreateLabel,
         },
         {
-            selector: groupsSelector.foldersHelperText,
-            text: groupsText.folderHelperText,
+            selector: groupsSelector.foldersCreateHelperText,
+            text: groupsText.folderCreateHelperText,
+        },
+        {
+            selector: groupsSelector.folderDeleteLabel,
+            text: groupsText.deleteLabel,
+        },
+        {
+            selector: groupsSelector.folderDeleteHelperText,
+            text: groupsText.folderDeleteHelperText,
         },
         {
             selector: groupsSelector.resourcesWorkspaceVar,
@@ -606,16 +725,39 @@ export const verifyPermissionCheckBoxLabelsAndHelperTexts = () => {
     });
 };
 
+const adminEnvsTags = ["Development", "Staging", "Production", "Released app"];
+const builderEnvTags = ["Development", "Staging", "Released app"];
+const enduserEnvTags = ["Released app"];
+
+const envTagsByRole = {
+    admin: adminEnvsTags,
+    builder: builderEnvTags,
+    enduser: enduserEnvTags,
+};
+
+export const verifyEnvironmentsTags = (selector, role, userType, expectedEnvs) => {
+    const tags = expectedEnvs ?? envTagsByRole[role==="custom" ? userType : role];
+
+    cy.get(selector).should("have.length", tags.length)
+        .each(($tag, index) => {
+            expect($tag.text().trim()).to.eq(tags[index]);
+        });
+};
+
 export const verifyGranularAccessByRole = (role) => {
     const roleConfig = {
         admin: {
             appEditRadio: { checked: true, enabled: false },
             appViewRadio: { checked: false, enabled: false },
             appHideCheckbox: { enabled: false },
-            workflowBuildRadio: { checked: true, enabled: false },
+            workflowEditRadio: { checked: true, enabled: false },
             workflowExecuteRadio: { checked: false, enabled: false },
             datasourceConfigureRadio: { checked: true, enabled: false },
             datasourceBuildWithRadio: { checked: false, enabled: false },
+            environments: adminEnvsTags,
+            folderEditRadio: { checked: true, enabled: false },
+            folderEditAppRadio: { checked: false, enabled: false },
+            folderViewAppRadio: { checked: false, enabled: false },
             addButtonEnabled: false,
             verifyHelperTexts: true,
             hasDatasource: true,
@@ -623,11 +765,15 @@ export const verifyGranularAccessByRole = (role) => {
         builder: {
             appEditRadio: { checked: true, enabled: true },
             appViewRadio: { checked: false, enabled: true },
-            appHideCheckbox: { enabled: false },
-            workflowBuildRadio: { checked: true, enabled: true },
+            appHideCheckbox: { enabled: true },
+            workflowEditRadio: { checked: true, enabled: true },
             workflowExecuteRadio: { checked: false, enabled: true },
             datasourceConfigureRadio: { checked: true, enabled: true },
             datasourceBuildWithRadio: { checked: false, enabled: true },
+            environments: builderEnvTags,
+            folderEditRadio: { checked: true, enabled: true },
+            folderEditAppRadio: { checked: false, enabled: true },
+            folderViewAppRadio: { checked: false, enabled: true },
             addButtonEnabled: true,
             verifyHelperTexts: false,
             hasDatasource: true,
@@ -636,8 +782,12 @@ export const verifyGranularAccessByRole = (role) => {
             appEditRadio: { checked: false, enabled: false },
             appViewRadio: { checked: true, enabled: false },
             appHideCheckbox: { enabled: true },
-            workflowBuildRadio: { checked: false, enabled: false },
+            workflowEditRadio: { checked: false, enabled: false },
             workflowExecuteRadio: { checked: true, enabled: false },
+            environments: enduserEnvTags,
+            folderEditRadio: { checked: false, enabled: false },
+            folderEditAppRadio: { checked: false, enabled: false },
+            folderViewAppRadio: { checked: true, enabled: true },
             addButtonEnabled: true,
             verifyHelperTexts: false,
             hasDatasource: false,
@@ -710,14 +860,17 @@ export const verifyGranularAccessByRole = (role) => {
     });
 
     cy.ifEnv("Enterprise", () => {
+        //verify environments for apps
+        verifyEnvironmentsTags(groupsSelector.appEnvironmentTag, role, config.environments);
+
         cy.verifyElement(groupsSelector.workflowsText, "Workflows");
 
-        cy.get(groupsSelector.workflowsBuildRadio)
+        cy.get(groupsSelector.workflowsEditRadio)
             .should("be.visible")
-            .and(config.workflowBuildRadio.checked ? "be.checked" : "not.be.checked")
+            .and(config.workflowEditRadio.checked ? "be.checked" : "not.be.checked")
             .and(
-                config.workflowBuildRadio.enabled ? "be.enabled" : "have.attr",
-                config.workflowBuildRadio.enabled ? "" : "disabled"
+                config.workflowEditRadio.enabled ? "be.enabled" : "have.attr",
+                config.workflowEditRadio.enabled ? "" : "disabled"
             );
 
         cy.get(groupsSelector.workflowsExecuteRadio)
@@ -728,9 +881,9 @@ export const verifyGranularAccessByRole = (role) => {
             );
 
         if (config.verifyHelperTexts) {
-            cy.verifyElement(groupsSelector.workflowsBuildLabel, "Build");
+            cy.verifyElement(groupsSelector.workflowsEditLabel, "Edit");
             cy.verifyElement(
-                groupsSelector.workflowsBuildHelperText,
+                groupsSelector.workflowsEditHelperText,
                 "Access to workflow builder"
             );
             cy.verifyElement(groupsSelector.workflowsExecuteLabel, "Execute");
@@ -789,6 +942,50 @@ export const verifyGranularAccessByRole = (role) => {
             );
         }
 
+        cy.verifyElement(groupsSelector.foldersText, "  App folders");
+
+        cy.get(groupsSelector.folderEditRadio)
+            .should("be.visible")
+            .and(config.folderEditRadio.checked ? "be.checked" : "not.be.checked")
+            .and(
+                config.folderEditRadio.enabled ? "be.enabled" : "have.attr",
+                config.folderEditRadio.enabled ? "" : "disabled"
+            );
+
+        cy.get(groupsSelector.folderEditAppRadio)
+            .should("be.visible")
+            .and(
+                config.folderEditAppRadio.enabled ? "be.enabled" : "have.attr",
+                config.folderEditAppRadio.enabled ? "" : "disabled"
+            );
+
+        cy.get(groupsSelector.folderViewAppRadio)
+            .should("be.visible")
+            .and(
+                config.folderViewAppRadio.enabled ? "be.enabled" : "have.attr",
+                config.folderViewAppRadio.enabled ? "" : "disabled"
+            );
+
+        if (config.verifyHelperTexts) {
+            cy.verifyElement(groupsSelector.folderEditLabel, groupsText.folderEditLabel);
+            cy.verifyElement(
+                groupsSelector.folderEditHelperText,
+                groupsText.folderEditHelperText
+            );
+            cy.verifyElement(groupsSelector.folderEditAppLabel, groupsText.folderEditAppLabel);
+            cy.verifyElement(
+                groupsSelector.folderEditAppHelperText,
+                groupsText.folderEditAppHelperText
+            );
+            cy.verifyElement(groupsSelector.folderViewAppLabel, groupsText.folderViewAppLabel);
+            cy.verifyElement(
+                groupsSelector.folderViewAppHelperText,
+                groupsText.folderViewAppHelperText
+            );
+        }
+
+        cy.verifyElement(groupsSelector.groupChip("All app folders"), "All app folders");
+
         cy.verifyElement(groupsSelector.addPermissionButton, "Add permission");
         cy.get(groupsSelector.addPermissionButton).should(
             config.addButtonEnabled ? "be.enabled" : "be.disabled"
@@ -826,6 +1023,8 @@ export const permissionModal = () => {
     );
 
     cy.get(groupsSelector.hidePermissionInput).should("be.visible");
+    cy.get(groupsSelector.environmentLabel).should("be.visible");
+    cy.get(groupsSelector.environmentSelectionContainer).should("be.visible");
     cy.verifyElement(groupsSelector.resourceLabel, groupsText.resourcesheader);
     cy.get(groupsSelector.resourceContainer).should("be.visible");
     cy.get(groupsSelector.allAppsRadio).should("be.visible").and("be.checked");

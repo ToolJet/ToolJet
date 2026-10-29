@@ -21,7 +21,6 @@ export const ModalHeader = React.memo(
     isFullScreen,
   }) => {
     const canvasHeaderHeight = getCanvasHeight(headerHeight);
-    // console.log(headerMaxHeight, 'headerMaxHeight');
     return (
       <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`} onClick={onClick}>
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>

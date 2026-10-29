@@ -9,7 +9,11 @@ import { SSOConfigs } from '../src/entities/sso_config.entity';
 import { OrganizationTjdbConfigurations } from '../src/entities/organization_tjdb_configurations.entity';
 import { UserDetails } from '../src/entities/user_details.entity';
 import { InstanceSettings } from '../src/entities/instance_settings.entity';
-import { INSTANCE_SETTINGS_ENCRYPTION_KEY, INSTANCE_CONFIGS_DATA_TYPES } from '../src/modules/instance-settings/constants';
+import { OrganizationAiKey } from '../src/entities/organization_ai_key.entity';
+import {
+  INSTANCE_SETTINGS_ENCRYPTION_KEY,
+  INSTANCE_CONFIGS_DATA_TYPES,
+} from '../src/modules/instance-settings/constants';
 import { getEnvVars } from './database-config-utils';
 import { dbTransactionWrap } from '../src/helpers/database.helper';
 
@@ -45,7 +49,7 @@ Object.keys(ENV_VARS).forEach((key) => {
  */
 
 class RotationProgress {
-  private totalTables = 6;
+  private totalTables = 7;
   private completedTables = 0;
   private currentTable = '';
   private currentTableRows = 0;
@@ -61,7 +65,8 @@ class RotationProgress {
   incrementRow(): void {
     this.currentTableRows++;
     if (this.currentTableRows % 10 === 0 || this.currentTableRows === this.currentTableTotal) {
-      const percent = this.currentTableTotal > 0 ? ((this.currentTableRows / this.currentTableTotal) * 100).toFixed(1) : '0.0';
+      const percent =
+        this.currentTableTotal > 0 ? ((this.currentTableRows / this.currentTableTotal) * 100).toFixed(1) : '0.0';
       process.stdout.write(`\r  Progress: ${this.currentTableRows}/${this.currentTableTotal} (${percent}%)`);
     }
   }
@@ -176,6 +181,7 @@ async function bootstrap() {
       await rotateTJDBConfigs(entityManager, dualKeyService, progress);
       await rotateUserDetails(entityManager, dualKeyService, progress);
       await rotateInstanceSettings(entityManager, dualKeyService, progress);
+      await rotateOrganizationAiKeys(entityManager, dualKeyService, progress);
 
       progress.complete();
 
@@ -233,25 +239,22 @@ async function promptForOldKey(): Promise<string> {
   });
 
   return new Promise((resolve, reject) => {
-    rl.question(
-      'Please enter the old key: ',
-      (answer) => {
-        rl.close();
-        const key = answer.trim();
+    rl.question('Please enter the old key: ', (answer) => {
+      rl.close();
+      const key = answer.trim();
 
-        if (!key) {
-          reject(new Error('Old key is required'));
-          return;
-        }
-
-        try {
-          validateKeyFormat(key, 'Old master key');
-          resolve(key);
-        } catch (error) {
-          reject(error);
-        }
+      if (!key) {
+        reject(new Error('Old key is required'));
+        return;
       }
-    );
+
+      try {
+        validateKeyFormat(key, 'Old master key');
+        resolve(key);
+      } catch (error) {
+        reject(error);
+      }
+    });
   });
 }
 
@@ -262,18 +265,15 @@ async function promptBackupConfirmation(): Promise<void> {
   });
 
   return new Promise((resolve, reject) => {
-    rl.question(
-      '⚠️  Have you backed up the database? This operation cannot be undone. (yes/no): ',
-      (answer) => {
-        rl.close();
-        if (answer.toLowerCase() === 'yes') {
-          console.log('✓ Backup confirmed');
-          resolve();
-        } else {
-          reject(new Error('Database backup not confirmed. Aborting rotation.'));
-        }
+    rl.question('⚠️  Have you backed up the database? This operation cannot be undone. (yes/no): ', (answer) => {
+      rl.close();
+      if (answer.toLowerCase() === 'yes') {
+        console.log('✓ Backup confirmed');
+        resolve();
+      } else {
+        reject(new Error('Database backup not confirmed. Aborting rotation.'));
       }
-    );
+    });
   });
 }
 
@@ -332,10 +332,18 @@ async function rotateOrgConstants(
       const orgId = constant.organizationConstant.organizationId;
 
       // Decrypt with old key (using orgId as column param)
-      const plainValue = await dualKeyService.decryptWithOldKey('org_environment_constant_values', orgId, constant.value);
+      const plainValue = await dualKeyService.decryptWithOldKey(
+        'org_environment_constant_values',
+        orgId,
+        constant.value
+      );
 
       // Encrypt with new key
-      const newCiphertext = await dualKeyService.encryptWithNewKey('org_environment_constant_values', orgId, plainValue);
+      const newCiphertext = await dualKeyService.encryptWithNewKey(
+        'org_environment_constant_values',
+        orgId,
+        plainValue
+      );
 
       constant.value = newCiphertext;
       await entityManager.save(constant);
@@ -496,8 +504,16 @@ async function rotateInstanceSettings(
 
     try {
       // table = INSTANCE_SETTINGS_ENCRYPTION_KEY ('instance_settings'), column = the row's key (e.g. 'SMTP_PASSWORD')
-      const plainValue = await dualKeyService.decryptWithOldKey(INSTANCE_SETTINGS_ENCRYPTION_KEY, setting.key, setting.value);
-      const newCiphertext = await dualKeyService.encryptWithNewKey(INSTANCE_SETTINGS_ENCRYPTION_KEY, setting.key, plainValue);
+      const plainValue = await dualKeyService.decryptWithOldKey(
+        INSTANCE_SETTINGS_ENCRYPTION_KEY,
+        setting.key,
+        setting.value
+      );
+      const newCiphertext = await dualKeyService.encryptWithNewKey(
+        INSTANCE_SETTINGS_ENCRYPTION_KEY,
+        setting.key,
+        plainValue
+      );
 
       setting.value = newCiphertext;
       await entityManager.save(setting);
@@ -505,6 +521,44 @@ async function rotateInstanceSettings(
       progress.incrementRow();
     } catch (error) {
       throw new Error(`Failed to rotate instance setting ${setting.key}: ${error.message}`);
+    }
+  }
+
+  progress.completeTable();
+}
+
+// Table 7: organization_ai_keys
+async function rotateOrganizationAiKeys(
+  entityManager: EntityManager,
+  dualKeyService: DualKeyEncryptionService,
+  progress: RotationProgress
+): Promise<void> {
+  const aiKeys = await entityManager.find(OrganizationAiKey);
+  progress.startTable('organization_ai_keys', aiKeys.length);
+
+  for (const aiKey of aiKeys) {
+    if (!aiKey.encryptedKey) {
+      progress.incrementRow();
+      continue;
+    }
+
+    try {
+      // Decrypt with old key
+      const plainValue = await dualKeyService.decryptWithOldKey(
+        'organization_ai_keys',
+        'encrypted_key',
+        aiKey.encryptedKey
+      );
+
+      // Encrypt with new key
+      const newCiphertext = await dualKeyService.encryptWithNewKey('organization_ai_keys', 'encrypted_key', plainValue);
+
+      aiKey.encryptedKey = newCiphertext;
+      await entityManager.save(aiKey);
+
+      progress.incrementRow();
+    } catch (error) {
+      throw new Error(`Failed to rotate organization AI key ${aiKey.id}: ${error.message}`);
     }
   }
 
@@ -566,6 +620,13 @@ async function verifyRotation(entityManager: EntityManager, newKey: string): Pro
   if (instanceSetting?.value) {
     await testService.decryptWithOldKey(INSTANCE_SETTINGS_ENCRYPTION_KEY, instanceSetting.key, instanceSetting.value);
     console.log('  ✓ Instance settings table verified');
+  }
+
+  // Test organization AI keys
+  const orgAiKey = await entityManager.findOne(OrganizationAiKey, { where: {} });
+  if (orgAiKey?.encryptedKey) {
+    await testService.decryptWithOldKey('organization_ai_keys', 'encrypted_key', orgAiKey.encryptedKey);
+    console.log('  ✓ Organization AI keys table verified');
   }
 }
 
@@ -634,7 +695,11 @@ async function testDecryptionWithOldKey(
     where: { dataType: INSTANCE_CONFIGS_DATA_TYPES.PASSWORD },
   });
   if (instanceSetting?.value) {
-    await dualKeyService.decryptWithOldKey(INSTANCE_SETTINGS_ENCRYPTION_KEY, instanceSetting.key, instanceSetting.value);
+    await dualKeyService.decryptWithOldKey(
+      INSTANCE_SETTINGS_ENCRYPTION_KEY,
+      instanceSetting.key,
+      instanceSetting.value
+    );
     console.log('  ✓ Instance settings table - old key works');
     testedCount++;
   }
@@ -642,8 +707,16 @@ async function testDecryptionWithOldKey(
   if (testedCount === 0) {
     console.log('  ⚠️  No encrypted data found to test (database might be empty)');
   }
+
+  // Test organization AI keys
+  const orgAiKey = await entityManager.findOne(OrganizationAiKey, { where: {} });
+  if (orgAiKey?.encryptedKey) {
+    await dualKeyService.decryptWithOldKey('organization_ai_keys', 'encrypted_key', orgAiKey.encryptedKey);
+    console.log('  ✓ Organization AI keys table - old key works');
+    testedCount++;
+  }
 }
 
 // Run the script
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
+
 bootstrap();

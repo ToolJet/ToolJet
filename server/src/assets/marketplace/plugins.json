@@ -61,7 +61,7 @@
   },
   {
     "name": "PocketBase",
-    "description": "API plugin from pocketbase",
+    "description": "API plugin from PocketBase",
     "version": "1.0.0",
     "id": "pocketbase",
     "author": "Tooljet",
@@ -77,7 +77,7 @@
   },
   {
     "name": "Engagespot",
-    "description": "Plugin for engagespot APIs",
+    "description": "Plugin for Engagespot APIs",
     "version": "1.0.0",
     "id": "engagespot",
     "author": "Tooljet",
@@ -85,7 +85,7 @@
   },
   {
     "name": "Salesforce",
-    "description": "API plugin from salesforce",
+    "description": "API plugin from Salesforce",
     "version": "1.0.0",
     "id": "salesforce",
     "author": "Tooljet",
@@ -100,8 +100,8 @@
     "timestamp": "Thu, 08 Aug 2024 11:04:36 GMT"
   },
   {
-    "name": "Sharepoint",
-    "description": "Plugin for Sharepoint API",
+    "name": "SharePoint",
+    "description": "Plugin for SharePoint API",
     "version": "1.0.0",
     "id": "sharepoint",
     "author": "Tooljet",
@@ -347,5 +347,77 @@
     "id": "couchbase",
     "author": "Tooljet",
     "timestamp": "Fri, 20 Jun 2025 06:46:04 GMT"
+  },
+  {
+    "name": "QuickBooks",
+    "description": "Integrate with QuickBooks Online Accounting API",
+    "version": "1.0.0",
+    "id": "quickbooks",
+    "author": "Tooljet",
+    "timestamp": "Wed, 09 Apr 2026 09:30:00 GMT"
+  },
+  {
+    "name": "Intercom",
+    "description": "Connect to Intercom API to manage contacts, conversations, tickets, companies, articles, and more",
+    "version": "1.0.0",
+    "id": "intercom",
+    "author": "Tooljet",
+    "timestamp": "Wed, 16 Apr 2026 10:00:00 GMT"
+  },
+  {
+    "name": "Asana",
+    "description": "Plugin for Asana project and task management",
+    "version": "1.0.0",
+    "id": "asana",
+    "author": "Tooljet",
+    "timestamp": "Sun, 29 Jun 2025 00:00:00 GMT"
+  },
+  {
+    "name": "ServiceNow",
+    "description": "Read and write ServiceNow records via the Table API",
+    "version": "1.0.0",
+    "id": "servicenow",
+    "author": "Tooljet",
+    "timestamp": "Mon, 08 Jun 2026 14:10:00 GMT",
+    "repo": "",
+    "tags": [
+      "IT Service Management"
+    ]
+  },
+  {
+    "name": "Confluence",
+    "description": "Read and write Confluence Cloud pages, spaces, comments and attachments",
+    "version": "1.0.0",
+    "id": "confluence",
+    "author": "Tooljet",
+    "timestamp": "Fri, 14 Aug 2026 00:00:00 GMT",
+    "repo": "",
+    "tags": [
+      "Collaboration"
+    ]
+  },
+  {
+    "name": "OpenRouter",
+    "description": "One key for hundreds of models, and any OpenAI-compatible endpoint",
+    "version": "1.0.0",
+    "id": "openrouter",
+    "author": "Tooljet",
+    "timestamp": "Fri, 19 Sep 2026 00:00:00 GMT",
+    "repo": "",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
+    "name": "TypeSafe",
+    "description": "Typed decisions from the Jev model: route, classify, score, yes/no. Direct or via OpenRouter.",
+    "version": "1.0.0",
+    "id": "typesafe",
+    "author": "Tooljet",
+    "timestamp": "Sat, 19 Sep 2026 22:30:00 GMT",
+    "repo": "",
+    "tags": [
+      "AI"
+    ]
   }
 ]

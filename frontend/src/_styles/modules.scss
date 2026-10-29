@@ -69,7 +69,7 @@
         scrollbar-width: thin;
         scrollbar-color: transparent transparent;
         height: 100%;
-        overflow: hidden auto;
+        overflow: hidden;
 
         /* Hide scrollbar by default */
         &::-webkit-scrollbar {
@@ -96,6 +96,28 @@
     &.disabled{
         pointer-events: none;
         opacity: 0.5;
+    }
+}
+
+.module-viewer-wrapper.padding-none {
+    .real-canvas {
+        padding: 0 !important;
+    }
+    .canvas-component._tooljet-ModuleContainer,
+    .canvas-component._tooljet-ModuleViewer {
+        padding: 0 !important;
+    }
+}
+
+// Dynamic-height modules size their inner canvas to content, so the viewer's
+// canvas containers must never scroll — the widget grows instead. Without this,
+// the real-canvas (calc(100% + 1px)) always overflows by a hair and shows a
+// permanent scrollbar on always-visible-scrollbar platforms.
+.module-viewer-wrapper.dynamic-height {
+    // !important: ties with `.viewer .main .canvas-container { overflow-y: auto }`
+    // on specificity and loses on source order otherwise.
+    .canvas-container {
+        overflow-y: hidden !important;
     }
 }
 

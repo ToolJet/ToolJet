@@ -1,6 +1,6 @@
 import React from 'react';
 import { renderElement } from '../Utils';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export const CustomComponent = function CustomComponent({
@@ -24,6 +24,7 @@ export const CustomComponent = function CustomComponent({
         initialValue={args.value ?? {}}
         onChange={(value) => paramUpdated({ name: 'data' }, 'value', value, 'properties')}
         componentName={`component/${component.component.name}/data`}
+        canRefresh={true}
       />
     ),
   });
@@ -42,6 +43,7 @@ export const CustomComponent = function CustomComponent({
         componentName={`component/${component.component.name}/code`}
         height={400}
         hideSuggestion={true}
+        canRefresh={true}
       />
     ),
   });

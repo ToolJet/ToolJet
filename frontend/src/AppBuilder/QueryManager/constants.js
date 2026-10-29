@@ -1,4 +1,5 @@
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
+import { DATA_QUERY_EVENTS_META } from './dataQueryEvents';
 
 const allStaticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API', shortName: 'REST API' },
@@ -44,11 +45,19 @@ export const customToggles = {
     label: 'Run this query on application load',
     translatedLabel: 'editor.queryManager.runQueryOnApplicationLoad',
   },
+  runOnDependencyChange: {
+    dataCy: 'run-on-dependency-change',
+    action: 'runOnDependencyChange',
+    label: 'Run this query on dependency change',
+    translatedLabel: 'editor.queryManager.runOnDependencyChange',
+  },
   requestConfirmation: {
     dataCy: 'confirmation-before-run',
     action: 'requestConfirmation',
     label: 'Request confirmation before running query',
     translatedLabel: 'editor.queryManager.confirmBeforeQueryRun',
+    fx: true,
+    fxKey: 'requestConfirmationFx',
   },
   showSuccessNotification: {
     dataCy: 'notification-on-success',
@@ -73,10 +82,7 @@ export const mockDataQueryAsComponent = (events) => {
   return {
     component: { component: { definition: { events: events } } },
     componentMeta: {
-      events: {
-        onDataQuerySuccess: { displayName: 'Query Success' },
-        onDataQueryFailure: { displayName: 'Query Failure' },
-      },
+      events: DATA_QUERY_EVENTS_META,
     },
   };
 };
@@ -123,4 +129,40 @@ export const workflowDefaultSources = {
   Response: { kind: 'response', id: 'response', name: 'Response' },
   Loop: { kind: 'loop', id: 'loop', name: 'Loop' },
   Agent: { kind: 'agent', id: 'agent', name: 'Agent' },
+};
+
+// Query kinds where abort is unavailable. These execute outside fetch() so AbortController
+// cannot cancel the underlying work — runjs/runpy run in-browser, workflows use SSE.
+// Used by AbortButton (to hide it) and QueryKeyHooks (to disable Cmd+. shortcut).
+export const ABORT_UNSUPPORTED_KINDS = new Set(['runjs', 'runpy', 'workflows']);
+
+// Datasource kinds the AI can write queries and transformations for. Kinds outside this list (e.g.
+// restapi, tooljetdb) are rejected by the agent, so every AI entry point must be gated on it —
+// otherwise the button is a guaranteed failure.
+// Kinds with no transformation layer at all — their query editor hides the Transformation tab, so
+// nothing (the "✨", the "@query.transformation" mention) may offer to write one for them.
+export const TRANSFORMATION_DISABLED_KINDS = new Set(['runjs', 'runpy', 'workflows']);
+
+export const AI_QUERY_SUPPORTED_KINDS = [
+  'postgresql',
+  'openapi',
+  'gmail',
+  'googlecalendar',
+  'mongodb',
+  'bigquery',
+  'mysql',
+  'mssql',
+  'snowflake',
+  'openai',
+  'runjs',
+  'databricks',
+  'servicenow',
+  'quickbooks',
+  'hubspot',
+];
+
+// ToolJet-synthesized query error kinds (errorData.data.type); mirrors server TJ_QUERY_ERROR_TYPE
+export const TJ_QUERY_ERROR_TYPE = {
+  UNAUTHORIZED: 'tj-401', // app-level Query Access denied
+  FORBIDDEN: 'tj-403', // data-source query-run restricted
 };

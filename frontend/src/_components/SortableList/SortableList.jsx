@@ -3,8 +3,10 @@ import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 import { SortableItem } from './components';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export function SortableList({ items, onChange, renderItem }) {
+  const { isModuleEditor } = useModuleContext();
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -17,7 +19,8 @@ export function SortableList({ items, onChange, renderItem }) {
     // })
   );
 
-  const shouldFreeze = useStore((state) => state.isVersionReleased || state.isEditorFreezed);
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const isEditorReadOnly = useStore((state) => state.isEditorReadOnly);
   const enableReleasedVersionPopupState = useStore((state) => state.enableReleasedVersionPopupState);
 
   return (
@@ -25,7 +28,10 @@ export function SortableList({ items, onChange, renderItem }) {
       sensors={sensors}
       onDragEnd={({ active, over }) => {
         if (shouldFreeze) {
-          enableReleasedVersionPopupState();
+          if (!isEditorReadOnly) {
+            enableReleasedVersionPopupState(); // only show version popup for version-frozen state
+          }
+          // For isEditorReadOnly, silently block — the banner explains why
           return;
         }
         if (over) {

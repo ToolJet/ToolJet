@@ -9,6 +9,10 @@ import { SubModule } from '@modules/app/sub-module';
 
 export class LoginConfigsModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const { LoginConfigsService, LoginConfigsController, LoginConfigsUtilService } = await this.getProviders(
       configs,
       'login-configs',
@@ -20,13 +24,14 @@ export class LoginConfigsModule extends SubModule {
       'guards/feature.guard',
     ]);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: LoginConfigsModule,
       imports: [await InstanceSettingsModule.register(configs), await EncryptionModule.register(configs)],
       controllers: isMainImport ? [LoginConfigsController] : [],
       providers: [
         LoginConfigsService,
         LoginConfigsUtilService,
+        { provide: 'MCP_LOGIN_CONFIGS', useExisting: LoginConfigsUtilService },
         OrganizationRepository,
         SSOConfigsRepository,
         SsoConfigOidcGroupSyncRepository,
@@ -34,7 +39,7 @@ export class LoginConfigsModule extends SubModule {
         SSOGuard,
         FeatureGuard,
       ],
-      exports: [LoginConfigsUtilService],
-    };
+      exports: [LoginConfigsUtilService, 'MCP_LOGIN_CONFIGS'],
+    });
   }
 }

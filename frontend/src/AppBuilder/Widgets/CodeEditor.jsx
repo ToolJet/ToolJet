@@ -1,5 +1,6 @@
 /* eslint-disable import/no-unresolved */
 import React, { useState, useEffect } from 'react';
+import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import CodeMirror from '@uiw/react-codemirror';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
@@ -9,7 +10,6 @@ import { sql } from '@codemirror/lang-sql';
 import { sass } from '@codemirror/lang-sass';
 import { debounce } from 'lodash';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
-import { EditorView } from '@codemirror/view';
 import './codeEditor.scss';
 
 const langSupport = Object.freeze({
@@ -20,8 +20,6 @@ const langSupport = Object.freeze({
   css: sass(),
 });
 
-const lineWrappingExtension = EditorView.lineWrapping;
-
 const CodeEditor = ({
   id,
   height,
@@ -30,7 +28,6 @@ const CodeEditor = ({
   styles,
   setExposedVariable,
   dataCy,
-  adjustComponentPositions,
   currentLayout,
   width,
   currentMode,
@@ -48,7 +45,6 @@ const CodeEditor = ({
     id,
     height,
     value: forceDynamicHeightUpdate,
-    adjustComponentPositions,
     currentLayout,
     width,
     visibility,
@@ -59,6 +55,12 @@ const CodeEditor = ({
   const codeChanged = debounce((code) => {
     setExposedVariable('value', code);
   }, 500);
+
+  const updateValue = (val) => {
+    setValue(val);
+    setForceDynamicHeightUpdate((prev) => !prev);
+    codeChanged(val);
+  };
 
   const editorStyles = {
     height: isDynamicHeightEnabled ? '100%' : height,
@@ -96,6 +98,8 @@ const CodeEditor = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useFormClear(() => updateValue(''));
+
   return (
     <div data-disabled={disabledState} style={editorStyles} data-cy={dataCy}>
       <div
@@ -120,15 +124,12 @@ const CodeEditor = ({
           maxHeight={isDynamicHeightEnabled ? 'none' : editorHeight}
           width="100%"
           theme={theme}
-          extensions={[langExtention ?? javascript(), lineWrappingExtension]}
-          onChange={(value) => {
-            setValue(value);
-            setForceDynamicHeightUpdate((prev) => !prev);
-            codeChanged(value);
-          }}
+          extensions={[langExtention ?? javascript()]}
+          onChange={updateValue}
           basicSetup={setupConfig}
           className={`codehinter-multi-line-input code-editor-component`}
           indentWithTab={true}
+          editable={!disabledState}
         />
       </div>
     </div>

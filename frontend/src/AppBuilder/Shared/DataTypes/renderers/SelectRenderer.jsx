@@ -9,7 +9,7 @@ import { isArray } from 'lodash';
 
 const { MenuList } = components;
 
-const COLORS = [
+export const COLORS = [
   '#40474D33',
   '#CE276133',
   '#6745E233',
@@ -110,7 +110,7 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
   );
 };
 
-const CustomOption = ({ innerRef, innerProps, children, isSelected, ...props }) => {
+const CustomOption = ({ innerRef, innerProps, children, isSelected, isFocused, ...props }) => {
   const { label, value, data } = props;
   const { optionColors } = props.selectProps;
 
@@ -118,7 +118,7 @@ const CustomOption = ({ innerRef, innerProps, children, isSelected, ...props }) 
     <div
       ref={innerRef}
       {...innerProps}
-      className="option-wrapper d-flex"
+      className={`option-wrapper d-flex ${isFocused ? 'option-focused' : ''}`}
       style={{ backgroundColor: 'var(--cc-surface1-surface)' }}
     >
       {props.selectProps.isMulti ? (
@@ -144,9 +144,9 @@ const CustomOption = ({ innerRef, innerProps, children, isSelected, ...props }) 
   );
 };
 
-const MultiValueRemove = ({ innerProps }) => <div {...innerProps} />;
+export const MultiValueRemove = ({ innerProps }) => <div {...innerProps} />;
 
-const CustomMultiValueContainer = ({ children }) => (
+export const CustomMultiValueContainer = ({ children }) => (
   <div
     style={{
       display: 'flex',
@@ -158,7 +158,7 @@ const CustomMultiValueContainer = ({ children }) => (
   </div>
 );
 
-const DropdownIndicator = ({ selectProps }) => {
+export const DropdownIndicator = ({ selectProps }) => {
   return (
     <div
       className="cell-icon-display"
@@ -188,7 +188,7 @@ const DropdownIndicator = ({ selectProps }) => {
   );
 };
 
-const getOverlay = (value, containerWidth, darkMode) => {
+export const getOverlay = (value, containerWidth, darkMode) => {
   if (!isArray(value)) return <div />;
 
   return (
@@ -348,8 +348,8 @@ export const SelectRenderer = ({
           ? defaultOptionsList
           : defaultOptionsList.slice(-1)[0]
         : isMulti
-        ? []
-        : {},
+          ? []
+          : {},
     [isMulti, defaultOptionsList]
   );
 
@@ -398,7 +398,7 @@ export const SelectRenderer = ({
     >
       <>
         <div
-          className="w-100 d-flex align-items-center"
+          className="w-100 h-100 d-flex align-items-center"
           ref={containerRef}
           onClick={(e) => {
             if ((isNewRow && isEditable) || widgetType === 'KeyValuePair') {

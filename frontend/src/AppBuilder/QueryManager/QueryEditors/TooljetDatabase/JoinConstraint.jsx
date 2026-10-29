@@ -1,6 +1,6 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
-import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
+import { useToolJetDbOperationsContext } from './ToolJetDbOperationsContext';
 import DropDownSelect from './DropDownSelect';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
@@ -19,7 +19,7 @@ import { ToolTip } from '@/_components';
 
 const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const { selectedTableId, tables, joinOptions, findTableDetails, tableForeignKeyInfo } =
-    useContext(TooljetDatabaseContext);
+    useToolJetDbOperationsContext();
   const joinType = data?.joinType;
   const baseTableDetails = (selectedTableId && findTableDetails(selectedTableId)) || {};
   const conditionsList = isEmpty(data?.conditions?.conditionsList) ? [{}] : data?.conditions?.conditionsList;
@@ -399,7 +399,7 @@ const JoinOn = ({
   onOperatorChange,
   onRemove,
 }) => {
-  const { tableInfo, findTableDetails } = useContext(TooljetDatabaseContext);
+  const { tableInfo, findTableDetails } = useToolJetDbOperationsContext();
   const { operator, leftField, rightField } = condition;
   const leftFieldColumn = leftField?.columnName;
   const rightFieldColumn = rightField?.columnName;
@@ -408,14 +408,14 @@ const JoinOn = ({
   const rightFieldTableDetails = (rightFieldTable && findTableDetails(rightFieldTable)) || {};
 
   const leftFieldOptions = leftFieldTableDetails?.table_name
-    ? tableInfo[leftFieldTableDetails.table_name]?.map((col) => ({
+    ? (tableInfo[leftFieldTableDetails.table_name]?.map((col) => ({
         label: col.Header,
         value: col.Header,
         icon: col.dataType,
-      })) ?? []
+      })) ?? [])
     : [];
   const selectedLeftField = leftFieldTableDetails?.table_name
-    ? tableInfo[leftFieldTableDetails.table_name]?.find((col) => col.Header === leftFieldColumn) ?? []
+    ? (tableInfo[leftFieldTableDetails.table_name]?.find((col) => col.Header === leftFieldColumn) ?? [])
     : {};
 
   const rightFieldOptions = rightFieldTableDetails?.table_name
@@ -434,7 +434,7 @@ const JoinOn = ({
     : [];
 
   const selectedRightField = rightFieldTableDetails?.table_name
-    ? tableInfo[rightFieldTableDetails.table_name]?.find((col) => col.Header === rightFieldColumn) ?? []
+    ? (tableInfo[rightFieldTableDetails.table_name]?.find((col) => col.Header === rightFieldColumn) ?? [])
     : {};
 
   const _operators = [{ label: '=', value: '=' }];

@@ -8,6 +8,7 @@ import {
 export default class LicenseBase {
   private _appsCount: number | string;
   private _tablesCount: number | string;
+  private _rowsCount: number | string;
   private _usersCount: number | string;
   private _isAuditLogs: boolean;
   private _maxDurationForAuditLogs: number | string;
@@ -41,6 +42,7 @@ export default class LicenseBase {
   private _ai: object;
   private _isExternalApis: boolean;
   private _isAppWhiteLabelling: boolean;
+  private _isEnvMapping: boolean;
   private _plan: string;
   private _isCustomGroups: boolean;
   private _modules: object;
@@ -49,10 +51,13 @@ export default class LicenseBase {
   private BASIC_PLAN_TERMS: Partial<Terms>;
   private _isModulesEnabled: boolean;
   private _isScimEnabled: boolean;
+  private _isMfaEnabled: boolean;
   private _isCustomDomains: boolean;
   private _isGoogle: boolean;
   private _isGithub: boolean;
   private _isObservability: object;
+  private _isGitSyncMultiBranch: boolean;
+  private _aiPlan: 'byok' | 'selfhostai' | 'credits';
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -64,7 +69,7 @@ export default class LicenseBase {
   ) {
     this.BASIC_PLAN_TERMS = BASIC_PLAN_TERMS;
 
-    if (process.env.NODE_ENV === 'test') {
+    if (process.env.NODE_ENV === 'test' && !licenseData) {
       const now = new Date();
       now.setMinutes(now.getMinutes() + 30);
       // Setting expiry 30 minutes
@@ -80,6 +85,7 @@ export default class LicenseBase {
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
       this._isAi = true;
+      this._aiPlan = 'credits';
       this._isExternalApis = true;
       this._isAppWhiteLabelling = true;
       this._isCustomDomains = true;
@@ -101,6 +107,7 @@ export default class LicenseBase {
     this._appsCount = licenseData?.apps;
     this._usersCount = licenseData?.users?.total;
     this._tablesCount = licenseData?.database?.table;
+    this._rowsCount = licenseData?.database?.row;
     this._editorUsersCount = licenseData?.users?.editor;
     this._viewerUsersCount = licenseData?.users?.viewer;
     this._superadminUsersCount = licenseData?.users?.superadmin;
@@ -139,10 +146,17 @@ export default class LicenseBase {
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
+    this._isGitSyncMultiBranch = this.getFeatureValue('gitSyncMultiBranch');
     this._isAi = this.getFeatureValue('ai');
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
+    // Strict opt-in, unlike getFeatureValue(): licenses issued before MFA existed have no
+    // `features.mfa` key at all, and getFeatureValue() defaults an absent key to true for
+    // non-flexible plans - which would silently turn MFA on for every pre-existing license.
+    this._isMfaEnabled = (this._features as any)?.mfa === true;
     this._isCustomDomains = this.getFeatureValue('customDomains');
+    this._isEnvMapping = this.getFeatureValue('workspaceEnv');
+    this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
   }
 
   private getFeatureValue(key: string) {
@@ -256,6 +270,22 @@ export default class LicenseBase {
     return !!this._app['pages']?.features?.addNavGroup;
   }
 
+  public get canvasPageHeaderEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.canvasPageHeader;
+    }
+
+    return !!this._app?.['pages']?.features?.canvasPageHeader;
+  }
+
+  public get canvasPageFooterEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.canvasPageFooter;
+    }
+
+    return !!this._app?.['pages']?.features?.canvasPageFooter;
+  }
+
   public get moduleEnabled(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.modules?.enabled;
@@ -292,6 +322,13 @@ export default class LicenseBase {
       return this.BASIC_PLAN_TERMS.database?.table || this._tablesCount || LICENSE_LIMIT.UNLIMITED;
     }
     return this._tablesCount || LICENSE_LIMIT.UNLIMITED;
+  }
+
+  public get rows(): number | string {
+    if (this.IsBasicPlan) {
+      return this.BASIC_PLAN_TERMS.database?.row || this._rowsCount || LICENSE_LIMIT.UNLIMITED;
+    }
+    return this._rowsCount || LICENSE_LIMIT.UNLIMITED;
   }
 
   public get maxDurationForAuditLogs(): number | string {
@@ -412,6 +449,28 @@ export default class LicenseBase {
     return this._isGitSync;
   }
 
+  public get queryFolders(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.queryFolders;
+    }
+
+    if (this._features?.['queryFolders'] === undefined) {
+      return false;
+    }
+    return !!this._features?.['queryFolders'];
+  }
+
+  public get customComponentLibraries(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.customComponentLibraries;
+    }
+
+    if (this._app?.features?.customComponentLibraries === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.customComponentLibraries;
+  }
+
   public get saml(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.saml;
@@ -474,6 +533,13 @@ export default class LicenseBase {
     return this._isScimEnabled;
   }
 
+  public get mfa(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.mfa;
+    }
+    return this._isMfaEnabled;
+  }
+
   public get customDomains(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.customDomains;
@@ -506,6 +572,13 @@ export default class LicenseBase {
     return this._isAi;
   }
 
+  public get aiPlan(): 'byok' | 'selfhostai' | 'credits' {
+    if (this.IsBasicPlan) {
+      return (this.BASIC_PLAN_TERMS.ai?.plan as 'byok' | 'selfhostai' | 'credits') || 'credits';
+    }
+    return this._aiPlan || 'credits';
+  }
+
   public get updatedAt(): Date {
     return this._updatedDate;
   }
@@ -530,6 +603,7 @@ export default class LicenseBase {
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
       gitSync: this.gitSync,
+      gitSyncMultiBranch: this.gitSyncMultiBranch,
       comments: this.comments,
       ai: this.aiFeature,
       appWhiteLabelling: this.appWhiteLabelling,
@@ -537,6 +611,8 @@ export default class LicenseBase {
       customGroups: this.customGroups,
       appPagesAddNavGroupEnabled: this.appPagesAddNavGroupEnabled,
       appPagesHeaderAndLogoEnabled: this.appPagesHeaderAndLogoEnabled,
+      canvasPageHeaderEnabled: this.canvasPageHeaderEnabled,
+      canvasPageFooterEnabled: this.canvasPageFooterEnabled,
       appPagesEnabled: this.appPagesEnabled,
       appPermissionComponent: this.appPermissionComponent,
       appPermissionQuery: this.appPermissionQuery,
@@ -550,8 +626,15 @@ export default class LicenseBase {
       github: this.github,
       externalApis: this.externalApis,
       scim: this.scim,
+      mfa: this.mfa,
       observabilityEnabled: this.observabilityEnabled,
       appHistory: this.appHistory,
+      appJsLibraries: this.appJsLibraries,
+      queryFolders: this.queryFolders,
+      workspaceEnv: this.workspaceEnv,
+      customComponentLibraries: this.customComponentLibraries,
+      aiPlan: this.aiPlan,
+      publicApp: this.publicApp,
     };
   }
 
@@ -567,6 +650,7 @@ export default class LicenseBase {
     return {
       appsCount: this.apps,
       tablesCount: this.tables,
+      rowsCount: this.rows,
       usersCount: this.users,
       auditLogsEnabled: this.auditLogs,
       maxDurationForAuditLogs: this.maxDurationForAuditLogs,
@@ -588,6 +672,7 @@ export default class LicenseBase {
       workflows: this.workflows,
       startDate: this.startDate,
       appHistoryEnabled: this.appHistory,
+      appJsLibrariesEnabled: this.appJsLibraries,
     };
   }
 
@@ -637,7 +722,7 @@ export default class LicenseBase {
   }
 
   public get appHistory(): boolean {
-    if (this.IsBasicPlan) {
+    if (this.IsBasicPlan || this.licenseType === LICENSE_TYPE.TRIAL || this.licenseType === LICENSE_TYPE.BUSINESS) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.history;
     }
 
@@ -645,5 +730,38 @@ export default class LicenseBase {
       return false;
     }
     return !!this._app?.features?.history;
+  }
+
+  public get workspaceEnv(): boolean {
+    return true;
+  }
+
+  public get appJsLibraries(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.jsLibraries;
+    }
+
+    if (this._app?.features?.jsLibraries === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.jsLibraries;
+  }
+
+  public get gitSyncMultiBranch(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS?.features?.gitSync && !!this.BASIC_PLAN_TERMS?.features?.gitSyncMultiBranch;
+    }
+    return !!this._isGitSync && !!this._isGitSyncMultiBranch;
+  }
+
+  public get publicApp(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.publicApp;
+    }
+
+    if (this._app?.features?.publicApp === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.publicApp;
   }
 }

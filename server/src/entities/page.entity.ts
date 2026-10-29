@@ -88,8 +88,22 @@ export class Page {
   })
   type: PageType;
 
+  @Column('jsonb', { name: 'page_header', nullable: true })
+  pageHeader;
+
+  @Column('jsonb', { name: 'page_footer', nullable: true })
+  pageFooter;
+
+  // Deprecated: use targetCorelationId instead
   @Column({ name: 'app_id', type: 'varchar', nullable: true }) // Assuming appId is a varchar/string
   appId: string | null;
+
+  // Co relation id for the target tooljet app when page type is 'app'
+  @Column({ name: 'target_corelation_id', type: 'uuid', nullable: true })
+  targetCorelationId: string | null;
+
+  @Column({ name: 'co_relation_id', nullable: true })
+  co_relation_id: string;
 
   @ManyToOne(() => AppVersion, (appVersion) => appVersion.pages)
   @JoinColumn({ name: 'app_version_id' })

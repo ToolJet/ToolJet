@@ -101,7 +101,11 @@ export const NumberRenderer = ({
   };
 
   const handleValueChange = (value) => {
-    if (value === '') return;
+    if (value === '' || value === null || value === undefined) {
+      setDisplayValue('');
+      onChange?.(null);
+      return;
+    }
 
     const numValue = Number(value);
     if (isNaN(numValue)) return;

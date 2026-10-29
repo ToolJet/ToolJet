@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { datasourceService } from '@/_services';
+import { datasourceService, authenticationService } from '@/_services';
 import { getHostURL } from '@/_helpers/routes';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
@@ -66,6 +66,7 @@ const Slack = ({
 
   function authGoogle() {
     const provider = 'slack';
+    const organizationId = authenticationService.currentSessionValue?.current_organization_id;
     setAuthStatus('waiting_for_url');
 
     let scope =
@@ -75,7 +76,7 @@ const Slack = ({
     }
 
     datasourceService
-      .fetchOauth2BaseUrl(provider, null, options)
+      .fetchOauth2BaseUrl(provider, null, options, currentAppEnvironmentId, organizationId)
       .then((data) => {
         const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=select_account`;
 

@@ -26,29 +26,44 @@ import {
   isDraggingModalToCanvas,
   updateDashedBordersOnHover,
   updateDashedBordersOnDragResize,
+  getCanvasBottomBound,
+  findNewParentIdFromMousePosition,
 } from './gridUtils';
 import {
   dragContextBuilder,
   getAdjustedDropPosition,
   getDroppableSlotIdOnScreen,
-  isInsideNestedListview,
+  isNestingLimitReached,
   isTargetModuleContainer,
   computeWidgetDropPosition,
   getRevertPosition,
   getParentFromSlotId,
   getContainerIdFromSlotId,
 } from './helpers/dragEnd';
+import { handleFlexContainerDragEnd } from './helpers/flexContainerDragEnd';
+import { computeFlexResizeStyles, computeFlexResizeEndPatch } from './helpers/gridResizeUtils';
+import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { useFlexContainerDropTarget } from '@/AppBuilder/Widgets/FlexContainer/useFlexContainerDropTarget';
 import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import './Grid.css';
 import { useGroupedTargetsScrollHandler } from './hooks/useGroupedTargetsScrollHandler';
 import { useCanvasAutoScroll } from './hooks/useCanvasAutoScroll';
-import { NO_OF_GRIDS, SUBCONTAINER_WIDGETS, TOP_ALIGNMENT_HEIGHT_INCREMENT } from '../appCanvasConstants';
+import {
+  NO_OF_GRIDS,
+  SUBCONTAINER_WIDGETS,
+  TOP_ALIGNMENT_HEIGHT_INCREMENT,
+  NESTING_LEVEL_LIMITS,
+} from '../appCanvasConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
 import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
 import ConfigHandleButton from '@/_components/ConfigHandleButton';
-import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
+import { getDropTargetLabel } from '../appCanvasUtils';
+import {
+  RESTRICTED_WIDGETS_CONFIG,
+  RESTRICTED_WIDGET_SLOTS_CONFIG,
+} from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 
 // Lazy load editor-only component to reduce viewer bundle size
 const MentionComponentInChat = lazy(() => import('../ConfigHandle/MentionComponentInChat'));
@@ -107,6 +122,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
   const isGroupResizingRef = useRef(false);
   const isGroupDraggingRef = useRef(false);
+  const { scheduleFlexContainerDropTargetUpdate, cancelFlexContainerDropTargetUpdate, clearFlexContainerDropTarget } =
+    useFlexContainerDropTarget({ moduleId });
   const isWidgetResizable = useMemo(() => {
     if (virtualTarget) {
       return false;
@@ -159,6 +176,24 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
     );
   }, [currentPageComponents, setBoxList, currentLayout]);
 
+  // The control box is a separate floating element. Lose its shared scroll port and it drifts silently.
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') return;
+    const id = selectedComponents?.[0];
+    if (!id) return;
+    const t = setTimeout(() => {
+      const el = document.querySelector(`.ele-${id}`);
+      const box = document.querySelector(`.moveable-control-box[target-id="${id}"]`);
+      if (!el || !box) return;
+      const drift = Math.round(box.getBoundingClientRect().top - el.getBoundingClientRect().top);
+      if (Math.abs(drift) > 2) {
+        // eslint-disable-next-line no-console
+        console.warn(`[moveable] control box drifted ${drift}px from "${id}" — resize handles will not line up`);
+      }
+    }, 250);
+    return () => clearTimeout(t);
+  }, [selectedComponents]);
+
   const safeUpdateMoveable = () => {
     if (!isDraggingRef.current && moveableRef.current) {
       moveableRef.current.updateTarget();
@@ -176,7 +211,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noOfBoxs, triggerCanvasUpdater, menuPosition, hideLogo, hideHeader, isPageMenuHidden]);
 
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const isAutoMobileLayout = useStore((state) => state.getIsAutoMobileLayout(moduleId));
 
   const handleResizeStop = useCallback(
     (boxList) => {
@@ -448,12 +484,19 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         }
         newParent = parent ? parent : null;
         oldParent = currentWidget.component?.parent;
-        layouts[id] = {
-          width: _width,
-          height: _height,
-          top: y,
-          left: _left,
-        };
+        if (parent && getComponentTypeFromId(parent) === 'FlexContainer') {
+          layouts[id] = createDefaultFlexChildLayout({
+            widthPx: _width * containerWidth,
+            height: _height,
+          });
+        } else {
+          layouts[id] = {
+            width: _width,
+            height: _height,
+            top: y,
+            left: _left,
+          };
+        }
 
         return layouts;
       }, {});
@@ -541,21 +584,24 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
       const parentId = targetSlotId?.length > 36 ? targetSlotId.slice(0, 36) : targetSlotId;
       const parentWidgetType = getComponentTypeFromId(parentId);
+      const parentSlotType = targetSlotId ? targetSlotId.split('-').pop() : undefined;
 
       let restrictedWidgetsTobeDropped =
-        RESTRICTED_WIDGETS_CONFIG?.[parentWidgetType]?.filter((widgetType) =>
-          widgetsTypeToBeDropped.includes(widgetType)
-        ) || [];
+        [
+          ...(RESTRICTED_WIDGETS_CONFIG?.[parentWidgetType] || []),
+          ...(['header', 'footer'].includes(parentSlotType) ? RESTRICTED_WIDGET_SLOTS_CONFIG : []),
+        ].filter((widgetType) => widgetsTypeToBeDropped.includes(widgetType)) || [];
 
-      // Check ListView nesting restriction:
-      // If dragging a ListView into a slot inside a nested ListView, block it
-      let listviewDepthExceeded = false;
-      if (widgetsTypeToBeDropped.includes('Listview') && isInsideNestedListview(targetSlotId, boxList)) {
-        listviewDepthExceeded = true;
-        restrictedWidgetsTobeDropped = ['Listview'];
+      // Check nesting depth restrictions for all widget types in NESTING_LEVEL_LIMITS
+      let nestingDepthExceeded = false;
+      for (const type of Object.keys(NESTING_LEVEL_LIMITS)) {
+        if (widgetsTypeToBeDropped.includes(type) && isNestingLimitReached(targetSlotId, boxList, type)) {
+          nestingDepthExceeded = true;
+          restrictedWidgetsTobeDropped = [...restrictedWidgetsTobeDropped, type];
+        }
       }
 
-      const isParentChangeAllowed = restrictedWidgetsTobeDropped?.length === 0 && !listviewDepthExceeded;
+      const isParentChangeAllowed = restrictedWidgetsTobeDropped?.length === 0 && !nestingDepthExceeded;
 
       const isParentModuleContainer = isTargetModuleContainer(targetSlotId, isModuleEditor);
 
@@ -595,7 +641,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         } else if (isParentModuleContainer) {
           toast.error('Modules cannot be edited inside an app');
         } else if (!isParentChangeAllowed) {
-          toast.error(`${restrictedWidgetsTobeDropped} is not compatible as a child component of ${parentWidgetType}`);
+          toast.error(
+            `${restrictedWidgetsTobeDropped} is not compatible as a child component of ${getDropTargetLabel(
+              parentWidgetType,
+              parentSlotType
+            )}`
+          );
         }
       }
 
@@ -624,14 +675,36 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         origin={false}
         individualGroupable={virtualTarget ? false : groupedTargets.length <= 1}
         draggable={!shouldFreeze}
-        resizable={!shouldFreeze ? isWidgetResizable : false}
+        resizable={!(currentLayout === 'mobile' && isAutoMobileLayout) && !shouldFreeze ? isWidgetResizable : false}
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
           const currentWidget = boxList.find(({ id }) => id === e.target.id);
+          const parentId = currentWidget?.component?.parent;
+          const isFlexChild = parentId && getComponentTypeFromId(parentId) === 'FlexContainer';
           const resizingComponentId = useStore.getState().resizingComponentId;
           if (resizingComponentId !== e.target.id) {
             useStore.getState().setResizingComponentId(e.target.id);
+          }
+
+          if (isFlexChild) {
+            // FlexContainer children are sized by flex rules, not absolute grid coordinates.
+            showGridLines();
+            handleActivateTargets(parentId);
+            const parentDir = getResolvedComponent(parentId, null, moduleId)?.properties?.direction ?? 'column';
+            Object.assign(
+              e.target.style,
+              computeFlexResizeStyles({
+                direction: e.direction,
+                parentDirection: parentDir,
+                width: e.width,
+                height: e.height,
+                gridHeight: GRID_HEIGHT,
+              })
+            );
+            e.target.style.transform = '';
+            positionGhostElement(e.target, 'moveable-ghost-widget');
+            return;
           }
 
           let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
@@ -643,6 +716,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           const currentWidth = currentWidget.width * _gridWidth;
           const diffWidth = e.width - currentWidth;
           const diffHeight = e.height - currentWidget.height;
+
           const isLeftChanged = e.direction[0] === -1;
           const isTopChanged = e.direction[1] === -1;
 
@@ -688,6 +762,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           positionGhostElement(e.target, 'moveable-ghost-widget');
         }}
         onResizeStart={(e) => {
+          // Auto stacking owns mobile positions; manual resizing is allowed once it's off.
+          if (currentLayout === 'mobile' && useStore.getState().getIsAutoMobileLayout(moduleId)) {
+            toast("Can't move components while auto layout is on", { id: 'mobile-auto-lock' });
+            return false;
+          }
           if (
             e.target.id &&
             useGridStore.getState().resizingComponentId !== e.target.id &&
@@ -713,6 +792,20 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             });
             hideGridLines();
             let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
+            if (
+              currentWidget.component?.parent &&
+              getComponentTypeFromId(currentWidget.component.parent) === 'FlexContainer'
+            ) {
+              const flexPatch = computeFlexResizeEndPatch({ lastEvent: e.lastEvent, gridHeight: GRID_HEIGHT });
+              // A click on the resizer/edge fires resizeEnd with no lastEvent (no actual drag).
+              // Skip committing the patch so the flex child keeps its current size instead of shrinking.
+              if (!flexPatch) return;
+
+              setComponentLayout({ [currentWidget.id]: flexPatch });
+              setReorderContainerChildren(currentWidget.component.parent);
+              incrementCanvasUpdater();
+              return;
+            }
             const directions = e.lastEvent?.direction;
             if (!e.lastEvent) {
               return;
@@ -728,8 +821,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               Math.round((e?.lastEvent?.height - topAlignmentAddedHeight) / GRID_HEIGHT) * GRID_HEIGHT
             );
             const currentWidth = currentWidget.width * _gridWidth;
-            const diffWidth = e.lastEvent?.width - currentWidth;
             const diffHeight = height - currentWidget?.height;
+            const diffWidth = e.lastEvent?.width - currentWidth;
             const isLeftChanged = e.lastEvent?.direction?.[0] === -1;
             const isTopChanged = e.lastEvent?.direction?.[1] === -1;
 
@@ -898,6 +991,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         }}
         checkInput
         onDragStart={(e) => {
+          // Auto stacking: let a click select, but block the move itself (alerted in onDrag).
+          if (currentLayout === 'mobile' && useStore.getState().getIsAutoMobileLayout(moduleId)) {
+            if (e.target.id && !e.target.classList.contains('delete-icon')) setSelectedComponents([e.target.id]);
+            return true;
+          }
           if (e.target.id === 'moveable-virtual-ghost-element') {
             startAutoScroll(e.clientX, e.clientY, e.target);
             return true;
@@ -1018,6 +1116,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           if (e.target.id === 'moveable-virtual-ghost-element') {
             return;
           }
+          // Blocked in onDrag while auto stacking is on, so there is nothing to persist.
+          if (currentLayout === 'mobile' && useStore.getState().getIsAutoMobileLayout(moduleId)) return;
           try {
             if (isDraggingRef.current) {
               useStore.getState().setDraggingComponentId(null);
@@ -1027,6 +1127,26 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             const oldParentId = boxList.find((b) => b.id === e.target.id)?.parent ?? 'canvas';
             prevDragParentId.current = null;
             newDragParentId.current = null;
+
+            // FlexContainer child drag: route to flex-specific handler
+            cancelFlexContainerDropTargetUpdate();
+            const handledByFlex = handleFlexContainerDragEnd({
+              e,
+              boxList,
+              currentLayout,
+              gridWidth,
+              setComponentLayout,
+              getComponentTypeFromId,
+              incrementCanvasUpdater,
+              setReorderContainerChildren,
+              moduleId,
+              getResolvedComponent,
+            });
+            if (handledByFlex) {
+              clearFlexContainerDropTarget();
+              setTimeout(() => setSelectedComponents([e.target.id]), 100);
+              return;
+            }
 
             if (!e.lastEvent) return;
 
@@ -1058,11 +1178,15 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               left = revertPos.left;
               top = revertPos.top;
 
-              if (!isModalToCanvas) {
-                toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
-              }
               if (isParentModuleContainer) {
                 toast.error('Modules cannot be edited inside an app');
+              } else if (!isModalToCanvas) {
+                toast.error(
+                  `${dragged.widgetType} is not compatible as a child component of ${getDropTargetLabel(
+                    target.widgetType,
+                    target.slotType
+                  )}`
+                );
               }
             }
 
@@ -1092,12 +1216,22 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             let top = e.translate[1] + scrollDelta.y;
 
             if (currentDragCanvasId === 'canvas') {
-              left = Math.round(e.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x || 0;
-              top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y || 0;
+              // Snap the scroll-compensated position so the ghost stays on the grid.
+              // scrollDelta (from autoscroll) is generally NOT a multiple of the grid
+              // width, so adding it AFTER snapping would push the ghost a constant
+              // (scrollDelta % gridWidth) px off the grid lines. Fold it into the
+              // value being rounded instead.
+              left = Math.round((e.translate[0] + scrollDelta.x) / _gridWidth) * _gridWidth || 0;
+              top = Math.round((e.translate[1] + scrollDelta.y) / GRID_HEIGHT) * GRID_HEIGHT || 0;
 
               const _canvasWidth = NO_OF_GRIDS * _gridWidth;
               left = Math.max(0, Math.min(left, _canvasWidth - e.target.clientWidth));
               top = Math.max(0, top);
+
+              const canvasBottomBound = getCanvasBottomBound();
+              if (canvasBottomBound !== Infinity) {
+                top = Math.min(top, canvasBottomBound - e.target.clientHeight);
+              }
             }
 
             // Apply bounds clamping to prevent widget from going out of canvas
@@ -1111,6 +1245,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             updateMousePosition(e.clientX, e.clientY, e.target);
             return false;
           }
+          // Auto stacking owns mobile positions; manual dragging is allowed once it's off.
+          if (currentLayout === 'mobile' && useStore.getState().getIsAutoMobileLayout(moduleId)) {
+            toast("Can't move components while auto layout is on", { id: 'mobile-auto-lock' });
+            return false;
+          }
           // Since onDrag is called multiple times when dragging, hence we are using isDraggingRef to prevent setting state again and again
           if (!isDraggingRef.current) {
             // Start autoscroll monitoring
@@ -1122,6 +1261,25 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             isDraggingRef.current = true;
           }
           const currentWidget = boxList.find((box) => box.id === e.target.id);
+          // FlexContainer children: skip grid snapping, allow free drag
+          if (
+            currentWidget?.component?.parent &&
+            getComponentTypeFromId(currentWidget.component.parent) === 'FlexContainer'
+          ) {
+            const scrollDelta = getScrollDelta();
+            e.target.style.transform = `translate(${e.translate[0] + scrollDelta.x}px, ${
+              e.translate[1] + scrollDelta.y
+            }px)`;
+            positionGhostElement(e.target, 'moveable-ghost-widget');
+            updateMousePosition(e.clientX, e.clientY, e.target);
+            scheduleFlexContainerDropTargetUpdate({
+              candidateId: findNewParentIdFromMousePosition(e.clientX, e.clientY, currentWidget.id),
+              clientX: e.clientX,
+              clientY: e.clientY,
+              excludeId: currentWidget.id,
+            });
+            return;
+          }
           const currentParentId =
             currentWidget?.component?.parent === null ? 'canvas' : currentWidget?.component?.parent;
           const _dragParentId = newDragParentId.current === null ? 'canvas' : newDragParentId.current;
@@ -1129,9 +1287,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
           // Get scroll delta from autoscroll hook
           const scrollDelta = getScrollDelta();
-          // Snap to grid + add scroll delta to keep widget under cursor
-          let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x || 0;
-          let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y || 0;
+          // Snap the scroll-compensated position so the widget stays on the grid.
+          // scrollDelta is generally not a multiple of the grid width, so adding it
+          // after snapping would push the widget (scrollDelta % gridWidth) px off the
+          // grid lines. Fold it into the value being rounded instead.
+          let left = Math.round((e.translate[0] + scrollDelta.x) / _gridWidth) * _gridWidth || 0;
+          let top = Math.round((e.translate[1] + scrollDelta.y) / GRID_HEIGHT) * GRID_HEIGHT || 0;
           const draggingWidgetWidth = getDraggingWidgetWidth(e.target.clientWidth, _gridWidth);
           e.target.style.width = `${draggingWidgetWidth}px`;
 
@@ -1153,6 +1314,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             e.target.style.width = `${e.target.clientWidth}px`;
           }
 
+          scheduleFlexContainerDropTargetUpdate({
+            candidateId: newParentId,
+            clientX: e.clientX,
+            clientY: e.clientY,
+          });
+
           if (newParentId !== prevDragParentId.current) {
             // setDragParentId(newParentId === 'canvas' ? null : newParentId);
             newDragParentId.current = newParentId === 'canvas' ? null : newParentId;
@@ -1165,36 +1332,40 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             const _canvasWidth = NO_OF_GRIDS * _gridWidth;
             left = Math.max(0, Math.min(left, _canvasWidth - e.target.clientWidth));
             top = Math.max(0, top);
+
+            const canvasBottomBound = getCanvasBottomBound();
+            if (canvasBottomBound !== Infinity) {
+              top = Math.min(top, canvasBottomBound - e.target.clientHeight);
+            }
           }
 
           e.target.style.transform = `translate(${left}px, ${top}px)`;
 
-          e.target.setAttribute(
-            'widget-pos2',
-            `translate: ${e.translate[0]} | Round: ${Math.round(e.translate[0] / gridWidth) * gridWidth} | ${gridWidth}`
-          );
+          // e.target.setAttribute(
+          //   'widget-pos2',
+          //   `translate: ${e.translate[0]} | Round: ${Math.round(e.translate[0] / gridWidth) * gridWidth} | ${gridWidth}`
+          // );
 
           positionGhostElement(e.target, 'moveable-ghost-widget');
 
           // Update autoscroll with current mouse position and target
           updateMousePosition(e.clientX, e.clientY, e.target);
         }}
-        onDragGroupStart={(e) => {
-          showGridLines();
-          handleActivateNonDraggingComponents();
-          // Don't start autoscroll if dragging via config handle
-          if (isGroupHandleHoverd) return;
-          // Start autoscroll for group drag with all target elements
-          const targets = e.targets || [];
-          if (targets.length > 0) {
-            startAutoScroll(e.clientX, e.clientY, targets, 'groupDrag');
-          }
-        }}
         onDragGroup={(ev) => {
           const { events } = ev;
           lastGroupDragEventRef.current = events;
           const parentElm = events[0]?.target?.closest('.real-canvas');
+          // Start-of-drag side effects wait for the first movement: a plain click inside the group
+          // area clears the selection on mouseup, which unmounts the group Moveable before
+          // onDragGroupEnd can undo them, leaving the grid lines stuck on.
           if (!isGroupDraggingRef.current) {
+            showGridLines();
+            handleActivateNonDraggingComponents();
+            // Don't start autoscroll if dragging via config handle
+            const targets = ev.targets || [];
+            if (!isGroupHandleHoverd && targets.length > 0) {
+              startAutoScroll(ev.clientX, ev.clientY, targets, 'groupDrag');
+            }
             useStore.getState().setIsGroupDragging(true);
             isGroupDraggingRef.current = true;
             // Add the class to the targets that are being dragged to hide the group selection
@@ -1304,7 +1475,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         snapGap={false}
         isDisplaySnapDigit={false}
         // snapThreshold={GRID_HEIGHT}
-        bounds={virtualTarget ? CANVAS_BOUNDS : canvasBounds}
+        // bounds={virtualTarget ? CANVAS_BOUNDS : canvasBounds}
         // Guidelines configuration
         elementGuidelines={elementGuidelines}
         snapDirections={{

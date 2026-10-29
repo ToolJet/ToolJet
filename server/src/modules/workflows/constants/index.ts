@@ -39,7 +39,8 @@ export const WORKFLOW_EXECUTION_STATUS = {
 };
 
 // Re-export types from types module for backward compatibility
-export { WORKFLOW_TRIGGER_TYPE, WorkflowTriggerType, ExecutionMetadata } from '../types';
+export { WORKFLOW_TRIGGER_TYPE } from '../types';
+export type { WorkflowTriggerType, ExecutionMetadata } from '../types';
 
 // Re-export queue configuration constants
 export * from './queue-config';

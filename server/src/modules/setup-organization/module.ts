@@ -2,6 +2,7 @@ import { DynamicModule } from '@nestjs/common';
 import { GroupPermissionsModule } from '@modules/group-permissions/module';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
+import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { RolesModule } from '@modules/roles/module';
@@ -14,12 +15,16 @@ import { SubModule } from '@modules/app/sub-module';
 
 export class SetupOrganizationsModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const { SetupOrganizationsService, SetupOrganizationsUtilService, SetupOrganizationsController } =
       await this.getProviders(configs, 'setup-organization', ['service', 'util.service', 'controller']);
 
     const { FeatureAbilityFactory } = await this.getProviders(configs, 'organizations', ['ability']);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: SetupOrganizationsModule,
       imports: [
         await GroupPermissionsModule.register(configs),
@@ -37,10 +42,11 @@ export class SetupOrganizationsModule extends SubModule {
         SetupOrganizationsUtilService,
         OrganizationRepository,
         OrganizationUsersRepository,
+        UserBanListRepository,
         FeatureAbilityFactory,
         DataSourcesRepository,
       ],
       exports: [SetupOrganizationsUtilService],
-    };
+    });
   }
 }

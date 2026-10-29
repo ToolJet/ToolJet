@@ -1,11 +1,11 @@
 
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
-  "title": "Github datasource",
-  "description": "A schema defining Github datasource",
+  "title": "GitHub datasource",
+  "description": "A schema defining GitHub datasource",
   "type": "api",
   "source": {
-    "name": "Github",
+    "name": "GitHub",
     "kind": "github",
     "exposedVariables": {
       "isLoading": false,
@@ -42,7 +42,6 @@
           "name": "Use Personal Access Token"
         }
       ]
-     
     },
     "personal_access_token": {
       "token": {
@@ -50,7 +49,7 @@
         "key": "personal_token",
         "type": "password",
         "description": "Enter personal access token",
-        "hint": "You can generate a personal access token from your Github account settings."
+        "hint": "You can generate a personal access token from your GitHub account settings."
       }
     }
   },

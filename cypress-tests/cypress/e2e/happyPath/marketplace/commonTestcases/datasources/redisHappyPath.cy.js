@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { dsCommonSelector } from "Selectors/marketplace/common";
-import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/datasourceformUIHelpers";
-import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
+import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
+import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/dataSourceFormFillHelpers";
 import { redisUIConfig, redisFormConfig } from "Constants/constants/marketplace/datasources/redis";
 
 const data = {};
@@ -97,9 +97,33 @@ describe("Redis", () => {
         cy.get(dsCommonSelector.dataSourceNameButton(redisDataSourceName)).click();
 
         fillDSConnectionForm(redisFormConfig, redisFormConfig.invalidHost);
-        verifyDSConnection("failed", "Connection could not be established");
+        verifyDSConnection("failed", 'Connection could not be established: Reached the max retries per request limit (which is 1). Refer to "maxRetriesPerRequest" option for details.');
 
         fillDSConnectionForm(redisFormConfig, redisFormConfig.invalidPort);
-        verifyDSConnection("failed", "Connection could not be established");
+        verifyDSConnection("failed", 'Connection could not be established: Reached the max retries per request limit (which is 1). Refer to "maxRetriesPerRequest" option for details.');
     });
 });
+
+/*
+ * Test Cases for Redis
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with redis scheme and default settings
+ *   - Steps: Navigate to data sources page → Click on data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states (disabled/enabled) match manifest
+ *   - Fields verified: scheme, host, port, database, username, password, tls_enabled, tls_certificate, ca_cert, client_key, client_cert
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with redis scheme
+ *   - Steps: Navigate to data sources page → Click on data source → Fill valid credentials → Test connection
+ *   - Expected: Toast message "Test connection verified" appears
+ *   - Credentials: Uses redisFormConfig valid credentials
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with redis scheme
+ *   - Steps: Navigate to data sources page → Click on data source → Test invalid host → Test invalid port → Verify error messages
+ *   - Expected:
+ *     - Invalid host: Connection fails with "Connection could not be established: Reached the max retries per request limit (which is 1). Refer to "maxRetriesPerRequest" option for details."
+ *     - Invalid port: Connection fails with "Connection could not be established: Reached the max retries per request limit (which is 1). Refer to "maxRetriesPerRequest" option for details."
+ */

@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import useStore from '@/AppBuilder/_stores/store';
-import { pasteComponents, copyComponents } from './appCanvasUtils';
+import { pasteComponents, copyComponents } from './copyPasteWidgetsUtils';
 import useKeyHooks from '@/_hooks/useKeyHooks';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -14,23 +14,46 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
   const handleRedo = useStore((state) => state.handleRedo);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
   const moveComponentPosition = useStore((state) => state.moveComponentPosition, shallow);
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const isEditorReadOnly = useStore((state) => state.isEditorReadOnly);
   const enableReleasedVersionPopupState = useStore((state) => state.enableReleasedVersionPopupState, shallow);
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
   const getSelectedComponents = useStore((state) => state.getSelectedComponents, shallow);
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const containerChildrenMapping = useStore((state) => state.containerChildrenMapping, shallow);
   const getComponentTypeFromId = useStore((state) => state.getComponentTypeFromId, shallow);
+  // Canvas shortcuts must stand down while a delete dialog owns the screen. Two concrete
+  // problems otherwise, because setWidgetDeleteConfirmation defaults `targets` to null and
+  // DeleteWidgetConfirmation falls back to the live canvas selection:
+  //  - Backspace re-fires the action and silently retargets an open dialog (a delete started
+  //    from the sidebar inspector for one component would delete the canvas selection instead)
+  //  - Escape clears the selection out from under a dialog that has no explicit targets,
+  //    leaving it confirming "Delete 0 components?"
+  const isDeleteDialogOpen = useStore(
+    (state) => Boolean(state.showWidgetDeleteConfirmation) || Boolean(state.queryPanel?.deletingQueryId)
+  );
 
-  useHotkeys('meta+z, control+z', handleUndo, { enabled: mode === 'edit' });
-  useHotkeys('meta+shift+z, control+shift+z', handleRedo, { enabled: mode === 'edit' });
+  useHotkeys(
+    'meta+z, control+z',
+    (e) => {
+      if (!isEditorReadOnly) handleUndo(e);
+    },
+    { enabled: mode === 'edit' }
+  );
+  useHotkeys(
+    'meta+shift+z, control+shift+z',
+    (e) => {
+      if (!isEditorReadOnly) handleRedo(e);
+    },
+    { enabled: mode === 'edit' }
+  );
 
   const paste = async () => {
     if (isModuleEditor && !focusedParentId) return;
     if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
       try {
         const cliptext = await navigator.clipboard.readText();
-        await pasteComponents(focusedParentId, JSON.parse(cliptext));
+        await pasteComponents(focusedParentId === 'canvas' ? undefined : focusedParentId, JSON.parse(cliptext));
       } catch (err) {
         console.log(err);
       }
@@ -53,7 +76,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
   const deleteComponents = () => {
     const selectedComponents = getSelectedComponents();
     if (selectedComponents.length > 0) {
-      setWidgetDeleteConfirmation(true);
+      setWidgetDeleteConfirmation(true, isModuleEditor);
     }
   };
 
@@ -63,7 +86,9 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
 
   const handleHotKeysCallback = (key) => {
     if (shouldFreeze) {
-      enableReleasedVersionPopupState();
+      if (!isEditorReadOnly) {
+        enableReleasedVersionPopupState();
+      }
       return;
     }
 
@@ -122,7 +147,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
       'meta+a, ctrl+a',
     ],
     handleHotKeysCallback,
-    mode === 'edit'
+    mode === 'edit' && !isDeleteDialogOpen
   );
 
   return (
@@ -138,7 +163,8 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
         maxWidth: canvasMaxWidth,
         margin: '0 auto',
         transform: 'translateZ(0)',
-        ...(isModuleMode && { height: '100%' }),
+        // Mobile frame below is height:100%; without a definite height here that chain collapses to 0.
+        ...((isModuleMode || (currentLayout === 'mobile' && mode === 'edit')) && { height: '100%' }),
       }}
     >
       {children}

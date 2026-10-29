@@ -19,12 +19,12 @@ const OptionItem = ({
   onOptionChange,
   getResolvedValue,
   getItemStyle,
-  // Configurable props for reuse
-  dataCyPrefix = '',
-  popoverFields,
-  popoverClassName,
+  config, // Configurable props for reuse
   ...restProps
 }) => {
+  const { dataCy: dataCyPrefix } = config;
+  const { onDefaultChange, componentType } = restProps;
+
   return (
     <Draggable key={item?.value} draggableId={item?.value} index={index}>
       {(provided, snapshot) => {
@@ -32,6 +32,7 @@ const OptionItem = ({
           <div
             key={index}
             data-cy={`${dataCyPrefix}-option-${index}`}
+            data-list-item-id={String(item?.value ?? '')}
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
@@ -48,12 +49,10 @@ const OptionItem = ({
                   darkMode={darkMode}
                   onOptionChange={onOptionChange}
                   onDeleteOption={onDeleteOption}
+                  onDefaultChange={onDefaultChange}
                   getResolvedValue={getResolvedValue}
-                  fields={popoverFields}
-                  dataCyPrefix={dataCyPrefix}
-                  popoverClassName={popoverClassName}
-                  onDefaultChange={restProps.onDefaultChange}
-                  componentType={restProps?.component?.component?.component}
+                  config={config}
+                  componentType={componentType}
                 />
               }
               onToggle={(isOpen) => {

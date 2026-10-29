@@ -1,9 +1,22 @@
-import { CreateUserDto, UpdateGivenWorkspaceDto, UpdateUserDto, WorkspaceDto } from '../dto';
+import {
+  CreateUserDto,
+  GetWorkspaceUsersByGroupsDto,
+  UpdateGivenWorkspaceDto,
+  UpdateUserDto,
+  WorkspaceDto,
+} from '../dto';
+import { ListGroupsQueryDto, UpdateGroupExternalDto } from '../dto/groups.dto';
 import { EntityManager } from 'typeorm';
+import { USER_STATUS } from '@modules/users/constants/lifecycle';
 
 export interface IExternalApisService {
   // Gets all users when no ID is passed, filters by ID when ID is passed
-  getAllUsers(lookupKey?: string, groupNamesString?: string, manager?: EntityManager): Promise<any>;
+  getAllUsers(
+    lookupKey?: string,
+    groupNamesString?: string,
+    statuses?: USER_STATUS[],
+    manager?: EntityManager
+  ): Promise<any>;
 
   // Creates a new user with the provided user data
   createUser(userDto: CreateUserDto): Promise<any>;
@@ -14,7 +27,7 @@ export interface IExternalApisService {
   // Replaces all workspace relations for a specific user
   replaceUserAllWorkspacesRelations(userId: string, workspacesDto: WorkspaceDto[]): Promise<void>;
 
-  // Updates a specific workspace relation for a given userxw
+  // Updates a specific workspace relation for a given user
   replaceUserWorkspaceRelations(
     userId: string,
     workspaceId: string,
@@ -23,4 +36,19 @@ export interface IExternalApisService {
 
   // Retrieves all workspaces
   getAllWorkspaces(): Promise<any>;
+
+  // Updates an existing group (name, permissions, granularPermissions)
+  updateGroup(workspaceId: string, groupId: string, updateGroupDto: UpdateGroupExternalDto): Promise<void>;
+
+  // Lists custom groups in a workspace with optional search and pagination
+  listGroups(workspaceId: string, query: ListGroupsQueryDto): Promise<any>;
+
+  // Gets details of a custom group by id
+  getGroup(workspaceId: string, groupId: string): Promise<any>;
+
+  // Deletes a custom group by id
+  deleteGroup(workspaceId: string, groupId: string): Promise<void>;
+
+  // Gets users in a workspace filtered by group membership
+  getWorkspaceUsersByGroups(workspaceId: string, body: GetWorkspaceUsersByGroupsDto): Promise<any>;
 }

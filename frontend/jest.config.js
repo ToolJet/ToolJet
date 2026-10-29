@@ -1,0 +1,185 @@
+const fs = require('fs');
+const path = require('path');
+
+// ee/ is a git submodule — absent on CE checkouts. The bundlers (webpack and
+// rspack alike) swap @ee/@cloud imports for src/modules/emptyModule based on
+// TOOLJET_EDITION (NormalModuleReplacementPlugin + resolve.fallback); mirror
+// that here. Default: ee when the submodule is present, ce otherwise. Run
+// `TOOLJET_EDITION=ce npx jest` to test CE resolution on an ee checkout.
+const eeExists = fs.existsSync(path.resolve(__dirname, 'ee/modules'));
+const edition = process.env.TOOLJET_EDITION || (eeExists ? 'ee' : 'ce');
+const useRealEe = edition !== 'ce' && eeExists;
+const emptyModule = '<rootDir>/src/modules/emptyModule';
+
+// Packages that ship ESM-only code and must be transformed by Jest.
+// Add a package here when a test fails with
+// "SyntaxError: Cannot use import statement outside a module".
+const esmPackages = [
+  '@open-draft/deferred-promise',
+  'msw',
+  'until-async',
+  'rettime',
+  'uuid',
+  'url-join',
+  'mpx-error-boundary',
+  'query-string',
+  'decode-uri-component',
+  'split-on-first',
+  'filter-obj',
+  // --- App Builder widget rendering (RTL seam) ---------------------------
+  // These are genuinely needed at runtime by the widget tree, so they must be
+  // transformed rather than stubbed. Each one is small (single-digit files
+  // reached per suite), unlike the react-markdown tree — see the
+  // moduleNameMapper note below.
+  'react-bootstrap', // OverlayTrigger, via src/_components/ToolTip.jsx
+  'dom-helpers', // react-bootstrap's own ESM dep (`import contains from 'dom-helpers/contains'`)
+  'react-dnd', // src/AppBuilder/AppBuilder.jsx
+  'dnd-core', // react-dnd's ESM dep
+  '@react-dnd', // scoped helpers: @react-dnd/invariant, @react-dnd/shallowequal, @react-dnd/asap
+  'react-dnd-html5-backend',
+];
+
+module.exports = {
+  transform: {
+    // Keep the application presets, but omit production-only Babel plugins when
+    // transforming ESM dependencies such as MSW.
+    '^.+\\.(mjs|[jt]sx?)$': [
+      'babel-jest',
+      {
+        babelrc: false,
+        configFile: false,
+        presets: ['@babel/preset-env', '@babel/preset-react', '@babel/preset-typescript'],
+        // PDF.jsx sets the pdfjs worker via `new URL(..., import.meta.url)` at
+        // module scope. @babel/preset-env rewrites ESM->CJS, where `import.meta`
+        // has no equivalent and throws "Cannot use 'import.meta' outside a
+        // module". This local plugin (scripts/babel-plugin-local-import-meta.js)
+        // rewrites import.meta to a CJS-safe file URL so the module loads under
+        // jest. PDF is the only frontend/src widget using it.
+        plugins: [require.resolve('./scripts/babel-plugin-local-import-meta')],
+      },
+    ],
+    '^.+\\.svg$': '<rootDir>/__mocks__/svg.js',
+  },
+  transformIgnorePatterns: [`node_modules/(?!(${esmPackages.join('|')})/)`],
+  moduleNameMapper: {
+    '^config$': '<rootDir>/src/test/mocks/config.js',
+    '^@tooljet/plugins/client$': '<rootDir>/src/test/mocks/tooljetPluginsClient.js',
+    // Real module uses top-level await (bundler-only); analytics stay dead in tests.
+    'modules/common/helpers/posthogHelper(\\.js)?$': '<rootDir>/src/test/mocks/posthogHelper.js',
+    // Real module creates the code-search worker via `import.meta.url` (bundler-only); in tests the
+    // stub returns null, so code search runs the same searcher on the main thread.
+    '/createCodeSearchWorker(\\.ts)?$': '<rootDir>/src/test/mocks/createCodeSearchWorker.ts',
+    '\\.(css|less|sass|scss)$': '<rootDir>/__mocks__/style.js',
+    // STUB, not transform, and deliberately so: react-markdown pulls a tree of
+    // ~30 ESM-only micromark/mdast/unified packages. Transforming that tree
+    // takes the cold suite from ~4s to ~50s. Nothing under test asserts on
+    // markdown *parsing* — only that the widget renders its text — so a
+    // renderable pass-through component is the cheap equivalent.
+    '^react-markdown$': '<rootDir>/__mocks__/reactMarkdown.jsx',
+    // STUB, not transform: react-pdf's dist is ESM-only and drags in the whole
+    // pdfjs-dist tree + a web worker jsdom can't run, so a real PDF never renders
+    // under jest anyway. Real rendering is QA-owned per the PDF contract; the
+    // engineering layer only needs the empty-url placeholder + container styles.
+    // See ee/test/app-builder/widgets/PDF/TESTING.md (D-10).
+    '^react-pdf$': '<rootDir>/__mocks__/reactPdf.jsx',
+    // STUB, not transform: react-qr-reader@2.2.1 calls getUserMedia at mount,
+    // which jsdom has no camera for, so a real scan never happens under jest.
+    // Real camera scanning is QA-owned per the QrScanner contract; the engineering
+    // layer drives the widget's own onScan/onError handlers through the mock's
+    // captured props. See ee/test/app-builder/widgets/QrScanner/TESTING.md (D-01/D-02).
+    '^react-qr-reader$': '<rootDir>/__mocks__/reactQrReader.jsx',
+    // STUB, not transform: react-media-recorder wraps MediaRecorder +
+    // getUserMedia, neither of which jsdom implements, so a real recording never
+    // happens under jest. Real photo capture (canvas) and live recording are
+    // QA-owned per the Camera contract; the engineering layer drives the widget's
+    // own onRecordingStart/onStop logic through the stub's status transitions and
+    // captured recorderOptions. See ee/test/app-builder/widgets/Camera/TESTING.md (D-01/D-02).
+    '^react-media-recorder$': '<rootDir>/__mocks__/reactMediaRecorder.jsx',
+    // STUB, not transform: AudioRecorder.jsx dynamically imports a single icon from
+    // `@tabler/icons-react/dist/esm/icons/<name>.js`, an ESM-only path outside jest's
+    // transform allowlist, so the real import throws "Cannot use import statement
+    // outside a module" on every render. The glyph is cosmetic; a pass-through icon
+    // is the cheap equivalent. See ee/test/app-builder/widgets/AudioRecorder/TESTING.md.
+    '^@tabler/icons-react/dist/esm/icons/.*$': '<rootDir>/__mocks__/tablerDynamicIcon.jsx',
+    // STUB, not transform: @react-google-maps/api wraps the Google Maps JS SDK
+    // (window.google, an external script, an API key), none of which jsdom has, so
+    // a real map never renders under jest. Real tiles/pan/zoom/drag geometry and the
+    // Places service are QA-owned per the Map contract; the engineering layer drives
+    // the widget's own onLoad/marker/polygon/map-click/drag/search handlers through
+    // the mock's captured props. See ee/test/app-builder/widgets/Map/TESTING.md (D-01/D-03).
+    '^@react-google-maps/api$': '<rootDir>/__mocks__/reactGoogleMapsApi.jsx',
+    // Same reasoning, one tree further out: @mdxeditor/editor is ESM-only and
+    // carries the whole Lexical stack. It is only reached because the EE
+    // AiBuilder doc previewer sits on an import chain that rendering a
+    // sub-container widget (Form field, ListView row) walks.
+    '^@mdxeditor/editor$': '<rootDir>/__mocks__/mdxEditor.jsx',
+    '^@mdxeditor/editor/style\\.css$': '<rootDir>/__mocks__/style.js',
+    // The remark/rehype plugins are only ever passed as opaque values into the
+    // (now stubbed) markdown renderer, so a plain string stub suffices.
+    '^(remark|rehype)-.*$': '<rootDir>/__mocks__/fileMock.js',
+    // The bundlers load these through asset/source or html-loader (e.g.
+    // Widgets/CustomComponent/iframe.html); jest would parse `<html>` as JS.
+    '\\.html$': '<rootDir>/__mocks__/fileMock.js',
+    // react-syntax-highlighter (Chat/MarkdownMessage) resolves to its ESM build,
+    // whose style tree is ~200 `export {} from` files. The package already ships
+    // an equivalent CJS build, so redirecting is free — cheaper than either
+    // transforming the tree or stubbing the highlighter out.
+    '^react-syntax-highlighter/dist/esm/(.*)$': 'react-syntax-highlighter/dist/cjs/$1',
+    // Same trick, and here it is the single biggest win in this file: lucide-react
+    // is ESM-only at its default entry, but ships a CJS build that jest can load
+    // with NO transform at all. Adding lucide-react to esmPackages instead costs
+    // ~38s on a cold cache (dist/esm is 7.5MB across ~1500 icon modules).
+    '^lucide-react$': 'lucide-react/dist/cjs/lucide-react.js',
+    // dynamic.mjs has no CJS twin, so it gets a hand-written stub that reads the
+    // same CJS barrel. See the file for why it resolves icons synchronously.
+    '^lucide-react/dynamic(\\.mjs)?$': '<rootDir>/__mocks__/lucideDynamicIcon.jsx',
+    // `*.svg?url` and other asset/resource imports resolve to URL strings in the
+    // bundlers; the query string would break jest resolution, so map them first.
+    '\\.svg\\?url$': '<rootDir>/__mocks__/fileMock.js',
+    '\\.(png|jpe?g|gif|webp|avif|ico|bmp|ttf|otf|woff2?|eot|mp[34]|webm|wav|tar|wasm|data)$':
+      '<rootDir>/__mocks__/fileMock.js',
+    // Mirror the bundler aliases (and edition-based emptyModule replacement) so
+    // tests resolve the same paths as the app. Specific entries precede generic ones.
+    '^@ee/modules(.*)$': useRealEe ? '<rootDir>/ee/modules$1' : emptyModule,
+    '^@cloud/modules(.*)$': emptyModule,
+    '^@ee/(.*)$': useRealEe ? '<rootDir>/ee/$1' : emptyModule,
+    '^@cloud/(.*)$': emptyModule, // cloud/ does not exist in this repo
+    '^@assets/(.*)$': '<rootDir>/assets/$1',
+    '^@white-label$': '<rootDir>/src/_helpers/white-label',
+    '^@white-label/(.*)$': '<rootDir>/src/_helpers/white-label/$1',
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@tooljet/widget-definitions$': '<rootDir>/../packages/widget-definitions/src/index.js',
+  },
+  // jsdom patched to keep Node's native fetch/TextEncoder/BroadcastChannel —
+  // required by MSW v2. Suites can still opt into `@jest-environment node`.
+  testEnvironment: 'jest-fixed-jsdom',
+  // setupFiles runs BEFORE the test framework and before any module in the
+  // suite is evaluated. Globals that widget modules touch at MODULE SCOPE
+  // (e.g. `new Worker(...)` in react-media-recorder) must be defined here —
+  // a stub in setupFilesAfterEach or in the spec body is hoisted too late.
+  setupFiles: ['<rootDir>/src/test/setupGlobals.js'],
+  setupFilesAfterEnv: ['<rootDir>/src/test/setupTests.js'],
+  clearMocks: true,
+  moduleDirectories: ['node_modules', 'src'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'json', 'jsx'],
+  // One naming convention for the whole repository: `*.spec.*` inside a
+  // `__tests__/` directory. A file named `*.test.*` will NOT run.
+  testMatch: ['**/__tests__/**/*.spec.[jt]s?(x)'],
+  testPathIgnorePatterns: ['/node_modules/'],
+  // assets/libs and build/assets/libs both ship a pyodide package.json, which
+  // collides in jest-haste-map. Neither is ever imported by a test.
+  modulePathIgnorePatterns: ['<rootDir>/build/', '<rootDir>/assets/libs/'],
+  coverageReporters: ['text', 'lcov', 'json-summary'],
+  coverageDirectory: `<rootDir>/coverage/app-builder/${edition}/jest`,
+  collectCoverageFrom: [
+    'src/AppBuilder/**/*.{js,jsx,ts,tsx}',
+    '!src/AppBuilder/**/*.stories.{js,jsx,ts,tsx}',
+    '!src/AppBuilder/**/*.spec.md',
+    '!src/AppBuilder/**/__tests__/**',
+    '!src/AppBuilder/**/*.(test|spec).{js,jsx,ts,tsx}',
+    '!src/AppBuilder/**/__mocks__/**',
+    // Type-only declarations; validate-app-builder-coverage-manifest.js rejects runtime code there.
+    '!src/AppBuilder/types/**',
+    '!src/test/**',
+  ],
+};

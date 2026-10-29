@@ -2,8 +2,9 @@ import { handleResponseWithoutValidation, authHeader } from '@/_helpers';
 import config from 'config';
 import queryString from 'query-string';
 import { getWorkspaceId, stripTrailingSlash } from '@/_helpers/utils';
-import { getRedirectToWithParams, isCustomDomain } from '@/_helpers/routes';
+import { getRedirectToWithParams, getPathname, isCustomDomain } from '@/_helpers/routes';
 import { getPatToken } from '@/AppBuilder/EmbedApp';
+import { clearAllViewerCaches } from '@/AppBuilder/_helpers/versionedIndexedDbStore';
 
 export const sessionService = {
   validateSession,
@@ -27,6 +28,12 @@ function validateSession(appId, workspaceSlug) {
 }
 
 function logout(avoidRedirection = false, organizationId = null) {
+  // Clears cached app definitions/dependency-graph snapshots so a different user logging into
+  // this browser afterward can't read a previous (possibly more-permissive) user's cached data —
+  // these caches are keyed by versionId/page, not by user, and EE permission redaction can vary
+  // per viewer. Client-side only, done regardless of whether the server-side logout call succeeds.
+  clearAllViewerCaches();
+
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),
@@ -39,6 +46,24 @@ function logout(avoidRedirection = false, organizationId = null) {
     if (window.self !== window.top) {
       window.parent.postMessage({ type: 'TJ_EMBED_APP_LOGOUT' }, '*');
     }
+
+    // App-scoped logout: redirect to app login page instead of workspace login
+    const currentPath = getPathname(null, true);
+    const appMatch = currentPath.match(/^\/applications\/([^/]+)/);
+    if (appMatch) {
+      const subpath = window.public_config?.SUB_PATH || '/';
+      const appLoginPath = `${subpath}applications/${appMatch[1]}/login`;
+      if (avoidRedirection) {
+        window.location.href = appLoginPath;
+      } else {
+        const pathname = getRedirectToWithParams(true);
+        window.location.href = `${appLoginPath}?redirectTo=${encodeURIComponent(
+          pathname.indexOf('/') === 0 ? pathname : `/${pathname}`
+        )}`;
+      }
+      return;
+    }
+
     const loginPath = (window.public_config?.SUB_PATH || '/') + 'login' + `${workspaceId ? `/${workspaceId}` : ''}`;
     if (avoidRedirection) {
       window.location.href = loginPath;

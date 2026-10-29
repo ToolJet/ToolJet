@@ -1,8 +1,55 @@
 import React from 'react';
 import { Code } from './Elements/Code';
 import { QuerySelector } from './QuerySelector';
-import { resolveReferences } from '@/_helpers/utils';
+import { convertToKebabCase } from '@/_helpers/utils';
 import { LabeledDivider } from './Components/Form/_components';
+import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
+import useStore from '@/AppBuilder/_stores/store';
+
+// Resolves against the live zustand store instead of the (stale/unsynced)
+// legacy `currentState`, so a conditionallyRender driver bound to another
+// component's value (e.g. `{{components.toggle1.value}}`) resolves correctly.
+function resolveLiveValue(propertyDefinition) {
+  if (!propertyDefinition) return propertyDefinition;
+  return { value: useStore.getState().getResolvedValue(propertyDefinition.value) };
+}
+
+// DaterangePicker legacy components are migrated with
+// `properties.legacyInvalidDates = {{true}}` so their historical "Invalid
+// date" exposures keep working. The opt-in moment is the user explicitly
+// editing the widget's date data in the inspector — the properties whose
+// downstream exposure the flag freezes: Default start date, Default end date,
+// or Format. The flag is then cleared (set to {{false}}) and the component
+// keeps the corrected exposure from then on. The flag is only ever cleared
+// here, never set back — an already-cleared flag is not rewritten, fx-mode
+// toggles are not value edits, and style changes (e.g. label alignment) are
+// unrelated to the exposed values. New components never carry the flag and
+// are left untouched.
+const DATERANGE_DATE_DATA_PROPERTIES = ['defaultStartDate', 'defaultEndDate', 'format'];
+
+export function shouldClearLegacyInvalidDates({ componentType, paramName, paramType, attr, definition }) {
+  return (
+    componentType === 'DaterangePicker' &&
+    paramType === 'properties' &&
+    attr === 'value' &&
+    DATERANGE_DATE_DATA_PROPERTIES.includes(paramName) &&
+    Boolean(definition?.properties?.legacyInvalidDates) &&
+    definition.properties.legacyInvalidDates.value !== '{{false}}'
+  );
+}
+
+// A Format with no alphabetic characters (e.g. a {{42}} binding resolving to
+// "42") can never contain a moment token: every display is a literal and no
+// input can parse. Surface it on the Format field itself — CodeHinter's
+// preview popover + error state, via validationFn — while the widget keeps
+// using the configured format verbatim (NO fallback: released apps keep
+// whatever behavior their format produced). Letterful formats are never
+// flagged — exotic tokens ('X', 'Q', 'kk') worked before and still do.
+export function getInvalidFormatError(format, kind = 'date') {
+  if (format == null || format === '') return null;
+  if (typeof format === 'string' && /[a-z]/i.test(format)) return null;
+  return `Invalid ${kind} format`;
+}
 
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
   let definition = component.component.definition.events[eventName];
@@ -53,9 +100,11 @@ export function renderCustomStyles(
     componentConfig.component == 'Table' ||
     componentConfig.component == 'DropdownV2' ||
     componentConfig.component == 'MultiselectV2' ||
+    componentConfig.component == 'Cascader' ||
     componentConfig.component == 'RadioButtonV2' ||
     componentConfig.component == 'TagsInput' ||
     componentConfig.component == 'Button' ||
+    componentConfig.component == 'ButtonGroupV2' ||
     componentConfig.component == 'Image' ||
     componentConfig.component == 'ModalV2' ||
     componentConfig.component == 'RangeSlider' ||
@@ -75,7 +124,8 @@ export function renderCustomStyles(
     componentConfig.component == 'TreeSelect' ||
     componentConfig.component == 'FilePicker' ||
     componentConfig.component == 'FileInput' ||
-    componentConfig.component == 'FileButton'
+    componentConfig.component == 'FileButton' ||
+    componentConfig.component == 'ColorPicker'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -83,12 +133,10 @@ export function renderCustomStyles(
 
     const getResolvedValue = (key, parentObjectKey = 'styles') => {
       if (componentConfig.component == 'PopoverMenu' && key == 'buttonType') {
-        return (
-          componentDefinition?.properties?.buttonType && resolveReferences(componentDefinition?.properties?.buttonType)
-        );
+        return resolveLiveValue(componentDefinition?.properties?.buttonType);
       }
       const value = paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key];
-      return value && resolveReferences(value);
+      return resolveLiveValue(value);
     };
 
     const utilFuncForMultipleChecks = (conditionallyRender) => {
@@ -169,6 +217,9 @@ export function renderElement(
 
   if (
     componentConfig.component == 'DropDown' ||
+    componentConfig.component == 'DropdownV2' ||
+    componentConfig.component == 'MultiselectV2' ||
+    componentConfig.component == 'TagsInput' ||
     componentConfig.component == 'Form' ||
     componentConfig.component == 'Listview' ||
     componentConfig.component == 'Image' ||
@@ -178,9 +229,11 @@ export function renderElement(
     componentConfig.component == 'CircularProgressBar' ||
     componentConfig.component == 'KeyValuePair' ||
     componentConfig.component == 'ProgressBar' ||
+    componentConfig.component == 'ButtonGroupV2' ||
     componentConfig.component == 'FilePicker' ||
     componentConfig.component == 'FileInput' ||
-    componentConfig.component == 'FileButton'
+    componentConfig.component == 'FileButton' ||
+    componentConfig.component == 'Tabs'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -188,7 +241,7 @@ export function renderElement(
 
     const getResolvedValue = (key, parentObjectKey = paramType) => {
       const value = paramTypeDefinition?.[key] || componentDefinition?.[parentObjectKey]?.[key];
-      return value && resolveReferences(value);
+      return resolveLiveValue(value);
     };
 
     const utilFuncForMultipleChecks = (conditionallyRender) => {
@@ -248,3 +301,95 @@ export function renderElement(
     />
   );
 }
+
+// Radix/Base UI popovers, selects and comboboxes portal their content into `document.body`, outside
+// the DOM subtree of the react-bootstrap `Overlay` (`rootClose`) wrapping `NavItemPopover`. `rootClose`
+// only checks DOM containment, so it wrongly treats a click inside one of these portals as "outside".
+const PORTALED_OVERLAY_SELECTOR = [
+  '[data-radix-popper-content-wrapper]', // Radix Popover/Select content
+  '[data-slot="combobox-content"]', // Base UI Combobox content
+  '.cm-tooltip-autocomplete', // CodeMirror autocomplete list
+  '#codehinter-preview-box-popover', // CodeHinter's own preview/error popover, portaled to document.body
+].join(', ');
+
+// Radix Select can also make a click's real target unresolvable: it briefly disables page-wide
+// pointer-events while open, and unmounts the clicked option on `pointerup` (before `click` fires)
+// when selecting a value. Either way the browser falls back to `<html>` as the target. Treat that as
+// noise from a closing Radix layer, not a genuine "click outside".
+const isUnresolvedClickTarget = (target) => typeof document !== 'undefined' && target === document.documentElement;
+
+export const isClickInsidePortaledOverlay = (target) =>
+  isUnresolvedClickTarget(target) || !!target?.closest?.(PORTALED_OVERLAY_SELECTOR);
+
+// Shared with validateStaticId's own trimmed comparison — a static id is always stored trimmed.
+export const trimStaticId = (value) => (typeof value === 'string' ? value.trim() : value);
+
+// Validate a candidate static id (Tabs' tab id, Nav item id, etc). Ids are compared with
+// plain equality everywhere at runtime (never resolved), so a `{{ }}` binding can never work
+// as an id and must be rejected outright rather than accepted and silently broken.
+export const validateStaticId = (value, existingIds = [], currentId = null, messages = {}) => {
+  const {
+    emptyMessage = 'ID cannot be empty',
+    bindingMessage = 'ID cannot contain a dynamic binding ({{ }}). Use a plain, static value.',
+    duplicateMessage = 'ID must be unique. This ID is already used by another item.',
+  } = messages;
+
+  if (value === null || value === undefined || String(value).trim() === '') {
+    return [false, emptyMessage];
+  }
+  const trimmedValue = String(value).trim();
+
+  if (trimmedValue.includes('{{') || trimmedValue.includes('}}')) {
+    return [false, bindingMessage];
+  }
+
+  // Compare by string value: Steps stores numeric ids while the editor always types strings.
+  if (existingIds.some((id) => String(id) === trimmedValue && String(id) !== String(currentId))) {
+    return [false, duplicateMessage];
+  }
+
+  return [true, null];
+};
+
+export const getDocsLink = (componentType = '') => {
+  switch (componentType) {
+    case 'ToggleSwitch':
+    case 'ToggleSwitchV2':
+      return 'https://docs.tooljet.com/docs/widgets/toggle-switch-v2';
+    case 'RadioButton':
+      return 'https://docs.tooljet.com/docs/widgets/radio-button-v2';
+    case 'KanbanBoard':
+      return 'https://docs.tooljet.com/docs/widgets/kanban';
+    case 'JSONEditor':
+      return 'https://docs.tooljet.com/docs/widgets/json-editor';
+    case 'JSONExplorer':
+      return 'https://docs.tooljet.com/docs/widgets/json-explorer';
+    case 'LibraryComponent':
+      return 'https://docs.tooljet.com/docs/app-builder/custom-component-library/overview';
+    case 'DropdownV2':
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
+    case 'DropDown':
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
+    case 'MultiselectV2':
+      return 'https://docs.tooljet.com/docs/widgets/multiselect';
+    case 'DaterangePicker':
+      return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
+    case 'RangeSliderV2':
+      return 'https://docs.tooljet.com/docs/widgets/range-slider';
+    case 'ModuleViewer':
+    case 'ModuleContainer':
+      return 'https://docs.tooljet.com/docs/app-builder/modules/overview';
+    default:
+      return `https://docs.tooljet.com/docs/widgets/${convertToKebabCase(componentType)}`;
+  }
+};
+
+export const goToModule = (moduleAppId) => {
+  const subpath = getSubpath();
+  const slug =
+    moduleAppId === undefined || moduleAppId === null || `${moduleAppId}`.trim() === '' ? '__invalid__' : moduleAppId;
+  const appPath = getPrivateRoute('editor', { slug });
+  const path = subpath ? `${subpath}${appPath}` : appPath;
+
+  window.open(path, '_blank', 'noopener,noreferrer');
+};

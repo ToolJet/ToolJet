@@ -1,5 +1,5 @@
 import { sanitizeInput } from '@helpers/utils.helper';
-import { IsString, IsOptional, IsNotEmpty, MaxLength, IsBoolean, IsUUID, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, MaxLength, IsBoolean, IsUUID, IsEnum, IsIn, Matches } from 'class-validator';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { APP_TYPES } from '../constants';
 
@@ -11,7 +11,8 @@ export enum AppBuilderMode {
 export class AppCreateDto {
   @IsNotEmpty()
   @IsString()
-  @MaxLength(50, { message: 'Maximum length has been reached.' })
+  @MaxLength(100, { message: 'Maximum length has been reached.' })
+  @Matches(/^[^/\\]*$/, { message: "Name should not contain '/' or '\\'" })
   name: string;
 
   @IsOptional()
@@ -27,12 +28,20 @@ export class AppCreateDto {
   @IsOptional()
   @IsString()
   prompt?: string;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
 }
 
 export class AppUpdateDto {
   @IsString()
   @IsOptional()
   current_version_id: string;
+
+  @IsString()
+  @IsOptional()
+  editingVersionId: string;
 
   @IsBoolean()
   @IsOptional()
@@ -44,12 +53,12 @@ export class AppUpdateDto {
 
   @IsString()
   @IsOptional()
-  @Transform(({ value }) => {
-    const newValue = sanitizeInput(value);
-    return newValue.trim();
-  })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsNotEmpty({ message: 'App name should not be empty' })
-  @MaxLength(50, { message: 'Maximum length has been reached.' })
+  @MaxLength(100, { message: 'Maximum length has been reached.' })
+  // '/' and '\' are path separators when this app (or module) is serialized to
+  // git; disallow both in names. See server/ee/git-sync AGENTS.md.
+  @Matches(/^[^/\\]*$/, { message: "Name should not contain '/' or '\\'" })
   name: string;
 
   @IsString()
@@ -61,6 +70,10 @@ export class AppUpdateDto {
   @IsOptional()
   @Transform(({ value }) => sanitizeInput(value))
   icon: string;
+
+  @IsString()
+  @IsOptional()
+  branch_id?: string;
 
   @IsOptional()
   @IsEnum(AppBuilderMode, { message: 'app_builder_mode must be either "ai" or "visual"' })
@@ -87,6 +100,10 @@ export class ValidateAppAccessDto {
   @IsString()
   @IsOptional()
   envId: string;
+
+  @IsString()
+  @IsOptional()
+  branchId?: string;
 }
 
 @Exclude()
@@ -111,6 +128,9 @@ export class ValidateAppAccessResponseDto {
 
   @Expose()
   versionId: string;
+
+  @Expose()
+  canEdit?: boolean;
 }
 
 export class AppListDto {
@@ -129,6 +149,23 @@ export class AppListDto {
   @IsString()
   @IsOptional()
   type: string;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
+
+  @IsOptional()
+  @IsIn(['picker'])
+  context?: string;
+}
+
+@Exclude()
+export class RestrictedAccessInfoDto {
+  @Expose()
+  appName: string;
+
+  @Expose()
+  folderName: string | null;
 }
 
 export class VersionReleaseDto {

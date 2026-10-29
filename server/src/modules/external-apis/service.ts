@@ -1,12 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
-import { CreateUserDto, UpdateGivenWorkspaceDto, UpdateUserDto, WorkspaceDto } from './dto';
+import {
+  CreateUserDto,
+  GetWorkspaceUsersByGroupsDto,
+  ListWorkspaceAppUsersV2QueryDto,
+  ListWorkspaceUserAppsV2QueryDto,
+  UpdateGivenWorkspaceDto,
+  UpdateUserDto,
+  WorkspaceDto,
+} from './dto';
+import { ListGroupsQueryDto, UpdateGroupExternalDto } from './dto/groups.dto';
 import { IExternalApisService } from './Interfaces/IService';
+import { USER_STATUS } from '@modules/users/constants/lifecycle';
 
 @Injectable()
 export class ExternalApisService implements IExternalApisService {
   constructor() {}
-  async getAllUsers(lookupKey?: string, groupNamesString?: string, manager?: EntityManager) {
+  async getAllUsers(lookupKey?: string, groupNamesString?: string, statuses?: USER_STATUS[], manager?: EntityManager) {
     throw new Error('Method not implemented.');
   }
   async createUser(userDto: CreateUserDto) {
@@ -22,6 +32,35 @@ export class ExternalApisService implements IExternalApisService {
     throw new Error('Method not implemented.');
   }
   async getAllWorkspaces() {
+    throw new Error('Method not implemented.');
+  }
+  async updateGroup(_workspaceId: string, _groupId: string, _updateGroupDto: UpdateGroupExternalDto): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  async listGroups(_workspaceId: string, _query: ListGroupsQueryDto): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+  async getGroup(_workspaceId: string, _groupId: string): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+  async deleteGroup(_workspaceId: string, _groupId: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  async getWorkspaceUsersByGroups(_workspaceId: string, _body: GetWorkspaceUsersByGroupsDto): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+  async listWorkspaceUserAppsV2(
+    _workspaceIdentifier: string,
+    _userIdentifier: string,
+    _query: ListWorkspaceUserAppsV2QueryDto
+  ): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+  async listWorkspaceAppUsersV2(
+    _workspaceIdentifier: string,
+    _appIdentifier: string,
+    _query: ListWorkspaceAppUsersV2QueryDto
+  ): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }

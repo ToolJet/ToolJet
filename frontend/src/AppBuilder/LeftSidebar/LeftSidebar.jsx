@@ -10,10 +10,15 @@ import LeftSidebarInspector from './LeftSidebarInspector/LeftSidebarInspector';
 import GlobalSettings from './GlobalSettings';
 import '../../_styles/left-sidebar.scss';
 import Debugger from './Debugger/Debugger';
+import DependencyViewer from './Dependencies/DependencyViewer';
+import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
-import { SquareDashedMousePointer, Bug, Bolt, History } from 'lucide-react';
+import { SquareDashedMousePointer, Bug, Bolt, History, Waypoints, Search } from 'lucide-react';
+import { useHotkeys } from 'react-hotkeys-hook';
+import { EditorView } from '@codemirror/view';
+import CodeSearch from './CodeSearch/CodeSearch';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import SupportButton from './SupportButton';
 import AvatarGroup from '@/_ui/AvatarGroup';
@@ -22,7 +27,22 @@ import { useOthers, useSelf } from '@y-presence/react';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import AppHistoryIcon from './AppHistory/AppHistoryIcon';
 import AppHistory from './AppHistory';
+import AppLibrariesIcon from './AppLibraries/AppLibrariesIcon';
+import AppLibraries from './AppLibraries';
+import Beta from '@/_ui/Beta';
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
+
+// Human names for the error-boundary label/location of each sidebar panel.
+const LEFT_SIDEBAR_PANEL_LABELS = {
+  page: 'Inspector',
+  inspect: 'Inspector',
+  search: 'Code search',
+  tooljetai: 'AI chat',
+  apphistory: 'App history',
+  libraries: 'Libraries',
+  debugger: 'Debugger',
+  settings: 'Global settings',
+};
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -68,18 +88,51 @@ export const BaseLeftSidebar = ({
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const sideBarBtnRefs = useRef({});
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const returnToSearch = useStore((state) => state.codeSearch.returnToSearch);
+  const setCodeSearchReturnToSearch = useStore((state) => state.setCodeSearchReturnToSearch);
   const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled;
 
   const handleSelectedSidebarItem = (item) => {
     if (item === 'debugger') resetUnreadErrorCount();
+    // Only a search result opens Settings with a way back to the search panel.
+    setCodeSearchReturnToSearch(false);
     setSelectedSidebarItem(item);
     localStorage.setItem('selectedSidebarItem', item);
-    if (item === selectedSidebarItem && !pinned) {
+    // Only treat a repeat click as "close" when the panel is actually OPEN. Panels that close
+    // themselves (the AI chat's X, and every other onClose handler) call toggleLeftSidebar(false)
+    // without clearing selectedSidebarItem, so it still points at that panel. Without the
+    // isSidebarOpen check the next click matches this branch and closes an already-closed sidebar,
+    // making the nav button look permanently disabled — the AI chat could not be reopened at all
+    // once dismissed mid-generation.
+    if (item === selectedSidebarItem && isSidebarOpen && !pinned) {
       return toggleLeftSidebar(false);
     }
     if (!isSidebarOpen) toggleLeftSidebar(true);
   };
+
+  // Same shortcut builders know from code editors' app-wide search; toggles the panel.
+  useHotkeys(
+    'mod+shift+f',
+    () => {
+      // Seed the search with the word selected in a code editor, as code editors do.
+      const editorElement = document.activeElement?.closest?.('.cm-editor');
+      const view = editorElement && EditorView.findFromDOM(editorElement);
+      const { from, to } = view?.state.selection.main || {};
+      const selected = view && from !== to ? view.state.sliceDoc(from, to) : '';
+      if (selected && selected.length <= 100 && !selected.includes('\n')) {
+        useStore.getState().setCodeSearchTerm(selected);
+        setSelectedSidebarItem('search');
+        if (!isSidebarOpen) toggleLeftSidebar(true);
+        return;
+      }
+      if (selectedSidebarItem === 'search' && isSidebarOpen) return toggleLeftSidebar(false);
+      setSelectedSidebarItem('search');
+      if (!isSidebarOpen) toggleLeftSidebar(true);
+    },
+    { enabled: currentMode !== 'view', enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true },
+    [selectedSidebarItem, isSidebarOpen, currentMode]
+  );
 
   const setSideBarBtnRefs = (page) => (ref) => {
     sideBarBtnRefs.current[page] = ref;
@@ -100,6 +153,21 @@ export const BaseLeftSidebar = ({
 
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null || !isSidebarOpen) return null;
+    const panelLabel = LEFT_SIDEBAR_PANEL_LABELS[selectedSidebarItem] || 'Left sidebar';
+    return (
+      // Every sidebar panel gets its own labelled boundary; switching panels auto-recovers.
+      <FallbackBoundary
+        label={panelLabel}
+        location={`LeftSideBar ${panelLabel}`}
+        darkMode={darkMode}
+        resetKeys={[selectedSidebarItem]}
+      >
+        {renderSelectedPanel()}
+      </FallbackBoundary>
+    );
+  };
+
+  const renderSelectedPanel = () => {
     switch (selectedSidebarItem) {
       case 'page': // this handles cases where user has page pinned in old layout before LTS 3.16 update
       case 'inspect':
@@ -111,18 +179,25 @@ export const BaseLeftSidebar = ({
             appType={appType}
           />
         );
+      case 'search':
+        return <CodeSearch darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'tooljetai':
         return renderAIChat({ darkMode });
       case 'apphistory':
-        return <AppHistory darkMode={darkMode} setPinned={setPinned} pinned={pinned} />;
+        return <AppHistory darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
+      case 'libraries':
+        return <AppLibraries darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
       case 'debugger':
         return <Debugger onClose={() => toggleLeftSidebar(false)} darkMode={darkMode} />;
+      case 'dependencies':
+        return <DependencyViewer darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'settings':
         return (
           <GlobalSettings
             darkMode={darkMode}
             isModuleEditor={isModuleEditor}
             onClose={() => toggleLeftSidebar(false)}
+            onBackToSearch={returnToSearch ? () => handleSelectedSidebarItem('search') : undefined}
           />
         );
     }
@@ -150,6 +225,19 @@ export const BaseLeftSidebar = ({
         </SidebarItem>
 
         <SidebarItem
+          selectedSidebarItem={selectedSidebarItem}
+          onClick={() => handleSelectedSidebarItem('search')}
+          darkMode={darkMode}
+          icon="search"
+          className={`left-sidebar-item left-sidebar-layout tw-overflow-visible`}
+          tip="Code search"
+          ref={setSideBarBtnRefs('search')}
+        >
+          <Search width="16" height="16" className="tw-text-icon-strong" />
+          <Beta className="code-search-beta-tag tw-py-0.5 tw-px-1.5 tw-border-none" />
+        </SidebarItem>
+
+        <SidebarItem
           icon="debugger"
           selectedSidebarItem={selectedSidebarItem}
           darkMode={darkMode}
@@ -163,13 +251,54 @@ export const BaseLeftSidebar = ({
         >
           <Bug width="16" height="16" className="tw-text-icon-strong" />
         </SidebarItem>
+
+        <SidebarItem
+          icon="dependencies"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          onClick={() => handleSelectedSidebarItem('dependencies')}
+          className={`left-sidebar-item left-sidebar-layout`}
+          tip="Dependencies"
+          ref={setSideBarBtnRefs('dependencies')}
+        >
+          <Waypoints width="16" height="16" className="tw-text-icon-strong" />
+        </SidebarItem>
       </>
     );
   };
 
-  const renderLeftSidebarItems = () => {
+  const renderSettingsItem = (isModuleEditor) => (
+    <SidebarItem
+      icon="settings"
+      selectedSidebarItem={selectedSidebarItem}
+      darkMode={darkMode}
+      // eslint-disable-next-line no-unused-vars
+      onClick={(e) => handleSelectedSidebarItem('settings')}
+      className={`left-sidebar-item  left-sidebar-layout`}
+      badge={true}
+      tip="Settings"
+      ref={setSideBarBtnRefs('settings')}
+      isModuleEditor={isModuleEditor}
+      data-cy="left-sidebar-settings-button"
+    >
+      <Bolt width="16" height="16" className="tw-text-icon-strong" />
+    </SidebarItem>
+  );
+
+  const renderLeftSidebarItems = (isModuleEditor) => {
     if (isModuleEditor) {
-      return renderCommonItems();
+      return (
+        <>
+          {renderAISideBarTrigger({
+            darkMode,
+            setSideBarBtnRefs,
+            selectedSidebarItem,
+            handleSelectedSidebarItem,
+          })}
+          {renderCommonItems()}
+          {renderSettingsItem(isModuleEditor)}
+        </>
+      );
     }
     return (
       <>
@@ -189,21 +318,15 @@ export const BaseLeftSidebar = ({
             setSideBarBtnRefs={setSideBarBtnRefs}
           />
         )}
-        <SidebarItem
-          icon="settings"
-          selectedSidebarItem={selectedSidebarItem}
-          darkMode={darkMode}
-          // eslint-disable-next-line no-unused-vars
-          onClick={(e) => handleSelectedSidebarItem('settings')}
-          className={`left-sidebar-item  left-sidebar-layout`}
-          badge={true}
-          tip="Settings"
-          ref={setSideBarBtnRefs('settings')}
-          isModuleEditor={isModuleEditor}
-          data-cy="left-sidebar-settings-button"
-        >
-          <Bolt width="16" height="16" className="tw-text-icon-strong" />
-        </SidebarItem>
+        {featureAccess?.appJsLibraries && (
+          <AppLibrariesIcon
+            darkMode={darkMode}
+            selectedSidebarItem={selectedSidebarItem}
+            handleSelectedSidebarItem={handleSelectedSidebarItem}
+            setSideBarBtnRefs={setSideBarBtnRefs}
+          />
+        )}
+        {renderSettingsItem(isModuleEditor)}
       </>
     );
   };
@@ -214,11 +337,16 @@ export const BaseLeftSidebar = ({
       data-cy="left-sidebar-inspector"
       style={{ zIndex: 9999, maxWidth: '304px' }}
     >
-      {renderLeftSidebarItems()}
+      {renderLeftSidebarItems(isModuleEditor)}
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai is open don't close
-          if (['tooljetai', 'inspect', 'debugger', 'settings'].includes(selectedSidebarItem)) return;
+          if (
+            ['tooljetai', 'inspect', 'search', 'debugger', 'settings', 'libraries', 'dependencies'].includes(
+              selectedSidebarItem
+            )
+          )
+            return;
           const isWithinSidebar = e.target.closest('.left-sidebar');
           const isClickOnInspect = e.target.closest('.config-handle-inspect');
           if (pinned || isWithinSidebar || isClickOnInspect) return;

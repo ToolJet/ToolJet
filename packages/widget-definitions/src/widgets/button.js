@@ -1,0 +1,329 @@
+export const buttonConfig = {
+  name: 'Button',
+  displayName: 'Button',
+  description: 'Trigger actions: queries, alerts, set variables etc.',
+  component: 'Button',
+  defaultSize: {
+    width: 4,
+    height: 40,
+  },
+  others: {
+    showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+    showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+  },
+  properties: {
+    text: {
+      type: 'code',
+      displayName: 'Label',
+      validation: {
+        schema: { type: 'string' },
+      },
+    },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: { schema: { type: 'boolean' } },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' } },
+      section: 'additionalActions',
+    },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' } },
+      section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
+  },
+  events: {
+    onClick: { displayName: 'On click' },
+    onHover: { displayName: 'On hover' },
+  },
+  styles: {
+    type: {
+      type: 'switch',
+      displayName: 'Type',
+      validation: { schema: { type: 'string' } },
+      options: [
+        { displayName: 'Solid', value: 'primary' },
+        { displayName: 'Outline', value: 'outline' },
+      ],
+      accordian: 'button',
+    },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+      conditionallyRender: {
+        key: 'type',
+        value: 'primary',
+      },
+      accordian: 'button',
+    },
+    hoverBackgroundMode: {
+      type: 'switch',
+      displayName: 'Hover background',
+      validation: { schema: { type: 'string' }, defaultValue: 'auto' },
+      options: [
+        { displayName: 'Auto', value: 'auto' },
+        { displayName: 'Manual', value: 'manual' },
+      ],
+      conditionallyRender: {
+        key: 'type',
+        value: 'primary',
+      },
+      accordian: 'container',
+      isFxNotRequired: true,
+    },
+    hoverBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: '',
+      showLabel: false,
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+      conditionallyRender: [
+        {
+          key: 'type',
+          value: 'primary',
+        },
+        {
+          key: 'hoverBackgroundMode',
+          value: 'manual',
+        },
+      ],
+      accordian: 'container',
+    },
+    textColor: {
+      type: 'colorSwatches',
+      displayName: 'Text color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+      accordian: 'button',
+    },
+    textSize: {
+      type: 'numberInput',
+      displayName: 'Font size',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 14,
+      },
+      accordian: 'button',
+    },
+    fontWeight: {
+      type: 'select',
+      displayName: 'Font Weight',
+      options: [
+        { name: 'normal', value: 'normal' },
+        { name: 'medium', value: 'medium' },
+        { name: 'bold', value: 'bold' },
+        { name: 'lighter', value: 'lighter' },
+        { name: 'bolder', value: 'bolder' },
+      ],
+      accordian: 'button',
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+      accordian: 'button',
+    },
+    loaderColor: {
+      type: 'colorSwatches',
+      displayName: 'Loader color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+      accordian: 'button',
+    },
+    contentAlignment: {
+      type: 'alignButtons',
+      displayName: 'Content alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'center',
+      },
+      accordian: 'button',
+    },
+
+    icon: {
+      type: 'icon',
+      displayName: 'Icon',
+      validation: { schema: { type: 'string' } },
+      accordian: 'button',
+
+      visibility: false,
+    },
+    iconColor: {
+      type: 'colorSwatches',
+      displayName: 'Icon color',
+      validation: { schema: { type: 'string' } },
+      accordian: 'button',
+      visibility: false,
+    },
+
+    direction: {
+      type: 'switch',
+      displayName: '',
+      validation: { schema: { type: 'string' } },
+      showLabel: false,
+      isIcon: true,
+      options: [
+        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+      ],
+      accordian: 'button',
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: false },
+      accordian: 'button',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      accordian: 'button',
+      conditionallyRender: {
+        key: 'type',
+        value: 'primary',
+      },
+    },
+
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'container',
+    },
+  },
+  exposedVariables: {
+    buttonText: 'Button',
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
+  },
+  actions: [
+    {
+      handle: 'click',
+      displayName: 'Click',
+    },
+    {
+      handle: 'setText',
+      displayName: 'Set text',
+      params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New Text' }],
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'disable',
+      displayName: 'Disable(deprecated)',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'visibility',
+      displayName: 'Visibility(deprecated)',
+      params: [{ handle: 'visible', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'loading',
+      displayName: 'Loading(deprecated)',
+      params: [{ handle: 'loading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+    },
+  ],
+  definition: {
+    others: {
+      showOnDesktop: { value: '{{true}}' },
+      showOnMobile: { value: '{{false}}' },
+    },
+    properties: {
+      text: { value: `Button` },
+      visibility: { value: '{{true}}' },
+      collapseWhenHidden: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
+      loadingState: { value: '{{false}}' },
+      tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
+    },
+    events: [],
+    styles: {
+      textSize: { value: '{{14}}' },
+      fontWeight: { value: 'normal' },
+      // textColor: { value: '#FFFFFF' },
+      textColor: { value: 'var(--cc-surface1-surface)' },
+      borderColor: { value: 'var(--cc-primary-brand)' },
+      loaderColor: { value: 'var(--cc-surface1-surface)' },
+      contentAlignment: { value: 'center' },
+      borderRadius: { value: '{{6}}' },
+      backgroundColor: { value: 'var(--cc-primary-brand)' },
+      hoverBackgroundMode: { value: 'auto' },
+      hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
+      iconColor: { value: 'var(--cc-surface1-surface)' },
+      direction: { value: 'left' },
+      padding: { value: 'default' },
+      boxShadow: { value: '0px 0px 0px 0px #00000090' },
+      icon: { value: 'IconAlignBoxBottomLeft' },
+      iconVisibility: { value: false },
+      type: { value: 'primary' },
+    },
+  },
+};

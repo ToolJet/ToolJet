@@ -12,7 +12,8 @@ export function fetchOAuthToken(authUrl, dataSourceId) {
 
 export function logoutAction() {
   localStorage.clear();
-  sessionService.logout(true);
+  sessionStorage.clear();
+  sessionService.logout(false);
 
   return Promise.resolve();
 }

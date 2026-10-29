@@ -8,6 +8,7 @@ export const userService = {
   createUser,
   deleteUser,
   updateCurrentUser,
+  updateNotificationPreference,
   changePassword,
   getAvatar,
   updateAvatar,
@@ -16,6 +17,10 @@ export const userService = {
   getUserLimits,
   changeUserPassword,
   generateUserPassword,
+  getMfaSetup,
+  confirmMfaSetup,
+  disableMfa,
+  toggleUserMfa,
 };
 
 function getInstanceUsers(page, options) {
@@ -71,6 +76,12 @@ function updateCurrentUser(firstName, lastName) {
   return fetch(`${config.apiUrl}/profile`, requestOptions).then(handleResponse);
 }
 
+function updateNotificationPreference(enabled) {
+  const body = { ai_build_notifications_enabled: enabled };
+  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/profile/preferences`, requestOptions).then(handleResponse);
+}
+
 function updateUserType(userUpdateBody) {
   const requestOptions = {
     method: 'PATCH',
@@ -111,4 +122,41 @@ function generateUserPassword(userId) {
 function getUserLimits(type) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/license/users/limits/${type}`, requestOptions).then(handleResponse);
+}
+
+function getMfaSetup() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/profile/mfa/setup`, requestOptions).then((response) =>
+    handleResponse(response, false, null, true)
+  );
+}
+
+function confirmMfaSetup(otp) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ otp }),
+  };
+  return fetch(`${config.apiUrl}/profile/mfa/confirm`, requestOptions).then(handleResponse);
+}
+
+function disableMfa(otp) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ otp }),
+  };
+  return fetch(`${config.apiUrl}/profile/mfa/disable`, requestOptions).then(handleResponse);
+}
+
+function toggleUserMfa(userId, enabled) {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ enabled }),
+  };
+  return fetch(`${config.apiUrl}/users/${userId}/mfa`, requestOptions).then(handleResponse);
 }

@@ -1,0 +1,816 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "CMS Site Search",
+    "description" : "Use these endpoints for searching content on your HubSpot hosted CMS website(s).",
+    "version" : "v3"
+  },
+  "servers" : [ {
+    "url" : "https://api.hubapi.com/"
+  } ],
+  "tags" : [ {
+    "name" : "Public",
+    "description" : "Public Site Searching across published content."
+  } ],
+  "paths" : {
+    "/cms/v3/site-search/indexed-data/{contentId}" : {
+      "get" : {
+        "tags" : [ "Public" ],
+        "summary" : "Get indexed properties.",
+        "description" : "For a given account and document ID (page ID, blog post ID, HubDB row ID, etc.), return all indexed data for that document. This is useful when debugging why a particular document is not returned from a custom search.",
+        "operationId" : "get-/cms/v3/site-search/indexed-data/{contentId}_getById",
+        "parameters" : [ {
+          "name" : "contentId",
+          "in" : "path",
+          "description" : "ID of the target document when searching for indexed properties.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "pattern" : ".*",
+            "type" : "string"
+          }
+        }, {
+          "name" : "type",
+          "in" : "query",
+          "description" : "The type of document. Can be one of `SITE_PAGE`, `BLOG_POST`, or `KNOWLEDGE_ARTICLE`.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "LANDING_PAGE", "BLOG_POST", "SITE_PAGE", "KNOWLEDGE_ARTICLE", "LISTING_PAGE" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/IndexedData"
+                },
+                "example" : {
+                  "id" : "24314356",
+                  "type" : "BLOG_POST",
+                  "fields" : {
+                    "html_h2_nested.ja" : {
+                      "name" : "html_h2_nested.ja",
+                      "values" : [ "Subscribe to Our Blog" ],
+                      "value" : "Subscribe to Our Blog",
+                      "metadataField" : false
+                    },
+                    "hidden" : {
+                      "name" : "hidden",
+                      "values" : [ false ],
+                      "value" : false,
+                      "metadataField" : false
+                    },
+                    "html_other_nested.ja" : {
+                      "name" : "html_other_nested.ja",
+                      "values" : [ "Customer Stories", "Hire a Partner", "We're committed to your privacy. HubSpot uses the information you provide to us to contact you about our relevant content, products, and services. You may unsubscribe from these communications at any time. For more information, check out our privacy policy .", "@Kippbodnar", "This blog post is one of several Marketing Transformation Success Stories we'll be featuring in celebration of  Marketing Transformation Week , April 4-8, 2011." ],
+                      "value" : "Customer Stories",
+                      "metadataField" : false
+                    },
+                    "language" : {
+                      "name" : "language",
+                      "values" : [ "en-us" ],
+                      "value" : "en-us",
+                      "metadataField" : false
+                    },
+                    "type" : {
+                      "name" : "type",
+                      "values" : [ 2 ],
+                      "value" : 2,
+                      "metadataField" : false
+                    },
+                    "featuredImageUrl" : {
+                      "name" : "featuredImageUrl",
+                      "values" : [ "https://cdn2.hubspot.net/hubfs/53/assets/hubspot.com/buzz/HubSpotOpenGraph.png" ],
+                      "value" : "https://cdn2.hubspot.net/hubfs/53/assets/hubspot.com/buzz/HubSpotOpenGraph.png",
+                      "metadataField" : false
+                    },
+                    "path" : {
+                      "name" : "path",
+                      "values" : [ "/blog/tabid/6307/bid/11692/Inbound-Marketing-Vs-Outbound-Marketing.aspx" ],
+                      "value" : "/blog/tabid/6307/bid/11692/Inbound-Marketing-Vs-Outbound-Marketing.aspx",
+                      "metadataField" : false
+                    },
+                    "title_nested.en" : {
+                      "name" : "title_nested.en",
+                      "values" : [ "Inbound Marketing Vs. Outbound Marketing" ],
+                      "value" : "Inbound Marketing Vs. Outbound Marketing",
+                      "metadataField" : false
+                    },
+                    "description_nested.en" : {
+                      "name" : "description_nested.en",
+                      "values" : [ "This blog post is one of several Marketing Transformation Success Stories we'll be featuring in celebration of Marketing Transformation Week, April 4" ],
+                      "value" : "This blog post is one of several Marketing Transformation Success Stories we'll be featuring in celebration of Marketing Transformation Week, April 4",
+                      "metadataField" : false
+                    },
+                    "portalId" : {
+                      "name" : "portalId",
+                      "values" : [ 53 ],
+                      "value" : 53,
+                      "metadataField" : false
+                    },
+                    "id" : {
+                      "name" : "id",
+                      "values" : [ 24314356 ],
+                      "value" : 24314356,
+                      "metadataField" : false
+                    },
+                    "tag" : {
+                      "name" : "tag",
+                      "values" : [ "Inbound Marketing" ],
+                      "value" : "Inbound Marketing",
+                      "metadataField" : false
+                    },
+                    "_routing" : {
+                      "name" : "_routing",
+                      "values" : [ "53" ],
+                      "value" : "53",
+                      "metadataField" : true
+                    },
+                    "path_tokenized" : {
+                      "name" : "path_tokenized",
+                      "values" : [ "/blog/tabid/6307/bid/11692/Inbound-Marketing-Vs-Outbound-Marketing.aspx" ],
+                      "value" : "/blog/tabid/6307/bid/11692/Inbound-Marketing-Vs-Outbound-Marketing.aspx",
+                      "metadataField" : false
+                    },
+                    "description_nested.ja" : {
+                      "name" : "description_nested.ja",
+                      "values" : [ "This blog post is one of several Marketing Transformation Success Stories we'll be featuring in celebration of Marketing Transformation Week, April 4" ],
+                      "value" : "This blog post is one of several Marketing Transformation Success Stories we'll be featuring in celebration of Marketing Transformation Week, April 4",
+                      "metadataField" : false
+                    },
+                    "html_h3_nested.ja" : {
+                      "name" : "html_h3_nested.ja",
+                      "values" : [ "Free HubSpot CRM", "App Marketplace", "Subscribe via Email", "Don't forget to share this post!", "Related Articles", "The Qualities of a Powerful Word-of-Mouth Marketing Strategy", "[UPDATE] 7 Customer Loyalty Programs That Actually Add Value", "The Ultimate Dictionary of Marketing Terms You Should Know", "Download for Later" ],
+                      "value" : "Free HubSpot CRM",
+                      "metadataField" : false
+                    },
+                    "name_nested.en" : {
+                      "name" : "name_nested.en",
+                      "values" : [ "Inbound Marketing Vs. Outbound Marketing" ],
+                      "value" : "Inbound Marketing Vs. Outbound Marketing",
+                      "metadataField" : false
+                    },
+                    "author_full_name" : {
+                      "name" : "author_full_name",
+                      "values" : [ "Kipp Bodnar" ],
+                      "value" : "Kipp Bodnar",
+                      "metadataField" : false
+                    },
+                    "html_all_nested.en" : {
+                      "name" : "html_all_nested.en",
+                      "values" : [ "English", "日本語", "Deutsch", "Español", "Português", "Français", "Contact Us", "Log in", "Get HubSpot free", "Software", "All your contacts and companies, 100% free.", "Marketing Hub", "All-in-one marketing software, starting at $0/month.", "Sales Hub", "All-in-one sales software, starting at $0/month.", "Service Hub", "All-in-one customer service software, starting at $0/month.", "New", "Find HubSpot apps for the tools and software you use to run your business.", "Pricing", "Resources", "Blog", "Read marketing, sales, agency, and customer success blog content.", "Hear from the businesses that use HubSpot to grow better every day.", "Developers New", "Create apps and custom integrations for businesses using HubSpot.", "Ebooks, Guides & More", "Get access to HubSpot’s most popular marketing resources.", "Onboarding & Services", "Find training and consulting services to help you thrive with HubSpot.", "Research & Reports", "Get up-to-date research and data on hot business trends.", "Free Courses & Certifications", "Take courses on the latest business trends, taught by industry experts.", "What Is Inbound?", "Get a primer on how inbound helps your business grow better.", "Customer Support", "Get help if you have questions about using HubSpot software.", "Partners", "Find a partner in our global community of service providers who can help you grow.", "Partner With Us", "Explore our sales, agency, and app partnership programs.", "About", "Company", "About Us", "Management Team", "Board of Directors", "Careers", "News", "HubSpot News", "Press Resources", "Speakers", "Investors", "Investor Relations", "Marketing", "Sales", "Service", "Website", "Subscribe", "Stay up to date with the latest marketing, sales, and service tips and news.", "Subscribe on Slack", "Agency", "Email Address", "Back to other options", "Thank You!", "Marketing | 1 min read", "Written by Kipp Bodnar", "Originally published Apr 6, 2011 6:51:00 PM, updated March 21 2013", "Topics:", "Inbound Marketing", "Marketing  | 5 min read", "Marketing  | 12 min read", "Marketing  | 32 min read" ],
+                      "value" : "English",
+                      "metadataField" : false
+                    },
+                    "contentGroupId" : {
+                      "name" : "contentGroupId",
+                      "values" : [ 58774 ],
+                      "value" : 58774,
+                      "metadataField" : false
+                    },
+                    "title_nested.ja" : {
+                      "name" : "title_nested.ja",
+                      "values" : [ "Inbound Marketing Vs. Outbound Marketing" ],
+                      "value" : "Inbound Marketing Vs. Outbound Marketing",
+                      "metadataField" : false
+                    },
+                    "html_h3_nested.en" : {
+                      "name" : "html_h3_nested.en",
+                      "values" : [ "Free HubSpot CRM", "App Marketplace", "Subscribe via Email", "Don't forget to share this post!", "Related Articles", "The Qualities of a Powerful Word-of-Mouth Marketing Strategy", "[UPDATE] 7 Customer Loyalty Programs That Actually Add Value", "The Ultimate Dictionary of Marketing Terms You Should Know", "Download for Later" ],
+                      "value" : "Free HubSpot CRM",
+                      "metadataField" : false
+                    },
+                    "author_handle" : {
+                      "name" : "author_handle",
+                      "values" : [ "@Kippbodnar" ],
+                      "value" : "@Kippbodnar",
+                      "metadataField" : false
+                    },
+                    "url" : {
+                      "name" : "url",
+                      "values" : [ "https://blog.hubspot.com/blog/tabid/6307/bid/11692/Inbound-Marketing-Vs-Outbound-Marketing.aspx" ],
+                      "value" : "https://blog.hubspot.com/blog/tabid/6307/bid/11692/Inbound-Marketing-Vs-Outbound-Marketing.aspx",
+                      "metadataField" : false
+                    },
+                    "name_nested.ja" : {
+                      "name" : "name_nested.ja",
+                      "values" : [ "Inbound Marketing Vs. Outbound Marketing" ],
+                      "value" : "Inbound Marketing Vs. Outbound Marketing",
+                      "metadataField" : false
+                    },
+                    "analyticsPageId" : {
+                      "name" : "analyticsPageId",
+                      "values" : [ "6307-11692" ],
+                      "value" : "6307-11692",
+                      "metadataField" : false
+                    },
+                    "publicAccessRulesEnabled" : {
+                      "name" : "publicAccessRulesEnabled",
+                      "values" : [ false ],
+                      "value" : false,
+                      "metadataField" : false
+                    },
+                    "html_h2_nested.en" : {
+                      "name" : "html_h2_nested.en",
+                      "values" : [ "Subscribe to Our Blog" ],
+                      "value" : "Subscribe to Our Blog",
+                      "metadataField" : false
+                    },
+                    "domain" : {
+                      "name" : "domain",
+                      "values" : [ "blog.hubspot.com" ],
+                      "value" : "blog.hubspot.com",
+                      "metadataField" : false
+                    },
+                    "html_all_nested.ja" : {
+                      "name" : "html_all_nested.ja",
+                      "values" : [ "English", "日本語", "Deutsch", "Español", "Português", "Français", "Contact Us", "Log in", "Get HubSpot free", "Software", "All your contacts and companies, 100% free.", "Marketing Hub", "All-in-one marketing software, starting at $0/month.", "Sales Hub", "All-in-one sales software, starting at $0/month.", "Service Hub", "All-in-one customer service software, starting at $0/month.", "New", "Find HubSpot apps for the tools and software you use to run your business.", "Pricing", "Resources", "Blog", "Read marketing, sales, agency, and customer success blog content.", "Hear from the businesses that use HubSpot to grow better every day.", "Developers New", "Create apps and custom integrations for businesses using HubSpot.", "Ebooks, Guides & More", "Get access to HubSpot’s most popular marketing resources.", "Onboarding & Services", "Find training and consulting services to help you thrive with HubSpot.", "Research & Reports", "Get up-to-date research and data on hot business trends.", "Free Courses & Certifications", "Take courses on the latest business trends, taught by industry experts.", "What Is Inbound?", "Get a primer on how inbound helps your business grow better.", "Customer Support", "Get help if you have questions about using HubSpot software.", "Partners", "Find a partner in our global community of service providers who can help you grow.", "Partner With Us", "Explore our sales, agency, and app partnership programs.", "About", "Company", "About Us", "Management Team", "Board of Directors", "Careers", "News", "HubSpot News", "Press Resources", "Speakers", "Investors", "Investor Relations", "Marketing", "Sales", "Service", "Website", "Subscribe", "Stay up to date with the latest marketing, sales, and service tips and news.", "Subscribe on Slack", "Agency", "Email Address", "Back to other options", "Thank You!", "Marketing | 1 min read", "Written by Kipp Bodnar", "Originally published Apr 6, 2011 6:51:00 PM, updated March 21 2013", "Topics:", "Inbound Marketing", "Marketing  | 5 min read", "Marketing  | 12 min read", "Marketing  | 32 min read" ],
+                      "value" : "English",
+                      "metadataField" : false
+                    },
+                    "author_full_name_raw" : {
+                      "name" : "author_full_name_raw",
+                      "values" : [ "Kipp Bodnar" ],
+                      "value" : "Kipp Bodnar",
+                      "metadataField" : false
+                    },
+                    "publishedDate" : {
+                      "name" : "publishedDate",
+                      "values" : [ 1302130260000 ],
+                      "value" : 1302130260000,
+                      "metadataField" : false
+                    },
+                    "html_other_nested.en" : {
+                      "name" : "html_other_nested.en",
+                      "values" : [ "Customer Stories", "Hire a Partner", "We're committed to your privacy. HubSpot uses the information you provide to us to contact you about our relevant content, products, and services. You may unsubscribe from these communications at any time. For more information, check out our privacy policy .", "@Kippbodnar", "This blog post is one of several Marketing Transformation Success Stories we'll be featuring in celebration of  Marketing Transformation Week , April 4-8, 2011." ],
+                      "value" : "Customer Stories",
+                      "metadataField" : false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "private_apps_legacy" : [ "content" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2_legacy" : [ "content" ]
+        } ]
+      }
+    },
+    "/cms/v3/site-search/search" : {
+      "get" : {
+        "tags" : [ "Public" ],
+        "summary" : "Search your site.",
+        "description" : "Returns any website content matching the given search criteria for a given HubSpot account. Searches can be filtered by content type, domain, or URL path.",
+        "operationId" : "get-/cms/v3/site-search/search_search",
+        "parameters" : [ {
+          "name" : "q",
+          "in" : "query",
+          "description" : "The term to search for.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "description" : "Specifies the number of results to be returned in a single response. Defaults to `10`. Maximum value is `100`.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "offset",
+          "in" : "query",
+          "description" : "Used to page through the results. If there are more results than specified by the `limit` parameter, you will need to use the value of offset returned in the previous request to get the next set of results.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "language",
+          "in" : "query",
+          "description" : "Specifies the language of content to be searched. This value must be a valid [ISO 639-1 language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) (e.g. `es` for Spanish)",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "af", "af-na", "af-za", "agq", "agq-cm", "ak", "ak-gh", "am", "am-et", "ar", "ar-001", "ar-ae", "ar-bh", "ar-dj", "ar-dz", "ar-eg", "ar-eh", "ar-er", "ar-il", "ar-iq", "ar-jo", "ar-km", "ar-kw", "ar-lb", "ar-ly", "ar-ma", "ar-mr", "ar-om", "ar-ps", "ar-qa", "ar-sa", "ar-sd", "ar-so", "ar-ss", "ar-sy", "ar-td", "ar-tn", "ar-ye", "as", "as-in", "asa", "asa-tz", "ast", "ast-es", "az", "az-az", "bas", "bas-cm", "be", "be-by", "bem", "bem-zm", "bez", "bez-tz", "bg", "bg-bg", "bm", "bm-ml", "bn", "bn-bd", "bn-in", "bo", "bo-cn", "bo-in", "br", "br-fr", "brx", "brx-in", "bs", "bs-ba", "ca", "ca-ad", "ca-es", "ca-fr", "ca-it", "ccp", "ccp-bd", "ccp-in", "ce", "ce-ru", "ceb", "ceb-ph", "cgg", "cgg-ug", "chr", "chr-us", "ckb", "ckb-iq", "ckb-ir", "cs", "cs-cz", "cu", "cu-ru", "cy", "cy-gb", "da", "da-dk", "da-gl", "dav", "dav-ke", "de", "de-at", "de-be", "de-ch", "de-de", "de-gr", "de-it", "de-li", "de-lu", "dje", "dje-ne", "doi", "doi-in", "dsb", "dsb-de", "dua", "dua-cm", "dyo", "dyo-sn", "dz", "dz-bt", "ebu", "ebu-ke", "ee", "ee-gh", "ee-tg", "el", "el-cy", "el-gr", "en", "en-001", "en-150", "en-ae", "en-ag", "en-ai", "en-as", "en-at", "en-au", "en-bb", "en-be", "en-bi", "en-bm", "en-bs", "en-bw", "en-bz", "en-ca", "en-cc", "en-ch", "en-ck", "en-cm", "en-cx", "en-cy", "en-de", "en-dg", "en-dk", "en-dm", "en-er", "en-fi", "en-fj", "en-fk", "en-fm", "en-gb", "en-gd", "en-gg", "en-gh", "en-gi", "en-gm", "en-gu", "en-gy", "en-hk", "en-ie", "en-il", "en-im", "en-in", "en-io", "en-je", "en-jm", "en-ke", "en-ki", "en-kn", "en-ky", "en-lc", "en-lr", "en-ls", "en-lu", "en-mg", "en-mh", "en-mo", "en-mp", "en-ms", "en-mt", "en-mu", "en-mw", "en-my", "en-na", "en-nf", "en-ng", "en-nl", "en-nr", "en-nu", "en-nz", "en-pg", "en-ph", "en-pk", "en-pn", "en-pr", "en-pw", "en-rw", "en-sb", "en-sc", "en-sd", "en-se", "en-sg", "en-sh", "en-si", "en-sl", "en-ss", "en-sx", "en-sz", "en-tc", "en-tk", "en-to", "en-tt", "en-tv", "en-tz", "en-ug", "en-um", "en-us", "en-vc", "en-vg", "en-vi", "en-vu", "en-ws", "en-za", "en-zm", "en-zw", "eo", "eo-001", "es", "es-419", "es-ar", "es-bo", "es-br", "es-bz", "es-cl", "es-co", "es-cr", "es-cu", "es-do", "es-ea", "es-ec", "es-es", "es-gq", "es-gt", "es-hn", "es-ic", "es-mx", "es-ni", "es-pa", "es-pe", "es-ph", "es-pr", "es-py", "es-sv", "es-us", "es-uy", "es-ve", "et", "et-ee", "eu", "eu-es", "ewo", "ewo-cm", "fa", "fa-af", "fa-ir", "ff", "ff-bf", "ff-cm", "ff-gh", "ff-gm", "ff-gn", "ff-gw", "ff-lr", "ff-mr", "ff-ne", "ff-ng", "ff-sl", "ff-sn", "fi", "fi-fi", "fil", "fil-ph", "fo", "fo-dk", "fo-fo", "fr", "fr-be", "fr-bf", "fr-bi", "fr-bj", "fr-bl", "fr-ca", "fr-cd", "fr-cf", "fr-cg", "fr-ch", "fr-ci", "fr-cm", "fr-dj", "fr-dz", "fr-fr", "fr-ga", "fr-gf", "fr-gn", "fr-gp", "fr-gq", "fr-ht", "fr-km", "fr-lu", "fr-ma", "fr-mc", "fr-mf", "fr-mg", "fr-ml", "fr-mq", "fr-mr", "fr-mu", "fr-nc", "fr-ne", "fr-pf", "fr-pm", "fr-re", "fr-rw", "fr-sc", "fr-sn", "fr-sy", "fr-td", "fr-tg", "fr-tn", "fr-vu", "fr-wf", "fr-yt", "fur", "fur-it", "fy", "fy-nl", "ga", "ga-gb", "ga-ie", "gd", "gd-gb", "gl", "gl-es", "gsw", "gsw-ch", "gsw-fr", "gsw-li", "gu", "gu-in", "guz", "guz-ke", "gv", "gv-im", "ha", "ha-gh", "ha-ne", "ha-ng", "haw", "haw-us", "he", "hi", "hi-in", "hr", "hr-ba", "hr-hr", "hsb", "hsb-de", "hu", "hu-hu", "hy", "hy-am", "ia", "ia-001", "id", "ig", "ig-ng", "ii", "ii-cn", "id-id", "is", "is-is", "it", "it-ch", "it-it", "it-sm", "it-va", "he-il", "ja", "ja-jp", "jgo", "jgo-cm", "yi", "yi-001", "jmc", "jmc-tz", "jv", "jv-id", "ka", "ka-ge", "kab", "kab-dz", "kam", "kam-ke", "kde", "kde-tz", "kea", "kea-cv", "khq", "khq-ml", "ki", "ki-ke", "kk", "kk-kz", "kkj", "kkj-cm", "kl", "kl-gl", "kln", "kln-ke", "km", "km-kh", "kn", "kn-in", "ko", "ko-kp", "ko-kr", "kok", "kok-in", "ks", "ks-in", "ksb", "ksb-tz", "ksf", "ksf-cm", "ksh", "ksh-de", "kw", "kw-gb", "ku", "ku-tr", "ky", "ky-kg", "lag", "lag-tz", "lb", "lb-lu", "lg", "lg-ug", "lkt", "lkt-us", "ln", "ln-ao", "ln-cd", "ln-cf", "ln-cg", "lo", "lo-la", "lrc", "lrc-iq", "lrc-ir", "lt", "lt-lt", "lu", "lu-cd", "luo", "luo-ke", "luy", "luy-ke", "lv", "lv-lv", "mai", "mai-in", "mas", "mas-ke", "mas-tz", "mer", "mer-ke", "mfe", "mfe-mu", "mg", "mg-mg", "mgh", "mgh-mz", "mgo", "mgo-cm", "mi", "mi-nz", "mk", "mk-mk", "ml", "ml-in", "mn", "mn-mn", "mni", "mni-in", "mr", "mr-in", "ms", "ms-bn", "ms-id", "ms-my", "ms-sg", "mt", "mt-mt", "mua", "mua-cm", "my", "my-mm", "mzn", "mzn-ir", "naq", "naq-na", "nb", "nb-no", "nb-sj", "nd", "nd-zw", "nds", "nds-de", "nds-nl", "ne", "ne-in", "ne-np", "nl", "nl-aw", "nl-be", "nl-ch", "nl-bq", "nl-cw", "nl-lu", "nl-nl", "nl-sr", "nl-sx", "nmg", "nmg-cm", "nn", "nn-no", "nnh", "nnh-cm", "no", "no-no", "nus", "nus-ss", "nyn", "nyn-ug", "om", "om-et", "om-ke", "or", "or-in", "os", "os-ge", "os-ru", "pa", "pa-in", "pa-pk", "pcm", "pcm-ng", "pl", "pl-pl", "prg", "prg-001", "ps", "ps-af", "ps-pk", "pt", "pt-ao", "pt-br", "pt-ch", "pt-cv", "pt-gq", "pt-gw", "pt-lu", "pt-mo", "pt-mz", "pt-pt", "pt-st", "pt-tl", "qu", "qu-bo", "qu-ec", "qu-pe", "rm", "rm-ch", "rn", "rn-bi", "ro", "ro-md", "ro-ro", "rof", "rof-tz", "ru", "ru-by", "ru-kg", "ru-kz", "ru-md", "ru-ru", "ru-ua", "rw", "rw-rw", "rwk", "rwk-tz", "sa", "sa-in", "sah", "sah-ru", "saq", "saq-ke", "sat", "sat-in", "sbp", "sbp-tz", "sd", "sd-in", "sd-pk", "se", "se-fi", "se-no", "se-se", "seh", "seh-mz", "ses", "ses-ml", "sg", "sg-cf", "shi", "shi-ma", "si", "si-lk", "sk", "sk-sk", "sl", "sl-si", "smn", "smn-fi", "sn", "sn-zw", "so", "so-dj", "so-et", "so-ke", "so-so", "sq", "sq-al", "sq-mk", "sq-xk", "sr", "sr-ba", "sr-cs", "sr-me", "sr-rs", "sr-xk", "su", "su-id", "sv", "sv-ax", "sv-fi", "sv-se", "sw", "sw-cd", "sw-ke", "sw-tz", "sw-ug", "sy", "ta", "ta-in", "ta-lk", "ta-my", "ta-sg", "te", "te-in", "teo", "teo-ke", "teo-ug", "tg", "tg-tj", "th", "th-th", "ti", "ti-er", "ti-et", "tk", "tk-tm", "tl", "to", "to-to", "tr", "tr-cy", "tr-tr", "tt", "tt-ru", "twq", "twq-ne", "tzm", "tzm-ma", "ug", "ug-cn", "uk", "uk-ua", "ur", "ur-in", "ur-pk", "uz", "uz-af", "uz-uz", "vai", "vai-lr", "vi", "vi-vn", "vo", "vo-001", "vun", "vun-tz", "wae", "wae-ch", "wo", "wo-sn", "xh", "xh-za", "xog", "xog-ug", "yav", "yav-cm", "yo", "yo-bj", "yo-ng", "yue", "yue-cn", "yue-hk", "zgh", "zgh-ma", "zh", "zh-cn", "zh-hk", "zh-mo", "zh-sg", "zh-tw", "zh-hans", "zh-hant", "zu", "zu-za" ]
+          }
+        }, {
+          "name" : "matchPrefix",
+          "in" : "query",
+          "description" : "Inverts the behavior of the pathPrefix filter when set to `false`. Defaults to `true`.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "autocomplete",
+          "in" : "query",
+          "description" : "Specifies whether or not you are showing autocomplete results. Defaults to false.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "popularityBoost",
+          "in" : "query",
+          "description" : "Specifies how strongly a result is boosted based on its view count. Defaults to 1.0.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "number"
+          }
+        }, {
+          "name" : "boostLimit",
+          "in" : "query",
+          "description" : "Specifies the maximum amount a result will be boosted based on its view count. Defaults to 5.0. Read more about elasticsearch boosting [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-boost.html).",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "number"
+          }
+        }, {
+          "name" : "boostRecent",
+          "in" : "query",
+          "description" : "Specifies a relative time window where scores of documents published outside this time window decay. This can only be used for blog posts. For example, boostRecent=10d will boost documents published within the last 10 days. Supported timeunits are ms (milliseconds), s (seconds), m (minutes), h (hours), d (days).",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "tableId",
+          "in" : "query",
+          "description" : "Specifies a specific HubDB table to search. Only returns results from the specified table. Can be used in tandem with the `hubdbQuery` parameter to further filter results.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "hubdbQuery",
+          "in" : "query",
+          "description" : "Specify a HubDB query to further filter the search results.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "domain",
+          "in" : "query",
+          "description" : "A domain to match search results for. Multiple domains can be provided with &.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "type",
+          "in" : "query",
+          "description" : "Specifies the type of content to search. Can be one or more of SITE_PAGE, LANDING_PAGE, BLOG_POST, LISTING_PAGE, and KNOWLEDGE_ARTICLE. Defaults to all content types except LANDING_PAGE and KNOWLEDGE_ARTICLE",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "LANDING_PAGE", "BLOG_POST", "SITE_PAGE", "KNOWLEDGE_ARTICLE", "LISTING_PAGE" ]
+            }
+          }
+        }, {
+          "name" : "pathPrefix",
+          "in" : "query",
+          "description" : "Specifies a path prefix to filter search results. Will only return results with URL paths that start with the specified parameter. Can be used multiple times.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "property",
+          "in" : "query",
+          "description" : "Specifies which properties to include in the search. Options include `title`, `description`, and `html`. All properties will be searched by default.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "length",
+          "in" : "query",
+          "description" : "Specifies the length of the search results. Can be set to `LONG` or `SHORT`. `SHORT` will return the first 128 characters of the content's meta description. `LONG` will build a more detailed content snippet based on the html/content of the page.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "SHORT", "LONG" ]
+          }
+        }, {
+          "name" : "groupId",
+          "in" : "query",
+          "description" : "Specifies which blog(s) to be searched by blog ID. Can be used multiple times to search more than one blog.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PublicSearchResults"
+                },
+                "example" : {
+                  "total" : 12,
+                  "offset" : 0,
+                  "limit" : 1,
+                  "results" : [ {
+                    "id" : 24314356,
+                    "score" : 2.536124,
+                    "type" : "BLOG_POST",
+                    "domain" : "blog.hubspot.com",
+                    "url" : "https://blog.hubspot.com/blog/tabid/6307/bid/11692/Inbound-Marketing-Vs-Outbound-Marketing.aspx",
+                    "featuredImageUrl" : "https://cdn2.hubspot.net/hubfs/53/assets/hubspot.com/buzz/HubSpotOpenGraph.png",
+                    "language" : "en-us",
+                    "title" : "Inbound <span class=\"hs-search-highlight hs-highlight-title\">Marketing</span> Vs. Outbound <span class=\"hs-search-highlight hs-highlight-title\">Marketing</span>",
+                    "description" : "This blog post is one of several <span class=\"hs-search-highlight hs-highlight-html\">Marketing</span> Transformation Success Stories we&#39;ll be featuring in celebration of  <span class=\"hs-search-highlight hs-highlight-html\">Marketing</span> Transformation Week , April 4-8, 2011.... All-in-one <span class=\"hs-search-highlight hs-highlight-html\">marketing</span> software, starting at $0/month.... Read <span class=\"hs-search-highlight hs-highlight-html\">marketing</span>, sales, agency, and customer success blog content.... Get access to HubSpot’s most popular <span class=\"hs-search-highlight hs-highlight-html\">marketing</span> resources.... Stay up to date with the latest <span class=\"hs-search-highlight hs-highlight-html\">marketing</span>, sales, and service tips and news.",
+                    "authorFullName" : "Kipp Bodnar",
+                    "tags" : [ "Inbound Marketing" ],
+                    "publishedDate" : 1302130260000
+                  } ],
+                  "searchTerm" : "marketing",
+                  "page" : 0
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "private_apps_legacy" : [ "content" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2_legacy" : [ "content" ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ErrorDetail" : {
+        "required" : [ "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate"
+          },
+          "in" : {
+            "type" : "string",
+            "description" : "The name of the field or parameter in which the error was found."
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "The status code associated with the error detail"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          }
+        }
+      },
+      "ContentSearchResult" : {
+        "required" : [ "domain", "id", "score", "type", "url" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "description" : "The ID of the content.",
+            "format" : "int32"
+          },
+          "score" : {
+            "type" : "number",
+            "description" : "The matching score of the document."
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "The type of document. Can be `SITE_PAGE`, `LANDING_PAGE`, `BLOG_POST`, `LISTING_PAGE`, or `KNOWLEDGE_ARTICLE`.",
+            "enum" : [ "LANDING_PAGE", "BLOG_POST", "SITE_PAGE", "KNOWLEDGE_ARTICLE", "LISTING_PAGE" ]
+          },
+          "domain" : {
+            "type" : "string",
+            "description" : "The domain the document is hosted on."
+          },
+          "url" : {
+            "type" : "string",
+            "description" : "The url of the document."
+          },
+          "featuredImageUrl" : {
+            "type" : "string",
+            "description" : "URL of the featured image."
+          },
+          "language" : {
+            "type" : "string",
+            "description" : "The document's language.",
+            "enum" : [ "af", "af-na", "af-za", "agq", "agq-cm", "ak", "ak-gh", "am", "am-et", "ar", "ar-001", "ar-ae", "ar-bh", "ar-dj", "ar-dz", "ar-eg", "ar-eh", "ar-er", "ar-il", "ar-iq", "ar-jo", "ar-km", "ar-kw", "ar-lb", "ar-ly", "ar-ma", "ar-mr", "ar-om", "ar-ps", "ar-qa", "ar-sa", "ar-sd", "ar-so", "ar-ss", "ar-sy", "ar-td", "ar-tn", "ar-ye", "as", "as-in", "asa", "asa-tz", "ast", "ast-es", "az", "az-az", "bas", "bas-cm", "be", "be-by", "bem", "bem-zm", "bez", "bez-tz", "bg", "bg-bg", "bm", "bm-ml", "bn", "bn-bd", "bn-in", "bo", "bo-cn", "bo-in", "br", "br-fr", "brx", "brx-in", "bs", "bs-ba", "ca", "ca-ad", "ca-es", "ca-fr", "ca-it", "ccp", "ccp-bd", "ccp-in", "ce", "ce-ru", "ceb", "ceb-ph", "cgg", "cgg-ug", "chr", "chr-us", "ckb", "ckb-iq", "ckb-ir", "cs", "cs-cz", "cu", "cu-ru", "cy", "cy-gb", "da", "da-dk", "da-gl", "dav", "dav-ke", "de", "de-at", "de-be", "de-ch", "de-de", "de-gr", "de-it", "de-li", "de-lu", "dje", "dje-ne", "doi", "doi-in", "dsb", "dsb-de", "dua", "dua-cm", "dyo", "dyo-sn", "dz", "dz-bt", "ebu", "ebu-ke", "ee", "ee-gh", "ee-tg", "el", "el-cy", "el-gr", "en", "en-001", "en-150", "en-ae", "en-ag", "en-ai", "en-as", "en-at", "en-au", "en-bb", "en-be", "en-bi", "en-bm", "en-bs", "en-bw", "en-bz", "en-ca", "en-cc", "en-ch", "en-ck", "en-cm", "en-cx", "en-cy", "en-de", "en-dg", "en-dk", "en-dm", "en-er", "en-fi", "en-fj", "en-fk", "en-fm", "en-gb", "en-gd", "en-gg", "en-gh", "en-gi", "en-gm", "en-gu", "en-gy", "en-hk", "en-ie", "en-il", "en-im", "en-in", "en-io", "en-je", "en-jm", "en-ke", "en-ki", "en-kn", "en-ky", "en-lc", "en-lr", "en-ls", "en-lu", "en-mg", "en-mh", "en-mo", "en-mp", "en-ms", "en-mt", "en-mu", "en-mw", "en-my", "en-na", "en-nf", "en-ng", "en-nl", "en-nr", "en-nu", "en-nz", "en-pg", "en-ph", "en-pk", "en-pn", "en-pr", "en-pw", "en-rw", "en-sb", "en-sc", "en-sd", "en-se", "en-sg", "en-sh", "en-si", "en-sl", "en-ss", "en-sx", "en-sz", "en-tc", "en-tk", "en-to", "en-tt", "en-tv", "en-tz", "en-ug", "en-um", "en-us", "en-vc", "en-vg", "en-vi", "en-vu", "en-ws", "en-za", "en-zm", "en-zw", "eo", "eo-001", "es", "es-419", "es-ar", "es-bo", "es-br", "es-bz", "es-cl", "es-co", "es-cr", "es-cu", "es-do", "es-ea", "es-ec", "es-es", "es-gq", "es-gt", "es-hn", "es-ic", "es-mx", "es-ni", "es-pa", "es-pe", "es-ph", "es-pr", "es-py", "es-sv", "es-us", "es-uy", "es-ve", "et", "et-ee", "eu", "eu-es", "ewo", "ewo-cm", "fa", "fa-af", "fa-ir", "ff", "ff-bf", "ff-cm", "ff-gh", "ff-gm", "ff-gn", "ff-gw", "ff-lr", "ff-mr", "ff-ne", "ff-ng", "ff-sl", "ff-sn", "fi", "fi-fi", "fil", "fil-ph", "fo", "fo-dk", "fo-fo", "fr", "fr-be", "fr-bf", "fr-bi", "fr-bj", "fr-bl", "fr-ca", "fr-cd", "fr-cf", "fr-cg", "fr-ch", "fr-ci", "fr-cm", "fr-dj", "fr-dz", "fr-fr", "fr-ga", "fr-gf", "fr-gn", "fr-gp", "fr-gq", "fr-ht", "fr-km", "fr-lu", "fr-ma", "fr-mc", "fr-mf", "fr-mg", "fr-ml", "fr-mq", "fr-mr", "fr-mu", "fr-nc", "fr-ne", "fr-pf", "fr-pm", "fr-re", "fr-rw", "fr-sc", "fr-sn", "fr-sy", "fr-td", "fr-tg", "fr-tn", "fr-vu", "fr-wf", "fr-yt", "fur", "fur-it", "fy", "fy-nl", "ga", "ga-gb", "ga-ie", "gd", "gd-gb", "gl", "gl-es", "gsw", "gsw-ch", "gsw-fr", "gsw-li", "gu", "gu-in", "guz", "guz-ke", "gv", "gv-im", "ha", "ha-gh", "ha-ne", "ha-ng", "haw", "haw-us", "he", "hi", "hi-in", "hr", "hr-ba", "hr-hr", "hsb", "hsb-de", "hu", "hu-hu", "hy", "hy-am", "ia", "ia-001", "id", "ig", "ig-ng", "ii", "ii-cn", "id-id", "is", "is-is", "it", "it-ch", "it-it", "it-sm", "it-va", "he-il", "ja", "ja-jp", "jgo", "jgo-cm", "yi", "yi-001", "jmc", "jmc-tz", "jv", "jv-id", "ka", "ka-ge", "kab", "kab-dz", "kam", "kam-ke", "kde", "kde-tz", "kea", "kea-cv", "khq", "khq-ml", "ki", "ki-ke", "kk", "kk-kz", "kkj", "kkj-cm", "kl", "kl-gl", "kln", "kln-ke", "km", "km-kh", "kn", "kn-in", "ko", "ko-kp", "ko-kr", "kok", "kok-in", "ks", "ks-in", "ksb", "ksb-tz", "ksf", "ksf-cm", "ksh", "ksh-de", "kw", "kw-gb", "ku", "ku-tr", "ky", "ky-kg", "lag", "lag-tz", "lb", "lb-lu", "lg", "lg-ug", "lkt", "lkt-us", "ln", "ln-ao", "ln-cd", "ln-cf", "ln-cg", "lo", "lo-la", "lrc", "lrc-iq", "lrc-ir", "lt", "lt-lt", "lu", "lu-cd", "luo", "luo-ke", "luy", "luy-ke", "lv", "lv-lv", "mai", "mai-in", "mas", "mas-ke", "mas-tz", "mer", "mer-ke", "mfe", "mfe-mu", "mg", "mg-mg", "mgh", "mgh-mz", "mgo", "mgo-cm", "mi", "mi-nz", "mk", "mk-mk", "ml", "ml-in", "mn", "mn-mn", "mni", "mni-in", "mr", "mr-in", "ms", "ms-bn", "ms-id", "ms-my", "ms-sg", "mt", "mt-mt", "mua", "mua-cm", "my", "my-mm", "mzn", "mzn-ir", "naq", "naq-na", "nb", "nb-no", "nb-sj", "nd", "nd-zw", "nds", "nds-de", "nds-nl", "ne", "ne-in", "ne-np", "nl", "nl-aw", "nl-be", "nl-ch", "nl-bq", "nl-cw", "nl-lu", "nl-nl", "nl-sr", "nl-sx", "nmg", "nmg-cm", "nn", "nn-no", "nnh", "nnh-cm", "no", "no-no", "nus", "nus-ss", "nyn", "nyn-ug", "om", "om-et", "om-ke", "or", "or-in", "os", "os-ge", "os-ru", "pa", "pa-in", "pa-pk", "pcm", "pcm-ng", "pl", "pl-pl", "prg", "prg-001", "ps", "ps-af", "ps-pk", "pt", "pt-ao", "pt-br", "pt-ch", "pt-cv", "pt-gq", "pt-gw", "pt-lu", "pt-mo", "pt-mz", "pt-pt", "pt-st", "pt-tl", "qu", "qu-bo", "qu-ec", "qu-pe", "rm", "rm-ch", "rn", "rn-bi", "ro", "ro-md", "ro-ro", "rof", "rof-tz", "ru", "ru-by", "ru-kg", "ru-kz", "ru-md", "ru-ru", "ru-ua", "rw", "rw-rw", "rwk", "rwk-tz", "sa", "sa-in", "sah", "sah-ru", "saq", "saq-ke", "sat", "sat-in", "sbp", "sbp-tz", "sd", "sd-in", "sd-pk", "se", "se-fi", "se-no", "se-se", "seh", "seh-mz", "ses", "ses-ml", "sg", "sg-cf", "shi", "shi-ma", "si", "si-lk", "sk", "sk-sk", "sl", "sl-si", "smn", "smn-fi", "sn", "sn-zw", "so", "so-dj", "so-et", "so-ke", "so-so", "sq", "sq-al", "sq-mk", "sq-xk", "sr", "sr-ba", "sr-cs", "sr-me", "sr-rs", "sr-xk", "su", "su-id", "sv", "sv-ax", "sv-fi", "sv-se", "sw", "sw-cd", "sw-ke", "sw-tz", "sw-ug", "sy", "ta", "ta-in", "ta-lk", "ta-my", "ta-sg", "te", "te-in", "teo", "teo-ke", "teo-ug", "tg", "tg-tj", "th", "th-th", "ti", "ti-er", "ti-et", "tk", "tk-tm", "tl", "to", "to-to", "tr", "tr-cy", "tr-tr", "tt", "tt-ru", "twq", "twq-ne", "tzm", "tzm-ma", "ug", "ug-cn", "uk", "uk-ua", "ur", "ur-in", "ur-pk", "uz", "uz-af", "uz-uz", "vai", "vai-lr", "vi", "vi-vn", "vo", "vo-001", "vun", "vun-tz", "wae", "wae-ch", "wo", "wo-sn", "xh", "xh-za", "xog", "xog-ug", "yav", "yav-cm", "yo", "yo-bj", "yo-ng", "yue", "yue-cn", "yue-hk", "zgh", "zgh-ma", "zh", "zh-cn", "zh-hk", "zh-mo", "zh-sg", "zh-tw", "zh-hans", "zh-hant", "zu", "zu-za" ]
+          },
+          "title" : {
+            "type" : "string",
+            "description" : "The title of the returned document."
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "The result's description. The content will be determined by the value of `length` in the request."
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "For knowledge articles, the category of the article."
+          },
+          "subcategory" : {
+            "type" : "string",
+            "description" : "For knowledge articles, the subcategory of the article."
+          },
+          "authorFullName" : {
+            "type" : "string",
+            "description" : "Name of the author."
+          },
+          "tags" : {
+            "type" : "array",
+            "description" : "If a blog post, the tags associated with it.",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "tableId" : {
+            "type" : "integer",
+            "description" : "If a dynamic page, the ID of the HubDB table.",
+            "format" : "int64"
+          },
+          "rowId" : {
+            "type" : "integer",
+            "description" : "If a dynamic page, the row ID in the HubDB table.",
+            "format" : "int64"
+          },
+          "publishedDate" : {
+            "type" : "integer",
+            "description" : "The date the content was published.",
+            "format" : "int64"
+          },
+          "combinedId" : {
+            "type" : "string",
+            "description" : "The ID of the document in HubSpot."
+          }
+        },
+        "description" : "An individual search result."
+      },
+      "PublicSearchResults" : {
+        "required" : [ "limit", "offset", "page", "results", "total" ],
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "offset" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "limit" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ContentSearchResult"
+            }
+          },
+          "searchTerm" : {
+            "type" : "string"
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "IndexedData" : {
+        "required" : [ "fields", "id", "type" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "The ID of the document in HubSpot."
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "The type of document. Can be `SITE_PAGE`, `LANDING_PAGE`, `BLOG_POST`, `LISTING_PAGE`, or `KNOWLEDGE_ARTICLE`.",
+            "enum" : [ "LANDING_PAGE", "BLOG_POST", "SITE_PAGE", "KNOWLEDGE_ARTICLE", "LISTING_PAGE" ]
+          },
+          "fields" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "$ref" : "#/components/schemas/IndexedField"
+            },
+            "description" : "The indexed fields in HubSpot."
+          }
+        },
+        "description" : "The indexed data in HubSpot"
+      },
+      "IndexedField" : {
+        "required" : [ "metadataField", "name", "value", "values" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "object",
+            "properties" : { }
+          },
+          "values" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "properties" : { }
+            }
+          },
+          "metadataField" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Error" : {
+        "required" : [ "category", "correlationId", "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate",
+            "example" : "An error occurred"
+          },
+          "correlationId" : {
+            "type" : "string",
+            "description" : "A unique identifier for the request. Include this value with any error reports or support tickets",
+            "format" : "uuid",
+            "example" : "aeb5f871-7f07-4993-9211-075dc63e7cbf"
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "The error category"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "errors" : {
+            "type" : "array",
+            "description" : "further information about the error",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "invalidPropertyName" : [ "propertyValue" ],
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A map of link names to associated URIs containing documentation about the error or recommended remediation steps"
+          }
+        },
+        "example" : {
+          "message" : "Invalid input (details will vary based on the error)",
+          "correlationId" : "aeb5f871-7f07-4993-9211-075dc63e7cbf",
+          "category" : "VALIDATION_ERROR",
+          "links" : {
+            "knowledge-base" : "https://www.hubspot.com/products/service/knowledge-base"
+          }
+        }
+      }
+    },
+    "responses" : {
+      "Error" : {
+        "description" : "An error occurred.",
+        "content" : {
+          "*/*" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "oauth2_legacy" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "https://app.hubspot.com/oauth/authorize",
+            "tokenUrl" : "https://api.hubapi.com/oauth/v1/token",
+            "scopes" : {
+              "content" : "Read from and write to my Content"
+            }
+          }
+        }
+      },
+      "hapikey" : {
+        "type" : "apiKey",
+        "name" : "hapikey",
+        "in" : "query"
+      },
+      "private_apps_legacy" : {
+        "type" : "apiKey",
+        "name" : "private-app-legacy",
+        "in" : "header"
+      }
+    }
+  },
+  "x-hubspot-available-client-libraries" : [ "PHP", "Node", "Python", "Ruby" ]
+}

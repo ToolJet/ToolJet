@@ -1,0 +1,917 @@
+openapi: 3.0.1
+info:
+  title: UPS TrackService API
+  termsOfService: https://www.ups.com/upsdeveloperkit/assets/html/serviceAgreement.html
+  version: ''
+  description: |
+  
+    The Track API helps retrieves current status of shipments such as Small Package 1Z, Infonotice, Mail Innovations, FGV, or UPS Freight shipments using the package number or the reference number. The tracking response data typically includes package movements/activities, destination UPS access point information, expected delivery dates/times, etc. Required parameters are the inquiryNumber, transaction ID, and transaction source.<br />The response returns an array of shipment objects containing detailed tracking information and status for the package(s) associated with the inquiryNumber, including current status, activity history, delivery details, package details, and more. For more information on the Track API, please visit the <a href="https://developer.ups.com/api/reference/tracking/product-info" target="_blank" rel="noopener noreferrer">Product Overview</a> page.
+
+    **Note:** Data is rolled off after the 120 day retention period and may not be returned in the response after the retention period.
+
+    Key Business Values:
+    - **Near real-time tracking information**: Get up-to-date information on the status and location of your shipments, so you can keep your customers informed.
+    - **Proof of Delivery**: Automated proof of delivery updates with signature verification to help prevent fraud and theft.
+    - **Improved cash flow**: Reduce the time it takes to collect payments by tracking shipments and invoices electronically.
+
+    # Reference
+    - <a href="https://developer.ups.com/api/reference/tracking/business-rules" target="_blank" rel="noopener">Business Rules</a>
+    - <a href="https://developer.ups.com/api/reference/tracking/appendix" target="_blank" rel="noopener">Appendix</a>
+    - <a href="https://developer.ups.com/api/reference/trackingapi/errors" target="_blank" rel="noopener noreferrer">Errors</a>
+    - <a href="https://developer.ups.com/api/reference/tracking/best-practices" target="_blank" rel="noopener noreferrer">Tracking Best Practices</a>
+    - <a href="https://developer.ups.com/api/reference/mcp/guide" target="_blank" rel="noopener noreferrer">Accelerate API Integration with UPS MCP Server</a>
+
+    <br/><p>Try out UPS APIs with example requests using Postman and learn more about the UPS Postman Collection by visiting our <a href="https://developer.ups.com/api/reference/postman/guide"
+    target="_blank" rel="noopener">Postman Guide</a>. Explore API documentation and sample applications through GitHub.</p>
+
+    <a href="https://god.gw.postman.com/run-collection/29542085-003f5ace-291f-4d93-b2a2-6be86eb9961d?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D29542085-003f5ace-291f-4d93-b2a2-6be86eb9961d%26entityType%3Dcollection%26workspaceId%3D7e7595f0-4829-4f9a-aee1-75c126b9d417" target="_blank" rel="noopener noreferrer">
+      <img src="https://run.pstmn.io/button.svg" alt="Run In Postman" style="width: 128px; height: 32px;"></a>
+    <a href="https://github.com/UPS-API" target="_blank" rel="noopener noreferrer">
+      <img src="https://www.ups.com/assets/resources/webcontent/images/gitHubButton.svg" alt="Open in GitHub " style="width: 128px; height: 32px;">
+    </a>
+servers:
+  - url: https://wwwcie.ups.com/api
+    description: Customer Integration Environment
+  - url: https://onlinetools.ups.com/api
+    description: Production
+paths:
+  "/track/v1/details/{inquiryNumber}":
+    get:
+      summary: Tracking
+      tags:
+        - Tracking
+      security:
+        - OAuth2: []
+      description: ''
+      operationId: getSingleTrackResponseUsingGET
+      parameters:
+      - name: inquiryNumber
+        in: path
+        description: The tracking number for which tracking information is requested.
+          Each inquiry number must be between 7 and 34 characters in length.
+        required: true
+        schema:
+          type: string
+      - name: locale
+        in: query
+        description: Language and country code of the user, separated by an underscore.
+          Default value is 'en_US'
+        schema:
+          type: string
+          default: en_US
+      - name: returnSignature
+        in: query
+        description: Indicator requesting that the delivery signature image be included
+          as part of the response (by default the image will not be returned). Returns
+          image bytecodes of the signature.
+        schema:
+          type: string
+          default: 'false'
+      - name: returnMilestones
+        in: query
+        description: returnMilestones
+        schema:
+          type: string
+          default: 'false'
+      - name: returnPOD
+        in: query
+        description: Return Proof of Delivery
+        schema:
+          type: string
+          default: 'false'
+      - name: transId
+        in: header
+        description: An identifier unique to the request.
+        required: true
+        schema:
+          type: string
+      - name: transactionSrc
+        in: header
+        description: Identifies the client/source application that is calling
+        required: true
+        schema:
+          type: string
+          default: testing
+      responses:
+        '200':
+          description: Tracking Information found
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/TrackApiResponse"
+        '400':
+          description: Invalid request
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Response"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/Response"
+        '404':
+          description: Tracking number information not found
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Response"
+        '500':
+          description: Internal server error
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Response"
+        '503':
+          description: Resource is not available
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Response"
+      deprecated: false
+  "/track/v1/reference/details/{referenceNumber}":
+    get:
+      summary: Track by Reference Number
+      tags:
+        - Tracking
+      security:
+        - OAuth2: []
+      description: ''
+      operationId: Reference Tracking API
+      parameters:
+      - name: referenceNumber
+        in: path
+        description: The reference number for which tracking information is requested.
+        required: true
+        schema:
+          type: string
+      - name: locale
+        in: query
+        description: Language and country code of the user, separated by an underscore.
+          Default value is 'en_US'
+        schema:
+          type: string
+          default: en_US
+      - name: fromPickUpDate
+        in: query
+        description: The tracking information for the above reference number will be searched from this date
+        schema:
+          type: string
+          default: currentDate-14
+      - name: toPickUpDate
+        in: query
+        description: The tracking information for the above reference number will be searched till this date
+        schema:
+          type: string
+          default: currentDate
+      - name: destCountry
+        in: query
+        description: The Destination Country associated with above reference number
+        schema:
+          type: string
+          default: 
+      - name: destZip
+        in: query
+        description: The Destination Zip associated with above reference number
+        schema:
+          type: string
+          default: 
+      - name: shipperNum
+        in: query
+        description: The Shipper Number (Account Number) associated with above reference number
+        schema:
+          type: string
+          default: 		  
+      - name: refNumType
+        in: query
+        description: The Reference number type which will define the tracking information is related to small package or fgv
+        schema:
+          type: string
+          default: 'SmallPackage. Valid values: SmallPackage, fgv'
+      - name: transId
+        in: header
+        description: An identifier unique to the request.
+        required: true
+        schema:
+          type: string
+      - name: transactionSrc
+        in: header
+        description: Identifies the client/source application that is calling
+        required: true
+        schema:
+          type: string
+          default: testing
+      responses:
+        '200':
+          description: Tracking Information found
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/TrackApiResponse"
+        '400':
+          description: Invalid request
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Response"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/Response"
+        '404':
+          description: Tracking number information not found
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Response"
+        '500':
+          description: Internal server error
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Response"
+        '503':
+          description: Resource is not available
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Response"
+      deprecated: false
+  "/track/v1/shipment/details/{inquiryNumber}":
+    get:
+      summary: Track Each Package in Shipment
+      tags:
+        - Tracking
+      security:
+        - OAuth2: []
+      description: ''
+      operationId: Shipment Tracking API
+      parameters:
+      - name: inquiryNumber
+        in: path
+        description: The tracking number for which tracking information is requested.
+          Each inquiry number must be between 7 and 34 characters in length.
+        required: true
+        schema:
+          type: string
+      - name: locale
+        in: query
+        description: Language and country code of the user, separated by an underscore.
+          Default value is 'en_US'
+        schema:
+          type: string
+          default: en_US
+      - name: offset
+        in: query
+        description: This is used to support pagination of package results. The offset is a 0-based index which defines the starting record to be returned.
+        schema:
+          type: string
+          default: 0
+      - name: count
+        in: query
+        description: This is used to support pagination of package results. The count is the maximum number of packages to return starting with the offset.
+        schema:
+          type: string
+          default: 50
+      - name: transId
+        in: header
+        description: An identifier unique to the request.
+        required: true
+        schema:
+          type: string
+      - name: transactionSrc
+        in: header
+        description: Identifies the client/source application that is calling
+        required: true
+        schema:
+          type: string
+          default: testing
+      responses:
+        '200':
+          description: Tracking Information found
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/TrackApiResponse"
+        '400':
+          description: Invalid request
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Response"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/Response"
+        '404':
+          description: Tracking number information not found
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Response"
+        '500':
+          description: Internal server error
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Response"
+        '503':
+          description: Resource is not available
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Response"
+      deprecated: false
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: |
+        Find your Client ID and Secret on your app info page.
+        1. Select \"Try It\"
+        2. In the Security section enter your Client ID and Secret.
+        3. Select \"Request Token\"
+        4. Enter any additional information in the Body and Parameters sections.
+        5. Select \"Send\" to execute your API request
+      flows:
+        clientCredentials:
+          x-tokenEndpointAuthMethod: client_secret_basic
+          tokenUrl: https://wwwcie.ups.com/security/v1/oauth/token
+          scopes: {}
+  schemas:
+    AccessPointInformation:
+      title: AccessPointInformation
+      type: object
+      description: The container that has all the information related to the access
+        point where the package is destined for/delivered to.
+      properties:
+        pickupByDate:
+          type: string
+    Activity:
+      title: Activity
+      type: object
+      description: Container with all activities associated with the package. Activities
+        are returned in chronological order, with the most recent activity first.
+      properties:
+        date:
+          type: string
+          description: 'The date of the activity. Format: YYYYMMDD'
+          example: '20210210'
+        gmtDate:
+          type: string
+          description: 'gmtDate'
+          example: '20210210'
+        gmtOffset:
+          type: string
+          description: 'gmtOffset'
+          example: '-05:00'
+        gmtTime:
+          type: string
+          description: 'gmtTime'
+          example: '74700'
+        location:
+          "$ref": "#/components/schemas/Location"
+        status:
+          "$ref": "#/components/schemas/Status"
+        time:
+          type: string
+          description: 'The time of the activity. Format: HHMMSS (24 hr)'
+          example: '071356'
+    Address:
+      title: Address
+      type: object
+      description: The container which has the physical address.
+      properties:
+        addressLine1:
+          type: string
+          description: The physical street address line 1.
+          example: 100 Main St
+        addressLine2:
+          type: string
+          description: The physical street address line 2.
+          example: Warehouse
+        addressLine3:
+          type: string
+          description: The physical street address line 3.
+          example: Building 1
+        city:
+          type: string
+          description: The physical address city.
+          example: Wayne
+        country:
+          type: string
+          description: The physical address country.
+          example: US
+        countryCode:
+          type: string
+          description: The physical address country code.
+          example: US
+        postalCode:
+          type: string
+          description: The physical address postal code.
+          example: '07470'
+        stateProvince:
+          type: string
+          description: The physical address state or province.
+          example: NJ
+    AlternateTrackingNumber:
+      title: AlternateTrackingNumber
+      type: object
+      description: The list of alternate tracking numbers associated with the package.
+      properties:
+        number:
+          type: string
+          description: The alternate tracking number.
+          example: '92419900000033499522966220'
+        type:
+          type: string
+          description: The type of alternate number. Non-typed numbers are typically
+            UPS tracking numbers.
+          example: USPS_PIC
+    DeliveryDate:
+      title: DeliveryDate
+      type: object
+      description: The list of delivery dates associated with the package.
+      properties:
+        date:
+          type: string
+          description: The date of this delivery detail. Format - YYYYMMDD
+        type:
+          type: string
+          description: 'The list of delivery dates associated with the package. 
+            Valid values:
+              SDD - Scheduled Delivery Date
+              RDD - Rescheduled Delivery Date
+              DEL - Delivered Date'
+    DeliveryInformation:
+      title: DeliveryInformation
+      type: object
+      description: Container with all information related to the delivery of the package.
+        Populated only when the package is delivered.
+      properties:
+        deliveryPhoto:
+          "$ref": "#/components/schemas/DeliveryPhoto"
+        location:
+          type: string
+          description: 'The location where the package was dropped off. For example:
+            ''Front Door'''
+          example: Front Door
+        receivedBy:
+          type: string
+          description: The individual who took possession of the package at delivery.
+          example: ''
+        signature:
+          "$ref": "#/components/schemas/Signature"
+        pod:
+           title: POD
+           type: object
+           description: Container which contains Proof of Delivery.
+           properties:
+            content:
+              type: string
+              description: 'The base64 encoded string representation of the Delivery Proof. Note: This is considered sensitive data and may only be returned for a user that has rights to the package.'
+    DeliveryPhoto:
+      title: DeliveryPhoto
+      type: object
+      description: Container with all information related to the delivery photo of the 
+        package.
+      properties:
+        isNonPostalCodeCountry:
+          type: boolean
+          description: 'The indication if the country does not use postal code. 
+            Valid values: ''true'' this country does not use postal code.
+            ''false'' this country uses postal code'
+        photo:
+          type: string
+        photoCaptureInd:
+          type: string
+          description: 'The photo capture indicator. Valid values: ''Y'' the photo is an
+            photo capture. ''N'' the photo is not a capture'
+        photoDispositionCode:
+          type: string
+          description: 'The photo disposition code. Valid values: ''V'' the photo is 
+            viewable. ''N'' the photo is not viewable. ''U'' the photo is not stored'
+    DeliveryTime:
+      title: DeliveryTime
+      type: object
+      description: The container which has all delivery times associated with the
+        package.
+      properties:
+        endTime:
+          type: string
+          description: 'The end time of a window or the committed time or the delivered
+            time. Only returned when the type is “EDW” or “CDW” or “IDW” or “CMT”
+            or “DEL”. Format: HHMMSS (24 hr)'
+        startTime:
+          type: string
+          description: 'The start time of a delivery. Only returned when the type
+            is “EDW” or “CDW” or “IDW”. Format: HHMMSS (24 hr).'
+        type:
+          type: string
+          description: |-
+            The date of this delivery detail.
+            Valid values:
+
+            EOD - End of Day
+            CMT - Commit Time
+            EDW - Estimated Delivery Window **
+            CDW - Confirmed Delivery Window **
+            IDW - Imminent Delivery Window **
+            DEL - Delivered Time
+    Dimension:
+      title: Dimension
+      type: object
+      properties:
+        height:
+          type: string
+          description: 'Height of the package'
+        length:
+          type: string
+          description: 'Length of the package'
+        unitOfDimension:
+          type: string
+          description: 'The unit of the dimensions'
+        width:
+          type: string
+          description: 'Width of the package'
+    Error:
+      title: Error
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    InquireNumbers:
+      title: InquireNumbers
+      type: object
+      properties:
+        inquiryNumbers:
+          type: array
+          items:
+            type: string
+      description: Inquiry number
+    Location:
+      title: Location
+      type: object
+      properties:
+        address:
+          "$ref": "#/components/schemas/Address"
+        slic:
+          type: string
+          description: Site Location Indicator Code (SLIC)
+          example: '8566'
+    Milestones:
+      title: Milestones
+      type: object
+      description: The list of milestones associated with the package. Milestones
+        will be returned in chronological order, with the oldest first and most recent/future
+        milestones last.
+      properties:
+        category:
+          type: string
+          description: The milestone category. This will be present only when a milestone
+            is in a COMPLETE state.
+        code:
+          type: string
+          description: The milestone code.
+        current:
+          type: boolean
+          description: 'The indication if the milestone represents the current state
+            of the package. Valid values: ''true'' this milestone is the current state
+            of the package.  ''false'' this milestone is not current.'
+        description:
+          type: string
+          description: 'The milestone description. Note: this is not translated at
+            this time and is returned in US English.'
+        linkedActivity:
+          type: string
+          description: The 0-based index of the activity that triggered this milestone.
+            This will be returned only when a milestone is in a COMPLETE state. For
+            example the most recent activity on the response is index 0.
+        state:
+          type: string
+          description: 'The milestone state. Valid values: ''This milestone has already
+            occurred''/''This milestone has not yet been completed''.'
+        subMilestone:
+          "$ref": "#/components/schemas/SubMilestone"
+    Package:
+      title: Package
+      type: object
+      properties:
+        accessPointInformation:
+          "$ref": "#/components/schemas/AccessPointInformation"
+        activity:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Activity"
+        additionalAttributes:
+          type: array
+          description: The list of additional attributes that may be associated with
+            the package. Presence of any element indicates the package has that attribute.
+          example:
+          - SENSOR_EVENT
+          items:
+            type: string
+        additionalServices:
+          type: array
+          description: The list of additional services that may be associated with
+            the package. Presence of any element indicates that the package has that
+            service.
+          example:
+          - ADULT_SIGNATURE_REQUIRED
+          - SIGNATURE_REQUIRED
+          - ADDITIONAL_HANDLING
+          - CARBON_NEUTRAL
+          - UPS_PREMIER_SILVER
+          - UPS_PREMIER_GOLD
+          - UPS_PREMIER_PLATINUM
+          items:
+            type: string
+        alternateTrackingNumber:
+          type: array
+          items:
+            "$ref": "#/components/schemas/AlternateTrackingNumber"
+        currentStatus:
+          "$ref": "#/components/schemas/Status"
+        deliveryDate:
+          type: array
+          items:
+            "$ref": "#/components/schemas/DeliveryDate"
+        deliveryInformation:
+          "$ref": "#/components/schemas/DeliveryInformation"
+        deliveryTime:
+          "$ref": "#/components/schemas/DeliveryTime"
+        dimension:
+          "$ref": "#/components/schemas/Dimension"
+        isSmartPackage:
+          type: boolean
+          description: 'Indicator of whether the package is a smart package'
+        milestones:
+          type: array
+          description: milestones
+          items:
+            "$ref": "#/components/schemas/Milestones"
+        packageAddress:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PackageAddress"
+        packageCount:
+          type: integer
+          description: The total number of packages in the shipment. Note that this
+            number may be greater than the number of returned packages in the response.
+            In such cases subsequent calls are needed to get additional packages.
+          format: int32
+          example: 2
+        paymentInformation:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PaymentInformation"
+        referenceNumber:
+          type: array
+          items:
+            "$ref": "#/components/schemas/ReferenceNumber"
+        service:
+          "$ref": "#/components/schemas/Service"
+        statusCode:
+          type: string
+        statusDescription:
+          type: string
+          description: 'The activity status description. Note: this field will be
+            translated based on the locale provided in the request.'
+        suppressionIndicators:
+          type: array
+          description: 'Contains values which signify that certain data should be
+            suppressed or hidden. Valid values: Tracking activity details should be
+            hidden. Note: this is mainly intended for use by UPS.com applications.'
+          example: DETAIL
+          items:
+            type: string
+        trackingNumber:
+          type: string
+        ucixStatus:
+          type: string
+          description: 'This indicator provides UCIX (UPS Customer Information Exchange) status
+            Valid values: ''O'' means open. ''C'' means closed.'
+        weight:
+          "$ref": "#/components/schemas/Weight"
+    PackageAddress:
+      title: PackageAddress
+      type: object
+      description: The container array that has all the addresses associated with
+        the package, such as the ship from (shipper), ship to (consignee), and delivery
+        addresses
+      properties:
+        address:
+          "$ref": "#/components/schemas/Address"
+        attentionName:
+          type: string
+          description: The specific name of an individual associated with the address
+            segment.
+        name:
+          type: string
+          description: Ship-to name.
+          example: Sears
+        type:
+          type: string
+          description: The type of address.
+          example: ORIGIN/DESTINATION
+    PaymentInformation:
+      title: PaymentInformation
+      type: object
+      description: The container array that has all the payment information associated
+        with the package, such as 'Collect on Delivery payment'.
+      properties:
+        amount:
+          type: string
+          description: 'The payment amount. This value will contain the amount in
+            dollars and cents, separated by a period (.) Example: ''1025.50''.9'
+          example: '243.5'
+        currency:
+          type: string
+          description: The payment currency code (see API codes for possible values).
+          example: EUR
+        id:
+          type: string
+          description: The payment internal ID. This may be used in other systems
+            to retrieve additional information on the payment.
+          example: 3S35571M1L381K5O0P316L0M1R2E6H14
+        paid:
+          type: boolean
+          description: 'The indication for whether the payment is paid or not. Valid
+            values: ''true'' the payment is paid. ''false'' the payment is not paid.'
+          example: false
+        paymentMethod:
+          type: string
+          description: The applicable payment methods.
+          example: C0, C1, ... C9
+        type:
+          type: string
+          description: The payment type.
+          example: ICOD/COD
+    ReferenceNumber:
+      title: ReferenceNumber
+      type: object
+      description: The list of reference numbers associated with the package.
+      properties:
+        number:
+          type: string
+          description: The reference number.
+          example: ShipRef123
+        type:
+          type: string
+          description: The type of reference number. Specifies how the reference number
+            is associated with the package.
+          example: SHIPMENT
+    Response:
+      title: Response
+      type: object
+      properties:
+        response:
+          "$ref": "#/components/schemas/ErrorResponse"
+    ErrorResponse:
+      title: Response
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Error"
+    Service:
+      title: Service
+      type: object
+      description: The container which has the package service information.
+      properties:
+        code:
+          type: string
+          description: The service name code.
+          example: '518'
+        description:
+          type: string
+          description: The service name description. Note that this field will be
+            translated based on the locale provided in the request.
+          example: UPS Ground
+        levelCode:
+          type: string
+          description: levelCode
+          example: '011'
+    Shipment:
+      title: Shipment
+      type: object
+      properties:
+        inquiryNumber:
+          type: string
+          description: inquiryNumber
+          example: 1Z023E2X0214323462
+        package:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Package"
+        userRelation:
+          type: array
+          description: The relationship of the user to the package(s) in the shipment.
+            No value means that the user has no relationship to the package. Note
+            that this check is only done when the request contains the 'Username'
+            and package rights checking is performed. Valid values:<br />'MYC_HOME'
+            - My Choice for Home<br />'MYC_BUS_OUTBOUND' - My Choice for Business
+            Outbound<br />'MYC_BUS_INBOUND' - My Choice for Business Inbound<br />'SHIPPER'
+            - Shipper
+          example: MYCHOICE_HOME
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Warning"
+    Signature:
+      title: Signature
+      type: object
+      description: Container with all the signature information associated to the
+        package being delivered.
+      properties:
+        image:
+          type: string
+          description: 'The base64 encoded string representation of the signature
+            image. Note: This is considered sensitive data and may only be returned
+            for a user that has rights to the package.'
+          example: encoding Base64
+    Status:
+      title: Status
+      type: object
+      description: The container which has the current package status
+      properties:
+        code:
+          type: string
+          description: The current status code.
+          example: SR
+        description:
+          type: string
+          description: The current status description. Note that this field will be
+            translated based on the locale provided in the request.
+          example: Your package was released by the customs agency.
+        simplifiedTextDescription:
+          type: string
+          description: The current status in simplified text. This is a supplementary
+            description providing additional information on the status of the package.
+            Note that this field will be translated based on the locale provided in
+            the request.
+          example: Delivered
+        statusCode:
+          type: string
+          description: The activity package detail status code see API Codes for possible
+            values.
+          example: '003'
+        type:
+          type: string
+          description: The activity status type.
+          example: X
+    SubMilestone:
+      title: SubMilestone
+      type: object
+      description: The sub-milestone container containing information on a child milestone.
+        Will be present only if a child milestone exists.
+      properties:
+        category:
+          type: string
+          description: The sub-milestone category.
+    TrackApiResponse:
+      title: TrackApiResponse
+      type: object
+      properties:
+        trackResponse:
+          "$ref": "#/components/schemas/TrackResponse"
+    TrackResponse:
+      title: TrackResponse
+      type: object
+      properties:
+        shipment:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Shipment"
+    Warning:
+      title: Warning
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    Weight:
+      title: Weight
+      type: object
+      description: The weight container for the package.
+      properties:
+        unitOfMeasurement:
+          type: string
+          description: 'The weight units of measurement. Valid values: ''LBS'' - pounds.
+            ''KGS'' - kilograms.'
+        weight:
+          type: string
+          description: 'The weight units of measurement. Valid values: ''LBS'' - pounds.
+            ''KGS'' - kilograms.'
+

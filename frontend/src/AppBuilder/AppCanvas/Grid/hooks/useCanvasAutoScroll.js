@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect } from 'react';
-import { positionGhostElement } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import { positionGhostElement, getCanvasBottomBound } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useGridStore } from '@/_stores/gridStore';
@@ -147,8 +147,11 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
     const currentPos = parseTransform(element);
     let newX = currentPos.x;
     let newY = currentPos.y;
-    newX = Math.round(newX / _gridWidth) * _gridWidth + scrollX;
-    newY = Math.round(newY / GRID_HEIGHT) * GRID_HEIGHT + scrollY;
+    // Snap the scroll-compensated position so the widget stays on the grid. Adding
+    // the scroll delta after snapping would push it (scroll % gridWidth) px off the
+    // grid lines, since the scroll amount is not a multiple of the grid width.
+    newX = Math.round((newX + scrollX) / _gridWidth) * _gridWidth;
+    newY = Math.round((newY + scrollY) / GRID_HEIGHT) * GRID_HEIGHT;
 
     // Clamp position to stay within canvas bounds
     // Left bound: newX >= 0
@@ -156,6 +159,12 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
     // Right bound: newX <= canvasWidth - elementWidth
     newX = Math.max(0, Math.min(newX, canvasWidth - elementWidth));
     newY = Math.max(0, newY);
+
+    // Bottom bound: widget should not go past footer
+    const canvasBottomBound = getCanvasBottomBound();
+    if (canvasBottomBound !== Infinity) {
+      newY = Math.min(newY, canvasBottomBound - element.clientHeight);
+    }
 
     // Update element transform immediately
     element.style.transform = `translate(${newX}px, ${newY}px)`;
@@ -181,13 +190,29 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
     let scrollY = 0;
 
     // Check vertical boundaries using MOUSE POSITION (on .canvas-content)
-    if (verticalContainer && clientY <= verticalRect.top + threshold) {
+    let verticalTopBoundary = verticalRect?.top ?? 0;
+    let verticalBottomBoundary = verticalRect?.bottom ?? 0;
+    if (verticalContainer) {
+      const headerElement = document.querySelector('[component-id="canvas-header"]');
+      if (headerElement) {
+        const headerRect = headerElement.getBoundingClientRect();
+        verticalTopBoundary = Math.max(verticalTopBoundary, headerRect.bottom);
+      }
+
+      const footerElement = document.querySelector('[component-id="canvas-footer"]');
+      if (footerElement) {
+        const footerRect = footerElement.getBoundingClientRect();
+        verticalBottomBoundary = Math.min(verticalBottomBoundary, footerRect.top);
+      }
+    }
+
+    if (verticalContainer && clientY > verticalTopBoundary && clientY <= verticalTopBoundary + threshold) {
       // Mouse within threshold of top edge - scroll up
       const remainingTopScroll = Math.floor(verticalContainer.scrollTop);
       if (remainingTopScroll > 1) {
         scrollY = -Math.min(scrollSpeed, remainingTopScroll);
       }
-    } else if (verticalContainer && clientY >= verticalRect.bottom - threshold) {
+    } else if (verticalContainer && clientY < verticalBottomBoundary && clientY >= verticalBottomBoundary - threshold) {
       // Mouse within threshold of bottom edge - scroll down
       scrollY = scrollSpeed;
     }

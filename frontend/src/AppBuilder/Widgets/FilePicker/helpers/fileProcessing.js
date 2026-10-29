@@ -2,10 +2,11 @@
 import * as XLSX from 'xlsx';
 import { toast } from 'react-hot-toast';
 import JSON5 from 'json5'; // Import JSON5 for more lenient parsing
+import Papa from 'papaparse';
 
 // Define constants for processing file types
 // (Consider moving these to a shared constants file if used elsewhere)
-export const PARSE_FILE_TYPES = {
+const PARSE_FILE_TYPES = {
   CSV: 'text/csv',
   TSV: 'text/tab-separated-values',
   TXT: 'text/plain',
@@ -14,34 +15,20 @@ export const PARSE_FILE_TYPES = {
   JSON: 'application/json', // Added JSON MIME type
 };
 
-const lineParser = (line, delimiter) => {
-  let lineToFormat = line;
-
-  // if delimiter is tab & if line contains '\\t' instead '\t' then just replace it with '\t'
-  if (delimiter === '\t' && line.includes('\\t')) {
-    lineToFormat = line.replaceAll('\\t', '\t');
-  }
-
-  return lineToFormat.split(delimiter).map((h) => h.trim());
-};
-
-// Helper functions for processing file content
-export const processCSV = (str, delimiter = ',') => {
+// RFC 4180 compliant CSV parser using PapaParse
+const processCSV = (str, delimiter = ',') => {
   try {
-    const lines = str.split(/\r?\n/);
-    const [headerLine, ...rows] = lines;
-    if (!headerLine) return [];
-    const headers = lineParser(headerLine, delimiter);
-    return rows
-      .filter((r) => r.trim().length > 0)
-      .map((row) => {
-        const cols = lineParser(row, delimiter);
-        const obj = {};
-        headers.forEach((h, i) => {
-          obj[h] = cols[i] ?? '';
-        });
-        return obj;
-      });
+    const result = Papa.parse(str, {
+      header: true,
+      delimiter: delimiter,
+      skipEmptyLines: 'greedy',
+      transformHeader: (h) => h.trim(),
+    });
+
+    if (result.errors.length > 0) {
+      console.error('CSV parse errors:', result.errors);
+    }
+    return result.data;
   } catch (error) {
     console.error('Error processing CSV:', error);
     toast.error('Failed to parse CSV file.');
@@ -49,7 +36,7 @@ export const processCSV = (str, delimiter = ',') => {
   }
 };
 
-export const processXls = async (base64Str) => {
+const processXls = async (base64Str) => {
   try {
     // Decode base64 to binary string
     const binary = atob(base64Str.split(',')[1] || base64Str);
@@ -75,7 +62,7 @@ export const processXls = async (base64Str) => {
 };
 
 // Added function to parse JSON content
-export const processJson = (str) => {
+const processJson = (str) => {
   try {
     // Use JSON5 for more flexibility (comments, trailing commas, etc.)
     return JSON5.parse(str);
@@ -109,25 +96,21 @@ export const processFileContent = async (fileType, fileContent, options = {}) =>
   }
 };
 
-// Deprecated error handler removed; rely on explicit toasts where needed.
-
-const DEPRECATED_processCSV = (str, delimiter = ',') => processCSV(str, delimiter);
-
 export const DEPRECATED_processFileContent = async (fileType, fileContent, options = {}) => {
   const { fileParsingDelimiter = ',', fileTypeFromExtension = 'auto-detect' } = options;
 
   switch (fileType) {
     case 'text/csv':
     case PARSE_FILE_TYPES.TXT:
-      return DEPRECATED_processCSV(
+      return processCSV(
         fileContent.readFileAsText,
         fileTypeFromExtension === 'auto-detect' ? ',' : fileParsingDelimiter
       );
     case PARSE_FILE_TYPES.TSV:
-      return DEPRECATED_processCSV(fileContent.readFileAsText, '\t');
+      return processCSV(fileContent.readFileAsText, '\t');
     case 'application/vnd.ms-excel':
     case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-      return await processXls(fileContent.readFileAsDataURL); // Use the actual processXls function
+      return await processXls(fileContent.readFileAsDataURL);
     case 'application/json':
       return processJson(fileContent.readFileAsText);
     default:
@@ -135,7 +118,7 @@ export const DEPRECATED_processFileContent = async (fileType, fileContent, optio
   }
 };
 
-export const detectParserFile = (file) => {
+const detectParserFile = (file) => {
   return Object.values(PARSE_FILE_TYPES).includes(file.type);
 };
 

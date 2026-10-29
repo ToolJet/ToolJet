@@ -5,6 +5,7 @@ import { createAppSlice } from './slices/appSlice';
 import { createLoaderSlice } from './slices/loaderSlice';
 import { createLeftSideBarSlice } from './slices/leftSideBarSlice';
 import { createComponentsSlice } from './slices/componentsSlice';
+import { createFlexContainerSlice } from './slices/flexContainerSlice';
 import { createRightSideBarSlice } from './slices/rightSideBarSlice';
 import { createModeSlice } from './slices/modeSlice';
 import { createQueryPanelSlice } from './slices/queryPanelSlice';
@@ -32,8 +33,13 @@ import { createFixWithAiSlice } from './slices/fixWithAi';
 import { createWhiteLabellingSlice } from './slices/whiteLabellingSlice';
 import { createFormComponentSlice } from './slices/componentSlices/formComponentSlice';
 import { createInspectorSlice } from './slices/inspectorSlice';
+import { createCodeSearchSlice } from './slices/codeSearchSlice';
 import { createModuleSlice } from './slices/moduleSlice';
+import { createLibrarySlice } from './slices/librarySlice';
+import { createDataQueryFolderSlice } from './slices/dataQueryFolderSlice';
 import { listViewComponentSlice } from './slices/componentSlices/listViewComponentSlice';
+import { tableComponentSlice } from './slices/componentSlices/tableComponentSlice';
+import { createBranchSlice } from './slices/branchSlice';
 enableMapSet();
 
 export default create(
@@ -44,6 +50,7 @@ export default create(
       ...createAppSlice(...state),
       ...createLoaderSlice(...state),
       ...createLeftSideBarSlice(...state),
+      ...createFlexContainerSlice(...state),
       ...createComponentsSlice(...state),
       ...createRightSideBarSlice(...state),
       ...createModeSlice(...state),
@@ -68,10 +75,15 @@ export default create(
       ...createFixWithAiSlice(...state),
       ...createWhiteLabellingSlice(...state),
       ...createInspectorSlice(...state),
+      ...createCodeSearchSlice(...state),
       ...createModuleSlice(...state),
+      ...createLibrarySlice(...state),
+      ...createDataQueryFolderSlice(...state),
       // component slices
       ...createFormComponentSlice(...state),
       ...listViewComponentSlice(...state),
+      ...tableComponentSlice(...state),
+      ...createBranchSlice(...state),
     })),
     { name: 'App Builder Store', anonymousActionType: 'unknown' }
   )

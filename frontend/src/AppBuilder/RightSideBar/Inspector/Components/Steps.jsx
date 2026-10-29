@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
-import { renderElement } from '../Utils';
+import { renderElement, validateStaticId, trimStaticId } from '../Utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import List from '@/ToolJetUI/List/List';
@@ -17,6 +18,9 @@ import { shallow } from 'zustand/shallow';
 import Switch from '@/AppBuilder/CodeBuilder/Elements/Switch';
 import { usePrevious } from '@dnd-kit/utilities';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+
+// Code search names a step by its id, else its name.
+const stepIdentity = (step) => String([step?.id, step?.name].find((v) => v != null && v !== ''));
 
 export function Steps({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -38,6 +42,8 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
 
   const [options, setOptions] = useState([]);
   const [hoveredOptionIndex, setHoveredOptionIndex] = useState(null);
+  // Bumped to remount the open popover's Id field so it re-seeds from the stored id.
+  const [idFieldResetKey, setIdFieldResetKey] = useState(0);
   let properties = [];
   let additionalActions = [];
   let optionsProperties = [];
@@ -74,6 +80,18 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
     paramUpdated({ name: 'steps' }, 'value', options, 'properties', false, props);
   };
 
+  const validateStepId = (value, currentItemId) =>
+    validateStaticId(
+      value,
+      options.map((option) => option.id),
+      currentItemId,
+      {
+        emptyMessage: 'Step ID cannot be empty',
+        bindingMessage: 'Step ID cannot contain a dynamic binding ({{ }}). Use a plain, static value.',
+        duplicateMessage: 'Step ID must be unique. This ID is already used by another step.',
+      }
+    );
+
   const generateNewOptions = () => {
     let found = false;
     let label = '';
@@ -106,7 +124,22 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
     updateAllOptionsParams(_items, { isParamFromDropdownOptions: true });
   };
 
-  const handleLabelChange = (propertyName, value, index) => {
+  const handleOptionChange = (propertyName, rawValue, index) => {
+    // Store id trimmed, matching what was validated.
+    const value = propertyName === 'id' ? trimStaticId(rawValue) : rawValue;
+
+    // Reject a colliding id outright, even locally (same as Tabs and Nav), and remount
+    // the Id field so it snaps back to the stored id.
+    if (propertyName === 'id') {
+      const [isValid] = validateStepId(value, options[index]?.id);
+      if (!isValid) {
+        setIdFieldResetKey((key) => key + 1);
+        return;
+      }
+      // Nothing else would resync the field's own displayed text after a trim.
+      if (value !== rawValue) setIdFieldResetKey((key) => key + 1);
+    }
+
     const _options = options.map((option, i) => {
       if (i === index) {
         return {
@@ -164,13 +197,15 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               {'Id'}
             </label>
             <CodeHinter
+              key={idFieldResetKey}
               type={'basic'}
               initialValue={item?.id + ''}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
-              placeholder={'Option label'}
-              onChange={(value) => handleLabelChange('id', value, index)}
+              placeholder={'Step ID'}
+              onChange={(value) => handleOptionChange('id', value, index)}
+              validationFn={(value) => validateStepId(value, item?.id)}
             />
           </div>
           <div className="field mb-3" data-cy={`input-and-label-column-name`}>
@@ -184,7 +219,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               mode="javascript"
               lineNumbers={false}
               placeholder={'Option label'}
-              onChange={(value) => handleLabelChange('name', value, index)}
+              onChange={(value) => handleOptionChange('name', value, index)}
             />
           </div>
           <div className="field mb-3" data-cy={`input-and-label-column-name`}>
@@ -198,7 +233,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               mode="javascript"
               lineNumbers={false}
               placeholder={'Tooltip'}
-              onChange={(value) => handleLabelChange('tooltip', value, index)}
+              onChange={(value) => handleOptionChange('tooltip', value, index)}
             />
           </div>
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
@@ -211,7 +246,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               type={'fxEditor'}
               paramLabel={'Visibility'}
               onChange={(value) =>
-                handleLabelChange(
+                handleOptionChange(
                   'visible',
                   {
                     value,
@@ -239,7 +274,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               type={'fxEditor'}
               paramLabel={'Disable'}
               paramName={'disable'}
-              onChange={(value) => handleLabelChange('disabled', { value }, index)}
+              onChange={(value) => handleOptionChange('disabled', { value }, index)}
               onFxPress={(active) => handleOnFxPress(active, index, 'disabled')}
               fxActive={item?.disabled?.fxActive}
               fieldMeta={{
@@ -266,10 +301,13 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               <div className="w-100" {...droppableProps} ref={innerRef}>
                 {options?.map((item, index) => {
                   return (
-                    <Draggable key={item.name} draggableId={item.name} index={index}>
+                    // Keyed by position, not by the editable label: a label commit (on blur) must not
+                    // remount the row, which would close its open popover.
+                    <Draggable key={index} draggableId={`step-${index}`} index={index}>
                       {(provided, snapshot) => (
                         <div
                           key={index}
+                          data-list-item-id={stepIdentity(item)}
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
@@ -281,7 +319,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
                             rootClose
                             overlay={_renderOverlay(item, index)}
                           >
-                            <div key={item.name + item.id}>
+                            <div key={index}>
                               <ListGroup.Item
                                 style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
                                 onMouseEnter={() => setHoveredOptionIndex(index)}
@@ -417,7 +455,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
             //     'properties',
             //     currentState,
             //     allComponents,
-            //     handleLabelChange
+            //     handleOptionChange
             //   );
             // }
             return renderElement(
@@ -454,6 +492,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
     ),
   });
   items.push({
+    id: ADDITIONAL_ACTIONS_ACCORDION_ID,
     title: `Additional Actions`,
     isOpen: true,
     children: additionalActions.map((property) => {

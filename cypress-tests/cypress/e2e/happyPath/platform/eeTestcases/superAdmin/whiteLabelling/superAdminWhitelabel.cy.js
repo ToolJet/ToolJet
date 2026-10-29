@@ -5,7 +5,7 @@ import {
 } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { logout } from "Support/utils/common";
-import { onboardingSelectors } from "Selectors/onboarding";
+import { onboardingSelectors } from "Selectors/platform/onboarding";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 import { whitelabelTestData, smtpConfig } from "Constants/constants/whitelabel";
 import {
@@ -33,6 +33,7 @@ describe("Instance settings - White labelling", () => {
     cy.apiDeleteAllApps();
     cy.apiConfigureSmtp(smtpConfig);
     enableInstanceSignup();
+    cy.mhDeleteAll();
   });
 
   after(() => {
@@ -222,7 +223,7 @@ describe("Instance settings - White labelling", () => {
       whitelabelTestData.logoIdentifier
     );
     cy.visit(`/my-workspace`);
-    cy.wait(500);
+    cy.wait(1500);
     cy.get(onboardingSelectors.loginEmailInput, { timeout: 50000 }).should(
       "be.visible"
     );

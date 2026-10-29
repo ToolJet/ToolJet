@@ -1,0 +1,2022 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "Properties",
+    "description" : "All HubSpot objects store data in default and custom properties. These endpoints provide access to read and modify object properties in HubSpot.",
+    "version" : "v3"
+  },
+  "servers" : [ {
+    "url" : "https://api.hubapi.com/"
+  } ],
+  "tags" : [ {
+    "name" : "Core"
+  }, {
+    "name" : "Batch"
+  }, {
+    "name" : "Groups"
+  } ],
+  "paths" : {
+    "/crm/v3/properties/{objectType}" : {
+      "get" : {
+        "tags" : [ "Core" ],
+        "summary" : "Read all properties",
+        "description" : "Read all existing properties for the specified object type and HubSpot account.",
+        "operationId" : "get-/crm/v3/properties/{objectType}_getAll",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "archived",
+          "in" : "query",
+          "description" : "Whether to return only results that have been archived.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        }, {
+          "name" : "properties",
+          "in" : "query",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionResponsePropertyNoPaging"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "media_bridge.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "timeline" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2_legacy" : [ "timeline" ]
+        }, {
+          "private_apps_legacy" : [ "media_bridge.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "oauth2_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.line_items.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.line_items.read" ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Core" ],
+        "summary" : "Create a property",
+        "description" : "Create and return a copy of a new property for the specified object type.",
+        "operationId" : "post-/crm/v3/properties/{objectType}_create",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PropertyCreate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Property"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        } ]
+      }
+    },
+    "/crm/v3/properties/{objectType}/batch/archive" : {
+      "post" : {
+        "tags" : [ "Batch" ],
+        "summary" : "Archive a batch of properties",
+        "description" : "Archive a provided list of properties. This method will return a 204 No Content response on success regardless of the initial state of the property (e.g. active, already archived, non-existent).",
+        "operationId" : "post-/crm/v3/properties/{objectType}/batch/archive_archive",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BatchInputPropertyName"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No content",
+            "content" : { }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        } ]
+      }
+    },
+    "/crm/v3/properties/{objectType}/batch/create" : {
+      "post" : {
+        "tags" : [ "Batch" ],
+        "summary" : "Create a batch of properties",
+        "description" : "Create a batch of properties using the same rules as when creating an individual property.",
+        "operationId" : "post-/crm/v3/properties/{objectType}/batch/create_create",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BatchInputPropertyCreate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BatchResponseProperty"
+                }
+              }
+            }
+          },
+          "207" : {
+            "description" : "multiple statuses",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BatchResponsePropertyWithErrors"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        } ]
+      }
+    },
+    "/crm/v3/properties/{objectType}/batch/read" : {
+      "post" : {
+        "tags" : [ "Batch" ],
+        "summary" : "Read a batch of properties",
+        "description" : "Read a provided list of properties.",
+        "operationId" : "post-/crm/v3/properties/{objectType}/batch/read_read",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BatchReadInputPropertyName"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BatchResponseProperty"
+                }
+              }
+            }
+          },
+          "207" : {
+            "description" : "multiple statuses",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BatchResponsePropertyWithErrors"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "media_bridge.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "timeline" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2_legacy" : [ "timeline" ]
+        }, {
+          "private_apps_legacy" : [ "media_bridge.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "oauth2_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.line_items.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.line_items.read" ]
+        } ]
+      }
+    },
+    "/crm/v3/properties/{objectType}/groups" : {
+      "get" : {
+        "tags" : [ "Groups" ],
+        "summary" : "Read all property groups",
+        "description" : "Read all existing property groups for the specified object type and HubSpot account.",
+        "operationId" : "get-/crm/v3/properties/{objectType}/groups_getAll",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionResponsePropertyGroupNoPaging"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "media_bridge.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "timeline" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2_legacy" : [ "timeline" ]
+        }, {
+          "private_apps_legacy" : [ "media_bridge.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "oauth2_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.line_items.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.line_items.read" ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Groups" ],
+        "summary" : "Create a property group",
+        "description" : "Create and return a copy of a new property group.",
+        "operationId" : "post-/crm/v3/properties/{objectType}/groups_create",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PropertyGroupCreate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PropertyGroup"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        } ]
+      }
+    },
+    "/crm/v3/properties/{objectType}/groups/{groupName}" : {
+      "get" : {
+        "tags" : [ "Groups" ],
+        "summary" : "Read a property group",
+        "description" : "Read a property group identified by {groupName}.",
+        "operationId" : "get-/crm/v3/properties/{objectType}/groups/{groupName}_getByName",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "groupName",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PropertyGroup"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "media_bridge.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "timeline" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2_legacy" : [ "timeline" ]
+        }, {
+          "private_apps_legacy" : [ "media_bridge.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "oauth2_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.line_items.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.line_items.read" ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Groups" ],
+        "summary" : "Archive a property group",
+        "description" : "Move a property group identified by {groupName} to the recycling bin.",
+        "operationId" : "delete-/crm/v3/properties/{objectType}/groups/{groupName}_archive",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "groupName",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No content",
+            "content" : { }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        } ]
+      },
+      "patch" : {
+        "tags" : [ "Groups" ],
+        "summary" : "Update a property group",
+        "description" : "Perform a partial update of a property group identified by {groupName}. Provided fields will be overwritten.",
+        "operationId" : "patch-/crm/v3/properties/{objectType}/groups/{groupName}_update",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "groupName",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PropertyGroupUpdate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PropertyGroup"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        } ]
+      }
+    },
+    "/crm/v3/properties/{objectType}/{propertyName}" : {
+      "get" : {
+        "tags" : [ "Core" ],
+        "summary" : "Read a property",
+        "description" : "Read a property identified by {propertyName}.",
+        "operationId" : "get-/crm/v3/properties/{objectType}/{propertyName}_getByName",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "propertyName",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "archived",
+          "in" : "query",
+          "description" : "Whether to return only results that have been archived.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        }, {
+          "name" : "properties",
+          "in" : "query",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Property"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "media_bridge.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "timeline" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.quotes.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.read" ]
+        }, {
+          "private_apps_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2_legacy" : [ "timeline" ]
+        }, {
+          "private_apps_legacy" : [ "media_bridge.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "oauth2_legacy" : [ "crm.objects.goals.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.line_items.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.line_items.read" ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Core" ],
+        "summary" : "Archive a property",
+        "description" : "Move a property identified by {propertyName} to the recycling bin.",
+        "operationId" : "delete-/crm/v3/properties/{objectType}/{propertyName}_archive",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "propertyName",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No content",
+            "content" : { }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        } ]
+      },
+      "patch" : {
+        "tags" : [ "Core" ],
+        "summary" : "Update a property",
+        "description" : "Perform a partial update of a property identified by {propertyName}. Provided fields will be overwritten.",
+        "operationId" : "patch-/crm/v3/properties/{objectType}/{propertyName}_update",
+        "parameters" : [ {
+          "name" : "objectType",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "propertyName",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PropertyUpdate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Property"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "hapikey" : [ ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "e-commerce" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "oauth2_legacy" : [ "e-commerce" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps_legacy" : [ "crm.schemas.custom.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "PropertyName" : {
+        "required" : [ "name" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "The name of the property to read or modify."
+          }
+        },
+        "example" : {
+          "name" : "my_custom_property"
+        }
+      },
+      "StandardError" : {
+        "required" : [ "category", "context", "errors", "links", "message", "status" ],
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "string"
+          },
+          "category" : {
+            "$ref" : "#/components/schemas/ErrorCategory"
+          },
+          "subCategory" : {
+            "type" : "object",
+            "properties" : { }
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "errors" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            }
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "BatchResponseProperty" : {
+        "required" : [ "completedAt", "results", "startedAt", "status" ],
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "PROCESSING", "CANCELED", "COMPLETE" ]
+          },
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Property"
+            }
+          },
+          "requestedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "startedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "completedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "PropertyGroup" : {
+        "required" : [ "archived", "displayOrder", "label", "name" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "The internal property group name, which must be used when referencing the property group via the API."
+          },
+          "label" : {
+            "type" : "string",
+            "description" : "A human-readable label that will be shown in HubSpot."
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "description" : "Property groups are displayed in order starting with the lowest positive integer value. Values of -1 will cause the property group to be displayed after any positive values.",
+            "format" : "int32"
+          },
+          "archived" : {
+            "type" : "boolean"
+          }
+        },
+        "description" : "An ID for a group of properties",
+        "example" : {
+          "name" : "mypropertygroup",
+          "label" : "My Property Group",
+          "displayOrder" : -1
+        }
+      },
+      "CollectionResponsePropertyGroupNoPaging" : {
+        "required" : [ "results" ],
+        "type" : "object",
+        "properties" : {
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PropertyGroup"
+            }
+          }
+        }
+      },
+      "PropertyCreate" : {
+        "required" : [ "fieldType", "groupName", "label", "name", "type" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "The internal property name, which must be used when referencing the property via the API."
+          },
+          "label" : {
+            "type" : "string",
+            "description" : "A human-readable property label that will be shown in HubSpot."
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "The data type of the property.",
+            "enum" : [ "string", "number", "date", "datetime", "enumeration", "bool" ]
+          },
+          "fieldType" : {
+            "type" : "string",
+            "description" : "Controls how the property appears in HubSpot.",
+            "enum" : [ "textarea", "text", "date", "file", "number", "select", "radio", "checkbox", "booleancheckbox", "calculation_equation" ]
+          },
+          "groupName" : {
+            "type" : "string",
+            "description" : "The name of the property group the property belongs to."
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "A description of the property that will be shown as help text in HubSpot."
+          },
+          "options" : {
+            "type" : "array",
+            "description" : "A list of valid options for the property. This field is required for enumerated properties.",
+            "items" : {
+              "$ref" : "#/components/schemas/OptionInput"
+            }
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "description" : "Properties are displayed in order starting with the lowest positive integer value. Values of -1 will cause the property to be displayed after any positive values.",
+            "format" : "int32"
+          },
+          "hasUniqueValue" : {
+            "type" : "boolean",
+            "description" : "Whether or not the property's value must be unique. Once set, this can't be changed."
+          },
+          "hidden" : {
+            "type" : "boolean",
+            "description" : "If true, the property won't be visible and can't be used in HubSpot."
+          },
+          "formField" : {
+            "type" : "boolean",
+            "description" : "Whether or not the property can be used in a HubSpot form."
+          },
+          "externalOptions" : {
+            "type" : "boolean",
+            "description" : "Applicable only for 'enumeration' type properties.  Should be set to true in conjunction with a 'referencedObjectType' of 'OWNER'.  Otherwise false."
+          },
+          "referencedObjectType" : {
+            "type" : "string",
+            "description" : "Should be set to 'OWNER' when 'externalOptions' is true, which causes the property to dynamically pull option values from the current HubSpot users."
+          },
+          "calculationFormula" : {
+            "type" : "string",
+            "description" : "Represents a formula that is used to compute a calculated property."
+          }
+        },
+        "example" : {
+          "label" : "My Contact Property",
+          "type" : "enumeration",
+          "fieldType" : "select",
+          "groupName" : "contactinformation",
+          "hidden" : false,
+          "displayOrder" : 2,
+          "hasUniqueValue" : false,
+          "formField" : true,
+          "options" : [ {
+            "label" : "Option A",
+            "description" : "Choice number one",
+            "value" : "A",
+            "displayOrder" : 1,
+            "hidden" : false
+          }, {
+            "label" : "Option B",
+            "description" : "Choice number two",
+            "value" : "B",
+            "displayOrder" : 2,
+            "hidden" : false
+          } ]
+        }
+      },
+      "OptionInput" : {
+        "required" : [ "hidden", "label", "value" ],
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "description" : "A human-readable option label that will be shown in HubSpot."
+          },
+          "value" : {
+            "type" : "string",
+            "description" : "The internal value of the option, which must be used when setting the property value through the API."
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "A description of the option."
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "description" : "Options are shown in order starting with the lowest positive integer value. Values of -1 will cause the option to be displayed after any positive values.",
+            "format" : "int32"
+          },
+          "hidden" : {
+            "type" : "boolean",
+            "description" : "Hidden options won't be shown in HubSpot."
+          }
+        },
+        "example" : {
+          "label" : "Option A",
+          "description" : "Choice number one",
+          "value" : "A",
+          "displayOrder" : 1,
+          "hidden" : false
+        }
+      },
+      "Error" : {
+        "required" : [ "category", "correlationId", "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate",
+            "example" : "An error occurred"
+          },
+          "correlationId" : {
+            "type" : "string",
+            "description" : "A unique identifier for the request. Include this value with any error reports or support tickets",
+            "format" : "uuid",
+            "example" : "aeb5f871-7f07-4993-9211-075dc63e7cbf"
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "The error category"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "errors" : {
+            "type" : "array",
+            "description" : "further information about the error",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "invalidPropertyName" : [ "propertyValue" ],
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A map of link names to associated URIs containing documentation about the error or recommended remediation steps"
+          }
+        },
+        "example" : {
+          "message" : "Invalid input (details will vary based on the error)",
+          "correlationId" : "aeb5f871-7f07-4993-9211-075dc63e7cbf",
+          "category" : "VALIDATION_ERROR",
+          "links" : {
+            "knowledge-base" : "https://www.hubspot.com/products/service/knowledge-base"
+          }
+        }
+      },
+      "BatchInputPropertyCreate" : {
+        "required" : [ "inputs" ],
+        "type" : "object",
+        "properties" : {
+          "inputs" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PropertyCreate"
+            }
+          }
+        }
+      },
+      "CollectionResponsePropertyNoPaging" : {
+        "required" : [ "results" ],
+        "type" : "object",
+        "properties" : {
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Property"
+            }
+          }
+        }
+      },
+      "ErrorDetail" : {
+        "required" : [ "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate"
+          },
+          "in" : {
+            "type" : "string",
+            "description" : "The name of the field or parameter in which the error was found."
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "The status code associated with the error detail"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          }
+        }
+      },
+      "PropertyUpdate" : {
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "description" : "A human-readable property label that will be shown in HubSpot."
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "The data type of the property.",
+            "enum" : [ "string", "number", "date", "datetime", "enumeration", "bool" ]
+          },
+          "fieldType" : {
+            "type" : "string",
+            "description" : "Controls how the property appears in HubSpot.",
+            "enum" : [ "textarea", "text", "date", "file", "number", "select", "radio", "checkbox", "booleancheckbox", "calculation_equation" ]
+          },
+          "groupName" : {
+            "type" : "string",
+            "description" : "The name of the property group the property belongs to."
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "A description of the property that will be shown as help text in HubSpot."
+          },
+          "options" : {
+            "type" : "array",
+            "description" : "A list of valid options for the property.",
+            "items" : {
+              "$ref" : "#/components/schemas/OptionInput"
+            }
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "description" : "Properties are displayed in order starting with the lowest positive integer value. Values of -1 will cause the Property to be displayed after any positive values.",
+            "format" : "int32"
+          },
+          "hidden" : {
+            "type" : "boolean",
+            "description" : "If true, the property won't be visible and can't be used in HubSpot."
+          },
+          "formField" : {
+            "type" : "boolean",
+            "description" : "Whether or not the property can be used in a HubSpot form."
+          },
+          "calculationFormula" : {
+            "type" : "string",
+            "description" : "Represents a formula that is used to compute a calculated property."
+          }
+        },
+        "example" : {
+          "label" : "My Contact Property",
+          "type" : "enumeration",
+          "fieldType" : "select",
+          "groupName" : "contactinformation",
+          "hidden" : false,
+          "displayOrder" : 2,
+          "formField" : true,
+          "options" : [ {
+            "label" : "Option A",
+            "description" : "Choice number one",
+            "value" : "A",
+            "displayOrder" : 1,
+            "hidden" : false
+          }, {
+            "label" : "Option B",
+            "description" : "Choice number two",
+            "value" : "B",
+            "displayOrder" : 2,
+            "hidden" : false
+          } ]
+        }
+      },
+      "BatchReadInputPropertyName" : {
+        "required" : [ "archived", "inputs" ],
+        "type" : "object",
+        "properties" : {
+          "archived" : {
+            "type" : "boolean"
+          },
+          "inputs" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PropertyName"
+            }
+          }
+        }
+      },
+      "PropertyGroupCreate" : {
+        "required" : [ "label", "name" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "The internal property group name, which must be used when referencing the property group via the API."
+          },
+          "label" : {
+            "type" : "string",
+            "description" : "A human-readable label that will be shown in HubSpot."
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "description" : "Property groups are displayed in order starting with the lowest positive integer value. Values of -1 will cause the property group to be displayed after any positive values.",
+            "format" : "int32"
+          }
+        },
+        "example" : {
+          "name" : "mypropertygroup",
+          "label" : "My Property Group",
+          "displayOrder" : -1
+        }
+      },
+      "PropertyModificationMetadata" : {
+        "required" : [ "archivable", "readOnlyDefinition", "readOnlyValue" ],
+        "type" : "object",
+        "properties" : {
+          "archivable" : {
+            "type" : "boolean"
+          },
+          "readOnlyDefinition" : {
+            "type" : "boolean"
+          },
+          "readOnlyOptions" : {
+            "type" : "boolean"
+          },
+          "readOnlyValue" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "ErrorCategory" : {
+        "required" : [ "httpStatus", "name" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "httpStatus" : {
+            "type" : "string",
+            "enum" : [ "CONTINUE", "SWITCHING_PROTOCOLS", "PROCESSING", "OK", "CREATED", "ACCEPTED", "NON_AUTHORITATIVE_INFORMATION", "NO_CONTENT", "RESET_CONTENT", "PARTIAL_CONTENT", "MULTI_STATUS", "ALREADY_REPORTED", "IM_USED", "MULTIPLE_CHOICES", "MOVED_PERMANENTLY", "FOUND", "SEE_OTHER", "NOT_MODIFIED", "USE_PROXY", "TEMPORARY_REDIRECT", "PERMANENT_REDIRECT", "BAD_REQUEST", "UNAUTHORIZED", "PAYMENT_REQUIRED", "FORBIDDEN", "NOT_FOUND", "METHOD_NOT_ALLOWED", "NOT_ACCEPTABLE", "PROXY_AUTHENTICATION_REQUIRED", "REQUEST_TIMEOUT", "CONFLICT", "GONE", "LENGTH_REQUIRED", "PRECONDITION_FAILED", "REQUEST_ENTITY_TOO_LARGE", "REQUEST_URI_TOO_LONG", "UNSUPPORTED_MEDIA_TYPE", "REQUESTED_RANGE_NOT_SATISFIABLE", "EXPECTATION_FAILED", "IM_A_TEAPOT", "MISDIRECTED_REQUEST", "UNPROCESSABLE_ENTITY", "LOCKED", "FAILED_DEPENDENCY", "UPGRADE_REQUIRED", "PRECONDITION_REQUIRED", "TOO_MANY_REQUESTS", "REQUEST_HEADERS_FIELDS_TOO_LARGE", "INTERNAL_STALE_SERVICE_DISCOVERY", "UNAVAILABLE_FOR_LEGAL_REASONS", "MIGRATION_IN_PROGRESS", "INTERNAL_SERVER_ERROR", "NOT_IMPLEMENTED", "BAD_GATEWAY", "SERVICE_UNAVAILABLE", "GATEWAY_TIMEOUT", "HTTP_VERSION_NOT_SUPPORTED", "VARIANT_ALSO_NEGOTIATES", "INSUFFICIENT_STORAGE", "LOOP_DETECTED", "NOT_EXTENDED", "NETWORK_AUTHENTICATION_REQUIRED" ]
+          }
+        }
+      },
+      "BatchInputPropertyName" : {
+        "required" : [ "inputs" ],
+        "type" : "object",
+        "properties" : {
+          "inputs" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PropertyName"
+            }
+          }
+        }
+      },
+      "BatchResponsePropertyWithErrors" : {
+        "required" : [ "completedAt", "results", "startedAt", "status" ],
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "PROCESSING", "CANCELED", "COMPLETE" ]
+          },
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Property"
+            }
+          },
+          "numErrors" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "errors" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StandardError"
+            }
+          },
+          "requestedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "startedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "completedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "Option" : {
+        "required" : [ "hidden", "label", "value" ],
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "description" : "A human-readable option label that will be shown in HubSpot."
+          },
+          "value" : {
+            "type" : "string",
+            "description" : "The internal value of the option, which must be used when setting the property value through the API."
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "A description of the option."
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "description" : "Options are displayed in order starting with the lowest positive integer value. Values of -1 will cause the option to be displayed after any positive values.",
+            "format" : "int32"
+          },
+          "hidden" : {
+            "type" : "boolean",
+            "description" : "Hidden options will not be displayed in HubSpot."
+          }
+        },
+        "example" : {
+          "label" : "Option A",
+          "description" : "Choice number one",
+          "value" : "A",
+          "displayOrder" : 1,
+          "hidden" : false
+        }
+      },
+      "PropertyGroupUpdate" : {
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "description" : "A human-readable label that will be shown in HubSpot."
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "description" : "Property groups are displayed in order starting with the lowest positive integer value. Values of -1 will cause the property group to be displayed after any positive values.",
+            "format" : "int32"
+          }
+        },
+        "example" : {
+          "label" : "My Property Group",
+          "displayOrder" : -1
+        }
+      },
+      "Property" : {
+        "required" : [ "description", "fieldType", "groupName", "label", "name", "options", "type" ],
+        "type" : "object",
+        "properties" : {
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "archivedAt" : {
+            "type" : "string",
+            "description" : "When the property was archived.",
+            "format" : "date-time"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "The internal property name, which must be used when referencing the property via the API."
+          },
+          "label" : {
+            "type" : "string",
+            "description" : "A human-readable property label that will be shown in HubSpot."
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "The property data type."
+          },
+          "fieldType" : {
+            "type" : "string",
+            "description" : "Controls how the property appears in HubSpot."
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "A description of the property that will be shown as help text in HubSpot."
+          },
+          "groupName" : {
+            "type" : "string",
+            "description" : "The name of the property group the property belongs to."
+          },
+          "options" : {
+            "type" : "array",
+            "description" : "A list of valid options for the property. This field is required for enumerated properties, but will be empty for other property types.",
+            "items" : {
+              "$ref" : "#/components/schemas/Option"
+            }
+          },
+          "createdUserId" : {
+            "type" : "string",
+            "description" : "The internal user ID of the user who created the property in HubSpot. This field may not exist if the property was created outside of HubSpot."
+          },
+          "updatedUserId" : {
+            "type" : "string",
+            "description" : "The internal user ID of the user who updated the property in HubSpot. This field may not exist if the property was updated outside of HubSpot."
+          },
+          "referencedObjectType" : {
+            "type" : "string",
+            "description" : "If this property is related to other object(s), they'll be listed here."
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "description" : "Properties are shown in order, starting with the lowest positive integer value.",
+            "format" : "int32"
+          },
+          "calculated" : {
+            "type" : "boolean",
+            "description" : "For default properties, true indicates that the property is calculated by a HubSpot process. It has no effect for custom properties."
+          },
+          "externalOptions" : {
+            "type" : "boolean",
+            "description" : "For default properties, true indicates that the options are stored externally to the property settings."
+          },
+          "archived" : {
+            "type" : "boolean",
+            "description" : "Whether or not the property is archived."
+          },
+          "hasUniqueValue" : {
+            "type" : "boolean",
+            "description" : "Whether or not the property's value must be unique. Once set, this can't be changed."
+          },
+          "hidden" : {
+            "type" : "boolean",
+            "description" : "Whether or not the property will be hidden from the HubSpot UI. It's recommended this be set to false for custom properties."
+          },
+          "hubspotDefined" : {
+            "type" : "boolean",
+            "description" : "This will be true for default object properties built into HubSpot."
+          },
+          "showCurrencySymbol" : {
+            "type" : "boolean",
+            "description" : "Whether or not the property will display the currency symbol set in the account settings."
+          },
+          "modificationMetadata" : {
+            "$ref" : "#/components/schemas/PropertyModificationMetadata"
+          },
+          "formField" : {
+            "type" : "boolean",
+            "description" : "Whether or not the property can be used in a HubSpot form."
+          },
+          "calculationFormula" : {
+            "type" : "string",
+            "description" : "Represents a formula that is used to compute a calculated property."
+          }
+        },
+        "example" : {
+          "name" : "my_contact_property",
+          "label" : "My Contact Property",
+          "type" : "enumeration",
+          "fieldType" : "select",
+          "groupName" : "contactinformation",
+          "hidden" : false,
+          "displayOrder" : 2,
+          "hasUniqueValue" : false,
+          "formField" : true,
+          "modificationMetadata" : {
+            "readOnlyOptions" : false,
+            "readOnlyValue" : false,
+            "readOnlyDefinition" : false,
+            "archivable" : true
+          },
+          "options" : [ {
+            "label" : "Option A",
+            "description" : "Choice number one",
+            "value" : "A",
+            "displayOrder" : 1,
+            "hidden" : false
+          }, {
+            "label" : "Option B",
+            "description" : "Choice number two",
+            "value" : "B",
+            "displayOrder" : 2,
+            "hidden" : false
+          } ]
+        }
+      }
+    },
+    "responses" : {
+      "Error" : {
+        "description" : "An error occurred.",
+        "content" : {
+          "*/*" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "oauth2_legacy" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "https://app.hubspot.com/oauth/authorize",
+            "tokenUrl" : "https://api.hubapi.com/oauth/v1/token",
+            "scopes" : {
+              "crm.objects.goals.read" : "Read goals",
+              "tickets" : "Read and write tickets",
+              "crm.schemas.custom.read" : "View custom object definitions",
+              "timeline" : "Create timeline events",
+              "e-commerce" : "e-commerce",
+              "media_bridge.read" : "Read media and media events"
+            }
+          }
+        }
+      },
+      "hapikey" : {
+        "type" : "apiKey",
+        "name" : "hapikey",
+        "in" : "query"
+      },
+      "oauth2" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "https://app.hubspot.com/oauth/authorize",
+            "tokenUrl" : "https://api.hubapi.com/oauth/v1/token",
+            "scopes" : {
+              "crm.schemas.deals.read" : " ",
+              "crm.objects.deals.write" : " ",
+              "crm.schemas.line_items.read" : "Line Items schemas",
+              "crm.objects.deals.read" : " ",
+              "crm.schemas.companies.read" : " ",
+              "crm.objects.companies.read" : " ",
+              "crm.objects.companies.write" : " ",
+              "crm.schemas.contacts.read" : " ",
+              "crm.objects.contacts.write" : " ",
+              "crm.schemas.quotes.read" : "Quotes schemas",
+              "crm.objects.contacts.read" : " ",
+              "crm.schemas.companies.write" : " ",
+              "crm.schemas.contacts.write" : " ",
+              "crm.schemas.deals.write" : " "
+            }
+          }
+        }
+      },
+      "private_apps_legacy" : {
+        "type" : "apiKey",
+        "name" : "private-app-legacy",
+        "in" : "header"
+      },
+      "private_apps" : {
+        "type" : "apiKey",
+        "name" : "private-app",
+        "in" : "header"
+      }
+    }
+  },
+  "x-hubspot-available-client-libraries" : [ "PHP", "Node", "Python", "Ruby" ]
+}

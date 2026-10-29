@@ -140,6 +140,7 @@ export const StylesTabElements = ({
         'select',
         'text',
         'newMultiSelect',
+        'tagsV2',
         'datepicker',
       ].includes(column.columnType) && (
         <>

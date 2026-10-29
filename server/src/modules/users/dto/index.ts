@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, MaxLength, MinLength, IsOptional } from 'class-validator';
+import { IsBoolean, IsString, IsNotEmpty, MaxLength, MinLength, IsOptional } from 'class-validator';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 import { USER_STATUS, USER_TYPE } from '@modules/users/constants/lifecycle';
@@ -21,6 +21,12 @@ export class UpdateUserTypeDto {
   @Transform(({ value }) => sanitizeInput(value))
   lastName: string;
 }
+export class ToggleUserMfaDto {
+  @IsBoolean()
+  @IsNotEmpty()
+  enabled: boolean;
+}
+
 export class UpdateUserTypeInstanceDto {
   @IsNotEmpty()
   @IsString()
@@ -70,6 +76,9 @@ export class AllUserResponse {
 
   @Expose()
   status: USER_STATUS;
+
+  @Expose()
+  mfaEnabled: boolean;
 }
 
 export class ChangePasswordDto {

@@ -26,8 +26,7 @@ const SqlSortRow = React.memo(function SqlSortRow({
   columnSelectorDependsOn,
   selectedDataSource,
   currentAppEnvironmentId,
-  schema,
-  table,
+  queryOptions,
   queryName,
 }) {
   const selectedOrder = SQL_SORT_ORDER_OPTIONS.find((option) => option.value === orderValue) ?? null;
@@ -53,7 +52,7 @@ const SqlSortRow = React.memo(function SqlSortRow({
           dependsOn={columnSelectorDependsOn}
           selectedDataSource={selectedDataSource}
           currentAppEnvironmentId={currentAppEnvironmentId}
-          options={{ schema, table }}
+          options={queryOptions}
           value={typeof columnValue === 'string' ? columnValue : ''}
           propertyKey={sortEntryId}
           optionsChanged={(updatedOptions) => {
@@ -65,7 +64,7 @@ const SqlSortRow = React.memo(function SqlSortRow({
           queryName={queryName}
           label="Column"
           darkMode={darkMode}
-          sizeStyles={{ width: '100%', height: '30px', borderRadius: '0 0 0 0' }}
+          sizeStyles={{ width: '100%', height: '30px', borderRadius: '4px 0 0 4px' }}
         />
       </div>
 
@@ -113,10 +112,6 @@ const SqlSort = React.memo(function SqlSort({
   currentAppEnvironmentId,
   queryName,
 }) {
-  const depKeys = Array.isArray(columnSelectorDependsOn) ? columnSelectorDependsOn : [];
-  const schema = depKeys.includes('schema') ? options?.schema ?? '' : '';
-  const table = depKeys.includes('table') ? options?.table ?? '' : '';
-
   const currentSortEntries = readValueMapFromOptions(options, getter, parseKey);
   const sortList = isEmpty(currentSortEntries) ? [] : Object.values(currentSortEntries);
 
@@ -188,8 +183,7 @@ const SqlSort = React.memo(function SqlSort({
           columnSelectorDependsOn={columnSelectorDependsOn}
           selectedDataSource={selectedDataSource}
           currentAppEnvironmentId={currentAppEnvironmentId}
-          schema={schema}
-          table={table}
+          queryOptions={options}
           queryName={queryName}
         />
       ))}

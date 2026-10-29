@@ -1,10 +1,9 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useExposeState } from '@/AppBuilder/Widgets/ModalV2/hooks/useModalCSA';
 import { useResetZIndex } from '@/AppBuilder/Widgets/ModalV2/hooks/useModalZIndex';
 import { useModalEventSideEffects } from '@/AppBuilder/Widgets/ModalV2/hooks/useResizeSideEffects';
-import { useEventListener } from '@/_hooks/use-event-listener';
 import { ModalWidget } from '@/AppBuilder/Widgets/ModalV2/Components/Modal';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import {
@@ -17,6 +16,11 @@ import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/Modal
 import '@/AppBuilder/Widgets/ModalV2/style.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
+import WidgetTooltip from '@/AppBuilder/AppCanvas/WidgetTooltip';
+
+// Upper bound on how long open() waits for the enter transition
+const OPEN_TIMEOUT_MS = 1000;
 
 export const ModalV2 = function Modal({
   id,
@@ -30,13 +34,14 @@ export const ModalV2 = function Modal({
   dataCy,
   height,
   currentMode,
-  adjustComponentPositions,
   currentLayout,
   componentCount,
   subContainerIndex,
   componentType,
+  tooltipProps,
 }) {
   const { moduleId } = useModuleContext();
+  const { contextPath } = useSubcontainerContext();
   const [showModal, setShowModal] = useState(false);
   const {
     closeOnClickingOutside = false,
@@ -60,11 +65,28 @@ export const ModalV2 = function Modal({
     footerBackgroundColor,
     bodyBackgroundColor,
     triggerButtonBackgroundColor,
+    triggerButtonHoverBackgroundMode,
+    triggerButtonHoverBackgroundColor = 'var(--cc-primary-brand)',
     triggerButtonTextColor,
+    triggerButtonTextSize = 14,
+    triggerButtonFontWeight,
+    triggerButtonContentAlignment,
     boxShadow,
     headerDividerColor,
     footerDividerColor,
   } = styles;
+  const normalizedTriggerButtonTextSize = Number(triggerButtonTextSize);
+  const computedTriggerButtonFontSize = Number.isFinite(normalizedTriggerButtonTextSize)
+    ? normalizedTriggerButtonTextSize
+    : 14;
+  const computedTriggerButtonLineHeight = computedTriggerButtonFontSize * 1.42;
+  const computedTriggerButtonIconSize = computedTriggerButtonLineHeight * 0.8;
+  const normalizedTriggerButtonFontWeight = triggerButtonFontWeight === 'medium' ? 500 : triggerButtonFontWeight;
+  const computedTriggerButtonFontWeight = normalizedTriggerButtonFontWeight
+    ? normalizedTriggerButtonFontWeight
+    : normalizedTriggerButtonFontWeight === '0'
+      ? 0
+      : 'normal';
   const isInitialRender = useRef(true);
   const title = properties.title ?? '';
   const titleAlignment = properties.titleAlignment ?? 'left';
@@ -83,55 +105,81 @@ export const ModalV2 = function Modal({
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
 
-  useDynamicHeight({
-    isDynamicHeightEnabled,
-    id,
-    height,
-    adjustComponentPositions,
-    currentLayout,
-    isContainer: true,
-    componentCount,
-    value: JSON.stringify({ headerHeight, showHeader, showModal }),
-    visibility: isVisible,
-    subContainerIndex,
-    componentType,
-  });
+  // open() resolves once the modal has finished entering, so `await open()` is followed by mounted children.
+  // It resolves to true if the modal opened, or false if it was closed or unmounted before it finished opening.
+  const pendingOpensRef = useRef([]);
+  const hasEnteredRef = useRef(false);
 
-  useEffect(() => {
-    const exposedVariables = {
-      open: async function () {
-        setExposedVariable('show', true);
-        setShowModal(true);
-      },
-      close: async function () {
-        setExposedVariable('show', false);
-        setShowModal(false);
-      },
-    };
-    setExposedVariables(exposedVariables);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const settleOpens = (opens, opened) => {
+    if (!opens.length) return;
+    try {
+      useStore.getState().flushImplicitBatchEntries();
+    } finally {
+      // The entries are already removed, so they must settle here even if the flush throws
+      opens.forEach(({ resolve, timer }) => {
+        clearTimeout(timer);
+        resolve(opened);
+      });
+    }
+  };
+
+  const resolvePendingOpens = (opened) => {
+    const pending = pendingOpensRef.current;
+    pendingOpensRef.current = [];
+    settleOpens(pending, opened);
+  };
+
+  // Resolves only this open, so an earlier open's timeout can't resolve a later one early
+  const resolveOpen = (open) => {
+    if (!pendingOpensRef.current.includes(open)) return;
+    pendingOpensRef.current = pendingOpensRef.current.filter((pending) => pending !== open);
+    // Timed out while still entering: the modal is on its way open, so report it as opened
+    settleOpens([open], true);
+  };
+
+  const onModalEntered = () => {
+    hasEnteredRef.current = true;
+    resolvePendingOpens(true);
+  };
 
   function hideModal() {
+    hasEnteredRef.current = false;
     fireEvent('onClose');
     setExposedVariable('show', false);
     setShowModal(false);
+    resolvePendingOpens(false);
   }
 
   function openModal() {
+    const opened = new Promise((resolve) => {
+      const open = { resolve };
+      // Never block the caller if the modal doesn't finish entering
+      open.timer = setTimeout(() => resolveOpen(open), OPEN_TIMEOUT_MS);
+      pendingOpensRef.current.push(open);
+    });
     setExposedVariable('show', true);
-    setShowModal(true);
+    if (hasEnteredRef.current) {
+      resolvePendingOpens(true);
+    } else {
+      setShowModal(true);
+    }
+    return opened;
   }
 
   const onShowModal = () => {
-    openModal();
     setSelectedComponentAsModal(id);
+    return openModal();
   };
 
   const onHideModal = () => {
     hideModal();
     clearSelectedComponents();
   };
+
+  const showModalRef = useRef(false);
+  useEffect(() => {
+    showModalRef.current = showModal;
+  }, [showModal]);
 
   useEffect(() => {
     if (isInitialRender.current) {
@@ -140,15 +188,29 @@ export const ModalV2 = function Modal({
     }
 
     if (showModal) {
-      onShowSideEffects();
+      onShowSideEffects(id);
     } else {
-      onHideSideEffects();
+      onHideSideEffects(id);
     }
 
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
     inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
+
+  // If modal is unmounted while open (e.g. parent page switches via an action
+  // fired from inside the modal), onHide never runs and canvas-content keeps
+  // the inline `overflow: hidden !important` set by onShowSideEffects, leaving
+  // the next page unscrollable.
+  useEffect(() => {
+    return () => {
+      resolvePendingOpens(false);
+      if (showModalRef.current) {
+        onHideSideEffects(id);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     // When modal is active, prevent drop event on backdrop (else widgets droppped will get added to canvas)
@@ -175,6 +237,30 @@ export const ModalV2 = function Modal({
     onHideModal,
     onShowModal,
   });
+  // Memoized: this lands in useDynamicHeight's effect deps. A fresh array per
+  // render (e.g. inside a Listview row, where Viewer re-renders on every
+  // canvasUpdater tick) would refire the effect → scheduleReflow → flushReflows →
+  // incrementCanvasUpdater → re-render, freezing the preview in a reflow loop.
+  const contextIndices = useMemo(
+    () => (contextPath.length > 0 ? contextPath.map((segment) => segment.index) : subContainerIndex),
+    [contextPath, subContainerIndex]
+  );
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    currentLayout,
+    isContainer: true,
+    componentCount,
+    // Includes footerHeight + showFooter so resizing/toggling the footer
+    // also triggers a reflow (configured slot heights feed into the modal's
+    // computed body height).
+    value: JSON.stringify({ headerHeight, footerHeight, showHeader, showFooter, showModal }),
+    visibility: isVisible,
+    subContainerIndex: contextIndices,
+    componentType,
+  });
 
   const customStyles = createModalStyles({
     height,
@@ -188,12 +274,15 @@ export const ModalV2 = function Modal({
     footerBackgroundColor,
     footerHeightPx,
     triggerButtonBackgroundColor,
+    triggerButtonHoverBackgroundMode,
+    triggerButtonHoverBackgroundColor,
     triggerButtonTextColor,
     isVisible,
     boxShadow,
     headerDividerColor,
     footerDividerColor,
     direction,
+    triggerButtonContentAlignment,
   });
 
   const { modalWidth, parentRef } = useModalEventSideEffects({
@@ -215,72 +304,94 @@ export const ModalV2 = function Modal({
       }}
     >
       {useDefaultButton && isVisible && (
-        <button
-          disabled={isDisabledTrigger}
-          className="jet-button btn btn-primary overflow-hidden"
-          style={customStyles.buttonStyles}
-          onClick={(event) => {
-            /**** Start - Logic to reduce the zIndex of modal control box ****/
-            controlBoxRef.current = document.querySelector(`.selected-component.sc-${id}`)?.parentElement;
-            if (mode === 'edit' && controlBoxRef.current) {
-              controlBoxRef.current.classList.add('modal-moveable');
-            }
-            /**** End - Logic to reduce the zIndex of modal control box ****/
+        <WidgetTooltip {...tooltipProps} darkMode={darkMode}>
+          <button
+            disabled={isDisabledTrigger}
+            className="jet-btn btn btn-primary overflow-hidden focus-visible:!tw-outline focus-visible:!tw-outline-2 focus-visible:!tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2"
+            style={customStyles.buttonStyles}
+            onClick={(event) => {
+              /**** Start - Logic to reduce the zIndex of modal control box ****/
+              controlBoxRef.current = document.querySelector(`.selected-component.sc-${id}`)?.parentElement;
+              if (mode === 'edit' && controlBoxRef.current) {
+                controlBoxRef.current.classList.add('modal-moveable');
+              }
+              /**** End - Logic to reduce the zIndex of modal control box ****/
 
-            event.stopPropagation();
-            setShowModal(true);
-          }}
-          data-cy={`${dataCy}-launch-button`}
-        >
-          {/* To maintain backward compatibility, apply class only if icon is visible */}
-          <span className={`${iconVisibility && 'tw-max-w-full tw-min-w-0 tw-overflow-hidden'}`}>
-            {triggerButtonLabel ?? 'Show Modal'}
-          </span>
-          {iconVisibility && (
-            <TablerIcon
-              iconName={iconName}
-              fallbackIcon="IconHome2"
+              event.stopPropagation();
+              setShowModal(true);
+            }}
+            data-cy={`${dataCy}-launch-button`}
+          >
+            {/* To maintain backward compatibility, apply class only if icon is visible */}
+            <span
+              className={`${iconVisibility && 'tw-max-w-full tw-min-w-0 tw-overflow-hidden'}`}
               style={{
-                width: '16px',
-                height: '16px',
-                color: iconColor,
+                fontSize: `${computedTriggerButtonFontSize}px`,
+                lineHeight: `${computedTriggerButtonLineHeight}px`,
+                fontWeight: computedTriggerButtonFontWeight,
               }}
-              className="tw-flex-shrink-0"
-              stroke={1.5}
-            />
-          )}
-        </button>
+            >
+              {triggerButtonLabel ?? 'Show Modal'}
+            </span>
+            {iconVisibility && (
+              <TablerIcon
+                iconName={iconName}
+                fallbackIcon="IconHome2"
+                style={{
+                  width: `${computedTriggerButtonIconSize}px`,
+                  height: `${computedTriggerButtonIconSize}px`,
+                  color: iconColor,
+                }}
+                className="tw-flex-shrink-0"
+                stroke={1.5}
+              />
+            )}
+          </button>
+        </WidgetTooltip>
       )}
 
       <ModalWidget
         show={showModal}
         contentClassName="modal-component"
-        container={document.getElementsByClassName('real-canvas')[0]}
+        container={() =>
+          document.getElementsByClassName('tj-canvas-area')?.[0] || document.getElementsByClassName('real-canvas')?.[0]
+        }
         size={size}
         keyboard={true}
+        // Keep react-bootstrap's focus trap OFF: it continuously yanks focus back
+        // into the modal, which breaks Radix overlays (PopoverMenu/Select) that
+        // portal outside the modal DOM. A WAI-ARIA focus trap needs a Radix-safe
+        // boundary-Tab approach instead — deferred, tracked in #5307.
         enforceFocus={false}
+        restoreFocus={false}
         animation={false}
         onShow={() => {
-          onShowModal();
+          // Not onShowModal(): that would register a second pending open for the same show
+          setSelectedComponentAsModal(id);
+          setExposedVariable('show', true);
           fireEvent('onOpen');
         }}
         onHide={() => {
           onHideModal();
         }}
-        onEscapeKeyDown={() => hideOnEsc && onHideModal()}
+        // onEscapeKeyDown is handled inside ModalWidget (Components/Modal.jsx),
+        // where it sits directly on BootstrapModal — passing it here is overridden
+        // by that inner handler (see #5308).
         id="modal-container"
         component-id={id}
         backdrop={'static'}
-        scrollable={true}
+        scrollable={isFullScreen}
         modalProps={{
           customStyles,
           parentRef,
           id,
+          moduleId,
           title,
           titleAlignment,
           hideTitleBar,
           hideCloseButton,
           onHideModal,
+          onModalEntered,
           component,
           hideOnEsc,
           modalHeight,
@@ -297,7 +408,7 @@ export const ModalV2 = function Modal({
           onSelectModal: setSelectedComponentAsModal,
           isFullScreen,
           darkMode,
-          subContainerIndex,
+          subContainerIndex: contextIndices,
           isDynamicHeightEnabled,
         }}
       />

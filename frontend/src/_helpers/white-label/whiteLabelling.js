@@ -28,6 +28,11 @@ export function retrieveWhiteLabelLogo() {
   return whiteLabelLogo;
 }
 
+export function retrieveWhiteLabelBanner() {
+  const { whiteLabelBanner } = useWhiteLabellingStore.getState();
+  return whiteLabelBanner;
+}
+
 // Set favicon and title dynamically
 export async function setFaviconAndTitle(location) {
   // TODO:Uncomment-if-needed

@@ -26,7 +26,7 @@ export class TableCountGuard implements CanActivate {
 
     return dbTransactionWrap(async (manager) => {
       if ((await this.fetchTotalTablesCount(manager, request?.user?.organizationId)) >= tablesCount) {
-        throw new HttpException('You have reached your maximum limit for apps.', 451);
+        throw new HttpException("You have reached your workspace's maximum limit for ToolJet Database tables.", 451);
       }
       return true;
     });

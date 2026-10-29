@@ -51,12 +51,14 @@ import {
   htmlConfig,
   verticalDividerConfig,
   customComponentConfig,
+  libraryComponentConfig,
   buttonGroupConfig,
   pdfConfig,
   stepsConfig,
   kanbanConfig,
   colorPickerConfig,
   treeSelectConfig,
+  cascaderConfig,
   linkConfig,
   iconConfig,
   boundedBoxConfig,
@@ -79,7 +81,8 @@ import {
   navigationConfig,
   fileButtonConfig,
   buttonGroupV2Config,
-} from '../widgets';
+  flexContainerConfig,
+} from '@tooljet/widget-definitions';
 
 export const widgets = [
   // Buttons
@@ -97,6 +100,7 @@ export const widgets = [
   formConfig,
   modalV2Config,
   containerConfig,
+  flexContainerConfig,
   accordionConfig,
   tabsConfig,
   listviewConfig,
@@ -126,6 +130,7 @@ export const widgets = [
   radiobuttonV2Config,
   fileinputConfig,
   treeSelectConfig,
+  cascaderConfig,
 
   //Date and time inputs
   datePickerV2Config,
@@ -163,6 +168,7 @@ export const widgets = [
 
   //Custom
   customComponentConfig,
+  libraryComponentConfig,
   htmlConfig,
   iframeConfig,
 

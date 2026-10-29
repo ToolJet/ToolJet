@@ -1,0 +1,270 @@
+name: License Compliance Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  license-check:
+    name: Check New Package Licenses
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Check licenses of new packages
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const https = require('https');
+
+            // ── Fetch license from npm registry ──────────────────────────────
+
+            function getJson(url) {
+              return new Promise((resolve) => {
+                https.get(url, { headers: { 'User-Agent': 'tooljet-license-checker' } }, (res) => {
+                  let data = '';
+                  res.on('data', chunk => data += chunk);
+                  res.on('end', () => {
+                    try {
+                      resolve(res.statusCode === 200 ? JSON.parse(data) : null);
+                    } catch {
+                      resolve(null);
+                    }
+                  });
+                }).on('error', () => resolve(null));
+              });
+            }
+
+            // The registry has no lookup by range, so "^3.4.17" is checked at
+            // 3.4.17. Anything else (">=1", "npm:alias@1", git URLs) uses latest.
+            async function fetchLicense(packageName, range) {
+              const encoded = packageName.replace('/', '%2F');
+              const version = (range.match(/^[\^~=v\s]*(\d+\.\d+\.\d+[\w.+-]*)$/) || [])[1];
+              const json =
+                (version && await getJson(`https://registry.npmjs.org/${encoded}/${version}`)) ||
+                await getJson(`https://registry.npmjs.org/${encoded}/latest`);
+              return typeof json?.license === 'string' ? json.license : 'UNKNOWN';
+            }
+
+            // ── License check — permissive licenses only ─────────────────────
+            // Add licenses that are suitable dependencies for an AGPL-3.0
+            // product; no per-package exceptions.
+            // SPDX "A OR B" lets us choose, so one permitted option is enough:
+            // "(MPL-2.0 OR Apache-2.0)" passes, "(MIT OR GPL-3.0)" passes as MIT,
+            // provided the elected license is recorded in THIRD-PARTY-NOTICES.
+            // "A AND B" applies both, so every part must be permitted.
+            // Mixed AND/OR, WITH exceptions and unknown licenses fail closed.
+
+            const PERMITTED_LICENSES = ['MIT', 'Apache-2.0', 'ISC', 'BSD-2-Clause', 'BSD-3-Clause'];
+            const PERMITTED_LIST     = PERMITTED_LICENSES.map(l => `\`${l}\``).join(', ');
+
+            function isPermitted(license) {
+              if (!license || license === 'UNKNOWN') return false;
+              const expr = license.replace(/[()]/g, '').trim();
+              const hasOr  = /\sOR\s/i.test(expr);
+              const hasAnd = /\sAND\s/i.test(expr);
+              if (hasOr && hasAnd) return false;
+              const ids = expr.split(/\s+(?:OR|AND)\s+/i);
+              return hasOr
+                ? ids.some(id => PERMITTED_LICENSES.includes(id))
+                : ids.every(id => PERMITTED_LICENSES.includes(id));
+            }
+
+            function isDualLicense(license) {
+              return /\sOR\s/i.test(license);
+            }
+
+            // Entries in THIRD-PARTY-NOTICES start with "<n>. <package> (<url>)".
+            let noticesText;
+            async function isInNotices(pkg) {
+              if (noticesText === undefined) {
+                try {
+                  const { data } = await github.rest.repos.getContent({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    path: 'THIRD-PARTY-NOTICES',
+                    ref: context.payload.pull_request.head.sha,
+                  });
+                  noticesText = Buffer.from(data.content, 'base64').toString();
+                } catch (e) {
+                  if (e.status !== 404) throw e;
+                  noticesText = '';
+                }
+              }
+              const escaped = pkg.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+              return new RegExp(`^\\s*\\d+\\.\\s+${escaped}\\s`, 'm').test(noticesText);
+            }
+
+            // ── Get PR diff files from GitHub API ─────────────────────────────
+
+            const prFiles = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              per_page: 100,
+            });
+
+            const pkgFiles = prFiles.filter(f =>
+              f.filename.endsWith('package.json') &&
+              !f.filename.includes('node_modules') &&
+              f.status !== 'removed'
+            );
+
+            if (pkgFiles.length === 0) {
+              console.log('No package.json files changed in this PR. Skipping.');
+              return;
+            }
+
+            console.log(`package.json files changed: ${pkgFiles.map(f => f.filename).join(', ')}`);
+
+            // ── Added or updated dependencies: base vs head package.json ──────
+            // Comparing parsed sections, not diff lines, so engines, version,
+            // scripts and overrides are never mistaken for packages, and a
+            // package edited in two places is reported once.
+
+            const DEP_SECTIONS = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'];
+
+            async function readPackageJson(path, ref) {
+              try {
+                const { data } = await github.rest.repos.getContent({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  path,
+                  ref,
+                });
+                return JSON.parse(Buffer.from(data.content, 'base64').toString());
+              } catch (e) {
+                if (e.status === 404) return {};
+                throw e;
+              }
+            }
+
+            function changedDependencies(base, head) {
+              const baseAny = Object.assign({}, ...DEP_SECTIONS.map(s => base[s] || {}));
+              const changes = new Map();
+              for (const s of DEP_SECTIONS) {
+                for (const [pkg, range] of Object.entries(head[s] || {})) {
+                  // Moving a package between sections at the same range is not a change.
+                  const before = base[s]?.[pkg] ?? baseAny[pkg];
+                  if (before === range || changes.has(pkg)) continue;
+                  changes.set(pkg, { pkg, range, before });
+                }
+              }
+              return [...changes.values()];
+            }
+
+            function describeChange({ range, before }) {
+              return before ? `\`${before}\` → \`${range}\`` : `added \`${range}\``;
+            }
+
+            // ── Main scan ─────────────────────────────────────────────────────
+
+            const violations = [];
+            const permitted  = [];
+
+            for (const file of pkgFiles) {
+              console.log(`\n── Scanning: ${file.filename}`);
+
+              const [base, head] = await Promise.all([
+                readPackageJson(file.previous_filename || file.filename, context.payload.pull_request.base.sha),
+                readPackageJson(file.filename, context.payload.pull_request.head.sha),
+              ]);
+              const changed = changedDependencies(base, head);
+
+              if (changed.length === 0) {
+                console.log('  No added or updated packages.');
+                continue;
+              }
+
+              console.log(`  Added or updated packages: ${changed.map(c => c.pkg).join(', ')}`);
+
+              for (const dep of changed) {
+                const license = await fetchLicense(dep.pkg, dep.range);
+                const entry   = { pkg: dep.pkg, change: describeChange(dep), license, file: file.filename };
+
+                if (isPermitted(license) && isDualLicense(license) && !(await isInNotices(dep.pkg))) {
+                  console.log(`  [FAIL]     ${dep.pkg} — ${license} (not in THIRD-PARTY-NOTICES)`);
+                  violations.push({ ...entry, note: 'dual-licensed, elected license missing from `THIRD-PARTY-NOTICES`' });
+                } else if (isPermitted(license)) {
+                  console.log(`  [OK]       ${dep.pkg} — ${license}`);
+                  permitted.push(entry);
+                } else {
+                  console.log(`  [FAIL]     ${dep.pkg} — ${license}`);
+                  violations.push(entry);
+                }
+              }
+            }
+
+            console.log(`\n── Summary`);
+            console.log(`   Permitted : ${permitted.length}`);
+            console.log(`   Violations: ${violations.length}`);
+
+            // ── Delete previous bot comment if any ────────────────────────────
+
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            for (const comment of comments.data) {
+              if (comment.body.includes('<!-- license-compliance-bot -->')) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: comment.id,
+                });
+              }
+            }
+
+            // ── Skip comment if nothing was added or updated ──────────────────
+
+            if (permitted.length === 0 && violations.length === 0) {
+              console.log('No added or updated packages detected. Skipping comment.');
+              return;
+            }
+
+            // ── Build and post comment ────────────────────────────────────────
+
+            function table(rows) {
+              return `| Package | Change | License | File |\n|---|---|---|---|\n` +
+                rows.map(r => `| \`${r.pkg}\` | ${r.change} | \`${r.license}\`${r.note ? ` (${r.note})` : ''} | \`${r.file}\` |`).join('\n') + '\n';
+            }
+
+            let body = `<!-- license-compliance-bot -->\n`;
+
+            if (violations.length === 0) {
+              body += `## ✅ License Compliance Check Passed\n\n`;
+              body += `All packages added or updated in this PR use permitted licenses (${PERMITTED_LIST}).\n\n`;
+              body += table(permitted);
+            } else {
+              body += `## ❌ License Compliance Check Failed\n\n`;
+              body += `This PR adds or updates package(s) with licenses that are **not permitted**.\n`;
+              body += `Allowed licenses: ${PERMITTED_LIST}. For SPDX \`OR\` expressions, one permitted option is enough, and the elected license must be recorded in \`THIRD-PARTY-NOTICES\`.\n\n`;
+              body += `### 🚫 Not Permitted\n\n`;
+              body += table(violations);
+              body += `\n`;
+              body += `> ❌ Replace the package(s) above with an equivalent under a permitted license. For a dual-licensed package, add its elected license to \`THIRD-PARTY-NOTICES\`.\n`;
+              body += `> If this package genuinely needs to be exempted, a maintainer can bypass this check using the bypass rules option on this PR.\n\n`;
+              if (permitted.length > 0) {
+                body += `### ✅ Permitted Packages\n\n`;
+                body += table(permitted);
+              }
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+            if (violations.length > 0) {
+              core.setFailed(
+                `License check failed: ${violations.length} package(s) with non-permitted licenses. See PR comment for details.`
+              );
+            }
+
+            

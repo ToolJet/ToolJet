@@ -49,6 +49,12 @@ export class CreatePageDto {
   hidden: Record<string, any>;
 
   @IsOptional()
+  pageHeader: Record<string, any>;
+
+  @IsOptional()
+  pageFooter: Record<string, any>;
+
+  @IsOptional()
   isPageGroup: boolean;
 
   @IsOptional()
@@ -74,6 +80,11 @@ export class CreatePageDto {
   @IsUUID()
   @IsOptional()
   appId?: string;
+
+  // Co relation id for the target tooljet app when page type is 'app'
+  @IsUUID()
+  @IsOptional()
+  targetCorelationId?: string;
 }
 
 export class DeletePageDto {

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import SelectSearch from 'react-select-search';
-import { useTranslation } from 'react-i18next';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 // Deprecated column for older select and multiselect
@@ -15,9 +14,9 @@ export const CustomDropdownColumn = ({
   contentWrap,
   autoHeight,
   darkMode,
+  placeholder = '',
 }) => {
   const [showOverlay, setShowOverlay] = useState(false);
-  const { t } = useTranslation();
 
   const sanitizedValue = useMemo(() => {
     if (!multiple) return value;
@@ -125,9 +124,10 @@ export const CustomDropdownColumn = ({
           value={sanitizedValue}
           renderValue={renderValue}
           search={false}
+          disabled={!isEditable}
           onChange={onChange}
           multiple={multiple}
-          placeholder={t('globals.select', 'Select') + '...'}
+          placeholder={placeholder}
           className="select-search"
         />
       </div>

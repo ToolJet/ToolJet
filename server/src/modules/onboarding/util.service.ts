@@ -159,14 +159,14 @@ export class OnboardingUtilService implements IOnboardingUtilService {
     await this.userRepository.updateOne(
       existingUser.id,
       {
-        password: params.password, 
+        password: params.password,
         status: USER_STATUS.ACTIVE,
         invitationToken: null,
         ...(params.firstName && { firstName: params.firstName }),
         ...(params.lastName && { lastName: params.lastName }),
       },
       manager
-    ); 
+    );
     existingUser.status = USER_STATUS.ACTIVE;
     existingUser.password = params.password;
   }
@@ -186,10 +186,8 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       const targetOrg = signingUpOrganization || defaultWorkspace;
 
       const organizationUsers = existingUser.organizationUsers || [];
-      
-      const membershipInCurrentOrg = organizationUsers.find(
-        (ou) => ou.organizationId === targetOrg?.id
-      );
+
+      const membershipInCurrentOrg = organizationUsers.find((ou) => ou.organizationId === targetOrg?.id);
 
       if (membershipInCurrentOrg?.status === WORKSPACE_USER_STATUS.INVITED) {
         throw new NotAcceptableException(
@@ -201,7 +199,6 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       if (membershipInCurrentOrg?.status === WORKSPACE_USER_STATUS.ACTIVE) {
         throw new NotAcceptableException('Email already exists in this workspace');
       }
-      
 
       const edition = getTooljetEdition();
       const isCloudEdition = edition === 'cloud';
@@ -216,12 +213,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
 
       if (!isCloudEdition && response) {
         if (!existingUser.password) {
-          await this.activateUserWithPassword(
-            existingUser,
-            { password, firstName, lastName },
-            targetOrg,
-            manager
-          );
+          await this.activateUserWithPassword(existingUser, { password, firstName, lastName }, targetOrg, manager);
         }
         if (!targetOrg) {
           throw new NotAcceptableException('No valid workspace found to log into.');
@@ -230,9 +222,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         existingUser.organization = targetOrg;
 
         // DO NOT create org user if already invited
-        let orgUser = organizationUsers.find(
-          ou => ou.organizationId === targetOrg.id
-        );
+        let orgUser = organizationUsers.find((ou) => ou.organizationId === targetOrg.id);
 
         // only create if truly not present
         if (!orgUser) {
@@ -255,8 +245,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           targetOrg.id
         );
       }
-      
-      
+
       const alreadyInvitedUserByAdmin = organizationUsers.find(
         (organizationUser: OrganizationUser) =>
           organizationUser.organizationId === organizationId &&
@@ -308,17 +297,35 @@ export class OnboardingUtilService implements IOnboardingUtilService {
             organizationUser = await this.addUserToTheWorkspace(existingUser, signingUpOrganization, manager);
             await this.licenseUserService.validateUser(manager, organizationId);
           }
+          // Cloud: regenerate invitation token if expired before resending
+          let instanceInviteToken = existingUser.invitationToken;
+          if (
+            getTooljetEdition() === 'cloud' &&
+            existingUser.invitationTokenExpiry &&
+            new Date() > existingUser.invitationTokenExpiry
+          ) {
+            instanceInviteToken = uuid.v4();
+            const linkExpiryMins = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
+            const newExpiry =
+              !isNaN(linkExpiryMins) && linkExpiryMins > 0 ? new Date(Date.now() + linkExpiryMins * 60 * 1000) : null;
+            await this.userRepository.updateOne(
+              existingUser.id,
+              { invitationToken: instanceInviteToken, invitationTokenExpiry: newExpiry },
+              manager
+            );
+          }
           this.eventEmitter.emit('emailEvent', {
             type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
             payload: {
               to: existingUser.email,
               name: existingUser.firstName,
-              invitationtoken: existingUser.invitationToken,
+              invitationtoken: instanceInviteToken,
               organizationInvitationToken: organizationUser.invitationToken,
               organizationId: organizationUser.organizationId,
               organizationName: signingUpOrganization.name,
               sender: null,
               redirectTo: redirectTo,
+              invitationTokenExpiry: organizationUser.invitationTokenExpiry,
             },
           });
           if (alreadyInvitedUserByAdmin) {
@@ -344,6 +351,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
             signingUpOrganization.name,
             signingUpOrganization.id,
             organizationUser.invitationToken,
+            organizationUser.invitationTokenExpiry,
             redirectTo,
             !!alreadyInvitedUserByAdmin
           );
@@ -399,13 +407,33 @@ export class OnboardingUtilService implements IOnboardingUtilService {
             );
           }
           await this.licenseUserService.validateUser(manager, organizationId);
+          // Cloud: regenerate invitation token if expired before resending
+          let instanceInviteToken = existingUser.invitationToken;
+          let instanceInviteTokenExpiry: Date | null = existingUser.invitationTokenExpiry;
+          if (
+            getTooljetEdition() === 'cloud' &&
+            existingUser.invitationTokenExpiry &&
+            new Date() > existingUser.invitationTokenExpiry
+          ) {
+            instanceInviteToken = uuid.v4();
+            const linkExpiryMins = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
+            const newExpiry =
+              !isNaN(linkExpiryMins) && linkExpiryMins > 0 ? new Date(Date.now() + linkExpiryMins * 60 * 1000) : null;
+            instanceInviteTokenExpiry = newExpiry;
+            await this.userRepository.updateOne(
+              existingUser.id,
+              { invitationToken: instanceInviteToken, invitationTokenExpiry: newExpiry },
+              manager
+            );
+          }
           this.eventEmitter.emit('emailEvent', {
             type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
             payload: {
               to: existingUser.email,
               name: existingUser.firstName,
-              invitationtoken: existingUser.invitationToken,
+              invitationtoken: instanceInviteToken,
               organizationId: existingUser.defaultOrganizationId,
+              invitationTokenExpiry: instanceInviteTokenExpiry,
             },
           });
           const errorMessage = 'The user is already registered. Please check your inbox for the activation link';
@@ -473,6 +501,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
     signingUpOrganizationName: string,
     organizationId: string,
     invitationToken: string,
+    invitationTokenExpiry?: Date | null,
     redirectTo?: string,
     throwError = true
   ) => {
@@ -486,6 +515,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         organizationName: signingUpOrganizationName,
         organizationId: organizationId,
         redirectTo: redirectTo,
+        invitationTokenExpiry: invitationTokenExpiry,
       },
     });
     if (throwError) {
@@ -540,23 +570,33 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         lastName: user.lastName,
         role: user.role,
       });
-      
+
       // Auto-activate users for non-cloud editions (skip email verification)
       const edition = getTooljetEdition();
       const isCloudEdition = edition === 'cloud';
+      const isPasswordSignup = [SOURCE.SIGNUP, SOURCE.WORKSPACE_SIGNUP].includes(lifeCycleParms.source as any);
+      const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
+      const passwordExpiry =
+        isPasswordSignup && !isNaN(rawExpiryDays) && rawExpiryDays > 0
+          ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000)
+          : null;
+
       if (!isCloudEdition && user.status === USER_STATUS.INVITED) {
         await this.userRepository.updateOne(
           user.id,
           {
             status: USER_STATUS.ACTIVE,
             invitationToken: null,
+            passwordExpiry,
           },
           manager
         );
         user.status = USER_STATUS.ACTIVE;
         user.invitationToken = null;
+      } else if (isCloudEdition && passwordExpiry) {
+        await this.userRepository.updateOne(user.id, { passwordExpiry }, manager);
       }
-      
+
       if (signingUpOrganization) {
         /* Attach the user and user groups to the organization */
         const organizationUser = await this.organizationUserRepository.createOne(
@@ -566,14 +606,14 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           manager,
           WORKSPACE_USER_SOURCE.SIGNUP
         );
-        
+
         // Auto-activate organization user for non-cloud editions
         if (!isCloudEdition && organizationUser.status === WORKSPACE_USER_STATUS.INVITED) {
           await this.organizationUsersUtilService.activateOrganization(organizationUser, manager);
         }
-        
+
         await this.licenseUserService.validateUser(manager, organizationId);
-        
+
         // For non-cloud editions, return login payload to auto-login user
         if (!isCloudEdition && response) {
           return await this.sessionUtilService.generateLoginResultPayload(
@@ -586,7 +626,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
             manager
           );
         }
-        
+
         // Only send verification email for cloud edition
         if (isCloudEdition) {
           this.eventEmitter.emit('emailEvent', {
@@ -600,6 +640,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
               organizationName: signingUpOrganization.name,
               sender: null,
               redirectTo: redirectTo,
+              invitationTokenExpiry: organizationUser.invitationTokenExpiry,
             },
           });
         }
@@ -632,7 +673,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           user.status = USER_STATUS.ACTIVE;
           user.invitationToken = null;
         }
-        
+
         // Use user's default organization ID if signingUpOrganization is null
         const orgIdForValidation = user.defaultOrganizationId || organizationId;
         if (orgIdForValidation) {
@@ -642,8 +683,9 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         // For non-cloud editions, return login payload to auto-login user
         if (!isCloudEdition && response) {
           const userOrg = await this.organizationRepository.get(user.defaultOrganizationId);
-          if (!userOrg) console.log('WARNING: userOrg not found for defaultOrganizationId:', user.defaultOrganizationId);
-          
+          if (!userOrg)
+            console.log('WARNING: userOrg not found for defaultOrganizationId:', user.defaultOrganizationId);
+
           return await this.sessionUtilService.generateLoginResultPayload(
             response,
             user,
@@ -655,7 +697,6 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           );
         }
 
-        
         // Only send verification email for cloud edition
         if (isCloudEdition) {
           this.eventEmitter.emit('emailEvent', {
@@ -665,6 +706,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
               name: user.firstName,
               invitationtoken: user.invitationToken,
               organizationId: user.defaultOrganizationId,
+              invitationTokenExpiry: user.invitationTokenExpiry,
             },
           });
         }
@@ -703,6 +745,14 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       const userType = (await manager.count(User)) === 0 ? USER_TYPE.INSTANCE : USER_TYPE.WORKSPACE;
 
       if (!existingUser) {
+        const newInvitationToken = isInvite ? uuid.v4() : null;
+        const isCloud = getTooljetEdition() === 'cloud';
+        const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '0', 10);
+        const newInvitationTokenExpiry =
+          isInvite && isCloud && !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0
+            ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)
+            : null;
+
         user = manager.create(User, {
           email,
           firstName,
@@ -712,7 +762,8 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           source,
           status,
           userType,
-          invitationToken: isInvite ? uuid.v4() : null,
+          invitationToken: newInvitationToken,
+          invitationTokenExpiry: newInvitationTokenExpiry,
           defaultOrganizationId: !shouldNotAttachWorkspace ? defaultOrganizationId || organizationId : null,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -832,22 +883,29 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       // Auto-activate users for non-cloud editions (skip email verification)
       const edition = getTooljetEdition();
       const isCloudEdition = edition === 'cloud';
+      const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
+      const passwordExpiry =
+        !isNaN(rawExpiryDays) && rawExpiryDays > 0 ? new Date(Date.now() + rawExpiryDays * 24 * 60 * 60 * 1000) : null;
+
       if (!isCloudEdition && user.status === USER_STATUS.INVITED) {
         await this.userRepository.updateOne(
           user.id,
           {
             status: USER_STATUS.ACTIVE,
             invitationToken: null,
+            passwordExpiry,
           },
           manager
         );
         user.status = USER_STATUS.ACTIVE;
         user.invitationToken = null;
-        
+
         // Also activate the organization user for non-cloud editions
         if (organizationUser.status === WORKSPACE_USER_STATUS.INVITED) {
           await this.organizationUsersUtilService.activateOrganization(organizationUser, manager);
         }
+      } else if (isCloudEdition && passwordExpiry) {
+        await this.userRepository.updateOne(user.id, { passwordExpiry }, manager);
       }
 
       // Validate license
@@ -875,6 +933,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
             name: user.firstName,
             invitationtoken: user.invitationToken,
             organizationId: defaultWorkspace.id,
+            invitationTokenExpiry: user.invitationTokenExpiry,
           },
         });
       }
@@ -944,6 +1003,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           name: existingUser.firstName,
           invitationtoken: existingUser.invitationToken,
           organizationId: defaultWorkspace.id,
+          invitationTokenExpiry: existingUser.invitationTokenExpiry,
         },
       });
 

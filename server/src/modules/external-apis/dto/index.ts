@@ -8,6 +8,7 @@ import {
   ValidateNested,
   MinLength,
   MaxLength,
+  Matches,
   ValidateIf,
   IsNotEmpty,
   IsDefined,
@@ -15,14 +16,41 @@ import {
   IsUrl,
   IsInt,
   Min,
+  Max,
+  IsNumber,
+  IsPositive,
+  registerDecorator,
+  ValidationOptions,
+  ValidationArguments,
 } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { USER_ROLE } from '@modules/group-permissions/constants';
+import { USER_STATUS } from '@modules/users/constants/lifecycle';
 import { TjdbSchemaToLatestVersion } from '@dto/transformers/resource-transformer';
 import { ValidateTooljetDatabaseImportSchema } from '@dto/validators/tooljet-database.validator';
 export enum Status {
   ACTIVE = 'active',
   ARCHIVED = 'archived',
+  INVITED = 'invited',
+}
+
+export class GetAllUsersQueryDto {
+  @IsOptional()
+  @IsString()
+  group_names?: string;
+
+  @IsOptional()
+  @Transform(({ value }) =>
+    typeof value === 'string'
+      ? value
+          .split(',')
+          .map((v) => v.trim())
+          .filter((v) => v !== '')
+      : value
+  )
+  @IsArray()
+  @IsEnum(USER_STATUS, { each: true })
+  status?: USER_STATUS[];
 }
 
 export class GroupDto {
@@ -54,7 +82,7 @@ export class WorkspaceDto {
 
   @IsEnum(Status)
   @IsOptional()
-  status?: Status = Status.ARCHIVED;
+  status?: Status;
 
   @IsArray()
   @ValidateNested({ each: true })
@@ -98,7 +126,7 @@ export class CreateUserDto {
 
   @IsEnum(Status)
   @IsOptional()
-  status?: Status = Status.ARCHIVED;
+  status?: Status = Status.INVITED;
 
   @IsString()
   @IsOptional()
@@ -128,6 +156,10 @@ export class UpdateUserDto {
   @IsEnum(Status)
   @IsOptional()
   status?: Status;
+
+  @IsString()
+  @IsOptional()
+  defaultOrganizationId?: string;
 }
 
 export class UpdateUserWorkspaceDto {
@@ -178,10 +210,19 @@ export class GithubHttpsConfigDTO extends OrganizationGitCreateDto {
 
 export class AppGitPullDto {
   @IsString()
-  appId: string;
+  organizationId: string;
 
   @IsString()
-  organizationId: string;
+  @IsOptional()
+  gitAppId?: string;
+
+  @IsString()
+  @IsOptional()
+  gitAppName?: string;
+
+  @IsString()
+  @IsOptional()
+  gitBranchName?: string;
 }
 
 export class AppGitPushDto {
@@ -271,6 +312,10 @@ export class GeneratePATDto {
   @IsOptional()
   appId: string;
 
+  @IsString()
+  @IsOptional()
+  appSlug?: string;
+
   @IsOptional()
   @IsInt()
   @Min(1)
@@ -288,4 +333,514 @@ export class ValidatePATSessionDto {
 
   @IsString()
   accessToken: string;
+}
+
+export class AutoDeployBodyDto {
+  @IsString()
+  @IsOptional()
+  versionId?: string;
+
+  @IsString()
+  @IsOptional()
+  versionName?: string;
+}
+
+export class SaveVersionBodyDto {
+  @IsString()
+  @IsOptional()
+  @MaxLength(25, { message: 'Version name cannot be longer than 25 characters' })
+  @Matches(/^[^\s~^:?*[\]\\@{]+$/, {
+    message: 'Version name contains invalid characters (spaces, ~, ^, :, ?, *, [, ], \\, @, { are not allowed).',
+  })
+  name?: string;
+}
+
+// Export groups DTOs
+export {
+  CreateGroupExternalDto,
+  GranularPermissionDto,
+  GranularPermissionResourceType,
+  AppEnvironment,
+  AppPermissionsDto,
+  DataSourcePermissionsDto,
+  FolderPermissionsDto,
+  WorkspacePermissionsDto,
+  WorkflowPermissionsDto,
+} from './groups.dto';
+
+export class WorkspaceModuleDto {
+  id: string;
+  name: string;
+  icon: string;
+  slug: string;
+  isPublic: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export class WorkspaceModulesResponseDto {
+  modules: WorkspaceModuleDto[];
+  total: number;
+}
+
+export class ModuleImportDto {
+  @IsDefined()
+  @IsObject()
+  definition: any;
+}
+
+export class ModuleImportRequestDto {
+  @IsString()
+  tooljet_version: string;
+
+  @IsOptional()
+  app?: ModuleImportDto[];
+
+  @IsOptional()
+  @IsString()
+  appName?: string;
+
+  @IsOptional()
+  @Transform(TjdbSchemaToLatestVersion)
+  @ValidateNested({ each: true })
+  @Type(() => ImportTooljetDatabaseDto)
+  @ValidateTooljetDatabaseImportSchema({ each: true })
+  tooljet_database?: ImportTooljetDatabaseDto[];
+}
+
+export class UserDetailKeyValueDto {
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @IsString()
+  value: string;
+}
+
+export class UpdateUserMetadataDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails: UserDetailKeyValueDto[];
+}
+
+export enum GroupMatchMode {
+  ALL = 'all',
+  ANY = 'any',
+}
+
+export class GetWorkspaceUsersByGroupsDto {
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  group_names: string[];
+
+  @IsEnum(GroupMatchMode)
+  @IsOptional()
+  match?: GroupMatchMode = GroupMatchMode.ALL;
+
+  @IsEnum(Status)
+  @IsOptional()
+  status?: Status;
+}
+
+export enum TjdbFilterOperator {
+  EQUALS = 'equals',
+  GREATER_THAN = 'greater than',
+  GREATER_THAN_OR_EQUAL = 'greater than or equal',
+  LESS_THAN = 'less than',
+  LESS_THAN_OR_EQUAL = 'less than or equal',
+  NOT_EQUAL = 'not equal',
+  LIKE = 'like',
+  ILIKE = 'ilike',
+  MATCH = 'match',
+  IMATCH = 'imatch',
+  IN = 'in',
+  IS = 'is',
+}
+
+export enum TjdbSortDirection {
+  ASCENDING = 'Ascending',
+  DESCENDING = 'Descending',
+}
+
+const IS_OPERATOR_ALLOWED_VALUES = ['null', 'true', 'false', 'notNull'];
+
+function IsTjdbFilterValue(validationOptions?: ValidationOptions) {
+  return function (object: object, propertyName: string) {
+    registerDecorator({
+      name: 'IsTjdbFilterValue',
+      target: (object as any).constructor,
+      propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: any, args: ValidationArguments) {
+          const filterCondition = args.object as TjdbFilterConditionDto;
+          if (filterCondition.operator === TjdbFilterOperator.IN) {
+            return Array.isArray(value) && value.length > 0;
+          }
+          if (filterCondition.operator === TjdbFilterOperator.IS) {
+            return IS_OPERATOR_ALLOWED_VALUES.includes(String(value));
+          }
+          return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
+        },
+        defaultMessage(args: ValidationArguments) {
+          const filterCondition = args.object as TjdbFilterConditionDto;
+          if (filterCondition.operator === TjdbFilterOperator.IN) {
+            return 'value must be a non-empty array when operator is "in"';
+          }
+          if (filterCondition.operator === TjdbFilterOperator.IS) {
+            return `value must be one of: ${IS_OPERATOR_ALLOWED_VALUES.join(', ')} when operator is "is"`;
+          }
+          return 'value must be a string, number, or boolean';
+        },
+      },
+    });
+  };
+}
+
+export class TjdbFilterConditionDto {
+  @IsString()
+  @IsNotEmpty()
+  column!: string;
+
+  @IsEnum(TjdbFilterOperator, {
+    message: `operator must be one of: ${Object.values(TjdbFilterOperator).join(', ')}`,
+  })
+  operator!: TjdbFilterOperator;
+
+  @IsTjdbFilterValue()
+  value!: string | number | boolean | (string | number)[];
+}
+
+export class TjdbSortConditionDto {
+  @IsString()
+  @IsNotEmpty()
+  column!: string;
+
+  @IsEnum(TjdbSortDirection, {
+    message: `direction must be one of: ${Object.values(TjdbSortDirection).join(', ')}`,
+  })
+  direction!: TjdbSortDirection;
+}
+
+export class ExportTjdbTableAsCsvDto {
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TjdbFilterConditionDto)
+  filters?: TjdbFilterConditionDto[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TjdbSortConditionDto)
+  sort?: TjdbSortConditionDto[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  select?: string[];
+
+  @IsOptional()
+  @IsNumber()
+  @IsPositive()
+  limit?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  offset?: number;
+}
+
+export class ExportAppAdminDto {
+  @ValidateIf((o) => !o.appSlug)
+  @IsNotEmpty()
+  @IsUUID()
+  appId?: string;
+
+  @ValidateIf((o) => !o.appId)
+  @IsNotEmpty()
+  @IsString()
+  appSlug?: string;
+}
+
+export class BanUserDto {
+  @IsEmail()
+  email: string;
+
+  @IsOptional()
+  @IsObject()
+  info?: object;
+}
+
+export class BanWorkspaceDto {
+  @ValidateIf((o) => !o.slug)
+  @IsNotEmpty()
+  @IsUUID()
+  workspaceId?: string;
+
+  @ValidateIf((o) => !o.workspaceId)
+  @IsNotEmpty()
+  @IsString()
+  slug?: string;
+
+  @IsOptional()
+  @IsObject()
+  info?: object;
+}
+
+export class UnbanWorkspaceDto {
+  @ValidateIf((o) => !o.slug)
+  @IsNotEmpty()
+  @IsUUID()
+  workspaceId?: string;
+
+  @ValidateIf((o) => !o.workspaceId)
+  @IsNotEmpty()
+  @IsString()
+  slug?: string;
+}
+
+export enum AppAccessPermission {
+  VIEW = 'view',
+  EDIT = 'edit',
+}
+
+class AppAccessListV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsEnum(AppAccessPermission)
+  permission?: AppAccessPermission;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+export class ListWorkspaceUserAppsV2QueryDto extends AppAccessListV2QueryDto {}
+
+export class ListWorkspaceAppUsersV2QueryDto extends AppAccessListV2QueryDto {}
+
+@Exclude()
+export class PaginationV2ResponseDto {
+  @Expose()
+  page: number;
+
+  @Expose({ name: 'per_page' })
+  perPage: number;
+
+  @Expose({ name: 'total_count' })
+  totalCount: number;
+}
+
+@Exclude()
+export class AppEnvironmentAccessV2ResponseDto {
+  @Expose()
+  development: boolean;
+
+  @Expose()
+  staging: boolean;
+
+  @Expose()
+  production: boolean;
+
+  @Expose()
+  released: boolean;
+}
+
+@Exclude()
+export class AppPermissionsV2ResponseDto {
+  @Expose({ name: 'can_view' })
+  canView: boolean;
+
+  @Expose({ name: 'can_edit' })
+  canEdit: boolean;
+
+  @Expose({ name: 'hidden_from_dashboard' })
+  hiddenFromDashboard: boolean;
+
+  @Expose()
+  @Type(() => AppEnvironmentAccessV2ResponseDto)
+  environments: AppEnvironmentAccessV2ResponseDto;
+}
+
+@Exclude()
+export class AccessSourceGroupV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  type: string;
+}
+
+@Exclude()
+export class AppAccessSourceV2ResponseDto {
+  @Expose()
+  type: 'group' | 'owner' | 'super_admin';
+
+  @Expose()
+  @Type(() => AccessSourceGroupV2ResponseDto)
+  group?: AccessSourceGroupV2ResponseDto;
+
+  @Expose()
+  scope?: 'all_apps' | 'selected_apps';
+
+  @Expose()
+  permission?: AppAccessPermission;
+
+  @Expose({ name: 'hidden_from_dashboard' })
+  hiddenFromDashboard?: boolean;
+}
+
+@Exclude()
+export class UserAppAccessV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  slug: string;
+
+  @Expose()
+  @Type(() => AppPermissionsV2ResponseDto)
+  permissions: AppPermissionsV2ResponseDto;
+
+  @Expose({ name: 'access_sources' })
+  @Type(() => AppAccessSourceV2ResponseDto)
+  accessSources: AppAccessSourceV2ResponseDto[];
+}
+
+@Exclude()
+export class AppUserAccessV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  email: string;
+
+  @Expose()
+  status: string;
+
+  @Expose()
+  role: string;
+
+  @Expose()
+  @Type(() => AppPermissionsV2ResponseDto)
+  permissions: AppPermissionsV2ResponseDto;
+
+  @Expose({ name: 'access_sources' })
+  @Type(() => AppAccessSourceV2ResponseDto)
+  accessSources: AppAccessSourceV2ResponseDto[];
+}
+
+@Exclude()
+export class ListWorkspaceUserAppsV2ResponseDto {
+  @Expose()
+  @Type(() => UserAppAccessV2ResponseDto)
+  data: UserAppAccessV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+@Exclude()
+export class ListWorkspaceAppUsersV2ResponseDto {
+  @Expose()
+  @Type(() => AppUserAccessV2ResponseDto)
+  data: AppUserAccessV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+export class UpdateWorkspaceUserV2Dto {
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails?: UserDetailKeyValueDto[];
+}
+
+export class ListWorkspaceUsersV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsEnum(Status)
+  status?: Status;
+
+  @IsOptional()
+  @IsEnum(USER_ROLE)
+  role?: USER_ROLE;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+@Exclude()
+export class WorkspaceUserV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  email: string;
+
+  @Expose()
+  role: string;
+
+  @Expose()
+  status: string;
+
+  @Expose({ name: 'userDetails' })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails: UserDetailKeyValueDto[];
+}
+
+@Exclude()
+export class ListWorkspaceUsersV2ResponseDto {
+  @Expose()
+  @Type(() => WorkspaceUserV2ResponseDto)
+  data: WorkspaceUserV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
 }

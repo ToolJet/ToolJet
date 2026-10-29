@@ -22,12 +22,16 @@ const GoogleSSOLoginButton = forwardRef((props, ref) => {
     // matches what's registered with Google, even on custom domains.
     const base = stripTrailingSlash(window.public_config?.TOOLJET_HOST || window.location.origin);
     const { client_id } = props.configs;
+    // Encode redirectTo in state so it survives the OAuth round-trip back to the base
+    // domain — the base domain cannot read a cookie set on a custom domain.
+    const state = props.redirectTo ? encodeURIComponent(JSON.stringify({ redirectTo: props.redirectTo })) : undefined;
     const authUrl = buildURLWithQuery('https://accounts.google.com/o/oauth2/auth', {
       redirect_uri: `${base}${getSubpath() ?? ''}/sso/google${props.configId ? `/${props.configId}` : ''}`,
       response_type: 'id_token',
       scope: 'email profile',
       client_id,
       nonce: randomString(10),
+      ...(state && { state }),
     });
     window.location.href = authUrl;
   };

@@ -40,14 +40,18 @@ async function validateAndInstallPlugins(nestApp: INestApplicationContext) {
 
     if (validationErrors.length === 0) {
       const plugin = await entityManager.findOne(Plugin, { where: { pluginId: pluginDto.id } });
-      plugin ? invalidPluginDtos.push(pluginDto) : validPluginDtos.push(pluginDto);
+      if (plugin) {
+        invalidPluginDtos.push(pluginDto);
+      } else {
+        validPluginDtos.push(pluginDto);
+      }
     } else {
       console.log(`Plugin with ID '${pluginId}' has validation errors:`, validationErrors);
       invalidPluginDtos.push(pluginDto);
     }
   }
 
-  invalidPluginDtos.length > 0 &&
+  if (invalidPluginDtos.length > 0)
     console.log(
       'Skipping invalid plugins:',
       invalidPluginDtos.map((dto) => dto.id),
@@ -74,5 +78,4 @@ function sanitizedArray(string: string): string[] {
   return [...new Set(string.split(',').map((p: string) => p.trim()))];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();

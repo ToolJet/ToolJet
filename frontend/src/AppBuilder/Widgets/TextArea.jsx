@@ -6,17 +6,7 @@ import { useHeightObserver } from '@/_hooks/useHeightObserver';
 
 export const TextArea = (props) => {
   const inputLogic = useInput(props);
-  const {
-    properties,
-    height,
-    width,
-    id,
-    adjustComponentPositions,
-    currentLayout,
-    currentMode,
-    subContainerIndex,
-    componentType,
-  } = props;
+  const { properties, height, width, id, currentLayout, currentMode, subContainerIndex, componentType } = props;
   const { inputRef, value } = inputLogic;
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
 
@@ -28,8 +18,21 @@ export const TextArea = (props) => {
       return;
     }
     inputRef.current.style.height = 'auto';
+    // Subtract the input container's padding + border so the outer wrapper
+    // matches the authored widget height when content fits. Without this,
+    // wrapper = textarea + container padding/border, making dynamic-height
+    // textareas visibly taller than non-dynamic ones.
+    const container = inputRef.current.parentElement;
+    const cs = container ? window.getComputedStyle(container) : null;
+    const containerPaddingAndBorder = cs
+      ? parseFloat(cs.paddingTop) +
+        parseFloat(cs.paddingBottom) +
+        parseFloat(cs.borderTopWidth) +
+        parseFloat(cs.borderBottomWidth)
+      : 0;
+    const effectiveMax = Math.max(height - containerPaddingAndBorder, 0);
     inputRef.current.style.height =
-      height >= inputRef.current.scrollHeight ? `${height}px` : `${inputRef.current.scrollHeight + 20}px`;
+      effectiveMax >= inputRef.current.scrollHeight ? `${effectiveMax}px` : `${inputRef.current.scrollHeight}px`;
   }, [inputRef?.current, height, isDynamicHeightEnabled]);
 
   useLayoutEffect(() => {
@@ -41,7 +44,6 @@ export const TextArea = (props) => {
     id,
     height,
     value: heightChangeValue,
-    adjustComponentPositions,
     currentLayout,
     width,
     visibility: inputLogic.visibility,

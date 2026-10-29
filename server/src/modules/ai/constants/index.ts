@@ -11,4 +11,10 @@ export enum FEATURE_KEY {
   LIST_CONVERSATIONS = 'listConversations',
   CREATE_CONVERSATION = 'createConversation',
   GET_CONVERSATION = 'getConversation',
+  UPDATE_KEY = 'updateKey',
+  GET_KEY_SETTINGS = 'getKeySettings',
+  AUTO_SORT_QUERIES = 'autoSortQueries',
+  GET_THREAD_TOKEN_USAGE = 'getThreadTokenUsage',
+  GET_LLM_PREFERENCE = 'getLlmPreference',
+  UPDATE_LLM_PREFERENCE = 'updateLlmPreference',
 }

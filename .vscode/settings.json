@@ -1,6 +1,6 @@
 {
-  "[javascript, typescript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  "[javascript][javascriptreact][typescript][typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "eslint.validate": [
     "javascript",
@@ -9,6 +9,7 @@
     "typescriptreact"
   ],
   "eslint.useFlatConfig": true,
+  "eslint.workingDirectories": [{ "mode": "auto" }],
   "editor.formatOnSave": false,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
@@ -23,5 +24,9 @@
       "url": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json"
     }
   ],
-  "CodeGPT.apiKey": "CodeGPT Plus Beta"
+  "CodeGPT.apiKey": "CodeGPT Plus Beta",
+  // jest.config.js lives in frontend/, not the repo root — without this the
+  // Jest extension silently finds no tests.
+  "jest.rootPath": "frontend",
+  "jest.runMode": "on-demand"
 }

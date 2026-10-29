@@ -13,6 +13,10 @@ const OAuth = ({
   client_secret,
   audience,
   client_auth,
+  company_id,
+  site_url,
+  code_verifier,
+  code_challenge_method,
   custom_auth_params,
   custom_query_params,
   scopes,
@@ -64,7 +68,7 @@ const OAuth = ({
 
   return (
     <>
-      {authOptions(isGrpc).length > 1 && (
+      {(authOptions(isGrpc).length > 1 || oauth_configs?.show_auth_type_dropdown) && (
         <>
           <label className="form-label" data-cy="authentication-type-dropdown-label">
             Authentication type
@@ -94,6 +98,10 @@ const OAuth = ({
         audience={audience}
         client_secret={client_secret}
         client_auth={client_auth}
+        company_id={company_id}
+        site_url={site_url}
+        code_verifier={code_verifier}
+        code_challenge_method={code_challenge_method}
         multiple_auth_enabled={multiple_auth_enabled}
         scopes={scopes}
         username={username}
@@ -107,6 +115,7 @@ const OAuth = ({
         optionsChanged={optionsChanged}
         selectedDataSource={selectedDataSource}
         oauth_configs={oauth_configs}
+        isDisabled={isDisabled}
       />
     </>
   );

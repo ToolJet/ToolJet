@@ -1,6 +1,5 @@
 import {
   Entity,
-  OneToOne,
   Column,
   CreateDateColumn,
   JoinColumn,
@@ -13,7 +12,6 @@ import {
   BaseEntity,
 } from 'typeorm';
 import { AppVersion } from './app_version.entity';
-import { AppGitSync } from './app_git_sync.entity';
 import { GroupPermission } from './group_permission.entity';
 import { User } from './user.entity';
 import { GroupApps } from './group_apps.entity';
@@ -75,6 +73,17 @@ export class App extends BaseEntity {
   @Column({ name: 'app_generated_from_prompt', default: false })
   appGeneratedFromPrompt: boolean;
 
+  @Column({ name: 'co_relation_id', nullable: true })
+  co_relation_id: string;
+
+  /**
+   * When the "your app is ready" email went out for this app, and the claim that stops it going
+   * out twice. Written by a conditional UPDATE that only matches while it is still null, so two
+   * concurrent builds cannot both win it.
+   */
+  @Column({ name: 'build_completion_email_sent_at', type: 'timestamp', nullable: true })
+  buildCompletionEmailSentAt: Date | null;
+
   @Column({
     type: 'enum',
     enumName: 'app_builder_mode',
@@ -105,6 +114,8 @@ export class App extends BaseEntity {
     threadId?: string | null;
     chatMessages?: any[];
     interrupt?: boolean;
+    interruptId?: string | null;
+    moduleDescription?: string;
   };
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
@@ -144,11 +155,6 @@ export class App extends BaseEntity {
   })
   groupPermissions: GroupPermission[];
 
-  @OneToOne(() => AppGitSync, (appGitSync) => appGitSync.app, {
-    onDelete: 'CASCADE',
-  })
-  appGitSync: AppGitSync;
-
   @OneToMany(() => GroupApps, (groupApps) => groupApps.app, {
     onDelete: 'CASCADE',
   })
@@ -164,4 +170,5 @@ export class App extends BaseEntity {
   aiConversations: AiConversation[];
 
   public editingVersion;
+  public isStub: boolean;
 }

@@ -1,5 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
+
+// Lazy-load app auth pages — separate chunks, don't pollute viewer bundle
+const AppLoginPage = lazy(() => import('@/modules/auth/pages/AppLoginPage/AppLoginPage'));
+const AppSignupPage = lazy(() => import('@/modules/onboarding/pages/AppSignupPage/AppSignupPage'));
+const AppForgotPasswordPage = lazy(() => import('@/modules/auth/pages/AppForgotPasswordPage/AppForgotPasswordPage'));
+const AppResetPasswordPage = lazy(() => import('@/modules/auth/pages/AppResetPasswordPage/AppResetPasswordPage'));
 import { AppsRoute } from '@/Routes';
 import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
 import EmbedApp from '@/AppBuilder/EmbedApp';
@@ -14,6 +20,7 @@ import { setFaviconAndTitle } from '@white-label/whiteLabelling';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { MigrationBanner } from '@/_components/MigrationBanner';
 
 /**
  * ViewerApp - Isolated router for viewer routes ONLY
@@ -56,12 +63,14 @@ const ViewerApp = () => {
           borderRadius: '10px',
           background: '#333',
           color: '#fff',
-          wordBreak: 'break-all',
+          maxWidth: '400px',
+          overflowWrap: 'anywhere',
         },
       }
     : {
         style: {
-          wordBreak: 'break-all',
+          maxWidth: '400px',
+          overflowWrap: 'anywhere',
         },
       };
 
@@ -130,6 +139,7 @@ const ViewerApp = () => {
 
   return (
     <>
+      <MigrationBanner darkMode={isAppDarkMode} floating endUser />
       <div className="main-wrapper" data-cy="main-wrapper">
         {isEmbedAppsPath ? (
           // Embedded app route: /embed-apps/:appId
@@ -139,6 +149,72 @@ const ViewerApp = () => {
         ) : (
           // Viewer routes: /applications/*
           <Routes>
+            {/* App-scoped auth routes — lazy-loaded, separate chunks */}
+            <Route
+              path="/:slug/login"
+              element={
+                <Suspense
+                  fallback={
+                    <div className="load" style={{ display: 'flex' }}>
+                      <div className="one"></div>
+                      <div className="two"></div>
+                      <div className="three"></div>
+                    </div>
+                  }
+                >
+                  <AppLoginPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/:slug/signup"
+              element={
+                <Suspense
+                  fallback={
+                    <div className="load" style={{ display: 'flex' }}>
+                      <div className="one"></div>
+                      <div className="two"></div>
+                      <div className="three"></div>
+                    </div>
+                  }
+                >
+                  <AppSignupPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/:slug/forgot-password"
+              element={
+                <Suspense
+                  fallback={
+                    <div className="load" style={{ display: 'flex' }}>
+                      <div className="one"></div>
+                      <div className="two"></div>
+                      <div className="three"></div>
+                    </div>
+                  }
+                >
+                  <AppForgotPasswordPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/:slug/reset-password/:token"
+              element={
+                <Suspense
+                  fallback={
+                    <div className="load" style={{ display: 'flex' }}>
+                      <div className="one"></div>
+                      <div className="two"></div>
+                      <div className="three"></div>
+                    </div>
+                  }
+                >
+                  <AppResetPasswordPage />
+                </Suspense>
+              }
+            />
+
             {/* Main viewer route: /applications/:slug/:pageHandle? */}
             <Route
               path="/:slug/:pageHandle?"

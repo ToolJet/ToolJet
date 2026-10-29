@@ -26,17 +26,20 @@ export class OrganizationGitUpdateDto {
   @IsString()
   @IsIn(['ed25519', 'rsa'])
   keyType: 'ed25519' | 'rsa';
+
+  @IsOptional()
+  @IsBoolean()
+  branchingEnabled?: boolean;
 }
 
-export class OrganizationGitHTTPSUpdateDto {
+export class OrganizationGitConfigUpdateDto {
   @IsOptional()
   @IsBoolean()
-  autoCommit: boolean;
-}
-export class OrganizationGitLabUpdateDto {
+  autoCommit?: boolean;
+
   @IsOptional()
   @IsBoolean()
-  autoCommit: boolean;
+  branchingEnabled?: boolean;
 }
 
 export class OrganizationGitStatusUpdateDto {
@@ -47,4 +50,11 @@ export class OrganizationGitStatusUpdateDto {
   @IsString()
   @IsNotEmpty()
   gitType: GITConnectionType;
+}
+
+// Payload for the dedicated PUT /git-sync/:id/is-branching-enabled endpoint that toggles
+// only the workspace branching mode (organization_git_sync.is_branching_enabled).
+export class UpdateBranchingEnabledDto {
+  @IsBoolean()
+  isBranchingEnabled: boolean;
 }

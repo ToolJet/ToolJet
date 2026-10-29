@@ -1,5 +1,6 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import Accordion from '@/_ui/Accordion';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../inspectorConstants';
 import { renderElement } from '../../Utils';
 import { resolveReferences } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved
@@ -22,6 +23,8 @@ import { ColorSwatches } from '@/modules/Appbuilder/components';
 import { getColumnIcon } from './utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { useColumnManager, useActionButtonManager, usePopoverState } from './hooks';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 // Helper function to get display text for column type
 const getColumnTypeDisplayText = (columnType) => {
@@ -44,6 +47,7 @@ const getColumnTypeDisplayText = (columnType) => {
     boolean: 'Boolean',
     select: 'Select',
     newMultiSelect: 'Multiselect',
+    tagsV2: 'Tags',
     json: 'JSON',
     markdown: 'Markdown',
     html: 'HTML',
@@ -103,8 +107,18 @@ export const Table = (props) => {
     activeIndex: activeColumnPopoverIndex,
     isRootCloseEnabled,
     togglePopover: handleToggleColumnPopover,
+    closePopover: closeColumnPopover,
     setRootCloseBlocker: setColumnPopoverRootCloseBlocker,
   } = usePopoverState();
+
+  const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
+
+  useEffect(() => {
+    if (isQueryPaneExpanded && activeColumnPopoverIndex !== null) {
+      closeColumnPopover();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isQueryPaneExpanded]);
 
   // Event handlers
   const handleDragEnd = useCallback(
@@ -120,10 +134,14 @@ export const Table = (props) => {
     [updateColumnEvents]
   );
 
-  const handleEventManagerPopoverCallback = useCallback((showing) => {
-    setActionPopOverRootClose(!showing);
-    setShowPopOver(showing);
-  }, []);
+  const handleEventManagerPopoverCallback = useCallback(
+    (showing) => {
+      setActionPopOverRootClose(!showing);
+      setShowPopOver(showing);
+      setColumnPopoverRootCloseBlocker('eventManager', showing);
+    },
+    [setColumnPopoverRootCloseBlocker]
+  );
 
   // Render helpers
   const renderCustomElement = useCallback(
@@ -136,12 +154,11 @@ export const Table = (props) => {
   const renderColumnPopover = useCallback(
     (column, index) => (
       <Popover
-        id="popover-basic-2"
+        id="table-column-popover-basic"
         className={`${darkMode && 'dark-theme'} shadow table-column-popover`}
         style={{
           width: '280px',
-          maxHeight: resolveReferences(column.isEditable) ? '100vh' : 'inherit',
-          zIndex: '9999',
+          zIndex: 11,
         }}
       >
         <ColumnPopoverContent
@@ -257,7 +274,10 @@ export const Table = (props) => {
               property="disableActionButton"
               props={action}
               component={component}
-              paramMeta={{ type: 'toggle', displayName: 'Disable action button' }}
+              paramMeta={{
+                type: 'toggle',
+                displayName: 'Disable action button',
+              }}
               paramType="properties"
             />
             <EventManager
@@ -265,7 +285,9 @@ export const Table = (props) => {
               sourceId={component?.id}
               eventSourceType="table_action"
               customEventRefs={actionRef}
-              eventMetaDefinition={{ events: { onClick: { displayName: 'On click' } } }}
+              eventMetaDefinition={{
+                events: { onClick: { displayName: 'On click' } },
+              }}
               currentState={currentState}
               dataQueries={dataQueries}
               components={components}
@@ -331,8 +353,6 @@ export const Table = (props) => {
   );
 
   // Derived state
-  const displaySearchBox = component.component.definition.properties.displaySearchBox?.value ?? true;
-
   const displayServerSideFilter = useMemo(
     () => resolveReferences(component.component.definition.properties.showFilterButton?.value) ?? false,
     [component.component.definition.properties.showFilterButton?.value]
@@ -370,6 +390,12 @@ export const Table = (props) => {
     [component.component.definition.properties.useDynamicColumn?.value]
   );
 
+  const autogenerateColumns = useMemo(
+    () => resolveReferences(component.component.definition.properties.autogenerateColumns?.value) ?? true,
+    [component.component.definition.properties.autogenerateColumns?.value]
+  );
+  const isColumnSchemaLocked = !autogenerateColumns;
+
   const allowSelection = useMemo(() => {
     const allowSelectionValue = component.component.definition.properties?.allowSelection?.value;
     if (allowSelectionValue) {
@@ -391,22 +417,30 @@ export const Table = (props) => {
     () => [
       'allowSelection',
       ...(allowSelection
-        ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow', 'selectRowOnCellEdit']
+        ? [
+            'highlightSelectedRow',
+            'disableRowDeselection',
+            'showBulkSelector',
+            'defaultSelectedRow',
+            'selectRowOnCellEdit',
+          ]
         : []),
+      'enableExpandableRows',
+      'expansionHeight',
     ],
     [allowSelection]
   );
 
   const searchSortFilterOptions = useMemo(
     () => [
-      ...(displaySearchBox ? ['displaySearchBox'] : []),
+      'displaySearchBox',
       ...(displayServerSideSearch ? ['serverSideSearch'] : []),
       'enabledSort',
       ...(enabledSort ? ['serverSideSort'] : []),
       'showFilterButton',
       ...(displayServerSideFilter ? ['serverSideFilter'] : []),
     ],
-    [displaySearchBox, displayServerSideSearch, enabledSort, displayServerSideFilter]
+    [displayServerSideSearch, enabledSort, displayServerSideFilter]
   );
 
   const paginationOptions = useMemo(
@@ -414,18 +448,23 @@ export const Table = (props) => {
       'enablePagination',
       ...(enablePagination ? ['serverSidePagination'] : []),
       ...(enablePagination && !serverSidePagination ? ['rowsPerPage'] : []),
-      ...(enablePagination && serverSidePagination ? ['enablePrevButton', 'enableNextButton', 'totalRecords'] : []),
+      ...(enablePagination && serverSidePagination
+        ? ['serverSideRowsPerPage', 'enablePrevButton', 'enableNextButton', 'totalRecords']
+        : []),
     ],
     [enablePagination, serverSidePagination]
   );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const additionalActions = [
     'showAddNewRowButton',
     'showDownloadButton',
+    'showRefreshButton',
     'hideColumnSelectorButton',
     'loadingState',
     'showBulkUpdateActions',
     'visibility',
+    'collapseWhenHidden',
     'disabledState',
     'dynamicHeight',
   ];
@@ -494,13 +533,35 @@ export const Table = (props) => {
                                 >
                                   <OverlayTrigger
                                     trigger="click"
-                                    placement="left"
-                                    flip={true}
+                                    show={activeColumnPopoverIndex === index}
+                                    placement="left-start"
+                                    flip={false}
                                     rootClose={isRootCloseEnabled}
                                     overlay={renderColumnPopover(item, index)}
                                     onToggle={(show) => handleToggleColumnPopover(index, show)}
+                                    popperConfig={{
+                                      modifiers: [
+                                        {
+                                          name: 'computeStyles',
+                                          options: { gpuAcceleration: false },
+                                        },
+                                        {
+                                          name: 'preventOverflow',
+                                          options: { padding: 0 },
+                                        },
+                                        {
+                                          name: 'pinToEditorTop',
+                                          enabled: true,
+                                          phase: 'beforeWrite',
+                                          requires: ['computeStyles'],
+                                          fn: ({ state }) => {
+                                            state.styles.popper.top = '48px';
+                                          },
+                                        },
+                                      ],
+                                    }}
                                   >
-                                    <div className="table-column-lists">
+                                    <div className="table-column-lists" data-list-item-id={item.id}>
                                       <List.Item
                                         isDraggable
                                         primaryText={resolvedItemName}
@@ -545,15 +606,49 @@ export const Table = (props) => {
                       {t('widget.Table.addNewColumn', ' Add new column')}
                     </AddNewButton>
                   </div>
+                  {!useDynamicColumn && (
+                    <div className="py-2">
+                      <ProgramaticallyHandleProperties
+                        label="Lock column schema"
+                        currentState={currentState}
+                        darkMode={darkMode}
+                        callbackFunction={(_index, _property, lockOn) =>
+                          paramUpdated(
+                            { name: 'autogenerateColumns' },
+                            'value',
+                            !resolveReferences(lockOn),
+                            'properties'
+                          )
+                        }
+                        property="lockColumnSchema"
+                        props={{
+                          lockColumnSchema: `{{${isColumnSchemaLocked}}}`,
+                        }}
+                        component={component}
+                        paramMeta={{
+                          type: 'toggle',
+                          displayName: 'Lock column schema',
+                          isFxNotRequired: true,
+                        }}
+                        paramType="properties"
+                      />
+                    </div>
+                  )}
                   <ProgramaticallyHandleProperties
                     label="Make all columns editable"
                     currentState={currentState}
                     darkMode={darkMode}
                     callbackFunction={(index, property, value) => setAllColumnsEditable(value)}
                     property="isAllColumnsEditable"
-                    props={{ isAllColumnsEditable: `{{${isAllColumnsEditable}}}` }}
+                    props={{
+                      isAllColumnsEditable: `{{${isAllColumnsEditable}}}`,
+                    }}
                     component={component}
-                    paramMeta={{ type: 'toggle', displayName: 'Make all columns editable', isFxNotRequired: true }}
+                    paramMeta={{
+                      type: 'toggle',
+                      displayName: 'Make all columns editable',
+                      isFxNotRequired: true,
+                    }}
                     paramType="properties"
                   />
                 </div>
@@ -569,7 +664,13 @@ export const Table = (props) => {
             <span>Action buttons</span>
             <ToolTip
               message={
-                <div style={{ padding: '8px 4px', textAlign: 'left', width: '185px' }}>
+                <div
+                  style={{
+                    padding: '8px 4px',
+                    textAlign: 'left',
+                    width: '185px',
+                  }}
+                >
                   These Action buttons are deprecated and will be removed in a future update. Use the new Button column
                   instead by adding a new column and selecting type as a button.
                 </div>
@@ -635,6 +736,7 @@ export const Table = (props) => {
       },
       // Additional actions section
       {
+        id: ADDITIONAL_ACTIONS_ACCORDION_ID,
         title: 'Additional actions',
         children: additionalActions.map((option) => renderCustomElement(option)),
       },
@@ -678,6 +780,7 @@ export const Table = (props) => {
       darkMode,
       renderCustomElement,
       useDynamicColumn,
+      isColumnSchemaLocked,
       handleDragEnd,
       filteredColumns,
       isRootCloseEnabled,

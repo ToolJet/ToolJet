@@ -20,6 +20,7 @@ export type ConvertedFormat = {
   headers: Record<string, string>;
   searchParams?: URLSearchParams;
   json?: Record<string, any>;
+  body?: Buffer | string;
 };
 
 export type QueryResult = {

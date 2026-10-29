@@ -3,6 +3,7 @@ import { UserAllPermissions } from '@modules/app/types';
 import { FEATURE_KEY } from '../../constants';
 import { App } from '@entities/app.entity';
 import { MODULES } from '@modules/app/constants/modules';
+import { APP_TYPES } from '@modules/apps/constants';
 import { FeatureAbility } from './index';
 
 export function defineDataQueryAppAbility(
@@ -11,19 +12,21 @@ export function defineDataQueryAppAbility(
   app: App
 ): void {
   const appId = app?.id;
-  const { superAdmin, isAdmin, userPermission, isBuilder } = UserAllPermissions;
-  const resourcePermissions = userPermission?.[MODULES.APP];
+  const { superAdmin, isAdmin, userPermission, isEndUser } = UserAllPermissions;
+  const isModule = app?.type === APP_TYPES.MODULE;
+  // Modules resolve via their own MODULES.MODULES bucket (granular module permissions),
+  // not the front-end app bucket — same mapping the guard used to fetch it.
+  const resourcePermissions = userPermission?.[isModule ? MODULES.MODULES : MODULES.APP];
   const isAllEditable = !!resourcePermissions?.isAllEditable;
-  const isCanCreate = userPermission.appCreate;
-  const isCanDelete = userPermission.appDelete;
+  const isCanCreate = isModule ? userPermission.moduleCreate : userPermission.appCreate;
+  const isCanDelete = isModule ? userPermission.moduleDelete : userPermission.appDelete;
   const isAllViewable = !!resourcePermissions?.isAllViewable;
-  const resourceType = UserAllPermissions?.resource[0]?.resourceType;
 
   if (app?.isPublic) {
     can([FEATURE_KEY.RUN_VIEWER], App);
   }
 
-  if (isAdmin || superAdmin || (resourceType === MODULES.MODULES && isBuilder)) {
+  if (isAdmin || superAdmin) {
     can(
       [
         FEATURE_KEY.CREATE,
@@ -83,6 +86,11 @@ export function defineDataQueryAppAbility(
   }
 
   if (resourcePermissions?.viewableAppsId?.length && appId && resourcePermissions?.viewableAppsId?.includes(appId)) {
+    can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
+    return;
+  }
+
+  if (isEndUser) {
     can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
     return;
   }

@@ -12,9 +12,10 @@ export default class SendGridQueryService implements QueryService {
 
     let result = {};
 
-    const fromAddress = queryOptions.send_mail_from_name && queryOptions.send_mail_from_name.trim()
-      ? { email: queryOptions.send_mail_from, name: queryOptions.send_mail_from_name.trim() }
-      : queryOptions.send_mail_from;
+    const fromAddress =
+      queryOptions.send_mail_from_name && queryOptions.send_mail_from_name.trim()
+        ? { email: queryOptions.send_mail_from, name: queryOptions.send_mail_from_name.trim() }
+        : queryOptions.send_mail_from;
 
     const sendgridEmailOptions: EmailOptions = {
       to: queryOptions.send_mail_to,

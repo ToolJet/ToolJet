@@ -25,7 +25,7 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
   }, [show]);
 
   const isDisabled = useMemo(() => {
-    return isLoading || (passwordOption === 'manual' && password.length < 5);
+    return isLoading || (passwordOption === 'manual' && (password.length < 5 || password.trim().length === 0));
   }, [isLoading, passwordOption, password]);
 
   const togglePasswordVisibility = () => {
@@ -171,8 +171,8 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
                                     ? '#D1D5DB'
                                     : '#656565'
                                   : password?.length
-                                  ? '#384151'
-                                  : '#D1D5DB'
+                                    ? '#384151'
+                                    : '#D1D5DB'
                               }
                             />
                           ) : (
@@ -183,8 +183,8 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
                                     ? '#D1D5DB'
                                     : '#656565'
                                   : password?.length
-                                  ? '#384151'
-                                  : '#D1D5DB'
+                                    ? '#384151'
+                                    : '#D1D5DB'
                               }
                             />
                           )}

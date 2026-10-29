@@ -13,6 +13,7 @@ import moment from 'moment-timezone';
 import cx from 'classnames';
 
 import './styles.scss';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const DatePickerV2 = ({
   height,
@@ -41,6 +42,8 @@ export const DatePickerV2 = ({
     dateInputRef,
     datePickerRef,
     dateFormat,
+    componentName,
+    id,
   };
   const dateTimeLogic = useDatetimeInput(inputProps);
   const dateLogic = useDateInput(inputProps);
@@ -54,6 +57,9 @@ export const DatePickerV2 = ({
     defaultValue ? getSelectedTimestampFromUnixTimestamp(unixTimestamp) : null
   );
   const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
+  // Unparseable typed text — kept on screen with an error instead of reverting.
+  const [textParseError, setTextParseError] = useState(false);
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
   const [displayTimestamp, setDisplayTimestamp] = useState(
@@ -62,6 +68,7 @@ export const DatePickerV2 = ({
   const [datepickerMode, setDatePickerMode] = useState('date');
 
   const setInputValue = (date, format, skipFireEvent = false) => {
+    setTextParseError(false);
     const unixTimestamp = getUnixTime(date, format ? format : dateFormat);
     const selectedTimestamp = getSelectedTimestampFromUnixTimestamp(unixTimestamp);
     setUnixTimestamp(unixTimestamp);
@@ -72,11 +79,12 @@ export const DatePickerV2 = ({
   };
 
   const handleClear = () => {
-    setInputValue(null);
+    setInputValue(null, null, true);
     setDisplayTimestamp('');
   };
 
   const onDateSelect = (date) => {
+    setTextParseError(false);
     const selectedTime = getUnixTime(date, dateFormat);
     setSelectedTimestamp(selectedTime);
     const unixTimestamp = getUnixTimestampFromSelectedTimestamp(selectedTime);
@@ -108,9 +116,9 @@ export const DatePickerV2 = ({
   }, [defaultValue]);
 
   useEffect(() => {
-    if (isInitialRender.current || textInputFocus) return;
+    if (isInitialRender.current || textInputFocus || textParseError) return;
     setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : '');
-  }, [selectedTimestamp, dateFormat, textInputFocus]);
+  }, [selectedTimestamp, dateFormat, textInputFocus, textParseError]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -134,20 +142,28 @@ export const DatePickerV2 = ({
   }, []);
 
   useEffect(() => {
+    // CSAs and clear update state and exposed variables silently — only real user selection fires
+    // onSelect (same contract as DaterangePicker). This also prevents event→action→event loops
+    // when an onSelect handler programmatically sets the value back on this widget.
     setExposedVariables({
       setValue: (value, format) => {
-        setInputValue(value, format);
+        setInputValue(value, format, true);
       },
       clearValue: () => {
-        setInputValue(null);
+        setInputValue(null, null, true);
       },
       setValueInTimestamp: (timeStamp) => {
-        setInputValue(timeStamp);
+        setInputValue(timeStamp, null, true);
       },
       setDate: (date, format) => {
         let momentObj = moment(date, [format ? format : dateFormat]);
         if (!momentObj.isValid()) momentObj = moment();
-        const updatedUnixTimestamp = moment(unixTimestamp);
+        // Base on the current value; when empty/cleared fall back to now so setDate still works
+        // (same guard as DatetimePickerV2 — moment(null) is invalid and would produce NaN)
+        let updatedUnixTimestamp = moment(unixTimestamp);
+        if (!updatedUnixTimestamp.isValid()) {
+          updatedUnixTimestamp = moment();
+        }
         updatedUnixTimestamp.set('year', momentObj.year());
         updatedUnixTimestamp.set('month', momentObj.month());
         updatedUnixTimestamp.set('date', momentObj.date());
@@ -155,16 +171,21 @@ export const DatePickerV2 = ({
         setUnixTimestamp(updatedUnixTimestamp.valueOf());
         setSelectedTimestamp(selectedTimestamp);
         setExposedDateVariables(updatedUnixTimestamp.valueOf(), selectedTimestamp);
-        fireEvent('onSelect');
       },
     });
   }, [selectedTimestamp, unixTimestamp, dateFormat]);
 
   useEffect(() => {
+    if (textParseError) {
+      setValidationStatus({ isValid: false, validationError: 'Invalid date' });
+      return;
+    }
     setValidationStatus(
       isDateValid(selectedTimestamp, { minDate, maxDate, customRule, isMandatory, excludedDates, dateFormat })
     );
-  }, [minDate, maxDate, customRule, isMandatory, selectedTimestamp, excludedDates, dateFormat]);
+  }, [minDate, maxDate, customRule, isMandatory, selectedTimestamp, excludedDates, dateFormat, textParseError]);
+
+  useFormClear(() => setInputValue(null, null, true));
 
   const componentProps = {
     className: 'input-field form-control validation-without-icon px-2',
@@ -183,11 +204,15 @@ export const DatePickerV2 = ({
         updatedDate = modifiedDate.toDate();
       }
       onDateSelect(updatedDate);
+      // A calendar pick supersedes typed text held on screen (parse error or
+      // mid-typing); sync the display immediately rather than waiting for blur.
+      setDisplayTimestamp(getFormattedSelectTimestamp(updatedDate, dateFormat));
       setDatePickerMode('date');
     },
     selected: selectedTimestamp ? moment(selectedTimestamp).toDate() : null,
     displayFormat: dateFormat,
-    excludeDates: excludedDates,
+    // Day-level exclusions must not disable whole year/month cells in year/month picker modes
+    excludeDates: datepickerMode === 'date' ? excludedDates : undefined,
     showMonthYearPicker: datepickerMode === 'month',
     showYearPicker: datepickerMode === 'year',
     minDate: moment(minDate).isValid() ? minDate : null,
@@ -215,6 +240,7 @@ export const DatePickerV2 = ({
     setDisplayTimestamp,
     setTextInputFocus,
     setShowValidationError,
+    onTextParse: (parsed) => setTextParseError(parsed.hasError),
     showValidationError,
     isValid,
     validationError,

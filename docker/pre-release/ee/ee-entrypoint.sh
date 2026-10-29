@@ -3,6 +3,16 @@ set -e
 
 npm cache clean --force
 
+# ================== fetch AWS RDS global cert bundle at runtime ==================
+mkdir -p /home/appuser/certs
+if wget -q -O /home/appuser/certs/global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem; then
+  echo "RDS cert bundle downloaded successfully."
+else
+  echo "Error: Failed to download RDS cert bundle. Check network/internet access for this task."
+  exit 1
+fi
+export NODE_EXTRA_CA_CERTS=/home/appuser/certs/global-bundle.pem
+
 # Load environment variables from .env if the file exists
 if [ -f "./.env" ]; then
   export $(grep -v '^#' ./.env | xargs -d '\n') || true
@@ -11,7 +21,8 @@ fi
 # Start Redis server only if REDIS_HOST is localhost or not set
 if [ -z "$REDIS_HOST" ] || [ "$REDIS_HOST" = "localhost" ]; then
   echo "Starting Redis server locally..."
-  redis-server /etc/redis/redis.conf &
+  # Own session: tini -g signals the server's process group, these stop only with the container.
+  setsid redis-server /etc/redis/redis.conf &
 elif [ -n "$REDIS_URL" ]; then
   echo "REDIS_URL connection is set: $REDIS_URL"
 else
@@ -37,7 +48,7 @@ if [[ "$PGRST_HOST" == localhost:* ]]; then
 
   # Starting PostgREST
   echo "Starting PostgREST..."
-  postgrest "$POSTGREST_CONFIG_PATH" &
+  setsid postgrest "$POSTGREST_CONFIG_PATH" &
 else
   echo "Using external PostgREST at $PGRST_HOST."
 fi
@@ -47,6 +58,12 @@ if [ -d "./server/dist" ]; then
   SETUP_CMD='npm run db:setup:prod'
 else
   SETUP_CMD='npm run db:setup'
+fi
+
+# MIGRATION_MODE=async: the server runs migrations itself, in the background.
+export MIGRATION_SETUP_COMMAND="$SETUP_CMD"
+if [ "$MIGRATION_MODE" = "async" ]; then
+  SETUP_CMD=true
 fi
 
 # Wait for PostgreSQL connection

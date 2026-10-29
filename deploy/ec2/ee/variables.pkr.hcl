@@ -17,6 +17,11 @@ variable "ami_groups" {
   default = ["all"]
 }
 
+variable "snapshot_groups" {
+  type    = list(string)
+  default = ["all"]
+}
+
 variable "PACKER_BUILDER_TYPE" {
   type    = string
   default = "amazon-ebs"

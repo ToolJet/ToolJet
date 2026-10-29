@@ -1,4 +1,5 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useContext } from 'react';
+import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 // eslint-disable-next-line import/no-unresolved
 import _, { debounce, omit } from 'lodash';
@@ -25,6 +26,7 @@ import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerConte
 
 import './form.scss';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import FormSignalContext from './FormSignalContext';
 
 const FormComponent = (props) => {
   const {
@@ -40,7 +42,6 @@ const FormComponent = (props) => {
     properties,
     resetComponent = () => {},
     dataCy,
-    adjustComponentPositions,
     currentLayout,
     componentCount,
     onComponentClick,
@@ -93,6 +94,7 @@ const FormComponent = (props) => {
 
   const activeColor = getModifiedColor(backgroundColor, 'active');
   const computedFormBodyHeight = getBodyHeight(height, showHeader, showFooter, headerHeight, footerHeight);
+  const [canHeight, setCanHeight] = useState('100%');
   const computedBorderRadius = `${borderRadius ? parseFloat(borderRadius) : 0}px`;
 
   const computedStyles = {
@@ -146,16 +148,18 @@ const FormComponent = (props) => {
     borderTopRightRadius: `${borderRadius}px`,
     backgroundColor:
       ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
+    overflow: 'hidden',
   };
   useDynamicHeight({
     isDynamicHeightEnabled,
     id,
     height,
-    adjustComponentPositions,
     currentLayout,
     isContainer: true,
     componentCount,
-    value: isJSONSchema,
+    // Refire reflow when slot visibility/heights change — resizing the form's
+    // header or footer must recompute the container's dynamic height.
+    value: `${isJSONSchema}|${showHeader ? 1 : 0}|${showFooter ? 1 : 0}|${headerHeight}|${footerHeight}`,
     visibility: isVisible,
     subContainerIndex,
     componentType,
@@ -185,6 +189,8 @@ const FormComponent = (props) => {
     });
     return result;
   }, shallow);
+
+  useExposedValueBatch(componentCount);
 
   // Derive childrenData from raw exposed values + component definitions (read imperatively).
   // Only recomputes when childExposedMap actually changes.
@@ -237,21 +243,39 @@ const FormComponent = (props) => {
   const effectiveChildrenData = advanced ? jsonSchemaChildrenData : childrenData;
 
   const [isValid, setValidation] = useState(true);
+  const [submitAttemptCount, setSubmitAttemptCount] = useState(0);
+  const [clearCount, setClearCount] = useState(0);
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
+
+  // When this Form is nested inside another Form, inherit the parent's submit
+  // attempts. A failed submit on the parent must surface validation errors on
+  // this child form's inputs too, even though they live under this form's own
+  // FormSignalContext.Provider (which would otherwise shadow the parent's).
+  const { submitAttemptCount: parentSubmitAttemptCount } = useContext(FormSignalContext);
+  const effectiveSubmitAttemptCount = submitAttemptCount + parentSubmitAttemptCount;
 
   useEffect(() => {
     const exposedVariables = {
       resetForm: async function () {
+        setSubmitAttemptCount(0);
         resetComponent();
+      },
+      clearForm: async function () {
+        setSubmitAttemptCount(0);
+        setClearCount((n) => n + 1);
       },
       submitForm: async function () {
         if (validateOnSubmit) {
           if (!isValid) {
+            setSubmitAttemptCount((n) => n + 1);
             return fireEvent('onInvalid');
           }
         }
-        fireEvent('onSubmit').then(() => resetOnSubmit && resetComponent());
+        fireEvent('onSubmit').then(() => {
+          setSubmitAttemptCount(0);
+          if (resetOnSubmit) resetComponent();
+        });
       },
     };
 
@@ -280,7 +304,10 @@ const FormComponent = (props) => {
   };
 
   useEffect(() => {
-    if (mounted) resetComponent();
+    if (mounted) {
+      setSubmitAttemptCount(0);
+      resetComponent();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(JSONSchema)]);
 
@@ -372,10 +399,12 @@ const FormComponent = (props) => {
   const fireSubmissionEvent = () => {
     if (validateOnSubmit) {
       if (!isValid) {
+        setSubmitAttemptCount((n) => n + 1);
         return fireEvent('onInvalid');
       }
     }
     fireEvent('onSubmit').then(() => {
+      setSubmitAttemptCount(0);
       if (resetOnSubmit) {
         debounce(() => resetComponent(), 100)();
       }
@@ -405,7 +434,6 @@ const FormComponent = (props) => {
     setComponentProperty(id, `footerHeight`, _height, 'properties', 'value', false);
   };
 
-  const [canHeight, setCanHeight] = useState('100%');
   useEffect(() => {
     // const newHeight = parseInt(height, 10) - 14;
 
@@ -417,6 +445,11 @@ const FormComponent = (props) => {
     const roundedHeight = Math.round(maxHeight / 10) * 10;
     setCanHeight(`${roundedHeight}px`);
   }, [computedFormBodyHeight, canvasHeight]);
+
+  const formSignalContextValue = useMemo(
+    () => ({ submitAttemptCount: effectiveSubmitAttemptCount, clearCount }),
+    [effectiveSubmitAttemptCount, clearCount]
+  );
 
   return (
     <form
@@ -458,54 +491,61 @@ const FormComponent = (props) => {
           </div>
         ) : (
           <fieldset disabled={isDisabled} style={{ width: '100%', height: '100%' }}>
-            {!advanced && (
-              <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
-                <SubContainer
-                  id={id}
-                  canvasHeight={parseInt(computedFormBodyHeight, 10)}
-                  canvasWidth={width}
-                  styles={{
-                    backgroundColor: computedStyles.backgroundColor,
-                    height: '100%',
-                  }}
-                  darkMode={darkMode}
-                  componentType="Form"
-                />
-              </div>
-            )}
-            {advanced &&
-              uiComponents?.map((item, index) => {
-                return (
-                  <div
-                    //check to avoid labels for these widgets as label is already present for them
-                    className={
-                      ![
-                        'Checkbox',
-                        'StarRating',
-                        'Multiselect',
-                        'DropDown',
-                        'RadioButton',
-                        'ToggleSwitch',
-                        'ToggleSwitchV2',
-                      ].includes(uiComponents?.[index + 1]?.component)
-                        ? `json-form-wrapper json-form-wrapper-disabled`
-                        : `json-form-wrapper  json-form-wrapper-disabled form-label-restricted`
-                    }
-                    key={index}
-                  >
-                    <div style={{ position: 'relative' }} className={`form-ele form-${id}-${index}`}>
-                      <RenderSchema
-                        component={item}
-                        parent={id}
-                        id={index}
-                        darkMode={darkMode}
-                        onOptionChange={onComponentOptionChangedForSubcontainer}
-                        onOptionsChange={onComponentOptionsChangedForSubcontainer}
-                      />
+            <FormSignalContext.Provider value={formSignalContextValue}>
+              {!advanced && (
+                <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
+                  <SubContainer
+                    id={id}
+                    canvasHeight={parseInt(computedFormBodyHeight, 10)}
+                    canvasWidth={width}
+                    styles={{
+                      backgroundColor: computedStyles.backgroundColor,
+                      height: '100%',
+                      // Suppress the transient scrollbar that flashes for a
+                      // frame while children grow ahead of the parent reflow.
+                      // Dynamic mode is view-only, so static-height authoring
+                      // still gets the default scroll behavior.
+                      overflowY: isDynamicHeightEnabled ? 'hidden' : undefined,
+                    }}
+                    darkMode={darkMode}
+                    componentType="Form"
+                  />
+                </div>
+              )}
+              {advanced &&
+                uiComponents?.map((item, index) => {
+                  return (
+                    <div
+                      //check to avoid labels for these widgets as label is already present for them
+                      className={
+                        ![
+                          'Checkbox',
+                          'StarRating',
+                          'Multiselect',
+                          'DropDown',
+                          'RadioButton',
+                          'ToggleSwitch',
+                          'ToggleSwitchV2',
+                        ].includes(uiComponents?.[index + 1]?.component)
+                          ? `json-form-wrapper json-form-wrapper-disabled`
+                          : `json-form-wrapper  json-form-wrapper-disabled form-label-restricted`
+                      }
+                      key={index}
+                    >
+                      <div style={{ position: 'relative' }} className={`form-ele form-${id}-${index}`}>
+                        <RenderSchema
+                          component={item}
+                          parent={id}
+                          id={index}
+                          darkMode={darkMode}
+                          onOptionChange={onComponentOptionChangedForSubcontainer}
+                          onOptionsChange={onComponentOptionsChangedForSubcontainer}
+                        />
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+            </FormSignalContext.Provider>
           </fieldset>
         )}
       </div>

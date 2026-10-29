@@ -17,9 +17,11 @@ const CommonOAuthFields = ({
   grant_type,
   oauth_configs,
   isFieldAllowed,
+  isDisabled = false,
 }) => {
   const { access_token_url, access_token_custom_headers } = tokenConfig;
-  const { client_id, client_secret, client_auth } = clientConfig;
+  const { client_id, client_secret, client_auth, company_id, site_url, code_verifier, code_challenge_method } =
+    clientConfig;
   const { scopes } = authConfig;
   const { optionchanged, optionsChanged } = handlers;
   const { workspaceConstants } = workspaceConfig;
@@ -127,6 +129,7 @@ const CommonOAuthFields = ({
                 className="form-control"
                 onChange={(e) => optionchanged('client_id', e.target.value)}
                 value={client_id}
+                disabled={isDisabled}
                 workspaceConstants={workspaceConstants}
                 placeholder="Enter client ID"
               />
@@ -154,6 +157,72 @@ const CommonOAuthFields = ({
             </div>
           )}
         </>
+      )}
+      {oauth_configs?.allowed_field_groups?.[grant_type]?.includes('company_id') && (
+        <div className="col-md-12" data-cy="company-id-section">
+          <label className="form-label mt-3" data-cy="label-company-id">
+            Company ID
+          </label>
+          <Input
+            data-cy="company-id-input-field"
+            type="text"
+            className="form-control"
+            onChange={(e) => optionchanged('company_id', e.target.value)}
+            value={company_id}
+            workspaceConstants={workspaceConstants}
+            placeholder="Enter company ID"
+          />
+        </div>
+      )}
+      {oauth_configs?.allowed_field_groups?.[grant_type]?.includes('site_url') && (
+        <div className="col-md-12" data-cy="site-url-section">
+          <label className="form-label mt-3" data-cy="label-site-url">
+            Site URL
+          </label>
+          <Input
+            data-cy="site-url-input-field"
+            type="text"
+            className="form-control"
+            onChange={(e) => optionchanged('site_url', e.target.value)}
+            value={site_url}
+            workspaceConstants={workspaceConstants}
+            placeholder="https://your-site.atlassian.net"
+          />
+        </div>
+      )}
+      {isFieldAllowed('code_challenge_method', grant_type, oauth_configs) && (
+        <div className="col-md-12" data-cy="code-challenge-method-section">
+          <label className="form-label mt-3" data-cy="label-code-challenge-method">
+            Code challenge method
+          </label>
+          <Select
+            options={[
+              { name: 'SHA-256', value: 'S256' },
+              { name: 'Plain', value: 'plain' },
+            ]}
+            value={code_challenge_method || 'S256'}
+            onChange={(value) => optionchanged('code_challenge_method', value)}
+            width={'100%'}
+            useMenuPortal={false}
+            dataCy="code-challenge-method"
+          />
+        </div>
+      )}
+      {isFieldAllowed('code_verifier', grant_type, oauth_configs) && (
+        <div className="col-md-12" data-cy="code-verifier-section">
+          <label className="form-label mt-3" data-cy="label-code-verifier">
+            Code verifier
+          </label>
+          <Input
+            data-cy="code-verifier-input-field"
+            type="text"
+            className="form-control"
+            onChange={(e) => optionchanged('code_verifier', e.target.value)}
+            value={code_verifier}
+            workspaceConstants={workspaceConfig.workspaceConstants}
+            placeholder="43-128 characters (A-Z, a-z, 0-9, - . _ ~)"
+          />
+        </div>
       )}
       {isFieldAllowed('scopes', grant_type, oauth_configs) && (
         <div className="col-md-12" data-cy="scope-section">
@@ -336,6 +405,7 @@ const OAuthConfiguration = ({
   handlers,
   oauth_configs,
   isFieldAllowed,
+  isDisabled,
 }) => {
   const { optionchanged } = handlers;
   const { grant_type } = authConfig;
@@ -344,6 +414,7 @@ const OAuthConfiguration = ({
   const grantTypeOptions = () => {
     const options = [
       { name: 'Authorization code', value: 'authorization_code' },
+      { name: 'Authorization code with PKCE', value: 'authorization_code_pkce' },
       { name: 'Client credentials', value: 'client_credentials' },
     ];
 
@@ -381,6 +452,7 @@ const OAuthConfiguration = ({
           oauth_configs={oauth_configs}
           grant_type={grant_type}
           isFieldAllowed={isFieldAllowed}
+          isDisabled={isDisabled}
         />
         {grant_type === 'client_credentials' ? (
           <ClientCredentialsFields

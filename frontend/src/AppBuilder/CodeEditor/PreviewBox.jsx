@@ -16,9 +16,11 @@ import { shallow } from 'zustand/shallow';
 import { Overlay } from 'react-bootstrap';
 import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-
+import cx from 'classnames';
 import { findDefault } from '../_utils/component-properties-validation';
 import FixWithAi from './FixWithAi';
+import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
+import { INLINE_AI_FEATURES_ENABLED } from '@/_helpers/constants';
 
 const sanitizeLargeDataset = (data, callback) => {
   const SIZE_LIMIT_KB = 5 * 1024; // 5 KB in bytes
@@ -134,7 +136,7 @@ export const PreviewBox = ({
   const globalServerConstantsRegex = /\{\{.*globals\.server.*\}\}/;
 
   const getPreviewContent = (content, type) => {
-    if (content === undefined || content === null) return currentValue;
+    if (content === undefined) return currentValue;
     try {
       switch (type) {
         case 'Object':
@@ -225,12 +227,12 @@ export const PreviewBox = ({
       const jsErrorType = isSecretError
         ? 'Error'
         : _error?.includes('ReferenceError')
-        ? 'ReferenceError'
-        : _error?.includes('TypeError')
-        ? 'TypeError'
-        : _error?.includes('SyntaxError')
-        ? 'SyntaxError'
-        : 'Invalid';
+          ? 'ReferenceError'
+          : _error?.includes('TypeError')
+            ? 'TypeError'
+            : _error?.includes('SyntaxError')
+              ? 'SyntaxError'
+              : 'Invalid';
 
       const errValue = ifCoersionErrorHasCircularDependency(_resolveValue);
 
@@ -238,13 +240,13 @@ export const PreviewBox = ({
         message: isServerConstant
           ? 'Server variables cannot be used in apps'
           : isSecretError
-          ? 'secrets cannot be used in apps'
-          : _error,
+            ? 'secrets cannot be used in apps'
+            : _error,
         value: isSecretError
           ? 'Undefined'
           : jsErrorType === 'Invalid'
-          ? JSON.stringify(errValue, reservedKeywordReplacer)
-          : resolvedValue,
+            ? JSON.stringify(errValue, reservedKeywordReplacer)
+            : resolvedValue,
         type: isSecretError ? 'Error' : jsErrorType,
         completeErrorMessage: completeErrMessage,
       });
@@ -309,20 +311,20 @@ const RenderResolvedValue = ({
   const previewValueType = isWorkspaceVariable
     ? previewType
     : withValidation || (coersionData && coersionData?.typeBeforeCoercion)
-    ? `${coersionData?.typeBeforeCoercion} ${
-        coersionData?.coercionPreview ? ` → ${coersionData?.typeAfterCoercion}` : ''
-      }`
-    : previewType;
+      ? `${coersionData?.typeBeforeCoercion} ${
+          coersionData?.coercionPreview ? ` → ${coersionData?.typeAfterCoercion}` : ''
+        }`
+      : previewType;
 
   const previewContent = isServerConstant
     ? isServerSideGlobalResolveEnabled
       ? 'Server variables would be resolved at runtime'
       : 'Server variables are only available in paid plans'
     : isSecretConstant
-    ? 'Values of secret constants are hidden'
-    : !withValidation
-    ? resolvedValue
-    : computeCoersionPreview(resolvedValue, coersionData);
+      ? 'Values of secret constants are hidden'
+      : !withValidation
+        ? resolvedValue
+        : computeCoersionPreview(resolvedValue, coersionData);
 
   const cls = error ? 'codehinter-error-banner' : 'codehinter-success-banner';
 
@@ -356,6 +358,9 @@ const PreviewContainer = ({
   previewRef,
   showPreview,
   onAiSuggestionAccept,
+  wrapperWidth,
+  overlayKey,
+  isInsideQueryManager,
   ...restProps
 }) => {
   const {
@@ -372,6 +377,7 @@ const PreviewContainer = ({
   } = restProps;
 
   const aiFeaturesEnabled = useStore((state) => state.ai?.aiFeaturesEnabled ?? false);
+  const isAiBlockedByBranch = useIsAiBlockedOnDefaultBranch();
   const fetchErrorFixUsingAi = useStore((state) => state.fetchErrorFixUsingAi);
   const clearChatHistory = useStore((state) => state.clearChatHistory);
   const componentDefinition = useStore((state) => state.getComponentDefinition(componentId), shallow); // TODO: check if moduleId needs to be passed here
@@ -409,8 +415,8 @@ const PreviewContainer = ({
     const defaultValue = validationSchema?.defaultValue
       ? validationSchema?.defaultValue
       : validationSchema
-      ? findDefault(validationSchema?.schema ?? {}, errorMessage?.value)
-      : undefined;
+        ? findDefault(validationSchema?.schema ?? {}, errorMessage?.value)
+        : undefined;
 
     const errorData = {
       key: componentKey,
@@ -483,8 +489,12 @@ const PreviewContainer = ({
           border: !isEmpty(validationSchema) && '1px solid var(--slate6)',
           padding: isEmpty(validationSchema) && !validationFn && '0px',
           boxShadow: ' 0px 4px 8px 0px #3032331A, 0px 0px 1px 0px #3032330D',
-          width: '250px',
-          maxWidth: '350px',
+          ...(wrapperWidth
+            ? { width: wrapperWidth }
+            : {
+                width: '250px',
+                maxWidth: '350px',
+              }),
         }}
       >
         <div>
@@ -502,7 +512,7 @@ const PreviewContainer = ({
                   <div className="">{errorMsg !== 'null' ? errorMsg : 'Invalid'}</div>
                 </div>
 
-                {aiFeaturesEnabled && (
+                {aiFeaturesEnabled && INLINE_AI_FEATURES_ENABLED && !isAiBlockedByBranch && (
                   <ToolTip
                     placement="left"
                     message={<FixIssueTooltipContent />}
@@ -537,7 +547,11 @@ const PreviewContainer = ({
                   Expected
                 </span>
               </div>
-              <Card className={darkMode && 'bg-slate2'}>
+              <Card
+                className={cx({
+                  'bg-slate2': darkMode,
+                })}
+              >
                 <Card.Body
                   className="p-1"
                   style={{
@@ -580,7 +594,10 @@ const PreviewContainer = ({
           )}
 
           <Card
-            className={darkMode && 'bg-slate2'}
+            className={cx({
+              'bg-slate2': darkMode,
+              'query-manager-input-preview-popover-card': isInsideQueryManager,
+            })}
             style={{
               borderColor: errorStateActive ? 'var(--tomato8)' : 'var(--slate6)',
             }}
@@ -602,13 +619,17 @@ const PreviewContainer = ({
     </Popover>
   );
 
+  const initialPlacement = isInsideQueryManager ? 'bottom-start' : previewPlacement || 'left';
+  const hasValue = currentValue !== '' && currentValue !== undefined && currentValue !== null;
+
   return (
     <>
       {!isPortalOpen && (
         <Overlay
-          placement={previewPlacement || 'left'}
+          key={overlayKey}
+          placement={initialPlacement}
           {...(previewRef?.current ? { target: previewRef.current } : {})}
-          show={showPreview}
+          show={showPreview && hasValue}
           rootClose
           shouldUpdatePosition={true}
           container={document.body}
@@ -616,6 +637,7 @@ const PreviewContainer = ({
             modifiers: [
               {
                 name: 'flip',
+                enabled: isInsideQueryManager,
                 options: {
                   fallbackPlacements: ['top', 'bottom', 'left', 'right'],
                   flipVariations: true,
@@ -723,7 +745,7 @@ const PreviewCodeBlock = ({ code, isExpectValue = false, isLargeDataset }) => {
 
     const typeOfValue = typeof prettyPrintedJson;
 
-    if (typeOfValue === 'object' || typeOfValue === 'array') {
+    if (prettyPrintedJson !== null && (typeOfValue === 'object' || typeOfValue === 'array')) {
       showJSONTree = true;
     } else {
       prettyPrintedJson = preview;

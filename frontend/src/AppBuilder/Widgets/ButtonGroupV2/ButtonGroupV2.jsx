@@ -1,17 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import Label from '@/_ui/Label';
 import './buttonGroupV2.scss';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 // eslint-disable-next-line import/no-unresolved
 import { cx } from 'class-variance-authority';
-import {
-  getLabelWidthOfInput,
-  getWidthTypeOfComponentStyles,
-} from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { getLabelFontSize, getWidthTypeOfComponentStyles } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 
 export const ButtonGroupV2 = (props) => {
   // ===== PROPS DESTRUCTURING =====
@@ -28,6 +28,10 @@ export const ButtonGroupV2 = (props) => {
     validate,
     validation,
     darkMode,
+    currentLayout,
+    currentMode,
+    subContainerIndex,
+    componentType,
   } = props;
 
   const {
@@ -36,10 +40,13 @@ export const ButtonGroupV2 = (props) => {
     direction,
     auto: labelAutoWidth,
     labelWidth,
-    widthType,
     backgroundColor,
+    hoverBackgroundMode = 'auto',
+    hoverBackgroundColor = 'var(--cc-primary-brand)',
     borderColor,
     textColor,
+    textSize = 14,
+    fontWeight = 'normal',
     iconColor,
     errTextColor,
     selectedBackgroundColor,
@@ -49,7 +56,10 @@ export const ButtonGroupV2 = (props) => {
     btnAlignment,
     boxShadow,
     padding,
+    labelFontSize,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
   const { label, advanced, schema, options, multiSelection, layout, loadingState, disabledState, visibility } =
     properties;
@@ -80,7 +90,7 @@ export const ButtonGroupV2 = (props) => {
     return multiSelection ? defaultValues : defaultValues.length > 0 ? [defaultValues[0]] : [];
   };
 
-  const validOptionValues = formattedOptions.map((option) => option.value);
+  const validOptionValues = useMemo(() => formattedOptions.map((option) => option.value), [formattedOptions]);
 
   // ===== STATE MANAGEMENT =====
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
@@ -90,21 +100,44 @@ export const ButtonGroupV2 = (props) => {
     selected: defaultOptionValues(formattedOptions),
   });
 
+  // ===== DYNAMIC HEIGHT =====
+  // Only Column/Wrap grow vertically (more options -> more rows).
+  // Row lays the buttons out on a single line with horizontal scroll,
+  // so its height is fixed so gate it out entirely so nothing reflows for row.
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view' && layout !== 'row';
+  const heightChangeValue = useHeightObserver(groupRef, isDynamicHeightEnabled);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: heightChangeValue,
+    currentLayout,
+    width,
+    visibility: exposedVariablesTemporaryState.isVisible,
+    subContainerIndex,
+    componentType,
+  });
+
   // ===== VALIDATION =====
   const isMandatory = validation?.mandatory ?? false;
   const [validationStatus, setValidationStatus] = useState(
     validate(exposedVariablesTemporaryState.selected?.length ? exposedVariablesTemporaryState.selected : null)
   );
+  const [hoveredButtonIndex, setHoveredButtonIndex] = useState(null);
   const { isValid, validationError } = validationStatus;
   const [userInteracted, setUserInteracted] = useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
 
   // ===== HELPER FUNCTIONS =====
-  const updateExposedVariablesState = (key, value) => {
+  const updateExposedVariablesState = useCallback((key, value) => {
     setExposedVariablesTemporaryState((prevState) => ({
       ...prevState,
       [key]: value,
     }));
-  };
+  }, []);
+
+  useFormClear(() => updateExposedVariablesState('selected', []));
 
   // ===== EFFECTS =====
   useBatchedUpdateEffectArray([
@@ -205,17 +238,18 @@ export const ButtonGroupV2 = (props) => {
   }, [advanced, JSON.stringify(options), JSON.stringify(schema), multiSelection]);
 
   const handleButtonClick = (value) => {
-    const isSelected = exposedVariablesTemporaryState.selected.includes(value);
-    if (multiSelection) {
-      updateExposedVariablesState(
-        'selected',
-        isSelected
-          ? exposedVariablesTemporaryState.selected.filter((item) => item !== value)
-          : [...exposedVariablesTemporaryState.selected, value]
-      );
-    } else {
-      updateExposedVariablesState('selected', isSelected ? [] : [value]);
-    }
+    const selected = exposedVariablesTemporaryState.selected;
+    const isSelected = selected.includes(value);
+    const next = multiSelection
+      ? isSelected
+        ? selected.filter((v) => v !== value)
+        : [...selected, value]
+      : isSelected
+        ? []
+        : [value];
+    updateExposedVariablesState('selected', next);
+    setExposedVariable('selected', next);
+    setExposedVariable('isValid', validate(next.length ? next : null)?.isValid);
     fireEvent('onClick');
     setUserInteracted(true);
   };
@@ -223,7 +257,6 @@ export const ButtonGroupV2 = (props) => {
   // ===== COMPUTED STYLES =====
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const justifyContentByAlignment = btnAlignment === 'left' ? 'start' : btnAlignment === 'right' ? 'end' : 'center';
-  const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
 
   const groupStyles = {
     width: layout === 'wrap' ? '100%' : 'max-content',
@@ -232,10 +265,11 @@ export const ButtonGroupV2 = (props) => {
   };
 
   const groupWrapperStyles = {
-    height: _height,
+    height: isDynamicHeightEnabled ? 'auto' : _height,
+    ...(isDynamicHeightEnabled && { minHeight: _height }),
     ...(layout === 'column' && { justifyContent: justifyContentByAlignment }),
-    overflow: layout === 'row' ? 'auto hidden' : 'hidden auto',
-    ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
+    overflow: layout === 'row' ? 'auto hidden' : isDynamicHeightEnabled ? 'visible' : 'hidden auto',
+    ...getWidthTypeOfComponentStyles('ofComponent', labelWidth, labelAutoWidth, alignment),
   };
 
   const commonStyles = {
@@ -246,6 +280,17 @@ export const ButtonGroupV2 = (props) => {
     transition: 'all .1s ease',
     boxShadow,
   };
+
+  const normalizedTextSize = Number(textSize);
+  const computedFontSize = Number.isFinite(normalizedTextSize) ? normalizedTextSize : 14;
+  const computedLineHeight = computedFontSize * 1.42;
+  const computedIconSize = computedLineHeight * 0.8;
+  const normalizedFontWeight = fontWeight === 'medium' ? 500 : fontWeight;
+  const computedFontWeight = normalizedFontWeight ? normalizedFontWeight : normalizedFontWeight === '0' ? 0 : 'normal';
+  const computedHoverBackgroundColor =
+    hoverBackgroundMode === 'manual'
+      ? hoverBackgroundColor || getModifiedColor(backgroundColor, 'hover')
+      : getModifiedColor(backgroundColor, 'hover');
 
   const selectedStyles = {
     backgroundColor: selectedBackgroundColor,
@@ -318,11 +363,11 @@ export const ButtonGroupV2 = (props) => {
           direction={direction}
           defaultAlignment={alignment}
           isMandatory={isMandatory}
-          _width={_width}
-          widthType={widthType}
+          _width={labelWidth}
           top={alignment !== 'top' && '9px'}
           id={`${id}-label`}
           dataCy={dataCy}
+          fontSize={labelFontSizeValue}
         />
         <div className="button-group-content-wrapper" style={groupWrapperStyles} ref={groupWrapperRef}>
           {exposedVariablesTemporaryState.isLoading ? (
@@ -338,24 +383,51 @@ export const ButtonGroupV2 = (props) => {
                   data-cy={`${dataCy}-button-${index}`}
                   style={{
                     ...commonStyles,
+                    backgroundColor:
+                      hoveredButtonIndex === index && !exposedVariablesTemporaryState.selected?.includes(option.value)
+                        ? computedHoverBackgroundColor
+                        : backgroundColor,
                     ...(exposedVariablesTemporaryState.selected?.includes(option.value) && selectedStyles),
                     ...(option.isDisabled && disabledStyles),
+                    fontSize: `${computedFontSize}px`,
+                    lineHeight: `${computedLineHeight}px`,
+                    fontWeight: computedFontWeight,
                   }}
                   key={index}
-                  disabled={option.isDisabled}
-                  className={'button-group-button'}
+                  // widget-level Disable/Loading must disable every button, not just
+                  // the per-option flag (native disabled also drops it from tab order)
+                  disabled={
+                    exposedVariablesTemporaryState.isDisabled ||
+                    exposedVariablesTemporaryState.isLoading ||
+                    option.isDisabled
+                  }
+                  className={
+                    'button-group-button focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2'
+                  }
                   onClick={(event) => {
                     event.stopPropagation();
                     handleButtonClick(option.value);
                   }}
+                  onMouseEnter={() => {
+                    setHoveredButtonIndex(index);
+                  }}
+                  onMouseLeave={() => {
+                    setHoveredButtonIndex(null);
+                  }}
                 >
                   {option.iconVisibility && (
-                    <div className="tw-flex tw-w-[16px] tw-h-[16px] tw-shrink-0">
+                    <div
+                      className="tw-flex tw-shrink-0"
+                      style={{
+                        width: `${computedIconSize}px`,
+                        height: `${computedIconSize}px`,
+                      }}
+                    >
                       <TablerIcon
                         iconName={option.icon}
                         style={{
-                          width: '16px',
-                          height: '16px',
+                          width: `${computedIconSize}px`,
+                          height: `${computedIconSize}px`,
                           color: exposedVariablesTemporaryState.selected?.includes(option.value)
                             ? selectedIconColor
                             : iconColor,

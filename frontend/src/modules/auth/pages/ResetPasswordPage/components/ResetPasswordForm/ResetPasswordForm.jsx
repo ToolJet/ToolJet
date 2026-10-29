@@ -36,8 +36,8 @@ const ResetPasswordForm = ({ token, onResetSuccess }) => {
   };
   useEffect(() => {
     if (
-      formData.password != '' &&
-      formData.password_confirmation != '' &&
+      formData.password.trim() != '' &&
+      formData.password_confirmation.trim() != '' &&
       password_comparison_check(formData) &&
       Object.keys(errors).length === 0
     ) {

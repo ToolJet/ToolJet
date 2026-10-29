@@ -1,5 +1,5 @@
 import { commonSelectors } from "Selectors/common";
-import { ssoSelector } from "Selectors/manageSSO";
+import { ssoSelector } from "Selectors/platform/manageSSO";
 import {
     InstanceSSO,
     instanceSSOConfig,
@@ -25,6 +25,7 @@ describe("Instance login", () => {
         resetInstanceDomain(false);
         cy.reload();
         openInstanceSettings();
+        cy.wait(1000);
         cy.get(ssoSelector.instanceLoginListItem).click();
 
         cy.get(commonSelectors.breadcrumbHeaderTitle("settings")).should(($el) => {

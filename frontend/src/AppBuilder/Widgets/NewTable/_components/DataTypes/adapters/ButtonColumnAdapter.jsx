@@ -54,8 +54,8 @@ export const ButtonColumn = ({
       ? 'transparent'
       : 'var(--cc-primary-brand)'
     : isOutline
-    ? 'transparent'
-    : backgroundColor;
+      ? 'transparent'
+      : backgroundColor;
 
   const computedLabelColor = isDefaultLabel
     ? isOutline
@@ -64,8 +64,6 @@ export const ButtonColumn = ({
     : labelColor;
 
   const computedIconColor = isDefaultIcon ? (isOutline ? 'var(--cc-default-icon)' : 'var(--icon-on-solid)') : iconColor;
-
-  const computedBorderColor = isDefaultBorder ? (isOutline ? 'var(--borders-strong)' : undefined) : borderColor;
 
   const computedLoaderColor = isDefaultLoader ? (isOutline ? 'var(--cc-primary-brand)' : '#FFFFFF') : loaderColor;
 
@@ -85,8 +83,8 @@ export const ButtonColumn = ({
     backgroundColor: computedBgColor,
     color: computedLabelColor,
   };
-  if (computedBorderColor) {
-    buttonStyle.borderColor = computedBorderColor;
+  if (borderColor) {
+    buttonStyle.borderColor = borderColor;
     buttonStyle.borderStyle = 'solid';
     buttonStyle.borderWidth = '1px';
   }

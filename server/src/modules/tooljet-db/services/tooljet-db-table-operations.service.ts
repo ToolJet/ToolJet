@@ -427,6 +427,12 @@ export class TooljetDbTableOperationsService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
+    const isTableInUse = await this.findQueriesLinkedToTable(internalTable.id);
+
+    if (isTableInUse) {
+      throw new BadRequestException("Table can't be deleted, it is being used in app queries");
+    }
+
     const tenantSchema = findTenantSchema(organizationId);
     const queryRunner = this.manager.connection.createQueryRunner();
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
@@ -460,6 +466,29 @@ export class TooljetDbTableOperationsService {
       await queryRunner.release();
       await tjdbQueryRunner.release();
     }
+  }
+
+  private async findQueriesLinkedToTable(tableId: string): Promise<boolean> {
+    const result = await this.manager.query(
+      `
+        SELECT EXISTS (
+          SELECT 1
+          FROM data_queries dq
+          INNER JOIN data_sources ds
+            ON dq.data_source_id = ds.id
+          INNER JOIN (
+            SELECT DISTINCT ON (app_id) id
+            FROM app_versions
+            ORDER BY app_id, created_at DESC
+          ) latest_versions ON latest_versions.id = dq.app_version_id
+          WHERE ds.kind = 'tooljetdb'
+            AND dq.options::text LIKE $1
+        ) AS exists
+      `,
+      [`%${tableId}%`]
+    );
+
+    return result[0]?.exists ?? false;
   }
 
   protected async editTable(organizationId: string, params) {
@@ -865,9 +894,74 @@ export class TooljetDbTableOperationsService {
     };
   }
 
+  async getRowsCount(organizationId: string): Promise<number> {
+    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+    const tables =
+      edition === TOOLJET_EDITIONS.Cloud
+        ? await this.manager.find(InternalTable, { where: { organizationId }, select: ['id'] })
+        : await this.manager.find(InternalTable, { select: ['id'] });
+
+    if (!tables.length) return 0;
+
+    const tenantSchema = findTenantSchema(organizationId);
+    const unionQuery = tables
+      .map((table) => `SELECT COUNT(*)::int AS count FROM "${tenantSchema}"."${table.id}"`)
+      .join(' UNION ALL ');
+    const result = await this.tooljetDbManager.query(
+      `SELECT COALESCE(SUM(count), 0)::int AS total FROM (${unionQuery}) counts`
+    );
+    return result[0]?.total ?? 0;
+  }
+
+  // Infinity when unlimited; otherwise how many more rows this org can add across all TJDB tables.
+  async getRemainingRowCapacity(organizationId: string): Promise<number> {
+    const rowLimit = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.TJDB_ROW_COUNT, organizationId);
+    if (rowLimit === LICENSE_LIMIT.UNLIMITED) return Infinity;
+    return rowLimit - (await this.getRowsCount(organizationId));
+  }
+
+  async isRowLimitReached(organizationId: string): Promise<boolean> {
+    return (await this.getRemainingRowCapacity(organizationId)) <= 0;
+  }
+
+  // For callers that already know the row count to check (e.g. a post-insert total computed
+  // inside a transaction, which this org's cached/committed count wouldn't reflect yet).
+  async isRowCountOverLimit(organizationId: string, rowCount: number): Promise<boolean> {
+    const rowLimit = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.TJDB_ROW_COUNT, organizationId);
+    if (rowLimit === LICENSE_LIMIT.UNLIMITED) return false;
+    return rowCount > rowLimit;
+  }
+
+  async getRowsLimit(organizationId: string) {
+    const licenseTerms = await this.licenseTermsService.getLicenseTerms(
+      [LICENSE_FIELD.TJDB_ROW_COUNT, LICENSE_FIELD.STATUS],
+      organizationId
+    );
+    if (licenseTerms[LICENSE_FIELD.TJDB_ROW_COUNT] === LICENSE_LIMIT.UNLIMITED) {
+      return {
+        rowsCount: generatePayloadForLimits(
+          0,
+          licenseTerms[LICENSE_FIELD.TJDB_ROW_COUNT],
+          licenseTerms[LICENSE_FIELD.STATUS],
+          LICENSE_LIMITS_LABEL.ROWS
+        ),
+      };
+    }
+    const rowCount = await this.getRowsCount(organizationId);
+    return {
+      rowsCount: generatePayloadForLimits(
+        rowCount,
+        licenseTerms[LICENSE_FIELD.TJDB_ROW_COUNT],
+        licenseTerms[LICENSE_FIELD.STATUS],
+        LICENSE_LIMITS_LABEL.ROWS
+      ),
+    };
+  }
+
   protected async joinTable(organizationId: string, params: Record<string, any>) {
-    const { joinQueryJson, dataQuery, user } = params;
-    if (!Object.keys(joinQueryJson).length) throw new BadRequestException("Input can't be empty");
+    const { joinQueryJson: rawJoinQueryJson, dataQuery, user } = params;
+    if (!Object.keys(rawJoinQueryJson).length) throw new BadRequestException("Input can't be empty");
+    const joinQueryJson = this.normalizeJoinQueryJsonToNewFormat(rawJoinQueryJson);
 
     const tjdbTenantConfigs = isSQLModeDisabled()
       ? {
@@ -950,6 +1044,60 @@ export class TooljetDbTableOperationsService {
         // });
       }
     }
+  }
+
+  private normalizeFieldToNewFormat(field: Record<string, any>): Record<string, any> {
+    if (!field) return field;
+    const result: Record<string, any> = { type: field.type };
+    if (field.table !== undefined) result.table = field.table;
+    result.columnName = field.columnName ?? field.column_name;
+    if (field.value !== undefined) result.value = field.value;
+    if (field.jsonpath !== undefined) result.jsonpath = field.jsonpath;
+    return result;
+  }
+
+  private normalizeConditionsToNewFormat(conditions: Record<string, any>): Record<string, any> {
+    if (!conditions) return conditions;
+    const rawConditionsList: Array<Record<string, any>> = conditions.conditions_list ?? [];
+    return {
+      operator: conditions.operator,
+      conditionsList: rawConditionsList.map((condition) => ({
+        operator: condition.operator,
+        leftField: this.normalizeFieldToNewFormat(condition.leftField ?? condition.left_field),
+        rightField: this.normalizeFieldToNewFormat(condition.rightField ?? condition.right_field),
+      })),
+    };
+  }
+
+  private normalizeJoinQueryJsonToNewFormat(queryJson: Record<string, any>): Record<string, any> {
+    if (!queryJson?.joins?.length) return queryJson;
+
+    const firstJoin = queryJson.joins[0];
+    const isOldFormat =
+      'join_type' in firstJoin ||
+      'conditions_list' in (firstJoin?.conditions ?? {}) ||
+      'conditions_list' in (queryJson?.conditions ?? {});
+
+    if (!isOldFormat) return queryJson;
+
+    return {
+      ...queryJson,
+      joins: queryJson.joins.map((join) => ({
+        id: join.id,
+        table: join.table,
+        joinType: join.joinType ?? join.join_type,
+        conditions: this.normalizeConditionsToNewFormat(join.conditions),
+      })),
+      ...(queryJson.conditions && {
+        conditions: this.normalizeConditionsToNewFormat(queryJson.conditions),
+      }),
+      order_by: (queryJson.order_by ?? []).map((orderByEntry) => ({
+        table: orderByEntry.table,
+        columnName: orderByEntry.columnName ?? orderByEntry.column_name,
+        direction: orderByEntry.direction,
+        ...(orderByEntry.jsonpath !== undefined && { jsonpath: orderByEntry.jsonpath }),
+      })),
+    };
   }
 
   protected buildJoinQuery(
@@ -1221,7 +1369,11 @@ export class TooljetDbTableOperationsService {
         if (isTimestampWithTimeZone())
           return {
             data_type,
-            column_default: this.addQuotesIfMissing(column_default),
+            // now() must stay an expression: quoted, Postgres would fix it to the table's creation time
+            column_default:
+              typeof column_default === 'string' && /^\s*(now\(\)|current_timestamp)\s*$/i.test(column_default)
+                ? column_default
+                : this.addQuotesIfMissing(column_default),
           };
         if (isJSONB()) {
           if (typeof column_default === 'object') {

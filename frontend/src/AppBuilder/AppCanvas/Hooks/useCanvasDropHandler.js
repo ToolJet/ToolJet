@@ -9,8 +9,54 @@ import { isPDFSupported } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { handleDeactivateTargets, hideGridLines } from '../Grid/gridUtils';
+import { appsService } from '@/_services';
+import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 
 const BUFFER_OFFSET = 15;
+
+/**
+ * Fetch every module in the workspace scoped to the active branch (header injected
+ * by authHeader). Used to refresh the modules store after hydrating a stub on drop
+ * so that module_container / input_items / defaultSize reflect real data instead
+ * of an empty stub placeholder.
+ */
+const fetchAllModulesPaged = async () => {
+  const all = [];
+  let currentPage = 1;
+  let totalPages = 1;
+  while (currentPage <= totalPages) {
+    const data = await appsService.getAll(currentPage, '', '', 'module');
+    all.push(...(data?.apps || []));
+    const pageCount = Number(data?.meta?.total_pages);
+    totalPages = Number.isFinite(pageCount) && pageCount > 0 ? pageCount : currentPage;
+    currentPage += 1;
+  }
+  return all;
+};
+
+/**
+ * Mirror ModuleManager's version-priority so both surfaces reference the same
+ * version after hydration: prefer a promoted main-branch version, fall back to
+ * any main-branch version, then to the first returned version.
+ */
+const pickDefaultVersion = (appVersions = []) => {
+  return (
+    appVersions.find((v) => v.version_type === 'version' && !v.branch_id && v.status !== 'DRAFT') ??
+    appVersions.find((v) => v.version_type === 'version' && !v.branch_id) ??
+    appVersions[0]
+  );
+};
+
+// Mirrors modules/Modules/utils.js#getIsModuleSynced (ee). Duplicated locally because CE code
+// can't import from @ee/ — keep both in sync if the sync rule changes. A module is "synced"
+// only when EVERY draft it has (main-branch AND branch-type) is in git; checking a single
+// picked version here would miss an unsynced sibling draft and unpin a module that isn't
+// actually fully synced.
+const isModuleSynced = (appVersions = []) => {
+  const draftVersions = appVersions.filter((v) => v.status === 'DRAFT');
+  if (draftVersions.length === 0) return appVersions.some((v) => (v.is_synced ?? v.isSynced) === true);
+  return draftVersions.every((v) => (v.is_synced ?? v.isSynced) === true);
+};
 
 export const useCanvasDropHandler = () => {
   const { isModuleEditor } = useModuleContext();
@@ -21,6 +67,9 @@ export const useCanvasDropHandler = () => {
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
+  const setModulesList = useStore((state) => state.setModulesList, shallow) || noop;
+  const setFlexContainerDropTarget = useStore((state) => state.setFlexContainerDropTarget, shallow);
+  const { isGitSyncEnabled } = useGitSyncConfig();
 
   const handleDrop = async ({ componentType: draggedComponentType, component }, canvasId) => {
     const realCanvasRef =
@@ -32,83 +81,133 @@ export const useCanvasDropHandler = () => {
     hideGridLines();
     setShowModuleBorder(false); // Hide the module border when dropping
 
-    if (isModuleEditor && canvasId === 'canvas') {
-      return;
-    }
-
-    if (!isModuleEditor && isParentModuleContainer) {
-      return toast.error('Modules cannot be edited inside an app');
-    }
-
-    if (draggedComponentType === 'PDF' && !isPDFSupported()) {
-      toast.error(
-        'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
-      );
-      return;
-    }
-
-    setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
-    setRightSidebarOpen(true);
-
-    // IMPORTANT: This logic needs to be changed when we implement the module versioning
-    const moduleInfo = component?.moduleId
-      ? {
-          moduleId: component.moduleId,
-          versionId: component.versionId,
-          environmentId: component.environmentId,
-          moduleName: component.displayName,
-          moduleContainer: component.moduleContainer,
-        }
-      : undefined;
-
-    let addedComponent;
-
-    if (WIDGETS_WITH_DEFAULT_CHILDREN.includes(draggedComponentType)) {
-      let parentComponent = addNewWidgetToTheEditor(
-        draggedComponentType,
-        currentLayout,
-        realCanvasRef,
-        canvasId,
-        moduleInfo
-      );
-      const childComponents = addChildrenWidgetsToParent(draggedComponentType, parentComponent?.id, currentLayout);
-      if (draggedComponentType === 'Form') {
-        parentComponent = addDefaultButtonIdToForm(parentComponent, childComponents);
+    try {
+      if (isModuleEditor && canvasId === 'canvas') {
+        return;
       }
-      addedComponent = [parentComponent, ...childComponents];
-      await addComponentToCurrentPage(addedComponent);
-    } else {
-      const newComponent = addNewWidgetToTheEditor(
-        draggedComponentType,
-        currentLayout,
-        realCanvasRef,
-        canvasId,
-        moduleInfo
-      );
-      addedComponent = [newComponent];
-      await addComponentToCurrentPage(addedComponent);
+
+      if (!isModuleEditor && isParentModuleContainer) {
+        return toast.error('Modules cannot be edited inside an app');
+      }
+
+      if (draggedComponentType === 'PDF' && !isPDFSupported()) {
+        toast.error(
+          'PDF is not supported in this version of browser. We recommend upgrading to the latest version for full support.'
+        );
+        return;
+      }
+
+      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+      setRightSidebarOpen(true);
+
+      // If the dragged module is a git-pulled stub (no real version imported yet),
+      // hydrate it server-side BEFORE building moduleInfo. Otherwise the stub's
+      // UUID version name would be persisted into properties.moduleVersionId.value
+      // and the by-correlation/by-name endpoint would fail on any workspace that
+      // later pulls the parent app. GET /apps/:id with the active branchId header
+      // triggers AppsService.getOne → hydrateStubApp server-side. After hydration
+      // we re-fetch the modules list so module_container / input_items are real.
+      let dropComponent = component;
+      if (dropComponent?.moduleId && dropComponent?.isStub && dropComponent?.appId) {
+        // Snapshot the drag ghost's bounding rect NOW, while the element is still
+        // mounted. The async hydration below lets the browser complete the drag
+        // lifecycle, which removes the ghost from the DOM. After that,
+        // getBoundingClientRect() on the detached node returns all-zeros, causing
+        // the widget to land at (0,0) instead of the drop position.
+        const ghostPos = useGridStore.getState().getGhostDragPosition();
+        if (ghostPos?.e?.target) {
+          const frozenTargetRect = ghostPos.e.target.getBoundingClientRect();
+          useGridStore.getState().actions.setGhostDragPosition({ ...ghostPos, frozenTargetRect });
+        }
+
+        const toastId = toast.loading('Loading module from git…');
+        try {
+          await appsService.getApp(dropComponent.appId);
+          const refreshed = await fetchAllModulesPaged();
+          setModulesList(refreshed);
+          const hydrated = refreshed.find((m) => m.id === dropComponent.appId);
+          if (!hydrated) {
+            toast.error('Module could not be hydrated', { id: toastId });
+            return;
+          }
+          const hydratedVersion = pickDefaultVersion(hydrated.app_versions);
+          if (!hydratedVersion || hydratedVersion.is_stub) {
+            toast.error('Module is still not ready. Please try again.', { id: toastId });
+            return;
+          }
+          const isDraft = hydratedVersion.status === 'DRAFT';
+          const shouldUnpin = isGitSyncEnabled && isDraft && isModuleSynced(hydrated.app_versions);
+          dropComponent = {
+            ...dropComponent,
+            isStub: false,
+            versionId: shouldUnpin
+              ? ''
+              : (hydratedVersion.module_reference_id ?? hydratedVersion.moduleReferenceId ?? ''),
+            versionName: shouldUnpin ? '' : (hydratedVersion.name ?? ''),
+            environmentId: hydratedVersion.current_environment_id,
+            moduleContainer: hydrated.module_container,
+            defaultSize: {
+              width: hydrated.module_container?.layouts?.[currentLayout]?.width ?? dropComponent.defaultSize?.width,
+              height: hydrated.module_container?.layouts?.[currentLayout]?.height ?? dropComponent.defaultSize?.height,
+            },
+          };
+          toast.dismiss(toastId);
+        } catch (err) {
+          console.error('[useCanvasDropHandler] hydrate module failed', err);
+          toast.error('Failed to load module from git', { id: toastId });
+          return;
+        }
+      }
+
+      // IMPORTANT: This logic needs to be changed when we implement the module versioning
+      const moduleInfo = dropComponent?.moduleId
+        ? {
+            moduleId: dropComponent.moduleId,
+            versionId: dropComponent.versionId,
+            versionName: dropComponent.versionName ?? '',
+            environmentId: dropComponent.environmentId,
+            moduleName: dropComponent.displayName,
+            moduleContainer: dropComponent.moduleContainer,
+          }
+        : undefined;
+
+      // Custom-tab drops carry which library component the LibraryComponent instance renders.
+      const libraryComponentInfo = component?.libraryComponentInfo;
+
+      let addedComponent;
+
+      if (WIDGETS_WITH_DEFAULT_CHILDREN.includes(draggedComponentType)) {
+        let parentComponent = addNewWidgetToTheEditor(
+          draggedComponentType,
+          currentLayout,
+          realCanvasRef,
+          canvasId,
+          moduleInfo,
+          libraryComponentInfo
+        );
+        const childComponents = addChildrenWidgetsToParent(draggedComponentType, parentComponent?.id, currentLayout);
+        if (draggedComponentType === 'Form') {
+          parentComponent = addDefaultButtonIdToForm(parentComponent, childComponents);
+        }
+        addedComponent = [parentComponent, ...childComponents];
+        await addComponentToCurrentPage(addedComponent);
+      } else {
+        const newComponent = addNewWidgetToTheEditor(
+          draggedComponentType,
+          currentLayout,
+          realCanvasRef,
+          canvasId,
+          moduleInfo,
+          libraryComponentInfo
+        );
+        addedComponent = [newComponent];
+        await addComponentToCurrentPage(addedComponent);
+      }
+    } finally {
+      // Reset drag bookkeeping when dropping
+      setCurrentDragCanvasId(null);
+      setFlexContainerDropTarget(null);
     }
-
-    // const canvas = document.querySelector('.canvas-container');
-    // const sidebar = document.querySelector('.editor-sidebar');
-    // const droppedElem = document.getElementById(addedComponent?.[0]?.id);
-
-    // if (!canvas || !sidebar || !droppedElem) return;
-
-    // const droppedRect = droppedElem.getBoundingClientRect();
-    // const sidebarRect = sidebar.getBoundingClientRect();
-
-    // const isOverlapping = droppedRect.right > sidebarRect.left && droppedRect.left < sidebarRect.right;
-
-    // if (isOverlapping) {
-    //   const overlap = droppedRect.right - sidebarRect.left;
-    //   canvas.scrollTo({
-    //     left: canvas.scrollLeft + overlap + BUFFER_OFFSET,
-    //     behavior: 'smooth',
-    //   });
-    // }
-    // Reset canvas ID when dropping
-    setCurrentDragCanvasId(null);
   };
 
   return { handleDrop };

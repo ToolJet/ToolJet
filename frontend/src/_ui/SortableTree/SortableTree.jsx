@@ -73,6 +73,9 @@ export function SortableTree({
   handlerClassName,
   nestedStyle,
   containerElement,
+  dragOverlayModifiers,
+  disabled = false,
+  getItemKey = (item) => item.id,
   ...restProps
 }) {
   const { isGroup: isGroupKey, parentId: parentIdKey } = propertyNames;
@@ -92,7 +95,7 @@ export function SortableTree({
 
   // Flatten tree for rendering
   const flattenedItems = useMemo(() => {
-    const flattenedTree = flattenTree(items, propertyNames);
+    const flattenedTree = flattenTree(items, propertyNames, getItemKey);
     const collapsedItems = flattenedTree.reduce(
       (acc, { children, collapsed, id }) => (collapsed && children?.length ? [...acc, id] : acc),
       []
@@ -115,7 +118,7 @@ export function SortableTree({
         )
       : null;
 
-  const sensors = useSensors(
+  const activeSensors = useSensors(
     useSensor(CustomPointerSensor, {
       activationConstraint: {
         delay: 250,
@@ -123,6 +126,8 @@ export function SortableTree({
       },
     })
   );
+  const emptySensors = useSensors();
+  const sensors = disabled ? emptySensors : activeSensors;
 
   const sortedIds = useMemo(() => flattenedItems.map(({ id }) => id), [flattenedItems]);
   const activeItem = activeId ? flattenedItems.find(({ id }) => id === activeId) : null;
@@ -246,7 +251,7 @@ export function SortableTree({
       const depth = projected.depth;
       const parentId = projected[parentIdKey];
       const parentGroup = items.find(({ id }) => id === parentId);
-      const clonedItems = JSON.parse(JSON.stringify(flattenTree(items, propertyNames)));
+      const clonedItems = JSON.parse(JSON.stringify(flattenTree(items, propertyNames, getItemKey)));
       const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
       const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
 
@@ -258,7 +263,7 @@ export function SortableTree({
       clonedItems[activeIndex] = { ...activeTreeItem, depth, [parentIdKey]: parentId };
 
       const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
-      let newItems = buildTree(sortedItems, propertyNames);
+      let newItems = buildTree(sortedItems, propertyNames, getItemKey);
 
       // If dropping into a collapsed group, expand it
       if (parentGroup?.collapsed && parentId) {
@@ -311,7 +316,7 @@ export function SortableTree({
 
             return (
               <SortableTreeItem
-                key={id}
+                key={getItemKey(data)}
                 id={id}
                 value={data}
                 groupToHighlight={groupToHighlight}
@@ -331,7 +336,18 @@ export function SortableTree({
           })}
         </Container>
         {createPortal(
-          <DragOverlay dropAnimation={dropAnimationConfig} modifiers={indicator ? [adjustTranslate] : undefined}>
+          <DragOverlay
+            dropAnimation={dropAnimationConfig}
+            // dnd-kit's default overlay z-index is 999, which paints BEHIND the
+            // fixed editor sidebar (.editor-sidebar, z-index 1041) — the dragged
+            // ghost vanished while the cursor was over the pages panel. 10000 is
+            // the repo's top-layer tier (z-index.scss $hints-z-index); nothing is
+            // draggable while a modal is open, so no conflict.
+            style={{ zIndex: 10000 }}
+            modifiers={
+              dragOverlayModifiers !== undefined ? dragOverlayModifiers : indicator ? [adjustTranslate] : undefined
+            }
+          >
             {activeId && activeItem && renderGhost ? renderGhost(activeItem, { darkMode }) : null}
           </DragOverlay>,
           document.body

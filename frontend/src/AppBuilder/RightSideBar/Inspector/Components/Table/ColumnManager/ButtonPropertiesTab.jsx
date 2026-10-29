@@ -2,7 +2,7 @@ import React from 'react';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 
 export const ButtonPropertiesTab = ({
   button,
