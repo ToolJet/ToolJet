@@ -17,7 +17,7 @@ import { LibraryLifecycleService } from '@modules/query-library/lifecycle.servic
 const VERSION_ID = '11111111-1111-4111-8111-111111111111';
 /** @group platform */
 describe('LibraryLifecycleService.deleteVersion', () => {
-  const service = new LibraryLifecycleService(null, null, null);
+  const service = new LibraryLifecycleService(null, null, null, { perform: jest.fn().mockResolvedValue(undefined) });
   const user = { id: 'user', organizationId: 'workspace' } as User;
   const query = { id: 'query', name: 'getCustomer', organizationId: user.organizationId } as LibraryQuery;
   const version = { id: VERSION_ID, libraryQueryId: query.id, versionNumber: 2, name: 'releaseB', kind: 'restapi' };

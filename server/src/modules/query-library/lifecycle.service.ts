@@ -19,7 +19,7 @@ import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { MODULES } from '@modules/app/constants/modules';
-import { AuditLog } from '@entities/audit_log.entity';
+import { AuditLoggerService } from '@modules/audit-logs/service';
 import { LIBRARY_QUERY_AUDIT_KEYS } from './constants';
 import { LIBRARY_QUERY_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
 import {
@@ -46,7 +46,8 @@ export class LibraryLifecycleService {
   constructor(
     protected readonly queryLibraryService: QueryLibraryService,
     protected readonly licenseTermsService: LicenseTermsService,
-    protected readonly drafts: LibraryDraftService
+    protected readonly drafts: LibraryDraftService,
+    protected readonly auditLogger: AuditLoggerService
   ) {}
 
   // Drafts live in library_query_drafts; state only tracks the released saved version.
@@ -426,32 +427,32 @@ export class LibraryLifecycleService {
     const request = RequestContext.currentContext?.req;
     // Persist before releasing the parent lock. Do not set deferred interceptor locals,
     // which would emit a duplicate audit entry after this transaction has committed.
-    await manager.save(AuditLog, {
-      userId: user.id,
-      organizationId: user.organizationId,
-      resourceId: query.id,
-      resourceName: query.name,
-      actionType,
-      resourceType: MODULES.QUERY_LIBRARY,
-      ipAddress: request ? request['clientIp'] || requestIp.getClientIp(request) : null,
-      resourceData: { versionNumber: version?.versionNumber, kind: version?.kind },
-      metadata: {
-        ...(RequestContext.getTransactionId()
-          ? {
-              transactionId: RequestContext.getTransactionId(),
-              route: RequestContext.getRoute(),
-              totalDuration: RequestContext.getStartTime() ? Date.now() - RequestContext.getStartTime() : 'unknown',
-            }
-          : {}),
-        instance_level: false,
-        workspace_level: true,
+    await this.auditLogger.perform(
+      {
+        userId: user.id,
+        organizationId: user.organizationId,
+        resourceId: query.id,
+        resourceName: query.name,
+        actionType,
+        resourceType: MODULES.QUERY_LIBRARY,
         userAgent: request?.headers['user-agent'],
-        tooljetVersion: globalThis.TOOLJET_VERSION,
-        ...(request?.user?.['oauthGrantId']
-          ? { oauthGrantId: request.user['oauthGrantId'], oauthClientId: request.user['oauthClientId'] }
-          : {}),
-        data: { name, version: version?.name },
+        ipAddress: request ? request['clientIp'] || requestIp.getClientIp(request) : null,
+        resourceData: { versionNumber: version?.versionNumber, kind: version?.kind },
+        metadata: {
+          ...(RequestContext.getTransactionId()
+            ? {
+                transactionId: RequestContext.getTransactionId(),
+                route: RequestContext.getRoute(),
+                totalDuration: RequestContext.getStartTime() ? Date.now() - RequestContext.getStartTime() : 'unknown',
+              }
+            : {}),
+          ...(request?.user?.['oauthGrantId']
+            ? { oauthGrantId: request.user['oauthGrantId'], oauthClientId: request.user['oauthClientId'] }
+            : {}),
+          data: { name, version: version?.name },
+        },
       },
-    });
+      manager
+    );
   }
 }

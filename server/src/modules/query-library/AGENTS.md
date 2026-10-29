@@ -34,8 +34,9 @@ Storage tests: `test/modules/query-library/unit/library-query-schema.spec.ts` an
 - `PATCH /queries/:id` changes identity/folder only; content/source writes require
   a draft UUID. The old single-draft save/discard routes have been removed.
 - Each lifecycle mutation holds the parent query lock through name checks,
-  snapshot/state writes, and direct audit persistence. Audit failure rolls back
-  the mutation; no deferred audit locals are set, avoiding duplicate entries.
+  snapshot/state writes, and edition-specific audit persistence. Audit failure rolls back
+  the mutation; the audit service keeps its licensed file sink. No deferred audit
+  locals are set, avoiding duplicate entries.
 - The last live draft/saved version, a Released saved version, and any consumer
   pin cannot be deleted. Allocation numbers still include deleted saved rows.
 - Standalone runs accept exactly one `draftId` or saved `libraryVersionId`;

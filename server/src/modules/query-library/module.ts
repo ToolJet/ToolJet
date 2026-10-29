@@ -22,10 +22,12 @@ export class QueryLibraryModule extends SubModule {
       'controller',
       'service',
     ]);
+    const { AuditLogsModule } = await this.getProviders(configs, 'audit-logs', ['module']);
     const { DataQueriesUtilService } = await this.getProviders(configs, 'data-queries', ['util.service']);
     return {
       module: QueryLibraryModule,
       imports: [
+        await AuditLogsModule.register(configs),
         await DataSourcesModule.register(configs),
         await AppEnvironmentsModule.register(configs),
         await AppPermissionsModule.register(configs),
