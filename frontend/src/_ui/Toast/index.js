@@ -4,6 +4,8 @@ import './toast.scss';
 import ErrorPanel from './ErrorPanel';
 import { ChevronRight } from 'lucide-react';
 
+const MAX_EXPANDED_ERRORS = 20;
+
 // Keep custom/interactive content on its original path: hiding it could hide actions.
 const textContent = (content) => {
   if (typeof content === 'string' || typeof content === 'number') return String(content);
@@ -39,9 +41,8 @@ const StandardToast = ({ notification }) => (
   </ToastBar>
 );
 
-const GroupedToasts = ({ toastOptions, onOpenDebugger, errorPresentation = 'stack' }) => {
+const GroupedToasts = ({ toastOptions }) => {
   const { toasts } = useToasterStore(toastOptions);
-  const [expanded, setExpanded] = useState(() => new Set());
   const [panelErrors, setPanelErrors] = useState(null);
   const hidden = useRef(new Set());
   const groups = useMemo(() => {
@@ -61,15 +62,12 @@ const GroupedToasts = ({ toastOptions, onOpenDebugger, errorPresentation = 'stac
     for (const id of hidden.current) {
       if (!currentIds.has(id)) hidden.current.delete(id);
     }
-    groups.forEach((errors, position) => {
+    groups.forEach((errors) => {
       hidden.current.delete(errors[0].id);
-      if (errors.length < 2 || expanded.has(position)) return;
+      if (errors.length < 2) return;
       errors.slice(1).forEach((t) => hidden.current.add(t.id));
     });
-    if ([...expanded].some((position) => !groups.has(position))) {
-      setExpanded((current) => new Set([...current].filter((position) => groups.has(position))));
-    }
-  }, [toasts, groups, expanded]);
+  }, [toasts, groups]);
 
   useEffect(() => {
     if (!panelErrors) return;
@@ -80,20 +78,28 @@ const GroupedToasts = ({ toastOptions, onOpenDebugger, errorPresentation = 'stac
       return;
     }
     const active = groups.get(anchor.position || 'top-center') || [];
-    const incoming = active.filter((t) => t.id !== anchor.id).sort((a, b) => a.createdAt - b.createdAt);
+    // Store order is newest first; reverse before sorting to preserve arrival order on timestamp ties.
+    const incoming = [...active]
+      .reverse()
+      .filter((t) => t.id !== anchor.id)
+      .sort((a, b) => a.createdAt - b.createdAt);
     if (!incoming.length) return;
     const messages = new Map(panelErrors.errors.map((error) => [error.id, error]));
     incoming.forEach((t) => messages.set(t.id, { ...t, message: textContent(t.message) }));
     // Preserve the anchor, list DOM, scroll position and expansion animation state.
-    setPanelErrors({ ...panelErrors, errors: [...messages.values()] });
+    setPanelErrors({ ...panelErrors, errors: [...messages.values()].slice(-MAX_EXPANDED_ERRORS) });
+    // Absorbed errors are already hidden; free their store slots immediately.
     incoming.forEach((t) => {
       hidden.current.add(t.id);
-      toast.dismiss(t.id);
+      toast.remove(t.id);
     });
-    // Extend the existing deadline, preserving its creation time, hover pause and DOM identity.
+    // Keep the later deadline, expressed relative to the anchor and its accumulated hover pauses.
     toast.error(anchor.message, {
       ...anchor,
-      duration: anchor.duration + incoming.reduce((total, t) => total + t.duration, 0),
+      duration: Math.max(
+        anchor.duration,
+        ...incoming.map((t) => t.createdAt + t.pauseDuration + t.duration - anchor.createdAt - anchor.pauseDuration)
+      ),
     });
   }, [toasts, groups, panelErrors]);
 
@@ -125,11 +131,7 @@ const GroupedToasts = ({ toastOptions, onOpenDebugger, errorPresentation = 'stac
             textContent(t.message) !== null
           )
             return null;
-          const grouped =
-            !expanded.has(position) &&
-            t.type === 'error' &&
-            errors.length > 1 &&
-            errors.some((error) => error.id === t.id);
+          const grouped = t.type === 'error' && errors.length > 1 && errors.some((error) => error.id === t.id);
           // Already-hidden members must not reappear during their exit/remove delay.
           if (t.type === 'error' && !t.visible && hidden.current.has(t.id)) return null;
           if (!grouped) return <StandardToast notification={t} />;
@@ -151,33 +153,25 @@ const GroupedToasts = ({ toastOptions, onOpenDebugger, errorPresentation = 'stac
                     <button
                       className="editor-error-toast__action"
                       onClick={(event) => {
-                        if (onOpenDebugger) {
-                          onOpenDebugger();
-                          dismissErrors();
-                          return;
-                        }
-                        if (errorPresentation === 'panel') {
-                          const card = event.currentTarget.closest('.editor-error-toast').parentElement;
-                          const { width, height } = card.getBoundingClientRect();
-                          setPanelErrors({
-                            initialSize: { width, height },
-                            id: t.id,
-                            errors: errors.map((error) => ({ ...error, message: textContent(error.message) })),
+                        const card = event.currentTarget.closest('.editor-error-toast').parentElement;
+                        const { width, height } = card.getBoundingClientRect();
+                        setPanelErrors({
+                          initialSize: { width, height },
+                          id: t.id,
+                          errors: [...errors]
+                            .reverse()
+                            .map((error) => ({ ...error, message: textContent(error.message) })),
+                        });
+                        // Keep the latest toast and its existing timer; absorb the older errors.
+                        errors
+                          .filter((error) => error.id !== t.id)
+                          .forEach((error) => {
+                            hidden.current.add(error.id);
+                            toast.remove(error.id);
                           });
-                          // Keep the latest toast and its existing timer; absorb the older errors.
-                          errors
-                            .filter((error) => error.id !== t.id)
-                            .forEach((error) => {
-                              hidden.current.add(error.id);
-                              toast.dismiss(error.id);
-                            });
-                          return;
-                        }
-                        errors.forEach((error) => hidden.current.delete(error.id));
-                        setExpanded((current) => new Set([...current, position]));
                       }}
                     >
-                      {onOpenDebugger ? 'View debugger' : 'View all'}
+                      View all
                       <ChevronRight size={14} aria-hidden="true" />
                     </button>
                   </div>

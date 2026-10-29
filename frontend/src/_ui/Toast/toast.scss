@@ -108,6 +108,15 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     max-height: min(320px, 50dvh);
+    // Match flex container canvases: reserve the gutter and reveal the thin scrollbar on hover.
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+
+    &:hover,
+    &:focus-visible {
+      scrollbar-color: color-mix(in srgb, var(--text-placeholder) 30%, transparent) transparent;
+    }
 
     li {
       display: flex;

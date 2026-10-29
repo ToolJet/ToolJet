@@ -106,15 +106,14 @@ No change may break existing saved applications. Always ask: would an app saved 
 
 - App editor and ViewerApp (private, public, published and embedded) enable grouping in
   `_ui/Toast`. Multiple visible text errors at the same position show the latest message and count.
-- Editor and viewer groups currently prototype View all: a scrollable list inside the latest toast.
+- Editor and viewer groups use View all: a scrollable list inside the latest toast.
   Older messages are absorbed into it; expansion alone retains the original expiry deadline.
-  New errors at the same position append without remounting or replaying entry animation and add
-  their durations to the remaining lifetime. Other notification types never extend the error toast.
-  `errorPresentation="stack"` restores View all; `"panel"` enables the prototype in App/ViewerApp.
+  New errors at the same position appear first without remounting or replaying entry animation.
+  The expiry is the later of the current deadline and the incoming error deadline, preserving hover pauses. Other notification types never extend the error toast.
   Outside the panel, each toast keeps its original lifetime and close action.
 - Single errors, interactive/custom-component/function-rendered messages, and other toast types
   retain the original renderer. No extra debugger logs are created. Dashboard notifications
-  do not enable grouping. Keep debugger integration in App, outside the shared toast/viewer bundle.
+  do not enable grouping.
 
 ### Bundles and performance
 

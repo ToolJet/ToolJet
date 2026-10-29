@@ -33,26 +33,9 @@ describe('editor error notifications', () => {
     expect(screen.getAllByRole('button', { name: 'View all' })).toHaveLength(1);
   });
 
-  // Break this catches: the editor expands errors instead of opening its debugger once.
-  it('opens the editor debugger and dismisses the group without affecting success', () => {
-    const onOpenDebugger = jest.fn();
-    render(<Toast groupErrors onOpenDebugger={onOpenDebugger} />);
-    act(() => {
-      toast.error('First failure');
-      toast.error('Second failure');
-      toast.success('Saved');
-    });
-    expect(screen.queryByRole('button', { name: 'View all' })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'View debugger' }));
-    expect(onOpenDebugger).toHaveBeenCalledTimes(1);
-    expect(screen.queryByText('First failure')).not.toBeInTheDocument();
-    expect(screen.queryByText('Second failure')).not.toBeInTheDocument();
-    expect(screen.getByText('Saved')).toBeVisible();
-  });
-
   // Break this catches: expanding creates a separate overlay or resets the latest toast's timer.
   it('expands inside the latest toast and expires on its original deadline', () => {
-    render(<Toast groupErrors errorPresentation="panel" />);
+    render(<Toast groupErrors />);
     act(() => toast.error('First failure', { duration: 10000 }));
     act(() => jest.advanceTimersByTime(100));
     act(() => toast.error('Latest failure', { duration: 2000 }));
@@ -71,16 +54,18 @@ describe('editor error notifications', () => {
   });
 
   // Break this catches: incoming errors remount the expanded toast or reorder existing messages.
-  it('silently appends incoming errors to the same expanded toast and updates its count', () => {
-    render(<Toast groupErrors errorPresentation="panel" />);
+  it('silently prepends incoming errors to the same expanded toast and updates its count', () => {
+    render(<Toast groupErrors />);
     act(() => toast.error('First', { duration: 5000 }));
     act(() => jest.advanceTimersByTime(10));
     act(() => toast.error('Second', { duration: 5000 }));
     fireEvent.click(screen.getByRole('button', { name: 'View all' }));
     const list = screen.getByRole('list', { name: 'Error messages' });
-    const before = within(list)
-      .getAllByRole('listitem')
-      .map((item) => item.textContent);
+    expect(
+      within(list)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent)
+    ).toEqual(['Second', 'First']);
     act(() => toast.error('Third'));
     act(() => toast.error('Fourth'));
     expect(screen.getByRole('list', { name: 'Error messages' })).toBe(list);
@@ -88,7 +73,7 @@ describe('editor error notifications', () => {
       within(list)
         .getAllByRole('listitem')
         .map((item) => item.textContent)
-    ).toEqual([...before, 'Third', 'Fourth']);
+    ).toEqual(['Fourth', 'Third', 'Second', 'First']);
     expect(screen.getByText('Errors (4)')).toBeVisible();
     expect(screen.getAllByRole('button', { name: 'Dismiss errors' })).toHaveLength(1);
     expect(screen.queryByText('Latest error')).not.toBeInTheDocument();
@@ -98,9 +83,29 @@ describe('editor error notifications', () => {
     expect(screen.queryByText('Third')).not.toBeInTheDocument();
   });
 
-  // Break this catches: append resets instead of adds time, or unrelated notifications extend errors.
-  it('adds only incoming error durations to the expanded toast deadline', () => {
-    render(<Toast groupErrors errorPresentation="panel" />);
+  it('scrolls new errors to the top without scrolling for unrelated notifications', () => {
+    render(<Toast groupErrors />);
+    act(() => {
+      toast.error('First');
+      toast.error('Second');
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+    const list = screen.getByRole('list', { name: 'Error messages' });
+    list.scrollTo = jest.fn();
+    Object.defineProperty(list, 'scrollHeight', { value: 600 });
+    act(() => toast.error('Third'));
+    expect(list.scrollTo).toHaveBeenLastCalledWith({ top: 0, behavior: 'smooth' });
+    list.scrollTo.mockClear();
+    act(() => toast.success('Saved'));
+    expect(list.scrollTo).not.toHaveBeenCalled();
+    window.matchMedia.mockReturnValue({ matches: true });
+    act(() => toast.error('Fourth'));
+    expect(list.scrollTo).toHaveBeenLastCalledWith({ top: 0, behavior: 'instant' });
+  });
+
+  // Break this catches: durations accumulate, shorter errors shorten the deadline, or other types extend it.
+  it('uses the later error deadline without accumulating durations', () => {
+    render(<Toast groupErrors />);
     act(() => {
       toast.error('First', { duration: 2000 });
       toast.error('Latest', { duration: 2000 });
@@ -115,10 +120,8 @@ describe('editor error notifications', () => {
       toast('Information', { duration: 20000 });
       toast.loading('Loading', { duration: 20000 });
     });
-    // Original 2000 + 3000 + 1000 = 6000 ms, regardless of arrival time.
-    act(() => jest.advanceTimersByTime(1001));
-    act(() => jest.advanceTimersByTime(1001));
-    act(() => jest.advanceTimersByTime(2997));
+    // Later deadline is 500 + 3000 = 3500 ms; the shorter arrival must not shorten it.
+    act(() => jest.advanceTimersByTime(2499));
     expect(screen.getByRole('list', { name: 'Error messages' })).toBeVisible();
     act(() => jest.advanceTimersByTime(2));
     act(() => jest.advanceTimersByTime(1001));
@@ -128,9 +131,28 @@ describe('editor error notifications', () => {
     expect(screen.getByText('Loading')).toBeVisible();
   });
 
+  it('accounts for accumulated hover pauses when comparing deadlines', () => {
+    render(<Toast groupErrors />);
+    act(() => {
+      toast.error('First', { duration: 2000 });
+      toast.error('Second', { duration: 2000 });
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+    const toaster = screen.getByRole('list', { name: 'Error messages' }).closest('[data-rht-toaster]');
+    fireEvent.mouseEnter(toaster);
+    act(() => jest.advanceTimersByTime(5000));
+    fireEvent.mouseLeave(toaster);
+    act(() => toast.error('New', { duration: 3000 }));
+    act(() => jest.advanceTimersByTime(2999));
+    expect(screen.getByRole('list', { name: 'Error messages' })).toBeVisible();
+    act(() => jest.advanceTimersByTime(2));
+    act(() => jest.advanceTimersByTime(1001));
+    expect(screen.queryByRole('list', { name: 'Error messages' })).not.toBeInTheDocument();
+  });
+
   // Break this catches: expansion replaces each notification's original icon.
   it('preserves notification icons in the expanded list', () => {
-    render(<Toast groupErrors errorPresentation="panel" />);
+    render(<Toast groupErrors />);
     act(() => {
       toast.error('First', { icon: '🔴' });
       toast.error('Latest', { icon: '❌' });
@@ -152,8 +174,8 @@ describe('editor error notifications', () => {
     expect(screen.getByText('First failure')).toBeVisible();
     expect(screen.getByText('Second failure')).toBeVisible();
     expect(screen.queryByText('Latest error')).not.toBeInTheDocument();
-    fireEvent.click(within(screen.getByText('First failure').parentElement).getByRole('button'));
-    expect(screen.getByText('Second failure')).toBeVisible();
+    expect(screen.getByRole('list', { name: 'Error messages' })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Dismiss errors' }));
     act(() => jest.advanceTimersByTime(2001));
     act(() => {
       toast.error('Next first');
@@ -296,5 +318,50 @@ describe('editor error notifications', () => {
     act(() => jest.advanceTimersByTime(1001));
     expect(screen.queryByText('Viewer one')).not.toBeInTheDocument();
     expect(screen.getByText('Viewer two')).toBeVisible();
+  });
+  // Break this catches: absorbed errors occupy store slots during their removal delay.
+  it('keeps the expanded list during rapidly delivered errors between renders', () => {
+    render(<Toast groupErrors />);
+    act(() => {
+      toast.error('First');
+      toast.error('Second');
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+    const list = screen.getByRole('list', { name: 'Error messages' });
+    for (let i = 0; i < 25; i++) {
+      act(() => toast.error(`Burst ${i}`));
+    }
+    expect(screen.getByRole('list', { name: 'Error messages' })).toBe(list);
+    expect(screen.getByText('Errors (20)')).toBeVisible();
+    expect(
+      within(list)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent)
+    ).toEqual(Array.from({ length: 20 }, (_, i) => `Burst ${24 - i}`));
+  });
+  // Break this catches: equal timestamps reverse errors emitted in the same tick.
+  it('orders initial and incoming same-tick errors newest to oldest', () => {
+    render(<Toast groupErrors />);
+    act(() => {
+      toast.error('One');
+      toast.error('Two');
+      toast.error('Three');
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+    const list = screen.getByRole('list', { name: 'Error messages' });
+    expect(
+      within(list)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent)
+    ).toEqual(['Three', 'Two', 'One']);
+    act(() => {
+      toast.error('Four');
+      toast.error('Five');
+    });
+    expect(
+      within(list)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent)
+    ).toEqual(['Five', 'Four', 'Three', 'Two', 'One']);
   });
 });

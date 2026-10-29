@@ -238,8 +238,7 @@ const ViewerApp = () => {
         )}
       </div>
 
-      {/* Prototype: switch errorPresentation to "stack" to restore View all. */}
-      <Toast toastOptions={toastOptions} groupErrors errorPresentation="panel" />
+      <Toast toastOptions={toastOptions} groupErrors />
     </>
   );
 };
