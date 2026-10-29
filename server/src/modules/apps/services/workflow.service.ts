@@ -8,7 +8,7 @@ export class WorkflowService implements IWorkflowService {
 
   // CE has no workflow/workflow-folder granular permission model - listing stays org-wide.
   // EE overrides this to scope the list to the user's editable/executable workflows.
-  async getWorkflows(organizationId: string, _user: User) {
-    return await this.appsRepository.findAllOrganizationWorkflows(organizationId);
+  async getWorkflows(organizationId: string, user: User) {
+    return await this.appsRepository.findAllOrganizationWorkflows(organizationId, undefined, user?.branchId);
   }
 }

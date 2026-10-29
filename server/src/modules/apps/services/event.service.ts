@@ -427,7 +427,7 @@ export class EventsService implements IEventsService {
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const event = await manager.findOne(EventHandler, {
-        where: { id: eventId },
+        where: { id: eventId, appVersionId },
       });
 
       if (!event) {

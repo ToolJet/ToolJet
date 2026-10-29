@@ -22,6 +22,7 @@ function setup() {
     { getAuthUrl } as unknown as DataSourcesUtilService,
     {} as unknown as never,
     { get: getEnvironment } as unknown as AppEnvironmentUtilService,
+    {} as unknown as never,
     {} as unknown as never
   );
   const user = { id: 'user-1', organizationId: SESSION_ORG } as unknown as User;

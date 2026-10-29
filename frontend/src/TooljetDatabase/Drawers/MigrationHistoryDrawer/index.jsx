@@ -1,0 +1,374 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import cx from 'classnames';
+import { capitalize } from 'lodash';
+import { toast } from 'react-hot-toast';
+import Drawer from '@/_ui/Drawer';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { ToolTip } from '@/_components/ToolTip';
+import { tooljetDatabaseService } from '@/_services';
+import { ArrowLeft, Download, CodeXml, Plus } from 'lucide-react';
+import generateFile from '@/_lib/generate-file';
+import SqlEditor from '../../_components/SqlEditor';
+import useMigrationModal from '../../MigrationConfirmModal/useMigrationModal';
+import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { isMultiEnvLicenseInvalid, getMultiEnvLicenseLockMessage } from '@/_helpers/multiEnvLicense';
+import {
+  envHasRelation,
+  findHeadMigrationId,
+  formatMigrationNumber,
+  isEnvironmentLocked,
+  TABLE_ABSENT_TOOLTIP,
+} from '../../constants';
+import './styles.scss';
+
+const TAB_LABELS = ['Development', 'Staging', 'Production'];
+
+const ReadOnlySqlView = ({ sql }) => <SqlEditor value={sql} dataCy="migration-history-sql-view" />;
+
+function formatTimestamp(date) {
+  const d = new Date(date);
+  const datePart = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const timePart = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  return `${datePart} · ${timePart}`;
+}
+
+// Always compares the active env against its own immediate downstream neighbor (never a
+// fixed chain-head or a hardcoded env name) - a previous version diffed every tab against
+// chainLength (== development's own count), which read as permanently 0 on the Development
+// tab and mislabeled the Staging tab's real "behind development" gap as "ahead of production".
+function statusLine(activeEnv, nextEnv, missingInNextCount) {
+  if (!nextEnv) {
+    return 'Production is not up to date with latest changes. Apply migration from development to staging, and then to production to see them reflected here.';
+  }
+  return `${capitalize(activeEnv.name)} is ${missingInNextCount} migration${missingInNextCount === 1 ? '' : 's'} ahead of ${
+    nextEnv.name
+  }`;
+}
+
+const MigrationHistoryDrawer = ({
+  isOpen,
+  onClose,
+  migrations,
+  environments,
+  allEnvironments,
+  relationsByEnvironment = [],
+  organizationId,
+  selectedTable,
+  refetchMigrations,
+  refetchTables,
+}) => {
+  const [activeTab, setActiveTab] = useState(0);
+  const [expandedMigrationId, setExpandedMigrationId] = useState(null);
+  const [promoteTarget, setPromoteTarget] = useState(null);
+  const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
+  const { switchEnvironment } = useTjdbActions();
+  const { runMigration, modal: newMigrationModal } = useMigrationModal();
+  const featureAccess = useLicenseStore((state) => state.featureAccess);
+  // Environment actions need a fresh license verdict: a plan that expired or was downgraded
+  // mid-session would otherwise leave promote enabled against a stale multiEnvironment flag.
+  // Only the license is re-read here - never the environments list, whose reload would reset
+  // the selection back to development (see tjdbStore.loadEnvironments).
+  const multiEnvLocked = isMultiEnvLicenseInvalid(featureAccess);
+
+  // Open on whichever environment the switcher is currently viewing, not always Development.
+  useEffect(() => {
+    if (!isOpen) return;
+    useLicenseStore.getState().actions.fetchFeatureAccess();
+    const index = allEnvironments.findIndex((env) => env.id === selectedEnvironment?.id);
+    setActiveTab(index >= 0 ? index : 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  const chainLength = migrations.length;
+  const latestMigrationId = migrations[chainLength - 1]?.id ?? null;
+  const reversedMigrations = useMemo(() => [...migrations].reverse(), [migrations]);
+
+  const envStateByPriorityIndex = allEnvironments.map((env) => environments.find((e) => e.environment_id === env.id));
+
+  const activeEnvState = envStateByPriorityIndex[activeTab];
+  const appliedIds = activeEnvState?.applied_migration_ids ?? [];
+  const appliedCount = appliedIds.length;
+  const headMigrationId = findHeadMigrationId(migrations, appliedIds);
+
+  const nextEnv = allEnvironments[activeTab + 1];
+  const nextEnvState = nextEnv ? envStateByPriorityIndex[activeTab + 1] : null;
+  // Sets, not counts: the next environment can hold as many migrations as this one and still lack some of them.
+  const nextAppliedIds = new Set(nextEnvState?.applied_migration_ids ?? []);
+  const missingInNextCount = appliedIds.filter((id) => !nextAppliedIds.has(id)).length;
+  const nextEnvBehind = nextEnv && missingInNextCount > 0;
+  // Promote replays migrations through the sibling relation in the target environment;
+  // without a multi-environment license the backend rejects it (403), so pre-gate here
+  // instead of surfacing an error toast after the click.
+  const canPromote = nextEnv && nextEnvBehind && !isEnvironmentLocked(nextEnv, multiEnvLocked);
+
+  const handleClose = () => {
+    setExpandedMigrationId(null);
+    setPromoteTarget(null);
+    onClose();
+  };
+
+  if (promoteTarget) {
+    return (
+      <Drawer isOpen={isOpen} onClose={handleClose} position="right" className="tj-db-drawer">
+        <PromotePreviewView
+          promoteTarget={promoteTarget}
+          organizationId={organizationId}
+          tableId={selectedTable?.id}
+          tableName={selectedTable?.table_name}
+          onBack={() => setPromoteTarget(null)}
+          onClose={handleClose}
+          refetchMigrations={refetchMigrations}
+          refetchTables={refetchTables}
+        />
+      </Drawer>
+    );
+  }
+
+  return (
+    <Drawer isOpen={isOpen} onClose={handleClose} position="right" className="tj-db-drawer">
+      <div className="migration-history-drawer">
+        <div className="migration-history-drawer__header">
+          <span>Migration history</span>
+          <button className="migration-history-drawer__close" onClick={handleClose}>
+            &times;
+          </button>
+        </div>
+
+        <div className="migration-history-drawer__tabs">
+          {TAB_LABELS.map((label, index) => {
+            // locked folds the list's `enabled` flag with the live license verdict, so a stale list
+            // after expiry/downgrade still renders the plan tooltip instead of a misleading "table
+            // does not exist". Development is never locked.
+            const environment = allEnvironments[index];
+            const locked = !environment || isEnvironmentLocked(environment, multiEnvLocked);
+            const available = !locked && envHasRelation(relationsByEnvironment, environment.id);
+            const tab = (
+              <button
+                key={label}
+                className={cx('migration-history-drawer__tab', { active: index === activeTab, disabled: !available })}
+                disabled={!available}
+                onClick={() => available && setActiveTab(index)}
+              >
+                {label}
+                {locked && <SolidIcon className="migration-history-drawer__tab-upgrade-icon" name="enterprisesmall" />}
+              </button>
+            );
+            if (available) return tab;
+            const tooltipMessage = locked ? getMultiEnvLicenseLockMessage(featureAccess) : TABLE_ABSENT_TOOLTIP;
+            return (
+              <ToolTip key={label} message={tooltipMessage} placement="top">
+                <div>{tab}</div>
+              </ToolTip>
+            );
+          })}
+        </div>
+
+        <div className="migration-history-drawer__status">
+          <span className="migration-history-drawer__status-label">STATUS</span>
+          <p>{statusLine(allEnvironments[activeTab], nextEnv, missingInNextCount)}</p>
+        </div>
+
+        <div className="migration-history-drawer__list">
+          {reversedMigrations.map((migration) => {
+            const isApplied = appliedIds.includes(migration.id);
+            const isExpanded = expandedMigrationId === migration.id;
+            return (
+              <div key={migration.id} className={cx('migration-history-drawer__row', { disabled: !isApplied })}>
+                <div className={cx('migration-history-drawer__row-marker', { pending: !isApplied })} />
+                <div className="migration-history-drawer__row-content">
+                  <div className="migration-history-drawer__row-title">
+                    <span>{formatMigrationNumber(migration.migration_number)}</span>
+                    {migration.id === latestMigrationId && (
+                      <span className="migration-history-drawer__badge latest">Latest</span>
+                    )}
+                    {migration.id === headMigrationId && activeTab !== 0 && appliedCount < chainLength && (
+                      <span className="migration-history-drawer__badge here">{TAB_LABELS[activeTab]} is here</span>
+                    )}
+                  </div>
+                  {migration.name && <div className="migration-history-drawer__row-name">{migration.name}</div>}
+                  {migration.description && (
+                    <div className="migration-history-drawer__row-description">{migration.description}</div>
+                  )}
+                  <div className="migration-history-drawer__row-timestamp">
+                    {formatTimestamp(migration.createdAt ?? migration.created_at)}
+                  </div>
+                  {isExpanded && <ReadOnlySqlView sql={migration.sql} />}
+                </div>
+                <button
+                  className={cx('migration-history-drawer__code-button', { active: isExpanded })}
+                  onClick={() => setExpandedMigrationId(isExpanded ? null : migration.id)}
+                >
+                  <CodeXml size={16} className="migration-history-drawer__code-icon" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="migration-history-drawer__footer">
+          <div>
+            {/* Raw SQL authoring always targets the table's own development relation
+                (recordRawSqlMigration resolves it with no environment_id) - only offer it there. */}
+            {activeTab === 0 && (
+              <ButtonSolid
+                variant="tertiary"
+                onClick={() =>
+                  runMigration({
+                    run: () => Promise.resolve({}),
+                    tableId: selectedTable?.id,
+                    showSqlEditor: true,
+                    changes: [],
+                    modalTitle: 'New migration',
+                    titlePlaceholder: 'Explain your changes briefly..',
+                    // The migration ran against development - refetchMigrations only updates this
+                    // drawer's list. switchEnvironment re-triggers Table/index.jsx's registered
+                    // handler, which reloads both the grid rows and column metadata for that env
+                    // (same mechanism PromotePreviewView.runPromote uses below).
+                    onSuccess: () => {
+                      refetchMigrations();
+                      switchEnvironment(allEnvironments[activeTab]);
+                    },
+                  })
+                }
+                data-cy="new-migration-button"
+              >
+                <Plus size={16} /> New migration
+              </ButtonSolid>
+            )}
+          </div>
+          {canPromote && (
+            <ButtonSolid
+              onClick={() =>
+                setPromoteTarget({
+                  sourceEnvironment: allEnvironments[activeTab],
+                  environment: nextEnv,
+                  sourceHeadId: headMigrationId,
+                })
+              }
+            >
+              Run in {nextEnv.name}
+            </ButtonSolid>
+          )}
+        </div>
+        {newMigrationModal}
+      </div>
+    </Drawer>
+  );
+};
+
+const PromotePreviewView = ({
+  promoteTarget,
+  organizationId,
+  tableId,
+  tableName,
+  onBack,
+  onClose,
+  refetchMigrations,
+  refetchTables,
+}) => {
+  const { sourceEnvironment, environment } = promoteTarget;
+  const [pendingMigrations, setPendingMigrations] = useState(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [isBackingUp, setIsBackingUp] = useState(false);
+  const { switchEnvironment } = useTjdbActions();
+
+  useEffect(() => {
+    tooljetDatabaseService
+      .previewPromoteTable(organizationId, tableId, sourceEnvironment.id)
+      .then(({ data, error }) => {
+        if (error) {
+          toast.error(error?.message || 'Could not load the migration preview', { position: 'top-center' });
+          return;
+        }
+        setPendingMigrations(data?.result?.missing_migrations ?? []);
+      });
+  }, [organizationId, tableId, sourceEnvironment.id]);
+
+  const runPromote = () => {
+    setIsRunning(true);
+    tooljetDatabaseService.promoteTable(organizationId, tableId, sourceEnvironment.id).then(({ error }) => {
+      setIsRunning(false);
+      if (error) {
+        toast.error(error?.message || `Could not run migrations in ${environment.name}`, { position: 'top-center' });
+        refetchMigrations();
+        refetchTables?.();
+        return;
+      }
+      toast.success(`Migrations applied to ${environment.name}`, { position: 'top-center' });
+      refetchMigrations();
+      refetchTables?.();
+      switchEnvironment(environment);
+      onBack();
+    });
+  };
+
+  // The backup is the target environment's rows as CSV - the data the pending migrations are about to change.
+  const downloadBackup = () => {
+    setIsBackingUp(true);
+    tooljetDatabaseService
+      .exportTableCsv(tableId, environment.id)
+      .then((blob) => generateFile(`${tableName}-${environment.name}-backup.csv`, blob, 'csv'))
+      .catch((err) => toast.error(err?.message ?? 'Could not download backup', { position: 'top-center' }))
+      .finally(() => setIsBackingUp(false));
+  };
+
+  const latest = pendingMigrations?.[pendingMigrations.length - 1];
+
+  return (
+    <div className="migration-history-drawer">
+      <div className="migration-history-drawer__header">
+        <button className="migration-history-drawer__back" onClick={onBack}>
+          <ArrowLeft size={18} />
+        </button>
+        <span>
+          Run {latest?.name || 'migration'} in {environment.name}
+        </span>
+        <button className="migration-history-drawer__close" onClick={onClose}>
+          &times;
+        </button>
+      </div>
+      <div className="migration-history-drawer__detail-body">
+        {pendingMigrations === null ? (
+          <p>Loading…</p>
+        ) : (
+          <>
+            <p>
+              The following{' '}
+              <strong>
+                {pendingMigrations.length} migration{pendingMigrations.length === 1 ? '' : 's'}
+              </strong>{' '}
+              will be applied to the {environment.name} table. Migration can cause loss of data, it is recommended to
+              download backup before proceeding.
+            </p>
+            {pendingMigrations.map((migration) => (
+              <div key={migration.id} className="migration-history-drawer__preview-item">
+                <div className="migration-history-drawer__row-title">
+                  <span>{migration.name || formatMigrationNumber(migration.migration_number)}</span>
+                </div>
+                <div className="migration-history-drawer__row-timestamp">{formatTimestamp(migration.created_at)}</div>
+                <ReadOnlySqlView sql={migration.sql} />
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+      <div className="migration-history-drawer__footer migration-history-drawer__footer--promote">
+        <ButtonSolid variant="secondary" onClick={downloadBackup} disabled={isBackingUp} isLoading={isBackingUp}>
+          <Download size={16} /> Download backup
+        </ButtonSolid>
+        <div className="migration-history-drawer__footer-actions">
+          <ButtonSolid variant="tertiary" onClick={onBack}>
+            Cancel
+          </ButtonSolid>
+          <ButtonSolid onClick={runPromote} disabled={isRunning || !pendingMigrations?.length} isLoading={isRunning}>
+            Run in {environment.name}
+          </ButtonSolid>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MigrationHistoryDrawer;

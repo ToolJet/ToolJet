@@ -47,7 +47,9 @@ function DrawerFooter({
     };
 
     const formType = initiator;
-    if (formType.startsWith('Create') || formType.startsWith('Upload')) {
+    if (formType === 'SeedDataForm') {
+      // enter is a no-op
+    } else if (formType.startsWith('Create') || formType.startsWith('Upload')) {
       addEnterCallback(onCreate);
     } else if (formType.startsWith('Edit')) {
       addEnterCallback(onEdit);
@@ -85,10 +87,10 @@ function DrawerFooter({
 
   const drawerDocumentationsLinks = {
     CreateTableForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#create-new-table',
-    EditTableForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#rename-table',
-    CreateColumnForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#add-new-column',
-    EditColumnForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#edit-column',
-    ForeignKeyTableForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#foreign-key',
+    EditTableForm: 'https://docs.tooljet.com/docs/tooljet-db/table-operations#rename-table',
+    CreateColumnForm: 'https://docs.tooljet.com/docs/tooljet-db/table-operations#add-new-column',
+    EditColumnForm: 'https://docs.tooljet.com/docs/tooljet-db/table-operations#edit-column',
+    ForeignKeyTableForm: 'https://docs.tooljet.com/docs/tooljet-db/constraints/foreign-key',
   };
   const drawerNames = Object.keys(drawerDocumentationsLinks);
   const isDrawerWithDocumentation = drawerNames.some((drawerName) => drawerName === initiator);
@@ -241,7 +243,13 @@ function DrawerFooter({
                   }}
                   size="md"
                 >
-                  Create <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
+                  {initiator === 'SeedDataForm' ? (
+                    'Seed'
+                  ) : (
+                    <>
+                      Create <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
+                    </>
+                  )}
                 </ButtonSolid>
               )}
             </>

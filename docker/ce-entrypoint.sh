@@ -22,6 +22,12 @@ else
   SETUP_CMD='npm run db:setup'
 fi
 
+# MIGRATION_MODE=async: the server runs migrations itself, in the background.
+export MIGRATION_SETUP_COMMAND="$SETUP_CMD"
+if [ "$MIGRATION_MODE" = "async" ]; then
+  SETUP_CMD=true
+fi
+
 if [ -f "./.env" ]; then
   declare $(grep -v '^#' ./.env | xargs)
 fi

@@ -1,0 +1,168 @@
+// Same width as the app's other warning dialogs (AlertDialog 410px, switch-branch 424px). The extra
+// .modal-dialog qualifier beats the viewport-media `.modal-dialog { max-width: 540px }` rule.
+.modal-dialog.tjdb-confirm-dialog {
+  max-width: 424px;
+}
+
+.migration-confirm-modal {
+  .migration-confirm-modal-header {
+    align-items: flex-start;
+    margin-top: 1.125rem;
+  }
+
+  .migration-confirm-modal-subtitle {
+    font-size: 0.875rem;
+    margin-top: 2px;
+  }
+
+  .migration-confirm-title-input {
+    resize: vertical;
+    min-height: 38px;
+  }
+
+  .migration-confirm-modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .migration-changes-list {
+    border: 1px solid var(--borders-disabled-on-white);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .migration-change-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 13px;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--borders-disabled-on-white);
+    }
+
+    .migration-change-icon-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      border-radius: 4px;
+      font-family: monospace;
+      font-weight: 700;
+    }
+
+    &.add .migration-change-icon-chip {
+      background: var(--background-success-weak);
+      color: var(--status-success-strong);
+    }
+
+    &.remove .migration-change-icon-chip {
+      background: var(--background-error-weak);
+      color: var(--status-error-strong);
+    }
+
+    &.edit .migration-change-icon-chip {
+      background: var(--background-accent-weak);
+      color: var(--primary-brand);
+    }
+
+    .migration-change-name-struck {
+      color: var(--text-placeholder);
+      text-decoration: line-through;
+    }
+
+    .migration-change-detail {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-placeholder);
+    }
+  }
+
+  .migration-deps-warning {
+    border: 1px solid var(--status-warning-strong);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .migration-deps-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+
+    .migration-deps-summary-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .migration-deps-warning-icon {
+      color: var(--status-warning-strong);
+      flex-shrink: 0;
+    }
+  }
+
+  // Two-column table: "app name + type pill" | "query name". Rows are `display: contents` so every
+  // row shares the grid's columns and stays aligned.
+  .migration-deps-list {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    column-gap: 12px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+
+    li:not(.migration-deps-more) {
+      display: contents;
+    }
+
+    .migration-deps-cell {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--borders-disabled-on-white);
+      overflow-wrap: anywhere;
+    }
+
+    .migration-deps-app-name {
+      font-weight: 600;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .migration-deps-app-type {
+      flex-shrink: 0;
+      padding: 0 8px;
+      border-radius: 6px;
+      background: var(--slate3);
+      color: var(--slate11);
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .migration-deps-more {
+      grid-column: 1 / -1;
+      padding-top: 6px;
+      color: var(--text-placeholder);
+    }
+  }
+
+  .migration-deps-fk-tables {
+    color: var(--status-warning-strong);
+    font-weight: 500;
+
+    &:not(:first-child) {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--status-warning-strong);
+    }
+  }
+}
