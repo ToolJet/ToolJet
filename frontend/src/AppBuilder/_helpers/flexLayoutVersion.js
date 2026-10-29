@@ -26,25 +26,5 @@ export const usesFlexLayoutV2 = (properties) => {
   return Number(value) >= Number(FLEX_LAYOUT_V2);
 };
 
-// Defaults only a new FlexContainer gets. ToolJet merges a widget's default definition into saved components (the
-// frontend's buildComponentMetaDefinition on a cloned page, the server's on load), which would stamp the flag, and Equal
-// heights, onto every container saved before UI 2.0. The server's copy of the widget config
-// (server/src/modules/apps/services/widget-config/flexContainer.js) must not carry these defaults for the same reason.
-const NEW_CONTAINER_ONLY_DEFAULTS = ['layoutVersion', 'equalHeights'];
-
-/**
- * Takes the new-container-only defaults back out of a saved FlexContainer's merged properties when the saved
- * properties did not have them.
- * @param {string} componentType
- * @param {Record<string, unknown>} mergedProperties  the widget's defaults merged with the saved properties
- * @param {Record<string, unknown> | undefined} savedProperties
- * @returns {Record<string, unknown>} a copy of mergedProperties without the keys the saved container did not have
- */
-export const dropNewContainerDefaults = (componentType, mergedProperties, savedProperties) => {
-  if (componentType !== 'FlexContainer' || !mergedProperties) return mergedProperties;
-  const properties = { ...mergedProperties };
-  NEW_CONTAINER_ONLY_DEFAULTS.forEach((key) => {
-    if (savedProperties?.[key] === undefined) delete properties[key];
-  });
-  return properties;
-};
+// A saved container keeps its layout when the widget defaults are merged into it (shared with the server's merge).
+export { dropNewContainerDefaults } from '@tooljet/widget-definitions';

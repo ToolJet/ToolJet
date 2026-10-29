@@ -1,7 +1,14 @@
 import React, { useMemo } from 'react';
 import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart as RRadarChart } from 'recharts';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { AXIS_FILL, ChartFrame, GRID, seriesColor, tooltipAndLegend, useChartClick } from '../lib/ui2/charts/chartParts';
+import {
+  AXIS_FILL,
+  ChartFrame,
+  GRID,
+  seriesColor,
+  tooltipAndLegend,
+  useChartClick,
+} from '../lib/ui2/charts/chartParts';
 import {
   animated,
   clamp,
@@ -40,11 +47,34 @@ export const RadarChart = () => {
       { skill: 'Design', alex: 75, jordan: 70 },
     ],
   });
-  const [categoryField] = ToolJet.useStateString({ name: 'categoryField', label: 'Category field', initialValue: 'skill' });
-  const [yFields] = ToolJet.useStateString({ name: 'yFields', label: 'Series fields (one or many)', description: 'A field, a list, or comma-separated.', initialValue: 'alex, jordan' });
-  const [maxValue] = ToolJet.useStateString({ name: 'maxValue', label: 'Max value (blank = auto)', initialValue: '100' });
-  const [fillOpacity] = ToolJet.useStateNumber({ name: 'fillOpacity', label: 'Fill opacity (0 to 1)', initialValue: 0.5 });
-  const [gridShape] = ToolJet.useStateEnumeration({ name: 'gridShape', label: 'Grid shape', enumDefinition: ['polygon', 'circle'], initialValue: 'polygon', inspector: 'switch' });
+  const [categoryField] = ToolJet.useStateString({
+    name: 'categoryField',
+    label: 'Category field',
+    initialValue: 'skill',
+  });
+  const [yFields] = ToolJet.useStateString({
+    name: 'yFields',
+    label: 'Series fields (one or many)',
+    description: 'A field, a list, or comma-separated.',
+    initialValue: 'alex, jordan',
+  });
+  const [maxValue] = ToolJet.useStateString({
+    name: 'maxValue',
+    label: 'Max value (blank = auto)',
+    initialValue: '100',
+  });
+  const [fillOpacity] = ToolJet.useStateNumber({
+    name: 'fillOpacity',
+    label: 'Fill opacity (0 to 1)',
+    initialValue: 0.5,
+  });
+  const [gridShape] = ToolJet.useStateEnumeration({
+    name: 'gridShape',
+    label: 'Grid shape',
+    enumDefinition: ['polygon', 'circle'],
+    initialValue: 'polygon',
+    inspector: 'switch',
+  });
   const [showGrid] = ToolJet.useStateBoolean({ name: 'showGrid', label: 'Grid', initialValue: true });
   const [showDots] = ToolJet.useStateBoolean({ name: 'showDots', label: 'Dots', initialValue: false });
   const [valuePrefix] = ToolJet.useStateString({ name: 'valuePrefix', label: 'Value prefix', initialValue: '' });
@@ -52,20 +82,33 @@ export const RadarChart = () => {
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No data' });
   const [animate] = ToolJet.useStateBoolean({ name: 'animate', label: 'Animate', initialValue: true });
   const [showLegend] = ToolJet.useStateBoolean({ name: 'showLegend', label: 'Legend', initialValue: true });
-  const [seriesLabels] = ToolJet.useStateObject({ name: 'seriesLabels', label: 'Series labels ({ field: label })', initialValue: {} });
+  const [seriesLabels] = ToolJet.useStateObject({
+    name: 'seriesLabels',
+    label: 'Series labels ({ field: label })',
+    initialValue: {},
+  });
   const [colors] = ToolJet.useStateArray({ name: 'colors', label: 'Series colors (in order)', initialValue: [] });
-  const [highlightClicked] = ToolJet.useStateBoolean({ name: 'highlightClicked', label: 'Highlight clicked point', description: 'Draws the clicked point emphasised until Clear clicked point runs or another is clicked.', initialValue: false });
+  const [highlightClicked] = ToolJet.useStateBoolean({
+    name: 'highlightClicked',
+    label: 'Highlight clicked point',
+    description: 'Draws the clicked point emphasised until Clear clicked point runs or another is clicked.',
+    initialValue: false,
+  });
   const click = useChartClick(highlightClicked);
   const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
   const gridColor = useThemeColor('gridColor', 'Grid line color', TOKEN.border);
   const axisTextColor = useThemeColor('axisTextColor', 'Axis label color', TOKEN.mutedText);
   const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 30 });
+  ToolJet.useComponentSettings({ role: 'radarchart', fit: false, loading: 'own', defaultWidth: 12, defaultHeight: 30 });
 
   const m = useMemo(() => {
     const configured = fieldList(yFields);
-    const fields = resolveChartFields(list(data).filter(isRecord).slice(0, MAX_AXES), isSet(categoryField) ? String(categoryField) : undefined, configured);
+    const fields = resolveChartFields(
+      list(data).filter(isRecord).slice(0, MAX_AXES),
+      isSet(categoryField) ? String(categoryField) : undefined,
+      configured
+    );
     const rows = seriesRows(data, fields.x, fields.series).slice(0, MAX_AXES);
     const labels = drawnLabelMap(seriesLabels, configured, fields.series);
     const slots = seriesSlots(configured, fields.series);
@@ -100,11 +143,20 @@ export const RadarChart = () => {
           data={m.plotted}
           outerRadius="72%"
           margin={{ top: 8, right: 16, bottom: 8, left: 16 }}
-          onClick={(e: { activePayload?: { payload?: unknown }[] } | null) => click.pick(e?.activePayload?.[0]?.payload)}
+          onClick={(e: { activePayload?: { payload?: unknown }[] } | null) =>
+            click.pick(e?.activePayload?.[0]?.payload)
+          }
         >
-          {showGrid !== false ? <PolarGrid gridType={gridShape === 'circle' ? 'circle' : 'polygon'} stroke={GRID} /> : null}
+          {showGrid !== false ? (
+            <PolarGrid gridType={gridShape === 'circle' ? 'circle' : 'polygon'} stroke={GRID} />
+          ) : null}
           <PolarAngleAxis dataKey={m.category} tick={{ fill: AXIS_FILL, fontSize: 12 }} />
-          <PolarRadiusAxis domain={[0, max !== null && max > 0 ? max : 'auto']} tick={false} axisLine={false} allowDataOverflow={false} />
+          <PolarRadiusAxis
+            domain={[0, max !== null && max > 0 ? max : 'auto']}
+            tick={false}
+            axisLine={false}
+            allowDataOverflow={false}
+          />
           {tooltipAndLegend(full, false, showLegend !== false)}
           {m.series.map((s, i) => (
             <Radar
@@ -120,15 +172,23 @@ export const RadarChart = () => {
                   ? // Highlight clicked point: the clicked category's point is ringed on each series.
                     (((d: { cx: number; cy: number; index: number; key?: string }) =>
                       sameDatum(m.plotted[d.index], highlighted) ? (
-                        <circle key={d.key} cx={d.cx} cy={d.cy} r={6} fill={m.fills[i]} stroke="var(--ui-bg)" strokeWidth={2} />
+                        <circle
+                          key={d.key}
+                          cx={d.cx}
+                          cy={d.cy}
+                          r={6}
+                          fill={m.fills[i]}
+                          stroke="var(--ui-bg)"
+                          strokeWidth={2}
+                        />
                       ) : showDots === true ? (
                         <circle key={d.key} cx={d.cx} cy={d.cy} r={3} fill={m.fills[i]} />
                       ) : (
                         <g key={d.key} />
                       )) as never)
                   : showDots === true
-                  ? { r: 3, fillOpacity: 1, fill: m.fills[i] }
-                  : false
+                    ? { r: 3, fillOpacity: 1, fill: m.fills[i] }
+                    : false
               }
               isAnimationActive={animated(animate, m.plotted.length)}
             />

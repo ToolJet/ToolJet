@@ -17,7 +17,13 @@ const toItems = (raw: unknown): Item[] =>
       const r = o as Row;
       if (r.divider === true && !r.label) return { label: '', value: '', divider: true };
       const value = str(r.value ?? r.key ?? r.label);
-      return { label: str(r.label ?? value), value, icon: str(r.icon) || undefined, disabled: Boolean(r.disabled), divider: Boolean(r.divider) };
+      return {
+        label: str(r.label ?? value),
+        value,
+        icon: str(r.icon) || undefined,
+        disabled: Boolean(r.disabled),
+        divider: Boolean(r.divider),
+      };
     })
     .filter((o): o is Item => !!o && (o.divider || o.value !== ''));
 
@@ -26,7 +32,12 @@ const toItems = (raw: unknown): Item[] =>
 // onOpen, onClose (MUI's: Escape, a click away, or an item); actions open and close.
 export const Menu = () => {
   const [children] = useStateText({ name: 'children', label: 'Button text', initialValue: 'Actions' });
-  const [variantProp] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['text', 'outlined', 'contained'], initialValue: 'outlined' });
+  const [variantProp] = ToolJet.useStateEnumeration({
+    name: 'variant',
+    label: 'Variant',
+    enumDefinition: ['text', 'outlined', 'contained'],
+    initialValue: 'outlined',
+  });
   const [colorProp] = ToolJet.useStateEnumeration({
     name: 'color',
     label: 'Color',
@@ -34,8 +45,18 @@ export const Menu = () => {
     initialValue: 'primary',
   });
   const { variant, color } = lookOf(variantProp, colorProp);
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium', 'large'], initialValue: 'medium' });
-  const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', description: 'Stretch the menu button to the width of its box; off, it is as wide as its label.', initialValue: true });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['small', 'medium', 'large'],
+    initialValue: 'medium',
+  });
+  const [fullWidth] = ToolJet.useStateBoolean({
+    name: 'fullWidth',
+    label: 'Full width',
+    description: 'Stretch the menu button to the width of its box; off, it is as wide as its label.',
+    initialValue: true,
+  });
   const [rawItems] = ToolJet.useStateArray({
     name: 'items',
     label: 'Items',
@@ -53,7 +74,7 @@ export const Menu = () => {
     enumDefinition: ['bottom-left', 'bottom-right'],
     initialValue: 'bottom-left',
   });
-  const [open, setOpen] = ToolJet.useStateBoolean({ name: 'open', initialValue: false, inspector: 'hidden' });
+  const [open, setOpen] = ToolJet.useStateBoolean({ name: 'isOpen', initialValue: false, inspector: 'hidden' });
   const [, setClickedItem] = ToolJet.useStateObject({ name: 'clickedItem', initialValue: {}, inspector: 'hidden' });
   const onItemClick = ToolJet.useEventCallback({ name: 'onItemClick' });
   const onOpen = ToolJet.useEventCallback({ name: 'onOpen' });
@@ -61,7 +82,27 @@ export const Menu = () => {
   const { disabled, loading } = ToolJet.useControlState();
   const anchor = useRef<HTMLButtonElement>(null);
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
+  ToolJet.useComponentSettings({
+    role: 'dropdownmenu',
+    fit: false,
+    loading: 'own',
+    usage:
+      "MUI's Menu opened from a Button: children (button text), variant, color, size, items [{label, value, icon, disabled, divider}], anchorOrigin; clickedItem exposed. onItemClick, onOpen, onClose; open, close. The menu opens in the popup layer.",
+    roleProps: { label: 'children', variant: 'variant' },
+    roleValues: {
+      variant: {
+        default: { variant: 'contained', color: 'primary' },
+        secondary: { variant: 'outlined', color: 'inherit' },
+        outline: { variant: 'outlined', color: 'primary' },
+        ghost: { variant: 'text', color: 'inherit' },
+        destructive: { variant: 'contained', color: 'error' },
+        link: { variant: 'text', color: 'primary' },
+      },
+    },
+    roleEvents: { onSelect: 'onItemClick' },
+    defaultWidth: 6,
+    defaultHeight: 4,
+  });
   const items = toItems(rawItems);
   // Open as the last call left it: open() twice in one event handler (before a render) fired onOpen twice.
   const openRef = useRef(!!open);
@@ -114,7 +155,14 @@ export const Menu = () => {
   );
 };
 
-const MenuPopup = (p: { open: boolean; anchorEl: HTMLElement | null; right: boolean; items: Item[]; onClose: () => void; onPick: (item: Item) => void }) => {
+const MenuPopup = (p: {
+  open: boolean;
+  anchorEl: HTMLElement | null;
+  right: boolean;
+  items: Item[];
+  onClose: () => void;
+  onPick: (item: Item) => void;
+}) => {
   const container = usePopupContainer();
   if (!container) return null;
   const horizontal = p.right ? 'right' : 'left';

@@ -1,11 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import * as hkdf from 'futoin-hkdf';
 import { IEncryptionService } from './interfaces/IService';
-
-const crypto = require('crypto');
+import * as crypto from 'crypto';
 
 @Injectable()
 export class EncryptionService implements IEncryptionService {
+  /**
+   * IMPORTANT: Do not modify this function signature - it is used in data migrations.
+   *
+   * Used in migrations:
+   * - 1669054493160-moveDataSourceOptionsToEnvironment.ts
+   * - 1706024347284-AddInstanceLevelSSOInSSOConfigs.ts
+   * - 1650485473528-PopulateSSOConfigs.ts
+   * - 1716551121164-addSMTPConfigsToTable.ts
+   * - 1681463532466-addMultipleEnvForCEcreatedApps.ts (via filterEncryptedFromOptions helper)
+   * - 1683022868045-environmentDataSourceMappingFix.ts (via filterEncryptedFromOptions helper)
+   * - 1709618105785-EncryptValuesForExistingOrganizationConstants.ts
+   * - 1721236971725-MoveToolJetDatabaseTablesFromPublicToTenantSchema.ts
+   */
   async encryptColumnValue(table: string, column: string, text: string): Promise<string> {
     const derivedKey = this.#computeAttributeKey(table, column);
     return this.#encrypt(text, derivedKey);
@@ -37,7 +49,8 @@ export class EncryptionService implements IEncryptionService {
 
     const aesgcm = crypto.createDecipheriv('aes-256-gcm', key, nonce);
     aesgcm.setAuthTag(auth_tag);
-    const plainText = aesgcm.update(ciphertext) + aesgcm.final();
+    // same coercion the old untyped `buf + buf` did (GCM final() is empty)
+    const plainText = aesgcm.update(ciphertext).toString('utf8') + aesgcm.final().toString('utf8');
 
     return plainText;
   }

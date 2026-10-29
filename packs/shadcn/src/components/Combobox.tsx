@@ -7,7 +7,16 @@ import { usePortalContainer } from '../lib/usePortalContainer';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { popupLayerStyle } from '../lib/popupLayer';
 import { cn } from '../lib/cn';
-import { initialKey, isDisabledOption, keyForValue, keptOptions, optionKey, toChoiceOptions, wantedValue, type ChoiceOption } from '../lib/ui2/choice/options';
+import {
+  initialKey,
+  isDisabledOption,
+  keyForValue,
+  keptOptions,
+  optionKey,
+  toChoiceOptions,
+  wantedValue,
+  type ChoiceOption,
+} from '../lib/ui2/choice/options';
 import { fieldVars, lookVars, useDropRemovedChoices, useFocusEvents, useResetOn } from '../lib/ui2/choice/looks';
 import { choiceValidationValue } from '../lib/ui2/choice/validationValue';
 import { useBusy, useColorStyle, useFieldStyles } from '../lib/ui2/choice/fieldStyles';
@@ -26,7 +35,8 @@ export const Combobox = () => {
     name: 'options',
     label: 'Options',
     inspector: 'options',
-    description: 'Plain values or [{ label, value, description?, icon? (IconUser, an image URL or an emoji), group?, disabled? }].',
+    description:
+      'Plain values or [{ label, value, description?, icon? (IconUser, an image URL or an emoji), group?, disabled? }].',
     initialValue: [
       { label: 'United States', value: 'us', group: 'Americas' },
       { label: 'Canada', value: 'ca', group: 'Americas' },
@@ -36,24 +46,53 @@ export const Combobox = () => {
       { label: 'Japan', value: 'jp', group: 'Asia Pacific' },
     ],
   });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Select a country...' });
-  const [searchPlaceholder] = ToolJet.useStateString({ name: 'searchPlaceholder', label: 'Search placeholder', initialValue: 'Search countries...' });
-  const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'No results text', initialValue: 'No country found.' });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Select a country...',
+  });
+  const [searchPlaceholder] = ToolJet.useStateString({
+    name: 'searchPlaceholder',
+    label: 'Search placeholder',
+    initialValue: 'Search countries...',
+  });
+  const [emptyText] = ToolJet.useStateString({
+    name: 'emptyText',
+    label: 'No results text',
+    initialValue: 'No country found.',
+  });
   const [showSearch] = ToolJet.useStateBoolean({ name: 'showSearch', label: 'Show search', initialValue: true });
   const [serverSideSearch] = ToolJet.useStateBoolean({
     name: 'serverSideSearch',
     label: 'Server-side search (options already filtered by searchText)',
     initialValue: false,
   });
-  const [showClearBtn] = ToolJet.useStateBoolean({ name: 'showClearBtn', label: 'Show clear button', initialValue: true });
-  const [optionsLoadingState] = ToolJet.useStateBoolean({ name: 'optionsLoadingState', label: 'Options loading state', initialValue: false });
+  const [showClearBtn] = ToolJet.useStateBoolean({
+    name: 'showClearBtn',
+    label: 'Show clear button',
+    initialValue: true,
+  });
+  const [optionsLoadingState] = ToolJet.useStateBoolean({
+    name: 'optionsLoadingState',
+    label: 'Options loading state',
+    initialValue: false,
+  });
   const [defaultValue] = ToolJet.useStateString({ name: 'defaultValue', label: 'Default value', initialValue: '' });
   // Exposed values. `value` was the pack's default value: an app that set it still starts on it.
   const [legacyValue, setValue] = ToolJet.useStateString({ name: 'value', initialValue: '', inspector: 'hidden' });
-  const [, setSelectedOption] = ToolJet.useStateObject({ name: 'selectedOption', initialValue: {}, inspector: 'hidden' });
+  const [, setSelectedOption] = ToolJet.useStateObject({
+    name: 'selectedOption',
+    initialValue: {},
+    inspector: 'hidden',
+  });
   const [, setSelectedLabel] = ToolJet.useStateString({ name: 'selectedLabel', initialValue: '', inspector: 'hidden' });
   const [, setSearchText] = ToolJet.useStateString({ name: 'searchText', initialValue: '', inspector: 'hidden' });
-  const [disabledProp] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
+  const [disabledProp] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable',
+    initialValue: false,
+    inspector: 'hidden',
+  });
   const onSelect = ToolJet.useEventCallback({ name: 'onSelect' });
   const onSearchTextChanged = ToolJet.useEventCallback({ name: 'onSearchTextChanged' });
   const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
@@ -62,7 +101,7 @@ export const Combobox = () => {
   const menuBackgroundColor = useColorStyle('menuBackgroundColor', 'Menu background', TOKEN.surface);
   const menuTextColor = useColorStyle('menuTextColor', 'Menu text color', TOKEN.text);
   const optionHoverColor = useColorStyle('optionHoverColor', 'Highlighted option background', TOKEN.muted);
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
+  ToolJet.useComponentSettings({ role: 'combobox', fit: true, loading: 'own', defaultWidth: 10, defaultHeight: 7 });
   const { disabled, loading } = useBusy(disabledProp);
   const fieldId = ToolJet.useFieldId();
 
@@ -71,13 +110,24 @@ export const Combobox = () => {
   const options = toChoiceOptions(rawOptions, 'Combobox');
   const serverSide = serverSideSearch === true;
   // Live: an action reads the key as last chosen, ahead of the next render.
-  const [key, setKey, keyRef] = useLiveState<string | null>(() => initialKey(defaultValue, options) ?? initialKey(legacyValue, options));
+  const [key, setKey, keyRef] = useLiveState<string | null>(
+    () => initialKey(defaultValue, options) ?? initialKey(legacyValue, options)
+  );
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   useResetOn(defaultValue, () => setKey(initialKey(defaultValue, options)));
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
-  ToolJet.useFormClear(() => { setOpen(false); setSearch(''); setKey(null); });
-  useDropRemovedChoices(options.map((o) => optionKey(o)), key === null ? [] : [key], () => setKey(null), serverSide);
+  ToolJet.useFormClear(() => {
+    setOpen(false);
+    setSearch('');
+    setKey(null);
+  });
+  useDropRemovedChoices(
+    options.map((o) => optionKey(o)),
+    key === null ? [] : [key],
+    () => setKey(null),
+    serverSide
+  );
   const kept = useRef(new Map<string, ChoiceOption>());
   const [selected] = keptOptions(options, key === null ? [] : [key], serverSide ? kept.current : null);
   kept.current = new Map(selected ? [[optionKey(selected), selected]] : []);
@@ -89,7 +139,7 @@ export const Combobox = () => {
   };
   useEffect(() => expose(selected), [key, JSON.stringify(selected)]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const check = ToolJet.useValidation({ section: 'choice', value: choiceValidationValue(selected), present: !!selected });
+  const check = ToolJet.useValidation({ kind: 'choice', value: choiceValidationValue(selected), present: !!selected });
   const focus = useFocusEvents(onFocus, onBlur, check.touch);
   const onSearch = (text: string) => {
     setSearch(text);
@@ -143,7 +193,10 @@ export const Combobox = () => {
     expose(option);
     onSelect();
   };
-  ToolJet.useAction({ name: 'selectOption', displayName: 'Select option', params: [{ handle: 'value', displayName: 'Value' }] }, selectByValue);
+  ToolJet.useAction(
+    { name: 'selectOption', displayName: 'Select option', params: [{ handle: 'value', displayName: 'Value' }] },
+    selectByValue
+  );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => setKey(null));
   ToolJet.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => triggerRef.current?.focus());
   ToolJet.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => {
@@ -152,7 +205,12 @@ export const Combobox = () => {
   });
 
   const showClear = showClearBtn !== false && !!selected && !disabled;
-  const vars = lookVars({ ...fieldVars(styles), '--lk-menu-bg': menuBackgroundColor, '--lk-menu-fg': menuTextColor, '--lk-hl': optionHoverColor });
+  const vars = lookVars({
+    ...fieldVars(styles),
+    '--lk-menu-bg': menuBackgroundColor,
+    '--lk-menu-fg': menuTextColor,
+    '--lk-hl': optionHoverColor,
+  });
   // A popup in a Dialog's body stacks above the dialog (popupLayer.ts), read off the owner as it opens.
   const popVars = open ? { ...vars, ...popupLayerStyle(anchorRef.current) } : vars;
   const menuId = fieldId ? `${fieldId}-menu` : undefined;
@@ -181,7 +239,9 @@ export const Combobox = () => {
                 </span>
                 {loading ? <Spinner /> : <ChevronsUpDown className="ui-icon-muted" />}
               </Popover.Trigger>
-              {showClear && !loading ? <ClearX label="Clear selection" className="uc-clear-at before-chevron" onClear={clear} /> : null}
+              {showClear && !loading ? (
+                <ClearX label="Clear selection" className="uc-clear-at before-chevron" onClear={clear} />
+              ) : null}
             </div>
             {container ? (
               <Popover.Portal container={container}>

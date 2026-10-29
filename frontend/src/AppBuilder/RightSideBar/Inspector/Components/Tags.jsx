@@ -18,6 +18,9 @@ import { shallow } from 'zustand/shallow';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { resolveReferences } from '@/_helpers/utils';
 
+// Code search names a tag by its id, else its title.
+const tagIdentity = (tag) => String([tag?.id, tag?.title].find((v) => v != null && v !== ''));
+
 export const Tags = ({
   component,
   componentMeta,
@@ -201,8 +204,8 @@ export const Tags = ({
       item?.iconVisibility?.value !== undefined
         ? getResolvedValue(item?.iconVisibility?.value)
         : item?.iconVisibility !== undefined
-        ? item?.iconVisibility
-        : false;
+          ? item?.iconVisibility
+          : false;
 
     return (
       <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
@@ -324,6 +327,7 @@ export const Tags = ({
                       {(provided, snapshot) => (
                         <div
                           key={index}
+                          data-list-item-id={tagIdentity(item)}
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}

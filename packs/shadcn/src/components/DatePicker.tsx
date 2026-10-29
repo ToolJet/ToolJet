@@ -6,7 +6,17 @@ import { Field } from '../lib/Field';
 import { usePortalContainer } from '../lib/usePortalContainer';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { popupLayerStyle } from '../lib/popupLayer';
-import { dateProblem, dateRules, formatDate, isOffDay, parseDateTime, startOfDay, toDay, toDayjsFormat, ymd } from '../lib/ui2/choice/dates';
+import {
+  dateProblem,
+  dateRules,
+  formatDate,
+  isOffDay,
+  parseDateTime,
+  startOfDay,
+  toDay,
+  toDayjsFormat,
+  ymd,
+} from '../lib/ui2/choice/dates';
 import { fieldVars, lookVars, useFocusEvents, useResetOn, useStable } from '../lib/ui2/choice/looks';
 import { useBusy, useFieldStyles } from '../lib/ui2/choice/fieldStyles';
 import { MonthGrid } from '../lib/ui2/choice/MonthGrid';
@@ -37,29 +47,85 @@ export const DatePicker = () => {
     initialValue: 'single',
     inspector: 'switch',
   });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Pick a date' });
-  const [defaultValue] = ToolJet.useStateString({ name: 'defaultValue', label: 'Default (YYYY-MM-DD, or [start, end] for a range)', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Pick a date',
+  });
+  const [defaultValue] = ToolJet.useStateString({
+    name: 'defaultValue',
+    label: 'Default (YYYY-MM-DD, or [start, end] for a range)',
+    initialValue: '',
+  });
   const [formatProp] = ToolJet.useStateString({ name: 'format', label: 'Display format', initialValue: 'DD MMM YYYY' });
-  const [minDate, setMinDate] = ToolJet.useStateString({ name: 'minDate', label: 'Earliest date (YYYY-MM-DD)', initialValue: '' });
-  const [maxDate, setMaxDate] = ToolJet.useStateString({ name: 'maxDate', label: 'Latest date (YYYY-MM-DD)', initialValue: '' });
-  const [disabledDates, setDisabledDates] = ToolJet.useStateArray({ name: 'disabledDates', label: 'Disabled dates', initialValue: [] });
-  const [showClearBtn] = ToolJet.useStateBoolean({ name: 'showClearBtn', label: 'Show clear button', initialValue: false });
+  const [minDate, setMinDate] = ToolJet.useStateString({
+    name: 'minDate',
+    label: 'Earliest date (YYYY-MM-DD)',
+    initialValue: '',
+  });
+  const [maxDate, setMaxDate] = ToolJet.useStateString({
+    name: 'maxDate',
+    label: 'Latest date (YYYY-MM-DD)',
+    initialValue: '',
+  });
+  const [disabledDates, setDisabledDates] = ToolJet.useStateArray({
+    name: 'disabledDates',
+    label: 'Disabled dates',
+    initialValue: [],
+  });
+  const [showClearBtn] = ToolJet.useStateBoolean({
+    name: 'showClearBtn',
+    label: 'Show clear button',
+    initialValue: false,
+  });
   // Exposed values. `value` was the pack's default date: an app that set it still starts on it.
   const [legacyValue, setValue] = ToolJet.useStateString({ name: 'value', initialValue: '', inspector: 'hidden' });
   const [, setStartDate] = ToolJet.useStateString({ name: 'startDate', initialValue: '', inspector: 'hidden' });
   const [, setEndDate] = ToolJet.useStateString({ name: 'endDate', initialValue: '', inspector: 'hidden' });
-  const [, setUnixTimestamp] = ToolJet.useStateNumber({ name: 'unixTimestamp', initialValue: null as unknown as number, inspector: 'hidden' });
+  const [, setUnixTimestamp] = ToolJet.useStateNumber({
+    name: 'unixTimestamp',
+    initialValue: null as unknown as number,
+    inspector: 'hidden',
+  });
   const [, setDisplayValue] = ToolJet.useStateString({ name: 'displayValue', initialValue: '', inspector: 'hidden' });
-  const [, setStartDateInUnix] = ToolJet.useStateNumber({ name: 'startDateInUnix', initialValue: null as unknown as number, inspector: 'hidden' });
-  const [, setEndDateInUnix] = ToolJet.useStateNumber({ name: 'endDateInUnix', initialValue: null as unknown as number, inspector: 'hidden' });
-  const [, setSelectedDateRange] = ToolJet.useStateString({ name: 'selectedDateRange', initialValue: '', inspector: 'hidden' });
-  const [, setDateFormat] = ToolJet.useStateString({ name: 'dateFormat', initialValue: 'DD MMM YYYY', inspector: 'hidden' });
-  const [disabledProp] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
+  const [, setStartDateInUnix] = ToolJet.useStateNumber({
+    name: 'startDateInUnix',
+    initialValue: null as unknown as number,
+    inspector: 'hidden',
+  });
+  const [, setEndDateInUnix] = ToolJet.useStateNumber({
+    name: 'endDateInUnix',
+    initialValue: null as unknown as number,
+    inspector: 'hidden',
+  });
+  const [, setSelectedDateRange] = ToolJet.useStateString({
+    name: 'selectedDateRange',
+    initialValue: '',
+    inspector: 'hidden',
+  });
+  const [, setDateFormat] = ToolJet.useStateString({
+    name: 'dateFormat',
+    initialValue: 'DD MMM YYYY',
+    inspector: 'hidden',
+  });
+  const [disabledProp] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable',
+    initialValue: false,
+    inspector: 'hidden',
+  });
   const onSelect = ToolJet.useEventCallback({ name: 'onSelect' });
   const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
   const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
   const styles = useFieldStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
+  ToolJet.useComponentSettings({
+    role: 'datepicker',
+    fit: true,
+    loading: 'own',
+    usage: 'A date field: value is YYYY-MM-DD; minDate/maxDate; onSelect.',
+    defaultWidth: 10,
+    defaultHeight: 7,
+  });
   const { disabled, loading } = useBusy(disabledProp);
   const fieldId = ToolJet.useFieldId();
 
@@ -68,7 +134,10 @@ export const DatePicker = () => {
   const range = mode === 'range';
   const format = toDayjsFormat(formatProp) || 'DD MMM YYYY';
   const stableDisabled = useStable(disabledDates);
-  const rules = useMemo(() => dateRules({ minDate, maxDate, disabledDates: stableDisabled, format }), [minDate, maxDate, stableDisabled, format]);
+  const rules = useMemo(
+    () => dateRules({ minDate, maxDate, disabledDates: stableDisabled, format }),
+    [minDate, maxDate, stableDisabled, format]
+  );
 
   // A default value or mode resets the selection. Both ends given together are put in order. The legacy `value` stands
   // in only while the app has never set defaultValue: `value` is also what the field exposes, so once a default was
@@ -89,7 +158,10 @@ export const DatePicker = () => {
   selectedRef.current = selected;
   useResetOn([defaultValue, mode], () => commit(readDefault()));
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
-  ToolJet.useFormClear(() => { setOpen(false); commit(undefined); });
+  ToolJet.useFormClear(() => {
+    setOpen(false);
+    commit(undefined);
+  });
   const [open, setOpen] = useState(false);
   // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): useOwnerGuard.
   useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
@@ -142,25 +214,67 @@ export const DatePicker = () => {
     const d = parse(v, fmt);
     if (d || blank(v)) commit(d);
   };
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }, { handle: 'format', displayName: 'Format' }] }, singleSet);
+  ToolJet.useAction(
+    {
+      name: 'setValue',
+      displayName: 'Set value',
+      params: [
+        { handle: 'value', displayName: 'Value' },
+        { handle: 'format', displayName: 'Format' },
+      ],
+    },
+    singleSet
+  );
   ToolJet.useAction({ name: 'clearValue', displayName: 'Clear value' }, () => commit(range ? {} : undefined));
-  ToolJet.useAction({ name: 'setValueInTimestamp', displayName: 'Set value in timestamp', params: [{ handle: 'value', displayName: 'Value' }] }, (ts) => {
-    const n = Number(ts);
-    if (!range && !blank(ts) && Number.isFinite(n)) commit(startOfDay(new Date(n)));
-  });
-  ToolJet.useAction({ name: 'setStartDate', displayName: 'Set start date', params: [{ handle: 'value', displayName: 'Value' }, { handle: 'format', displayName: 'Format' }] }, (v, f) => setEnd('from', v, f));
-  ToolJet.useAction({ name: 'setEndDate', displayName: 'Set end date', params: [{ handle: 'value', displayName: 'Value' }, { handle: 'format', displayName: 'Format' }] }, (v, f) => setEnd('to', v, f));
+  ToolJet.useAction(
+    {
+      name: 'setValueInTimestamp',
+      displayName: 'Set value in timestamp',
+      params: [{ handle: 'value', displayName: 'Value' }],
+    },
+    (ts) => {
+      const n = Number(ts);
+      if (!range && !blank(ts) && Number.isFinite(n)) commit(startOfDay(new Date(n)));
+    }
+  );
+  ToolJet.useAction(
+    {
+      name: 'setStartDate',
+      displayName: 'Set start date',
+      params: [
+        { handle: 'value', displayName: 'Value' },
+        { handle: 'format', displayName: 'Format' },
+      ],
+    },
+    (v, f) => setEnd('from', v, f)
+  );
+  ToolJet.useAction(
+    {
+      name: 'setEndDate',
+      displayName: 'Set end date',
+      params: [
+        { handle: 'value', displayName: 'Value' },
+        { handle: 'format', displayName: 'Format' },
+      ],
+    },
+    (v, f) => setEnd('to', v, f)
+  );
   ToolJet.useAction(
     {
       name: 'setDateRange',
       displayName: 'Set date range',
-      params: [{ handle: 'startDate', displayName: 'Start date' }, { handle: 'endDate', displayName: 'End date' }, { handle: 'format', displayName: 'Format' }],
+      params: [
+        { handle: 'startDate', displayName: 'Start date' },
+        { handle: 'endDate', displayName: 'End date' },
+        { handle: 'format', displayName: 'Format' },
+      ],
     },
     (a, b, f) => {
       if (!range) return;
       const from = parse(a, f);
       const to = parse(b, f);
-      if ((from || blank(a)) && (to || blank(b))) commit(from && to && to < from ? { from: to, to: from } : { from, to });
+      if ((from || blank(a)) && (to || blank(b)))
+        commit(from && to && to < from ? { from: to, to: from } : { from, to });
     }
   );
   ToolJet.useAction({ name: 'clearStartDate', displayName: 'Clear start date' }, () => {
@@ -172,10 +286,21 @@ export const DatePicker = () => {
   ToolJet.useAction({ name: 'clearDateRange', displayName: 'Clear date range' }, () => {
     if (range) commit({});
   });
-  ToolJet.useAction({ name: 'setMinDate', displayName: 'Set min date', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => setMinDate(blank(v) ? '' : String(v)));
-  ToolJet.useAction({ name: 'setMaxDate', displayName: 'Set max date', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => setMaxDate(blank(v) ? '' : String(v)));
-  ToolJet.useAction({ name: 'setDisabledDates', displayName: 'Set disabled dates', params: [{ handle: 'value', displayName: 'Value' }] }, (v) =>
-    setDisabledDates(Array.isArray(v) ? v : blank(v) ? [] : [v])
+  ToolJet.useAction(
+    { name: 'setMinDate', displayName: 'Set min date', params: [{ handle: 'value', displayName: 'Value' }] },
+    (v) => setMinDate(blank(v) ? '' : String(v))
+  );
+  ToolJet.useAction(
+    { name: 'setMaxDate', displayName: 'Set max date', params: [{ handle: 'value', displayName: 'Value' }] },
+    (v) => setMaxDate(blank(v) ? '' : String(v))
+  );
+  ToolJet.useAction(
+    {
+      name: 'setDisabledDates',
+      displayName: 'Set disabled dates',
+      params: [{ handle: 'value', displayName: 'Value' }],
+    },
+    (v) => setDisabledDates(Array.isArray(v) ? v : blank(v) ? [] : [v])
   );
   ToolJet.useAction({ name: 'clearDisabledDates', displayName: 'Clear disabled dates' }, () => setDisabledDates([]));
   ToolJet.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => triggerRef.current?.focus());
@@ -184,17 +309,26 @@ export const DatePicker = () => {
     triggerRef.current?.blur();
   });
   // UI 2.0's Date picker has setDate beside setValue, so the pack keeps both names.
-  ToolJet.useAction({ name: 'setDate', displayName: 'Set date', params: [{ handle: 'date', displayName: 'Date (YYYY-MM-DD)' }] }, (v) => singleSet(v, ''));
+  ToolJet.useAction(
+    { name: 'setDate', displayName: 'Set date', params: [{ handle: 'date', displayName: 'Date (YYYY-MM-DD)' }] },
+    (v) => singleSet(v, '')
+  );
 
   const from = endOf(selected, 'from');
   const to = endOf(selected, 'to');
   const day = dayOf(selected);
   // A picked day outside minDate/maxDate or on a disabled date is invalid, and so is a range ending before it starts.
   const problem = range
-    ? dateProblem(from, rules) || dateProblem(to, rules) || (from && to && to < from ? 'Pick an end date on or after the start date' : '')
+    ? dateProblem(from, rules) ||
+      dateProblem(to, rules) ||
+      (from && to && to < from ? 'Pick an end date on or after the start date' : '')
     : dateProblem(day, rules);
   const filled = range ? !!from && !!to : !!day;
-  const check = ToolJet.useValidation({ section: 'date', value: range ? (filled ? [ymd(from), ymd(to)] : '') : ymd(day), present: filled && !problem });
+  const check = ToolJet.useValidation({
+    kind: 'date',
+    value: range ? (filled ? [ymd(from), ymd(to)] : '') : ymd(day),
+    present: filled && !problem,
+  });
   const focus = useFocusEvents(onFocus, onBlur, check.touch);
   const text = range ? (from ? `${shown(from)}${to ? ` – ${shown(to)}` : ''}` : '') : shown(day);
   const rangeClicks = useRef(0);
@@ -231,7 +365,13 @@ export const DatePicker = () => {
 
   return (
     <div className="ui uc" ref={anchorRef} style={vars}>
-      <Field label={label} description={description} htmlFor={fieldId} error={check.error || problem} required={check.required}>
+      <Field
+        label={label}
+        description={description}
+        htmlFor={fieldId}
+        error={check.error || problem}
+        required={check.required}
+      >
         <FieldLoading loading={loading}>
           <Popover.Root open={open} onOpenChange={openChange}>
             <PickerTrigger
@@ -256,7 +396,13 @@ export const DatePicker = () => {
             />
             {container ? (
               <Popover.Portal container={container}>
-                <Popover.Content aria-label={range ? 'Choose dates' : 'Choose a date'} className="ui-popup uc-pop" align="start" sideOffset={4} style={popVars}>
+                <Popover.Content
+                  aria-label={range ? 'Choose dates' : 'Choose a date'}
+                  className="ui-popup uc-pop"
+                  align="start"
+                  sideOffset={4}
+                  style={popVars}
+                >
                   <MonthGrid
                     autoFocus
                     month={month}

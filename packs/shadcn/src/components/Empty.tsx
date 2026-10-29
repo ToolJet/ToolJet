@@ -9,8 +9,20 @@ import '../styles/ui2-display.css';
 export const Empty = () => {
   const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'No results' });
   const [description] = ToolJet.useStateString({ name: 'description', label: 'Description', initialValue: '' });
-  const [icon] = ToolJet.useStateString({ name: 'icon', label: 'Icon', description: 'Any lucide or Tabler name.', initialValue: 'inbox', inspector: 'icon' });
-  const [actionLabel] = ToolJet.useStateString({ name: 'actionLabel', label: 'Action label', description: 'Empty hides the button.', initialValue: '' });
+  const [icon] = ToolJet.useStateString({
+    name: 'icon',
+    label: 'Icon',
+    description: 'Any lucide or Tabler name.',
+    initialValue: 'inbox',
+    inspector: 'icon',
+    iconSet: 'lucide',
+  });
+  const [actionLabel] = ToolJet.useStateString({
+    name: 'actionLabel',
+    label: 'Action label',
+    description: 'Empty hides the button.',
+    initialValue: '',
+  });
   const onActionClicked = ToolJet.useEventCallback({ name: 'onActionClicked' });
   const background = useThemeColor('backgroundColor', 'Background', 'transparent');
   const borderColor = useThemeColor('borderColor', 'Dashed border color', TOKEN.border);
@@ -20,7 +32,7 @@ export const Empty = () => {
   const titleColor = useThemeColor('titleColor', 'Title color', TOKEN.text);
   const textColor = useThemeColor('textColor', 'Description color', TOKEN.mutedText);
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 20 });
+  ToolJet.useComponentSettings({ role: 'empty', fit: false, loading: 'own', defaultWidth: 14, defaultHeight: 20 });
 
   const Glyph = iconFor(icon) ?? iconFor('inbox')!;
   const vars = styleVars([
@@ -41,7 +53,11 @@ export const Empty = () => {
         <p className="ui2-empty-title">{String(title ?? '')}</p>
         {description ? <p className="ui2-empty-text">{String(description)}</p> : null}
         {actionLabel ? (
-          <button type="button" className="ui-btn ui-btn--outline ui-btn--sm ui-btn--auto ui2-empty-action" onClick={onActionClicked}>
+          <button
+            type="button"
+            className="ui-btn ui-btn--outline ui-btn--sm ui-btn--auto ui2-empty-action"
+            onClick={onActionClicked}
+          >
             {String(actionLabel)}
           </button>
         ) : null}

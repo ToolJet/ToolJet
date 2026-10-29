@@ -1,4 +1,4 @@
-FROM node:22.15.1 AS builder
+FROM node:22.23.4 AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
@@ -69,8 +69,9 @@ COPY ./package.json ./package.json
 
 # Build plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
-# Pin ibm_db's clidriver to a build linked against glibc <=2.14, since the runtime
-# stage is bullseye (glibc 2.31) and the latest clidriver requires glibc 2.32+
+# Pin ibm_db's clidriver to a build linked against glibc <=2.14. The runtime stage
+# is now bookworm (glibc 2.36) so this pin is no longer strictly required, but the
+# older clidriver is forward-compatible and keeping it avoids re-testing ibm_db.
 ENV IBM_DB_INSTALLER_URL=https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/v11.5.9
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
@@ -78,6 +79,10 @@ RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
 ENV TOOLJET_EDITION=cloud
+
+# Copy shared widget-definitions package (required by frontend + server file: dependency)
+COPY ./packages/widget-definitions/package.json ./packages/widget-definitions/package.json
+COPY ./packages/widget-definitions/src/ ./packages/widget-definitions/src/
 
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
@@ -98,17 +103,14 @@ RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
-# Built-in component packs (packs/builtin.json): each pack is built and packaged under server/builtin-packs, which the
-# server installs into every workspace (ee custom-component-libraries/builtin-packs.ts).
-COPY ./packages/pack-tools/ ./packages/pack-tools/
+# Built-in component packs: each pack in packs/builtin.json is built with the custom component CLI (cli/) into
+# server/builtin-packs, which the server serves to every workspace like native widgets.
+COPY ./cli/ ./cli/
 COPY ./packs/ ./packs/
-RUN npm --prefix packages/pack-tools install --no-audit --no-fund \
-    && for dir in $(node -e "console.log(require('./packs/builtin.json').packs.map((p) => p.dir).join(' '))"); do \
-         npm --prefix "$dir" ci --no-audit --no-fund; \
-       done \
-    && node packages/pack-tools/bundle-builtin.mjs
+RUN npm --prefix cli ci --include=dev && npm --prefix cli run build && node packs/build-builtin.mjs --install
 
-FROM node:22.15.1-bullseye
+# Runtime stage on bookworm: Debian 11 is end-of-life and no node:22.23.4-bullseye image exists.
+FROM node:22.23.4-bookworm
 
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
@@ -117,6 +119,11 @@ RUN apt-get update -yq \
 
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
+
+# Node 22.15.1 ships tz 2025a, missing the Canada DST change of 1 Nov 2026; ICU 2026e files from unicode-org/icu-data. Remove when Node tz >= 2026e.
+COPY ./docker/icu-tz /usr/local/share/icu-tz
+ENV ICU_TIMEZONE_FILES_DIR=/usr/local/share/icu-tz
+RUN node -e "if (process.versions.tz < '2026e') throw new Error('stale tz data: ' + process.versions.tz)"
 
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=cloud
@@ -147,6 +154,8 @@ COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
 COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
 # copy frontend build
 COPY --from=builder /app/frontend/build ./app/frontend/build
+# copy widget-definitions (server node_modules symlinks to this)
+COPY --from=builder /app/packages/widget-definitions ./app/packages/widget-definitions
 # copy server build
 COPY --from=builder /app/server/package.json ./app/server/package.json
 COPY --from=builder /app/server/.version ./app/server/.version
@@ -162,8 +171,11 @@ WORKDIR /app
 
 # Install PostgreSQL
 USER root
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
+# postgresql-13 is published for bookworm-pgdg, so the major version and paths stay at 13.
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+      | gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
+RUN echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" \
+      | tee /etc/apt/sources.list.d/pgdg.list
 RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor --fix-missing
 
 

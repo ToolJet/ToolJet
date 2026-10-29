@@ -52,6 +52,7 @@ import {
   verticalDividerConfig,
   customComponentConfig,
   libraryComponentConfig,
+  packComponentConfig,
   buttonGroupConfig,
   pdfConfig,
   stepsConfig,
@@ -82,7 +83,7 @@ import {
   fileButtonConfig,
   buttonGroupV2Config,
   flexContainerConfig,
-} from '../widgets';
+} from '@tooljet/widget-definitions';
 
 export const widgets = [
   // Buttons
@@ -169,6 +170,7 @@ export const widgets = [
   //Custom
   customComponentConfig,
   libraryComponentConfig,
+  packComponentConfig,
   htmlConfig,
   iframeConfig,
 

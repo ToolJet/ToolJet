@@ -26,6 +26,8 @@ export interface Terms {
     multiEnvironment?: boolean;
     multiPlayerEdit?: boolean;
     gitSync?: boolean;
+    gitSyncMultiBranch?: boolean;
+    workspaceEnv?: boolean;
     comments?: boolean;
     customThemes?: boolean;
     serverSideGlobalResolve?: boolean;
@@ -72,6 +74,9 @@ export interface Terms {
       publicApp: boolean;
       customComponentLibraries?: boolean;
       versionReview?: boolean;
+    };
+    components?: {
+      navigation: boolean;
     };
   };
   modules?: {

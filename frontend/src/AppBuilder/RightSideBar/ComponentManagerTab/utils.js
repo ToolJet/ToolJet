@@ -14,16 +14,16 @@ export const hasLibraryContent = (library) => library.revisions.length > 0 || li
 // older-pinned library's real components live in a different manifest.
 // A component matches by the name its tile shows (displayName, "Scatter Chart") or its export name ("ScatterChart"),
 // ignoring case and spaces, so either spelling finds it.
-const squash = (text) => String(text ?? '').toLowerCase().replace(/\s+/g, '');
+const squash = (text) =>
+  String(text ?? '')
+    .toLowerCase()
+    .replace(/\s+/g, '');
 export const getLibrarySearchMatch = (library, manifestComponents, searchQuery) => {
   const query = squash(searchQuery);
   const matchesLibraryName = squash(library.name).includes(query);
   const components = Object.entries(manifestComponents ?? {}).filter(
     ([exportName, config]) =>
-      !query ||
-      matchesLibraryName ||
-      squash(exportName).includes(query) ||
-      squash(config?.displayName).includes(query)
+      !query || matchesLibraryName || squash(exportName).includes(query) || squash(config?.displayName).includes(query)
   );
   const isVisible = hasLibraryContent(library) && (!query || matchesLibraryName || components.length > 0);
   return { components, isVisible };

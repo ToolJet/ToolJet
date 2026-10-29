@@ -26,7 +26,10 @@ export class WorkflowBundlesController {
     @Param('language') language: BundleLanguage,
     @Query() query: PackageSearchQueryDto
   ): Promise<JavascriptPackageSearchResult[] | PythonPackageSearchResult[]> {
-    throw new HttpException('Enterprise feature: Package management requires ToolJet Enterprise Edition', HttpStatus.INTERNAL_SERVER_ERROR);
+    throw new HttpException(
+      'Enterprise feature: Package management requires ToolJet Enterprise Edition',
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
   }
 
   @Get('packages/:language/:name')
@@ -35,7 +38,10 @@ export class WorkflowBundlesController {
     @Param('language') language: BundleLanguage,
     @Param('name') packageName: string
   ): Promise<UnifiedPackageInfo> {
-    throw new HttpException('Enterprise feature: Package management requires ToolJet Enterprise Edition', HttpStatus.INTERNAL_SERVER_ERROR);
+    throw new HttpException(
+      'Enterprise feature: Package management requires ToolJet Enterprise Edition',
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
   }
 
   @Get('packages/:language/:name/versions')
@@ -44,7 +50,10 @@ export class WorkflowBundlesController {
     @Param('language') language: BundleLanguage,
     @Param('name') packageName: string
   ): Promise<UnifiedPackageVersionsResult> {
-    throw new HttpException('Enterprise feature: Package management requires ToolJet Enterprise Edition', HttpStatus.INTERNAL_SERVER_ERROR);
+    throw new HttpException(
+      'Enterprise feature: Package management requires ToolJet Enterprise Edition',
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
   }
 
   @Get(':appVersionId/packages/:language')
@@ -53,7 +62,10 @@ export class WorkflowBundlesController {
     @Param('appVersionId') appVersionId: string,
     @Param('language') language: BundleLanguage
   ): Promise<GetJavascriptPackagesResult | GetPythonPackagesResult> {
-    throw new HttpException('Enterprise feature: Package management requires ToolJet Enterprise Edition', HttpStatus.INTERNAL_SERVER_ERROR);
+    throw new HttpException(
+      'Enterprise feature: Package management requires ToolJet Enterprise Edition',
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
   }
 
   @Put(':appVersionId/packages/:language')
@@ -63,7 +75,10 @@ export class WorkflowBundlesController {
     @Param('language') language: BundleLanguage,
     @Body() dto: UpdateJavascriptPackagesDto | UpdatePythonPackagesDto
   ): Promise<UpdatePackagesResult> {
-    throw new HttpException('Enterprise feature: Package management requires ToolJet Enterprise Edition', HttpStatus.INTERNAL_SERVER_ERROR);
+    throw new HttpException(
+      'Enterprise feature: Package management requires ToolJet Enterprise Edition',
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
   }
 
   @Get(':appVersionId/bundle/:language/status')
@@ -72,7 +87,10 @@ export class WorkflowBundlesController {
     @Param('appVersionId') appVersionId: string,
     @Param('language') language: BundleLanguage
   ): Promise<UnifiedBundleStatus> {
-    throw new HttpException('Enterprise feature: Package management requires ToolJet Enterprise Edition', HttpStatus.INTERNAL_SERVER_ERROR);
+    throw new HttpException(
+      'Enterprise feature: Package management requires ToolJet Enterprise Edition',
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
   }
 
   @Post(':appVersionId/bundle/:language/rebuild')
@@ -82,6 +100,9 @@ export class WorkflowBundlesController {
     @Param('language') language: BundleLanguage,
     @Body() dto: RebuildBundleDto
   ): Promise<RebuildBundleResult> {
-    throw new HttpException('Enterprise feature: Package management requires ToolJet Enterprise Edition', HttpStatus.INTERNAL_SERVER_ERROR);
+    throw new HttpException(
+      'Enterprise feature: Package management requires ToolJet Enterprise Edition',
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
   }
 }

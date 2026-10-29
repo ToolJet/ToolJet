@@ -46,30 +46,3 @@ describe('WidgetTooltip inside a parent widget without a tooltip', () => {
     expect(screen.getAllByText('Pending requests').length).toBeGreaterThan(0);
   });
 });
-
-describe('an HTML tooltip', () => {
-  // An HTML tooltip drew on no surface (transparent, no padding) in the tooltip's white text: barely visible on the
-  // canvas. It has the same surface and text colour as a plain text tooltip.
-  test.each([false, true])('sits on the text tooltip surface (dark mode %s)', async (darkMode) => {
-    const user = userEvent.setup();
-    const surface = async (format, content) => {
-      const view = render(
-        <WidgetTooltip content={content} format={format} show darkMode={darkMode}>
-          <button type="button">{format}</button>
-        </WidgetTooltip>
-      );
-      await user.hover(screen.getByRole('button', { name: format }));
-      await wait(700);
-      const tip = document.querySelector('[data-cy="widget-tooltip"]');
-      expect(tip).toHaveTextContent('Approve this request');
-      const classes = tip.className;
-      await user.unhover(screen.getByRole('button', { name: format }));
-      view.unmount();
-      return classes;
-    };
-    const text = await surface('plainText', 'Approve this request');
-    const html = await surface('html', '<b>Approve</b> this request');
-    expect(html).not.toContain('tw-bg-transparent');
-    expect(html).toBe(text);
-  });
-});

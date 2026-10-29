@@ -10,6 +10,14 @@ import configPrettier from 'eslint-config-prettier';
 import pluginStorybook from 'eslint-plugin-storybook';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import noTdzCrash from './eslint-rules/no-tdz-crash.cjs';
+
+// Local project-specific rules
+const tooljetPlugin = {
+  rules: {
+    'no-tdz-crash': noTdzCrash,
+  },
+};
 
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -80,6 +88,7 @@ export default [
       import: pluginImportX,
       jest: pluginJest,
       prettier: pluginPrettier,
+      tooljet: tooljetPlugin,
     },
 
     settings: {
@@ -115,18 +124,13 @@ export default [
       // prettier config (disables conflicting rules)
       ...configPrettier.rules,
 
-      // Re-enable prettier/prettier as error (after configPrettier may disable it)
-      'prettier/prettier': [
-        'error',
-        {
-          semi: true,
-          trailingComma: 'es5',
-          printWidth: 120,
-          singleQuote: true,
-          arrowParens: 'always',
-          proseWrap: 'preserve',
-        },
-      ],
+      // Catches let/const/class uses that throw a TDZ ReferenceError at runtime —
+      // a bug class formerly masked by ES5 transpilation (see eslint-rules/no-tdz-crash.cjs)
+      'tooljet/no-tdz-crash': 'error',
+
+      // Re-enable prettier/prettier as error (after configPrettier may disable it).
+      // Options come from the root .prettierrc — single source of truth.
+      'prettier/prettier': 'error',
 
       // Project rules (preserved from .eslintrc.js)
       'react/prop-types': 0,
@@ -148,7 +152,7 @@ export default [
       'import/no-unresolved': [
         'error',
         {
-          ignore: ['^@/', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring', 'class-variance-authority', '@radix-ui/', '\\?url$'],
+          ignore: ['^@/', '^@tooljet/plugins', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring', 'class-variance-authority', '@radix-ui/', '\\?url$'],
         },
       ],
       'react/no-unknown-property': 'off',
@@ -182,10 +186,13 @@ export default [
 
     plugins: {
       '@typescript-eslint': tsPlugin,
-      import: pluginImportX,
       react: pluginReact,
       'react-hooks': pluginReactHooks,
       prettier: pluginPrettier,
+      // Registered under 'import' (not 'import-x') to match the rule names and
+      // existing eslint-disable directives — same as the JS/JSX block above
+      import: pluginImportX,
+      tooljet: tooljetPlugin,
     },
 
     settings: {
@@ -216,10 +223,13 @@ export default [
       // @typescript-eslint recommended
       '@typescript-eslint/adjacent-overload-signatures': 'error',
       '@typescript-eslint/ban-ts-comment': 'error',
-      // ban-types was split in typescript-eslint v8; the three rules below are its replacements.
+      // ban-types was removed in typescript-eslint v8 — these are its successors
+      '@typescript-eslint/no-empty-object-type': 'error',
       '@typescript-eslint/no-unsafe-function-type': 'error',
       '@typescript-eslint/no-wrapper-object-types': 'error',
-      '@typescript-eslint/no-empty-object-type': 'error',
+      // Catches let/const/class uses that throw a TDZ ReferenceError at runtime —
+      // a bug class formerly masked by ES5 transpilation (see eslint-rules/no-tdz-crash.cjs)
+      'tooljet/no-tdz-crash': 'error',
       '@typescript-eslint/no-array-constructor': 'error',
       '@typescript-eslint/no-empty-interface': 'error',
       '@typescript-eslint/no-extra-non-null-assertion': 'error',
@@ -272,7 +282,7 @@ export default [
       'import/no-unresolved': [
         'error',
         {
-          ignore: ['^@/', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring', 'class-variance-authority', '@radix-ui/', '\\?url$'],
+          ignore: ['^@/', '^@tooljet/plugins', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring', 'class-variance-authority', '@radix-ui/', '\\?url$'],
         },
       ],
 
@@ -288,6 +298,30 @@ export default [
     rules: {
       'react-hooks/exhaustive-deps': 'error',
       'react/jsx-no-leaked-render': ['error', { validStrategies: ['ternary', 'coerce'] }],
+    },
+  },
+
+  // EE/cloud-only code must be imported via the `@ee`/`@cloud` aliases, never a
+  // relative path — relative paths bypass NormalModuleReplacementPlugin's swap,
+  // so a CE build would ship real EE code instead of the empty-module stub.
+  {
+    files: ['src/**/*.js', 'src/**/*.jsx', 'src/**/*.ts', 'src/**/*.tsx'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/ee/**', '**/ee'],
+              message: 'Import EE-only code via the "@ee/" alias, not a relative path.',
+            },
+            {
+              group: ['**/cloud/**', '**/cloud'],
+              message: 'Import cloud-only code via the "@cloud/" alias, not a relative path.',
+            },
+          ],
+        },
+      ],
     },
   },
 

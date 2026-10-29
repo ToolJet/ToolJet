@@ -2,12 +2,9 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import { ModalWidget } from '../Modal';
 
-// The body's canvas needs the App Builder's drag-drop context; it stays mounted even while loading now, so it is
-// stubbed here.
+// The body's canvas stays mounted (hidden under the spinner while loading), and it needs App Builder drag-drop context
+// this test doesn't set up: it is stubbed. showHeader/showFooter/showConfigHandler are off for the same reason.
 jest.mock('@/AppBuilder/AppCanvas/Container', () => ({ __esModule: true, Container: () => null }));
-
-// Renders with showHeader/showFooter/showConfigHandler false so the widget mounts without its Header/Footer
-// subtrees, which need App Builder drag-drop context this test doesn't set up.
 const buildModalProps = (overrides = {}) => ({
   customStyles: { modalBody: {} },
   parentRef: { current: null },

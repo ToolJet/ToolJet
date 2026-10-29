@@ -5,7 +5,7 @@ import { Field } from '../lib/Field';
 import { cn } from '../lib/cn';
 import { usePortalContainer } from '../lib/usePortalContainer';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
-import { TJ } from '../lib/ui2/inputs/sdk';
+import { ToolJet } from '@tooljet/custom-component-sdk';
 import { field, useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
 import { TOKEN } from '../lib/styleDefaults';
@@ -21,8 +21,22 @@ const LOOKS: Look[] = [
 ];
 
 const SWATCHES = [
-  '#0f172a', '#64748b', '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e',
-  '#10b981', '#14b8a6', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#d946ef', '#ec4899',
+  '#0f172a',
+  '#64748b',
+  '#ef4444',
+  '#f97316',
+  '#f59e0b',
+  '#eab308',
+  '#84cc16',
+  '#22c55e',
+  '#10b981',
+  '#14b8a6',
+  '#06b6d4',
+  '#3b82f6',
+  '#6366f1',
+  '#8b5cf6',
+  '#d946ef',
+  '#ec4899',
 ];
 
 type EyeDropperCtor = new () => { open: () => Promise<{ sRGBHex?: string }> };
@@ -34,7 +48,10 @@ const useDrag = (onMove: (p: { x: number; y: number }) => void, onEnd: () => voi
   const ref = useRef<HTMLDivElement>(null);
   const at = (e: React.PointerEvent) => {
     const r = ref.current?.getBoundingClientRect() ?? { left: 0, top: 0, width: 0, height: 0 };
-    return { x: r.width ? clamp01((e.clientX - r.left) / r.width) : 0, y: r.height ? clamp01((e.clientY - r.top) / r.height) : 0 };
+    return {
+      x: r.width ? clamp01((e.clientX - r.left) / r.width) : 0,
+      y: r.height ? clamp01((e.clientY - r.top) / r.height) : 0,
+    };
   };
   return {
     ref,
@@ -56,15 +73,36 @@ const useDrag = (onMove: (p: { x: number; y: number }) => void, onEnd: () => voi
 };
 
 export const ColorPicker = () => {
-  const [label] = TJ.useStateString({ name: 'label', label: 'Label', initialValue: 'Brand color' });
-  const [description] = TJ.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
-  const [defaultValue] = TJ.useStateString({ name: 'defaultValue', label: 'Default color', initialValue: '#6366f1' });
-  const [placeholder] = TJ.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Pick a color' });
-  const [swatches] = TJ.useStateArray({ name: 'swatches', label: 'Preset swatches', placeholder: "['#0f172a', '#6366f1', '#22c55e']", initialValue: SWATCHES });
-  const [showSwatches] = TJ.useStateBoolean({ name: 'showSwatches', label: 'Show swatches', initialValue: true });
-  const [showPicker] = TJ.useStateBoolean({ name: 'showPicker', label: 'Show saturation and hue picker', initialValue: true });
-  const [allowAlpha] = TJ.useStateBoolean({ name: 'allowAlpha', label: 'Allow transparency (alpha)', initialValue: false });
-  const [triggerStyle] = TJ.useStateEnumeration({
+  const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: 'Brand color' });
+  const [description] = ToolJet.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
+  const [defaultValue] = ToolJet.useStateString({
+    name: 'defaultValue',
+    label: 'Default color',
+    initialValue: '#6366f1',
+  });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Pick a color',
+  });
+  const [swatches] = ToolJet.useStateArray({
+    name: 'swatches',
+    label: 'Preset swatches',
+    placeholder: "['#0f172a', '#6366f1', '#22c55e']",
+    initialValue: SWATCHES,
+  });
+  const [showSwatches] = ToolJet.useStateBoolean({ name: 'showSwatches', label: 'Show swatches', initialValue: true });
+  const [showPicker] = ToolJet.useStateBoolean({
+    name: 'showPicker',
+    label: 'Show saturation and hue picker',
+    initialValue: true,
+  });
+  const [allowAlpha] = ToolJet.useStateBoolean({
+    name: 'allowAlpha',
+    label: 'Allow transparency (alpha)',
+    initialValue: false,
+  });
+  const [triggerStyle] = ToolJet.useStateEnumeration({
     name: 'triggerStyle',
     label: 'Trigger',
     enumDefinition: ['field', 'swatch'],
@@ -72,19 +110,40 @@ export const ColorPicker = () => {
     initialValue: 'field',
     inspector: 'switch',
   });
-  const [showClearBtn] = TJ.useStateBoolean({ name: 'showClearBtn', label: 'Show clear button', initialValue: false });
+  const [showClearBtn] = ToolJet.useStateBoolean({
+    name: 'showClearBtn',
+    label: 'Show clear button',
+    initialValue: false,
+  });
   // Exposed: the hex (what a Form collects) and UI 2.0's other forms of it.
-  const [rawValue, setValue] = TJ.useStateString({ name: 'value', initialValue: '', inspector: 'hidden' });
-  const [, setSelectedColorRGB] = TJ.useStateString({ name: 'selectedColorRGB', initialValue: '', inspector: 'hidden' });
-  const [, setSelectedColorRGBA] = TJ.useStateString({ name: 'selectedColorRGBA', initialValue: '', inspector: 'hidden' });
-  const [, setColorFormat] = TJ.useStateString({ name: 'colorFormat', initialValue: 'hex', inspector: 'hidden' });
-  const [, setAllowOpacity] = TJ.useStateBoolean({ name: 'allowOpacity', initialValue: false, inspector: 'hidden' });
+  const [rawValue, setValue] = ToolJet.useStateString({ name: 'value', initialValue: '', inspector: 'hidden' });
+  const [, setSelectedColorRGB] = ToolJet.useStateString({
+    name: 'selectedColorRGB',
+    initialValue: '',
+    inspector: 'hidden',
+  });
+  const [, setSelectedColorRGBA] = ToolJet.useStateString({
+    name: 'selectedColorRGBA',
+    initialValue: '',
+    inspector: 'hidden',
+  });
+  const [, setColorFormat] = ToolJet.useStateString({ name: 'colorFormat', initialValue: 'hex', inspector: 'hidden' });
+  const [, setAllowOpacity] = ToolJet.useStateBoolean({
+    name: 'allowOpacity',
+    initialValue: false,
+    inspector: 'hidden',
+  });
   // UI 2.0 exposes isValid as always true: any colour the picker holds is valid.
-  TJ.useStateBoolean({ name: 'isValid', initialValue: true, inspector: 'hidden' });
-  const [legacyDisabled] = TJ.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
-  const onChange = TJ.useEventCallback({ name: 'onChange' });
-  const onFocus = TJ.useEventCallback({ name: 'onFocus' });
-  const onBlur = TJ.useEventCallback({ name: 'onBlur' });
+  ToolJet.useStateBoolean({ name: 'isValid', initialValue: true, inspector: 'hidden' });
+  const [legacyDisabled] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
+  const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
 
   const alpha = allowAlpha === true;
   const value = M.normalizeHex(rawValue, alpha) ?? '';
@@ -107,7 +166,7 @@ export const ColorPicker = () => {
     setColorFormat('hex');
   });
 
-  const control = TJ.useControlState();
+  const control = ToolJet.useControlState();
   const disabled = legacyDisabled || control.disabled;
   // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): useOwnerGuard.
   useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
@@ -159,24 +218,29 @@ export const ColorPicker = () => {
     setHsva(next);
     commit(hexOf(next));
   };
-  const areaKeys = (e: React.KeyboardEvent) => (e.key === 'ArrowUp' || e.key === 'ArrowDown' ? keys('v', 0.01, 1)(e) : keys('s', 0.01, 1)(e));
+  const areaKeys = (e: React.KeyboardEvent) =>
+    e.key === 'ArrowUp' || e.key === 'ArrowDown' ? keys('v', 0.01, 1)(e) : keys('s', 0.01, 1)(e);
 
-  TJ.useAction({ name: 'setColor', displayName: 'Set color', params: [{ handle: 'color', displayName: 'Color', type: 'color' }] }, (c) => {
-    if (c === '' || c === null || c === undefined) return publish('');
-    const hex = M.normalizeHex(c, alpha);
-    if (hex) publish(hex);
-    return undefined;
-  });
-  TJ.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => triggerRef.current?.focus());
-  TJ.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => triggerRef.current?.blur());
+  ToolJet.useAction(
+    { name: 'setColor', displayName: 'Set color', params: [{ handle: 'color', displayName: 'Color', type: 'color' }] },
+    (c) => {
+      if (c === '' || c === null || c === undefined) return publish('');
+      const hex = M.normalizeHex(c, alpha);
+      if (hex) publish(hex);
+      return undefined;
+    }
+  );
+  ToolJet.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => triggerRef.current?.focus());
+  ToolJet.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => triggerRef.current?.blur());
 
-  const fieldId = TJ.useFieldId();
+  const fieldId = ToolJet.useFieldId();
   const looks = useLooks(LOOKS);
-  TJ.useComponentSettings({ defaultWidth: 8, defaultHeight: 7 });
+  ToolJet.useComponentSettings({ role: 'colorpicker', fit: true, loading: 'own', defaultWidth: 8, defaultHeight: 7 });
 
   const colors = M.toSwatches(swatches);
   const opaque = M.rgbaToHex(M.hsvToRgb(hsva), false);
-  const Dropper = typeof window !== 'undefined' ? (window as unknown as { EyeDropper?: EyeDropperCtor }).EyeDropper : undefined;
+  const Dropper =
+    typeof window !== 'undefined' ? (window as unknown as { EyeDropper?: EyeDropperCtor }).EyeDropper : undefined;
   const eyeDrop = async () => {
     if (!Dropper) return;
     try {
@@ -232,7 +296,13 @@ export const ColorPicker = () => {
             )}
             {container ? (
               <Popover.Portal container={container}>
-                <Popover.Content aria-label="Choose a colour" className="ui-popup ui2-in ui2-pop ui2-color-pop" style={looks} align="start" sideOffset={4}>
+                <Popover.Content
+                  aria-label="Choose a colour"
+                  className="ui-popup ui2-in ui2-pop ui2-color-pop"
+                  style={looks}
+                  align="start"
+                  sideOffset={4}
+                >
                   {showPicker !== false ? (
                     <>
                       <div
@@ -247,7 +317,10 @@ export const ColorPicker = () => {
                           background: `linear-gradient(to top, #000000, transparent), linear-gradient(to right, #ffffff, hsl(${Math.round(hsva.h)} 100% 50%))`,
                         }}
                       >
-                        <span className="ui2-color-thumb" style={{ left: `${hsva.s * 100}%`, top: `${(1 - hsva.v) * 100}%`, background: opaque }} />
+                        <span
+                          className="ui2-color-thumb"
+                          style={{ left: `${hsva.s * 100}%`, top: `${(1 - hsva.v) * 100}%`, background: opaque }}
+                        />
                       </div>
                       <div
                         {...hue}
@@ -261,7 +334,13 @@ export const ColorPicker = () => {
                         className="ui2-color-bar"
                         style={{ background: 'linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00)' }}
                       >
-                        <span className="ui2-color-thumb" style={{ left: `${(hsva.h / 360) * 100}%`, background: `hsl(${Math.round(hsva.h)} 100% 50%)` }} />
+                        <span
+                          className="ui2-color-thumb"
+                          style={{
+                            left: `${(hsva.h / 360) * 100}%`,
+                            background: `hsl(${Math.round(hsva.h)} 100% 50%)`,
+                          }}
+                        />
                       </div>
                       {alpha ? (
                         <div
@@ -293,7 +372,12 @@ export const ColorPicker = () => {
                       onKeyDown={(e) => isEnter(e) && applyDraft()}
                     />
                     {typeof Dropper === 'function' ? (
-                      <button type="button" className="ui2-color-dropper" aria-label="Pick a color from the screen" onClick={eyeDrop}>
+                      <button
+                        type="button"
+                        className="ui2-color-dropper"
+                        aria-label="Pick a color from the screen"
+                        onClick={eyeDrop}
+                      >
                         <Pipette size={16} />
                       </button>
                     ) : null}

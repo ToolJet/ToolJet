@@ -40,9 +40,21 @@ import '../styles/ui2-choice.css';
 export const DateTimePicker = () => {
   const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: 'Date and time' });
   const [description] = ToolJet.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Pick a date and time' });
-  const [defaultValue] = ToolJet.useStateString({ name: 'defaultValue', label: 'Default value (YYYY-MM-DD HH:mm)', initialValue: '' });
-  const [dateFormatProp] = ToolJet.useStateString({ name: 'dateFormat', label: 'Date display format', initialValue: 'DD MMM YYYY' });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Pick a date and time',
+  });
+  const [defaultValue] = ToolJet.useStateString({
+    name: 'defaultValue',
+    label: 'Default value (YYYY-MM-DD HH:mm)',
+    initialValue: '',
+  });
+  const [dateFormatProp] = ToolJet.useStateString({
+    name: 'dateFormat',
+    label: 'Date display format',
+    initialValue: 'DD MMM YYYY',
+  });
   const [timeFormat] = ToolJet.useStateEnumeration({
     name: 'timeFormat',
     label: 'Time format',
@@ -52,23 +64,54 @@ export const DateTimePicker = () => {
     inspector: 'switch',
   });
   const [minuteStepProp] = ToolJet.useStateNumber({ name: 'minuteStep', label: 'Minute step', initialValue: 5 });
-  const [minDate, setMinDate] = ToolJet.useStateString({ name: 'minDate', label: 'Earliest date (YYYY-MM-DD)', initialValue: '' });
-  const [maxDate, setMaxDate] = ToolJet.useStateString({ name: 'maxDate', label: 'Latest date (YYYY-MM-DD)', initialValue: '' });
-  const [disabledDates, setDisabledDates] = ToolJet.useStateArray({ name: 'disabledDates', label: 'Disabled dates', initialValue: [] });
-  const [showClearBtn] = ToolJet.useStateBoolean({ name: 'showClearBtn', label: 'Show clear button', initialValue: false });
+  const [minDate, setMinDate] = ToolJet.useStateString({
+    name: 'minDate',
+    label: 'Earliest date (YYYY-MM-DD)',
+    initialValue: '',
+  });
+  const [maxDate, setMaxDate] = ToolJet.useStateString({
+    name: 'maxDate',
+    label: 'Latest date (YYYY-MM-DD)',
+    initialValue: '',
+  });
+  const [disabledDates, setDisabledDates] = ToolJet.useStateArray({
+    name: 'disabledDates',
+    label: 'Disabled dates',
+    initialValue: [],
+  });
+  const [showClearBtn] = ToolJet.useStateBoolean({
+    name: 'showClearBtn',
+    label: 'Show clear button',
+    initialValue: false,
+  });
   // Exposed values. `value` was the pack's default value: an app that set it still starts on it.
   const [legacyValue, setValue] = ToolJet.useStateString({ name: 'value', initialValue: '', inspector: 'hidden' });
   const [, setSelectedDate] = ToolJet.useStateString({ name: 'selectedDate', initialValue: '', inspector: 'hidden' });
   const [, setSelectedTime] = ToolJet.useStateString({ name: 'selectedTime', initialValue: '', inspector: 'hidden' });
-  const [, setUnixTimestamp] = ToolJet.useStateNumber({ name: 'unixTimestamp', initialValue: null as unknown as number, inspector: 'hidden' });
+  const [, setUnixTimestamp] = ToolJet.useStateNumber({
+    name: 'unixTimestamp',
+    initialValue: null as unknown as number,
+    inspector: 'hidden',
+  });
   const [, setDisplayValue] = ToolJet.useStateString({ name: 'displayValue', initialValue: '', inspector: 'hidden' });
-  const [disabledProp] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
+  const [disabledProp] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable',
+    initialValue: false,
+    inspector: 'hidden',
+  });
   const onSelect = ToolJet.useEventCallback({ name: 'onSelect' });
   const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
   const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
   const styles = useFieldStyles();
   const popoverStyles = usePopoverStyles('Calendar icon color');
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 7 });
+  ToolJet.useComponentSettings({
+    role: 'datetimepicker',
+    fit: true,
+    loading: 'own',
+    defaultWidth: 12,
+    defaultHeight: 7,
+  });
   const { disabled, loading } = useBusy(disabledProp);
   const fieldId = ToolJet.useFieldId();
 
@@ -80,8 +123,13 @@ export const DateTimePicker = () => {
   const displayFormat = `${dayFormat} ${use24 ? 'HH:mm' : 'h:mm A'}`;
   const step = minuteStep(minuteStepProp, 5);
   const stableDisabled = useStable(disabledDates);
-  const rules = useMemo(() => dateRules({ minDate, maxDate, disabledDates: stableDisabled, format: dayFormat }), [minDate, maxDate, stableDisabled, dayFormat]);
-  const readDefault = () => parseDateTime(defaultValue === '' || defaultValue == null ? legacyValue : defaultValue, displayFormat)?.getTime() ?? null;
+  const rules = useMemo(
+    () => dateRules({ minDate, maxDate, disabledDates: stableDisabled, format: dayFormat }),
+    [minDate, maxDate, stableDisabled, dayFormat]
+  );
+  const readDefault = () =>
+    parseDateTime(defaultValue === '' || defaultValue == null ? legacyValue : defaultValue, displayFormat)?.getTime() ??
+    null;
   const [ts, setTs] = useState<number | null>(readDefault);
   const tsRef = useRef(ts);
   tsRef.current = ts;
@@ -92,7 +140,10 @@ export const DateTimePicker = () => {
     setTs(parseDateTime(defaultValue, displayFormat)?.getTime() ?? null);
   });
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
-  ToolJet.useFormClear(() => { setSkipped(null); setTs(null); });
+  ToolJet.useFormClear(() => {
+    setSkipped(null);
+    setTs(null);
+  });
   const [open, setOpen] = useState(false);
   // An open popup closes when its owner stops taking input (disabled, or blocked or hidden by the host): useOwnerGuard.
   useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
@@ -122,24 +173,62 @@ export const DateTimePicker = () => {
       setTs(d ? d.getTime() : null);
     }
   };
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }, { handle: 'format', displayName: 'Format' }] }, setDate);
-  ToolJet.useAction({ name: 'setValueInTimestamp', displayName: 'Set value in timestamp', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => {
-    const n = Number(v);
-    if (v !== '' && v !== null && v !== undefined && Number.isFinite(n)) setTs(n);
-  });
+  ToolJet.useAction(
+    {
+      name: 'setValue',
+      displayName: 'Set value',
+      params: [
+        { handle: 'value', displayName: 'Value' },
+        { handle: 'format', displayName: 'Format' },
+      ],
+    },
+    setDate
+  );
+  ToolJet.useAction(
+    {
+      name: 'setValueInTimestamp',
+      displayName: 'Set value in timestamp',
+      params: [{ handle: 'value', displayName: 'Value' }],
+    },
+    (v) => {
+      const n = Number(v);
+      if (v !== '' && v !== null && v !== undefined && Number.isFinite(n)) setTs(n);
+    }
+  );
   // setTime keeps the day (today when none is picked) and sets the time of day.
-  ToolJet.useAction({ name: 'setTime', displayName: 'Set time', params: [{ handle: 'value', displayName: 'Value' }, { handle: 'format', displayName: 'Format' }] }, (v, f) => {
-    const m = parseTimeArg(v, f);
-    if (m === null) return;
-    const day = tsRef.current === null ? startOfDay(new Date()) : new Date(tsRef.current);
-    const next = atTime(day, m);
-    if (next) setTs(next.getTime());
-  });
+  ToolJet.useAction(
+    {
+      name: 'setTime',
+      displayName: 'Set time',
+      params: [
+        { handle: 'value', displayName: 'Value' },
+        { handle: 'format', displayName: 'Format' },
+      ],
+    },
+    (v, f) => {
+      const m = parseTimeArg(v, f);
+      if (m === null) return;
+      const day = tsRef.current === null ? startOfDay(new Date()) : new Date(tsRef.current);
+      const next = atTime(day, m);
+      if (next) setTs(next.getTime());
+    }
+  );
   ToolJet.useAction({ name: 'clearValue', displayName: 'Clear value' }, () => setTs(null));
-  ToolJet.useAction({ name: 'setMinDate', displayName: 'Set min date', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => setMinDate(v ? String(v) : ''));
-  ToolJet.useAction({ name: 'setMaxDate', displayName: 'Set max date', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => setMaxDate(v ? String(v) : ''));
-  ToolJet.useAction({ name: 'setDisabledDates', displayName: 'Set disabled dates', params: [{ handle: 'value', displayName: 'Value' }] }, (v) =>
-    setDisabledDates(Array.isArray(v) ? v : v === undefined || v === null || v === '' ? [] : [v])
+  ToolJet.useAction(
+    { name: 'setMinDate', displayName: 'Set min date', params: [{ handle: 'value', displayName: 'Value' }] },
+    (v) => setMinDate(v ? String(v) : '')
+  );
+  ToolJet.useAction(
+    { name: 'setMaxDate', displayName: 'Set max date', params: [{ handle: 'value', displayName: 'Value' }] },
+    (v) => setMaxDate(v ? String(v) : '')
+  );
+  ToolJet.useAction(
+    {
+      name: 'setDisabledDates',
+      displayName: 'Set disabled dates',
+      params: [{ handle: 'value', displayName: 'Value' }],
+    },
+    (v) => setDisabledDates(Array.isArray(v) ? v : v === undefined || v === null || v === '' ? [] : [v])
   );
   ToolJet.useAction({ name: 'clearDisabledDates', displayName: 'Clear disabled dates' }, () => setDisabledDates([]));
   ToolJet.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => triggerRef.current?.focus());
@@ -148,8 +237,14 @@ export const DateTimePicker = () => {
     triggerRef.current?.blur();
   });
 
-  const problem = skipped ? `The clocks skip ${skipped.text} in this time zone. Pick another time.` : dateProblem(date, rules);
-  const check = ToolJet.useValidation({ section: 'date', value: date ? formatDate(date, 'YYYY-MM-DD[T]HH:mm') : '', present: !!date && !problem });
+  const problem = skipped
+    ? `The clocks skip ${skipped.text} in this time zone. Pick another time.`
+    : dateProblem(date, rules);
+  const check = ToolJet.useValidation({
+    kind: 'date',
+    value: date ? formatDate(date, 'YYYY-MM-DD[T]HH:mm') : '',
+    present: !!date && !problem,
+  });
   const focus = useFocusEvents(onFocus, onBlur, check.touch);
   const now = new Date();
   const nowMinutes = Math.floor((now.getHours() * 60 + now.getMinutes()) / step) * step;
@@ -159,7 +254,7 @@ export const DateTimePicker = () => {
     if (skipped) return skipped.day;
     if (date) return startOfDay(date);
     const today = startOfDay(now);
-    return !dateProblem(today, rules) ? today : rules.min ?? today;
+    return !dateProblem(today, rules) ? today : (rules.min ?? today);
   };
   const pickAt = (day: Date, m: number) => {
     const next = atTime(day, m);
@@ -196,7 +291,13 @@ export const DateTimePicker = () => {
 
   return (
     <div className="ui uc" ref={anchorRef} style={vars}>
-      <Field label={label} description={description} htmlFor={fieldId} error={check.error || problem} required={check.required}>
+      <Field
+        label={label}
+        description={description}
+        htmlFor={fieldId}
+        error={check.error || problem}
+        required={check.required}
+      >
         <FieldLoading loading={loading}>
           <Popover.Root open={open} onOpenChange={openChange}>
             <PickerTrigger
@@ -221,7 +322,13 @@ export const DateTimePicker = () => {
             />
             {container ? (
               <Popover.Portal container={container}>
-                <Popover.Content aria-label="Choose a date and time" className="ui-popup uc-pop" align="start" sideOffset={4} style={popVars}>
+                <Popover.Content
+                  aria-label="Choose a date and time"
+                  className="ui-popup uc-pop"
+                  align="start"
+                  sideOffset={4}
+                  style={popVars}
+                >
                   <MonthGrid
                     autoFocus
                     month={month}

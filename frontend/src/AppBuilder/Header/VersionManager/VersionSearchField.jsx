@@ -7,7 +7,6 @@ const VersionSearchField = ({ value, onChange, placeholder = 'Search versions by
       <div
         className="d-flex align-items-center"
         style={{
-          backgroundColor: 'white',
           border: '1px solid var(--border-default)',
           borderRadius: '6px',
           padding: '7px 12px',

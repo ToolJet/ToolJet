@@ -4,6 +4,8 @@
 import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useSessionManagement } from '@/_hooks/useSessionManagement';
+import { useAutoSyncNotifications } from '@/_hooks/useAutoSyncNotifications';
+import { useNotificationsStore } from '@/_stores/notificationsStore';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { handleAppAccess, handleError } from '@/_helpers/handleAppAccess';
 import { getQueryParams, getSubpath } from '@/_helpers/routes';
@@ -12,6 +14,9 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useMobileRouteGuard } from '@/_hooks/useMobileRouteGuard';
 import { MobileEmptyState } from './MobileBlock';
 import { authenticationService, appsService } from '@/_services';
+import { workspaceBranchesService } from '@/_services/workspace_branches.service';
+import { getBranchNameFromUrl, getResolvedBranchName, setActiveBranch } from '@/_helpers/active-branch';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { getEnvironmentAccessFromPermissions, getSafeEnvironment } from '@/_helpers/environmentAccess';
 
 export const AppsRoute = ({ children, componentType, darkMode }) => {
@@ -23,12 +28,70 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
     /* Only for preiview / released apps */
     disableInValidSessionCallback: componentType !== 'editor',
   });
+  useAutoSyncNotifications();
+
+  // Connect the notifications WebSocket once session is valid — must not fire before
+  // authentication completes or the org_id will be "null" (string), causing 401 loops.
+  // Only connect in editor mode to avoid unnecessary server load from end-user viewers.
+  useEffect(() => {
+    if (isValidSession && componentType === 'editor') {
+      useNotificationsStore.getState().actions.connect();
+    }
+  }, [isValidSession, componentType]);
+
   const clonedElement = React.cloneElement(children, extraProps);
   const navigate = useNavigate();
   const switchPage = useStore((state) => state.switchPage);
   const { shouldBlockMobile } = useMobileRouteGuard();
-  /* 
-   any extra logic specifc to the route can be done 
+
+  // Resolve the URL branch name (`?branch=<name>`) to its id before the app-access/load calls,
+  // so they carry the right branch_id. The editor/viewer mount fresh with no branches store, so
+  // resolve via a lightweight list() call. IMPORTANT: only invoked from onValidSession — once the
+  // session is established (tj-workspace-id available); calling it on bare mount would fire the
+  // request before the workspace context exists. Best-effort: on failure fall back to the
+  // default branch (backend resolves it).
+  const resolveBranchFromUrl = async () => {
+    const branchName = getBranchNameFromUrl();
+    // Already resolved for THIS URL branch — nothing to do. (Don't gate on getActiveBranchId():
+    // the cache may hold a DIFFERENT branch from a previous route and must be re-resolved.)
+    if (!branchName || getResolvedBranchName() === branchName) return;
+    // Fast path: during SPA navigation the workspace branches store is already populated, so
+    // resolve name -> id synchronously and avoid the async race with the app-load. Use
+    // switchBranch so the store's currentBranch (the UI's source of truth) is kept in sync with
+    // the API cache — otherwise the app loads on the URL branch while the UI still shows main.
+    const wsStore = useWorkspaceBranchesStore.getState();
+    const storeBranch = wsStore.branches?.find((b) => b.name === branchName);
+    if (storeBranch) {
+      wsStore.actions.switchBranch(storeBranch.id);
+      return;
+    }
+    // Hard reload / fresh viewer: no store yet — fetch and resolve, then sync both cache + store.
+    try {
+      const data = await workspaceBranchesService.list();
+      const branches = data?.branches || [];
+      // Fall back to the default branch when the URL branch is unknown — e.g. a feature branch
+      // that no longer exists client-side in single-branch mode. setActiveBranch rewrites the URL
+      // to the resolved branch, so `?branch=<feature>` is redirected to the default.
+      const branch =
+        branches.find((b) => b.name === branchName) ||
+        branches.find((b) => b.is_default || b.isDefault) ||
+        branches[0] ||
+        null;
+      setActiveBranch(branch);
+      if (branch) {
+        useWorkspaceBranchesStore.setState({
+          branches,
+          activeBranchId: branch.id,
+          currentBranch: branch,
+        });
+      }
+    } catch {
+      setActiveBranch(null);
+    }
+  };
+
+  /*
+   any extra logic specifc to the route can be done
    when the session is valid state updates to true.
   */
   useEffect(() => {
@@ -45,6 +108,8 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
   useEffect(() => {
     const validateSession = async () => {
       if (!isInvalidSession || componentType !== 'viewer') return;
+      // No branch resolution here: this path runs without a valid session (released/public apps),
+      // which are resolved by slug instance-wide and are branch-independent.
 
       const { slug, versionId, environmentId } = params;
       const queryParams = getQueryParams();
@@ -94,6 +159,10 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
     const isSwitchingPages = location.state?.isSwitchingPage;
 
     if (!isSwitchingPages) {
+      // Resolve the branch (session is valid here, so tj-workspace-id is available) before the
+      // app-access/load calls so they carry the right branch_id.
+      await resolveBranchFromUrl();
+
       const { slug, versionId, environmentId, pageHandle } = params;
       /* Validate the app permissions */
       let accessDetails = await handleAppAccess(componentType, slug, versionId, environmentId);

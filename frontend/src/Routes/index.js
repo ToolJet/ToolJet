@@ -5,4 +5,5 @@ export * from './SwitchWorkspaceRoute';
 export * from './OrganizationInviteRoute';
 export * from './SuperAdminRoute';
 export * from './AuthRoute';
+export * from './GroupAdminOrAdminRoute';
 export * from './MarketplaceRoute';

@@ -106,20 +106,20 @@ function TableDetailsDropdown({
                   {isEmpty(targetTable)
                     ? 'Please select the table'
                     : isSourceColumnAvailable
-                    ? 'Please select source column'
-                    : tableColumns.length === 0
-                    ? 'There are no columns of the same datatype'
-                    : 'There are no columns of the same datatype'}
+                      ? 'Please select source column'
+                      : tableColumns.length === 0
+                        ? 'There are no columns of the same datatype'
+                        : 'There are no columns of the same datatype'}
                 </div>
               }
               value={
                 source && (!isEditColumn || !isCreateColumn)
                   ? sourceColumn
                   : source && (isEditColumn || isCreateColumn)
-                  ? defaultValue
-                  : actions
-                  ? onDelete
-                  : targetColumn
+                    ? defaultValue
+                    : actions
+                      ? onDelete
+                      : targetColumn
               }
               foreignKeyAccess={true}
               topPlaceHolder={!actions && 'Select column..'}

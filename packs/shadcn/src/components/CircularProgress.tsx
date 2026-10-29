@@ -12,19 +12,48 @@ export const CircularProgress = () => {
   const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value (0 to 100)', initialValue: 63 });
   const [size] = ToolJet.useStateNumber({ name: 'size', label: 'Size (px)', initialValue: 96 });
   const [thickness] = ToolJet.useStateNumber({ name: 'thickness', label: 'Thickness (px)', initialValue: 8 });
-  const [lineCap] = ToolJet.useStateEnumeration({ name: 'lineCap', label: 'Ends', enumDefinition: ['round', 'flat'], enumLabels: { round: 'Round', flat: 'Flat' }, initialValue: 'round', inspector: 'switch' });
-  const [centerText] = ToolJet.useStateEnumeration({ name: 'centerText', label: 'Centre text', enumDefinition: ['value', 'custom', 'none'], enumLabels: { value: 'Value', custom: 'Custom', none: 'None' }, initialValue: 'value', inspector: 'switch' });
+  const [lineCap] = ToolJet.useStateEnumeration({
+    name: 'lineCap',
+    label: 'Ends',
+    enumDefinition: ['round', 'flat'],
+    enumLabels: { round: 'Round', flat: 'Flat' },
+    initialValue: 'round',
+    inspector: 'switch',
+  });
+  const [centerText] = ToolJet.useStateEnumeration({
+    name: 'centerText',
+    label: 'Centre text',
+    enumDefinition: ['value', 'custom', 'none'],
+    enumLabels: { value: 'Value', custom: 'Custom', none: 'None' },
+    initialValue: 'value',
+    inspector: 'switch',
+  });
   const [customText] = ToolJet.useStateString({ name: 'text', label: 'Custom centre text', initialValue: '' });
   const [label] = ToolJet.useStateString({ name: 'label', label: 'Sub-label', initialValue: 'Complete' });
   const barColor = useThemeColor('barColor', 'Bar color', TOKEN.brand);
   const trackColor = useThemeColor('trackColor', 'Track color', TOKEN.brand);
   const textColor = useThemeColor('textColor', 'Centre text color', TOKEN.text);
   const labelColor = useThemeColor('labelColor', 'Sub-label color', TOKEN.mutedText);
-  const alignment = ToolJet.useStyleEnumeration({ name: 'alignment', label: 'Alignment', enumDefinition: ['left', 'center', 'right'], enumLabels: { left: 'Left', center: 'Center', right: 'Right' }, initialValue: 'center' });
+  const alignment = ToolJet.useStyleEnumeration({
+    name: 'alignment',
+    label: 'Alignment',
+    enumDefinition: ['left', 'center', 'right'],
+    enumLabels: { left: 'Left', center: 'Center', right: 'Right' },
+    initialValue: 'center',
+  });
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 5, defaultHeight: 10 });
+  ToolJet.useComponentSettings({
+    role: 'circularprogress',
+    fit: true,
+    loading: 'own',
+    defaultWidth: 5,
+    defaultHeight: 10,
+  });
 
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => setValue(clamp(num(v), 0, 100)));
+  ToolJet.useAction(
+    { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (v) => setValue(clamp(num(v), 0, 100))
+  );
 
   // The ring is the size set, or the largest square its box has room for: a 96px ring was cut in a box narrower or
   // shorter than that (a 3-column box on a phone-width page).
@@ -34,7 +63,8 @@ export const CircularProgress = () => {
     const el = wrap.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
     // An unlaid box (0 by 0, jsdom, a hidden tab) keeps the size set.
-    const measure = () => setRoom(el.clientWidth > 0 && el.clientHeight > 0 ? Math.min(el.clientWidth, el.clientHeight) : 0);
+    const measure = () =>
+      setRoom(el.clientWidth > 0 && el.clientHeight > 0 ? Math.min(el.clientWidth, el.clientHeight) : 0);
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(el);

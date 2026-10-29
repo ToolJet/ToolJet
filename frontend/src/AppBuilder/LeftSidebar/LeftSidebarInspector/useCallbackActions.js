@@ -2,12 +2,14 @@ import { toast } from 'react-hot-toast';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { copyToClipboard } from './utils';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const useCallbackActions = () => {
-  const deleteComponents = useStore((state) => state.deleteComponents, shallow);
+  const { isModuleEditor } = useModuleContext();
+  const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation, shallow);
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const currentPageComponents = useStore((state) => state?.getCurrentPageComponents(), shallow);
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const runQuery = useStore((state) => state.queryPanel.runQuery);
   const getComponentIdToAutoScroll = useStore((state) => state.getComponentIdToAutoScroll);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery, shallow);
@@ -15,10 +17,12 @@ const useCallbackActions = () => {
   const getQueryIdFromName = useStore((state) => state.getQueryIdFromName, shallow);
   const expandQueryPaneIfNeeded = useStore((state) => state.queryPanel.expandQueryPaneIfNeeded, shallow);
 
+  // Goes through the confirmation dialog rather than deleting outright, so the
+  // reference check that guards every other delete path applies here too.
   const handleRemoveComponent = (component) => {
     const { nodeName } = component;
     const componentId = getComponentIdFromName(nodeName);
-    deleteComponents([componentId]);
+    if (componentId) setWidgetDeleteConfirmation(true, [componentId]);
   };
 
   const handleSelectComponentOnEditor = (component) => {

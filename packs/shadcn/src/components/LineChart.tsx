@@ -2,7 +2,19 @@ import React, { useMemo } from 'react';
 import { CartesianGrid, Line, LineChart as RLineChart, ReferenceLine, XAxis } from 'recharts';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { LOCALE_HINT } from '../lib/locale';
-import { AXIS, CURSOR_LINE, ChartFrame, GRID, REF, clickedMarks, seriesColor, tooltipAndLegend, useBoxSize, useChartClick, valueAxis } from '../lib/ui2/charts/chartParts';
+import {
+  AXIS,
+  CURSOR_LINE,
+  ChartFrame,
+  GRID,
+  REF,
+  clickedMarks,
+  seriesColor,
+  tooltipAndLegend,
+  useBoxSize,
+  useChartClick,
+  valueAxis,
+} from '../lib/ui2/charts/chartParts';
 import {
   animated,
   clamp,
@@ -43,25 +55,68 @@ const SAMPLE = [
 export const LineChart = () => {
   const [data] = ToolJet.useStateArray({ name: 'data', label: 'Data', initialValue: SAMPLE });
   const [xField] = ToolJet.useStateString({ name: 'xField', label: 'X field', initialValue: 'month' });
-  const [yFields] = ToolJet.useStateString({ name: 'yFields', label: 'Series fields (one or many)', description: 'A field, a list, or comma-separated.', initialValue: 'revenue, expenses' });
-  const [curve] = ToolJet.useStateEnumeration({ name: 'curve', label: 'Curve', enumDefinition: ['monotone', 'linear', 'step'], initialValue: 'monotone', inspector: 'switch' });
+  const [yFields] = ToolJet.useStateString({
+    name: 'yFields',
+    label: 'Series fields (one or many)',
+    description: 'A field, a list, or comma-separated.',
+    initialValue: 'revenue, expenses',
+  });
+  const [curve] = ToolJet.useStateEnumeration({
+    name: 'curve',
+    label: 'Curve',
+    enumDefinition: ['monotone', 'linear', 'step'],
+    initialValue: 'monotone',
+    inspector: 'switch',
+  });
   const [showDots] = ToolJet.useStateBoolean({ name: 'showDots', label: 'Dots', initialValue: false });
   const [strokeWidth] = ToolJet.useStateNumber({ name: 'strokeWidth', label: 'Line width (px)', initialValue: 2 });
-  const [dashedFields] = ToolJet.useStateString({ name: 'dashedFields', label: 'Dashed series (fields)', initialValue: '' });
-  const [referenceValue] = ToolJet.useStateString({ name: 'referenceValue', label: 'Target line value', initialValue: '' });
-  const [referenceLabel] = ToolJet.useStateString({ name: 'referenceLabel', label: 'Target line label', initialValue: '' });
-  const [yAxisFormat] = ToolJet.useStateEnumeration({ name: 'yAxisFormat', label: 'Value format', enumDefinition: ['number', 'currency', 'percent', 'compact'], initialValue: 'number', inspector: 'switch' });
+  const [dashedFields] = ToolJet.useStateString({
+    name: 'dashedFields',
+    label: 'Dashed series (fields)',
+    initialValue: '',
+  });
+  const [referenceValue] = ToolJet.useStateString({
+    name: 'referenceValue',
+    label: 'Target line value',
+    initialValue: '',
+  });
+  const [referenceLabel] = ToolJet.useStateString({
+    name: 'referenceLabel',
+    label: 'Target line label',
+    initialValue: '',
+  });
+  const [yAxisFormat] = ToolJet.useStateEnumeration({
+    name: 'yAxisFormat',
+    label: 'Value format',
+    enumDefinition: ['number', 'currency', 'percent', 'compact'],
+    initialValue: 'number',
+    inspector: 'switch',
+  });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency code', initialValue: 'USD' });
-  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
+  const [locale] = ToolJet.useStateString({
+    name: 'locale',
+    label: 'Locale',
+    description: LOCALE_HINT,
+    initialValue: '',
+  });
   const [valuePrefix] = ToolJet.useStateString({ name: 'valuePrefix', label: 'Value prefix', initialValue: '' });
   const [valueSuffix] = ToolJet.useStateString({ name: 'valueSuffix', label: 'Value suffix', initialValue: '' });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No data' });
   const [animate] = ToolJet.useStateBoolean({ name: 'animate', label: 'Animate', initialValue: true });
   const [showGrid] = ToolJet.useStateBoolean({ name: 'showGrid', label: 'Grid', initialValue: true });
   const [showLegend] = ToolJet.useStateBoolean({ name: 'showLegend', label: 'Legend', initialValue: true });
-  const [seriesLabels] = ToolJet.useStateObject({ name: 'seriesLabels', label: 'Series labels ({ field: label })', initialValue: {} });
+  const [seriesLabels] = ToolJet.useStateObject({
+    name: 'seriesLabels',
+    label: 'Series labels ({ field: label })',
+    initialValue: {},
+  });
   const [colors] = ToolJet.useStateArray({ name: 'colors', label: 'Series colors (in order)', initialValue: [] });
-  const [highlightClicked] = ToolJet.useStateBoolean({ name: 'highlightClicked', label: 'Highlight clicked point', description: 'Draws the clicked point emphasised until Clear clicked point runs or another is clicked.', initialValue: false });
+  const [highlightClicked] = ToolJet.useStateBoolean({
+    name: 'highlightClicked',
+    label: 'Highlight clicked point',
+    description: 'Draws the clicked point emphasised until Clear clicked point runs or another is clicked.',
+    initialValue: false,
+  });
   const click = useChartClick(highlightClicked);
   const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
   const gridColor = useThemeColor('gridColor', 'Grid line color', TOKEN.border);
@@ -69,7 +124,7 @@ export const LineChart = () => {
   const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);
   const referenceLineColor = useThemeColor('referenceLineColor', 'Target line color', TOKEN.mutedText);
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 28 });
+  ToolJet.useComponentSettings({ role: 'linechart', fit: false, loading: 'own', defaultWidth: 20, defaultHeight: 28 });
   const box = useBoxSize();
 
   const target = num(referenceValue);
@@ -83,7 +138,9 @@ export const LineChart = () => {
     const short = scaled(formatter(format, true), lineScale);
     const extremes = values.filter((v): v is number => typeof v === 'number');
     if (target !== null) extremes.push(target);
-    const longest = extremes.length ? Math.max(String(short(Math.max(...extremes))).length, String(short(Math.min(...extremes))).length) : 3;
+    const longest = extremes.length
+      ? Math.max(String(short(Math.max(...extremes))).length, String(short(Math.min(...extremes))).length)
+      : 3;
     const labels = drawnLabelMap(seriesLabels, configured, fields.series);
     const slots = seriesSlots(configured, fields.series);
     return {
@@ -99,10 +156,27 @@ export const LineChart = () => {
       full: scaled(formatter(format, false), lineScale),
       yWidth: Math.min(88, Math.max(32, longest * 7 + 10)),
       allowDecimals: !wholeNumbers(plotted, fields.series),
-      ticks: wholeTicks(target !== null && fields.series.length ? [...plotted, { [fields.series[0]]: target }] : plotted, fields.series),
+      ticks: wholeTicks(
+        target !== null && fields.series.length ? [...plotted, { [fields.series[0]]: target }] : plotted,
+        fields.series
+      ),
       xTicks: dateTicks(plotted, fields.x),
     };
-  }, [data, xField, yFields, dashedFields, seriesLabels, colors, chartColor, yAxisFormat, currency, locale, valuePrefix, valueSuffix, target]);
+  }, [
+    data,
+    xField,
+    yFields,
+    dashedFields,
+    seriesLabels,
+    colors,
+    chartColor,
+    yAxisFormat,
+    currency,
+    locale,
+    valuePrefix,
+    valueSuffix,
+    target,
+  ]);
   const compact = box.height > 0 && isCompactChart(box.height);
   const targetLabel = isSet(referenceLabel) ? String(referenceLabel) : '';
   const width = clamp(strokeWidth, 0.5, 12, 2);
@@ -115,14 +189,21 @@ export const LineChart = () => {
         emptyText={emptyText}
         label="Line chart"
         resetKey={[data, xField, yFields]}
-        looks={{ '--lk-grid': gridColor, '--lk-axis': axisTextColor, '--lk-legend': legendTextColor, '--lk-ref': referenceLineColor }}
+        looks={{
+          '--lk-grid': gridColor,
+          '--lk-axis': axisTextColor,
+          '--lk-legend': legendTextColor,
+          '--lk-ref': referenceLineColor,
+        }}
         notes={m.notes}
         onDoubleClick={click.doubleClick}
       >
         <RLineChart
           data={m.rows}
           margin={{ left: 4, right: 12, top: target !== null && targetLabel ? 20 : 8 }}
-          onClick={(e: { activePayload?: { payload?: unknown }[] } | null) => click.pick(e?.activePayload?.[0]?.payload)}
+          onClick={(e: { activePayload?: { payload?: unknown }[] } | null) =>
+            click.pick(e?.activePayload?.[0]?.payload)
+          }
         >
           {showGrid !== false && !compact ? <CartesianGrid vertical={false} stroke={GRID} /> : null}
           <XAxis dataKey={m.x} {...AXIS} hide={compact} minTickGap={24} tickFormatter={m.xTicks} />
@@ -134,7 +215,11 @@ export const LineChart = () => {
               stroke={REF}
               strokeDasharray="4 4"
               ifOverflow="extendDomain"
-              label={targetLabel ? { value: targetLabel, position: 'insideTopRight', fill: REF, fontSize: 12, offset: 6 } : undefined}
+              label={
+                targetLabel
+                  ? { value: targetLabel, position: 'insideTopRight', fill: REF, fontSize: 12, offset: 6 }
+                  : undefined
+              }
             />
           ) : null}
           {m.series.map((s, i) => (

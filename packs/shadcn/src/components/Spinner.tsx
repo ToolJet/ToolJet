@@ -23,7 +23,11 @@ export const Spinner = () => {
     initialValue: 'ring',
     inspector: 'switch',
   });
-  const [size] = ToolJet.useStateString({ name: 'size', label: 'Size (sm, default, lg or px)', initialValue: 'default' });
+  const [size] = ToolJet.useStateString({
+    name: 'size',
+    label: 'Size (sm, default, lg or px)',
+    initialValue: 'default',
+  });
   const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: 'Loading…' });
   const [labelPosition] = ToolJet.useStateEnumeration({
     name: 'labelPosition',
@@ -36,8 +40,14 @@ export const Spinner = () => {
   const spinnerColor = useThemeColor('spinnerColor', 'Spinner color', TOKEN.brand);
   const trackColor = useThemeColor('trackColor', 'Ring track color', TOKEN.brand);
   const labelColor = useThemeColor('labelColor', 'Label color', TOKEN.mutedText);
-  const alignment = ToolJet.useStyleEnumeration({ name: 'alignment', label: 'Alignment', enumDefinition: ['left', 'center', 'right'], initialValue: 'left', inspector: 'switch' });
-  ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
+  const alignment = ToolJet.useStyleEnumeration({
+    name: 'alignment',
+    label: 'Alignment',
+    enumDefinition: ['left', 'center', 'right'],
+    initialValue: 'left',
+    inspector: 'switch',
+  });
+  ToolJet.useComponentSettings({ role: 'spinner', fit: false, loading: 'own', defaultWidth: 6, defaultHeight: 4 });
 
   const px = spinnerSize(size);
   const stroke = Math.max(2, Math.round(px / 10));
@@ -85,7 +95,11 @@ export const Spinner = () => {
         ]),
       }}
     >
-      <div role="status" aria-label={text || 'Loading'} className={cn('ui2-spinner', labelPosition === 'bottom' && 'is-below')}>
+      <div
+        role="status"
+        aria-label={text || 'Loading'}
+        className={cn('ui2-spinner', labelPosition === 'bottom' && 'is-below')}
+      >
         {indicator}
         {text ? <span className="ui2-spinner-label">{text}</span> : null}
       </div>

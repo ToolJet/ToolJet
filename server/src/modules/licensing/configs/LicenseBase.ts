@@ -42,6 +42,7 @@ export default class LicenseBase {
   private _ai: object;
   private _isExternalApis: boolean;
   private _isAppWhiteLabelling: boolean;
+  private _isEnvMapping: boolean;
   private _plan: string;
   private _isCustomGroups: boolean;
   private _modules: object;
@@ -55,6 +56,7 @@ export default class LicenseBase {
   private _isGoogle: boolean;
   private _isGithub: boolean;
   private _isObservability: object;
+  private _isGitSyncMultiBranch: boolean;
   private _aiPlan: 'byok' | 'selfhostai' | 'credits';
 
   constructor(
@@ -144,6 +146,7 @@ export default class LicenseBase {
     this._isMultiPlayerEdit = this.getFeatureValue('multiPlayerEdit');
     this._isComments = this.getFeatureValue('comments');
     this._isGitSync = this.getFeatureValue('gitSync');
+    this._isGitSyncMultiBranch = this.getFeatureValue('gitSyncMultiBranch');
     this._isAi = this.getFeatureValue('ai');
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
@@ -152,6 +155,7 @@ export default class LicenseBase {
     // non-flexible plans - which would silently turn MFA on for every pre-existing license.
     this._isMfaEnabled = (this._features as any)?.mfa === true;
     this._isCustomDomains = this.getFeatureValue('customDomains');
+    this._isEnvMapping = this.getFeatureValue('workspaceEnv');
     this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
   }
 
@@ -612,6 +616,7 @@ export default class LicenseBase {
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
       gitSync: this.gitSync,
+      gitSyncMultiBranch: this.gitSyncMultiBranch,
       comments: this.comments,
       ai: this.aiFeature,
       appWhiteLabelling: this.appWhiteLabelling,
@@ -639,6 +644,7 @@ export default class LicenseBase {
       appHistory: this.appHistory,
       appJsLibraries: this.appJsLibraries,
       queryFolders: this.queryFolders,
+      workspaceEnv: this.workspaceEnv,
       customComponentLibraries: this.customComponentLibraries,
       versionReview: this.versionReview,
       aiPlan: this.aiPlan,
@@ -742,6 +748,10 @@ export default class LicenseBase {
     return !PLANS_BELOW_PRO.includes(this._plan?.toLowerCase());
   }
 
+  public get workspaceEnv(): boolean {
+    return true;
+  }
+
   public get appJsLibraries(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.jsLibraries;
@@ -751,6 +761,13 @@ export default class LicenseBase {
       return false;
     }
     return !!this._app?.features?.jsLibraries;
+  }
+
+  public get gitSyncMultiBranch(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS?.features?.gitSync && !!this.BASIC_PLAN_TERMS?.features?.gitSyncMultiBranch;
+    }
+    return !!this._isGitSync && !!this._isGitSyncMultiBranch;
   }
 
   public get publicApp(): boolean {

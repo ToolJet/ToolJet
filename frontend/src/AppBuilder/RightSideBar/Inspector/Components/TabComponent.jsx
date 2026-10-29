@@ -458,6 +458,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
                       {(provided, snapshot) => (
                         <div
                           key={index}
+                          data-list-item-id={String(item.id ?? '')}
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
@@ -569,7 +570,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
             allComponents
           )}
           {_renderTabOptions()}
-          {/* shadcn/ui Tabs (experiment): its style, alignment and wizard options apply to static tabs as well. */}
+          {/* ToolJet UI 2.0 Tabs: its style, alignment and wizard options apply to static tabs as well. */}
           {component?.component?.component === 'ShadTabs' &&
             properties
               .filter((property) => !['useDynamicOptions', 'tabs'].includes(property))

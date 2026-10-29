@@ -7,7 +7,9 @@ import * as request from 'supertest';
 import { CustomComponentLibrary } from '@entities/custom_component_library.entity';
 import { CustomComponentLibraryRevision } from '@entities/custom_component_library_revision.entity';
 import { CustomComponentDevBundle } from '@entities/custom_component_dev_bundle.entity';
-import { saveEntity } from './utils';
+import { AppVersion } from '@entities/app_version.entity';
+import { Component } from '@entities/component.entity';
+import { saveEntity, updateEntity } from './utils';
 
 /** Creates a CustomComponentLibrary row directly (bypassing the HTTP/service layer). */
 export async function createLibrary(
@@ -44,6 +46,35 @@ export async function createDevBundle(
     manifest: buildManifest(),
     uploadedAt: new Date(),
     ...overrides,
+  } as any);
+}
+
+/**
+ * Pins a library version in an app version's globalSettings, the way the builder does.
+ * The pin key is the correlationId with dashes stripped.
+ */
+export async function pinLibraryToVersion(
+  version: AppVersion,
+  library: CustomComponentLibrary,
+  libraryVersion = '1.0.0'
+): Promise<void> {
+  const pinKey = library.correlationId.replace(/-/g, '');
+  await updateEntity(AppVersion, version.id, {
+    globalSettings: { ...version.globalSettings, customComponentLibraries: { [pinKey]: libraryVersion } } as any,
+  });
+}
+
+/**
+ * Drops a LibraryComponent instance referencing a library onto a page. A pin alone doesn't
+ * block deletion (nothing clears it when the last instance goes) -- deleteLibrary looks for
+ * this row, so real-usage tests need both.
+ */
+export async function createLibraryComponent(pageId: string, correlationId: string): Promise<Component> {
+  return saveEntity(Component, {
+    name: `librarycomponent-${Date.now()}`,
+    type: 'LibraryComponent',
+    pageId,
+    properties: { correlationId: { value: correlationId } },
   } as any);
 }
 

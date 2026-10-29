@@ -43,7 +43,7 @@ describe('customComponentLibrariesStore', () => {
   });
 
   describe('fetchLibraries', () => {
-    it('[FetchLibraries-001] populates devPreviewEmailsByUserId from every library\'s devBundles', () => {
+    it("[FetchLibraries-001] populates devPreviewEmailsByUserId from every library's devBundles", () => {
       // Break this catches: the exact bug this design targets — email resolution used to
       // live inside syncDevPinStreams (gated behind license/stream access), so without a
       // CCL license the "dev: <email>" badge fell back to showing a raw userId. Deriving
@@ -87,7 +87,7 @@ describe('customComponentLibrariesStore', () => {
       useCustomComponentLibrariesStore.setState({ libraries: [library] as any });
     });
 
-    it('[SyncDevPinStreams-001] does not touch devPreviewEmailsByUserId — that is fetchLibraries\' job now', () => {
+    it("[SyncDevPinStreams-001] does not touch devPreviewEmailsByUserId — that is fetchLibraries' job now", () => {
       useCustomComponentLibrariesStore.setState({ devPreviewEmailsByUserId: { 'user-1': 'stale@tooljet.io' } });
 
       useCustomComponentLibrariesStore.getState().syncDevPinStreams({ [DASHLESS]: 'dev:user-1' });
@@ -97,7 +97,7 @@ describe('customComponentLibrariesStore', () => {
       });
     });
 
-    it('[SyncDevPinStreams-002] opens a stream for the viewer\'s own pin', () => {
+    it("[SyncDevPinStreams-002] opens a stream for the viewer's own pin", () => {
       useCustomComponentLibrariesStore.getState().syncDevPinStreams({ [DASHLESS]: 'dev:user-1' });
 
       expect(customComponentLibrariesService.streamDevBundleUpdates).toHaveBeenCalledWith(
@@ -113,7 +113,7 @@ describe('customComponentLibrariesStore', () => {
       expect(customComponentLibrariesService.streamDevBundleUpdates).not.toHaveBeenCalled();
     });
 
-    it('[SyncDevPinStreams-004] a live push invalidates that library\'s dev manifest cache entry', () => {
+    it("[SyncDevPinStreams-004] a live push invalidates that library's dev manifest cache entry", () => {
       // Break this catches: a push not evicting the cached manifest, since the key has
       // no nonce to bust it automatically.
       useCustomComponentLibrariesStore.setState({
@@ -121,7 +121,8 @@ describe('customComponentLibrariesStore', () => {
       });
 
       useCustomComponentLibrariesStore.getState().syncDevPinStreams({ [DASHLESS]: 'dev:user-1' });
-      const onMessage = (customComponentLibrariesService.streamDevBundleUpdates as jest.Mock).mock.calls[0][2].onMessage;
+      const onMessage = (customComponentLibrariesService.streamDevBundleUpdates as jest.Mock).mock.calls[0][2]
+        .onMessage;
       onMessage();
 
       expect(useCustomComponentLibrariesStore.getState().manifests[`${LIBRARY_ID}@dev:user-1`]).toBeUndefined();
@@ -148,7 +149,9 @@ describe('customComponentLibrariesStore', () => {
     it('[InvalidateManifest-002] is a no-op when there is nothing cached for that key', () => {
       useCustomComponentLibrariesStore.setState({ manifests: {} });
 
-      expect(() => useCustomComponentLibrariesStore.getState().invalidateManifest(LIBRARY_ID, 'dev:user-1')).not.toThrow();
+      expect(() =>
+        useCustomComponentLibrariesStore.getState().invalidateManifest(LIBRARY_ID, 'dev:user-1')
+      ).not.toThrow();
       expect(useCustomComponentLibrariesStore.getState().manifests).toEqual({});
     });
   });

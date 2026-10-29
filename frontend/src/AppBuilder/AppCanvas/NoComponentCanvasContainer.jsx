@@ -7,12 +7,14 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 // The AI-era empty canvas ships with the AI builder (ee); without it the cards below stay.
 import { EmptyCanvasAiState } from '@ee/modules/AiBuilder/components/CanvasBuild';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const NoComponentCanvasContainer = () => {
+  const { isModuleEditor } = useModuleContext();
   const sampleDataSource = useStore((state) => state.sampleDataSource, shallow);
   const createDataQuery = useStore((state) => state.dataQuery.createDataQuery, shallow);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData, shallow);
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const expandQueryPaneIfNeeded = useStore((state) => state.queryPanel.expandQueryPaneIfNeeded);
   const aiFeaturesEnabled = useStore((state) => state.ai?.aiFeaturesEnabled);
 

@@ -20,7 +20,13 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     if (superAdmin) {
       // super admin can do all operations
       can(
-        [FEATURE_KEY.GET_DOMAINS, FEATURE_KEY.GET_TERMS, FEATURE_KEY.UPDATE_LICENSE, FEATURE_KEY.GET_LICENSE],
+        [
+          FEATURE_KEY.GET_DOMAINS,
+          FEATURE_KEY.GET_TERMS,
+          FEATURE_KEY.UPDATE_LICENSE,
+          FEATURE_KEY.GET_LICENSE,
+          FEATURE_KEY.UPDATE_ENV_LICENSE_SETTING,
+        ],
         InstanceSettings
       );
     }

@@ -119,12 +119,12 @@ export const FlexContainer = ({
         overflowY: 'visible',
       }
     : shouldStack
-    ? { overflowY: 'auto' }
-    : flexWrap
-    ? {}
-    : isRow
-    ? { overflowX: 'auto' }
-    : { overflowY: 'auto' };
+      ? { overflowY: 'auto' }
+      : flexWrap
+        ? {}
+        : isRow
+          ? { overflowX: 'auto' }
+          : { overflowY: 'auto' };
 
   const outerStyles = {
     height: isDynamicHeightEnabled ? 'auto' : '100%',

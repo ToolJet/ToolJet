@@ -42,14 +42,21 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     if (!isEmpty(dataQueryId)) {
       dataQuery = await this.manager.findOne(DataQuery, {
         where: { id: dataQueryId },
-        relations: ['apps'],
+        relations: ['apps', 'appVersion'],
       });
     }
-    const isPublicAppRequest = isEmpty(organizationId) && !isEmpty(dataQuery) && dataQuery.app.isPublic;
+    // Every app type carries is_public on its own app_versions row.
+    const isQueryPublic = dataQuery?.appVersion?.isPublic;
+    const isPublicAppRequest = isEmpty(organizationId) && !isEmpty(dataQuery) && isQueryPublic;
     const isUserLoggedin = !isEmpty(requestContext.user) && !isEmpty(organizationId);
     const orgMismatch = !isEmpty(dataQuery) && dataQuery?.app?.organizationId !== organizationId;
 
-    if (superAdmin || isAdmin || userPermission.tjdbCRUD) {
+    // Instance-wide switch: only admins may modify ToolJet Database, regardless of group permissions.
+    const isEditRestrictedToAdmins = process.env.TOOLJET_DB_DISABLE_BUILDER_EDIT === 'true' && !(superAdmin || isAdmin);
+    // App queries reach PostgREST in-process and never pass this guard, so any proxy write here is a direct API call.
+    const isBlockedProxyWrite = isEditRestrictedToAdmins && requestContext.method !== 'GET';
+
+    if (superAdmin || isAdmin || (userPermission.tjdbCRUD && !isEditRestrictedToAdmins)) {
       can(
         [
           FEATURE_KEY.CREATE_TABLE,
@@ -65,7 +72,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         InternalTable
       );
     }
-    if (superAdmin || isAdmin || isBuilder) {
+    if (superAdmin || isAdmin || (isBuilder && !isEditRestrictedToAdmins)) {
       can([FEATURE_KEY.BULK_UPLOAD], InternalTable);
     }
 
@@ -73,7 +80,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 
-    if (isUserLoggedin && (isAdmin || isBuilder || !orgMismatch)) {
+    if (isUserLoggedin && (isAdmin || isBuilder || !orgMismatch) && !isBlockedProxyWrite) {
       //For logged in users only with valid organization and data query, allow proxy postgrest feature
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }

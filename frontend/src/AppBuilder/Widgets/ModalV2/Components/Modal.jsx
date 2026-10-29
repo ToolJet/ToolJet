@@ -17,11 +17,13 @@ export const ModalWidget = ({ ...restProps }) => {
     customStyles,
     parentRef,
     id,
+    moduleId,
     showConfigHandler,
     isDisabled,
     isLoading,
     modalBodyHeight,
     onHideModal,
+    onModalEntered,
     hideCloseButton,
     darkMode,
     modalWidth,
@@ -42,7 +44,7 @@ export const ModalWidget = ({ ...restProps }) => {
   const setComponentProperty = useStore((state) => state.setComponentProperty);
   const activeSlot = useActiveSlot(id); // Track the active slot for this widget
   const temporaryLayouts = useStore((state) => {
-    return state.temporaryLayouts?.[getDynamicLayoutKey(id, subContainerIndex, '-body')];
+    return state.temporaryLayouts?.[getDynamicLayoutKey(id, subContainerIndex, '-body', moduleId)];
   }, shallow);
   const [needsBodyScroll, setNeedsBodyScroll] = useState(false);
   const _modalHeight = isFullScreen ? '100vh' : `${modalHeight}px`;
@@ -174,6 +176,7 @@ export const ModalWidget = ({ ...restProps }) => {
       )}
       backdropClassName={skin ? 'tj-shad-backdrop' : undefined}
       animation={true}
+      onEntered={onModalEntered}
       onEscapeKeyDown={(e) => {
         // A nested Radix overlay (PopoverMenu / Select) dismisses on Escape in the
         // capture phase and calls preventDefault() on the same event; this handler

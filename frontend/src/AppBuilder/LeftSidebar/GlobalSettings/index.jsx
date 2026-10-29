@@ -12,7 +12,7 @@ import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import Accordion from '@/_ui/Accordion';
 import './styles.scss';
 
-const GlobalSettings = ({ darkMode, onClose, isModuleEditor = false }) => {
+const GlobalSettings = ({ darkMode, onClose, onBackToSearch, isModuleEditor = false }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
 
   const canvasStylesContent = (
@@ -35,7 +35,7 @@ const GlobalSettings = ({ darkMode, onClose, isModuleEditor = false }) => {
     <ModuleProvider moduleId={'canvas'}>
       <div className={cx('global-settings-panel', { 'dark-theme': darkMode })}>
         {/* Header */}
-        <GlobalSettingsHeader darkMode={darkMode} onClose={onClose} />
+        <GlobalSettingsHeader darkMode={darkMode} onClose={onClose} onBackToSearch={onBackToSearch} />
 
         {/* Main Content Section */}
         <div className="global-settings-main-content">
@@ -43,9 +43,7 @@ const GlobalSettings = ({ darkMode, onClose, isModuleEditor = false }) => {
           {!isModuleEditor && (
             <>
               <SlugInput />
-              <div className={cx({ disabled: shouldFreeze })}>
-                <MaintenanceMode darkMode={darkMode} />
-              </div>
+              <MaintenanceMode darkMode={darkMode} />
             </>
           )}
           <AppExport darkMode={darkMode} isModuleEditor={isModuleEditor} />

@@ -179,6 +179,24 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
     );
   }, [currentPageComponents, setBoxList, currentLayout]);
 
+  // The control box is a separate floating element. Lose its shared scroll port and it drifts silently.
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') return;
+    const id = selectedComponents?.[0];
+    if (!id) return;
+    const t = setTimeout(() => {
+      const el = document.querySelector(`.ele-${id}`);
+      const box = document.querySelector(`.moveable-control-box[target-id="${id}"]`);
+      if (!el || !box) return;
+      const drift = Math.round(box.getBoundingClientRect().top - el.getBoundingClientRect().top);
+      if (Math.abs(drift) > 2) {
+        // eslint-disable-next-line no-console
+        console.warn(`[moveable] control box drifted ${drift}px from "${id}" — resize handles will not line up`);
+      }
+    }, 250);
+    return () => clearTimeout(t);
+  }, [selectedComponents]);
+
   const safeUpdateMoveable = () => {
     if (!isDraggingRef.current && moveableRef.current) {
       moveableRef.current.updateTarget();
@@ -196,7 +214,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noOfBoxs, triggerCanvasUpdater, menuPosition, hideLogo, hideHeader, isPageMenuHidden]);
 
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const isAutoMobileLayout = useStore((state) => state.getIsAutoMobileLayout(moduleId));
 
   const handleResizeStop = useCallback(
     (boxList) => {
@@ -659,7 +678,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         origin={false}
         individualGroupable={virtualTarget ? false : groupedTargets.length <= 1}
         draggable={!shouldFreeze}
-        resizable={!shouldFreeze ? isWidgetResizable : false}
+        resizable={!(currentLayout === 'mobile' && isAutoMobileLayout) && !shouldFreeze ? isWidgetResizable : false}
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
@@ -746,6 +765,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           positionGhostElement(e.target, 'moveable-ghost-widget');
         }}
         onResizeStart={(e) => {
+          // Auto stacking owns mobile positions; manual resizing is allowed once it's off.
+          if (currentLayout === 'mobile' && useStore.getState().getIsAutoMobileLayout(moduleId)) {
+            toast("Can't move components while auto layout is on", { id: 'mobile-auto-lock' });
+            return false;
+          }
           if (
             e.target.id &&
             useGridStore.getState().resizingComponentId !== e.target.id &&
@@ -973,6 +997,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         }}
         checkInput
         onDragStart={(e) => {
+          // Auto stacking: let a click select, but block the move itself (alerted in onDrag).
+          if (currentLayout === 'mobile' && useStore.getState().getIsAutoMobileLayout(moduleId)) {
+            if (e.target.id && !e.target.classList.contains('delete-icon')) setSelectedComponents([e.target.id]);
+            return true;
+          }
           if (e.target.id === 'moveable-virtual-ghost-element') {
             // A component from the panel reaches the canvas at its right edge, right beside the panel.
             startAutoScroll(e.clientX, e.clientY, e.target, 'drag', { waitForEdgeExit: true });
@@ -1063,6 +1092,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           if (e.target.id === 'moveable-virtual-ghost-element') {
             return;
           }
+          // Blocked in onDrag while auto stacking is on, so there is nothing to persist.
+          if (currentLayout === 'mobile' && useStore.getState().getIsAutoMobileLayout(moduleId)) return;
           try {
             if (isDraggingRef.current) {
               useStore.getState().setDraggingComponentId(null);
@@ -1188,6 +1219,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
             // Update autoscroll with current mouse position and target
             updateMousePosition(e.clientX, e.clientY, e.target);
+            return false;
+          }
+          // Auto stacking owns mobile positions; manual dragging is allowed once it's off.
+          if (currentLayout === 'mobile' && useStore.getState().getIsAutoMobileLayout(moduleId)) {
+            toast("Can't move components while auto layout is on", { id: 'mobile-auto-lock' });
             return false;
           }
           // Since onDrag is called multiple times when dragging, hence we are using isDraggingRef to prevent setting state again and again

@@ -257,7 +257,7 @@ const VersionPicker = ({ library }) => {
             className="custom-library-version-chip"
             data-cy={`custom-library-version-${library.name.toLowerCase().replace(/\s+/g, '-')}`}
           >
-            {isDevPin ? 'dev' : current ?? 'Select version'}
+            {isDevPin ? 'dev' : (current ?? 'Select version')}
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="custom-library-version-menu" onClick={(e) => e.stopPropagation()}>
@@ -327,46 +327,29 @@ const VersionPicker = ({ library }) => {
   );
 };
 
-const CustomComponentCard = ({
-  libraryId,
-  correlationId,
-  libraryName,
-  revisionId,
+// A draggable card for one SDK-built component (a library's or a pack's): drops `dragComponent` as a
+// `componentType` widget, with the same rules as the built-in components' DragLayer. `onDropped` runs after a drop.
+// `tile` draws it as a ToolJet widget in the palette (its role's widget icon over its name), else as a list row.
+export const SdkComponentCard = ({
+  componentType,
+  dragComponent,
   name,
-  componentConfig,
+  displayName,
+  description,
+  role,
   tile = false,
+  onDropped,
 }) => {
-  const { displayName, description, props = [], styles = [], defaultWidth, defaultHeight, role } = componentConfig;
   const darkMode = useStore((state) => state.isTJDarkMode);
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const { handleDrop } = useCanvasDropHandler() || noop;
 
-  const dragComponent = useMemo(() => {
-    const defaultSize = manifestDefaultSize({ defaultWidth, defaultHeight });
-    return {
-      component: 'LibraryComponent',
-      displayName: name,
-      defaultSize,
-      libraryComponentInfo: {
-        libraryId,
-        correlationId,
-        libraryName,
-        componentName: name,
-        revisionId,
-        props,
-        styles,
-        defaultSize,
-      },
-    };
-  }, [libraryId, correlationId, libraryName, name, revisionId, props, styles, defaultWidth, defaultHeight]);
-
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
       type: 'box',
-      item: { componentType: 'LibraryComponent', component: dragComponent },
+      item: { componentType, component: dragComponent },
       collect: (monitor) => ({ isDragging: monitor.isDragging() }),
-      // Same rules as the built-in components' DragLayer.
       end: (item, monitor) => {
         // Released over the component panel: the drag is cancelled. The panel overlays the canvas, so the
         // position lookup below would otherwise find the canvas underneath and add the component.
@@ -382,14 +365,10 @@ const CustomComponentCard = ({
           ? findNewParentIdFromMousePosition(releasedAt.x, releasedAt.y)
           : useGridStore.getState().currentDragCanvasId;
         handleDrop(item, canvasId ?? useGridStore.getState().currentDragCanvasId);
-        const { globalSettings, globalSettingsChanged } = useStore.getState();
-        const pins = globalSettings?.customComponentLibraries ?? {};
-        if (!normalizePin(pins[dashlessId(correlationId)] ?? pins[correlationId])) {
-          globalSettingsChanged({ customComponentLibraries: { ...pins, [dashlessId(correlationId)]: revisionId } });
-        }
+        onDropped?.();
       },
     }),
-    [dragComponent]
+    [componentType, dragComponent, onDropped]
   );
 
   useEffect(() => {
@@ -450,5 +429,58 @@ const CustomComponentCard = ({
         {description && <div className="custom-component-card-description">{description}</div>}
       </div>
     </div>
+  );
+};
+
+const CustomComponentCard = ({
+  libraryId,
+  correlationId,
+  libraryName,
+  revisionId,
+  name,
+  componentConfig,
+  tile = false,
+}) => {
+  const { displayName, description, props = [], styles = [], defaultWidth, defaultHeight, role } = componentConfig;
+
+  const dragComponent = useMemo(() => {
+    const defaultSize = manifestDefaultSize({ defaultWidth, defaultHeight });
+    return {
+      component: 'LibraryComponent',
+      displayName: name,
+      defaultSize,
+      libraryComponentInfo: {
+        libraryId,
+        correlationId,
+        libraryName,
+        componentName: name,
+        revisionId,
+        props,
+        styles,
+        defaultSize,
+      },
+    };
+  }, [libraryId, correlationId, libraryName, name, revisionId, props, styles, defaultWidth, defaultHeight]);
+
+  // The first drop of a library pins the app to the revision it was dropped from.
+  const pinRevision = useCallback(() => {
+    const { globalSettings, globalSettingsChanged } = useStore.getState();
+    const pins = globalSettings?.customComponentLibraries ?? {};
+    if (!normalizePin(pins[dashlessId(correlationId)] ?? pins[correlationId])) {
+      globalSettingsChanged({ customComponentLibraries: { ...pins, [dashlessId(correlationId)]: revisionId } });
+    }
+  }, [correlationId, revisionId]);
+
+  return (
+    <SdkComponentCard
+      componentType="LibraryComponent"
+      dragComponent={dragComponent}
+      name={name}
+      displayName={displayName}
+      description={description}
+      role={role}
+      tile={tile}
+      onDropped={pinRevision}
+    />
   );
 };

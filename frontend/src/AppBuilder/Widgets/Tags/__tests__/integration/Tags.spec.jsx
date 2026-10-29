@@ -7,7 +7,7 @@
  */
 import { screen, waitFor, within } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
-import { tagsConfig } from '@/AppBuilder/WidgetManager/widgets/tags';
+import { tagsConfig } from '@tooljet/widget-definitions';
 import { binding, createWidgetHarness } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 't1';
@@ -184,7 +184,9 @@ describe('Tags widget', () => {
   test('[Tags-BND-003] missing, non-primitive and odd values render safely', async () => {
     // Break this catches: rendering a raw object title (React crash) or an unknown icon name blanking the widget.
     widget.render({
-      properties: dynamic("[{color:'rgb(1, 1, 1)'},{title:{x:1}},{title:'odd', icon:'NotAnIcon', iconVisibility:true}]"),
+      properties: dynamic(
+        "[{color:'rgb(1, 1, 1)'},{title:{x:1}},{title:'odd', icon:'NotAnIcon', iconVisibility:true}]"
+      ),
     });
     await mounted();
 

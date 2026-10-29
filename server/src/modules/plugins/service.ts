@@ -11,7 +11,7 @@ import { IPluginsService } from './interfaces/IService';
 import * as path from 'path';
 import { Injectable } from '@nestjs/common';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
-const fs = require('fs');
+import * as fs from 'fs';
 
 @Injectable()
 export class PluginsService implements IPluginsService {
@@ -41,7 +41,7 @@ export class PluginsService implements IPluginsService {
       if (validManifest && validOperations) {
         shouldCreate = true;
       }
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException('Invalid plugin files');
     }
 
@@ -216,6 +216,7 @@ export class PluginsService implements IPluginsService {
       if (shouldAutoInstall && pluginsToBeInstalled.length) {
         for (const pluginId of pluginsToBeInstalled) {
           const pluginDetails = pluginsListIdToDetailsMap[pluginId];
+          if (!pluginDetails) continue;
           const installedPluginInfo = await this.install(pluginDetails);
           installedPluginsList.push(installedPluginInfo.name);
           installedPluginsInfo.push(installedPluginInfo);

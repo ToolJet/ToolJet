@@ -9,6 +9,7 @@ import { findHighestLevelofSelection } from './Grid/gridUtils';
 import { NO_OF_GRIDS, isTabsType, isModalType } from './appCanvasConstants';
 import { computeComponentName, getAllChildComponents } from './appCanvasUtils';
 import { utilityFuncForNameSeed } from '@/_helpers/utils';
+import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 
 const getSelectedText = () => {
   let selectedText = '';
@@ -123,7 +124,7 @@ const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentI
       parentComponent.component.component === 'Accordion' ||
       parentComponent.component.component === 'Form' ||
       isModalType(parentComponent.component.component) ||
-      parentComponent.component.component === 'LibraryComponent'
+      isSdkComponentType(parentComponent.component.component)
     );
   }
 
@@ -311,7 +312,7 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
       (key) =>
         targetParentId === key ||
         ((isTabsType(components?.[key]?.component.component) ||
-          components?.[key]?.component.component === 'LibraryComponent') &&
+          isSdkComponentType(components?.[key]?.component.component)) &&
           targetParentId?.split('-')?.slice(0, -1)?.join('-') === key) ||
         (['Container', 'Form', 'ModalV2', 'ShadDialog', 'Accordion'].includes(components?.[key]?.component.component) &&
           ['header', 'footer'].some((section) => targetParentId.includes(section)))
@@ -455,8 +456,13 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
         existingComponents = Object.values(components);
       }
 
-      // Add already processed components to existingComponents
-      const processedComponents = finalComponentWithUpdatedLayout || [];
+      // NOTE: this used to read `finalComponentWithUpdatedLayout || []` — a TDZ
+      // self-reference (this .map callback runs while that const is still being
+      // initialized) that ES5 output evaluated as `undefined`. So already-pasted
+      // components were never actually included in position calculations. Historical
+      // behavior preserved; to make the original intent work, accumulate processed
+      // components in a separate array declared before this map.
+      const processedComponents = [];
       existingComponents = [...existingComponents, ...processedComponents];
       if (isGroup) {
         // Handle group positioning

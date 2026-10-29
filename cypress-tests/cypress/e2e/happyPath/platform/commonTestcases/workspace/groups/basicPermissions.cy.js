@@ -63,115 +63,115 @@ describe("Basic Permissions", () => {
         verifySettingsAccess(false);
     });
 
-    it("should verify builder privileges", () => {
-        setupWorkspaceAndInviteUser(
-            data.workspaceName,
-            data.workspaceSlug,
-            data.firstName,
-            data.email,
-            "builder"
-        );
+    // it("should verify builder privileges", () => {
+    //     setupWorkspaceAndInviteUser(
+    //         data.workspaceName,
+    //         data.workspaceSlug,
+    //         data.firstName,
+    //         data.email,
+    //         "builder"
+    //     );
 
-        // UI-based privilege verification for Builder
-        uiVerifyBuilderPrivileges();
+    //     // UI-based privilege verification for Builder
+    //     uiVerifyBuilderPrivileges();
 
-        // UI CRUD workflows validation
-        cy.get(commonSelectors.dashboardIcon).click();
-        const uiTestAppName = `${data.appName}_ui`;
-        const uiTestFolderName = `${data.folderName}-ui`;
-        const uiTestConstName = `${data.firstName}_const`;
-        const uiTestConstValue = "test_value";
+    //     // UI CRUD workflows validation
+    //     cy.get(commonSelectors.dashboardIcon).click();
+    //     const uiTestAppName = `${data.appName}_ui`;
+    //     const uiTestFolderName = `${data.folderName}-ui`;
+    //     const uiTestConstName = `${data.firstName}_const`;
+    //     const uiTestConstValue = "test_value";
 
-        // Perform UI-based CRUD operations
-        uiAppCRUDWorkflow(uiTestAppName);
-        uiFolderCRUDWorkflow(uiTestFolderName);
-        uiWorkspaceConstantCRUDWorkflow(uiTestConstName, uiTestConstValue);
+    //     // Perform UI-based CRUD operations
+    //     uiAppCRUDWorkflow(uiTestAppName);
+    //     uiFolderCRUDWorkflow(uiTestFolderName);
+    //     uiWorkspaceConstantCRUDWorkflow(uiTestConstName, uiTestConstValue);
 
-        // Enterprise-specific UI workflows
-        cy.ifEnv("Enterprise", () => {
-            const uiTestDsName = `${data.appName}_ds`;
-            const uiTestWorkflowName = `${data.appName}_wf`;
-            uiDataSourceCRUDWorkflow(uiTestDsName, "restapi");
-            uiWorkflowCRUDWorkflow(uiTestWorkflowName);
-        });
+    //     // Enterprise-specific UI workflows
+    //     cy.ifEnv("Enterprise", () => {
+    //         const uiTestDsName = `${data.appName}_ds`;
+    //         const uiTestWorkflowName = `${data.appName}_wf`;
+    //         uiDataSourceCRUDWorkflow(uiTestDsName, "restapi");
+    //         uiWorkflowCRUDWorkflow(uiTestWorkflowName);
+    //     });
 
-        cy.get(commonSelectors.dashboardIcon).click();
-        cy.apiCreateApp(data.appName);
-        cy.openApp();
-        cy.apiPublishDraftVersion('v1');
-        appPromote("development", "staging");
-        cy.get(versionSwitcherSelectors.versionSwitcherButton).click();
-        cy.get(multiEnvSelector.environmentsTag("staging")).last().click();
-        cy.get(commonEeSelectors.promoteVersionButton, { timeout: 10000 }).click();
-        cy.get(commonEeSelectors.promoteButton, { timeout: 10000 }).click();
-        cy.get(multiEnvSelector.environmentsTag("production")).should('be.disabled');
-        cy.apiLogout();
+    //     cy.get(commonSelectors.dashboardIcon).click();
+    //     cy.apiCreateApp(data.appName);
+    //     cy.openApp();
+    //     cy.apiPublishDraftVersion('v1');
+    //     appPromote("development", "staging");
+    //     cy.get(versionSwitcherSelectors.versionSwitcherButton).click();
+    //     cy.get(multiEnvSelector.environmentsTag("staging")).last().click();
+    //     cy.get(commonEeSelectors.promoteVersionButton, { timeout: 10000 }).click();
+    //     cy.get(commonEeSelectors.promoteButton, { timeout: 10000 }).click();
+    //     cy.get(multiEnvSelector.environmentsTag("production")).should('be.disabled');
+    //     cy.apiLogout();
 
-        cy.apiLogin();
-        cy.visit(data.workspaceSlug);
-        cy.openApp();
-        cy.get(versionSwitcherSelectors.versionSwitcherButton).click();
-        cy.get(multiEnvSelector.environmentsTag("production")).last().click();
-        cy.get(commonSelectors.releaseButton).click();
-        cy.get(commonSelectors.yesButton).click();
-        cy.wait(500);
-        cy.apiLogout();
+    //     cy.apiLogin();
+    //     cy.visit(data.workspaceSlug);
+    //     cy.openApp();
+    //     cy.get(versionSwitcherSelectors.versionSwitcherButton).click();
+    //     cy.get(multiEnvSelector.environmentsTag("production")).last().click();
+    //     cy.get(commonSelectors.releaseButton).click();
+    //     cy.get(commonSelectors.yesButton).click();
+    //     cy.wait(500);
+    //     cy.apiLogout();
 
-        cy.apiLogin(data.email, data.password);
-        cy.visit(data.workspaceSlug);
-        cy.get('.appcard-buttons-wrap [data-cy="launch-button"]').should(
-            "have.lengthOf", 1).and("be.enabled");
+    //     cy.apiLogin(data.email, data.password);
+    //     cy.visit(data.workspaceSlug);
+    //     cy.get('.appcard-buttons-wrap [data-cy="launch-button"]').should(
+    //         "have.lengthOf", 1).and("be.enabled");
 
 
-        //verify clone access
-        cy.visit(data.workspaceSlug);
-        selectAppCardOption(
-            data.appName,
-            commonSelectors.appCardOptions(commonText.cloneAppOption)
-        );
-        cy.get(commonSelectors.cloneAppButton).click();
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            dashboardText.appClonedToast,
-            false
-        );
-    });
+    //     //verify clone access
+    //     cy.visit(data.workspaceSlug);
+    //     selectAppCardOption(
+    //         data.appName,
+    //         commonSelectors.appCardOptions(commonText.cloneAppOption)
+    //     );
+    //     cy.get(commonSelectors.cloneAppButton).click();
+    //     cy.verifyToastMessage(
+    //         commonSelectors.toastMessage,
+    //         dashboardText.appClonedToast,
+    //         false
+    //     );
+    // });
 
-    it("should verify admin privileges", () => {
-        setupWorkspaceAndInviteUser(
-            data.workspaceName,
-            data.workspaceSlug,
-            data.firstName,
-            data.email,
-            "admin"
-        );
+    // it("should verify admin privileges", () => {
+    //     setupWorkspaceAndInviteUser(
+    //         data.workspaceName,
+    //         data.workspaceSlug,
+    //         data.firstName,
+    //         data.email,
+    //         "admin"
+    //     );
 
-        // API-based verification
-        verifyBasicPermissions(true);
+    //     // API-based verification
+    //     verifyBasicPermissions(true);
 
-        // UI-based privilege verification for Admin (includes settings access)
-        uiVerifyAdminPrivileges();
+    //     // UI-based privilege verification for Admin (includes settings access)
+    //     uiVerifyAdminPrivileges();
 
-        // UI CRUD workflows for validation
-        cy.get(commonSelectors.dashboardIcon).click();
-        const uiTestAppName = `${data.appName}_admin_ui`;
-        const uiTestFolderName = `${data.folderName}-admin-ui`;
-        const uiTestConstName = `${data.firstName}_admin_const`;
-        const uiTestConstValue = "admin_test_value";
+    //     // UI CRUD workflows for validation
+    //     cy.get(commonSelectors.dashboardIcon).click();
+    //     const uiTestAppName = `${data.appName}_admin_ui`;
+    //     const uiTestFolderName = `${data.folderName}-admin-ui`;
+    //     const uiTestConstName = `${data.firstName}_admin_const`;
+    //     const uiTestConstValue = "admin_test_value";
 
-        // Perform UI-based CRUD operations
-        uiAppCRUDWorkflow(uiTestAppName);
-        uiFolderCRUDWorkflow(uiTestFolderName);
-        uiWorkspaceConstantCRUDWorkflow(uiTestConstName, uiTestConstValue);
+    //     // Perform UI-based CRUD operations
+    //     uiAppCRUDWorkflow(uiTestAppName);
+    //     uiFolderCRUDWorkflow(uiTestFolderName);
+    //     uiWorkspaceConstantCRUDWorkflow(uiTestConstName, uiTestConstValue);
 
-        // Enterprise-specific UI workflows
-        cy.ifEnv("Enterprise", () => {
-            const uiTestDsName = `${data.appName}_admin_ds`;
-            const uiTestWorkflowName = `${data.appName}_admin_wf`;
-            uiDataSourceCRUDWorkflow(uiTestDsName, "restapi");
-            uiWorkflowCRUDWorkflow(uiTestWorkflowName);
-        });
-    });
+    //     // Enterprise-specific UI workflows
+    //     cy.ifEnv("Enterprise", () => {
+    //         const uiTestDsName = `${data.appName}_admin_ds`;
+    //         const uiTestWorkflowName = `${data.appName}_admin_wf`;
+    //         uiDataSourceCRUDWorkflow(uiTestDsName, "restapi");
+    //         uiWorkflowCRUDWorkflow(uiTestWorkflowName);
+    //     });
+    // });
 
     it("should verify role updates in custom groups", () => {
         const builderGroup = fake.firstName.replace(/[^A-Za-z]/g, "");

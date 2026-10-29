@@ -1,6 +1,7 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 import { getPreviewQueryParams } from '@/_helpers/routes';
+import { getActiveBranchId } from '@/_helpers/active-branch';
 
 export const dataqueryService = {
   create,
@@ -161,7 +162,11 @@ function invoke(dataSourceId, methodName, environmentId, args, resolvedOptions) 
     ...(resolvedOptions ? { resolvedOptions } : {}),
   };
 
-  const url = `${config.apiUrl}/data-sources/${dataSourceId}/invoke`;
+  let url = `${config.apiUrl}/data-sources/${dataSourceId}/invoke`;
+  const branchId = getActiveBranchId();
+  if (branchId) {
+    url += `?branch_id=${branchId}`;
+  }
 
   const requestOptions = {
     method: 'POST',
@@ -174,8 +179,10 @@ function invoke(dataSourceId, methodName, environmentId, args, resolvedOptions) 
 
 export function getAllTablesForADataSource(dataSourceId, environmentId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-
-  return fetch(`${config.apiUrl}/data-queries/${dataSourceId}/list-tables/${environmentId}`, requestOptions).then(
-    handleResponse
-  );
+  let url = `${config.apiUrl}/data-queries/${dataSourceId}/list-tables/${environmentId}`;
+  const branchId = getActiveBranchId();
+  if (branchId) {
+    url += `?branch_id=${branchId}`;
+  }
+  return fetch(url, requestOptions).then(handleResponse);
 }

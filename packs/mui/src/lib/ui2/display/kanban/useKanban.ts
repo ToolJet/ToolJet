@@ -19,7 +19,16 @@ import { dropPointAt, NO_TOUCH, useTouchDragRef, type TouchDragOptions } from '.
 // actions, the board state, dragging and the keyboard move. A pack draws the board from what this returns in its own
 // library's parts. Shared as is by the MUI and Ant packs (keep the copies the same).
 
-export type CardFields = { title: string; description: string; badge: string; tags: string; progress: string; avatar: string; meta: string; details: string };
+export type CardFields = {
+  title: string;
+  description: string;
+  badge: string;
+  tags: string;
+  progress: string;
+  avatar: string;
+  meta: string;
+  details: string;
+};
 
 export type KanbanOptions = {
   /** The cards property: the native and shadcn name is data; the Ant pack keeps its own dataSource. */
@@ -37,6 +46,8 @@ export type KanbanOptions = {
   disabled?: boolean;
   /** Loading: no touch move starts (a reload under the spinner would drop the card on stale data). */
   loading?: boolean;
+  /** What the board tells ToolJet about itself beyond its size (useComponentSettings: role, usage, slots, ...). */
+  settings?: Record<string, unknown>;
 };
 
 export type DropTarget = { columnId: string; before: string | null };
@@ -46,7 +57,8 @@ export const CARDS_PER_STEP = 100;
 export const MAX_BOARD_COLUMNS = 50;
 // A detail longer than this takes the card's full width; shorter ones (an amount, a date) sit two to a row.
 export const SHORT_DETAIL = 22;
-export const KEYBOARD_HELP = 'Press Enter to open a card. To move it, press Space, use the arrow keys, then Space or Enter to drop it. Escape cancels.';
+export const KEYBOARD_HELP =
+  'Press Enter to open a card. To move it, press Space, use the arrow keys, then Space or Enter to drop it. Escape cancels.';
 
 export const strip = (card: BoardCard | null | undefined): Record<string, unknown> => {
   if (!card) return {};
@@ -61,14 +73,23 @@ export const asTags = (value: unknown): string[] =>
 export const isImage = (value: unknown) => typeof value === 'string' && /^(https?:|data:image\/)/.test(value.trim());
 
 /** Whether a scrolled element has more content past its end (`axis` y: below, x: to the right), for a fade. */
-export const useMoreAhead = (ref: React.RefObject<HTMLElement>, axis: 'x' | 'y', deps: unknown[], onSize?: (el: HTMLElement) => void) => {
+export const useMoreAhead = (
+  ref: React.RefObject<HTMLElement>,
+  axis: 'x' | 'y',
+  deps: unknown[],
+  onSize?: (el: HTMLElement) => void
+) => {
   const [more, setMore] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
     const check = () => {
       onSize?.(el);
-      setMore(axis === 'y' ? el.scrollHeight - el.scrollTop - el.clientHeight > 4 : el.scrollWidth - el.scrollLeft - el.clientWidth > 4);
+      setMore(
+        axis === 'y'
+          ? el.scrollHeight - el.scrollTop - el.clientHeight > 4
+          : el.scrollWidth - el.scrollLeft - el.clientWidth > 4
+      );
     };
     check();
     el.addEventListener('scroll', check, { passive: true });
@@ -81,10 +102,13 @@ export const useMoreAhead = (ref: React.RefObject<HTMLElement>, axis: 'x' | 'y',
       Array.from(el.children).forEach((child) => observer.observe(child));
     };
     observeAll();
-    const children = typeof MutationObserver === 'undefined' ? null : new MutationObserver(() => {
-      observeAll();
-      check();
-    });
+    const children =
+      typeof MutationObserver === 'undefined'
+        ? null
+        : new MutationObserver(() => {
+            observeAll();
+            check();
+          });
     children?.observe(el, { childList: true });
     return () => {
       el.removeEventListener('scroll', check);
@@ -129,14 +153,23 @@ const useThemeColor = (name: string, label: string, initialValue: string): strin
 };
 
 export const useKanban = (o: KanbanOptions) => {
-  const [data] = ToolJet.useStateArray({ name: o.dataName, label: 'Cards', description: 'Array of card objects, e.g. {{queries.getTasks.data}}.', initialValue: o.sample });
+  const [data] = ToolJet.useStateArray({
+    name: o.dataName,
+    label: 'Cards',
+    description: 'Array of card objects, e.g. {{queries.getTasks.data}}.',
+    initialValue: o.sample,
+  });
   const [columns] = ToolJet.useStateArray({
     name: 'columns',
     label: 'Columns (in order)',
     description: 'Array of { id, title } (a color adds a dot). A status no column lists gets a column at the end.',
     initialValue: o.columns,
   });
-  const [statusFieldRaw] = ToolJet.useStateString({ name: 'statusField', label: 'Status field', initialValue: 'status' });
+  const [statusFieldRaw] = ToolJet.useStateString({
+    name: 'statusField',
+    label: 'Status field',
+    initialValue: 'status',
+  });
   const [idFieldRaw] = ToolJet.useStateString({ name: 'idField', label: 'Id field', initialValue: 'id' });
   const [cardLayout] = ToolJet.useStateEnumeration({
     name: 'cardLayout',
@@ -145,7 +178,8 @@ export const useKanban = (o: KanbanOptions) => {
     enumLabels: { fields: 'Fields', custom: 'Custom' },
     initialValue: 'fields',
     inspector: 'switch',
-    description: 'Custom: each card is a row of ToolJet components reading the card as {{cardData}} (also {{listItem}}), e.g. {{cardData.title}}.',
+    description:
+      'Custom: each card is a row of ToolJet components reading the card as {{cardData}} (also {{listItem}}), e.g. {{cardData.title}}.',
   });
   const [cardHeight] = ToolJet.useStateNumber({
     name: 'cardHeight',
@@ -156,14 +190,46 @@ export const useKanban = (o: KanbanOptions) => {
     visibleWhen: { key: 'cardLayout', value: 'custom' },
   });
   const d = o.defaults;
-  const [titleField] = ToolJet.useStateString({ name: 'titleField', label: 'Title field', initialValue: d.title ?? 'title' });
-  const [descriptionField] = ToolJet.useStateString({ name: 'descriptionField', label: 'Description field', initialValue: d.description ?? '' });
-  const [badgeField] = ToolJet.useStateString({ name: 'badgeField', label: 'Badge field (priority, severity)', initialValue: d.badge ?? '' });
-  const [tagsField] = ToolJet.useStateString({ name: 'tagsField', label: 'Tags field (a list)', initialValue: d.tags ?? '' });
-  const [progressField] = ToolJet.useStateString({ name: 'progressField', label: 'Progress field (0 to 100)', initialValue: d.progress ?? '' });
-  const [metaField] = ToolJet.useStateString({ name: 'metaField', label: 'Meta field (a date, a count)', initialValue: d.meta ?? '' });
-  const [avatarField] = ToolJet.useStateString({ name: 'avatarField', label: 'Avatar field (a name or image URL)', initialValue: d.avatar ?? '' });
-  const [detailsField] = ToolJet.useStateString({ name: 'detailsField', label: 'Details field (shown on the clicked card)', initialValue: d.details ?? '' });
+  const [titleField] = ToolJet.useStateString({
+    name: 'titleField',
+    label: 'Title field',
+    initialValue: d.title ?? 'title',
+  });
+  const [descriptionField] = ToolJet.useStateString({
+    name: 'descriptionField',
+    label: 'Description field',
+    initialValue: d.description ?? '',
+  });
+  const [badgeField] = ToolJet.useStateString({
+    name: 'badgeField',
+    label: 'Badge field (priority, severity)',
+    initialValue: d.badge ?? '',
+  });
+  const [tagsField] = ToolJet.useStateString({
+    name: 'tagsField',
+    label: 'Tags field (a list)',
+    initialValue: d.tags ?? '',
+  });
+  const [progressField] = ToolJet.useStateString({
+    name: 'progressField',
+    label: 'Progress field (0 to 100)',
+    initialValue: d.progress ?? '',
+  });
+  const [metaField] = ToolJet.useStateString({
+    name: 'metaField',
+    label: 'Meta field (a date, a count)',
+    initialValue: d.meta ?? '',
+  });
+  const [avatarField] = ToolJet.useStateString({
+    name: 'avatarField',
+    label: 'Avatar field (a name or image URL)',
+    initialValue: d.avatar ?? '',
+  });
+  const [detailsField] = ToolJet.useStateString({
+    name: 'detailsField',
+    label: 'Details field (shown on the clicked card)',
+    initialValue: d.details ?? '',
+  });
   const [density] = ToolJet.useStateEnumeration({
     name: 'density',
     label: 'Card density',
@@ -172,15 +238,47 @@ export const useKanban = (o: KanbanOptions) => {
     initialValue: 'comfortable',
     inspector: 'switch',
   });
-  const [collapsedHeight] = ToolJet.useStateString({ name: 'collapsedHeight', label: 'Collapsed card height (px, empty: show all)', initialValue: '' });
-  const [columnWidthRaw] = ToolJet.useStateString({ name: 'columnWidth', label: 'Column width (px, empty: fill the board)', initialValue: '' });
-  const [showCount] = ToolJet.useStateBoolean({ name: 'showCount', label: 'Card count on columns', initialValue: true });
-  const [collapsibleColumns] = ToolJet.useStateBoolean({ name: 'collapsibleColumns', label: 'Collapsible columns', initialValue: true });
-  const [collapsedColumns, setCollapsedColumns] = ToolJet.useStateArray({ name: 'collapsedColumns', label: 'Columns collapsed at start (ids)', initialValue: [] });
+  const [collapsedHeight] = ToolJet.useStateString({
+    name: 'collapsedHeight',
+    label: 'Collapsed card height (px, empty: show all)',
+    initialValue: '',
+  });
+  const [columnWidthRaw] = ToolJet.useStateString({
+    name: 'columnWidth',
+    label: 'Column width (px, empty: fill the board)',
+    initialValue: '',
+  });
+  const [showCount] = ToolJet.useStateBoolean({
+    name: 'showCount',
+    label: 'Card count on columns',
+    initialValue: true,
+  });
+  const [collapsibleColumns] = ToolJet.useStateBoolean({
+    name: 'collapsibleColumns',
+    label: 'Collapsible columns',
+    initialValue: true,
+  });
+  const [collapsedColumns, setCollapsedColumns] = ToolJet.useStateArray({
+    name: 'collapsedColumns',
+    label: 'Columns collapsed at start (ids)',
+    initialValue: [],
+  });
   const [allowDrag] = ToolJet.useStateBoolean({ name: 'allowDrag', label: 'Drag to move', initialValue: true });
-  const [allowAdd] = ToolJet.useStateBoolean({ name: 'allowAdd', label: 'Add card button on columns', initialValue: false });
-  const [allowDelete] = ToolJet.useStateBoolean({ name: 'allowDelete', label: 'Delete button on cards', initialValue: false });
-  const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty column message', initialValue: 'No cards' });
+  const [allowAdd] = ToolJet.useStateBoolean({
+    name: 'allowAdd',
+    label: 'Add card button on columns',
+    initialValue: false,
+  });
+  const [allowDelete] = ToolJet.useStateBoolean({
+    name: 'allowDelete',
+    label: 'Delete button on cards',
+    initialValue: false,
+  });
+  const [emptyText] = ToolJet.useStateString({
+    name: 'emptyText',
+    label: 'Empty column message',
+    initialValue: 'No cards',
+  });
   const [badgeColors] = ToolJet.useStateObject({
     name: 'badgeColors',
     label: 'Badge colours by value',
@@ -188,13 +286,33 @@ export const useKanban = (o: KanbanOptions) => {
     initialValue: {},
   });
   // Exposed values.
-  const [, setUpdatedCardData] = ToolJet.useStateArray({ name: 'updatedCardData', initialValue: [], inspector: 'hidden' });
-  const [, setLastSelectedCard] = ToolJet.useStateObject({ name: 'lastSelectedCard', initialValue: {}, inspector: 'hidden' });
-  const [, setLastCardMovement] = ToolJet.useStateObject({ name: 'lastCardMovement', initialValue: {}, inspector: 'hidden' });
+  const [, setUpdatedCardData] = ToolJet.useStateArray({
+    name: 'updatedCardData',
+    initialValue: [],
+    inspector: 'hidden',
+  });
+  const [, setLastSelectedCard] = ToolJet.useStateObject({
+    name: 'lastSelectedCard',
+    initialValue: {},
+    inspector: 'hidden',
+  });
+  const [, setLastCardMovement] = ToolJet.useStateObject({
+    name: 'lastCardMovement',
+    initialValue: {},
+    inspector: 'hidden',
+  });
   const [, setAddCardColumn] = ToolJet.useStateString({ name: 'addCardColumn', initialValue: '', inspector: 'hidden' });
   const [, setLastAddedCard] = ToolJet.useStateObject({ name: 'lastAddedCard', initialValue: {}, inspector: 'hidden' });
-  const [, setLastUpdatedCard] = ToolJet.useStateObject({ name: 'lastUpdatedCard', initialValue: {}, inspector: 'hidden' });
-  const [, setLastRemovedCard] = ToolJet.useStateObject({ name: 'lastRemovedCard', initialValue: {}, inspector: 'hidden' });
+  const [, setLastUpdatedCard] = ToolJet.useStateObject({
+    name: 'lastUpdatedCard',
+    initialValue: {},
+    inspector: 'hidden',
+  });
+  const [, setLastRemovedCard] = ToolJet.useStateObject({
+    name: 'lastRemovedCard',
+    initialValue: {},
+    inspector: 'hidden',
+  });
   const onCardMoved = ToolJet.useEventCallback({ name: 'onCardMoved' });
   const onAddCardClick = ToolJet.useEventCallback({ name: 'onAddCardClick' });
   const onCardAdded = ToolJet.useEventCallback({ name: 'onCardAdded' });
@@ -207,16 +325,35 @@ export const useKanban = (o: KanbanOptions) => {
     columnBackgroundColor: useThemeColor('columnBackgroundColor', 'Column background', THEME.surfaceMuted),
     columnBorderColor: useThemeColor('columnBorderColor', 'Column border color', THEME.borderWeak),
     columnTitleColor: useThemeColor('columnTitleColor', 'Column title color', THEME.text),
-    columnCountBackgroundColor: useThemeColor('columnCountBackgroundColor', 'Column count background', THEME.surfaceStrong),
+    columnCountBackgroundColor: useThemeColor(
+      'columnCountBackgroundColor',
+      'Column count background',
+      THEME.surfaceStrong
+    ),
     columnCountTextColor: useThemeColor('columnCountTextColor', 'Column count text color', THEME.text),
-    columnGap: ToolJet.useStyleNumber({ name: 'columnGap', label: 'Gap between columns', placeholder: '16', inspector: 'numberInput' }),
-    columnBorderRadius: ToolJet.useStyleNumber({ name: 'columnBorderRadius', label: 'Column radius', placeholder: o.radiusHints?.column ?? 'Theme radius x 2', inspector: 'numberInput' }),
+    columnGap: ToolJet.useStyleNumber({
+      name: 'columnGap',
+      label: 'Gap between columns',
+      placeholder: '16',
+      inspector: 'numberInput',
+    }),
+    columnBorderRadius: ToolJet.useStyleNumber({
+      name: 'columnBorderRadius',
+      label: 'Column radius',
+      placeholder: o.radiusHints?.column ?? 'Theme radius x 2',
+      inspector: 'numberInput',
+    }),
     cardBackgroundColor: useThemeColor('cardBackgroundColor', 'Card background', THEME.surface),
     cardBorderColor: useThemeColor('cardBorderColor', 'Card border color', THEME.borderWeak),
     cardTitleColor: useThemeColor('cardTitleColor', 'Card title color', THEME.text),
     cardTextColor: useThemeColor('cardTextColor', 'Card secondary text color', THEME.muted),
     progressColor: useThemeColor('progressColor', 'Progress color (else the primary)', THEME.brand),
-    cardBorderRadius: ToolJet.useStyleNumber({ name: 'cardBorderRadius', label: 'Card radius', placeholder: o.radiusHints?.card ?? 'Theme radius', inspector: 'numberInput' }),
+    cardBorderRadius: ToolJet.useStyleNumber({
+      name: 'cardBorderRadius',
+      label: 'Card radius',
+      placeholder: o.radiusHints?.card ?? 'Theme radius',
+      inspector: 'numberInput',
+    }),
     cardShadow: ToolJet.useStyleEnumeration({
       name: 'cardShadow',
       label: 'Card shadow',
@@ -225,7 +362,7 @@ export const useKanban = (o: KanbanOptions) => {
       initialValue: o.shadow,
     }),
   };
-  ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 46 });
+  ToolJet.useComponentSettings({ ...o.settings, defaultWidth: 43, defaultHeight: 46 });
 
   const statusField = fieldName(statusFieldRaw, 'status');
   const idField = fieldName(idFieldRaw, 'id');
@@ -260,7 +397,10 @@ export const useKanban = (o: KanbanOptions) => {
       else next.add(key);
       return next;
     });
-  const collapsed = useMemo(() => new Set((Array.isArray(collapsedColumns) ? collapsedColumns : []).map(String)), [collapsedColumns]);
+  const collapsed = useMemo(
+    () => new Set((Array.isArray(collapsedColumns) ? collapsedColumns : []).map(String)),
+    [collapsedColumns]
+  );
   const toggleColumn = (columnId: string) => {
     const next = new Set(collapsed);
     if (next.has(columnId)) next.delete(columnId);
@@ -270,7 +410,8 @@ export const useKanban = (o: KanbanOptions) => {
   const [shownColumns, setShownColumns] = useState(MAX_BOARD_COLUMNS);
   const [shownCards, setShownCards] = useState<Record<string, number>>({});
   const shownOf = (columnId: string) => shownCards[columnId] ?? CARDS_PER_STEP;
-  const showMoreCards = (columnId: string) => setShownCards((n) => ({ ...n, [columnId]: (n[columnId] ?? CARDS_PER_STEP) + CARDS_PER_STEP }));
+  const showMoreCards = (columnId: string) =>
+    setShownCards((n) => ({ ...n, [columnId]: (n[columnId] ?? CARDS_PER_STEP) + CARDS_PER_STEP }));
   const showMoreColumns = () => setShownColumns((n) => n + MAX_BOARD_COLUMNS);
 
   // Actions and handlers run later: they read the board from a ref, so two in a row see each other's change.
@@ -287,7 +428,13 @@ export const useKanban = (o: KanbanOptions) => {
   };
   const doAdd = (card: unknown, columnId: unknown) => {
     const { board: cols, statusField: sf, idField: idf } = live.current;
-    const result = addCard(cols, card && typeof card === 'object' ? card : {}, isSet(columnId) ? String(columnId) : undefined, sf, idf);
+    const result = addCard(
+      cols,
+      card && typeof card === 'object' ? card : {},
+      isSet(columnId) ? String(columnId) : undefined,
+      sf,
+      idf
+    );
     commit(result.columns, () => setLastAddedCard(result.card), onCardAdded);
   };
   const doUpdate = (id: unknown, values: unknown) => {
@@ -330,7 +477,9 @@ export const useKanban = (o: KanbanOptions) => {
     const key = refocusKey.current;
     if (!key) return;
     refocusKey.current = null;
-    const el = Array.from(boardRef.current?.querySelectorAll<HTMLElement>('[data-kb-card]') ?? []).find((c) => c.dataset.kbCard === key);
+    const el = Array.from(boardRef.current?.querySelectorAll<HTMLElement>('[data-kb-card]') ?? []).find(
+      (c) => c.dataset.kbCard === key
+    );
     el?.focus();
   });
 
@@ -357,7 +506,14 @@ export const useKanban = (o: KanbanOptions) => {
     },
     (id, columnId) => doMove(id, columnId)
   );
-  ToolJet.useAction({ name: 'deleteCard', displayName: 'Delete card', params: [{ handle: idParam, displayName: 'Card id', defaultValue: '' }] }, (id) => doDelete(id));
+  ToolJet.useAction(
+    {
+      name: 'deleteCard',
+      displayName: 'Delete card',
+      params: [{ handle: idParam, displayName: 'Card id', defaultValue: '' }],
+    },
+    (id) => doDelete(id)
+  );
   ToolJet.useAction(
     {
       name: 'updateCardData',
@@ -410,7 +566,7 @@ export const useKanban = (o: KanbanOptions) => {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const cards = board.find((c) => c.id === columnId)?.cards ?? [];
     const at = cards.findIndex((c) => c.__key === key);
-    const before = e.clientY < rect.top + rect.height / 2 ? key : cards[at + 1]?.__key ?? null;
+    const before = e.clientY < rect.top + rect.height / 2 ? key : (cards[at + 1]?.__key ?? null);
     if (target?.columnId !== columnId || target.before !== before) setTarget({ columnId, before });
   };
   const onDragOverColumn = (e: React.DragEvent, columnId: string) => {
@@ -479,8 +635,10 @@ export const useKanban = (o: KanbanOptions) => {
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         const to = board[colIndex + (e.key === 'ArrowRight' ? 1 : -1)];
         if (to) next = { columnId: to.id, before: null };
-      } else if (e.key === 'ArrowUp') next = { columnId: t.columnId, before: others[Math.max(0, at - 1)]?.__key ?? null };
-      else if (e.key === 'ArrowDown') next = { columnId: t.columnId, before: at + 1 >= others.length ? null : others[at + 1].__key };
+      } else if (e.key === 'ArrowUp')
+        next = { columnId: t.columnId, before: others[Math.max(0, at - 1)]?.__key ?? null };
+      else if (e.key === 'ArrowDown')
+        next = { columnId: t.columnId, before: at + 1 >= others.length ? null : others[at + 1].__key };
       else if (e.key === ' ' || e.key === 'Enter' || e.key === 'Tab') {
         if (e.key !== 'Tab') e.preventDefault();
         doMove(key, t.columnId, t.before);
@@ -536,9 +694,18 @@ export const useKanban = (o: KanbanOptions) => {
     const style: React.CSSProperties | undefined = isCollapsed
       ? undefined
       : columnWidth
-      ? { width: columnWidth, flex: `1 1 ${columnWidth}`, minWidth: `min(${columnWidth}, ${minColumn}px)` }
-      : { minWidth: `${minColumn}px` };
-    return { column, cards, hidden: column.cards.length - cards.length, isCollapsed, over, fill: !isCollapsed && !columnWidth, style, dropLineAt };
+        ? { width: columnWidth, flex: `1 1 ${columnWidth}`, minWidth: `min(${columnWidth}, ${minColumn}px)` }
+        : { minWidth: `${minColumn}px` };
+    return {
+      column,
+      cards,
+      hidden: column.cards.length - cards.length,
+      isCollapsed,
+      over,
+      fill: !isCollapsed && !columnWidth,
+      style,
+      dropLineAt,
+    };
   });
 
   return {

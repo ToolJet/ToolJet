@@ -2,14 +2,20 @@ import React from 'react';
 import cx from 'classnames';
 
 import useStore from '@/AppBuilder/_stores/store';
+import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 
 import './version-switcher-button.scss';
 
 const VersionSwitcherButton = ({ version, environment, onClick, releasedVersionId, isOpen, darkMode }) => {
   const isAiBuildingApp = useStore((state) => state.ai?.isLoading ?? false);
+  const { isGitSyncEnabled } = useGitSyncConfig();
 
   const isDraft = version?.status === 'DRAFT';
   const isReleased = version?.id === releasedVersionId;
+  // Synced apps in a git workspace have exactly one draft with a fixed git name —
+  // show "Draft" as the canonical label. Unsynced apps can have multiple drafts
+  // with distinct names, so show the actual version name instead.
+  const displayName = isDraft && isGitSyncEnabled && version?.isSynced ? 'Draft' : version?.name;
 
   const capitalizeFirstLetter = (str) => {
     if (!str) return 'Development';
@@ -43,7 +49,7 @@ const VersionSwitcherButton = ({ version, environment, onClick, releasedVersionI
 
         {/* Version name */}
         <span className="version-name" data-cy="version-name">
-          {version?.name}
+          {displayName}
         </span>
 
         {/* Divider */}

@@ -15,7 +15,15 @@ import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 /** One item's face: icon (initials in the icon rail), label, badge, and a chevron when it has children. */
-const NavFace = ({ item, collapsed, chevron }: { item: Pick<NavItem, 'icon' | 'label' | 'badge'>; collapsed: boolean; chevron?: React.ReactNode }) => (
+const NavFace = ({
+  item,
+  collapsed,
+  chevron,
+}: {
+  item: Pick<NavItem, 'icon' | 'label' | 'badge'>;
+  collapsed: boolean;
+  chevron?: React.ReactNode;
+}) => (
   <>
     {item.icon ? (
       <Icon name={item.icon} className="n2-nav-icon" />
@@ -23,7 +31,13 @@ const NavFace = ({ item, collapsed, chevron }: { item: Pick<NavItem, 'icon' | 'l
       <span className="n2-nav-initials">{item.label.slice(0, 2)}</span>
     ) : null}
     {collapsed ? <span className="n2-sr-only">{item.label}</span> : <span className="n2-nav-label">{item.label}</span>}
-    {item.badge ? collapsed ? <span className="n2-nav-dot" aria-label={item.badge} /> : <span className="n2-nav-badge">{item.badge}</span> : null}
+    {item.badge ? (
+      collapsed ? (
+        <span className="n2-nav-dot" aria-label={item.badge} />
+      ) : (
+        <span className="n2-nav-badge">{item.badge}</span>
+      )
+    ) : null}
     {chevron}
   </>
 );
@@ -43,8 +57,16 @@ export const Navigation = () => {
       { label: 'Settings', value: 'settings', icon: 'IconSettings', group: 'Insights' },
     ],
   });
-  const [defaultValue] = ToolJet.useStateString({ name: 'defaultValue', label: 'Active item (value)', initialValue: '' });
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Selected item', initialValue: 'dashboard' });
+  const [defaultValue] = ToolJet.useStateString({
+    name: 'defaultValue',
+    label: 'Active item (value)',
+    initialValue: '',
+  });
+  const [value, setValue] = ToolJet.useStateString({
+    name: 'value',
+    label: 'Selected item',
+    initialValue: 'dashboard',
+  });
   const [orientation] = ToolJet.useStateEnumeration({
     name: 'orientation',
     label: 'Orientation',
@@ -77,10 +99,22 @@ export const Navigation = () => {
     initialValue: 'start',
     inspector: 'switch',
   });
-  const [collapsed, setCollapsed] = ToolJet.useStateBoolean({ name: 'collapsed', label: 'Collapsed (icon-only sidebar)', initialValue: false });
-  const [showCollapseButton] = ToolJet.useStateBoolean({ name: 'showCollapseButton', label: 'Show collapse button', initialValue: false });
+  const [collapsed, setCollapsed] = ToolJet.useStateBoolean({
+    name: 'collapsed',
+    label: 'Collapsed (icon-only sidebar)',
+    initialValue: false,
+  });
+  const [showCollapseButton] = ToolJet.useStateBoolean({
+    name: 'showCollapseButton',
+    label: 'Show collapse button',
+    initialValue: false,
+  });
   const [, setSelectedItem] = ToolJet.useStateObject({ name: 'selectedItem', initialValue: {}, inspector: 'hidden' });
-  const [, setPreviousSelectedItem] = ToolJet.useStateObject({ name: 'previousSelectedItem', initialValue: {}, inspector: 'hidden' });
+  const [, setPreviousSelectedItem] = ToolJet.useStateObject({
+    name: 'previousSelectedItem',
+    initialValue: {},
+    inspector: 'hidden',
+  });
   const [, setIsCollapsed] = ToolJet.useStateBoolean({ name: 'isCollapsed', initialValue: false, inspector: 'hidden' });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const { disabled } = ToolJet.useControlState();
@@ -98,7 +132,7 @@ export const Navigation = () => {
   const separatorColor = useThemeColor('separatorColor', 'Separator color', TOKEN.border);
   const itemRadius = useThemeRadius('itemRadius', 'Item radius');
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 9, defaultHeight: 32 });
+  ToolJet.useComponentSettings({ role: 'navigation', fit: false, loading: 'own', defaultWidth: 9, defaultHeight: 32 });
 
   // setItemVisibility and setItemDisable change one item until the Items change.
   const source = useStable(rawItems);
@@ -141,17 +175,40 @@ export const Navigation = () => {
     moveTo(item.key);
     onClick();
   };
-  ToolJet.useAction({ name: 'selectItem', displayName: 'Select item', params: [{ handle: 'id', displayName: 'Item value' }] }, (v) => {
-    moveTo(v === undefined || v === null ? '' : String(v));
-  });
-  const itemParams = (label: string) => [
-    { handle: 'id', displayName: 'Item value' },
-    { handle: 'value', displayName: label, type: 'toggle' as const, defaultValue: '{{true}}' },
-  ];
-  ToolJet.useAction({ name: 'setItemVisibility', displayName: 'Set item visibility', params: itemParams('Visible') }, (id, v) => change(id, { visible: onArg(v) }));
-  ToolJet.useAction({ name: 'setItemDisable', displayName: 'Set item disable', params: itemParams('Disable') }, (id, v) => change(id, { disabled: onArg(v) }));
   ToolJet.useAction(
-    { name: 'setCollapsed', displayName: 'Set collapsed', params: [{ handle: 'value', displayName: 'Collapsed', type: 'toggle', defaultValue: '{{true}}' }] },
+    { name: 'selectItem', displayName: 'Select item', params: [{ handle: 'id', displayName: 'Item value' }] },
+    (v) => {
+      moveTo(v === undefined || v === null ? '' : String(v));
+    }
+  );
+  ToolJet.useAction(
+    {
+      name: 'setItemVisibility',
+      displayName: 'Set item visibility',
+      params: [
+        { handle: 'id', displayName: 'Item value' },
+        { handle: 'value', displayName: 'Visible', type: 'toggle', defaultValue: '{{true}}' },
+      ],
+    },
+    (id, v) => change(id, { visible: onArg(v) })
+  );
+  ToolJet.useAction(
+    {
+      name: 'setItemDisable',
+      displayName: 'Set item disable',
+      params: [
+        { handle: 'id', displayName: 'Item value' },
+        { handle: 'value', displayName: 'Disable', type: 'toggle', defaultValue: '{{true}}' },
+      ],
+    },
+    (id, v) => change(id, { disabled: onArg(v) })
+  );
+  ToolJet.useAction(
+    {
+      name: 'setCollapsed',
+      displayName: 'Set collapsed',
+      params: [{ handle: 'value', displayName: 'Collapsed', type: 'toggle', defaultValue: '{{true}}' }],
+    },
     (v) => setCollapsed(onArg(v))
   );
 
@@ -178,13 +235,28 @@ export const Navigation = () => {
   const dropdown = (item: NavItem, isActive: boolean) => (
     <Menu.Root key={item.key} modal={false}>
       <Menu.Trigger asChild disabled={disabled || item.disabled}>
-        <button type="button" className={cn('n2-nav-item', isActive && 'is-active')} title={iconRail ? item.label : undefined} aria-current={isActive ? 'true' : undefined}>
-          <NavFace item={item} collapsed={iconRail} chevron={iconRail ? null : <ChevronDown size={14} className="n2-nav-chevron" />} />
+        <button
+          type="button"
+          className={cn('n2-nav-item', isActive && 'is-active')}
+          title={iconRail ? item.label : undefined}
+          aria-current={isActive ? 'true' : undefined}
+        >
+          <NavFace
+            item={item}
+            collapsed={iconRail}
+            chevron={iconRail ? null : <ChevronDown size={14} className="n2-nav-chevron" />}
+          />
         </button>
       </Menu.Trigger>
       {container ? (
         <Menu.Portal container={container}>
-          <Menu.Content className="ui-popup n2-menu" align="start" side={iconRail ? 'right' : 'bottom'} sideOffset={4} style={{ ...vars, ['--lk-item-hover' as string]: 'var(--lk-hover, var(--ui-muted))' }}>
+          <Menu.Content
+            className="ui-popup n2-menu"
+            align="start"
+            side={iconRail ? 'right' : 'bottom'}
+            sideOffset={4}
+            style={{ ...vars, ['--lk-item-hover' as string]: 'var(--lk-hover, var(--ui-muted))' }}
+          >
             {iconRail ? <MenuLabel>{item.label}</MenuLabel> : null}
             <MenuRows
               rows={item.children.map((child) => ({ kind: 'item' as const, ...child, description: '' }))}
@@ -231,7 +303,11 @@ export const Navigation = () => {
             onClick={() => setExpanded((e) => ({ ...e, [item.key]: !open }))}
             className={cn('n2-nav-item', found?.parent?.key === item.key && 'has-active-child')}
           >
-            <NavFace item={item} collapsed={false} chevron={<ChevronRight size={16} className={cn('n2-nav-chevron', open && 'is-open')} />} />
+            <NavFace
+              item={item}
+              collapsed={false}
+              chevron={<ChevronRight size={16} className={cn('n2-nav-chevron', open && 'is-open')} />}
+            />
           </button>
           {open ? (
             <ul className="n2-nav-children">
@@ -239,7 +315,13 @@ export const Navigation = () => {
                 const on = found?.item.key === child.key;
                 return (
                   <li key={child.key}>
-                    <button type="button" aria-current={on ? 'page' : undefined} disabled={disabled || child.disabled} onClick={() => pick(child)} className={cn('n2-nav-item', on && 'is-active')}>
+                    <button
+                      type="button"
+                      aria-current={on ? 'page' : undefined}
+                      disabled={disabled || child.disabled}
+                      onClick={() => pick(child)}
+                      className={cn('n2-nav-item', on && 'is-active')}
+                    >
                       <NavFace item={child} collapsed={false} />
                     </button>
                   </li>
@@ -267,7 +349,11 @@ export const Navigation = () => {
   });
 
   return (
-    <LoadingFrame loading={ld.loading} minHeight={40} look={ld.skeleton ? <NavSkel vertical={vertical} /> : <LoadingBox />}>
+    <LoadingFrame
+      loading={ld.loading}
+      minHeight={40}
+      look={ld.skeleton ? <NavSkel vertical={vertical} /> : <LoadingBox />}
+    >
       <nav
         ref={anchorRef}
         aria-label="Navigation"
@@ -282,9 +368,20 @@ export const Navigation = () => {
         )}
         style={vars}
       >
-        {items.length ? rows : <span className="n2-empty" style={{ padding: '0 8px' }}>No navigation items</span>}
+        {items.length ? (
+          rows
+        ) : (
+          <span className="n2-empty" style={{ padding: '0 8px' }}>
+            No navigation items
+          </span>
+        )}
         {vertical && showCollapseButton ? (
-          <button type="button" className="n2-nav-item n2-nav-collapse" onClick={() => setCollapsed(!collapsed)} aria-label={collapsed ? 'Expand' : 'Collapse'}>
+          <button
+            type="button"
+            className="n2-nav-item n2-nav-collapse"
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? 'Expand' : 'Collapse'}
+          >
             {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
             {!collapsed ? <span className="n2-nav-label">Collapse</span> : null}
           </button>

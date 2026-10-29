@@ -10,6 +10,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+
 // Categories are listed alphabetically by their display title, after "All categories".
 const categoryTitle = (categoryId) => categoryTitles[categoryId] || categoryId;
 
@@ -68,6 +70,15 @@ export default function TemplateLibraryModal(props) {
 
   const [deploying, setDeploying] = useState(false);
 
+  const { currentBranch, orgGitConfig } = useWorkspaceBranchesStore((state) => ({
+    currentBranch: state.currentBranch,
+    orgGitConfig: state.orgGitConfig,
+  }));
+
+  const isOnDefaultBranch =
+    (orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled) &&
+    (currentBranch?.is_default || currentBranch?.isDefault);
+
   return (
     <Modal
       show={props.show}
@@ -117,6 +128,12 @@ export default function TemplateLibraryModal(props) {
                       </ButtonSolid>
                       <ButtonSolid
                         onClick={() => {
+                          if (isOnDefaultBranch) {
+                            toast.error('Master is locked. Create a branch to create an app from template.', {
+                              position: 'top-center',
+                            });
+                            return;
+                          }
                           props.openCreateAppFromTemplateModal(selectedApp);
                           setShowCreateAppFromTemplateModal(false);
                           props.onCloseButtonClick();

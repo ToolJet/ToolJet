@@ -49,7 +49,7 @@ const initialState = {
 };
 
 export const createGridSlice = (set, get) => {
-  // Batch reflow scheduler. Collects reflow requests that
+  // Batch reflow scheduler. Collects adjustComponentPositions requests that
   // arrive in the same JS tick (e.g. 50 Tables in a ListView all reporting
   // height changes on data load), fires them in one shared rAF, and lets
   // flushReflows process them together — one setTemporaryLayouts write and
@@ -74,6 +74,18 @@ export const createGridSlice = (set, get) => {
   return {
     ...initialState,
     scheduleReflow,
+    setFlexContainerDropTarget: (payload) =>
+      set((state) => {
+        const current = state.flexContainerDropTarget;
+        if (
+          current === payload ||
+          (current?.flexContainerId === payload?.flexContainerId && current?.index === payload?.index)
+        ) {
+          return;
+        }
+
+        state.flexContainerDropTarget = payload;
+      }),
     checkHoveredComponentDynamicHeight: (id) => {
       const { getResolvedComponent, getComponentDefinition } = get();
       const resolvedProperties = getResolvedComponent(id)?.properties;
@@ -90,18 +102,6 @@ export const createGridSlice = (set, get) => {
     debouncedIncrementCanvasUpdater: debounce(() => {
       get().incrementCanvasUpdater();
     }, 200),
-    setFlexContainerDropTarget: (payload) =>
-      set((state) => {
-        const current = state.flexContainerDropTarget;
-        if (
-          current === payload ||
-          (current?.flexContainerId === payload?.flexContainerId && current?.index === payload?.index)
-        ) {
-          return;
-        }
-
-        state.flexContainerDropTarget = payload;
-      }),
     setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
     setResizingComponentId: (id) => set(() => ({ resizingComponentId: id })),
     setIsGroupDragging: (isGroupDragging) => set(() => ({ isGroupDragging: isGroupDragging })),
@@ -191,15 +191,17 @@ export const createGridSlice = (set, get) => {
     // `contextPrefix` scopes to a branch (e.g., a Listview nested inside a
     // parent row passes the parent row context so sibling rows stay untouched).
     // `null`/empty matches the container's key at any context.
-    clearContainerTempLayouts: (containerId, contextPrefix = null) => {
+    clearContainerTempLayouts: (containerId, contextPrefix = null, moduleId = 'canvas') => {
       const normalizedPrefix = normalizeLayoutContext(contextPrefix);
       const prefix = normalizedPrefix ? normalizedPrefix.join('.') : null;
-
+      // Keys are moduleId-scoped for embedded modules;
+      // build the same scoped base so a module container's temps are matched (an unscoped base would never match).
+      const base = getDynamicLayoutKey(containerId, null, '', moduleId);
       const matches = (key) => {
         if (!prefix) {
-          return key === containerId || key.startsWith(`${containerId}-`);
+          return key === base || key.startsWith(`${base}-`);
         }
-        return key === `${containerId}-${prefix}` || key.startsWith(`${containerId}-${prefix}.`);
+        return key === `${base}-${prefix}` || key.startsWith(`${base}-${prefix}.`);
       };
 
       set((state) => {
@@ -309,6 +311,7 @@ export const createGridSlice = (set, get) => {
             getContainerChildrenMapping,
             getExposedPropertyForAdditionalActions: boundGetExposedPropertyForAdditionalActions,
             calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
+            moduleId,
           });
 
           const newHeight = resolveWidgetMeasuredHeight({
@@ -322,18 +325,39 @@ export const createGridSlice = (set, get) => {
             visibility,
             containerHeight,
             calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
+            moduleId,
           });
 
           if (isModalType(componentType) && isContainer) {
-            mergedPatch[getDynamicLayoutKey(componentId, contextIndices, '-body')] = {
+            mergedPatch[getDynamicLayoutKey(componentId, contextIndices, '-body', moduleId)] = {
               ...changedComponent.layouts[currentLayout],
-              ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices, '-body')],
+              ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices, '-body', moduleId)],
               height: newHeight,
             };
             return;
           }
 
           if (componentType === 'Listview' && contextIndices && isContainer) {
+            const scopedElement = document.querySelector(
+              getDynamicElementSelector(componentId, contextIndices, moduleId)
+            );
+            if (!scopedElement) {
+              mergedPatch[getDynamicLayoutKey(componentId, contextIndices, '', moduleId)] = {
+                ...changedComponent.layouts[currentLayout],
+                ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices, '', moduleId)],
+                height: newHeight,
+              };
+              const nextCtx = contextIndices.length > 1 ? contextIndices.slice(0, -1) : null;
+              const selfKey = `${componentId}|${currentLayout}|${nextCtx ? nextCtx.join('.') : ''}`;
+              nextBubbles.set(selfKey, { id: componentId, layout: currentLayout, contextIndices: nextCtx, moduleId });
+              return;
+            }
+          }
+
+          // A UI 2.0 List view row or Kanban card: write the row's height under the row's context and stop there (no
+          // sibling temps in the row; the list's own height is its leaf reflow, useAutoHeight, once React draws the
+          // taller row).
+          if (isUi2PerRowType(componentType) && contextIndices && isContainer) {
             const scopedElement = document.querySelector(getDynamicElementSelector(componentId, contextIndices));
             if (!scopedElement) {
               mergedPatch[getDynamicLayoutKey(componentId, contextIndices)] = {
@@ -341,9 +365,6 @@ export const createGridSlice = (set, get) => {
                 ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices)],
                 height: newHeight,
               };
-              const nextCtx = contextIndices.length > 1 ? contextIndices.slice(0, -1) : null;
-              const selfKey = `${componentId}|${currentLayout}|${nextCtx ? nextCtx.join('.') : ''}`;
-              nextBubbles.set(selfKey, { id: componentId, layout: currentLayout, contextIndices: nextCtx, moduleId });
               return;
             }
           }
@@ -396,7 +417,7 @@ export const createGridSlice = (set, get) => {
           }, {});
 
           const resolvedHeights = siblingIds.reduce((acc, siblingId) => {
-            const existingTemp = temporaryLayouts?.[getDynamicLayoutKey(siblingId, contextIndices)];
+            const existingTemp = temporaryLayouts?.[getDynamicLayoutKey(siblingId, contextIndices, '', moduleId)];
             if (existingTemp?.height != null && existingTemp.height > 0) {
               acc[siblingId] = existingTemp.height;
               return acc;
@@ -423,12 +444,13 @@ export const createGridSlice = (set, get) => {
             collapseWhenHiddenMap,
             calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
             getComponentDefinition: boundGetComponentDefinition,
+            moduleId,
           });
 
           if (Object.keys(temporaryLayoutPatch).length === 0) return;
 
           if (isContainer && componentType !== 'Listview' && !isUi2PerRowType(componentType)) {
-            const element = document.querySelector(getDynamicElementSelector(componentId, contextIndices));
+            const element = document.querySelector(getDynamicElementSelector(componentId, contextIndices, moduleId));
             if (element && visibility) element.style.height = `${newHeight}px`;
           }
 
@@ -436,7 +458,7 @@ export const createGridSlice = (set, get) => {
           // pin its temp top to 0 so the transform & canvas-height math match.
           // moduleId === 'canvas' is the module editor, where it keeps canonical top.
           if (componentType === 'ModuleContainer' && moduleId !== 'canvas') {
-            const moduleContainerKey = getDynamicLayoutKey(componentId, contextIndices);
+            const moduleContainerKey = getDynamicLayoutKey(componentId, contextIndices, '', moduleId);
             if (temporaryLayoutPatch[moduleContainerKey]) {
               temporaryLayoutPatch[moduleContainerKey] = { ...temporaryLayoutPatch[moduleContainerKey], top: 0 };
             }
@@ -445,7 +467,7 @@ export const createGridSlice = (set, get) => {
           Object.assign(mergedPatch, temporaryLayoutPatch);
 
           const scopedElement = contextIndices
-            ? document.querySelector(getDynamicElementSelector(componentId, contextIndices))
+            ? document.querySelector(getDynamicElementSelector(componentId, contextIndices, moduleId))
             : null;
           const nextBubbleTargetId = getNextBubbleTargetId({
             componentId,

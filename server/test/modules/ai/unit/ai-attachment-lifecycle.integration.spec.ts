@@ -100,10 +100,11 @@ integration('attachment lifecycle with PostgreSQL', () => {
   it('adds the reconciliation index to an already migrated database and tolerates earlier copies', async () => {
     const runner = db.createQueryRunner();
     const migration = new IndexAiAttachmentReconciliation1790683260000();
-    const indexes = () => db.query(
-      'SELECT indexdef FROM pg_indexes WHERE schemaname=$1 AND indexname=$2',
-      [schema, 'idx_ai_attachments_reconcile']
-    );
+    const indexes = () =>
+      db.query('SELECT indexdef FROM pg_indexes WHERE schemaname=$1 AND indexname=$2', [
+        schema,
+        'idx_ai_attachments_reconcile',
+      ]);
     try {
       expect(await indexes()).toHaveLength(0);
       await migration.up(runner);

@@ -10,7 +10,7 @@ import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import ConfigHandleButton from '../../../_components/ConfigHandleButton';
-import { SquareDashedMousePointer, PencilRuler, Lock, VectorSquare, EyeClosed, Trash } from 'lucide-react';
+import { SquareDashedMousePointer, PencilRuler, Lock, VectorSquare, EyeClosed, Trash, Waypoints } from 'lucide-react';
 import Popover from '@/_ui/Popover';
 import dynamicHeightSvg from '@assets/images/dynamic-height-info.svg?url';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
@@ -46,7 +46,7 @@ export const ConfigHandle = ({
       state.license?.featureAccess?.customComponentLibraries === true ||
       isBuiltInPack(state.getComponentDefinition(id, moduleId)?.component?.definition?.properties?.correlationId?.value)
   );
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
   const isMultipleComponentsSelected = useStore(
     (state) => (findHighestLevelofSelection(state?.selectedComponents)?.length > 1 ? true : false),
@@ -68,6 +68,7 @@ export const ConfigHandle = ({
   const insideFlex = String(customClassName ?? '').includes('flex-child-config-handle');
 
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
+  const setEntityToViewDependencies = useStore((state) => state.setEntityToViewDependencies);
   const isModal = componentType === 'Modal' || componentType === 'ModalV2';
 
   // If one component is hovered and one is selected, show the handle for the hovered component
@@ -95,7 +96,7 @@ export const ConfigHandle = ({
   const deleteComponents = () => {
     const selectedComponents = getSelectedComponents();
     if (selectedComponents.length > 0) {
-      setWidgetDeleteConfirmation(true);
+      setWidgetDeleteConfirmation(true, isModuleEditor);
     }
   };
 
@@ -298,6 +299,16 @@ export const ConfigHandle = ({
         dataCy={`${componentName.toLowerCase()}-inspect-button`}
       >
         <SquareDashedMousePointer size={14} color="var(--icon-strong)" />
+      </ConfigHandleButton>
+
+      <ConfigHandleButton
+        customStyles={iconOnlyButtonStyle}
+        onClick={() => setEntityToViewDependencies?.({ kind: 'component', id })}
+        message="Dependencies"
+        show={true}
+        dataCy={`${componentName.toLowerCase()}-dependencies-button`}
+      >
+        <Waypoints size={14} color="var(--icon-strong)" />
       </ConfigHandleButton>
 
       <ConfigHandleButton

@@ -48,8 +48,22 @@ export const ProgressList = () => {
     name: 'data',
     label: 'Data',
     initialValue: [
-      { id: 1, label: 'Marketing', spent: 18400, budget: 25000, status: 'On track', note: '12 days left in the quarter' },
-      { id: 2, label: 'Engineering tools', spent: 9100, budget: 10000, status: 'At risk', note: 'Renewals due in November' },
+      {
+        id: 1,
+        label: 'Marketing',
+        spent: 18400,
+        budget: 25000,
+        status: 'On track',
+        note: '12 days left in the quarter',
+      },
+      {
+        id: 2,
+        label: 'Engineering tools',
+        spent: 9100,
+        budget: 10000,
+        status: 'At risk',
+        note: 'Renewals due in November',
+      },
       { id: 3, label: 'Travel', spent: 7600, budget: 6000, status: 'Over budget', note: 'Over by $1,600' },
       { id: 4, label: 'Training', spent: 1200, budget: 5000, status: '', note: 'Courses start in November' },
     ],
@@ -57,23 +71,87 @@ export const ProgressList = () => {
   const [labelField] = ToolJet.useStateString({ name: 'labelField', label: 'Label field', initialValue: 'label' });
   const [valueField] = ToolJet.useStateString({ name: 'valueField', label: 'Value field', initialValue: 'spent' });
   const [targetField] = ToolJet.useStateString({ name: 'targetField', label: 'Target field', initialValue: 'budget' });
-  const [percentField] = ToolJet.useStateString({ name: 'percentField', label: 'Percent field (0 to 100; overrides value / target)', initialValue: '' });
-  const [captionField] = ToolJet.useStateString({ name: 'captionField', label: 'Caption field (a line under the bar)', initialValue: 'note' });
-  const [statusField] = ToolJet.useStateString({ name: 'statusField', label: 'Status field (a chip, or a tone name)', initialValue: 'status' });
+  const [percentField] = ToolJet.useStateString({
+    name: 'percentField',
+    label: 'Percent field (0 to 100; overrides value / target)',
+    initialValue: '',
+  });
+  const [captionField] = ToolJet.useStateString({
+    name: 'captionField',
+    label: 'Caption field (a line under the bar)',
+    initialValue: 'note',
+  });
+  const [statusField] = ToolJet.useStateString({
+    name: 'statusField',
+    label: 'Status field (a chip, or a tone name)',
+    initialValue: 'status',
+  });
   // Number by default: a currency default printed bound order counts as $10 (the sample budgets read as figures).
-  const [valueFormat] = ToolJet.useStateEnumeration({ name: 'valueFormat', label: 'Value format', enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'], enumLabels: { auto: 'Auto', number: 'Number', currency: 'Currency', percent: 'Percent', compact: 'Compact' }, initialValue: 'number' });
-  const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency (ISO code, e.g. USD)', initialValue: 'USD' });
-  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
+  const [valueFormat] = ToolJet.useStateEnumeration({
+    name: 'valueFormat',
+    label: 'Value format',
+    enumDefinition: ['auto', 'number', 'currency', 'percent', 'compact'],
+    enumLabels: { auto: 'Auto', number: 'Number', currency: 'Currency', percent: 'Percent', compact: 'Compact' },
+    initialValue: 'number',
+  });
+  const [currency] = ToolJet.useStateString({
+    name: 'currency',
+    label: 'Currency (ISO code, e.g. USD)',
+    initialValue: 'USD',
+  });
+  const [locale] = ToolJet.useStateString({
+    name: 'locale',
+    label: 'Locale',
+    description: LOCALE_HINT,
+    initialValue: '',
+  });
   const [idField] = ToolJet.useStateString({ name: 'idField', label: 'Id field', initialValue: 'id' });
-  const [autoTone] = ToolJet.useStateEnumeration({ name: 'autoTone', label: 'Tone from progress', enumDefinition: ['none', 'goal', 'limit'], enumLabels: { none: 'None', goal: 'Goal', limit: 'Limit' }, initialValue: 'none', inspector: 'switch' });
-  const [showValues] = ToolJet.useStateBoolean({ name: 'showValues', label: 'Show value of target', initialValue: true });
+  const [autoTone] = ToolJet.useStateEnumeration({
+    name: 'autoTone',
+    label: 'Tone from progress',
+    enumDefinition: ['none', 'goal', 'limit'],
+    enumLabels: { none: 'None', goal: 'Goal', limit: 'Limit' },
+    initialValue: 'none',
+    inspector: 'switch',
+  });
+  const [showValues] = ToolJet.useStateBoolean({
+    name: 'showValues',
+    label: 'Show value of target',
+    initialValue: true,
+  });
   const [showPercent] = ToolJet.useStateBoolean({ name: 'showPercent', label: 'Show percentage', initialValue: true });
-  const [barSize] = ToolJet.useStateEnumeration({ name: 'barSize', label: 'Bar size', enumDefinition: ['thin', 'default', 'thick'], enumLabels: { thin: 'Thin', default: 'Default', thick: 'Thick' }, initialValue: 'default', inspector: 'switch' });
-  const [listStyle] = ToolJet.useStateEnumeration({ name: 'listStyle', label: 'List style', enumDefinition: ['card', 'plain'], enumLabels: { card: 'Card', plain: 'Plain' }, initialValue: 'card', inspector: 'switch' });
-  const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty text', initialValue: 'Nothing to track yet' });
+  const [barSize] = ToolJet.useStateEnumeration({
+    name: 'barSize',
+    label: 'Bar size',
+    enumDefinition: ['thin', 'default', 'thick'],
+    enumLabels: { thin: 'Thin', default: 'Default', thick: 'Thick' },
+    initialValue: 'default',
+    inspector: 'switch',
+  });
+  const [listStyle] = ToolJet.useStateEnumeration({
+    name: 'listStyle',
+    label: 'List style',
+    enumDefinition: ['card', 'plain'],
+    enumLabels: { card: 'Card', plain: 'Plain' },
+    initialValue: 'card',
+    inspector: 'switch',
+  });
+  const [emptyText] = ToolJet.useStateString({
+    name: 'emptyText',
+    label: 'Empty text',
+    initialValue: 'Nothing to track yet',
+  });
   const [, setSelectedItem] = ToolJet.useStateObject({ name: 'selectedItem', initialValue: {}, inspector: 'hidden' });
-  const [, setSelectedItemId] = ToolJet.useStateString({ name: 'selectedItemId', initialValue: '', inspector: 'hidden' });
-  const [, setSelectedItemIndex] = ToolJet.useStateNumber({ name: 'selectedItemIndex', initialValue: -1, inspector: 'hidden' });
+  const [, setSelectedItemId] = ToolJet.useStateString({
+    name: 'selectedItemId',
+    initialValue: '',
+    inspector: 'hidden',
+  });
+  const [, setSelectedItemIndex] = ToolJet.useStateNumber({
+    name: 'selectedItemIndex',
+    initialValue: -1,
+    inspector: 'hidden',
+  });
   const onItemClicked = ToolJet.useEventCallback({ name: 'onItemClicked' });
   const backgroundColor = useThemeColor('backgroundColor', 'List background', TOKEN.surface);
   const borderColor = useThemeColor('borderColor', 'Border and divider color', TOKEN.border);
@@ -86,13 +164,37 @@ export const ProgressList = () => {
     name: 'titleFontFamily',
     label: 'Label typeface',
     enumDefinition: ['theme', 'sans', 'serif', 'display', 'mono'],
-    enumLabels: { theme: 'Theme font', sans: 'Sans serif', serif: 'Serif', display: 'Display serif', mono: 'Monospace' },
+    enumLabels: {
+      theme: 'Theme font',
+      sans: 'Sans serif',
+      serif: 'Serif',
+      display: 'Display serif',
+      mono: 'Monospace',
+    },
     initialValue: 'theme',
   });
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 36 });
+  ToolJet.useComponentSettings({
+    role: 'progresslist',
+    fit: true,
+    loading: 'own',
+    defaultWidth: 20,
+    defaultHeight: 36,
+  });
 
-  const fields = { labelField, valueField, targetField, percentField, captionField, statusField, valueFormat, currency, locale, idField, autoTone };
+  const fields = {
+    labelField,
+    valueField,
+    targetField,
+    percentField,
+    captionField,
+    statusField,
+    valueFormat,
+    currency,
+    locale,
+    idField,
+    autoTone,
+  };
   const entries = useMemo(() => progressEntries(data, idField), [data, idField]);
   const max = useMemo(() => progressMax(entries, fields), [entries, valueField, targetField]); // eslint-disable-line react-hooks/exhaustive-deps
   // The first rows and a Show more button for the next ones: a 10,000-row binding would freeze the page.
@@ -125,7 +227,17 @@ export const ProgressList = () => {
 
   if (!entries.length) {
     return (
-      <LoadingFrame loading={ld.loading} minHeight={160} look={ld.skeleton ? <ProgressRowsSkel count={Math.min(rows.length || 4, 8)} barHeight={barHeight} /> : <LoadingBox />}>
+      <LoadingFrame
+        loading={ld.loading}
+        minHeight={160}
+        look={
+          ld.skeleton ? (
+            <ProgressRowsSkel count={Math.min(rows.length || 4, 8)} barHeight={barHeight} />
+          ) : (
+            <LoadingBox />
+          )
+        }
+      >
         <div className={cn('ui ui2-plist is-fill', card && 'is-card')} style={vars}>
           <div className="ui2-plist-empty-wrap">
             <p className="ui2-plist-empty">{emptyText || 'Nothing to track yet'}</p>
@@ -136,7 +248,13 @@ export const ProgressList = () => {
   }
 
   return (
-    <LoadingFrame loading={ld.loading} minHeight={160} look={ld.skeleton ? <ProgressRowsSkel count={Math.min(rows.length || 4, 8)} barHeight={barHeight} /> : <LoadingBox />}>
+    <LoadingFrame
+      loading={ld.loading}
+      minHeight={160}
+      look={
+        ld.skeleton ? <ProgressRowsSkel count={Math.min(rows.length || 4, 8)} barHeight={barHeight} /> : <LoadingBox />
+      }
+    >
       <div className={cn('ui ui2-plist is-fill', card && 'is-card')} style={vars}>
         <ul className="ui2-plist-rows" role="list">
           {rows.map((row) => {
@@ -165,10 +283,14 @@ export const ProgressList = () => {
                     aria-label={row.label || undefined}
                     aria-valuemin={0}
                     aria-valuemax={100}
-                    aria-valuenow={row.pct !== null && Number.isFinite(row.pct) ? Math.round(barWidth(row.pct)) : undefined}
+                    aria-valuenow={
+                      row.pct !== null && Number.isFinite(row.pct) ? Math.round(barWidth(row.pct)) : undefined
+                    }
                     style={{ height: barHeight }}
                   >
-                    <span style={{ width: `${barWidth(row.pct)}%`, background: row.tone ? TONE_VAR[row.tone] : undefined }} />
+                    <span
+                      style={{ width: `${barWidth(row.pct)}%`, background: row.tone ? TONE_VAR[row.tone] : undefined }}
+                    />
                   </span>
                   {row.caption ? (
                     <span className="ui2-plist-foot">

@@ -115,6 +115,7 @@ const OAuth = ({
         optionsChanged={optionsChanged}
         selectedDataSource={selectedDataSource}
         oauth_configs={oauth_configs}
+        isDisabled={isDisabled}
       />
     </>
   );

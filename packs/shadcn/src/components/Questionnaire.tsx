@@ -33,7 +33,9 @@ import '../styles/ui2-display-chat.css';
 // { name, prompt, description, required, type: single | multiple | text, choices, other, placeholder, multiline }; the
 // pack's earlier { id, question, options } items still read (questionnaireModel.ts).
 
-type AnswerOption = { kind: 'choice'; label: string; value: ChoiceValue; description: string } | { kind: 'other'; label: string; value: null; description: string };
+type AnswerOption =
+  | { kind: 'choice'; label: string; value: ChoiceValue; description: string }
+  | { kind: 'other'; label: string; value: null; description: string };
 type Event = { name: string };
 
 const currentOf = (item: QuestionItem | undefined) =>
@@ -51,14 +53,19 @@ export const Questionnaire = () => {
   const [rawItems] = ToolJet.useStateArray({
     name: 'items',
     label: 'Items',
-    description: 'Array of { name, prompt, description, required, type: single | multiple | text, choices, other, placeholder }.',
+    description:
+      'Array of { name, prompt, description, required, type: single | multiple | text, choices, other, placeholder }.',
     initialValue: [
       {
         name: 'role',
         prompt: 'What best describes your role?',
         required: true,
         type: 'single',
-        choices: [{ label: 'Operations', description: 'Run day-to-day work' }, { label: 'Finance' }, { label: 'Engineering' }],
+        choices: [
+          { label: 'Operations', description: 'Run day-to-day work' },
+          { label: 'Finance' },
+          { label: 'Engineering' },
+        ],
         other: true,
       },
       {
@@ -71,7 +78,11 @@ export const Questionnaire = () => {
       { name: 'notes', prompt: 'Anything else we should know?', type: 'text', placeholder: 'Optional' },
     ],
   });
-  const [defaultAnswers] = ToolJet.useStateObject({ name: 'defaultAnswers', label: 'Default answers', initialValue: {} });
+  const [defaultAnswers] = ToolJet.useStateObject({
+    name: 'defaultAnswers',
+    label: 'Default answers',
+    initialValue: {},
+  });
   const [shortcuts] = ToolJet.useStateEnumeration({
     name: 'shortcuts',
     label: 'Answer shortcuts',
@@ -81,9 +92,21 @@ export const Questionnaire = () => {
     inspector: 'switch',
   });
   const [showProgress] = ToolJet.useStateBoolean({ name: 'showProgress', label: 'Show progress', initialValue: true });
-  const [submitLabel] = ToolJet.useStateString({ name: 'submitLabel', label: 'Submit button label', initialValue: 'Submit' });
-  const [completeTitle] = ToolJet.useStateString({ name: 'completeTitle', label: 'Completed title', initialValue: 'Thanks for your answers' });
-  const [completeText] = ToolJet.useStateString({ name: 'completeText', label: 'Completed text', initialValue: 'We will use them to set up your workspace.' });
+  const [submitLabel] = ToolJet.useStateString({
+    name: 'submitLabel',
+    label: 'Submit button label',
+    initialValue: 'Submit',
+  });
+  const [completeTitle] = ToolJet.useStateString({
+    name: 'completeTitle',
+    label: 'Completed title',
+    initialValue: 'Thanks for your answers',
+  });
+  const [completeText] = ToolJet.useStateString({
+    name: 'completeText',
+    label: 'Completed text',
+    initialValue: 'We will use them to set up your workspace.',
+  });
   const [surface] = ToolJet.useStateEnumeration({
     name: 'surface',
     label: 'Surface',
@@ -110,11 +133,23 @@ export const Questionnaire = () => {
     name: 'titleFontFamily',
     label: 'Question typeface',
     enumDefinition: ['theme', 'sans', 'serif', 'display', 'mono'],
-    enumLabels: { theme: 'Theme font', sans: 'Sans serif', serif: 'Serif', display: 'Display serif', mono: 'Monospace' },
+    enumLabels: {
+      theme: 'Theme font',
+      sans: 'Sans serif',
+      serif: 'Serif',
+      display: 'Display serif',
+      mono: 'Monospace',
+    },
     initialValue: 'theme',
   });
   const loadingNow = useLoading();
-  ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 48 });
+  ToolJet.useComponentSettings({
+    role: 'questionnaire',
+    fit: false,
+    loading: 'own',
+    defaultWidth: 20,
+    defaultHeight: 48,
+  });
 
   const [domId] = useState(() => `ui2q-${++instanceCount}`);
   const itemsKey = useMemo(() => safeKey(rawItems), [rawItems]);
@@ -191,7 +226,11 @@ export const Questionnaire = () => {
     move(target, true);
   };
   ToolJet.useAction(
-    { name: 'goTo', displayName: 'Go to question', params: [{ handle: 'index', displayName: 'Index or name', defaultValue: '{{0}}' }] },
+    {
+      name: 'goTo',
+      displayName: 'Go to question',
+      params: [{ handle: 'index', displayName: 'Index or name', defaultValue: '{{0}}' }],
+    },
     (arg) => goTo(arg)
   );
 
@@ -375,7 +414,12 @@ export const Questionnaire = () => {
               <input {...field} className="ui-input ui2q-field" />
             )
           ) : (
-            <div role={item.type === 'single' ? 'radiogroup' : 'group'} aria-labelledby={promptId} aria-required={item.required || undefined} className="ui2q-answers">
+            <div
+              role={item.type === 'single' ? 'radiogroup' : 'group'}
+              aria-labelledby={promptId}
+              aria-required={item.required || undefined}
+              className="ui2q-answers"
+            >
               {options.map((option, i) => {
                 const checked = option.kind === 'other' ? !!answer.otherOn : isPicked(item, answer, option.value);
                 const key = shortcutKey(i, mode);
@@ -445,7 +489,11 @@ export const Questionnaire = () => {
                 Skip
               </button>
             ) : null}
-            <button type="button" className="ui-btn ui-btn--default ui-btn--auto ui2q-primary" onClick={last ? submit : next}>
+            <button
+              type="button"
+              className="ui-btn ui-btn--default ui-btn--auto ui2q-primary"
+              onClick={last ? submit : next}
+            >
               {last ? String(submitLabel ?? '') || 'Submit' : 'Next'}
             </button>
           </div>
@@ -457,7 +505,11 @@ export const Questionnaire = () => {
   return (
     <LoadingFrame loading={loadingNow} look={<LoadingBox />}>
       <div className="ui ui2q-root" style={{ ...(style as React.CSSProperties), ...FIXED_BOX_SCROLL }}>
-        <div id={domId} className={cn('ui2q', surface !== 'plain' ? 'ui2q--card' : 'ui2q--plain')} data-step={complete ? 'complete' : at}>
+        <div
+          id={domId}
+          className={cn('ui2q', surface !== 'plain' ? 'ui2q--card' : 'ui2q--plain')}
+          data-step={complete ? 'complete' : at}
+        >
           {body}
         </div>
       </div>

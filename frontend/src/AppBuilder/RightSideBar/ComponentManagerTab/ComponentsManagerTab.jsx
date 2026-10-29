@@ -7,8 +7,9 @@ import Fuse from 'fuse.js';
 import { SearchBox } from '@/_components';
 import { DragLayer } from './DragLayer';
 import { LibrarySection } from './CustomComponentsTab';
+import { PackSection, useBuiltinPacks } from './BuiltinPackSections';
 import { LibraryPicker } from './LibraryPicker';
-import { libraryChoices, resolveLibraryChoice } from './componentLibrary';
+import { ROCKET_1, libraryChoices, resolveLibraryChoice } from './componentLibrary';
 import { hasLibraryContent, normalizedPinsMap } from './utils';
 import { dashlessId } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
@@ -55,7 +56,7 @@ class ModuleErrorBoundary extends React.Component {
 // TODO: searching
 
 export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
-  const _shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const _shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
   const edition = fetchEdition();
@@ -71,46 +72,55 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     (state) => state.license?.featureAccess?.customComponentLibraries === true
   );
 
-  // The app's library (componentLibrary.js): ToolJet UI 1.0, a component pack, or another custom library. Saved, else
-  // inferred. A pick saves it, except in a frozen editor, where it only changes the list. The built-in packs are offered
-  // on every plan; the other custom libraries only with custom component libraries.
+  // The app's component library (componentLibrary.js): ToolJet UI 1.0, a pack that ships with ToolJet (every
+  // edition), or a custom library the plan allows. Saved, else inferred from the app's components. A pick saves it,
+  // except in a frozen editor, where it only changes the list.
+  const builtinPacks = useBuiltinPacks();
   const libraries = useCustomComponentLibrariesStore((state) => state.libraries);
   useEffect(() => {
-    useCustomComponentLibrariesStore.getState().fetchLibraries();
-  }, []);
+    if (hasCustomComponentLibrariesAccess) useCustomComponentLibrariesStore.getState().fetchLibraries();
+  }, [hasCustomComponentLibrariesAccess]);
   const choices = useMemo(
     () =>
       libraryChoices(
-        (libraries ?? []).filter((lib) => hasLibraryContent(lib) && (lib.builtIn || hasCustomComponentLibrariesAccess))
+        builtinPacks,
+        hasCustomComponentLibrariesAccess ? (libraries ?? []).filter(hasLibraryContent) : []
       ),
-    [libraries, hasCustomComponentLibrariesAccess]
+    [builtinPacks, libraries, hasCustomComponentLibrariesAccess]
   );
+  const hasLibraryChoices = choices.packs.length + choices.custom.length > 0;
   const savedLibrary = useStore((state) => state.globalSettings?.componentLibrary);
   const pages = useStore((state) => state.modules?.canvas?.pages);
-  const globalSettingsChanged = useStore((state) => state.globalSettingsChanged);
-  const appLibrary = useMemo(() => resolveLibraryChoice(savedLibrary, choices, pages), [savedLibrary, choices, pages]);
+  // Every page's components, so an app saved before the setting is inferred from all of it, not the open page.
+  const appComponents = useMemo(
+    () => Object.assign({}, ...(pages ?? []).map((page) => page?.components ?? {})),
+    [pages]
+  );
+  const appLibrary = useMemo(
+    () => (hasLibraryChoices ? resolveLibraryChoice(savedLibrary, choices, appComponents) : ROCKET_1),
+    [hasLibraryChoices, savedLibrary, choices, appComponents]
+  );
   // The pick shows at once; it gives way to the app's library once that is saved or another app or version loads.
   const [pickedLibrary, setPickedLibrary] = useState(null);
   useEffect(() => setPickedLibrary(null), [appLibrary]);
-  const libraryKey = pickedLibrary ?? appLibrary;
-  // Picking a pack or library also pins its latest revision when the version has no pin for it yet, as dropping one of
-  // its components does: an AI build into this app writes the components, and a component renders only while its
-  // library is pinned.
+  const library = pickedLibrary ?? appLibrary;
+  // Picking a custom library also pins its latest revision when the version has no pin for it yet, as dropping one of
+  // its components does: a component renders only while its library is pinned. Packs ship with the release, unpinned.
   const pickLibrary = (value) => {
     setPickedLibrary(value);
     if (value === savedLibrary || shouldFreeze) return;
-    const picked = [...choices.packs, ...choices.custom].find((choice) => choice.value === value)?.library;
+    const picked = choices.custom.find((choice) => choice.value === value)?.library;
     const pins = useStore.getState().globalSettings?.customComponentLibraries;
     const latest = picked?.revisions?.[0]?.version;
     const pinned = picked && normalizedPinsMap(pins)[dashlessId(picked.correlationId)];
-    globalSettingsChanged({
+    useStore.getState().globalSettingsChanged({
       componentLibrary: value,
       ...(latest && !pinned
         ? { customComponentLibraries: { ...normalizedPinsMap(pins), [dashlessId(picked.correlationId)]: latest } }
         : {}),
     });
   };
-  const libraryChoice = [...choices.packs, ...choices.custom].find((choice) => choice.value === libraryKey);
+  const libraryChoice = [...choices.packs, ...choices.custom].find((choice) => choice.value === library);
 
   const componentList = useMemo(() => {
     return [
@@ -274,8 +284,10 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
 
   // Remove renderSection, replace with Tabs/Tab logic below
 
-  // The picked library's components: Rocket 1.0's sections, or the library's own (a pack in the same sections).
+  // The picked library's components: ToolJet UI 1.0's sections, a pack's in the same sections, or a custom library's.
   function libraryComponents() {
+    if (libraryChoice?.pack)
+      return <PackSection key={libraryChoice.pack.pack} pack={libraryChoice.pack} searchQuery={searchQuery} />;
     if (!libraryChoice) return segregateSections();
     return (
       <div className="custom-components-tab">
@@ -331,8 +343,13 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
               />
             </div>
           </div>
-          <React.Fragment key={libraryKey}>{searchBox()}</React.Fragment>
-          <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
+          {hasLibraryChoices && (
+            <div className="tw-px-4 tw-pt-3">
+              <LibraryPicker value={library} choices={choices} onChange={pickLibrary} />
+            </div>
+          )}
+          <React.Fragment key={library}>{searchBox()}</React.Fragment>
+          <div className="widgets-list col-sm-12 col-lg-12 row">{libraryComponents()}</div>
         </>
       ) : (
         <>
@@ -361,8 +378,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
             <Tab
               eventKey="components"
               title={
-                choices.packs.length || choices.custom.length ? (
-                  <LibraryPicker value={libraryKey} choices={choices} onChange={pickLibrary} />
+                hasLibraryChoices ? (
+                  <LibraryPicker value={library} choices={choices} onChange={pickLibrary} />
                 ) : (
                   (() => {
                     const str = t('globals.components', 'Components');
@@ -372,7 +389,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
               }
               darkMode={darkMode}
             >
-              <React.Fragment key={libraryKey}>{searchBox()}</React.Fragment>
+              <React.Fragment key={library}>{searchBox()}</React.Fragment>
               <div className="widgets-list col-sm-12 col-lg-12 row">{libraryComponents()}</div>
             </Tab>
             {hasModuleAccess && (

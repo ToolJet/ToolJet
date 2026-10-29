@@ -643,7 +643,9 @@ export default class Snowflake implements QueryService {
     if (!scopeParts.includes('offline_access')) scopeParts.push('offline_access');
     const scope = scopeParts.join(' ');
 
-    const host = isTooljetManagedApp ? process.env.TOOLJET_HOST : getOptionValue('tj_redirect_host') || process.env.TOOLJET_HOST;
+    const host = isTooljetManagedApp
+      ? process.env.TOOLJET_HOST
+      : getOptionValue('tj_redirect_host') || process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;
@@ -750,7 +752,9 @@ export default class Snowflake implements QueryService {
     }
     const scope = scopeParts.join(' ');
 
-    const host = isTooljetManagedApp ? process.env.TOOLJET_HOST : sourceOptions['tj_redirect_host'] || process.env.TOOLJET_HOST;
+    const host = isTooljetManagedApp
+      ? process.env.TOOLJET_HOST
+      : sourceOptions['tj_redirect_host'] || process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const redirectUri = `${fullUrl}oauth2/authorize`;

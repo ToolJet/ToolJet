@@ -69,6 +69,7 @@ const Container = React.memo(
     );
     const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
+    const isMobileMainCanvas = currentLayout === 'mobile' && id === 'canvas';
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
     const isWidgetInSubContainerDragging = useStore(
       (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
@@ -102,6 +103,21 @@ const Container = React.memo(
         usesFlexLayoutV2(state.getComponentDefinition?.(id, moduleId)?.component?.definition?.properties),
       shallow
     );
+
+    function getContainerCanvasWidth() {
+      if (canvasWidth !== undefined) {
+        if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
+        if (id === 'canvas') return canvasWidth;
+        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
+      }
+      if (componentType === 'canvas-header' || componentType === 'canvas-footer') {
+        return realCanvasRef?.current?.offsetWidth - 2 * PAGE_CANVAS_HEADER_FOOTER_PADDING;
+      }
+      return realCanvasRef?.current?.offsetWidth;
+    }
+
+    const containerCanvasWidth = getContainerCanvasWidth();
+    const gridWidth = containerCanvasWidth / NO_OF_GRIDS;
 
     // Initialize ghost moveable hook
     const { activateMoveableGhost, deactivateMoveableGhost, updateGhostSize } = useDropVirtualMoveableGhost();
@@ -161,8 +177,11 @@ const Container = React.memo(
       setCurrentDragCanvasId,
     ]);
 
+    // Only a row after the first of a row-scoped widget is a read-only mirror (row 0 is the editable one). A canvas
+    // with no row index is not a row at all: a pack or library component's named drop area (ToolJet.Slot).
     const isContainerReadOnly = useMemo(() => {
-      return (index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || currentMode === 'view';
+      const isMirrorRow = index !== null && index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType);
+      return isMirrorRow || currentMode === 'view';
     }, [index, componentType, currentMode]);
 
     const [{ isOverCurrent }, drop] = useDrop({
@@ -215,21 +234,6 @@ const Container = React.memo(
       (id === 'canvas' || componentType === 'ModuleContainer') &&
       components.length === 0 &&
       !isDragging;
-
-    function getContainerCanvasWidth() {
-      if (canvasWidth !== undefined) {
-        if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
-        if (id === 'canvas') return canvasWidth;
-        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
-      }
-      if (componentType === 'canvas-header' || componentType === 'canvas-footer') {
-        return realCanvasRef?.current?.offsetWidth - 2 * PAGE_CANVAS_HEADER_FOOTER_PADDING;
-      }
-      return realCanvasRef?.current?.offsetWidth;
-    }
-
-    const containerCanvasWidth = getContainerCanvasWidth();
-    const gridWidth = containerCanvasWidth / NO_OF_GRIDS;
 
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
@@ -290,7 +294,9 @@ const Container = React.memo(
         style={{
           height: id === 'canvas' ? `${canvasHeight}` : getSubContainerHeightAfterPadding(componentType),
           backgroundSize: `${gridWidth}px ${GRID_HEIGHT}px`,
-          padding: `${HOVER_CLICK_OUTLINE_BORDER}px`, // This is required to prevent the hover click outline from being cut off
+          // Stops the hover outline being clipped. Skipped on mobile, where widget widths come from
+          // the unpadded outer width and this would push them past the content box.
+          padding: isMobileMainCanvas ? 0 : `${HOVER_CLICK_OUTLINE_BORDER}px`,
           backgroundColor:
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)

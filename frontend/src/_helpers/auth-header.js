@@ -15,6 +15,8 @@ export function authHeader(isMultipartData = false, current_organization_id) {
 
   const wid = current_organization_id || session?.current_organization_id;
 
+  // The active branch is no longer sent as a header. It travels as a `branch_id` query param
+  // via appendBranchParam() on branch-sensitive API calls (see _helpers/active-branch).
   const headers = {
     ...(!isMultipartData && {
       'Content-Type': 'application/json',

@@ -4,6 +4,7 @@ import queryString from 'query-string';
 import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 export function useAppPreviewLink() {
   const { moduleId } = useModuleContext();
@@ -16,6 +17,7 @@ export function useAppPreviewLink() {
     slug,
     currentVersionId,
     selectedVersion,
+    currentLayout,
   } = useStore(
     (state) => ({
       featureAccess: state.license?.featureAccess,
@@ -26,9 +28,12 @@ export function useAppPreviewLink() {
       slug: state.appStore.modules[moduleId].app.slug,
       currentVersionId: state.currentVersionId,
       selectedVersion: state.selectedVersion,
+      currentLayout: state.currentLayout,
     }),
     shallow
   );
+
+  const currentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
 
   const [appPreviewLink, setAppPreviewLink] = useState('');
 
@@ -40,9 +45,16 @@ export function useAppPreviewLink() {
       featureAccess?.licenseStatus?.isLicenseValid === false ||
       featureAccess?.multiEnvironment === false;
 
+    // Include `branch=<name>`: the private-app-auth guard resolves the app by slug on this
+    // branch (a branch-type version's slug lives on its feature branch, not the default), so the
+    // preview of a branch version needs the branch context to resolve — without it the guard's
+    // slug lookup misses and the app can't be found.
     const previewQuery = queryString.stringify({
-      version: selectedVersion?.name,
+      version: selectedVersion?.display_name || selectedVersion?.displayName || selectedVersion?.name,
       ...(!isBasicPlan ? { env: selectedEnvironment?.name } : {}),
+      // Carry the editor's mobile view into preview so it opens in mobile too.
+      ...(currentLayout === 'mobile' ? { layout: 'mobile' } : {}),
+      ...(currentBranch ? { branch: currentBranch.name } : {}),
     });
 
     const link = editingVersion
@@ -60,6 +72,9 @@ export function useAppPreviewLink() {
     featureAccess?.licenseStatus?.isLicenseValid,
     selectedEnvironment?.name,
     selectedVersion?.name,
+    selectedVersion?.versionType,
+    currentBranch,
+    currentLayout,
   ]);
 
   return appPreviewLink;

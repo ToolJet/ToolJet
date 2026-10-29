@@ -103,6 +103,7 @@ export const createDebuggerSlice = (set, get) => ({
 
     validateComponent: (id, component, moduleId = 'canvas', logAccumulator = null) => {
       const componentDefinition = get().getComponentDefinition(id, moduleId);
+      if (!componentDefinition?.component) return component;
       const componentName = componentDefinition.component.name;
       const componentType = componentDefinition.component.component;
       const componentMeta = componentTypeDefinitionMap[componentType];
@@ -174,19 +175,26 @@ export const createDebuggerSlice = (set, get) => ({
       const log = get().debugger.log;
 
       const componentDefinition = get().getComponentDefinition(componentId, moduleId);
+      // A dependency cascade can reference a component that no longer exists in the current app —
+      // e.g. a stale dependency-graph entry keyed by a previous app's component id on clone -> open
+      // (before initDependencyGraph rebuilds), or a just-deleted component. Nothing to validate
+      // against, so return the value unchanged instead of dereferencing undefined and throwing
+      // (which the fetchApp catch swallows, blanking the editor).
+      if (!componentDefinition?.component) return value;
       const componentName = componentDefinition.component.name;
       const componentType = componentDefinition.component.component;
       const componentMeta = componentTypeDefinitionMap[componentType];
       // A widget type this build does not register (an app saved with ToolJet UI 2.0's Shad* widgets) has no schema to
       // validate against: its value stands as it is, so the rest of the app still loads.
-      if (!componentMeta?.[type]) return value;
-      const validationSchema = componentMeta[type][property]?.validation?.schema;
+      if (!componentMeta) return value;
+      // Pack and custom library components declare no validation meta; their Validation section brings its own
+      const validationSchema = componentMeta[type]?.[property]?.validation?.schema;
 
       const defaultValue = validationSchema?.defaultValue
         ? validationSchema?.defaultValue
         : validationSchema
-        ? findDefault(validationSchema, value)
-        : undefined;
+          ? findDefault(validationSchema, value)
+          : undefined;
 
       const schema = _.isUndefined(validationSchema) ? any() : generateSchemaFromValidationDefinition(validationSchema);
 

@@ -41,6 +41,7 @@ import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
 import { completionLabelTooltip } from './completionLabelTooltip';
 import { optionsListBlockReason } from '@/AppBuilder/RightSideBar/Inspector/Components/shared/utils/optionsLiteral';
 import { CHOICE_FIELDS, holdsExpression } from './heldExpression';
+import { codeSearchHighlight } from './codeSearchHighlight';
 
 // Hoisted to module scope so their identity never changes: anything fed into the
 // CodeMirror `extensions` prop must stay referentially stable, otherwise
@@ -508,12 +509,14 @@ const EditorInput = ({
             // rows. Enable wrapping so per-row selection rects
             // are generated.
             EditorView.lineWrapping,
+            codeSearchHighlight,
             ...(maxLength > 0 ? [maxLengthFilter(maxLength)] : []),
           ]
         : [
             langExtension,
             tooltipExtension,
             EditorView.lineWrapping,
+            codeSearchHighlight,
             ...(maxLength > 0 ? [maxLengthFilter(maxLength)] : []),
           ],
     [showSuggestions, langExtension, autoCompleteConfig, customTabKeymap, maxLength]
@@ -584,7 +587,7 @@ const EditorInput = ({
     <div
       ref={currentEditorHeightRef}
       className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'} ${disabled ? 'disabled-cursor' : ''}`}
-      data-cy={`${cyLabel.replace(/_/g, '-')}-input-field`}
+      data-cy={`${cyLabel}-input-field`}
     >
       {/* sticky element to position the preview box correctly on top without flowing out of container */}
       {usePortalEditor && (
@@ -831,6 +834,7 @@ const DynamicEditorBridge = (props) => {
       className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor', {
         'ui2-segmented-stacked': segmented === 'stacked',
       })}
+      data-param={paramName}
     >
       <div
         className={cx('d-flex align-items-center justify-content-between code-flex-wrapper', {

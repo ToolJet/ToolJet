@@ -27,7 +27,9 @@ describe('LibraryComponent inspector editors', () => {
   it('picks the editor from the hint only for the type it writes', () => {
     expect(editorHint({ name: 'columns', type: 'array', inspector: 'columns' })).toBe('columns');
     expect(editorHint({ name: 'options', type: 'array', inspector: 'options' })).toBe('options');
-    expect(editorHint({ name: 'icon', type: 'string', inspector: 'icon' })).toBe('icon');
+    // The pack's lucide picker only for iconSet 'lucide'; a Tabler icon uses the native icon field.
+    expect(editorHint({ name: 'icon', type: 'string', inspector: 'icon', iconSet: 'lucide' })).toBe('icon');
+    expect(editorHint({ name: 'icon', type: 'string', inspector: 'icon' })).toBeUndefined();
     expect(editorHint({ name: 'icon', type: 'array', inspector: 'icon' })).toBeUndefined();
     expect(fieldMeta({ name: 'columns', type: 'array', inspector: 'columns' }).type).toBe('code');
     expect(fieldMeta({ name: 'tint', type: 'string', inspector: 'color' }).type).toBe('colorSwatches');

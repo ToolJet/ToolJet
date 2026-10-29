@@ -336,7 +336,7 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
   }, [options?.metadata, queryName]);
 
   const loadServices = React.useCallback(async () => {
-    if (!selectedDataSource?.id) return;
+    if (!selectedDataSource?.id || selectedDataSource?.kind !== 'grpcv2') return;
 
     if (!selectedDataSource?.options?.url?.value) {
       toast.error('Please configure the server URL in your data source settings');
@@ -553,10 +553,10 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
                   options?.service && options?.method
                     ? `${options.service} → ${options.method}`
                     : isLoadingServices
-                    ? 'Loading services...'
-                    : hierarchicalOptions.length === 0
-                    ? 'No services found'
-                    : 'Select service'
+                      ? 'Loading services...'
+                      : hierarchicalOptions.length === 0
+                        ? 'No services found'
+                        : 'Select service'
                 }
                 disabled={
                   (!options?.service || !options?.method) && (isLoadingServices || hierarchicalOptions.length === 0)

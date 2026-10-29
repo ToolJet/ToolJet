@@ -35,6 +35,7 @@ export type FetchUserResponse = {
   avatarId?: string;
   groups?: any;
   roleGroup?: any;
+  adminGroups?: { id: string; name: string }[];
 };
 
 export type UserFilterOptions = { searchText?: string; status?: string };

@@ -283,8 +283,8 @@ function TableSchema({
                   columnDetails[index]?.constraints_type?.is_primary_key === true
                     ? 'Primary key data type cannot be modified'
                     : columnDetails[index]?.data_type === 'timestamp with time zone'
-                    ? 'Date with time'
-                    : null
+                      ? 'Date with time'
+                      : null
                 }
                 placement="top"
                 tooltipClassName="tootip-table"
@@ -324,8 +324,8 @@ function TableSchema({
                       columnConstraints.is_unique = prevColumns[index].constraints_type?.is_primary_key
                         ? true
                         : value?.value === 'boolean'
-                        ? false
-                        : false;
+                          ? false
+                          : false;
 
                       columnConstraints.is_primary_key = value.value === 'boolean' && false;
                       // columnConstraints.is_primary_key = value.value === 'serial' && true;
@@ -442,12 +442,12 @@ function TableSchema({
                     columnDetails[index]?.data_type === 'serial'
                       ? 'Serial data type values cannot be modified'
                       : columnDetails[index]?.data_type === 'timestamp with time zone' &&
-                        columnDetails[index]?.column_default
-                      ? convertDateToTimeZoneFormatted(
-                          columnDetails[index].column_default,
-                          columnDetails[index]?.configurations?.timezone || getLocalTimeZone()
-                        )
-                      : null
+                          columnDetails[index]?.column_default
+                        ? convertDateToTimeZoneFormatted(
+                            columnDetails[index].column_default,
+                            columnDetails[index]?.configurations?.timezone || getLocalTimeZone()
+                          )
+                        : null
                   }
                   placement="top"
                   tooltipClassName="tootip-table"
@@ -505,12 +505,12 @@ function TableSchema({
                           columnDetails[index].data_type === 'serial'
                             ? 'Auto-generated'
                             : // : checkDefaultValue(columnDetails[index].column_default)
-                            // ? null
-                            columnDetails[index].data_type === 'jsonb'
-                            ? columnDetails[index].constraints_type?.is_not_null
-                              ? JSON.stringify({})
-                              : null
-                            : columnDetails[index].column_default
+                              // ? null
+                              columnDetails[index].data_type === 'jsonb'
+                              ? columnDetails[index].constraints_type?.is_not_null
+                                ? JSON.stringify({})
+                                : null
+                              : columnDetails[index].column_default
                         }
                         type="text"
                         className="form-control defaultValue"
@@ -538,10 +538,10 @@ function TableSchema({
                   columnDetails[index]?.data_type === 'boolean'
                     ? 'Boolean type column cannot be a primary key'
                     : columnDetails[index]?.data_type === 'timestamp with time zone'
-                    ? ' Primary key cannot be created with this column type'
-                    : columnDetails[index]?.data_type === 'jsonb'
-                    ? 'JSON type column cannot be a primary key'
-                    : 'There must be atleast one Primary key'
+                      ? ' Primary key cannot be created with this column type'
+                      : columnDetails[index]?.data_type === 'jsonb'
+                        ? 'JSON type column cannot be a primary key'
+                        : 'There must be atleast one Primary key'
                 }
                 placement="top"
                 tooltipClassName="tootip-table"
@@ -557,8 +557,8 @@ function TableSchema({
                       ['boolean', 'timestamp with time zone', 'jsonb'].includes(columnDetails[index]?.data_type)
                         ? false
                         : columnDetails[index]?.constraints_type?.is_primary_key
-                        ? true
-                        : false
+                          ? true
+                          : false
                     }
                     onChange={(e) => {
                       const prevColumns = { ...columnDetails };
@@ -597,9 +597,9 @@ function TableSchema({
                   columnDetails[index]?.constraints_type?.is_primary_key === true
                     ? 'Primary key values cannot be null'
                     : columnDetails[index]?.data_type === 'serial' &&
-                      columnDetails[index]?.constraints_type?.is_primary_key !== true
-                    ? 'Serial data type cannot have NULL value'
-                    : null
+                        columnDetails[index]?.constraints_type?.is_primary_key !== true
+                      ? 'Serial data type cannot have NULL value'
+                      : null
                 }
                 placement="top"
                 tooltipClassName="tootip-table"
@@ -615,7 +615,7 @@ function TableSchema({
                     <input
                       className="form-check-input"
                       data-cy={`${String(
-                        columnDetails[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL'
+                        (columnDetails[index]?.constraints_type?.is_not_null ?? false) ? 'NOT NULL' : 'NULL'
                       )
                         .toLowerCase()
                         .replace(/\s+/g, '-')}-checkbox`}
@@ -636,7 +636,7 @@ function TableSchema({
                   </label>
                   <p
                     data-cy={`${String(
-                      columnDetails[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL'
+                      (columnDetails[index]?.constraints_type?.is_not_null ?? false) ? 'NOT NULL' : 'NULL'
                     )
                       .toLowerCase()
                       .replace(/\s+/g, '-')}-text`}

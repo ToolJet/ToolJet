@@ -96,7 +96,8 @@ export const createInspectorSlice = (set, get) => ({
       case 'Kanban': {
         return [...get().getContainerChildrenMapping(id), ...get().getContainerChildrenMapping(`${id}-modal`)];
       }
-      case 'LibraryComponent': {
+      case 'LibraryComponent':
+      case 'PackComponent': {
         // ToolJet.Slot canvases are `<componentId>-<slotName>`. Slots register at runtime (e.g. one per tab
         // from a property), so match every slot canvas by prefix; slot names never contain '-'.
         const { containerChildrenMapping } = get();

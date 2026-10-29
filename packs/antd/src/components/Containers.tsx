@@ -2,11 +2,29 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Avatar, Button, Card as AntCard, List as AntList, Modal as AntModal, Space, Tabs as AntTabs, Tag } from 'antd';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
 
-const TONE_TAG: Record<string, string | undefined> = { success: 'success', warning: 'warning', danger: 'error', info: 'processing', neutral: undefined };
+const TONE_TAG: Record<string, string | undefined> = {
+  success: 'success',
+  warning: 'warning',
+  danger: 'error',
+  info: 'processing',
+  neutral: undefined,
+};
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, usePopupTheme, useTokenStyles } from '../lib/AntProvider';
 import { SpinOver } from '../lib/Loading';
-import { followSelection, idGroup, readField, repeatedIds, rowIdOf, rowIdText, rowKeyOf, str, toKeyedItems, toRows, type Row } from '../lib/data';
+import {
+  followSelection,
+  idGroup,
+  readField,
+  repeatedIds,
+  rowIdOf,
+  rowIdText,
+  rowKeyOf,
+  str,
+  toKeyedItems,
+  toRows,
+  type Row,
+} from '../lib/data';
 import { formatCell } from '../lib/format';
 import { slotNames } from '../lib/slots';
 import { useDialogOwner } from '../lib/useOwnerGuard';
@@ -24,18 +42,51 @@ export const Tabs = () => {
       { key: 'tab2', label: 'Tab 2' },
     ],
   });
-  const [activeKey, setActiveKey] = ToolJet.useStateString({ name: 'activeKey', label: 'Active key', description: 'Empty opens the first tab.', initialValue: '' });
-  const [type] = ToolJet.useStateEnumeration({ name: 'type', label: 'Type', enumDefinition: ['line', 'card'], initialValue: 'line' });
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'middle', 'large'], initialValue: 'middle' });
+  const [activeKey, setActiveKey] = ToolJet.useStateString({
+    name: 'activeKey',
+    label: 'Active key',
+    description: 'Empty opens the first tab.',
+    initialValue: '',
+  });
+  const [type] = ToolJet.useStateEnumeration({
+    name: 'type',
+    label: 'Type',
+    enumDefinition: ['line', 'card'],
+    initialValue: 'line',
+  });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['small', 'middle', 'large'],
+    initialValue: 'middle',
+  });
   const [centered] = ToolJet.useStateBoolean({ name: 'centered', label: 'Centered', initialValue: false });
-  const [tabPosition] = ToolJet.useStateEnumeration({ name: 'tabPosition', label: 'Tab position', enumDefinition: ['top', 'left', 'right', 'bottom'], initialValue: 'top' });
+  const [tabPosition] = ToolJet.useStateEnumeration({
+    name: 'tabPosition',
+    label: 'Tab position',
+    enumDefinition: ['top', 'left', 'right', 'bottom'],
+    initialValue: 'top',
+  });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onTabClick = ToolJet.useEventCallback({ name: 'onTabClick' });
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 30, defaultHeight: 40 });
+  ToolJet.useComponentSettings({
+    role: 'tabs',
+    fit: false,
+    loading: 'own',
+    usage:
+      "Ant's Tabs: items [{key, label}], each tab a canvas of child components (slot tab_<key>); activeKey; type (line, card); onChange; setActiveKey.",
+    roleProps: { tabs: 'items', currentTab: 'activeKey' },
+    roleActions: { setTab: 'setActiveKey' },
+    defaultWidth: 30,
+    defaultHeight: 40,
+  });
   const items = toKeyedItems(rawItems);
-  const slots = slotNames('tab', items.map((t) => t.key));
+  const slots = slotNames(
+    'tab',
+    items.map((t) => t.key)
+  );
   // A bound number (2) names the tab keyed '2' too.
   const asked = str(activeKey);
   const current = items.some((t) => t.key === asked) ? asked : items[0]?.key;
@@ -49,9 +100,12 @@ export const Tabs = () => {
   // fires nothing (lib/sameValue).
   const keySetter = useValueSetter<string | undefined>(current, (k) => setActiveKey(k ?? ''));
   const change = (key: string) => {
-    if (keySetter.set(items.some((t) => t.key === key) ? key : items[0]?.key ?? key)) onChange();
+    if (keySetter.set(items.some((t) => t.key === key) ? key : (items[0]?.key ?? key))) onChange();
   };
-  ToolJet.useAction({ name: 'setActiveKey', displayName: 'Set active tab', params: [{ handle: 'key', displayName: 'Tab key' }] }, (k) => change(str(k)));
+  ToolJet.useAction(
+    { name: 'setActiveKey', displayName: 'Set active tab', params: [{ handle: 'key', displayName: 'Tab key' }] },
+    (k) => change(str(k))
+  );
 
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-tabs">
@@ -80,14 +134,37 @@ export const Tabs = () => {
 // components (slot body); event onClick.
 export const Card = () => {
   const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Card title' });
-  const [extra] = ToolJet.useStateString({ name: 'extra', label: 'Extra', description: 'Text at the right of the title.', initialValue: '' });
-  const [variant] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['outlined', 'borderless'], initialValue: 'outlined' });
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['default', 'small'], initialValue: 'default' });
+  const [extra] = ToolJet.useStateString({
+    name: 'extra',
+    label: 'Extra',
+    description: 'Text at the right of the title.',
+    initialValue: '',
+  });
+  const [variant] = ToolJet.useStateEnumeration({
+    name: 'variant',
+    label: 'Variant',
+    enumDefinition: ['outlined', 'borderless'],
+    initialValue: 'outlined',
+  });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['default', 'small'],
+    initialValue: 'default',
+  });
   const [hoverable] = ToolJet.useStateBoolean({ name: 'hoverable', label: 'Hoverable', initialValue: false });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 40 });
+  ToolJet.useComponentSettings({
+    role: 'card',
+    fit: false,
+    loading: 'own',
+    usage:
+      "Ant's Card: title, extra (top right text), variant (outlined, borderless), size; its body is a canvas of child components (slot body).",
+    defaultWidth: 16,
+    defaultHeight: 40,
+  });
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-card">
       <AntCard
@@ -111,15 +188,48 @@ export const Card = () => {
 // hide.
 export const Modal = () => {
   const [triggerText] = ToolJet.useStateString({ name: 'triggerText', label: 'Trigger text', initialValue: 'Open' });
-  const [showTrigger] = ToolJet.useStateBoolean({ name: 'showTrigger', label: 'Show trigger', description: 'A button on the canvas that opens the modal.', initialValue: true });
+  const [showTrigger] = ToolJet.useStateBoolean({
+    name: 'showTrigger',
+    label: 'Show trigger',
+    description: 'A button on the canvas that opens the modal.',
+    initialValue: true,
+  });
   const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Modal title' });
-  const [content] = ToolJet.useStateString({ name: 'content', label: 'Content', description: 'Text above the body components.', initialValue: '' });
+  const [content] = ToolJet.useStateString({
+    name: 'content',
+    label: 'Content',
+    description: 'Text above the body components.',
+    initialValue: '',
+  });
   const [okText] = ToolJet.useStateString({ name: 'okText', label: 'OK text', initialValue: 'OK' });
   const [cancelText] = ToolJet.useStateString({ name: 'cancelText', label: 'Cancel text', initialValue: 'Cancel' });
-  const [okType] = ToolJet.useStateEnumeration({ name: 'okType', label: 'OK type', enumDefinition: ['primary', 'danger'], initialValue: 'primary' });
-  const [footer] = ToolJet.useStateBoolean({ name: 'footer', label: 'Footer', description: 'The OK and Cancel buttons.', initialValue: true });
-  const [width] = ToolJet.useStateNumber({ name: 'width', label: 'Width (px)', initialValue: 520, min: 240, max: 1600 });
-  const [bodyHeight] = ToolJet.useStateNumber({ name: 'bodyHeight', label: 'Body height (px)', description: '0 for no body components.', initialValue: 200, min: 0, max: 2000 });
+  const [okType] = ToolJet.useStateEnumeration({
+    name: 'okType',
+    label: 'OK type',
+    enumDefinition: ['primary', 'danger'],
+    initialValue: 'primary',
+  });
+  const [footer] = ToolJet.useStateBoolean({
+    name: 'footer',
+    label: 'Footer',
+    description: 'The OK and Cancel buttons.',
+    initialValue: true,
+  });
+  const [width] = ToolJet.useStateNumber({
+    name: 'width',
+    label: 'Width (px)',
+    initialValue: 520,
+    min: 240,
+    max: 1600,
+  });
+  const [bodyHeight] = ToolJet.useStateNumber({
+    name: 'bodyHeight',
+    label: 'Body height (px)',
+    description: '0 for no body components.',
+    initialValue: 200,
+    min: 0,
+    max: 2000,
+  });
   const [centered] = ToolJet.useStateBoolean({ name: 'centered', label: 'Centered', initialValue: true });
   const [closable] = ToolJet.useStateBoolean({ name: 'closable', label: 'Closable', initialValue: true });
   const [maskClosable] = ToolJet.useStateBoolean({ name: 'maskClosable', label: 'Mask closable', initialValue: true });
@@ -130,7 +240,26 @@ export const Modal = () => {
   const afterClose = ToolJet.useEventCallback({ name: 'afterClose' });
   const { disabled, loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
+  ToolJet.useComponentSettings({
+    role: 'dialog',
+    fit: false,
+    loading: 'own',
+    usage:
+      "Ant's Modal: title, content (text), a body canvas of components (slot body, bodyHeight), okText, cancelText, okType (primary, danger), footer, width; open is exposed; a trigger button on the canvas (showTrigger, triggerText); actions show, hide; events onOk, onCancel, afterOpen, afterClose.",
+    roleProps: {
+      description: 'content',
+      confirmText: 'okText',
+      show: 'open',
+      showFooter: 'footer',
+      destructive: 'okType',
+    },
+    roleValues: { okType: { true: 'danger', false: 'primary' } },
+    roleEvents: { onConfirm: 'onOk', onOpen: 'afterOpen', onClose: 'afterClose' },
+    roleActions: { open: 'show', close: 'hide' },
+    slots: [{ name: 'body', kind: 'popup' }],
+    defaultWidth: 6,
+    defaultHeight: 4,
+  });
 
   // Showing a modal already open (or hiding one already closed) changes nothing: its afterOpen fired again.
   const openSetter = useValueSetter(!!open, setOpen);
@@ -234,11 +363,15 @@ const occurrenceKeys = (rows: Row[], field: string) => {
 // header, footer, bordered, split, size, pageSize (0 for no pagination), locale emptyText. Event onItemClick with
 // selectedItem exposed.
 export const List = () => {
-  const [rawData] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', initialValue: [
-    { id: 1, title: 'Quarterly report is ready', description: 'Finance shared the Q3 numbers' },
-    { id: 2, title: 'New comment on Order 1042', description: 'Maya Chen: can we ship on Friday?' },
-    { id: 3, title: 'Invoice 2209 paid', description: 'Received 1,250.00 USD' },
-  ] });
+  const [rawData] = ToolJet.useStateArray({
+    name: 'dataSource',
+    label: 'Data source',
+    initialValue: [
+      { id: 1, title: 'Quarterly report is ready', description: 'Finance shared the Q3 numbers' },
+      { id: 2, title: 'New comment on Order 1042', description: 'Maya Chen: can we ship on Friday?' },
+      { id: 3, title: 'Invoice 2209 paid', description: 'Received 1,250.00 USD' },
+    ],
+  });
   const [renderItem] = ToolJet.useStateEnumeration({
     name: 'renderItem',
     label: 'Render item',
@@ -246,26 +379,107 @@ export const List = () => {
     enumLabels: { meta: 'Fields (List.Item.Meta)', components: 'Components' },
     initialValue: 'meta',
   });
-  const [titleField] = ToolJet.useStateString({ name: 'titleField', label: 'Title field', initialValue: 'title', visibleWhen: { key: 'renderItem', value: 'meta' } });
-  const [descriptionField] = ToolJet.useStateString({ name: 'descriptionField', label: 'Description field', initialValue: 'description', visibleWhen: { key: 'renderItem', value: 'meta' } });
-  const [avatarField] = ToolJet.useStateString({ name: 'avatarField', label: 'Avatar field', description: 'An image URL field.', initialValue: '', visibleWhen: { key: 'renderItem', value: 'meta' } });
-  const [extraField] = ToolJet.useStateString({ name: 'extraField', label: 'Extra field', description: 'Shown at the right.', initialValue: '', visibleWhen: { key: 'renderItem', value: 'meta' } });
-  const [badgeField] = ToolJet.useStateString({ name: 'badgeField', label: 'Badge field', description: 'A status Tag at the right.', initialValue: '', visibleWhen: { key: 'renderItem', value: 'meta' } });
-  const [rowHeight] = ToolJet.useStateNumber({ name: 'rowHeight', label: 'Row height (px)', initialValue: 64, min: 24, max: 1200, visibleWhen: { key: 'renderItem', value: 'components' } });
+  const [titleField] = ToolJet.useStateString({
+    name: 'titleField',
+    label: 'Title field',
+    initialValue: 'title',
+    visibleWhen: { key: 'renderItem', value: 'meta' },
+  });
+  const [descriptionField] = ToolJet.useStateString({
+    name: 'descriptionField',
+    label: 'Description field',
+    initialValue: 'description',
+    visibleWhen: { key: 'renderItem', value: 'meta' },
+  });
+  const [avatarField] = ToolJet.useStateString({
+    name: 'avatarField',
+    label: 'Avatar field',
+    description: 'An image URL field.',
+    initialValue: '',
+    visibleWhen: { key: 'renderItem', value: 'meta' },
+  });
+  const [extraField] = ToolJet.useStateString({
+    name: 'extraField',
+    label: 'Extra field',
+    description: 'Shown at the right.',
+    initialValue: '',
+    visibleWhen: { key: 'renderItem', value: 'meta' },
+  });
+  const [badgeField] = ToolJet.useStateString({
+    name: 'badgeField',
+    label: 'Badge field',
+    description: 'A status Tag at the right.',
+    initialValue: '',
+    visibleWhen: { key: 'renderItem', value: 'meta' },
+  });
+  const [rowHeight] = ToolJet.useStateNumber({
+    name: 'rowHeight',
+    label: 'Row height (px)',
+    initialValue: 64,
+    min: 24,
+    max: 1200,
+    visibleWhen: { key: 'renderItem', value: 'components' },
+  });
   const [rowKey] = ToolJet.useStateString({ name: 'rowKey', label: 'Row key', initialValue: 'id' });
   const [header] = ToolJet.useStateString({ name: 'header', label: 'Header', initialValue: '' });
   const [footer] = ToolJet.useStateString({ name: 'footer', label: 'Footer', initialValue: '' });
   const [bordered] = ToolJet.useStateBoolean({ name: 'bordered', label: 'Bordered', initialValue: true });
-  const [split] = ToolJet.useStateBoolean({ name: 'split', label: 'Split', description: 'Lines between items.', initialValue: true });
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['default', 'small', 'large'], initialValue: 'default' });
-  const [pageSize] = ToolJet.useStateNumber({ name: 'pageSize', label: 'Page size', description: '0 for no pagination.', initialValue: 0, min: 0, max: 500 });
+  const [split] = ToolJet.useStateBoolean({
+    name: 'split',
+    label: 'Split',
+    description: 'Lines between items.',
+    initialValue: true,
+  });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['default', 'small', 'large'],
+    initialValue: 'default',
+  });
+  const [pageSize] = ToolJet.useStateNumber({
+    name: 'pageSize',
+    label: 'Page size',
+    description: '0 for no pagination.',
+    initialValue: 0,
+    min: 0,
+    max: 500,
+  });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty text', initialValue: 'No data' });
-  const [selectedItem, setSelectedItem] = ToolJet.useStateObject({ name: 'selectedItem', initialValue: {}, inspector: 'hidden' });
-  const [, setSelectedItemKey] = ToolJet.useStateString({ name: 'selectedItemKey', initialValue: '', inspector: 'hidden' });
+  const [selectedItem, setSelectedItem] = ToolJet.useStateObject({
+    name: 'selectedItem',
+    initialValue: {},
+    inspector: 'hidden',
+  });
+  const [, setSelectedItemKey] = ToolJet.useStateString({
+    name: 'selectedItemKey',
+    initialValue: '',
+    inspector: 'hidden',
+  });
   const onItemClick = ToolJet.useEventCallback({ name: 'onItemClick' });
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 30 });
+  ToolJet.useComponentSettings({
+    role: 'listview',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's List: dataSource; renderItem 'meta' (List.Item.Meta: titleField, descriptionField, avatarField (image URL or a name), extraField, badgeField (status Tag)) or 'components' (rows of child components reading {{listItem}}, rowHeight); header, footer, bordered, pageSize; selectedItem; onItemClick.",
+    roleProps: {
+      data: 'dataSource',
+      itemContent: 'renderItem',
+      rowsPerPage: 'pageSize',
+      subtitleField: 'descriptionField',
+      imageField: 'avatarField',
+      metaField: 'extraField',
+      idField: 'rowKey',
+      showBorder: 'bordered',
+    },
+    roleValues: { renderItem: { fields: 'meta', components: 'components' } },
+    roleEvents: { onRecordClicked: 'onItemClick' },
+    slots: [{ name: 'row', kind: 'rows' }],
+    defaultWidth: 20,
+    defaultHeight: 30,
+  });
   const [page, setPage] = useState(1);
 
   const rows = toRows(rawData);
@@ -290,7 +504,10 @@ export const List = () => {
     if (warned.current || !repeated.length) return;
     warned.current = true;
     console.warn(
-      `[List] Item ids should be unique: ${repeated.slice(0, 5).map((id) => JSON.stringify(id)).join(', ')} ` +
+      `[List] Item ids should be unique: ${repeated
+        .slice(0, 5)
+        .map((id) => JSON.stringify(id))
+        .join(', ')} ` +
         `${repeated.length === 1 ? 'is' : 'are'} held by more than one item in the "${field}" field. A selected item whose ` +
         'id is repeated stays selected only while it is the same record; a change that leaves that unclear clears it.'
     );
@@ -301,10 +518,11 @@ export const List = () => {
   // The selected id's rows (their content) when picked or last followed (lib/data followSelection).
   const group = useRef<string[]>([]);
   const exposedKey = selectedItem && Object.keys(selectedItem).length ? rowKeyOf(selectedItem as Row, field, -1) : '';
-  const selectedKey = picked || (exposedKey ? (keys.find((k, i) => rowKeyOf(rows[i], field, i) === exposedKey) ?? '') : '');
+  const selectedKey =
+    picked || (exposedKey ? (keys.find((k, i) => rowKeyOf(rows[i], field, i) === exposedKey) ?? '') : '');
 
   const select = (row: Row | null, index: number) => {
-    setPicked(row && index >= 0 ? keys[index] ?? '' : '');
+    setPicked(row && index >= 0 ? (keys[index] ?? '') : '');
     group.current = row ? idGroup(rows, ids, rowIdText(row, field)) : [];
     setSelectedItem(row ?? {});
     setSelectedItemKey((row ? rowIdOf(row, field, index) : '') as string);
@@ -345,10 +563,13 @@ export const List = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keys]);
-  ToolJet.useAction({ name: 'selectItem', displayName: 'Select item', params: [{ handle: 'key', displayName: 'Row key' }] }, (key) => {
-    const index = rows.findIndex((r, i) => rowKeyOf(r, field, i) === str(key));
-    select(rows[index] ?? null, index);
-  });
+  ToolJet.useAction(
+    { name: 'selectItem', displayName: 'Select item', params: [{ handle: 'key', displayName: 'Row key' }] },
+    (key) => {
+      const index = rows.findIndex((r, i) => rowKeyOf(r, field, i) === str(key));
+      select(rows[index] ?? null, index);
+    }
+  );
   ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => select(null, -1));
 
   return (
@@ -362,14 +583,21 @@ export const List = () => {
         size={size as 'default'}
         loading={loading}
         locale={{ emptyText: emptyText || 'No data' }}
-        pagination={size_ && rows.length > size_ ? { current: p, pageSize: size_, total: rows.length, size: 'small', align: 'end', onChange: setPage } : false}
+        pagination={
+          size_ && rows.length > size_
+            ? { current: p, pageSize: size_, total: rows.length, size: 'small', align: 'end', onChange: setPage }
+            : false
+        }
         rowKey={(r) => keys[visible.indexOf(r) + offset] ?? ''}
         renderItem={(row, i) => {
           const key = keys[i + offset];
           const selected = key === selectedKey;
           if (asRows)
             return (
-              <AntList.Item className={selected ? 'tj-ant-item tj-ant-item--rows is-selected' : 'tj-ant-item tj-ant-item--rows'} onClickCapture={() => select(row, i + offset)}>
+              <AntList.Item
+                className={selected ? 'tj-ant-item tj-ant-item--rows is-selected' : 'tj-ant-item tj-ant-item--rows'}
+                onClickCapture={() => select(row, i + offset)}
+              >
                 <div style={{ width: '100%', minHeight: height }}>
                   <ToolJet.RowSlot name="row" index={i} item={row} />
                 </div>
@@ -381,16 +609,33 @@ export const List = () => {
           const extra =
             badge || extraText ? (
               <Space size={8}>
-                {badge ? <Tag color={TONE_TAG[chipTone(badge)]} style={{ marginInlineEnd: 0 }}>{chipLabel(badge)}</Tag> : null}
+                {badge ? (
+                  <Tag color={TONE_TAG[chipTone(badge)]} style={{ marginInlineEnd: 0 }}>
+                    {chipLabel(badge)}
+                  </Tag>
+                ) : null}
                 {extraText ? <span>{extraText}</span> : null}
               </Space>
             ) : null;
           // The title field, else the row's first text field (a name the data does not have shows the record anyway).
-          const titleValue = readField(row, titleField) ?? Object.values(row).find((v) => typeof v === 'string' && v.trim());
+          const titleValue =
+            readField(row, titleField) ?? Object.values(row).find((v) => typeof v === 'string' && v.trim());
           return (
-            <AntList.Item className={selected ? 'tj-ant-item is-selected' : 'tj-ant-item'} onClick={() => select(row, i + offset)} extra={extra || undefined}>
+            <AntList.Item
+              className={selected ? 'tj-ant-item is-selected' : 'tj-ant-item'}
+              onClick={() => select(row, i + offset)}
+              extra={extra || undefined}
+            >
               <AntList.Item.Meta
-                avatar={avatar ? (/^(https?:|data:)/.test(avatar) ? <Avatar src={avatar} /> : <Avatar>{avatar.slice(0, 1).toUpperCase()}</Avatar>) : undefined}
+                avatar={
+                  avatar ? (
+                    /^(https?:|data:)/.test(avatar) ? (
+                      <Avatar src={avatar} />
+                    ) : (
+                      <Avatar>{avatar.slice(0, 1).toUpperCase()}</Avatar>
+                    )
+                  ) : undefined
+                }
                 title={formatCell(titleValue)}
                 description={descriptionField ? formatCell(readField(row, descriptionField)) || undefined : undefined}
               />

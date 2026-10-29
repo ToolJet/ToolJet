@@ -13,6 +13,7 @@ import WidgetTooltip from './WidgetTooltip';
 // name them keep an empty list.
 const SHADCN_COMPONENTS = [];
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
+import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
@@ -387,7 +388,7 @@ const RenderWidget = ({
     !SHADCN_COMPONENTS.includes(component.component) &&
     // A pack component (LibraryComponent) shows loading itself, its own look or the host's spinner: dimmed here too,
     // its skeleton read at half strength.
-    (isDisabled || (isLoading && component.component !== 'LibraryComponent'));
+    (isDisabled || (isLoading && !isSdkComponentType(component.component)));
   // A disabled UI 2.0 widget is dimmed here, once, to the same half opacity as a native widget's .disabled, whatever
   // it draws (a Stat, a Hero, Tabs dimmed nothing; an Input only its box). Its parts that dim themselves when disabled
   // keep full opacity inside it (Ui2/_shared/styles/shadcn.scss). Loading is its own state and is not dimmed; input

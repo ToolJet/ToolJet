@@ -1,5 +1,5 @@
 import { usesFlexLayoutV2, dropNewContainerDefaults } from '../flexLayoutVersion';
-import { flexContainerConfig } from '@/AppBuilder/WidgetManager/widgets/flexContainer';
+import { flexContainerConfig } from '@tooljet/widget-definitions';
 import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 import fs from 'fs';
 import path from 'path';
@@ -57,11 +57,12 @@ describe('FlexContainer layout version', () => {
     expect(properties.gap).toEqual({ value: '12' });
   });
 
-  it("is not in the server's copy of the widget config, whose defaults the server merges into every saved component", () => {
-    const serverConfig = fs.readFileSync(
-      path.resolve(__dirname, '../../../../../server/src/modules/apps/services/widget-config/flexContainer.js'),
+  it("is taken back out by the server's merge of the widget defaults into saved components (shared helper)", () => {
+    const server = fs.readFileSync(
+      path.resolve(__dirname, '../../../../../server/src/modules/apps/util.service.ts'),
       'utf8'
     );
-    expect(serverConfig).not.toMatch(/layoutVersion|equalHeights/);
+    expect(server).toMatch(/import \{ dropNewContainerDefaults \} from '@tooljet\/widget-definitions'/);
+    expect(server).toMatch(/properties: dropNewContainerDefaults\(/);
   });
 });

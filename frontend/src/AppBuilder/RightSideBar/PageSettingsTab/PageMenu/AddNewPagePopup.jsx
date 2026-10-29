@@ -1,14 +1,17 @@
-import React, { forwardRef, useCallback, useEffect, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
+import { AlertTriangle } from 'lucide-react';
+import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
 import { Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
 import { Icon } from '@/AppBuilder/CodeBuilder/Elements/Icon';
 import { EventManager } from '../../Inspector/EventManager';
+import { PAGE_EVENTS_META } from './pageEventsMeta';
 import { kebabCase } from 'lodash';
 import Select from '@/_ui/Select';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
-import { appService } from '@/_services';
+import { appsService } from '@/_services';
 import { ToolTip } from '@/_components';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -65,11 +68,11 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   const disableOrEnablePage = useStore((state) => state.disableOrEnablePage);
   const togglePageHeader = useStore((state) => state.togglePageHeader);
   const togglePageFooter = useStore((state) => state.togglePageFooter);
-  const updatePageAppId = useStore((state) => state.updatePageAppId);
+  const updatePageTargetApp = useStore((state) => state.updatePageTargetApp);
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const openPageEditPopover = useStore((state) => state.openPageEditPopover);
-  const appId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
 
   const [page, setPage] = useState(editingPage || props?.page);
 
@@ -98,7 +101,14 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   const [pageName, setPageName] = useState('');
   const [handle, setHandle] = useState('');
   const [pageURL, setPageURL] = useState('');
-  const [hasAutoSaved, setHasAutoSaved] = useState(false);
+  // Re-entrancy guard for the auto-create effects below. MUST be a ref, not state:
+  // addNewPage() pushes the new page into the zustand store synchronously, which
+  // forces a nested synchronous re-render + effect flush (useSyncExternalStore)
+  // BEFORE any setState queued after the call is applied. A state flag therefore
+  // never flips in time and the effect re-enters itself until React throws
+  // "Maximum update depth exceeded" — one click created 50+ pages. The ref is
+  // written before addNewPage() so the nested flush sees it already set.
+  const hasAutoSavedRef = useRef(false);
   const [error, setError] = useState(null);
 
   const isHomePage = page?.id === homePageId;
@@ -107,12 +117,21 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   const [appOptions, setAppOptions] = useState([]);
   const [appOptionsLoading, setAppOptionsLoading] = useState(true);
 
+  const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
+  const { isValid: isLinkValid, errorMessage: linkedAppErrorMessage } = isLinkedAppValid(
+    page?.targetCorelationId,
+    linkedAppsMap
+  );
+  const isInvalid = type === 'app' && !isLinkValid;
+  const isTargetMissing = page?.targetCorelationId && !appOptions.some((opt) => opt.value === page?.targetCorelationId);
+
   useEffect(() => {
     setError(null);
   }, [show]);
 
   useEffect(() => {
-    if (mode === 'add' && type === 'default' && !hasAutoSaved) {
+    if (mode === 'add' && type === 'default' && !hasAutoSavedRef.current) {
+      hasAutoSavedRef.current = true;
       const existingNames = pages.map((p) => p.name.toLowerCase());
       let index = 1;
       let newName = `Page ${index}`;
@@ -126,18 +145,17 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
         setPageName(newName);
         setHandle(data?.handle);
       });
-
-      setHasAutoSaved(true);
     } else if (editingPage) {
       setPage(editingPage);
       setPageName(editingPage.name);
       setHandle(editingPage.handle);
     }
-  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type]);
+  }, [mode, pages, editingPage, addNewPage, isPageGroup, type]);
 
   //Nav item with URL hooks
   useEffect(() => {
-    if (mode === 'add' && type === 'url' && !hasAutoSaved) {
+    if (mode === 'add' && type === 'url' && !hasAutoSavedRef.current) {
+      hasAutoSavedRef.current = true;
       const existingNames = pages.map((p) => p.name.toLowerCase());
       let index = 1;
       let newName = `URL ${index}`;
@@ -151,19 +169,17 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
         setPageName(newName);
         setPageURL(data?.url);
       });
-
-      setHasAutoSaved(true);
     } else if (editingPage) {
       setPage(editingPage);
       setPageName(editingPage.name);
       setPageURL(editingPage.url);
     }
-  }, [addNewPage, appOptions, editingPage, hasAutoSaved, isPageGroup, mode, pages, type]);
+  }, [addNewPage, appOptions, editingPage, isPageGroup, mode, pages, type]);
 
   //Nav item with app hooks
   useEffect(() => {
-    const fetchApps = async (page) => {
-      const { apps } = await appService.getAll(page);
+    const fetchApps = async () => {
+      const { apps } = await appsService.getAllAddableApps();
       return apps;
     };
 
@@ -172,11 +188,13 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
       const apps = await fetchApps(0);
       let appsOptionsList = [];
       apps
-        .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
+        .filter((item) => item.slug !== undefined && item.id !== appId)
         .forEach((item) => {
           appsOptionsList.push({
-            name: item.name,
-            value: item.slug,
+            label: item.name,
+            value: item.co_relation_id,
+            slug: item.slug,
+            currentVersionId: item.current_version_id,
           });
         });
       return appsOptionsList;
@@ -189,7 +207,8 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
       .finally(() => {
         setAppOptionsLoading(false);
       });
-    if (mode === 'add' && type === 'app' && !hasAutoSaved) {
+    if (mode === 'add' && type === 'app' && !hasAutoSavedRef.current) {
+      hasAutoSavedRef.current = true;
       const existingNames = pages.map((p) => p.name.toLowerCase());
       let index = 1;
       let newName = `App ${index}`;
@@ -202,17 +221,16 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
         setPage(data);
         setPageName(newName);
       });
-
-      setHasAutoSaved(true);
     } else if (editingPage) {
       setPage(editingPage);
       setPageName(editingPage.name);
     }
-  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type, appId]);
+  }, [mode, pages, editingPage, addNewPage, isPageGroup, type, appId]);
 
   //Custom nav item
   useEffect(() => {
-    if (mode === 'add' && type === 'custom' && !hasAutoSaved) {
+    if (mode === 'add' && type === 'custom' && !hasAutoSavedRef.current) {
+      hasAutoSavedRef.current = true;
       const existingNames = pages.map((p) => p.name.toLowerCase());
       let index = 1;
       let newName = `Custom ${index}`;
@@ -225,17 +243,16 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
         setPage(data);
         setPageName(newName);
       });
-
-      setHasAutoSaved(true);
     } else if (editingPage) {
       setPage(editingPage);
       setPageName(editingPage.name);
     }
-  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type]);
+  }, [mode, pages, editingPage, addNewPage, isPageGroup, type]);
 
   //Nav item with group
   useEffect(() => {
-    if (mode === 'add' && type === 'group' && !hasAutoSaved) {
+    if (mode === 'add' && type === 'group' && !hasAutoSavedRef.current) {
+      hasAutoSavedRef.current = true;
       const existingNames = pages.map((p) => p.name.toLowerCase());
       let index = 1;
       let newName = `Group ${index}`;
@@ -248,13 +265,11 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
         setPage(data);
         setPageName(newName);
       });
-
-      setHasAutoSaved(true);
     } else if (editingPage) {
       setPage(editingPage);
       setPageName(editingPage.name);
     }
-  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type, appId]);
+  }, [mode, pages, editingPage, addNewPage, isPageGroup, type, appId]);
 
   const handlePageSwitch = useCallback(() => {
     if (currentPageId === page.id) {
@@ -406,19 +421,40 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
               <Select
                 options={appOptions}
                 search={true}
-                value={page?.appId}
+                value={
+                  isTargetMissing
+                    ? { label: 'Undefined app', value: page?.targetCorelationId }
+                    : page?.targetCorelationId
+                }
                 onChange={(value) => {
-                  updatePageAppId(page?.id, value);
+                  const selected = appOptions.find((opt) => opt.value === value);
+                  updatePageTargetApp(
+                    page?.id,
+                    value,
+                    selected?.slug ?? null,
+                    selected?.currentVersionId ?? null,
+                    moduleId
+                  );
                 }}
                 isLoading={appOptionsLoading}
                 placeholder={'Select...'}
                 useMenuPortal={false}
                 width={'168px'}
                 borderRadius="6px"
-                styles={{ border: '1px solid var(--border-default) !important' }}
+                styles={{
+                  border: `1px solid ${isInvalid ? 'var(--border-danger-strong)' : 'var(--border-default)'} !important`,
+                }}
                 className={`app-select ${darkMode ? 'select-search-dark' : 'select-search'}`}
               />
             </div>
+            {isInvalid && (
+              <div className="tw-mt-1 tw-flex tw-items-center tw-gap-1">
+                <AlertTriangle className="tw-h-[12px] tw-w-[12px] tw-shrink-0 tw-text-[var(--icon-danger)]" />
+                <span className="tw-font-['IBM_Plex_Sans'] tw-text-[11px]/[16px] tw-font-[400] tw-text-[var(--text-danger)]">
+                  {linkedAppErrorMessage}
+                </span>
+              </div>
+            )}
           </div>
         )}
         {['url', 'app'].includes(type) && (
@@ -610,20 +646,9 @@ const PageEvents = ({ type, page, allPages, onNestedPopoverOpenChange }) => {
   const getComponents = useStore((state) => state.getCurrentPageComponents);
   const components = getComponents();
 
-  const eventMapping = {
-    default: {
-      title: 'Page events',
-      event: { onPageLoad: { displayName: 'On page load' } },
-    },
-    custom: {
-      title: 'Events',
-      event: { onClick: { displayName: 'On click' } },
-    },
-  };
-
   return (
     <div className="page-events">
-      <div className="section-header pb-2">{eventMapping[type].title}</div>
+      <div className="section-header pb-2">{PAGE_EVENTS_META[type].title}</div>
       <div className="page-events-list">
         <EventManager
           component={{
@@ -635,7 +660,7 @@ const PageEvents = ({ type, page, allPages, onNestedPopoverOpenChange }) => {
           }}
           sourceId={page?.id}
           eventSourceType="page"
-          eventMetaDefinition={{ events: eventMapping[type].event, name: 'page' }}
+          eventMetaDefinition={{ events: PAGE_EVENTS_META[type].events, name: 'page' }}
           components={components}
           pages={allPages}
           popOverCallback={(showing) => onNestedPopoverOpenChange?.(showing)}

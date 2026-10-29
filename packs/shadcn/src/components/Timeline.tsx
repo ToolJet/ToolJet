@@ -23,9 +23,27 @@ export const Timeline = () => {
     description:
       'Array of { title, description, time, status, color, icon }. status: a word such as done, pending, error or current (coloured by statusColors, else the theme).',
     initialValue: [
-      { title: 'Order placed', description: 'Ada Lovelace placed order #1024', time: '09:12', status: 'done', icon: 'shopping-cart' },
-      { title: 'Payment confirmed', description: 'Card ending 4242', time: '09:14', status: 'done', icon: 'credit-card' },
-      { title: 'Packed', description: 'Warehouse B is packing the order', time: '11:30', status: 'current', icon: 'package' },
+      {
+        title: 'Order placed',
+        description: 'Ada Lovelace placed order #1024',
+        time: '09:12',
+        status: 'done',
+        icon: 'shopping-cart',
+      },
+      {
+        title: 'Payment confirmed',
+        description: 'Card ending 4242',
+        time: '09:14',
+        status: 'done',
+        icon: 'credit-card',
+      },
+      {
+        title: 'Packed',
+        description: 'Warehouse B is packing the order',
+        time: '11:30',
+        status: 'current',
+        icon: 'package',
+      },
       { title: 'Shipped', description: 'Waiting for pickup', time: '', status: 'pending', icon: 'truck' },
     ],
   });
@@ -45,7 +63,11 @@ export const Timeline = () => {
     initialValue: 'comfortable',
     inspector: 'switch',
   });
-  const [newestFirst] = ToolJet.useStateBoolean({ name: 'newestFirst', label: 'Newest first (reverse)', initialValue: false });
+  const [newestFirst] = ToolJet.useStateBoolean({
+    name: 'newestFirst',
+    label: 'Newest first (reverse)',
+    initialValue: false,
+  });
   const [timePosition] = ToolJet.useStateEnumeration({
     name: 'timePosition',
     label: 'Time',
@@ -54,9 +76,23 @@ export const Timeline = () => {
     initialValue: 'right',
     inspector: 'switch',
   });
-  const [dateFormat] = ToolJet.useStateString({ name: 'dateFormat', label: 'Date format for ISO times (empty: as given)', description: 'dayjs tokens, e.g. D MMM, HH:mm.', initialValue: '' });
-  const [statusColors] = ToolJet.useStateObject({ name: 'statusColors', label: 'Colours by status', description: '{ "shipped": "#16a34a" }: a status word to a colour.', initialValue: {} });
-  const [, setLastClickedItem] = ToolJet.useStateObject({ name: 'lastClickedItem', initialValue: {}, inspector: 'hidden' });
+  const [dateFormat] = ToolJet.useStateString({
+    name: 'dateFormat',
+    label: 'Date format for ISO times (empty: as given)',
+    description: 'dayjs tokens, e.g. D MMM, HH:mm.',
+    initialValue: '',
+  });
+  const [statusColors] = ToolJet.useStateObject({
+    name: 'statusColors',
+    label: 'Colours by status',
+    description: '{ "shipped": "#16a34a" }: a status word to a colour.',
+    initialValue: {},
+  });
+  const [, setLastClickedItem] = ToolJet.useStateObject({
+    name: 'lastClickedItem',
+    initialValue: {},
+    inspector: 'hidden',
+  });
   const [, setSelectedItem] = ToolJet.useStateObject({ name: 'selectedItem', initialValue: {}, inspector: 'hidden' });
   // UI 2.0's name only: the pack's earlier onItemClick fired alongside it.
   const onItemClicked = ToolJet.useEventCallback({ name: 'onItemClicked' });
@@ -68,11 +104,14 @@ export const Timeline = () => {
   const timeColor = useThemeColor('timeColor', 'Time color', TOKEN.mutedText);
   const accent = useThemeColor('accentColor', 'Accent (current items)', TOKEN.brand);
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 36 });
+  ToolJet.useComponentSettings({ role: 'timeline', fit: true, loading: 'own', defaultWidth: 12, defaultHeight: 36 });
 
   const source = useStable(rawItems);
   const [shownCount, setShownCount] = useState(MAX_ITEMS);
-  const items = useMemo(() => timelineItems(source, newestFirst === true, shownCount), [source, newestFirst, shownCount]);
+  const items = useMemo(
+    () => timelineItems(source, newestFirst === true, shownCount),
+    [source, newestFirst, shownCount]
+  );
   const total = Array.isArray(source) ? source.length : 0;
   const compact = density === 'compact';
   const icons = marker === 'icon';
@@ -112,11 +151,15 @@ export const Timeline = () => {
       <div className="ui n2-timeline-wrap" style={vars}>
         <ol className={cn('n2-timeline', compact && 'is-compact')}>
           {items.map((item, index) => {
-            const colour = (isSet(item.color) ? item.color : statusColor(item.status, statusColors)) || 'var(--lk-marker, var(--ui-primary))';
+            const colour =
+              (isSet(item.color) ? item.color : statusColor(item.status, statusColors)) ||
+              'var(--lk-marker, var(--ui-primary))';
             const Glyph = icons && item.icon ? iconFor(item.icon) : null;
             const time = formatDate(item.time, dateFormat);
             const isLast = index === items.length - 1;
-            const timeNode = time ? <span className={cn('n2-timeline-time', timePosition === 'top' && 'is-top')}>{time}</span> : null;
+            const timeNode = time ? (
+              <span className={cn('n2-timeline-time', timePosition === 'top' && 'is-top')}>{time}</span>
+            ) : null;
             return (
               <li
                 key={`${item.key}-${index}`}
@@ -124,7 +167,13 @@ export const Timeline = () => {
                 style={{ ['--tl-c' as string]: colour }}
                 onClick={() => click(item)}
               >
-                {!isLast ? <span aria-hidden="true" className="n2-timeline-line" style={{ left: column / 2 - 0.5, top: markerTop + size + 4, bottom: 4 - markerTop }} /> : null}
+                {!isLast ? (
+                  <span
+                    aria-hidden="true"
+                    className="n2-timeline-line"
+                    style={{ left: column / 2 - 0.5, top: markerTop + size + 4, bottom: 4 - markerTop }}
+                  />
+                ) : null}
                 <div
                   role={disabled ? undefined : 'button'}
                   tabIndex={disabled ? undefined : 0}
@@ -138,7 +187,11 @@ export const Timeline = () => {
                   <span className="n2-timeline-col" style={{ width: column, paddingTop: markerTop }}>
                     {icons ? (
                       <span className="n2-timeline-badge" style={{ width: size, height: size }}>
-                        {Glyph ? <Glyph size={compact ? 12 : 14} strokeWidth={2.25} aria-hidden="true" /> : <span className="n2-timeline-badge-dot" />}
+                        {Glyph ? (
+                          <Glyph size={compact ? 12 : 14} strokeWidth={2.25} aria-hidden="true" />
+                        ) : (
+                          <span className="n2-timeline-badge-dot" />
+                        )}
                       </span>
                     ) : (
                       <span className="n2-timeline-dot" style={{ width: size, height: size }} />

@@ -31,7 +31,14 @@ export const DropdownMenu = () => {
     name: 'variant',
     label: 'Variant',
     enumDefinition: ['default', 'secondary', 'outline', 'ghost', 'destructive', 'link'],
-    enumLabels: { default: 'Default', secondary: 'Secondary', outline: 'Outline', ghost: 'Ghost', destructive: 'Destructive', link: 'Link' },
+    enumLabels: {
+      default: 'Default',
+      secondary: 'Secondary',
+      outline: 'Outline',
+      ghost: 'Ghost',
+      destructive: 'Destructive',
+      link: 'Link',
+    },
     initialValue: 'outline',
   });
   const [size] = ToolJet.useStateEnumeration({
@@ -42,7 +49,13 @@ export const DropdownMenu = () => {
     initialValue: 'default',
     inspector: 'switch',
   });
-  const [triggerIcon] = ToolJet.useStateString({ name: 'triggerIcon', label: 'Trigger icon (Tabler name, e.g. IconDots)', initialValue: '', inspector: 'icon' });
+  const [triggerIcon] = ToolJet.useStateString({
+    name: 'triggerIcon',
+    label: 'Trigger icon (Tabler name, e.g. IconDots)',
+    initialValue: '',
+    inspector: 'icon',
+    iconSet: 'lucide',
+  });
   const [showChevron] = ToolJet.useStateBoolean({ name: 'showChevron', label: 'Show chevron', initialValue: true });
   const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', initialValue: false });
   const [rawItems] = ToolJet.useStateArray({
@@ -78,8 +91,16 @@ export const DropdownMenu = () => {
     initialValue: 'bottom',
     inspector: 'switch',
   });
-  const [optionsLoading] = ToolJet.useStateBoolean({ name: 'optionsLoadingState', label: 'Options loading state', initialValue: false });
-  const [, setLastClickedOption] = ToolJet.useStateObject({ name: 'lastClickedOption', initialValue: {}, inspector: 'hidden' });
+  const [optionsLoading] = ToolJet.useStateBoolean({
+    name: 'optionsLoadingState',
+    label: 'Options loading state',
+    initialValue: false,
+  });
+  const [, setLastClickedOption] = ToolJet.useStateObject({
+    name: 'lastClickedOption',
+    initialValue: {},
+    inspector: 'hidden',
+  });
   // The picked item's value with its type kept (1 stays 1, true stays true), as lastClickedOption.value holds it.
   const [, setSelectedItem] = ToolJet.useStateString({ name: 'selectedItem', initialValue: '', inspector: 'hidden' });
   const [, setIsOpen] = ToolJet.useStateBoolean({ name: 'isOpen', initialValue: false, inspector: 'hidden' });
@@ -93,17 +114,27 @@ export const DropdownMenu = () => {
   const textColor = useThemeColor('textColor', 'Trigger text color', TOKEN.text);
   const borderColor = useThemeColor('borderColor', 'Trigger border color', TOKEN.border);
   const borderRadius = useThemeRadius('borderRadius', 'Trigger radius');
-  const menuBackgroundColor = useThemeColor('menuBackgroundColor', 'Menu background', TOKEN.surface, { section: 'Menu' });
+  const menuBackgroundColor = useThemeColor('menuBackgroundColor', 'Menu background', TOKEN.surface, {
+    section: 'Menu',
+  });
   const menuBorderColor = useThemeColor('menuBorderColor', 'Menu border color', TOKEN.border, { section: 'Menu' });
   const itemTextColor = useThemeColor('itemTextColor', 'Item text color', TOKEN.text, { section: 'Menu' });
-  const itemHoverBackgroundColor = useThemeColor('itemHoverBackgroundColor', 'Item hover background', TOKEN.muted, { section: 'Menu' });
-  const itemHoverTextColor = useThemeColor('itemHoverTextColor', 'Item hover text color', TOKEN.text, { section: 'Menu' });
-  const descriptionColor = useThemeColor('descriptionColor', 'Item description and shortcut color', TOKEN.mutedText, { section: 'Menu' });
+  const itemHoverBackgroundColor = useThemeColor('itemHoverBackgroundColor', 'Item hover background', TOKEN.muted, {
+    section: 'Menu',
+  });
+  const itemHoverTextColor = useThemeColor('itemHoverTextColor', 'Item hover text color', TOKEN.text, {
+    section: 'Menu',
+  });
+  const descriptionColor = useThemeColor('descriptionColor', 'Item description and shortcut color', TOKEN.mutedText, {
+    section: 'Menu',
+  });
   const iconColor = useThemeColor('iconColor', 'Item icon color', TOKEN.mutedText, { section: 'Menu' });
-  const destructiveColor = useThemeColor('destructiveColor', 'Destructive item color', TOKEN.error, { section: 'Menu' });
+  const destructiveColor = useThemeColor('destructiveColor', 'Destructive item color', TOKEN.error, {
+    section: 'Menu',
+  });
   const menuRadius = useThemeRadius('menuRadius', 'Menu radius', { section: 'Menu' });
   const menuWidth = useBlankNumber('menuWidth', 'Menu width (px)', 'Fits the items', { section: 'Menu' });
-  ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
+  ToolJet.useComponentSettings({ role: 'dropdownmenu', fit: false, loading: 'own', defaultWidth: 6, defaultHeight: 4 });
 
   const [anchorRef, container] = usePortalContainer();
   const [open, setOpen] = useState(false);

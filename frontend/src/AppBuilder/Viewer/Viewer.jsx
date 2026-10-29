@@ -17,6 +17,7 @@ import Spinner from '@/_ui/Spinner';
 import TooljetBanner from './TooljetBanner';
 import PreviewHeader from './PreviewHeader';
 import { useCompareOverlayBridge } from './useCompareOverlayBridge';
+import { useAutoMobileLayout } from '@/AppBuilder/_hooks/useAutoMobileLayout';
 
 export const Viewer = ({
   id: appId,
@@ -24,13 +25,27 @@ export const Viewer = ({
   moduleId = 'canvas',
   switchDarkMode,
   environmentId,
+  environmentName,
   versionId,
+  currentVersionId,
+  appDataRevision,
   moduleMode = false,
+  isHydrating = false,
   slug: appSlug,
+  componentName,
 } = {}) => {
   const DEFAULT_CANVAS_WIDTH = 1292;
   const { t } = useTranslation();
-  const appType = useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode, appSlug);
+  const appType = useAppData(
+    appId,
+    moduleId,
+    darkMode,
+    'view',
+    { environmentId, environmentName, versionId, componentName, currentVersionId, appDataRevision },
+    moduleMode,
+    false,
+    appSlug
+  );
   // In a compare view frame: opens the dialog a changed component sits in, when asked.
   useCompareOverlayBridge(moduleId, !moduleMode);
   const temporaryLayouts = useStore((state) => state.temporaryLayouts, shallow);
@@ -74,6 +89,10 @@ export const Viewer = ({
   const currentPageComponents = useMemo(() => getCurrentPageComponents, [getCurrentPageComponents]);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const deviceWindowWidth = window.screen.width - 5;
+
+  // Stack the current page's mobile layout on the fly (no persist) so every page aligns.
+  // Pass moduleId explicitly — this runs above Viewer's own ModuleProvider.
+  useAutoMobileLayout(currentLayout, moduleId);
 
   const hideSidebar = moduleMode || isPagesSidebarHidden || appType === 'module';
 
@@ -121,15 +140,17 @@ export const Viewer = ({
   };
   useEffect(() => {
     if (moduleMode) return;
+    // Force mobile when preview was launched from mobile (?layout=mobile), else detect by width.
+    const forcedMobile = new URLSearchParams(window.location.search).get('layout') === 'mobile';
     const isMobileDevice = deviceWindowWidth < 600;
-    toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
+    toggleCurrentLayout(forcedMobile || isMobileDevice ? 'mobile' : 'desktop');
     setIsViewer(true, moduleId);
     return () => {
       setIsViewer(false, moduleId);
     };
   }, []);
 
-  if (isEditorLoading) {
+  if (isEditorLoading || isHydrating) {
     return (
       <div className={cx('apploader', { 'dark-theme theme-dark': darkMode, 'module-mode': moduleMode })}>
         {moduleMode ? <Spinner /> : <TJLoader />}
@@ -189,8 +210,8 @@ export const Viewer = ({
                                 isPagesSidebarHidden || currentLayout === 'mobile'
                                   ? 'auto'
                                   : position === 'top'
-                                  ? '0px'
-                                  : '256px',
+                                    ? '0px'
+                                    : '256px',
                             }}
                           >
                             <div

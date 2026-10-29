@@ -4,10 +4,33 @@ import { EntityManager } from 'typeorm';
 import { EncryptionService } from '../service';
 import { Credential } from '@entities/credential.entity';
 
+/**
+ * ███████████████████████████████████████████████████████████████████████████████
+ * █                                                                             █
+ * █                               DEPRECATED                                    █
+ * █                                                                             █
+ * █  For data-source OAuth tokens, this table/service is deprecated.            █
+ * █  Use datasource_user_token_data (see data_source_user_token.entity.ts)      █
+ * █  instead. Other encrypted fields (passwords, API keys, workspace           █
+ * █  constants) still use this service.                                        █
+ * █                                                                             █
+ * ███████████████████████████████████████████████████████████████████████████████
+ */
+
 @Injectable()
 export class CredentialsService {
   constructor(protected readonly encryptionService: EncryptionService) {}
 
+  /**
+   * IMPORTANT: Do not modify this function signature - it is used in data migrations.
+   *
+   * Used in migrations:
+   * - 1752749046662-EncrpyGoogleCalendarClientSecret.ts
+   * - 1681463532466-addMultipleEnvForCEcreatedApps.ts (via filterEncryptedFromOptions helper)
+   *
+   * This function internally calls:
+   * - EncryptionService.encryptColumnValue()
+   */
   async create(value: string, manager?: EntityManager): Promise<Credential> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const newCredential = manager.create(Credential, {

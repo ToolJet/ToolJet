@@ -21,6 +21,7 @@ import {
 } from './appCanvasConstants';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { manifestDefaultToDefinitionValue } from '@/AppBuilder/Widgets/libraryComponentDefaults';
+import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 
 export function snapToGrid(canvasWidth, x, y) {
   const gridX = canvasWidth / 43;
@@ -59,13 +60,17 @@ export const addNewWidgetToTheEditor = (
     });
   }
 
-  // Custom tab (LibraryComponent host widget): stamp WHICH library component this
-  // instance renders — mirrors the moduleInfo pattern below. Must run before the
-  // defaultWidth/Height reads so a manifest-declared size wins.
+  // A custom-component card (LibraryComponent) or a pack card (PackComponent): stamp WHICH component this instance
+  // renders — mirrors the moduleInfo pattern below. Must run before the defaultWidth/Height reads so a
+  // manifest-declared size wins. A pack component names only its pack: it always draws the build the release ships.
   if (libraryComponentInfo) {
-    componentData.definition.properties.libraryId = { value: libraryComponentInfo.libraryId };
-    componentData.definition.properties.correlationId = { value: libraryComponentInfo.correlationId };
-    componentData.definition.properties.libraryName = { value: libraryComponentInfo.libraryName };
+    if (libraryComponentInfo.pack) {
+      componentData.definition.properties.pack = { value: libraryComponentInfo.pack };
+    } else {
+      componentData.definition.properties.libraryId = { value: libraryComponentInfo.libraryId };
+      componentData.definition.properties.correlationId = { value: libraryComponentInfo.correlationId };
+      componentData.definition.properties.libraryName = { value: libraryComponentInfo.libraryName };
+    }
     componentData.definition.properties.componentName = { value: libraryComponentInfo.componentName };
     // Manifest prop defaults land as instance values so the Inspector's fields arrive
     // pre-filled (module input_items precedent below).
@@ -84,13 +89,14 @@ export const addNewWidgetToTheEditor = (
   const defaultWidth = componentData.defaultSize.width;
   const defaultHeight = componentData.defaultSize.height;
 
-  const { e } = useGridStore.getState().getGhostDragPosition();
+  const { e, frozenTargetRect } = useGridStore.getState().getGhostDragPosition();
   const subContainerWidth = canvasBoundingRect?.width;
 
   const { left: _left, top: _top } = getMouseDistanceFromParentDiv(
     e,
     parentId === 'canvas' ? 'real-canvas' : parentId,
-    parentCanvasType
+    parentCanvasType,
+    frozenTargetRect
   );
   const scrollTop = realCanvasRef?.scrollTop;
   const subContainerWidths = useGridStore.getState().subContainerWidths;
@@ -108,9 +114,15 @@ export const addNewWidgetToTheEditor = (
   let customLayouts = undefined;
 
   if (moduleInfo) {
+    // Pin the dragged ModuleViewer to the module's current version's module_reference_id
+    // (a stable cross-instance id from the modules list). Falls back to '' (unpinned) if
+    // the module has no version yet. Users can opt into follow-latest semantics via the
+    // inspector ("Current branch" option writes '' back to value).
     componentData.definition.properties.moduleAppId = { value: moduleInfo.moduleId };
-    componentData.definition.properties.moduleVersionId = { value: moduleInfo.versionId };
-    componentData.definition.properties.moduleEnvironmentId = { value: moduleInfo.environmentId };
+    componentData.definition.properties.moduleVersionId = {
+      value: moduleInfo.versionId ?? '',
+      versionName: moduleInfo.versionName ?? '',
+    };
     componentData.definition.properties.visibility = { value: true };
     customLayouts = moduleInfo?.moduleContainer?.layouts;
 
@@ -232,8 +244,11 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
       const height = layout.height ? layout.height : componentMeta.defaultSize.height;
       const top = layout.top ? layout.top : 0;
       const left = layout.left ? layout.left : 0;
-      const newComponentDefinition = {
+      const newComponentProperties = {
         ...componentData.definition.properties,
+      };
+      const newComponentStyles = {
+        ...componentData.definition.styles,
       };
 
       if (_.isArray(properties) && properties.length > 0) {
@@ -246,11 +261,11 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
               ? `{{${customResolverVariable}.${accessorKey}}}`
               : (defaultValue && defaultValue[prop]) || '';
 
-          _.set(newComponentDefinition, prop, {
+          _.set(newComponentProperties, prop, {
             value: accessor,
           });
         });
-        _.set(componentData, 'definition.properties', newComponentDefinition);
+        _.set(componentData, 'definition.properties', newComponentProperties);
       }
 
       if (_.isArray(styles) && styles.length > 0) {
@@ -259,11 +274,11 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
             ? `{{${customResolverVariable}.${accessorKey}}}`
             : defaultValue[prop] || '';
 
-          _.set(newComponentDefinition, prop, {
+          _.set(newComponentStyles, prop, {
             value: accessor,
           });
         });
-        _.set(componentData, 'definition.styles', newComponentDefinition);
+        _.set(componentData, 'definition.styles', newComponentStyles);
       }
 
       if (currentLayout === 'mobile') {
@@ -383,7 +398,7 @@ const collectChildComponents = (allComponents, parentId, visited) => {
       allComponents[parentId]?.component?.component === 'Accordion' ||
       allComponents[parentId]?.component?.component === 'Form' ||
       isModalType(allComponents[parentId]?.component?.component) ||
-      allComponents[parentId]?.component?.component === 'LibraryComponent'; // ToolJet.Slot canvases
+      isSdkComponentType(allComponents[parentId]?.component?.component); // ToolJet.Slot canvases
 
     if (componentParentId && isParentTabORCalendar) {
       let childComponent = deepClone(allComponents[componentId]);

@@ -4,11 +4,11 @@ import { Check, ChevronDown } from 'lucide-react';
 import { Field, fieldAria } from '../lib/Field';
 import { cn } from '../lib/cn';
 import { usePortalContainer } from '../lib/usePortalContainer';
-import { TJ } from '../lib/ui2/inputs/sdk';
+import { ToolJet } from '@tooljet/custom-component-sdk';
 import { POPOVER, field, useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
 import { TOKEN } from '../lib/styleDefaults';
-import { ClearX, boundsRule, isEnter, useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
+import { ClearX, boundsRule, isEnter, useReseed } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import { FieldLoading } from '../lib/ui2/loading/look';
 import { useValueSetter } from '../lib/sameValue';
@@ -31,21 +31,34 @@ const currencyName = (code: string, locale: string): string => {
 };
 
 export const CurrencyInput = () => {
-  const [label] = TJ.useStateString({ name: 'label', label: 'Label', initialValue: 'Amount' });
-  const [description] = TJ.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
-  const [placeholder] = TJ.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '0.00' });
-  const [defaultValue] = TJ.useStateString({ name: 'defaultValue', label: 'Default value', initialValue: '' });
+  const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: 'Amount' });
+  const [description] = ToolJet.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '0.00' });
+  const [defaultValue] = ToolJet.useStateString({ name: 'defaultValue', label: 'Default value', initialValue: '' });
   // Also the exposed currency: setCurrency and the picker change it, a new Currency starts it again.
-  const [currencyProp, setCurrencyState] = TJ.useStateString({ name: 'currency', label: 'Currency (ISO code)', initialValue: 'USD' });
-  const [currencyOptions] = TJ.useStateArray({
+  const [currencyProp, setCurrencyState] = ToolJet.useStateString({
+    name: 'currency',
+    label: 'Currency (ISO code)',
+    initialValue: 'USD',
+  });
+  const [currencyOptions] = ToolJet.useStateArray({
     name: 'currencyOptions',
     label: 'Currencies to choose from (empty: fixed)',
     placeholder: "['USD', 'EUR', 'GBP']",
     initialValue: [],
   });
-  const [localeProp] = TJ.useStateString({ name: 'locale', label: 'Number format locale', placeholder: 'en-US, de-DE, en-IN', initialValue: 'en-US' });
-  const [decimalPlaces] = TJ.useStateString({ name: 'decimalPlaces', label: "Decimal places (empty: the currency's own)", initialValue: '' });
-  const [currencyDisplay] = TJ.useStateEnumeration({
+  const [localeProp] = ToolJet.useStateString({
+    name: 'locale',
+    label: 'Number format locale',
+    placeholder: 'en-US, de-DE, en-IN',
+    initialValue: 'en-US',
+  });
+  const [decimalPlaces] = ToolJet.useStateString({
+    name: 'decimalPlaces',
+    label: "Decimal places (empty: the currency's own)",
+    initialValue: '',
+  });
+  const [currencyDisplay] = ToolJet.useStateEnumeration({
     name: 'currencyDisplay',
     label: 'Currency sign',
     enumDefinition: ['symbol', 'narrowSymbol', 'code'],
@@ -53,18 +66,50 @@ export const CurrencyInput = () => {
     initialValue: 'symbol',
     inspector: 'switch',
   });
-  const [showClearBtn] = TJ.useStateBoolean({ name: 'showClearBtn', label: 'Show clear button', initialValue: false });
+  const [showClearBtn] = ToolJet.useStateBoolean({
+    name: 'showClearBtn',
+    label: 'Show clear button',
+    initialValue: false,
+  });
   // UI 2.0 keeps these in its Validation section, which has no number kind for packs: they are properties here.
-  const [minValue] = TJ.useStateString({ name: 'minValue', label: 'Min value', description: 'Leave empty for no limit.', initialValue: '' });
-  const [maxValue] = TJ.useStateString({ name: 'maxValue', label: 'Max value', description: 'Leave empty for no limit.', initialValue: '' });
-  const [rawValue, setValue] = TJ.useStateNumber({ name: 'value', initialValue: M.parseNumber(defaultValue) as number, inspector: 'hidden' });
-  const [, setFormattedValue] = TJ.useStateString({ name: 'formattedValue', initialValue: '', inspector: 'hidden' });
-  const [legacyRequired] = TJ.useStateBoolean({ name: 'required', label: 'Required', initialValue: false, inspector: 'hidden' });
-  const [legacyDisabled] = TJ.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
-  const onChange = TJ.useEventCallback({ name: 'onChange' });
-  const onEnterPressed = TJ.useEventCallback({ name: 'onEnterPressed' });
-  const onFocus = TJ.useEventCallback({ name: 'onFocus' });
-  const onBlur = TJ.useEventCallback({ name: 'onBlur' });
+  const [minValue] = ToolJet.useStateString({
+    name: 'minValue',
+    label: 'Min value',
+    description: 'Leave empty for no limit.',
+    initialValue: '',
+  });
+  const [maxValue] = ToolJet.useStateString({
+    name: 'maxValue',
+    label: 'Max value',
+    description: 'Leave empty for no limit.',
+    initialValue: '',
+  });
+  const [rawValue, setValue] = ToolJet.useStateNumber({
+    name: 'value',
+    initialValue: M.parseNumber(defaultValue) as number,
+    inspector: 'hidden',
+  });
+  const [, setFormattedValue] = ToolJet.useStateString({
+    name: 'formattedValue',
+    initialValue: '',
+    inspector: 'hidden',
+  });
+  const [legacyRequired] = ToolJet.useStateBoolean({
+    name: 'required',
+    label: 'Required',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const [legacyDisabled] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const onEnterPressed = ToolJet.useEventCallback({ name: 'onEnterPressed' });
+  const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
+  const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [anchorRef, container] = usePortalContainer();
@@ -77,7 +122,12 @@ export const CurrencyInput = () => {
   const lo = M.parseNumber(minValue);
   const hi = M.parseNumber(maxValue);
   const formatted = (n: number | null, code = currency) =>
-    M.formatCurrency(n, { currency: code, locale, decimals: M.currencyDecimals(code, decimalPlaces), display: 'symbol' });
+    M.formatCurrency(n, {
+      currency: code,
+      locale,
+      decimals: M.currencyDecimals(code, decimalPlaces),
+      display: 'symbol',
+    });
 
   const publish = (n: number | null, code = currency) => {
     setValue(n as number);
@@ -111,13 +161,13 @@ export const CurrencyInput = () => {
   useReseed([currency, locale, decimalPlaces], () => setFormattedValue(formatted(value)), { onMount: false });
   // A Form's clear empties `value` itself, without publish(): the typed draft and formattedValue are the widget's own,
   // so a focused box would keep showing the draft and formattedValue would keep the old amount.
-  TJ.useFormClear(() => {
+  ToolJet.useFormClear(() => {
     setDraft(null);
     publish(null);
   });
 
   // setValue(value, currency): UI 2.0 takes the currency with the value, rounding to the new currency's decimals.
-  TJ.useAction(
+  ToolJet.useAction(
     {
       name: 'setValue',
       displayName: 'Set value',
@@ -132,24 +182,34 @@ export const CurrencyInput = () => {
       set(M.parseNumber(v, locale), next);
     }
   );
-  TJ.useAction({ name: 'setCurrency', displayName: 'Set currency', params: [{ handle: 'currency', displayName: 'Currency' }] }, (code) => {
-    const next = M.toCurrency(code, currencySetter.latest.current);
-    currencySetter.set(next);
-    setFormattedValue(formatted(amount.latest.current, next));
-  });
-  TJ.useAction({ name: 'clear', displayName: 'Clear' }, () => set(null));
-  TJ.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => inputRef.current?.focus());
-  TJ.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => inputRef.current?.blur());
-
-  const fieldId = TJ.useFieldId();
-  const control = TJ.useControlState();
-  const check = TJ.useValidation({ section: 'choice', value, present: value !== null });
-  const rule = useRuleCheck(
-    check,
-    boundsRule(value, lo, hi) || (legacyRequired && value === null ? 'This field is mandatory' : '')
+  ToolJet.useAction(
+    { name: 'setCurrency', displayName: 'Set currency', params: [{ handle: 'currency', displayName: 'Currency' }] },
+    (code) => {
+      const next = M.toCurrency(code, currencySetter.latest.current);
+      currencySetter.set(next);
+      setFormattedValue(formatted(amount.latest.current, next));
+    }
   );
+  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => set(null));
+  ToolJet.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => inputRef.current?.focus());
+  ToolJet.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => inputRef.current?.blur());
+
+  const fieldId = ToolJet.useFieldId();
+  const control = ToolJet.useControlState();
+  const rule = ToolJet.useValidation({
+    kind: 'choice',
+    value,
+    present: value !== null,
+    rule: boundsRule(value, lo, hi) || (legacyRequired && value === null ? 'This field is mandatory' : ''),
+  });
   const looks = useLooks(LOOKS);
-  TJ.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
+  ToolJet.useComponentSettings({
+    role: 'currencyinput',
+    fit: true,
+    loading: 'own',
+    defaultWidth: 10,
+    defaultHeight: 7,
+  });
 
   const disabled = legacyDisabled || control.disabled;
   const display = ['symbol', 'narrowSymbol', 'code'].includes(currencyDisplay) ? currencyDisplay : 'symbol';
@@ -183,7 +243,13 @@ export const CurrencyInput = () => {
                 </SelectPrimitive.Trigger>
                 {container ? (
                   <SelectPrimitive.Portal container={container}>
-                    <SelectPrimitive.Content className="ui-popup ui2-in ui2-pop" style={looks} position="popper" sideOffset={4} align="start">
+                    <SelectPrimitive.Content
+                      className="ui-popup ui2-in ui2-pop"
+                      style={looks}
+                      position="popper"
+                      sideOffset={4}
+                      align="start"
+                    >
                       <SelectPrimitive.Viewport className="ui2-pop-list">
                         {choices.map((code) => (
                           <SelectPrimitive.Item key={code} value={code} className="ui2-pop-item">
@@ -207,7 +273,11 @@ export const CurrencyInput = () => {
               type="text"
               inputMode="decimal"
               autoComplete="off"
-              className={cn('ui2-inner ui2-tabular', showSign && !sign.after && 'has-start', showSign && sign.after && 'has-end')}
+              className={cn(
+                'ui2-inner ui2-tabular',
+                showSign && !sign.after && 'has-start',
+                showSign && sign.after && 'has-end'
+              )}
               placeholder={placeholder}
               disabled={disabled}
               value={shown}

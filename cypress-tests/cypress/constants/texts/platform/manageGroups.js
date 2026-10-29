@@ -22,10 +22,11 @@ export const groupsText = {
   emailTableHeader: "Email id",
   resourcesTableHeader: "Resource",
   resourcesApps: "Apps",
-  resourcesFolders: "Folder",
+  resourcesFolders: "App folder",
   createLabel: "Create",
-  folderCreateLabel: "Create/Update/Delete",
-  folderHelperText: "All operations on folders",
+  folderCreateLabel: "Create",
+  folderCreateHelperText: "Create new app folders in this workspace",
+  folderDeleteHelperText: "Delete any app folders in this workspace",
   deleteLabel: "Delete",
   deleteMessage: "This permission will be permanently deleted. Do you want to continue?",
   permissionUpdatedToast: "Group permissions updated",
@@ -86,6 +87,13 @@ export const groupsText = {
   continueButtonText: "Continue",
   roleUpdateToastMessage: "Role updated successfully",
 
+  folderEditLabel: "Edit folder",
+  folderEditHelperText: "Rename the folder, add, remove and edit apps in the folder",
+  folderEditAppLabel: "Edit apps",
+  folderEditAppHelperText: "Edit apps in the folder",
+  folderViewAppLabel: "View apps",
+  folderViewAppHelperText: "View apps in the folder",
+
   endUserToBuilderMessage: Cypress.env('environment') === 'Community'
     ? "Changing the user role from end-user to builder will grant access the user access to all resources.Are you sure you want to continue?"
     : "Changing user default group from end-user to builder will affect the count of users covered by your plan.Are you sure you want to continue?",
@@ -125,4 +133,31 @@ export const groupsText = {
   emptyPagePermissionTitle: "No permissions added yet",
   emptyPagePermissionHelperText: "Add assets to configure granular, asset-level permissions for this user group",
 
+};
+
+export const groupAdminText = {
+  groupAdminsTab: "Group admins",
+  assignGroupAdminButton: "Assign group admin",
+  assignPlaceholder: "Select users to assign as group admins",
+  assignedToast: "Group admin(s) assigned",
+  removedToast: "Group admin removed",
+
+  nameHeader: "User name",
+  emailHeader: "Email id",
+
+  emptyStateTitle: "No group admins assigned",
+  emptyStateInfo: "Assign a group admin to delegate",
+  emptyStateInfo2: "membership management for this group.",
+  noResultsTitle: "No results found",
+
+  noGroupAdminOfAnyGroup: "You are not a group admin of any group.",
+  cannotAddEndUserTitle: "Cannot add an end-user to this group",
+  adminOnlyRoleChange: "Only a workspace admin can change user roles.",
+
+  apiErrorDefaultGroup: "Group admins can only be assigned to custom groups",
+  apiErrorInactiveMember: "Only active workspace members can be assigned as group admin",
+  apiRoleChangeType: "USER_ROLE_CHANGE_ADMIN_REQUIRED",
+
+  memberRemovedToast: "User removed from the group",
+  duplicatedToast: "Group duplicated successfully",
 };

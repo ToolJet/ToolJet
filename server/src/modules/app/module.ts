@@ -16,6 +16,7 @@ import { SessionModule } from '@modules/session/module';
 import { EncryptionModule } from '@modules/encryption/module';
 import { AppController } from './controller';
 import { AppService } from './service';
+import { AppUtilService } from './util.service';
 import { ProfileModule } from '@modules/profile/module';
 import { SMTPModule } from '@modules/smtp/module';
 import { UsersModule } from '@modules/users/module';
@@ -38,6 +39,7 @@ import { FolderAppsModule } from '@modules/folder-apps/module';
 import { DataQueryFoldersModule } from '@modules/data-query-folders/module';
 import { PersonalAccessTokensModule } from '@modules/personal-access-tokens/module';
 import { AppsModule } from '@modules/apps/module';
+import { AppValidationModule } from '@modules/app-validation/module';
 import { VersionModule } from '@modules/versions/module';
 import { DataQueriesModule } from '@modules/data-queries/module';
 import { PluginsModule } from '@modules/plugins/module';
@@ -48,11 +50,15 @@ import { WorkflowsModule } from '@modules/workflows/module';
 import { AiModule } from '@modules/ai/module';
 import { CustomStylesModule } from '@modules/custom-styles/module';
 import { CustomComponentLibrariesModule } from '@modules/custom-component-libraries/module';
+import { BuiltinPacksModule } from '@modules/builtin-packs/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { EventsModule } from '@modules/events/module';
 import { ExternalApiModule } from '@modules/external-apis/module';
 import { GitSyncModule } from '@modules/git-sync/module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { AppGitModule } from '@modules/app-git/module';
+import { WorkspaceBranchesModule } from '@modules/workspace-branches/module';
+import { GitSyncWebhookModule } from '@modules/git-sync-webhooks/module';
 import { OrganizationPaymentModule } from '@modules/organization-payments/module';
 import { CrmModule } from '@modules/CRM/module';
 import { ClearSSOResponseScheduler } from '@modules/auth/schedulers/clear-sso-response.scheduler';
@@ -64,6 +70,7 @@ import { CustomDomainStatusScheduler } from '@modules/custom-domains/scheduler';
 import { ModulesModule } from '@modules/modules/module';
 import { EmailListenerModule } from '@modules/email-listener/module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
+import { OrganizationEnvModule } from '@modules/organization-env/module';
 import { reconfigurePostgrest, reconfigurePostgrestWithoutSchemaSync } from '@modules/tooljet-db/helper';
 import { isSQLModeDisabled } from '@helpers/tooljet_db.helper';
 import { EntityManager } from 'typeorm';
@@ -79,6 +86,8 @@ import { ExpressAdapter } from '@bull-board/express';
 import * as basicAuth from 'express-basic-auth';
 import { MfaCleanupScheduler } from '@modules/auth/scheduler';
 import { OtelMiddleware } from './middlewares/otel.middleware';
+import { WorkspaceContextModule } from '@modules/workspace-context/module';
+import { NotificationsModule } from '@modules/notifications/module';
 
 export class AppModule implements OnModuleInit, NestModule {
   constructor(
@@ -134,6 +143,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await SetupOrganizationsModule.register(configs, true),
       await WhiteLabellingModule.register(configs, true),
       await EmailModule.register(configs),
+      await AppValidationModule.register(configs),
       await AppsModule.register(configs, true),
       await VersionModule.register(configs, true),
       await DataQueriesModule.register(configs, true),
@@ -145,24 +155,38 @@ export class AppModule implements OnModuleInit, NestModule {
       await AiModule.register(configs, true),
       await CustomStylesModule.register(configs, true),
       await CustomComponentLibrariesModule.register(configs, true),
+      await BuiltinPacksModule.register(configs, true),
       await AppPermissionsModule.register(configs, true),
       await EventsModule.register(configs),
       await ExternalApiModule.register(configs, true),
       await GitSyncModule.register(configs, true),
+      // Registered AFTER GitSyncModule so the legacy /git-sync/finalize/:id and
+      // /git-sync/test-connection routes are added to the Express router first; the
+      // bare :id routes in GitSyncConfigsModule come later and won't shadow them.
+      await GitSyncConfigsModule.register(configs, true),
       await AppGitModule.register(configs, true),
+      await WorkspaceBranchesModule.register(configs, true),
+      await GitSyncWebhookModule.register(configs, true),
       await CrmModule.register(configs, true),
       await OrganizationPaymentModule.register(configs, true),
       await EmailListenerModule.register(configs),
       await InMemoryCacheModule.register(configs),
+      await OrganizationEnvModule.register(configs),
       await AppHistoryModule.register(configs, true),
       await ScimModule.register(configs, true),
       await CustomDomainsModule.register(configs, true),
+      await WorkspaceContextModule.register(configs, true),
+      await NotificationsModule.register(configs, true),
     ];
 
     const conditionalImports = [];
 
     if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
-      conditionalImports.push(await WorkflowsModule.register(configs, true));
+      // BullBoard's root instance ('bull_board_instance') must exist whenever any
+      // BullBoardModule.forFeature is registered (app-history, git-sync queues) — including in
+      // migration/get-context mode, or those forFeature providers fail to resolve. forRoot is
+      // lightweight: it wires the dashboard route/adapter, it does not start queue workers or open
+      // Redis connections.
       conditionalImports.push(
         BullBoardModule.forRoot({
           route: '/jobs',
@@ -173,6 +197,14 @@ export class AppModule implements OnModuleInit, NestModule {
           }),
         })
       );
+
+      // The workflow scheduler is the heavy part — it loads every schedule from the DB on boot (a
+      // multi-second query) and registers cron timers. That's never needed in migration/get-context
+      // mode, where it would idle the shared migration transaction. Nothing else depends on
+      // WorkflowsModule, so it's safe to omit there.
+      if (!configs.IS_GET_CONTEXT) {
+        conditionalImports.push(await WorkflowsModule.register(configs, true));
+      }
     }
 
     if (getTooljetEdition() === TOOLJET_EDITIONS.Cloud) {
@@ -191,6 +223,21 @@ export class AppModule implements OnModuleInit, NestModule {
 
     const imports = [...baseImports, ...conditionalImports];
 
+    // Cron schedulers are pure @Cron providers (nothing depends on them via DI). They are only
+    // meaningful with ScheduleModule, which is itself excluded in migration/get-context mode — so
+    // omit them there too, keeping the migration context free of background timers.
+    const schedulerProviders = configs.IS_GET_CONTEXT
+      ? []
+      : [
+          ClearSSOResponseScheduler,
+          ClearStaleAiRunsScheduler,
+          SampleDBScheduler,
+          SessionScheduler,
+          AuditLogsClearScheduler,
+          MfaCleanupScheduler,
+          CustomDomainStatusScheduler,
+        ];
+
     return {
       module: AppModule,
       imports: [...modules, ...imports],
@@ -202,14 +249,9 @@ export class AppModule implements OnModuleInit, NestModule {
         { provide: APP_INTERCEPTOR, useClass: PatScopeInterceptor },
         ShutdownHook,
         GetConnection,
-        ClearSSOResponseScheduler,
-        ClearStaleAiRunsScheduler,
-        SampleDBScheduler,
-        SessionScheduler,
-        AuditLogsClearScheduler,
-        MfaCleanupScheduler,
-        CustomDomainStatusScheduler,
         AppService,
+        AppUtilService,
+        ...schedulerProviders,
       ],
     };
   }

@@ -59,6 +59,7 @@ export const resolveFlexContainerHeight = ({
   getDynamicElementSelector,
   getEffectiveLayout,
   resolveWidgetVisibility,
+  moduleId = 'canvas',
 }) => {
   const canonicalLayout = getCanonicalLayout(componentId, currentLayout, currentPageComponents);
   const component = getResolvedComponent(componentId, contextIndices);
@@ -72,7 +73,7 @@ export const resolveFlexContainerHeight = ({
   const flexWrap = properties.flexWrap === true;
   const rawChildIds = getContainerChildrenMapping(componentId);
   const childIds = getFlexContainerChildOrder(currentPageComponents, componentId, rawChildIds);
-  const wrapperElement = document.querySelector(getDynamicElementSelector(componentId, contextIndices));
+  const wrapperElement = document.querySelector(getDynamicElementSelector(componentId, contextIndices, moduleId));
   // `clientWidth` is the wrapper's content-box width (border excluded, padding
   // included). The flex canvas inside the wrapper applies its own padding, so
   // flex children actually share `clientWidth - 2 * padding`. Subtract padding
@@ -114,7 +115,8 @@ export const resolveFlexContainerHeight = ({
       currentLayout,
       currentPageComponents,
       temporaryLayouts,
-      contextIndices
+      contextIndices,
+      moduleId
     );
     let childHeight = effectiveLayout?.height ?? childLayout.height ?? 0;
     const childDefinition = getComponentDefinition?.(childId);

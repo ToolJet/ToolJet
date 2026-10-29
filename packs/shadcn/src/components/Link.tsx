@@ -19,12 +19,24 @@ const UNDERLINE: Record<string, string> = {
   none: 'no-underline',
 };
 const WEIGHT: Record<string, number> = { normal: 400, medium: 500, semibold: 600, bold: 700 };
-const JUSTIFY: Record<string, string> = { left: 'n2-justify-left', center: 'n2-justify-center', right: 'n2-justify-right' };
+const JUSTIFY: Record<string, string> = {
+  left: 'n2-justify-left',
+  center: 'n2-justify-center',
+  right: 'n2-justify-right',
+};
 
 // UI 2.0 Link: an anchor (a script URL is no link: the text shows as a button instead).
 export const Link = () => {
-  const [linkText, setLinkText] = ToolJet.useStateString({ name: 'linkText', label: 'Link text', initialValue: 'View details' });
-  const [linkTarget, setLinkTarget] = ToolJet.useStateString({ name: 'linkTarget', label: 'Link target (URL)', initialValue: 'https://tooljet.com' });
+  const [linkText, setLinkText] = ToolJet.useStateString({
+    name: 'linkText',
+    label: 'Link text',
+    initialValue: 'View details',
+  });
+  const [linkTarget, setLinkTarget] = ToolJet.useStateString({
+    name: 'linkTarget',
+    label: 'Link target (URL)',
+    initialValue: 'https://tooljet.com',
+  });
   const [targetType] = ToolJet.useStateEnumeration({
     name: 'targetType',
     label: 'Open in',
@@ -42,7 +54,13 @@ export const Link = () => {
     inspector: 'switch',
   });
   const [showIcon] = ToolJet.useStateBoolean({ name: 'showIcon', label: 'External-link icon', initialValue: false });
-  const [fontSize] = ToolJet.useStateNumber({ name: 'fontSize', label: 'Font size (px)', initialValue: 14, min: 8, max: 96 });
+  const [fontSize] = ToolJet.useStateNumber({
+    name: 'fontSize',
+    label: 'Font size (px)',
+    initialValue: 14,
+    min: 8,
+    max: 96,
+  });
   const [fontWeight] = ToolJet.useStateEnumeration({
     name: 'fontWeight',
     label: 'Weight',
@@ -64,7 +82,7 @@ export const Link = () => {
     inspector: 'switch',
   });
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 3 });
+  ToolJet.useComponentSettings({ role: 'link', fit: false, loading: 'own', defaultWidth: 6, defaultHeight: 3 });
 
   // setLinkTarget and setLinkText hold until the Link target and Text properties themselves change (the state hooks).
   const href = safeUrl(linkTarget);
@@ -78,11 +96,13 @@ export const Link = () => {
     if (anchorRef.current) anchorRef.current.click();
     else onClick();
   });
-  ToolJet.useAction({ name: 'setLinkTarget', displayName: 'Set link target', params: [{ handle: 'linkTarget', displayName: 'URL' }] }, (u) =>
-    setLinkTarget(u === undefined || u === null ? '' : String(u))
+  ToolJet.useAction(
+    { name: 'setLinkTarget', displayName: 'Set link target', params: [{ handle: 'linkTarget', displayName: 'URL' }] },
+    (u) => setLinkTarget(u === undefined || u === null ? '' : String(u))
   );
-  ToolJet.useAction({ name: 'setLinkText', displayName: 'Set link text', params: [{ handle: 'linkText', displayName: 'Text' }] }, (t) =>
-    setLinkText(t === undefined || t === null ? '' : String(t))
+  ToolJet.useAction(
+    { name: 'setLinkText', displayName: 'Set link text', params: [{ handle: 'linkText', displayName: 'Text' }] },
+    (t) => setLinkText(t === undefined || t === null ? '' : String(t))
   );
 
   const sameTab = targetType === 'same' || (targetType as string) === '_self';
@@ -127,7 +147,14 @@ export const Link = () => {
             {content}
           </a>
         ) : (
-          <button type="button" disabled={disabled} className={className} style={style} onMouseEnter={onHover} onClick={onClick}>
+          <button
+            type="button"
+            disabled={disabled}
+            className={className}
+            style={style}
+            onMouseEnter={onHover}
+            onClick={onClick}
+          >
             {content}
           </button>
         )}

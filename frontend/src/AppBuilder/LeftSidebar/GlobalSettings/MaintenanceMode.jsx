@@ -4,6 +4,7 @@ import SwitchComponent from '@/components/ui/Switch/Index';
 import { shallow } from 'zustand/shallow';
 import { Confirm } from '@/AppBuilder/Viewer/Confirm';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 const MaintenanceMode = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
@@ -15,6 +16,10 @@ const MaintenanceMode = ({ darkMode }) => {
     }),
     shallow
   );
+  const currentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const isOnFeatureBranch = currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
+
+  if (isOnFeatureBranch) return null;
 
   return (
     <>
@@ -29,7 +34,7 @@ const MaintenanceMode = ({ darkMode }) => {
         onCancel={() => setConfirmationShow(false)}
         darkMode={darkMode}
       />
-      <div className="tw-flex">
+      <div data-param="appInMaintenance" className="tw-flex">
         <SwitchComponent
           align="right"
           label="Maintenance mode"

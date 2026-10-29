@@ -194,9 +194,11 @@ export class PostgrestProxyService {
         // PostgREST can return an empty object while its schema cache reloads after CREATE TABLE.
         // Keep the explicit rejection visible to clients; an undefined message crashes the error
         // formatter and leaves the insert hanging with an ambiguous outcome.
-        const errorMessage = postgrestResponse.message || (proxyRes.statusCode === 404
-          ? 'Could not find the table in the PostgREST schema cache. Please retry.'
-          : `PostgREST rejected this request (HTTP ${proxyRes.statusCode}).`);
+        const errorMessage =
+          postgrestResponse.message ||
+          (proxyRes.statusCode === 404
+            ? 'Could not find the table in the PostgREST schema cache. Please retry.'
+            : `PostgREST rejected this request (HTTP ${proxyRes.statusCode}).`);
         postgrestResponse.message = errorMessage;
         const errorContext: {
           origin: TooljetDbActions;

@@ -29,9 +29,3 @@ export class OrganizationGitStatusUpdateDto {
   @IsBoolean()
   isEnabled: boolean;
 }
-
-export class OrganizationGitHTTPSUpdateDto {
-  @IsOptional()
-  @IsBoolean()
-  autoCommit: boolean;
-}

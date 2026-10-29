@@ -48,13 +48,24 @@ const useFittedValue = (value: unknown, fit: (n: number) => number, setValue: (v
 // option clears the value, with onChange.
 export const RadioGroup = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Shipping' });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: 'Plain values or [{ label, value, disabled? }].', initialValue: [
-    { label: 'Standard', value: 'standard' },
-    { label: 'Express', value: 'express' },
-    { label: 'Overnight', value: 'overnight' },
-  ] });
+  const [rawOptions] = ToolJet.useStateArray({
+    name: 'options',
+    label: 'Options',
+    inspector: 'options',
+    description: 'Plain values or [{ label, value, disabled? }].',
+    initialValue: [
+      { label: 'Standard', value: 'standard' },
+      { label: 'Express', value: 'express' },
+      { label: 'Overnight', value: 'overnight' },
+    ],
+  });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
-  const [optionType] = ToolJet.useStateEnumeration({ name: 'optionType', label: 'Option type', enumDefinition: ['default', 'button'], initialValue: 'default' });
+  const [optionType] = ToolJet.useStateEnumeration({
+    name: 'optionType',
+    label: 'Option type',
+    enumDefinition: ['default', 'button'],
+    initialValue: 'default',
+  });
   const [buttonStyle] = ToolJet.useStateEnumeration({
     name: 'buttonStyle',
     label: 'Button style',
@@ -62,15 +73,40 @@ export const RadioGroup = (props: Record<string, unknown>) => {
     initialValue: 'solid',
     visibleWhen: { key: 'optionType', value: 'button' },
   });
-  const [vertical] = ToolJet.useStateBoolean({ name: 'vertical', label: 'Vertical', initialValue: false, visibleWhen: { key: 'optionType', value: 'default' } });
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'middle', 'large'], initialValue: 'middle' });
-  const [allowDeselect] = ToolJet.useStateBoolean({ name: 'allowDeselect', label: 'Allow deselect', description: 'A click on the picked option clears it.', initialValue: false });
+  const [vertical] = ToolJet.useStateBoolean({
+    name: 'vertical',
+    label: 'Vertical',
+    initialValue: false,
+    visibleWhen: { key: 'optionType', value: 'default' },
+  });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['small', 'middle', 'large'],
+    initialValue: 'middle',
+  });
+  const [allowDeselect] = ToolJet.useStateBoolean({
+    name: 'allowDeselect',
+    label: 'Allow deselect',
+    description: 'A click on the picked option clears it.',
+    initialValue: false,
+  });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ section: 'choice', value: str(value), present: value !== '' });
+  const check = ToolJet.useValidation({ kind: 'choice', value: str(value), present: value !== '' });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'radio',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's Radio.Group: label, options [{label, value}], value, optionType (default, button), buttonStyle, vertical; onChange.",
+    roleProps: { description: 'extra' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 14,
+    defaultHeight: 6,
+  });
   const options = toOptions(rawOptions, 'RadioGroup');
   // The radios hold option keys; the value keeps its type (lib/data Option).
   const key = value === '' ? '' : keyForValue(options, value);
@@ -96,7 +132,9 @@ export const RadioGroup = (props: Record<string, unknown>) => {
             buttonStyle={buttonStyle as 'solid'}
             size={size as 'middle'}
             disabled={disabled}
-            style={vertical && optionType === 'default' ? { display: 'flex', flexDirection: 'column', gap: 8 } : undefined}
+            style={
+              vertical && optionType === 'default' ? { display: 'flex', flexDirection: 'column', gap: 8 } : undefined
+            }
             onChange={(e) => pick(e.target.value)}
           >
             {/* The radios are drawn here, not from Ant's options, so each has a React key of its own (two options
@@ -131,23 +169,59 @@ export const RadioGroup = (props: Record<string, unknown>) => {
 // Ant's Segmented: options, value, block, size, vertical; event onChange.
 export const Segmented = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'View' });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: 'Plain values or [{ label, value, disabled? }].', initialValue: [
-    { label: 'Daily', value: 'daily' },
-    { label: 'Weekly', value: 'weekly' },
-    { label: 'Monthly', value: 'monthly' },
-  ] });
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'Empty selects the first option.', initialValue: '' });
-  const [block] = ToolJet.useStateBoolean({ name: 'block', label: 'Block', description: 'Fit the width.', initialValue: false });
+  const [rawOptions] = ToolJet.useStateArray({
+    name: 'options',
+    label: 'Options',
+    inspector: 'options',
+    description: 'Plain values or [{ label, value, disabled? }].',
+    initialValue: [
+      { label: 'Daily', value: 'daily' },
+      { label: 'Weekly', value: 'weekly' },
+      { label: 'Monthly', value: 'monthly' },
+    ],
+  });
+  const [value, setValue] = ToolJet.useStateString({
+    name: 'value',
+    label: 'Value',
+    description: 'Empty selects the first option.',
+    initialValue: '',
+  });
+  const [block] = ToolJet.useStateBoolean({
+    name: 'block',
+    label: 'Block',
+    description: 'Fit the width.',
+    initialValue: false,
+  });
   // Where the group sits when its box is wider than the buttons: a filter toggle that ends a row reads at the row's end.
-  const [alignment] = ToolJet.useStateEnumeration({ name: 'alignment', label: 'Alignment', enumDefinition: ['left', 'center', 'right'], enumLabels: { left: 'Left', center: 'Center', right: 'Right' }, initialValue: 'left', visibleWhen: { key: 'block', value: false } });
+  const [alignment] = ToolJet.useStateEnumeration({
+    name: 'alignment',
+    label: 'Alignment',
+    enumDefinition: ['left', 'center', 'right'],
+    enumLabels: { left: 'Left', center: 'Center', right: 'Right' },
+    initialValue: 'left',
+    visibleWhen: { key: 'block', value: false },
+  });
   const [vertical] = ToolJet.useStateBoolean({ name: 'vertical', label: 'Vertical', initialValue: false });
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'middle', 'large'], initialValue: 'middle' });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['small', 'middle', 'large'],
+    initialValue: 'middle',
+  });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
-  const check = ToolJet.useValidation({ section: 'choice', value: str(value), present: value !== '' });
+  const check = ToolJet.useValidation({ kind: 'choice', value: str(value), present: value !== '' });
   const tokens = useTokenStyles();
   // Its label over a 32px control, as Ant's Input (the 4-row box cut the control by 20px).
-  ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'togglegroup',
+    fit: true,
+    loading: 'own',
+    usage: "Ant's Segmented: options [{label, value}], value (empty: the first), block; onChange.",
+    roleActions: { setValue: 'setFieldValue' },
+    defaultWidth: 14,
+    defaultHeight: 6,
+  });
   const options = toOptions(rawOptions, 'Segmented');
   // Ant's Segmented keys each item by its value, so it gets each option's own React key as the value (two options with
   // one value drew with one key); the value keeps its type (lib/data Option). An option drawn twice shows the first.
@@ -197,12 +271,26 @@ export const Rate = (props: Record<string, unknown>) => {
   const [count] = ToolJet.useStateNumber({ name: 'count', label: 'Count', initialValue: 5, min: 1, max: 20 });
   const [allowHalf] = ToolJet.useStateBoolean({ name: 'allowHalf', label: 'Allow half', initialValue: false });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: true });
-  const [tooltips] = ToolJet.useStateArray({ name: 'tooltips', label: 'Tooltips', description: "One per star: ['bad', 'normal', 'good']", initialValue: [] });
+  const [tooltips] = ToolJet.useStateArray({
+    name: 'tooltips',
+    label: 'Tooltips',
+    description: "One per star: ['bad', 'normal', 'good']",
+    initialValue: [],
+  });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
-  const check = ToolJet.useValidation({ section: 'choice', value, present: Number(value) > 0 });
+  const check = ToolJet.useValidation({ kind: 'choice', value, present: Number(value) > 0 });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 4 });
+  ToolJet.useComponentSettings({
+    role: 'rating',
+    fit: true,
+    loading: 'own',
+    usage: "Ant's Rate: value, count, allowHalf; onChange.",
+    roleProps: { max: 'count' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 10,
+    defaultHeight: 4,
+  });
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
@@ -214,7 +302,11 @@ export const Rate = (props: Record<string, unknown>) => {
   const tips = Array.isArray(tooltips) ? tooltips.map(str) : [];
   const stars = Math.max(1, Math.min(20, Number(count) || 5));
   // Ant draws a literal 9 of 5 stars as 5, and 2.3 as 2 (2.5 with halves).
-  const drawn = useFittedValue(value, (n) => Math.max(0, Math.min(stars, allowHalf ? Math.round(n * 2) / 2 : Math.round(n))), setValue);
+  const drawn = useFittedValue(
+    value,
+    (n) => Math.max(0, Math.min(stars, allowHalf ? Math.round(n * 2) / 2 : Math.round(n))),
+    setValue
+  );
 
   return (
     <AntProvider tokens={tokens}>
@@ -248,8 +340,18 @@ const toRange = (v: unknown, lo: number, hi: number): [number, number] => {
 // own prop) gives two handles, and value is then [from, to].
 export const Slider = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Volume' });
-  const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', description: 'A number, or [from, to] with Range on.', initialValue: 0 });
-  const [range] = ToolJet.useStateBoolean({ name: 'range', label: 'Range', description: 'Two handles; the value is [from, to].', initialValue: false });
+  const [value, setValue] = ToolJet.useStateNumber({
+    name: 'value',
+    label: 'Value',
+    description: 'A number, or [from, to] with Range on.',
+    initialValue: 0,
+  });
+  const [range] = ToolJet.useStateBoolean({
+    name: 'range',
+    label: 'Range',
+    description: 'Two handles; the value is [from, to].',
+    initialValue: false,
+  });
   const [min] = ToolJet.useStateNumber({ name: 'min', label: 'Min', initialValue: 0 });
   const [max] = ToolJet.useStateNumber({ name: 'max', label: 'Max', initialValue: 100 });
   const [step] = ToolJet.useStateNumber({ name: 'step', label: 'Step', initialValue: 1 });
@@ -260,12 +362,20 @@ export const Slider = (props: Record<string, unknown>) => {
   const isRange = range === true;
   const isPair = Array.isArray(value);
   const check = ToolJet.useValidation({
-    section: 'choice',
+    kind: 'choice',
     value: isPair ? (value as unknown as unknown[]).join(',') : String(value ?? ''),
     present: true,
   });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 4 });
+  ToolJet.useComponentSettings({
+    role: 'slider',
+    fit: true,
+    loading: 'own',
+    usage: "Ant's Slider: value, min, max, step; onChange while dragging, onChangeComplete on release.",
+    roleActions: { setValue: 'setFieldValue' },
+    defaultWidth: 14,
+    defaultHeight: 4,
+  });
   const lo = toNumber(min) ?? 0;
   const hi = Math.max(lo, toNumber(max) ?? 100);
   // Within the bounds and on the step grid, as Ant draws the thumb (its closest point: a grid step, or Max): an action's
@@ -292,7 +402,13 @@ export const Slider = (props: Record<string, unknown>) => {
   // so no onChange. An empty value (a cleared Form) stays empty and draws the whole range.
   const empty = value === null || value === undefined || (value as unknown) === '';
   const pair = toRange(value, lo, hi);
-  const fittedKey = isRange ? (empty ? '' : pair.join(',')) : isPair ? String(clamp(toNumber((value as unknown as unknown[])[0]) ?? lo)) : '';
+  const fittedKey = isRange
+    ? empty
+      ? ''
+      : pair.join(',')
+    : isPair
+      ? String(clamp(toNumber((value as unknown as unknown[])[0]) ?? lo))
+      : '';
   const valueKey = isPair ? (value as unknown as unknown[]).join(',') : String(value ?? '');
   useEffect(() => {
     if (!fittedKey || fittedKey === valueKey) return;

@@ -7,15 +7,22 @@ import { DataQueryRepository } from '@modules/data-queries/repository';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppsRepository } from '@modules/apps/repository';
-import { AppGitRepository } from '@modules/app-git/repository';
 import { FeatureAbilityFactory } from './ability';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { AppHistoryModule } from '@modules/app-history/module';
+import { ValidModuleByCorrelationGuard } from './guards/valid-module-by-correlation.guard';
+import { EncryptionModule } from '@modules/encryption/module';
 
 export class VersionModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       VersionController,
       VersionControllerV2,
@@ -27,6 +34,7 @@ export class VersionModule extends SubModule {
       VersionUtilService,
       VersionCompareControllers,
       VersionCompareProviders,
+      GitSyncEditGuard,
     } = await this.getProviders(configs, 'versions', [
       'controller',
       'controller.v2',
@@ -37,6 +45,7 @@ export class VersionModule extends SubModule {
       'service',
       'util.service',
       'compare',
+      'guards/git-sync-edit.guard',
     ]);
 
     // Get apps related providers
@@ -46,7 +55,7 @@ export class VersionModule extends SubModule {
       ['services/component.service', 'services/event.service', 'services/page.service', 'services/page.util.service']
     );
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: VersionModule,
       imports: [
         await AppsModule.register(configs),
@@ -55,6 +64,8 @@ export class VersionModule extends SubModule {
         await ThemesModule.register(configs),
         await AppPermissionsModule.register(configs),
         await AppHistoryModule.register(configs),
+        await EncryptionModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
       ],
       controllers: isMainImport
         ? [
@@ -74,8 +85,8 @@ export class VersionModule extends SubModule {
         DataQueryRepository,
         DataSourcesRepository,
         VersionRepository,
+        OrganizationGitSyncRepository,
         AppsRepository,
-        AppGitRepository,
         VersionsCreateService,
         PageService,
         EventsService,
@@ -84,8 +95,14 @@ export class VersionModule extends SubModule {
         ...VersionCompareProviders,
         FeatureAbilityFactory,
         GroupPermissionsRepository,
+        ValidModuleByCorrelationGuard,
+        GitSyncEditGuard,
       ],
-      exports: [VersionUtilService],
-    };
+      // VersionService is exported so the app-git module can inject it to run the git-aware
+      // save/delete flows (call update()/deleteVersion() for the DB work, then create/delete the
+      // git tag). Direction is app-git → versions (app-git imports VersionModule), which replaces
+      // the old versions → app-git moduleRef.get(AppGitService) hack.
+      exports: [VersionUtilService, VersionService],
+    });
   }
 }

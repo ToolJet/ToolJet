@@ -8,7 +8,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHash, randomUUID } from 'crypto';
+import { createHash } from 'crypto';
 import { DataSource, getMetadataArgsStorage, QueryFailedError } from 'typeorm';
 import { AiAttachment } from '@entities/ai_attachment.entity';
 import { AiAttachmentService, MAX_AI_ATTACHMENT_BYTES } from '@modules/ai/services/ai-attachment.service';
@@ -59,8 +59,8 @@ describe('Agent-backed attachment metadata', () => {
         value?._type === 'in'
           ? value._value.includes(record[key])
           : value?._type === 'isNull'
-          ? record[key] == null
-          : record[key] === value
+            ? record[key] == null
+            : record[key] === value
       );
     repository = {
       create: jest.fn((record) => record),
@@ -156,19 +156,22 @@ describe('Agent-backed attachment metadata', () => {
     await expect(service.upload(owner, file())).rejects.toThrow('File upload failed. Please retry.');
   });
 
-  it.each(['42P01', '42703'])('explains incomplete database setup without exposing SQL or file data (%s)', async (code) => {
-    repository.save.mockRejectedValue(
-      new QueryFailedError(
-        'INSERT INTO attachment_receipt VALUES ($1)',
-        ['synthetic private file bytes'],
-        Object.assign(new Error('internal schema detail'), { code })
-      )
-    );
-    await expect(service.upload(owner, file())).rejects.toThrow(
-      'File uploads are unavailable because attachment setup is incomplete. Ask your administrator to apply the latest database updates.'
-    );
-    expect(agent.attachmentRequest).not.toHaveBeenCalled();
-  });
+  it.each(['42P01', '42703'])(
+    'explains incomplete database setup without exposing SQL or file data (%s)',
+    async (code) => {
+      repository.save.mockRejectedValue(
+        new QueryFailedError(
+          'INSERT INTO attachment_receipt VALUES ($1)',
+          ['synthetic private file bytes'],
+          Object.assign(new Error('internal schema detail'), { code })
+        )
+      );
+      await expect(service.upload(owner, file())).rejects.toThrow(
+        'File uploads are unavailable because attachment setup is incomplete. Ask your administrator to apply the latest database updates.'
+      );
+      expect(agent.attachmentRequest).not.toHaveBeenCalled();
+    }
+  );
 
   it.each([null, 'not-an-array', ids, ['not-a-uuid']])(
     'rejects invalid or excessive message IDs: %p',

@@ -122,6 +122,42 @@ export async function initializeOtel(app: NestExpressApplication, logger: any) {
   }
 }
 
+export async function initializeEnvConfigRegistry(app: NestExpressApplication, logger?: any) {
+  if (!logger) {
+    logger = createLogger('EnvConfigRegistry');
+  }
+  try {
+    const tooljetEdition = getTooljetEdition() as TOOLJET_EDITIONS;
+
+    if (tooljetEdition !== TOOLJET_EDITIONS.EE) {
+      logger.log('Skipping environment config registry initialization for non-EE edition');
+      return;
+    }
+
+    logger.log('Initializing environment config registry...');
+    const importPath = await getImportPath(false, tooljetEdition);
+    const { OrganizationEnvUtilService } = await import(`${importPath}/organization-env/util.service`);
+
+    const orgEnvUtilService = app.get(OrganizationEnvUtilService, { strict: false });
+    await orgEnvUtilService.initialize();
+    logger.log('✅ Environment config registry initialized successfully');
+
+    try {
+      const { LoginConfigsService } = await import(`${importPath}/login-configs/service`);
+      const loginConfigsService = app.get(LoginConfigsService, { strict: false });
+      await loginConfigsService.autoEnableEnvConfigs();
+      logger.log('✅ Auto-enabled env-managed SSO providers where eligible');
+    } catch (error) {
+      // Never let an auto-enable failure block app startup — env-config staying off just
+      // means an admin toggles it manually, same as before this existed.
+      logger.error('❌ Failed to auto-enable env-managed SSO providers:', error);
+    }
+  } catch (error) {
+    logger.error('❌ Failed to initialize environment config registry:', error);
+    throw error;
+  }
+}
+
 /**
  * Replaces subpath placeholders in static assets
  */
@@ -210,6 +246,7 @@ type CorsOriginsCache = { getOriginsSet(): Promise<Set<string> | null> };
 
 function tryGetCacheService(app: NestExpressApplication): CorsOriginsCache | null {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { CustomDomainCacheService } = require('@modules/custom-domains/cache.service');
     return app.get(CustomDomainCacheService, { strict: false }) ?? null;
   } catch {

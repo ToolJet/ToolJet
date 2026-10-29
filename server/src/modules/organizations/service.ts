@@ -1,4 +1,10 @@
-import { ConflictException, Injectable, NotAcceptableException, NotImplementedException, Optional } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotAcceptableException,
+  NotImplementedException,
+  Optional,
+} from '@nestjs/common';
 import { Organization } from 'src/entities/organization.entity';
 import { isSuperAdmin } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
@@ -90,7 +96,7 @@ export class OrganizationsService implements IOrganizationsService {
   }
 
   async updateOrganizationNameAndSlug(user: User, updatableData: OrganizationUpdateDto): Promise<Organization> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       const organizationId = user.organizationId;
       const organization = await manager.findOne(Organization, { where: { id: organizationId } });
       await this.organizationRepository.updateOne(organizationId, updatableData, manager);
@@ -115,8 +121,9 @@ export class OrganizationsService implements IOrganizationsService {
         },
       };
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
-      return;
     });
+
+    return;
   }
 
   async updateOrganizationStatus(
