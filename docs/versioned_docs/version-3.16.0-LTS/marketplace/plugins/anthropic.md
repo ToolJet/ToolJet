@@ -27,18 +27,28 @@ The **Chat (Deprecated)** operation is still available for existing queries. Ins
 
 **Required Parameters**
 
-- **Model**: The model to use for generating the chat response. The available models are:
+- **Model**: The model to use for generating the chat response. The default is **claude-opus-5**. The available models are:
 
+    - **claude-fable-5-1**
+    - **claude-fable-5**
+    - **claude-opus-5-5**
+    - **claude-opus-5**
+    - **claude-sonnet-5**
     - **claude-sonnet-4-5-20250929**
     - **claude-sonnet-4-20250514**
     - **claude-opus-4-5-20251101**
     - **claude-opus-4-1-20250805**
     - **claude-opus-4-20250514**
     - **claude-haiku-4-5**
+    - **claude-3-5-haiku-20241022 (Deprecated)**
+    - **claude-3-5-sonnet-20241022 (Discontinued)**
+    - **claude-3-opus-20240229 (Discontinued)**
+    - **claude-3-sonnet-20240229 (Discontinued)**
+    - **claude-3-haiku-20240307 (Discontinued)**
 
 - **User message**: The message the model replies to. ToolJet sends it as the last `user` message, after **Message History**. The query fails if this field is empty.
 
-- **Max Size**: Maximum tokens used in response.
+- **Max Size**: Maximum tokens used in response. If left empty, `256` is used. The value is capped per model: `128000` for **claude-fable-5-1**, **claude-fable-5**, **claude-opus-5-5**, **claude-opus-5** and **claude-sonnet-5**, `64000` for **claude-haiku-4-5**, and `2048` for all other models.
 
 **Optional Parameters**
 
@@ -46,7 +56,11 @@ The **Chat (Deprecated)** operation is still available for existing queries. Ins
 
 - **Message History**: Earlier turns of the conversation, as a JSON array of objects with `role` (`user` or `assistant`) and `content`, for example `[{ "role": "user", "content": "Hello Claude!" }, { "role": "assistant", "content": "Hello! How can I assist you today?" }]`. If the value isn't valid JSON, ToolJet ignores it and sends only the **User message**.
 
-- **Temperature**: Controls the randomness of the response. Accepts values between 0 and 1, with a default of 1.
+- **Temperature**: Controls the randomness of the response. Accepts values between 0 and 1. If left empty, `0.5` is used.
+
+:::note
+**claude-fable-5-1**, **claude-fable-5**, **claude-opus-5-5**, **claude-opus-5** and **claude-sonnet-5** don't accept a temperature, so the **Temperature** field isn't shown for these models.
+:::
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/anthropic/query-v2.png" alt="Anthropic Query" />
 
