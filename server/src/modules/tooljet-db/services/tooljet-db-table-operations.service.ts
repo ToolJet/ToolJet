@@ -667,11 +667,12 @@ export class TooljetDbTableOperationsService {
 
       await queryRunner.manager.save(internalTable);
 
-      // The relation id is independent of the logical table id: it is minted here and is the physical
-      // Postgres table name. Rows inserted by migration A still satisfy relation.id === internalTable.id,
-      // so both shapes coexist - never assume either holds generally. create_table only creates the
-      // development-environment relation; higher environments get their own relation when the table is
-      // first promoted (not yet built).
+      // The relation id is the physical Postgres table name. The first relation reuses the logical table
+      // id, the shape migration A gives existing tables, so a release without relations - one rolled
+      // back to - still finds the table by internal_tables.id. Other relations (a promote, migration B's
+      // development twin) mint their own id, so never assume either shape holds generally. create_table
+      // only creates the development-environment relation; higher environments get their own relation
+      // when the table is first promoted.
       const environmentId = await this.relationResolverService.resolveEnvironmentIdFor(
         organizationId,
         queryRunner.manager
@@ -680,7 +681,7 @@ export class TooljetDbTableOperationsService {
 
       const relation = await queryRunner.manager.save(
         queryRunner.manager.create(InternalTableRelation, {
-          id: uuidv4(),
+          id: internalTable.id,
           internalTableId: internalTable.id,
           environmentId,
           branchId,

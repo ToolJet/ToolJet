@@ -41,17 +41,21 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 
 ## Invariants & gotchas
 
-- **`internal_table_relations.id` and `internal_table_id` are unrelated in general** — only migration-A
-  rows satisfy `id === internal_table_id`; that equality is also migration B's idempotency
-  discriminator. A physical table name always comes from the resolver, never a logical id.
+- **`internal_table_relations.id` and `internal_table_id` are unrelated in general** — a table's first
+  relation (migration A's, or the development relation `create_table` makes) satisfies
+  `id === internal_table_id`, so a release rolled back to still finds the physical table; promoted
+  relations and migration B's development twins mint their own id. That equality is also migration B's
+  idempotency discriminator. A physical table name always comes from the resolver, never a logical id.
 - `configurations` (column metadata) lives on the relation row, not `internal_tables` — it's per
   (environment, branch).
 - **Transition release:** `internal_tables.configurations` still exists so the previous release can
   boot, but it is frozen at upgrade time. Never read or write it; a later release drops it.
-  `co_relation_id` is nullable with a `gen_random_uuid()` default instead of NOT NULL. A rollback
-  keeps only tables that existed before the upgrade. Tables created after it are unreadable
-  (physical name = relation id), tables dropped after it reappear (soft delete), and column settings
-  changed after it are lost. A table created on the previous release gets no relation on roll-forward.
+  `co_relation_id` is nullable with a `gen_random_uuid()` default instead of NOT NULL. After a
+  rollback the previous release reads each table's `id === internal_table_id` relation: the
+  development data of a table created after the upgrade, and the production data of a table migration B
+  moved. Tables dropped after the upgrade are removed by the substrate schema's `down()`. Production
+  data of a table created and promoted after the upgrade is orphaned, not deleted. A table created on
+  the previous release gets no relation on roll-forward.
 - Both proxy entry points (`PostgrestProxyService.proxy()`/`.perform()`) funnel through
   `resolveAndRewrite()`. Known third path: `server/ee/external-apis/service.ts`'s
   `exportTjdbTableAsCSV` calls PostgREST directly (needs `Accept: text/csv`); it resolves the
@@ -151,7 +155,7 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   placeholders (resolved via `refs`/`resolveSiblingByCoRelationId`) and rewrites any `serial` default
   to a `{{self}}`-derived sequence — never bakes in a physical relation id. A baselined FK's target is a
   physical relation id; `buildForeignKeyDdl` maps it through `internal_table_relations` to the table's
-  `co_relation_id` (relation id ≠ internal table id for any table created after environments), falling
+  `co_relation_id` (a promoted or twin relation's id is not an internal table id), falling
   back to reading it as an `internal_tables` id for Migration A's not-yet-inserted targets.
   Known gaps: replay's `edit_column` never re-applies `writeThroughColumnConfigurations` (only the
   inserting migration's display settings survive); `targetRelation` and any FK sibling must already be
