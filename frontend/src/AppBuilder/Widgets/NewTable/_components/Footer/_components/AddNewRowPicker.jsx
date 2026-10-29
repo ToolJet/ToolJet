@@ -30,7 +30,7 @@ const RowChip = ({ index, selected, invalid, disabled, onSelect }) => (
 );
 
 // "…" stands for the rows that have no chip. It turns red when one of them has errors, and lists them in a menu.
-const MoreRows = ({ hidden, invalidRows, disabled, onSelect }) => {
+const MoreRows = ({ hidden, invalidRows, disabled, darkMode, onSelect }) => {
   const [open, setOpen] = useState(false);
   const hasInvalid = hidden.some((index) => invalidRows.has(index));
 
@@ -53,7 +53,12 @@ const MoreRows = ({ hidden, invalidRows, disabled, onSelect }) => {
       <PopoverContent
         align="start"
         role="menu"
-        className={cn(MENU_LAYER_CLASS, 'tw-max-h-[240px] tw-w-auto tw-min-w-[72px] tw-overflow-y-auto tw-p-1')}
+        className={cn(
+          MENU_LAYER_CLASS,
+          'tw-max-h-[240px] tw-w-auto tw-min-w-[72px] tw-overflow-y-auto tw-p-1',
+          // the menu renders in a portal, outside the themed form
+          darkMode && 'dark-theme'
+        )}
       >
         {hidden.map((index) => (
           <button
@@ -81,12 +86,19 @@ const MoreRows = ({ hidden, invalidRows, disabled, onSelect }) => {
 
 // Row chips with "+" and, under them, "ROW x OF N" and Remove row. `invalidRows` holds the indexes of the rows
 // that failed the last Add rows click.
-export const AddNewRowPicker = ({ count, active, invalidRows, disabled, onSelect, onAdd, onRemove }) => (
+export const AddNewRowPicker = ({ count, active, invalidRows, disabled, darkMode, onSelect, onAdd, onRemove }) => (
   <div className="tw-flex tw-shrink-0 tw-flex-col tw-gap-2 tw-px-4 tw-pt-4">
     <div role="group" aria-label="Rows" className="tw-flex tw-flex-wrap tw-items-center tw-gap-1">
       {getRowChips(count, active).map((chip) =>
         chip.type === 'more' ? (
-          <MoreRows key="more" hidden={chip.hidden} invalidRows={invalidRows} disabled={disabled} onSelect={onSelect} />
+          <MoreRows
+            key="more"
+            hidden={chip.hidden}
+            invalidRows={invalidRows}
+            disabled={disabled}
+            darkMode={darkMode}
+            onSelect={onSelect}
+          />
         ) : (
           <RowChip
             key={chip.index}

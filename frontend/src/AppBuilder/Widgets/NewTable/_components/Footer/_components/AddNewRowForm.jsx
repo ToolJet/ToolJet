@@ -81,7 +81,7 @@ export const AddNewRowForm = ({
 
       {rows && (
         <div inert={saving ? '' : undefined} className={cn(saving && 'tw-opacity-50')}>
-          <AddNewRowPicker {...rows} disabled={saving} />
+          <AddNewRowPicker {...rows} disabled={saving} darkMode={darkMode} />
         </div>
       )}
 
