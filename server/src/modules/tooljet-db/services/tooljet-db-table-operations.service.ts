@@ -483,6 +483,14 @@ export class TooljetDbTableOperationsService {
       if (list) list.push(relation);
       else relationsByTable.set(relation.internalTableId, [relation]);
     }
+    // Served from their own id in every environment by the resolver (see tablesWithoutRelations).
+    const withoutRelations = new Set(
+      await this.relationResolverService.tablesWithoutRelations(
+        organizationId,
+        tables.filter((table) => !relationsByTable.has(table.id)).map((table) => table.id),
+        this.manager
+      )
+    );
 
     return tables.map((table) => ({
       id: table.id,
@@ -492,7 +500,7 @@ export class TooljetDbTableOperationsService {
         return {
           environment_id: environment.id,
           environment_name: environment.name,
-          has_relation: !!relation,
+          has_relation: !!relation || withoutRelations.has(table.id),
           baseline_error: relation?.baselineError ?? null,
         };
       }),

@@ -26,6 +26,7 @@ export class TjdbRolloutSubstrateSchema1793250000300 implements MigrationInterfa
     }
     // An earlier revision of Migration A dropped this column on test databases; Migration A reads it.
     await queryRunner.query(`ALTER TABLE internal_tables ADD COLUMN IF NOT EXISTS configurations jsonb`);
+    await this.mirrorConfigurationsToInternalTables(queryRunner);
     // Here, not in Migration A: the ALTER takes an ACCESS EXCLUSIVE lock, which in the data phase would
     // block every ToolJet Database read until the phase commits. The previous release creates tables
     // without a co_relation_id; the default gives them one. Migration A fills the existing NULLs.
@@ -33,6 +34,10 @@ export class TjdbRolloutSubstrateSchema1793250000300 implements MigrationInterfa
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `DROP TRIGGER IF EXISTS trg_mirror_relation_configurations ON internal_table_relations`
+    );
+    await queryRunner.query(`DROP FUNCTION IF EXISTS mirror_relation_configurations()`);
     await queryRunner.query(`ALTER TABLE internal_tables ALTER COLUMN co_relation_id DROP DEFAULT`);
     // drop_table soft-deletes the row and drops its physical tables. Without deleted_at the row
     // would come back as a table with nothing behind it, and a name reused after the delete would
@@ -48,6 +53,34 @@ export class TjdbRolloutSubstrateSchema1793250000300 implements MigrationInterfa
     await queryRunner.dropTable('internal_table_migration_applications');
     await queryRunner.dropTable('internal_table_migrations');
     await queryRunner.dropTable('internal_table_relations');
+  }
+
+  /**
+   * The previous release reads column settings from internal_tables.configurations; this release writes
+   * them to the relation. For this release only, copy every write on a table's id === internal_table_id
+   * relation - the physical table the previous release reads - back, so a rollback keeps settings
+   * changed after the upgrade. A trigger, not app code: about eight write paths plus raw SQL set them.
+   */
+  private async mirrorConfigurationsToInternalTables(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
+      CREATE OR REPLACE FUNCTION public.mirror_relation_configurations() RETURNS trigger LANGUAGE plpgsql AS $$
+        BEGIN
+          UPDATE internal_tables SET configurations = NEW.configurations
+          WHERE id = NEW.internal_table_id AND configurations IS DISTINCT FROM NEW.configurations;
+          RETURN NEW; END; $$
+    `);
+    // DROP first so a second run (test databases that ran this under an earlier timestamp) succeeds.
+    await queryRunner.query(
+      `DROP TRIGGER IF EXISTS trg_mirror_relation_configurations ON internal_table_relations`
+    );
+    await queryRunner.query(`
+      CREATE TRIGGER trg_mirror_relation_configurations
+        AFTER INSERT OR UPDATE OF configurations
+        ON internal_table_relations
+        FOR EACH ROW
+        WHEN (NEW.id = NEW.internal_table_id)
+        EXECUTE FUNCTION mirror_relation_configurations()
+    `);
   }
 
   private async createRelationsTable(queryRunner: QueryRunner): Promise<void> {

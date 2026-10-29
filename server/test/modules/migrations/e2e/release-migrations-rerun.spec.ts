@@ -9,7 +9,17 @@
 import { INestApplication } from '@nestjs/common';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import { initTestApp, closeTestApp, createAdmin, getDefaultDataSource, withRealTransactions } from 'test-helper';
+import {
+  initTestApp,
+  closeTestApp,
+  createAdmin,
+  createApplication,
+  createApplicationVersion,
+  ensureAppEnvironments,
+  getDefaultDataSource,
+  resolveOrSeedDefaultBranch,
+  withRealTransactions,
+} from 'test-helper';
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
 import { ResourceType } from 'src/modules/group-permissions/constants';
 import { CreateFolderDataSourcesTable1793250000000 } from '../../../../migrations/1793250000000-CreateFolderDataSourcesTable';
@@ -112,5 +122,131 @@ describe('Release migrations', () => {
         }
       });
     }, 60_000);
+
+    it('should keep a feature-branch webhook toggle when the workflow_enabled backfill runs again', async () => {
+      await withRealTransactions(async () => {
+        const { workflow, defaultDraft, featureDraft, workspaceId } = await seedWorkflow();
+        try {
+          await inRolledBackTransaction(async (queryRunner) => {
+            await new AddWorkflowEnabledToAppVersions1793250000500().up(queryRunner);
+            await queryRunner.query(`UPDATE apps SET workflow_enabled = true WHERE id = $1`, [workflow.id]);
+            await queryRunner.query(`UPDATE app_versions SET workflow_enabled = true WHERE id = $1`, [defaultDraft.id]);
+            await queryRunner.query(`UPDATE app_versions SET workflow_enabled = false WHERE id = $1`, [featureDraft.id]);
+
+            await new BackfillWorkflowEnabledOnAppVersions1793250000900().up(queryRunner);
+
+            expect(await workflowEnabledOf(queryRunner, 'app_versions', featureDraft.id)).toBe(false);
+          });
+        } finally {
+          await getDefaultDataSource().query(`DELETE FROM organizations WHERE id = $1`, [workspaceId]);
+        }
+      });
+    }, 60_000);
   });
+
+  // The previous release runs on this schema after a rollback, and reads what it always read.
+  describe('for the previous release', () => {
+    it('should copy configurations written on the relation sharing the table id to internal_tables, and only that one', async () => {
+      await withRealTransactions(async () => {
+        const { workspace } = await createAdmin(app, `release-migrations-mirror-${uuidv4()}@tooljet.io`);
+        try {
+          const environments = await ensureAppEnvironments(app, workspace.id);
+          const byPriority = [...environments].sort((a, b) => a.priority - b.priority);
+          const branch = await resolveOrSeedDefaultBranch(workspace.id);
+
+          await inRolledBackTransaction(async (queryRunner) => {
+            await new TjdbRolloutSubstrateSchema1793250000300().up(queryRunner);
+            const tableId = uuidv4();
+            await queryRunner.query(
+              `INSERT INTO internal_tables (id, organization_id, table_name, co_relation_id) VALUES ($1, $2, 'orders', $3)`,
+              [tableId, workspace.id, uuidv4()]
+            );
+            const configurationsOf = async () =>
+              (await queryRunner.query(`SELECT configurations FROM internal_tables WHERE id = $1`, [tableId]))[0]
+                .configurations;
+            const insertRelation = (id: string, environmentId: string, configurations: object) =>
+              queryRunner.query(
+                `INSERT INTO internal_table_relations (id, internal_table_id, environment_id, branch_id, configurations)
+                 VALUES ($1, $2, $3, $4, $5)`,
+                [id, tableId, environmentId, branch.id, configurations]
+              );
+
+            await insertRelation(tableId, byPriority[0].id, { columns: { column_names: { id: 'a' } } });
+            expect(await configurationsOf()).toEqual({ columns: { column_names: { id: 'a' } } });
+
+            await queryRunner.query(`UPDATE internal_table_relations SET configurations = $1 WHERE id = $2`, [
+              { columns: { column_names: { id: 'a', name: 'b' } } },
+              tableId,
+            ]);
+            expect(await configurationsOf()).toEqual({ columns: { column_names: { id: 'a', name: 'b' } } });
+
+            await insertRelation(uuidv4(), byPriority[byPriority.length - 1].id, { columns: { column_names: {} } });
+            expect(await configurationsOf()).toEqual({ columns: { column_names: { id: 'a', name: 'b' } } });
+          });
+        } finally {
+          await getDefaultDataSource().query(`DELETE FROM organizations WHERE id = $1`, [workspace.id]);
+        }
+      });
+    }, 60_000);
+
+    it('should copy a default-branch webhook toggle to apps.workflow_enabled, and not a feature-branch one', async () => {
+      await withRealTransactions(async () => {
+        const { workflow, defaultDraft, featureDraft, workspaceId } = await seedWorkflow();
+        try {
+          await inRolledBackTransaction(async (queryRunner) => {
+            await new AddWorkflowEnabledToAppVersions1793250000500().up(queryRunner);
+
+            await queryRunner.query(`UPDATE app_versions SET workflow_enabled = true WHERE id = $1`, [defaultDraft.id]);
+            expect(await workflowEnabledOf(queryRunner, 'apps', workflow.id)).toBe(true);
+
+            await queryRunner.query(`UPDATE app_versions SET workflow_enabled = false WHERE id = $1`, [featureDraft.id]);
+            expect(await workflowEnabledOf(queryRunner, 'apps', workflow.id)).toBe(true);
+          });
+        } finally {
+          await getDefaultDataSource().query(`DELETE FROM organizations WHERE id = $1`, [workspaceId]);
+        }
+      });
+    }, 60_000);
+
+    it('should leave app_versions.workflow_enabled nullable with no default, so readers fall back to the app', async () => {
+      await withRealTransactions(() =>
+        inRolledBackTransaction(async (queryRunner) => {
+          await new AddWorkflowEnabledToAppVersions1793250000500().up(queryRunner);
+          const [column] = await queryRunner.query(
+            `SELECT is_nullable, column_default FROM information_schema.columns
+             WHERE table_name = 'app_versions' AND column_name = 'workflow_enabled'`
+          );
+          expect(column).toEqual({ is_nullable: 'YES', column_default: null });
+        })
+      );
+    }, 60_000);
+  });
+
+  /** A workflow with a DRAFT on the default branch and a branch row on a feature branch. Commits for real. */
+  async function seedWorkflow() {
+    const { user, workspace } = await createAdmin(app, `release-migrations-workflow-${uuidv4()}@tooljet.io`);
+    const workflow = await createApplication(app, {
+      name: `wf-${uuidv4()}`,
+      user: { ...user, organizationId: workspace.id } as any,
+      type: 'workflow',
+    });
+    const defaultDraft = await createApplicationVersion(app, { ...workflow, organizationId: workspace.id } as any);
+    const featureDraft = await createApplicationVersion(app, { ...workflow, organizationId: workspace.id } as any, {
+      name: 'feature',
+    });
+    const [featureBranch] = await getDefaultDataSource().query(
+      `INSERT INTO organization_git_sync_branches (organization_id, branch_name, is_default) VALUES ($1, $2, false) RETURNING id`,
+      [workspace.id, `feature-${uuidv4()}`]
+    );
+    await getDefaultDataSource().query(`UPDATE app_versions SET branch_id = $1, version_type = 'branch' WHERE id = $2`, [
+      featureBranch.id,
+      featureDraft.id,
+    ]);
+    return { workflow, defaultDraft, featureDraft, workspaceId: workspace.id };
+  }
+
+  async function workflowEnabledOf(queryRunner: QueryRunner, table: 'apps' | 'app_versions', id: string) {
+    const [row] = await queryRunner.query(`SELECT workflow_enabled FROM ${table} WHERE id = $1`, [id]);
+    return row.workflow_enabled;
+  }
 });

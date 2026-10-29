@@ -48,14 +48,19 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   idempotency discriminator. A physical table name always comes from the resolver, never a logical id.
 - `configurations` (column metadata) lives on the relation row, not `internal_tables` — it's per
   (environment, branch).
-- **Transition release:** `internal_tables.configurations` still exists so the previous release can
-  boot, but it is frozen at upgrade time. Never read or write it; a later release drops it.
+- **Transition release:** `internal_tables.configurations` still exists for the previous release. App
+  code never reads or writes it: the `trg_mirror_relation_configurations` trigger copies every write on
+  an `id === internal_table_id` relation into it, and a later release drops both.
   `co_relation_id` is nullable with a `gen_random_uuid()` default instead of NOT NULL. After a
   rollback the previous release reads each table's `id === internal_table_id` relation: the
   development data of a table created after the upgrade, and the production data of a table migration B
-  moved. Tables dropped after the upgrade are removed by the substrate schema's `down()`. Production
-  data of a table created and promoted after the upgrade is orphaned, not deleted. A table created on
-  the previous release gets no relation on roll-forward.
+  moved. Production data of a table created and promoted after the upgrade is orphaned, not deleted.
+  Tables dropped after the upgrade are only soft-deleted, so the previous release lists them again with
+  no physical table behind them (accepted); the substrate schema's `down()` removes them.
+- **No relation at all** (async data phase before migration A commits, or a table the previous
+  release created during a rollback): the resolver serves the table from its own id in every
+  environment, with `internal_tables.configurations` (`tablesWithoutRelations`). DDL on such a table is
+  not supported.
 - Both proxy entry points (`PostgrestProxyService.proxy()`/`.perform()`) funnel through
   `resolveAndRewrite()`. Known third path: `server/ee/external-apis/service.ts`'s
   `exportTjdbTableAsCSV` calls PostgREST directly (needs `Accept: text/csv`); it resolves the

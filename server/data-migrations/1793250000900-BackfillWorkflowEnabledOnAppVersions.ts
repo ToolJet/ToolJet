@@ -46,7 +46,7 @@ export class BackfillWorkflowEnabledOnAppVersions1793250000900 implements Migrat
            FROM apps a
            WHERE a.id = av.app_id
              AND av.id = ANY($1::uuid[])
-             AND av.workflow_enabled IS DISTINCT FROM a.workflow_enabled`,
+             AND av.workflow_enabled IS NULL`,
         [ids]
       );
       progress.show();
