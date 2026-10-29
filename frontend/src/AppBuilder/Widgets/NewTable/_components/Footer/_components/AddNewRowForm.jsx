@@ -15,6 +15,10 @@ const POPOVER_STYLE = {
   zIndex: 100,
 };
 
+// The popover fades out before it closes (the dialog fades through its own exit animation).
+export const FADE_OUT_MS = 150;
+const FADE_OUT_STYLE = { opacity: 0, transition: `opacity ${FADE_OUT_MS}ms ease-out`, pointerEvents: 'none' };
+
 // Thin scrollbar in a reserved gutter, so the fields keep the same width whether or not the body scrolls.
 const BODY_STYLE = { overflowY: 'auto', flex: 1, scrollbarWidth: 'thin', scrollbarGutter: 'stable' };
 
@@ -26,14 +30,29 @@ const FIELD_LAYOUT_CLASS = {
 
 // variant "popover": the form sits inside the table, so it draws its own card and handles Escape itself.
 // variant "dialog": a Rocket dialog supplies the card, the overlay and Escape, and labels itself from the title.
-export const AddNewRowForm = ({ fields, onSubmit, onCancel, onEscape, darkMode, bodyRef, variant = 'popover' }) => {
+export const AddNewRowForm = ({
+  fields,
+  onSubmit,
+  onCancel,
+  onEscape,
+  darkMode,
+  bodyRef,
+  variant = 'popover',
+  saving = false,
+  closing = false,
+}) => {
   const titleId = useId();
   const isDialog = variant === 'dialog';
   const Heading = isDialog ? DialogPrimitive.Title : 'h2';
 
   return (
     <div
-      {...(!isDialog && { role: 'dialog', 'aria-labelledby': titleId, style: POPOVER_STYLE })}
+      {...(!isDialog && {
+        role: 'dialog',
+        'aria-labelledby': titleId,
+        style: { ...POPOVER_STYLE, ...(closing && FADE_OUT_STYLE) },
+      })}
+      aria-busy={saving || undefined}
       onKeyDown={(event) => {
         // an open menu or calendar has already used the Escape, and marked it as handled
         if (!isDialog && event.key === 'Escape' && !event.defaultPrevented) onEscape?.();
@@ -59,63 +78,79 @@ export const AddNewRowForm = ({ fields, onSubmit, onCancel, onEscape, darkMode, 
       <div
         ref={bodyRef}
         data-cy="add-new-row-0"
-        className="tw-flex tw-flex-col tw-gap-4 tw-py-4 tw-pl-4 tw-pr-2"
+        // the fieldset below locks every native control; inert covers the custom ones (select, chips, date...)
+        inert={saving ? '' : undefined}
+        className={cn('tw-flex tw-flex-col tw-gap-4 tw-py-4 tw-pl-4 tw-pr-2', saving && 'tw-opacity-50')}
         style={BODY_STYLE}
       >
-        {fields.map(
-          ({
-            key,
-            label,
-            labelId,
-            dataCy,
-            headerDataCy,
-            layout = 'stacked',
-            hasValidation,
-            error,
-            errorId,
-            control,
-          }) => (
-            <div
-              key={key}
-              role="group"
-              aria-labelledby={labelId}
-              data-cy={dataCy}
-              className="tw-flex tw-flex-col tw-gap-0.5 tw-p-0.5"
-            >
-              <div className={cn('tw-flex', FIELD_LAYOUT_CLASS[layout])}>
-                {layout === 'label-after' && control}
-                <span className="tw-inline-flex tw-items-baseline">
-                  <span
-                    id={labelId}
-                    className="tw-text-base tw-font-medium tw-text-text-default"
-                    data-cy={headerDataCy}
-                  >
-                    {label}
-                  </span>
-                  {hasValidation && (
-                    <span aria-hidden="true" className="tw-text-base tw-font-medium tw-text-text-danger">
-                      *
+        <fieldset disabled={saving} className="tw-m-0 tw-flex tw-min-w-0 tw-flex-col tw-gap-4 tw-border-0 tw-p-0">
+          {fields.map(
+            ({
+              key,
+              label,
+              labelId,
+              dataCy,
+              headerDataCy,
+              layout = 'stacked',
+              hasValidation,
+              error,
+              errorId,
+              control,
+            }) => (
+              <div
+                key={key}
+                role="group"
+                aria-labelledby={labelId}
+                data-cy={dataCy}
+                className="tw-flex tw-flex-col tw-gap-0.5 tw-p-0.5"
+              >
+                <div className={cn('tw-flex', FIELD_LAYOUT_CLASS[layout])}>
+                  {layout === 'label-after' && control}
+                  <span className="tw-inline-flex tw-items-baseline">
+                    <span
+                      id={labelId}
+                      className="tw-text-base tw-font-medium tw-text-text-default"
+                      data-cy={headerDataCy}
+                    >
+                      {label}
                     </span>
-                  )}
-                </span>
-                {layout !== 'label-after' && control}
+                    {hasValidation && (
+                      <span aria-hidden="true" className="tw-text-base tw-font-medium tw-text-text-danger">
+                        *
+                      </span>
+                    )}
+                  </span>
+                  {layout !== 'label-after' && control}
+                </div>
+                {error && (
+                  <p id={errorId} role="alert" className="tw-m-0 tw-px-1 tw-text-sm tw-text-text-danger">
+                    {error}
+                  </p>
+                )}
               </div>
-              {error && (
-                <p id={errorId} role="alert" className="tw-m-0 tw-px-1 tw-text-sm tw-text-text-danger">
-                  {error}
-                </p>
-              )}
-            </div>
-          )
-        )}
+            )
+          )}
+        </fieldset>
       </div>
 
       <div className="tw-flex tw-h-[70px] tw-shrink-0 tw-items-center tw-justify-end tw-gap-2 tw-border-0 tw-border-t tw-border-solid tw-border-border-default tw-px-4">
-        <Button variant="outline" className="tw-h-9 tw-text-lg" data-cy="discard-button" onClick={onCancel}>
+        <Button
+          variant="outline"
+          className={cn('tw-h-9 tw-text-lg', saving && 'tw-opacity-50')}
+          data-cy="discard-button"
+          disabled={saving}
+          onClick={onCancel}
+        >
           Cancel
         </Button>
-        <Button variant="primary" className="tw-h-9 tw-text-lg" data-cy="save-button" onClick={onSubmit}>
-          Add row
+        <Button
+          variant="primary"
+          className={cn('tw-h-9 tw-text-lg', saving && 'tw-opacity-60')}
+          data-cy="save-button"
+          disabled={saving}
+          onClick={onSubmit}
+        >
+          {saving ? 'Adding row…' : 'Add row'}
         </Button>
       </div>
     </div>

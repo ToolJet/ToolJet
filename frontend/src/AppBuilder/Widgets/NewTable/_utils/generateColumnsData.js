@@ -110,6 +110,7 @@ export default function generateColumnsData({
   validateDates,
   searchText,
   columnForAddNewRow = false,
+  datePickerPortalId,
   t,
   moduleId = 'canvas',
 }) {
@@ -454,6 +455,7 @@ export default function generateColumnsData({
                   unixTimestamp={column.unixTimestamp}
                   id={id}
                   containerWidth={columnSize}
+                  portalId={columnForAddNewRow ? datePickerPortalId : undefined}
                   placeholder={
                     columnForAddNewRow
                       ? getDatePlaceholder({
