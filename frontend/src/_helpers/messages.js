@@ -20,14 +20,21 @@ export const ssoConfMessages = (sso, action, dynamic_parts) => {
  * The global exception filter collapses every error response down to `{ message, ... }`, dropping
  * any other fields on the exception body — so a handler that needs to carry extra detail (e.g. the
  * branch list in FoldersService.deleteFolder) JSON-encodes it into the message string itself.
- * Unwrap that back to the plain message for display; falls back to the raw string when it isn't
- * JSON (the common case — most error messages are plain strings, not an encoded payload).
+ * Decode that back into the object the handler sent, or null when the error is an ordinary plain
+ * string (the common case). Non-object JSON (`42`, `null`, an array) is null too, so callers can
+ * reach for a field with `?.` and not have to re-check the type.
  */
-export const extractErrorMessage = (error) => {
+export const extractErrorPayload = (error) => {
   try {
     const parsed = JSON.parse(error);
-    return parsed?.message || error;
+    return parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
   } catch {
-    return error;
+    return null;
   }
 };
+
+/**
+ * The displayable half of an encoded error payload: just the message, with the extra fields
+ * dropped. Falls back to the raw string when there is nothing encoded to unwrap.
+ */
+export const extractErrorMessage = (error) => extractErrorPayload(error)?.message || error;
