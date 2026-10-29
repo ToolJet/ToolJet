@@ -23,7 +23,7 @@ The base module every other backend module builds on. Owns: the `SubModule` base
 | `module.ts` | Root `AppModule.register()` — `AppModuleLoader.loadModules` + every feature module's `register(configs, true)`; conditional imports (Workflows + BullBoard non-Cloud, `SessionTransferModule` Cloud-only, Metrics via env) |
 | `loader.ts` | Infra modules: TypeORM (main + `tooljetDb`), BullMQ, ConfigModule, pino logger, otel/Sentry, Redis, `GuardValidatorModule` |
 | `middlewares/migration-gate.middleware.ts` | Upgrade gate, async mode only (blocking mode passes everything): answers API writes with 503 while a migration runs or after a failed run. Details: `server/docs/MIGRATION_FLOW.md` (Upgrade gate) |
-| `migration-runs/` | `MigrationRunsService`: gate status, and async-mode runs (data, then cleanup phase, each in a child process). Super-admin `migration-runs` routes. The public `migration-status` route is on `AppController`. Details: `MIGRATION_FLOW.md` (Async mode). Settings (`MIGRATION_MODE`, `DISABLE_MIGRATION_TRAFFIC_GATE`, lock waits, end-user banner text): `MIGRATION_FLOW.md` (Environment variables), mirrored in `.env.example` |
+| `migration-runs/` | `MigrationRunsService`: gate status, and async-mode runs (data, then cleanup phase, each in a child process). Super-admin `migration-runs` routes. The public `migration-status` route is on `AppController`. Details: `MIGRATION_FLOW.md` (Async mode) |
 | `validators/feature-guard.validator.ts` | `GuardValidator` — boot-time scan asserting every route has an `AbilityGuard` |
 | `interceptors/response.interceptor.ts` | Emits audit-log events after responses, driven by `MODULE_INFO` feature config |
 | `types.ts` | `FeatureConfig`, `ResourceDetails`, `UserAllPermissions` |
