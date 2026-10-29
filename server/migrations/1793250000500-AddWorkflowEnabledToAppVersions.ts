@@ -14,7 +14,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * propagation, every version published in the gap would be created false and the trigger would
  * later fan that across the workflow.
  */
-export class AddWorkflowEnabledToAppVersions1787700000000 implements MigrationInterface {
+export class AddWorkflowEnabledToAppVersions1793250000500 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       ALTER TABLE app_versions ADD COLUMN IF NOT EXISTS workflow_enabled boolean NOT NULL DEFAULT false
@@ -50,6 +50,8 @@ export class AddWorkflowEnabledToAppVersions1787700000000 implements MigrationIn
           RETURN NEW; END; $$
     `);
 
+    // DROP first so a second run (test databases that ran this under an earlier timestamp) succeeds.
+    await queryRunner.query(`DROP TRIGGER IF EXISTS trg_propagate_workflow_enabled ON app_versions`);
     await queryRunner.query(`
       CREATE TRIGGER trg_propagate_workflow_enabled
         AFTER UPDATE OF workflow_enabled, is_stub
@@ -64,6 +66,7 @@ export class AddWorkflowEnabledToAppVersions1787700000000 implements MigrationIn
 
     // A WHEN clause referencing OLD is invalid for INSERT, so the insert path needs its own
     // trigger. Covers a draft recreated after a published row already exists (revert, pull).
+    await queryRunner.query(`DROP TRIGGER IF EXISTS trg_propagate_workflow_enabled_insert ON app_versions`);
     await queryRunner.query(`
       CREATE TRIGGER trg_propagate_workflow_enabled_insert
         AFTER INSERT
@@ -72,6 +75,9 @@ export class AddWorkflowEnabledToAppVersions1787700000000 implements MigrationIn
         EXECUTE FUNCTION propagate_workflow_enabled()
     `);
 
+    await queryRunner.query(
+      `DROP TRIGGER IF EXISTS trg_sync_published_workflow_enabled_from_draft ON app_versions`
+    );
     await queryRunner.query(`
       CREATE TRIGGER trg_sync_published_workflow_enabled_from_draft
         BEFORE INSERT OR UPDATE OF workflow_enabled, status

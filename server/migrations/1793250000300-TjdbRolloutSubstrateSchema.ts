@@ -1,22 +1,31 @@
 // migration-lint: allow-destructive the unique indexes are on new tables, or replace a constraint with a looser partial one
 import { MigrationInterface, QueryRunner, Table, TableColumn, TableForeignKey, TableUnique } from 'typeorm';
 
-// Pure-DDL half of "Migration A" (`data-migrations/1787564882760-TjdbRolloutMigrationASubstrate.ts`),
+// Pure-DDL half of "Migration A" (`data-migrations/1793250000800-TjdbRolloutMigrationASubstrate.ts`),
 // split out so the 3 new tables + internal_tables shape changes exist even on a deploy that skips
 // `db:migrate:data`. The data migration backfills relations/baselines into what this creates.
 //
 // Revert order matters and isn't enforced mechanically (both the schema and data datasources write
 // to the same `migrations` table, and TypeORM reverts by insertion id, not timestamp):
-//   TjdbRolloutMigrationBEnvironmentAssignment1788252587903 (down)
-//   -> TjdbRolloutMigrationASubstrate1787564882760 (down)
+//   TjdbRolloutMigrationBEnvironmentAssignment1793250001100 (down)
+//   -> TjdbRolloutMigrationASubstrate1793250000800 (down)
 //   -> this migration (down)
 // See src/modules/tooljet-db/AGENTS.md for the environments data model this substrate supports.
-export class TjdbRolloutSubstrateSchema1787564882000 implements MigrationInterface {
+export class TjdbRolloutSubstrateSchema1793250000300 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await this.createRelationsTable(queryRunner);
-    await this.createMigrationsTable(queryRunner);
-    await this.createMigrationApplicationsTable(queryRunner);
-    await this.addSoftDeleteToInternalTables(queryRunner);
+    // Test databases ran this under an earlier timestamp and run it again under this one. Each step
+    // creates a table or column with everything that hangs off it in the same transaction, so its
+    // presence means the step is done.
+    if (!(await queryRunner.hasTable('internal_table_relations'))) await this.createRelationsTable(queryRunner);
+    if (!(await queryRunner.hasTable('internal_table_migrations'))) await this.createMigrationsTable(queryRunner);
+    if (!(await queryRunner.hasTable('internal_table_migration_applications'))) {
+      await this.createMigrationApplicationsTable(queryRunner);
+    }
+    if (!(await queryRunner.hasColumn('internal_tables', 'deleted_at'))) {
+      await this.addSoftDeleteToInternalTables(queryRunner);
+    }
+    // An earlier revision of Migration A dropped this column on test databases; Migration A reads it.
+    await queryRunner.query(`ALTER TABLE internal_tables ADD COLUMN IF NOT EXISTS configurations jsonb`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

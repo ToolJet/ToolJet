@@ -11,7 +11,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * (mirroring the per-data-source data_sources_group_permissions.can_run_query). Defaults true and
  * is unused for app/workflow/module folders.
  */
-export class AddDataSourceFolderGranularPermissions1787100000000 implements MigrationInterface {
+export class AddDataSourceFolderGranularPermissions1793250000100 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
             ALTER TYPE "public"."resource_type" ADD VALUE IF NOT EXISTS 'data_source_folder';
@@ -19,14 +19,14 @@ export class AddDataSourceFolderGranularPermissions1787100000000 implements Migr
 
     await queryRunner.query(`
             ALTER TABLE "permission_groups"
-            ADD COLUMN "data_source_folder_create" boolean NOT NULL DEFAULT false;
+            ADD COLUMN IF NOT EXISTS "data_source_folder_create" boolean NOT NULL DEFAULT false;
             ALTER TABLE "permission_groups"
-            ADD COLUMN "data_source_folder_delete" boolean NOT NULL DEFAULT false;
+            ADD COLUMN IF NOT EXISTS "data_source_folder_delete" boolean NOT NULL DEFAULT false;
         `);
 
     await queryRunner.query(`
             ALTER TABLE "folders_group_permissions"
-            ADD COLUMN "can_run_query" boolean NOT NULL DEFAULT true;
+            ADD COLUMN IF NOT EXISTS "can_run_query" boolean NOT NULL DEFAULT true;
         `);
   }
 

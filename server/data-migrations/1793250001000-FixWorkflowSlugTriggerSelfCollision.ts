@@ -20,7 +20,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * 1781741000000 also does CREATE OR REPLACE on this function, and all schema migrations run
  * before any data migration, so an earlier-phase fix would be clobbered on a fresh install.
  */
-export class FixWorkflowSlugTriggerSelfCollision1787900000000 implements MigrationInterface {
+export class FixWorkflowSlugTriggerSelfCollision1793250001000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE OR REPLACE FUNCTION enforce_app_versions_default_branch_slug_unique()

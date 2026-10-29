@@ -6,7 +6,7 @@ import { MigrationProgress, processDataInBatches } from '@helpers/migration.help
 import { findTenantSchema } from '@helpers/tooljet_db.helper'; // migration-import-allowed: resolves the workspace's TJDB schema
 import { synthesizeBaseline } from '@modules/tooljet-db/helpers/baseline-synthesis'; // migration-import-allowed: baseline must match what runtime replay expects
 
-const MIGRATION_NAME = 'TjdbRolloutMigrationASubstrate1787564882760';
+const MIGRATION_NAME = 'TjdbRolloutMigrationASubstrate1793250000800';
 
 // "Migration A": the data half of the environment substrate. Every existing internal_tables row
 // gets an internal_table_relations row at the priority-1 (development) environment on the org's
@@ -16,14 +16,14 @@ const MIGRATION_NAME = 'TjdbRolloutMigrationASubstrate1787564882760';
 // this implements.
 //
 // The 3 internal_table* tables + internal_tables' soft-delete/unique-index shape are created by the
-// sibling schema migration `migrations/1787564882000-TjdbRolloutSubstrateSchema.ts` — DDL ownership
+// sibling schema migration `migrations/1793250000300-TjdbRolloutSubstrateSchema.ts` — DDL ownership
 // lives entirely there; this migration only backfills data into them. Revert order (not enforced
 // mechanically — both data sources share one `migrations` table, reverted by insertion id, not
-// timestamp): TjdbRolloutMigrationBEnvironmentAssignment1788252587903 (down) -> this migration
-// (down) -> TjdbRolloutSubstrateSchema1787564882000 (down).
+// timestamp): TjdbRolloutMigrationBEnvironmentAssignment1793250001100 (down) -> this migration
+// (down) -> TjdbRolloutSubstrateSchema1793250000300 (down).
 type InternalTableRow = { id: string; organization_id: string; configurations: any };
 
-export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInterface {
+export class TjdbRolloutMigrationASubstrate1793250000800 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await this.dedupeAndLockDownCoRelationId(queryRunner);
 
@@ -132,7 +132,7 @@ export class TjdbRolloutMigrationASubstrate1787564882760 implements MigrationInt
     // Live tables only, like organization_id_table_name_unique: drop_table soft-deletes the row and it
     // keeps its co_relation_id, which a later import or git pull of the same table reuses.
     await queryRunner.query(`
-      CREATE UNIQUE INDEX organization_id_co_relation_id_unique
+      CREATE UNIQUE INDEX IF NOT EXISTS organization_id_co_relation_id_unique
       ON internal_tables (organization_id, co_relation_id)
       WHERE deleted_at IS NULL
     `);

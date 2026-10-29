@@ -4,8 +4,8 @@
  * GATE 8, Step 8.4b (phase-8-implementation.md "## Verification — GATE 8", Step 8.4 Tests
  * section): "The data migration (8.4b): seed rows with apps.workflow_enabled = true for a
  * workflow and a non-workflow, run it, assert only workflow versions were written." Direct
- * coverage of `BackfillWorkflowEnabledOnAppVersions1787800000000` (`data-migrations/
- * 1787800000000-BackfillWorkflowEnabledOnAppVersions.ts`), invoked here the same way the CLI
+ * coverage of `BackfillWorkflowEnabledOnAppVersions1793250000900` (`data-migrations/
+ * 1793250000900-BackfillWorkflowEnabledOnAppVersions.ts`), invoked here the same way the CLI
  * invokes it — `up(queryRunner)` — since a data migration otherwise only runs once, on
  * deployment, with no natural hook to exercise from an HTTP or repository test.
  *
@@ -28,11 +28,11 @@ import {
 import { INestApplication } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
-import { BackfillWorkflowEnabledOnAppVersions1787800000000 } from '../../../../data-migrations/1787800000000-BackfillWorkflowEnabledOnAppVersions';
+import { BackfillWorkflowEnabledOnAppVersions1793250000900 } from '../../../../data-migrations/1793250000900-BackfillWorkflowEnabledOnAppVersions';
 
 jest.setTimeout(60_000);
 
-describe('BackfillWorkflowEnabledOnAppVersions1787800000000 (GATE 8, Step 8.4b)', () => {
+describe('BackfillWorkflowEnabledOnAppVersions1793250000900 (GATE 8, Step 8.4b)', () => {
   let nestApp: INestApplication;
 
   beforeAll(async () => {
@@ -68,7 +68,7 @@ describe('BackfillWorkflowEnabledOnAppVersions1787800000000 (GATE 8, Step 8.4b)'
     const queryRunner = ds.createQueryRunner();
     await queryRunner.connect();
     try {
-      const migration = new BackfillWorkflowEnabledOnAppVersions1787800000000();
+      const migration = new BackfillWorkflowEnabledOnAppVersions1793250000900();
       await migration.up(queryRunner);
 
       const workflowVersionAfter = await findEntityOrFail(AppVersion, { id: workflowVersion.id });

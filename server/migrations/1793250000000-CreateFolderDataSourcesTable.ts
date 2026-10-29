@@ -21,7 +21,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * branch_id is NOT NULL there is no NULL-branch partial-index split (the NULL != NULL trap that
  * forced folder_apps to carry two partial indexes does not apply here).
  */
-export class CreateFolderDataSourcesTable1787000000000 implements MigrationInterface {
+export class CreateFolderDataSourcesTable1793250000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS folder_data_sources (
