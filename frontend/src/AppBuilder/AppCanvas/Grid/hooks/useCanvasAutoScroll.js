@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect } from 'react';
 import { positionGhostElement, getCanvasBottomBound } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import useStore from '@/AppBuilder/_stores/store';
-import { getAiChatSurfaceState } from '@/AppBuilder/LeftSidebar/aiChatLayout';
+import { getLeftPanelState } from '@/AppBuilder/panelLayout';
 import { shallow } from 'zustand/shallow';
 import { useGridStore } from '@/_stores/gridStore';
 import { GRID_HEIGHT } from '../../appCanvasConstants';
@@ -51,7 +51,7 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const isLeftSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
-  const isLeftPanelOpen = getAiChatSurfaceState(selectedSidebarItem, isLeftSidebarOpen).isLeftPanelOpen;
+  const isLeftPanelOpen = getLeftPanelState(selectedSidebarItem, isLeftSidebarOpen).isLeftPanelOpen;
 
   const { threshold, scrollSpeed, verticalContainerSelector, horizontalContainerSelector, canvasHeightIncrement } = {
     ...DEFAULT_CONFIG,

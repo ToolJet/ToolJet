@@ -26,12 +26,17 @@ import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import { PageSettings } from '@/AppBuilder/RightSideBar/PageSettingsTab';
 import ComponentsManagerTab from '@/AppBuilder/RightSideBar/ComponentManagerTab';
 import { QueryDataPane } from '@/AppBuilder/QueryPanel/QueryDataPane';
-import { getLeftPanelHeight, getLeftPanelOverflow, PANEL_MOTION, shouldShowLibraries } from '@/AppBuilder/panelLayout';
+import {
+  getLeftPanelHeight,
+  getLeftPanelOverflow,
+  getLeftPanelState,
+  PANEL_MOTION,
+  shouldShowLibraries,
+} from '@/AppBuilder/panelLayout';
 import AppHistoryIcon from './AppHistory/AppHistoryIcon';
 import AppHistory from './AppHistory';
 import AppLibrariesIcon from './AppLibraries/AppLibrariesIcon';
 import AppLibraries from './AppLibraries';
-import { getAiChatMotionClassNames, getAiChatSurfaceState } from './aiChatLayout';
 
 // Human names for the error-boundary label/location of each sidebar panel.
 const LEFT_SIDEBAR_PANEL_LABELS = {
@@ -68,8 +73,6 @@ export const BaseLeftSidebar = ({
     isSidebarOpen,
     isDraggingQueryPane,
     isQueryPaneExpanded,
-    isAiChatOpen,
-    setAiChatOpen,
   ] = useStore(
     (state) => [
       state.isLeftSideBarPinned,
@@ -81,8 +84,6 @@ export const BaseLeftSidebar = ({
       state.isSidebarOpen,
       state.queryPanel.isDraggingQueryPane,
       state.queryPanel.isQueryPaneExpanded,
-      state.isAiChatOpen,
-      state.setAiChatOpen,
     ],
     shallow
   );
@@ -91,7 +92,6 @@ export const BaseLeftSidebar = ({
     getLeftPanelHeight(isQueryPaneExpanded, queryPanelHeight)
   );
   const [isPanelContentMounted, setIsPanelContentMounted] = useState(isSidebarOpen);
-  const [isAiChatMounted, setIsAiChatMounted] = useState(isAiChatOpen);
   const [animatePanelSwitch, setAnimatePanelSwitch] = useState(false);
   const sideBarBtnRefs = useRef({});
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
@@ -99,20 +99,9 @@ export const BaseLeftSidebar = ({
   const setCodeSearchReturnToSearch = useStore((state) => state.setCodeSearchReturnToSearch);
   const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled;
-  const { isLeftPanelOpen, isRightChatOpen, isFabVisible, shouldMountLeftPanel } = getAiChatSurfaceState(
-    selectedSidebarItem,
-    isSidebarOpen,
-    isAiChatOpen
-  );
-  const aiChatMotionClassNames = getAiChatMotionClassNames();
+  const { isLeftPanelOpen, shouldMountLeftPanel } = getLeftPanelState(selectedSidebarItem, isSidebarOpen);
 
   const handleSelectedSidebarItem = (item) => {
-    // The AI icon only opens the chat (which replaces the right panel); the chat's own × closes it.
-    // It never opens, switches, or closes the left panel.
-    if (item === 'tooljetai') {
-      setAiChatOpen(true);
-      return;
-    }
     // Only a search result opens Settings with a way back to the search panel.
     setCodeSearchReturnToSearch(false);
     // Left-rail clicks never close the right panel; it closes only from its own ×.
@@ -178,16 +167,6 @@ export const BaseLeftSidebar = ({
     return () => window.clearTimeout(exitTimer);
   }, [isSidebarOpen]);
 
-  useEffect(() => {
-    if (isRightChatOpen) {
-      setIsAiChatMounted(true);
-      return undefined;
-    }
-
-    const exitTimer = window.setTimeout(() => setIsAiChatMounted(false), PANEL_MOTION.durationMs);
-    return () => window.clearTimeout(exitTimer);
-  }, [isRightChatOpen]);
-
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null) return null;
     const panelLabel = LEFT_SIDEBAR_PANEL_LABELS[selectedSidebarItem] || 'Left sidebar';
@@ -213,6 +192,8 @@ export const BaseLeftSidebar = ({
 
   const renderSelectedPanel = () => {
     switch (selectedSidebarItem) {
+      case 'tooljetai':
+        return renderAIChat({ darkMode });
       case 'pages':
         return <PageSettings surface="navigation" onClose={() => toggleLeftSidebar(false)} />;
       case 'components':
@@ -259,6 +240,8 @@ export const BaseLeftSidebar = ({
   const renderCommonItems = () => {
     return (
       <>
+        {/* The AI chat sits first on the rail and opens in the left panel like every other item. */}
+        {renderAISideBarTrigger({ darkMode, setSideBarBtnRefs, selectedSidebarItem, handleSelectedSidebarItem })}
         <SidebarItem
           selectedSidebarItem={selectedSidebarItem}
           onClick={() => handleSelectedSidebarItem('pages')}
@@ -408,26 +391,6 @@ export const BaseLeftSidebar = ({
           </div>
         </div>
       </div>
-      {isAiChatMounted && (
-        <aside
-          className={aiChatMotionClassNames.shell}
-          data-state={isRightChatOpen ? 'open' : 'closed'}
-          aria-label="AI agent chat"
-        >
-          <div className={aiChatMotionClassNames.content}>{renderAIChat({ darkMode })}</div>
-        </aside>
-      )}
-      {isFabVisible && (
-        <div className="ai-builder-fab">
-          {renderAISideBarTrigger({
-            darkMode,
-            setSideBarBtnRefs,
-            selectedSidebarItem: isAiChatOpen ? 'tooljetai' : selectedSidebarItem,
-            handleSelectedSidebarItem,
-            isFab: true,
-          })}
-        </div>
-      )}
     </>
   );
 };

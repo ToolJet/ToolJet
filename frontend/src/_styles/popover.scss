@@ -11,9 +11,9 @@
   border-right: 2px solid var(--slate6, #313538);
 
 
+  // Scrolling comes from getLeftPanelOverflow: the chat scrolls its own messages.
   &.tooljetai {
     width: 440px;
-    overflow: auto !important;
   }
 
   select {

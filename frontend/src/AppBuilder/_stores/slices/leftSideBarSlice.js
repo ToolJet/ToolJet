@@ -11,9 +11,6 @@ const initialState = {
   isLeftSideBarPinned: storedIsSidebarPinned,
   selectedSidebarItem: storedIsSidebarPinned ? storedSelectedSidebarItem : null,
   isSidebarOpen: storedIsSidebarPinned,
-  // The AI chat is a right-side drawer with its own open state, independent of the left panel:
-  // opening or closing it never changes selectedSidebarItem / isSidebarOpen.
-  isAiChatOpen: false,
   pathToBeInspected: null,
   // One-shot deep link into the Dependencies panel: { kind: 'component' | 'query' | 'variable', id }.
   // The panel owns its own selection, so this only seeds it — DependencyViewer clears the
@@ -42,9 +39,16 @@ export const createLeftSideBarSlice = (set, get) => ({
       false,
       'setIsSidebarOpen'
     ),
-  // The AI chat and the right panel share the right side: opening the chat replaces the right panel.
-  setAiChatOpen: (isAiChatOpen) =>
-    set(() => ({ isAiChatOpen, ...(isAiChatOpen && { isRightSidebarOpen: false }) }), false, 'setAiChatOpen'),
+  // The AI chat is the 'tooljetai' left panel. Opening it replaces whichever left panel is showing;
+  // closing it empties the left slot only when the chat is what's in it.
+  setAiChatOpen: (open) => {
+    if (open) {
+      set(() => ({ selectedSidebarItem: 'tooljetai', isSidebarOpen: true }), false, 'setAiChatOpen');
+      return;
+    }
+    const { selectedSidebarItem, isSidebarOpen, toggleLeftSidebar } = get();
+    if (selectedSidebarItem === 'tooljetai' && isSidebarOpen) toggleLeftSidebar(false);
+  },
   setPathToBeInspected: (pathToBeInspected) => set(() => ({ pathToBeInspected }), false, 'setPathToBeInspected'),
   setComponentToInspect: (componentToInspect) => {
     const {

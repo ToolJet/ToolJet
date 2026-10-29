@@ -1,13 +1,13 @@
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { LEFT_SIDEBAR_WIDTH, RIGHT_SIDEBAR_WIDTH } from '../appCanvasConstants';
-import { getAiChatSurfaceState } from '@/AppBuilder/LeftSidebar/aiChatLayout';
+import { getLeftPanelState } from '@/AppBuilder/panelLayout';
 
 export default function useCanvasMinWidth({ currentMode, isModuleMode }) {
   const isLeftSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
-  const isLeftPanelOpen = getAiChatSurfaceState(selectedSidebarItem, isLeftSidebarOpen).isLeftPanelOpen;
+  const isLeftPanelOpen = getLeftPanelState(selectedSidebarItem, isLeftSidebarOpen).isLeftPanelOpen;
 
   const getMinWidth = () => {
     if (isModuleMode) return '100%';

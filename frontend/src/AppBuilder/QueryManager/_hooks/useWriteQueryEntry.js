@@ -46,7 +46,7 @@ export const useWriteQueryEntry = (scope = 'query') => {
     });
     const store = useStore.getState();
 
-    // Opens the AI chat drawer without touching whichever left panel is open.
+    // Opens the AI chat in the left panel.
     store.setAiChatOpen(true);
 
     if (isPressed) {

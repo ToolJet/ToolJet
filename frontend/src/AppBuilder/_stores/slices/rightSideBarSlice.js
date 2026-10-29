@@ -12,24 +12,14 @@ const initialState = {
   rightPanelSubject: null,
 };
 
-// The right side shows one surface at a time — the right panel or the AI chat — so opening the
-// right panel always closes the chat (see setAiChatOpen for the other direction).
 export const createRightSideBarSlice = (set, get) => ({
   ...initialState,
   setActiveRightSideBarTab: (tab) => {
     set(() => ({ activeRightSideBarTab: tab }), false, 'setActiveRightSideBarTab');
   },
   toggleRightSidebar: () =>
-    set(
-      (state) => ({
-        isRightSidebarOpen: !state.isRightSidebarOpen,
-        ...(!state.isRightSidebarOpen && { isAiChatOpen: false }),
-      }),
-      false,
-      'toggleRightSidebar'
-    ),
-  setRightSidebarOpen: (open) =>
-    set(() => ({ isRightSidebarOpen: open, ...(open && { isAiChatOpen: false }) }), false, 'setRightSidebarOpen'),
+    set((state) => ({ isRightSidebarOpen: !state.isRightSidebarOpen }), false, 'toggleRightSidebar'),
+  setRightSidebarOpen: (open) => set(() => ({ isRightSidebarOpen: open }), false, 'setRightSidebarOpen'),
   toggleRightSidebarPin: () =>
     set((state) => ({ isRightSidebarPinned: !state.isRightSidebarPinned }), false, 'toggleRightSidebarPin'),
   setCanvasHeaderSelected: (selected) => {
@@ -44,7 +34,6 @@ export const createRightSideBarSlice = (set, get) => ({
           if (!state.isRightSidebarOpen) {
             state.isRightSidebarOpen = true;
           }
-          state.isAiChatOpen = false;
         }
       },
       false,
@@ -63,7 +52,6 @@ export const createRightSideBarSlice = (set, get) => ({
           if (!state.isRightSidebarOpen) {
             state.isRightSidebarOpen = true;
           }
-          state.isAiChatOpen = false;
         }
       },
       false,

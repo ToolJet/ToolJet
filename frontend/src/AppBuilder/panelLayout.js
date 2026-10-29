@@ -108,7 +108,15 @@ export const getPageSettingsSections = (surface) => [
   { id: 'styles', sections: ['page-styles'] },
 ];
 
-export const getLeftPanelOverflow = (panel) => (panel === 'pages' ? 'hidden' : 'auto');
+// Pages and the AI chat scroll their own content; every other panel scrolls as a whole.
+export const getLeftPanelOverflow = (panel) => (panel === 'pages' || panel === 'tooljetai' ? 'hidden' : 'auto');
+
+// Every rail item, the AI chat included, shares the one left slot. The panel stays mounted while it
+// animates closed and unmounts once the selection clears.
+export const getLeftPanelState = (selectedSidebarItem, isSidebarOpen) => ({
+  isLeftPanelOpen: Boolean(isSidebarOpen && selectedSidebarItem),
+  shouldMountLeftPanel: Boolean(selectedSidebarItem),
+});
 
 export const shouldShowLibraries = (isModuleEditor, hasAppJsLibrariesAccess) =>
   !isModuleEditor && Boolean(hasAppJsLibrariesAccess);

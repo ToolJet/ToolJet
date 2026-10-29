@@ -11,6 +11,7 @@ import {
   getRightPanelForSelection,
   getPageSettingsSections,
   getLeftPanelOverflow,
+  getLeftPanelState,
   getComponentPickerClassName,
   getQueryListClassName,
   getQueryPanelHeaderClassName,
@@ -226,6 +227,21 @@ describe('AB-PANEL-001 app builder panel composition', () => {
   it('does not add a redundant scrollbar to the Pages panel', () => {
     expect(getLeftPanelOverflow('pages')).toBe('hidden');
     expect(getLeftPanelOverflow('dependencies')).toBe('auto');
+  });
+
+  // The chat scrolls its own messages and pins its input to the bottom, so the panel must not scroll too.
+  it('does not scroll the AI chat panel around its own message list', () => {
+    expect(getLeftPanelOverflow('tooljetai')).toBe('hidden');
+  });
+
+  it('treats the AI chat as an ordinary left panel', () => {
+    expect(getLeftPanelState('tooljetai', true)).toEqual({ isLeftPanelOpen: true, shouldMountLeftPanel: true });
+    expect(getLeftPanelState('pages', true)).toEqual({ isLeftPanelOpen: true, shouldMountLeftPanel: true });
+  });
+
+  it('keeps the left panel mounted while it closes, then unmounts it once the selection clears', () => {
+    expect(getLeftPanelState('pages', false)).toEqual({ isLeftPanelOpen: false, shouldMountLeftPanel: true });
+    expect(getLeftPanelState(null, false)).toEqual({ isLeftPanelOpen: false, shouldMountLeftPanel: false });
   });
 
   // Break this catches: component tiles lose their compact styling when rendered outside the old right sidebar.

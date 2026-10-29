@@ -4,14 +4,14 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { LEFT_SIDEBAR_WIDTH } from '../appCanvasConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { getAiChatSurfaceState } from '@/AppBuilder/LeftSidebar/aiChatLayout';
+import { getLeftPanelState } from '@/AppBuilder/panelLayout';
 
 const useSidebarMargin = (canvasContainerRef) => {
   const { moduleId } = useModuleContext();
   const [editorMarginLeft, setEditorMarginLeft] = useState(0);
   const isLeftSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
-  const isLeftPanelOpen = getAiChatSurfaceState(selectedSidebarItem, isLeftSidebarOpen).isLeftPanelOpen;
+  const isLeftPanelOpen = getLeftPanelState(selectedSidebarItem, isLeftSidebarOpen).isLeftPanelOpen;
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const scrollLeftRef = useRef(0);
   const appliedLeftSidebarWidthRef = useRef(0);
