@@ -48,23 +48,33 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
 - EE controller adds `POST /workflow-node` (create workflow-node query) and re-guards run/update endpoints.
 - EE response cache (`ee/data-queries/cache/`, loaded by `module.ts` only for EE/Cloud): opt-in per query via
   saved `options.responseCache` (`enabled`, `ttlSeconds` ≤ 1 day, `keyByUser`). Entries live in Redis under a
-  per-query token; Clear (`POST :id/versions/:versionId/cache/clear`, builder-only) replaces the token.
+  per-query token; Clear (`POST :id/versions/:versionId/cache/clear`, builder-only) invalidates the token.
   Run body `cacheControl: 'refresh'` (`RunDataQueryDto` → `runExecutionOptions`) = replace the token, run, cache
   the result; Preview replaces only its own entry. CE accepts and ignores `cacheControl`. RunJS/RunPy are never
   cached; workflow queries are cached at the workflow trigger instead (see `workflows/AGENTS.md`).
   License: `QueryResultCacheService.begin` bypasses (no read, write or token change) unless the workspace license
   has `features.queryResponseCache` (`LICENSE_FIELD.QUERY_RESPONSE_CACHE`); a missing key or failed check means off.
   The builder disables the toggle with the upgrade crown; Clear stays available to free entries saved earlier.
-  Memory: Redis is shared with BullMQ (`noeviction`), so `RedisQueryCacheStore` counts bytes itself
-  (`MEMORY USAGE` per entry + `2 × key length + 224` for its index member and record) in 10-minute expiry windows
-  (`tj:qc:usage:ws:{orgId}`, `tj:qc:usage:global`) and refuses writes over `QUERY_CACHE_MAX_WORKSPACE_BYTES` /
-  `QUERY_CACHE_MAX_TOTAL_BYTES` (0 = no writes); it never evicts. A write reserves space, then a plain `SET … PXAT`
-  to its own staging key (`<entry>:pending:<reservationId>`), then confirm `RENAME`s it onto the entry and charges the
-  real size; the payload never goes through Lua. Only the save whose reservation the record holds publishes, in the
-  same script that checks it, so a stale save can never overwrite a newer save's entry. Clear/refresh give bytes back immediately.
-  Invariant: bytes are released only from the per-query record `tj:qc:{queryId}:rec` (`bytes|window|reservationId`),
-  never by measuring a value (it may not be written yet); confirm acts only while the record holds its own id.
-  Usage keys are outside the query hash tag, so the cache needs single-node Redis.
+  Memory: Redis is shared with BullMQ (`noeviction`). `RedisQueryCacheStore` enforces fixed
+  `QUERY_CACHE_MAX_WORKSPACE_BYTES` / `QUERY_CACHE_MAX_TOTAL_BYTES` (0 = no writes). Published entries
+  charge `MEMORY USAGE` plus `3 × key length + 512` for query/global tracking. A separate 2048-byte
+  `@overhead` record charges container overhead once per query until its last entry/pending/purge record
+  is removed; both quota checks include it. Token-only queries reserve this overhead before creation;
+  admission failure bypasses caching. Clear does not create a replacement token; refresh admits one normally. Every pending save has
+  its own charged staging record; the entry record is a zero-byte publication owner until confirm.
+  Reserve → plain `SET … PXAT` to `<entry>:pending:<reservationId>` → confirm atomically checks ownership,
+  publishes with `RENAME`, rechecks limits and transfers the charge. Stale writers delete/release only
+  their own staging allocation. Clear revokes publication but retains pending charges until completion/expiry.
+  The global `tj:qc:expiry` sorted set lets any write reclaim expired values AND tracking across idle
+  queries/workspaces, in bounded batches. Clear drains the existing index in place; a generation-tagged
+  purge marker blocks new tokens until cleanup finishes and permits interrupted purges to recover there.
+  Small oversized tracking containers are rebuilt in bounded copies to reclaim retained dictionary capacity.
+  Usage hashes group bytes in 10-minute windows, but never forgive a charge merely because its window
+  ended. Accounting/index keys have no TTL: they disappear when their last record is reclaimed. With no
+  writes, expired records remain charged; the next writes clean them up. Redis server time controls expiry.
+  Usage/expiry keys are outside query hash tags, so the cache requires single-node Redis.
+  Rollout from the earlier window-expiring ledger requires stopping old cache writers and draining
+  their `tj:qc:*` cache keys first; mixed ledger implementations are not compatible. Do not flush shared Redis.
 
 ## Invariants & gotchas
 
