@@ -321,6 +321,6 @@ ENV HOME=/home/appuser
 USER appuser
 WORKDIR /app
 
-RUN npm install --prefix server --no-save dotenv@10.0.0 joi@17.4.1 && npm cache clean --force
+RUN npm install --prefix server --no-save dotenv@10.0.0 joi@17.13.8 && npm cache clean --force
 
 ENTRYPOINT ["./server/ee-entrypoint.sh"]
