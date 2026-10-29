@@ -1,11 +1,7 @@
-
 import Cloudflare_ai_search from '../lib';
 import got from 'got';
 
-jest.mock('got', () => ({
-  __esModule: true,
-  default: jest.fn(),
-}));
+jest.mock('got', () => ({ __esModule: true, default: jest.fn() }));
 
 const mockGot = got as unknown as jest.Mock;
 
@@ -14,8 +10,7 @@ const sourceOptions = {
   account_id: 'test-account-id',
 };
 
-const baseUrl =
-  'https://api.cloudflare.com/client/v4/accounts/test-account-id/ai-search/namespaces/default';
+const baseUrl = 'https://api.cloudflare.com/client/v4/accounts/test-account-id/ai-search/namespaces/default';
 
 describe('Cloudflare AI Search', () => {
   let plugin: Cloudflare_ai_search;
@@ -55,11 +50,7 @@ describe('Cloudflare AI Search', () => {
       },
     });
 
-    const result = await plugin.run(
-      sourceOptions,
-      { operation: 'list_instances' },
-      'test-data-source'
-    );
+    const result = await plugin.run(sourceOptions, { operation: 'list_instances' }, 'test-data-source');
 
     expect(mockGot).toHaveBeenCalledWith(
       `${baseUrl}/instances`,
@@ -92,9 +83,7 @@ describe('Cloudflare AI Search', () => {
   });
 
   test('searches an instance and passes metadata filters', async () => {
-    const filters = JSON.stringify({
-      category: 'documentation',
-    });
+    const filters = JSON.stringify({ category: 'documentation' });
 
     await plugin.run(
       sourceOptions,
@@ -188,11 +177,7 @@ describe('Cloudflare AI Search', () => {
     });
 
     await expect(
-      plugin.run(
-        sourceOptions,
-        { operation: 'list_instances' },
-        'test-data-source'
-      )
+      plugin.run(sourceOptions, { operation: 'list_instances' }, 'test-data-source')
     ).rejects.toMatchObject({
       message: 'Query could not be completed',
       description: 'Permission denied',
@@ -205,18 +190,13 @@ describe('Cloudflare AI Search', () => {
       status: 'ok',
     });
 
-    expect(mockGot).toHaveBeenCalledWith(
-      `${baseUrl}/instances`,
-      expect.objectContaining({ method: 'GET' })
-    );
+    expect(mockGot).toHaveBeenCalledWith(`${baseUrl}/instances`, expect.objectContaining({ method: 'GET' }));
   });
 
   test('reports a failed connection when authentication fails', async () => {
     mockGot.mockRejectedValueOnce(new Error('Unauthorized'));
 
-    await expect(
-      plugin.testConnection(sourceOptions)
-    ).resolves.toMatchObject({
+    await expect(plugin.testConnection(sourceOptions)).resolves.toMatchObject({
       status: 'failed',
     });
   });
