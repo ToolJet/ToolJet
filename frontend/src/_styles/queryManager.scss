@@ -2719,8 +2719,9 @@ $border-radius: 4px;
 
 // ─── Query Folder Feature ──────────────────────────────────────────────────────
 
-// Cursor hint on query/folder name spans (enables text selection on double-click)
-.query-name .text-truncate {
+// Text cursor on the selected query's name, which double-click renames. Other rows keep the row's
+// pointer so the whole row reads as one click target.
+.query-name-editable {
   cursor: text;
 }
 

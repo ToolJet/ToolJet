@@ -140,7 +140,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                 >
                   <span
                     ref={queryNameEleRef}
-                    className="text-truncate"
+                    // Only the selected query's name reads as editable; elsewhere the row is one click target.
+                    className={`text-truncate${isQuerySelected ? ' query-name-editable' : ''}`}
                     onDoubleClick={(e) => {
                       e.stopPropagation();
                       if (!shouldFreeze) setRenamingQuery(dataQuery.id);
