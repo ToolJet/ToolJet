@@ -52,8 +52,9 @@ describe('BackfillWorkflowEnabledOnAppVersions1793250000900 (GATE 8, Step 8.4b)'
       type: 'workflow',
     });
     const workflowVersion = await createApplicationVersion(nestApp, workflowApp as App & { organizationId: string });
+    // Only the app is set: a non-NULL write to this default-branch draft is mirrored onto
+    // apps.workflow_enabled by the trigger, which would overwrite the value under test.
     await updateEntity(App, workflowApp.id, { workflowEnabled: true });
-    await updateEntity(AppVersion, workflowVersion.id, { workflowEnabled: false });
 
     const frontEndApp = await createApplication(nestApp, {
       name: 'g8-migration-non-workflow',
