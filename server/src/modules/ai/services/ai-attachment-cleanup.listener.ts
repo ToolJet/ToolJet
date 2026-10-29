@@ -13,8 +13,12 @@ export class AiAttachmentCleanupListener {
     this.sweeping = true;
     try {
       await this.attachments.sweep();
-    } catch {
-      Logger.warn('Attachment sweep will retry.', 'AiAttachmentCleanup');
+    } catch (error) {
+      Logger.warn(
+        `Attachment sweep will retry (type=${String(error?.name || 'unknown').replace(/[^a-zA-Z]/g, '')}, ` +
+          `code=${String(error?.code ?? error?.status ?? 'none').replace(/[^a-zA-Z0-9_]/g, '')}).`,
+        'AiAttachmentCleanup'
+      );
     } finally {
       this.sweeping = false;
     }
