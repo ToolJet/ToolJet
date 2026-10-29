@@ -84,7 +84,8 @@ function renderForm({ columns = COLUMNS, properties = {}, fireEvent = jest.fn(),
   seedApp({});
   const store = useTableStore.getState();
   store.initializeComponent(TABLE_ID);
-  store.setTableProperties(TABLE_ID, properties);
+  // these scenarios are about the single-row form; a missing setting means "on" for saved apps (see 001)
+  store.setTableProperties(TABLE_ID, { allowAddingMultipleRows: false, ...properties });
   store.setColumnDetails(TABLE_ID, columns, false, [], {}, false, [], false);
   const allColumns = columns.map((column) => ({
     columnDef: { accessorKey: column.key, meta: { columnType: column.columnType } },
