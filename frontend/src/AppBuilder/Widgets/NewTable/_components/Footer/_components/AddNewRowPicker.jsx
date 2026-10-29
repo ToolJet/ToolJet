@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Rocket';
 import { getRowChips } from '../../../_utils/addNewRowChips';
+import { THEME_PRIMARY_BUTTON_CLASS } from '../../../_utils/addNewRowTheme';
 
 const CHIP_CLASS = 'tw-min-w-8 tw-px-2 tw-text-base [font-family:inherit]';
 const SELECTED_CLASS = 'tw-bg-button-outline-pressed';
@@ -115,7 +116,7 @@ export const AddNewRowPicker = ({ count, active, invalidRows, disabled, darkMode
         aria-label="Add another row"
         data-cy="add-another-row-button"
         disabled={disabled}
-        className="tw-w-8 tw-px-0"
+        className={cn('tw-w-8 tw-px-0', THEME_PRIMARY_BUTTON_CLASS)}
         onClick={onAdd}
       >
         <Plus size={16} aria-hidden="true" />
