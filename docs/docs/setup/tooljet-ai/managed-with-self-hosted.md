@@ -30,8 +30,11 @@ If your instance runs behind a firewall, proxy, or restricted egress policy, all
 
 | Domain | Purpose |
 |---|---|
+| `https://ai-server.tooljet.ai` | ToolJet Managed AI Server, which receives AI requests such as app builds, AI chat, and attachments |
 | `https://api-gateway.tooljet.ai` | Routes AI requests to the configured LLM provider |
 | `https://python-server.tooljet.ai` | Backs AI operations that require the Python execution service |
+
+
 
 If your instance uses an [HTTP proxy](/docs/setup/http-proxy), make sure these domains are reachable through it.
 
@@ -47,7 +50,7 @@ Credits are pooled at the **instance level** for self-hosted deployments. See [U
 
 ## Switching the AI Provider
 
-With this setup, each user can pick which LLM provider powers their own AI chats. See [Selecting an AI Model](/docs/build-with-ai/model-selection) for details.
+With this setup, each user can pick the LLM provider and model for their own AI chats. See [Selecting an AI Model](/docs/build-with-ai/model-selection) for details.
 
 ## Switching to a Different Setup
 

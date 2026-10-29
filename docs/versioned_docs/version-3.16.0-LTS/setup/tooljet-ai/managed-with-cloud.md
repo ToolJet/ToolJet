@@ -35,7 +35,7 @@ Credits are pooled at the **workspace level**. See [Understanding AI Credits](/d
 
 ## Switching the AI Provider
 
-With this setup, each user can pick which LLM provider powers their own AI chats. See [Selecting an AI Model](/docs/build-with-ai/model-selection) for details.
+With this setup, each user can pick the LLM provider and model for their own AI chats. See [Selecting an AI Model](/docs/build-with-ai/model-selection) for details.
 
 ## Switching to a Different Setup
 
