@@ -1,20 +1,45 @@
-import React, { useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useEffect, useMemo, useCallback, useId, useRef, useState } from 'react';
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
-import { tabbable } from 'tabbable';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { IconPencil } from '@tabler/icons-react';
-import { Tooltip } from 'react-tooltip';
-import cx from 'classnames';
 import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import generateColumnsData from '../../../_utils/generateColumnsData';
+import {
+  getAddNewRowColumns,
+  getColumnSelectOptions,
+  getIncludedTableColumns,
+  hasColumnValidation,
+} from '../../../_utils/addNewRowConfig';
+import useStore from '@/AppBuilder/_stores/store';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import useStore from '@/AppBuilder/_stores/store';
-import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
-import { determineJustifyContentValue } from '@/_helpers/utils';
+import { validateNewRowField } from '../../../_utils/validateNewRowField';
+import { AddNewRowForm } from './AddNewRowForm';
+import {
+  getFieldKind,
+  getFieldLayout,
+  TextControl,
+  TextAreaControl,
+  NumberControl,
+  SelectControl,
+  ChipsControl,
+  SwitchControl,
+  JsonControl,
+  RichTextControl,
+  RendererControl,
+} from './AddNewRowFields';
 
-export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEvent, setExposedVariables }) {
+const FOCUSABLE_SELECTOR = 'input, textarea, [role="combobox"], [role="button"], button';
+
+const coreRowModel = getCoreRowModel();
+
+export function AddNewRow({
+  id,
+  hideAddNewRowPopup,
+  darkMode,
+  allColumns: allTableColumns,
+  fireEvent,
+  setExposedVariables,
+}) {
   const { moduleId } = useModuleContext();
   const columnProperties = useTableStore((state) => state.getColumnProperties(id), shallow);
   const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
@@ -22,14 +47,14 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
   const updateAddNewRowDetails = useTableStore((state) => state.updateAddNewRowDetails, shallow);
   const clearAddNewRowDetails = useTableStore((state) => state.clearAddNewRowDetails, shallow);
   const updateShouldPersistAddNewRow = useTableStore((state) => state.updateShouldPersistAddNewRow, shallow);
-  const columnHeaderWrap = useTableStore((state) => state.getTableStyles(id)?.columnHeaderWrap, shallow);
-  const headerCasing = useTableStore((state) => state.getTableStyles(id)?.headerCasing, shallow);
-  const columnTitleColor = useTableStore((state) => state.getTableStyles(id)?.columnTitleColor, shallow);
-  const columnBackgroundColor = useTableStore((state) => state.getTableStyles(id)?.columnBackgroundColor, shallow);
-  const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
-  const getResolvedValue = useStore.getState().getResolvedValue;
-  // header overflow set to wrap: let the header grow with the text instead of overflowing the fixed 32px height
-  const isHeaderWrapped = getResolvedValue(columnHeaderWrap) === 'wrap';
+  const addNewRowColumns = useTableStore((state) => state.getTableProperties(id)?.addNewRowColumns, shallow);
+  const allColumns = useMemo(
+    () => getIncludedTableColumns(allTableColumns, addNewRowColumns),
+    [allTableColumns, addNewRowColumns]
+  );
+  const baseId = useId();
+  // errors stay hidden until Add row is clicked once; after that they follow the edits
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const addNewRowDetailsLength = addNewRowDetails.size;
 
@@ -70,13 +95,12 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
   );
 
   const addRowTableRef = useRef();
-  const rowToFocusRef = useRef(null);
 
   const columns = useMemo(
     () =>
       [
         ...generateColumnsData({
-          columnProperties: columnProperties.map((column) => ({
+          columnProperties: getAddNewRowColumns(columnProperties, addNewRowColumns).map((column) => ({
             ...column,
             isEditable: true,
           })),
@@ -96,6 +120,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
     [
       id,
       columnProperties,
+      addNewRowColumns,
       columnSizes,
       darkMode,
       handleCellValueChange,
@@ -106,199 +131,149 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
     ]
   );
 
+  // Fresh data or row model on every render makes the table reset its page index, which re-renders this form,
+  // which hands it fresh data again, without end. Keep both stable and turn the reset off (nothing paginates here).
+  const rowsData = useMemo(() => [...addNewRowDetails.values()], [addNewRowDetails]);
   const table = useReactTable({
-    data: [...addNewRowDetails.values()],
+    data: rowsData,
     columns: columns,
-    getCoreRowModel: getCoreRowModel(),
+    getCoreRowModel: coreRowModel,
+    autoResetAll: false,
   });
 
-  const addNewRow = () => {
-    rowToFocusRef.current = addNewRowDetailsLength;
-    updateAddNewRowDetails(id, addNewRowDetailsLength, newEmptyRow);
-  };
+  const row = table.getRowModel().rows[0];
 
-  useEffect(() => {
-    // Move focus into the new row's first cell when a new row is added
-    const rowIndex = rowToFocusRef.current;
-    if (rowIndex === null) return;
-    rowToFocusRef.current = null;
-    const row = addRowTableRef.current?.querySelectorAll('.table-row')?.[rowIndex];
-    if (!row) return;
-    // tabbable returns the row's controls in real tab order and already excludes disabled, hidden
-    // and tabindex="-1" nodes — which is how JSON columns keep opting themselves out.
-    tabbable(row)[0]?.focus();
-  }, [addNewRowDetailsLength]);
+  const fields = (row?.getVisibleCells() ?? []).map((cell, index) => {
+    const { columnDef } = cell.column;
+    const key = columnDef.accessorKey;
+    const columnType = columnDef.meta?.columnType;
+    const label = typeof columnDef.header === 'string' ? columnDef.header : String(key ?? cell.column.id);
+    const labelId = `${baseId}-label-${index}`;
+    const value = addNewRowDetails.get(row.index)?.[key];
+    const onChange = (newValue) => handleCellValueChange(row.index, key, newValue, row.original);
+    const { validateWidget, validateDates } = useStore.getState();
+    const validation = validateNewRowField(columnDef.meta, value, { validateWidget, validateDates, moduleId });
+    const error = submitAttempted && !validation.isValid ? (validation.validationError ?? 'Invalid value') : null;
+    const errorId = `${baseId}-error-${index}`;
+    const invalid = !!error;
+    const columnConfig = columnDef.meta ?? {};
+    const resolve = (resolvable) =>
+      useStore.getState().getResolvedValue(resolvable, { cellValue: value, rowData: row.original }, moduleId);
+    const kind = getFieldKind(columnType, { allowMultipleTags: !!resolve(columnConfig.allowMultipleSelection) });
+    const options = kind === 'select' || kind === 'chips' ? getColumnSelectOptions(columnConfig, resolve) : [];
+    const defaultOptions =
+      columnConfig.useDynamicOptions && resolve(columnConfig.useDynamicOptions)
+        ? []
+        : (columnConfig.defaultOptionsList ?? []);
 
-  const closeAddNewRowPopup = () => {
-    hideAddNewRowPopup();
-    updateShouldPersistAddNewRow(id, true);
-  };
+    let control;
+    if (kind === 'text')
+      control = (
+        <TextControl
+          labelId={labelId}
+          value={value}
+          onChange={onChange}
+          columnType={columnType}
+          invalid={invalid}
+          errorId={errorId}
+        />
+      );
+    else if (kind === 'textarea')
+      control = (
+        <TextAreaControl labelId={labelId} value={value} onChange={onChange} invalid={invalid} errorId={errorId} />
+      );
+    else if (kind === 'number')
+      control = (
+        <NumberControl labelId={labelId} value={value} onChange={onChange} invalid={invalid} errorId={errorId} />
+      );
+    else if (kind === 'switch') control = <SwitchControl labelId={labelId} value={value} onChange={onChange} />;
+    else if (kind === 'json')
+      control = <JsonControl labelId={labelId} value={value} onChange={onChange} invalid={invalid} errorId={errorId} />;
+    else if (kind === 'richtext')
+      control = (
+        <RichTextControl
+          labelId={labelId}
+          value={value}
+          onChange={onChange}
+          columnType={columnType}
+          darkMode={darkMode}
+          invalid={invalid}
+          errorId={errorId}
+        />
+      );
+    else if (kind === 'select')
+      control = (
+        <SelectControl
+          labelId={labelId}
+          options={options}
+          value={value}
+          defaultValue={defaultOptions.slice(-1)[0]?.value}
+          placeholder={columnConfig.placeholder}
+          onChange={onChange}
+          darkMode={darkMode}
+          invalid={invalid}
+          errorId={errorId}
+        />
+      );
+    else if (kind === 'chips')
+      control = (
+        <ChipsControl
+          labelId={labelId}
+          options={options}
+          value={value}
+          defaultValues={defaultOptions.map((option) => option.value)}
+          placeholder={columnConfig.placeholder}
+          onChange={onChange}
+          darkMode={darkMode}
+          invalid={invalid}
+          errorId={errorId}
+        />
+      );
+    else
+      control = (
+        <RendererControl invalid={invalid}>
+          {flexRender(columnDef.cell, { ...cell.getContext(), isEditable: true })}
+        </RendererControl>
+      );
+
+    const hookName = generateCypressDataCy(label);
+    return {
+      key: cell.id,
+      label,
+      labelId,
+      dataCy: `${hookName}-column-${row.index}`,
+      headerDataCy: `${hookName}-column-header`,
+      layout: getFieldLayout(columnType),
+      hasValidation: hasColumnValidation(columnConfig),
+      isValid: validation.isValid,
+      error,
+      errorId,
+      control,
+    };
+  });
 
   return (
-    <div className={`table-add-new-row card ${darkMode && 'dark-theme'}`}>
-      <div className="card-header row">
-        <div className="col">
-          <h4 data-cy="add-new-rows-header" className="font-weight-500 tj-text-lg">
-            Add new rows
-          </h4>
-        </div>
-        <div className="col-auto">
-          <button data-cy="add-new-rows-close-button" onClick={closeAddNewRowPopup} className="btn btn-light btn-sm">
-            x
-          </button>
-        </div>
-      </div>
-      {/* header styles mirror the main table header (bg, casing, color, pencil icon, wrap) */}
-      <div className="table-responsive jet-data-table" ref={addRowTableRef}>
-        <table
-          className={`table table-vcenter table-nowrap ${darkMode && 'dark-theme table-dark'}`}
-          data-cy="add-new-row-table"
-        >
-          <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="tr" style={{ display: 'flex' }}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className={cx('th tj-text-xsm font-weight-400', { 'header-wrap': isHeaderWrapped })}
-                    style={{
-                      width: header.column.getSize(),
-                      whiteSpace: isHeaderWrapped ? 'normal' : 'nowrap',
-                      backgroundColor: columnBackgroundColor,
-                      color: columnTitleColor,
-                      '--cc-table-header-hover': getModifiedColor(columnBackgroundColor, 6),
-                    }}
-                    data-cy={`${generateCypressDataCy(
-                      typeof header.column.columnDef?.header === 'string'
-                        ? header.column.columnDef?.header
-                        : header.column.id
-                    )}-column-header`}
-                  >
-                    <div
-                      className={`d-flex custom-gap-4 align-items-center thead-editable-icon-header-text-wrapper justify-content-${determineJustifyContentValue(
-                        header.column.columnDef.meta?.horizontalAlignment ?? ''
-                      )}`}
-                      data-cy={`${generateCypressDataCy(
-                        typeof header.column.columnDef?.header === 'string'
-                          ? header.column.columnDef?.header
-                          : header.column.id
-                      )}-editable-icon`}
-                    >
-                      {header.column.columnDef.meta?.columnType !== 'image' && (
-                        <div className="d-flex align-items-center tw-flex-shrink-0">
-                          <IconPencil size="16px" color="var(--cc-secondary-icon, var(--icon-default))" />
-                        </div>
-                      )}
-                      <div
-                        className={cx('header-text', {
-                          'text-truncate': !isHeaderWrapped,
-                          'wrap-wrapper': isHeaderWrapped,
-                        })}
-                        style={{
-                          textTransform: headerCasing === 'uppercase' ? 'uppercase' : 'none',
-                          textAlign: header.column.columnDef.meta?.horizontalAlignment || 'left',
-                        }}
-                      >
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                      </div>
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.map((row) => (
-              // min-height matches the main table body row. String cells only fill their row,
-              // so a row of empty string cells collapses to 0 without it; a min rather than a fixed
-              // height lets the row grow for multi-line text cells.
-              <tr
-                key={row.id}
-                style={{ display: 'flex', minHeight: cellHeight === 'condensed' ? '39px' : '45px' }}
-                className="table-row"
-                data-cy={`add-new-row-${row.index}`}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    data-cy={`${generateCypressDataCy(
-                      typeof cell.column.columnDef?.header === 'string' ? cell.column.columnDef?.header : cell.column.id
-                    )}-column-${row.index}`}
-                    className={cx(`table-text-align-${cell.column.columnDef.meta?.horizontalAlignment} td`, {
-                      'has-actions':
-                        cell.column.columnDef.meta?.position === 'right' ||
-                        cell.column.columnDef.meta?.position === 'left',
-                      'has-left-actions': cell.column.columnDef.meta?.position === 'left',
-                      'has-right-actions': cell.column.columnDef.meta?.position === 'right',
-                      'has-text': cell.column.columnDef.meta?.columnType === 'text',
-                      'has-dropdown': cell.column.columnDef.meta?.columnType === 'dropdown',
-                      'has-multiselect': cell.column.columnDef.meta?.columnType === 'multiselect',
-                      'has-datepicker': cell.column.columnDef.meta?.columnType === 'datepicker',
-                      'align-items-center flex-column': cell.column.columnDef.meta?.columnType === 'selector',
-                      'selector-column':
-                        cell.column.columnDef.meta?.columnType === 'selector' && cell.column.id === 'selection',
-                      'has-select': ['select', 'newMultiSelect', 'tagsV2'].includes(
-                        cell.column.columnDef.meta?.columnType
-                      ),
-                      isEditable: true,
-                    })}
-                    style={{ width: cell.column.getSize() }}
-                  >
-                    <div
-                      className={`td-container ${
-                        cell.column.columnDef.meta?.columnType === 'image' && 'jet-table-image-column'
-                      } ${cell.column.columnDef.meta?.columnType !== 'image' && 'w-100 h-100'}`}
-                    >
-                      {flexRender(cell.column.columnDef.cell, {
-                        ...cell.getContext(),
-                        isEditable: true,
-                      })}
-                    </div>
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <button
-          className="btn btn-light btn-sm m-2"
-          onClick={addNewRow}
-          data-cy={`add-another-row-button`}
-          data-tooltip-id="tooltip-for-add-row"
-          data-tooltip-content="Add another row"
-        >
-          +
-        </button>
-        <Tooltip id="tooltip-for-add-row" className="tooltip" />
-      </div>
-      <div className="card-footer d-flex custom-gap-4">
-        <ButtonSolid
-          variant="primary"
-          className="tj-text-xsm"
-          data-cy="save-button"
-          onClick={async () => {
-            await fireEvent('onNewRowsAdded');
-            hideAddNewRowPopup();
-          }}
-          size="sm"
-          customStyles={{ padding: '10px 20px', backgroundColor: 'var(--cc-primary-brand)' }}
-        >
-          <span>Save</span>
-        </ButtonSolid>
-        <ButtonSolid
-          variant="tertiary"
-          className="tj-text-xsm"
-          data-cy="discard-button"
-          onClick={() => {
-            hideAddNewRowPopup();
-            clearAddNewRowDetails(id);
-          }}
-          size="sm"
-          customStyles={{ padding: '10px 20px' }}
-        >
-          <span>Discard</span>
-        </ButtonSolid>
-      </div>
-    </div>
+    <AddNewRowForm
+      fields={fields}
+      darkMode={darkMode}
+      bodyRef={addRowTableRef}
+      onSubmit={async () => {
+        const firstInvalid = fields.find((field) => !field.isValid);
+        if (firstInvalid) {
+          setSubmitAttempted(true);
+          addRowTableRef.current
+            ?.querySelector(`[data-cy="${firstInvalid.dataCy}"]`)
+            ?.querySelector(FOCUSABLE_SELECTOR)
+            ?.focus();
+          return;
+        }
+        await fireEvent('onNewRowsAdded');
+        hideAddNewRowPopup();
+      }}
+      onCancel={() => {
+        hideAddNewRowPopup();
+        clearAddNewRowDetails(id);
+      }}
+    />
   );
 }
