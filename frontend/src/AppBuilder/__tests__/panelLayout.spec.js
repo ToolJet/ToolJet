@@ -177,17 +177,18 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     });
   });
 
-  // Break this catches: global theme tokens make the bottom bar drift from the approved prototype palette.
+  // Break this catches: global theme tokens make the bottom bar's tabs drift from the approved prototype
+  // palette, or the bar itself stops matching the left panel's surface (white, or dark in dark mode).
   it('uses the exact prototype colors for selected and unselected runtime tabs', () => {
     expect(getRuntimePanelTheme(false)).toEqual({
-      panel: '#ffffff',
+      panel: 'var(--background-surface-layer-01)',
       text: '#222631',
       muted: '#747d8f',
       border: '#e1e5ed',
       accent: '#4368e8',
     });
     expect(getRuntimePanelTheme(true)).toEqual({
-      panel: '#1e232d',
+      panel: 'var(--background-surface-layer-01)',
       text: '#f3f5f9',
       muted: '#a8b0bf',
       border: '#353c49',
@@ -511,7 +512,7 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(getQueryTypographyClassName('label')).toBe('query-field-label');
     expect(getQueryTypographyClassName('helper')).toBe('query-field-helper');
     expect(getQueryDetailsStyle('right')).toEqual({
-      '--query-panel-background': '#ffffff',
+      '--query-panel-background': 'var(--background-surface-layer-01)',
       '--query-field-label-color': 'var(--slate11)',
       '--query-field-label-font-size': '13px',
       '--query-field-label-font-weight': 400,
@@ -524,15 +525,15 @@ describe('AB-PANEL-001 app builder panel composition', () => {
       '--query-field-value-font-size': '13px',
       '--query-field-value-font-weight': 400,
       '--query-field-value-line-height': '20px',
-      '--query-control-background': '#ffffff',
+      '--query-control-background': 'var(--background-surface-layer-01)',
       '--query-control-border': 'var(--slate7)',
       '--query-control-border-width': '1px',
       '--query-dropdown-button-border-width': '0px',
       '--query-dropdown-height': '36px',
-      '--query-dropdown-hover-background': '#ffffff',
+      '--query-dropdown-hover-background': 'var(--background-surface-layer-01)',
       '--query-dropdown-focus-border': 'var(--slate7)',
       '--query-dropdown-focus-shadow': 'none',
-      '--query-dropdown-selected-background': '#ffffff',
+      '--query-dropdown-selected-background': 'var(--background-surface-layer-01)',
     });
     expect(getQueryDetailsStyle('bottom')).toBeUndefined();
   });
@@ -541,14 +542,14 @@ describe('AB-PANEL-001 app builder panel composition', () => {
   it('keeps query inputs visually static while they remain fully interactive', () => {
     const style = getQueryDetailsStyle('right');
 
-    expect(style['--query-control-background']).toBe('#ffffff');
+    expect(style['--query-control-background']).toBe('var(--background-surface-layer-01)');
     expect(style['--query-control-border']).toBe('var(--slate7)');
     expect(style['--query-control-border-width']).toBe('1px');
     expect(style['--query-dropdown-button-border-width']).toBe('0px');
-    expect(style['--query-dropdown-hover-background']).toBe('#ffffff');
+    expect(style['--query-dropdown-hover-background']).toBe('var(--background-surface-layer-01)');
     expect(style['--query-dropdown-focus-border']).toBe('var(--slate7)');
     expect(style['--query-dropdown-focus-shadow']).toBe('none');
-    expect(style['--query-dropdown-selected-background']).toBe('#ffffff');
+    expect(style['--query-dropdown-selected-background']).toBe('var(--background-surface-layer-01)');
   });
 
   // Break this catches: React Select's zero-width search input inherits the field border and

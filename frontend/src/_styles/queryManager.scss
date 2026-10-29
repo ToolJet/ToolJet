@@ -227,12 +227,12 @@ $border-radius: 4px;
   position: relative;
   height: 100%;
   min-height: 0;
-  background: #ffffff;
+  background: var(--background-surface-layer-01);
 
   .query-manager {
     height: 100%;
     overflow: hidden;
-    background: #ffffff;
+    background: var(--background-surface-layer-01);
   }
 }
 
@@ -281,7 +281,7 @@ $border-radius: 4px;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: #ffffff;
+  background: var(--background-surface-layer-01);
 
   .query-manager-header--right {
     position: relative;
@@ -294,7 +294,7 @@ $border-radius: 4px;
     padding: 10px 52px 0 16px !important;
     border-top: 0;
     border-bottom: 1px solid var(--border-weak);
-    background: #ffffff;
+    background: var(--background-surface-layer-01);
     z-index: 2;
 
     > .col {
@@ -442,7 +442,7 @@ $border-radius: 4px;
     scrollbar-gutter: stable;
     scrollbar-width: thin;
     scrollbar-color: var(--slate7) transparent;
-    background: var(--query-panel-background, #ffffff);
+    background: var(--query-panel-background);
 
     &::-webkit-scrollbar {
       width: 6px;
@@ -750,7 +750,7 @@ $border-radius: 4px;
 
       &:focus-within,
       &.is-open {
-        background: #ffffff;
+        background: var(--background-surface-layer-01);
         box-shadow: var(--query-dropdown-focus-shadow);
       }
 
@@ -3354,8 +3354,8 @@ $border-radius: 4px;
 }
 
 // Every surface of the right-side query panel is the white surface layer (the dark surface in dark
-// mode). The legacy `.query-manager .header` / `.preview-section` rules paint these with --base and
-// --slate3; this block comes last and is scoped deeper, so it wins over them.
+// mode), the same token as the left panel. The legacy `.query-manager .header` / `.preview-section`
+// rules paint these with --base and --slate3; this block comes last and is scoped deeper, so it wins.
 .right-sidebar-query-configuration .query-manager--right {
   .query-manager-header--right,
   .preview-section .preview-toggle,
@@ -3363,4 +3363,9 @@ $border-radius: 4px;
   .preview-data-container {
     background: var(--background-surface-layer-01);
   }
+}
+
+// The Inspector/Debugger drawer around its content; the legacy `.query-pane` rule paints it --base.
+.query-pane.runtime-panel-content {
+  background: var(--background-surface-layer-01);
 }

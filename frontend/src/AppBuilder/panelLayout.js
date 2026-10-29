@@ -49,16 +49,18 @@ export const PANEL_MOTION = {
   rightShellEnterAnimation: false,
 };
 
+// The bar shares the left panel's surface token (white, or the dark surface in dark mode); its tab
+// colors stay on the prototype palette.
 const RUNTIME_PANEL_THEMES = {
   light: {
-    panel: '#ffffff',
+    panel: 'var(--background-surface-layer-01)',
     text: '#222631',
     muted: '#747d8f',
     border: '#e1e5ed',
     accent: '#4368e8',
   },
   dark: {
-    panel: '#1e232d',
+    panel: 'var(--background-surface-layer-01)',
     text: '#f3f5f9',
     muted: '#a8b0bf',
     border: '#353c49',
@@ -263,7 +265,7 @@ export const getQueryTypographyClassName = (kind) =>
 export const getQueryDetailsStyle = (surface) =>
   surface === 'right'
     ? {
-        '--query-panel-background': '#ffffff',
+        '--query-panel-background': 'var(--background-surface-layer-01)',
         '--query-field-label-color': 'var(--slate11)',
         '--query-field-label-font-size': '13px',
         '--query-field-label-font-weight': 400,
@@ -276,15 +278,15 @@ export const getQueryDetailsStyle = (surface) =>
         '--query-field-value-font-size': '13px',
         '--query-field-value-font-weight': 400,
         '--query-field-value-line-height': '20px',
-        '--query-control-background': '#ffffff',
+        '--query-control-background': 'var(--background-surface-layer-01)',
         '--query-control-border': 'var(--slate7)',
         '--query-control-border-width': '1px',
         '--query-dropdown-button-border-width': '0px',
         '--query-dropdown-height': '36px',
-        '--query-dropdown-hover-background': '#ffffff',
+        '--query-dropdown-hover-background': 'var(--background-surface-layer-01)',
         '--query-dropdown-focus-border': 'var(--slate7)',
         '--query-dropdown-focus-shadow': 'none',
-        '--query-dropdown-selected-background': '#ffffff',
+        '--query-dropdown-selected-background': 'var(--background-surface-layer-01)',
       }
     : undefined;
 
