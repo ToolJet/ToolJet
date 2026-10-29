@@ -33,7 +33,13 @@ beforeAll(() => {
 
 const savedRows = () => [...useTableStore.getState().getAllAddNewRowDetails(TABLE_ID).values()];
 
-function renderForm({ columns = [NAME, NOTES], properties = {}, fireEvent = jest.fn(), hide = jest.fn() } = {}) {
+function renderForm({
+  columns = [NAME, NOTES],
+  properties = {},
+  fireEvent = jest.fn(),
+  hide = jest.fn(),
+  darkMode = false,
+} = {}) {
   seedApp({});
   const store = useTableStore.getState();
   store.initializeComponent(TABLE_ID);
@@ -47,7 +53,7 @@ function renderForm({ columns = [NAME, NOTES], properties = {}, fireEvent = jest
     <AddNewRow
       id={TABLE_ID}
       hideAddNewRowPopup={hide}
-      darkMode={false}
+      darkMode={darkMode}
       allColumns={allColumns}
       fireEvent={fireEvent}
       setExposedVariables={jest.fn()}
@@ -416,5 +422,69 @@ describe('Table-ADDROWFORM-042 saving several rows', () => {
 
     await act(async () => release());
     await waitFor(() => expect(hide).toHaveBeenCalledTimes(1));
+  });
+});
+
+describe('Table-ADDROWFORM-043 dark mode', () => {
+  const PLAN = {
+    id: 'm4',
+    name: 'Plan',
+    key: 'plan',
+    columnType: 'select',
+    options: [{ label: 'Free', value: 'free' }],
+  };
+
+  test('Table-ADDROWFORM-043 the "…" menu and a select menu, which render in a portal, follow the app theme', async () => {
+    // Break this catches: menus opening in light colours over a dark form, because a portal leaves the themed tree.
+    const { user } = renderForm({ columns: [PLAN], darkMode: true });
+    await addRows(user, 11);
+
+    await user.click(screen.getByRole('button', { name: 'More rows' }));
+    expect(screen.getByRole('menu')).toHaveClass('dark-theme');
+    await user.keyboard('{Escape}');
+
+    await user.click(within(field('Plan')).getByRole('combobox'));
+    expect(screen.getByRole('listbox').closest('[data-radix-popper-content-wrapper]')).toBeInTheDocument();
+    expect(screen.getByRole('listbox').closest('.dark-theme')).toBeInTheDocument();
+  });
+
+  test('Table-ADDROWFORM-043 in light mode nothing is themed dark', async () => {
+    // Break this catches: the dark class being applied unconditionally.
+    const { user } = renderForm({ columns: [PLAN], darkMode: false });
+    await addRows(user, 11);
+
+    await user.click(screen.getByRole('button', { name: 'More rows' }));
+
+    expect(screen.getByRole('menu')).not.toHaveClass('dark-theme');
+  });
+});
+
+describe('Table-ADDROWFORM-044 keyboard order', () => {
+  test('Table-ADDROWFORM-044 Tab walks the form in reading order: chips, +, Remove row, fields, Cancel, Add rows', async () => {
+    // Break this catches: the picker or the footer sitting in the wrong place in the tab order.
+    const { user } = renderForm({ columns: [NAME, NOTES] });
+    await addRows(user, 1);
+    await user.click(chip(1));
+    const stops = [];
+    const nameOf = (element) =>
+      element.getAttribute('aria-label') ||
+      element.textContent.trim() ||
+      within(element.closest('[role="group"][aria-labelledby]')).getByText(/./, { selector: 'span' }).textContent;
+
+    for (let i = 0; i < 8; i += 1) {
+      await user.tab();
+      stops.push(nameOf(document.activeElement));
+    }
+
+    expect(stops).toEqual([
+      'Row 2',
+      'Add another row',
+      'Remove row',
+      'Name',
+      'Notes',
+      'Cancel',
+      'Add 2 rows',
+      expect.anything(),
+    ]);
   });
 });
