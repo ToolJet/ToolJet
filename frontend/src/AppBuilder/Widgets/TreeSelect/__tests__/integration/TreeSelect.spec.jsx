@@ -266,19 +266,16 @@ describe('TreeSelect widget', () => {
       leafPathStrings: ['root-branch-leaf-a'],
     });
 
-    // D-08: in cascading mode the selected parent adds its descendants; deselect stays exact.
+    // D-08/D-10: in cascading mode select adds descendants and deselect removes the node and its ancestors.
     await tree.act('selectOptions', ['branch', 'leaf-a', 'other']);
     expect(exposed().checkedPathStrings).toEqual(['root-branch', 'root-branch-leaf-a', 'root-branch-leaf-b', 'other']);
     expect(exposed().leafPathStrings).toEqual(['root-branch-leaf-a', 'root-branch-leaf-b', 'other']);
-    await tree.act('deselectOptions', ['branch', 'other']);
-    expect(exposed().checked).toEqual(['leaf-a', 'leaf-b']);
-    expect(exposed().checkedPathArray).toEqual([
-      ['root', 'branch', 'leaf-a'],
-      ['root', 'branch', 'leaf-b'],
-    ]);
+    await tree.act('deselectOptions', ['leaf-b', 'other']);
+    expect(exposed().checked).toEqual(['leaf-a']);
+    expect(exposed().checkedPathArray).toEqual([['root', 'branch', 'leaf-a']]);
 
     await tree.act('deselectOptions');
-    expect(exposed().checked).toEqual(['leaf-a', 'leaf-b']);
+    expect(exposed().checked).toEqual(['leaf-a']);
     await tree.act('selectOptions', null);
     expect(exposed()).toMatchObject({
       checked: [],
@@ -317,6 +314,47 @@ describe('TreeSelect widget', () => {
     await setProperty('allowIndependentSelection', true);
     await tree.act('selectOptions', 'branch');
     await waitFor(() => expect(exposed().checked).toEqual(['branch']));
+  });
+
+  test('[TreeSelect-ACT-004] deselectOptions cascades like an un-click in cascading mode and stays exact in independent mode', async () => {
+    // Break this catches: the action removing only the given values, leaving descendants checked or ancestors fully checked.
+    tree.render({
+      currentMode: 'view',
+      properties: {
+        data: binding([
+          node('Root', 'root', [
+            node('Branch', 'branch', [node('Leaf A', 'leaf-a'), node('Leaf B', 'leaf-b', null, { disabled: true })]),
+            node('Leaf C', 'leaf-c'),
+          ]),
+        ]),
+        checkedData: binding(['root', 'leaf-b']),
+      },
+    });
+    await screen.findByText('Leaf B');
+    await waitFor(() => expect(exposed().checked).toEqual(['root', 'branch', 'leaf-a', 'leaf-b', 'leaf-c']));
+
+    // D-10: the parent's enabled descendants and its ancestors go; the disabled child keeps its state (D-07).
+    await tree.act('deselectOptions', 'branch');
+    await waitFor(() => expect(exposed().checked).toEqual(['leaf-b', 'leaf-c']));
+    expect(checkbox('Leaf A')).not.toBeChecked();
+    expect(checkbox('Leaf B')).toBeChecked();
+    expect(checkbox('Root')).not.toBeChecked();
+    expect(exposed().leafPathStrings).toEqual(['root-branch-leaf-b', 'root-leaf-c']);
+
+    await tree.act('selectOptions', 'root');
+    await waitFor(() => expect(exposed().checked).toEqual(['root', 'branch', 'leaf-a', 'leaf-c']));
+    await tree.act('deselectOptions', 'leaf-a');
+    await waitFor(() => expect(exposed().checked).toEqual(['leaf-c']));
+    expect(checkbox('Branch')).not.toBeChecked();
+
+    await tree.act('selectOptions', ['leaf-c', 'ghost']);
+    await tree.act('deselectOptions', 'ghost');
+    await waitFor(() => expect(exposed().checked).toEqual(['leaf-c']));
+
+    await setProperty('allowIndependentSelection', true);
+    await tree.act('selectOptions', ['branch', 'leaf-a']);
+    await tree.act('deselectOptions', 'branch');
+    await waitFor(() => expect(exposed().checked).toEqual(['leaf-a']));
   });
 
   test('[TreeSelect-ACT-002] selection actions publish paths from the replacement data tree', async () => {

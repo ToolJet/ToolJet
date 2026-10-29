@@ -160,10 +160,15 @@ export function useTreeSelect({
         }
       },
       deselectOptions: async function (values) {
-        const { computeExposedVars, validate } = latest.current;
-        const toRemove = new Set(normalizeValues(values));
+        const { computeExposedVars, validate, data, allowIndependentSelection } = latest.current;
+        const toRemove = normalizeValues(values);
         setChecked((prev) => {
-          const updated = prev.filter((v) => !toRemove.has(v));
+          const remaining = new Set(prev);
+          toRemove.forEach((value) => {
+            // Cascading mode removes like an un-click (D-10); unknown values are removed as given
+            if (allowIndependentSelection || !toggleCascade(data, remaining, value, true)) remaining.delete(value);
+          });
+          const updated = Array.from(remaining);
           setExposedVariables(computeExposedVars(updated));
           if (validate) {
             const result = validate(updated);
