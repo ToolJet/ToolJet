@@ -38,7 +38,11 @@ const labelPopoverContent = (darkMode, t) => (
         'Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python'
       )}
       <br />
-      <a href="https://docs.tooljet.io/docs/tutorial/transformations" target="_blank" rel="noreferrer">
+      <a
+        href="https://docs.tooljet.com/docs/app-builder/connecting-with-data-sources/transforming-data"
+        target="_blank"
+        rel="noreferrer"
+      >
         {t('globals.readDocumentation', 'Read documentation')}
       </a>
       .

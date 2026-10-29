@@ -15,6 +15,10 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  *
  * down() re-adds the columns (nullable, no backfill) — matching this migration
  * family's convention of not reverting data on rollback.
+ *
+ * A data migration although it only drops columns: 3.21.58 maps these columns, and async mode's
+ * schema phase must leave a schema 3.21.58 runs on. Moved from migrations/ under the same name,
+ * so databases that already ran it do not run it again.
  */
 export class DropGitSyncMetaHashColumns1782500000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -25,9 +29,15 @@ export class DropGitSyncMetaHashColumns1782500000000 implements MigrationInterfa
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`ALTER TABLE organization_git_sync_branches ADD COLUMN IF NOT EXISTS app_meta_hash VARCHAR(64)`);
-    await queryRunner.query(`ALTER TABLE organization_git_sync_branches ADD COLUMN IF NOT EXISTS module_meta_hash VARCHAR(64)`);
-    await queryRunner.query(`ALTER TABLE organization_git_sync_branches ADD COLUMN IF NOT EXISTS data_source_meta_hash VARCHAR(64)`);
+    await queryRunner.query(
+      `ALTER TABLE organization_git_sync_branches ADD COLUMN IF NOT EXISTS app_meta_hash VARCHAR(64)`
+    );
+    await queryRunner.query(
+      `ALTER TABLE organization_git_sync_branches ADD COLUMN IF NOT EXISTS module_meta_hash VARCHAR(64)`
+    );
+    await queryRunner.query(
+      `ALTER TABLE organization_git_sync_branches ADD COLUMN IF NOT EXISTS data_source_meta_hash VARCHAR(64)`
+    );
     await queryRunner.query(
       `ALTER TABLE data_source_versions ADD COLUMN IF NOT EXISTS meta_timestamp NUMERIC(15) DEFAULT NULL`
     );

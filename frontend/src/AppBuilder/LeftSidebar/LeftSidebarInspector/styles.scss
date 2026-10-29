@@ -82,6 +82,10 @@
 	font-size: 12px;
 	flex: 1;
 	min-width: 0px;
+
+	span {
+		white-space: nowrap;
+	}
 }
 
 
