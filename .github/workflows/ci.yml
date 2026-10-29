@@ -472,6 +472,7 @@ jobs:
           npm run --prefix server test --
           --group=-gitsync
           --shard=${{ matrix.shard }}/3
+          --logHeapUsage
           --coverage --coverageReporters=json
           --json --outputFile /tmp/tj-unit-results-${{ matrix.shard }}.json
       - name: Strip coverage map from results JSON
@@ -703,7 +704,7 @@ jobs:
       - name: Unit tests
         id: unit
         continue-on-error: true
-        run: TOOLJET_EDITION=ce npm run --prefix server test -- --group=-gitsync
+        run: TOOLJET_EDITION=ce npm run --prefix server test -- --group=-gitsync --logHeapUsage
       - name: E2E tests
         id: e2e
         run: TOOLJET_EDITION=ce npm run --prefix server test:e2e -- --group=-gitsync --testTimeout=60000
