@@ -668,7 +668,11 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: coverage-report-html
-          path: server/coverage-combined/
+          # Numeric reports include all editions; private source HTML must stay private.
+          path: |
+            server/coverage-combined/
+            !server/coverage-combined/ee/**
+            !server/coverage-combined/lcov-report/ee/**
           compression-level: 9
           if-no-files-found: ignore
           retention-days: 7
