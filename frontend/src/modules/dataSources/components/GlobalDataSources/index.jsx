@@ -1,6 +1,7 @@
 import React, { useContext, useRef, useState, useEffect } from 'react';
 import cx from 'classnames';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isEmpty } from 'lodash';
 import { Sidebar } from '../Sidebar';
@@ -10,7 +11,8 @@ import {
   DataBaseSources,
   ApiSources,
   CloudStorageSources,
-  CommonlyUsedDataSources,
+  AiSources,
+  getCommonlyUsedDataSources,
 } from '../../../common/components/DataSourceComponents';
 import { pluginsService, globalDatasourceService, authenticationService, marketplaceService } from '@/_services';
 import { Card } from '@/_ui/Card';
@@ -29,6 +31,7 @@ import { shallow } from 'zustand/shallow';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { MarketplaceBanner } from '../MarketplaceBanner';
 import { fetchEdition } from '@/modules/common/helpers/utils';
+import { getDataSourceGroupLabel } from './utils';
 
 export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }) => {
   const containerRef = useRef(null);
@@ -85,7 +88,9 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
   useEffect(() => {
     pluginsService
       .findAll()
-      .then(({ data = [] }) => setPlugins([...data]))
+      .then(({ data = [] }) => {
+        setPlugins([...data].sort((a, b) => a.name.localeCompare(b.name)));
+      })
       .catch((error) => {
         toast.error(error?.message || 'Failed to fetch plugins');
       });
@@ -137,10 +142,9 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     fetchDataSources(resetSelection, dataSource);
   };
 
-  const handleSearch = (e) => {
-    const searchQuery = e.target.value;
-    setQueryString(searchQuery);
+  const handleSearch = (e) => setQueryString(e.target.value);
 
+  const filterDataSources = (searchQuery) => {
     let arr = [];
 
     const filtered = datasourcesGroups().map((datasourceGroup) => {
@@ -166,6 +170,19 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     filteredDsList.length >= 1 ? setSuggestingDataSource(false) : setSuggestingDataSource(true);
     setFilteredDataSources([...filtered]);
   };
+
+  // Reapply URL searches on navigation, and refresh results as installed plugins arrive.
+  const [searchParams] = useSearchParams();
+  const urlSearch = searchParams.get('search') ?? '';
+  useEffect(() => {
+    setQueryString(urlSearch);
+  }, [urlSearch]);
+
+  useEffect(() => {
+    filterDataSources(queryString);
+    // Filtering depends on the catalogue as well as the user's current search.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryString, plugins, isCloudEdition]);
 
   const createDataSource = (dataSource) => {
     const { id } = dataSource;
@@ -445,13 +462,35 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
 
   const datasourcesGroups = () => {
     const allDataSourcesList = {
-      common: CommonlyUsedDataSources,
+      common: getCommonlyUsedDataSources(plugins),
       databases: DataBaseSources,
       apis: ApiSources,
       cloudStorages: CloudStorageSources,
+      ais: AiSources,
       plugins: plugins,
       filteredDatasources: filteredDataSources,
     };
+
+    const pluginGroups = plugins.reduce((acc, plugin) => {
+      const groupLabel = getDataSourceGroupLabel(plugin);
+      if (!acc[groupLabel]) {
+        acc[groupLabel] = [];
+      }
+      acc[groupLabel].push(plugin);
+      return acc;
+    }, {});
+
+    const sortByName = (list) => [...list].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+    const databasesList = sortByName([...allDataSourcesList.databases, ...(pluginGroups.Databases || [])]);
+    const apisList = sortByName([...allDataSourcesList.apis, ...(pluginGroups.APIs || [])]);
+    const cloudStoragesList = sortByName([
+      ...allDataSourcesList.cloudStorages,
+      ...(pluginGroups['Cloud Storages'] || []),
+    ]);
+    const aiList = sortByName([...allDataSourcesList.ais, ...(pluginGroups.AI || [])]);
+    const pluginsList = sortByName(pluginGroups.Plugins || []);
+
     const dataSourceList = [
       {
         type: 'Commonly used',
@@ -459,44 +498,44 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
         list: allDataSourcesList.common,
         renderDatasources: () => renderCardGroup(allDataSourcesList.common, 'Commonly used'),
       },
-
       {
         type: 'Databases',
         key: '#databases',
-        list: allDataSourcesList.databases,
-        renderDatasources: () => renderCardGroup(allDataSourcesList.databases, 'Databases'),
+        list: databasesList,
+        renderDatasources: () => renderCardGroup(databasesList, 'Databases'),
       },
       {
         type: 'APIs',
         key: '#apis',
-        list: allDataSourcesList.apis,
-        renderDatasources: () => renderCardGroup(allDataSourcesList.apis, 'APIs'),
+        list: apisList,
+        renderDatasources: () => renderCardGroup(apisList, 'APIs'),
       },
       {
         type: 'Cloud Storages',
         key: '#cloudstorage',
-        list: allDataSourcesList.cloudStorages,
-        renderDatasources: () => renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
+        list: cloudStoragesList,
+        renderDatasources: () => renderCardGroup(cloudStoragesList, 'Cloud Storages'),
       },
       {
-        type: 'Plugins',
-        key: '#plugins',
-        list: allDataSourcesList.plugins,
-        renderDatasources: () => renderCardGroup(allDataSourcesList.plugins, 'Plugins'),
+        type: 'AI',
+        key: '#ai',
+        list: aiList,
+        renderDatasources: () => renderCardGroup(aiList, 'AI'),
       },
+      ...(!isCloudEdition
+        ? [
+            {
+              type: 'Plugins',
+              key: '#plugins',
+              list: pluginsList,
+              renderDatasources: () => renderCardGroup(pluginsList, 'Plugins'),
+            },
+          ]
+        : []),
     ];
 
     return dataSourceList;
   };
-
-  const selectedPlugin = marketplacePlugins.find(
-    (plugin) =>
-      plugin.id === selectedDataSource?.kind ||
-      plugin.id === selectedDataSource?.pluginId ||
-      plugin.id === selectedDataSource?.plugin_id
-  );
-
-  const tags = selectedPlugin?.tags || [];
 
   return (
     <div className="row gx-0">
@@ -521,7 +560,6 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
             updateSelectedDatasource={updateSelectedDatasource}
             showSaveBtn={canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id) || canDeleteDataSource()}
             environmentLoading={environmentLoading}
-            tags={tags}
           />
         )}
         {isLoading && loadingState()}

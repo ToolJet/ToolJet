@@ -112,7 +112,7 @@ export const ModalWidget = ({ ...restProps }) => {
             setNeedsBodyScroll(totalHeight > maxModalHeightPx);
           } else {
             modalContent.style.setProperty('height', _modalHeight, 'important');
-            modalContent.style.setProperty('max-height', isFullScreen ? '100%' : modalHeight, 'important');
+            modalContent.style.setProperty('max-height', isFullScreen ? '100%' : _modalHeight, 'important');
             setNeedsBodyScroll(false);
           }
         } else {
@@ -145,6 +145,13 @@ export const ModalWidget = ({ ...restProps }) => {
       )}
       animation={true}
       onEscapeKeyDown={(e) => {
+        // A nested Radix overlay (PopoverMenu / Select) dismisses on Escape in the
+        // capture phase and calls preventDefault() on the same event; this handler
+        // runs later in the bubble phase, so `defaultPrevented` tells us the inner
+        // layer already consumed the keypress — bail so we don't also close the
+        // modal. A DOM-presence check is unreliable because Radix has already
+        // removed the popover from the DOM by the time we run (see #5308).
+        if (e.defaultPrevented) return;
         e.preventDefault();
         if (hideOnEsc) {
           onHideModal();

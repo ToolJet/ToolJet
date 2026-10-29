@@ -1,22 +1,18 @@
 import { fake } from "Fixtures/fake";
-import { commonSelectors } from "Selectors/common";
-import { postgreSqlSelector } from "Selectors/postgreSql";
-import { postgreSqlText } from "Texts/postgreSql";
-import { deleteWorkflowAndDS, deleteDatasource } from "Support/utils/dataSource";
-import { dataSourceSelector } from "Selectors/dataSource";
-import { workflowsText } from "Texts/workflows";
-import { workflowSelector } from "Selectors/workflows";
-
 import {
-  enterJsonInputInStartNode,
+  buildLinearWorkflow,
+  cleanupDataSources,
+  cleanupWorkflows,
+  createPostgresDataSource,
   importWorkflowApp,
   verifyTextInResponseOutputLimited,
-  navigateBackToWorkflowsDashboard
-} from "Support/utils/workFlows";
+} from "Support/utils/workflows/workFlows";
+import { workflowsText } from "Texts/platform/workflows";
+
 
 const data = {};
 
-describe("Workflows Export/Import Sanity", () => {
+describe("Workflows - export and import round trip", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
@@ -26,109 +22,59 @@ describe("Workflows Export/Import Sanity", () => {
       .replaceAll("[^A-Za-z]", "");
   });
 
-  it("RunJS workflow - execute, export/import, re-execute", () => {
+
+  afterEach(() => {
+    cleanupWorkflows([data.workflowName, `${data.workflowName}-runjs`, `${data.workflowName}-pg`]);
+    cleanupDataSources([`cypress-${data.dataSourceName}-manual-pgsql`]);
+  });
+
+  it("A RunJS workflow survives an export/import round trip and still executes", () => {
     const workflowName = `${data.workflowName}-runjs`;
 
-    cy.createWorkflowApp(workflowName);
-    enterJsonInputInStartNode();
-    cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
+    cy.apiCreateWorkflow(workflowName);
+    cy.openWorkflow();
 
-    cy.get(workflowSelector.nodeName(workflowsText.runjs)).click({
-      force: true,
+    buildLinearWorkflow({
+      blockLabel: workflowsText.runjsNodeLabel,
+      nodeName: workflowsText.runjs,
+      inputField: workflowsText.runjsInputField,
+      query: workflowsText.runjsNodeCode,
+      responseReturn: workflowsText.responseNodeQuery,
     });
-
-    cy.get(workflowSelector.inputField(workflowsText.runjsInputField))
-      .click({ force: true })
-      .realType(workflowsText.runjsNodeCode, { delay: 50 });
-
-    cy.get("body").click(50, 50);
-    cy.wait(500);
-
-    cy.connectNodeToResponseNode(
-      workflowsText.runjs,
-      workflowsText.responseNodeQuery
-    );
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
+
 
     cy.exportWorkflowApp(workflowName);
-    cy.apiDeleteWorkflow(workflowName);
+
     importWorkflowApp(workflowName, workflowsText.exportFixturePath);
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
-    cy.apiDeleteWorkflow(workflowName);
+
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });
 
-  it("Postgres workflow - execute, export/import, re-execute", () => {
+  it("A Postgres workflow survives an export/import round trip, including its data source binding", () => {
     const workflowName = `${data.workflowName}-pg`;
     const dataSourceName = `cypress-${data.dataSourceName}-manual-pgsql`;
+    createPostgresDataSource(dataSourceName);
 
-    cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.apiCreateDataSource(
-      `${Cypress.env("server_host")}/api/data-sources`,
-      dataSourceName,
-      "postgresql",
-      [
-        { key: "connection_type", value: "manual", encrypted: false },
-        { key: "host", value: `${Cypress.env("pg_host")}`, encrypted: false },
-        { key: "port", value: 5432, encrypted: false },
-        { key: "ssl_enabled", value: false, encrypted: false },
-        { key: "database", value: "postgres", encrypted: false },
-        { key: "ssl_certificate", value: "none", encrypted: false },
-        {
-          key: "username",
-          value: `${Cypress.env("pg_user")}`,
-          encrypted: false,
-        },
-        {
-          key: "password",
-          value: `${Cypress.env("pg_password")}`,
-          encrypted: false,
-        },
-      ]
-    );
-
-    cy.get(dataSourceSelector.dataSourceNameButton(dataSourceName))
-      .should("be.visible")
-      .click();
-
-    cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get(postgreSqlSelector.textConnectionVerified, {
-      timeout: 10000,
-    }).should("have.text", postgreSqlText.labelConnectionVerified);
-
-    cy.reload();
-
-    cy.apiCreateWorkflow(data.workflowName)
+    cy.apiCreateWorkflow(workflowName);
     cy.openWorkflow();
-    enterJsonInputInStartNode();
-    cy.connectDataSourceNode(dataSourceName);
 
-    cy.get(workflowSelector.nodeName(workflowsText.postgresqlNodeName)).click({
-      force: true,
+    buildLinearWorkflow({
+      blockLabel: dataSourceName,
+      nodeName: workflowsText.postgresqlNodeName,
+      inputField: workflowsText.pgsqlQueryInputField,
+      query: workflowsText.postgresNodeQuery,
+      responseReturn: workflowsText.postgresResponseNodeQuery,
+      clearBeforeTyping: true,
     });
-
-    cy.get(workflowSelector.inputField(workflowsText.pgsqlQueryInputField))
-      .click({ force: true })
-      .clearAndTypeOnCodeMirror("")
-      .realType(workflowsText.postgresNodeQuery, { delay: 50 });
-
-    cy.get("body").click(50, 50);
-    cy.wait(500);
-
-    cy.connectNodeToResponseNode(
-      workflowsText.postgresqlNodeName,
-      workflowsText.postgresResponseNodeQuery
-    );
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
     cy.exportWorkflowApp(workflowName);
-    cy.apiDeleteWorkflow(workflowName);
+
     importWorkflowApp(workflowName, workflowsText.exportFixturePath);
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
-    cy.apiDeleteWorkflow(workflowName);
-
-    cy.apiDeleteDataSource(dataSourceName);
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });
 });

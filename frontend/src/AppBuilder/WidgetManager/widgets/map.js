@@ -80,6 +80,12 @@ export const mapConfig = {
         defaultValue: true,
       },
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   events: {
     onBoundsChange: { displayName: 'On bounds change' },
@@ -121,6 +127,7 @@ export const mapConfig = {
   },
   exposedVariables: {
     center: {},
+    selectedMarker: {},
   },
   definition: {
     others: {
@@ -141,6 +148,7 @@ export const mapConfig = {
         value: `{{true}}`,
       },
       addNewMarkers: { value: `{{true}}` },
+      collapseWhenHidden: { value: '{{false}}' },
     },
     events: [],
     styles: {

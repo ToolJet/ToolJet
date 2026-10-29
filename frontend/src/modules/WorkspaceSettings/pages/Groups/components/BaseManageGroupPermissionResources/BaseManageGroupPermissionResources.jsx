@@ -340,7 +340,7 @@ class BaseManageGroupPermissionResources extends React.Component {
           <SolidIcon name="informationcircle" fill="#3E63DD" /> {text}
           <a
             style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
-            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
+            href="https://docs.tooljet.com/docs/user-management/role-based-access/user-roles#permissions-for-user-roles"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -532,9 +532,11 @@ class BaseManageGroupPermissionResources extends React.Component {
     const { featureAccess } = this.props;
 
     const { licenseStatus: { isExpired, isLicenseValid, licenseType } = {}, plan } = featureAccess || {};
-    // Treat both basic and starter plans as restricted plans
-    const isBasicPlan = featureAccess === undefined ? false : isExpired || !isLicenseValid || plan === 'starter';
-    const isPaidPlan = featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter';
+    // Treat basic, starter and basicplus plans as restricted plans
+    const isBasicPlan =
+      featureAccess === undefined ? false : isExpired || !isLicenseValid || plan === 'starter' || plan === 'basicplus';
+    const isPaidPlan =
+      featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter' && plan !== 'basicplus';
     const { customGroups: isFeatureEnabled, modulesEnabled: isModulesEnabled } = featureAccess || {};
 
     const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';

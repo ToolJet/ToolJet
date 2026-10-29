@@ -10,6 +10,8 @@ import { cx } from 'class-variance-authority';
 import { getLabelFontSize, getWidthTypeOfComponentStyles } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 
 export const ButtonGroupV2 = (props) => {
   // ===== PROPS DESTRUCTURING =====
@@ -26,6 +28,10 @@ export const ButtonGroupV2 = (props) => {
     validate,
     validation,
     darkMode,
+    currentLayout,
+    currentMode,
+    subContainerIndex,
+    componentType,
   } = props;
 
   const {
@@ -92,6 +98,25 @@ export const ButtonGroupV2 = (props) => {
     isVisible: visibility,
     isDisabled: disabledState || loadingState,
     selected: defaultOptionValues(formattedOptions),
+  });
+
+  // ===== DYNAMIC HEIGHT =====
+  // Only Column/Wrap grow vertically (more options -> more rows).
+  // Row lays the buttons out on a single line with horizontal scroll,
+  // so its height is fixed so gate it out entirely so nothing reflows for row.
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view' && layout !== 'row';
+  const heightChangeValue = useHeightObserver(groupRef, isDynamicHeightEnabled);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: heightChangeValue,
+    currentLayout,
+    width,
+    visibility: exposedVariablesTemporaryState.isVisible,
+    subContainerIndex,
+    componentType,
   });
 
   // ===== VALIDATION =====
@@ -213,17 +238,18 @@ export const ButtonGroupV2 = (props) => {
   }, [advanced, JSON.stringify(options), JSON.stringify(schema), multiSelection]);
 
   const handleButtonClick = (value) => {
-    const isSelected = exposedVariablesTemporaryState.selected.includes(value);
-    if (multiSelection) {
-      updateExposedVariablesState(
-        'selected',
-        isSelected
-          ? exposedVariablesTemporaryState.selected.filter((item) => item !== value)
-          : [...exposedVariablesTemporaryState.selected, value]
-      );
-    } else {
-      updateExposedVariablesState('selected', isSelected ? [] : [value]);
-    }
+    const selected = exposedVariablesTemporaryState.selected;
+    const isSelected = selected.includes(value);
+    const next = multiSelection
+      ? isSelected
+        ? selected.filter((v) => v !== value)
+        : [...selected, value]
+      : isSelected
+      ? []
+      : [value];
+    updateExposedVariablesState('selected', next);
+    setExposedVariable('selected', next);
+    setExposedVariable('isValid', validate(next.length ? next : null)?.isValid);
     fireEvent('onClick');
     setUserInteracted(true);
   };
@@ -239,9 +265,10 @@ export const ButtonGroupV2 = (props) => {
   };
 
   const groupWrapperStyles = {
-    height: _height,
+    height: isDynamicHeightEnabled ? 'auto' : _height,
+    ...(isDynamicHeightEnabled && { minHeight: _height }),
     ...(layout === 'column' && { justifyContent: justifyContentByAlignment }),
-    overflow: layout === 'row' ? 'auto hidden' : 'hidden auto',
+    overflow: layout === 'row' ? 'auto hidden' : isDynamicHeightEnabled ? 'visible' : 'hidden auto',
     ...getWidthTypeOfComponentStyles('ofComponent', labelWidth, labelAutoWidth, alignment),
   };
 
@@ -367,8 +394,16 @@ export const ButtonGroupV2 = (props) => {
                     fontWeight: computedFontWeight,
                   }}
                   key={index}
-                  disabled={option.isDisabled}
-                  className={'button-group-button'}
+                  // widget-level Disable/Loading must disable every button, not just
+                  // the per-option flag (native disabled also drops it from tab order)
+                  disabled={
+                    exposedVariablesTemporaryState.isDisabled ||
+                    exposedVariablesTemporaryState.isLoading ||
+                    option.isDisabled
+                  }
+                  className={
+                    'button-group-button focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2'
+                  }
                   onClick={(event) => {
                     event.stopPropagation();
                     handleButtonClick(option.value);

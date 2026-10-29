@@ -1,3 +1,9 @@
+/**
+ * @jest-config-loader ts-node
+ *
+ * Node >= 22.18 strips TypeScript natively, so Jest would import this file as ESM
+ * and fail on the extensionless relative import below. Keep the ts-node loader.
+ */
 import type { Config } from '@jest/types';
 import { coverageConfig } from './jest-coverage.config';
 
@@ -18,7 +24,10 @@ const config: Config.InitialOptions = {
   verbose: true,
   slowTestThreshold: 0,
   transformIgnorePatterns: [
-    'node_modules/(?!(lib0|y-protocols|@octokit|before-after-hook|universal-user-agent|universal-github-app-jwt|cookie-parser)/)',
+    // thrift's nested uuid dependency ships an ESM-only build; both names must be
+    // whitelisted since node_modules/ appears twice in that nested path and each
+    // occurrence is checked independently.
+    'node_modules/(?!(lib0|y-protocols|@octokit|before-after-hook|universal-user-agent|universal-github-app-jwt|cookie-parser|thrift|uuid)/)',
   ],
   transform: {
     '^.+\\.(t|j)s$': [

@@ -150,12 +150,10 @@ export const Steps = function Steps({
       setActiveStepId(stepsArr.filter((step) => step.visible)?.[0]?.id);
     });
 
-    setExposedVariable('setStep', (stepId) => {
-      if (!disabledState) setActiveStepId(stepId);
-    });
+    setExposedVariable('setStep', (stepId) => setActiveStepId(stepId));
     setExposedVariable('setVisibility', (visibility) => setIsVisible(!!visibility));
     setExposedVariable('setDisabled', (disabled) => setIsDisabled(!!disabled));
-  }, [isVisible, isDisabled, activeStepId, stepsArr, disabledState]);
+  }, [isVisible, isDisabled, activeStepId, stepsArr]);
 
   // Update state from props
   useEffect(() => setIsVisible(visibility), [visibility]);
@@ -199,11 +197,20 @@ export const Steps = function Steps({
                 show={!step.disabled && !isDisabled && step.tooltip}
                 message={getSafeRenderableValue(step.tooltip || '')}
               >
-                <div
+                <button
+                  type="button"
                   onClick={() => stepsSelectable && handleStepClick(step.id)}
+                  // native disabled only when selectable+disabled (avoids greying a
+                  // display-only step); non-selectable steps are removed from the tab
+                  // order via tabIndex=-1 instead
+                  disabled={stepsSelectable && (isDisabled || isStepDisabled)}
+                  tabIndex={stepsSelectable ? undefined : -1}
+                  aria-current={isActive ? 'step' : undefined}
                   className={`milestone ${theme === 'numbers' ? 'numbers' : ''} ${
                     isDisabled || isStepDisabled ? 'disabled' : ''
-                  } ${isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'}`}
+                  } ${
+                    isCompleted ? 'completed' : isActive ? 'active' : 'incomplete'
+                  } focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-1`}
                 >
                   {theme === 'numbers' ? (
                     index + 1
@@ -232,7 +239,7 @@ export const Steps = function Steps({
                       )}
                     </>
                   )}
-                </div>
+                </button>
               </ToolTip>
               {index < filteredSteps.length - 1 && (
                 <div className={`step-connector ${isCompleted ? 'completed' : 'incomplete'}`} />

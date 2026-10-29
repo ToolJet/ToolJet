@@ -1,8 +1,10 @@
 import React, { Component, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import * as Sentry from '@sentry/react';
 
 // Lazy load ENTIRE APP ROUTERS (not just pages)
 // This is CRITICAL for bundle isolation - each router imports completely different code
+const McpOAuthConsent = lazy(() => import('./McpOAuth/ConsentPage'));
 const ViewerApp = lazy(() => import('./ViewerApp'));
 const MainApp = lazy(() => import('./App').then((module) => ({ default: module.App })));
 
@@ -15,13 +17,14 @@ const LoadingFallback = () => (
 );
 
 /**
- * ChunkErrorBoundary — Catches ChunkLoadError from stale webpack chunks after deployments.
+ * ChunkErrorBoundary — Renders a recovery screen for any crash in the app tree, and additionally
+ * auto-reloads once for ChunkLoadError from stale webpack chunks after deployments.
  *
  * After a new deployment, old chunk files no longer exist on the
  * server. If the browser still has a cached index.html referencing old filenames, lazy-loaded
  * imports will fail with ChunkLoadError.
  *
- * Recovery strategy:
+ * ChunkLoadError recovery strategy:
  *  1. On first ChunkLoadError → auto-reload once (picks up new index.html with correct chunk names)
  *  2. If the reload didn't help (flag still set) → show a user-facing error with a manual Refresh button
  *  3. On successful app boot → flags are cleared (in index.jsx) so future deployments can auto-recover
@@ -29,23 +32,30 @@ const LoadingFallback = () => (
  * The `chunk_reload` flag in sessionStorage prevents infinite reload loops.
  */
 class ChunkErrorBoundary extends Component {
-  state = { hasError: false };
+  state = { hasError: false, isChunkError: false };
 
   static getDerivedStateFromError(error) {
-    if (error?.name === 'ChunkLoadError') {
-      return { hasError: true };
-    }
-    return null;
+    // Every error must flip hasError. Returning null here leaves the boundary rendering the
+    // same crashing children, which remount and throw again — a silent infinite remount that
+    // pegs the CPU and exhausts the browser's connection pool instead of showing anything.
+    return { hasError: true, isChunkError: error?.name === 'ChunkLoadError' };
   }
 
-  componentDidCatch(error) {
-    if (error?.name === 'ChunkLoadError' && !sessionStorage.getItem('chunk_reload')) {
-      // First failure — attempt one automatic reload to pick up new chunks
-      sessionStorage.setItem('chunk_reload', 'true');
-      window.location.reload();
+  componentDidCatch(error, errorInfo) {
+    if (error?.name === 'ChunkLoadError') {
+      if (!sessionStorage.getItem('chunk_reload')) {
+        // First failure — attempt one automatic reload to pick up new chunks
+        sessionStorage.setItem('chunk_reload', 'true');
+        window.location.reload();
+      }
+      // If chunk_reload flag is already set, we've already tried reloading once.
+      // Don't reload again — render() will show the error UI instead.
+      return;
     }
-    // If chunk_reload flag is already set, we've already tried reloading once.
-    // Don't reload again — render() will show the error UI instead.
+    // React reports boundary-caught errors to this hook and nowhere else, so without
+    // this a render crash leaves no trace in the console or in error reporting.
+    console.error('[ChunkErrorBoundary] Uncaught render error:', error, errorInfo?.componentStack);
+    Sentry.captureException(error, { extra: { componentStack: errorInfo?.componentStack } });
   }
 
   handleRefresh = () => {
@@ -56,7 +66,11 @@ class ChunkErrorBoundary extends Component {
 
   render() {
     if (this.state.hasError) {
-      // Reload already attempted once and didn't fix it — show error UI
+      // Chunk errors: reload was already attempted once and didn't fix it.
+      // Anything else: a real crash we cannot recover from automatically.
+      const message = this.state.isChunkError
+        ? 'A new version is available. Please refresh to continue.'
+        : 'Something went wrong. Please refresh to continue.';
       return (
         <div
           style={{
@@ -68,7 +82,7 @@ class ChunkErrorBoundary extends Component {
             gap: '16px',
           }}
         >
-          <p style={{ fontSize: '16px', color: '#666' }}>A new version is available. Please refresh to continue.</p>
+          <p style={{ fontSize: '16px', color: '#666' }}>{message}</p>
           <button
             onClick={this.handleRefresh}
             style={{
@@ -97,6 +111,7 @@ class ChunkErrorBoundary extends Component {
  * How it works:
  * - /applications/* routes load ViewerApp.jsx (viewer bundle ONLY)
  * - /embed-apps/* routes load ViewerApp.jsx (viewer bundle ONLY)
+ * - /mcp/consent loads the isolated OAuth consent page
  * - All other routes load App.jsx (main app bundle)
  *
  * Why this matters:
@@ -106,7 +121,7 @@ class ChunkErrorBoundary extends Component {
  * - Result: Viewer bundle < 1.5MB (90% reduction from ~15MB)
  *
  * WARNING: Do NOT import feature components directly in this file!
- * Only lazy load the two top-level router components (ViewerApp and MainApp).
+ * Lazy load top-level route components to keep their bundles isolated.
  */
 export const RootRouter = () => {
   return (
@@ -114,6 +129,7 @@ export const RootRouter = () => {
       <ChunkErrorBoundary>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
+            <Route path="/mcp/consent" element={<McpOAuthConsent />} />
             {/* Viewer routes - ISOLATED BUNDLE */}
             {/* App-scoped auth routes (login/signup) are lazy-loaded inside ViewerApp */}
             <Route path="/applications/*" element={<ViewerApp />} />

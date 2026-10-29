@@ -1,0 +1,16 @@
+module.exports = {
+  apiUrl: 'http://localhost:3000/api',
+  ENVIRONMENT: 'test',
+  SERVER_IP: process.env.SERVER_IP,
+  COMMENT_FEATURE_ENABLE: true,
+  TOOLJET_SERVER_URL: process.env.TOOLJET_SERVER_URL,
+  ENABLE_MULTIPLAYER_EDITING: true,
+  ENABLE_MARKETPLACE_DEV_MODE: process.env.ENABLE_MARKETPLACE_DEV_MODE,
+  TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB: 5,
+  TOOLJET_MARKETPLACE_URL: 'https://tooljet-plugins-production.s3.us-east-2.amazonaws.com',
+  TOOLJET_EDITION: process.env.TOOLJET_EDITION,
+  ENABLE_WORKFLOW_SCHEDULING: process.env.ENABLE_WORKFLOW_SCHEDULING,
+  WEBSITE_SIGNUP_URL: 'https://www.tooljet.com/signup',
+  TJ_SELFHOST_CREDITS_APP: 'https://app.tooljet.com/applications/c1ec8a6c-ee9a-4d7a-ba9b-3590bbeaf6b9',
+  ENABLE_PASSWORD_COMPLEXITY_RULES: false,
+};

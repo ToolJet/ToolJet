@@ -3,6 +3,11 @@
 # Load the .env file
 source .env
 
+# Keep .env private: only the owner can read/write it
+OLD_UMASK=$(umask)
+umask 077
+chmod 600 .env
+
 # Check if LOCKBOX_MASTER_KEY is present or empty
 if [[ -z "$LOCKBOX_MASTER_KEY" ]]; then
   # Generate LOCKBOX_MASTER_KEY
@@ -121,6 +126,9 @@ awk -v uri="$PGRST_DB_URI" '
 
 echo "Successfully updated PGRST database URI"
 
+# Restore the original umask now that .env updates are done
+umask "$OLD_UMASK"
+
 
 if [[ -z $PG_USER || -z $PG_PASS || -z $PG_HOST ]]
 then
@@ -129,6 +137,17 @@ then
 fi
 
 export $(grep -v '^#' .env | xargs)
+
+# Create directory for RDS certificates
+mkdir -p /home/ubuntu/certs
+
+# Download the latest AWS RDS CA bundle
+if wget -q -O /home/ubuntu/certs/global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem; then
+  echo "RDS cert bundle downloaded successfully."
+else
+  echo "Error: Failed to download RDS cert bundle."
+  exit 1
+fi
 
 if psql -d postgresql://$PG_USER:$PG_PASS@$PG_HOST/postgres -c 'select now()' > /dev/null 2>&1
 then

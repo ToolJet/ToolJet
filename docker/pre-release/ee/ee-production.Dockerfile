@@ -1,9 +1,19 @@
-FROM node:22.15.1 AS builder
+# tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827).
+FROM node:22.23.4 AS mcp-builder
+WORKDIR /mcp
+ARG CUSTOM_GITHUB_TOKEN
+ARG TOOLJET_MCP_REF=main
+RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+RUN git clone https://github.com/ToolJet/tooljet-mcp.git . && git checkout ${TOOLJET_MCP_REF}
+RUN npm ci && npm run build:plugin
+
+
+FROM node:22.23.4 AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@10.9.2 && npm cache clean --force
+RUN npm i -g npm@10.9.9 && npm cache clean --force
 
 RUN mkdir -p /app
 WORKDIR /app
@@ -58,6 +68,7 @@ ENV TOOLJET_EDITION=ee
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server ci --omit=dev
 COPY ./server/ ./server/
+RUN node server/scripts/compress-templates.js
 RUN npm install -g @nestjs/cli && npm install -g copyfiles
 RUN npm --prefix server run build && npm prune --production --prefix server
 
@@ -86,7 +97,6 @@ RUN apt-get update && \
         xz-utils \
         tar \
         postgresql-client \
-        redis \
         libaio1 \
         libxml2 \
         git \
@@ -96,14 +106,24 @@ RUN apt-get update && \
     && apt-get autoremove -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Install Redis 7.x from official Redis repository (Debian's bundled package is stale)
+RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bookworm main" | tee /etc/apt/sources.list.d/redis.list \
+    && apt-get update && apt-get install -y redis-server
 
-RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
-    && tar -xf node-v22.15.1-linux-x64.tar.xz \
-    && mv node-v22.15.1-linux-x64 /usr/local/lib/nodejs \
+
+RUN curl -O https://nodejs.org/dist/v22.23.4/node-v22.23.4-linux-x64.tar.xz \
+    && tar -xf node-v22.23.4-linux-x64.tar.xz \
+    && mv node-v22.23.4-linux-x64 /usr/local/lib/nodejs \
     && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
     && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
-    && rm node-v22.15.1-linux-x64.tar.xz
+    && rm node-v22.23.4-linux-x64.tar.xz
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
+
+# Node 22.15.1 ships tz 2025a, missing the Canada DST change of 1 Nov 2026; ICU 2026e files from unicode-org/icu-data. Remove when Node tz >= 2026e.
+COPY ./docker/icu-tz /usr/local/share/icu-tz
+ENV ICU_TIMEZONE_FILES_DIR=/usr/local/share/icu-tz
+RUN node -e "if (process.versions.tz < '2026e') throw new Error('stale tz data: ' + process.versions.tz)"
 
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
@@ -156,6 +176,12 @@ COPY --from=builder --chown=appuser:0 /app/server/scripts ./app/server/scripts
 COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 COPY ./docker/pre-release/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
+
+# tooljet-mcp bundle for the socket relay (ee-server#827). data/ must sit next to mcp/,
+# not inside it — bundle resolves it as ../data. package.json ships for its "type":"module".
+COPY --from=mcp-builder --chown=appuser:0 /mcp/bundle/index.js ./app/mcp/index.js
+COPY --from=mcp-builder --chown=appuser:0 /mcp/package.json ./app/mcp/package.json
+COPY --from=mcp-builder --chown=appuser:0 /mcp/data ./app/data
 
 
 # Create directory /home/appuser and set ownership to appuser

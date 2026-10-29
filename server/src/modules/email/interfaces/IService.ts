@@ -3,6 +3,8 @@ import {
   SendCommentMentionEmailPayload,
   SendOrganizationUserWelcomeEmailPayload,
   SendPasswordResetEmailPayload,
+  SendPasswordExpiredResetEmailPayload,
+  SendAppBuildCompletedEmailPayload,
 } from '../dto';
 
 export interface IEmailService {
@@ -11,6 +13,8 @@ export interface IEmailService {
   sendWelcomeEmail(payload: SendWelcomeEmailPayload): Promise<any>;
   sendOrganizationUserWelcomeEmail(payload: SendOrganizationUserWelcomeEmailPayload): Promise<any>;
   sendPasswordResetEmail(payload: SendPasswordResetEmailPayload): Promise<any>;
+  sendPasswordExpiredResetEmail(payload: SendPasswordExpiredResetEmailPayload): Promise<any>;
   sendCommentMentionEmail(payload: SendCommentMentionEmailPayload): Promise<any>;
+  sendAppBuildCompletedEmail(payload: SendAppBuildCompletedEmailPayload): Promise<any>;
   init(): Promise<void>;
 }

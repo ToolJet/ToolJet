@@ -1,3 +1,4 @@
+import { saveSecurityEntity, deleteSecurityEntity } from '@modules/mcp-oauth/revocation';
 import { Injectable } from '@nestjs/common';
 import { DataSource, In, Not, Repository } from 'typeorm';
 import { SsoConfigOidcGroupSync } from '@entities/sso_config_oidc_group_sync.entity';
@@ -31,9 +32,9 @@ export class SsoConfigOidcGroupSyncRepository extends Repository<SsoConfigOidcGr
         },
       });
       if (existingGroupSync) {
-        results.push(await this.save({ ...existingGroupSync, ...groupSync }));
+        results.push(await saveSecurityEntity(this.manager, SsoConfigOidcGroupSync, { ...existingGroupSync, ...groupSync }));
       } else {
-        results.push(await this.save(this.create({ ...groupSync, ssoConfigId })));
+        results.push(await saveSecurityEntity(this.manager, SsoConfigOidcGroupSync, this.create({ ...groupSync, ssoConfigId })));
       }
     }
 
@@ -47,7 +48,7 @@ export class SsoConfigOidcGroupSyncRepository extends Repository<SsoConfigOidcGr
         },
       });
       if (groupSyncsToDelete.length > 0) {
-        await this.remove(groupSyncsToDelete);
+        await deleteSecurityEntity(this.manager, SsoConfigOidcGroupSync, groupSyncsToDelete.map(row => row.id));
         results.push(...groupSyncsToDelete);
       }
     }

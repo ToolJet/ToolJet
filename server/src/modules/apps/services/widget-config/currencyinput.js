@@ -12,6 +12,13 @@ export const currencyinputConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    legacyInputSize: {
+      type: 'toggle',
+      displayName: 'Legacy input size',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'deprecatedStyles',
+      isFxNotRequired: true,
+    },
     label: {
       type: 'code',
       displayName: 'Label',
@@ -29,7 +36,11 @@ export const currencyinputConfig = {
       type: 'code',
       displayName: 'Default value',
       validation: {
-        schema: { type: 'number' },
+        schema: {
+          type: 'union',
+          schemas: [{ type: 'string', pattern: "^-?[0-9.,'\\s]*$" }, { type: 'number' }],
+          defaultValue: '0',
+        },
         defaultValue: 0,
       },
     },
@@ -302,6 +313,11 @@ export const currencyinputConfig = {
       ],
     },
     {
+      handle: 'setCountryCode',
+      displayName: 'Set country code',
+      params: [{ handle: 'countryCode', displayName: 'Country code', defaultValue: '' }],
+    },
+    {
       handle: 'clear',
       displayName: 'Clear',
     },
@@ -343,6 +359,7 @@ export const currencyinputConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      legacyInputSize: { value: '{{false}}' },
       value: { value: '0' },
       label: { value: 'Label' },
       placeholder: { value: 'Enter amount' },

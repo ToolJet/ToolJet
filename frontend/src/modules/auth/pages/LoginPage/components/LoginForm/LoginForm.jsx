@@ -200,6 +200,8 @@ const LoginForm = ({
                         ? `/applications/${appSlug}/forgot-password?redirectTo=${encodeURIComponent(
                             redirectTo || `/applications/${appSlug}`
                           )}`
+                        : paramOrganizationSlug
+                        ? `/forgot-password?oid=${paramOrganizationSlug}`
                         : '/forgot-password'
                     }
                     hint={''}

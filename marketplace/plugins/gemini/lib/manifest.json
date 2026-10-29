@@ -7,7 +7,7 @@
   "tj:source": {
     "name": "Gemini",
     "kind": "gemini",
-    "type": "api"
+    "type": "ai"
   },
   "properties": {
     "apiKey": {

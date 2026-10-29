@@ -1,0 +1,17 @@
+{
+  "name": "Major incident management",
+  "description": "Run major incidents from declaration to closure. Coordinate the response, track recovery tasks and keep a clear record of every decision.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "major-incident-management",
+  "category": "it-operations"
+}

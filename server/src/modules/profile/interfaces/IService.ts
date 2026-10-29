@@ -1,4 +1,4 @@
-import { ProfileUpdateDto } from '@modules/profile/dto';
+import { ProfilePreferencesDto, ProfileUpdateDto } from '@modules/profile/dto';
 import { File } from '@entities/file.entity';
 import { EntityManager } from 'typeorm';
 import { User } from '@entities/user.entity';
@@ -8,9 +8,11 @@ export interface IProfileService {
 
   addAvatar(userId: string, imageBuffer: Buffer, filename: string): Promise<File>;
 
-  updateUserPassword(userId: string, password: string): Promise<void>;
+  updateUserPassword(userId: string, password: string, currentSessionId?: string): Promise<void>;
 
   updateUserName(userId: string, updateUserDto: ProfileUpdateDto): Promise<void>;
+
+  updatePreferences(userId: string, preferencesDto: ProfilePreferencesDto): Promise<void>;
 }
 
 export interface IProfileUtilService {
