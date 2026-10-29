@@ -34,6 +34,7 @@ export const QueryPanel = ({ darkMode }) => {
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
+  const queryPanelWidth = useStore((state) => state.queryPanel.queryPanelWidth);
   const unreadErrorCount = useStore((state) => state.debugger.unreadErrorCount);
   const resetUnreadErrorCount = useStore((state) => state.debugger.resetUnreadErrorCount);
   const selectedQueryId = useStore((state) => state.queryPanel.selectedQuery?.id);
@@ -147,7 +148,9 @@ export const QueryPanel = ({ darkMode }) => {
     document
   );
 
-  const rightPanelOffset = { right: getRuntimePanelRightOffset(isRightSidebarOpen, activeRightSideBarTab) };
+  const rightPanelOffset = {
+    right: getRuntimePanelRightOffset(isRightSidebarOpen, activeRightSideBarTab, queryPanelWidth),
+  };
   const runtimePanelTheme = getRuntimePanelTheme(darkMode);
   const runtimePanelBarStyle = {
     ...rightPanelOffset,

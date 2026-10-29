@@ -46,6 +46,10 @@ import {
   getLeftPanelReservedBottom,
   getLeftPanelHeight,
   shouldShowLibraries,
+  QUERY_PANEL_RESIZE,
+  clampQueryPanelWidth,
+  getQueryPanelWidth,
+  parseStoredQueryPanelWidth,
 } from '@/AppBuilder/panelLayout';
 import fs from 'fs';
 import path from 'path';
@@ -335,6 +339,7 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(getQueryManagerClassName('right', false)).toBe('query-manager query-manager--right');
     expect(getQueryManagerClassName('bottom', true)).toBe('query-manager theme-dark');
     expect(getRightPanelStyle('query')).toEqual({
+      '--query-right-panel-width': 'min(496px, calc(100vw - 54px))',
       maxWidth: 'calc(100vw - 54px)',
       overflow: 'hidden',
       width: 'min(496px, calc(100vw - 54px))',
@@ -362,6 +367,48 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(getRightPanelReservedWidth(false, 'query')).toBe(0);
     expect(getRightPanelReservedWidth(true, 'configuration')).toBe('300px');
     expect(getRightPanelReservedWidth(true, 'query')).toBe('min(496px, calc(100vw - 54px))');
+  });
+
+  describe('resizable query panel width', () => {
+    // Break this catches: the drag shrinks the panel below its default, or pushes it over the left rail.
+    it('keeps a dragged width between the default width and the left rail', () => {
+      expect(QUERY_PANEL_RESIZE).toMatchObject({ defaultPx: 496, railPx: 54 });
+      expect(clampQueryPanelWidth(300, 1440)).toBe(496);
+      expect(clampQueryPanelWidth(800, 1440)).toBe(800);
+      expect(clampQueryPanelWidth(1600, 1440)).toBe(1386);
+      expect(clampQueryPanelWidth(640.6, 1440)).toBe(641);
+      // A window narrower than the default leaves no room: the panel spans to the rail.
+      expect(clampQueryPanelWidth(300, 500)).toBe(446);
+      expect(clampQueryPanelWidth(900, 500)).toBe(446);
+    });
+
+    // Break this catches: a width chosen in a wide window overflows the rail after the window shrinks.
+    it('renders a chosen width capped at the rail, and the default width when none is chosen', () => {
+      expect(getQueryPanelWidth(null)).toBe('min(496px, calc(100vw - 54px))');
+      expect(getQueryPanelWidth(720)).toBe('min(720px, calc(100vw - 54px))');
+    });
+
+    // Break this catches: the canvas border and the bottom runtime bar keep the default width after a drag.
+    it('reserves the dragged width for the canvas and the runtime panel', () => {
+      expect(getRightPanelReservedWidth(true, 'query', 720)).toBe('min(720px, calc(100vw - 54px))');
+      expect(getRuntimePanelRightOffset(true, 'query', 720)).toBe('min(720px, calc(100vw - 54px))');
+      expect(getRightPanelReservedWidth(true, 'configuration', 720)).toBe('300px');
+      expect(getRightPanelReservedWidth(false, 'query', 720)).toBe(0);
+      expect(getRightPanelStyle('query', 720)).toMatchObject({
+        '--query-right-panel-width': 'min(720px, calc(100vw - 54px))',
+        width: 'min(720px, calc(100vw - 54px))',
+      });
+      expect(getRightPanelStyle('configuration', 720)).toEqual({ overflow: 'auto' });
+    });
+
+    // Break this catches: a corrupt saved value (text, zero, negative) renders a 0px or NaN-wide panel.
+    it('reads only a positive saved width back after a reload', () => {
+      expect(parseStoredQueryPanelWidth('720')).toBe(720);
+      expect(parseStoredQueryPanelWidth(null)).toBeNull();
+      expect(parseStoredQueryPanelWidth('abc')).toBeNull();
+      expect(parseStoredQueryPanelWidth('0')).toBeNull();
+      expect(parseStoredQueryPanelWidth('-40')).toBeNull();
+    });
   });
 
   it('widens the canvas by every reserved side width so its content keeps its size', () => {

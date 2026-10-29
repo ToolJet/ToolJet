@@ -14,6 +14,7 @@ import {
   PANEL_MOTION,
 } from '@/AppBuilder/panelLayout';
 import { AddEditPagePopup } from './PageSettingsTab/PageMenu/AddNewPagePopup';
+import { QueryPanelResizeHandle } from './QueryPanelResizeHandle';
 import './rightSidebar.scss';
 import { Button } from '@/components/ui/Button/Button';
 
@@ -25,6 +26,8 @@ export const RightSideBar = ({ darkMode }) => {
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
+  const queryPanelWidth = useStore((state) => state.queryPanel.queryPanelWidth);
+  const setQueryPanelWidth = useStore((state) => state.queryPanel.setQueryPanelWidth);
   const [isPanelMounted, setIsPanelMounted] = useState(isRightSidebarOpen);
   const [renderedTab, setRenderedTab] = useState(activeTab);
 
@@ -49,7 +52,7 @@ export const RightSideBar = ({ darkMode }) => {
   return (
     <div className="sub-section">
       <div
-        style={getRightPanelStyle(displayedTab)}
+        style={getRightPanelStyle(displayedTab, queryPanelWidth)}
         className={cx(
           getRightPanelClassName(displayedTab),
           { 'dark-theme theme-dark': darkMode },
@@ -57,6 +60,12 @@ export const RightSideBar = ({ darkMode }) => {
         )}
         data-state={isRightSidebarOpen ? 'open' : 'closed'}
       >
+        {displayedTab === RIGHT_SIDE_BAR_TAB.QUERY && isRightSidebarOpen && (
+          <QueryPanelResizeHandle
+            onResize={setQueryPanelWidth}
+            onResizeEnd={(width) => setQueryPanelWidth(width, { persist: true })}
+          />
+        )}
         <div
           key={displayedTab}
           className={cx('right-panel-content', { 'dark-theme theme-dark': darkMode })}

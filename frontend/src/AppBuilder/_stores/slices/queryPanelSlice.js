@@ -12,8 +12,17 @@ import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAb
 import { ABORT_UNSUPPORTED_KINDS, defaultSources, TJ_QUERY_ERROR_TYPE } from '@/AppBuilder/QueryManager/constants';
 import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { QUERY_PANEL_RESIZE, parseStoredQueryPanelWidth } from '@/AppBuilder/panelLayout';
 
 const runtimePanelPreferences = JSON.parse(localStorage.getItem('runtimePanelPreferences')) ?? {};
+
+const readStoredQueryPanelWidth = () => {
+  try {
+    return parseStoredQueryPanelWidth(localStorage.getItem(QUERY_PANEL_RESIZE.storageKey));
+  } catch {
+    return null;
+  }
+};
 
 // tj-403 = data-source query-run permission denied; toast in every mode, unlike ordinary query failures
 const toastIfQueryRunRestricted = (errorData) => {
@@ -27,6 +36,8 @@ const initialState = {
   queryPanelHeight: runtimePanelPreferences?.isExpanded ? 30 : 0,
   selectedQuery: null,
   previewPanelHeight: 0,
+  // Dragged width of the right-side query panel in px; null keeps the default width.
+  queryPanelWidth: readStoredQueryPanelWidth(),
   selectedDataSource: null,
   queryToBeRun: null,
   previewLoading: false,
@@ -145,6 +156,25 @@ export const createQueryPanelSlice = (set, get) => ({
         'setPreviewPanelHeight'
       );
     }, // updatePreviewPanelHeight
+
+    // Called on every drag frame; persist only when the drag ends, so a drag writes storage once.
+    setQueryPanelWidth: (width, { persist = false } = {}) => {
+      if (get().queryPanel.queryPanelWidth !== width) {
+        set(
+          (state) => {
+            state.queryPanel.queryPanelWidth = width;
+          },
+          false,
+          'setQueryPanelWidth'
+        );
+      }
+      if (!persist) return;
+      try {
+        localStorage.setItem(QUERY_PANEL_RESIZE.storageKey, String(width));
+      } catch {
+        // Storage can be unavailable (private mode, quota); the width still holds for this session.
+      }
+    },
     setSelectedDataSource: (dataSource = null) =>
       set(
         (state) => {

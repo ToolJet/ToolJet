@@ -7,6 +7,7 @@ export default function useCanvasMinWidth({ currentMode, isModuleMode }) {
   const isLeftSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
+  const queryPanelWidth = useStore((state) => state.queryPanel.queryPanelWidth);
   const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
   const isLeftPanelOpen = getLeftPanelState(selectedSidebarItem, isLeftSidebarOpen).isLeftPanelOpen;
 
@@ -14,5 +15,8 @@ export default function useCanvasMinWidth({ currentMode, isModuleMode }) {
   if (currentMode !== 'edit') return '';
 
   const leftWidth = isLeftPanelOpen ? (LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default) : 0;
-  return getCanvasMinWidth(leftWidth, getRightPanelReservedWidth(isRightSidebarOpen, activeRightSideBarTab));
+  return getCanvasMinWidth(
+    leftWidth,
+    getRightPanelReservedWidth(isRightSidebarOpen, activeRightSideBarTab, queryPanelWidth)
+  );
 }
