@@ -9,7 +9,7 @@
 #   RESULT_UNIT, RESULT_E2E, RESULT_CYPRESS_{PLATFORM,MARKETPLACE}, RESULT_VULN_GATE  — full lane
 #   RESULT_CHANGED                     — changed lane
 #   RESULT_FRONTEND                    — both lanes
-#   UNIT_JSON, E2E_JSON_DIR, UNIT_STEP_URL, E2E_STEP_URL — for render-failed-tests.mjs
+#   UNIT_JSON, UNIT_JSON_DIR, E2E_JSON_DIR, UNIT_STEP_URL, E2E_STEP_URL — for render-failed-tests.mjs
 #   COVERAGE_MD — coverage gate section from coverage-gate.sh, full lane only
 
 set -euo pipefail

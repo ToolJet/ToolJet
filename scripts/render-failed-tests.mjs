@@ -8,7 +8,8 @@
 //   node render-failed-tests.mjs details        → nested <details> block with failing
 //                                                 tests only; empty output when none
 //
-// Env: UNIT_JSON (jest --json file), E2E_JSON_DIR (dir of per-shard jsons),
+// Env: UNIT_JSON (jest --json file), UNIT_JSON_DIR (dir of per-shard jsons),
+//      E2E_JSON_DIR (dir of per-shard jsons),
 //      UNIT_STEP_URL, E2E_STEP_URL (job log links, optional)
 
 import fs from 'node:fs';
@@ -20,19 +21,8 @@ const MAX_ERR_CHARS = 400;
 
 const stripAnsi = (s) => s.replace(/\u001b\[[0-9;]*m/g, '');
 
-function loadUnit() {
-  const p = process.env.UNIT_JSON;
-  if (!p || !fs.existsSync(p)) return null;
-  try {
-    return [JSON.parse(fs.readFileSync(p, 'utf8'))];
-  } catch {
-    return null;
-  }
-}
-
-function loadE2e() {
-  const dir = process.env.E2E_JSON_DIR;
-  if (!dir || !fs.existsSync(dir)) return null;
+function loadJsonDir(dir) {
+  if (!dir || !fs.existsSync(dir)) return [];
   const runs = [];
   for (const f of fs.readdirSync(dir)) {
     if (!f.endsWith('.json')) continue;
@@ -42,6 +32,25 @@ function loadE2e() {
       // partial shard output (crashed mid-write) — skip
     }
   }
+  return runs;
+}
+
+// Changed lane writes one UNIT_JSON file; the full lane writes one file per unit shard.
+function loadUnit() {
+  const runs = loadJsonDir(process.env.UNIT_JSON_DIR);
+  const p = process.env.UNIT_JSON;
+  if (p && fs.existsSync(p)) {
+    try {
+      runs.push(JSON.parse(fs.readFileSync(p, 'utf8')));
+    } catch {
+      // unreadable single-file output — skip
+    }
+  }
+  return runs.length ? runs : null;
+}
+
+function loadE2e() {
+  const runs = loadJsonDir(process.env.E2E_JSON_DIR);
   return runs.length ? runs : null;
 }
 
