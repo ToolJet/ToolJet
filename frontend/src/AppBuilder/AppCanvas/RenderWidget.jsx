@@ -75,6 +75,9 @@ const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2'];
 // Statistics owns its card tooltip so a cut-off text's own tooltip can take priority over it.
 const WIDGETS_WITH_OWN_TOOLTIP = [...WIDGETS_WITH_PORTALED_CONTENT, 'Statistics'];
 
+// Events whose fireEvent promise settles when the app's handlers have finished, for widgets that wait on them.
+const AWAITED_EVENTS = ['onNewRowsAdded'];
+
 const RenderWidget = ({
   id,
   widgetHeight,
@@ -275,7 +278,7 @@ const RenderWidget = ({
   );
   const fireEventWrapper = useCallback(
     (eventName, options) => {
-      fireEvent(
+      const handled = fireEvent(
         eventName,
         id,
         moduleId,
@@ -283,7 +286,8 @@ const RenderWidget = ({
         options,
         resolveIndex ?? null
       );
-      return Promise.resolve();
+      // Every other event resolves at once, as it always did; only these let a widget wait for the app's handlers.
+      return AWAITED_EVENTS.includes(eventName) ? Promise.resolve(handled) : Promise.resolve();
     },
     [fireEvent, id, customResolvables, effectiveSubContainerIndex, moduleId, resolveIndex]
   );

@@ -6,11 +6,25 @@ export const resolveAddNewRowIn = (value) => (ADD_NEW_ROW_PLACEMENTS.includes(va
 // Same key the add-row draft is stored under (accessorKey in generateColumnsData).
 export const getColumnKey = (column) => column.key || column.name;
 
+// The table makes a column for every key inside an object in its data ("metadata.team", "metadata.level"). When
+// the parent column ("metadata", e.g. a JSON column) exists it already holds those keys, so they are not offered
+// again, and a "metadata.team" value would otherwise be written over what was typed in the "metadata" field.
+// A table that only has the nested columns keeps them, as the only way to enter those values.
+const hasParentColumn = (column, columnKeys) => {
+  const parts = String(getColumnKey(column) ?? '').split('.');
+  return parts.slice(1).some((_, index) => columnKeys.has(parts.slice(0, index + 1).join('.')));
+};
+
 export const getAddNewRowColumns = (columns, selectedKeys) => {
   const isSelected = Array.isArray(selectedKeys) ? (column) => selectedKeys.includes(getColumnKey(column)) : () => true;
+  const columnKeys = new Set((columns ?? []).filter(Boolean).map(getColumnKey));
 
   return (columns ?? []).filter(
-    (column) => column && !NON_ADDABLE_COLUMN_TYPES.includes(column.columnType) && isSelected(column)
+    (column) =>
+      column &&
+      !NON_ADDABLE_COLUMN_TYPES.includes(column.columnType) &&
+      !hasParentColumn(column, columnKeys) &&
+      isSelected(column)
   );
 };
 
