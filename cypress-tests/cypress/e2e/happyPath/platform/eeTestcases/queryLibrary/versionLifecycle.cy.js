@@ -61,6 +61,22 @@ const release = (screenshot) => {
   get('yes-button').click();
   get('yes-button').should('not.exist');
 };
+const darkDialogs = (resource) => {
+  createDraft('Dark-candidate', `${resource}-create-draft-dark`);
+  menu();
+  get('dark-candidate-version-more-menu-button').click();
+  get('dark-candidate-edit-version-button').click();
+  get('edit-version-description-input-field').clear().type('Dark draft details');
+  picture(`${resource}-edit-dark`);
+  get('save-button').click();
+  get('save-button').should('not.exist');
+  save('Dark-candidate', 'Dark-saved');
+  promote(`${resource}-promote-dark`);
+  select('Dark-saved', 'Staging');
+  promote();
+  select('Dark-saved', 'Production');
+  release(`${resource}-release-dark`);
+};
 const visit = (path, dark = false) => cy.visit(path, { onBeforeLoad(win) {
   win.localStorage.setItem('darkMode', String(dark));
   win.localStorage.setItem('walkthroughCompleted', 'true');
@@ -136,6 +152,7 @@ describe('Query Library named version lifecycle', () => {
     get('branch-b-save-version-button').click();
     picture('library-save-dark');
     get('create-version-cancel-button').click();
+    darkDialogs('library');
   });
 
   scenario('uses the same Save, Create draft, Edit, Promote and Release dialogs for Modules', () => {
@@ -169,6 +186,7 @@ describe('Query Library named version lifecycle', () => {
     get('dark-draft-save-version-button').click();
     picture('module-save-dark');
     get('create-version-cancel-button').click();
+    darkDialogs('module');
   });
 
   scenario('blocks deletion for app and module consumers and preserves selection after I understand', () => {

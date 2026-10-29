@@ -1,4 +1,5 @@
 import '@/test/setupMsw';
+import { waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import config from 'config';
 import { server } from '@/test/msw/server';
@@ -80,7 +81,8 @@ it('uses standalone create and delete routes without an app version', async () =
   expect(state().dataQuery.queries.modules.canvas.map(({ id }) => id)).toEqual(['q1']);
 });
 
-it('ignores a query creation that finishes after leaving its session', async () => {
+it('persists edits queued during creation after exit without populating the next session', async () => {
+  const patches = [];
   let finish;
   let start;
   const ready = new Promise((resolve) => {
@@ -93,6 +95,10 @@ it('ignores a query creation that finishes after leaving its session', async () 
         finish = resolve;
       });
       return HttpResponse.json({ id: 'late-query', name: 'lateQuery', draftId: 'late-draft' });
+    }),
+    http.patch(`${config.apiUrl}/query-library/queries/late-query/drafts/late-draft`, async ({ request }) => {
+      patches.push({ options: (await request.json()).options, workspace: request.headers.get('tj-workspace-id') });
+      return HttpResponse.json({ ...draft, id: 'late-draft', options: { url: 'queued-before-exit' } });
     })
   );
   await seed();
@@ -104,10 +110,13 @@ it('ignores a query creation that finishes after leaving its session', async () 
     'lateQuery'
   );
   await ready;
+  const temporaryId = state().dataQuery.creatingQueryInProcessId;
+  state().dataQuery.saveData({ id: temporaryId, options: { url: 'queued-before-exit' } });
   state().queryLibrary.endLibrarySession();
   state().queryLibrary.beginLibrarySession('workspace-b');
   finish();
   await creation;
+  await waitFor(() => expect(patches).toEqual([{ options: { url: 'queued-before-exit' }, workspace: 'workspace-a' }]));
   expect(state().dataQuery.queries.modules.canvas).toEqual([]);
   expect(state().queryLibrary.versionsByQueryId).toEqual({});
 });
