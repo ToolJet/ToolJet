@@ -4,6 +4,8 @@ const backend = (edition) => [
   ...(edition === 'ce' ? [] : ['ee/ai/**/*.ts']),
   '!**/module.ts',
   '!**/*.module.ts',
+  '!**/*.dto.ts',
+  '!**/*.entity.ts',
   '!**/interfaces/**',
   '!**/types/**',
   '!**/*.(spec|test).ts',

@@ -23,6 +23,6 @@ node scripts/check-ai-tests.cjs
 for package in server frontend; do
   mkdir -p "$package/coverage-ai/$TOOLJET_EDITION"
   npm --prefix "$package" run test:ai -- --coverage --json --outputFile="coverage-ai/$TOOLJET_EDITION/results.json" "$@"
-  node scripts/check-ai-test-results.cjs "$package" "$package/coverage-ai/$TOOLJET_EDITION/results.json"
+  node scripts/check-ai-test-results.cjs "$package" "$package/coverage-ai/$TOOLJET_EDITION/results.json" focused
   node scripts/report-ai-coverage.cjs "$package" "$package/coverage-ai/$TOOLJET_EDITION/coverage-final.json" "$package/coverage-ai/$TOOLJET_EDITION/report"
 done

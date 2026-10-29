@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const root = path.resolve(__dirname, '..');
+const { testKind, isFocusedTest, hasDisabledTest } = require('./ai-test-policy.cjs');
 const edition = require('./ai-test-scope.cjs').editionFor(process.argv[2] || 'server');
 if (!['ce', 'ee', 'cloud'].includes(edition)) throw new Error('Unknown TOOLJET_EDITION');
 const useEE = edition !== 'ce';
@@ -42,14 +43,11 @@ for (const pkg of selected ? [selected] : ['server', 'frontend']) {
   const expected = new Set();
   for (const file of scoped) {
     const rel = path.relative(root, file).split(path.sep).join('/');
-    const valid =
-      pkg === 'server'
-        ? /^server\/(ee\/)?test\/modules\/ai\/unit\/[^/]+\.spec\.ts$/.test(rel)
-        : /\/__tests__\/.*\.spec\.[jt]sx?$/.test(rel);
+    const valid = testKind(pkg, rel);
     if (!valid) errors.push(`Misplaced AI test: ${rel}`);
     const source = fs.readFileSync(file, 'utf8');
-    if (/\b(?:it|test|describe)\s*\.\s*(?:only|skip|todo|failing)\s*(?:\(|\.)/.test(source)) {
-      errors.push(`Disabled, focused or expected-failing AI test: ${rel}`);
+    if (hasDisabledTest(source)) {
+      errors.push(`Disabled or focused AI test: ${rel}`);
     }
     if (
       !rel.startsWith(`${pkg}/ee/`) &&
@@ -92,9 +90,14 @@ for (const pkg of selected ? [selected] : ['server', 'frontend']) {
     errors.push(`${pkg}: expected at least ${minimum} AI test files, found ${expected.size}`);
   const focused = listTests(pkg, pkg === 'server' ? 'test/jest-ai.config.ts' : 'jest-ai.config.js');
   const normal = listTests(pkg, pkg === 'server' ? 'jest.config.ts' : 'jest.config.js');
+  const normalE2e =
+    pkg === 'server' && [...expected].some((file) => testKind(pkg, file) === 'e2e')
+      ? listTests(pkg, 'test/jest-e2e.config.ts')
+      : new Set();
   for (const file of expected) {
-    if (!focused.has(file)) errors.push(`Focused runner misses ${file}`);
-    if (!normal.has(file)) errors.push(`Normal runner misses ${file}`);
+    if (isFocusedTest(pkg, file) && !focused.has(file)) errors.push(`Focused runner misses ${file}`);
+    const runner = testKind(pkg, file) === 'e2e' ? normalE2e : normal;
+    if (!runner.has(file)) errors.push(`Normal runner misses ${file}`);
   }
   for (const file of focused) if (!expected.has(file)) errors.push(`Unexpected focused test: ${file}`);
   if (!useEE)

@@ -2,7 +2,7 @@
   "server": {
     "lines": {
       "ce": 39.8,
-      "ee": 16.5
+      "ee": 27.8
     },
     "files": {
       "src/modules/ai/services/ai-attachment-cleanup.listener.ts": 95,
@@ -12,8 +12,8 @@
   },
   "frontend": {
     "lines": {
-      "ce": 52.2,
-      "ee": 36.7
+      "ce": 70.9,
+      "ee": 57.3
     },
     "files": {
       "src/_services/ai.service.js": 65,

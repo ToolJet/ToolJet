@@ -626,16 +626,44 @@ jobs:
           path: server/coverage-e2e
       - name: Merge coverage
         run: npm run --prefix server test:cov:merge
+      - name: Download E2E execution results
+        uses: actions/download-artifact@v8
+        with:
+          pattern: full-e2e-results-*
+          path: /tmp/ai-e2e-results
+          merge-multiple: true
+      - name: Verify AI E2E assertions executed
+        id: ai-e2e-results
+        continue-on-error: true
+        run: node scripts/check-ai-test-results.cjs server /tmp/ai-e2e-results e2e
+      - name: Test coverage baseline normalization
+        run: node --test scripts/normalize-ai-coverage-baseline.test.mjs scripts/ai-test-policy.test.mjs
+      - name: Compare the baseline using the same AI source scope
+        id: baseline-scope
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_REF: ${{ github.base_ref }}
+        run: node scripts/normalize-ai-coverage-baseline.mjs server/coverage-combined/coverage-summary.json /tmp/coverage-baseline
+      - name: Upload comparable coverage baseline
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-baseline
+          path: /tmp/coverage-baseline/
+          if-no-files-found: warn
       - name: Extract and check full-scope AI backend coverage
         id: ai-coverage
         continue-on-error: true
         run: node scripts/report-ai-coverage.cjs server server/coverage-combined/coverage-final.json server/coverage-ai/ee/report
       - name: Upload AI backend coverage
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: coverage-ai-backend
           path: server/coverage-ai/ee/report/coverage-summary.json
-          if-no-files-found: error
+          if-no-files-found: warn
       - name: Upload combined coverage report
         uses: actions/upload-artifact@v7
         with:
@@ -674,8 +702,8 @@ jobs:
           path: /tmp/cov/
           if-no-files-found: ignore
           retention-days: 1
-      - name: Enforce AI coverage verdict after publishing reports
-        if: ${{ !cancelled() && steps.ai-coverage.outcome == 'failure' }}
+      - name: Enforce coverage verdicts after publishing reports
+        if: ${{ !cancelled() && (steps.ai-coverage.outcome == 'failure' || steps.baseline-scope.outcome == 'failure' || steps.ai-e2e-results.outcome == 'failure') }}
         run: exit 1
 
   # ---------------------------------------------------------------------------
@@ -1373,6 +1401,15 @@ jobs:
           pattern: coverage-lcov-*
           path: /tmp/ci-results/lcov
           merge-multiple: true
+
+      - name: Download comparable coverage baseline
+        if: >-
+          github.event_name == 'pull_request' && needs.detect-changes.result != 'skipped' && needs.detect-changes.outputs.mode == 'full'
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-baseline
+          path: /tmp/ci-results/base
 
       - name: Evaluate results
         id: eval

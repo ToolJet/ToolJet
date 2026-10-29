@@ -72,6 +72,7 @@ function addedFiles(diff) {
 
 const summary = readJson('coverage/coverage-summary.json');
 const base = readJson('base/coverage-summary.json');
+const baselineScope = readJson('base/baseline-scope.json');
 const patch = readJson('patch.json');
 const diff = readText('lcov/pr.diff');
 
@@ -124,6 +125,9 @@ if (!summary?.total) {
       delta >= -FLOOR_TOLERANCE,
       `overall ${pct(prPct)} (${sign}${Math.abs(delta).toFixed(2)} vs ${baseName}, min ${pct(basePct - FLOOR_TOLERANCE)})${report}`
     );
+    if (baselineScope?.addedUnchangedAiFiles?.length) {
+      parts.push(`Baseline includes ${baselineScope.addedUnchangedAiFiles.length} previously omitted, unchanged AI files at 0% (${pct(baselineScope.originalLines.pct)} → ${pct(basePct)}); thresholds unchanged.`);
+    }
   }
 }
 
