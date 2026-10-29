@@ -7,12 +7,13 @@
  * mirroring the one-off data migrations.
  */
 
-import { migrateProperties } from '@modules/apps/services/app-import-export.service';
+import { migrateProperties, NewRevampedComponents } from '@modules/apps/services/app-import-export.service';
 
 const TOOLJET_VERSION = '3.5.0';
 const NAV_LAYOUT_KEYS = ['orientation', 'displayStyle', 'navItemSize', 'horizontalAlignment', 'verticalAlignment'];
 
-// Mirrors NewRevampedComponents (Navigation is migrated regardless of this list, Steps is not).
+// Production passes NewRevampedComponents, which has 'Steps' but not 'Navigation': the Navigation
+// relocation must keep working outside the revamped-components gate, so use the real list here.
 type MigrateArgs = Parameters<typeof migrateProperties>;
 type StyleMap = Record<string, { value: unknown }>;
 
@@ -20,7 +21,7 @@ const migrate = (type: string, component: { properties?: StyleMap; styles?: Styl
   migrateProperties(
     type as MigrateArgs[0],
     component as unknown as MigrateArgs[1],
-    ['Steps', 'Navigation'] as unknown as MigrateArgs[2],
+    NewRevampedComponents,
     TOOLJET_VERSION
   );
 
