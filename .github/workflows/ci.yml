@@ -87,7 +87,7 @@ jobs:
               - '!**/*.md'
             # toolchain / workflow changes affect every suite
             root:
-              - '{package.json,package-lock.json,.nvmrc,.node-version,.github/workflows/**,scripts/ai-*,scripts/check-ai-*,scripts/report-ai-*,scripts/test-ai-*}'
+              - '{package.json,package-lock.json,.nvmrc,.node-version,.github/workflows/**,scripts/ai-*,scripts/check-ai-*,scripts/report-ai-*,scripts/test-ai-*,scripts/normalize-ai-coverage-baseline.*,scripts/render-coverage.mjs,scripts/coverage-gate.sh}'
       # a submodule bump counts only if the EE diff touches more than docs/skills;
       # any lookup failure counts as changed
       - name: Detect EE submodule changes
@@ -193,6 +193,8 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'server/package-lock.json'
       - run: npm ci --prefix server
+      - name: Test AI coverage policy and baseline normalization
+        run: set -o pipefail; mkdir -p /tmp/buildlog; node --test scripts/normalize-ai-coverage-baseline.test.mjs scripts/ai-test-policy.test.mjs 2>&1 | tee -a /tmp/buildlog/server.log
       - run: set -o pipefail; mkdir -p /tmp/buildlog; npm run --prefix server lint 2>&1 | tee -a /tmp/buildlog/server.log
       - run: set -o pipefail; npm run --prefix server build 2>&1 | tee -a /tmp/buildlog/server.log
       - run: set -o pipefail; bash server/scripts/check-ee-leak.sh 2>&1 | tee -a /tmp/buildlog/server.log
@@ -587,6 +589,9 @@ jobs:
   # passed — a report merged from a failing/incomplete suite would misrepresent coverage.
   test-server-coverage:
     name: 'Coverage · server'
+    permissions:
+      contents: read
+      actions: read
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs:
@@ -627,6 +632,8 @@ jobs:
       - name: Merge coverage
         run: npm run --prefix server test:cov:merge
       - name: Download E2E execution results
+        id: e2e-results-download
+        continue-on-error: true
         uses: actions/download-artifact@v8
         with:
           pattern: full-e2e-results-*
@@ -636,8 +643,6 @@ jobs:
         id: ai-e2e-results
         continue-on-error: true
         run: node scripts/check-ai-test-results.cjs server /tmp/ai-e2e-results e2e
-      - name: Test coverage baseline normalization
-        run: node --test scripts/normalize-ai-coverage-baseline.test.mjs scripts/ai-test-policy.test.mjs
       - name: Compare the baseline using the same AI source scope
         id: baseline-scope
         if: github.event_name == 'pull_request'
@@ -707,7 +712,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 1
       - name: Enforce coverage verdicts after publishing reports
-        if: ${{ !cancelled() && (steps.ai-coverage.outcome == 'failure' || steps.baseline-scope.outcome == 'failure' || steps.ai-e2e-results.outcome == 'failure') }}
+        if: ${{ !cancelled() && (steps.ai-coverage.outcome == 'failure' || steps.baseline-scope.outcome == 'failure' || steps.ai-e2e-results.outcome == 'failure' || steps.e2e-results-download.outcome == 'failure') }}
         run: exit 1
 
   # ---------------------------------------------------------------------------
@@ -1479,11 +1484,13 @@ jobs:
             fi
           done
 
-          # Coverage gate — full PR runs with server changes whose suites all passed
-          # (a failed suite already fails the gate and leaves no coverage to judge).
-          # Writes the comment section rendered by render-ci-comment.sh.
-          if [[ "$MODE" == "full" && "$failed" == "false" && "${{ github.event_name }}" == "pull_request" \
-                && "${{ needs.detect-changes.outputs.server }}" == "true" ]]; then
+          # Judge coverage only after its contributing server suites passed. An AI
+          # report or unrelated job failure must not hide the available diagnostics;
+          # failed remains true, so calculating coverage cannot clear another failure.
+          if [[ "$MODE" == "full" && "${{ github.event_name }}" == "pull_request" \
+                && "${{ needs.detect-changes.outputs.server }}" == "true" \
+                && "${{ needs.test-server.result }}" == "success" \
+                && "${{ needs.test-server-e2e.result }}" == "success" ]]; then
             mkdir -p /tmp/ci-results
             if ! bash scripts/coverage-gate.sh > /tmp/ci-results/coverage.md; then
               echo "coverage gate: fail"
