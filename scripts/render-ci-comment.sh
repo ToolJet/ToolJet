@@ -6,7 +6,8 @@
 #   SHA, RUN_URL, VERDICT              — always
 #   BASE_REF, SCOPE                    — changed lane
 #   RESULT_BUILD_{SERVER,PLUGINS,FRONTEND,MARKETPLACE}
-#   RESULT_UNIT, RESULT_E2E, RESULT_CYPRESS_{PLATFORM,MARKETPLACE}, RESULT_VULN_GATE  — full lane
+#   RESULT_AI_UNIT, RESULT_UNIT, RESULT_E2E, RESULT_CYPRESS_{PLATFORM,MARKETPLACE}, RESULT_VULN_GATE  — full lane
+#   RESULT_CE, RESULT_SERVER_COVERAGE  — full lane
 #   RESULT_CHANGED                     — changed lane
 #   RESULT_FRONTEND                    — both lanes
 #   UNIT_JSON, E2E_JSON_DIR, UNIT_STEP_URL, E2E_STEP_URL — for render-failed-tests.mjs
@@ -51,13 +52,17 @@ echo "| **Lint & Build** | $(icon "$RESULT_BUILD_SERVER") server · $(icon "$RES
 echo "| **Frontend tests** | $(cell "${RESULT_FRONTEND:-skipped}") |"
 if [ "$MODE" = "full" ]; then
   echo "| **Unit tests** | $(row unit "$RESULT_UNIT") |"
+  echo "| **AI execution — server** | $(cell "${RESULT_AI_UNIT:-skipped}") |"
+  echo "| **Server CE tests** | $(cell "${RESULT_CE:-skipped}") |"
   echo "| **E2E tests** | $(row e2e "$RESULT_E2E") |"
   echo "| **Cypress — Platform** | $(cell "$RESULT_CYPRESS_PLATFORM") |"
   echo "| **Cypress — Marketplace** | $(cell "$RESULT_CYPRESS_MARKETPLACE") |"
   echo "| **Vulnerability gate** | $(cell "${RESULT_VULN_GATE:-skipped}") |"
   # coverage.md line 1 = row cell, rest = details (scripts/render-coverage.mjs).
   # No file = gate didn't run: no server code changed, or a suite already failed.
-  if [ -s "${COVERAGE_MD:-}" ]; then
+  if [ "${RESULT_SERVER_COVERAGE:-}" = "failure" ]; then
+    echo "| **Coverage — server** | ❌ failure — [coverage job](${RUN_URL}) |"
+  elif [ -s "${COVERAGE_MD:-}" ]; then
     echo "| **Coverage — server** | $(head -n 1 "$COVERAGE_MD") |"
   elif [ "$RESULT_UNIT" = "skipped" ]; then
     echo "| **Coverage — server** | ⏭️ skipped — no server code changed |"

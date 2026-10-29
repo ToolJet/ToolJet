@@ -92,7 +92,7 @@ jobs:
               - '{.version,server/.version,frontend/.version}'
             # toolchain / workflow changes affect every suite
             root:
-              - '{package.json,package-lock.json,.nvmrc,.node-version,.github/workflows/**}'
+              - '{package.json,package-lock.json,.nvmrc,.node-version,.github/workflows/**,scripts/ai-*,scripts/check-ai-*,scripts/report-ai-*,scripts/test-ai-*,scripts/normalize-ai-coverage-baseline.*,scripts/redact-private-diff.*,scripts/render-coverage.mjs,scripts/coverage-gate.sh}'
       # a submodule bump counts only if the EE diff touches more than docs/skills;
       # any lookup failure counts as changed
       - name: Detect EE submodule changes
@@ -198,6 +198,8 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'server/package-lock.json'
       - run: npm ci --prefix server
+      - name: Test AI coverage policy and baseline normalization
+        run: set -o pipefail; mkdir -p /tmp/buildlog; node --test scripts/normalize-ai-coverage-baseline.test.mjs scripts/ai-test-policy.test.mjs scripts/redact-private-diff.test.mjs 2>&1 | tee -a /tmp/buildlog/server.log
       - run: set -o pipefail; mkdir -p /tmp/buildlog; npm run --prefix server lint 2>&1 | tee -a /tmp/buildlog/server.log
       - run: set -o pipefail; npm run --prefix server build 2>&1 | tee -a /tmp/buildlog/server.log
       - run: set -o pipefail; bash server/scripts/check-ee-leak.sh 2>&1 | tee -a /tmp/buildlog/server.log
@@ -309,14 +311,36 @@ jobs:
       # must fail the build before the suite reports a misleading green.
       - name: Validate test layout
         run: npm run test:layout
+      - name: Validate AI placement, discovery and pinned EE revision
+        run: TOOLJET_EDITION=ee node ../scripts/check-ai-tests.cjs frontend
       # Widget testing contracts are validated in the separate `widget-contracts` job below.
       - name: Run full test suite with coverage
-        run: npm run test:ci
+        run: |
+          mkdir -p coverage-ai/ee
+          TOOLJET_EDITION=ee npm run test:ci -- --json --outputFile=coverage-ai/ee/results.json
+      - name: Verify AI execution
+        id: ai-results
+        continue-on-error: true
+        run: node ../scripts/check-ai-test-results.cjs frontend coverage-ai/ee/results.json
+      - name: Extract and check full-scope AI coverage
+        id: ai-coverage
+        continue-on-error: true
+        run: node ../scripts/report-ai-coverage.cjs frontend coverage/app-builder/ee/jest/coverage-final.json coverage-ai/ee/report
+      - name: Upload AI frontend coverage
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-ai-frontend
+          path: frontend/coverage-ai/ee/report/coverage-summary.json
+          if-no-files-found: error
       # Fails if an App Builder source file is not assigned to a subsystem in
       # app-builder-coverage-manifest.json. The harness contract spec already
       # runs in the full suite above via testMatch.
       - name: Validate App Builder coverage manifest
+        if: ${{ !cancelled() && (steps.ai-coverage.outcome == 'success' || steps.ai-coverage.outcome == 'failure') }}
         run: npm run validate:app-builder-coverage-manifest
+      - name: Enforce AI execution and coverage verdicts after publishing reports
+        if: ${{ !cancelled() && (steps.ai-results.outcome == 'failure' || steps.ai-coverage.outcome == 'failure') }}
+        run: exit 1
 
   # Separate job, and therefore a separate status check, so a contract violation can't
   # hide the frontend test result. Ported from lts-3.16 (#18166), where it replaced the
@@ -394,6 +418,7 @@ jobs:
       && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
     outputs:
       unit: ${{ steps.unit.outcome }}
+      ai: ${{ steps.ai-results.outcome }}
     container: node:22.23.4-bookworm
     services: &server-test-services
       postgres:
@@ -423,6 +448,7 @@ jobs:
       PG_USER: postgres
       PG_PASS: postgres
       PG_DB: tooljet_test
+      ATTACHMENT_TEST_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/tooljet_ai_test_ci
       TOOLJET_DB_USER: postgres
       TOOLJET_DB_PASS: postgres
       TOOLJET_DB_HOST: postgres
@@ -457,6 +483,10 @@ jobs:
       - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
+      - name: Validate AI placement and discovery
+        run: TOOLJET_EDITION=ee node scripts/check-ai-tests.cjs server
+      - name: Create isolated attachment fixture database
+        run: PGPASSWORD="$PG_PASS" createdb --host "$PG_HOST" --username "$PG_USER" tooljet_ai_test_ci
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
       - name: Unit tests
@@ -467,6 +497,10 @@ jobs:
           --group=-gitsync
           --coverage --coverageReporters=json
           --json --outputFile /tmp/tj-unit-results.json
+      - name: Verify all AI assertions executed
+        id: ai-results
+        if: ${{ !cancelled() && (steps.unit.outcome == 'success' || steps.unit.outcome == 'failure') }}
+        run: node scripts/check-ai-test-results.cjs server /tmp/tj-unit-results.json
       - name: Strip coverage map from results JSON
         # --coverage attaches a full coverageMap to the --json output (~12MB for this
         # suite) — coverage-unit/coverage-final.json below is the report that matters.
@@ -560,6 +594,9 @@ jobs:
   # passed — a report merged from a failing/incomplete suite would misrepresent coverage.
   test-server-coverage:
     name: 'Coverage · server'
+    permissions:
+      contents: read
+      actions: read
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs:
@@ -599,11 +636,53 @@ jobs:
           path: server/coverage-e2e
       - name: Merge coverage
         run: npm run --prefix server test:cov:merge
+      - name: Download E2E execution results
+        id: e2e-results-download
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          pattern: full-e2e-results-*
+          path: /tmp/ai-e2e-results
+          merge-multiple: true
+      - name: Verify AI E2E assertions executed
+        id: ai-e2e-results
+        continue-on-error: true
+        run: node scripts/check-ai-test-results.cjs server /tmp/ai-e2e-results e2e
+      - name: Compare the baseline using the same AI source scope
+        id: baseline-scope
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_REF: ${{ github.base_ref }}
+        run: node scripts/normalize-ai-coverage-baseline.mjs server/coverage-combined/coverage-summary.json /tmp/coverage-baseline
+      - name: Upload comparable coverage baseline
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-baseline
+          path: /tmp/coverage-baseline/
+          if-no-files-found: warn
+      - name: Extract and check full-scope AI backend coverage
+        id: ai-coverage
+        continue-on-error: true
+        run: node scripts/report-ai-coverage.cjs server server/coverage-combined/coverage-final.json server/coverage-ai/ee/report
+      - name: Upload AI backend coverage
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-ai-backend
+          path: server/coverage-ai/ee/report/coverage-summary.json
+          if-no-files-found: warn
       - name: Upload combined coverage report
         uses: actions/upload-artifact@v7
         with:
           name: coverage-report-html
-          path: server/coverage-combined/
+          # Numeric reports include all editions; private source HTML must stay private.
+          path: |
+            server/coverage-combined/
+            !server/coverage-combined/ee/**
+            !server/coverage-combined/lcov-report/ee/**
           compression-level: 9
           if-no-files-found: ignore
           retention-days: 7
@@ -627,7 +706,8 @@ jobs:
           old=$(git rev-parse HEAD^1:server/ee) new=$(git rev-parse HEAD:server/ee)
           if [ "$old" != "$new" ]; then
             git -C server/ee cat-file -e "$old" 2>/dev/null || git -C server/ee fetch --no-tags --depth=1 origin "$old"
-            git -C server/ee diff --no-color "$old" "$new" --src-prefix=a/server/ee/ --dst-prefix=b/server/ee/ -- . ':(exclude)test/**' >> /tmp/cov/pr.diff
+            # Colocated private specs were moved; their deleted source must not enter public artifacts.
+            git -C server/ee diff --no-color --no-ext-diff --no-textconv "$old" "$new" --src-prefix=a/server/ee/ --dst-prefix=b/server/ee/ -- . ':(exclude)test/**' ':(exclude)**/*.spec.*' ':(exclude)**/*.test.*' | node scripts/redact-private-diff.cjs >> /tmp/cov/pr.diff
           fi
       - name: Upload coverage gate inputs
         if: github.event_name == 'pull_request'
@@ -637,6 +717,9 @@ jobs:
           path: /tmp/cov/
           if-no-files-found: ignore
           retention-days: 1
+      - name: Enforce coverage verdicts after publishing reports
+        if: ${{ !cancelled() && (steps.ai-coverage.outcome == 'failure' || steps.baseline-scope.outcome == 'failure' || steps.ai-e2e-results.outcome == 'failure' || steps.e2e-results-download.outcome == 'failure') }}
+        run: exit 1
 
   # ---------------------------------------------------------------------------
   # 3a-bis. git-sync suite — isolated because it depends on an EXTERNAL git simulator
@@ -685,17 +768,25 @@ jobs:
       - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
+      - name: Validate AI placement and discovery
+        run: TOOLJET_EDITION=ce node scripts/check-ai-tests.cjs server
+      - name: Create isolated attachment fixture database
+        run: PGPASSWORD="$PG_PASS" createdb --host "$PG_HOST" --username "$PG_USER" tooljet_ai_test_ci
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
       - name: Unit tests
         id: unit
         continue-on-error: true
-        run: TOOLJET_EDITION=ce npm run --prefix server test -- --group=-gitsync
+        run: TOOLJET_EDITION=ce npm run --prefix server test -- --group=-gitsync --json --outputFile=/tmp/tj-ce-unit-results.json
+      - name: Verify CE AI execution without private submodules
+        id: ai
+        continue-on-error: true
+        run: TOOLJET_EDITION=ce node scripts/check-ai-test-results.cjs server /tmp/tj-ce-unit-results.json
       - name: E2E tests
         id: e2e
         run: TOOLJET_EDITION=ce npm run --prefix server test:e2e -- --group=-gitsync --testTimeout=60000
-      - name: Fail job if unit or e2e failed
-        if: ${{ steps.unit.outcome == 'failure' || steps.e2e.outcome == 'failure' }}
+      - name: Fail job if unit, AI execution or e2e failed
+        if: ${{ !cancelled() && (steps.unit.outcome == 'failure' || steps.ai.outcome == 'failure' || steps.e2e.outcome == 'failure') }}
         run: exit 1
 
   test-gitsync:
@@ -881,6 +972,7 @@ jobs:
       PG_USER: postgres
       PG_PASS: postgres
       PG_DB: tooljet_test
+      ATTACHMENT_TEST_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/tooljet_ai_test_ci
       TOOLJET_DB_USER: postgres
       TOOLJET_DB_PASS: postgres
       TOOLJET_DB_HOST: postgres
@@ -929,6 +1021,10 @@ jobs:
       - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
+      - name: Validate AI placement and discovery
+        run: TOOLJET_EDITION=ee node scripts/check-ai-tests.cjs server
+      - name: Create isolated attachment fixture database
+        run: PGPASSWORD="$PG_PASS" createdb --host "$PG_HOST" --username "$PG_USER" tooljet_ai_test_ci
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
       - name: Run changed tests (unit + e2e)
@@ -1324,6 +1420,15 @@ jobs:
           path: /tmp/ci-results/lcov
           merge-multiple: true
 
+      - name: Download comparable coverage baseline
+        if: >-
+          github.event_name == 'pull_request' && needs.detect-changes.result != 'skipped' && needs.detect-changes.outputs.mode == 'full'
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-baseline
+          path: /tmp/ci-results/base
+
       - name: Evaluate results
         id: eval
         env:
@@ -1388,11 +1493,13 @@ jobs:
             fi
           done
 
-          # Coverage gate — full PR runs with server changes whose suites all passed
-          # (a failed suite already fails the gate and leaves no coverage to judge).
-          # Writes the comment section rendered by render-ci-comment.sh.
-          if [[ "$MODE" == "full" && "$failed" == "false" && "${{ github.event_name }}" == "pull_request" \
-                && "${{ needs.detect-changes.outputs.server }}" == "true" ]]; then
+          # Judge coverage only after its contributing server suites passed. An AI
+          # report or unrelated job failure must not hide the available diagnostics;
+          # failed remains true, so calculating coverage cannot clear another failure.
+          if [[ "$MODE" == "full" && "${{ github.event_name }}" == "pull_request" \
+                && "${{ needs.detect-changes.outputs.server }}" == "true" \
+                && "${{ needs.test-server.result }}" == "success" \
+                && "${{ needs.test-server-e2e.result }}" == "success" ]]; then
             mkdir -p /tmp/ci-results
             if ! bash scripts/coverage-gate.sh > /tmp/ci-results/coverage.md; then
               echo "coverage gate: fail"
@@ -1429,6 +1536,9 @@ jobs:
           # strings when the whole job is skipped (server=='false') — fall back to
           # the job result itself so the comment shows "skipped", not "❓".
           RESULT_UNIT: ${{ needs.test-server.outputs.unit || needs.test-server.result }}
+          RESULT_AI_UNIT: ${{ needs.test-server.outputs.ai || needs.test-server.result }}
+          RESULT_CE: ${{ needs.test-server-ce.result }}
+          RESULT_SERVER_COVERAGE: ${{ needs.test-server-coverage.result }}
           RESULT_E2E: ${{ needs.test-server-e2e.result }}
           RESULT_CHANGED: ${{ needs.test-changed.result }}
           RESULT_FRONTEND: ${{ needs.test-frontend.result }}
