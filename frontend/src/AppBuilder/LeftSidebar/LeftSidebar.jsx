@@ -15,7 +15,10 @@ import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
-import { SquareDashedMousePointer, Bug, Bolt, History, Waypoints } from 'lucide-react';
+import { SquareDashedMousePointer, Bug, Bolt, History, Waypoints, Search } from 'lucide-react';
+import { useHotkeys } from 'react-hotkeys-hook';
+import { EditorView } from '@codemirror/view';
+import CodeSearch from './CodeSearch/CodeSearch';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import SupportButton from './SupportButton';
 import AvatarGroup from '@/_ui/AvatarGroup';
@@ -26,12 +29,14 @@ import AppHistoryIcon from './AppHistory/AppHistoryIcon';
 import AppHistory from './AppHistory';
 import AppLibrariesIcon from './AppLibraries/AppLibrariesIcon';
 import AppLibraries from './AppLibraries';
+import Beta from '@/_ui/Beta';
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
 // Human names for the error-boundary label/location of each sidebar panel.
 const LEFT_SIDEBAR_PANEL_LABELS = {
   page: 'Inspector',
   inspect: 'Inspector',
+  search: 'Code search',
   tooljetai: 'AI chat',
   apphistory: 'App history',
   libraries: 'Libraries',
@@ -83,11 +88,15 @@ export const BaseLeftSidebar = ({
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const sideBarBtnRefs = useRef({});
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const returnToSearch = useStore((state) => state.codeSearch.returnToSearch);
+  const setCodeSearchReturnToSearch = useStore((state) => state.setCodeSearchReturnToSearch);
   const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled;
 
   const handleSelectedSidebarItem = (item) => {
     if (item === 'debugger') resetUnreadErrorCount();
+    // Only a search result opens Settings with a way back to the search panel.
+    setCodeSearchReturnToSearch(false);
     setSelectedSidebarItem(item);
     localStorage.setItem('selectedSidebarItem', item);
     // Only treat a repeat click as "close" when the panel is actually OPEN. Panels that close
@@ -101,6 +110,29 @@ export const BaseLeftSidebar = ({
     }
     if (!isSidebarOpen) toggleLeftSidebar(true);
   };
+
+  // Same shortcut builders know from code editors' app-wide search; toggles the panel.
+  useHotkeys(
+    'mod+shift+f',
+    () => {
+      // Seed the search with the word selected in a code editor, as code editors do.
+      const editorElement = document.activeElement?.closest?.('.cm-editor');
+      const view = editorElement && EditorView.findFromDOM(editorElement);
+      const { from, to } = view?.state.selection.main || {};
+      const selected = view && from !== to ? view.state.sliceDoc(from, to) : '';
+      if (selected && selected.length <= 100 && !selected.includes('\n')) {
+        useStore.getState().setCodeSearchTerm(selected);
+        setSelectedSidebarItem('search');
+        if (!isSidebarOpen) toggleLeftSidebar(true);
+        return;
+      }
+      if (selectedSidebarItem === 'search' && isSidebarOpen) return toggleLeftSidebar(false);
+      setSelectedSidebarItem('search');
+      if (!isSidebarOpen) toggleLeftSidebar(true);
+    },
+    { enabled: currentMode !== 'view', enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true },
+    [selectedSidebarItem, isSidebarOpen, currentMode]
+  );
 
   const setSideBarBtnRefs = (page) => (ref) => {
     sideBarBtnRefs.current[page] = ref;
@@ -147,6 +179,8 @@ export const BaseLeftSidebar = ({
             appType={appType}
           />
         );
+      case 'search':
+        return <CodeSearch darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'tooljetai':
         return renderAIChat({ darkMode });
       case 'apphistory':
@@ -163,6 +197,7 @@ export const BaseLeftSidebar = ({
             darkMode={darkMode}
             isModuleEditor={isModuleEditor}
             onClose={() => toggleLeftSidebar(false)}
+            onBackToSearch={returnToSearch ? () => handleSelectedSidebarItem('search') : undefined}
           />
         );
     }
@@ -187,6 +222,19 @@ export const BaseLeftSidebar = ({
           ref={setSideBarBtnRefs('inspect')}
         >
           <SquareDashedMousePointer width="16" height="16" className="tw-text-icon-strong" />
+        </SidebarItem>
+
+        <SidebarItem
+          selectedSidebarItem={selectedSidebarItem}
+          onClick={() => handleSelectedSidebarItem('search')}
+          darkMode={darkMode}
+          icon="search"
+          className={`left-sidebar-item left-sidebar-layout tw-overflow-visible`}
+          tip="Code search"
+          ref={setSideBarBtnRefs('search')}
+        >
+          <Search width="16" height="16" className="tw-text-icon-strong" />
+          <Beta className="code-search-beta-tag tw-py-0.5 tw-px-1.5 tw-border-none" />
         </SidebarItem>
 
         <SidebarItem
@@ -294,7 +342,9 @@ export const BaseLeftSidebar = ({
         onInteractOutside={(e) => {
           // if tooljetai is open don't close
           if (
-            ['tooljetai', 'inspect', 'debugger', 'settings', 'libraries', 'dependencies'].includes(selectedSidebarItem)
+            ['tooljetai', 'inspect', 'search', 'debugger', 'settings', 'libraries', 'dependencies'].includes(
+              selectedSidebarItem
+            )
           )
             return;
           const isWithinSidebar = e.target.closest('.left-sidebar');

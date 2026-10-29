@@ -1,6 +1,7 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import Redis from 'ioredis';
 import { TransactionLogger } from '@modules/logging/service';
+import { REDIS_MODULE_OPTIONS, RedisModuleOptions } from './redis.constants';
 
 /**
  * Global Redis Service
@@ -29,7 +30,10 @@ import { TransactionLogger } from '@modules/logging/service';
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private client: Redis;
 
-  constructor(private readonly transactionLogger: TransactionLogger) {}
+  constructor(
+    private readonly transactionLogger: TransactionLogger,
+    @Inject(REDIS_MODULE_OPTIONS) private readonly options: RedisModuleOptions
+  ) {}
 
   /**
    * Redis connection configuration derived from environment variables
@@ -47,7 +51,13 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     };
   }
 
-  onModuleInit() {
+  /**
+   * Creates the singleton client and attaches listeners. Idempotent — returns the existing client
+   * if one is already open. Both the eager (onModuleInit) and lazy (getClient) paths go through it.
+   */
+  private initClient(): Redis {
+    if (this.client) return this.client;
+
     this.client = new Redis(this.getRedisConfig());
 
     this.client.on('error', (err) => {
@@ -69,10 +79,20 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     this.client.on('reconnecting', () => {
       this.transactionLogger.log('[RedisService] Redis client reconnecting...');
     });
+
+    return this.client;
+  }
+
+  onModuleInit() {
+    // In the migration/CLI context (IS_GET_CONTEXT) skip the eager connection — nothing in that
+    // context needs Redis, and getClient() will connect lazily if some path ever does.
+    if (!this.options?.eagerConnect) return;
+    this.initClient();
   }
 
   onModuleDestroy() {
-    this.client?.disconnect();
+    if (!this.client) return;
+    this.client.disconnect();
     this.transactionLogger.log('[RedisService] Redis client disconnected');
   }
 
@@ -81,10 +101,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
    * Use this for general Redis operations (get, set, hset, etc.)
    */
   getClient(): Redis {
-    if (!this.client) {
-      throw new Error('Redis client not initialized. Ensure RedisModule is imported.');
-    }
-    return this.client;
+    // Lazily connect on first use. This covers the get-context path (where the eager connect was
+    // skipped) and is a no-op once the eager connection already opened the client.
+    return this.initClient();
   }
 
   /**

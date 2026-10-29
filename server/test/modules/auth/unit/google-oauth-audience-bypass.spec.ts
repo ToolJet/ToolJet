@@ -34,6 +34,7 @@ describe('GoogleOAuthService.signIn — GHSA-xfj2 audience-check bypass guard', 
       firstName: 'SSO',
       lastName: 'User',
       email: 'user@tooljet.io',
+      emailVerified: false,
       sso: 'google',
     });
   });

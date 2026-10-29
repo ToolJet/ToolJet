@@ -1,5 +1,8 @@
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { InternalTable } from '@entities/internal_table.entity';
+import { InternalTableRelation } from '@entities/internal_table_relation.entity';
+import { computeMissingMigrations } from '@modules/tooljet-db/services/tooljet-db-promote.service';
 import { VersionRepository } from './repository';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
@@ -23,13 +26,19 @@ import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { v4 as uuid } from 'uuid';
 import { APP_TYPES } from '@modules/apps/constants';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from './module-ref.util';
+import { resolveAllWorkflowRefsForVersion, resolveWorkflowRef } from './workflow-ref.util';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import {
   assertGitSyncEditAllowedForOrg,
   assertVersionEditable,
 } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
+import { AppsUtilService } from '@modules/apps/util.service';
+import { TooljetDbRelationResolverService } from '@modules/tooljet-db/services/relation-resolver.service';
 import { AppValidationService } from '@modules/app-validation/service';
 import { VersionSettingsWrite } from '@modules/app-validation/types';
+
+/** A table that resolves in the target environment but hasn't caught up on all its migrations yet. */
+export type TableBehindWarning = { tableId: string; tableName: string; missingCount: number };
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -41,6 +50,8 @@ export class VersionUtilService implements IVersionUtilService {
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly appHistoryUtilService: AppHistoryUtilService,
     protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService,
+    protected readonly appsUtilService: AppsUtilService,
+    protected readonly relationResolverService: TooljetDbRelationResolverService,
     protected readonly appValidationService: AppValidationService
   ) {}
   protected mergeDeep(target, source, seen = new WeakMap()) {
@@ -245,8 +256,10 @@ export class VersionUtilService implements IVersionUtilService {
    *      in-memory entities. Satisfies `chk_app_versions_branch_metadata` and
    *      preserves continuity for the user's next edit. No child entities
    *      (pages / queries / etc.) are cloned — same model as the migration.
-   *   2. NULL out branch_id on the just-published row. Released snapshots
-   *      become branchless in the new model.
+   *   2. Nothing else. The just-published row KEEPS its default-branch
+   *      branch_id — see the closing comment in this method. An earlier
+   *      model detached it here; that CHECK constraint is gone and released
+   *      rows are no longer branchless.
    *
    * No-op when:
    *   - row isn't VERSION-type (sub-branch BRANCH publishes have their own flow)
@@ -308,11 +321,18 @@ export class VersionUtilService implements IVersionUtilService {
         ...(parentApp.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
         co_relation_id: sourceVersion?.co_relation_id ?? appVersion.co_relation_id,
         parentVersionId: sourceVersion?.id ?? appVersion.id,
+        // A workflow's flow graph lives in `definition`, not in child entities, so
+        // setupNewVersion's clone never carries it and the continuity draft would open on a
+        // lone start node. Mirrors buildVersionFromParent.
+        ...(parentApp.type === APP_TYPES.WORKFLOW && {
+          definition: sourceVersion?.definition ?? (appVersion as any)?.definition ?? null,
+        }),
         currentEnvironmentId: firstPriorityEnv?.id ?? sourceVersion?.currentEnvironmentId ?? null,
         // Inherit sync state — the just-published row was synced, so the continuity
         // draft seeded from it should stay marked synced too.
         isSynced: sourceVersion?.isSynced ?? appVersion.isSynced ?? false,
         isStub: false,
+        workflowEnabled: (sourceVersion as any)?.workflowEnabled ?? (appVersion as any)?.workflowEnabled ?? false,
         appName: (sourceVersion as any)?.appName ?? (appVersion as any)?.appName ?? null,
         slug: (sourceVersion as any)?.slug ?? (appVersion as any)?.slug ?? null,
         icon: (sourceVersion as any)?.icon ?? (appVersion as any)?.icon ?? null,
@@ -355,7 +375,7 @@ export class VersionUtilService implements IVersionUtilService {
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto, manager?: EntityManager) {
     const { versionName, versionType } = versionCreateDto;
-    const branchId = await this.resolveVersionBranchId(app, user, versionCreateDto);
+    const branchId = await this.resolveVersionBranchId(user, versionCreateDto);
 
     if (!versionName || versionName.trim().length === 0) {
       throw new BadRequestException('Version name cannot be empty.');
@@ -405,7 +425,7 @@ export class VersionUtilService implements IVersionUtilService {
    * the released/current version is never removed.
    */
   async replaceDraftVersion(app: App, user: User, versionCreateDto: VersionCreateDto): Promise<any> {
-    const branchId = await this.resolveVersionBranchId(app, user, versionCreateDto);
+    const branchId = await this.resolveVersionBranchId(user, versionCreateDto);
     if (!versionCreateDto.versionName || versionCreateDto.versionName.trim().length === 0) {
       throw new BadRequestException('Version name cannot be empty.');
     }
@@ -465,23 +485,11 @@ export class VersionUtilService implements IVersionUtilService {
   /**
    * Resolve the branch id a new version lands on: the forwarded branch id, else the org's
    * default branch. branch_id is NOT NULL on app_versions for every app type now (see
-   * 1782400000000-BackfillWorkflowBranchIdAndEnforceNotNull), so every type needs a real value —
-   * but workflows never participate in git-sync branching, so they're pinned to the org's
-   * default branch unconditionally, ignoring any branch context on the request. That context is
-   * normally absent for workflow calls (the frontend omits it — see active-branch.js's
-   * isBranchRelevantPath), but `_activeBranchId` is a session-wide client cache that can still
-   * carry a stale feature-branch id left over from an unrelated app opened earlier in the same
-   * session; the backend must not trust it for a type that structurally can't branch. This is a
-   * pure constraint-satisfaction fix, not new git-sync participation for workflows.
+   * 1782400000000-BackfillWorkflowBranchIdAndEnforceNotNull), so every type needs a real value.
    */
-  private async resolveVersionBranchId(
-    app: App,
-    user: User,
-    versionCreateDto: VersionCreateDto
-  ): Promise<string | undefined> {
+  private async resolveVersionBranchId(user: User, versionCreateDto: VersionCreateDto): Promise<string | undefined> {
     const defaultBranchId = (await this.gitSyncConfigsUtilService.getDetails(user.organizationId)).options.defaultBranch
       ?.id;
-    if (app.type === APP_TYPES.WORKFLOW) return defaultBranchId ?? undefined;
     return versionCreateDto.branchId ?? defaultBranchId ?? undefined;
   }
 
@@ -536,6 +544,10 @@ export class VersionUtilService implements IVersionUtilService {
         appName: versionFrom?.appName ?? app.name ?? app.id,
         icon: versionFrom?.icon ?? null,
         isPublic: versionFrom?.isPublic ?? false,
+        // Must survive a revert: replaceDraftVersion deletes and recreates the default branch's
+        // DRAFT, and propagate_workflow_enabled then fans whatever this row holds across every
+        // published row of the workflow.
+        workflowEnabled: versionFrom?.workflowEnabled ?? false,
       })
     );
 
@@ -625,6 +637,7 @@ export class VersionUtilService implements IVersionUtilService {
           appName: versionFrom?.appName ?? app.name ?? app.id,
           icon: versionFrom?.icon ?? null,
           isPublic: versionFrom?.isPublic ?? false,
+          workflowEnabled: versionFrom?.workflowEnabled ?? false,
         })
       );
 
@@ -678,6 +691,105 @@ export class VersionUtilService implements IVersionUtilService {
       if (error instanceof BadRequestException) throw error;
       this.logger.error('Failed to check if module version is in use', error?.stack || error);
       throw new BadRequestException('Failed to check if module version is in use');
+    }
+  }
+
+  // Twin of checkDraftModulesInApp for embedded workflows. Blocks on what a pin RESOLVES TO,
+  // never on what it says, so a future sentinel needs no change here.
+  //
+  // Unlike the module twin, an absent pin is NOT an offender: for a workflow query it means
+  // "run whatever's released", which is a legitimate published target.
+  async checkDraftWorkflowsInApp(versionId: string, organizationId: string, manager: EntityManager): Promise<void> {
+    try {
+      const defaultBranchId =
+        (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
+
+      const refs = await resolveAllWorkflowRefsForVersion(manager, versionId, organizationId, defaultBranchId);
+      if (refs.length === 0) return;
+
+      const dataQueries = await manager.find(DataQuery, {
+        where: { id: In(refs.map((r) => r.dataQueryId)) },
+        select: ['id', 'options'],
+      });
+      const optionsByDataQueryId = new Map(dataQueries.map((dq) => [dq.id, dq.options]));
+
+      const coRels = Array.from(new Set(refs.map((r) => r.workflowCoRel)));
+      const workflowApps: { coRel: string; name: string }[] = await manager.query(
+        `SELECT DISTINCT ON (a.co_relation_id) a.co_relation_id AS "coRel",
+                COALESCE(a.name, (
+                  SELECT av.app_name FROM app_versions av
+                  WHERE av.app_id = a.id AND av.app_name IS NOT NULL
+                  ORDER BY av.created_at DESC LIMIT 1
+                )) AS "name"
+         FROM apps a
+         WHERE a.co_relation_id::text = ANY($1) AND a.type = $2 AND a.organization_id = $3
+         ORDER BY a.co_relation_id, a.created_at ASC`,
+        [coRels, APP_TYPES.WORKFLOW, organizationId]
+      );
+      const nameByCoRel = new Map(workflowApps.map((w) => [w.coRel, w.name]));
+
+      type Offender = { name: string; kind: 'no-row' | 'invalid-pin' | 'draft-pinned' };
+      const offenders: Offender[] = [];
+      const seenCoRel = new Set<string>();
+
+      for (const ref of refs) {
+        if (seenCoRel.has(ref.workflowCoRel)) continue;
+        seenCoRel.add(ref.workflowCoRel);
+        const name = nameByCoRel.get(ref.workflowCoRel) ?? 'unknown workflow';
+
+        // consumerBranchId omitted deliberately: the question here is whether the target is
+        // publishable, not which branch to follow, so __current_branch__ resolves to the
+        // default-branch draft and is caught by the DRAFT check below.
+        let resolved: { appId: string | null; appVersionId: string | null };
+        try {
+          resolved = await resolveWorkflowRef(
+            manager,
+            optionsByDataQueryId.get(ref.dataQueryId) ?? {},
+            organizationId,
+            defaultBranchId
+          );
+        } catch {
+          offenders.push({ name, kind: 'invalid-pin' });
+          continue;
+        }
+
+        if (!resolved.appVersionId) {
+          offenders.push({ name, kind: 'no-row' });
+          continue;
+        }
+
+        const row = await manager.findOne(AppVersion, {
+          where: { id: resolved.appVersionId },
+          select: ['id', 'status'],
+        });
+        if (!row || row.status === AppVersionStatus.DRAFT) {
+          offenders.push({ name, kind: 'draft-pinned' });
+        }
+      }
+
+      if (offenders.length === 0) return;
+
+      const formatEntry = (o: Offender) =>
+        o.kind === 'no-row'
+          ? `Workflow "${o.name}" has no saved version yet. Save the workflow first.`
+          : o.kind === 'invalid-pin'
+            ? `Workflow "${o.name}" pin is invalid. Pin a saved version.`
+            : `Workflow "${o.name}" has a draft version pinned. Pin a saved version.`;
+
+      const workflowList = offenders.map(formatEntry).join(' ');
+      throw new BadRequestException({
+        message: {
+          error:
+            offenders.length === 1
+              ? `Save blocked - ${formatEntry(offenders[0])}`
+              : `Save blocked - ${offenders.length} workflows need saving. ${workflowList}`,
+          details: workflowList,
+        },
+      });
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error('Failed to check draft workflows in app', error?.stack || error);
+      throw new BadRequestException('Failed to validate workflow versions');
     }
   }
 
@@ -806,11 +918,225 @@ export class VersionUtilService implements IVersionUtilService {
     }
   }
 
+  /**
+   * Second dependency type promote must validate, same shape as checkModulesPromotableToEnvironment:
+   * a query against a ToolJet DB table that hasn't reached the target environment yet would 404 at
+   * runtime, so promote blocks instead. Offender lookup is one query (relationResolverService.resolve
+   * batches on IN), not one per table. A soft-deleted table is invisible to findTooljetDbTables
+   * already, so it never blocks. `versionId` scopes findTooljetDbTables to the version being
+   * promoted, same as checkModulesPromotableToEnvironment scopes on it — an abandoned draft's stale
+   * table reference must never block a different version's promote.
+   *
+   * Once every table clears the hard block, a second, additive pass warns (never blocks) on tables
+   * that resolve in the target but are missing migrations there - "resolves" only means a relation
+   * row exists, not that it is caught up. A table with no relation in the source environment yet
+   * (e.g. created directly in a higher environment) has nothing to compare against and is silently
+   * skipped.
+   */
+  async checkTablesPromotableToEnvironment(
+    appId: string,
+    versionId: string,
+    targetEnvironmentId: string,
+    targetEnvironmentName: string,
+    sourceEnvironmentId: string,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<{ warnings: TableBehindWarning[] }> {
+    try {
+      const tables = await this.appsUtilService.findTooljetDbTables(appId, versionId);
+      if (!tables.length) return { warnings: [] };
+
+      const tableIds = tables.map((t) => t.table_id);
+      const resolved = await this.relationResolverService.resolve(
+        organizationId,
+        tableIds,
+        targetEnvironmentId,
+        manager
+      );
+      const offenderIds = tableIds.filter((id) => !resolved.has(id));
+      if (offenderIds.length) {
+        const offenders = await manager.find(InternalTable, { where: { id: In(offenderIds) } });
+        const names = offenders.map((t) => t.tableName);
+        const tableList = names.join(', ');
+        const message =
+          names.length === 1
+            ? `Promote blocked - table "${names[0]}" not available in ${targetEnvironmentName}. Promote the table first.`
+            : `Promote blocked - ${names.length} tables not available in ${targetEnvironmentName}: ${tableList}. Promote the tables first.`;
+        throw new BadRequestException({
+          message: { error: message, details: tableList },
+        });
+      }
+
+      const warnings = await this.findTablesBehindTarget(organizationId, sourceEnvironmentId, resolved, manager);
+      return { warnings };
+    } catch (error) {
+      // ForbiddenException: relationResolverService.resolve() throws it (unlicensed org resolving
+      // to a non-default environment) — a real 403, not a validation failure, so it must pass
+      // through same as BadRequestException rather than get flattened into a misleading 400.
+      if (error instanceof BadRequestException || error instanceof ForbiddenException) throw error;
+      this.logger.error('Failed to check table environment availability', error?.stack || error);
+      throw new BadRequestException('Failed to validate tooljet database tables for promote');
+    }
+  }
+
+  private async findTablesBehindTarget(
+    organizationId: string,
+    sourceEnvironmentId: string,
+    targetResolved: Map<string, string>,
+    manager: EntityManager
+  ): Promise<TableBehindWarning[]> {
+    const tableIds = [...targetResolved.keys()];
+    const sourceResolved = await this.relationResolverService.resolve(
+      organizationId,
+      tableIds,
+      sourceEnvironmentId,
+      manager
+    );
+
+    const pairs = tableIds.flatMap((tableId) => {
+      const sourceRelationId = sourceResolved.get(tableId);
+      return sourceRelationId ? [{ tableId, sourceRelationId, targetRelationId: targetResolved.get(tableId) }] : [];
+    });
+    if (!pairs.length) return [];
+
+    const relationIds = pairs.flatMap((pair) => [pair.sourceRelationId, pair.targetRelationId]);
+    const relations = await manager.find(InternalTableRelation, { where: { id: In(relationIds) } });
+    const relationById = new Map(relations.map((r) => [r.id, r]));
+
+    const internalTables = await manager.find(InternalTable, {
+      where: { id: In(pairs.map((pair) => pair.tableId)) },
+    });
+    const tableNameById = new Map(internalTables.map((t) => [t.id, t.tableName]));
+
+    const warnings: TableBehindWarning[] = [];
+    for (const { tableId, sourceRelationId, targetRelationId } of pairs) {
+      const sourceRelation = relationById.get(sourceRelationId);
+      const targetRelation = relationById.get(targetRelationId);
+      if (!sourceRelation || !targetRelation) continue;
+
+      const missing = await computeMissingMigrations(tableId, sourceRelation, targetRelation, manager);
+      if (missing.length) {
+        warnings.push({
+          tableId,
+          tableName: tableNameById.get(tableId) ?? tableId,
+          missingCount: missing.length,
+        });
+      }
+    }
+    return warnings;
+  }
+
+  // Twin of checkModulesPromotableToEnvironment for embedded workflows.
+  async checkWorkflowsPromotableToEnvironment(
+    versionId: string,
+    targetEnvironmentName: string,
+    targetPriority: number,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    try {
+      const defaultBranchId =
+        (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
+
+      const refs = await resolveAllWorkflowRefsForVersion(manager, versionId, organizationId, defaultBranchId);
+      if (refs.length === 0) return;
+
+      const dataQueries = await manager.find(DataQuery, {
+        where: { id: In(refs.map((r) => r.dataQueryId)) },
+        select: ['id', 'options'],
+      });
+      const optionsByDataQueryId = new Map(dataQueries.map((dq) => [dq.id, dq.options]));
+
+      const coRels = Array.from(new Set(refs.map((r) => r.workflowCoRel)));
+      const workflowApps: { coRel: string; name: string }[] = await manager.query(
+        `SELECT DISTINCT ON (a.co_relation_id) a.co_relation_id AS "coRel",
+                COALESCE(a.name, (
+                  SELECT av.app_name FROM app_versions av
+                  WHERE av.app_id = a.id AND av.app_name IS NOT NULL
+                  ORDER BY av.created_at DESC LIMIT 1
+                )) AS "name"
+         FROM apps a
+         WHERE a.co_relation_id::text = ANY($1) AND a.type = $2 AND a.organization_id = $3
+         ORDER BY a.co_relation_id, a.created_at ASC`,
+        [coRels, APP_TYPES.WORKFLOW, organizationId]
+      );
+      const nameByCoRel = new Map(workflowApps.map((w) => [w.coRel, w.name]));
+
+      type Offender = {
+        name: string;
+        kind: 'no-row' | 'unresolved-pin' | 'not-promoted' | 'draft-pinned';
+        versionName?: string;
+      };
+      const offenders: Offender[] = [];
+      const seenCoRel = new Set<string>();
+
+      for (const ref of refs) {
+        if (seenCoRel.has(ref.workflowCoRel)) continue;
+        seenCoRel.add(ref.workflowCoRel);
+        const name = nameByCoRel.get(ref.workflowCoRel) ?? 'unknown workflow';
+
+        let resolved: { appId: string | null; appVersionId: string | null };
+        try {
+          resolved = await resolveWorkflowRef(
+            manager,
+            optionsByDataQueryId.get(ref.dataQueryId) ?? {},
+            organizationId,
+            defaultBranchId
+          );
+        } catch {
+          offenders.push({ name, kind: 'unresolved-pin' });
+          continue;
+        }
+        if (!resolved.appVersionId) {
+          offenders.push({ name, kind: 'no-row' });
+          continue;
+        }
+
+        const row = await manager
+          .createQueryBuilder(AppVersion, 'av')
+          .leftJoin('app_environments', 'e', 'e.id = av.current_environment_id')
+          .select(['av.name AS "versionName"', 'av.status AS "status"', 'e.priority AS "envPriority"'])
+          .where('av.id = :id', { id: resolved.appVersionId })
+          .getRawOne<{ versionName: string; status: string; envPriority: number | null }>();
+
+        // A draft pin reported as "not promoted" names a uuid and suggests a remedy that
+        // cannot work, so classify it separately.
+        if (row?.status === AppVersionStatus.DRAFT) {
+          offenders.push({ name, kind: 'draft-pinned' });
+        } else if (!row || row.envPriority === null || row.envPriority < targetPriority) {
+          offenders.push({ name, kind: 'not-promoted', versionName: row?.versionName });
+        }
+      }
+
+      if (offenders.length === 0) return;
+
+      const formatEntry = (o: Offender) => {
+        if (o.kind === 'no-row') return `Workflow "${o.name}" has no saved version. Save the workflow first.`;
+        if (o.kind === 'unresolved-pin') return `Workflow "${o.name}" pin is invalid. Pin a saved version.`;
+        if (o.kind === 'draft-pinned') return `Workflow "${o.name}" has a draft version pinned. Pin a saved version.`;
+        return `Workflow "${o.name}" version "${o.versionName ?? 'unresolved'}" not promoted to ${targetEnvironmentName} yet.`;
+      };
+      const workflowList = offenders.map(formatEntry).join(' ');
+      const message =
+        offenders.length === 1
+          ? `Promote blocked - ${formatEntry(offenders[0])}`
+          : `Promote blocked - ${offenders.length} dependent workflows need attention. ${workflowList}`;
+      throw new BadRequestException({
+        message: { error: message, details: workflowList },
+      });
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error('Failed to check workflow environment availability', error?.stack || error);
+      throw new BadRequestException('Failed to validate workflow versions for promote');
+    }
+  }
+
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const versionToDelete = app.appVersions[0];
       const versionId = versionToDelete.id;
-      const resourceLabel = app.type === 'module' ? 'module' : 'app';
+      const resourceLabel =
+        app.type === APP_TYPES.MODULE ? 'module' : app.type === APP_TYPES.WORKFLOW ? 'workflow' : 'app';
 
       // A released/current version can never be deleted, regardless of git state.
       if (app.currentVersionId === versionId || versionToDelete.status === AppVersionStatus.RELEASED) {
@@ -834,7 +1160,7 @@ export class VersionUtilService implements IVersionUtilService {
             `${branchName} (Draft) version is the head of the ${branchName} branch and cannot be deleted`
           );
         }
-        throw new ForbiddenException(`Cannot delete only version of ${app.type === 'module' ? 'module' : 'app'}`);
+        throw new ForbiddenException(`Cannot delete only version of ${resourceLabel}`);
       }
 
       // getDetails().isEnabled = git sync configured AND licensed. options.defaultBranch is always
