@@ -15,8 +15,9 @@ const FONT_INHERIT_CLASS = '[font-family:inherit]';
 const TEXT_SIZE_CLASS = 'tw-text-lg md:tw-text-lg';
 const CONTROL_SIZE_CLASS = `tw-h-9 ${TEXT_SIZE_CLASS} ${FONT_INHERIT_CLASS}`;
 const BOX_CLASS = `tw-w-full tw-rounded-md tw-border tw-border-solid tw-border-border-default tw-bg-background-surface-layer-01 tw-text-lg ${FONT_INHERIT_CLASS} tw-text-text-default aria-[invalid=true]:tw-border-border-danger-strong aria-[invalid=true]:tw-bg-background-error-weak`;
-// The select/popover menus render in a portal, so they need a layer above the table popover (z-index 100).
-const MENU_LAYER_CLASS = 'tw-z-[1042]';
+// The select/popover menus render in a portal, so they need a layer above the table popover (z-index 100) and
+// above a dialog (the builder lifts Rocket dialogs to z-index 1050).
+const MENU_LAYER_CLASS = 'tw-z-[1060]';
 
 // aria-invalid also drives the red border and tint of the Rocket inputs and of the boxes above.
 const invalidAria = (invalid, errorId) => (invalid ? { 'aria-invalid': 'true', 'aria-describedby': errorId } : {});
