@@ -15,6 +15,7 @@ const config: Config.InitialOptions = {
   globalSetup: '<rootDir>/test/jest-global-setup.ts',
   setupFiles: ['<rootDir>/test/jest-setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/test/jest-transaction-setup.ts'],
+  testPathIgnorePatterns: ['/node_modules/', ...(process.env.TOOLJET_EDITION === 'ce' ? ['<rootDir>/ee/'] : [])],
   testRegex: 'test/modules/.*/unit/.*spec\\.ts$',
   transform: {
     '^.+\\.(t|j)s$': [
