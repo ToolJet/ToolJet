@@ -229,8 +229,13 @@ integration('attachment lifecycle with PostgreSQL', () => {
       [due]
     );
     await db.query('ANALYZE ai_attachments');
-    const plan = await db.query(`EXPLAIN (FORMAT JSON) SELECT a.id FROM ai_attachments a
-      WHERE state <> 'deleting' AND next_cleanup_at <= now() ORDER BY next_cleanup_at,id LIMIT 100 FOR UPDATE SKIP LOCKED`);
+    // Validate index compatibility independently of cost estimates for this synthetic fixture.
+    // SET LOCAL is confined to this transaction and cannot affect the service's later queries.
+    const plan = await db.transaction(async (manager) => {
+      await manager.query('SET LOCAL enable_seqscan = off');
+      return manager.query(`EXPLAIN (FORMAT JSON) SELECT a.id FROM ai_attachments a
+        WHERE state <> 'deleting' AND next_cleanup_at <= now() ORDER BY next_cleanup_at,id LIMIT 100 FOR UPDATE SKIP LOCKED`);
+    });
     expect(JSON.stringify(plan)).toMatch(/idx_ai_attachments_(reconcile|cleanup)/);
     expect(JSON.stringify(plan)).not.toContain('Seq Scan');
     await service.sweep();
