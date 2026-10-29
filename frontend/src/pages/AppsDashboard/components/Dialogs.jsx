@@ -137,7 +137,7 @@ export default function Dialogs({
       )} */}
 
       <WorkspaceSwitchBranchModal
-        show={switchBranchModal.open}
+        show={switchBranchModal?.open ?? false}
         onBranchSwitch={handleOnBranchSwitch}
         onClose={handleCloseSwitchBranchModal}
       />
