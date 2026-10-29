@@ -1,0 +1,190 @@
+/* Layout around MUI's own styles (Emotion, in the shadow root): component roots, filling the widget box, and the few
+   pieces the pack adds. Colours come from MUI's default theme; the roots take MUI's font stack (the popup layer too:
+   it otherwise inherits the host's app font where MUI sets none). */
+.tj-mui-root,
+.tj-cc-overlay {
+  width: 100%;
+  min-width: 0;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+.tj-mui--fill {
+  height: 100%;
+}
+.tj-mui-center {
+  display: flex;
+  align-items: center;
+}
+.tj-mui-center:not(.tj-mui-start) > :only-child {
+  margin-inline: auto;
+}
+.tj-mui-center > .MuiButton-fullWidth,
+.tj-mui-block {
+  width: 100%;
+}
+.tj-mui-block {
+  display: block;
+}
+.tj-mui-field--outlined-label {
+  padding-top: 9px;
+}
+.tj-mui-placeholder {
+  /* MUI's input placeholder: the text colour, faded. */
+  opacity: 0.42;
+}
+
+/* Tabs: the bar, then the open panel filling the rest */
+.tj-mui-tabs {
+  display: flex;
+  flex-direction: column;
+}
+.tj-mui-tabs--vertical {
+  flex-direction: row;
+}
+.tj-mui-tabpanel {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  padding-top: 8px;
+}
+.tj-mui-tabs--vertical .tj-mui-tabpanel {
+  padding: 0 0 0 12px;
+}
+.tj-mui-tabpanel[hidden] {
+  display: none;
+}
+
+.tj-mui-progress {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.tj-mui-divider-v {
+  justify-content: center;
+}
+.tj-mui-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Loading: the content stays mounted and keeps the box's size, hidden under MUI's Skeleton or CircularProgress. */
+.tj-mui-loading {
+  position: relative;
+}
+.tj-mui-loading--fill,
+.tj-mui-loading--fill > .tj-mui-loading__content {
+  height: 100%;
+}
+.tj-mui-loading--on > .tj-mui-loading__content {
+  visibility: hidden;
+  /* Also opacity: x-charts sets visibility: visible on pie arcs, which would show through the Skeleton. */
+  opacity: 0;
+}
+.tj-mui-loading__look {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.tj-mui-loading__center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.tj-mui-loading__spinner {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* DataGrid html cells: the sanitised markup wraps, and the row (auto height) grows to it, at least the density's
+   row height (set by the grid), content centred as in MUI's cells. */
+.tj-mui-html-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  white-space: normal;
+  line-height: 1.43;
+  overflow-wrap: anywhere;
+  padding-block: 8px;
+  min-width: 0;
+}
+
+/* A button label stays on one line, as in MUI apps; a label wider than the box ends in an ellipsis. */
+.tj-mui-button-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* What an html cell's markup gives a width (an initials avatar, an icon, a dot) keeps it: in a flex row next to a long
+   name it was squeezed into a clipped oval. */
+.tj-mui-html-cell [style*="width:"],
+.tj-mui-html-cell [style*="width :"],
+.tj-mui-html-cell img,
+.tj-mui-html-cell svg {
+  flex-shrink: 0;
+}
+
+/* StatCard in a box too short for the title over the figure (Display.tsx, fitText.ts useFitLayout): less padding and
+   no gap, then the title beside the figure on one line, the interval after it. */
+.tj-mui-stat.is-short > .MuiCardContent-root,
+.tj-mui-stat.is-short > .MuiCardContent-root:last-child {
+  padding-block: 8px;
+}
+.tj-mui-stat.is-short .tj-mui-stat-head {
+  margin-bottom: 0;
+}
+.tj-mui-stat.is-inline > .MuiCardContent-root {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tj-mui-stat.is-inline .tj-mui-stat-head {
+  flex: 1 1 0;
+  min-width: 32px;
+}
+.tj-mui-stat.is-inline .tj-mui-stat-figure {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.tj-mui-stat.is-inline .tj-mui-stat-interval {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tj-mui-stat.is-inline .tj-mui-stat-figure > .MuiSkeleton-root {
+  width: 64px;
+}
+
+/* Avatar: the box the avatar fits as a square (fitText.ts useFitSquare), centred as before. */
+.tj-mui-avatar-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+.tj-mui-avatar-box .MuiAvatar-root {
+  flex-shrink: 0;
+}
+
+/* PieChart's measured box (lib/chartLegend.ts): the chart fills it as it filled the widget. */
+.tj-mui-chart-box {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Card grid: the cards scroll in the widget box; the sentinel after the last drawn card asks for more. */
+.tj-mui-cardgrid {
+  overflow: auto;
+}
+.tj-mui-grow-sentinel {
+  height: 1px;
+}

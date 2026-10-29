@@ -36,6 +36,8 @@ import {
   manifestDefaultSize,
 } from './utils';
 import { getDocsLink } from '../Inspector/Utils';
+import WidgetIcon from '@/../assets/images/icons/widgets';
+import { groupPackComponents, paletteFor } from './packPalette';
 
 export const CustomComponentsTab = ({ searchQuery = '' }) => {
   const libraries = useCustomComponentLibrariesStore((state) => state.libraries); // null = loading
@@ -115,11 +117,14 @@ const NoResultsMessage = ({ searchQuery }) => (
   </div>
 );
 
-const LibrarySection = ({ library, searchQuery = '', onVisibilityChange = noop }) => {
+// `picked`: the library is the one picked for the app (the Components tab's library): no collapsing header, only its
+// version picker, since the tab already names it.
+export const LibrarySection = ({ library, searchQuery = '', onVisibilityChange = noop, picked = false }) => {
   const [open, setOpen] = useState(true);
   const { current, latest } = useLibraryCurrentRevision(library);
   const manifest = useResolvedManifest(library, current, latest);
   const { components, isVisible } = getLibrarySearchMatch(library, manifest?.components, searchQuery);
+  const sections = useMemo(() => groupPackComponents(components), [components]);
 
   // Cleanup reports "gone" on unmount (library removed from the candidate list) or
   // right before re-reporting on a query/manifest change — always a targeted add/remove
@@ -132,6 +137,58 @@ const LibrarySection = ({ library, searchQuery = '', onVisibilityChange = noop }
   // A dev-only library with nothing picked yet still renders its header + VersionPicker
   // so it's discoverable — the card list itself stays empty until a dev entry is chosen.
   if (!isVisible) return null;
+
+  const packSections = (list) => (
+    // A component pack (its components declare roles): ToolJet's palette sections, as widget tiles.
+    <div className="custom-library-section-content custom-library-pack-sections">
+      {list.map((section) => (
+        <div key={section.key} className="custom-library-pack-section" data-cy={`pack-section-${section.key}`}>
+          <div className="custom-library-pack-section-title">{section.title}</div>
+          <div className="component-card-group-wrapper">
+            {section.items.map(([exportName, comp]) => (
+              <CustomComponentCard
+                key={exportName}
+                libraryId={library.id}
+                correlationId={library.correlationId}
+                libraryName={library.name}
+                revisionId={current}
+                name={exportName}
+                componentConfig={comp}
+                tile
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+  const flatList = () => (
+    <div className="custom-library-section-content">
+      {components.map(([exportName, comp]) => (
+        <CustomComponentCard
+          key={exportName}
+          libraryId={library.id}
+          correlationId={library.correlationId}
+          libraryName={library.name}
+          revisionId={current}
+          name={exportName} // the bundle's export — what the shell resolves
+          componentConfig={comp}
+        />
+      ))}
+    </div>
+  );
+
+  if (picked) {
+    return (
+      <div className="custom-library-section custom-library-section--picked">
+        <div className="custom-library-section-header custom-library-version-row">
+          <span className="custom-library-version-label">Version</span>
+          <VersionPicker library={library} />
+        </div>
+        {sections ? packSections(sections) : flatList()}
+      </div>
+    );
+  }
 
   return (
     <div className="custom-library-section">
@@ -154,21 +211,7 @@ const LibrarySection = ({ library, searchQuery = '', onVisibilityChange = noop }
         </div>
       </div>
 
-      {open && (
-        <div className="custom-library-section-content">
-          {components.map(([exportName, comp]) => (
-            <CustomComponentCard
-              key={exportName}
-              libraryId={library.id}
-              correlationId={library.correlationId}
-              libraryName={library.name}
-              revisionId={current}
-              name={exportName} // the bundle's export — what the shell resolves
-              componentConfig={comp}
-            />
-          ))}
-        </div>
-      )}
+      {open && (sections ? packSections(sections) : flatList())}
     </div>
   );
 };
@@ -284,11 +327,121 @@ const VersionPicker = ({ library }) => {
   );
 };
 
-const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId, name, componentConfig }) => {
-  const { displayName, description, props = [], styles = [], defaultWidth, defaultHeight } = componentConfig;
+// A draggable card for one SDK-built component (a library's or a pack's): drops `dragComponent` as a
+// `componentType` widget, with the same rules as the built-in components' DragLayer. `onDropped` runs after a drop.
+// `tile` draws it as a ToolJet widget in the palette (its role's widget icon over its name), else as a list row.
+export const SdkComponentCard = ({
+  componentType,
+  dragComponent,
+  name,
+  displayName,
+  description,
+  role,
+  tile = false,
+  onDropped,
+}) => {
+  const darkMode = useStore((state) => state.isTJDarkMode);
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const { handleDrop } = useCanvasDropHandler() || noop;
+
+  const [{ isDragging }, drag, preview] = useDrag(
+    () => ({
+      type: 'box',
+      item: { componentType, component: dragComponent },
+      collect: (monitor) => ({ isDragging: monitor.isDragging() }),
+      end: (item, monitor) => {
+        // Released over the component panel: the drag is cancelled. The panel overlays the canvas, so the
+        // position lookup below would otherwise find the canvas underneath and add the component.
+        const releasedAt = monitor.getClientOffset();
+        if (releasedAt && document.elementFromPoint(releasedAt.x, releasedAt.y)?.closest('.editor-sidebar')) {
+          handleDeactivateTargets();
+          hideGridLines();
+          return;
+        }
+        // hover sets currentDragCanvasId only on a dragover, so it can be stale when the release follows the
+        // last move immediately; the release position is the source of truth.
+        const canvasId = releasedAt
+          ? findNewParentIdFromMousePosition(releasedAt.x, releasedAt.y)
+          : useGridStore.getState().currentDragCanvasId;
+        handleDrop(item, canvasId ?? useGridStore.getState().currentDragCanvasId);
+        onDropped?.();
+      },
+    }),
+    [componentType, dragComponent, onDropped]
+  );
+
+  useEffect(() => {
+    preview(getEmptyImage(), { captureDraggingState: true });
+  }, []);
+
+  // The panel stays open during a drag: closing it unmounts this card, the browser then never fires dragend,
+  // and react-dnd only finishes the drop on the next mouse move.
+  useEffect(() => {
+    if (isDragging && !isRightSidebarPinned) {
+      setRightSidebarOpen(true);
+    }
+  }, [isDragging, isRightSidebarPinned, setRightSidebarOpen]);
+
+  if (tile) {
+    // As a ToolJet widget in the palette (WidgetBox): its widget's icon over its name.
+    const { icon } = paletteFor(role);
+    const title = displayName ?? name;
+    return (
+      <div
+        ref={drag}
+        className="text-center align-items-center clearfix draggable-box-wrapper"
+        data-cy={`custom-component-${name.toLowerCase()}`}
+      >
+        <div
+          className="component-image-wrapper"
+          style={{ height: '56px', width: '72px', position: 'relative' }}
+          title={description || title}
+        >
+          <div className="component-image-holder d-flex flex-column justify-content-center" style={{ height: '100%' }}>
+            <center>
+              <div className="widget-svg-container" style={{ width: '24px', height: '24px' }}>
+                {icon?.startsWith('Icon') ? (
+                  <TablerIcon
+                    iconName={icon}
+                    style={{ width: 24, height: 24, color: 'var(--icon-brand)' }}
+                    stroke={1.5}
+                  />
+                ) : icon ? (
+                  <WidgetIcon name={icon} fill={darkMode ? '#3A3F42' : '#D7DBDF'} />
+                ) : (
+                  <span className="custom-component-tile-initials">{initials(title)}</span>
+                )}
+              </div>
+            </center>
+          </div>
+          <div className="component-title">{title}</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={drag} className="custom-component-card" data-cy={`custom-component-${name.toLowerCase()}`}>
+      <div className="custom-component-card-icon">{initials(displayName ?? name)}</div>
+      <div className="custom-component-card-text">
+        <div className="custom-component-card-name">{displayName ?? name}</div>
+        {description && <div className="custom-component-card-description">{description}</div>}
+      </div>
+    </div>
+  );
+};
+
+const CustomComponentCard = ({
+  libraryId,
+  correlationId,
+  libraryName,
+  revisionId,
+  name,
+  componentConfig,
+  tile = false,
+}) => {
+  const { displayName, description, props = [], styles = [], defaultWidth, defaultHeight, role } = componentConfig;
 
   const dragComponent = useMemo(() => {
     const defaultSize = manifestDefaultSize({ defaultWidth, defaultHeight });
@@ -309,56 +462,25 @@ const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId
     };
   }, [libraryId, correlationId, libraryName, name, revisionId, props, styles, defaultWidth, defaultHeight]);
 
-  const [{ isDragging }, drag, preview] = useDrag(
-    () => ({
-      type: 'box',
-      item: { componentType: 'LibraryComponent', component: dragComponent },
-      collect: (monitor) => ({ isDragging: monitor.isDragging() }),
-      // Same rules as the built-in components' DragLayer.
-      end: (item, monitor) => {
-        // Released over the component panel: the drag is cancelled. The panel overlays the canvas, so the
-        // position lookup below would otherwise find the canvas underneath and add the component.
-        const releasedAt = monitor.getClientOffset();
-        if (releasedAt && document.elementFromPoint(releasedAt.x, releasedAt.y)?.closest('.editor-sidebar')) {
-          handleDeactivateTargets();
-          hideGridLines();
-          return;
-        }
-        // hover sets currentDragCanvasId only on a dragover, so it can be stale when the release follows the
-        // last move immediately; the release position is the source of truth.
-        const canvasId = releasedAt
-          ? findNewParentIdFromMousePosition(releasedAt.x, releasedAt.y)
-          : useGridStore.getState().currentDragCanvasId;
-        handleDrop(item, canvasId ?? useGridStore.getState().currentDragCanvasId);
-        const { globalSettings, globalSettingsChanged } = useStore.getState();
-        const pins = globalSettings?.customComponentLibraries ?? {};
-        if (!normalizePin(pins[dashlessId(correlationId)] ?? pins[correlationId])) {
-          globalSettingsChanged({ customComponentLibraries: { ...pins, [dashlessId(correlationId)]: revisionId } });
-        }
-      },
-    }),
-    [dragComponent]
-  );
-
-  useEffect(() => {
-    preview(getEmptyImage(), { captureDraggingState: true });
-  }, []);
-
-  // The panel stays open during a drag: closing it unmounts this card, the browser then never fires dragend,
-  // and react-dnd only finishes the drop on the next mouse move.
-  useEffect(() => {
-    if (isDragging && !isRightSidebarPinned) {
-      setRightSidebarOpen(true);
+  // The first drop of a library pins the app to the revision it was dropped from.
+  const pinRevision = useCallback(() => {
+    const { globalSettings, globalSettingsChanged } = useStore.getState();
+    const pins = globalSettings?.customComponentLibraries ?? {};
+    if (!normalizePin(pins[dashlessId(correlationId)] ?? pins[correlationId])) {
+      globalSettingsChanged({ customComponentLibraries: { ...pins, [dashlessId(correlationId)]: revisionId } });
     }
-  }, [isDragging, isRightSidebarPinned, setRightSidebarOpen]);
+  }, [correlationId, revisionId]);
 
   return (
-    <div ref={drag} className="custom-component-card" data-cy={`custom-component-${name.toLowerCase()}`}>
-      <div className="custom-component-card-icon">{initials(displayName ?? name)}</div>
-      <div className="custom-component-card-text">
-        <div className="custom-component-card-name">{displayName ?? name}</div>
-        {description && <div className="custom-component-card-description">{description}</div>}
-      </div>
-    </div>
+    <SdkComponentCard
+      componentType="LibraryComponent"
+      dragComponent={dragComponent}
+      name={name}
+      displayName={displayName}
+      description={description}
+      role={role}
+      tile={tile}
+      onDropped={pinRevision}
+    />
   );
 };

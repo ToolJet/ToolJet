@@ -1,0 +1,307 @@
+/* UI 2.0 charts, ported for the pack (Widgets/Ui2/_charts and the chart rules in shadcn.scss). Colours read the
+   widget's --lk-* style variables, else the theme's. */
+.ui2-chart {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  font-size: 12px;
+}
+.ui2-chart-plot {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+.ui2-chart-area {
+  width: 100%;
+  height: 100%;
+}
+.ui2-chart .recharts-surface {
+  overflow: visible;
+}
+.ui2-chart .recharts-wrapper:focus,
+.ui2-chart .recharts-surface:focus,
+.ui2-chart .recharts-sector:focus {
+  outline: none;
+}
+
+/* Empty and error looks: the muted message centred in the chart's box. */
+.ui2-chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 12px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--ui-muted-fg);
+}
+.ui2-chart-empty.is-small {
+  font-size: 12px;
+}
+
+.ui2-chart-notes {
+  flex-shrink: 0;
+  padding-top: 6px;
+  color: var(--lk-legend, var(--ui-muted-fg));
+}
+.ui2-chart-notes > div {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Tooltip card */
+.ui2-chart-tip {
+  display: grid;
+  min-width: 8rem;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--ui-border);
+  border-radius: calc(var(--ui-radius) + 2px);
+  background: var(--ui-bg);
+  color: var(--ui-fg);
+  font-size: 12px;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+.ui2-chart-tip.is-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  white-space: nowrap;
+}
+.ui2-chart-tip-title {
+  font-weight: 500;
+}
+.ui2-chart-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ui2-chart-tip-swatch {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+.ui2-chart-tip-name {
+  flex: 1;
+  color: var(--ui-muted-fg);
+}
+.ui2-chart-tip-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Legend */
+.ui2-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 16px;
+  padding-top: 12px;
+  font-size: 12px;
+  color: var(--lk-legend, var(--ui-muted-fg));
+}
+.ui2-chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ui2-chart-legend-swatch {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+/* Radial */
+.ui2-radial {
+  position: relative;
+}
+.ui2-radial-centre {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  line-height: 1;
+  pointer-events: none;
+}
+.ui2-radial-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+  color: var(--lk-center-value, var(--ui-fg));
+}
+.ui2-radial-label {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--lk-center-label, var(--ui-muted-fg));
+}
+.ui2-radial .recharts-radial-bar-sector,
+.ui2-pointer {
+  cursor: pointer;
+}
+
+/* Funnel */
+.ui2-funnel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  padding: 4px 0;
+}
+.ui2-funnel-stage {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 0;
+  max-height: 52px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ui-radius);
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+}
+.ui2-funnel-stage:focus-visible {
+  box-shadow: 0 0 0 2px var(--ui-ring);
+}
+.ui2-funnel-label {
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--lk-axis, var(--ui-muted-fg));
+}
+.ui2-funnel-track {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  height: 100%;
+  min-width: 0;
+}
+.ui2-funnel-bar {
+  height: 100%;
+  min-height: 10px;
+  /* The theme radius (6px unthemed), not a fixed 6px. */
+  border-radius: var(--ui-radius);
+  transition: opacity 0.15s;
+}
+.ui2-funnel-stage:hover .ui2-funnel-bar {
+  filter: brightness(0.95);
+}
+.ui2-funnel-figures {
+  display: flex;
+  flex-shrink: 0;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.ui2-funnel-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ui-fg);
+}
+.ui2-funnel-conv {
+  width: 44px;
+  text-align: right;
+  color: var(--ui-muted-fg);
+}
+@keyframes ui2-funnel-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Heatmap */
+.ui2-heatmap {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-size: 12px;
+}
+.ui2-heatmap-grid {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  grid-auto-rows: 1fr;
+}
+.ui2-heatmap-row-label {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding-right: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--lk-axis, var(--ui-muted-fg));
+}
+.ui2-heatmap-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  /* 4px unthemed; follows the theme radius. */
+  border-radius: calc(var(--ui-radius) - 2px);
+  background: var(--heat);
+  color: var(--heat-fg);
+  font: inherit;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  outline: none;
+  transition: filter 0.15s;
+}
+.ui2-heatmap-cell:hover {
+  filter: brightness(0.95);
+}
+.ui2-heatmap-cell:focus-visible {
+  box-shadow: 0 0 0 2px var(--ui-ring);
+}
+.ui2-heatmap-columns {
+  display: grid;
+  padding-top: 6px;
+}
+.ui2-heatmap-col-label {
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--lk-axis, var(--ui-muted-fg));
+}
+.ui2-heatmap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+  color: var(--lk-legend, var(--ui-muted-fg));
+  font-variant-numeric: tabular-nums;
+}
+.ui2-heatmap-scale {
+  width: 96px;
+  height: 8px;
+  border-radius: 999px;
+}

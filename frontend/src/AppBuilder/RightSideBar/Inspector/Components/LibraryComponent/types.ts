@@ -14,11 +14,27 @@ export interface InspectorComponent {
   };
 }
 
+/**
+ * Manifest `inspector` hints drawn by a purpose-built editor rather than a native field type: 'columns' (a table's
+ * column objects), 'options' (a list of plain values or { label, value, disabled, description, icon }) and 'icon' (an
+ * icon name). 'color' needs no editor of its own: it maps to the native swatch field.
+ */
+export type LibraryEditorHint = 'columns' | 'options' | 'icon';
+
 export interface FieldMeta {
+  // false hides the native icon field's show/hide toggle
+  visibility?: boolean;
   displayName?: string;
   name: string;
   type?: string;
   checkboxLabel?: string;
+  showLabel?: boolean;
+  // Label tooltip (ToolTip.jsx reads meta.tip): the only helper-note channel native field meta has.
+  tip?: string;
+  placeholder?: string;
+  // Read by the slider field (CodeBuilder/Elements/Slider.jsx); also spelled out in `tip` for other field types.
+  min?: number;
+  max?: number;
   options?: { value: string; [labelKey: string]: string }[];
   validation?: { schema: { type: string }; defaultValue?: unknown };
 }

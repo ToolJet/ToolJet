@@ -7,6 +7,10 @@ import { getMaxHeight } from '../../../_utils/helper';
 import useTextColor from '../_hooks/useTextColor';
 import useValidationStyle from '../_hooks/useValidationStyle';
 import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
+import { determineJustifyContentValue } from '@/_helpers/utils';
+import { chipLabel, chipTone } from '../../../_utils/chipTone';
+import { avatarHue, isNobody, initials } from '../../../_utils/avatarHue';
 
 /**
  * StringColumnAdapter - Table adapter for StringRenderer
@@ -33,6 +37,9 @@ export const StringColumn = ({
   const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
   const [isEditing, setIsEditing] = useState(false);
   const cellTextColor = useTextColor(id, textColor);
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+  const showAsChip = getResolvedValue(column?.displayAsChip) === true;
+  const showAvatar = getResolvedValue(column?.displayAvatar) === true;
 
   const { isValid, validationError } = useStringValidation(column, cellValue);
   useValidationStyle(id, row, validationError);
@@ -46,6 +53,67 @@ export const StringColumn = ({
       setIsEditing(false);
     }
   }, [isEditable, isEditing]);
+
+  // "Show as status chip": a state ("Paid", "Overdue", "In progress") drawn as a tinted chip whose tone is read from
+  // its words. An editable column keeps the text field.
+  if (showAsChip && !isEditable && cellValue !== null && cellValue !== undefined && cellValue !== '') {
+    const text = String(cellValue);
+    return (
+      <div
+        className={`d-flex align-items-center h-100 w-100 overflow-hidden justify-content-${determineJustifyContentValue(
+          horizontalAlignment
+        )}`}
+      >
+        <span className={`tj-chip tj-chip-${chipTone(text)}`} title={text}>
+          <HighLightSearch text={chipLabel(text)} searchTerm={searchText} />
+        </span>
+      </div>
+    );
+  }
+
+  // "Show avatar": a person's initials in a circle tinted from their name, before the name.
+  if (
+    showAvatar &&
+    !isEditable &&
+    cellValue !== null &&
+    cellValue !== undefined &&
+    cellValue !== '' &&
+    !isNobody(cellValue)
+  ) {
+    const text = String(cellValue);
+    return (
+      <div
+        className={`d-flex align-items-center h-100 w-100 overflow-hidden justify-content-${determineJustifyContentValue(
+          horizontalAlignment
+        )}`}
+        style={{ gap: 8, color: cellTextColor || undefined }}
+      >
+        <span className="tj-cell-avatar" style={{ '--tj-cell-avatar-hue': avatarHue(text) }} aria-hidden="true">
+          {initials(text)}
+        </span>
+        <span className="text-truncate" title={text}>
+          <HighLightSearch text={text} searchTerm={searchText} />
+        </span>
+      </div>
+    );
+  }
+
+  // One long unbroken token (an email, a URL, an id): the shadcn look keeps it on one line with an ellipsis and the
+  // full value on hover, instead of breaking it mid-word ("jane.doe@example-company.com / pany").
+  if (!isEditable && typeof cellValue === 'string' && cellValue.length > 18 && !/\s/.test(cellValue)) {
+    return (
+      <div
+        className={`d-flex align-items-center h-100 w-100 overflow-hidden justify-content-${determineJustifyContentValue(
+          horizontalAlignment
+        )}`}
+        style={{ color: cellTextColor || undefined }}
+      >
+        <span className="tj-cell-token" title={cellValue}>
+          <HighLightSearch text={cellValue} searchTerm={searchText} />
+        </span>
+      </div>
+    );
+  }
 
   return (
     <StringRenderer

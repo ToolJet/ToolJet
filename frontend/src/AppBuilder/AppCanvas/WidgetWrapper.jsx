@@ -1,3 +1,6 @@
+import { fitsContentInView, marksDynamicHeight, stretchesInRow } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
+import { leavesFlexFlow } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { usePackRole } from '@/AppBuilder/Widgets/hooks/usePackRole';
 import React, { memo, useEffect, useMemo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
@@ -5,7 +8,7 @@ import { shallow } from 'zustand/shallow';
 import { ConfigHandle } from './ConfigHandle/ConfigHandle';
 import cx from 'classnames';
 import RenderWidget from './RenderWidget';
-import { NO_OF_GRIDS, HIDDEN_COMPONENT_HEIGHT, SUBCONTAINER_WIDGETS } from './appCanvasConstants';
+import { NO_OF_GRIDS, HIDDEN_COMPONENT_HEIGHT, SUBCONTAINER_WIDGETS, isModalType } from './appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { getDynamicLayoutKey, serializeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
@@ -53,6 +56,11 @@ const WidgetWrapper = memo(
     layoutMode = 'grid',
     containerWidth,
     flexDirection = 'column',
+    flexAlignItems,
+    flexEqualHeights = false,
+    flexWraps,
+    // The parent FlexContainer's layout version (_helpers/flexLayoutVersion.js); false keeps the lts-3.16 layout.
+    flexLayoutV2 = true,
     flexShouldStack = false,
   }) => {
     const { contextPath } = useSubcontainerContext();
@@ -110,11 +118,17 @@ const WidgetWrapper = memo(
       shallow
     );
     const isFlexSubcontainer = isFlexLayout && SUBCONTAINER_WIDGETS.includes(componentType);
+    // Component packs and FlexContainer cards and rows fit their content without the property (dynamicHeightPolicy).
     const isDynamicHeightEnabled = useStore(
-      (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties?.dynamicHeight,
+      (state) => fitsContentInView(componentType, state.getResolvedComponent(id, resolveIndex, moduleId)?.properties),
       shallow
     );
     const isDynamicHeightEnabledInModeView = isDynamicHeightEnabled && mode === 'view';
+    // The editor's dynamic-height marker (purple outline and handle): only for widgets whose box follows their content.
+    const showsDynamicHeight = useStore(
+      (state) => marksDynamicHeight(componentType, state.getResolvedComponent(id, resolveIndex, moduleId)?.properties),
+      shallow
+    );
     // Dont remove - used to re-render height calculations when textSize changes (ProgressBar)
     // eslint-disable-next-line no-unused-vars
     const textSize = useStore(
@@ -144,6 +158,27 @@ const WidgetWrapper = memo(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [visibility]);
 
+    const modalWithoutTrigger = useStore(
+      (state) =>
+        isModalType(componentType) &&
+        state.getResolvedComponent?.(id, resolveIndex, moduleId)?.properties?.useDefaultButton === false,
+      shallow
+    );
+    // A pack widget's role (a pack Stat stretches in an Equal heights row like UI 2.0's Stat card).
+    const packRole = usePackRole(componentType, id, moduleId);
+    // Whether an Equal heights row (or Align: Stretch) stretches this child to its line's height (dynamicHeightPolicy).
+    const stretchInRow = useStore(
+      (state) =>
+        isFlexLayout &&
+        stretchesInRow(
+          { alignItems: flexAlignItems, equalHeights: flexEqualHeights },
+          componentType,
+          state.getResolvedComponent(id, resolveIndex, moduleId)?.properties,
+          mode,
+          packRole
+        ),
+      shallow
+    );
     const flexLayout = useFlexWidgetLayout({
       layoutData,
       gridWidth,
@@ -157,6 +192,12 @@ const WidgetWrapper = memo(
       measureWidth: isFlexSubcontainer,
       dynamicHeight: isDynamicHeightEnabledInModeView,
       temporaryHeight: temporaryLayouts?.height,
+      // A FlexContainer takes its height from its children's layout, never from a DOM measurement, so a stretched card
+      // cannot feed its stretched size back into the reflow; a stretched leaf (a Stat card) is measured unstretched
+      // (dynamicHeightReflow.resolveWidgetMeasuredHeight).
+      stretch: stretchInRow,
+      wraps: flexWraps !== false,
+      layoutV2: flexLayoutV2,
     });
 
     if (!canShowInCurrentLayout || !layoutData) {
@@ -210,7 +251,17 @@ const WidgetWrapper = memo(
       display: !visibility && mode === 'view' ? 'none' : 'block',
     };
 
-    const outerStyle = isFlexLayout ? flexLayout.outerStyle : gridOuterStyle;
+    // A dialog without its trigger button draws nothing in place (the open dialog renders outside this box). In a flex
+    // container it leaves the flow: it took a slot and a gap, and a header's action button stopped short of the row's
+    // end. On the grid its empty box stays where it was drawn, so it lets presses through: a closed sheet drawn over a
+    // Kanban board swallowed every card drag. In a FlexContainer saved before the UI 2.0 layout it keeps its slot.
+    const outerStyle = isFlexLayout
+      ? leavesFlexFlow({ modalWithoutTrigger, mode, layoutV2: flexLayoutV2 })
+        ? { ...flexLayout.outerStyle, position: 'absolute', flex: 'none', width: 0, height: 0, minHeight: 0 }
+        : flexLayout.outerStyle
+      : modalWithoutTrigger && mode === 'view'
+        ? { ...gridOuterStyle, pointerEvents: 'none' }
+        : gridOuterStyle;
     const renderWidgetWidth = isFlexLayout
       ? isFlexSubcontainer && flexLayout.measuredWidth != null
         ? flexLayout.measuredWidth
@@ -258,8 +309,9 @@ const WidgetWrapper = memo(
             'active-target': isWidgetActive,
             'opacity-0 pointer-events-none': isDragging || isResizing,
             'module-container': isModuleContainer,
-            'dynamic-height-target': isDynamicHeightEnabled,
+            'dynamic-height-target': showsDynamicHeight,
             'flex-child-wrapper': isFlexLayout,
+            'flex-stretch-child': isFlexLayout && flexLayout.isStretched,
           })}
           data-id={`${id}`}
           id={id}
@@ -295,7 +347,7 @@ const WidgetWrapper = memo(
               customClassName={configHandleClassName}
               isModuleContainer={isModuleContainer}
               subContainerIndex={subContainerIndex}
-              isDynamicHeightEnabled={isDynamicHeightEnabled}
+              isDynamicHeightEnabled={showsDynamicHeight}
             />
           )}
           <RenderWidget
@@ -314,6 +366,9 @@ const WidgetWrapper = memo(
             moduleId={moduleId}
             currentMode={mode}
             currentLayout={currentLayout}
+            boxFit={isFlexLayout ? (flexLayout.fillWidth ? 'fill' : 'fixed') : 'grid'}
+            // The box is stretched to its row's height (an Equal heights row): a widget with a surface fills it.
+            boxStretch={isFlexLayout && !!flexLayout.isStretched}
           />
         </div>
       </>

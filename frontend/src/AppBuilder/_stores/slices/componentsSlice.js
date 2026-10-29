@@ -37,6 +37,7 @@ import {
 } from './componentsSliceUtils';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
 
 // calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
@@ -2296,7 +2297,8 @@ export const createComponentsSlice = (set, get) => ({
       return;
     }
     const { component } = componentDef;
-    const oldValue = component.definition[paramType][property];
+    // A section can be missing: pack and custom library components get definition.validation only from the server
+    const oldValue = component.definition[paramType]?.[property];
     const parentId = component.parent;
     if (Array.isArray(oldValue?.value)) {
       const resolvedComponent = {
@@ -3735,7 +3737,8 @@ export const createComponentsSlice = (set, get) => ({
     // For ListView, we use the last index (immediate parent's row index)
     const lastIndex = Array.isArray(indices) ? indices[indices.length - 1] : indices;
 
-    if (parentType === 'Listview') {
+    // A pack or library list's rows (ToolJet.RowSlot) keep per-row values the native List view's way.
+    if (parentType === 'Listview' || isSdkComponentType(parentType)) {
       let parentComponent = getExposedValueOfComponent(baseParentId, moduleId);
       if (lastIndex == null) {
         return undefined;

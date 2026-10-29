@@ -12,6 +12,50 @@ export const flexContainerConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    // ToolJet UI 2.0: draw this container as a card with a header above the flex body.
+    cardStyle: {
+      type: 'switch',
+      displayName: 'Surface',
+      isFxNotRequired: true,
+      fullWidth: true,
+      options: [
+        { displayName: 'Plain', value: 'none' },
+        { displayName: 'Card', value: 'shadcnCard' },
+      ],
+      validation: { schema: { type: 'string' }, defaultValue: 'none' },
+    },
+    // A card header drawn as a strip (title left, description right, a divider under it), as Ant's Card draws it; set
+    // by the AI compiler from a pack's surface.
+    cardHeaderDivider: {
+      type: 'toggle',
+      displayName: 'Header divider',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+    },
+    // A card in an app built on a component pack with its own design system (Ant, MUI) takes the pack's card look,
+    // written in its styles by the AI compiler ('own'), instead of the theme's card ('theme').
+    cardLook: {
+      type: 'switch',
+      displayName: 'Card look',
+      isFxNotRequired: true,
+      fullWidth: true,
+      options: [
+        { displayName: 'Theme', value: 'theme' },
+        { displayName: 'Own', value: 'own' },
+      ],
+      validation: { schema: { type: 'string' }, defaultValue: 'theme' },
+    },
+    // Optional: a title or description bound to a query reads undefined until the query answers, and the card draws
+    // nothing for it; required, every page load logged "received undefined" for each card.
+    cardTitle: {
+      type: 'code',
+      displayName: 'Card title',
+      validation: { schema: { type: 'string', optional: true }, defaultValue: '' },
+    },
+    cardExtra: {
+      type: 'code',
+      displayName: 'Card description',
+      validation: { schema: { type: 'string', optional: true }, defaultValue: '' },
+    },
     direction: {
       type: 'switch',
       displayName: 'Direction',
@@ -35,6 +79,7 @@ export const flexContainerConfig = {
         { displayName: 'flex-start', value: 'flex-start', lucideIconName: 'align-horizontal-justify-start' },
         { displayName: 'center', value: 'center', lucideIconName: 'align-horizontal-justify-center' },
         { displayName: 'flex-end', value: 'flex-end', lucideIconName: 'align-horizontal-justify-end' },
+        { displayName: 'space-between', value: 'space-between', lucideIconName: 'align-horizontal-space-between' },
       ],
       validation: {
         schema: { type: 'string' },
@@ -50,10 +95,25 @@ export const flexContainerConfig = {
         { displayName: 'flex-start', value: 'flex-start', lucideIconName: 'align-vertical-justify-start' },
         { displayName: 'center', value: 'center', lucideIconName: 'align-vertical-justify-center' },
         { displayName: 'flex-end', value: 'flex-end', lucideIconName: 'align-vertical-justify-end' },
+        // Stretch: in a row, child containers (cards) fill the line's height, so siblings share one height.
+        { displayName: 'stretch', value: 'stretch', lucideIconName: 'stretch-vertical' },
+        // Baseline: the last text lines of a row's children line up (a labelled field's value, a badge, a button).
+        { displayName: 'baseline', value: 'last baseline', lucideIconName: 'baseline' },
       ],
       validation: {
         schema: { type: 'string' },
         defaultValue: 'flex-start',
+      },
+    },
+    // In a row, the children that draw a surface (a FlexContainer, a Stat card) take the height of the tallest child on
+    // their line, so cards of different content heights line up. Other children keep their height and the row's Align.
+    // On for a new container (definition below); a container saved before has no value and reads off.
+    equalHeights: {
+      type: 'toggle',
+      displayName: 'Equal heights in a row',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
       },
     },
     gap: {
@@ -206,6 +266,9 @@ export const flexContainerConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      cardStyle: { value: 'none' },
+      cardTitle: { value: '' },
+      cardExtra: { value: '' },
       direction: { value: 'row' },
       flexWrap: { value: '{{true}}' },
       gap: { value: '12' },
@@ -213,6 +276,11 @@ export const flexContainerConfig = {
       justifyContent: { value: 'flex-start' },
       alignItems: { value: 'flex-start' },
       stackBelow: { value: 'none' },
+      equalHeights: { value: '{{true}}' },
+      // The UI 2.0 layout (_helpers/flexLayoutVersion.js): a container created from these defaults gets it, one saved
+      // before keeps the lts-3.16 layout. Not shown in the inspector. Do not add this or equalHeights to the server's
+      // copy of this config: the server merges its defaults into every saved component on load.
+      layoutVersion: { value: '2' },
       loadingState: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
       visibility: { value: '{{true}}' },

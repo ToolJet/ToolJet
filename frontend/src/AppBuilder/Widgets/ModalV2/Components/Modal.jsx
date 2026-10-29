@@ -37,6 +37,8 @@ export const ModalWidget = ({ ...restProps }) => {
     isFullScreen,
     subContainerIndex,
     isDynamicHeightEnabled,
+    skin,
+    sheetSide,
   } = restProps['modalProps'];
 
   const setComponentProperty = useStore((state) => state.setComponentProperty);
@@ -99,7 +101,27 @@ export const ModalWidget = ({ ...restProps }) => {
     setTimeout(() => {
       const modalContent = document.querySelector(`.tj-modal-content-${id}`);
       if (restProps.show && modalContent) {
-        if (!isFalsyOrMultipleZeros(modalHeight)) {
+        if (sheetSide) {
+          // A sheet's dialog spans the visible part of the modal layer; its body scrolls. The layer can start below a
+          // bar (the viewer's Preview header) and run past the window, or end above it (the editor's canvas), so 100%
+          // hid the footer buttons: size the dialog to what is visible of the layer. A right or left sheet fills it; a
+          // top or bottom one is the modal's height (at most what is visible) against that edge.
+          const layer = modalContent.closest('.modal')?.getBoundingClientRect();
+          const visible = Math.max(
+            0,
+            Math.min(window.innerHeight, layer?.bottom ?? window.innerHeight) - Math.max(0, layer?.top ?? 0)
+          );
+          const dialog = modalContent.closest('.modal-dialog');
+          dialog?.style.setProperty('height', `${visible}px`, 'important');
+          dialog?.style.setProperty('max-height', `${visible}px`, 'important');
+          const vertical = sheetSide === 'top' || sheetSide === 'bottom';
+          const contentHeight = vertical
+            ? `${Math.min(visible, isFalsyOrMultipleZeros(modalHeight) ? 400 : parseInt(modalHeight, 10) || 400)}px`
+            : '100%';
+          modalContent.style.setProperty('height', contentHeight, 'important');
+          modalContent.style.setProperty('max-height', contentHeight, 'important');
+          setNeedsBodyScroll(true);
+        } else if (!isFalsyOrMultipleZeros(modalHeight)) {
           if (isDynamicHeightEnabled) {
             const canvasHeaderHeight = getCanvasHeight(headerHeight);
             const canvasFooterHeight = getCanvasHeight(footerHeight);
@@ -135,6 +157,7 @@ export const ModalWidget = ({ ...restProps }) => {
     temporaryLayouts,
     _modalHeight,
     id,
+    sheetSide,
   ]);
 
   return (
@@ -143,8 +166,15 @@ export const ModalWidget = ({ ...restProps }) => {
       contentClassName={classNames(
         `modal-component tj-modal--container tj-modal-widget-content tj-modal-content-${id}`,
         isDynamicHeightEnabled && `dynamic-${id}`,
-        isDynamicHeightEnabled && needsBodyScroll && 'tj-modal-allow-body-scroll'
+        (isDynamicHeightEnabled || sheetSide) && needsBodyScroll && 'tj-modal-allow-body-scroll',
+        skin && 'tj-shad-tokens tj-shad-dialog-content'
       )}
+      dialogClassName={classNames(
+        skin && 'tj-shad-dialog',
+        sheetSide && `tj-modal-sheet tj-modal-sheet--${sheetSide}`,
+        sheetSide && skin && `tj-shad-sheet tj-shad-sheet--${sheetSide}`
+      )}
+      backdropClassName={skin ? 'tj-shad-backdrop' : undefined}
       animation={true}
       onEntered={onModalEntered}
       onEscapeKeyDown={(e) => {
@@ -195,27 +225,39 @@ export const ModalWidget = ({ ...restProps }) => {
             onDrop={(e) => e.stopPropagation()}
           />
         )}
-        {!isLoading ? (
-          <>
-            <SubContainer
-              id={`${id}`}
-              canvasHeight={modalBodyHeight}
-              styles={{
-                backgroundColor: customStyles.modalBody.backgroundColor,
-                overflowY: isDisabled || (isDynamicHeightEnabled && !needsBodyScroll) ? 'hidden' : 'auto',
-              }}
-              canvasWidth={modalWidth}
-              darkMode={darkMode}
-              componentType="ModalV2"
-            />
-          </>
-        ) : (
-          <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
+        {/* Loading, the body's canvas stays mounted, hidden and inert under the spinner: swapping it for the spinner
+            unmounted the modal's components, and what was typed in them was lost. Disabled, it stays drawn but is
+            inert and aria-disabled: the overlay only stopped the pointer, so Tab reached the body and an open Select
+            in it still took a choice (the pack's popups close and refuse one in an inert or aria-disabled part). */}
+        <div
+          inert={isLoading || isDisabled ? '' : undefined}
+          aria-hidden={isLoading || undefined}
+          aria-disabled={isDisabled && !isLoading ? 'true' : undefined}
+          style={isLoading ? { visibility: 'hidden', height: '100%' } : { display: 'contents' }}
+        >
+          <SubContainer
+            id={`${id}`}
+            canvasHeight={modalBodyHeight}
+            styles={{
+              backgroundColor: customStyles.modalBody.backgroundColor,
+              overflowY: isDisabled || (isDynamicHeightEnabled && !needsBodyScroll) ? 'hidden' : 'auto',
+            }}
+            canvasWidth={modalWidth}
+            darkMode={darkMode}
+            componentType="ModalV2"
+          />
+        </div>
+        {isLoading ? (
+          <div
+            className="d-flex justify-content-center align-items-center"
+            style={{ position: 'absolute', inset: 0, zIndex: 2 }}
+            aria-busy="true"
+          >
             <center>
               <Spinner />
             </center>
           </div>
-        )}
+        ) : null}
       </BootstrapModal.Body>
       {showFooter && (
         <ModalFooter

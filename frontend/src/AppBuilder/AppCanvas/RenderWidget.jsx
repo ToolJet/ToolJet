@@ -9,7 +9,11 @@ import { useTranslation } from 'react-i18next';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
 import WidgetTooltip from './WidgetTooltip';
+// UI 2.0's built-in widgets are not on this branch (components come from packs); the policies below that name them
+// stay for the core, with no types listed.
+const SHADCN_COMPONENTS = [];
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
+import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
@@ -70,7 +74,29 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Timeline',
 ];
 
-const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2'];
+const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2', 'ShadDialog'];
+
+// A saved component whose type this build does not register (a retired widget, a widget from a newer ToolJet): a quiet
+// box in its slot instead of an error that takes the page down.
+const UnavailableWidget = () => (
+  <div
+    data-cy="unavailable-widget"
+    style={{
+      height: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      border: '1px dashed var(--cc-weak-border, #d0d5dd)',
+      borderRadius: 6,
+      color: 'var(--cc-placeholder-text, #667085)',
+      fontSize: 12,
+      textAlign: 'center',
+      padding: 4,
+    }}
+  >
+    This widget is not available
+  </div>
+);
 
 const RenderWidget = ({
   id,
@@ -88,6 +114,8 @@ const RenderWidget = ({
   moduleId,
   currentMode,
   currentLayout,
+  boxFit,
+  boxStretch,
 }) => {
   const component = useStore((state) => state.getComponentDefinition(id, moduleId)?.component, shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
@@ -291,7 +319,15 @@ const RenderWidget = ({
     setExposedVariable('id', id);
   }, []);
 
-  const collapseWhenHidden = resolvedProperties?.collapseWhenHidden ?? false;
+  // A hidden child of a FlexContainer always renders at 0 (flex flow has no slot to keep), so its visibility changes
+  // reflow like collapseWhenHidden ones: a card's height computed before its hidden empty state resolved kept the
+  // empty state's 180px as a blank band.
+  const inFlexFlow = useStore(
+    (state) =>
+      !!parentId &&
+      state.getComponentDefinition(parentId.slice(0, 36), moduleId)?.component?.component === 'FlexContainer'
+  );
+  const collapseWhenHidden = (resolvedProperties?.collapseWhenHidden ?? false) || inFlexFlow;
   const resolvedWidgetVisibility = useStore((state) => {
     const resolved = state.getResolvedComponent(id, resolveIndex, moduleId);
     const exposed = getExposedPropertyForAdditionalActions(id, resolveIndex, 'isVisible', moduleId);
@@ -314,7 +350,10 @@ const RenderWidget = ({
   // Pick the tooltip source — some widgets keep tooltip under `properties`,
   // others under `general`. SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY enumerates
   // the former group.
-  const isShadowedWidget = SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component);
+  // shadcn pack widgets keep it under properties too.
+  const isShadowedWidget =
+    SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component) ||
+    SHADCN_COMPONENTS.includes(component?.component);
   const userTooltipContent = isShadowedWidget ? resolvedProperties?.tooltip : resolvedGeneralProperties?.tooltip;
   const userTooltipFormat = isShadowedWidget
     ? resolvedProperties?.tooltipFormat
@@ -324,12 +363,25 @@ const RenderWidget = ({
 
   // User-defined CSS class(es), gated by the customStyling license. Trimmed + whitespace-collapsed.
   const userCssClass = hasCustomStyling ? (resolvedStyles?.cssClass ?? '').trim().replace(/\s+/g, ' ') : '';
+  // A shadcn pack widget draws its own disabled and loading states (half opacity, a skeleton); the wrapper's
+  // .disabled halved it again, and a disabled toolbar button read at a quarter opacity, near invisible.
   const isDisabledOrLoading =
-    !['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading);
+    !['Modal', 'ModalV2', 'ShadDialog', 'CircularProgressBar'].includes(component.component) &&
+    !SHADCN_COMPONENTS.includes(component.component) &&
+    // A pack component (LibraryComponent) shows loading itself, its own look or the host's spinner: dimmed here too,
+    // its skeleton read at half strength.
+    (isDisabled || (isLoading && !isSdkComponentType(component.component)));
+  // A disabled UI 2.0 widget is dimmed here, once, to the same half opacity as a native widget's .disabled, whatever
+  // it draws (a Stat, a Hero, Tabs dimmed nothing; an Input only its box). Its parts that dim themselves when disabled
+  // keep full opacity inside it (Ui2/_shared/styles/shadcn.scss). Loading is its own state and is not dimmed; input
+  // stays blocked by the widget itself, so tooltips still show.
+  const isUi2Disabled =
+    SHADCN_COMPONENTS.includes(component.component) && component.component !== 'ShadDialog' && isDisabled && !isLoading;
   const innerWidgetClassName = [
     'canvas-component',
     inCanvas && `_tooljet-${component?.component} _tooljet-${component?.name}`,
     isDisabledOrLoading && 'disabled',
+    isUi2Disabled && 'ui2-disabled',
     userCssClass,
   ]
     .filter(Boolean)
@@ -345,32 +397,38 @@ const RenderWidget = ({
       data-cy={`draggable-widget-${componentName}`}
     >
       <TrackedSuspense fallback={null}>
-        <ComponentToRender
-          id={id}
-          key={key}
-          {...obj}
-          currentLayout={currentLayout}
-          setExposedVariable={setExposedVariable}
-          setExposedVariables={setExposedVariables}
-          height={widgetHeight - 4}
-          width={widgetWidth}
-          parentId={parentId}
-          fireEvent={fireEventWrapper}
-          validate={validate}
-          resetComponent={resetComponent}
-          resetExposedVariables={resetExposedVariables}
-          onComponentClick={onComponentClick}
-          darkMode={darkMode}
-          componentName={componentName}
-          componentCount={componentCount}
-          dataCy={`${componentName}`}
-          currentMode={currentMode}
-          subContainerIndex={subContainerIndex}
-          componentType={componentType}
-          {...(selfScopesTooltip && {
-            tooltipProps: { content: userTooltipContent, format: userTooltipFormat, show: hasUserTooltip },
-          })}
-        />
+        {!ComponentToRender ? (
+          <UnavailableWidget />
+        ) : (
+          <ComponentToRender
+            id={id}
+            key={key}
+            {...obj}
+            currentLayout={currentLayout}
+            boxFit={boxFit}
+            boxStretch={boxStretch}
+            setExposedVariable={setExposedVariable}
+            setExposedVariables={setExposedVariables}
+            height={widgetHeight - 4}
+            width={widgetWidth}
+            parentId={parentId}
+            fireEvent={fireEventWrapper}
+            validate={validate}
+            resetComponent={resetComponent}
+            resetExposedVariables={resetExposedVariables}
+            onComponentClick={onComponentClick}
+            darkMode={darkMode}
+            componentName={componentName}
+            componentCount={componentCount}
+            dataCy={`${componentName}`}
+            currentMode={currentMode}
+            subContainerIndex={subContainerIndex}
+            componentType={componentType}
+            {...(selfScopesTooltip && {
+              tooltipProps: { content: userTooltipContent, format: userTooltipFormat, show: hasUserTooltip },
+            })}
+          />
+        )}
       </TrackedSuspense>
     </div>
   );

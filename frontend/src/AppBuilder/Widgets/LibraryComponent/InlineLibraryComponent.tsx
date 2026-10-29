@@ -4,20 +4,196 @@ import { createPortal } from 'react-dom';
 import {
   LibraryInstance,
   LibraryInstanceContext,
+  PackHost,
   loadLibraryCss,
   loadLibraryModule,
   slotAttributeName,
 } from './inlineRuntime';
+import useStore from '@/AppBuilder/_stores/store';
 
 // Shadow-root baseline. ToolJet's global CSS stays out, while inherited properties and theme custom
 // properties (--cc-*, --text-*) still flow in. The body is non-scrollable and sized by the widget box.
 // A render error inside the bundle is caught by RenderWidget's FallbackBoundary (portals bubble).
 const BASE_CSS = `
-:host { display: block; position: relative; }
+:host { display: block; position: relative; font-family: var(--cc-font-family, inherit); }
 .tj-cc-root { width: 100%; height: 100%; overflow: hidden; }
+/* A control that fills its box draws its focus ring (Ant's 2px glow, the shadcn pack's 1px ring) just outside it: clipped
+   at the box, an Ant input in the editor kept its ring on the top edge only, under its label. Paint 4px past the box. */
+@supports (overflow-clip-margin: 4px) { .tj-cc-root { overflow: clip; overflow-clip-margin: 4px; } }
+.tj-cc-root.tj-cc-fit { height: auto; overflow: visible; }
+.tj-cc-root.tj-cc-fit > * { height: auto; }
+.tj-cc-root.tj-cc-fit.tj-cc-stretch, .tj-cc-root.tj-cc-fit.tj-cc-stretch > * { height: 100%; }
 *, *::before, *::after { box-sizing: border-box; }
 .tj-cc-error { padding: 8px; font: 12px/1.4 monospace; color: var(--text-danger); white-space: pre-wrap; }
 `;
+
+// After the library's own CSS: ToolJet's theme tokens that a pack reads through the standard --tj-* names (radius
+// scale, text on the brand colour, status colours, surfaces), so a shipped theme restyles every pack the same way.
+// A pack maps them onto its own variables (the shadcn pack: --ui-*), or reads them directly.
+// The app theme as --tj-* tokens, defined only when the host has tj-themed: a pack drawn in its own design system
+// (manifest themeMode "own") gets them only once the app applies a theme, and falls back to its stock look otherwise.
+// A theme's small and large radius are optional, and 0 means not set (the shipped ToolJet themes save 6/0/0): either
+// one at 0 follows the default radius as stock Ant's scale does (6/4/8), else Ant drew square cards, tags and Segmented
+// thumbs beside 6px inputs. max(set, min(derived, (1px - set) * 1000)) is the set value from 1px up, the derived one at 0.
+const TOKEN_CSS = `
+:host(.tj-themed) {
+  --tj-radius: var(--cc-radius-default, 6px);
+  --tj-radius-small: max(var(--cc-radius-small, 0px), min(max(0px, var(--tj-radius) - 2px), (1px - var(--cc-radius-small, 0px)) * 1000));
+  --tj-radius-large: max(var(--cc-radius-large, 0px), min(var(--tj-radius) + min(var(--tj-radius), 2px), (1px - var(--cc-radius-large, 0px)) * 1000));
+  --tj-on-brand: var(--cc-on-primary-brand, #ffffff);
+  --tj-brand: var(--cc-primary-brand, #4368e3);
+  --tj-brand-strong: var(--cc-primary-brand-strong, var(--cc-primary-brand, #4368e3));
+  --tj-surface: var(--cc-surface1-surface, #ffffff);
+  --tj-surface-muted: var(--cc-surface3-surface, var(--cc-surface2-surface, #f1f3f5));
+  --tj-text: var(--cc-primary-text, #1b1f24);
+  --tj-text-muted: var(--cc-placeholder-text, #6a727c);
+  --tj-border: var(--cc-default-border, #d7dbdf);
+  --tj-border-weak: var(--cc-weak-border, var(--cc-default-border, #e4e7eb));
+  --tj-danger: var(--cc-error-systemStatus, #d72d39);
+  --tj-success: var(--cc-success-systemStatus, #1e823b);
+  --tj-warning: var(--cc-warning-systemStatus, #b54708);
+}
+`;
+
+// One set of constructable stylesheets per library revision, adopted by every instance and popup layer, instead of
+// a <style> copy of the library CSS in each shadow root (jsdom and old browsers fall back to <style> elements).
+// release() drops a root from the sheets on unmount. Chrome's constructed sheet holds every tree scope that adopted
+// it strongly, so a detached shadow root kept in adoptedStyleSheets stayed alive with its tj-cc-root and the ~140
+// listeners React puts on every portal container: ~135 listeners and the widget's DOM leaked per mount (C-04).
+type Sheets = {
+  adopt: (root: ShadowRoot) => void;
+  release: (root: ShadowRoot) => void;
+  setLibraryCss: (css: string) => void;
+  /** The library's CSS has been applied once: a component drawn before that showed unstyled for a moment. */
+  hasCss: () => boolean;
+};
+const sheetsByLibrary = new Map<string, Sheets>();
+const canAdopt = () =>
+  typeof CSSStyleSheet !== 'undefined' &&
+  'replaceSync' in CSSStyleSheet.prototype &&
+  'adoptedStyleSheets' in Document.prototype;
+const sheetsFor = (key: string): Sheets => {
+  const known = sheetsByLibrary.get(key);
+  if (known) return known;
+  let sheets: Sheets;
+  if (canAdopt()) {
+    const make = (text: string) => {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(text);
+      return sheet;
+    };
+    const library = make('');
+    const list = [make(BASE_CSS), library, make(TOKEN_CSS)];
+    // Every instance hands its library's CSS over on mount; parsed once per content (Ant's is close to 1 MB, and a
+    // page of 37 widgets parsed it 37 times on every page switch). Changed CSS (a dev rebuild) is still applied.
+    let applied = '';
+    let loaded = false;
+    sheets = {
+      adopt: (root) => (root.adoptedStyleSheets = list),
+      release: (root) => (root.adoptedStyleSheets = []),
+      setLibraryCss: (css) => {
+        loaded = true;
+        if (css === applied) return;
+        applied = css;
+        library.replaceSync(css);
+      },
+      hasCss: () => loaded,
+    };
+  } else {
+    const roots = new Set<ShadowRoot>();
+    let libraryCss = '';
+    let loaded = false;
+    sheets = {
+      adopt: (root) => {
+        roots.add(root);
+        [BASE_CSS, libraryCss, TOKEN_CSS].forEach((text, i) => {
+          const el = document.createElement('style');
+          el.textContent = text;
+          el.dataset.tjSheet = String(i);
+          root.prepend(el);
+        });
+      },
+      release: (root) => {
+        roots.delete(root);
+        root.querySelectorAll('style[data-tj-sheet]').forEach((el) => el.remove());
+      },
+      setLibraryCss: (css) => {
+        loaded = true;
+        if (css === libraryCss) return;
+        libraryCss = css;
+        roots.forEach((root) =>
+          root.querySelectorAll('style[data-tj-sheet="1"]').forEach((el) => (el.textContent = css))
+        );
+      },
+      hasCss: () => loaded,
+    };
+  }
+  sheetsByLibrary.set(key, sheets);
+  return sheets;
+};
+
+// One popup layer per library revision on the page (select lists, menus, dialogs), shared by its instances. It sits
+// on document.body: WidgetWrapper positions every widget with a transform, which would make it the containing block
+// of position:fixed popups.
+// The store writes a pack component makes as it mounts (each ToolJet.useStateX publishes its value, useValidation its
+// isValid and isMandatory) are held in the store's exposed-value batch and applied together, in one store update, once
+// the mount's effects have run. Each write on its own re-ran every widget's store selectors, so a page of N pack
+// widgets cost N x writes x N selector runs: 100 Ant fields took ~3 s to switch to, a native page of 100 ~0.4 s. The
+// batch is ref-counted (a page switch holds one too): every widget mounting in one commit opens it in its layout
+// effect, before any passive effect of that commit runs, and the last one to close applies all the writes.
+export const holdStoreWrites = (): (() => void) => {
+  const state = useStore.getState() as { startExposedValueBatch?: () => void; flushExposedValueBatch?: () => void };
+  if (typeof state.startExposedValueBatch !== 'function') return () => {};
+  state.startExposedValueBatch();
+  let open = true;
+  return () => {
+    if (!open) return;
+    open = false;
+    (useStore.getState() as { flushExposedValueBatch: () => void }).flushExposedValueBatch();
+  };
+};
+
+const layers = new Map<string, { overlay: HTMLElement; host: HTMLElement; count: number; release: () => void }>();
+const acquireLayer = (key: string, sheets: Sheets) => {
+  const known = layers.get(key);
+  if (known) {
+    known.count += 1;
+    return known;
+  }
+  const host = document.createElement('div');
+  host.className = 'tj-cc-popup-host';
+  const root = host.attachShadow({ mode: 'open' });
+  sheets.adopt(root);
+  const overlay = document.createElement('div');
+  overlay.className = 'tj-cc-overlay';
+  root.appendChild(overlay);
+  document.body.appendChild(host);
+  const release = isolateInteractiveEvents(host);
+  const layer = {
+    overlay,
+    host,
+    count: 1,
+    release: () => {
+      release();
+      sheets.release(root);
+      // A pack may keep the layer's root after it is gone (Ant's rc-util style cache is keyed by container): empty it,
+      // so the popups and the listeners React put on the overlay go with the layer.
+      root.replaceChildren();
+      host.remove();
+    },
+  };
+  layers.set(key, layer);
+  return layer;
+};
+const releaseLayer = (key: string) => {
+  const layer = layers.get(key);
+  if (!layer) return;
+  layer.count -= 1;
+  if (layer.count <= 0) {
+    layer.release();
+    layers.delete(key);
+  }
+};
 
 const isTextField = (node: EventTarget | undefined): boolean =>
   node instanceof HTMLElement &&
@@ -31,7 +207,7 @@ const isTextField = (node: EventTarget | undefined): boolean =>
 const PRESS_EVENTS = ['mousedown', 'touchstart'] as const;
 const KEY_EVENTS = ['keydown', 'keyup', 'keypress'] as const;
 
-const isolateInteractiveEvents = (host: HTMLElement): (() => void) => {
+export const isolateInteractiveEvents = (host: HTMLElement): (() => void) => {
   const onPress = (e: Event) => {
     const origin = e.composedPath()[0];
     if (isTextField(origin) || (origin instanceof Element && origin.closest('[data-tj-no-drag]'))) e.stopPropagation();
@@ -63,6 +239,23 @@ interface InlineLibraryComponentProps {
   actions: Map<string, (...args: unknown[]) => unknown>;
   boxShadow?: string;
   dataCy?: string;
+  // Pack contract v2 (LibraryComponent.jsx): the host capabilities, the root sized to its content instead of the
+  // box, more light-DOM children (list rows) and drop areas drawn inside the popup layer.
+  host?: PackHost;
+  fit?: boolean;
+  /** The box is stretched to its row's height (an Equal heights row): the root gets tj-cc-stretch and fills it. */
+  stretch?: boolean;
+  /** The widget's saved height: a fitted box keeps it until the component draws, so the dynamic height measure does
+   *  not read the empty box (the page's widgets collapsed onto each other, then jumped to their heights). */
+  reserveHeight?: number;
+  /** The app theme reaches the pack as --tj-* tokens (TOKEN_CSS). */
+  themed?: boolean;
+  /** The app is in dark mode: native parts (scrollbars, date inputs) draw dark too. */
+  darkMode?: boolean;
+  hostRef?: React.Ref<HTMLDivElement>;
+  light?: React.ReactNode;
+  popupSlotNames?: string[];
+  renderPopupSlot?: (name: string) => React.ReactNode;
 }
 
 const InlineLibraryComponent = ({
@@ -79,14 +272,22 @@ const InlineLibraryComponent = ({
   actions,
   boxShadow,
   dataCy,
+  host,
+  fit = false,
+  stretch = false,
+  reserveHeight,
+  themed = true,
+  darkMode = false,
+  hostRef: outerRef,
+  light,
+  popupSlotNames = [],
+  renderPopupSlot,
 }: InlineLibraryComponentProps) => {
-  const hostRef = useRef<HTMLDivElement>(null);
-  const [shadow, setShadow] = useState<{
-    mount: HTMLElement;
-    style: HTMLStyleElement;
-    popupStyle: HTMLStyleElement;
-  } | null>(null);
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const [shadow, setShadow] = useState<{ mount: HTMLElement; popupHost: HTMLElement } | null>(null);
   const [Component, setComponent] = useState<React.ComponentType<any> | null>(null);
+  // Drawn once the library's CSS is applied (at once when another instance already loaded it), not unstyled first.
+  const [cssReady, setCssReady] = useState(() => sheetsFor(cacheKey).hasCss());
   const [loadError, setLoadError] = useState<string | null>(null);
   // Slots the bundle currently renders, in mount order. Counted, so two ToolJet.Slot elements with the
   // same name (e.g. during a keyed remount) share one drop area until the last one unmounts.
@@ -107,43 +308,61 @@ const InlineLibraryComponent = ({
     };
   }, []);
 
+  const sheetKey = cacheKey;
   useLayoutEffect(() => {
-    const host = hostRef.current;
-    if (!host) return;
-    const root = host.shadowRoot ?? host.attachShadow({ mode: 'open' });
-    const base = document.createElement('style');
-    base.textContent = BASE_CSS;
-    const style = document.createElement('style');
+    const el = hostRef.current;
+    if (!el) return;
+    const sheets = sheetsFor(sheetKey);
+    const root = el.shadowRoot ?? el.attachShadow({ mode: 'open' });
+    root.replaceChildren();
+    sheets.adopt(root);
     const mount = document.createElement('div');
     mount.className = 'tj-cc-root';
-    root.replaceChildren(base, style, mount);
-
-    // Popup layer for the bundle's select lists, menus and dialogs. WidgetWrapper positions every widget
-    // with a transform, which would make it the containing block for position:fixed popups (a dialog
-    // centred on the widget box, lists stacked under later widgets). So popups get their own shadow root
-    // on document.body, with the same bundle CSS, exposed to the bundle as `shadowRoot.tjOverlay`.
-    const popupHost = document.createElement('div');
-    popupHost.className = 'tj-cc-popup-host';
-    const popupRoot = popupHost.attachShadow({ mode: 'open' });
-    const popupBase = document.createElement('style');
-    popupBase.textContent = BASE_CSS;
-    const popupStyle = document.createElement('style');
-    const overlay = document.createElement('div');
-    overlay.className = 'tj-cc-overlay';
-    popupRoot.append(popupBase, popupStyle, overlay);
-    document.body.appendChild(popupHost);
-    Object.defineProperty(root, 'tjOverlay', { value: overlay, configurable: true });
-
-    const releaseHost = isolateInteractiveEvents(host);
-    const releasePopup = isolateInteractiveEvents(popupHost);
-
-    setShadow({ mount, style, popupStyle });
+    root.appendChild(mount);
+    // The bundle portals its popups into `shadowRoot.tjOverlay` (the library's shared popup layer).
+    const layer = acquireLayer(sheetKey, sheets);
+    Object.defineProperty(root, 'tjOverlay', { value: layer.overlay, configurable: true });
+    const releaseHost = isolateInteractiveEvents(el);
+    setShadow({ mount, popupHost: layer.host });
     return () => {
       releaseHost();
-      releasePopup();
-      popupHost.remove();
+      releaseLayer(sheetKey);
+      sheets.release(root);
+      // A pack may keep the root after the unmount (Ant's icons register every shadow root in rc-util's style
+      // container cache): empty it, so it no longer reaches the mount, its listeners or the popup layer.
+      delete (root as ShadowRoot & { tjOverlay?: HTMLElement }).tjOverlay;
+      root.replaceChildren();
+      // And through root.host the kept root reached the whole unmounted page. Once React has removed the tree, cut the
+      // host out of it; a host still connected (a hidden Suspense tree, a sheet change) is left alone.
+      setTimeout(() => {
+        if (el.isConnected) return;
+        el.remove();
+        el.replaceChildren();
+      }, 0);
     };
-  }, []);
+  }, [sheetKey]);
+
+  useLayoutEffect(() => {
+    shadow?.mount.classList.toggle('tj-cc-fit', fit);
+    shadow?.mount.classList.toggle('tj-cc-stretch', stretch);
+    hostRef.current?.classList.toggle('tj-themed', themed);
+    // Popups (menus, pickers, dialogs) draw in the shared popup host, outside the widget: it takes the same theme
+    // contract, or every popup fell back to the pack's stock colours, font and radius under an applied theme.
+    // The layer is shared by a library's widgets, which an app themes alike.
+    shadow?.popupHost?.classList.toggle('tj-themed', themed);
+    // The browser draws scrollbars and other native parts from color-scheme: unset, a scrolling card in a dark app kept
+    // a light scrollbar. The popup layer follows too.
+    const scheme = darkMode ? 'dark' : 'light';
+    if (hostRef.current) hostRef.current.style.colorScheme = scheme;
+    if (shadow?.popupHost) shadow.popupHost.style.colorScheme = scheme;
+  }, [shadow, fit, stretch, themed, darkMode]);
+
+  // The host already dims a disabled widget's box. It marks the root too, so a component whose controls dim
+  // themselves when disabled can keep them at full opacity (the pack's CSS reads the mark) instead of dimming twice.
+  const hostDisabled = !!host?.disabled;
+  useLayoutEffect(() => {
+    shadow?.mount.toggleAttribute('data-tj-host-disabled', hostDisabled);
+  }, [shadow, hostDisabled]);
 
   useEffect(() => {
     let cancelled = false;
@@ -166,19 +385,43 @@ const InlineLibraryComponent = ({
   }, [bundleUrl, cacheKey, isDevBuild, componentName]);
 
   useEffect(() => {
-    if (!shadow) return;
     let cancelled = false;
-    loadLibraryCss(cssUrl, cacheKey, { isDevBuild }).then((css) => {
-      if (cancelled) return;
-      shadow.style.textContent = css ?? '';
-      shadow.popupStyle.textContent = css ?? '';
-    });
+    setCssReady(sheetsFor(sheetKey).hasCss());
+    loadLibraryCss(cssUrl, cacheKey, { isDevBuild })
+      .then((css) => {
+        if (!cancelled) sheetsFor(sheetKey).setLibraryCss(css ?? '');
+      })
+      // A stylesheet that fails to load must not keep the component from drawing.
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setCssReady(true);
+      });
     return () => {
       cancelled = true;
     };
-  }, [shadow, cssUrl, cacheKey, isDevBuild]);
+  }, [cssUrl, cacheKey, isDevBuild, sheetKey]);
 
   // Latest callbacks behind a stable facade, so the context value changes only when props do.
+  // The component's first commit: its mount effects' store writes go out as one update (holdStoreWrites). Opened in a
+  // layout effect, closed in this component's passive effect, which runs after its children's (the pack component's)
+  // passive effects; a timer closes it should the passive effects be dropped.
+  const mountHold = useRef<(() => void) | null>(null);
+  useLayoutEffect(() => {
+    if (!Component) return undefined;
+    const release = holdStoreWrites();
+    mountHold.current = release;
+    const fallback = setTimeout(release, 0);
+    return () => {
+      clearTimeout(fallback);
+      release();
+    };
+  }, [Component]);
+  useEffect(() => {
+    if (!Component) return;
+    mountHold.current?.();
+    mountHold.current = null;
+  }, [Component]);
+
   const latest = useRef({ setExposedVariable, fireEvent });
   latest.current = { setExposedVariable, fireEvent };
 
@@ -190,21 +433,34 @@ const InlineLibraryComponent = ({
       fireEvent: (name) => latest.current.fireEvent(name, { isCustomComponentEvent: true }),
       actions,
       registerSlot,
+      host,
     }),
-    [componentProps, componentStyles, actions, registerSlot]
+    [componentProps, componentStyles, actions, registerSlot, host]
   );
 
   let content: React.ReactNode = null;
+  const drawn = !!loadError || (!!Component && cssReady);
   if (loadError) content = <div className="tj-cc-error">{loadError}</div>;
-  else if (Component)
+  else if (Component && cssReady)
     content = (
       <LibraryInstanceContext.Provider value={instance}>
         <Component {...componentProps} />
       </LibraryInstanceContext.Provider>
     );
 
+  const setRef = (el: HTMLDivElement | null) => {
+    hostRef.current = el;
+    if (typeof outerRef === 'function') outerRef(el);
+    else if (outerRef) (outerRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+  };
+
   return (
-    <div ref={hostRef} data-cy={dataCy} className="tw-w-full tw-h-full tw-block" style={{ boxShadow }}>
+    <div
+      ref={setRef}
+      data-cy={dataCy}
+      className={fit && !stretch ? 'tw-w-full tw-block' : 'tw-w-full tw-h-full tw-block'}
+      style={{ boxShadow, ...(fit && !stretch && !drawn && reserveHeight ? { minHeight: reserveHeight } : {}) }}
+    >
       {shadow && createPortal(content, shadow.mount)}
       {/* Light-DOM children, projected into the bundle's <slot> elements. */}
       {slotNames.map((name) => (
@@ -212,6 +468,19 @@ const InlineLibraryComponent = ({
           {renderSlot(name)}
         </div>
       ))}
+      {light}
+      {/* Drop areas inside popups: children of the popup layer's host, projected into the popup's <slot>. */}
+      {shadow && renderPopupSlot && host
+        ? popupSlotNames.map((name) =>
+            createPortal(
+              <div slot={host.popupSlotAttr(name)} className="tw-block tw-w-full tw-h-full">
+                {renderPopupSlot(name)}
+              </div>,
+              shadow.popupHost,
+              name
+            )
+          )
+        : null}
     </div>
   );
 };

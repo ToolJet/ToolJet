@@ -39,9 +39,11 @@ import { useLocation, useParams } from 'react-router-dom';
 import { whenBranchResolved } from '@/_helpers/active-branch';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
+import { appliedThemeDefinition } from '../_utils/themeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
 import { getCachedAppDefinition, setCachedAppDefinition } from '@/AppBuilder/_helpers/appDefinitionCache';
+import { setOnBrandColors } from '@/AppBuilder/_helpers/onBrandText';
 
 const useAppData = (
   appId,
@@ -752,8 +754,9 @@ const useAppData = (
           setModuleDefinition(appData.modules);
         }
 
+        // A snapshot's queries come with its definition; the version's own are the edited ones.
         const queryData =
-          isPublicAccess || (mode !== 'edit' && appData.is_public)
+          isPublicAccess || (mode !== 'edit' && appData.is_public) || (mode !== 'edit' && queryParams.snapshot)
             ? appData
             : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id, mode);
 
@@ -1001,7 +1004,7 @@ const useAppData = (
   useEffect(() => {
     const root = document.documentElement;
     const mode = appMode && appMode !== 'auto' ? appMode : darkMode ? 'dark' : 'light';
-    const themeObj = !themeAccess ? baseTheme?.definition : selectedTheme?.definition || {};
+    const themeObj = appliedThemeDefinition(selectedTheme, themeAccess);
     Object.keys(themeObj).forEach((category) => {
       const categoryObj = themeObj[category];
       Object.keys(categoryObj).forEach((property) => {
@@ -1021,6 +1024,20 @@ const useAppData = (
         });
       });
     });
+    // Values the loop above does not set as variables: the radius scale (numbers, not light/dark pairs), a text colour
+    // readable on the brand colour and the brand fill that colour reads on at 4.5:1 (component packs draw primary
+    // buttons and chips with them).
+    const radius = themeObj?.border?.radius;
+    ['default', 'small', 'large'].forEach((size) => {
+      const value = Number(radius?.[size]);
+      if (Number.isFinite(value)) root.style.setProperty(`--cc-radius-${size}`, `${value}px`);
+      else root.style.removeProperty(`--cc-radius-${size}`);
+    });
+    setOnBrandColors(root, themeObj?.brand?.colors?.primary?.[mode]);
+    // The theme's font, for component packs (their shadow roots read --cc-font-family, else the page font).
+    const font = typeof themeObj?.text?.font === 'string' ? themeObj.text.font.trim() : '';
+    if (font) root.style.setProperty('--cc-font-family', `'${font.replace(/'/g, '')}', ui-sans-serif, system-ui, sans-serif`);
+    else root.style.removeProperty('--cc-font-family');
     detectThemeChange();
   }, [darkMode, appMode, selectedTheme, !!themeAccess]);
 

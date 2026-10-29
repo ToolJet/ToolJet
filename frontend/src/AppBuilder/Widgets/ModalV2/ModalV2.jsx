@@ -22,6 +22,8 @@ import WidgetTooltip from '@/AppBuilder/AppCanvas/WidgetTooltip';
 // Upper bound on how long open() waits for the enter transition
 const OPEN_TIMEOUT_MS = 1000;
 
+const SHEET_SIDES = ['right', 'left', 'top', 'bottom'];
+
 export const ModalV2 = function Modal({
   id,
   component,
@@ -64,10 +66,10 @@ export const ModalV2 = function Modal({
     headerBackgroundColor,
     footerBackgroundColor,
     bodyBackgroundColor,
-    triggerButtonBackgroundColor,
+    triggerButtonBackgroundColor: rawTriggerButtonBackgroundColor,
     triggerButtonHoverBackgroundMode,
-    triggerButtonHoverBackgroundColor = 'var(--cc-primary-brand)',
-    triggerButtonTextColor,
+    triggerButtonHoverBackgroundColor: rawTriggerButtonHoverBackgroundColor = 'var(--cc-primary-brand)',
+    triggerButtonTextColor: rawTriggerButtonTextColor,
     triggerButtonTextSize = 14,
     triggerButtonFontWeight,
     triggerButtonContentAlignment,
@@ -75,6 +77,17 @@ export const ModalV2 = function Modal({
     headerDividerColor,
     footerDividerColor,
   } = styles;
+  // A colour or label bound to a non-text value (a number, `false`, an object) falls back to the definition default
+  // rather than crashing the hover-shade maths or rendering an object as a React child. An unset value keeps its old
+  // behaviour.
+  const textOr = (value, fallback) => (value == null || typeof value === 'string' ? value : fallback);
+  const triggerButtonBackgroundColor = textOr(rawTriggerButtonBackgroundColor, 'var(--cc-primary-brand)');
+  const triggerButtonHoverBackgroundColor = textOr(rawTriggerButtonHoverBackgroundColor, 'var(--cc-primary-brand)');
+  const triggerButtonTextColor = textOr(rawTriggerButtonTextColor, 'var(--cc-surface1-surface)');
+  const computedTriggerButtonLabel =
+    typeof triggerButtonLabel === 'number'
+      ? String(triggerButtonLabel)
+      : (textOr(triggerButtonLabel, null) ?? 'Show Modal');
   const normalizedTriggerButtonTextSize = Number(triggerButtonTextSize);
   const computedTriggerButtonFontSize = Number.isFinite(normalizedTriggerButtonTextSize)
     ? normalizedTriggerButtonTextSize
@@ -101,6 +114,12 @@ export const ModalV2 = function Modal({
   const headerHeightPx = getModalHeaderHeight(showHeader, headerHeight);
   const footerHeightPx = getModalFooterHeight(showFooter, footerHeight);
   const isFullScreen = properties.size === 'fullscreen';
+  // The shadcn pack's Dialog is this widget in the pack's look (Widgets/Shadcn/ShadOverlays.jsx).
+  const skin = componentType === 'ShadDialog' ? 'shadcn' : undefined;
+  // Kind "sheet" opens against one edge of the window instead of centred: full height on the right or left, full width
+  // on the top or bottom. Anything else is a dialog, as every modal was before.
+  const sheetSide =
+    properties.variant === 'sheet' ? (SHEET_SIDES.includes(properties.side) ? properties.side : 'right') : undefined;
   const computedCanvasHeight = isFullScreen
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
@@ -307,7 +326,7 @@ export const ModalV2 = function Modal({
         <WidgetTooltip {...tooltipProps} darkMode={darkMode}>
           <button
             disabled={isDisabledTrigger}
-            className="jet-btn btn btn-primary overflow-hidden"
+            className={`jet-btn btn btn-primary overflow-hidden${skin ? ' tj-shad-trigger' : ''}`}
             style={customStyles.buttonStyles}
             onClick={(event) => {
               /**** Start - Logic to reduce the zIndex of modal control box ****/
@@ -331,7 +350,7 @@ export const ModalV2 = function Modal({
                 fontWeight: computedTriggerButtonFontWeight,
               }}
             >
-              {triggerButtonLabel ?? 'Show Modal'}
+              {computedTriggerButtonLabel}
             </span>
             {iconVisibility && (
               <TablerIcon
@@ -404,6 +423,8 @@ export const ModalV2 = function Modal({
           darkMode,
           subContainerIndex: contextIndices,
           isDynamicHeightEnabled,
+          skin,
+          sheetSide,
         }}
       />
     </div>

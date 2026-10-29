@@ -9,6 +9,11 @@ import './WidgetTooltip.scss';
 
 export const TOOLTIP_FORMATS = ['plainText', 'markdown', 'html'];
 const DEFAULT_FORMAT = 'plainText';
+// setTimeout's largest delay. A widget with no tooltip keeps its Tooltip (dropping the wrapper would remount the widget
+// when a bound tooltip turns on) but must never open it: an opened Tooltip, even an empty one, closes every other, and a
+// hover over a child reaches its parent's trigger too, so a List view row's or Kanban card's empty tooltip shut the
+// tooltip of the button inside it a moment after it showed.
+const NEVER_OPEN_DELAY = 2 ** 31 - 1;
 const MARKDOWN_REMARK_PLUGINS = [remarkGfm];
 
 // styles for markdown and plain text
@@ -59,7 +64,7 @@ const WidgetTooltip = ({
   const themeClass = darkMode ? 'dark-theme theme-dark' : '';
 
   return (
-    <TooltipProvider delayDuration={delayDuration}>
+    <TooltipProvider delayDuration={shouldShowTooltip ? delayDuration : NEVER_OPEN_DELAY}>
       <Tooltip>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
         {shouldShowTooltip && (

@@ -183,7 +183,8 @@ export const createDebuggerSlice = (set, get) => ({
       const componentType = componentDefinition.component.component;
       const componentMeta = componentTypeDefinitionMap[componentType];
       if (!componentMeta) return value;
-      const validationSchema = componentMeta[type][property]?.validation?.schema;
+      // Pack and custom library components declare no validation meta; their Validation section brings its own
+      const validationSchema = componentMeta[type]?.[property]?.validation?.schema;
 
       const defaultValue = validationSchema?.defaultValue
         ? validationSchema?.defaultValue

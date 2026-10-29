@@ -117,3 +117,84 @@ describe('inline SDK: styles and slots', () => {
     warn.mockRestore();
   });
 });
+
+describe('inline SDK: host disabled mark', () => {
+  beforeEach(() => {
+    loadLibraryModule.mockResolvedValue({ Card });
+  });
+
+  const hostWith = (disabled) => ({
+    disabled,
+    loading: false,
+    fieldId: 'field-1',
+    useValidation: () => ({ isValid: true, error: '', required: false, touch: () => {} }),
+    setRows: () => {},
+    rowSlotAttr: (i) => `row-${i}`,
+    registerPopupSlot: () => () => {},
+    popupSlotAttr: (name) => name,
+  });
+
+  it('marks the component root while the host disables it, so the pack dims once without a wrapper', async () => {
+    // Break this catches: the pack needing its own wrapper (withHostDisabled) to learn it is host-disabled, which
+    // hides every wrapped component from the CLI's build; or the mark staying after the host re-enables it.
+    const { host, rerenderWith } = renderCard({ host: hostWith(true) });
+    const root = () => host.shadowRoot.querySelector('.tj-cc-root');
+    await waitFor(() => expect(root()).toBeTruthy());
+
+    await waitFor(() => expect(root().hasAttribute('data-tj-host-disabled')).toBe(true));
+    rerenderWith({ host: hostWith(false) });
+    await waitFor(() => expect(root().hasAttribute('data-tj-host-disabled')).toBe(false));
+  });
+});
+
+describe('inline SDK: state bindings', () => {
+  const SAMPLE = [{ id: 1, name: 'Sample row' }];
+  const Grid = () => {
+    const [data] = ToolJet.useStateArray({ name: 'data', initialValue: SAMPLE });
+    return <div data-testid="card" data-count={data.length} />;
+  };
+  beforeEach(() => {
+    loadLibraryModule.mockResolvedValue({ Card: Grid });
+  });
+
+  it('[LibraryComponent-INLINE-STATE-001] a set property whose binding resolves to undefined starts empty, not with the sample', async () => {
+    // Break this catches: a failed or not-yet-run query reading as the component's sample data in the viewer.
+    const { card, rerenderWith } = renderCard({ componentProps: { data: undefined } });
+    await waitFor(() => expect(card()).not.toBeNull());
+    expect(card().dataset.count).toBe('0');
+
+    rerenderWith({ componentProps: { data: [{ id: 7 }, { id: 8 }] } });
+    expect(card().dataset.count).toBe('2');
+  });
+
+  it('[LibraryComponent-INLINE-STATE-002] a property the app never set falls back to initialValue', async () => {
+    const { card } = renderCard({ componentProps: {} });
+    await waitFor(() => expect(card()).not.toBeNull());
+    expect(card().dataset.count).toBe('1');
+  });
+});
+
+describe('inline SDK: style bindings', () => {
+  it('[LibraryComponent-INLINE-STYLES-003] a style bound to null, or to an option it does not list, falls back to initialValue', async () => {
+    // Break this catches: a style bound to data that has not loaded ({{null}}) reaching a vendor component, which can
+    // throw (MUI Tabs' textColor took the whole viewer down).
+    loadLibraryModule.mockResolvedValue({
+      Card: () => {
+        const tone = ToolJet.useStyleEnumeration({
+          name: 'tone',
+          enumDefinition: ['primary', 'secondary'],
+          initialValue: 'primary',
+        });
+        const accent = ToolJet.useStyleString({ name: 'accent', initialValue: 'red' });
+        return <div data-testid="card" data-tone={tone} data-accent={accent} />;
+      },
+    });
+    const { card, rerenderWith } = renderCard({ componentStyles: { tone: null, accent: null } });
+    await waitFor(() => expect(card()).not.toBeNull());
+    expect(card().dataset).toMatchObject({ tone: 'primary', accent: 'red' });
+    rerenderWith({ componentStyles: { tone: 'tertiary', accent: 'blue' } });
+    expect(card().dataset).toMatchObject({ tone: 'primary', accent: 'blue' });
+    rerenderWith({ componentStyles: { tone: 'secondary' } });
+    expect(card().dataset.tone).toBe('secondary');
+  });
+});
