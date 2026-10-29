@@ -51,7 +51,7 @@ const deriveEnvironmentStatus = (isSelected, hasTableContext, hasRelation, migra
 };
 
 const EnvironmentSwitcher = () => {
-  const { organizationId, tables, setTables, selectedTable } = useContext(TooljetDatabaseContext);
+  const { organizationId, tables, setTables, selectedTable, tablesLoaded } = useContext(TooljetDatabaseContext);
   const environments = useTjdbStore((state) => state.environments);
   const selectedEnvironment = useTjdbStore((state) => state.selectedEnvironment);
   const migrationsVersion = useTjdbStore((state) => state.migrationsVersion);
@@ -100,6 +100,9 @@ const EnvironmentSwitcher = () => {
   if (environments.length <= 1 || !selectedEnvironment) return null;
 
   const hasTableContext = !!selectedTable?.id;
+  // A workspace with no tables has nothing to switch between. Only on Development though: Create table
+  // is disabled elsewhere, so on another environment the pill is the way back to Development.
+  if (tablesLoaded && tables.length === 0 && selectedEnvironment.priority === 1) return null;
   const relationsByEnvironment = tables?.find((table) => table.id === selectedTable?.id)?.environments ?? [];
   const migrations = tableMigrations?.migrations ?? [];
   const chainLength = migrations.length;
@@ -141,14 +144,16 @@ const EnvironmentSwitcher = () => {
         </span>
       </button>
 
-      <button
-        className="btn tjdb-environment-switcher__history-button"
-        onClick={openMigrationHistory}
-        title="Migration history"
-        data-cy="tjdb-migration-history-button"
-      >
-        <History width="16" height="16" className="tw-text-icon-strong" />
-      </button>
+      {hasTableContext && (
+        <button
+          className="btn tjdb-environment-switcher__history-button"
+          onClick={openMigrationHistory}
+          title="Migration history"
+          data-cy="tjdb-migration-history-button"
+        >
+          <History width="16" height="16" className="tw-text-icon-strong" />
+        </button>
+      )}
 
       <Overlay
         show={isOpen}
