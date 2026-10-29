@@ -62,6 +62,17 @@ The user profile column accepts any key-value pairs in valid JSON object format.
 - **Reciepient** - Unique user identifier.
 - **Notification Title** - The title for your notification.
 
+#### Optional Parameters
+
+- **Notification Message** - The body text of the notification.
+- **Notification URL** - The URL the user is taken to when they click the notification.
+- **Notification Icon** - URL of the icon shown with the notification.
+- **Notification Data** - Custom data sent with the notification.
+- **Notification Category** - Identifier of a notification category set up in your Engagespot workspace.
+- **Override** - Overrides the delivery preferences configured in your Engagespot account for this notification.
+
+The notification is sent to the single user in **Reciepient**.
+
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/send-query.png" alt="engagespot send notitication"/>
 
 ### Generate User Token

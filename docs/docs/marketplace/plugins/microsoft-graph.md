@@ -15,7 +15,7 @@ To connect ToolJet with Microsoft Graph, you’ll need the following credentials
 
 - **Tenant**
 - **Access Token URL**
-- **OAuth Type**
+- **OAuth type** (ToolJet Cloud only)
 - **Client ID**
 - **Client Secret**
 
@@ -28,6 +28,17 @@ You can enable the **Authentication required for all users** toggle in the confi
 :::note 
 After completing the OAuth flow, the query must be triggered again to fetch data from Microsoft Graph.
 :::
+
+### OAuth Type
+
+On ToolJet Cloud, the **OAuth type** dropdown sets which Microsoft app ToolJet uses for the OAuth flow:
+
+| Option | What it does |
+| ------ | ------------ |
+| **ToolJet app** | Uses ToolJet's own Microsoft app. The **Client ID** and **Client secret** fields are hidden, so you don't need to register an app in Azure. |
+| **Custom app** | Uses your own Azure app registration. Enter its **Client ID** and **Client secret**, and add the **Redirect URI** shown in the form to the app registration. |
+
+New data sources default to **Custom app**. On self-hosted ToolJet, the dropdown isn't shown and the data source always uses **Custom app**, so **Client ID** and **Client secret** are required.
 
 ## Supported Entities
 

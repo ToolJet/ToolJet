@@ -11,15 +11,14 @@ Before following this guide, it is assumed that you have already completed the p
 
 ## Connection
 
-To connect the FedEx plugin to your ToolJet app, you’ll need the following credentials:
+To connect the FedEx plugin to your ToolJet app, you’ll need the following details:
 
+- **Base URL**: Select **Production [https://apis.fedex.com]** or **Sandbox [https://apis-sandbox.fedex.com]**. This field has no default, and queries fail until you select one.
 - **Client ID**
 - **Client Secret**
-
-If you’re a FedEx® Internal, Compatible, or Integrator Customer or a FedEx® Proprietary Parent/Child Customer, you’ll also need:
-
-- **Child Key**
-- **Child Secret**
+- **Customer type**: Your FedEx customer type. Defaults to **FedEx® Standard Customers**, which needs only the Client ID and Client Secret. If you select **FedEx® Internal, Compatible, and Integrator customers** or **FedEx® Proprietary Parent Child customers**, you also need:
+  - **Child key**: The customer key returned by the FedEx Credential Registration API.
+  - **Child secret**: The customer password returned by the FedEx Credential Registration API.
 
 Follow [this](https://developer.fedex.com/api/en-us/catalog/authorization/docs.html) to generate the required credentials from the FedEx Developer Portal.
 
@@ -37,22 +36,22 @@ Follow [this](https://developer.fedex.com/api/en-us/catalog/authorization/docs.h
 
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
-| POST   | `/ship/v1/endofday/` | Create End of Day Close – submit shipping data to FedEx to close out the day’s shipments. |
-| PUT    | `/ship/v1/endofday/` | Modify End of Day Close – update or modify an existing End of Day Close request. |
+| PUT    | `/ship/v1/endofday/` | Ground End of Day Close – close out the day’s FedEx Ground shipments. |
+| POST   | `/ship/v1/endofday/` | Reprint End of Day – reprint the End of Day Close report. |
 
 ### Ship Consolidation 
 
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
-| POST   | `/ship/v1/consolidation/` | Create Consolidation – create a new consolidation request. |
-| PUT    | `/ship/v1/consolidation/` | Modify Consolidation – update an existing consolidation request. |
-| POST   | `/ship/v1/consolidation/shipments` | Add Shipments to Consolidation – add one or more shipments to an existing consolidation. |
-| POST   | `/ship/v1/consolidation/results` | Retrieve Consolidation Results – get processing results for a consolidation. |
-| POST   | `/ship/v1/consolidation/confirmations` | Submit Consolidation Confirmation – confirm consolidated shipments. |
-| POST   | `/ship/v1/consolidation/confirmationresults` | Retrieve Consolidation Confirmation Results – check confirmation status. |
-| POST   | `/ship/v1/consolidation/retrieve` | Retrieve Consolidation – fetch an existing consolidation by ID. |
-| PUT    | `/ship/v1/consolidation/shipments/delete` | Delete Shipment(s) from Consolidation – remove shipment(s) from an existing consolidation. |
-| PUT    | `/ship/v1/consolidation/delete` | Delete Consolidation – delete an entire consolidation record. |
+| POST   | `/ship/v1/consolidations` | Create Consolidation – create a new consolidation request. |
+| PUT    | `/ship/v1/consolidations` | Modify Consolidation – update an existing consolidation request. |
+| POST   | `/ship/v1/consolidations/shipments` | Add Shipments to Consolidation – add one or more shipments to an existing consolidation. |
+| POST   | `/ship/v1/consolidations/results` | Retrieve Consolidation Results – get processing results for a consolidation. |
+| POST   | `/ship/v1/consolidations/confirmations` | Submit Consolidation Confirmation – confirm consolidated shipments. |
+| POST   | `/ship/v1/consolidations/confirmationresults` | Retrieve Consolidation Confirmation Results – check confirmation status. |
+| POST   | `/ship/v1/consolidations/retrieve` | Retrieve Consolidation – fetch an existing consolidation by ID. |
+| PUT    | `/ship/v1/consolidations/shipments/delete` | Delete Shipment(s) from Consolidation – remove shipment(s) from an existing consolidation. |
+| PUT    | `/ship/v1/consolidations/delete` | Delete Consolidation – delete an entire consolidation record. |
 
 ### Open Ship
 
@@ -81,7 +80,7 @@ Follow [this](https://developer.fedex.com/api/en-us/catalog/authorization/docs.h
 
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
-| POST   | `/country/v1/postal/validate/` | Validate Postal Code – validate and resolve postal/ZIP codes and return standardized or corrected information. |
+| POST   | `/country/v1/postal/validate` | Validate Postal Code – validate and resolve postal/ZIP codes and return standardized or corrected information. |
 
 ### Rates and Transit Times
 
@@ -141,7 +140,7 @@ Follow [this](https://developer.fedex.com/api/en-us/catalog/authorization/docs.h
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST   | `/availability/v1/transittimes` | Retrieve Services and Transit Times – get estimated transit times for a particular shipment. |
-| POST   | `/availability/v1/packageandserviceoption` | Retrieve Package and Service Options – get available package types and shipping services for a given origin and destination. |
+| POST   | `/availability/v1/packageandserviceoptions` | Retrieve Package and Service Options – get available package types and shipping services for a given origin and destination. |
 | POST   | `/availability/v1/specialserviceoptions` | Retrieve Special Service Options – get special service options (such as Saturday delivery, signature options, etc.) available for a shipment. |
 
 ## Example Queries

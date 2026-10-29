@@ -97,7 +97,7 @@ NoSQL mode enables you to perform schema-less storage and retrieval of JSON docu
 - **[Delete](#delete-nosql)**
 - **[Search by hash](#search-by-hash)**
 - **[Search by value](#search-by-value)**
-- **[SeleSearch by conditions](#search-by-conditions)**
+- **[Search by conditions](#search-by-conditions)**
 
 #### Insert (NoSQL)
 
@@ -186,7 +186,6 @@ Returns data from a table for a matching value.
 | ------------------------------------------------ | -------------------------------------------------- |
 | Schema (required)                                | schema where the table you are searching lives     |
 | Table (required)                                 | table you wish to search                           |
-| Hash Values (required)                           | array of hashes to retrieve                        |
 | Search Attribute (required)                      | attribute you wish to search can be any attribute  |
 | Search Value (required)                          | value you wish to search - wild cards are allowed. |
 | Table Attributes (required)                      | define which attributes you want returned.         |
