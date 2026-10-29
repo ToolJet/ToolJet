@@ -16,7 +16,7 @@ For connecting to OpenAI, the following credential is required:
 - **API Key**: API key for OpenAI can be generated [here](https://platform.openai.com/account/api-keys).
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/connection-v4.png" alt="Configuring OpenAI in ToolJet" />
+    <img className="screenshot-full img-l" src="/img/marketplace/plugins/openai/connection-v5.png" alt="OpenAI data source connection form with the API Key field" />
 </div>
 
 ## Supported Operations
@@ -85,7 +85,7 @@ Suffix: \n
 ```
 </details>
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/chat-v4.png" alt="Chat Operation" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/chat-v5.png" alt="Chat operation with System Prompt, Message History and User message filled in for the GPT-4.1 model" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
