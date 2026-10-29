@@ -9,15 +9,10 @@ import {
   initTestApp,
 } from 'test-helper';
 
-const EDITIONS: Array<{ label: string; edition: 'ee' | 'ce'; plan?: 'enterprise' }> = [
-  { label: 'EE (plan: enterprise)', edition: 'ee', plan: 'enterprise' },
-  { label: 'CE', edition: 'ce' },
-];
-
 /** @group platform */
 describe('AppEnvironmentsController', () => {
-  // EE overrides init, post-action and the list without calling super, so each edition runs its own implementation.
-  describe.each(EDITIONS)('$label', ({ edition, plan }) => {
+  // The EE overrides of these endpoints are covered in ee/test/modules/app-environments.
+  describe('CE', () => {
     describe('workspace scoping of client-supplied ids', () => {
       let app: INestApplication;
       let orgA: { id: string; cookie: string[]; appId: string; versionId: string; environmentId: string };
@@ -26,9 +21,9 @@ describe('AppEnvironmentsController', () => {
       const asWorkspaceA = (req: request.Test) => req.set('tj-workspace-id', orgA.id).set('Cookie', orgA.cookie);
 
       beforeAll(async () => {
-        ({ app } = await initTestApp({ edition, plan }));
+        ({ app } = await initTestApp());
 
-        const a = await createUser(app, { email: `env-scope-a-${edition}@tooljet.io` });
+        const a = await createUser(app, { email: 'env-scope-a-ce@tooljet.io' });
         const appA = await createApplication(app, { name: 'App A', user: a.user });
         const versionA = await createApplicationVersion(app, appA);
         const { tokenCookie } = await buildTestSession(a.user, a.organization.id);
@@ -40,7 +35,7 @@ describe('AppEnvironmentsController', () => {
           environmentId: versionA.currentEnvironmentId,
         };
 
-        const b = await createUser(app, { email: `env-scope-b-${edition}@tooljet.io` });
+        const b = await createUser(app, { email: 'env-scope-b-ce@tooljet.io' });
         const appB = await createApplication(app, { name: 'App B', user: b.user });
         const versionB = await createApplicationVersion(app, appB);
         orgB = {

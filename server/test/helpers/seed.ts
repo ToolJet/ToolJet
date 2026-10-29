@@ -113,6 +113,8 @@ export interface CreateAppWithDependenciesOptions {
   dsKind?: string;
   dsOptions?: Array<Partial<DataSourceOptionInput>>;
   name?: string;
+  /** Data source names are unique per workspace branch, so apps sharing a workspace need distinct ones. */
+  dsName?: string;
 }
 
 export interface CreateGroupPermissionParams {
@@ -934,6 +936,7 @@ export const createAppWithDependencies = async (
     dsKind = 'restapi',
     dsOptions = [{}],
     name = 'name',
+    dsName = 'name',
   }: CreateAppWithDependenciesOptions
 ) => {
   const application = await createApplication(
@@ -953,7 +956,7 @@ export const createAppWithDependencies = async (
   let dataSource: DataSource | undefined;
   if (isDataSourceNeeded) {
     dataSource = await createDataSource(app, {
-      name: 'name',
+      name: dsName,
       kind: dsKind,
       appVersion,
     });

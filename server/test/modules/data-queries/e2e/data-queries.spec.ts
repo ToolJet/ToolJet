@@ -41,9 +41,11 @@ describe('DataQueriesController', () => {
 
       const { appVersion: versionA, dataQuery: queryA } = await createAppWithDependencies(app, adminUserData.user, {
         name: `app-a-${suffix}`,
+        dsName: `ds-a-${suffix}`,
       });
       const { appVersion: versionB, dataQuery: queryB } = await createAppWithDependencies(app, adminUserData.user, {
         name: `app-b-${suffix}`,
+        dsName: `ds-b-${suffix}`,
       });
 
       const { tokenCookie } = await login(app, adminUserData.user.email, 'password', orgId);
