@@ -16,7 +16,7 @@ import { Dialog, DialogContent } from '@/components/ui/Rocket';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { validateNewRowField } from '../../../_utils/validateNewRowField';
-import { AddNewRowForm } from './AddNewRowForm';
+import { AddNewRowForm, FADE_OUT_MS } from './AddNewRowForm';
 import {
   getFieldKind,
   getFieldLayout,
@@ -30,6 +30,9 @@ import {
   RichTextControl,
   RendererControl,
 } from './AddNewRowFields';
+
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 const FOCUSABLE_SELECTOR = 'input, textarea, [role="combobox"], [role="button"], button';
 
@@ -57,12 +60,26 @@ export function AddNewRow({
     [allTableColumns, addNewRowColumns]
   );
   const baseId = useId();
+  // the date calendar renders inside the dialog (see DatePickerRenderer's portalId), here
+  const datePortalId = `${baseId}-date-portal`;
   // What had focus when the form opened (the footer's add button). A Radix dialog returns focus only to its own
   // trigger, and this one has none, so the dialog puts it back here when it closes.
   const openerRef = useRef(null);
   if (openerRef.current === null && typeof document !== 'undefined') openerRef.current = document.activeElement;
   // errors stay hidden until Add row is clicked once; after that they follow the edits
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  // saving: the event is with the app. closing: fading out. busyRef is set by the first Add row or Cancel click,
+  // synchronously, so a second click, Enter or Escape in the same instant cannot start a second send or cancel.
+  const [saving, setSaving] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const busyRef = useRef(false);
+  const mountedRef = useRef(true);
+  useEffect(
+    () => () => {
+      mountedRef.current = false;
+    },
+    []
+  );
 
   const addNewRowDetailsLength = addNewRowDetails.size;
 
@@ -122,6 +139,7 @@ export function AddNewRow({
           handleCellValueChange,
           searchText: '',
           columnForAddNewRow: true,
+          datePickerPortalId: placement === 'dialog' ? datePortalId : undefined,
           moduleId,
         }).filter(Boolean),
       ].filter(Boolean),
@@ -136,6 +154,8 @@ export function AddNewRow({
       addNewRowDetails,
       addNewRowDetailsLength,
       moduleId,
+      placement,
+      datePortalId,
     ]
   );
 
@@ -260,14 +280,33 @@ export function AddNewRow({
     };
   });
 
-  // Cancel, Escape and the dialog closing all do the same: tell the app, close, drop what was typed.
+  // The form fades out and then closes (at once for users who prefer reduced motion).
+  const closeWithFade = (afterClose) => {
+    const finish = () => {
+      // the app may already have closed it (the discardNewlyAddedRows action)
+      if (!mountedRef.current) return;
+      hideAddNewRowPopup();
+      afterClose?.();
+    };
+    if (prefersReducedMotion()) {
+      finish();
+      return;
+    }
+    setClosing(true);
+    setTimeout(finish, FADE_OUT_MS);
+  };
+
+  // Cancel, Escape and the dialog closing all do the same: tell the app, fade out, close, drop what was typed.
+  // Once a row is on its way to the app it can no longer be cancelled.
   const handleCancel = () => {
+    if (busyRef.current) return;
+    busyRef.current = true;
     fireEvent('onAddNewRowCancelled');
-    hideAddNewRowPopup();
-    clearAddNewRowDetails(id);
+    closeWithFade(() => clearAddNewRowDetails(id));
   };
 
   const handleSubmit = async () => {
+    if (busyRef.current) return;
     const firstInvalid = fields.find((field) => !field.isValid);
     if (firstInvalid) {
       setSubmitAttempted(true);
@@ -277,13 +316,22 @@ export function AddNewRow({
         ?.focus();
       return;
     }
-    await fireEvent('onNewRowsAdded');
-    hideAddNewRowPopup();
+    busyRef.current = true;
+    setSaving(true);
+    try {
+      // settles when the app's handlers (queries and so on) have finished
+      await fireEvent('onNewRowsAdded');
+    } catch {
+      // what to do when a handler fails is up to the app; the form closes either way
+    }
+    closeWithFade();
   };
 
   const form = (variant) => (
     <AddNewRowForm
       variant={variant}
+      saving={saving}
+      closing={closing}
       fields={fields}
       darkMode={darkMode}
       bodyRef={addRowTableRef}
@@ -295,7 +343,7 @@ export function AddNewRow({
 
   if (placement === 'dialog') {
     return (
-      <Dialog open onOpenChange={(open) => !open && handleCancel()}>
+      <Dialog open={!closing} onOpenChange={(open) => !open && handleCancel()}>
         <DialogContent
           showCloseButton={false}
           aria-describedby={undefined}
@@ -308,6 +356,7 @@ export function AddNewRow({
           )}
         >
           {form('dialog')}
+          <div id={datePortalId} />
         </DialogContent>
       </Dialog>
     );
