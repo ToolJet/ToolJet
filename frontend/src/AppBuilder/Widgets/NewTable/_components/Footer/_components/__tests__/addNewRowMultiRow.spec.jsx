@@ -488,3 +488,41 @@ describe('Table-ADDROWFORM-044 keyboard order', () => {
     ]);
   });
 });
+
+describe('Table-ADDROWFORM-045 the app theme colour', () => {
+  // jsdom loads no stylesheet, so the check is on the classes: the brand colour must come from the app's theme
+  // variable, in every state, and the platform's fixed button colours must be gone.
+  const BRAND = 'tw-bg-[var(--cc-primary-brand)]';
+  const FIXED_TOKENS = [
+    'tw-bg-button-primary',
+    'hover:tw-bg-button-primary-hover',
+    'disabled:tw-bg-button-primary-disabled',
+  ];
+
+  const expectThemed = (button) => {
+    const classes = button.className.split(/\s+/);
+    for (const state of ['', 'hover:', 'active:', 'disabled:']) expect(classes).toContain(`${state}${BRAND}`);
+    for (const token of FIXED_TOKENS) expect(classes).not.toContain(token);
+  };
+
+  test('Table-ADDROWFORM-045 the Add row button and the + button follow the theme colour', () => {
+    // Break this catches: the buttons keeping the platform blue when the builder changes the app's primary colour.
+    renderForm();
+
+    expectThemed(screen.getByRole('button', { name: 'Add row' }));
+    expectThemed(addAnother());
+  });
+
+  test('Table-ADDROWFORM-045 so does the single-row form, and the button while it is saving', async () => {
+    // Break this catches: the saving state or the single-row form falling back to the fixed colours.
+    let release;
+    const fireEvent = jest.fn(() => new Promise((resolve) => (release = resolve)));
+    const { user } = renderForm({ properties: { allowAddingMultipleRows: false }, fireEvent });
+    expectThemed(screen.getByRole('button', { name: 'Add row' }));
+
+    await user.click(screen.getByRole('button', { name: 'Add row' }));
+
+    expectThemed(screen.getByRole('button', { name: 'Adding row…' }));
+    await act(async () => release());
+  });
+});
