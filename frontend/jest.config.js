@@ -161,13 +161,14 @@ module.exports = {
   // One naming convention for the whole repository: `*.spec.*` inside a
   // `__tests__/` directory. A file named `*.test.*` will NOT run.
   testMatch: ['**/__tests__/**/*.spec.[jt]s?(x)'],
-  testPathIgnorePatterns: ['/node_modules/'],
+  testPathIgnorePatterns: ['/node_modules/', ...(edition === 'ce' ? ['<rootDir>/ee/'] : [])],
   // assets/libs and build/assets/libs both ship a pyodide package.json, which
   // collides in jest-haste-map. Neither is ever imported by a test.
   modulePathIgnorePatterns: ['<rootDir>/build/', '<rootDir>/assets/libs/'],
-  coverageReporters: ['text', 'lcov', 'json-summary'],
+  coverageReporters: ['text', 'lcov', 'json', 'json-summary'],
   coverageDirectory: `<rootDir>/coverage/app-builder/${edition}/jest`,
   collectCoverageFrom: [
+    ...require('../scripts/ai-coverage-scope.cjs').frontend(edition),
     'src/AppBuilder/**/*.{js,jsx,ts,tsx}',
     '!src/AppBuilder/**/*.stories.{js,jsx,ts,tsx}',
     '!src/AppBuilder/**/*.spec.md',
