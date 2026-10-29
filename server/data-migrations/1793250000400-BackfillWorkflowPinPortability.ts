@@ -4,12 +4,7 @@ const MIGRATION_NAME = 'BackfillWorkflowPinPortability1793250000400';
 
 export class BackfillWorkflowPinPortability1793250000400 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const [{ count }] = await queryRunner.query(`
-      SELECT COUNT(*) FROM data_queries dq
-      JOIN data_sources ds ON ds.id = dq.data_source_id
-      WHERE ds.kind = 'workflows';
-    `);
-    console.log(`${MIGRATION_NAME}: [START] Workflow queries to check: ${parseInt(count, 10)}`);
+    console.log(`${MIGRATION_NAME}: [START] Backfilling workflow pins`);
 
     // dq.kind isn't a DB column — runtime-only, mirrors dataSource.kind — so join data_sources instead.
     await queryRunner.query(`
