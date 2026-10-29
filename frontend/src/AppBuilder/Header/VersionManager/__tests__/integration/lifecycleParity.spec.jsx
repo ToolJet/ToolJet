@@ -94,6 +94,7 @@ async function setup(
           { url: `${config.apiUrl}/app-environments/:id/versions`, json: () => ({ appVersions: versions }) },
           { method: 'put', url: `${config.apiUrl}/v2/apps/module-1/versions/:id`, json: {} },
           { url: `${config.apiUrl}/v2/apps/module-1/versions/:id`, json: {} },
+          { url: `${config.apiUrl}/apps/module-1/versions/:id/library-pins`, json: { pins: [] } },
           { method: 'put', url: `${config.apiUrl}/app-git/module-1/versions/:id`, json: {} },
           {
             url: `${config.apiUrl}/app-git/org-1/app/:id/configs`,

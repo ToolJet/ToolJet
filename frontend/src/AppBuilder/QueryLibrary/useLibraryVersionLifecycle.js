@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { libraryRunEnvironment, viewedLibraryVersionId } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
@@ -26,6 +26,31 @@ export default function useLibraryVersionLifecycle({ queryId }) {
   const [error, setError] = useState(null);
   const [browsedEnvironment, setBrowsedEnvironment] = useState(selectedEnvironment);
   const browsing = useRef(selectedEnvironment);
+  const loadRequest = useRef(0);
+  const currentQueryId = useRef(queryId);
+  currentQueryId.current = queryId;
+  const loadLibraryVersions = library.loadLibraryVersions;
+  const loadVersions = useCallback(async () => {
+    const request = ++loadRequest.current;
+    const accepts = () => {
+      const currentLibrary = useStore.getState().queryLibrary;
+      return (
+        request === loadRequest.current &&
+        currentQueryId.current === queryId &&
+        currentLibrary.workspaceId === workspaceId &&
+        currentLibrary.sessionId === sessionId
+      );
+    };
+    setLoading(true);
+    setError(null);
+    try {
+      return await loadLibraryVersions(queryId);
+    } catch (reason) {
+      if (accepts()) setError(reason?.error || reason?.message || 'Could not load versions');
+    } finally {
+      if (accepts()) setLoading(false);
+    }
+  }, [loadLibraryVersions, queryId, workspaceId, sessionId]);
   useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe(setSession);
     return () => subscription.unsubscribe();
@@ -35,23 +60,11 @@ export default function useLibraryVersionLifecycle({ queryId }) {
     setBrowsedEnvironment(selectedEnvironment);
   }, [selectedEnvironment]);
   useEffect(() => {
-    let active = true;
-    setLoading(true);
-    setError(null);
-    library
-      .loadLibraryVersions(queryId)
-      .catch((reason) => {
-        if (active) setError(reason?.error || reason?.message || 'Could not load versions');
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+    loadVersions();
     return () => {
-      active = false;
+      loadRequest.current += 1;
     };
-    // Library actions use the current session; reloading is scoped to this resource identity.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryId, workspaceId, sessionId]);
+  }, [loadVersions]);
 
   const development = environments.find((environment) => environment.priority === 1);
   const versions = [
@@ -91,15 +104,7 @@ export default function useLibraryVersionLifecycle({ queryId }) {
   const refresh = async () => {
     browsing.current = selectedEnvironment;
     setBrowsedEnvironment(selectedEnvironment);
-    setLoading(true);
-    setError(null);
-    try {
-      return await library.loadLibraryVersions(queryId);
-    } catch (reason) {
-      setError(reason?.error || reason?.message || 'Could not load versions');
-    } finally {
-      setLoading(false);
-    }
+    return loadVersions();
   };
   return {
     resourceType: 'query-library',

@@ -1,6 +1,6 @@
 import '@/test/setupMsw';
 import React from 'react';
-import { screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { screen, waitFor, fireEvent, act, renderHook } from '@testing-library/react';
 import { render } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
@@ -10,6 +10,7 @@ import { server } from '@/test/msw/server';
 import useStore from '@/AppBuilder/_stores/store';
 import { createAppBuilderControls } from '@/test/app-builder/controls';
 import LibraryVersionDropdown from '../../LibraryVersionDropdown';
+import useLibraryVersionLifecycle from '../../useLibraryVersionLifecycle';
 
 const controls = createAppBuilderControls();
 const dev = { id: 'env-dev', name: 'development', priority: 1 };
@@ -230,4 +231,54 @@ it.each(['promote', 'release'])('calls only the library %s route for the selecte
   await userEvent.click(cy(action === 'release' ? 'yes-button' : 'promote-button'));
   await waitFor(() => expect(writes).toEqual([{ id: saved.id, action }]));
   expect(requests.every((url) => url.includes('/query-library/'))).toBe(true);
+});
+
+it('keeps a newer refresh success when the initial load rejects later', async () => {
+  const responses = [];
+  server.use(http.get(`${base}/versions`, () => new Promise((resolve) => responses.push(resolve))));
+  const { result } = renderHook(() => useLibraryVersionLifecycle({ queryId: 'q1' }));
+  await waitFor(() => expect(responses).toHaveLength(1));
+  const initialRequest = global.fetch.mock.results[0].value;
+  let refreshing;
+  act(() => {
+    refreshing = result.current.actions.refresh();
+  });
+  await waitFor(() => expect(responses).toHaveLength(2));
+  await act(async () => {
+    responses[1](HttpResponse.json(view));
+    await refreshing;
+  });
+  expect(result.current.loading).toBe(false);
+  expect(result.current.error).toBeNull();
+  await act(async () => {
+    responses[0](HttpResponse.json({ message: 'Obsolete failure' }, { status: 500 }));
+    await initialRequest;
+  });
+  expect(result.current.error).toBeNull();
+  expect(result.current.loading).toBe(false);
+  expect(result.current.versions.map(({ id }) => id)).toEqual(['draft-one', 'draft-two', 'saved-one']);
+});
+
+it('keeps loading for the current refresh after an older success, then shows the current failure', async () => {
+  const responses = [];
+  server.use(http.get(`${base}/versions`, () => new Promise((resolve) => responses.push(resolve))));
+  const { result } = renderHook(() => useLibraryVersionLifecycle({ queryId: 'q1' }));
+  await waitFor(() => expect(responses).toHaveLength(1));
+  const initialRequest = global.fetch.mock.results[0].value;
+  let refreshing;
+  act(() => {
+    refreshing = result.current.actions.refresh();
+  });
+  await waitFor(() => expect(responses).toHaveLength(2));
+  await act(async () => {
+    responses[0](HttpResponse.json(view));
+    await initialRequest;
+  });
+  expect(result.current.loading).toBe(true);
+  await act(async () => {
+    responses[1](HttpResponse.json({ message: 'Current failure' }, { status: 500 }));
+    await refreshing;
+  });
+  expect(result.current.loading).toBe(false);
+  expect(result.current.error).toBe('Current failure');
 });

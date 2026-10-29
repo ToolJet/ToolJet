@@ -55,3 +55,16 @@ Fault commands used `npm test -- --runInBand LibraryVersionDropdown lifecyclePar
 Reviewed the adapter against the exact Task 5 value/actions and Task 4 explicit-ID interfaces. No legacy draft sentinel, singular draft fallback, generated version names, app grants, app initialization or Git action was introduced. Forms and confirmations remain the same rendered components for both resources. No backend/service/store code changed in Task 6.
 
 RTL checks confirm DOM/theme classes and behavior; they are not pixel screenshots. Live-browser light/dark review and full editor journeys remain controller/final-verification work. No full frontend suite or live service stack was run for this scoped task. Existing console warnings about Zustand's deprecated equality API, icon SVG properties and React act timing remain visible in test logs; all assertions pass. Task 7 still owns dependency-warning extraction. The previously recorded refresh-overlay observation remains in progress.md for final review.
+
+
+## Review fix round 1 — obsolete load completions
+
+Addressed `task-6-review.md` P2 in `useLibraryVersionLifecycle.js`. Initial loading and open/refresh now use the same `loadVersions` function and monotonically increasing request generation. Error/loading completions are accepted only for the newest generation, the current query, and the originating workspace/session; effect cleanup invalidates pending completions. The store's own data-acceptance guard remains unchanged.
+
+Added two real-store/MSW regressions with individually controlled response promises: (1) newer refresh succeeds, then older initial request rejects, preserving successful rows/no error; (2) older initial request succeeds while refresh is pending, preserving loading until the current refresh fails and displays its current error. No sleeps, mocked lifecycle logic or mocked store.
+
+RED: `npm test -- --runInBand LibraryVersionDropdown -t 'newer refresh success|keeps loading for the current refresh'` — **2 failed, 13 skipped**. The first exposed `Obsolete failure` replacing null error; the second exposed loading false while the current request remained pending (`/tmp/task6-round1-red.log`). This is direct break-to-prove evidence against the prior production implementation.
+
+GREEN: `npm test -- --runInBand LibraryVersionDropdown lifecycleParity` — **2 suites, 33 tests passed** (`/tmp/task6-round1-green.log`). Final rerun also passed 33/33 (`/tmp/task6-round1-final-green.log`); final scoped eslint and `git diff --check` passed (`/tmp/task6-round1-final-lint.log`). All Node commands ran after `nvm use` (`v22.23.4`). Added the real module release-notices HTTP fixture to the parity setup so existing release tests no longer emit unhandled MSW library-pins requests; no library path gained an app request.
+
+The round's scoped code/test/report commit uses subject `fix: ignore obsolete Query Library version load completion`. No separate report-only commit. Live pixel review and full-suite limits above are unchanged.
