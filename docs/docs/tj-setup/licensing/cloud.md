@@ -63,7 +63,11 @@ Starting from version `v3.5.34-cloud-lts`, which was released on May 27th, 2025,
 | ------------ | :-----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Builder      |       2       | All builders will be automatically archived, except for two random builders (including 1 Admin).                                                              |
 | End User     |      50       | All users beyond 50 will be archived automatically.                                                                                                           |
-| Applications |       2       | All the previously created apps will be accessible, but the users will not be able to create new apps if they already have two or more than two apps created. |
+| Applications |      10       | All the previously created apps will be accessible, but the users will not be able to create new apps if they already have 10 or more apps created. |
+| ToolJet Database tables | 10 | All the previously created tables will be accessible, but the users will not be able to create new tables if the workspace already has 10 or more tables. |
+| ToolJet Database rows | 500 | All the existing rows can still be viewed, updated, and deleted, but the users will not be able to add new rows once the workspace's ToolJet Database tables hold 500 or more rows in total. |
+
+Starting from version `v3.20.233-lts`, the Basic subscription allows up to 10 applications instead of 2, and limits the ToolJet Database to 10 tables (previously 5) and 500 rows. Trial subscriptions have the same application, table, and row limits. Refer to **[ToolJet Database](/docs/tooljet-db/tooljet-database)** for more details.
 
 ### Unarchiving Desired Users Affected Due to New Pricing Plan
 
