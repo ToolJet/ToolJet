@@ -52,9 +52,11 @@ export function AddNewRow({
   const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);
   const updateAddNewRowDetails = useTableStore((state) => state.updateAddNewRowDetails, shallow);
   const clearAddNewRowDetails = useTableStore((state) => state.clearAddNewRowDetails, shallow);
+  const removeAddNewRowDetail = useTableStore((state) => state.removeAddNewRowDetail, shallow);
   const updateShouldPersistAddNewRow = useTableStore((state) => state.updateShouldPersistAddNewRow, shallow);
   const addNewRowColumns = useTableStore((state) => state.getTableProperties(id)?.addNewRowColumns, shallow);
   const placement = resolveAddNewRowIn(useTableStore((state) => state.getTableProperties(id)?.addNewRowIn, shallow));
+  const multiRow = !!useTableStore((state) => state.getTableProperties(id)?.allowAddingMultipleRows, shallow);
   const allColumns = useMemo(
     () => getIncludedTableColumns(allTableColumns, addNewRowColumns),
     [allTableColumns, addNewRowColumns]
@@ -70,6 +72,9 @@ export function AddNewRow({
   const [submitAttempted, setSubmitAttempted] = useState(false);
   // saving: the event is with the app. closing: fading out. busyRef is set by the first Add row or Cancel click,
   // synchronously, so a second click, Enter or Escape in the same instant cannot start a second send or cancel.
+  const [activeRow, setActiveRow] = useState(0);
+  // what to focus once the next render is on screen: a field (by its data-cy) or the first one of the row
+  const [focusRequest, setFocusRequest] = useState(null);
   const [saving, setSaving] = useState(false);
   const [closing, setClosing] = useState(false);
   const busyRef = useRef(false);
@@ -82,6 +87,8 @@ export function AddNewRow({
   );
 
   const addNewRowDetailsLength = addNewRowDetails.size;
+  // the selection can point past the end for a moment after a row is removed or the draft is cleared
+  const activeIndex = multiRow ? Math.max(0, Math.min(activeRow, addNewRowDetailsLength - 1)) : 0;
 
   const newEmptyRow = useMemo(() => {
     return allColumns.reduce((accumulator, column) => {
@@ -169,18 +176,40 @@ export function AddNewRow({
     autoResetAll: false,
   });
 
-  const row = table.getRowModel().rows[0];
+  const tableRows = table.getRowModel().rows;
+  const row = tableRows[activeIndex];
+
+  const labelOf = (cell) => {
+    const { columnDef } = cell.column;
+    return typeof columnDef.header === 'string' ? columnDef.header : String(columnDef.accessorKey ?? cell.column.id);
+  };
+  const dataCyOf = (cell, rowIndex) => `${generateCypressDataCy(labelOf(cell))}-column-${rowIndex}`;
+  const validateCell = (cell, rowIndex) => {
+    const { columnDef } = cell.column;
+    const { validateWidget, validateDates } = useStore.getState();
+    return validateNewRowField(columnDef.meta, addNewRowDetails.get(rowIndex)?.[columnDef.accessorKey], {
+      validateWidget,
+      validateDates,
+      moduleId,
+    });
+  };
+  const firstInvalidCell = (tableRow) =>
+    tableRow.getVisibleCells().find((cell) => !validateCell(cell, tableRow.index).isValid);
+
+  // rows that failed the last Add rows click, and that still fail after the edits since
+  const invalidRows = new Set(
+    submitAttempted ? tableRows.filter((tableRow) => firstInvalidCell(tableRow)).map((tableRow) => tableRow.index) : []
+  );
 
   const fields = (row?.getVisibleCells() ?? []).map((cell, index) => {
     const { columnDef } = cell.column;
     const key = columnDef.accessorKey;
     const columnType = columnDef.meta?.columnType;
-    const label = typeof columnDef.header === 'string' ? columnDef.header : String(key ?? cell.column.id);
+    const label = labelOf(cell);
     const labelId = `${baseId}-label-${index}`;
     const value = addNewRowDetails.get(row.index)?.[key];
     const onChange = (newValue) => handleCellValueChange(row.index, key, newValue, row.original);
-    const { validateWidget, validateDates } = useStore.getState();
-    const validation = validateNewRowField(columnDef.meta, value, { validateWidget, validateDates, moduleId });
+    const validation = validateCell(cell, row.index);
     const error = submitAttempted && !validation.isValid ? (validation.validationError ?? 'Invalid value') : null;
     const errorId = `${baseId}-error-${index}`;
     const invalid = !!error;
@@ -264,13 +293,12 @@ export function AddNewRow({
         </RendererControl>
       );
 
-    const hookName = generateCypressDataCy(label);
     return {
       key: cell.id,
       label,
       labelId,
-      dataCy: `${hookName}-column-${row.index}`,
-      headerDataCy: `${hookName}-column-header`,
+      dataCy: dataCyOf(cell, row.index),
+      headerDataCy: `${generateCypressDataCy(label)}-column-header`,
       layout: getFieldLayout(columnType),
       hasValidation: hasColumnValidation(columnConfig),
       isValid: validation.isValid,
@@ -307,13 +335,12 @@ export function AddNewRow({
 
   const handleSubmit = async () => {
     if (busyRef.current) return;
-    const firstInvalid = fields.find((field) => !field.isValid);
-    if (firstInvalid) {
+    // every row is checked before anything is sent: all rows are added, or none
+    const invalidRow = tableRows.find((tableRow) => firstInvalidCell(tableRow));
+    if (invalidRow) {
       setSubmitAttempted(true);
-      addRowTableRef.current
-        ?.querySelector(`[data-cy="${firstInvalid.dataCy}"]`)
-        ?.querySelector(FOCUSABLE_SELECTOR)
-        ?.focus();
+      setActiveRow(invalidRow.index);
+      setFocusRequest({ dataCy: dataCyOf(firstInvalidCell(invalidRow), invalidRow.index) });
       return;
     }
     busyRef.current = true;
@@ -327,12 +354,47 @@ export function AddNewRow({
     closeWithFade();
   };
 
+  const addRow = () => {
+    updateAddNewRowDetails(id, addNewRowDetailsLength, newEmptyRow);
+    setActiveRow(addNewRowDetailsLength);
+    setFocusRequest({ dataCy: null });
+  };
+
+  const removeRow = () => {
+    removeAddNewRowDetail(id, activeIndex);
+    setActiveRow(Math.min(activeIndex, addNewRowDetailsLength - 2));
+  };
+
+  useEffect(() => {
+    if (!focusRequest) return;
+    const body = addRowTableRef.current;
+    const target = focusRequest.dataCy ? body?.querySelector(`[data-cy="${focusRequest.dataCy}"]`) : body;
+    target?.querySelector(FOCUSABLE_SELECTOR)?.focus();
+  }, [focusRequest]);
+
+  // a different row starts at its first field
+  useEffect(() => {
+    if (addRowTableRef.current) addRowTableRef.current.scrollTop = 0;
+  }, [activeIndex]);
+
   const form = (variant) => (
     <AddNewRowForm
       variant={variant}
       saving={saving}
       closing={closing}
       fields={fields}
+      rows={
+        multiRow
+          ? {
+              count: addNewRowDetailsLength,
+              active: activeIndex,
+              invalidRows,
+              onSelect: setActiveRow,
+              onAdd: addRow,
+              onRemove: removeRow,
+            }
+          : null
+      }
       darkMode={darkMode}
       bodyRef={addRowTableRef}
       onSubmit={handleSubmit}

@@ -2,6 +2,8 @@ import React, { useId } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
+import { getRowCountLabel } from '../../../_utils/addNewRowChips';
+import { AddNewRowPicker } from './AddNewRowPicker';
 
 // Sized against the table the popover sits in: 66.6% of its width (at most 500px) and 80% of its height, centred.
 const POPOVER_STYLE = {
@@ -40,6 +42,8 @@ export const AddNewRowForm = ({
   variant = 'popover',
   saving = false,
   closing = false,
+  // multiple rows: chips to pick a row, "+" and Remove row; absent for a single-row form
+  rows = null,
 }) => {
   const titleId = useId();
   const isDialog = variant === 'dialog';
@@ -71,13 +75,19 @@ export const AddNewRowForm = ({
           data-cy="add-new-rows-header"
           className="tw-m-0 tw-text-xl tw-font-medium tw-text-text-default"
         >
-          Add row
+          {rows ? 'Add rows' : 'Add row'}
         </Heading>
       </div>
 
+      {rows && (
+        <div inert={saving ? '' : undefined} className={cn(saving && 'tw-opacity-50')}>
+          <AddNewRowPicker {...rows} disabled={saving} />
+        </div>
+      )}
+
       <div
         ref={bodyRef}
-        data-cy="add-new-row-0"
+        data-cy={`add-new-row-${rows?.active ?? 0}`}
         // the fieldset below locks every native control; inert covers the custom ones (select, chips, date...)
         inert={saving ? '' : undefined}
         className={cn('tw-flex tw-flex-col tw-gap-4 tw-py-4 tw-pl-4 tw-pr-2', saving && 'tw-opacity-50')}
@@ -150,7 +160,7 @@ export const AddNewRowForm = ({
           disabled={saving}
           onClick={onSubmit}
         >
-          {saving ? 'Adding row…' : 'Add row'}
+          {saving ? `Adding ${getRowCountLabel(rows?.count ?? 1)}…` : `Add ${getRowCountLabel(rows?.count ?? 1)}`}
         </Button>
       </div>
     </div>
