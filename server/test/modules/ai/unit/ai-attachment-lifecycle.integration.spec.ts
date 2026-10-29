@@ -1,4 +1,5 @@
 /** @group working */
+import { assertAiTestDatabase } from '../../../helpers/ai-test-database';
 // Opt in only with a disposable PostgreSQL database; all tables live in a private random schema.
 import { randomUUID, createHash } from 'crypto';
 import { DataSource } from 'typeorm';
@@ -8,8 +9,6 @@ import { AiAttachmentService } from '@modules/ai/services/ai-attachment.service'
 import { CreateAiAttachments1789689600000 } from '../../../../migrations/1789689600000-CreateAiAttachments';
 import { HardenAiAttachmentLifecycle1790683200000 } from '../../../../migrations/1790683200000-HardenAiAttachmentLifecycle';
 import { IndexAiAttachmentReconciliation1790683260000 } from '../../../../migrations/1790683260000-IndexAiAttachmentReconciliation';
-
-import { assertAiTestDatabase } from '../../../helpers/ai-test-database';
 
 const integration = process.env.ATTACHMENT_TEST_DATABASE_URL ? describe : describe.skip;
 integration('attachment lifecycle with PostgreSQL', () => {
@@ -102,10 +101,11 @@ integration('attachment lifecycle with PostgreSQL', () => {
   it('adds the reconciliation index to an already migrated database and tolerates earlier copies', async () => {
     const runner = db.createQueryRunner();
     const migration = new IndexAiAttachmentReconciliation1790683260000();
-    const indexes = () => db.query(
-      'SELECT indexdef FROM pg_indexes WHERE schemaname=$1 AND indexname=$2',
-      [schema, 'idx_ai_attachments_reconcile']
-    );
+    const indexes = () =>
+      db.query('SELECT indexdef FROM pg_indexes WHERE schemaname=$1 AND indexname=$2', [
+        schema,
+        'idx_ai_attachments_reconcile',
+      ]);
     try {
       expect(await indexes()).toHaveLength(0);
       await migration.up(runner);

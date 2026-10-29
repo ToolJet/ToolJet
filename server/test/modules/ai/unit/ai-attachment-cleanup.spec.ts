@@ -7,7 +7,9 @@ describe('attachment cleanup scheduling', () => {
   let listener: AiAttachmentCleanupListener;
   beforeEach(() => {
     attachments = { sweep: jest.fn(), cleanupDeletedConversations: jest.fn() };
-    listener = new AiAttachmentCleanupListener(attachments as any);
+    listener = new AiAttachmentCleanupListener(
+      attachments as unknown as ConstructorParameters<typeof AiAttachmentCleanupListener>[0]
+    );
     jest.spyOn(Logger, 'warn').mockImplementation(() => undefined);
   });
   afterEach(() => jest.restoreAllMocks());

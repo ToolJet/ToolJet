@@ -1,7 +1,9 @@
 /** Only the dedicated local/CI throwaway database may receive AI test fixtures. */
 export function assertAiTestDatabase(connection: string | undefined): string {
   if (!connection)
-    throw new Error('AI database tests require ATTACHMENT_TEST_DATABASE_URL; use npm run test:ai:local.');
+    throw new Error(
+      'AI database tests require ATTACHMENT_TEST_DATABASE_URL pointing to an isolated tooljet_ai_test_* database.'
+    );
   const url = new URL(connection);
   const local = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
   const ciService = process.env.GITHUB_ACTIONS === 'true' && url.hostname === 'postgres';

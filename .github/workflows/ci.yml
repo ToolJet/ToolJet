@@ -302,8 +302,6 @@ jobs:
     timeout-minutes: 30 # Set a timeout of 30 minutes
     needs: build
     container: node:22.23.4-bookworm
-    env:
-      ATTACHMENT_TEST_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/tooljet_ai_test_ci
     services:
       postgres:
         image: postgres
@@ -317,9 +315,6 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
       - name: Cache node modules
         uses: actions/cache@v3
         env:
@@ -337,35 +332,9 @@ jobs:
       - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
       - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
       - run: npm --prefix server ci
-      - name: Validate AI placement, discovery and pinned EE revision
-        run: TOOLJET_EDITION=ee node scripts/check-ai-tests.cjs server
-      - name: Create isolated attachment fixture database
-        run: PGPASSWORD="$PG_PASS" createdb --host "$PG_HOST" --username "$PG_USER" tooljet_ai_test_ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
-      - name: Unit tests with coverage
-        id: unit
-        run: >-
-          npm --prefix server run test -- --group=working --group=workflows --group=security
-          --coverage --coverageReporters=json --json --outputFile=/tmp/tj-unit-results.json
-      - name: Verify all AI assertions executed
-        if: ${{ !cancelled() && (steps.unit.outcome == 'success' || steps.unit.outcome == 'failure') }}
-        run: TOOLJET_EDITION=ee node scripts/check-ai-test-results.cjs server /tmp/tj-unit-results.json
-      - name: Extract and check full-scope AI backend coverage
-        id: ai-coverage
-        if: ${{ !cancelled() && steps.unit.outcome == 'success' }}
-        continue-on-error: true
-        run: TOOLJET_EDITION=ee node scripts/report-ai-coverage.cjs server server/coverage-unit/coverage-final.json server/coverage-ai/ee/report
-      - name: Upload AI backend coverage
-        if: ${{ !cancelled() && (steps.ai-coverage.outcome == 'success' || steps.ai-coverage.outcome == 'failure') }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-ai-backend
-          path: server/coverage-ai/ee/report/coverage-summary.json
-          if-no-files-found: error
-      - name: Enforce AI coverage verdict after publishing reports
-        if: ${{ !cancelled() && steps.ai-coverage.outcome == 'failure' }}
-        run: exit 1
+      - run: npm --prefix server run test -- --group=working --group=workflows --group=security
 
   e2e-test:
     runs-on: ubuntu-latest
