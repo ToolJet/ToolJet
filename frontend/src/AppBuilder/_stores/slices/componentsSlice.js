@@ -2297,7 +2297,8 @@ export const createComponentsSlice = (set, get) => ({
       return;
     }
     const { component } = componentDef;
-    const oldValue = component.definition[paramType][property];
+    // A section can be missing: pack and custom library components get definition.validation only from the server
+    const oldValue = component.definition[paramType]?.[property];
     const parentId = component.parent;
     if (Array.isArray(oldValue?.value)) {
       const resolvedComponent = {
