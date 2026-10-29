@@ -1,4 +1,4 @@
-/** @group platform */
+/** @group working */
 import { assertAiTestDatabase } from '../../../helpers/ai-test-database';
 
 const actions = process.env.GITHUB_ACTIONS;

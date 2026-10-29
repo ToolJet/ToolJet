@@ -1,4 +1,4 @@
-/** @group platform */
+/** @group working */
 import { Logger } from '@nestjs/common';
 import { AiAttachmentCleanupListener } from '@modules/ai/services/ai-attachment-cleanup.listener';
 
