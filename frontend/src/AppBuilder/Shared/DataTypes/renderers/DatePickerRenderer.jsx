@@ -146,6 +146,8 @@ export const DatePickerRenderer = ({
   setIsInputFocused,
   isInputFocused,
   placeholder,
+  // where the calendar renders; a modal dialog passes an element inside itself, or its calendar sits underneath
+  portalId = 'component-portal',
   widgetType,
   id,
 }) => {
@@ -373,7 +375,7 @@ export const DatePickerRenderer = ({
               id={id}
             />
           }
-          portalId="component-portal"
+          portalId={portalId}
           showTimeSelect={isTimeChecked}
           showTimeSelectOnly={!isDateSelectionEnabled && isTimeChecked}
           showMonthDropdown
