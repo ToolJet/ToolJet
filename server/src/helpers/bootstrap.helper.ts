@@ -1,3 +1,4 @@
+import { isPublicOAuthProtocolPath, isMcpOAuthEnabled } from '@modules/mcp-oauth/http-security';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
@@ -313,6 +314,7 @@ export function setupCsrfOriginCheck(app: NestExpressApplication, configService:
   const logger = createLogger('CsrfOriginCheck');
   const tooljetHost = configService.get<string>('TOOLJET_HOST')?.replace(/\/+$/, '');
   const safeMethods = new Set(['GET', 'HEAD', 'OPTIONS']);
+  const subpath = (configService.get<string>('SUB_PATH') || '').replace(/^\/+|\/+$/g, '');
   // These paths use non-cookie auth (API keys, SAML assertions, webhook signatures)
   // and don't need Origin checks.
   const exemptPrefixes = [
@@ -325,6 +327,9 @@ export function setupCsrfOriginCheck(app: NestExpressApplication, configService:
     '/api/ext/',
     '/api/sso/saml/',
     '/api/oauth/saml/',
+    // IdP form posts still use assertion authentication when ToolJet is mounted
+    // below a subpath. Do not subject those callbacks to browser-session CSRF.
+    ...(subpath ? [`/${subpath}/api/sso/saml/`, `/${subpath}/api/oauth/saml/`] : []),
   ];
 
   let dataSource: DataSource | null = null;
@@ -332,6 +337,11 @@ export function setupCsrfOriginCheck(app: NestExpressApplication, configService:
 
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (safeMethods.has(req.method)) return next();
+    if (
+      isMcpOAuthEnabled(configService.get('TOOLJET_EDITION'), configService.get('MCP_OAUTH_ENABLED')) &&
+      isPublicOAuthProtocolPath(req.path, configService.get('SUB_PATH'))
+    )
+      return next();
     if (exemptPrefixes.some((p) => req.path === p || req.path.startsWith(p))) return next();
 
     let origin = req.headers.origin as string | undefined;
@@ -396,6 +406,23 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
     };
 
     let cacheService: CorsOriginsCache | null = null;
+
+    // Browser MCP clients need public, cookie-free token/registration endpoints. Keep the
+    // workspace browser API's existing CORS policy and credential handling separate.
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      if (
+        !isMcpOAuthEnabled(configService.get('TOOLJET_EDITION'), configService.get('MCP_OAUTH_ENABLED')) ||
+        !isPublicOAuthProtocolPath(req.path, configService.get('SUB_PATH'))
+      )
+        return next();
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      if (req.method === 'OPTIONS') {
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        return res.status(204).end();
+      }
+      next();
+    });
 
     // Enable CORS with a dynamic origin function
     app.enableCors({
@@ -620,6 +647,25 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   );
   logger.log(`Metrics Enabled: ${configService.get('ENABLE_METRICS') === 'true'}`);
   logger.log('='.repeat(60));
+}
+
+// Inside the Kubernetes default 30s grace period, so we exit before the kubelet's SIGKILL.
+export const SHUTDOWN_TIMEOUT_MS = 20_000;
+
+/** Runs `shutdown` once per process, then exits with its code; exits 1 if it outlasts `timeoutMs`. */
+export function onceWithDeadline(
+  shutdown: (signal: string) => Promise<number>,
+  exit: (code: number) => void,
+  timeoutMs = SHUTDOWN_TIMEOUT_MS
+): (signal: string) => void {
+  let started = false;
+  return (signal) => {
+    // tini -g and each npm in the start chain all deliver the same SIGTERM.
+    if (started) return;
+    started = true;
+    setTimeout(() => exit(1), timeoutMs).unref();
+    shutdown(signal).then(exit, () => exit(1));
+  };
 }
 
 /**
