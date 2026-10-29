@@ -95,6 +95,7 @@ import {
   remapLibraryConsumerOptions,
 } from '@modules/data-queries/library/library-export.util';
 import { LIBRARY_KIND } from '@modules/data-queries/library/library-query.util';
+import { assertCanRelease } from '@modules/data-queries/library/library-lifecycle.util';
 import { LibraryQuery } from '@entities/library_query.entity';
 import { LibraryQueryDraft } from '@entities/library_query_draft.entity';
 import { LibraryQueryFolder } from '@entities/library_query_folder.entity';
@@ -1573,6 +1574,11 @@ export class AppImportExportService {
     );
   }
 
+  // CE has no multi-environment licence; EE resolves the destination workspace's terms.
+  protected async isMultiEnvironmentLicensed(_organizationId: string): Promise<boolean> {
+    return false;
+  }
+
   // Import named snapshots under the recursive parent-lock plan, then remap exact consumer UUIDs.
   // A conflicting name rejects the entire transaction; saved content and metadata remain immutable.
   protected async importLibraryQueries(
@@ -1750,6 +1756,11 @@ export class AppImportExportService {
       const state = await manager.findOneBy(LibraryQueryState, { libraryQueryId: target.id });
       if (!state || state.releasedVersionId !== releasedVersionId) {
         await requireWrite();
+        if (releasedVersionId) {
+          const released = own.find((version) => version.id === releasedVersionId);
+          const environment = environments.find((row) => row.id === released.currentEnvironmentId) ?? null;
+          assertCanRelease(environment, await this.isMultiEnvironmentLicensed(organizationId));
+        }
         await manager.save(LibraryQueryState, { libraryQueryId: target.id, releasedVersionId });
       }
     }

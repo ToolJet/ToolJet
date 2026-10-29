@@ -122,7 +122,7 @@ function setup(overrides: Partial<Store> = {}, { perms = { isAdmin: true } as Pe
   const resourceMapping = { dataSourceMapping: { [SRC_DS]: DST_DS }, appVersionMapping: { [id(700)]: id(701) } };
   const run = (exported: LibraryExportQuery[], tooljetDatabaseMapping: Record<string, { id: string }> = {}) =>
     service.importLibraryQueries(manager, exported, user, resourceMapping, tooljetDatabaseMapping);
-  return { store, run, manager, appsUtilService, abilityService, logger };
+  return { store, run, manager, appsUtilService, abilityService, logger, service };
 }
 
 const snapshot = (n: number, name: string, extra = {}) => ({
@@ -228,6 +228,30 @@ describe('AppImportExportService named library import', () => {
     expect(store.drafts[0].createdFromVersionId).toBe(result.versions[id(101)]);
     expect(store.states[store.states.length - 1].releasedVersionId).toBe(result.versions[id(101)]);
   });
+  it.each([null, { name: 'development', priority: 1 }])(
+    'validates a changed Released pointer against destination licence terms (%s)',
+    async (environment) => {
+      const { run, service, store } = setup();
+      const licence = jest
+        .spyOn(
+          service as unknown as { isMultiEnvironmentLicensed(organizationId: string): Promise<boolean> },
+          'isMultiEnvironmentLicensed'
+        )
+        .mockResolvedValue(true);
+      await expect(
+        run([
+          exportedQuery({
+            drafts: [],
+            releasedVersionId: id(101),
+            versions: [{ ...exportedQuery().versions[0], environment }],
+          }),
+        ])
+      ).rejects.toMatchObject({ status: 400 });
+      expect(licence).toHaveBeenCalledWith(ORG);
+      expect(store.states.every((state) => state.releasedVersionId === null)).toBe(true);
+    }
+  );
+
   it('never reuses a number held by a deleted saved version', async () => {
     const query = Object.assign(new LibraryQuery(), { id: id(100), name: 'getInvoices', organizationId: ORG });
     const deleted = Object.assign(new LibraryQueryVersion(), {
