@@ -26,6 +26,7 @@ import {
 } from '../_components/DataTypes';
 import useTableStore from '../_stores/tableStore';
 import { normalizeButtonEvent } from './normalizeButtonEvent';
+import { getDatePlaceholder } from './addNewRowConfig';
 import SelectSearch from 'react-select-search';
 import { parseDate, getDateTimeFormat } from '@/AppBuilder/Shared/DataTypes/renderers/DatePickerRenderer';
 
@@ -453,6 +454,18 @@ export default function generateColumnsData({
                   unixTimestamp={column.unixTimestamp}
                   id={id}
                   containerWidth={columnSize}
+                  placeholder={
+                    columnForAddNewRow
+                      ? getDatePlaceholder({
+                          dateFormat: column.dateFormat,
+                          isTimeChecked: getResolvedValue(column?.isTimeChecked, { cellValue, rowData }) ?? false,
+                          isDateSelectionEnabled:
+                            getResolvedValue(column?.isDateSelectionEnabled, { cellValue, rowData }) ?? true,
+                          isTwentyFourHrFormatEnabled:
+                            getResolvedValue(column?.isTwentyFourHrFormatEnabled, { cellValue, rowData }) ?? false,
+                        })
+                      : undefined
+                  }
                 />
               );
 

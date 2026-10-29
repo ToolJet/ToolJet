@@ -25,6 +25,7 @@ export const DatepickerColumn = ({
   textColor,
   id,
   containerWidth,
+  placeholder,
 }) => {
   const cellTextColor = useTextColor(id, textColor);
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -76,6 +77,7 @@ export const DatepickerColumn = ({
       validationError={validationError}
       setIsInputFocused={setIsInputFocused}
       isInputFocused={isInputFocused}
+      placeholder={placeholder}
     />
   );
 };
