@@ -33,7 +33,11 @@ cell() {
 row() {
   local rendered
   rendered=$(node "$SCRIPT_DIR/render-failed-tests.mjs" row "$1" || true)
-  if [ -n "$rendered" ]; then echo "$rendered"; else cell "$2"; fi
+  # a shard killed before writing its JSON leaves the others' counts looking clean:
+  # when the job did not succeed, the job result wins over a ✅ count
+  if [ -n "$rendered" ] && [ "$2" != "success" ] && [ "${rendered#✅ }" != "$rendered" ]; then
+    echo "$(cell "$2") · ${rendered#✅ }"
+  elif [ -n "$rendered" ]; then echo "$rendered"; else cell "$2"; fi
 }
 
 if [ "$MODE" = "full" ]; then

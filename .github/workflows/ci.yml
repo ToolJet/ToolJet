@@ -1457,13 +1457,14 @@ jobs:
           RESULT_VULN_GATE: ${{ needs.vulnerability-gate.result }}
         run: |
           jobs_json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs?per_page=100" 2>/dev/null || echo '{}')
-          job_url() { echo "$jobs_json" | jq -r --arg n "$1" '.jobs[]? | select(.name | contains($n)) | .html_url' | head -1; }
+          # $1 is a jq regex; prefer a failed job so the link lands on the failure
+          job_url() { echo "$jobs_json" | jq -r --arg n "$1" '[.jobs[]? | select(.name | test($n))] | (map(select(.conclusion == "failure")) + .)[0].html_url // empty'; }
           if [ "$MODE" = "changed" ]; then
             export UNIT_STEP_URL=$(job_url "Changed OK")
             export E2E_STEP_URL="$UNIT_STEP_URL"
             export SCOPE=$(cat /tmp/ci-results/tj-scope.txt 2>/dev/null || echo "not recorded")
           else
-            export UNIT_STEP_URL=$(job_url "Test Suite · server")
+            export UNIT_STEP_URL=$(job_url "Test Suite · server [(][0-9]+[)]")
             export E2E_STEP_URL=$(job_url "Test Suite · server e2e")
           fi
           bash scripts/render-ci-comment.sh "$MODE" > /tmp/ci-comment.md

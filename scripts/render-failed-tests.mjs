@@ -59,8 +59,10 @@ function counts(runs) {
     (a, r) => ({
       passed: a.passed + (r.numPassedTests || 0),
       failed: a.failed + (r.numFailedTests || 0),
+      // a worker killed mid-run fails its suite without failing any test
+      suitesFailed: a.suitesFailed + (r.numFailedTestSuites || 0),
     }),
-    { passed: 0, failed: 0 }
+    { passed: 0, failed: 0, suitesFailed: 0 }
   );
 }
 
@@ -128,9 +130,10 @@ if (cmd === 'row') {
   const runs = suite === 'unit' ? unit : e2e;
   if (!runs) process.exit(0); // caller falls back to the job-result cell
   const url = suite === 'unit' ? process.env.UNIT_STEP_URL : process.env.E2E_STEP_URL;
-  const { passed, failed } = counts(runs);
+  const { passed, failed, suitesFailed } = counts(runs);
   const link = url ? ` — [step ↗](${url})` : '';
-  console.log(failed ? `❌ ${failed} failed · ${passed} passed${link}` : `✅ ${passed} passed${link}`);
+  const broken = [failed && `${failed} failed`, suitesFailed && `${suitesFailed} suite(s) did not run`].filter(Boolean);
+  console.log(broken.length ? `❌ ${broken.join(' · ')} · ${passed} passed${link}` : `✅ ${passed} passed${link}`);
 } else if (cmd === 'details') {
   const sections = [
     unit ? section('Unit', unit, process.env.UNIT_STEP_URL) : '',
