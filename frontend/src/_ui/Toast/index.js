@@ -116,6 +116,9 @@ const GroupedToasts = ({ toastOptions }) => {
                   <ErrorPanel
                     errors={panelErrors.errors}
                     initialSize={panelErrors.initialSize}
+                    onHeightChange={(height) => {
+                      if (height !== t.height) toast.error(t.message, { ...t, height });
+                    }}
                     onClose={() => toast.dismiss(t.id)}
                   />
                 )}

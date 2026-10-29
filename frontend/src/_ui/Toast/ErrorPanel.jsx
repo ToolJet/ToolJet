@@ -2,9 +2,17 @@ import React, { useLayoutEffect, useRef } from 'react';
 import { ToastIcon } from 'react-hot-toast';
 
 // Render within the latest ToastBar: its original timer owns the entire error list.
-export default function ErrorPanel({ errors, onClose, initialSize }) {
+export default function ErrorPanel({ errors, onClose, initialSize, onHeightChange }) {
   const panelRef = useRef(null);
   const listRef = useRef(null);
+  useLayoutEffect(() => {
+    const card = panelRef.current?.parentElement;
+    if (!card || typeof ResizeObserver === 'undefined') return;
+    // react-hot-toast observes content mutations, not the animation's size changes.
+    const observer = new ResizeObserver(() => onHeightChange(card.getBoundingClientRect().height));
+    observer.observe(card);
+    return () => observer.disconnect();
+  }, [onHeightChange]);
   useLayoutEffect(() => {
     const list = listRef.current;
     list?.scrollTo?.({

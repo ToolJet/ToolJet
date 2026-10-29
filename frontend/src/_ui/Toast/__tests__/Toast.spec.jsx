@@ -53,6 +53,51 @@ describe('editor error notifications', () => {
     expect(screen.queryByText('Latest failure')).not.toBeInTheDocument();
   });
 
+  it('moves existing success and info toasts when the expanded card finishes resizing', () => {
+    const OriginalResizeObserver = window.ResizeObserver;
+    const observers = [];
+    window.ResizeObserver = class {
+      constructor(callback) {
+        this.callback = callback;
+        observers.push(this);
+      }
+      observe() {}
+      disconnect() {}
+    };
+    let expandedHeight = 48;
+    HTMLElement.prototype.getBoundingClientRect.mockImplementation(function () {
+      return { width: 400, height: this.querySelector('.toast-error-panel') ? expandedHeight : 48 };
+    });
+    try {
+      render(<Toast groupErrors />);
+      act(() => {
+        toast('Information');
+        toast.success('Saved');
+      });
+      act(() => jest.advanceTimersByTime(10));
+      act(() => {
+        toast.error('First');
+        toast.error('Second');
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+      const successSlot = screen.getByText('Saved').parentElement.parentElement;
+      const infoSlot = screen.getByText('Information').parentElement.parentElement;
+      // CSS/WAAPI resizing alone produces no child-list mutation for the library to observe.
+      act(() => {
+        expandedHeight = 300;
+        observers.forEach((observer) => observer.callback());
+      });
+      expect(successSlot).toHaveStyle({ transform: 'translateY(308px)' });
+      expect(infoSlot).toHaveStyle({ transform: 'translateY(364px)' });
+      expect(screen.getByRole('list', { name: 'Error messages' })).toBeVisible();
+      act(() => jest.advanceTimersByTime(4001));
+      act(() => jest.advanceTimersByTime(1001));
+      expect(screen.queryByRole('list', { name: 'Error messages' })).not.toBeInTheDocument();
+    } finally {
+      window.ResizeObserver = OriginalResizeObserver;
+    }
+  });
+
   // Break this catches: incoming errors remount the expanded toast or reorder existing messages.
   it('silently prepends incoming errors to the same expanded toast and updates its count', () => {
     render(<Toast groupErrors />);
