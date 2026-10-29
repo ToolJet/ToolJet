@@ -210,18 +210,27 @@ export const Checkbox = ({
           <>
             <div
               onClick={handleToggleChange}
+              className="has-[:focus-visible]:tw-ring-2 has-[:focus-visible]:tw-ring-interactive-focus-outline has-[:focus-visible]:tw-ring-offset-1"
               style={{
                 ...checkboxStyle,
               }}
             >
+              {/* Mouse interaction is handled by the wrapping box (handleToggleChange);
+                  the input is visually hidden but stays keyboard-focusable so Tab + Space work for a11y. */}
               <input
-                style={{ display: 'none' }}
-                className="form-check-input"
+                className="form-check-input tw-absolute tw-inset-0 tw-m-0 tw-opacity-0 tw-pointer-events-none"
                 type="checkbox"
                 onClick={toggleValue}
+                onKeyDown={(e) => {
+                  if (e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                    if (!disable && !loading) handleToggleChange();
+                  }
+                }}
                 defaultChecked={defaultValue}
                 checked={checked}
                 id={inputId}
+                disabled={disable}
                 aria-disabled={disable}
                 aria-busy={loading}
                 aria-required={isMandatory}

@@ -5984,7 +5984,8 @@ div#driver-page-overlay {
   display: flex;
   flex-direction: column;
   justify-content: left;
-  overflow: hidden !important;
+  // visible so the button focus outline isn't clipped by this container
+  overflow: visible !important;
 }
 
 .group-button {
@@ -16168,8 +16169,20 @@ fieldset:disabled {
     border-bottom-right-radius: 10px;
   }
 
+  // When the time panel sits beside a (taller) calendar, stretch the wrapper
+  // chain so the divider border-left spans the popup's full height instead of
+  // stopping at the time columns.
+  .react-datepicker-time__input-container,
+  .react-datepicker-time__input {
+    height: 100%;
+  }
+
+  .react-datepicker__input-time-container .custom-time-input {
+    height: 100%;
+  }
+
   .time-header {
-    width: 62px;
+    width: 68px;
     height: 35px;
     padding: 8px 6px 7px 6px;
     justify-content: center;
@@ -16186,14 +16199,27 @@ fieldset:disabled {
     padding-bottom: 12px;
   }
 
+  // Wraps each scroll column so the custom scrollbar can sit on its right
+  // edge; item sizing stays original, but the column is 6px wider than the
+  // items + margins (68 vs 62) so the 12px scrollbar strip never overlaps the
+  // numbers.
+  .time-colwrap {
+    position: relative;
+    width: 68px;
+  }
+
   .time-col {
     margin-top: 5px;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: none;
     height: 265px;
-    width: 62px;
+    width: 68px;
     color: var(--cc-primary-text) !important;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   .selected-time {
@@ -16211,6 +16237,41 @@ fieldset:disabled {
     margin: 2px 6px;
     font-size: 11px;
     cursor: pointer;
+  }
+
+  // Custom overlay scrollbar: 7px left-aligned thumb inside a 12px strip on
+  // the column's right edge (same placement in every column). Hidden at rest;
+  // visible while scrolling (1s linger), while the mouse is over the right
+  // edge, and while dragging.
+  .time-scrollbar {
+    position: absolute;
+    top: 5px; // below .time-col's top margin
+    bottom: 0;
+    right: 0;
+    width: 12px;
+  }
+
+  .time-scrollbar-thumb {
+    position: absolute;
+    left: 2px;
+    width: 7px;
+    border-radius: 999px;
+    background: var(--borders-disabled-on-white, #e4e7eb);
+    opacity: 0;
+    transition: opacity 0.25s;
+    touch-action: none;
+  }
+
+  .time-scrollbar.scrolling .time-scrollbar-thumb,
+  .time-scrollbar.dragging .time-scrollbar-thumb,
+  .time-scrollbar:hover .time-scrollbar-thumb {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    .time-scrollbar-thumb {
+      opacity: 1;
+    }
   }
 
   .time-item:hover {
