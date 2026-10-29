@@ -20,6 +20,9 @@ import { DataQueriesUtilService } from '@modules/data-queries/util.service';
 import { AppValidationService } from '@modules/app-validation/service';
 import { lockForValidation } from '@modules/app-validation/lock';
 import { QueryWrite } from '@modules/app-validation/types';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { assertGitSyncEditAllowedForOrg } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
+import { AppVersion } from '@entities/app_version.entity';
 
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
@@ -27,7 +30,8 @@ export class DataQueriesService implements IDataQueriesService {
     protected readonly dataQueryRepository: DataQueryRepository,
     protected readonly dataQueryUtilService: DataQueriesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository,
-    protected readonly appValidationService: AppValidationService
+    protected readonly appValidationService: AppValidationService,
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
 
   /**
@@ -321,12 +325,34 @@ export class DataQueriesService implements IDataQueriesService {
     // Persisting options on run is an EDITOR authoring convenience.
     // This endpoint is also hit by app preview, and there the user is consuming, not editing,
     // so the loaded options must NOT be written back.
-    if (mode !== 'view' && ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) && !isEmpty(options)) {
+    if (
+      mode !== 'view' &&
+      ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) &&
+      !isEmpty(options) &&
+      (await this.isGitSyncEditAllowed(user.organizationId, dataQuery.appVersion))
+    ) {
       await this.dataQueryRepository.updateOne(dataQueryId, { options });
       dataQuery['options'] = options;
     }
 
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app);
+  }
+
+  // GitSyncQueryEditGuard's rule as a check: read-only versions still run, but don't persist options.
+  private async isGitSyncEditAllowed(organizationId: string, appVersion: AppVersion): Promise<boolean> {
+    if (!appVersion) return true;
+    try {
+      await assertGitSyncEditAllowedForOrg(
+        this.gitSyncConfigsUtilService,
+        organizationId,
+        { branchId: appVersion.branchId, status: appVersion.status, isSynced: appVersion.isSynced },
+        'query'
+      );
+      return true;
+    } catch (error) {
+      if (error instanceof ForbiddenException) return false;
+      throw error;
+    }
   }
 
   async runQueryForApp(

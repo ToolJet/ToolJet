@@ -4,8 +4,8 @@ import { AbilityFactory } from '@modules/app/ability-factory';
 import { UserAllPermissions } from '@modules/app/types';
 import { FEATURE_KEY } from '../constants';
 import { App } from '@entities/app.entity';
-import { MODULES } from '@modules/app/constants/modules';
 import { APP_TYPES } from '@modules/apps/constants';
+import { resourceTypeForAppType } from './resource-type';
 
 type Subjects = InferSubjects<typeof App> | 'all';
 export type AppGitAbility = Ability<[FEATURE_KEY, Subjects]>;
@@ -25,13 +25,22 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const appId = request?.tj_resource_id;
     const appType = request?.tj_app?.type;
     const isModule = appType === APP_TYPES.MODULE;
+    const isWorkflow = appType === APP_TYPES.WORKFLOW;
     const { superAdmin, isAdmin, userPermission } = UserAllPermissions;
 
-    // Modules resolve via their own MODULES.MODULES bucket (granular module permissions),
-    // not the front-end app bucket.
-    const userAppGitPermissions = userPermission?.[isModule ? MODULES.MODULES : MODULES.APP];
+    // Modules and workflows resolve via their own granular-permission buckets, not the
+    // front-end app bucket. Must match FeatureAbilityGuard.getResource, which decides which
+    // bucket is populated — reading a bucket the guard never requested yields undefined and
+    // denies every non-admin request for that type.
+    const userAppGitPermissions = userPermission?.[resourceTypeForAppType(appType)];
     const isAllAppsEditable = !!userAppGitPermissions?.isAllEditable;
-    const isAllAppsCreatable = !!(isModule ? userPermission?.moduleCreate : userPermission?.appCreate);
+    const isAllAppsCreatable = !!(isModule
+      ? userPermission?.moduleCreate
+      : isWorkflow
+        ? userPermission?.workflowCreate
+        : userPermission?.appCreate);
+    // Per-resource id allowlist is named per type on the permissions object.
+    const editableIds = isWorkflow ? userAppGitPermissions?.editableWorkflowsId : userAppGitPermissions?.editableAppsId;
 
     // Used for public endpoint to get the app configs
     can(FEATURE_KEY.GIT_FETCH_APP_CONFIGS, App);
@@ -58,10 +67,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can(FEATURE_KEY.GIT_CREATE_APP, App);
       can(FEATURE_KEY.GIT_GET_APPS, App);
     }
-    if (
-      isAllAppsEditable ||
-      (userAppGitPermissions?.editableAppsId?.length && appId && userAppGitPermissions.editableAppsId.includes(appId))
-    ) {
+    if (isAllAppsEditable || (editableIds?.length && appId && editableIds.includes(appId))) {
       can(FEATURE_KEY.GIT_UPDATE_APP, App);
       can(FEATURE_KEY.GIT_SYNC_APP, App);
       can(FEATURE_KEY.GIT_APP_VERSION_RENAME, App);
@@ -71,11 +77,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     }
 
     // Additional checks based on specific actions
-    if (
-      userAppGitPermissions?.editableAppsId?.length &&
-      appId &&
-      userAppGitPermissions.editableAppsId.includes(appId)
-    ) {
+    if (editableIds?.length && appId && editableIds.includes(appId)) {
       can(FEATURE_KEY.GIT_GET_APP_CONFIG, App);
     }
   }

@@ -51,6 +51,10 @@ export class AppUpdateDto {
   @IsOptional()
   is_maintenance_on: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  workflow_enabled?: boolean;
+
   @IsString()
   @IsOptional()
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))

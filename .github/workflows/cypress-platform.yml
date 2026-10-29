@@ -9,6 +9,16 @@ on:
         type: string
         required: false
         default: 'ee'
+      # Prebuilt image (ci.yml → build-cypress-image); skips the in-job build.
+      image:
+        type: string
+        required: false
+        default: ''
+      # JSON list, one entry per machine the specs are split across, e.g. '[1,2,3,4]'.
+      shards:
+        type: string
+        required: false
+        default: '[1]'
   pull_request_target:
     types: [labeled]
   # workflow_dispatch:
@@ -48,6 +58,8 @@ jobs:
             }}
         label:
           - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress-git-sync-ee') && 'gitsync' || 'default' }}
+        # label-triggered runs have no inputs, so they stay on one machine
+        shard: ${{ fromJSON(inputs.shards || '[1]') }}
         exclude:
           - edition: ""
 
@@ -73,6 +85,7 @@ jobs:
           echo "Matrix edition: ${{ matrix.edition }}"
 
       - name: Free up disk space
+        if: ${{ !inputs.image }}
         run: |
           echo "Available disk space before cleanup:"
           df -h
@@ -132,7 +145,7 @@ jobs:
 
       # EE dockerfile build below
       - name: Build EE Docker image
-        if: matrix.edition == 'ee'
+        if: matrix.edition == 'ee' && !inputs.image
         run: |
           echo "Building EE Docker image..."
           docker buildx build \
@@ -213,11 +226,20 @@ jobs:
           if [ "${{ matrix.edition }}" = "ce" ]; then
             sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
           elif [ "${{ matrix.edition }}" = "ee" ]; then
-            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1${{ inputs.image || format('tooljet/tj-osv:{0}-ee', env.SAFE_BRANCH_NAME) }}|' docker-compose.yaml
           fi
+          # Own MailHog per machine: the shared one is wiped by other runs' specs
+          # (mhDeleteAll) while a test is still waiting for its email.
+          cat > mailhog.compose.yaml <<'EOF'
+          services:
+            mailhog:
+              image: mailhog/mailhog:v1.0.1
+              ports:
+                - 8025:8025
+          EOF
 
       - name: view docker-compose file
-        run: cat docker-compose.yaml
+        run: cat docker-compose.yaml mailhog.compose.yaml
 
       - name: Install Docker Compose
         run: |
@@ -225,13 +247,10 @@ jobs:
           chmod +x /usr/local/bin/docker-compose
 
       - name: Run docker-compose file
-        run: docker-compose up -d
+        run: docker-compose -f docker-compose.yaml -f mailhog.compose.yaml up -d
 
       - name: Checking containers
         run: docker ps -a
-
-      - name: sleep
-        run: sleep 80
 
       - name: docker logs
         run: docker-compose logs tooljet
@@ -416,6 +435,64 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SECRETS) || fromJSON(secrets.CYPRESS_EE_SECRETS)) }}
           dir: "./cypress-tests"
 
+      # The first machine onboards through the UI (firstUserOnboarding.cy.js), which
+      # needs a ToolJet with no admin yet. Every other machine is set up by API instead.
+      - name: Seeding (Setup Super Admin)
+        if: strategy.job-index != 0
+        run: |
+          curl --fail-with-body 'http://localhost:3000/api/onboarding/setup-super-admin' \
+            -H 'Content-Type: application/json' \
+            --data-raw '{
+              "companyName": "ToolJet",
+              "name": "The Developer",
+              "workspaceName": "My workspace",
+              "email": "dev@tooljet.io",
+              "password": "password"
+            }'
+
+      - name: Seeding (Authenticate)
+        if: strategy.job-index != 0
+        run: |
+          AUTH_RESPONSE=$(curl --fail-with-body \
+            -c /tmp/tj_cookies.txt \
+            'http://localhost:3000/api/authenticate' \
+            -H 'Content-Type: application/json' \
+            --data-raw '{
+              "email": "dev@tooljet.io",
+              "password": "password"
+            }')
+          echo "$AUTH_RESPONSE"
+          ORG_ID=$(echo "$AUTH_RESPONSE" | jq -r '.current_organization_id')
+          echo "TJ_ORG_ID=$ORG_ID" >> $GITHUB_ENV
+
+      - name: Seeding (Complete Onboarding)
+        if: strategy.job-index != 0
+        run: |
+          # Without this the frontend redirects every page visit to /setup.
+          curl --fail-with-body \
+            -b /tmp/tj_cookies.txt \
+            -X POST \
+            'http://localhost:3000/api/onboarding/finish' \
+            -H 'Content-Type: application/json' \
+            -H "tj-workspace-id: $TJ_ORG_ID" \
+            --data-raw '{"region": "us"}'
+
+      - name: Seeding (Update License)
+        if: strategy.job-index != 0 && matrix.edition == 'ee'
+        run: |
+          # Same call as updateLicense.cy.js. The key is part of a larger secret, so
+          # GitHub doesn't mask it on its own.
+          LICENSE_KEY=$(jq -r '.license_keys.valid' cypress-tests/cypress.env.json)
+          echo "::add-mask::$LICENSE_KEY"
+          jq -n --arg key "$LICENSE_KEY" '{key: $key}' | curl --fail -sS -o /dev/null \
+            -b /tmp/tj_cookies.txt \
+            -X PATCH \
+            'http://localhost:3000/api/license' \
+            -H 'Content-Type: application/json' \
+            -H "tj-workspace-id: $TJ_ORG_ID" \
+            --data @-
+          echo "License updated"
+
       - name: Install Cypress & deps
         uses: cypress-io/github-action@v6
         with:
@@ -425,7 +502,19 @@ jobs:
       - name: Run Cypress tests
         working-directory: ./cypress-tests
         env:
-          CELL: "Platform / ${{ matrix.edition }}"
+          CELL: "Platform / ${{ matrix.edition }}${{ strategy.job-total > 1 && format(' ({0}/{1})', matrix.shard, strategy.job-total) || '' }}"
+          SHARD_INDEX: ${{ strategy.job-index }}
+          SHARD_TOTAL: ${{ strategy.job-total }}
+          # every machine has its own fresh ToolJet. The first group runs on the first
+          # machine: the onboarding UI spec sets that one up, the "Seeding" steps set up
+          # the rest. Licensing specs change the license, so they stay together there.
+          # manageSSO.cy.js failed every attempt on a fresh CI machine but passes after the
+          # sso/ and settings/ specs (its order on main), so it runs after them on one machine.
+          SHARD_GROUPS: firstUserOnboarding.cy.js,/licensing/;/eeTestcases/sso/,/eeTestcases/settings/,workspace/manageSSO.cy.js
+          # this machine's MailHog (see "Update docker-compose file"): ToolJet sends to it
+          # over the compose network, Cypress reads it on the published port
+          CYPRESS_mailhog_smtp_host: mailhog
+          CYPRESS_mailHogUrl: http://localhost:8025
           BROWSER: chrome
           CONFIG_FILE: ${{ matrix.label == 'gitsync' && 'cypress-gitsync.config.js' || matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
           CYPRESS_CONFIG: "baseUrl=http://localhost:3000"
@@ -446,7 +535,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: cypress-summary-platform-${{ matrix.edition }}
+          name: cypress-summary-platform-${{ matrix.edition }}-${{ matrix.shard }}
           path: cypress-tests/summary.json
           retention-days: 7
 
@@ -454,7 +543,7 @@ jobs:
         uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: screenshots-${{ matrix.edition }}
+          name: screenshots-${{ matrix.edition }}-${{ matrix.shard }}
           path: cypress-tests/cypress/screenshots
 
   Cypress-Platform-Subpath:

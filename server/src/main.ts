@@ -20,6 +20,8 @@ import { SsoInfoUpdatedInterceptor } from '@modules/session/interceptors/sso-inf
 import { shutdownOtelLogs, initializeOtelLogs } from '@otel/logs';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { migrateSchemaBeforeBoot } from './migration-helpers/migrate-before-boot';
+import { MigrationRunsService } from '@modules/app/migration-runs/service';
 
 // Import helper functions
 import {
@@ -35,6 +37,7 @@ import {
   createLogger,
   logStartupInfo,
   logShutdownInfo,
+  onceWithDeadline,
   initSentry,
   initializeOtel,
   initializeEnvConfigRegistry,
@@ -130,6 +133,17 @@ async function bootstrap() {
     appLogger.log('Setting up security headers...');
     setSecurityHeaders(app, configService, appLogger);
     appLogger.log('✅ Security headers configured');
+    app.use((req, res, next) => {
+      if (req.path === `${urlPrefix.replace(/\/$/, '')}/mcp/consent`) {
+        res.setHeader('X-Frame-Options', 'DENY');
+        const csp = String(res.getHeader('Content-Security-Policy') || '');
+        res.setHeader(
+          'Content-Security-Policy',
+          `${csp.replace(/frame-ancestors[^;]*(;|$)/, '')}; frame-ancestors 'none'`
+        );
+      }
+      next();
+    });
 
     // Setup static assets
     appLogger.log('Setting up static assets...');
@@ -161,6 +175,12 @@ async function bootstrap() {
 
     // Off the readiness path: first sync after upgrade rewrites every workspace's sample source.
     void handleSampleDataSourceSync(app, appLogger);
+
+    // Tracking is best-effort: a failure here must not take down a serving process.
+    await app
+      .get(MigrationRunsService)
+      .start()
+      .catch((error: Error) => appLogger.error(`Async migrations could not start: ${error.message}`));
   } catch (error) {
     logger.error('❌ Failed to bootstrap application:', error);
     process.exit(1);
@@ -168,23 +188,26 @@ async function bootstrap() {
 }
 
 function setupGracefulShutdown(app: NestExpressApplication, logger: any) {
-  const gracefulShutdown = async (signal: string) => {
-    logShutdownInfo(signal, logger);
-    let exitCode = 0;
-    try {
-      await app.close();
-      logger.log('✅ Application closed successfully');
-    } catch (error) {
-      logger.error('❌ Error during application shutdown:', error);
-      exitCode = 1;
-    }
-    // Flush the OTel log queue before exiting, regardless of how app.close() went.
-    await shutdownOtelLogs();
-    process.exit(exitCode);
-  };
+  const gracefulShutdown = onceWithDeadline(
+    async (signal) => {
+      logShutdownInfo(signal, logger);
+      let exitCode = 0;
+      try {
+        await app.close();
+        logger.log('✅ Application closed successfully');
+      } catch (error) {
+        logger.error('❌ Error during application shutdown:', error);
+        exitCode = 1;
+      }
+      // Flush the OTel log queue before exiting, regardless of how app.close() went.
+      await shutdownOtelLogs();
+      return exitCode;
+    },
+    (code) => process.exit(code)
+  );
 
-  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', gracefulShutdown);
+  process.on('SIGTERM', gracefulShutdown);
 }
 
 async function setupApplicationMiddleware(app: NestExpressApplication, appLogger: any) {
@@ -203,7 +226,7 @@ function configureUrlPrefix() {
   const urlPrefix = hasSubPath ? process.env.SUB_PATH : '';
 
   // Exclude these endpoints from prefix. These endpoints are required for health checks.
-  const pathsToExclude = [];
+  const pathsToExclude = [{ path: '/.well-known/{*path}', method: RequestMethod.GET }];
   if (hasSubPath) {
     pathsToExclude.push({ path: '/', method: RequestMethod.GET });
   }
@@ -237,4 +260,7 @@ function setupBodyParsers(app: NestExpressApplication, configService: ConfigServ
 setupGlobalAgent();
 
 // Main execution
-bootstrap();
+migrateSchemaBeforeBoot().then(bootstrap, (error) => {
+  console.error(error);
+  process.exit(1);
+});

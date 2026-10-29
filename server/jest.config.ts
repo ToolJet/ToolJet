@@ -1,4 +1,9 @@
-/** @jest-config-loader ts-node */
+/**
+ * @jest-config-loader ts-node
+ *
+ * Node >= 22.18 strips TypeScript natively, so Jest would import this file as ESM
+ * and fail on the extensionless relative import below. Keep the ts-node loader.
+ */
 import type { Config } from '@jest/types';
 import { existsSync } from 'fs';
 import { join } from 'path';
@@ -13,6 +18,7 @@ const shared: Config.InitialProjectOptions = {
   moduleFileExtensions: ['js', 'json', 'ts', 'node'],
   testEnvironment: 'node',
   globalSetup: '<rootDir>/test/jest-global-setup.ts',
+  globalTeardown: '<rootDir>/test/jest-global-teardown.ts',
   setupFiles: ['<rootDir>/test/jest-setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/test/jest-transaction-setup.ts'],
   testRegex: 'test/modules/.*/unit/.*spec\\.ts$',

@@ -140,7 +140,10 @@
         gap: 5px;
 
         .modal-name {
-            width: 250px;
+            max-width: 400px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     }
 

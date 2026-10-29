@@ -52,7 +52,7 @@ describe("Workflows - dashboard CRUD", () => {
     }).should("contain.text", data.workflowName);
   });
 
-  it("The workflow card menu offers the workflow-specific actions", () => {
+  it("The workflow card menu offers the workflow-specific actions and no Clone", () => {
     cy.apiCreateWorkflow(data.workflowName);
     openWorkflowsDashboard();
 
@@ -72,13 +72,8 @@ describe("Workflows - dashboard CRUD", () => {
     cy.get(
       commonSelectors.appCardOptions(workflowsText.deleteWorkflowOption)
     ).verifyVisibleElement("have.text", workflowsText.deleteWorkflowOption);
-  });
 
-  it("The workflow card menu does not offer Clone", () => {
-    cy.apiCreateWorkflow(data.workflowName);
-    openWorkflowsDashboard();
-
-    viewAppCardOptions(data.workflowName);
+    // Clone is an app-only action and must not be offered for workflows.
     cy.get(workflowSelector.cardOptions).should("be.visible");
     cy.get(workflowSelector.cardOptions).should(
       "not.contain.text",

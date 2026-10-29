@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { authenticationService } from '@/_services';
 import { getPrivateRoute, redirectToDashboard, routes } from '@/_helpers/routes';
+import { appendBranchName } from '@/_helpers/active-branch';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AppLogo from '@/_components/AppLogo';
-import { hasBuilderRole } from '@/_helpers/utils';
+import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 
 const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'front-end' }) => {
@@ -33,7 +34,6 @@ const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'front-en
       data_source_group_permissions?.is_all_usable ||
       data_source_group_permissions?.configurable_data_source_id?.length ||
       data_source_group_permissions?.is_all_configurable;
-    const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
 
     return (
       <div className={`logo-nav-card settings-card card ${darkMode && 'dark-theme'}`}>
@@ -52,12 +52,16 @@ const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'front-en
           : workflowsEnabled &&
             showWorkflows &&
             admin && (
-              <Link target="_blank" to={getPrivateRoute('workflows')} className="dropdown-item tj-text tj-text-xsm">
+              <Link
+                target="_blank"
+                to={appendBranchName(getPrivateRoute('workflows'))}
+                className="dropdown-item tj-text tj-text-xsm"
+              >
                 <SolidIcon name={'workflows'} width="20" fill="#C1C8CD" />
                 <span>{'Workflows'}</span>
               </Link>
             )}
-        {(admin || isBuilder) && (
+        {canAccessTooljetDbDashboard() && (
           <Link
             target="_blank"
             to={getPrivateRoute('database')}

@@ -55,4 +55,9 @@ export const workflowSelector = {
   // appCardOptions(text) builds a per-option selector, which cannot express
   // "no clone control exists".
   cardOptions: '[data-cy="card-options"]',
+  workflowEnableToggle: '[data-cy="workflow-enable-toggle"] input',
+  versionLockBanner: '[data-cy="version-lock-banner"]',
+  versionLockInfoText: '[data-cy="version-lock-info-text"]',
+  createDraftLink: '[data-cy="create-draft-link"]',
+  confirmYesButton: '[data-cy="yes-button"]',
 };

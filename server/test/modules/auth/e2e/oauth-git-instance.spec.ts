@@ -29,6 +29,10 @@ describe('OAuthController', () => {
     userRepository = getEntityRepository(User);
     orgUserRepository = getEntityRepository(OrganizationUser);
     await ensureInstanceSSOConfigs();
+    // Instance SSO signup now respects the real enableSignUp flag (no longer defaults to true
+    // for the synthetic instance-SSO org). In CE, getSettings() reads getDefaultInstanceSettings(),
+    // where ENABLE_SIGNUP derives from DISABLE_SIGNUPS — so first-user SSO signup needs this set.
+    process.env.DISABLE_SIGNUPS = 'false';
   });
 
   afterEach(() => {

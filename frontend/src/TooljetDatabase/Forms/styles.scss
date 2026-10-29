@@ -87,6 +87,42 @@
   }
 }
 
+.tj-db-type-omitted-footer {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  border-top: 1px solid var(--borders-disabled-on-white);
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-placeholder);
+
+  // The hover zone (position/display toggle only - visuals of the card itself are the tw- classes
+  // on the element in EditColumnForm.jsx, not here, so there's one place owning each).
+  .tj-db-type-omitted-link {
+    position: relative;
+    color: var(--text-accent);
+    text-decoration: underline;
+    cursor: pointer;
+
+    .tj-db-type-omitted-popover {
+      display: none;
+      position: absolute;
+      z-index: 1;
+      width: 280px; 
+      top: calc(100% + 6px);
+      left: 50%; // centered under the link - move with `transform` below, not this
+      transform: translateX(-50%);
+      box-shadow: var(--elevation-300-box-shadow);
+    }
+
+    &:hover .tj-db-type-omitted-popover {
+      display: block;
+    }
+  }
+}
+
 .edit-warning-info {
   background-color: #FFF8F7;
   padding: 8px;

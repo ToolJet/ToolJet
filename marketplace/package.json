@@ -10,12 +10,11 @@
     "@types/node": "^25.9.1",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^5.57.0",
-    "ajv": "^6.15.0",
     "eslint": "^8.37.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-jest": "^27.2.1",
     "eslint-plugin-prettier": "^4.2.1",
-    "js-yaml": "^4.1.1",
+    "js-yaml": "^4.3.2",
     "lerna": "^10.1.1",
     "mime-types": "^2.1.35",
     "prettier": "^2.8.7",
@@ -23,14 +22,27 @@
     "ts-jest": "^29.0.5"
   },
   "overrides": {
-    "axios": "^1.20.0",
     "tar": "^7.5.22",
+    "axios": "^1.20.0",
     "websocket-driver": "^0.7.5",
     "handlebars": "^4.7.10",
     "follow-redirects": "^1.16.2",
     "zod": "^4.6.6",
     "smol-toml": "^1.9.0",
     "undici": "^7.30.1",
+    "protobufjs": "^7.6.5",
+    "ws": "^8.21.0",
+    "tmp": "^0.2.6",
+    "ip-address": "^10.7.2",
+    "browserslist": "^4.29.0",
+    "sigstore": "^4.1.1",
+    "nx": "^22.7.7",
+    "form-data": "^4.0.6",
+    "js-yaml@^3": "^3.15.2",
+    "js-yaml@^4": "^4.3.2",
+    "brace-expansion@^1.0.0": "^1.1.21",
+    "brace-expansion@^2.0.0": "^2.1.7",
+    "brace-expansion@^5.0.0": "^5.0.12",
     "external-editor": {
       "tmp": "^0.2.6"
     }
@@ -44,7 +56,6 @@
     "start:dev": "npm run build && npm run start:watch",
     "upload-to-s3": "bash scripts/upload-to-s3.sh",
     "lint": "eslint .  '**/*.ts'",
-    "validate:plugin": "node scripts/validate-plugin.js",
     "format": "eslint . --fix '**/*.ts'"
   }
 }

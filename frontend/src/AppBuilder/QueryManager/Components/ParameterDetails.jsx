@@ -85,7 +85,7 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
         </Popover>
       }
     >
-      <span className="parameterItem">
+      <span className="parameterItem" data-list-item-id={isEdit ? String(name ?? '') : undefined}>
         {isEdit ? (
           <PillButton
             className="parameterItemPillButton"

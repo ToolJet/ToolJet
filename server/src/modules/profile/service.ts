@@ -1,8 +1,10 @@
+import { invalidateUserCredentials } from '@modules/mcp-oauth/revocation';
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { ProfilePreferencesDto, ProfileUpdateDto } from '@modules/profile/dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager } from 'typeorm';
+import { EntityManager, Not } from 'typeorm';
+import { UserSessions } from '@entities/user_sessions.entity';
 import { ProfileUtilService } from '@modules/profile/util.service';
 import { User } from '@entities/user.entity';
 import { IProfileService } from '@modules/profile/interfaces/IService';
@@ -59,7 +61,7 @@ export class ProfileService implements IProfileService {
     });
   }
 
-  async updateUserPassword(userId: string, password: string): Promise<void> {
+  async updateUserPassword(userId: string, password: string, currentSessionId?: string): Promise<void> {
     validatePasswordServer(password);
     return dbTransactionWrap(async (manager: EntityManager) => {
       const user = await manager.findOneOrFail(User, {
@@ -78,6 +80,12 @@ export class ProfileService implements IProfileService {
         },
         manager
       );
+      await invalidateUserCredentials(manager, userId);
+      // Sign the user out everywhere else, keeping the session that made this change
+      await manager.delete(UserSessions, {
+        userId,
+        ...(currentSessionId ? { id: Not(currentSessionId) } : {}),
+      });
       const auditLogEntry = {
         userId: user.id,
         organizationId: user.defaultOrganizationId,
