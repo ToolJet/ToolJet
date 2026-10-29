@@ -19,10 +19,6 @@ To get the most out of each credit, keep sessions focused: start a fresh chat fo
 
 Credit usage in ToolJet varies based on the complexity of the request. Monthly credits are always consumed first. Add-on credits are utilized only after the monthly credits are exhausted. 
 
-### Models on the Free Plan
-
-On the Free plan, AI chats can use only a set of lower-cost models. Other models appear locked in the model picker until you upgrade your plan. See [Models on the Free Plan](/docs/build-with-ai/model-selection#models-on-the-free-plan) for the included models.
-
 ## Types of Credits
 
 ### Monthly Credits
