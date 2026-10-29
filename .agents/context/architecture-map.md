@@ -139,6 +139,7 @@ Built-in plugins under `plugins/packages/` cover SQL/NoSQL databases, REST/Graph
 
 | Failure | Handling/evidence |
 |---|---|
+| Database migration on upgrade (many pods; `MIGRATION_MODE=blocking\|async`) | Advisory locks serialise pods. In async mode the upgrade gate answers API writes with 503 while a migration runs and after a failed run; blocking mode has no gate. Async mode applies schema migrations before boot and data migrations in the background. `server/docs/MIGRATION_FLOW.md` (Many pods, one migration; Upgrade gate; Async mode; Failure modes). |
 | Invalid/expired session or insufficient permission | Guards return authorization errors before service execution. |
 | Public/private or unreleased app mismatch | App access guards and release validation prevent hydration. |
 | Query timeout, connector error, OAuth refresh requirement, or throttling | Data query services return structured failed/`needs_oauth` states; throttler limits per-app runs. |
