@@ -11,11 +11,42 @@ export interface ManifestProp {
   enumValues?: string[]; // only present when type === 'enumeration'
   enumLabels?: Record<string, string>; // only present when type === 'enumeration'
   section?: string; // groups this prop into an Inspector accordion section by name
+  exposed?: boolean; // styles only: also set as a read-only exposed variable (useStyleX `expose: true`)
+  placeholder?: string;
+  min?: number;
+  max?: number;
+  visibleWhen?: ManifestVisibleWhen; // Inspector shows the field only while prop `key` equals `value`
+  iconSet?: 'tabler' | 'lucide'; // the icon set an `inspector: 'icon'` prop's picker offers
 }
+
+export interface ManifestVisibleWhen {
+  key: string;
+  value: unknown;
+}
+
+// Which native validation fields the Inspector offers: text inputs get them all, choice and date controls only
+// mandatory and a custom rule.
+const VALIDATION_KINDS = ['text', 'choice', 'date'] as const;
+export type ManifestValidationKind = (typeof VALIDATION_KINDS)[number];
 
 export interface ManifestEvent {
   name: string;
+  displayName?: string;
 }
+
+// Drop areas: a Slot (a container area), RowSlot (a canvas per useRows item) or PopupSlot (inside a popup).
+const SLOT_KINDS = ['slot', 'rows', 'popup'] as const;
+export interface ManifestSlot {
+  name: string;
+  kind: (typeof SLOT_KINDS)[number];
+  variable?: string; // rows only: what the row's components call their item instead of {{listItem}}
+}
+
+const SLOT_COMPONENT_KINDS: Record<string, ManifestSlot['kind']> = {
+  Slot: 'slot',
+  RowSlot: 'rows',
+  PopupSlot: 'popup',
+};
 
 // Mirrors ActionParamDef.type in @tooljet/custom-component-sdk; each maps to an EventManager param renderer.
 const ACTION_PARAM_TYPES = ['code', 'toggle', 'select', 'switch', 'color'] as const;
@@ -39,12 +70,80 @@ export interface ManifestComponent {
   defaultWidth: number;
   defaultHeight: number;
   props: ManifestProp[];
+  styles: ManifestProp[]; // Inspector Styles tab; never exposed variables
   events: ManifestEvent[];
   actions: ManifestAction[];
+  validation?: ManifestValidationKind; // set when the component calls ToolJet.useValidation
+  role?: string; // the native widget this component stands in for (e.g. 'stat'), from useComponentSettings
+  fit?: boolean; // grows to its content when the builder turns on dynamic height, from useComponentSettings
+  loading?: 'own'; // the component draws its own loading look, so the host draws no overlay
+  usage?: string; // when to use the component, for the AI app builder
+  controlState?: boolean; // the component calls useControlState, so the Inspector offers Disable
+  slots?: ManifestSlot[];
+  // How the component names the props, events and actions of the native widget it stands in for (its `role`), and
+  // the values a role prop takes: the AI app builder plans in native widgets and maps them through these.
+  roleProps?: Record<string, string>;
+  roleValues?: Record<string, Record<string, RoleValue>>;
+  roleEvents?: Record<string, string>;
+  roleActions?: Record<string, string>;
+  labelCase?: 'upper'; // the component writes its label in capitals, so a layout sized for its text widens it
 }
 
-export interface Manifest {
+// Library-wide settings, from .tooljet/config.json.
+export interface ManifestLibrarySettings {
+  themeMode?: 'own'; // drawn in its own design system: takes the app theme only once one is applied
+  surface?: Record<string, unknown>; // the page and card look layouts around its components should match
+}
+
+export interface Manifest extends ManifestLibrarySettings {
   components: Record<string, ManifestComponent>;
+}
+
+// The role mappings useComponentSettings takes: a name → name map, and roleValues a map of those per prop.
+const ROLE_MAPS = ['roleProps', 'roleEvents', 'roleActions'] as const;
+export type RoleMap = (typeof ROLE_MAPS)[number];
+
+const isStringMap = (value: unknown): value is Record<string, string> =>
+  isPlainObject(value) && Object.values(value).every((v) => typeof v === 'string');
+
+type RoleScalar = string | number | boolean;
+// A role prop's value in this component: one value, or several props set together ({ variant: 'text', color: 'inherit' }).
+export type RoleValue = RoleScalar | Record<string, RoleScalar>;
+
+const isRoleScalar = (value: unknown): value is RoleScalar => ['string', 'number', 'boolean'].includes(typeof value);
+
+const isValueMap = (value: unknown): value is Record<string, RoleValue> =>
+  isPlainObject(value) &&
+  Object.values(value).every((v) => isRoleScalar(v) || (isPlainObject(v) && Object.values(v).every(isRoleScalar)));
+
+/** Throws unless `settings` holds valid role mappings and labelCase; returns the ones it holds. */
+export function readRoleSettings(
+  settings: Record<string, unknown>,
+  componentName: string
+): Pick<ManifestComponent, RoleMap | 'roleValues' | 'labelCase'> {
+  const out: Pick<ManifestComponent, RoleMap | 'roleValues' | 'labelCase'> = {};
+  for (const key of ROLE_MAPS) {
+    const value = settings[key];
+    if (value === undefined) continue;
+    if (!isStringMap(value)) {
+      throw new Error(`Invalid "${key}" in component "${componentName}": must map names to names.`);
+    }
+    out[key] = value;
+  }
+  if (settings.roleValues !== undefined) {
+    const value = settings.roleValues;
+    if (!isPlainObject(value) || !Object.values(value).every(isValueMap)) {
+      throw new Error(`Invalid "roleValues" in component "${componentName}": must map each prop to a map of values.`);
+    }
+    out.roleValues = value as Record<string, Record<string, RoleValue>>;
+  }
+  if (settings.labelCase !== undefined) {
+    if (settings.labelCase !== 'upper') {
+      throw new Error(`Invalid "labelCase" in component "${componentName}": must be 'upper'.`);
+    }
+    out.labelCase = 'upper';
+  }
+  return out;
 }
 
 const TOOLJET_SDK_MODULE = '@tooljet/custom-component-sdk';
@@ -59,14 +158,36 @@ const HOOK_TYPE_MAP: Record<string, ManifestProp['type']> = {
   useStateEnumeration: 'enumeration',
 };
 
+// Style hook name → value type; styles share ManifestProp's shape but live in their own list.
+const STYLE_HOOK_TYPE_MAP: Record<string, ManifestProp['type']> = {
+  useStyleString: 'string',
+  useStyleNumber: 'number',
+  useStyleBoolean: 'boolean',
+  useStyleEnumeration: 'enumeration',
+};
+
+// Everything that becomes an exposed variable, in the order clash messages name them.
+const EXPOSED_KINDS = ['prop', 'action', 'exposed style'] as const;
+type ExposedKind = (typeof EXPOSED_KINDS)[number];
+
+const withArticle = (kind: string) => (/^[aeiou]/.test(kind) ? `an ${kind}` : `a ${kind}`);
+
+// Styles the builder's LibraryComponent applies itself; a style with one of these names would collide with it.
+const RESERVED_STYLE_NAMES = new Set(['boxShadow']);
+
 // Exposed variables the builder's LibraryComponent always sets; a prop or action with one of these names would clobber it.
 const RESERVED_EXPOSED_NAMES = new Set(['isVisible', 'isLoading', 'setVisibility', 'setLoading']);
+
+// Exposed variables the builder also sets on a component that calls ToolJet.useValidation.
+const VALIDATION_EXPOSED_NAMES = ['isValid', 'isMandatory'];
 
 // Marks a value that can't be worked out without running the component.
 const NOT_STATIC = Symbol('NOT_STATIC');
 
 export interface ManifestResult {
   manifest: Manifest;
+  /** Per component, the project's own functions it calls that use ToolJet hooks: fields reading alone can't see. */
+  helperDeclared: Record<string, string[]>;
   tsErrorCount: number;
   tsErrorReport: string;
   warnings: string[];
@@ -88,6 +209,7 @@ export async function generateManifest(projectRoot: string): Promise<ManifestRes
 
   const components: Record<string, ManifestComponent> = {};
   const warnings: string[] = [];
+  const helperDeclared: Record<string, string[]> = {};
 
   // Walk exports of src/index.ts
   const sourceFile = program.getSourceFile(entryFile);
@@ -115,7 +237,11 @@ export async function generateManifest(projectRoot: string): Promise<ManifestRes
     if (!decl) continue;
 
     const component = walkComponentDeclaration(decl, checker, componentName, warnings);
-    if (component) components[componentName] = component;
+    if (component) {
+      components[componentName] = component;
+      const helpers = sdkHelpersCalledBy(decl, checker);
+      if (helpers.length) helperDeclared[componentName] = helpers;
+    }
   }
 
   const tsErrors = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error);
@@ -131,6 +257,7 @@ export async function generateManifest(projectRoot: string): Promise<ManifestRes
 
   return {
     manifest: { components },
+    helperDeclared,
     tsErrorCount: tsErrors.length,
     tsErrorReport,
     warnings,
@@ -146,8 +273,12 @@ function walkComponentDeclaration(
   // Only treat exports that look like React components as components — anything
   // else (types, constants, plain helper functions) is skipped rather than showing
   // up as a phantom, prop-less component in the manifest.
+  // A hook (useX) is never a component, even when it returns JSX for the components that call it.
+  if (/^use[A-Z]/.test(componentName)) return null;
   const fnNode = getFunctionLikeNode(decl);
-  if (!fnNode || !fnNode.body || !containsJsx(fnNode.body)) {
+  const isComponent =
+    !!fnNode?.body && (containsJsx(fnNode.body) || (isPascalCase(componentName) && callsHook(fnNode.body)));
+  if (!fnNode || !isComponent) {
     return null;
   }
 
@@ -155,15 +286,30 @@ function walkComponentDeclaration(
   // Constraint: only top-level calls in function body (not inside nested functions/callbacks)
 
   const props: ManifestProp[] = [];
+  const styles: ManifestProp[] = [];
+  const styleNames = new Set<string>();
   const events: ManifestEvent[] = [];
   const actions: ManifestAction[] = [];
   const eventNames = new Set<string>();
-  // Props and actions both land on the component's exposed variables, so they share one namespace.
-  const exposedNames = new Map<string, 'prop' | 'action'>();
+  // Props, actions and exposed styles all land on the component's exposed variables, so they share one namespace.
+  const exposedNames = new Map<string, ExposedKind>();
   let defaultWidth = 6;
   let defaultHeight = 5;
+  let role: string | undefined;
+  let fit: boolean | undefined;
+  let validation: ManifestValidationKind | undefined;
+  let loading: 'own' | undefined;
+  let usage: string | undefined;
+  let controlState = false;
+  let roleSettings: ReturnType<typeof readRoleSettings> = {};
+  const slots: ManifestSlot[] = [];
+  const addSlot = (slot: ManifestSlot) => {
+    if (!slots.some((s) => s.name === slot.name && s.kind === slot.kind)) slots.push(slot);
+  };
+  // visibleWhen keys are checked once every prop is collected, so a field may name a prop declared after it.
+  const visibleWhenKeys: { key: string; context: string }[] = [];
 
-  const claimExposedName = (name: string, kind: 'prop' | 'action') => {
+  const claimExposedName = (name: string, kind: ExposedKind) => {
     if (RESERVED_EXPOSED_NAMES.has(name)) {
       throw new Error(`Name "${name}" in component "${componentName}" is reserved by ToolJet.`);
     }
@@ -172,7 +318,12 @@ function walkComponentDeclaration(
       throw new Error(`Duplicate ${kind} name "${name}" in component "${componentName}".`);
     }
     if (owner) {
-      throw new Error(`Name "${name}" in component "${componentName}" is used by both a prop and an action.`);
+      const [first, second] = EXPOSED_KINDS.filter((k) => k === owner || k === kind);
+      throw new Error(
+        `Name "${name}" in component "${componentName}" is used by both ${withArticle(first)} and ${withArticle(
+          second
+        )}.`
+      );
     }
     exposedNames.set(name, kind);
   };
@@ -193,17 +344,66 @@ function walkComponentDeclaration(
     return name;
   };
 
+  // Styles aren't exposed, so they only need to be unique among themselves.
+  const claimStyleName = (name: string) => {
+    if (RESERVED_STYLE_NAMES.has(name)) {
+      throw new Error(`Style name "${name}" in component "${componentName}" is reserved by ToolJet.`);
+    }
+    if (styleNames.has(name)) {
+      throw new Error(`Duplicate style name "${name}" in component "${componentName}".`);
+    }
+    styleNames.add(name);
+  };
+
   // ToolJet.useStateString({ name: 'key', initialValue: '...', inspector: 'code', ... })
-  const collectProp = (node: ts.CallExpression, method: string, hookContext: string) => {
+  // ToolJet.useStyleString({ name: 'key', initialValue: '...', inspector: 'color', ... }) — same options, kind 'style'
+  const collectProp = (node: ts.CallExpression, method: string, hookContext: string, kind: 'prop' | 'style') => {
     const options = readOptions(node.arguments[0], hookContext);
     const name = readName(options, hookContext);
-    const propContext = `${hookContext}, prop "${name}"`;
-    claimExposedName(name, 'prop');
+    const propContext = `${hookContext}, ${kind} "${name}"`;
+    let exposed = false;
+    if (kind === 'style') {
+      claimStyleName(name);
+      const exposeNode = getPropNode(options, 'expose', checker);
+      const expose = exposeNode ? evalLiteralNode(exposeNode, checker) : false;
+      if (typeof expose !== 'boolean') {
+        throw new Error(`${propContext}: "expose" must be true or false.`);
+      }
+      exposed = expose;
+      if (exposed) claimExposedName(name, 'exposed style');
+    } else {
+      claimExposedName(name, 'prop');
+    }
 
-    const label = readStringProp(options, 'label', checker, propContext);
-    const description = readStringProp(options, 'description', checker, propContext);
+    // Display text built at runtime (a list joined into a description) is read from the render (manifest-recorder.ts).
+    const readText = (key: 'label' | 'description' | 'placeholder') => {
+      const node = getPropNode(options, key, checker);
+      const value = node ? evalLiteralNode(node, checker) : undefined;
+      if (value === undefined || typeof value === 'string') return value;
+      if (value !== NOT_STATIC) throw new Error(`${propContext}: "${key}" must be a string.`);
+      warnings.push(
+        `${
+          kind === 'style' ? 'Style' : 'Prop'
+        } "${name}" in component "${componentName}": ${key} isn't a static string, so the builder shows none.`
+      );
+      return undefined;
+    };
+    const label = readText('label');
+    const description = readText('description');
     const inspector = readStringProp(options, 'inspector', checker, propContext);
     const section = readStringProp(options, 'section', checker, propContext);
+    const placeholder = readText('placeholder');
+    const min = readNumberProp(options, 'min', checker, propContext);
+    const max = readNumberProp(options, 'max', checker, propContext);
+    if (min !== undefined && max !== undefined && min > max) {
+      throw new Error(`${propContext}: "min" is above "max".`);
+    }
+    const visibleWhen = readVisibleWhen(options, checker, propContext);
+    const iconSet = readStringProp(options, 'iconSet', checker, propContext);
+    if (iconSet !== undefined && iconSet !== 'tabler' && iconSet !== 'lucide') {
+      throw new Error(`${propContext}: "iconSet" must be 'tabler' or 'lucide'.`);
+    }
+    if (visibleWhen) visibleWhenKeys.push({ key: visibleWhen.key, context: propContext });
 
     let defaultValue: unknown;
     const initialValueNode = getPropNode(options, 'initialValue', checker);
@@ -212,7 +412,9 @@ function walkComponentDeclaration(
       // Not an error: the component falls back to its own initialValue at runtime, only the builder default is lost.
       if (value === NOT_STATIC) {
         warnings.push(
-          `Prop "${name}" in component "${componentName}": initialValue isn't a static literal, so the builder shows no default. The component still uses it at runtime.`
+          `${
+            kind === 'style' ? 'Style' : 'Prop'
+          } "${name}" in component "${componentName}": initialValue isn't a static literal, so the builder shows no default. The component still uses it at runtime.`
         );
       } else {
         defaultValue = value;
@@ -228,7 +430,7 @@ function walkComponentDeclaration(
       }
       if (values.some((v) => typeof v !== 'string')) {
         throw new Error(
-          `Invalid enumDefinition in component "${componentName}", prop "${name}": all values must be string literals.`
+          `Invalid enumDefinition in component "${componentName}", ${kind} "${name}": all values must be string literals.`
         );
       }
       enumValues = values;
@@ -244,9 +446,9 @@ function walkComponentDeclaration(
       enumLabels = labels as Record<string, string>;
     }
 
-    props.push({
+    (kind === 'style' ? styles : props).push({
       name,
-      type: HOOK_TYPE_MAP[method],
+      type: kind === 'style' ? STYLE_HOOK_TYPE_MAP[method] : HOOK_TYPE_MAP[method],
       default: defaultValue,
       ...(label ? { label } : {}),
       ...(description ? { description } : {}),
@@ -254,17 +456,25 @@ function walkComponentDeclaration(
       ...(enumValues ? { enumValues } : {}),
       ...(enumLabels ? { enumLabels } : {}),
       ...(section ? { section } : {}),
+      ...(exposed ? { exposed } : {}),
+      ...(placeholder ? { placeholder } : {}),
+      ...(min !== undefined ? { min } : {}),
+      ...(max !== undefined ? { max } : {}),
+      ...(visibleWhen ? { visibleWhen } : {}),
+      ...(iconSet ? { iconSet: iconSet as 'tabler' | 'lucide' } : {}),
     });
   };
 
   // ToolJet.useEventCallback({ name: 'onClick' })
   const collectEvent = (node: ts.CallExpression, hookContext: string) => {
-    const name = readName(readOptions(node.arguments[0], hookContext), hookContext);
+    const options = readOptions(node.arguments[0], hookContext);
+    const name = readName(options, hookContext);
     if (eventNames.has(name)) {
       throw new Error(`Duplicate event name "${name}" in component "${componentName}".`);
     }
     eventNames.add(name);
-    events.push({ name });
+    const displayName = readStringProp(options, 'displayName', checker, `${hookContext}, event "${name}"`);
+    events.push({ name, ...(displayName ? { displayName } : {}) });
   };
 
   // ToolJet.useAction({ name: 'setValue', params: [{ handle: 'value', type: 'code' }] }, handler)
@@ -347,12 +557,70 @@ function walkComponentDeclaration(
     };
   };
 
-  // ToolJet.useComponentSettings({ defaultWidth: 5, defaultHeight: 4 })
+  // ToolJet.useValidation({ kind: 'text', value }): the value is read at runtime, only the kind is static.
+  const collectValidation = (node: ts.CallExpression, hookContext: string) => {
+    if (validation) {
+      throw new Error(`ToolJet.useValidation is called more than once in component "${componentName}".`);
+    }
+    const kind = readStringProp(readOptions(node.arguments[0], hookContext), 'kind', checker, hookContext) ?? 'text';
+    if (!(VALIDATION_KINDS as readonly string[]).includes(kind)) {
+      throw new Error(`${hookContext}: "kind" must be 'text', 'choice' or 'date'.`);
+    }
+    validation = kind as ManifestValidationKind;
+  };
+
+  // ToolJet.useComponentSettings({ defaultWidth: 5, defaultHeight: 4, role: 'stat', fit: true })
   const applySettings = (node: ts.CallExpression, hookContext: string) => {
     const [settingsArg] = node.arguments;
     if (!settingsArg) return;
 
     const settings = readOptions(settingsArg, hookContext);
+    role = readStringProp(settings, 'role', checker, hookContext);
+    usage = readStringProp(settings, 'usage', checker, hookContext);
+    const loadingValue = readStringProp(settings, 'loading', checker, hookContext);
+    if (loadingValue !== undefined && loadingValue !== 'own') {
+      throw new Error(`Invalid "loading" in component "${componentName}": must be 'own'.`);
+    }
+    loading = loadingValue;
+    const slotsNode = getPropNode(settings, 'slots', checker);
+    if (slotsNode) {
+      const declared = evalLiteralNode(slotsNode, checker);
+      const valid =
+        Array.isArray(declared) &&
+        declared.every(
+          (slot) =>
+            isPlainObject(slot) &&
+            typeof slot.name === 'string' &&
+            (SLOT_KINDS as readonly unknown[]).includes(slot.kind) &&
+            (slot.variable === undefined || typeof slot.variable === 'string')
+        );
+      if (!valid) {
+        throw new Error(
+          `Invalid "slots" in component "${componentName}": each needs a "name" and a "kind" of 'slot', 'rows' or 'popup'.`
+        );
+      }
+      (declared as ManifestSlot[]).forEach(addSlot);
+    }
+    const roleValuesRead: Record<string, unknown> = {};
+    for (const key of [...ROLE_MAPS, 'roleValues', 'labelCase']) {
+      const node = getPropNode(settings, key, checker);
+      if (!node) continue;
+      const value = evalLiteralNode(node, checker);
+      if (value === NOT_STATIC) {
+        throw new Error(`Invalid "${key}" in component "${componentName}": must be a static literal.`);
+      }
+      roleValuesRead[key] = value;
+    }
+    roleSettings = readRoleSettings(roleValuesRead, componentName);
+    const fitNode = getPropNode(settings, 'fit', checker);
+    if (fitNode) {
+      const val = evalLiteralNode(fitNode, checker);
+      if (typeof val !== 'boolean') {
+        throw new Error(`Invalid "fit" in component "${componentName}": must be true or false.`);
+      }
+      fit = val;
+    }
+
     for (const key of ['defaultWidth', 'defaultHeight'] as const) {
       const valueNode = getPropNode(settings, key, checker);
       if (!valueNode) continue;
@@ -378,10 +646,13 @@ function walkComponentDeclaration(
         if (obj === 'ToolJet' && isToolJetSdkIdentifier(expr.expression, checker)) {
           const hookContext = `ToolJet.${method} in component "${componentName}"`;
 
-          if (HOOK_TYPE_MAP[method]) collectProp(node, method, hookContext);
+          if (HOOK_TYPE_MAP[method]) collectProp(node, method, hookContext, 'prop');
+          else if (STYLE_HOOK_TYPE_MAP[method]) collectProp(node, method, hookContext, 'style');
           else if (method === 'useEventCallback') collectEvent(node, hookContext);
           else if (method === 'useAction') collectAction(node, hookContext);
           else if (method === 'useComponentSettings') applySettings(node, hookContext);
+          else if (method === 'useValidation') collectValidation(node, hookContext);
+          else if (method === 'useControlState') controlState = true;
         }
       }
     }
@@ -395,13 +666,66 @@ function walkComponentDeclaration(
 
   ts.forEachChild(fnNode.body, visitor);
 
+  // Drop areas are JSX, often drawn inside a .map or a render helper, so the whole body is searched.
+  const slotVisitor = (node: ts.Node) => {
+    if (ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) {
+      const tag = node.tagName;
+      const kind = ts.isPropertyAccessExpression(tag) && SLOT_COMPONENT_KINDS[tag.name.getText()];
+      if (kind && isToolJetSdkIdentifier(tag.expression, checker)) {
+        const attr = (key: string) => {
+          const found = node.attributes.properties.find(
+            (a): a is ts.JsxAttribute => ts.isJsxAttribute(a) && a.name.getText() === key
+          );
+          const init = found?.initializer;
+          if (!init) return undefined;
+          if (ts.isStringLiteral(init)) return init.text;
+          const value =
+            ts.isJsxExpression(init) && init.expression ? evalLiteralNode(init.expression, checker) : NOT_STATIC;
+          return typeof value === 'string' ? value : NOT_STATIC;
+        };
+        const name = attr('name') ?? (kind === 'rows' ? 'row' : undefined);
+        if (!name)
+          throw new Error(`<ToolJet.${tag.name.getText()}> in component "${componentName}" is missing a "name".`);
+        // A name only known at runtime (one slot per tab) can't be listed; the host learns it when the slot mounts.
+        if (name !== NOT_STATIC) {
+          const variable = kind === 'rows' ? attr('variable') : undefined;
+          addSlot({ name, kind, ...(typeof variable === 'string' ? { variable } : {}) });
+        }
+      }
+    }
+    ts.forEachChild(node, slotVisitor);
+  };
+  ts.forEachChild(fnNode.body, slotVisitor);
+
+  const validationClash = validation && VALIDATION_EXPOSED_NAMES.find((name) => exposedNames.has(name));
+  if (validationClash) {
+    throw new Error(
+      `Name "${validationClash}" in component "${componentName}" is reserved by ToolJet while the component calls useValidation.`
+    );
+  }
+
+  for (const { key, context } of visibleWhenKeys) {
+    if (!props.some((prop) => prop.name === key)) {
+      throw new Error(`${context}: visibleWhen key "${key}" is not a prop of component "${componentName}".`);
+    }
+  }
+
   return {
     displayName: toDisplayName(componentName),
     defaultWidth,
     defaultHeight,
     props,
+    styles,
     events,
     actions,
+    ...(validation ? { validation } : {}),
+    ...(role !== undefined ? { role } : {}),
+    ...(fit !== undefined ? { fit } : {}),
+    ...(loading ? { loading } : {}),
+    ...(usage ? { usage } : {}),
+    ...(controlState ? { controlState } : {}),
+    ...(slots.length ? { slots } : {}),
+    ...roleSettings,
   };
 }
 
@@ -412,6 +736,23 @@ function containsJsx(node: ts.Node): boolean {
   if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node) || ts.isJsxFragment(node)) return true;
 
   return !!ts.forEachChild(node, (child) => (containsJsx(child) ? true : undefined));
+}
+
+// React's convention: a capitalised function that calls a hook is a component, even when its JSX is drawn by the
+// hook it calls (`export const DatePicker = (props) => usePicker(props, false)`).
+const isPascalCase = (name: string) => /^[A-Z]/.test(name);
+
+function callsHook(node: ts.Node): boolean {
+  if (ts.isCallExpression(node)) {
+    const callee = node.expression;
+    const name = ts.isIdentifier(callee)
+      ? callee.text
+      : ts.isPropertyAccessExpression(callee)
+      ? callee.name.text
+      : undefined;
+    if (name && /^use[A-Z]/.test(name)) return true;
+  }
+  return !!ts.forEachChild(node, (child) => (callsHook(child) ? true : undefined));
 }
 
 function isFunctionLike(node: ts.Node): boolean {
@@ -435,6 +776,60 @@ function getFunctionLikeNode(
   }
 
   return undefined;
+}
+
+// The project's own function a call resolves to (not a library's, not a type declaration), or undefined.
+function projectFunctionOf(
+  callee: ts.Expression,
+  checker: ts.TypeChecker
+): ts.FunctionDeclaration | ts.FunctionExpression | ts.ArrowFunction | undefined {
+  let symbol = checker.getSymbolAtLocation(callee);
+  if (symbol && symbol.flags & ts.SymbolFlags.Alias) symbol = checker.getAliasedSymbol(symbol);
+  const decl = symbol?.declarations?.[0];
+  const file = decl?.getSourceFile();
+  if (!decl || !file || file.isDeclarationFile || file.fileName.includes('/node_modules/')) return undefined;
+  return getFunctionLikeNode(decl);
+}
+
+// Whether a function uses the SDK (a ToolJet.x call or <ToolJet.X>), directly or through more of the project's own
+// functions.
+function usesSdk(
+  fn: ts.FunctionDeclaration | ts.FunctionExpression | ts.ArrowFunction,
+  checker: ts.TypeChecker,
+  seen: Set<ts.Node>
+): boolean {
+  if (seen.has(fn) || !fn.body) return false;
+  seen.add(fn);
+  const visit = (node: ts.Node): boolean => {
+    if (ts.isPropertyAccessExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 'ToolJet') {
+      if (isToolJetSdkIdentifier(node.expression, checker)) return true;
+    }
+    if (ts.isCallExpression(node)) {
+      const helper = projectFunctionOf(node.expression, checker);
+      if (helper && usesSdk(helper, checker, seen)) return true;
+    }
+    return !!ts.forEachChild(node, (child) => (visit(child) ? true : undefined));
+  };
+  return visit(fn.body);
+}
+
+// The project's own functions a component calls that use ToolJet hooks. Reading the component alone doesn't see the
+// fields they declare; recording a render does (manifest-recorder.ts).
+function sdkHelpersCalledBy(decl: ts.Declaration, checker: ts.TypeChecker): string[] {
+  const fn = getFunctionLikeNode(decl);
+  if (!fn?.body) return [];
+  const names = new Set<string>();
+  const visit = (node: ts.Node) => {
+    if (ts.isCallExpression(node)) {
+      const helper = projectFunctionOf(node.expression, checker);
+      if (helper && helper !== fn && usesSdk(helper, checker, new Set([fn]))) {
+        names.add(node.expression.getText());
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(fn.body, visit);
+  return [...names];
 }
 
 // Confirms `expr` resolves to the real `ToolJet` binding imported from the SDK,
@@ -545,9 +940,47 @@ function readStringProp(
   const node = getPropNode(obj, key, checker);
   if (!node) return undefined;
 
-  if (ts.isStringLiteralLike(node)) return node.text;
+  const value = evalLiteralNode(node, checker);
+  if (typeof value === 'string') return value;
 
   throw new Error(`${context}: "${key}" must be a string literal or a const string.`);
+}
+
+function readNumberProp(
+  obj: ts.ObjectLiteralExpression,
+  key: string,
+  checker: ts.TypeChecker,
+  context: string
+): number | undefined {
+  const node = getPropNode(obj, key, checker);
+  if (!node) return undefined;
+
+  const value = evalLiteralNode(node, checker);
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+
+  throw new Error(`${context}: "${key}" must be a number.`);
+}
+
+function readVisibleWhen(
+  obj: ts.ObjectLiteralExpression,
+  checker: ts.TypeChecker,
+  context: string
+): ManifestVisibleWhen | undefined {
+  const node = getPropNode(obj, 'visibleWhen', checker);
+  if (!node) return undefined;
+
+  const rule = resolveObjectLiteral(node, checker);
+  const valueNode = rule && getPropNode(rule, 'value', checker);
+  const key = rule && readStringProp(rule, 'key', checker, `${context}, visibleWhen`);
+  if (!rule || !key || !valueNode) {
+    throw new Error(`${context}: "visibleWhen" must be an object literal with a "key" and a "value".`);
+  }
+
+  const value = evalLiteralNode(valueNode, checker);
+  if (value === NOT_STATIC) {
+    throw new Error(`${context}: "visibleWhen" value must be a static literal.`);
+  }
+  return { key, value };
 }
 
 function toDisplayName(name: string): string {
@@ -623,6 +1056,33 @@ function evalLiteralNode(expression: ts.Expression, checker: ts.TypeChecker): un
     return result;
   }
 
-  // Calls, arithmetic, let bindings, parameters, ... — can't be known without running the component.
+  // 'a' + 'b': text joined from parts that are all static.
+  if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.PlusToken) {
+    const left = evalLiteralNode(node.left, checker);
+    const right = evalLiteralNode(node.right, checker);
+    if (left === NOT_STATIC || right === NOT_STATIC) return NOT_STATIC;
+    if (typeof left === 'string' || typeof right === 'string') return `${left}${right}`;
+    return NOT_STATIC;
+  }
+
+  // `Up to ${LIMIT}.`: a template whose every substitution is static.
+  if (ts.isTemplateExpression(node)) {
+    let text = node.head.text;
+    for (const span of node.templateSpans) {
+      const value = evalLiteralNode(span.expression, checker);
+      if (value === NOT_STATIC || (value !== null && typeof value === 'object')) return NOT_STATIC;
+      text += `${value}${span.literal.text}`;
+    }
+    return text;
+  }
+
+  // TOKEN.brand: a property of a const object.
+  if (ts.isPropertyAccessExpression(node)) {
+    const target = evalLiteralNode(node.expression, checker);
+    const key = node.name.getText();
+    return isPlainObject(target) && Object.prototype.hasOwnProperty.call(target, key) ? target[key] : NOT_STATIC;
+  }
+
+  // Calls, other arithmetic, let bindings, parameters, ... — can't be known without running the component.
   return NOT_STATIC;
 }
