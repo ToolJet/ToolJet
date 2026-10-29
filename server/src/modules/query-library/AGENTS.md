@@ -22,3 +22,24 @@ Workspace-owned query identities live in `LibraryQuery`; editable snapshots live
 
 Storage tests: `test/modules/query-library/unit/library-query-schema.spec.ts` and
 `ee/test/modules/query-library/e2e/library-drafts-storage.spec.ts`.
+
+## Named lifecycle API
+
+- `LibraryLifecycleService` owns explicit draft reads, creation from a saved version,
+  metadata/options PATCH, source changes, UUID-preserving save, and deletion.
+- `/queries/:id/drafts/:draftId` identifies an editable snapshot. Saved rows are
+  immutable; these routes never resolve a saved UUID back to its deleted draft.
+- `GET versions` returns `drafts[]` and `versions[]`, using persisted names.
+  Save accepts unchanged content under a unique name and may retain its own name.
+- `PATCH /queries/:id` changes identity/folder only; content/source writes require
+  a draft UUID. The old single-draft save/discard routes have been removed.
+- Each lifecycle mutation holds the parent query lock through name checks,
+  snapshot/state writes, and direct audit persistence. Audit failure rolls back
+  the mutation; no deferred audit locals are set, avoiding duplicate entries.
+- The last live draft/saved version, a Released saved version, and any consumer
+  pin cannot be deleted. Allocation numbers still include deleted saved rows.
+- Standalone runs accept exactly one `draftId` or saved `libraryVersionId`;
+  draft runs are Development-only and authorize that draft's actual source.
+
+Lifecycle verification: `ee/test/modules/query-library/e2e/library-lifecycle.spec.ts`;
+metadata/run validation: `test/modules/query-library/unit/library-version-validation.spec.ts`.

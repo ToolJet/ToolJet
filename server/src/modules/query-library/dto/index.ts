@@ -44,9 +44,6 @@ export class UpdateLibraryQueryDto {
   @MaxLength(255)
   @Matches(/\S/)
   name?: string;
-  @ValidateIf((_object, value) => value !== undefined)
-  @IsObject()
-  options?: Record<string, unknown>;
   @IsOptional()
   @IsUUID()
   folderId?: string | null;
