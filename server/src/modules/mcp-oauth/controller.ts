@@ -15,14 +15,16 @@ import {
   UseFilters,
   SetMetadata,
   UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { McpOAuthThrottleGuard } from './throttle.guard';
+import { McpOAuthAccountGuard } from './account.guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { McpOAuthService } from './service';
 import { OAuthFailure, OAuthRedirectFailure } from './protocol';
 import { User } from '@entities/user.entity';
-import { BootstrapInput, ConsentInput, ViewerInput } from './dto';
+import { BootstrapInput, ConsentInput, ViewerInput, WorkspaceInput } from './dto';
 
 @Catch()
 export class McpOAuthExceptionFilter implements ExceptionFilter {
@@ -65,6 +67,12 @@ export class McpOAuthController {
   private headers(res: Response) {
     res.set({ 'Cache-Control': 'no-store', Pragma: 'no-cache', 'Referrer-Policy': 'no-referrer' });
   }
+  private bindBrowser(res: Response, flow: { id: string; csrf: string }) {
+    res.cookie(this.oauth.cookieName(flow.id), flow.csrf, {
+      httpOnly: true, secure: this.oauth.settings().issuer.startsWith('https:'), sameSite: 'lax',
+      path: new URL(this.oauth.settings().issuer).pathname, maxAge: 600000,
+    });
+  }
   private csrf(req: Request, id: string) {
     const cookie = req.cookies?.[this.oauth.cookieName(id)];
     if (
@@ -104,13 +112,7 @@ export class McpOAuthController {
   async authorize(@Query() query: Record<string, unknown>, @Res() res: Response) {
     this.headers(res);
     const flow = await this.oauth.start(query);
-    res.cookie(this.oauth.cookieName(flow.id), flow.csrf, {
-      httpOnly: true,
-      secure: this.oauth.settings().issuer.startsWith('https:'),
-      sameSite: 'lax',
-      path: new URL(this.oauth.settings().issuer).pathname,
-      maxAge: 600000,
-    });
+    this.bindBrowser(res, flow);
     res.redirect(flow.location);
   }
   @Get('interactions/:id')
@@ -118,19 +120,43 @@ export class McpOAuthController {
     this.headers(res);
     res.json(await this.oauth.preview(id, this.csrf(req, id), this.origin(req)));
   }
+  @Get('interactions/:id/workspaces')
+  @UseGuards(McpOAuthAccountGuard)
+  async workspaces(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
+    this.headers(res);
+    res.json(await this.oauth.workspaces(id, this.csrf(req, id), req.user as User, this.origin(req)));
+  }
+  @Post('interactions/:id/workspace')
+  async selectWorkspace(@Param('id') id: string, @Body() body: WorkspaceInput, @Req() req: Request, @Res() res: Response) {
+    this.headers(res);
+    const flow = await this.oauth.selectWorkspace(id, this.csrf(req, id), body.workspace, this.origin(req));
+    this.bindBrowser(res, flow);
+    res.clearCookie(this.oauth.cookieName(id), { path: new URL(this.oauth.settings().issuer).pathname });
+    res.json({ redirectUrl: flow.location });
+  }
+  @Post('interactions/:id/cancel')
+  async cancelSelection(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
+    this.headers(res);
+    const result = await this.oauth.cancelSelection(id, this.csrf(req, id), this.origin(req));
+    res.clearCookie(this.oauth.cookieName(id), { path: new URL(this.oauth.settings().issuer).pathname });
+    res.json(result);
+  }
   @Get('interactions/:id/session')
   @UseGuards(JwtAuthGuard)
   async session(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
     const flow = await this.oauth.interaction(id, this.csrf(req, id), undefined, this.origin(req));
     await this.oauth.assertCurrentAuthentication(req.user as User, flow.payload.organizationId);
-    res.json({ email: (req.user as User).email });
+    res.json({ email: (req.user as User).email, accountId: (req.user as User).id });
   }
   @Post('interactions/:id')
   @UseGuards(JwtAuthGuard)
   async consent(@Param('id') id: string, @Body() body: ConsentInput, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
     if (typeof body.allow !== 'boolean') throw new OAuthFailure('invalid_request', 'Choose Allow or Cancel');
+    // A different tab may have signed in as another user since consent was displayed.
+    if (body.accountId !== undefined && body.accountId !== (req.user as User).id)
+      throw new UnauthorizedException();
     const result = await this.oauth.consent(id, this.csrf(req, id), req.user as User, body.allow, this.origin(req));
     res.clearCookie(this.oauth.cookieName(id), { path: new URL(this.oauth.settings().issuer).pathname });
     res.status(200).json(result);

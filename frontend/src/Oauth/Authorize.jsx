@@ -344,10 +344,12 @@ export function Authorize({ navigate }) {
     };
 
     if (mcpContext) {
-      authenticationService
-        .signInViaOAuth(router.query.configId, router.query.origin, authParams, mcpContext)
-        .then(handleAuthResponse)
-        .catch(handleAuthError);
+      // Before workspace selection, retain the platform's general Cloud sign-in endpoint.
+      const login =
+        mcpContext.organizationId === null && fetchEdition() === 'cloud' && !router.query.configId
+          ? aiOnboardingService.signInViaOAuth(router.query.origin, authParams, utmParams)
+          : authenticationService.signInViaOAuth(router.query.configId, router.query.origin, authParams, mcpContext);
+      login.then(handleAuthResponse).catch(handleAuthError);
       return;
     }
 

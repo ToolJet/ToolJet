@@ -32,7 +32,7 @@ const session = (status = 200) =>
   server.use(
     http.get(`${interactionUrl()}/session`, ({ request }) => {
       requests.session.push(request);
-      return HttpResponse.json({ email: 'builder@synthetic.example' }, { status });
+      return HttpResponse.json({ email: 'builder@synthetic.example', accountId: 'synthetic-user' }, { status });
     })
   );
 const decision = (data = {}, status = 200) =>
@@ -54,6 +54,80 @@ beforeEach(() => {
   requests = { preview: [], session: [], decision: [] };
   preview();
   session();
+});
+describe('shared URL workspace chooser', () => {
+  const workspaces = (items = [], status = 200) =>
+    server.use(
+      http.get(`${interactionUrl()}/workspaces`, () =>
+        HttpResponse.json({ email: 'operator@synthetic.example', workspaces: items }, { status })
+      )
+    );
+  beforeEach(() => preview({ ...flow, organizationId: null, organizationName: null, loginUrl: '#account-login' }));
+  test('offers general login and workspace SSO before granting any workspace access', async () => {
+    workspaces([], 401);
+    render(<ConsentPage />);
+    expect(await screen.findByRole('link', { name: 'Sign in to ToolJet' })).toHaveAttribute('href', '#account-login');
+    expect(requests.session).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: 'Allow access' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in with your workspace' }));
+    expect(screen.getByRole('textbox', { name: /Workspace URL/ })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
+  });
+  test('preselects a sole workspace but requires explicit continuation', async () => {
+    workspaces([{ id: 'orchard', name: 'Orchard operations' }]);
+    render(<ConsentPage />);
+    expect(await screen.findByRole('combobox', { name: 'Workspace' })).toHaveValue('orchard');
+    expect(screen.getByText('operator@synthetic.example')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled();
+    expect(requests.session).toHaveLength(0);
+  });
+  test('does not silently choose among multiple workspaces and submits the explicit selection', async () => {
+    workspaces([
+      { id: 'orchard', name: 'Orchard operations' },
+      { id: 'meadow', name: 'Meadow operations' },
+    ]);
+    let submitted;
+    server.use(
+      http.post(`${interactionUrl()}/workspace`, async ({ request }) => {
+        submitted = { csrf: request.headers.get('x-tooljet-oauth-csrf'), body: await request.json() };
+        return HttpResponse.json({ redirectUrl: '#selected-workspace' });
+      })
+    );
+    render(<ConsentPage />);
+    const choices = await screen.findByRole('combobox', { name: 'Workspace' });
+    expect(choices).toHaveValue('');
+    fireEvent.change(choices, { target: { value: 'meadow' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await waitFor(() => expect(window.location.hash).toBe('#selected-workspace'));
+    expect(submitted).toEqual({ csrf: 'synthetic-csrf', body: { workspace: 'meadow' } });
+  });
+  test('handles an account with no eligible workspaces and offers account switching', async () => {
+    workspaces();
+    render(<ConsentPage />);
+    expect(await screen.findByText(/No active workspaces/)).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Use another account' })).toHaveAttribute('href', '#account-login');
+    expect(screen.queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument();
+  });
+  test('allows cancellation without signing in', async () => {
+    workspaces([], 401);
+    server.use(
+      http.post(`${interactionUrl()}/cancel`, ({ request }) => {
+        expect(request.headers.get('x-tooljet-oauth-csrf')).toBe('synthetic-csrf');
+        return HttpResponse.json({ redirectUrl: '#cancelled' });
+      })
+    );
+    render(<ConsentPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(window.location.hash).toBe('#cancelled'));
+  });
+  test('shows a safe retry message after selection fails', async () => {
+    workspaces([{ id: 'orchard', name: 'Orchard operations' }]);
+    server.use(http.post(`${interactionUrl()}/workspace`, () => HttpResponse.json({}, { status: 400 })));
+    render(<ConsentPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Continue' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('workspace or connection link is unavailable');
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled();
+  });
 });
 afterEach(() => {
   config.apiUrl = originalApiUrl;
@@ -195,7 +269,7 @@ test('sends browser-bound cancellation and displays a safe failure', async () =>
   fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('Unable to complete');
   expect(screen.queryByText('synthetic-private-diagnostic')).not.toBeInTheDocument();
-  expect(requests.decision[0].body).toEqual({ allow: false });
+  expect(requests.decision[0].body).toEqual({ allow: false, accountId: 'synthetic-user' });
   expect(requests.decision[0].request.headers.get('x-tooljet-oauth-csrf')).toBe('synthetic-csrf');
 });
 test('offers the correct workspace login after an unsuccessful login attempt', async () => {
@@ -235,7 +309,7 @@ test('approval preserves workspace and CSRF binding, and requires login after se
   fireEvent.click(await screen.findByRole('button', { name: 'Allow access' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('sign-in has expired');
   const { request, body } = requests.decision[0];
-  expect(body).toEqual({ allow: true });
+  expect(body).toEqual({ allow: true, accountId: 'synthetic-user' });
   expect(request.credentials).toBe('include');
   expect(request.headers.get('tj-workspace-id')).toBe('garden-id');
   expect(request.headers.get('x-tooljet-oauth-csrf')).toBe('synthetic-csrf');
@@ -250,7 +324,7 @@ test.each([
   render(<ConsentPage />);
   fireEvent.click(await screen.findByRole('button', { name: buttonName }));
   await waitFor(() => expect(window.location.hash).toBe('#synthetic-callback'));
-  expect(requests.decision[0].body).toEqual({ allow });
+  expect(requests.decision[0].body).toEqual({ allow, accountId: 'synthetic-user' });
 });
 test.each(['true', 'false'])('applies saved darkMode=%s before and after session verification', async (preference) => {
   localStorage.setItem('darkMode', preference);

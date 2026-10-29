@@ -50,6 +50,7 @@ beforeEach(() => {
   authenticationService.getSignupOrganizationSlug.mockReturnValue('stale-signup');
   authenticationService.getInviteFlowIndetifier.mockReturnValue('stale-invite');
   authenticationService.signInViaOAuth.mockResolvedValue({ current_organization_id: 'orchard-workspace' });
+  aiOnboardingService.signInViaOAuth.mockResolvedValue({ current_organization_id: 'orchard-workspace' });
   interactionRequests = [];
   server.use(
     http.get(interactionUrl, ({ request }) => {
@@ -97,6 +98,23 @@ test('an expired or wrong-browser interaction never reaches SSO sign-in or onboa
   await waitFor(() => expect(Navigate).toHaveBeenCalled());
   expect(authenticationService.signInViaOAuth).not.toHaveBeenCalled();
   expect(aiOnboardingService.signInViaOAuth).not.toHaveBeenCalled();
+});
+
+test.each(['google', 'git'])('%s can return a general login to the unselected workspace chooser', async (provider) => {
+  mockQuery = {
+    origin: provider,
+    code: 'synthetic-code',
+    state: encodeURIComponent(JSON.stringify({ redirectTo: consentPath })),
+  };
+  const fragment =
+    provider === 'google' ? `#${new URLSearchParams({ state: mockQuery.state, id_token: 'synthetic-id-token' })}` : '';
+  window.history.replaceState({}, '', `/tools/sso/${provider}${fragment}`);
+  server.use(http.get(interactionUrl, () => HttpResponse.json({ organizationId: null })));
+  const navigate = jest.fn();
+  render(<Authorize navigate={navigate} />);
+  await waitFor(() => expect(onLoginSuccess).toHaveBeenCalledWith(expect.anything(), navigate, consentPath));
+  expect(aiOnboardingService.signInViaOAuth).toHaveBeenCalledWith(provider, expect.anything(), expect.anything());
+  expect(authenticationService.signInViaOAuth).not.toHaveBeenCalled();
 });
 
 test.each(['openid', 'saml'])('%s uses its same-origin consent return cookie', async (provider) => {

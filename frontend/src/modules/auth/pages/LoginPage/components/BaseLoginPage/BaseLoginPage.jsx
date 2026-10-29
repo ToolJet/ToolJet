@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
-import { getRedirectTo } from '@/_helpers/routes';
+import { getRedirectTo, isMcpOAuthConsentPath } from '@/_helpers/routes';
 import { setCookie } from '@/_helpers/cookie';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
@@ -68,7 +68,8 @@ const BaseLoginPage = ({ configs, organizationId, currentOrganizationName, handl
       email,
       workspace_id: organizationId || currentOrganizationName,
     });
-    onLoginSuccess(user, navigate);
+    // Keep OAuth returns local to this tab; another login tab may overwrite the shared redirect cookie.
+    onLoginSuccess(user, navigate, isMcpOAuthConsentPath(redirectTo) ? redirectTo : null);
   };
 
   const handleLogin = (email, password, onError) => {

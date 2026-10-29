@@ -247,6 +247,44 @@
 .mcp-oauth-signin {
   text-decoration: none;
 }
+.mcp-oauth-picker,
+.mcp-oauth-picker label {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.mcp-oauth-picker label {
+  gap: 8px;
+}
+.mcp-oauth-picker h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+.mcp-oauth-picker input,
+.mcp-oauth-picker select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--background-surface-layer-01);
+  color: var(--text-default);
+  font: inherit;
+}
+.mcp-oauth-picker-links {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.mcp-oauth-picker-links button,
+.mcp-oauth-picker-links a {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--text-brand);
+  cursor: pointer;
+}
 @media (max-width: 480px) {
   .mcp-oauth-page {
     padding: 32px 16px;

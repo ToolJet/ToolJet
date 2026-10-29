@@ -12,7 +12,18 @@ jest.mock('@/_helpers', () => ({
 jest.mock('@/_helpers/routes', () => ({ getRedirectTo: jest.fn() }));
 const originalFetch = global.fetch;
 beforeEach(() => {
+  jest.clearAllMocks();
   global.fetch = jest.fn().mockResolvedValue({ json: async () => ({}) });
+});
+
+test('an unselected MCP login excludes stale workspace and credential headers', async () => {
+  const context = { organizationId: null, redirectTo: `/mcp/consent?request=${'N'.repeat(43)}` };
+  await authenticationService.signInViaOAuth(undefined, 'git', { token: 'synthetic-code' }, context);
+  const [, options] = global.fetch.mock.calls[0];
+  expect(JSON.parse(options.body)).toEqual({ token: 'synthetic-code', ...context });
+  expect(options.headers).toEqual({ 'Content-Type': 'application/json' });
+  expect(authHeader).not.toHaveBeenCalled();
+  expect(getCookie).not.toHaveBeenCalled();
 });
 afterEach(() => {
   global.fetch = originalFetch;

@@ -6,6 +6,7 @@ import '@/_styles/componentdesign.scss';
 import '@/_styles/typography.scss';
 import './oauth.css';
 import ClientLogo from './ClientLogo';
+import WorkspacePicker from './WorkspacePicker';
 import { captureMcpOAuthBootstrap, clearMcpOAuthBootstrap, getMcpOAuthBootstrap } from './bootstrap';
 
 export const SCOPE_LABELS = {
@@ -35,6 +36,7 @@ export default function ConsentPage() {
   const pageClassName = `mcp-oauth-page${darkMode ? ' dark-theme theme-dark' : ''}`;
   const [flow, setFlow] = useState(null);
   const [email, setEmail] = useState(null);
+  const [accountId, setAccountId] = useState(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [needsLogin, setNeedsLogin] = useState(false);
@@ -43,6 +45,7 @@ export default function ConsentPage() {
     let active = true;
     setFlow(null);
     setEmail(null);
+    setAccountId(null);
     setNeedsLogin(false);
     setError('');
     const load = async () => {
@@ -81,6 +84,7 @@ export default function ConsentPage() {
       const info = await response.json();
       if (!active) return;
       setFlow(info);
+      if (!info.organizationId) return;
       const session = await fetch(`${api()}/interactions/${id}/session`, {
         credentials: 'include',
         headers: { 'tj-workspace-id': info.organizationId, 'x-tooljet-oauth-origin': window.location.origin },
@@ -110,6 +114,7 @@ export default function ConsentPage() {
       const user = await session.json();
       if (active) {
         setEmail(user.email);
+        setAccountId(user.accountId);
         try {
           sessionStorage.removeItem(`tj_mcp_login_${id}`);
         } catch {
@@ -135,7 +140,7 @@ export default function ConsentPage() {
           'tj-workspace-id': flow.organizationId,
           'x-tooljet-oauth-csrf': flow.csrfToken,
         },
-        body: JSON.stringify({ allow }),
+        body: JSON.stringify({ allow, accountId }),
       });
       if (response.status === 401) {
         setEmail(null);
@@ -152,7 +157,8 @@ export default function ConsentPage() {
   };
 
   // Keep consent hidden during the session check and while leaving for login.
-  if (!email && !error && !needsLogin) {
+  const choosingWorkspace = flow && !flow.organizationId;
+  if (!choosingWorkspace && !email && !error && !needsLogin) {
     return (
       <main className={pageClassName}>
         <p role="status">Connecting to ToolJet…</p>
@@ -185,6 +191,7 @@ export default function ConsentPage() {
               {error}
             </p>
           )}
+          {choosingWorkspace && <WorkspacePicker flow={flow} endpoint={`${api()}/interactions/${id}`} />}
           {hasConsent && (
             <>
               <div className="mcp-oauth-account">

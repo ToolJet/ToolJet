@@ -26,7 +26,8 @@ export const loadMcpOAuthLoginContext = async (redirectTo) => {
   });
   if (!response.ok) throw new Error('This AI connection expired or changed. Start again from your AI client.');
   const flow = await response.json();
-  if (typeof flow.organizationId !== 'string' || !flow.organizationId) {
+  // A shared-URL transaction has no workspace until the account returns to the picker.
+  if (flow.organizationId !== null && (typeof flow.organizationId !== 'string' || !flow.organizationId)) {
     throw new Error('Unable to identify the workspace for this AI connection. Start again from your AI client.');
   }
   return { organizationId: flow.organizationId, redirectTo };
