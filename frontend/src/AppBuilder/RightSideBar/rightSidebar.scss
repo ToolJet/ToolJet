@@ -13,6 +13,12 @@
   }
 }
 
+// The panel sits below the 48px app header; the legacy `.editor .editor-sidebar` rule makes it a full
+// window tall, which pushed its bottom 48px (where query preview docks) off screen.
+.editor .right-panel-shell.editor-sidebar {
+  height: calc(100vh - 48px);
+}
+
 .right-panel-shell--query {
   width: min(496px, calc(100vw - 54px)) !important;
 }

@@ -11,6 +11,7 @@ import {
   getQueryDetailsStyle,
   getQueryDetailsOverflowStyle,
   getQueryTypographyClassName,
+  PREVIEW_PANEL,
 } from '@/AppBuilder/panelLayout';
 import DataSourcePicker from './DataSourcePicker';
 import { Transformation } from './Transformation';
@@ -148,10 +149,10 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
     optionsChangedforParams({ ...prevOptions, parameters: updatedParameters });
   };
-  const [previewHeight, setPreviewHeight] = useState(40);
+  const [previewHeight, setPreviewHeight] = useState(PREVIEW_PANEL.collapsedPx);
 
   const calculatePreviewHeight = (height, previewPanelExpanded) => {
-    setPreviewHeight(previewPanelExpanded ? height : 40);
+    setPreviewHeight(previewPanelExpanded ? height : PREVIEW_PANEL.collapsedPx);
   };
   const renderDataSourcesList = () => {
     return (

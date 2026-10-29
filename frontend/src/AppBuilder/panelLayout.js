@@ -22,6 +22,17 @@ export const LEFT_PANEL_ITEMS = LEFT_PANEL_SECTIONS.flatMap(({ items }) => items
 
 export const RUNTIME_PANEL_COLLAPSED_HEIGHT = 38;
 
+// Query preview docks at the bottom of the right-side query panel (containerClassName). It opens at
+// defaultRatio of that panel, resizes from its top edge, collapses below minPx, and always leaves
+// reservedAbovePx for the query fields above it. Closed, it matches the closed runtime panel bar.
+export const PREVIEW_PANEL = {
+  containerClassName: 'right-sidebar-query-configuration',
+  collapsedPx: RUNTIME_PANEL_COLLAPSED_HEIGHT,
+  defaultRatio: 0.4,
+  minPx: 50,
+  reservedAbovePx: 120,
+};
+
 export const PANEL_MOTION = {
   durationMs: 180,
   easing: 'cubic-bezier(0.2, 0, 0, 1)',

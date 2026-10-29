@@ -1914,7 +1914,11 @@ $border-radius: 4px;
       }
     }
 
+    // Same height as the closed Inspector/Debugger bar beside it, open or closed.
     .preview-toggle {
+      flex: 0 0 38px;
+      height: 38px;
+      box-sizing: border-box;
       padding: 4px 6px;
       background-color: var(--base);
       border-top: 1px solid var(--slate5);
