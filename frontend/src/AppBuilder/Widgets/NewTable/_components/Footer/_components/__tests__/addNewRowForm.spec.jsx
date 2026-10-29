@@ -1,5 +1,6 @@
 import React, { Profiler } from 'react';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { unstable_batchedUpdates } from 'react-dom';
 import userEvent from '@testing-library/user-event';
 import { seedApp } from '@/test/app-builder';
 import useTableStore from '../../../../_stores/tableStore';
@@ -55,6 +56,19 @@ const RICH_COLUMNS = [
   { id: 'r2', name: 'Bio', key: 'bio', columnType: 'html' },
   { id: 'r3', name: 'Notes', key: 'notes', columnType: 'markdown' },
 ];
+
+// jsdom has no matchMedia; the form skips its fade-out for users who prefer reduced motion.
+function setReducedMotion(reduce) {
+  window.matchMedia = (query) => ({
+    matches: reduce && query.includes('prefers-reduced-motion'),
+    media: query,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+  });
+}
+beforeEach(() => setReducedMotion(true));
 
 // Radix Select and Popover lean on pointer-capture and scrollIntoView, which jsdom lacks.
 beforeAll(() => {
@@ -987,5 +1001,248 @@ describe('Table-ADDROWFORM-030 dialog focus', () => {
 
     await waitFor(() => expect(opener).toHaveFocus());
     opener.remove();
+  });
+});
+
+describe('Table-ADDROWFORM-032 saving state', () => {
+  const NAME = { id: 's1', name: 'Name', key: 'name', columnType: 'string' };
+  const deferred = () => {
+    let resolve;
+    let reject;
+    const promise = new Promise((res, rej) => {
+      resolve = res;
+      reject = rej;
+    });
+    return { promise, resolve, reject };
+  };
+  const send = (user) => user.click(screen.getByRole('button', { name: 'Add row' }));
+
+  test('Table-ADDROWFORM-032 while the app handles the event the form shows Adding row… and locks', async () => {
+    // Break this catches: no sign that the row is being added, and fields that stay editable mid-save.
+    const pending = deferred();
+    const { user, hide } = renderForm({ columns: [NAME], fireEvent: jest.fn(() => pending.promise) });
+
+    await user.type(within(field('Name')).getByRole('textbox'), 'Ada');
+    await send(user);
+
+    const saving = screen.getByRole('button', { name: 'Adding row…' });
+    expect(saving).toBeDisabled();
+    expect(saving).toHaveClass('tw-opacity-60');
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toHaveClass('tw-opacity-50');
+    expect(within(field('Name')).getByRole('textbox')).toBeDisabled();
+    expect(document.querySelector('[data-cy="add-new-row-0"]')).toHaveAttribute('inert');
+    expect(hide).not.toHaveBeenCalled();
+
+    pending.resolve();
+    await waitFor(() => expect(hide).toHaveBeenCalledTimes(1));
+  });
+
+  test('Table-ADDROWFORM-032 a second click while saving does not send the row twice', async () => {
+    // Break this catches: a double click adding the row twice.
+    const pending = deferred();
+    const { user, fireEvent, hide } = renderForm({ columns: [NAME], fireEvent: jest.fn(() => pending.promise) });
+
+    await send(user);
+    await user.click(screen.getByRole('button', { name: 'Adding row…' }));
+    await user.keyboard('{Enter}');
+
+    expect(fireEvent).toHaveBeenCalledTimes(1);
+    pending.resolve();
+    await waitFor(() => expect(hide).toHaveBeenCalledTimes(1));
+  });
+
+  test('Table-ADDROWFORM-032 two clicks in the same instant still send the row once', async () => {
+    // Break this catches: a double click slipping through before the button has re-rendered as disabled.
+    const pending = deferred();
+    const { fireEvent } = renderForm({ columns: [NAME], fireEvent: jest.fn(() => pending.promise) });
+    const button = screen.getByRole('button', { name: 'Add row' });
+
+    act(() => {
+      unstable_batchedUpdates(() => {
+        button.click();
+        button.click();
+      });
+    });
+
+    expect(fireEvent).toHaveBeenCalledTimes(1);
+    await act(async () => pending.resolve());
+  });
+
+  test('Table-ADDROWFORM-032 a Cancel in the same instant as Add row does not cancel the row', async () => {
+    // Break this catches: Cancel winning a race against a send that has already started.
+    const pending = deferred();
+    const { fireEvent } = renderForm({ columns: [NAME], fireEvent: jest.fn(() => pending.promise) });
+
+    act(() => {
+      unstable_batchedUpdates(() => {
+        screen.getByRole('button', { name: 'Add row' }).click();
+        screen.getByRole('button', { name: 'Cancel' }).click();
+      });
+    });
+
+    expect(fireEvent).toHaveBeenCalledTimes(1);
+    expect(fireEvent).not.toHaveBeenCalledWith('onAddNewRowCancelled');
+    await act(async () => pending.resolve());
+  });
+
+  test('Table-ADDROWFORM-032 Escape and Cancel are ignored while saving', async () => {
+    // Break this catches: cancelling a row that is already on its way to the app.
+    const pending = deferred();
+    const { user, fireEvent, hide } = renderForm({ columns: [NAME], fireEvent: jest.fn(() => pending.promise) });
+
+    await send(user);
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(fireEvent).toHaveBeenCalledTimes(1);
+    expect(fireEvent).not.toHaveBeenCalledWith('onAddNewRowCancelled');
+    expect(hide).not.toHaveBeenCalled();
+    pending.resolve();
+    await waitFor(() => expect(hide).toHaveBeenCalledTimes(1));
+  });
+
+  test("Table-ADDROWFORM-032 the form closes when the handler fails too, and the failure is the app's to handle", async () => {
+    // Break this catches: a failed handler leaving the form stuck in "Adding row…" for ever.
+    const failing = jest.fn(() => Promise.reject(new Error('query failed')));
+    const { user, hide } = renderForm({ columns: [NAME], fireEvent: failing });
+
+    await send(user);
+
+    await waitFor(() => expect(hide).toHaveBeenCalledTimes(1));
+  });
+
+  test('Table-ADDROWFORM-032 a form the app has already closed is not closed a second time', async () => {
+    // Break this catches: the form calling hide again after a handler closed it (e.g. discardNewlyAddedRows).
+    const pending = deferred();
+    let unmount;
+    const hide = jest.fn();
+    const { user, unmount: unmountForm } = renderForm({
+      columns: [NAME],
+      fireEvent: jest.fn(() => pending.promise),
+      hide,
+    });
+    unmount = unmountForm;
+
+    await send(user);
+    unmount();
+    pending.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(hide).not.toHaveBeenCalled();
+  });
+
+  test('Table-ADDROWFORM-032 an invalid form never enters the saving state', async () => {
+    // Break this catches: a blocked send still showing "Adding row…" and locking the form.
+    const { user, fireEvent } = renderForm({
+      columns: [{ ...NAME, minLength: '3' }],
+      fireEvent: jest.fn(() => Promise.resolve()),
+    });
+
+    await send(user);
+
+    expect(fireEvent).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Add row' })).toBeEnabled();
+    expect(within(field('Name')).getByRole('textbox')).toBeEnabled();
+  });
+});
+
+describe('Table-ADDROWFORM-033 fade out', () => {
+  test('Table-ADDROWFORM-033 after a send the form fades out, then closes', async () => {
+    // Break this catches: the form vanishing abruptly instead of fading, as in the design notes.
+    setReducedMotion(false);
+    const { user, hide } = renderForm();
+
+    await user.click(screen.getByRole('button', { name: 'Add row' }));
+
+    const popover = screen.getByRole('dialog', { name: 'Add row' });
+    expect(popover).toHaveStyle({ opacity: '0' });
+    expect(hide).not.toHaveBeenCalled();
+    await waitFor(() => expect(hide).toHaveBeenCalledTimes(1));
+  });
+
+  test('Table-ADDROWFORM-033 Cancel fades out the same way', async () => {
+    // Break this catches: Cancel closing differently from Add row ("same as Save" in the design).
+    setReducedMotion(false);
+    const { user, hide, fireEvent } = renderForm();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(fireEvent).toHaveBeenCalledWith('onAddNewRowCancelled');
+    expect(screen.getByRole('dialog', { name: 'Add row' })).toHaveStyle({ opacity: '0' });
+    await waitFor(() => expect(hide).toHaveBeenCalledTimes(1));
+  });
+
+  test('Table-ADDROWFORM-033 with reduced motion it closes at once, without fading', async () => {
+    // Break this catches: users who asked for less motion still getting a fade.
+    setReducedMotion(true);
+    const { user, hide } = renderForm();
+
+    await user.click(screen.getByRole('button', { name: 'Add row' }));
+
+    expect(hide).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Table-ADDROWFORM-035 a JSON column does not add fields for its keys', () => {
+  const NESTED = [
+    { id: 'n1', name: 'name', key: 'name', columnType: 'string' },
+    { id: 'n2', name: 'metadata', key: 'metadata', columnType: 'json' },
+    { id: 'n3', name: 'metadata.team', key: 'metadata.team', columnType: 'string', autogenerated: true },
+    { id: 'n4', name: 'metadata.level', key: 'metadata.level', columnType: 'string', autogenerated: true },
+  ];
+
+  test('Table-ADDROWFORM-035 the form shows the JSON field only', () => {
+    // Break this catches: "metadata.team" and "metadata.level" appearing next to the JSON field.
+    renderForm({ columns: NESTED });
+
+    expect(field('metadata')).toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'metadata.team' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'metadata.level' })).not.toBeInTheDocument();
+  });
+
+  test('Table-ADDROWFORM-035 the row sent holds no dotted keys, so it cannot overwrite the JSON value', async () => {
+    // Break this catches: nested columns being turned into an object that replaces what was typed in the JSON field.
+    const { user } = renderForm({ columns: NESTED });
+
+    await user.click(within(field('metadata')).getByRole('textbox'));
+    await user.paste('{"team":"a","level":3}');
+    await user.click(within(field('name')).getByRole('textbox'));
+
+    expect(Object.keys(draft())).toEqual(['name', 'metadata']);
+    expect(draft().metadata).toBe('{"team":"a","level":3}');
+  });
+});
+
+describe('Table-ADDROWFORM-036 date picker popup in the dialog', () => {
+  test('Table-ADDROWFORM-036 the calendar opens inside the dialog, so it is above it and can be clicked', async () => {
+    // Break this catches: the calendar rendering in the editor's portal, beneath the dialog and blocked by it.
+    const { user } = renderForm({ columns: OPTION_COLUMNS, properties: { addNewRowIn: 'dialog' } });
+
+    await user.click(within(field('Joined on')).getByRole('textbox'));
+
+    const popper = await waitFor(() => {
+      const found = document.querySelector('.react-datepicker-popper');
+      if (!found) throw new Error('calendar not open');
+      return found;
+    });
+    expect(screen.getByRole('dialog', { name: 'Add row' }).contains(popper)).toBe(true);
+  });
+
+  test('Table-ADDROWFORM-036 picking a day in the dialog calendar fills the field', async () => {
+    // Break this catches: a calendar that opens but cannot be used from inside the modal dialog.
+    const { user } = renderForm({ columns: OPTION_COLUMNS, properties: { addNewRowIn: 'dialog' } });
+    const input = within(field('Joined on')).getByRole('textbox');
+
+    await user.click(input);
+    const day = await waitFor(() => {
+      const found = document.querySelector('.react-datepicker__day:not(.react-datepicker__day--outside-month)');
+      if (!found) throw new Error('no day');
+      return found;
+    });
+    await user.click(day);
+
+    expect(input.value).not.toBe('');
+    expect(draft().joined).not.toBe('');
   });
 });
