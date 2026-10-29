@@ -183,9 +183,19 @@ export const getRightPanelStyle = (activeTab) =>
     : { overflow: 'auto' };
 
 // The bottom runtime panel stops where the right sidebar starts, so it must track the wider query surface.
-export const getRuntimePanelRightOffset = (isRightSidebarOpen, activeTab) => {
+// The width the open right panel covers. The canvas reserves it and the bottom runtime panel stops
+// short of it; the query editor is wider than the other tabs.
+export const getRightPanelReservedWidth = (isRightSidebarOpen, activeTab) => {
   if (!isRightSidebarOpen) return 0;
   return activeTab === 'query' ? QUERY_RIGHT_PANEL_WIDTH : '300px';
+};
+
+export const getRuntimePanelRightOffset = getRightPanelReservedWidth;
+
+// The canvas reserves side-panel widths as borders, so it grows by them to keep its content width.
+export const getCanvasMinWidth = (leftWidthPx, rightReservedWidth) => {
+  const offsets = [leftWidthPx ? `${leftWidthPx}px` : null, rightReservedWidth || null].filter(Boolean);
+  return offsets.length ? `calc(100% + ${offsets.join(' + ')})` : '';
 };
 
 export const getQueryManagerClassName = (surface, darkMode) =>

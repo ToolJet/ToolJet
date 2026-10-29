@@ -29,6 +29,8 @@ import {
   getQueryManagerClassName,
   getRightPanelStyle,
   getRuntimePanelRightOffset,
+  getRightPanelReservedWidth,
+  getCanvasMinWidth,
   getRuntimeTabClickAction,
   getQueryHeaderClassName,
   getQueryHeaderControlPresentation,
@@ -353,6 +355,22 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(getRuntimePanelRightOffset(false, 'query')).toBe(0);
     expect(getRuntimePanelRightOffset(true, 'configuration')).toBe('300px');
     expect(getRuntimePanelRightOffset(true, 'query')).toBe('min(496px, calc(100vw - 54px))');
+  });
+
+  // Break this catches: the canvas reserves 300px while the wider query editor covers its right edge.
+  it('reserves the real width of the open right panel on the canvas', () => {
+    expect(getRightPanelReservedWidth(false, 'query')).toBe(0);
+    expect(getRightPanelReservedWidth(true, 'configuration')).toBe('300px');
+    expect(getRightPanelReservedWidth(true, 'query')).toBe('min(496px, calc(100vw - 54px))');
+  });
+
+  it('widens the canvas by every reserved side width so its content keeps its size', () => {
+    expect(getCanvasMinWidth(0, 0)).toBe('');
+    expect(getCanvasMinWidth(350, 0)).toBe('calc(100% + 350px)');
+    expect(getCanvasMinWidth(0, '300px')).toBe('calc(100% + 300px)');
+    expect(getCanvasMinWidth(440, getRightPanelReservedWidth(true, 'query'))).toBe(
+      'calc(100% + 440px + min(496px, calc(100vw - 54px)))'
+    );
   });
 
   // Break this catches: right-side query fields return to the legacy horizontal label/control layout.
