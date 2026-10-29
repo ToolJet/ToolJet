@@ -21,7 +21,8 @@ fs.rmSync(out, { recursive: true, force: true });
 for (const dir of packs) {
   const packDir = path.join(root, dir);
   const pack = path.basename(packDir);
-  if (install) execFileSync('npm', ['ci', '--no-audit', '--no-fund'], { cwd: packDir, stdio: 'inherit' });
+  // The Dockerfiles run this under NODE_ENV=production, which would skip the dev dependencies (types) the build needs.
+  if (install) execFileSync('npm', ['ci', '--include=dev', '--no-audit', '--no-fund'], { cwd: packDir, stdio: 'inherit' });
   execFileSync('node', [cli, 'library', 'build'], { cwd: packDir, stdio: 'inherit' });
 
   const { version } = JSON.parse(fs.readFileSync(path.join(packDir, 'package.json'), 'utf8'));

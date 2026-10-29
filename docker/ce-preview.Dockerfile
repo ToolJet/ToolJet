@@ -46,7 +46,7 @@ RUN npm --prefix server run build
 # server/builtin-packs, which the server serves to every workspace like native widgets.
 COPY ./cli/ ./cli/
 COPY ./packs/ ./packs/
-RUN npm --prefix cli ci && npm --prefix cli run build && node packs/build-builtin.mjs --install
+RUN npm --prefix cli ci --include=dev && npm --prefix cli run build && node packs/build-builtin.mjs --install
 
 FROM node:22.23.4-bookworm
 # copy postgrest executable

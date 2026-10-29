@@ -125,7 +125,7 @@ RUN npm --prefix server run build && npm prune --production --prefix server
 # server/builtin-packs, which the server serves to every workspace like native widgets.
 COPY ./cli/ ./cli/
 COPY ./packs/ ./packs/
-RUN npm --prefix cli ci && npm --prefix cli run build && node packs/build-builtin.mjs --install
+RUN npm --prefix cli ci --include=dev && npm --prefix cli run build && node packs/build-builtin.mjs --install
 
 # Install dependencies for PostgREST, curl, tar, etc.
 RUN apt-get update && apt-get install -y \
