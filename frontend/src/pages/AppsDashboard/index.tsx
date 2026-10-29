@@ -7,7 +7,7 @@ import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import { authenticationService } from '@/_services/authentication.service';
 
 import { useFetchAppsLimit } from '@/_services/hooks/appsServiceHooks';
-import { useIsWorkspaceBranchLocked } from '@/_hooks/useIsWorkspaceBranchLocked';
+import { useIsWorkspaceBranchLocked } from '@/pages/AppsDashboard/hooks/useIsWorkspaceBranchLocked';
 
 import { Separator } from '@/components/ui/Rocket/Separator/Separator';
 import Layout from '@/_ui/Layout';
@@ -21,7 +21,7 @@ import PageHeader from './components/PageHeader';
 import ViewTabs from './components/ViewTabs';
 import Dialogs from './components/Dialogs';
 
-import { PLACEHOLDER_APPS, PLACEHOLDER_FOLDERS } from './placeholderItems';
+import { dummyApps, dummyFolders } from './dummyData';
 
 import {
   appTypeToDisplayNameMapping,
@@ -43,8 +43,25 @@ export default function AppsDashboard({
 }) {
   const navigate = useNavigate();
 
-  const isWorkspaceBranchLocked = useIsWorkspaceBranchLocked();
+  const { isBranchLocked, isBranchingEnabledFeature } = useIsWorkspaceBranchLocked(appType);
   const { data: appsLimit } = useFetchAppsLimit();
+
+  const {
+    role,
+    admin: isAdmin,
+    super_admin: isSuperAdmin,
+    user_permissions: userPermissions,
+  } = authenticationService.currentSessionValue;
+
+  const hasCreatePermission = isSuperAdmin
+    ? true
+    : appType === 'front-end'
+      ? user_permissions?.app_create
+      : appType === 'module'
+        ? isAdmin || userPermissions?.module_create || role?.name === 'builder'
+        : appType === 'workflow'
+          ? isAdmin || userPermissions?.workflow_create
+          : false;
 
   useEffect(() => {
     let timeoutId: number;
@@ -65,7 +82,7 @@ export default function AppsDashboard({
     const workspaceId = getWorkspaceId();
 
     if (appType === 'module') {
-      authenticationService.currentSessionValue?.role?.name == 'end-user' && navigate(`/${workspaceId}/home`);
+      role?.name == 'end-user' && navigate(`/${workspaceId}/home`);
     }
 
     if (appType === 'workflow') {
@@ -81,7 +98,7 @@ export default function AppsDashboard({
     }
   }, [appType, navigate]);
 
-  const hasItems = appType === 'front-end' ? PLACEHOLDER_FOLDERS.length > 0 || PLACEHOLDER_APPS.length > 0 : false;
+  const hasItems = appType === 'front-end' ? dummyFolders.length > 0 || dummyApps.length > 0 : false;
 
   return (
     <Layout
@@ -91,7 +108,7 @@ export default function AppsDashboard({
       darkMode={darkMode}
       switchDarkMode={switchDarkMode}
     >
-      {appType !== 'workflow' && (
+      {isBranchingEnabledFeature && (
         <WorkspaceLockedBanner showNewBanner pageContext={`${appTypeToDisplayNameMapping[appType]}s`} />
       )}
 
@@ -103,7 +120,7 @@ export default function AppsDashboard({
             <>
               {hasItems && (
                 <>
-                  <AddNewMenu appType={appType} isWorkspaceBranchLocked={isWorkspaceBranchLocked} />
+                  <AddNewMenu appType={appType} isBranchLocked={isBranchLocked} />
                   <BuildWithAIButton data-cy="page-header-build-with-ai" />
                 </>
               )}
@@ -124,7 +141,12 @@ export default function AppsDashboard({
         )}
       </div>
 
-      <Dialogs appType={appType} limits={appsLimit?.appsCount ?? {}} />
+      <Dialogs
+        appType={appType}
+        isBranchLocked={isBranchLocked}
+        limits={appsLimit?.appsCount ?? {}}
+        hasCreatePermission={hasCreatePermission}
+      />
     </Layout>
   );
 }

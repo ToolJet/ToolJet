@@ -4,11 +4,12 @@ import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button/Button';
 import DashboardCard from './DashboardCard';
 
+import type { FolderItem } from '../dummyData/types';
+import type { TAppType } from '../helper';
+
 interface FolderCardProps {
-  name: string;
-  /** Preformatted, e.g. "9 apps • Edited Sep 12, 2026". */
-  description: string;
-  isPinned?: boolean;
+  folderDetails: FolderItem;
+  appType: TAppType;
   onMoreClick?: () => void;
 }
 
@@ -37,7 +38,9 @@ function FolderIllustration({ size = 18.33, className }: { size?: number; classN
   );
 }
 
-export default function FolderCard({ name, description, isPinned = false }: FolderCardProps) {
+export default function FolderCard({ folderDetails, appType }: FolderCardProps) {
+  const { name, pinned } = folderDetails;
+
   const [, setSearchParams] = useSearchParams();
 
   const handleOpenFolder = () => {
@@ -54,10 +57,10 @@ export default function FolderCard({ name, description, isPinned = false }: Fold
 
   return (
     <DashboardCard
-      name={name}
-      description={description}
+      itemDetails={folderDetails}
+      appType={appType}
       icon={<FolderIllustration size={20} className="tw-p-px" />}
-      pinned={isPinned}
+      pinned={pinned}
       endAction={
         <Button isLucid variant="secondary" size="medium" trailingIcon="arrow-right" onClick={handleOpenFolder}>
           Open

@@ -53,6 +53,23 @@ export const staticContentMappingByAppType: TStaticContentMappingByAppType = {
   },
 } as const;
 
+// appType → the snake_case prefix its folder-permission session fields use
+// (folder_create, workflow_folder_create, module_folder_create, ...).
+// Add an entry here (not another ternary) when a new folder-owning app type is introduced.
+const FOLDER_TYPE_PREFIX_BY_APP_TYPE = {
+  workflow: 'workflow_',
+  module: 'module_',
+} as const;
+
+export const hasFolderOperationPermission = (
+  userPermissions: { [key: string]: boolean },
+  appType: Exclude<TAppType, 'front-end'>,
+  action: 'create' | 'delete'
+) => {
+  const prefix = FOLDER_TYPE_PREFIX_BY_APP_TYPE[appType] ?? '';
+  return userPermissions?.[`${prefix}folder_${action}`];
+};
+
 export function canUserPerformWorkflowAction(app = {} as { id?: string }) {
   const { user_permissions, workflow_group_permissions, super_admin, admin } =
     authenticationService.currentSessionValue;

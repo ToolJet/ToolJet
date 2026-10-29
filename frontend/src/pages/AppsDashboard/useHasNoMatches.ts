@@ -1,5 +1,5 @@
-import { useListQueryParams } from '@/HomePage/ItemsList/hooks/useListQueryParams';
-import { useItemsListStore } from '@/HomePage/ItemsList/store/itemsListStore';
+import { useListQueryParams } from '@/pages/AppsDashboard/ItemsList/hooks/useListQueryParams';
+import { useItemsListStore } from '@/pages/AppsDashboard/ItemsList/store/itemsListStore';
 
 // True once a search or filter has returned nothing. False while loading, and for a workspace that is simply empty.
 export function useHasNoMatches(): boolean {

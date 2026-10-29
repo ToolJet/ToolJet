@@ -12,20 +12,14 @@ import { useAppsStore } from '@/_stores/appsStore';
 
 interface MoreActionsMenuProps {
   appType: TAppType;
-  onCreateFromTemplate?: () => void;
-  onImportFromDevice?: () => void;
-  onImportFromGit?: () => void;
 }
 
 // Figma items are 180px wide: + 16px group padding + 2px border.
 const MENU_CLASSES = { ...HEADER_MENU_CLASSES, content: `${HEADER_MENU_CLASSES.content} tw-min-w-[198px]` };
 
-export default function MoreActionsMenu({
-  appType,
-  onCreateFromTemplate,
-  onImportFromDevice,
-  onImportFromGit,
-}: MoreActionsMenuProps) {
+export default function MoreActionsMenu({ appType }: MoreActionsMenuProps) {
+  const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
+
   const hiddenFileInput = useRef(null);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -34,6 +28,14 @@ export default function MoreActionsMenu({
 
   const handleOpenFilePicker = () => {
     hiddenFileInput.current?.click();
+  };
+
+  const handleOpenTemplateDialog = () => {
+    setAppDialogState({ type: 'choose-from-template', appDetails: null });
+  };
+
+  const handleOpenImportFromGitDialog = () => {
+    setAppDialogState({ type: 'import-from-git', appDetails: null });
   };
 
   const sections: DropdownMenuSection[] = [
@@ -53,15 +55,14 @@ export default function MoreActionsMenu({
                 id: 'template',
                 label: 'Create app from template',
                 icon: <AppWindow />,
-                onSelect: onCreateFromTemplate,
-                disabled: true,
+                onSelect: handleOpenTemplateDialog,
                 'data-cy': 'more-actions-create-from-template',
               },
               {
                 id: 'import-git',
                 label: 'Import app from Git repo',
                 icon: <FolderGit2 />,
-                onSelect: onImportFromGit,
+                onSelect: handleOpenImportFromGitDialog,
                 'data-cy': 'more-actions-import-from-git',
               },
             ]

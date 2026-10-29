@@ -10,12 +10,18 @@ import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/Switch
 // import PermissionDeniedDialog from './PermissionDeniedDialog';
 // import ExportAppModal from '../../shared/components/ExportAppModal';
 // import ChangeIconDialog from '../../shared/components/ChangeIconDialog';
+import ImportAppFromGit from './ImportAppFromGit';
 import AppCRUDActionDialog from './AppCRUDActionDialog';
-import FolderActionDialog from './FolderActionsDialog';
+import FolderActionsDialog from './FolderActionsDialog';
+import TemplateLibraryModal from '@/HomePage/TemplateLibraryModal';
+import ChangeIconDialog from './ChangeIconDialog';
+import ExportAppModal from './ExportAppDialog';
 
 export default function Dialogs({
   appType,
   limits,
+  isBranchLocked,
+  hasCreatePermission,
   showLimitBanner,
   isAppCreationDisabled,
   showInsufficentPermissionModalstate,
@@ -30,10 +36,9 @@ export default function Dialogs({
   const resetAppDialogState = useAppsStore((state) => state.resetAppDialogState);
 
   const folderDialogState = useAppsStore((state) => state.folderDialogState);
-  const resetFolderDialogState = useAppsStore((state) => state.resetFolderDialogState);
 
-  const openSwitchBranchModal = useAppsStore((state) => state.openSwitchBranchModal);
-  const setOpenSwitchBranchModal = useAppsStore((state) => state.setOpenSwitchBranchModal);
+  const switchBranchModal = useAppsStore((state) => state.switchBranchModal);
+  const toggleSwitchBranchModal = useAppsStore((state) => state.toggleSwitchBranchModal);
 
   const [, setSearchParams] = useSearchParams();
   const [templateToCreate, setTemplateToCreate] = useState(null);
@@ -70,8 +75,8 @@ export default function Dialogs({
   //   }
   // }, [dependentPluginsInTemplate, dependentPluginsInTemplateError, templateToCreate]);
 
-  const openCreateAppFromTemplateModal = (templateToCreate) => {
-    setTemplateToCreate(templateToCreate);
+  const handleOpenCreateAppFromTemplateDialog = (templateToCreate) => {
+    setAppDialogState({ type: 'create-from-template', appDetails: templateToCreate });
   };
 
   const handleCloseTemplateDialog = () => {
@@ -79,17 +84,20 @@ export default function Dialogs({
     setSearchParams({}, { replace: true });
   };
 
-  const handleCloseSwitchBranchModal = () => setOpenSwitchBranchModal(false);
+  const handleCloseSwitchBranchModal = () => toggleSwitchBranchModal({ open: false, postSwitchAction: '' });
 
   const handleOnBranchSwitch = () => {
+    const postSwitchAction = switchBranchModal.postSwitchAction;
+
     handleCloseSwitchBranchModal();
-    setCurrentPage(1);
-    queryClient.invalidateQueries({ queryKey: ['apps'] });
-    setAppDialogState({ type: 'create' });
+    // setCurrentPage(1);
+    // queryClient.invalidateQueries({ queryKey: ['apps'] });
+    // setAppDialogState({ type: 'create' });
   };
 
   const isExportAppDialogOpen = appDialogState.type === 'export';
   const isChangeIconDialogOpen = appDialogState.type === 'change-icon';
+  const isImportFromGitDialogOpen = appDialogState.type === 'import-from-git';
   const isChooseFromTemplateDialogOpen = appDialogState.type === 'choose-from-template';
   const isAppCRUDDialogOpen =
     Boolean(appDialogState.type) &&
@@ -102,53 +110,46 @@ export default function Dialogs({
 
   return (
     <>
-      {/* {isChangeIconDialogOpen && (
+      {isChangeIconDialogOpen && (
         <ChangeIconDialog
           open={isChangeIconDialogOpen}
           onClose={resetAppDialogState}
           appDetails={appDialogState.appDetails}
         />
-      )} */}
-
-      {isAppCRUDDialogOpen && (
-        <AppCRUDActionDialog
-          limits={limits}
-          open={isAppCRUDDialogOpen}
-          onClose={resetAppDialogState}
-          actionType={appDialogState.type}
-          appDetails={appDialogState.appDetails}
-          appType={appDialogState.appDetails?.type ?? appType}
-        />
       )}
 
-      {/* {isExportAppDialogOpen && (
+      {isAppCRUDDialogOpen && (
+        <AppCRUDActionDialog limits={limits} open={isAppCRUDDialogOpen} defaultAppType={appType} />
+      )}
+
+      {isExportAppDialogOpen && (
         <ExportAppModal
           open={isExportAppDialogOpen}
           onClose={resetAppDialogState}
           appDetails={appDialogState.appDetails}
         />
-      )} */}
-
-      {isFolderActionDialogOpen && (
-        <FolderActionDialog
-          open={isFolderActionDialogOpen}
-          onClose={resetFolderDialogState}
-          actionType={folderDialogState.type}
-          folderId={folderDialogState.currentFolderId}
-          initialFolderName={folderDialogState.initialFolderName}
-          appId={folderDialogState.appDetails?.id}
-          appType={folderDialogState.appDetails?.type ?? appType}
-        />
       )}
+
+      {isFolderActionDialogOpen && <FolderActionsDialog open={isFolderActionDialogOpen} defaultAppType={appType} />}
 
       {/* {showInsufficentPermissionModalstate && (
         <PermissionDeniedDialog open={showInsufficentPermissionModalstate} onClose={handleClosePermissionDeniedModal} />
       )} */}
 
       <WorkspaceSwitchBranchModal
-        show={openSwitchBranchModal}
-        onClose={handleCloseSwitchBranchModal}
+        show={switchBranchModal.open}
         onBranchSwitch={handleOnBranchSwitch}
+        onClose={handleCloseSwitchBranchModal}
+      />
+
+      <ImportAppFromGit open={isImportFromGitDialogOpen} handleClose={resetAppDialogState} />
+
+      <TemplateLibraryModal
+        darkMode={darkMode}
+        show={isChooseFromTemplateDialogOpen}
+        onCloseButtonClick={resetAppDialogState}
+        openCreateAppFromTemplateModal={handleOpenCreateAppFromTemplateDialog}
+        appCreationDisabled={!hasCreatePermission}
       />
     </>
   );

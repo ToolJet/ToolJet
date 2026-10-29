@@ -6,8 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Rocket
 import Tooltip from '@/components/ui/Rocket/Tooltip';
 import { useIsRootItemsLoading } from '../useIsRootItemsLoading';
 import GridView from './GridView';
-import ItemsList from '@/HomePage/ItemsList/ItemsList';
-import { useItemsListStore } from '@/HomePage/ItemsList/store/itemsListStore';
+import ItemsList from '@/pages/AppsDashboard/ItemsList/ItemsList';
+import { useItemsListStore } from '@/pages/AppsDashboard/ItemsList/store/itemsListStore';
 
 import type { TAppType } from '../helper';
 
@@ -26,7 +26,7 @@ export default function ViewTabs({ appType }: { appType: TAppType }) {
     (state: { setExpanded: (expanded: Record<string, boolean>) => void }) => state.setExpanded
   );
 
-  const [selectedView, setSelectedView] = useState('grid');
+  const [selectedView, setSelectedView] = useState('list');
 
   const handleCollapseFolder = () => {
     setExpanded({});

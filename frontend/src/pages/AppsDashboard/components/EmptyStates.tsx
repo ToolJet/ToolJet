@@ -69,7 +69,7 @@ function NoResults({ title, description, 'data-cy': dataCy }: NoResultsProps) {
     <Empty className="tw-gap-3 tw-px-4 tw-py-10" data-cy={dataCy}>
       <EmptyHeader className="tw-gap-0">
         <EmptyMedia className="tw-mb-0">
-          <NoResultFoundIllustration width={128} height={97} />
+          <NoResultFoundIllustration />
         </EmptyMedia>
 
         <EmptyTitle className="tw-mt-2.5">{title}</EmptyTitle>

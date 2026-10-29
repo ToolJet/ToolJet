@@ -3,7 +3,7 @@ import { capitalize, cloneDeep, isEmpty, sample } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { CircleAlert, Trash } from 'lucide-react';
+import { CircleAlert, Trash, TriangleAlert } from 'lucide-react';
 import config from 'config';
 import { cn } from '@/lib/utils';
 import { validateName, getWorkspaceId } from '@/_helpers/utils';
@@ -28,7 +28,13 @@ import { useInstallDependentPlugins, useUninstallPlugins } from '@/_services/hoo
 import ActionDialog from './ActionDialog';
 import { appTypeToDisplayNameMapping } from '../helper';
 
-export default function AppCRUDActionDialog({ open, onClose, actionType, appDetails, appType, limits }) {
+const MAX_APP_NAME_LENGTH = 100;
+
+// `defaultAppType` is the page's app type, used when the dialog's app doesn't carry its own.
+export default function AppCRUDActionDialog({ open, defaultAppType, limits }) {
+  const { type: actionType, appDetails, selectedRowIds } = useAppsStore((state) => state.appDialogState);
+  const resetAppDialogState = useAppsStore((state) => state.resetAppDialogState);
+  const appType = appDetails?.type ?? defaultAppType;
   const appTypeDisplayName = appTypeToDisplayNameMapping[appType];
   const navigate = useNavigate();
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
@@ -44,7 +50,7 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
   const [name, setName] = useState(appDetails?.name ?? '');
   const [errorText, setErrorText] = useState('');
   const handleResetState = () => {
-    onClose();
+    resetAppDialogState();
   };
   const handle409Error = (error) => {
     error?.statusCode === 409 && setErrorText(`${capitalize(appTypeDisplayName)} name already exists`);
@@ -53,7 +59,7 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
     const inputValue = e.target.value;
     const trimmedName = inputValue?.trim();
     setName(inputValue);
-    if (inputValue.length < 50) {
+    if (inputValue.length < MAX_APP_NAME_LENGTH) {
       const error = validateName(trimmedName, 'App', false);
       setErrorText(error?.errorMsg || '');
     }
@@ -81,7 +87,7 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
       case 'delete':
         deleteApp({ appId: appDetails?.id, appType }, { onSuccess: handleResetState });
         break;
-      case 'clone': {
+      case 'duplicate': {
         if (!limits?.canAddUnlimited && (limits?.current ?? 0) >= (limits?.total ?? 0)) {
           toast.error('You have reached your maximum limit for apps. Upgrade your plan for more.');
           return;
@@ -135,7 +141,7 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
               { style: { maxWidth: '425px' } }
             );
 
-            onClose();
+            resetAppDialogState();
             return;
           }
 
@@ -189,7 +195,7 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
           }
 
           toast.error(error?.error || error?.message || `${appTypeDisplayName} import failed`);
-          onClose();
+          resetAppDialogState();
         }
         break;
       }
@@ -197,11 +203,18 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
         break;
     }
   };
-  const isDeleteActionType = actionType === 'delete';
+
+  const selectedRowCount = selectedRowIds?.length || 0;
+  const isDeleteActionType = actionType === 'delete' || actionType === 'bulk-delete';
   const isImportAnywayActionType = actionType === 'import-anyway';
   const isAlertDialog = isDeleteActionType || isImportAnywayActionType;
-  const { title, submitBtnLabel } = getDialogConfig({ actionType, appTypeDisplayName, isAlertDialog });
-  const isNameInvalid = name.trim().length === 0 || name?.length > 50 || Boolean(errorText);
+  const { title, submitBtnLabel } = getDialogConfig({
+    actionType,
+    appTypeDisplayName,
+    isAlertDialog,
+    selectedRowCount,
+  });
+  const isNameInvalid = name.trim().length === 0 || name?.length > MAX_APP_NAME_LENGTH || Boolean(errorText);
   const isNameChangeRequired = ['rename'].includes(actionType);
   const isNameChanged = name?.trim() !== appDetails?.name;
   const isFormBeingSubmitted =
@@ -213,7 +226,8 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
     isImportingResource ||
     isUninstallingPlugins;
   const isCancelBtnDisabled = isFormBeingSubmitted;
-  const isSubmitBtnDisabled = isNameInvalid || isFormBeingSubmitted || (isNameChangeRequired && !isNameChanged);
+  const isSubmitBtnDisabled = true;
+  // const isSubmitBtnDisabled = isNameInvalid || isFormBeingSubmitted || (isNameChangeRequired && !isNameChanged);
   return (
     <ActionDialog
       open={open}
@@ -232,7 +246,7 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
         },
       ]}
     >
-      {['create', 'rename', 'import', 'clone', 'create-from-template'].includes(actionType) ? (
+      {['create', 'rename', 'import', 'duplicate', 'create-from-template'].includes(actionType) ? (
         <CreateRenameCloneImportBody
           appType={appType}
           appName={name}
@@ -246,6 +260,8 @@ export default function AppCRUDActionDialog({ open, onClose, actionType, appDeta
         />
       ) : actionType === 'delete' ? (
         <DeleteAppBody appType={appType} appName={name} />
+      ) : actionType === 'bulk-delete' ? (
+        <BulkDeleteAppsBody appType={appType} selectedRowCount={selectedRowIds.length} />
       ) : actionType === 'import-anyway' ? (
         <MissingGroupsDialogBody missingGroups={appDetails?.missingGroups} />
       ) : (
@@ -267,9 +283,9 @@ function CreateRenameCloneImportBody({
 }) {
   const appTypeDisplayName = appTypeToDisplayNameMapping[appType];
   const helpText =
-    appName.length >= 50
+    appName.length >= MAX_APP_NAME_LENGTH
       ? 'Maximum length has been reached'
-      : `${capitalize(appTypeDisplayName)} name must be unique and max 50 characters`;
+      : `${capitalize(appTypeDisplayName)} name must be unique and max ${MAX_APP_NAME_LENGTH} characters`;
   return (
     <form id={`${actionType}-${appType}-form`} className="tw-px-6 tw-py-4" onSubmit={onSubmit}>
       <Field>
@@ -280,7 +296,7 @@ function CreateRenameCloneImportBody({
           autoFocus
           type="text"
           value={appName}
-          maxLength={50}
+          maxLength={MAX_APP_NAME_LENGTH}
           id={`${appType}-name`}
           placeholder={`Enter ${appTypeDisplayName.toLowerCase()} name`}
           // ref={inputRef}
@@ -332,10 +348,28 @@ function MissingGroupsDialogBody({ missingGroups }) {
 function DeleteAppBody({ appType, appName }) {
   const appTypeDisplayName = appTypeToDisplayNameMapping[appType];
   const heading = `Delete "${appName}"`;
-  const message = `This will permanently delete the ${appTypeDisplayName} and all its associated data. This action cannot be undone.`;
+  const message = `The ${appTypeDisplayName} ${appName} and the associated data will be permanently deleted, do you want to continue?`;
+
   return (
     <div className="tw-px-6 tw-py-4">
       <Trash size={40} color="var(--icon-danger)" className="tw-mb-2" />
+      <h6 className="tw-font-title-x-large tw-text-text-default tw-mb-0.5">{heading}</h6>
+      <p data-cy="modal-message" className="tw-font-body-default tw-text-text-default tw-mb-0">
+        {message}
+      </p>
+    </div>
+  );
+}
+
+function BulkDeleteAppsBody({ appType, selectedRowCount }) {
+  const appTypeDisplayName = appTypeToDisplayNameMapping[appType];
+  const noun = selectedRowCount > 1 ? `${appTypeDisplayName}s` : appTypeDisplayName;
+  const heading = `Delete selected ${noun}?`;
+  const message = `You are about to delete ${selectedRowCount} ${noun}. This action cannot be undone and may remove any related data.`;
+
+  return (
+    <div className="tw-px-6 tw-py-4">
+      <TriangleAlert size={40} color="var(--icon-danger)" className="tw-mb-2" />
       <h6 className="tw-font-title-x-large tw-text-text-default tw-mb-0.5">{heading}</h6>
       <p data-cy="modal-message" className="tw-font-body-default tw-text-text-default tw-mb-0">
         {message}
@@ -365,7 +399,7 @@ function DeleteAppBody({ appType, appName }) {
 //     </Collapsible>
 //   );
 // }
-function getDialogConfig({ actionType, appTypeDisplayName, isAlertDialog }) {
+function getDialogConfig({ actionType, appTypeDisplayName, isAlertDialog, selectedRowCount }) {
   switch (actionType) {
     case 'create-from-template':
       return {
@@ -376,6 +410,11 @@ function getDialogConfig({ actionType, appTypeDisplayName, isAlertDialog }) {
       return {
         title: '',
         submitBtnLabel: 'Import anyway',
+      };
+    case 'bulk-delete':
+      return {
+        title: '',
+        submitBtnLabel: `Delete ${appTypeDisplayName}${selectedRowCount > 1 ? 's' : ''}`,
       };
     default: {
       const submitBtnLabel = `${capitalize(actionType)} ${appTypeDisplayName}`;

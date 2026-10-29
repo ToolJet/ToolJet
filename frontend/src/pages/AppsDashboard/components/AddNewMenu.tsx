@@ -1,30 +1,37 @@
 import React from 'react';
 import { Blocks, FolderOpen } from 'lucide-react';
 
+import { authenticationService } from '@/_services/authentication.service';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+
 import { useAppsStore } from '@/_stores/appsStore';
 import { Button } from '@/components/ui/Button/Button';
 import DropdownMenu, { type DropdownMenuSection } from '@/components/ui/Rocket/DropdownMenu';
 import { HEADER_MENU_CLASSES } from './headerMenuClasses';
 
-import { appTypeToDisplayNameMapping, type TAppType } from '../helper';
+import { appTypeToDisplayNameMapping, hasFolderOperationPermission, type TAppType } from '../helper';
 
 interface AddNewMenuProps {
   appType: TAppType;
-  isWorkspaceBranchLocked: boolean;
-  onAddApp?: () => void;
-  onAddFolder?: () => void;
+  isBranchLocked: boolean;
 }
 
 const MENU_CLASSES = { ...HEADER_MENU_CLASSES, content: `${HEADER_MENU_CLASSES.content} tw-min-w-40` };
 
-export default function AddNewMenu({ appType, isWorkspaceBranchLocked, onAddFolder }: AddNewMenuProps) {
+export default function AddNewMenu({ appType, isBranchLocked }: AddNewMenuProps) {
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
   const setFolderDialogState = useAppsStore((state) => state.setFolderDialogState);
-  const setOpenSwitchBranchModal = useAppsStore((state) => state.setOpenSwitchBranchModal);
+  const toggleSwitchBranchModal = useAppsStore((state) => state.toggleSwitchBranchModal);
+
+  const hasFolderCreatePermission = hasFolderOperationPermission(
+    authenticationService.currentSessionValue.user_permissions,
+    appType,
+    'create'
+  );
 
   const handleOpenCreateAppDialog = () => {
-    if (isWorkspaceBranchLocked && appType === 'front-end') {
-      setOpenSwitchBranchModal(true);
+    if (isBranchLocked) {
+      toggleSwitchBranchModal({ open: true, postSwitchAction: 'create' });
       return;
     }
 
@@ -32,6 +39,14 @@ export default function AddNewMenu({ appType, isWorkspaceBranchLocked, onAddFold
   };
 
   const handleOpenCreateNewFolderDialog = () => {
+    if (!hasFolderCreatePermission) return;
+
+    posthogHelper.captureEvent('create_new_folder', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+    });
+
     setFolderDialogState({ type: 'create-folder' });
   };
 
@@ -52,6 +67,7 @@ export default function AddNewMenu({ appType, isWorkspaceBranchLocked, onAddFold
           icon: <FolderOpen />,
           onSelect: handleOpenCreateNewFolderDialog,
           'data-cy': 'add-new-folder',
+          disabled: !hasFolderCreatePermission,
         },
       ],
     },

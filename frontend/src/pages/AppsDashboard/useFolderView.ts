@@ -1,25 +1,25 @@
 import { useEffect, useMemo } from 'react';
 
 import { useSearchStore } from '@/_stores/searchStore';
-import { useListQueryParams } from '@/HomePage/ItemsList/hooks/useListQueryParams';
-import { useItemsListStore } from '@/HomePage/ItemsList/store/itemsListStore';
-import type { ListFooterMeta } from '@/HomePage/ItemsList/ListFooter';
+import { useListQueryParams } from '@/pages/AppsDashboard/ItemsList/hooks/useListQueryParams';
+import { useItemsListStore } from '@/pages/AppsDashboard/ItemsList/store/itemsListStore';
 
-import type { AppItem } from './dashboard.types';
-import { toGridItems, type RootItem } from './toGridItems';
+import { isAppItem } from './items';
+import type { AppItem, ListItem } from './dummyData/types';
+import type { ListMeta } from './types';
 
 type ListParams = ReturnType<typeof useListQueryParams>;
 type FetchParams = ListParams['filters'] & { sort: string };
 
 interface FolderViewState {
-  items: RootItem[];
-  meta: ListFooterMeta | null;
+  items: ListItem[];
+  meta: ListMeta | null;
   status: 'idle' | 'loading' | 'success' | 'error';
 }
 
 interface ItemsListState {
   query: { page: number; searchKey: string };
-  root: { items: RootItem[]; status: 'idle' | 'loading' | 'success' | 'error' };
+  root: { items: ListItem[]; status: 'idle' | 'loading' | 'success' | 'error' };
   folderView: FolderViewState;
   setSearchKey: (searchKey: string) => void;
   fetchRootItems: (params: FetchParams) => void;
@@ -33,7 +33,7 @@ export type FolderViewStatus = 'loading' | 'success' | 'error' | 'notFound';
 export function useFolderView(folderName: string): { status: FolderViewStatus; apps: AppItem[] } {
   const searchQuery: string = useSearchStore((state: { searchQuery: string }) => state.searchQuery);
   const query = useItemsListStore((state: ItemsListState) => state.query);
-  const rootItems: RootItem[] = useItemsListStore((state: ItemsListState) => state.root.items);
+  const rootItems: ListItem[] = useItemsListStore((state: ItemsListState) => state.root.items);
   const rootStatus = useItemsListStore((state: ItemsListState) => state.root.status);
   const folderView = useItemsListStore((state: ItemsListState) => state.folderView);
   const setSearchKey = useItemsListStore((state: ItemsListState) => state.setSearchKey);
@@ -61,7 +61,7 @@ export function useFolderView(folderName: string): { status: FolderViewStatus; a
 
   useEffect(() => resetFolderView, [folderName, resetFolderView]);
 
-  const apps = useMemo(() => toGridItems(folderView.items).apps, [folderView.items]);
+  const apps = useMemo(() => folderView.items.filter(isAppItem), [folderView.items]);
 
   if (rootStatus === 'error' || folderView.status === 'error') return { status: 'error', apps };
   if (rootStatus === 'success' && !folderId) return { status: 'notFound', apps };

@@ -2,6 +2,22 @@ import type { HTMLAttributes, ReactNode } from 'react';
 
 import type { ButtonProps } from '@/components/ui/Button/Button';
 
+import type { TAppType } from '../helper';
+import type { ItemKindWithDetails } from '../types';
+
+interface DashboardCardBaseProps {
+  /** Shown at rest; replaced by the action row on hover or focus. */
+  icon: ReactNode;
+  /** Left-aligned action; the rest of the row is right-aligned. */
+  startAction?: ReactNode;
+  endAction: ReactNode;
+  appType: TAppType;
+  pinned?: boolean;
+  isUnsynced?: boolean;
+}
+
+export type DashboardCardProps = DashboardCardBaseProps & ItemKindWithDetails;
+
 export interface PageHeaderProps {
   title: string;
   description?: string;

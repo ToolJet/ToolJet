@@ -2,9 +2,9 @@ import React from 'react';
 
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/Rocket/Skeleton/Skeleton';
-import { GRID_TEMPLATE_COLUMNS } from '@/HomePage/ItemsList/columns';
-import { INFO_SKELETON_WIDTHS, SKELETON_BAR_CLASS } from '@/HomePage/ItemsList/FolderStatusRow';
-import { FOOTER_CLASS } from '@/HomePage/ItemsList/ListFooter';
+import { GRID_TEMPLATE_COLUMNS } from '@/pages/AppsDashboard/ItemsList/columns';
+import { INFO_SKELETON_WIDTHS, SKELETON_BAR_CLASS } from '@/pages/AppsDashboard/ItemsList/FolderStatusRow';
+import { FOOTER_CLASS } from './PageFooter';
 
 const SKELETON_CLASS = 'tw-rounded tw-bg-interactive-default';
 const LIST_ROW_COUNT = 8;

@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from '@/components/ui/Rocket/Dialog/Dialog';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import type { ActionDialogProps, ActionDialogSubmitAction } from './types';
 
 export default function ActionDialog({
   open,
@@ -13,11 +14,12 @@ export default function ActionDialog({
   submitActions,
   children,
   title = null,
+  titleIcon = null,
   classes = null,
   modality = true,
   hasFooter = true,
   ...dialogBodyProps
-}) {
+}: ActionDialogProps) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const { label: cancelBtnLabel, ...cancelBtnPropsRest } = cancelBtnProps ?? {};
@@ -41,7 +43,7 @@ export default function ActionDialog({
               className="tw-font-title-x-large tw-text-text-default"
               data-cy={`${generateCypressDataCy(title)}-title`}
             >
-              {title}
+              {titleIcon} {title}
             </DialogTitle>
           </DialogHeader>
         )}
@@ -50,7 +52,7 @@ export default function ActionDialog({
           {children}
         </DialogBody>
 
-        {hasFooter && (
+        {hasFooter && submitActions && (
           <DialogFooter
             className={cn('tw-p-6 tw-border-0 sm:tw-justify-between sm:tw-items-center', classes?.dialogFooter)}
           >
@@ -66,7 +68,7 @@ export default function ActionDialog({
   );
 }
 
-function SubmitActions({ actions }) {
+function SubmitActions({ actions }: { actions: ActionDialogSubmitAction[] }) {
   const buttons = actions.map(({ label, variant = 'primary', size = 'default', ...rest }, i) => (
     <Button key={i} variant={variant} size={size} {...rest}>
       {label}

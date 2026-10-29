@@ -3,27 +3,28 @@ import { useSearchParams } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { useRootItemsSync } from '@/HomePage/ItemsList/hooks/useRootItemsSync';
-import { ITEMS_PER_PAGE, useItemsListStore } from '@/HomePage/ItemsList/store/itemsListStore';
-import type { ListFooterMeta } from '@/HomePage/ItemsList/ListFooter';
+import { useRootItemsSync } from '@/pages/AppsDashboard/ItemsList/hooks/useRootItemsSync';
+import { ITEMS_PER_PAGE, useItemsListStore } from '@/pages/AppsDashboard/ItemsList/store/itemsListStore';
 
 import { NoMatchesFound, NoAppsExist } from './EmptyStates';
 import { FolderViewLoading, GridViewLoading } from './LoadingStates';
-import { toGridItems, type RootItem } from '../toGridItems';
+import { isAppItem, isFolderItem } from '../items';
 import { useFolderView } from '../useFolderView';
 import { useHasNoMatches } from '../useHasNoMatches';
 import AppCard from './AppCard';
 import FolderCard from './FolderCard';
 import PageFooter from './PageFooter';
 
-import type { AppItem, FolderItem } from '../dashboard.types';
+import type { AppItem, FolderItem, ListItem } from '../dummyData/types';
+import type { ListMeta } from '../types';
 import { appTypeToDisplayNameMapping, staticContentMappingByAppType, type TAppType } from '../helper';
 
 // Shared by the grid tab and the folder view so the footer stays pinned below scrolling content.
-export const GRID_SCROLL_CLASS = 'tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-y-auto tw-px-[4.375rem]';
+export const GRID_SCROLL_CLASS =
+  'tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-y-auto tw-hide-scrollbar tw-px-[4.375rem]';
 
 // Shared with the grid loading state so skeleton cards wrap at the same breakpoints.
-export const GRID_CLASS = 'tw-grid tw-grid-cols-[repeat(auto-fill,minmax(240px,1fr))] tw-gap-6';
+export const GRID_CLASS = 'tw-grid tw-grid-cols-[repeat(auto-fill,minmax(260px,1fr))] tw-gap-6';
 
 // Pinned folders show only under Pinned, not again under Folders.
 export default function GridView({ isLoading, appType }: { isLoading: boolean; appType: TAppType }) {
@@ -32,13 +33,11 @@ export default function GridView({ isLoading, appType }: { isLoading: boolean; a
     (state: { folderView: { status: string } }) => state.folderView.status === 'loading'
   );
 
-  const folderMeta: ListFooterMeta | null = useItemsListStore(
-    (state: { folderView: { meta: ListFooterMeta | null } }) => state.folderView.meta
+  const folderMeta: ListMeta | null = useItemsListStore(
+    (state: { folderView: { meta: ListMeta | null } }) => state.folderView.meta
   );
 
-  const rootMeta: ListFooterMeta | null = useItemsListStore(
-    (state: { root: { meta: ListFooterMeta | null } }) => state.root.meta
-  );
+  const rootMeta: ListMeta | null = useItemsListStore((state: { root: { meta: ListMeta | null } }) => state.root.meta);
   const setPage: (page: number) => void = useItemsListStore(
     (state: { setPage: (page: number) => void }) => state.setPage
   );
@@ -69,10 +68,10 @@ export default function GridView({ isLoading, appType }: { isLoading: boolean; a
       <PageFooter
         isLoading={isFooterLoading}
         page={page}
-        pageSize={footerMeta?.per_page ?? ITEMS_PER_PAGE}
-        totalCount={footerMeta?.total_count ?? 0}
+        pageSize={footerMeta?.page_size ?? ITEMS_PER_PAGE}
+        totalCount={footerMeta?.total ?? 0}
         onPageChange={setPage}
-        singularItemLabel={folderName ? 'app' : 'item'}
+        singularItemLabel={folderName ? appTypeToDisplayNameMapping[appType] : 'item'}
       />
     </>
   );
@@ -120,20 +119,11 @@ function GridSection<T>({ title, items, getKey, renderItem }: GridSectionProps<T
 
 const getId = (item: { id: string }) => item.id;
 
-const renderFolder = (folder: FolderItem) => (
-  <FolderCard name={folder.name} description={folder.description} isPinned={folder.isPinned} />
+const renderFolder = (appType: TAppType) => (folder: FolderItem) => (
+  <FolderCard folderDetails={folder} appType={appType} />
 );
 
-const renderApp = (app: AppItem) => (
-  <AppCard
-    name={app.name}
-    description={app.description}
-    icon={app.icon}
-    iconColor={app.iconColor}
-    isPinned={app.isPinned}
-    isUnsynced={app.isUnsynced}
-  />
-);
+const renderApp = (appType: TAppType) => (app: AppItem) => <AppCard appDetails={app} appType={appType} />;
 
 // The Pinned section mixes both kinds, so entries carry their kind.
 type PinnedEntry = { kind: 'folder'; folder: FolderItem } | { kind: 'app'; app: AppItem };
@@ -141,24 +131,25 @@ type PinnedEntry = { kind: 'folder'; folder: FolderItem } | { kind: 'app'; app: 
 const getPinnedEntryKey = (entry: PinnedEntry) =>
   entry.kind === 'folder' ? `folder:${entry.folder.id}` : `app:${entry.app.id}`;
 
-const renderPinnedEntry = (entry: PinnedEntry) =>
-  entry.kind === 'folder' ? renderFolder(entry.folder) : renderApp(entry.app);
+const renderPinnedEntry = (appType: TAppType) => (entry: PinnedEntry) =>
+  entry.kind === 'folder' ? renderFolder(appType)(entry.folder) : renderApp(appType)(entry.app);
 
 // Pinned means a pinned folder, a pinned stray app, or a folder holding a pinned app; each shows only there.
-function GridViewData({ isLoading }: { isLoading: boolean }) {
+function GridViewData({ isLoading, appType }: { isLoading: boolean; appType: TAppType }) {
   // Stays mounted while loading or when nothing matches, because it owns the fetch.
   useRootItemsSync();
   const hasNoMatches = useHasNoMatches();
-  const rootItems: RootItem[] = useItemsListStore((state: { root: { items: RootItem[] } }) => state.root.items);
-  const { folders, apps } = useMemo(() => toGridItems(rootItems), [rootItems]);
+  const rootItems: ListItem[] = useItemsListStore((state: { root: { items: ListItem[] } }) => state.root.items);
+  const folders = useMemo(() => rootItems.filter(isFolderItem), [rootItems]);
+  const apps = useMemo(() => rootItems.filter(isAppItem), [rootItems]);
 
-  const isPinnedFolder = (folder: FolderItem) => folder.isPinned || folder.hasPinnedApps;
+  const isPinnedFolder = (folder: FolderItem) => folder.pinned || folder.has_pinned_apps;
   const pinnedEntries: PinnedEntry[] = [
     ...folders.filter(isPinnedFolder).map((folder): PinnedEntry => ({ kind: 'folder', folder })),
-    ...apps.filter((app) => app.isPinned).map((app): PinnedEntry => ({ kind: 'app', app })),
+    ...apps.filter((app) => app.pinned).map((app): PinnedEntry => ({ kind: 'app', app })),
   ];
   const otherFolders = folders.filter((folder) => !isPinnedFolder(folder));
-  const otherApps = apps.filter((app) => !app.isPinned);
+  const otherApps = apps.filter((app) => !app.pinned);
 
   if (isLoading) return <GridViewLoading classes={{ gridContainer: GRID_CLASS }} />;
 
@@ -166,9 +157,19 @@ function GridViewData({ isLoading }: { isLoading: boolean }) {
 
   return (
     <>
-      <GridSection title="Pinned" items={pinnedEntries} getKey={getPinnedEntryKey} renderItem={renderPinnedEntry} />
-      <GridSection title="Folders" items={otherFolders} getKey={getId} renderItem={renderFolder} />
-      <GridSection title="Stray apps" items={otherApps} getKey={getId} renderItem={renderApp} />
+      <GridSection
+        title="Pinned"
+        items={pinnedEntries}
+        getKey={getPinnedEntryKey}
+        renderItem={renderPinnedEntry(appType)}
+      />
+      <GridSection title="Folders" items={otherFolders} getKey={getId} renderItem={renderFolder(appType)} />
+      <GridSection
+        title={`Stray ${appTypeToDisplayNameMapping[appType]}s`}
+        items={otherApps}
+        getKey={getId}
+        renderItem={renderApp(appType)}
+      />
     </>
   );
 }
@@ -229,7 +230,7 @@ function FolderView({ folderName, appType }: FolderViewProps) {
             />
           )
         ) : (
-          <GridList items={apps} getKey={getId} renderItem={renderApp} />
+          <GridList items={apps} getKey={getId} renderItem={renderApp(appType)} />
         ))}
     </div>
   );
