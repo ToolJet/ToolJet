@@ -280,6 +280,20 @@ export const createInitSlice = (set, get) => ({
       false,
       { type: 'updateAddNewRowDetails', payload: { id, index, newRow } }
     ),
+  // Rows after the removed one move up, in one update, so the indexes stay 0..n-1 in order and the store is never
+  // seen empty part-way (the form would add a blank row).
+  removeAddNewRowDetail: (id, index) =>
+    set(
+      (state) => {
+        const newRows = state.components[id].addNewRow;
+        if (!newRows.has(index)) return;
+        const remaining = [...newRows.entries()].filter(([rowIndex]) => rowIndex !== index).map(([, row]) => row);
+        newRows.clear();
+        remaining.forEach((row, rowIndex) => newRows.set(rowIndex, row));
+      },
+      false,
+      { type: 'removeAddNewRowDetail', payload: { id, index } }
+    ),
   clearAddNewRowDetails: (id) =>
     set(
       (state) => {
