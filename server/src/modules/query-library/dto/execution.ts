@@ -48,6 +48,7 @@ class LibraryEnvironmentResponseDto {
 }
 @Exclude()
 class LibraryCatalogDraftResponseDto {
+  @Expose() status: 'DRAFT';
   @Expose() id: string;
   @Expose() name: string;
   @Expose() createdAt: Date;
@@ -56,6 +57,7 @@ class LibraryCatalogDraftResponseDto {
 }
 @Exclude()
 class LibraryCatalogVersionResponseDto {
+  @Expose() status: 'PUBLISHED';
   @Expose() id: string;
   @Expose() name: string;
   @Expose() kind: string;
@@ -80,6 +82,8 @@ export class LibraryCatalogResponseDto {
 }
 @Exclude()
 class LibraryUsageQueryResponseDto {
+  @Expose() libraryQueryVersionId: string;
+  @Expose() status: 'DRAFT' | 'PUBLISHED' | 'MISSING';
   @Expose() id: string;
   @Expose() name: string;
   @Expose() appVersionName: string;

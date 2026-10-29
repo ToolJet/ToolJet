@@ -1,4 +1,4 @@
-import { matchLibraryQuery } from '@modules/data-queries/library/library-export.util';
+import { assertLibraryExport, matchLibraryQuery } from '@modules/data-queries/library/library-export.util';
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { LibraryQuery } from '@entities/library_query.entity';
@@ -71,6 +71,10 @@ export async function withLibraryImportLocks<T>(
     const app = item?.appV2 ?? item;
     if (!app || typeof app !== 'object' || visited.has(app)) return;
     visited.add(app);
+    if (!isGitApp && app.libraryQueries !== undefined) {
+      if (!Array.isArray(app.libraryQueries)) throw new BadRequestException('Invalid named library query export');
+      assertLibraryExport(app.libraryQueries);
+    }
     const bundled = !isGitApp && Array.isArray(app.libraryQueries) ? app.libraryQueries : [];
     const claimed = new Set<string>();
     for (const incoming of bundled) {

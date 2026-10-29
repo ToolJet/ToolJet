@@ -637,8 +637,8 @@ describe('library-query.util', () => {
       );
       expect(view.queries[0]).toMatchObject({
         name: 'Customers',
-        drafts: [{ id: 'draft-id', name: 'Try another URL', inputs: [{ name: 'id' }] }],
-        versions: [{ id: 'saved', name: 'Release beta' }],
+        drafts: [{ id: 'draft-id', name: 'Try another URL', status: 'DRAFT', inputs: [{ name: 'id' }] }],
+        versions: [{ id: 'saved', name: 'Release beta', status: 'PUBLISHED' }],
       });
       expect(JSON.stringify(view)).not.toContain('secret');
       expect(view.queries[0]).not.toHaveProperty('draft');
@@ -679,6 +679,8 @@ describe('library-query.util', () => {
       queryId: 'c1',
       queryName: 'getCustomerLib',
       libraryQueryId: 'lq1',
+      libraryQueryVersionId: 'snapshot-id',
+      status: 'PUBLISHED',
       versionName: 'v2',
       pinnedEnvironment: null,
       ...over,
@@ -713,6 +715,8 @@ describe('library-query.util', () => {
             name: 'getCustomerLib',
             appVersionName: 'v1',
             libraryQueryId: 'lq1',
+            libraryQueryVersionId: 'snapshot-id',
+            status: 'PUBLISHED',
             versionName: 'draft',
             pinnedEnvironment: null,
           },
@@ -721,6 +725,8 @@ describe('library-query.util', () => {
             name: 'other',
             appVersionName: 'v2',
             libraryQueryId: 'lq1',
+            libraryQueryVersionId: 'snapshot-id',
+            status: 'PUBLISHED',
             versionName: 'v2',
             pinnedEnvironment: 'Staging',
           },

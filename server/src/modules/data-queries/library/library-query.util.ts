@@ -64,6 +64,7 @@ type LibraryInput = { name?: string; defaultValue?: unknown };
 export type LibraryEnvironment = { id: string; name: string; priority: number };
 export type LibraryField = { name: string; defaultValue?: unknown };
 export type LibraryCatalogVersion = {
+  status: 'PUBLISHED';
   id: string;
   name: string;
   kind: string;
@@ -79,7 +80,7 @@ export type LibraryCatalogQuery = {
   // One past the highest number ever released, soft-deleted versions included (release never reuses a number).
   nextVersionNumber: number;
   releasedVersionId: string | null;
-  drafts: { id: string; name: string; kind: string; inputs: LibraryField[]; createdAt: Date }[];
+  drafts: { status: 'DRAFT'; id: string; name: string; kind: string; inputs: LibraryField[]; createdAt: Date }[];
   versions: LibraryCatalogVersion[];
 };
 export type LibraryCatalog = { queries: LibraryCatalogQuery[] };
@@ -133,6 +134,7 @@ export function toLibraryCatalog(
       drafts: drafts
         .filter((row) => row.libraryQueryId === draft.id)
         .map((row) => ({
+          status: 'DRAFT',
           id: row.id,
           name: row.name,
           kind: row.kind,
@@ -140,6 +142,7 @@ export function toLibraryCatalog(
           createdAt: row.createdAt,
         })),
       versions: own.map((version) => ({
+        status: 'PUBLISHED',
         id: version.id,
         name: libraryVersionName(version),
         kind: version.kind,
@@ -510,6 +513,8 @@ export type LibraryConsumer = {
   queryId: string;
   queryName: string;
   libraryQueryId: string;
+  libraryQueryVersionId: string;
+  status: 'DRAFT' | 'PUBLISHED' | 'MISSING';
   versionName: string; // persisted draft or saved-version name; missing for an unresolved pin
   pinnedEnvironment: string | null; // environment name of the pinned version; null for a draft pin
 };
@@ -539,6 +544,8 @@ export async function queryLibraryConsumers(
     // Scope both snapshot tables to this query; display names never determine lifecycle status.
     `SELECT a.id AS "appId", COALESCE(av.app_name, a.name) AS "appName", a.type::text AS "appType",
             av.name AS "appVersionName", dq.id AS "queryId", dq.name AS "queryName", lq.id AS "libraryQueryId",
+            ${consumerOptionUuidSql('libraryQueryVersionId')} AS "libraryQueryVersionId",
+            CASE WHEN lv.id IS NOT NULL THEN 'PUBLISHED' WHEN ld.id IS NOT NULL THEN 'DRAFT' ELSE 'MISSING' END AS status,
             COALESCE(lv.name, ld.name, 'missing') AS "versionName",
             env.name AS "pinnedEnvironment"
        FROM data_queries dq
@@ -567,6 +574,8 @@ export type LibraryUsageEntry = {
     name: string;
     appVersionName: string;
     libraryQueryId: string;
+    libraryQueryVersionId: string;
+    status: 'DRAFT' | 'PUBLISHED' | 'MISSING';
     versionName: string;
     pinnedEnvironment: string | null;
   }[];
@@ -586,6 +595,8 @@ export function toLibraryUsage(consumers: LibraryConsumer[]): {
         name: row.queryName,
         appVersionName: row.appVersionName,
         libraryQueryId: row.libraryQueryId,
+        libraryQueryVersionId: row.libraryQueryVersionId,
+        status: row.status,
         versionName: row.versionName,
         pinnedEnvironment: row.pinnedEnvironment ?? null,
       });

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { dataqueryService } from '@/_services';
+import { upperFirst } from 'lodash';
+import { libraryQueryService } from '@/_services';
 import { getWorkspaceId } from '@/_helpers/utils';
-import { libraryAppUrl } from './queryLibraryApp';
+import { getSubpath } from '@/_helpers/routes';
 
 // Only the consumers of this one library query, as { id, name, queries } entries.
 const forQuery = (entries = [], libraryQueryId) =>
@@ -9,7 +10,7 @@ const forQuery = (entries = [], libraryQueryId) =>
     .map((entry) => ({ ...entry, queries: entry.queries.filter((query) => query.libraryQueryId === libraryQueryId) }))
     .filter((entry) => entry.queries.length > 0);
 
-function UsageGroup({ title, entries }) {
+function UsageGroup({ title, entries, workspaceId }) {
   return (
     <section className="query-library-usage__group">
       <div className="query-library-usage__title">{`${title} (${entries.length})`}</div>
@@ -20,13 +21,17 @@ function UsageGroup({ title, entries }) {
           {entries.flatMap((entry) =>
             entry.queries.map((query) => (
               <li key={`${entry.id}-${query.id}`}>
-                <a href={libraryAppUrl(`/${getWorkspaceId()}/apps/${entry.id}`)} target="_blank" rel="noreferrer">
+                <a
+                  href={`${getSubpath() ?? ''}/${workspaceId || getWorkspaceId()}/apps/${entry.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   {entry.name}
                 </a>
                 <span>
                   {` · ${query.appVersionName} · ${query.name} · ${
-                    !query.versionName || query.versionName === 'draft' ? 'Draft' : query.versionName
-                  }`}
+                    query.versionName
+                  }${query.status === 'DRAFT' ? ' · Draft' : ''}${query.pinnedEnvironment ? ` · ${upperFirst(query.pinnedEnvironment)}` : ''}`}
                 </span>
               </li>
             ))
@@ -37,37 +42,54 @@ function UsageGroup({ title, entries }) {
   );
 }
 
-export default function LibraryUsagePanel({ versionId, libraryQueryId }) {
+const UsageAside = ({ children }) => (
+  <aside className="query-library-usage" data-cy="query-library-usage">
+    {children}
+  </aside>
+);
+
+const UsageNote = ({ children }) => <p className="query-library-usage__empty">{children}</p>;
+
+const Unused = ({ workspaceId }) => (
+  <UsageAside>
+    <UsageGroup workspaceId={workspaceId} title="Used by apps" entries={[]} />
+    <UsageGroup workspaceId={workspaceId} title="Used by modules" entries={[]} />
+  </UsageAside>
+);
+
+export default function LibraryUsagePanel({ libraryQueryId, workspaceId }) {
   const [usage, setUsage] = useState(null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (!versionId || !libraryQueryId) return;
+    if (!libraryQueryId) return;
     let ignore = false;
     setUsage(null);
     setFailed(false);
-    dataqueryService
-      .getLibraryUsage(versionId)
+    libraryQueryService
+      .getUsage({ workspaceId })
       .then((response) => !ignore && setUsage(response))
       .catch(() => !ignore && setFailed(true));
     return () => {
       ignore = true;
     };
-  }, [versionId, libraryQueryId]);
+  }, [libraryQueryId, workspaceId]);
 
-  if (!libraryQueryId) return null;
-  if (failed) {
+  if (!libraryQueryId) return <Unused workspaceId={workspaceId} />;
+  if (failed)
     return (
-      <aside className="query-library-usage" data-cy="query-library-usage">
-        <p className="query-library-usage__empty">Couldn&apos;t load usage</p>
-      </aside>
+      <UsageAside>
+        <UsageNote>Couldn&apos;t load usage</UsageNote>
+      </UsageAside>
     );
-  }
-  if (usage === null) return null;
+  if (usage === null) return <UsageAside />;
+  const apps = forQuery(usage.apps, libraryQueryId);
+  const modules = forQuery(usage.modules, libraryQueryId);
+  if (apps.length === 0 && modules.length === 0) return <Unused workspaceId={workspaceId} />;
   return (
-    <aside className="query-library-usage" data-cy="query-library-usage">
-      <UsageGroup title="Used by apps" entries={forQuery(usage.apps, libraryQueryId)} />
-      <UsageGroup title="Used by modules" entries={forQuery(usage.modules, libraryQueryId)} />
-    </aside>
+    <UsageAside>
+      <UsageGroup workspaceId={workspaceId} title="Used by apps" entries={apps} />
+      <UsageGroup workspaceId={workspaceId} title="Used by modules" entries={modules} />
+    </UsageAside>
   );
 }
