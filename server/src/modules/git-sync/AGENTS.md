@@ -75,6 +75,9 @@ logic is in `server/ee/git-sync/`.
   `githubPrivateKey` if it was stripped earlier. `getDetails` now shallow-clones its argument, but
   the ordering in `findAppGitConfigs` is still the guard that matters.
 - **The app-git import lane creates referenced workflow rows, and gates them.** `createGitApp` (and the two tag-import helpers) pre-create + hydrate embedded **workflows** as well as modules, via `pullAndHydrateWorkflowRefs` → `hydrateReferencedWorkflowStubs`. Creating them requires `workflowCreate` (`assertWorkflowCreatePermission`), asserted **before** hydration — after it, the check would always see zero missing. Workflows reached through a module are handled by `hydrateStubApp` step 6b during that module's hydration, so this lane must not walk into modules.
+- Pull / create-branch clone the default `organization_git_sync_branches` row's `branch_name`, not the
+  configured branch. Env config keeps it in sync via `reconcileDefaultBranchName` (`ee/git-sync/default-branch.util.ts`)
+  on restart hydration and on toggle; renames must also invalidate `RemoteBranchCacheService`.
 - Testing: don't extend the monolithic git-sync lifecycle `it()` block in the e2e suite — write standalone specs instead (see `server/docs/testing.md`, Determinism).
 
 ## Related modules
