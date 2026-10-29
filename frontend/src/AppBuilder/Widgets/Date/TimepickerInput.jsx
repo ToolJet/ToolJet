@@ -1,15 +1,115 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import moment from 'moment-timezone';
 import cx from 'classnames';
 
-const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onTimeChange, minTime, maxTime }) => {
-  const [headers, setHeaders] = React.useState(['Hours', 'Minutes']);
-  useEffect(() => {
-    if (!isTwentyFourHourMode) {
-      setHeaders(['Hours', 'Minutes', 'am/pm']);
-    }
-  }, [isTwentyFourHourMode]);
+const SCROLLBAR_PADDING = 2;
+const MIN_THUMB_HEIGHT = 32;
+const SCROLL_HIDE_DELAY_MS = 1000;
 
+// Custom auto-hiding scrollbar overlaying each column's right edge (original
+// column sizing kept). The native scrollbar is hidden; a 7px thumb sits
+// left-aligned inside a 12px strip on the right. It is hidden at rest and
+// appears while scrolling (lingers 1s), while the mouse is over the right
+// edge, and while dragging — the same placement in every column; AM/PM uses
+// the same wrapper without a scrollbar.
+export const TimeScrollColumn = ({ withScrollbar = true, children }) => {
+  const listRef = useRef(null);
+  const barRef = useRef(null);
+  const hideTimerRef = useRef(null);
+  const [thumb, setThumb] = useState({ top: SCROLLBAR_PADDING, height: MIN_THUMB_HEIGHT });
+  const [scrolling, setScrolling] = useState(false);
+  const [dragging, setDragging] = useState(false);
+
+  const getSizes = () => {
+    const list = listRef.current;
+    const bar = barRef.current;
+    if (!list || !bar) return null;
+    const track = bar.clientHeight - SCROLLBAR_PADDING * 2;
+    const height = Math.max(MIN_THUMB_HEIGHT, (track * list.clientHeight) / list.scrollHeight);
+    return { track, height, maxScroll: list.scrollHeight - list.clientHeight };
+  };
+
+  const placeThumb = useCallback(() => {
+    const sizes = getSizes();
+    if (!sizes) return;
+    const progress = sizes.maxScroll ? listRef.current.scrollTop / sizes.maxScroll : 0;
+    setThumb({ top: SCROLLBAR_PADDING + progress * (sizes.track - sizes.height), height: sizes.height });
+  }, []);
+
+  const itemCount = React.Children.count(children);
+  useEffect(() => {
+    if (withScrollbar) placeThumb();
+  }, [withScrollbar, itemCount, placeThumb]);
+
+  useEffect(() => () => clearTimeout(hideTimerRef.current), []);
+
+  const onScroll = () => {
+    placeThumb();
+    setScrolling(true);
+    clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => setScrolling(false), SCROLL_HIDE_DELAY_MS);
+  };
+
+  const scrollToThumbTop = (top) => {
+    const sizes = getSizes();
+    if (!sizes || sizes.track <= sizes.height) return;
+    const clamped = Math.min(Math.max(top, 0), sizes.track - sizes.height);
+    listRef.current.scrollTop = (clamped / (sizes.track - sizes.height)) * sizes.maxScroll;
+  };
+
+  const onThumbPointerDown = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const thumbEl = e.currentTarget;
+    const barTop = barRef.current.getBoundingClientRect().top;
+    const grabOffset = e.clientY - thumbEl.getBoundingClientRect().top;
+    // Capture keeps the drag alive when the pointer leaves the thumb; the
+    // listeners live on window so dragging still works if capture is refused.
+    try {
+      thumbEl.setPointerCapture(e.pointerId);
+    } catch {
+      /* non-capturable pointer */
+    }
+    setDragging(true);
+    const onMove = (ev) => scrollToThumbTop(ev.clientY - barTop - SCROLLBAR_PADDING - grabOffset);
+    const onUp = () => {
+      setDragging(false);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+  };
+
+  const onBarPointerDown = (e) => {
+    if (e.target !== barRef.current) return;
+    const sizes = getSizes();
+    if (!sizes) return;
+    const y = e.clientY - barRef.current.getBoundingClientRect().top;
+    scrollToThumbTop(y - SCROLLBAR_PADDING - sizes.height / 2);
+  };
+
+  return (
+    <div className={cx('time-colwrap')}>
+      <div className={cx('time-col')} ref={listRef} onScroll={withScrollbar ? onScroll : undefined}>
+        {children}
+      </div>
+      {withScrollbar && (
+        <div className={cx('time-scrollbar', { scrolling, dragging })} ref={barRef} onPointerDown={onBarPointerDown}>
+          <div
+            className={cx('time-scrollbar-thumb')}
+            style={{ top: `${thumb.top}px`, height: `${thumb.height}px` }}
+            onPointerDown={onThumbPointerDown}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onTimeChange, minTime, maxTime }) => {
   const momentObj = currentTimestamp ? moment(currentTimestamp) : null;
   const selectedHour = momentObj?.hour() || 0;
   const selectedMinute = momentObj?.minute() || 0;
@@ -58,15 +158,13 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
   return (
     <div className={cx('custom-time-input ')}>
       <div className={cx('d-flex')}>
-        {headers.map((header) => (
-          <span key={header} className={cx('time-header')}>
-            {header}
-          </span>
-        ))}
+        <span className={cx('time-header')}>Hours</span>
+        <span className={cx('time-header')}>Minutes</span>
+        {!isTwentyFourHourMode && <span className={cx('time-header')}>am/pm</span>}
       </div>
       <div className={cx('d-block')}>
         <div className={cx('d-flex time-input-body')}>
-          <div className={cx('time-col')}>
+          <TimeScrollColumn>
             {isTwentyFourHourMode
               ? [...Array(24).keys()].map((hour) => (
                   <div
@@ -99,8 +197,8 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
                     </div>
                   );
                 })}
-          </div>
-          <div className={cx('time-col')}>
+          </TimeScrollColumn>
+          <TimeScrollColumn>
             {[...Array(60).keys()].map((minute) => (
               <div
                 key={minute}
@@ -117,9 +215,9 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
                 {String(minute).padStart(2, '0')}
               </div>
             ))}
-          </div>
+          </TimeScrollColumn>
           {!isTwentyFourHourMode && (
-            <div className={cx('time-col')}>
+            <TimeScrollColumn withScrollbar={false}>
               <div
                 className={cx('time-item', {
                   'selected-time': selectedAmPm === 'AM',
@@ -148,7 +246,7 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
               >
                 PM
               </div>
-            </div>
+            </TimeScrollColumn>
           )}
         </div>
       </div>
