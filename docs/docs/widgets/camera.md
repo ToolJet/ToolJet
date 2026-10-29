@@ -5,6 +5,8 @@ title: Camera
 
 The **Camera** component allows users to capture photos and record videos directly from their camera. It provides device selection, fullscreen mode, and controls for capturing images or recording video. In this document, we'll go through all the configuration options for the **Camera** component.
 
+On phones and tablets, the camera dropdown is replaced by a **Switch camera** button that toggles between the front and back cameras. The back camera is used by default. The button is disabled while a video is recording.
+
 ## Properties
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
 |:---------------|:-------------------------------------------------|:-----------------------------|
