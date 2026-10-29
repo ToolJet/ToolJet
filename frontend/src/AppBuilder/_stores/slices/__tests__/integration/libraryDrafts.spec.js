@@ -179,3 +179,85 @@ it('orders option writes behind a pending source change on the same draft', asyn
   await writing;
   expect(order).toEqual(['source', 'options']);
 });
+
+it.each([false, true])(
+  'serializes multiple option writes after a source PUT and blocks Save until the tail settles (failure=%s)',
+  async (failLatest) => {
+    const deferred = () => {
+      let resolve;
+      const promise = new Promise((done) => {
+        resolve = done;
+      });
+      return { promise, resolve };
+    };
+    const sourceStarted = deferred();
+    const sourceResponse = deferred();
+    const firstStarted = deferred();
+    const firstResponse = deferred();
+    const secondStarted = deferred();
+    const secondResponse = deferred();
+    const requests = [];
+    let persisted;
+    let saves = 0;
+    server.use(
+      http.put(`${config.apiUrl}/query-library/queries/q1/drafts/a/data-source`, async () => {
+        sourceStarted.resolve();
+        await sourceResponse.promise;
+        return HttpResponse.json(draft('a'));
+      }),
+      http.patch(`${config.apiUrl}/query-library/queries/q1/drafts/a`, async ({ request }) => {
+        const { options } = await request.json();
+        requests.push(options.url);
+        const first = options.url === 'first';
+        (first ? firstStarted : secondStarted).resolve();
+        await (first ? firstResponse : secondResponse).promise;
+        if (!first && failLatest) return HttpResponse.json({ error: 'Latest rejected' }, { status: 400 });
+        persisted = options.url;
+        return HttpResponse.json({ ...draft('a'), options });
+      }),
+      http.post(`${config.apiUrl}/query-library/queries/q1/drafts/a/save`, () => {
+        saves += 1;
+        return HttpResponse.json({ ...draft('a'), options: { url: persisted } });
+      })
+    );
+    await seed();
+    const changingSource = state().queryLibrary.changeLibraryDraftDataSource('q1', 'a', 'new-source');
+    await sourceStarted.promise;
+    const firstWrite = state().dataQuery.saveData({ ...identity, options: { url: 'first' } });
+    state().dataQuery.saveData({ ...identity, options: { url: 'second' } });
+    state().dataQuery.saveData.flush();
+    const publishing = state().queryLibrary.saveLibraryDraft('q1', 'a', { name: 'saved' });
+    const result = publishing.then(
+      (value) => ({ value }),
+      (error) => ({ error })
+    );
+    sourceResponse.resolve();
+    await firstStarted.promise;
+    // A further edit arrives while Save is already awaiting the earlier tail.
+    if (!failLatest) state().dataQuery.saveData({ ...identity, options: { url: 'latest' } });
+    // Permit the newer response first. A serialized chain must still wait for the older PATCH.
+    secondResponse.resolve();
+    await new Promise(setImmediate);
+    const requestsBeforeFirstResponse = [...requests];
+    const savesBeforeFirstResponse = saves;
+    firstResponse.resolve();
+    await changingSource;
+    await firstWrite;
+    await secondStarted.promise;
+    const outcome = await result;
+    expect(requestsBeforeFirstResponse).toEqual(['first']);
+    expect(savesBeforeFirstResponse).toBe(0);
+    expect(requests).toEqual(failLatest ? ['first', 'second'] : ['first', 'second', 'latest']);
+    if (failLatest) {
+      expect(outcome.error).toBeDefined();
+      expect(saves).toBe(0);
+      await expect(state().queryLibrary.saveLibraryDraft('q1', 'a', { name: 'saved' })).rejects.toBeDefined();
+      expect(saves).toBe(0);
+    } else {
+      expect(outcome.error).toBeUndefined();
+      expect(outcome.value.options.url).toBe('latest');
+      expect(persisted).toBe('latest');
+      expect(saves).toBe(1);
+    }
+  }
+);

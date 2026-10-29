@@ -168,6 +168,9 @@ export const createDataQuerySlice = (set, get) => {
         const previous = draftOperations.get(key) ?? record.promise;
         const promise = previous ? previous.catch(() => {}).then(request) : request();
         record.promise = promise;
+        // Every source/options request advances the same tail. Subsequent autosaves must
+        // wait for this PATCH, rather than all subscribing to the original source PUT.
+        draftOperations.set(key, promise);
         draftSaving();
         promise.then(
           () => {
@@ -242,14 +245,21 @@ export const createDataQuerySlice = (set, get) => {
       },
       flushLibraryDraft: async (queryId, draftId) => {
         if (!draftId || draftId === 'draft') throw new Error('Select an editable draft');
+        const sessionId = get().queryLibrary.sessionId;
         const key = draftKey(destination(), queryId, draftId);
-        const record = draftWrites.get(key);
-        if (record && record.target.sessionId === get().queryLibrary.sessionId) {
-          record.send.flush();
-          await record.promise;
-          if (record.error) throw record.error;
+        while (true) {
+          if (get().queryLibrary.sessionId !== sessionId) throw new Error('Library session changed');
+          const record = draftWrites.get(key);
+          record?.send.flush();
+          const tail = draftOperations.get(key) ?? record?.promise;
+          await tail;
+          // An edit may have arrived while this request was pending. Dispatch any trailing
+          // edit and wait again until the tail we just awaited is still the latest one.
+          record?.send.flush();
+          if (tail !== (draftOperations.get(key) ?? record?.promise)) continue;
+          if (record?.error) throw record.error;
+          return;
         }
-        await draftOperations.get(key);
       },
       retryLibraryDraftSave: (queryId, draftId) => {
         const record = draftWrites.get(draftKey(destination(), queryId, draftId));
