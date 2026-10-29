@@ -46,7 +46,8 @@ if (shardTotal > 1) {
     total: shardTotal,
     groups: (process.env.SHARD_GROUPS || "")
       .split(";")
-      .map((group) => group.split(",").filter(Boolean))
+      // trimmed, so a YAML folded block can put one group per line
+      .map((group) => group.split(",").map((part) => part.trim()).filter(Boolean))
       .filter((group) => group.length),
   });
   console.log(`Shard ${Number(process.env.SHARD_INDEX || 0) + 1}/${shardTotal} runs ${specs.length} specs:`);
