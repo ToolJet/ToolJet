@@ -27,9 +27,11 @@ const save = (oldName, newName, screenshot) => {
   if (screenshot) picture(screenshot);
   get('version-name-input-field').should('have.value', newName);
   get('create-version-save-button').click();
-  if (Cypress.env('moduleId')) cy.wait('@saveModuleVersion').then(({ request: saved, response }) => {
-    expect(saved.body.name).to.eq(newName);
-    expect(response.statusCode).to.eq(200);
+  cy.then(() => {
+    if (Cypress.env('moduleId')) cy.wait('@saveModuleVersion').then(({ request: saved, response }) => {
+      expect(saved.body.name).to.eq(newName);
+      expect(response.statusCode).to.eq(200);
+    });
   });
   get('create-version-save-button').should('not.exist');
   get('version-switcher-button').should('contain.text', newName);
@@ -55,10 +57,12 @@ const promote = (screenshot) => {
   cy.get('#version-manager-popover').should('not.exist');
 };
 const release = (screenshot) => {
+  cy.intercept('**/api/**/release').as('releaseSnapshot');
   menu();
   get('release-version-button').click();
   if (screenshot) picture(screenshot);
   get('yes-button').click();
+  cy.wait('@releaseSnapshot').its('response.statusCode').should('be.oneOf', [200, 201]);
   get('yes-button').should('not.exist');
 };
 const darkDialogs = (resource) => {
@@ -88,6 +92,78 @@ describe('Query Library named version lifecycle', () => {
     cy.apiLogin(Cypress.env('testEmail'), 'password', Cypress.env('workspaceId'));
   });
 
+  scenario('creates app and module consumers from the Library card with explicit draft and saved pins', () => {
+    let libraryId;
+    let savedId;
+    let draftId;
+    let emptyApp;
+    let creates = 0;
+    cy.intercept('POST', '**/api/data-queries/data-sources/*/versions/*', (req) => {
+      creates += 1;
+      req.alias = 'createConsumer';
+    });
+    request('POST', 'apps', { name: 'Empty catalog picker', type: 'front-end', icon: 'floppydisk' }).then(({ body }) => {
+      emptyApp = body.id;
+      visit(`/${Cypress.env('workspaceId')}/apps/${emptyApp}`);
+    });
+    get('library-add-query-card').click();
+    cy.contains('No queries in the query library yet').should('be.visible');
+    get('create-library-consumer').should('be.disabled');
+    cy.contains('button', 'Cancel').click();
+    cy.then(() => expect(creates).to.eq(0));
+    request('GET', 'query-library/static-data-sources').then(({ body }) => {
+      const source = body.find((item) => item.kind === 'runjs');
+      return request('POST', 'query-library/queries', { name: 'Picker lookup', kind: 'runjs', dataSourceId: source.id, options: { code: 'return { answer: 42 };', inputs: [] } });
+    })
+      .then(({ body }) => {
+        libraryId = body.id;
+        savedId = body.draftId;
+        return request('POST', `query-library/queries/${libraryId}/drafts/${savedId}/save`, { name: 'Stable' });
+      }).then(() => request('POST', `query-library/queries/${libraryId}/drafts`, { name: 'Experiment', fromVersionId: savedId }))
+      .then(({ body }) => { draftId = body.id; });
+    for (const type of ['front-end', 'module']) {
+      for (const pinKind of ['saved', 'draft']) {
+        let versionId;
+        let consumerId;
+        request('POST', type === 'module' ? 'modules' : 'apps', { name: `Picker ${type} ${pinKind}`, type, icon: 'floppydisk' })
+          .then(({ body }) => {
+            visit(`/${Cypress.env('workspaceId')}/apps/${body.id}`);
+            return request('GET', `apps/${body.id}`);
+          }).then(({ body }) => { versionId = body.editing_version.id; });
+        get('library-add-query-card').click();
+        cy.contains('Select a query').click();
+        cy.get('[role="option"]').contains('Picker lookup').click();
+        if (pinKind === 'draft') {
+          cy.contains('Stable · Development').click();
+          cy.get('[role="option"]').contains('Experiment · Draft (testing only)').click();
+        }
+        // A chosen target remains local until the user confirms creation.
+        cy.contains('button', 'Cancel').click();
+        get('library-add-query-card').click();
+        cy.contains('Select a query').click();
+        cy.get('[role="option"]').contains('Picker lookup').click();
+        if (pinKind === 'draft') {
+          cy.contains('Stable · Development').click();
+          cy.get('[role="option"]').contains('Experiment · Draft (testing only)').click();
+        }
+        get('create-library-consumer').click();
+        cy.wait('@createConsumer').then(({ request: sent, response }) => {
+          expect(response.statusCode).to.eq(201);
+          expect(sent.body.options).to.include({ libraryQueryId: libraryId, libraryQueryVersionId: pinKind === 'draft' ? draftId : savedId });
+          expect(sent.body.options).not.to.have.property('libraryVersion');
+          consumerId = response.body.id;
+        });
+        get('query-run-button').click();
+        get('preview-content').should('contain.text', '42');
+        cy.then(() => request('GET', `data-queries/${versionId}?mode=edit`)).then(({ body }) => {
+          const persisted = body.data_queries.find((query) => query.id === consumerId);
+          expect(persisted.options).to.include({ libraryQueryId: libraryId, libraryQueryVersionId: pinKind === 'draft' ? draftId : savedId });
+        });
+        picture(`consumer-${type}-${pinKind}`);
+      }
+    }
+  });
+
   scenario('creates independent drafts, saves unchanged content, promotes and releases older and newer versions', () => {
     let queryId;
     let originalId;
@@ -102,6 +178,7 @@ describe('Query Library named version lifecycle', () => {
       queryId = response.body.id;
       originalId = response.body.draftId;
       Cypress.env('libraryQueryId', queryId);
+      Cypress.env('libraryQueryName', response.body.name);
     });
     save('v1', 'Original', 'library-save-light');
     cy.then(() => request('GET', `query-library/queries/${queryId}/versions`)).then(({ body }) => {
@@ -129,8 +206,11 @@ describe('Query Library named version lifecycle', () => {
     });
     save('Branch-A', 'Newer'); // No content change is required to save a named snapshot.
     promote('library-promote-light');
+    get('version-switcher-button').should('contain.text', 'Newer').and('contain.text', 'Staging');
     select('Newer', 'Staging');
     promote();
+    get('version-switcher-button').should('contain.text', 'Newer').and('contain.text', 'Production');
+    cy.contains('This query is connected to a local data source which has been').should('not.exist');
     select('Newer', 'Production');
     release('library-release-light');
     select('Original', 'Development');
@@ -145,8 +225,11 @@ describe('Query Library named version lifecycle', () => {
       expect(body.versions.filter((version) => version.isReleased).map((version) => version.name)).to.deep.eq(['Newer']);
       expect(body.versions.find((version) => version.name === 'Newer').id).to.eq(draftA.id);
     });
+    createDraft('From-production');
+    get('version-switcher-button').should('contain.text', 'Development');
+    picture('library-create-from-production');
     visit(`/${Cypress.env('workspaceId')}/query-library`, true);
-    cy.get('[data-cy^="list-query-"]').first().click();
+    cy.then(() => get(`list-query-${Cypress.env('libraryQueryName').toLowerCase()}`).click());
     select('Branch-B', 'Development');
     menu();
     get('branch-b-save-version-button').click();
@@ -177,6 +260,8 @@ describe('Query Library named version lifecycle', () => {
     promote('module-promote-light');
     select('Newer', 'Staging');
     promote();
+    get('version-switcher-button').should('contain.text', 'Newer').and('contain.text', 'Production');
+    cy.contains('This query is connected to a local data source which has been').should('not.exist');
     select('Newer', 'Production');
     release('module-release-light');
     createDraft('Dark-draft');
@@ -211,7 +296,7 @@ describe('Query Library named version lifecycle', () => {
             });
         }).then(({ body }) => { consumerId = body.id; });
       visit(`/${Cypress.env('workspaceId')}/query-library`);
-      cy.get('[data-cy^="list-query-"]').first().click();
+      cy.then(() => get(`list-query-${Cypress.env('libraryQueryName').toLowerCase()}`).click());
       select('Branch-B', 'Development');
       menu();
       get('branch-b-version-more-menu-button').click();

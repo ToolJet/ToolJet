@@ -1,4 +1,5 @@
 /** @jest-environment node */
+import { toLibraryVersionsResponse } from '@modules/query-library/dto/lifecycle';
 import { BadRequestException } from '@nestjs/common';
 import {
   assertCanRelease,
@@ -82,6 +83,15 @@ describe('library-lifecycle.util', () => {
       const view = toLibraryQueryVersionsView(state(), [row(1), row(2), row(3, { deletedAt: new Date() })], [], []);
       expect(view.versions.map((v) => v.name)).toEqual(['release-2', 'release-1']);
       expect(view.nextVersionNumber).toBe(4);
+    });
+
+    it('preserves nullable saved parent IDs through the strict response mapper', () => {
+      const view = toLibraryQueryVersionsView(state(), [row(1), row(2, { createdFromVersionId: 'lv1' })], [], []);
+      const response = toLibraryVersionsResponse(view);
+      expect(response.versions).toMatchObject([
+        { id: 'lv2', createdFromVersionId: 'lv1', createdFrom: 'release-1' },
+        { id: 'lv1', createdFromVersionId: null, createdFrom: null },
+      ]);
     });
 
     it('should start at 1 with no versions', () => {

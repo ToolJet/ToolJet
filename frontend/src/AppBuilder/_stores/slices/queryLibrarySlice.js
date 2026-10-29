@@ -225,7 +225,7 @@ export const createQueryLibrarySlice = (set, get) => {
           get().queryLibrary.updateLibraryDraftSnapshot(
             queryId,
             draftId,
-            pending?.pending ? { ...draft, options: pending.values.options } : draft
+            pending ? { ...draft, options: pending.values.options } : draft
           );
         }
         return draft;
@@ -290,7 +290,7 @@ export const createQueryLibrarySlice = (set, get) => {
           get().queryLibrary.updateLibraryDraftSnapshot(
             queryId,
             draftId,
-            pending?.pending ? { ...draft, options: pending.values.options } : draft
+            pending ? { ...draft, options: pending.values.options } : draft
           );
         }
         return draft;
@@ -298,16 +298,27 @@ export const createQueryLibrarySlice = (set, get) => {
       createLibraryDraft: async (queryId, body) => {
         const selectedId = viewedLibraryVersionId(get(), queryId);
         const selectedQueryId = get().queryPanel.selectedQuery?.id;
+        const selectedEnvironment = pickedLibraryEnvironment(get(), queryId);
         const sessionId = get().queryLibrary.sessionId;
-        const draft = await libraryQueryService.createDraft(queryId, body, context());
-        if (!current(sessionId)) return draft;
-        await reload(queryId);
-        if (
+        const ownsSelection = () =>
           current(sessionId) &&
           selectedId === viewedLibraryVersionId(get(), queryId) &&
-          selectedQueryId === get().queryPanel.selectedQuery?.id
-        )
-          get().queryLibrary.viewLibraryVersion(queryId, draft.id);
+          selectedQueryId === get().queryPanel.selectedQuery?.id &&
+          selectedEnvironment === pickedLibraryEnvironment(get(), queryId);
+        const draft = await libraryQueryService.createDraft(queryId, body, context());
+        if (!current(sessionId)) return draft;
+        const selectCreated = ownsSelection();
+        await reload(queryId);
+        if (selectCreated && ownsSelection()) {
+          cancelSelection();
+          set((state) => {
+            state.queryLibrary.runEnvironmentByQueryId[queryId] =
+              state.environments.find((environment) => environment.priority === 1) ?? null;
+            state.queryLibrary.viewedVersionIdByQueryId[queryId] = draft.id;
+          });
+          get().dataQuery.refreshLibrarySaveStatus?.();
+          get().queryPanel.setSelectedQuery(queryId, 'canvas', { fromServer: true });
+        }
         return draft;
       },
       deleteLibraryDraft: async (queryId, draftId) => {
@@ -327,9 +338,32 @@ export const createQueryLibrarySlice = (set, get) => {
 
       promoteLibraryVersion: async (queryId, libraryVersionId) => {
         const sessionId = get().queryLibrary.sessionId;
+        const selectedId = viewedLibraryVersionId(get(), queryId);
+        const selectedQueryId = get().queryPanel.selectedQuery?.id;
+        const selectedEnvironment = pickedLibraryEnvironment(get(), queryId);
         const target = context();
         const promoted = await libraryQueryService.promote(queryId, libraryVersionId, target);
-        if (current(sessionId)) await reload(queryId);
+        if (!current(sessionId)) return promoted;
+        if (
+          selectedId === libraryVersionId &&
+          selectedId === viewedLibraryVersionId(get(), queryId) &&
+          selectedQueryId === queryId &&
+          selectedQueryId === get().queryPanel.selectedQuery?.id &&
+          selectedEnvironment === pickedLibraryEnvironment(get(), queryId)
+        ) {
+          cancelSelection();
+          // Move the selected snapshot and environment together before refreshing its view.
+          set((state) => {
+            const view = state.queryLibrary.versionsByQueryId[queryId];
+            view.versions = view.versions.map((row) => (row.id === promoted.id ? promoted : row));
+            state.queryLibrary.runEnvironmentByQueryId[queryId] =
+              state.environments.find((environment) => environment.id === promoted.environment?.id) ??
+              promoted.environment;
+            state.queryLibrary.viewedVersionIdByQueryId[queryId] = promoted.id;
+          });
+          get().queryPanel.setSelectedQuery(queryId, 'canvas', { fromServer: true });
+        }
+        await reload(queryId);
         return promoted;
       },
 

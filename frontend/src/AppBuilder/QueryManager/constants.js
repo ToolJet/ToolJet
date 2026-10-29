@@ -113,7 +113,7 @@ export const schemaUnavailableOptions = {
   },
   runpy: {},
   workflows: {},
-  library: { libraryVersion: 'latest', inputs: {} },
+  library: { inputs: {} },
 };
 
 const allDefaultSources = {

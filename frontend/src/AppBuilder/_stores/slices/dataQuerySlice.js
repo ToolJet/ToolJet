@@ -134,7 +134,16 @@ export const createDataQuerySlice = (set, get) => {
   // Library drafts have independent throttle and write chains. A trailing edit from A can never
   // replace B's queued edit; failed writes stay attached to their original workspace/draft.
   const draftWrites = new Map();
+  // Transport tails outlive editor sessions; only retry/display records are session-scoped.
   const draftOperations = new Map();
+  const trackDraftOperation = (key, promise) => {
+    draftOperations.set(key, promise);
+    const clear = () => {
+      if (draftOperations.get(key) === promise) draftOperations.delete(key);
+    };
+    promise.then(clear, clear);
+    return promise;
+  };
   const draftKey = (target, queryId, draftId = target.draftId) => `${target.workspaceId}:${queryId}:${draftId}`;
   const visibleDraft = (target, queryId) =>
     current(target) &&
@@ -159,9 +168,10 @@ export const createDataQuerySlice = (set, get) => {
     let record = draftWrites.get(key);
     if (!record || record.target.sessionId !== target.sessionId) {
       const prior = record;
-      record = { target, queryId: values.id, values, pending: false, promise: prior?.promise };
+      record = { target, queryId: values.id, values, revision: 0, pending: false, promise: prior?.promise };
       record.send = throttle(() => {
         const sent = record.values;
+        const sentRevision = record.revision;
         record.pending = true;
         record.error = null;
         const request = () =>
@@ -171,20 +181,20 @@ export const createDataQuerySlice = (set, get) => {
         record.promise = promise;
         // Every source/options request advances the same tail. Subsequent autosaves must
         // wait for this PATCH, rather than all subscribing to the original source PUT.
-        draftOperations.set(key, promise);
+        trackDraftOperation(key, promise);
         draftSaving();
         promise.then(
           () => {
             if (record.promise !== promise || draftWrites.get(key) !== record) return;
             record.error = null;
-            record.pending = false;
+            record.pending = record.revision !== sentRevision;
             draftSaving();
           },
           (error) => {
             if (record.promise !== promise || draftWrites.get(key) !== record) return;
-            record.error = error;
-            record.pending = false;
-            if (visibleDraft(target, values.id)) toast.error('Query could not be saved.');
+            record.pending = record.revision !== sentRevision;
+            record.error = record.pending ? null : error;
+            if (!record.pending && visibleDraft(target, values.id)) toast.error('Query could not be saved.');
             draftSaving();
           }
         );
@@ -193,6 +203,7 @@ export const createDataQuerySlice = (set, get) => {
       draftWrites.set(key, record);
     }
     record.values = values;
+    record.revision += 1;
     record.pending = true;
     record.error = null;
     if (current(target))
@@ -227,22 +238,21 @@ export const createDataQuerySlice = (set, get) => {
       clearLibraryDraftWrites: () => {
         for (const record of draftWrites.values()) record.send.cancel();
         draftWrites.clear();
-        draftOperations.clear();
       },
-      libraryDraftWrite: (queryId, draftId) => draftWrites.get(draftKey(destination(), queryId, draftId)),
+      libraryDraftWrite: (queryId, draftId) => {
+        const record = draftWrites.get(draftKey(destination(), queryId, draftId));
+        return record && current(record.target) && (record.pending || record.error) ? record : undefined;
+      },
       refreshLibrarySaveStatus: draftSaving,
       queueLibraryDraftOperation: (queryId, draftId, request) => {
         const key = draftKey(destination(), queryId, draftId);
         const record = draftWrites.get(key);
         record?.send.flush();
         const previous = draftOperations.get(key) ?? record?.promise;
-        const promise = Promise.resolve(previous).then(request);
-        draftOperations.set(key, promise);
-        const clear = () => {
-          if (draftOperations.get(key) === promise) draftOperations.delete(key);
-        };
-        promise.then(clear, clear);
-        return promise;
+        const promise = Promise.resolve(previous)
+          .catch(() => {})
+          .then(request);
+        return trackDraftOperation(key, promise);
       },
       flushLibraryDraft: async (queryId, draftId) => {
         if (!draftId || draftId === 'draft') throw new Error('Select an editable draft');
@@ -253,7 +263,9 @@ export const createDataQuerySlice = (set, get) => {
           const record = draftWrites.get(key);
           record?.send.flush();
           const tail = draftOperations.get(key) ?? record?.promise;
-          await tail;
+          // A previous session's failed transport is an ordering barrier, not this
+          // session's retry state. Current-session failures are checked below.
+          await Promise.resolve(tail).catch(() => {});
           // An edit may have arrived while this request was pending. Dispatch any trailing
           // edit and wait again until the tail we just awaited is still the latest one.
           record?.send.flush();

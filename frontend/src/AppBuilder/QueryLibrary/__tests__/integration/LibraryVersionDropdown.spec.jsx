@@ -328,3 +328,13 @@ it.each([
   await waitFor(() => expect(screen.queryByRole('button', { name: 'Delete version' })).not.toBeInTheDocument());
   expect(screen.queryByText('I understand')).not.toBeInTheDocument();
 });
+
+it('preserves saved parent UUIDs in the normalized lifecycle contract', async () => {
+  view.versions = [{ ...saved, createdFromVersionId: 'saved-parent', createdFrom: 'parent-version' }];
+  const { result } = renderHook(() => useLibraryVersionLifecycle({ queryId: 'q1' }));
+  await waitFor(() => expect(result.current.versions).toHaveLength(3));
+  expect(result.current.versions.find((version) => version.id === saved.id)).toMatchObject({
+    parentVersionId: 'saved-parent',
+    createdFromVersion: 'parent-version',
+  });
+});

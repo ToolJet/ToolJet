@@ -8,6 +8,7 @@ export type LibraryVersionView = {
   name: string;
   versionNumber: number;
   description: string | null;
+  createdFromVersionId: string | null;
   createdFrom: string | null;
   environment: { id: string; name: string; priority: number } | null;
   isReleased: boolean;
@@ -99,6 +100,7 @@ export function toLibraryQueryVersionsView(
           name: row.name,
           versionNumber: row.versionNumber,
           description: row.description ?? null,
+          createdFromVersionId: row.createdFromVersionId ?? null,
           createdFrom: nameOf(row.createdFromVersionId),
           environment: environment
             ? { id: environment.id, name: environment.name, priority: environment.priority }

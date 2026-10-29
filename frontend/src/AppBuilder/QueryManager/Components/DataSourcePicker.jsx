@@ -5,6 +5,8 @@ import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox as SearchBox2 } from '@/_components/SearchBox';
 import DataSourceIcon from './DataSourceIcon';
+import { Library } from '../QueryEditors/Library';
+import { globalDatasourceService } from '@/_services';
 import { isEmpty } from 'lodash';
 import { Tooltip } from 'react-tooltip';
 import { Virtuoso } from 'react-virtuoso';
@@ -26,6 +28,11 @@ function DataSourcePicker({ darkMode }) {
   const allUserDefinedSources = [...dataSources, ...globalDataSources].filter(
     (ds) => ds.type !== DATA_SOURCE_TYPE.STATIC && !ds.is_dummy
   );
+  const [librarySource, setLibrarySource] = useState(null);
+  const [libraryOptions, setLibraryOptions] = useState({});
+  const [resolvedLibrarySource, setResolvedLibrarySource] = useState(null);
+  const [librarySourceError, setLibrarySourceError] = useState(null);
+  const [creatingLibraryQuery, setCreatingLibraryQuery] = useState(false);
   const [searchTerm, setSearchTerm] = useState();
   const [filteredUserDefinedDataSources, setFilteredUserDefinedDataSources] = useState(allUserDefinedSources);
   const [collapsedGroups, setCollapsedGroups] = useState(new Set());
@@ -54,9 +61,44 @@ function DataSourcePicker({ darkMode }) {
     });
 
   const handleChangeDataSource = (source) => {
+    if (source.kind === 'library') {
+      setLibraryOptions({});
+      setResolvedLibrarySource(null);
+      setLibrarySourceError(null);
+      setLibrarySource(source);
+      return;
+    }
     createDataQuery(source);
     setPreviewData(null);
   };
+
+  const resolveLibrarySource = async () => {
+    const state = useStore.getState();
+    const { data_sources: sources } = await globalDatasourceService.getForApp(
+      state.appStore.modules.canvas.app.organizationId ?? getWorkspaceId(),
+      state.currentVersionId,
+      state.selectedEnvironment?.id
+    );
+    const source = sources.find((item) => item.kind === 'library' && item.id && item.id !== 'null');
+    if (!source) throw new Error('The Query Library data source is unavailable. Reopen the picker to try again.');
+    return { ...librarySource, ...source };
+  };
+
+  useEffect(() => {
+    if (!librarySource) return;
+    let active = true;
+    resolveLibrarySource()
+      .then((source) => active && setResolvedLibrarySource(source))
+      .catch(
+        () =>
+          active &&
+          setLibrarySourceError('The Query Library data source is unavailable. Reopen the picker to try again.')
+      );
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [librarySource]);
 
   useEffect(() => {
     if (searchTerm) {
@@ -153,6 +195,45 @@ function DataSourcePicker({ darkMode }) {
       </div>
     );
   };
+
+  if (librarySource) {
+    return (
+      <div className="tw-flex tw-flex-col tw-gap-3" data-cy="library-consumer-picker">
+        <Library options={libraryOptions} optionsChanged={setLibraryOptions} darkMode={darkMode} />
+        {librarySourceError && <div role="alert">{librarySourceError}</div>}
+        <div className="tw-flex tw-justify-end tw-gap-2">
+          <ButtonSolid variant="tertiary" disabled={creatingLibraryQuery} onClick={() => setLibrarySource(null)}>
+            Cancel
+          </ButtonSolid>
+          <ButtonSolid
+            disabled={
+              !resolvedLibrarySource ||
+              !libraryOptions.libraryQueryId ||
+              !libraryOptions.libraryQueryVersionId ||
+              creatingLibraryQuery
+            }
+            onClick={async () => {
+              setCreatingLibraryQuery(true);
+              try {
+                const source = await resolveLibrarySource();
+                await createDataQuery(source, false, libraryOptions);
+                setPreviewData(null);
+                setLibrarySource(null);
+              } catch (error) {
+                setResolvedLibrarySource(null);
+                setLibrarySourceError(error.message || 'Unable to create the Query Library query.');
+              } finally {
+                setCreatingLibraryQuery(false);
+              }
+            }}
+            data-cy="create-library-consumer"
+          >
+            Create query
+          </ButtonSolid>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

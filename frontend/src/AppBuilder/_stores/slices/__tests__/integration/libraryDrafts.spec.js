@@ -4,7 +4,12 @@ import { http, HttpResponse } from 'msw';
 import config from 'config';
 import { server } from '@/test/msw/server';
 import useStore from '@/AppBuilder/_stores/store';
-import { viewedLibraryVersionId, withViewedLibraryVersion } from '../../queryLibrarySlice';
+import {
+  viewedLibraryVersionId,
+  withViewedLibraryVersion,
+  libraryRunEnvironment,
+  isLibraryQueryLocked,
+} from '../../queryLibrarySlice';
 
 const state = () => useStore.getState();
 const identity = { id: 'q1', name: 'lookup' };
@@ -259,5 +264,230 @@ it.each([false, true])(
       expect(persisted).toBe('latest');
       expect(saves).toBe(1);
     }
+  }
+);
+
+const deferred = () => {
+  let resolve;
+  const promise = new Promise((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+};
+it('accepts remote options after a successful local autosave', async () => {
+  server.use(http.patch(`${config.apiUrl}/query-library/queries/q1/drafts/a`, () => HttpResponse.json(draft('a'))));
+  await seed();
+  await state().dataQuery.saveData({ ...identity, options: { url: 'local-old' } });
+  server.use(
+    http.get(`${config.apiUrl}/query-library/queries/q1/versions`, () =>
+      HttpResponse.json({ ...view, drafts: [{ ...draft('a'), options: { url: 'remote-new' } }, draft('b')] })
+    )
+  );
+  await state().queryLibrary.loadLibraryVersions('q1');
+  expect(withViewedLibraryVersion(state(), identity).options.url).toBe('remote-new');
+});
+it.each([false, true])('preserves a newer unsent edit when an older autosave settles (failure=%s)', async (fail) => {
+  const pending = deferred();
+  server.use(
+    http.patch(`${config.apiUrl}/query-library/queries/q1/drafts/a`, async () => {
+      await pending.promise;
+      return fail ? HttpResponse.json({ error: 'failed' }, { status: 400 }) : HttpResponse.json(draft('a'));
+    })
+  );
+  await seed();
+  const first = state().dataQuery.saveData({ ...identity, options: { url: 'first' } });
+  state().dataQuery.saveData({ ...identity, options: { url: 'queued' } });
+  pending.resolve();
+  await first.catch(() => {});
+  expect(state().queryLibrary.isSaving).toBe(true);
+  await state().queryLibrary.loadLibraryVersions('q1');
+  expect(withViewedLibraryVersion(state(), identity).options.url).toBe('queued');
+  state().dataQuery.saveData.flush();
+  await state()
+    .dataQuery.flushLibraryDraft('q1', 'a')
+    .catch(() => {});
+});
+it('keeps failed local options during a server refresh', async () => {
+  server.use(
+    http.patch(`${config.apiUrl}/query-library/queries/q1/drafts/a`, () =>
+      HttpResponse.json({ error: 'failed' }, { status: 400 })
+    )
+  );
+  await seed();
+  await state()
+    .dataQuery.saveData({ ...identity, options: { url: 'failed-local' } })
+    .catch(() => {});
+  await state().queryLibrary.loadLibraryVersions('q1');
+  expect(withViewedLibraryVersion(state(), identity).options.url).toBe('failed-local');
+  expect(state().queryLibrary.saveError).toBe(true);
+});
+it.each([2, 3])('selects and unlocks a new draft created from environment priority %s', async (priority) => {
+  const development = { id: 'configured-development', name: 'development', priority: 1 };
+  const environment = { id: 'saved-env', name: 'saved environment', priority };
+  let created = false;
+  server.use(
+    http.get(`${config.apiUrl}/query-library/queries/q1/versions`, () =>
+      HttpResponse.json({
+        drafts: [draft('a'), draft('b'), ...(created ? [draft('new-draft')] : [])],
+        versions: [{ ...draft('saved'), environment }],
+      })
+    ),
+    http.post(`${config.apiUrl}/query-library/queries/q1/drafts`, () => {
+      created = true;
+      return HttpResponse.json(draft('new-draft'));
+    })
+  );
+  await seed();
+  state().queryLibrary.setLibraryEnvironments([development, environment]);
+  state().queryLibrary.setLibraryRunEnvironment('q1', environment);
+  state().queryLibrary.viewLibraryVersion('q1', 'saved');
+  await state().queryLibrary.createLibraryDraft('q1', { name: 'new-draft', fromVersionId: 'saved' });
+  expect(viewedLibraryVersionId(state(), 'q1')).toBe('new-draft');
+  expect(libraryRunEnvironment(state(), 'q1')).toEqual(development);
+  expect(isLibraryQueryLocked(state(), 'q1')).toBe(false);
+  expect(withViewedLibraryVersion(state(), identity).options).toEqual({ url: 'new-draft' });
+  expect(state().queryLibrary.versionsByQueryId.q1.drafts.slice(0, 2)).toEqual(view.drafts);
+});
+it.each(['query', 'session', 'selection'])(
+  'does not steal selection after a pending draft creation and %s switch',
+  async (switchKind) => {
+    const pending = deferred();
+    server.use(
+      http.post(`${config.apiUrl}/query-library/queries/q1/drafts`, async () => {
+        await pending.promise;
+        return HttpResponse.json(draft('new-draft'));
+      })
+    );
+    await seed();
+    const creating = state().queryLibrary.createLibraryDraft('q1', { name: 'new-draft', fromVersionId: 'a' });
+    if (switchKind === 'session') await seed();
+    if (switchKind === 'selection') state().queryLibrary.viewLibraryVersion('q1', 'b');
+    if (switchKind === 'query') {
+      state().dataQuery.setQueries([identity, { id: 'q2', name: 'other' }]);
+      state().queryPanel.setSelectedQuery('q2');
+    }
+    pending.resolve();
+    await creating;
+    expect(viewedLibraryVersionId(state(), 'q1')).toBe(switchKind === 'selection' ? 'b' : 'a');
+    if (switchKind === 'query') expect(state().queryPanel.selectedQuery.id).toBe('q2');
+  }
+);
+it.each(['options', 'failed options', 'source', 'failed source'])(
+  'retains same-identity transport ordering across session re-entry after %s',
+  async (operation) => {
+    const pending = deferred();
+    const started = deferred();
+    const requests = [];
+    let persisted;
+    server.use(
+      http.patch(`${config.apiUrl}/query-library/queries/q1/drafts/a`, async ({ request }) => {
+        const { options } = await request.json();
+        requests.push(options.url);
+        if (options.url === 'old') {
+          started.resolve();
+          await pending.promise;
+        }
+        if (options.url === 'old' && operation.startsWith('failed'))
+          return HttpResponse.json({ error: 'old failure' }, { status: 400 });
+        persisted = options.url;
+        return HttpResponse.json({ ...draft('a'), options });
+      }),
+      http.put(`${config.apiUrl}/query-library/queries/q1/drafts/a/data-source`, async () => {
+        requests.push('old');
+        started.resolve();
+        await pending.promise;
+        if (operation.startsWith('failed')) return HttpResponse.json({ error: 'old failure' }, { status: 400 });
+        persisted = 'old';
+        return HttpResponse.json(draft('a'));
+      }),
+      http.post(`${config.apiUrl}/query-library/queries/q1/drafts/a/save`, () => {
+        requests.push('save');
+        return HttpResponse.json({ ...draft('a'), options: { url: persisted } });
+      })
+    );
+    await seed();
+    const old = operation.includes('source')
+      ? state().queryLibrary.changeLibraryDraftDataSource('q1', 'a', 'new-source')
+      : state().dataQuery.saveData({ ...identity, options: { url: 'old' } });
+    const oldResult = old.catch(() => {});
+    await started.promise;
+    await seed();
+    const next = state().dataQuery.saveData({ ...identity, options: { url: 'new' } });
+    const saving = state().queryLibrary.saveLibraryDraft('q1', 'a', { name: 'new-saved' });
+    await new Promise(setImmediate);
+    const before = [...requests];
+    pending.resolve();
+    await oldResult;
+    await next;
+    const saved = await saving;
+    expect(before).toEqual(['old']);
+    expect(requests).toEqual(['old', 'new', 'save']);
+    expect(saved.options.url).toBe('new');
+    expect(persisted).toBe('new');
+    expect(state().queryLibrary.saveError).toBe(false);
+  }
+);
+
+it.each([1, 2])('follows the selected saved snapshot after promotion from priority %s', async (priority) => {
+  const environments = [1, 2, 3].map((value) => ({
+    id: `env-${value}`,
+    priority: value,
+    name: `Environment ${value}`,
+  }));
+  let promoted = false;
+  const snapshot = () => ({ ...draft('saved'), environment: environments[promoted ? priority : priority - 1] });
+  server.use(
+    http.get(`${config.apiUrl}/query-library/queries/q1/versions`, () =>
+      HttpResponse.json({ drafts: view.drafts, versions: [snapshot()] })
+    ),
+    http.post(`${config.apiUrl}/query-library/queries/q1/versions/saved/promote`, () => {
+      promoted = true;
+      return HttpResponse.json(snapshot());
+    })
+  );
+  await seed();
+  state().queryLibrary.setLibraryEnvironments(environments);
+  state().queryLibrary.setLibraryRunEnvironment('q1', environments[priority - 1]);
+  state().queryLibrary.viewLibraryVersion('q1', 'saved');
+  await state().queryLibrary.promoteLibraryVersion('q1', 'saved');
+  expect(viewedLibraryVersionId(state(), 'q1')).toBe('saved');
+  expect(libraryRunEnvironment(state(), 'q1')).toEqual(environments[priority]);
+  expect(state().queryPanel.selectedQuery.options).toEqual({ url: 'saved' });
+  expect(isLibraryQueryLocked(state(), 'q1')).toBe(true);
+});
+it.each(['query', 'session', 'selection'])(
+  'does not steal selection after pending promotion and %s switch',
+  async (switchKind) => {
+    const pending = deferred();
+    const development = { id: 'dev', priority: 1 };
+    const staging = { id: 'stage', priority: 2 };
+    let promoted = false;
+    const snapshot = () => ({ ...draft('saved'), environment: promoted ? staging : development });
+    server.use(
+      http.get(`${config.apiUrl}/query-library/queries/q1/versions`, () =>
+        HttpResponse.json({ drafts: view.drafts, versions: [snapshot()] })
+      ),
+      http.post(`${config.apiUrl}/query-library/queries/q1/versions/saved/promote`, async () => {
+        await pending.promise;
+        promoted = true;
+        return HttpResponse.json(snapshot());
+      })
+    );
+    await seed();
+    state().queryLibrary.setLibraryEnvironments([development, staging]);
+    state().queryLibrary.setLibraryRunEnvironment('q1', development);
+    state().queryLibrary.viewLibraryVersion('q1', 'saved');
+    const promoting = state().queryLibrary.promoteLibraryVersion('q1', 'saved');
+    if (switchKind === 'session') await seed();
+    if (switchKind === 'selection') state().queryLibrary.viewLibraryVersion('q1', 'b');
+    if (switchKind === 'query') {
+      state().dataQuery.setQueries([identity, { id: 'q2', name: 'other' }]);
+      state().queryPanel.setSelectedQuery('q2');
+    }
+    pending.resolve();
+    await promoting;
+    expect(state().queryLibrary.runEnvironmentByQueryId.q1).not.toEqual(staging);
+    if (switchKind === 'query') expect(state().queryPanel.selectedQuery.id).toBe('q2');
+    else expect(viewedLibraryVersionId(state(), 'q1')).toBe(switchKind === 'selection' ? 'b' : 'a');
   }
 );

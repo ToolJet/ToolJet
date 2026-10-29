@@ -59,6 +59,7 @@ export class LibraryDraftResponseDto {
 }
 @Exclude()
 export class LibraryVersionResponseDto {
+  @Expose() createdFromVersionId: string | null;
   @Expose() id: string;
   @Expose() name: string;
   @Expose() versionNumber: number;
