@@ -42,6 +42,8 @@ jobs:
       plugins: ${{ steps.filter.outputs.plugins }}
       marketplace: ${{ steps.filter.outputs.marketplace }}
       migrations: ${{ steps.filter.outputs.migrations }}
+      # false = nothing CI-relevant changed (docs, cypress-tests, deploy, …): only the gate runs
+      any: ${{ (steps.filter.outputs.changes != '[]' || steps.sub.outputs.server == 'true' || steps.sub.outputs.frontend == 'true') && 'true' || 'false' }}
       # secrets aren't allowed in job-level if:, so expose only whether the snapshot is configured
       snapshot: ${{ secrets.MIGRATION_SNAPSHOT_BUCKET != '' }}
       # changed = fast lane (run-ci-changed label): lint+build always, changed tests only,
@@ -85,6 +87,9 @@ jobs:
             migrations:
               - 'server/{migrations,data-migrations}/**'
               - '!**/*.md'
+            # version bump = release cut: runs only the vulnerability gate (no job reads this output)
+            version:
+              - '{.version,server/.version,frontend/.version}'
             # toolchain / workflow changes affect every suite
             root:
               - '{package.json,package-lock.json,.nvmrc,.node-version,.github/workflows/**}'
@@ -1231,7 +1236,10 @@ jobs:
   # Repo-wide Dependabot-alert policy (not PR-diff scoped) — full lane only, feeds ci-gate.
   vulnerability-gate:
     needs: detect-changes
-    if: needs.detect-changes.result == 'success' && needs.detect-changes.outputs.mode == 'full'
+    # repo-wide Dependabot alerts shouldn't block a PR that touches no code; pushes always check
+    if: >-
+      needs.detect-changes.result == 'success' && needs.detect-changes.outputs.mode == 'full'
+      && (github.event_name != 'pull_request' || needs.detect-changes.outputs.any == 'true')
     uses: ./.github/workflows/release-vulnerability-gate.yml
     secrets:
       DEPENDABOT_ALERTS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN }}
