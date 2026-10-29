@@ -666,6 +666,8 @@ jobs:
           CHANNEL: ${{ secrets.SLACK_CHANNEL_ID }}
           # Suite name rendered in the Slack headline (e.g. "❌ Cypress App Builder Failed").
           SUITE: App Builder
+          # one "App Builder / ee" row for the 6 Cypress-AppBuilder machines
+          COMBINE_SHARDS: "true"
           # Red unless every test job that ran passed (skipped cells don't count).
           OVERALL: >-
             ${{ (needs.Build-Image.result == 'failure' ||

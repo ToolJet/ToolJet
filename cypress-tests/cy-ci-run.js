@@ -76,6 +76,15 @@ cypress
         skipped: results.totalSkipped,
         duration: results.totalDuration,
       },
+      // which specs failed, for the Slack message (a failing hook marks its test failed)
+      failedSpecs: (results.runs || [])
+        .filter((run) => run.stats && run.stats.failures > 0)
+        .map((run) => ({
+          spec: run.spec.relative,
+          tests: (run.tests || [])
+            .filter((test) => test.state === "failed")
+            .map((test) => [].concat(test.title).join(" › ")),
+        })),
     });
     process.exit(results.totalFailed > 0 ? 1 : 0);
   })
