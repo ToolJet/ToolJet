@@ -35,13 +35,37 @@
 // Also tracks in-flight saves (by request id) so waitForEventSavesToSettle can hold
 // typing until a late autosave has landed and re-rendered the popover.
 const inFlightEventSaves = new Set();
+// Sets keyed by req.id: interceptEvents is registered by several helpers, so one
+// request runs every stacked handler and a plain counter would over-count.
+const completedEventSaves = new Set();
 const interceptEvents = () =>
   cy
     .intercept(/\/events(\/|\?|$)/, (req) => {
       inFlightEventSaves.add(req.id);
-      req.on("after:response", () => inFlightEventSaves.delete(req.id));
+      req.on("after:response", () => {
+        inFlightEventSaves.delete(req.id);
+        completedEventSaves.add(req.id);
+      });
     })
     .as("events");
+
+// Run `change`, then soft-wait (up to ~10s) until a save that started after it has
+// completed. The editor queues event saves with requestIdleCallback and only shows
+// the new value once the response lands, so on a busy runner the save can start
+// well after any fixed grace — and a pick made before it lands races it.
+const afterEventSave = (change) => {
+  let since;
+  const poll = (attempts) =>
+    cy.wait(250).then(() => {
+      const saved = completedEventSaves.size > since && !inFlightEventSaves.size;
+      if (!saved && attempts > 1) poll(attempts - 1);
+    });
+  cy.then(() => {
+    since = completedEventSaves.size;
+  });
+  change();
+  cy.then(() => poll(40));
+};
 
 // Soft wait (never fails): poll until no /events save is in flight, giving up after
 // ~5s. A save that lands mid-type re-renders the popover's CodeHinter and detaches
@@ -190,26 +214,17 @@ export const selectCSA = (
 ) => {
   interceptEvents();
 
-  selectSearchableOption(
-    '[data-cy="action-options-component-selection-field"]',
-    component
-  );
   // Let the component pick's save land first: a late response re-renders the popover
   // and can reset an action picked in the meantime back to "Select...".
-  waitForEventSavesToSettle(500);
+  afterEventSave(() =>
+    selectSearchableOption(
+      '[data-cy="action-options-component-selection-field"]',
+      component
+    )
+  );
   const actionField = '[data-cy="action-options-action-selection-field"]';
   const actionLabel = new RegExp(`^\\s*${componentAction}\\s*$`, "i");
-  const actionInputValue = () =>
-    Cypress.$(actionField).first().find("input:visible").first().val() || "";
-  selectSearchableOption(actionField, componentAction);
-  waitForEventSavesToSettle(500);
-  // Re-pick once if a late save still reset it, then require it to stick.
-  cy.then(() => {
-    if (!actionLabel.test(actionInputValue())) {
-      selectSearchableOption(actionField, componentAction);
-      waitForEventSavesToSettle(500);
-    }
-  });
+  afterEventSave(() => selectSearchableOption(actionField, componentAction));
   cy.get(actionField)
     .first()
     .find("input:visible")
