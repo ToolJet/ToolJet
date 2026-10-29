@@ -28,6 +28,8 @@ Click any item or group to open its settings:
 
 Each menu item also has its own **On click** event section, which runs before the component's **On click** event. Groups have **Label**, **Id**, **Icon**, **Hide this item** and **Disable item**, but no **Caption** or events. Child items can be added from inside the group's settings.
 
+A group is shown only when at least one of its child items is visible, so hiding every child item also hides the group. In horizontal orientation, clicking a group opens its child items in a dropdown. In vertical orientation, groups start collapsed and expand or collapse when you click the group header. Selecting an item, by clicking it or with `selectItem()`, expands that item's group and collapses the other groups; selecting a top-level item collapses all groups. A disabled group can't be opened, and `selectItem()` ignores group IDs.
+
 ## Events
 
 | Event | Description |
@@ -55,8 +57,8 @@ The following actions of the Navigation component can be controlled using compon
 
 | <div style={{ width:"130px"}}> Variable </div> | <div style={{ width:"250px"}}> Description </div> | How To Access |
 | :--------------------------------------------- | :------------------------------------------------ | :------------ |
-| selectedItem | The currently selected navigation item object. | `{{components.navigation1.selectedItem}}` |
-| previousSelectedItem | The previously selected navigation item object. | `{{components.navigation1.previousSelectedItem}}` |
+| selectedItem | The currently selected item as an object with `id`, `label`, `groupId` and `groupLabel`. `groupId` and `groupLabel` are `null` for a top-level item. `null` until an item is selected. | `{{components.navigation1.selectedItem}}` |
+| previousSelectedItem | The previously selected item, in the same shape as `selectedItem`. | `{{components.navigation1.previousSelectedItem}}` |
 | isVisible | Indicates if the component is visible. | `{{components.navigation1.isVisible}}` |
 | isDisabled | Indicates if the component is disabled. | `{{components.navigation1.isDisabled}}` |
 | isLoading | Indicates if the component is in a loading state. | `{{components.navigation1.isLoading}}` |

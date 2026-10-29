@@ -120,7 +120,7 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
 | :--------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
-| Padding inside | Sets the space between the component's border and its fields, in pixels. Defaults to `12`. | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value. |
+| Padding inside | Sets the space between the component's border and its fields, in pixels. Defaults to `12`. Components added before this setting was introduced are set to `0`, so their layout doesn't change. | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value. |
 | Background | Sets the background color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Border | Sets the border color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Border radius | Sets the radius of the component's corners, in pixels. Defaults to `6`. | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value. |
