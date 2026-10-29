@@ -98,6 +98,28 @@ describe('editor error notifications', () => {
     }
   });
 
+  it('keeps the collapsed dimensions as the expanded card minimum without sizing ordinary toasts', () => {
+    HTMLElement.prototype.getBoundingClientRect.mockReturnValue({ height: 120, width: 400 });
+    render(<Toast groupErrors />);
+    act(() => {
+      toast.error('One');
+      toast.error('Two');
+      toast.success('Saved');
+    });
+    const collapsedCard = screen.getByText('Two').closest('.editor-error-toast').parentElement;
+    expect(collapsedCard.style.minWidth).toBe('');
+    fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+    const expandedCard = screen
+      .getByRole('list', { name: 'Error messages' })
+      .closest('.toast-error-panel').parentElement;
+    expect(expandedCard).toBe(collapsedCard);
+    expect(expandedCard).toHaveStyle({ minWidth: '400px', minHeight: '120px', boxSizing: 'border-box' });
+    act(() => toast.error('New'));
+    expect(expandedCard).toHaveStyle({ minWidth: '400px', minHeight: '120px' });
+    expect(screen.getByText('Saved').parentElement.style.minWidth).toBe('');
+    expect(screen.getByText('Saved').parentElement.style.minHeight).toBe('');
+  });
+
   // Break this catches: incoming errors remount the expanded toast or reorder existing messages.
   it('silently prepends incoming errors to the same expanded toast and updates its count', () => {
     render(<Toast groupErrors />);

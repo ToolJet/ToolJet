@@ -111,7 +111,14 @@ const GroupedToasts = ({ toastOptions }) => {
           const errors = groups.get(position) || [];
           if (panelErrors?.id === t.id) {
             return (
-              <ToastBar toast={t}>
+              <ToastBar
+                toast={t}
+                style={{
+                  minWidth: panelErrors.initialSize.width,
+                  minHeight: panelErrors.initialSize.height,
+                  boxSizing: 'border-box',
+                }}
+              >
                 {() => (
                   <ErrorPanel
                     errors={panelErrors.errors}
