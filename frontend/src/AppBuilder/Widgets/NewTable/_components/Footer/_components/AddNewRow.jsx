@@ -8,8 +8,11 @@ import {
   getColumnSelectOptions,
   getIncludedTableColumns,
   hasColumnValidation,
+  resolveAddNewRowIn,
 } from '../../../_utils/addNewRowConfig';
 import useStore from '@/AppBuilder/_stores/store';
+import { cn } from '@/lib/utils';
+import { Dialog, DialogContent } from '@/components/ui/Rocket';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { validateNewRowField } from '../../../_utils/validateNewRowField';
@@ -48,11 +51,16 @@ export function AddNewRow({
   const clearAddNewRowDetails = useTableStore((state) => state.clearAddNewRowDetails, shallow);
   const updateShouldPersistAddNewRow = useTableStore((state) => state.updateShouldPersistAddNewRow, shallow);
   const addNewRowColumns = useTableStore((state) => state.getTableProperties(id)?.addNewRowColumns, shallow);
+  const placement = resolveAddNewRowIn(useTableStore((state) => state.getTableProperties(id)?.addNewRowIn, shallow));
   const allColumns = useMemo(
     () => getIncludedTableColumns(allTableColumns, addNewRowColumns),
     [allTableColumns, addNewRowColumns]
   );
   const baseId = useId();
+  // What had focus when the form opened (the footer's add button). A Radix dialog returns focus only to its own
+  // trigger, and this one has none, so the dialog puts it back here when it closes.
+  const openerRef = useRef(null);
+  if (openerRef.current === null && typeof document !== 'undefined') openerRef.current = document.activeElement;
   // errors stay hidden until Add row is clicked once; after that they follow the edits
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
@@ -252,28 +260,58 @@ export function AddNewRow({
     };
   });
 
-  return (
+  // Cancel, Escape and the dialog closing all do the same: tell the app, close, drop what was typed.
+  const handleCancel = () => {
+    fireEvent('onAddNewRowCancelled');
+    hideAddNewRowPopup();
+    clearAddNewRowDetails(id);
+  };
+
+  const handleSubmit = async () => {
+    const firstInvalid = fields.find((field) => !field.isValid);
+    if (firstInvalid) {
+      setSubmitAttempted(true);
+      addRowTableRef.current
+        ?.querySelector(`[data-cy="${firstInvalid.dataCy}"]`)
+        ?.querySelector(FOCUSABLE_SELECTOR)
+        ?.focus();
+      return;
+    }
+    await fireEvent('onNewRowsAdded');
+    hideAddNewRowPopup();
+  };
+
+  const form = (variant) => (
     <AddNewRowForm
+      variant={variant}
       fields={fields}
       darkMode={darkMode}
       bodyRef={addRowTableRef}
-      onSubmit={async () => {
-        const firstInvalid = fields.find((field) => !field.isValid);
-        if (firstInvalid) {
-          setSubmitAttempted(true);
-          addRowTableRef.current
-            ?.querySelector(`[data-cy="${firstInvalid.dataCy}"]`)
-            ?.querySelector(FOCUSABLE_SELECTOR)
-            ?.focus();
-          return;
-        }
-        await fireEvent('onNewRowsAdded');
-        hideAddNewRowPopup();
-      }}
-      onCancel={() => {
-        hideAddNewRowPopup();
-        clearAddNewRowDetails(id);
-      }}
+      onSubmit={handleSubmit}
+      onCancel={handleCancel}
+      onEscape={handleCancel}
     />
   );
+
+  if (placement === 'dialog') {
+    return (
+      <Dialog open onOpenChange={(open) => !open && handleCancel()}>
+        <DialogContent
+          showCloseButton={false}
+          aria-describedby={undefined}
+          // a click on the backdrop must not throw away a half-filled form; Escape and Cancel still close it
+          onInteractOutside={(event) => event.preventDefault()}
+          onCloseAutoFocus={() => openerRef.current?.focus?.()}
+          className={cn(
+            'tw-max-h-[min(80vh,720px)] tw-max-w-[500px] tw-overflow-hidden',
+            darkMode && 'dark-theme theme-dark'
+          )}
+        >
+          {form('dialog')}
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  return form('popover');
 }
