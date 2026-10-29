@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { EntityManager, In, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -10,6 +16,7 @@ import { DataQueryRepository } from './repository';
 import { decamelizeKeys } from 'humps';
 import { serializeDataQueries } from './serialization.helper';
 import {
+  AddToLibraryDto,
   CreateDataQueryDto,
   IUpdatingReferencesOptions,
   ListTablesDto,
@@ -19,48 +26,46 @@ import {
 import {
   assertLibraryDataSource,
   assertLibraryTarget,
-  assertNotCalledByReleasedVersions,
-  assertReleasableLibraryDraft,
-  assertSameLibrary,
+  isLibraryUuid,
   assertSupportedLibraryKind,
   buildLibraryVariableMap,
   CLIENT_SIDE_LIBRARY_KINDS,
-  isSameLibrarySnapshot,
-  latestReleaseOrThrow,
-  LibraryCatalog,
+  LIBRARY_KIND,
   libraryServerReferences,
   libraryTransformationOf,
-  libraryUsedByMessage,
-  libraryVersionName,
   LIBRARY_QUERY_IS_CLIENT_SIDE,
-  parseLibraryVersionRef,
-  pickPinnedVersion,
+  parseLibraryReference,
+  resolveLibraryReference,
   replaceLibraryServerReferences,
-  toLibraryCatalog,
   toLibraryRunEntity,
-  toLibrarySiblings,
-  toLibraryUsage,
   toRunTarget,
   withoutLibraryRequestDetails,
-  UNSUPPORTED_LIBRARY_KINDS,
 } from './library/library-query.util';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { FEATURE_KEY } from './constants';
-import { cloneDeep, isEmpty } from 'lodash';
-import { isUUID } from 'class-validator';
+import { isEmpty, isEqual } from 'lodash';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { IDataQueriesService, QueryCreateContext, QueryUpdateContext, QueryDeleteContext } from './interfaces/IService';
 import { App } from '@entities/app.entity';
-import { LibraryQueryVersion } from '@entities/library_query_version.entity';
-import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
-import { LIBRARY_QUERY_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
+import { LibraryQuery } from '@entities/library_query.entity';
+import { DataQueryExecutionOptions } from './interfaces/IUtilService';
+import {
+  APP_LEVEL_OPTION_KEYS,
+  assertLibraryConsumerOptions,
+  libraryScopeViolations,
+  splitAppLevelOptions,
+} from './library/add-to-library.util';
+import { QueryLibraryService } from '@modules/query-library/service';
+import { AbilityService } from '@modules/ability/interfaces/IService';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
 import { APP_TYPES } from '@modules/apps/constants';
 import { AppValidationService } from '@modules/app-validation/service';
 import { lockForValidation } from '@modules/app-validation/lock';
 import { QueryWrite } from '@modules/app-validation/types';
+import { QUERY_NAME_PATTERN } from '@modules/app-validation/catalog';
+import { LibraryLifecycleService } from '@modules/query-library/lifecycle.service';
 
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
@@ -68,7 +73,10 @@ export class DataQueriesService implements IDataQueriesService {
     protected readonly dataQueryRepository: DataQueryRepository,
     protected readonly dataQueryUtilService: DataQueriesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository,
-    protected readonly appValidationService: AppValidationService
+    protected readonly appValidationService: AppValidationService,
+    protected readonly queryLibraryService: QueryLibraryService,
+    protected readonly abilityService: AbilityService,
+    protected readonly libraryLifecycleService: LibraryLifecycleService
   ) {}
 
   /**
@@ -230,17 +238,22 @@ export class DataQueriesService implements IDataQueriesService {
       // against it, so a query of any other version (or app) must be unreachable here.
       const existing = await manager.findOne(DataQuery, {
         where: { id: dataQueryId, appVersionId: versionId },
-        select: ['id', 'appVersionId', 'name', 'dataSourceId'],
+        select: {
+          id: true,
+          appVersionId: true,
+          name: true,
+          dataSourceId: true,
+          options: true,
+          dataSource: { kind: true },
+        },
+        relations: { dataSource: true },
       });
       if (!existing) {
         throw new NotFoundException('Data query not found');
       }
+      if (options !== undefined) assertLibraryConsumerOptions(existing.dataSource?.kind, existing.options, options);
       if (name !== undefined && existing.name !== name) {
         await this.assertUniqueQueryName(manager, existing.appVersionId, name, dataQueryId);
-        // A rename breaks released code that calls the old name.
-        const library = await this.findLibraryQuery(dataQueryId, versionId);
-        // Its own released versions never block its rename (same rule as delete).
-        if (library) await assertNotCalledByReleasedVersions(library.appVersionId, existing.name, manager, library.id);
       }
 
       const touched = Object.keys({ ...(name !== undefined && { name }), ...(options !== undefined && { options }) });
@@ -266,186 +279,129 @@ export class DataQueriesService implements IDataQueriesService {
     );
   }
 
-  // `versionId` is the library app's version (the route's :versionId, already checked against `app`).
-  async getLibraryUsage(app: App, versionId: string) {
-    const consumers = await this.dataQueryRepository.findLibraryConsumers(app.organizationId, versionId);
-    return toLibraryUsage(consumers);
-  }
-
-  // Library pickers: names, kinds and input/parameter definitions only, never query text (see toLibraryCatalog).
-  async getLibraryCatalog(app: App, versionId: string): Promise<LibraryCatalog> {
-    if (app.type !== APP_TYPES.QUERY_LIBRARY) throw new BadRequestException('Not a query library');
-    const manager = this.dataQueryRepository.manager;
-    const rows = await manager.find(DataQuery, { where: { appVersionId: versionId }, relations: { dataSource: true } });
-    const drafts = rows
-      .map((row) => ({
-        id: row.id,
-        name: row.name,
-        kind: row.dataSource.kind,
-        dataSourceId: row.dataSourceId,
-        options: row.options as Record<string, unknown>,
-      }))
-      .filter((draft) => !UNSUPPORTED_LIBRARY_KINDS.includes(draft.kind));
-    if (!drafts.length) return { queries: [] };
-
-    const queryIds = drafts.map((draft) => draft.id);
-    // The entity's @DeleteDateColumn leaves soft-deleted versions out.
-    const versions = await manager.find(LibraryQueryVersion, {
-      where: { dataQueryId: In(queryIds) },
-      order: { versionNumber: 'DESC' },
-    });
-    // Nested folders: the mapping's parent is always the immediate folder.
-    const folderRows: { queryId: string; folder: string }[] = await manager.query(
-      `SELECT m.child_id AS "queryId", f.name AS "folder"
-         FROM data_query_folder_mappings m
-         JOIN data_query_folders f ON f.id = m.parent_id
-        WHERE m.child_type = 'query' AND m.child_id = ANY($1::uuid[])`,
-      [queryIds]
+  // Moves an app query's logic into the workspace query library (copy + save v1) and turns the app query into a
+  // consumer pinned to v1, all in one transaction. `dto.sourceOptions` must equal the stored row, so a stale client
+  // can't convert something other than what the builder sees; the kept app-level keys come from the stored row.
+  async addToLibrary(user: User, app: App, dataQueryId: string, versionId: string, dto: AddToLibraryDto) {
+    if (app.type !== APP_TYPES.FRONT_END)
+      throw new BadRequestException('Only app queries can be added to the query library');
+    // UI writes only report name problems (see VALIDATION_MODE_BY_SOURCE), so this endpoint enforces the pattern itself.
+    if (!QUERY_NAME_PATTERN.test(dto.name)) {
+      throw new BadRequestException('A query name can only have letters, digits, underscore and hyphen');
+    }
+    // Opens its own transaction, so it runs before ours.
+    await this.dataQueryUtilService.validateQueryActionsAgainstEnvironment(
+      user.organizationId,
+      versionId,
+      'You cannot update queries in the promoted version.'
     );
-    // Soft-deleted rows count, same as release, so the next number matches what Release will assign.
-    const highestRows: { queryId: string; highest: number }[] = await manager.query(
-      `SELECT data_query_id AS "queryId", MAX(version_number)::int AS "highest"
-         FROM library_query_versions WHERE data_query_id = ANY($1::uuid[]) GROUP BY data_query_id`,
-      [queryIds]
-    );
-    return toLibraryCatalog(
-      drafts,
-      versions,
-      new Map(folderRows.map((row) => [row.queryId, row.folder])),
-      new Map(highestRows.map((row) => [row.queryId, row.highest]))
-    );
-  }
-
-  // Copies the draft into the next `vN` snapshot. The draft row stays editable; pinned apps run the snapshot.
-  async releaseLibraryQuery(
-    user: User,
-    dataQueryId: string,
-    app: App
-  ): Promise<{ id: string; name: string; versionNumber: number; createdAt: Date }> {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      // Lock the draft so two releases of the same query run one after the other.
+      // Lock the app query so two concurrent conversions run one after the other (the second then sees the
+      // changed options and gets a 409 instead of orphaning a library query).
       await manager.query('SELECT id FROM data_queries WHERE id = $1 FOR UPDATE', [dataQueryId]);
-      const draft = await manager.findOne(DataQuery, {
-        where: { id: dataQueryId },
+      // Scoped to the URL's version, like update: the guards authorised that version, so a query of any other
+      // version (released, git-locked) is a 404, not a rewrite.
+      const stored = await manager.findOne(DataQuery, {
+        where: { id: dataQueryId, appVersionId: versionId },
         relations: { dataSource: true, appVersion: true },
       });
-      if (!draft || draft.appVersion?.appId !== app.id) throw new NotFoundException('Library query not found');
-      if (app.type !== APP_TYPES.QUERY_LIBRARY) {
-        throw new BadRequestException('Only query library queries can be released');
-      }
-      const kind = draft.dataSource.kind;
-      assertReleasableLibraryDraft(kind, draft.options);
+      if (!stored || stored.appVersion?.appId !== app.id) throw new NotFoundException('Data query not found');
+      if (!isEqual(stored.options, dto.sourceOptions)) throw new ConflictException('This query changed, try again.');
 
-      // Soft-deleted rows count here so a version number is never reused.
-      const [{ latest }] = await manager.query(
-        'SELECT COALESCE(MAX(version_number), 0)::int AS latest FROM library_query_versions WHERE data_query_id = $1',
-        [dataQueryId]
-      );
-      const latestRelease = await manager.findOne(LibraryQueryVersion, {
-        where: { dataQueryId },
-        order: { versionNumber: 'DESC' },
-      });
-      const snapshot = { kind, dataSourceId: draft.dataSourceId, options: draft.options };
-      if (latestRelease && isSameLibrarySnapshot(latestRelease, snapshot)) {
-        throw new BadRequestException(`Nothing changed since ${libraryVersionName(latestRelease)}`);
+      const { dataSource } = stored;
+      const kind = dataSource.kind;
+      assertSupportedLibraryKind(kind);
+      // The library copy keeps the same data source row, so it has to be one every app in the workspace can see.
+      if (
+        dataSource.organizationId !== app.organizationId ||
+        (dataSource.scope !== 'global' && dataSource.type !== 'static')
+      ) {
+        throw new BadRequestException("This query's data source can't be used from the query library.");
       }
 
-      const released = await manager.save(
-        manager.create(LibraryQueryVersion, {
-          dataQueryId,
-          versionNumber: latest + 1,
-          kind,
-          dataSourceId: draft.dataSourceId,
-          options: cloneDeep(draft.options),
-          createdBy: user.id,
-        })
-      );
+      const appLevel = Object.keys(dto.libraryOptions).filter((key) => APP_LEVEL_OPTION_KEYS.includes(key));
+      if (appLevel.length) {
+        throw new BadRequestException(`The library copy can't carry app-level settings: ${appLevel.join(', ')}`);
+      }
+      // Library queries take inputs, not parameters.
+      if ('parameters' in dto.libraryOptions || (stored.options.parameters ?? []).length) {
+        throw new BadRequestException("A query with parameters can't be added to the query library");
+      }
+      // `libraryScopeViolations` skips `inputs`, so they are checked here: declared with empty defaults, and the app
+      // fills exactly those.
+      const violations = libraryScopeViolations(kind, dto.libraryOptions);
+      if (violations.length) {
+        throw new BadRequestException(`The library copy can't read app values: ${violations.join(', ')}`);
+      }
+      const declared = dto.libraryOptions.inputs ?? [];
+      const declaredNames = Array.isArray(declared) ? declared.map((input) => input?.name) : [];
+      if (
+        !Array.isArray(declared) ||
+        declared.some(
+          (input) => typeof input?.name !== 'string' || input.defaultValue !== '' || Object.keys(input).length !== 2
+        ) ||
+        new Set(declaredNames).size !== declaredNames.length ||
+        !isEqual([...declaredNames].sort(), Object.keys(dto.inputs).sort())
+      ) {
+        throw new BadRequestException(
+          'The declared inputs must have empty defaults and match the values filled in the app'
+        );
+      }
+      if (Object.values(dto.inputs).some((value) => typeof value !== 'string')) {
+        throw new BadRequestException('Input values must be text');
+      }
 
-      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-        userId: user.id,
+      // Same rule as importing library queries.
+      const permissions = await this.abilityService.resourceActionsPermission(user, {
         organizationId: user.organizationId,
-        resourceId: draft.id,
-        resourceName: draft.name,
-        actionType: LIBRARY_QUERY_VERSION_AUDIT_KEYS.RELEASE,
-        resourceData: { appId: app.id, versionNumber: released.versionNumber, kind },
-        metadata: { data: { name: 'Library Query Released', version: libraryVersionName(released) } },
       });
+      if (!(permissions.isSuperAdmin || permissions.isAdmin || !!permissions.moduleCreate)) {
+        throw new ForbiddenException(
+          "This query requires adding to the query library, but you don't have permission to create modules. Contact admin."
+        );
+      }
+
+      const libraryStatic = await this.dataSourceRepository.getStaticDataSourceByKind(
+        app.organizationId,
+        LIBRARY_KIND,
+        manager
+      );
+      const created = await this.queryLibraryService.create(
+        user,
+        {
+          name: dto.name,
+          kind,
+          dataSourceId: stored.dataSourceId,
+          options: dto.libraryOptions,
+        },
+        manager
+      );
+      const released = await this.libraryLifecycleService.saveDraft(
+        user,
+        created,
+        created.draftId,
+        { name: 'v1' },
+        manager
+      );
+
+      const options = {
+        ...splitAppLevelOptions(stored.options).appLevel,
+        libraryQueryId: created.id,
+        libraryQueryVersionId: released.id,
+        libraryKind: kind,
+        inputs: dto.inputs,
+      };
+      await this.dataQueryRepository.updateOne(dataQueryId, { options, dataSourceId: libraryStatic.id }, manager);
 
       return {
-        id: released.id,
-        name: libraryVersionName(released),
-        versionNumber: released.versionNumber,
-        createdAt: released.createdAt,
+        query: { id: stored.id, name: stored.name, kind: LIBRARY_KIND, data_source_id: libraryStatic.id, options },
+        libraryQueryId: created.id,
+        libraryVersionId: released.id,
       };
     });
   }
 
-  // Soft-deletes one released version. Blocked while any app or module version pins it. The route's guards
-  // already resolved `app` from the query inside the URL's app version, so a query of another app is a 404.
-  async deleteLibraryQueryVersion(dataQueryId: string, libraryVersionId: string, app: App): Promise<void> {
-    if (app.type !== APP_TYPES.QUERY_LIBRARY) throw new BadRequestException('Not a query library');
-    const manager = this.dataQueryRepository.manager;
-    const query = await manager.findOne(DataQuery, { where: { id: dataQueryId }, relations: { appVersion: true } });
-    if (!query || query.appVersion?.appId !== app.id) throw new NotFoundException('Library query not found');
-    // The entity's @DeleteDateColumn leaves already-deleted versions out.
-    const version = isUUID(libraryVersionId)
-      ? await manager.findOne(LibraryQueryVersion, { where: { id: libraryVersionId, dataQueryId } })
-      : null;
-    if (!version) throw new NotFoundException('Library query version not found');
-
-    const consumers = await this.dataQueryRepository.findLibraryConsumers(
-      app.organizationId,
-      query.appVersionId,
-      query.id,
-      version.id
-    );
-    if (consumers.length) throw new ConflictException(libraryUsedByMessage(consumers));
-
-    await manager.softDelete(LibraryQueryVersion, { id: version.id });
-
-    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-      userId: (RequestContext.currentContext?.req as RequestWithUser | undefined)?.user?.id,
-      organizationId: app.organizationId,
-      resourceId: query.id,
-      resourceName: query.name,
-      actionType: LIBRARY_QUERY_VERSION_AUDIT_KEYS.DELETE,
-      resourceData: { appId: app.id, versionNumber: version.versionNumber, kind: version.kind },
-      metadata: { data: { name: 'Library Query Version Deleted', version: libraryVersionName(version) } },
-    });
-  }
-
-  // The library query a data query id points at, or null for a query in any other kind of app.
-  // Scoped to the URL's version before any message is built: a library query of another app or workspace is a
-  // 404, never a list of its consumers or callers.
-  protected async findLibraryQuery(dataQueryId: string, versionId: string) {
-    const query = await this.dataQueryRepository.getOneById(dataQueryId, { appVersion: { app: true } });
-    const app = query?.appVersion?.app;
-    if (app?.type !== APP_TYPES.QUERY_LIBRARY) return null;
-    if (query.appVersionId !== versionId) throw new NotFoundException('Data query not found');
-    return { id: query.id, name: query.name, appVersionId: query.appVersionId, organizationId: app.organizationId };
-  }
-
-  // Deleting a library query is refused while an app/module version uses it or a released version
-  // of another library query calls it by name.
-  protected async assertLibraryQueryDeletable(dataQueryId: string, versionId: string) {
-    const library = await this.findLibraryQuery(dataQueryId, versionId);
-    if (!library) return;
-    const consumers = await this.dataQueryRepository.findLibraryConsumers(
-      library.organizationId,
-      library.appVersionId,
-      library.id
-    );
-    if (consumers.length) throw new ConflictException(libraryUsedByMessage(consumers));
-    await assertNotCalledByReleasedVersions(
-      library.appVersionId,
-      library.name,
-      this.dataQueryRepository.manager,
-      library.id
-    );
-  }
-
   async delete(dataQueryId: string, versionId: string) {
-    await this.assertLibraryQueryDeletable(dataQueryId, versionId);
     const historyUserId = (RequestContext.currentContext?.req as RequestWithUser | undefined)?.user?.id;
     const context = await this.beforeQueryDelete(dataQueryId);
 
@@ -488,6 +444,11 @@ export class DataQueriesService implements IDataQueriesService {
           })
         );
       }
+
+      stored.forEach((query, i) =>
+        assertLibraryConsumerOptions(query.dataSource?.kind, query.options, dataQueriesOptions[i].options)
+      );
+      // Lock in id order, so two bulk updates over the same rows can't deadlock.
 
       if (stored.length) {
         const writes: QueryWrite[] = dataQueriesOptions.map(({ id, options }, position) => ({
@@ -543,6 +504,7 @@ export class DataQueriesService implements IDataQueriesService {
     // This endpoint is also hit by app preview, and there the user is consuming, not editing,
     // so the loaded options must NOT be written back.
     if (mode !== 'view' && ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) && !isEmpty(options)) {
+      assertLibraryConsumerOptions(dataQuery.dataSource?.kind, dataQuery.options, options);
       await this.dataQueryRepository.updateOne(dataQueryId, { options });
       dataQuery['options'] = options;
     }
@@ -567,68 +529,40 @@ export class DataQueriesService implements IDataQueriesService {
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view', app);
   }
 
-  // Primary: the consumer's pinned version (or the draft). Sibling: the sibling's latest release.
-  // `libraryDraft` is the library query row behind the target; the run uses its app version.
-  protected async loadLibraryTarget(consumerQueryId: string, app: App, siblingQueryId?: string) {
+  // The consumer selects one explicit snapshot; the library identity only supplies workspace/name.
+  protected async loadLibraryTarget(consumerQueryId: string, app: App) {
     const manager = this.dataQueryRepository.manager;
     const consumer = await this.dataQueryRepository.getOneById(consumerQueryId, {
       dataSource: true,
       permissions: true,
     });
     const primaryId = consumer?.options?.libraryQueryId;
-    const primary = primaryId
-      ? await this.dataQueryRepository.getOneById(primaryId, { dataSource: true, appVersion: { app: true } })
+    const primary = isLibraryUuid(primaryId)
+      ? await manager.findOne(LibraryQuery, { where: { id: primaryId, organizationId: app.organizationId } })
       : null;
-    const libraryApp = primary?.appVersion?.app ?? null;
-    assertLibraryTarget({ consumer, library: primary, consumerApp: app, libraryApp });
+    assertLibraryTarget({ consumer, library: primary, consumerApp: app });
 
-    const ref = parseLibraryVersionRef(consumer.options?.libraryQueryVersionId);
-    const pinned = ref.draft
-      ? null
-      : pickPinnedVersion(await manager.findOneBy(LibraryQueryVersion, { id: ref.versionId }), primary.id);
-    const primaryTarget = toRunTarget(primary, pinned);
-
-    if (!siblingQueryId || siblingQueryId === primary.id) {
-      assertSupportedLibraryKind(primaryTarget.kind);
-      return { consumer, target: primaryTarget, libraryDraft: primary, libraryApp };
-    }
-
-    const sibling = await this.dataQueryRepository.getOneById(siblingQueryId, {
-      dataSource: true,
-      appVersion: { app: true },
-    });
-    assertSameLibrary({ kind: primaryTarget.kind, appVersionId: primary.appVersionId }, sibling);
-    const latest = await manager.findOne(LibraryQueryVersion, {
-      where: { dataQueryId: sibling.id },
-      order: { versionNumber: 'DESC' },
-    });
-    const target = toRunTarget(sibling, latestReleaseOrThrow(sibling.name, latest));
+    const ref = parseLibraryReference(consumer.options);
+    const { snapshot } = await resolveLibraryReference(primary.id, ref.id, manager);
+    const target = toRunTarget(primary, snapshot);
     assertSupportedLibraryKind(target.kind);
-    return { consumer, target, libraryDraft: sibling, libraryApp };
+    return { consumer, target };
   }
 
   // `user` is used by the EE override to apply query-level permissions on the consumer query.
 
-  async getLibraryDefinition(consumerQueryId: string, app: App, libraryQueryId?: string, user?: User) {
-    const { target, libraryDraft } = await this.loadLibraryTarget(consumerQueryId, app, libraryQueryId);
+  async getLibraryDefinition(consumerQueryId: string, app: App, user?: User) {
+    const { target } = await this.loadLibraryTarget(consumerQueryId, app);
     if (!CLIENT_SIDE_LIBRARY_KINDS.includes(target.kind)) {
       throw new BadRequestException('Only RunJS library queries run in the browser');
     }
-    const drafts = await this.dataQueryRepository.getAll(libraryDraft.appVersionId);
-    // The entity's @DeleteDateColumn leaves soft-deleted versions out.
-    const versions = await this.dataQueryRepository.manager.find(LibraryQueryVersion, {
-      where: { dataQueryId: In(drafts.map((draft) => draft.id)) },
-      select: { dataQueryId: true, versionNumber: true, kind: true },
-    });
     return {
       id: target.queryId,
       name: target.name,
       kind: target.kind,
       code: target.options.code ?? '',
       inputs: target.options.inputs ?? [],
-      parameters: target.options.parameters ?? [],
       transformation: libraryTransformationOf(target.options),
-      siblings: toLibrarySiblings(drafts, versions),
     };
   }
 
@@ -640,7 +574,7 @@ export class DataQueriesService implements IDataQueriesService {
     app: App,
     environmentId?: string
   ): Promise<object> {
-    const { consumer, target, libraryDraft } = await this.loadLibraryTarget(consumerQueryId, app, dto?.libraryQueryId);
+    const { consumer, target } = await this.loadLibraryTarget(consumerQueryId, app);
     if (CLIENT_SIDE_LIBRARY_KINDS.includes(target.kind)) {
       throw new BadRequestException(LIBRARY_QUERY_IS_CLIENT_SIDE);
     }
@@ -663,22 +597,22 @@ export class DataQueriesService implements IDataQueriesService {
           dataSource,
           user ? user.organizationId : app.organizationId,
           environmentId,
-          libraryDraft.appVersion?.branchId,
+          undefined,
           user
         )
       : undefined;
     const { scope, variableMap } = buildLibraryVariableMap(
       target.options,
-      { inputs: dto?.inputs, parameters: dto?.parameters },
+      { inputs: dto?.inputs },
       {
         currentUser,
         resolveServerText: resolvedReferences && ((text) => replaceLibraryServerReferences(text, resolvedReferences)),
       }
     );
     // Always 'view': runQueryOnBuilder's option write-back must never touch a library query.
-    const entity = toLibraryRunEntity(target, libraryDraft, dataSource, consumer);
+    const entity = toLibraryRunEntity(target, dataSource, consumer);
     const result = withoutLibraryRequestDetails(
-      await this.runAndGetResult(user, entity, variableMap, response, environmentId, 'view', app)
+      await this.runAndGetResult(user, entity, variableMap, response, environmentId, 'view', app, { library: {} })
     );
     // The browser runs the transformation with the scope the server resolved (declared names, defaults applied).
     return libraryTransformation === undefined ? result : { ...result, libraryTransformation, libraryScope: scope };
@@ -695,7 +629,8 @@ export class DataQueriesService implements IDataQueriesService {
     response: Response,
     environmentId?: string,
     mode?: string,
-    app?: App
+    app?: App,
+    executionOptions?: DataQueryExecutionOptions
   ): Promise<object> {
     let result = {};
 
@@ -708,7 +643,7 @@ export class DataQueriesService implements IDataQueriesService {
         environmentId,
         mode,
         app,
-        undefined // opts parameter
+        executionOptions
       );
     } catch (error) {
       if (error.constructor.name === 'QueryError') {

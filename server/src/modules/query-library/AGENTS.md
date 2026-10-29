@@ -44,3 +44,11 @@ Storage tests: `test/modules/query-library/unit/library-query-schema.spec.ts` an
 
 Lifecycle verification: `ee/test/modules/query-library/e2e/library-lifecycle.spec.ts`;
 metadata/run validation: `test/modules/query-library/unit/library-version-validation.spec.ts`.
+
+- Consumer runtime resolves the required `libraryQueryVersionId` UUID from saved
+  storage first, then drafts scoped to its workspace-authorized query. There is no
+  selected-draft fallback. Saving keeps a consumer's UUID and freezes its snapshot.
+- Catalog returns `drafts[]` with UUIDs and persisted names, plus named saved
+  versions; it exposes input definitions only, never snapshot options.
+- Consumer release/promote gates use stored status and version IDs. A saved
+  version named `draft` remains a saved version.

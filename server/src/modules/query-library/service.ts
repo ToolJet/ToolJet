@@ -154,6 +154,7 @@ export class QueryLibraryService {
     if (!drafts.length) return { queries: [] };
     const ids = drafts.map(({ id }) => id);
     const versions = await manager.find(LibraryQueryVersion, { where: { libraryQueryId: In(ids) } });
+    const snapshots = await manager.find(LibraryQueryDraft, { where: { libraryQueryId: In(ids) } });
     const folders = await manager.find(LibraryQueryFolder, { where: { organizationId } });
     const folderNames = new Map(folders.map(({ id, name }) => [id, name]));
     const highest: { queryId: string; highest: number }[] = await manager.query(
@@ -168,7 +169,8 @@ export class QueryLibraryService {
       new Map(drafts.map(({ id, folderId }) => [id, folderNames.get(folderId)])),
       new Map(highest.map((row) => [row.queryId, row.highest])),
       new Map(environments.map(({ id, name, priority }) => [id, { id, name, priority }])),
-      new Map(states.map((state) => [state.libraryQueryId, state]))
+      new Map(states.map((state) => [state.libraryQueryId, state])),
+      snapshots
     );
   }
 

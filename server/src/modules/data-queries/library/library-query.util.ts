@@ -1,11 +1,12 @@
-import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { readFileSync } from 'fs';
 import * as ivm from 'isolated-vm';
 import { cloneDeep, isEqual } from 'lodash';
 import { getDynamicVariables, resolveCode } from 'lib/utils';
-import { APP_TYPES } from '@modules/apps/constants';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSource } from '@entities/data_source.entity';
+import { LibraryQuery } from '@entities/library_query.entity';
+import { LibraryQueryDraft } from '@entities/library_query_draft.entity';
 import { LibraryQueryVersion } from '@entities/library_query_version.entity';
 import { EntityManager } from 'typeorm';
 
@@ -14,8 +15,6 @@ export const LIBRARY_QUERY_IS_CLIENT_SIDE = 'LIBRARY_QUERY_IS_CLIENT_SIDE';
 export const CLIENT_SIDE_LIBRARY_KINDS: readonly string[] = ['runjs'];
 export const UNSUPPORTED_LIBRARY_KINDS: readonly string[] = ['runpy', 'workflows', 'library'];
 
-// Pin sentinel for "run the draft"; a missing or empty ref means the same.
-export const LIBRARY_DRAFT = 'draft';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isLibraryUuid = (value: unknown): value is string => typeof value === 'string' && UUID.test(value);
 
@@ -25,14 +24,31 @@ export const consumerOptionUuidSql = (key: 'libraryQueryId' | 'libraryQueryVersi
   `(CASE WHEN dq.options::jsonb ->> '${key}' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'` +
   ` THEN (dq.options::jsonb ->> '${key}')::uuid END)`;
 
-// `strict` is off, so a discriminated union would not narrow at call sites; `versionId` is set whenever `draft` is false.
-export function parseLibraryVersionRef(ref: unknown): { draft: boolean; versionId?: string } {
-  if (ref === undefined || ref === null || ref === '' || ref === LIBRARY_DRAFT) return { draft: true };
-  if (typeof ref === 'string' && UUID.test(ref)) return { draft: false, versionId: ref };
-  throw new BadRequestException('Library query version not found');
+export function parseLibraryReference(options: Record<string, unknown>): { id: string } {
+  if (
+    !isLibraryUuid(options?.libraryQueryVersionId) ||
+    options?.draftId !== undefined ||
+    options?.libraryVersionId !== undefined
+  )
+    throw new BadRequestException('Supply one explicit libraryQueryVersionId UUID');
+  return { id: options.libraryQueryVersionId };
 }
 
-export const libraryVersionName = (v: { versionNumber: number }): string => `v${v.versionNumber}`;
+export async function resolveLibraryReference(
+  queryId: string,
+  id: string,
+  manager: EntityManager
+): Promise<{ kind: 'draft'; snapshot: LibraryQueryDraft } | { kind: 'saved'; snapshot: LibraryQueryVersion }> {
+  if (!isLibraryUuid(id)) throw new BadRequestException('Library query version not found');
+  const where = { id, libraryQueryId: queryId };
+  const saved = await manager.findOne(LibraryQueryVersion, { where });
+  if (saved) return { kind: 'saved', snapshot: saved };
+  const draft = await manager.findOne(LibraryQueryDraft, { where });
+  if (draft) return { kind: 'draft', snapshot: draft };
+  throw new NotFoundException('Library query version not found');
+}
+
+export const libraryVersionName = (version: { name: string }): string => version.name;
 
 type LibrarySnapshot = { kind: string; dataSourceId: string | null; options: unknown };
 
@@ -40,16 +56,18 @@ type LibrarySnapshot = { kind: string; dataSourceId: string | null; options: unk
 export const isSameLibrarySnapshot = (a: LibrarySnapshot, b: LibrarySnapshot): boolean =>
   a.kind === b.kind && (a.dataSourceId ?? null) === (b.dataSourceId ?? null) && isEqual(a.options, b.options);
 
-type LibraryParameter = { name?: string; defaultValue?: unknown };
+type LibraryInput = { name?: string; defaultValue?: unknown };
 
+export type LibraryEnvironment = { id: string; name: string; priority: number };
 export type LibraryField = { name: string; defaultValue?: unknown };
 export type LibraryCatalogVersion = {
   id: string;
   name: string;
   kind: string;
   inputs: LibraryField[];
-  parameters: LibraryField[];
   createdAt: Date;
+  environment: LibraryEnvironment | null;
+  isReleased: boolean;
 };
 export type LibraryCatalogQuery = {
   id: string;
@@ -57,63 +75,79 @@ export type LibraryCatalogQuery = {
   folder: string | null;
   // One past the highest number ever released, soft-deleted versions included (release never reuses a number).
   nextVersionNumber: number;
-  draft: { kind: string; inputs: LibraryField[]; parameters: LibraryField[]; matchesLatestVersion: boolean };
+  releasedVersionId: string | null;
+  drafts: { id: string; name: string; kind: string; inputs: LibraryField[]; createdAt: Date }[];
   versions: LibraryCatalogVersion[];
 };
 export type LibraryCatalog = { queries: LibraryCatalogQuery[] };
 
-export type LibraryCatalogDraft = LibrarySnapshot & { id: string; name: string };
-export type LibraryCatalogVersionRow = LibrarySnapshot & {
+export type LibraryCatalogDraft = LibrarySnapshot & {
   id: string;
-  dataQueryId: string;
+  libraryQueryId: string;
+  name: string;
+  createdAt: Date;
+};
+export type LibraryCatalogVersionRow = LibrarySnapshot & {
+  name: string;
+  id: string;
+  libraryQueryId: string;
   versionNumber: number;
   createdAt: Date;
+  currentEnvironmentId?: string | null;
 };
 
 // Only names and default values leave the server: no query text, URLs, code or transformation.
 const toLibraryFields = (value: unknown): LibraryField[] =>
-  (Array.isArray(value) ? (value as LibraryParameter[]) : [])
+  (Array.isArray(value) ? (value as LibraryInput[]) : [])
     .filter((field) => field?.name)
     .map(({ name, defaultValue }) => (defaultValue === undefined ? { name } : { name, defaultValue }));
 
-const optionsField = (options: unknown, key: 'inputs' | 'parameters'): LibraryField[] =>
-  toLibraryFields((options as Record<string, unknown> | null)?.[key]);
+const inputsOf = (options: unknown): LibraryField[] =>
+  toLibraryFields((options as Record<string, unknown> | null)?.inputs);
 
 // Pure so it can be unit-tested without a DB. Nested folders show only the immediate folder name.
 export function toLibraryCatalog(
-  drafts: LibraryCatalogDraft[],
+  queries: { id: string; name: string }[],
   versions: LibraryCatalogVersionRow[],
   folderByQueryId: Map<string, string>,
-  highestNumberByQueryId: Map<string, number> = new Map()
+  highestNumberByQueryId: Map<string, number> = new Map(),
+  environmentsById: Map<string, LibraryEnvironment> = new Map(),
+  stateByQueryId: Map<string, { releasedVersionId: string | null }> = new Map(),
+  drafts: LibraryCatalogDraft[] = []
 ): LibraryCatalog {
-  const queries = drafts
-    .filter((draft) => !UNSUPPORTED_LIBRARY_KINDS.includes(draft.kind))
-    .map((draft): LibraryCatalogQuery => {
-      const own = versions
-        .filter((version) => version.dataQueryId === draft.id)
-        .sort((a, b) => b.versionNumber - a.versionNumber);
-      return {
-        id: draft.id,
-        name: draft.name,
-        folder: folderByQueryId.get(draft.id) ?? null,
-        nextVersionNumber: Math.max(highestNumberByQueryId.get(draft.id) ?? 0, own[0]?.versionNumber ?? 0) + 1,
-        draft: {
-          kind: draft.kind,
-          inputs: optionsField(draft.options, 'inputs'),
-          parameters: optionsField(draft.options, 'parameters'),
-          matchesLatestVersion: own.length > 0 && isSameLibrarySnapshot(draft, own[0]),
-        },
-        versions: own.map((version) => ({
-          id: version.id,
-          name: libraryVersionName(version),
-          kind: version.kind,
-          inputs: optionsField(version.options, 'inputs'),
-          parameters: optionsField(version.options, 'parameters'),
-          createdAt: version.createdAt,
+  const catalogQueries = queries.map((draft): LibraryCatalogQuery => {
+    const own = versions
+      .filter((version) => version.libraryQueryId === draft.id)
+      .sort((a, b) => b.versionNumber - a.versionNumber);
+    // Queries without a state row have no Released pointer.
+    const state = stateByQueryId.get(draft.id) ?? { releasedVersionId: null };
+    return {
+      id: draft.id,
+      name: draft.name,
+      folder: folderByQueryId.get(draft.id) ?? null,
+      nextVersionNumber: Math.max(highestNumberByQueryId.get(draft.id) ?? 0, own[0]?.versionNumber ?? 0) + 1,
+      releasedVersionId: state.releasedVersionId,
+      drafts: drafts
+        .filter((row) => row.libraryQueryId === draft.id)
+        .map((row) => ({
+          id: row.id,
+          name: row.name,
+          kind: row.kind,
+          inputs: inputsOf(row.options),
+          createdAt: row.createdAt,
         })),
-      };
-    });
-  queries.sort((a, b) => {
+      versions: own.map((version) => ({
+        id: version.id,
+        name: libraryVersionName(version),
+        kind: version.kind,
+        inputs: inputsOf(version.options),
+        createdAt: version.createdAt,
+        environment: environmentsById.get(version.currentEnvironmentId) ?? null,
+        isReleased: version.id === state.releasedVersionId,
+      })),
+    };
+  });
+  catalogQueries.sort((a, b) => {
     if (a.folder !== b.folder) {
       if (a.folder === null) return -1;
       if (b.folder === null) return 1;
@@ -121,7 +155,7 @@ export function toLibraryCatalog(
     }
     return a.name.localeCompare(b.name);
   });
-  return { queries };
+  return { queries: catalogQueries };
 }
 
 export function assertSupportedLibraryKind(kind: string): void {
@@ -149,16 +183,14 @@ const TEMPLATE = /\{\{([\s\S]*?)\}\}/g;
 const SERVER_REFERENCE = /\{\{\s*(constants|secrets)\.(.*?)\s*\}\}/g;
 const normalisedReference = (_match: string, kind: string, key: string): string => `{{${kind}.${key}}}`;
 
-// The distinct server references in the inputs' and parameters' defaults, in the form resolveConstants reads.
+// The distinct server references in the inputs' defaults, in the form resolveConstants reads.
 export function libraryServerReferences(options: Record<string, unknown> | null | undefined): string[] {
   const references = new Set<string>();
-  for (const key of ['inputs', 'parameters']) {
-    const definitions = options?.[key];
-    for (const { defaultValue } of (Array.isArray(definitions) ? definitions : []) as LibraryParameter[]) {
-      if (typeof defaultValue !== 'string') continue;
-      for (const match of defaultValue.matchAll(SERVER_REFERENCE)) {
-        references.add(normalisedReference(match[0], match[1], match[2]));
-      }
+  const definitions = options?.inputs;
+  for (const { defaultValue } of (Array.isArray(definitions) ? definitions : []) as LibraryInput[]) {
+    if (typeof defaultValue !== 'string') continue;
+    for (const match of defaultValue.matchAll(SERVER_REFERENCE)) {
+      references.add(normalisedReference(match[0], match[1], match[2]));
     }
   }
   return [...references];
@@ -201,31 +233,14 @@ export function assertLibraryTarget({
   consumer,
   library,
   consumerApp,
-  libraryApp,
 }: {
   consumer: DataQuery;
-  library: DataQuery | null;
+  library: LibraryQuery | null;
   consumerApp: { organizationId: string };
-  libraryApp: { organizationId: string; type: string } | null;
 }): void {
   if (consumer?.kind !== LIBRARY_KIND) throw new BadRequestException('Not a library query');
-  if (!library || !libraryApp) throw new NotFoundException('Library query not found');
-  if (libraryApp.organizationId !== consumerApp.organizationId) throw new ForbiddenException();
-  if (libraryApp.type !== APP_TYPES.QUERY_LIBRARY) throw new BadRequestException('Not a query library');
-  // The kind is checked on the run target (assertSupportedLibraryKind): the draft may have changed since the pinned release.
-}
-
-// `primary.kind` is the kind of the version being run, which can differ from its draft.
-export function assertSameLibrary(primary: Pick<DataQuery, 'kind' | 'appVersionId'>, sibling: DataQuery | null): void {
-  // Sibling calls exist only for library RunJS. Without this, anyone who can run an
-  // app's SQL/REST library query could run any other query in that library.
-  if (!CLIENT_SIDE_LIBRARY_KINDS.includes(primary.kind)) {
-    throw new ForbiddenException('Only RunJS library queries can run other library queries');
-  }
-  if (!sibling) throw new NotFoundException('Library query not found');
-  if (sibling.appVersionId !== primary.appVersionId) {
-    throw new ForbiddenException('Library query is not in the same library');
-  }
+  if (!library || library.organizationId !== consumerApp.organizationId)
+    throw new NotFoundException('Library query not found');
 }
 
 function collectStrings(value: unknown, out: string[] = []): string[] {
@@ -241,9 +256,9 @@ export type LibraryRunContext = {
   resolveServerText?: (text: string) => string;
 };
 
-export type LibraryRunValues = { inputs?: Record<string, unknown>; parameters?: Record<string, unknown> };
+export type LibraryRunValues = { inputs?: Record<string, unknown> };
 
-// Library templates see `input`, `parameters` and `globals.currentUser` (from the signed-in user, never the client).
+// Library templates see `input` and `globals.currentUser` (from the signed-in user, never the client).
 // The library editor resolves with the same names (queryPanelSlice), so authors see what consumers get.
 export function buildLibraryVariableMap(
   options: Record<string, any>,
@@ -251,9 +266,8 @@ export function buildLibraryVariableMap(
   { currentUser, resolveServerText }: LibraryRunContext = {}
 ): {
   input: Record<string, unknown>;
-  parameters: Record<string, unknown>;
-  // `input` / `parameters` with each default's server references still as text: safe to send to the browser.
-  scope: { input: Record<string, unknown>; parameters: Record<string, unknown> };
+  // `input` with each default's server references still as text: safe to send to the browser.
+  scope: { input: Record<string, unknown> };
   variableMap: Record<string, unknown>;
 } {
   const memoryLimit = parseInt(process.env?.WORKFLOW_JS_MEMORY_LIMIT_MB) || 20;
@@ -283,7 +297,7 @@ export function buildLibraryVariableMap(
   const resolveDeclared = (definitions: unknown, supplied: Record<string, unknown> = {}) => {
     const resolved: Record<string, unknown> = {};
     const raw: Record<string, unknown> = {};
-    for (const { name, defaultValue } of (Array.isArray(definitions) ? definitions : []) as LibraryParameter[]) {
+    for (const { name, defaultValue } of (Array.isArray(definitions) ? definitions : []) as LibraryInput[]) {
       if (!name) continue;
       // Own properties only: a declared name like `constructor` must not pick up Object.prototype members.
       if (Object.prototype.hasOwnProperty.call(supplied ?? {}, name) && supplied[name] !== undefined) {
@@ -301,20 +315,19 @@ export function buildLibraryVariableMap(
     // ponytail: lodash + moment are re-compiled into each run's isolate (~ms per run); cache compiled code via ivm cachedData if run latency matters
     for (const bundle of loadTemplateBundles()) isolate.compileScriptSync(bundle).runSync(context, { timeout: 5000 });
     const { resolved: input, raw: rawInput } = resolveDeclared(options?.inputs, values?.inputs);
-    const { resolved: parameters, raw: rawParameters } = resolveDeclared(options?.parameters, values?.parameters);
 
     const globals = { currentUser: currentUser ?? {} };
-    // The transformation runs in the browser, so its {{ }} are never resolved here (like inputs and parameters).
+    // The transformation runs in the browser, so its {{ }} are never resolved here (like inputs).
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { inputs: _i, parameters: _p, transformation: _t, ...queryOptions } = options ?? {};
+    const { inputs: _i, transformation: _t, ...queryOptions } = options ?? {};
     const variableMap: Record<string, unknown> = {};
     for (const text of collectStrings(queryOptions)) {
       for (const variable of getDynamicVariables(text.replace(/\n/g, ' ')) ?? []) {
         if (SERVER_RESOLVED.test(variable) || variable in variableMap) continue;
-        variableMap[variable] = evaluate(variable.slice(2, -2), { input, parameters, globals }, variable);
+        variableMap[variable] = evaluate(variable.slice(2, -2), { input, globals }, variable);
       }
     }
-    return { input, parameters, scope: { input: rawInput, parameters: rawParameters }, variableMap };
+    return { input, scope: { input: rawInput }, variableMap };
   } finally {
     // A memory-limit kill already disposes the isolate; disposing again would throw and mask the real error.
     if (!isolate.isDisposed) isolate.dispose();
@@ -346,114 +359,104 @@ export type LibraryRunTarget = {
   kind: string;
   dataSourceId: string | null;
   options: Record<string, any>;
-  versionName: string; // 'v3' or 'draft'
+  versionName: string; // persisted draft or saved-version name
 };
 
-// A pinned version runs from its own snapshot; the draft is only used when there is no version.
-export function toRunTarget(draft: DataQuery, version: LibraryQueryVersion | null): LibraryRunTarget {
-  const source = version ?? draft;
+export function toRunTarget(query: LibraryQuery, snapshot: LibraryQueryVersion | LibraryQueryDraft): LibraryRunTarget {
   return {
-    queryId: draft.id,
-    name: draft.name,
-    kind: source.kind,
-    dataSourceId: source.dataSourceId ?? null,
-    options: source.options as Record<string, any>,
-    versionName: version ? libraryVersionName(version) : LIBRARY_DRAFT,
+    queryId: query.id,
+    name: query.name,
+    kind: snapshot.kind,
+    dataSourceId: snapshot.dataSourceId ?? null,
+    options: snapshot.options as Record<string, unknown>,
+    versionName: snapshot.name,
   };
-}
-
-// ponytail: static scan; queries[name] dynamic access is missed — add a declared-siblings list if that shows up
-export function findSiblingNames(code: string): string[] {
-  const names = new Set<string>();
-  for (const [, name] of (code ?? '').matchAll(/\bqueries\.([A-Za-z_$][\w$]*)/g)) names.add(name);
-  return [...names];
 }
 
 export type LibraryPin = {
   consumerQueryName: string;
   libraryQueryName: string;
-  pinnedVersion: string; // 'v1' | 'draft'
-  latestVersion: string | null;
-  siblings: { name: string; runsVersion: string | null }[];
+  pinnedVersion: string;
+  pinnedVersionId: string | null;
+  releasedVersionId: string | null;
+  status: 'draft' | 'saved' | 'missing';
+  releasedVersion: string | null;
+  pinnedEnvironment: { name: string; priority: number } | null;
 };
 
-// One consumer query joined to its pinned version. A null pinnedVersionNumber means the pin is a draft or
-// resolves to no live version of that library query (V1-era row, deleted version, other workspace).
 export type LibraryPinRow = {
   consumerQueryName: string;
   libraryQueryName: string | null;
-  libraryAppVersionId: string | null;
-  pinnedVersionNumber: number | null;
-  latestVersionNumber: number | null;
-  pinnedKind: string | null;
-  pinnedOptions: unknown;
+  pinnedVersionName: string | null;
+  releasedVersionName: string | null;
+  pinnedVersionId: string | null;
+  releasedVersionId: string | null;
+  draftId: string | null;
+  draftName: string | null;
+  pinnedEnvironmentName: string | null;
+  pinnedEnvironmentPriority: number | null;
 };
 
-// Latest live version of every query in a library, so a RunJS pin's `queries.x` calls can be resolved.
-export type LibrarySiblingRelease = { libraryAppVersionId: string; name: string; latestVersionNumber: number | null };
-
-const versionLabel = (versionNumber: number | null): string | null =>
-  versionNumber === null ? null : libraryVersionName({ versionNumber });
-
-// Pure so the release gate and the library-pins endpoint (and the unit tests) share one decision.
-export function toLibraryPins(rows: LibraryPinRow[], siblingReleases: LibrarySiblingRelease[]): LibraryPin[] {
-  return rows.map((row) => {
-    const pinned = row.pinnedVersionNumber !== null;
-    const code = (row.pinnedOptions as { code?: unknown } | null)?.code;
-    const siblings =
-      pinned && CLIENT_SIDE_LIBRARY_KINDS.includes(row.pinnedKind ?? '') && typeof code === 'string'
-        ? findSiblingNames(code).flatMap((name) => {
-            const match = siblingReleases.find(
-              (sibling) => sibling.libraryAppVersionId === row.libraryAppVersionId && sibling.name === name
-            );
-            return match ? [{ name, runsVersion: versionLabel(match.latestVersionNumber) }] : [];
-          })
-        : [];
-    return {
-      consumerQueryName: row.consumerQueryName,
-      libraryQueryName: row.libraryQueryName ?? 'unknown query',
-      pinnedVersion: versionLabel(row.pinnedVersionNumber) ?? LIBRARY_DRAFT,
-      latestVersion: versionLabel(row.latestVersionNumber),
-      siblings,
-    };
-  });
+export function toLibraryPins(rows: LibraryPinRow[]): LibraryPin[] {
+  return rows.map((row) => ({
+    consumerQueryName: row.consumerQueryName,
+    libraryQueryName: row.libraryQueryName ?? 'unknown query',
+    pinnedVersion: row.pinnedVersionName ?? row.draftName ?? 'missing',
+    releasedVersion: row.releasedVersionName,
+    pinnedVersionId: row.pinnedVersionId ?? row.draftId,
+    releasedVersionId: row.releasedVersionId,
+    status: row.pinnedVersionId ? 'saved' : row.draftId ? 'draft' : 'missing',
+    pinnedEnvironment:
+      row.pinnedVersionId && row.pinnedEnvironmentName !== null
+        ? { name: row.pinnedEnvironmentName, priority: Number(row.pinnedEnvironmentPriority) }
+        : null,
+  }));
 }
 
-// The release-gate message for an app version's pins (null = release may go ahead). Any released version passes;
-// only draft/unresolvable pins and pins whose RunJS calls a never-released sibling block.
-export function libraryReleaseBlock(pins: LibraryPin[]): { error: string; details: string } | null {
-  const sentences = new Set<string>();
-  for (const pin of pins) {
-    if (pin.pinnedVersion === LIBRARY_DRAFT) {
-      sentences.add(
-        `Library query "${pin.consumerQueryName}" is not on a released version. Pick a released version of "${pin.libraryQueryName}".`
-      );
-      continue;
-    }
-    for (const sibling of pin.siblings) {
-      if (sibling.runsVersion !== null) continue;
-      sentences.add(
-        `Library query "${pin.libraryQueryName}" ${pin.pinnedVersion} calls "${sibling.name}", which has no released version. Release "${sibling.name}" first.`
-      );
-    }
-  }
+type LibraryGateBlock = { error: string; details: string } | null;
+
+const draftPinSentence = (pin: LibraryPin) =>
+  `Library query "${pin.consumerQueryName}" is on the draft of "${pin.libraryQueryName}". Pin a saved version.`;
+
+// Wording copies checkModulesPromotableToEnvironment: one offender inline, several counted.
+function gateBlock(verb: 'Release' | 'Promote', sentences: Set<string>): LibraryGateBlock {
   if (sentences.size === 0) return null;
   const details = [...sentences].join(' ');
   const error =
     sentences.size === 1
-      ? `Release blocked - ${details}`
-      : `Release blocked - ${sentences.size} library queries need a released version. ${details}`;
+      ? `${verb} blocked - ${details}`
+      : `${verb} blocked - ${sentences.size} library queries need attention. ${details}`;
   return { error, details };
 }
 
-// appVersionId/appVersion come from the library draft, not the consumer: the snapshot's data source belongs to the
-// library, which always lives on the default branch.
-export function toLibraryRunEntity(
-  target: LibraryRunTarget,
-  libraryDraft: DataQuery,
-  dataSource: DataSource,
-  consumer: DataQuery
-): DataQuery {
+// Release gate (null = go ahead): every pin must be its query's Released version.
+export function libraryReleaseBlock(pins: LibraryPin[]): LibraryGateBlock {
+  const sentences = new Set<string>();
+  for (const pin of pins) {
+    if (pin.status !== 'saved') sentences.add(draftPinSentence(pin));
+    else if (pin.pinnedVersionId !== pin.releasedVersionId)
+      sentences.add(
+        `Library query "${pin.consumerQueryName}" uses "${pin.libraryQueryName}" ${pin.pinnedVersion}, but the released version is ${pin.releasedVersion ?? 'none'}.`
+      );
+  }
+  return gateBlock('Release', sentences);
+}
+
+// Promote gate (null = go ahead): every pinned version must already be in the target environment.
+export function libraryPromoteBlock(pins: LibraryPin[], targetName: string, targetPriority: number): LibraryGateBlock {
+  const sentences = new Set<string>();
+  for (const pin of pins) {
+    if (pin.status !== 'saved') sentences.add(draftPinSentence(pin));
+    else if ((pin.pinnedEnvironment?.priority ?? -Infinity) < targetPriority)
+      sentences.add(
+        `Library query "${pin.libraryQueryName}" version "${pin.pinnedVersion}" not promoted to ${targetName} yet.`
+      );
+  }
+  return gateBlock('Promote', sentences);
+}
+
+// Consumer identity and app metadata remain intact; execution selects library credentials on the default branch.
+export function toLibraryRunEntity(target: LibraryRunTarget, dataSource: DataSource, consumer: DataQuery): DataQuery {
   // Execute the library query, but authorise and audit it as the consumer query:
   // EE query-permission checks key off dataQuery.id/permissions (ee/data-queries/util.service.ts).
   return Object.assign(Object.create(Object.getPrototypeOf(consumer)), consumer, {
@@ -462,8 +465,8 @@ export function toLibraryRunEntity(
     kind: target.kind,
     dataSourceId: target.dataSourceId,
     dataSource,
-    appVersionId: libraryDraft.appVersionId,
-    appVersion: libraryDraft.appVersion,
+    appVersionId: consumer.appVersionId,
+    appVersion: consumer.appVersion,
     permissions: consumer.permissions ?? [],
     options: cloneDeep(target.options),
   });
@@ -471,15 +474,9 @@ export function toLibraryRunEntity(
 
 // An app's pin must be a live version of the library query the consumer points at.
 export function pickPinnedVersion(version: LibraryQueryVersion | null, libraryQueryId: string): LibraryQueryVersion {
-  if (!version || version.dataQueryId !== libraryQueryId)
+  if (!version || version.libraryQueryId !== libraryQueryId)
     throw new NotFoundException('Library query version not found');
   return version;
-}
-
-// Sibling calls run the sibling's latest release; a never-released sibling can't be called.
-export function latestReleaseOrThrow(siblingName: string, latest: LibraryQueryVersion | null): LibraryQueryVersion {
-  if (!latest) throw new BadRequestException(`Library query "${siblingName}" has no released version`);
-  return latest;
 }
 
 // A deleted data source leaves the snapshot behind with a null data source id.
@@ -498,21 +495,6 @@ export function libraryTransformationOf(options: Record<string, unknown>): strin
   return String(options.transformation ?? '');
 }
 
-export type LibrarySibling = { id: string; name: string; kind: string; released: boolean };
-
-// Pure so it can be unit-tested without a DB. `versions` may hold several versions per query.
-export function toLibrarySiblings(
-  drafts: { id: string; name: string; kind: string }[],
-  versions: { dataQueryId: string; versionNumber: number; kind: string }[]
-): LibrarySibling[] {
-  return drafts.map((draft) => {
-    const latest = versions
-      .filter((version) => version.dataQueryId === draft.id)
-      .reduce<(typeof versions)[number] | null>((a, b) => (!a || b.versionNumber > a.versionNumber ? b : a), null);
-    return { id: draft.id, name: draft.name, kind: latest?.kind ?? draft.kind, released: !!latest };
-  });
-}
-
 // Same strings as APP_TYPES.FRONT_END / APP_TYPES.MODULE, as literals so the type is a plain union.
 const CONSUMER_APP_TYPES = ['front-end', 'module'] as const;
 export type LibraryConsumerAppType = (typeof CONSUMER_APP_TYPES)[number];
@@ -525,7 +507,8 @@ export type LibraryConsumer = {
   queryId: string;
   queryName: string;
   libraryQueryId: string;
-  versionName: string; // 'v2', or 'draft' when the pin doesn't resolve to a live version
+  versionName: string; // persisted draft or saved-version name; missing for an unresolved pin
+  pinnedEnvironment: string | null; // environment name of the pinned version; null for a draft pin
 };
 
 // Shared by DataQueryRepository and AppsService (EE AppsService has its own constructor, so no repo injection).
@@ -533,37 +516,40 @@ export type LibraryConsumer = {
 export async function queryLibraryConsumers(
   manager: EntityManager,
   organizationId: string,
-  libraryAppVersionId: string,
   libraryQueryId?: string,
   libraryVersionId?: string
 ): Promise<LibraryConsumer[]> {
   // data_queries.options may be simple-json (text): cast to jsonb. Pointer ids are compared as uuid;
   // consumerOptionUuidSql turns a malformed pointer into NULL, so it matches nothing instead of failing the cast.
-  const params: unknown[] = [organizationId, libraryAppVersionId, LIBRARY_KIND, [...CONSUMER_APP_TYPES]];
+  const params: unknown[] = [organizationId, LIBRARY_KIND, [...CONSUMER_APP_TYPES]];
   let queryFilter = '';
   if (libraryQueryId) {
     params.push(libraryQueryId);
-    queryFilter = `AND lq.id = $5::uuid`;
+    queryFilter = `AND lq.id = $4::uuid`;
     if (libraryVersionId) {
       params.push(libraryVersionId);
-      queryFilter += ` AND lv.id = $6::uuid`;
+      queryFilter += ` AND ${consumerOptionUuidSql('libraryQueryVersionId')} = $5::uuid`;
     }
   }
   return manager.query(
     // apps.name is NULL on the branch model; the name lives on app_versions.app_name.
-    // The pin resolves like getLibraryPinsForAppVersion: a live version of that very query, else it reads as draft.
+    // Scope both snapshot tables to this query; display names never determine lifecycle status.
     `SELECT a.id AS "appId", COALESCE(av.app_name, a.name) AS "appName", a.type::text AS "appType",
             av.name AS "appVersionName", dq.id AS "queryId", dq.name AS "queryName", lq.id AS "libraryQueryId",
-            CASE WHEN lv.id IS NULL THEN '${LIBRARY_DRAFT}' ELSE 'v' || lv.version_number END AS "versionName"
+            COALESCE(lv.name, ld.name, 'missing') AS "versionName",
+            env.name AS "pinnedEnvironment"
        FROM data_queries dq
-       JOIN data_sources ds ON ds.id = dq.data_source_id AND ds.kind = $3
+       JOIN data_sources data_source ON data_source.id = dq.data_source_id AND data_source.kind = $2
        JOIN app_versions av ON av.id = dq.app_version_id
        JOIN apps a ON a.id = av.app_id
-       JOIN data_queries lq ON lq.id = ${consumerOptionUuidSql('libraryQueryId')} AND lq.app_version_id = $2::uuid
+       JOIN library_queries lq ON lq.id = ${consumerOptionUuidSql('libraryQueryId')} AND lq.organization_id = $1
        LEFT JOIN library_query_versions lv ON lv.id = ${consumerOptionUuidSql('libraryQueryVersionId')}
-                                          AND lv.data_query_id = lq.id AND lv.deleted_at IS NULL
+                                          AND lv.library_query_id = lq.id AND lv.deleted_at IS NULL
+       LEFT JOIN library_query_drafts ld ON ld.id = ${consumerOptionUuidSql('libraryQueryVersionId')}
+                                        AND ld.library_query_id = lq.id AND ld.deleted_at IS NULL
+       LEFT JOIN app_environments env ON env.id = lv.current_environment_id
       WHERE a.organization_id = $1
-        AND a.type::text = ANY($4::text[])
+        AND a.type::text = ANY($3::text[])
         ${queryFilter}
       ORDER BY "appName", av.name, dq.name`,
     params
@@ -573,7 +559,14 @@ export async function queryLibraryConsumers(
 export type LibraryUsageEntry = {
   id: string;
   name: string;
-  queries: { id: string; name: string; appVersionName: string; libraryQueryId: string; versionName: string }[];
+  queries: {
+    id: string;
+    name: string;
+    appVersionName: string;
+    libraryQueryId: string;
+    versionName: string;
+    pinnedEnvironment: string | null;
+  }[];
 };
 
 // Split by app type. The `apps` key keeps its V1 meaning: front-end apps only.
@@ -591,6 +584,7 @@ export function toLibraryUsage(consumers: LibraryConsumer[]): {
         appVersionName: row.appVersionName,
         libraryQueryId: row.libraryQueryId,
         versionName: row.versionName,
+        pinnedEnvironment: row.pinnedEnvironment ?? null,
       });
       byApp.set(row.appId, entry);
     }
@@ -614,43 +608,4 @@ export function libraryUsedByMessage(consumers: LibraryConsumer[]): string {
   const ordered = [...consumers].sort((a, b) => Number(a.appType === 'module') - Number(b.appType === 'module'));
   const list = [...new Set(ordered.map((consumer) => `${consumer.appName} · ${consumer.appVersionName}`))].join(', ');
   return `Used by ${counts}: ${list}. Remove it from those first.`;
-}
-
-export type ReleasedLibraryCode = { queryId: string; queryName: string; versionNumber: number; code: string | null };
-
-// Pure half of the called-by-released-versions guard. Names the oldest calling version: it is the first one that has to be retired.
-// `excludeQueryId` skips a query's own versions (deleting a query takes them with it).
-export function calledByReleasedVersion(
-  queryName: string,
-  releasedCode: ReleasedLibraryCode[],
-  excludeQueryId?: string
-): { caller: string; versionNumber: number } | null {
-  const callers = releasedCode
-    .filter((row) => row.queryId !== excludeQueryId && findSiblingNames(row.code ?? '').includes(queryName))
-    .sort((a, b) => a.queryName.localeCompare(b.queryName) || a.versionNumber - b.versionNumber);
-  return callers.length ? { caller: callers[0].queryName, versionNumber: callers[0].versionNumber } : null;
-}
-
-// Renaming or deleting a library query is refused while a live released version of another query calls it
-// by name, because released code can't be edited.
-export async function assertNotCalledByReleasedVersions(
-  libraryAppVersionId: string,
-  queryName: string,
-  manager: EntityManager,
-  excludeQueryId?: string
-): Promise<void> {
-  const released: ReleasedLibraryCode[] = await manager.query(
-    `SELECT lq.id AS "queryId", lq.name AS "queryName", lv.version_number AS "versionNumber",
-            lv.options ->> 'code' AS "code"
-       FROM library_query_versions lv
-       JOIN data_queries lq ON lq.id = lv.data_query_id
-      WHERE lq.app_version_id = $1::uuid AND lv.deleted_at IS NULL AND lv.kind = ANY($2::text[])`,
-    [libraryAppVersionId, CLIENT_SIDE_LIBRARY_KINDS]
-  );
-  const calledBy = calledByReleasedVersion(queryName, released, excludeQueryId);
-  if (calledBy) {
-    throw new BadRequestException(
-      `${queryName} is called by ${calledBy.caller} v${calledBy.versionNumber}. Release a version of ${calledBy.caller} that doesn't call it, then delete the older versions that do.`
-    );
-  }
 }

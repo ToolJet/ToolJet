@@ -41,8 +41,8 @@ import {
   LIBRARY_KIND,
   LibraryPin,
   LibraryPinRow,
-  LibrarySiblingRelease,
   libraryReleaseBlock,
+  libraryPromoteBlock,
   toLibraryPins,
 } from '@modules/data-queries/library/library-query.util';
 import { Component } from 'src/entities/component.entity';
@@ -60,7 +60,6 @@ const PERMISSION_RESOURCE_BY_APP_TYPE: Record<string, MODULES> = {
   [APP_TYPES.WORKFLOW]: MODULES.WORKFLOWS,
   [APP_TYPES.FRONT_END]: MODULES.APP,
   [APP_TYPES.MODULE]: MODULES.MODULES,
-  [APP_TYPES.QUERY_LIBRARY]: MODULES.MODULES,
 };
 const DEFAULT_PERMISSION_RESOURCE = MODULES.APP;
 
@@ -75,32 +74,6 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly abilityService: AbilityService,
     protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
-  // The workspace's one query library and its single version, where library queries live; null when
-  // the workspace has none yet.
-  async findWorkspaceQueryLibrary(
-    manager: EntityManager,
-    organizationId: string
-  ): Promise<{ app: App; versionId: string } | null> {
-    const app = await manager.findOne(App, {
-      where: { organizationId, type: APP_TYPES.QUERY_LIBRARY },
-      order: { createdAt: 'ASC' },
-    });
-    if (!app) return null;
-    const version = await manager.findOne(AppVersion, { where: { appId: app.id }, order: { createdAt: 'ASC' } });
-    if (!version) throw new NotFoundException('Query library has no version');
-    return { app, versionId: version.id };
-  }
-
-  // Import calls this so an export lands in a workspace that has no library yet.
-  async getOrCreateWorkspaceQueryLibrary(manager: EntityManager, user: User): Promise<{ app: App; versionId: string }> {
-    const existing = await this.findWorkspaceQueryLibrary(manager, user.organizationId);
-    if (existing) return existing;
-    const app = await this.create('Query library', user, APP_TYPES.QUERY_LIBRARY, false, manager);
-    const version = await manager.findOne(AppVersion, { where: { appId: app.id }, order: { createdAt: 'ASC' } });
-    if (!version) throw new NotFoundException('Query library has no version');
-    return { app, versionId: version.id };
-  }
-
   async create(
     name: string,
     user: User,
@@ -1008,7 +981,7 @@ export class AppsUtilService implements IAppsUtilService {
       ORDER BY av_pick.is_stub ASC, av_pick.updated_at DESC
       LIMIT 1
     )`;
-    // Modules and query libraries need their versions (the library picker reads app_versions[0].id).
+    // Module pickers need their versions.
     if (isModuleLikeAppType(type)) {
       if (branchId) {
         qb.innerJoinAndSelect('apps.appVersions', 'appVersions', branchPick, { branchId });
@@ -1100,7 +1073,6 @@ export class AppsUtilService implements IAppsUtilService {
       // Modules are now permission-scoped (H1): filter to the user's editable ∪ viewable ∪ owned
       // module ids, exactly like front-end apps. Previously modules were returned unfiltered.
       case APP_TYPES.MODULE:
-      case APP_TYPES.QUERY_LIBRARY:
         if (context === 'picker') {
           return this.addPickerModulesFilter(viewableAppsQb, userAppPermissions as unknown as UserAppsPermissions);
         }
@@ -1804,7 +1776,7 @@ export class AppsUtilService implements IAppsUtilService {
     }
   }
 
-  // The gate and the library-pins endpoint read the same rows, so the dialog warns about exactly what the gate blocks.
+  // The gates and the library-pins endpoint read the same rows, so the dialog warns about exactly what the gates block.
   async getLibraryPinsForAppVersion(
     versionId: string,
     organizationId: string,
@@ -1813,38 +1785,28 @@ export class AppsUtilService implements IAppsUtilService {
     // A malformed pin id matches nothing (consumerOptionUuidSql). Another workspace's library queries read as gone.
     const rows: LibraryPinRow[] = await manager.query(
       `SELECT dq.name AS "consumerQueryName",
-              CASE WHEN la.id IS NOT NULL THEN lq.name END AS "libraryQueryName",
-              CASE WHEN la.id IS NOT NULL THEN lq.app_version_id END AS "libraryAppVersionId",
-              lv.version_number AS "pinnedVersionNumber",
-              (SELECT MAX(x.version_number) FROM library_query_versions x
-                WHERE x.data_query_id = lq.id AND x.deleted_at IS NULL AND la.id IS NOT NULL) AS "latestVersionNumber",
-              lv.kind AS "pinnedKind",
-              lv.options AS "pinnedOptions"
+              lq.name AS "libraryQueryName",
+              lv.name AS "pinnedVersionName",
+              lv.id AS "pinnedVersionId",
+              ld.id AS "draftId", ld.name AS "draftName",
+              rv.name AS "releasedVersionName", rv.id AS "releasedVersionId",
+              pe.name AS "pinnedEnvironmentName",
+              pe.priority AS "pinnedEnvironmentPriority"
          FROM data_queries dq
          JOIN data_sources ds ON ds.id = dq.data_source_id AND ds.kind = $3
-         LEFT JOIN data_queries lq ON lq.id = ${consumerOptionUuidSql('libraryQueryId')}
-         LEFT JOIN app_versions lav ON lav.id = lq.app_version_id
-         LEFT JOIN apps la ON la.id = lav.app_id AND la.organization_id = $2 AND la.type = $4
+         LEFT JOIN library_queries lq ON lq.id = ${consumerOptionUuidSql('libraryQueryId')} AND lq.organization_id = $2
          LEFT JOIN library_query_versions lv ON lv.id = ${consumerOptionUuidSql('libraryQueryVersionId')}
-                                            AND lv.data_query_id = lq.id AND lv.deleted_at IS NULL AND la.id IS NOT NULL
+                                            AND lv.library_query_id = lq.id AND lv.deleted_at IS NULL
+         LEFT JOIN library_query_drafts ld ON ld.id = ${consumerOptionUuidSql('libraryQueryVersionId')}
+                                          AND ld.library_query_id = lq.id AND ld.deleted_at IS NULL
+         LEFT JOIN app_environments pe ON pe.id = lv.current_environment_id
+         LEFT JOIN library_query_states st ON st.library_query_id = lq.id
+         LEFT JOIN library_query_versions rv ON rv.id = st.released_version_id AND rv.deleted_at IS NULL
         WHERE dq.app_version_id = $1
         ORDER BY dq.name`,
-      [versionId, organizationId, LIBRARY_KIND, APP_TYPES.QUERY_LIBRARY]
+      [versionId, organizationId, LIBRARY_KIND]
     );
-    const libraryAppVersionIds = [
-      ...new Set(rows.flatMap((row) => (row.libraryAppVersionId ? [row.libraryAppVersionId] : []))),
-    ];
-    const siblingReleases: LibrarySiblingRelease[] = libraryAppVersionIds.length
-      ? await manager.query(
-          `SELECT lq.app_version_id AS "libraryAppVersionId", lq.name,
-                  (SELECT MAX(x.version_number) FROM library_query_versions x
-                    WHERE x.data_query_id = lq.id AND x.deleted_at IS NULL) AS "latestVersionNumber"
-             FROM data_queries lq
-            WHERE lq.app_version_id = ANY($1::uuid[])`,
-          [libraryAppVersionIds]
-        )
-      : [];
-    return toLibraryPins(rows, siblingReleases);
+    return toLibraryPins(rows);
   }
 
   async checkLibraryQueriesReleasedInApp(
@@ -1853,14 +1815,36 @@ export class AppsUtilService implements IAppsUtilService {
     manager: EntityManager
   ): Promise<void> {
     try {
-      // Any released version passes (old pins are fine). Blocks draft/unresolvable pins and pins whose
-      // RunJS calls a sibling that was never released. Modules go through the same gate.
+      // Every pin must be its query's Released version. Modules go through the same gate.
       const block = libraryReleaseBlock(await this.getLibraryPinsForAppVersion(versionId, organizationId, manager));
       if (block) throw new BadRequestException({ message: block });
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       console.error('Failed to check library query release state', error?.stack || error);
       throw new BadRequestException('Failed to validate library queries for release');
+    }
+  }
+
+  // Promote gate for apps and modules (direct pins only): every pinned library version must already be in the target
+  // environment. Mirrors VersionUtilService.checkModulesPromotableToEnvironment.
+  async checkLibraryQueriesPromotableToEnvironment(
+    versionId: string,
+    targetEnvironmentName: string,
+    targetPriority: number,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    try {
+      const block = libraryPromoteBlock(
+        await this.getLibraryPinsForAppVersion(versionId, organizationId, manager),
+        targetEnvironmentName,
+        targetPriority
+      );
+      if (block) throw new BadRequestException({ message: block });
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      console.error('Failed to check library query environment availability', error?.stack || error);
+      throw new BadRequestException('Failed to validate library queries for promote');
     }
   }
 

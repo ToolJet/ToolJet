@@ -48,9 +48,11 @@ class LibraryEnvironmentResponseDto {
 }
 @Exclude()
 class LibraryCatalogDraftResponseDto {
+  @Expose() id: string;
+  @Expose() name: string;
+  @Expose() createdAt: Date;
   @Expose() kind: string;
   @Expose() @Type(() => LibraryInputResponseDto) inputs: LibraryInputResponseDto[];
-  @Expose() matchesLatestVersion: boolean;
 }
 @Exclude()
 class LibraryCatalogVersionResponseDto {
@@ -68,9 +70,8 @@ class LibraryCatalogQueryResponseDto {
   @Expose() name: string;
   @Expose() folder: string | null;
   @Expose() nextVersionNumber: number;
-  @Expose() hasDraft: boolean;
   @Expose() releasedVersionId: string | null;
-  @Expose() @Type(() => LibraryCatalogDraftResponseDto) draft: LibraryCatalogDraftResponseDto;
+  @Expose() @Type(() => LibraryCatalogDraftResponseDto) drafts: LibraryCatalogDraftResponseDto[];
   @Expose() @Type(() => LibraryCatalogVersionResponseDto) versions: LibraryCatalogVersionResponseDto[];
 }
 @Exclude()
