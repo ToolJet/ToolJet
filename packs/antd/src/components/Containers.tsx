@@ -521,12 +521,12 @@ export const List = () => {
   const selectedKey =
     picked || (exposedKey ? (keys.find((k, i) => rowKeyOf(rows[i], field, i) === exposedKey) ?? '') : '');
 
-  const select = (row: Row | null, index: number) => {
+  const select = (row: Row | null, index: number, fire = true) => {
     setPicked(row && index >= 0 ? (keys[index] ?? '') : '');
     group.current = row ? idGroup(rows, ids, rowIdText(row, field)) : [];
     setSelectedItem(row ?? {});
     setSelectedItemKey((row ? rowIdOf(row, field, index) : '') as string);
-    if (row) onItemClick();
+    if (row && fire) onItemClick();
   };
   // The selection follows its record by key across a refresh or a reorder (an edited record is exposed as it is now),
   // and clears once the record is gone: the old row stayed exposed and highlighted nothing (SP-31). A repeated id is
@@ -567,7 +567,11 @@ export const List = () => {
     { name: 'selectItem', displayName: 'Select item', params: [{ handle: 'key', displayName: 'Row key' }] },
     (key) => {
       const index = rows.findIndex((r, i) => rowKeyOf(r, field, i) === str(key));
-      select(rows[index] ?? null, index);
+      if (index < 0) return;
+      // As in the Rocket List view: no click event from an action, and the page the item is on is shown, or the
+      // selection is invisible (team testing, 2026-10-29).
+      select(rows[index], index, false);
+      if (size_) setPage(Math.floor(index / size_) + 1);
     }
   );
   ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => select(null, -1));
@@ -617,9 +621,11 @@ export const List = () => {
                 {extraText ? <span>{extraText}</span> : null}
               </Space>
             ) : null;
-          // The title field, else the row's first text field (a name the data does not have shows the record anyway).
-          const titleValue =
-            readField(row, titleField) ?? Object.values(row).find((v) => typeof v === 'string' && v.trim());
+          // The title field; the row's first text field only when no title field is set. A named field the row lacks
+          // shows a blank title, as in the Rocket and MUI lists, not another field (team testing, 2026-10-29).
+          const titleValue = str(titleField)
+            ? readField(row, titleField)
+            : Object.values(row).find((v) => typeof v === 'string' && v.trim());
           return (
             <AntList.Item
               className={selected ? 'tj-ant-item is-selected' : 'tj-ant-item'}

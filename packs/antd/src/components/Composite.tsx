@@ -465,6 +465,7 @@ export const RecordList = () => {
     idField,
   });
   const { selectedItemId, select } = useSelection(items, idField);
+  ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => select(null));
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-list tj-ant-scroll">
       <List
@@ -479,6 +480,9 @@ export const RecordList = () => {
           <List.Item
             className={it.key === selectedItemId ? 'tj-ant-item is-selected' : 'tj-ant-item'}
             onClick={() => {
+              // Clicking the selected record again unselects it, with no click event, as in the Rocket Record list
+              // (team testing, 2026-10-29: a selection could not be undone).
+              if (it.key === selectedItemId) return select(null);
               select(it as unknown as Selectable);
               onItemClicked();
             }}

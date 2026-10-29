@@ -685,13 +685,13 @@ export const List = () => {
   const selectedKey =
     picked || (exposedKey ? (keys.find((k, i) => rowKeyOf(items[i], field, i) === exposedKey) ?? '') : '');
 
-  const select = (row: Row | null, index: number) => {
+  const select = (row: Row | null, index: number, fire = true) => {
     setPicked(row && index >= 0 ? (keys[index] ?? '') : '');
     group.current = row ? idGroup(items, ids, rowIdText(row, field)) : [];
     setSelectedItem(row ?? {});
     // The item's own key value, as the app wrote it (a number stays a number).
     setSelectedItemKey((row ? rowIdOf(row, field, index) : '') as string);
-    if (row) onItemClick();
+    if (row && fire) onItemClick();
   };
   // The selection follows its item by key when the items change: a refresh republishes the fresh record, a reorder keeps
   // it, and a removal clears it (it kept exposing the old record). A repeated id is followed only to the same record by
@@ -728,7 +728,11 @@ export const List = () => {
     { name: 'selectItem', displayName: 'Select item', params: [{ handle: 'key', displayName: 'Item key' }] },
     (key) => {
       const index = items.findIndex((r, i) => rowKeyOf(r, field, i) === str(key));
-      select(items[index] ?? null, index);
+      if (index < 0) return;
+      // As in the Rocket List view: no click event from an action, and the page the item is on is shown, or the
+      // selection is invisible (team testing, 2026-10-29).
+      select(items[index], index, false);
+      if (size) setPage(Math.floor(index / size) + 1);
     }
   );
   ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => select(null, -1));

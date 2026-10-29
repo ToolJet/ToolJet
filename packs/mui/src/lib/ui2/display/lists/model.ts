@@ -129,13 +129,27 @@ export const styleVars = (pairs: [unknown, string, ((v: unknown) => string)?][])
 const FORMATS = ['number', 'currency', 'percent', 'compact'];
 export const VALUE_FORMATS = ['auto', ...FORMATS, 'date', 'datetime'];
 const nf = numberFormat;
-const currencyCode = (c: unknown) => (isNonBlankString(c) && /^[A-Za-z]{3}$/.test(c.trim()) ? c.trim().toUpperCase() : 'USD');
+// No currency set means USD. A set code that is not three letters (a typo like "US Dollar") formats as a plain amount and
+// warns once, rather than quietly showing dollars (team testing, 2026-10-29).
+const warnedCurrencies = new Set<string>();
+const currencyCode = (c: unknown): string | null => {
+  if (!isSet(c) || (typeof c === 'string' && !c.trim())) return 'USD';
+  const code = String(c).trim();
+  if (/^[A-Za-z]{3}$/.test(code)) return code.toUpperCase();
+  if (!warnedCurrencies.has(code)) {
+    warnedCurrencies.add(code);
+    console.warn(`Currency "${code}" is not a three-letter ISO code such as USD or EUR; showing the amount without a symbol.`);
+  }
+  return null;
+};
+const moneyOptions = (code: string | null, digits: Intl.NumberFormatOptions): Intl.NumberFormatOptions =>
+  code ? { style: 'currency', currency: code, ...digits } : digits;
 const isNumericFigure = (v: unknown): v is number | string =>
   typeof v === 'number' ? Number.isFinite(v) : typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v.trim());
 
 const formatNumber = (n: number, format: string, currency?: unknown, locale?: unknown): string => {
   const where = localeFor(currency, locale);
-  if (format === 'currency') return nf(where, { style: 'currency', currency: currencyCode(currency), ...moneyDigits(n, where) }).format(n);
+  if (format === 'currency') return nf(where, moneyOptions(currencyCode(currency), moneyDigits(n, where))).format(n);
   if (format === 'compact') return nf(where, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
   if (format === 'percent') return `${nf(where, { maximumFractionDigits: 1 }).format(n)}%`;
   return nf(where, { maximumFractionDigits: 2 }).format(n);
@@ -227,6 +241,23 @@ const metaPart = (row: Row, spec: string): string => {
 export const firstTextField = (row: Row): string | undefined => Object.keys(row).find((k) => isNonBlankString(row[k]));
 
 /** Keys of their own for every item: a repeated id gets a suffix by occurrence ("1~2"). */
+/** The key of an item with no id: its content, so a removal or a reorder leaves the selection on the same record (or
+ *  clears it), where a position key moved it to whatever record took that place (team testing, 2026-10-29). An edited
+ *  record without an id cannot be told from a new one, so its selection clears. Identical items share a key, told apart
+ *  by occurrence (uniqueKeys). */
+const contentKey = (item: unknown): string => {
+  let text = '';
+  try {
+    text = JSON.stringify(item) ?? '';
+  } catch {
+    text = String(item);
+  }
+  // FNV-1a: a short stable key, not the whole record.
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193);
+  return `#${(h >>> 0).toString(36)}`;
+};
+
 const uniqueKeys = <T extends { key: string }>(items: T[], fromId: boolean[]): T[] => {
   const seen = new Set<string>();
   const occurrences = new Map<string, number>();
@@ -284,7 +315,8 @@ export const cardItems = (data: unknown, f: Record<string, unknown> = {}): CardI
   const badgeKeys = [...new Set([...(isNonBlankString(f.badgeField) ? [f.badgeField.trim()] : []), ...fieldList(f.badgeFields)])];
   const items = data.flatMap((row: unknown, index: number) => {
     if (!isRecord(row)) return [];
-    const titleKey = isNonBlankString(f.titleField) && f.titleField in row ? f.titleField : firstTextField(row);
+    // A named title field that the row lacks shows a blank title, not another field (team testing, 2026-10-29).
+    const titleKey = isNonBlankString(f.titleField) ? f.titleField : firstTextField(row);
     const id = isNonBlankString(f.idField) ? row[f.idField] : row.id;
     const title = titleKey ? toText(row[titleKey]) : '';
     const badges = badgeKeys.map((k) => toText(row[k]).trim()).filter(Boolean).slice(0, 4);
@@ -295,7 +327,7 @@ export const cardItems = (data: unknown, f: Record<string, unknown> = {}): CardI
     const avatarImage = isImageUrl(avatarValue) ? avatarValue.trim() : '';
     return [
       {
-        key: toText(id) || String(index),
+        key: toText(id) || contentKey(row),
         keyFromId: !!toText(id),
         title,
         subtitle:
@@ -356,14 +388,14 @@ export const recordItems = (data: unknown, f: Record<string, unknown> = {}): Rec
   const format = typeof f.valueFormat === 'string' && VALUE_FORMATS.includes(f.valueFormat) ? f.valueFormat : 'auto';
   const items = data.flatMap((row: unknown, index: number) => {
     if (!isRecord(row)) return [];
-    const titleKey = isNonBlankString(f.titleField) && f.titleField in row ? f.titleField : firstTextField(row);
+    const titleKey = isNonBlankString(f.titleField) ? f.titleField : firstTextField(row);
     const title = titleKey ? toText(row[titleKey]) : '';
     const id = isNonBlankString(f.idField) ? row[f.idField] : row.id;
     const avatarValue = isNonBlankString(f.avatarField) ? row[f.avatarField] : undefined;
     const image = isImageUrl(avatarValue) ? avatarValue.trim() : '';
     return [
       {
-        key: toText(id) || String(index),
+        key: toText(id) || contentKey(row),
         keyFromId: !!toText(id),
         title,
         image,
@@ -429,8 +461,8 @@ export const pageWindow = (page: number, count: number | null): (number | string
   return out;
 };
 
-export const itemKey = (item: unknown, idField: string, index: number): string =>
-  isRecord(item) && isSet(item[idField]) ? String(item[idField]) : `#${index}`;
+export const itemKey = (item: unknown, idField: string, _index?: number): string =>
+  isRecord(item) && isSet(item[idField]) ? String(item[idField]) : contentKey(item);
 
 export const SHADOWS: Record<string, string> = {
   none: 'none',
@@ -493,7 +525,7 @@ export const keyValueText = (row: KeyValueRow, defaults: { currency?: string; lo
       const locale = toText(own.locale) || defaults.locale || 'en-US';
       const options: Intl.NumberFormatOptions =
         type === 'currency'
-          ? { style: 'currency', currency: currencyCode(own.currency ?? row.currency ?? defaults.currency), minimumFractionDigits: digits ?? 2, maximumFractionDigits: digits ?? 2 }
+          ? moneyOptions(currencyCode(own.currency ?? row.currency ?? defaults.currency), { minimumFractionDigits: digits ?? 2, maximumFractionDigits: digits ?? 2 })
           : { minimumFractionDigits: digits ?? 0, maximumFractionDigits: digits ?? 2 };
       return wrap(nf(locale, options).format(n));
     }

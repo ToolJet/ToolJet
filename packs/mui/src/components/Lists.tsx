@@ -284,6 +284,7 @@ export const RecordList = () => {
     ]
   );
   const { selectedItemId, select } = useSelection(rows as Selectable[], idField);
+  ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => select(null));
   const grow = useGrowingCount(rows.length);
   const dense = density === 'compact';
   const size = AVATAR_SIZE[String(density)] ?? AVATAR_SIZE.default;
@@ -309,6 +310,9 @@ export const RecordList = () => {
                     <ListItemButton
                       selected={selected}
                       onClick={() => {
+                        // Clicking the highlighted record again unselects it, with no click event, as in the Rocket
+                        // Record list (team testing, 2026-10-29: a selection could not be undone).
+                        if (selected) return select(null);
                         select(row as unknown as Selectable);
                         onItemClicked();
                       }}
