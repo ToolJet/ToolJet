@@ -47,6 +47,10 @@ import {
   getLeftPanelReservedBottom,
   getLeftPanelHeight,
   shouldShowLibraries,
+  QUERY_PANEL_RESIZE,
+  clampQueryPanelWidth,
+  getQueryPanelWidth,
+  parseStoredQueryPanelWidth,
 } from '@/AppBuilder/panelLayout';
 import fs from 'fs';
 import path from 'path';
@@ -174,17 +178,18 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     });
   });
 
-  // Break this catches: global theme tokens make the bottom bar drift from the approved prototype palette.
+  // Break this catches: global theme tokens make the bottom bar's tabs drift from the approved prototype
+  // palette, or the bar itself stops matching the left panel's surface (white, or dark in dark mode).
   it('uses the exact prototype colors for selected and unselected runtime tabs', () => {
     expect(getRuntimePanelTheme(false)).toEqual({
-      panel: '#ffffff',
+      panel: 'var(--background-surface-layer-01)',
       text: '#222631',
       muted: '#747d8f',
       border: '#e1e5ed',
       accent: '#4368e8',
     });
     expect(getRuntimePanelTheme(true)).toEqual({
-      panel: '#1e232d',
+      panel: 'var(--background-surface-layer-01)',
       text: '#f3f5f9',
       muted: '#a8b0bf',
       border: '#353c49',
@@ -336,6 +341,7 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(getQueryManagerClassName('right', false)).toBe('query-manager query-manager--right');
     expect(getQueryManagerClassName('bottom', true)).toBe('query-manager theme-dark');
     expect(getRightPanelStyle('query')).toEqual({
+      '--query-right-panel-width': 'min(496px, calc(100vw - 54px))',
       maxWidth: 'calc(100vw - 54px)',
       overflow: 'hidden',
       width: 'min(496px, calc(100vw - 54px))',
@@ -363,6 +369,64 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(getRightPanelReservedWidth(false, 'query')).toBe(0);
     expect(getRightPanelReservedWidth(true, 'configuration')).toBe('300px');
     expect(getRightPanelReservedWidth(true, 'query')).toBe('min(496px, calc(100vw - 54px))');
+  });
+
+  describe('resizable query panel width', () => {
+    // Break this catches: the drag shrinks the panel below its default, or pushes it over the left rail.
+    it('keeps a dragged width between the default width and the left rail', () => {
+      expect(QUERY_PANEL_RESIZE).toMatchObject({ defaultPx: 496, railPx: 54 });
+      expect(clampQueryPanelWidth(300, 1440)).toBe(496);
+      expect(clampQueryPanelWidth(800, 1440)).toBe(800);
+      expect(clampQueryPanelWidth(1600, 1440)).toBe(1386);
+      expect(clampQueryPanelWidth(640.6, 1440)).toBe(641);
+      // A window narrower than the default leaves no room: the panel spans to the rail.
+      expect(clampQueryPanelWidth(300, 500)).toBe(446);
+      expect(clampQueryPanelWidth(900, 500)).toBe(446);
+    });
+
+    // Break this catches: with a left panel open, the drag carries the query panel under it.
+    it('stops a drag at the open left panel, never below the default width', () => {
+      expect(clampQueryPanelWidth(1600, 1440, 350)).toBe(1036);
+      expect(clampQueryPanelWidth(800, 1440, 350)).toBe(800);
+      expect(clampQueryPanelWidth(300, 1440, 350)).toBe(496);
+      // Too narrow for both: the panel keeps its default width and the left panel covers its edge.
+      expect(clampQueryPanelWidth(900, 800, 350)).toBe(496);
+    });
+
+    // Break this catches: a wide query panel covers an open left panel.
+    it('drops the right panel below an open left panel', () => {
+      expect(getRightPanelClassName('query', true)).toContain('right-panel-shell--below-left-panel');
+      expect(getRightPanelClassName('configuration', true)).toContain('right-panel-shell--below-left-panel');
+      expect(getRightPanelClassName('query', false)).not.toContain('right-panel-shell--below-left-panel');
+    });
+
+    // Break this catches: a width chosen in a wide window overflows the rail after the window shrinks.
+    it('renders a chosen width capped at the rail, and the default width when none is chosen', () => {
+      expect(getQueryPanelWidth(null)).toBe('min(496px, calc(100vw - 54px))');
+      expect(getQueryPanelWidth(720)).toBe('min(720px, calc(100vw - 54px))');
+    });
+
+    // Break this catches: the canvas border and the bottom runtime bar keep the default width after a drag.
+    it('reserves the dragged width for the canvas and the runtime panel', () => {
+      expect(getRightPanelReservedWidth(true, 'query', 720)).toBe('min(720px, calc(100vw - 54px))');
+      expect(getRuntimePanelRightOffset(true, 'query', 720)).toBe('min(720px, calc(100vw - 54px))');
+      expect(getRightPanelReservedWidth(true, 'configuration', 720)).toBe('300px');
+      expect(getRightPanelReservedWidth(false, 'query', 720)).toBe(0);
+      expect(getRightPanelStyle('query', 720)).toMatchObject({
+        '--query-right-panel-width': 'min(720px, calc(100vw - 54px))',
+        width: 'min(720px, calc(100vw - 54px))',
+      });
+      expect(getRightPanelStyle('configuration', 720)).toEqual({ overflow: 'auto' });
+    });
+
+    // Break this catches: a corrupt saved value (text, zero, negative) renders a 0px or NaN-wide panel.
+    it('reads only a positive saved width back after a reload', () => {
+      expect(parseStoredQueryPanelWidth('720')).toBe(720);
+      expect(parseStoredQueryPanelWidth(null)).toBeNull();
+      expect(parseStoredQueryPanelWidth('abc')).toBeNull();
+      expect(parseStoredQueryPanelWidth('0')).toBeNull();
+      expect(parseStoredQueryPanelWidth('-40')).toBeNull();
+    });
   });
 
   it('widens the canvas by every reserved side width so its content keeps its size', () => {
@@ -473,7 +537,7 @@ describe('AB-PANEL-001 app builder panel composition', () => {
     expect(getQueryTypographyClassName('label')).toBe('query-field-label');
     expect(getQueryTypographyClassName('helper')).toBe('query-field-helper');
     expect(getQueryDetailsStyle('right')).toEqual({
-      '--query-panel-background': '#ffffff',
+      '--query-panel-background': 'var(--background-surface-layer-01)',
       '--query-field-label-color': 'var(--slate11)',
       '--query-field-label-font-size': '13px',
       '--query-field-label-font-weight': 400,
@@ -486,15 +550,15 @@ describe('AB-PANEL-001 app builder panel composition', () => {
       '--query-field-value-font-size': '13px',
       '--query-field-value-font-weight': 400,
       '--query-field-value-line-height': '20px',
-      '--query-control-background': '#ffffff',
+      '--query-control-background': 'var(--background-surface-layer-01)',
       '--query-control-border': 'var(--slate7)',
       '--query-control-border-width': '1px',
       '--query-dropdown-button-border-width': '0px',
       '--query-dropdown-height': '36px',
-      '--query-dropdown-hover-background': '#ffffff',
+      '--query-dropdown-hover-background': 'var(--background-surface-layer-01)',
       '--query-dropdown-focus-border': 'var(--slate7)',
       '--query-dropdown-focus-shadow': 'none',
-      '--query-dropdown-selected-background': '#ffffff',
+      '--query-dropdown-selected-background': 'var(--background-surface-layer-01)',
     });
     expect(getQueryDetailsStyle('bottom')).toBeUndefined();
   });
@@ -503,14 +567,14 @@ describe('AB-PANEL-001 app builder panel composition', () => {
   it('keeps query inputs visually static while they remain fully interactive', () => {
     const style = getQueryDetailsStyle('right');
 
-    expect(style['--query-control-background']).toBe('#ffffff');
+    expect(style['--query-control-background']).toBe('var(--background-surface-layer-01)');
     expect(style['--query-control-border']).toBe('var(--slate7)');
     expect(style['--query-control-border-width']).toBe('1px');
     expect(style['--query-dropdown-button-border-width']).toBe('0px');
-    expect(style['--query-dropdown-hover-background']).toBe('#ffffff');
+    expect(style['--query-dropdown-hover-background']).toBe('var(--background-surface-layer-01)');
     expect(style['--query-dropdown-focus-border']).toBe('var(--slate7)');
     expect(style['--query-dropdown-focus-shadow']).toBe('none');
-    expect(style['--query-dropdown-selected-background']).toBe('#ffffff');
+    expect(style['--query-dropdown-selected-background']).toBe('var(--background-surface-layer-01)');
   });
 
   // Break this catches: React Select's zero-width search input inherits the field border and

@@ -9,11 +9,14 @@ import { RIGHT_SIDE_BAR_TAB } from './rightSidebarConstants';
 import QueryManager from '@/AppBuilder/QueryManager/QueryManager';
 import {
   getQueryHeaderControlPresentation,
+  getLeftPanelState,
   getRightPanelClassName,
   getRightPanelStyle,
   PANEL_MOTION,
 } from '@/AppBuilder/panelLayout';
 import { AddEditPagePopup } from './PageSettingsTab/PageMenu/AddNewPagePopup';
+import { QueryPanelResizeHandle } from './QueryPanelResizeHandle';
+import { LEFT_SIDEBAR_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './rightSidebar.scss';
 import { Button } from '@/components/ui/Button/Button';
 
@@ -25,6 +28,12 @@ export const RightSideBar = ({ darkMode }) => {
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
+  const queryPanelWidth = useStore((state) => state.queryPanel.queryPanelWidth);
+  const setQueryPanelWidth = useStore((state) => state.queryPanel.setQueryPanelWidth);
+  const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
+  const isLeftSidebarOpen = useStore((state) => state.isSidebarOpen);
+  const { isLeftPanelOpen } = getLeftPanelState(selectedSidebarItem, isLeftSidebarOpen);
+  const leftPanelWidth = isLeftPanelOpen ? (LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default) : 0;
   const [isPanelMounted, setIsPanelMounted] = useState(isRightSidebarOpen);
   const [renderedTab, setRenderedTab] = useState(activeTab);
 
@@ -49,14 +58,21 @@ export const RightSideBar = ({ darkMode }) => {
   return (
     <div className="sub-section">
       <div
-        style={getRightPanelStyle(displayedTab)}
+        style={getRightPanelStyle(displayedTab, queryPanelWidth)}
         className={cx(
-          getRightPanelClassName(displayedTab),
+          getRightPanelClassName(displayedTab, isLeftPanelOpen),
           { 'dark-theme theme-dark': darkMode },
           { 'tw-pointer-events-none': shouldFreeze }
         )}
         data-state={isRightSidebarOpen ? 'open' : 'closed'}
       >
+        {displayedTab === RIGHT_SIDE_BAR_TAB.QUERY && isRightSidebarOpen && (
+          <QueryPanelResizeHandle
+            onResize={setQueryPanelWidth}
+            onResizeEnd={(width) => setQueryPanelWidth(width, { persist: true })}
+            leftPanelWidth={leftPanelWidth}
+          />
+        )}
         <div
           key={displayedTab}
           className={cx('right-panel-content', { 'dark-theme theme-dark': darkMode })}

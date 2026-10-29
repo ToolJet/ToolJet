@@ -48,7 +48,7 @@ const LEFT_SIDEBAR_PANEL_LABELS = {
   dependencies: 'Dependencies',
   apphistory: 'App history',
   tooljetai: 'AI chat',
-  settings: 'Global settings',
+  settings: 'App settings',
 };
 
 // TODO: remove passing refs to LeftSidebarItem and use state

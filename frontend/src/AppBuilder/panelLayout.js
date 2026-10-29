@@ -49,16 +49,18 @@ export const PANEL_MOTION = {
   rightShellEnterAnimation: false,
 };
 
+// The bar shares the left panel's surface token (white, or the dark surface in dark mode); its tab
+// colors stay on the prototype palette.
 const RUNTIME_PANEL_THEMES = {
   light: {
-    panel: '#ffffff',
+    panel: 'var(--background-surface-layer-01)',
     text: '#222631',
     muted: '#747d8f',
     border: '#e1e5ed',
     accent: '#4368e8',
   },
   dark: {
-    panel: '#1e232d',
+    panel: 'var(--background-surface-layer-01)',
     text: '#f3f5f9',
     muted: '#a8b0bf',
     border: '#353c49',
@@ -173,8 +175,11 @@ export const getQuerySearchFocusStyle = (surface) =>
       }
     : undefined;
 
-export const getRightPanelClassName = (activeTab) =>
-  `editor-sidebar right-panel-shell${activeTab === 'query' ? ' right-panel-shell--query' : ''}`;
+// An open left panel stacks above the right panel, so a widened query panel slides under it.
+export const getRightPanelClassName = (activeTab, isLeftPanelOpen = false) =>
+  `editor-sidebar right-panel-shell${activeTab === 'query' ? ' right-panel-shell--query' : ''}${
+    isLeftPanelOpen ? ' right-panel-shell--below-left-panel' : ''
+  }`;
 
 export const getAppBuilderTypographyStyle = () => ({
   '--app-builder-font-family': "'Inter', sans-serif",
@@ -182,23 +187,50 @@ export const getAppBuilderTypographyStyle = () => ({
   '--app-builder-canvas-font-family': "'IBM Plex Sans', sans-serif",
 });
 
-const QUERY_RIGHT_PANEL_WIDTH = 'min(496px, calc(100vw - 54px))';
+// The query panel opens at defaultPx and widens from a handle on its left edge, as far as the left
+// navigation rail (railPx), or as far as the left panel while one is open. The dragged width is stored in px and capped at the rail when rendered,
+// so a width chosen in a wide window still fits after the window shrinks.
+export const QUERY_PANEL_RESIZE = {
+  defaultPx: 496,
+  railPx: 54,
+  keyboardStepPx: 16,
+  storageKey: 'queryPanelWidth',
+};
 
-export const getRightPanelStyle = (activeTab) =>
-  activeTab === 'query'
-    ? {
-        maxWidth: 'calc(100vw - 54px)',
-        overflow: 'hidden',
-        width: QUERY_RIGHT_PANEL_WIDTH,
-      }
-    : { overflow: 'auto' };
+const QUERY_RIGHT_PANEL_MAX_WIDTH = `calc(100vw - ${QUERY_PANEL_RESIZE.railPx}px)`;
 
-// The bottom runtime panel stops where the right sidebar starts, so it must track the wider query surface.
+// When the window is too narrow for both, the default width wins and the left panel covers the edge.
+export const clampQueryPanelWidth = (widthPx, viewportWidth, leftPanelWidthPx = 0) => {
+  const spaceRightOfRailPx = viewportWidth - QUERY_PANEL_RESIZE.railPx;
+  const minPx = Math.min(QUERY_PANEL_RESIZE.defaultPx, spaceRightOfRailPx);
+  const maxPx = Math.max(minPx, spaceRightOfRailPx - leftPanelWidthPx);
+  return Math.round(Math.min(Math.max(widthPx, minPx), maxPx));
+};
+
+export const getQueryPanelWidth = (widthPx) =>
+  `min(${widthPx || QUERY_PANEL_RESIZE.defaultPx}px, ${QUERY_RIGHT_PANEL_MAX_WIDTH})`;
+
+export const parseStoredQueryPanelWidth = (rawValue) => {
+  const widthPx = Number(rawValue);
+  return rawValue !== null && Number.isFinite(widthPx) && widthPx > 0 ? widthPx : null;
+};
+
+export const getRightPanelStyle = (activeTab, queryPanelWidth) => {
+  if (activeTab !== 'query') return { overflow: 'auto' };
+  const width = getQueryPanelWidth(queryPanelWidth);
+  return {
+    '--query-right-panel-width': width,
+    maxWidth: QUERY_RIGHT_PANEL_MAX_WIDTH,
+    overflow: 'hidden',
+    width,
+  };
+};
+
 // The width the open right panel covers. The canvas reserves it and the bottom runtime panel stops
-// short of it; the query editor is wider than the other tabs.
-export const getRightPanelReservedWidth = (isRightSidebarOpen, activeTab) => {
+// short of it; the query editor is wider than the other tabs, and follows its dragged width.
+export const getRightPanelReservedWidth = (isRightSidebarOpen, activeTab, queryPanelWidth) => {
   if (!isRightSidebarOpen) return 0;
-  return activeTab === 'query' ? QUERY_RIGHT_PANEL_WIDTH : '300px';
+  return activeTab === 'query' ? getQueryPanelWidth(queryPanelWidth) : '300px';
 };
 
 export const getRuntimePanelRightOffset = getRightPanelReservedWidth;
@@ -240,7 +272,7 @@ export const getQueryTypographyClassName = (kind) =>
 export const getQueryDetailsStyle = (surface) =>
   surface === 'right'
     ? {
-        '--query-panel-background': '#ffffff',
+        '--query-panel-background': 'var(--background-surface-layer-01)',
         '--query-field-label-color': 'var(--slate11)',
         '--query-field-label-font-size': '13px',
         '--query-field-label-font-weight': 400,
@@ -253,15 +285,15 @@ export const getQueryDetailsStyle = (surface) =>
         '--query-field-value-font-size': '13px',
         '--query-field-value-font-weight': 400,
         '--query-field-value-line-height': '20px',
-        '--query-control-background': '#ffffff',
+        '--query-control-background': 'var(--background-surface-layer-01)',
         '--query-control-border': 'var(--slate7)',
         '--query-control-border-width': '1px',
         '--query-dropdown-button-border-width': '0px',
         '--query-dropdown-height': '36px',
-        '--query-dropdown-hover-background': '#ffffff',
+        '--query-dropdown-hover-background': 'var(--background-surface-layer-01)',
         '--query-dropdown-focus-border': 'var(--slate7)',
         '--query-dropdown-focus-shadow': 'none',
-        '--query-dropdown-selected-background': '#ffffff',
+        '--query-dropdown-selected-background': 'var(--background-surface-layer-01)',
       }
     : undefined;
 

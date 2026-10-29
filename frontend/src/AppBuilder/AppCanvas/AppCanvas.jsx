@@ -63,7 +63,12 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const getPageId = useStore((state) => state.getCurrentPageId, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
-  const rightPanelReservedWidth = getRightPanelReservedWidth(isRightSidebarOpen, activeRightSideBarTab);
+  const queryPanelWidth = useStore((state) => state.queryPanel.queryPanelWidth);
+  const rightPanelReservedWidth = getRightPanelReservedWidth(
+    isRightSidebarOpen,
+    activeRightSideBarTab,
+    queryPanelWidth
+  );
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const pageKey = useStore((state) => state.pageKey);

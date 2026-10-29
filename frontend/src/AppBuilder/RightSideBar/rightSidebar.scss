@@ -19,8 +19,50 @@
   height: calc(100vh - 48px);
 }
 
+// The left panel's popper wrapper sits at z-index 2 (popover.scss) so the menus it opens stay above
+// it. While a left panel is open the right panel drops below it, so a widened query panel slides under.
+.editor .right-panel-shell.right-panel-shell--below-left-panel {
+  z-index: 1;
+}
+
 .right-panel-shell--query {
-  width: min(496px, calc(100vw - 54px)) !important;
+  // Set inline from the dragged width (getRightPanelStyle); the fallback is the default width.
+  width: var(--query-right-panel-width, min(496px, calc(100vw - 54px))) !important;
+}
+
+// Grab zone on the query panel's left edge; dragging it widens the panel up to the left rail.
+.query-panel-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  width: 6px;
+  cursor: col-resize;
+  outline: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    background: transparent;
+    transition: background-color 120ms ease;
+  }
+
+  &:hover::after,
+  &:focus-visible::after,
+  &.is-dragging::after {
+    background: var(--border-accent-strong);
+  }
+}
+
+// While dragging, the pointer keeps the resize cursor and nothing under it gets selected.
+body.query-panel-resizing {
+  cursor: col-resize;
+  user-select: none;
 }
 
 .right-panel-content {
