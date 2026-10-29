@@ -5,7 +5,8 @@ import { QUERY_PANEL_RESIZE, clampQueryPanelWidth } from '@/AppBuilder/panelLayo
 
 // Sits on the left edge of the panel it resizes and measures that panel when a drag starts.
 // onResize fires on every drag frame; onResizeEnd fires once with the width the drag settled on.
-export const QueryPanelResizeHandle = ({ onResize, onResizeEnd }) => {
+// leftPanelWidth is the open left panel's width, which the drag stops at (0 when none is open).
+export const QueryPanelResizeHandle = ({ onResize, onResizeEnd, leftPanelWidth = 0 }) => {
   const [isDragging, setIsDragging] = useState(false);
   // Drag state lives in refs: a quick drag can deliver mousedown, mousemove and mouseup before React
   // re-renders, and the window listeners only pick up a new handler after a render.
@@ -25,7 +26,11 @@ export const QueryPanelResizeHandle = ({ onResize, onResizeEnd }) => {
   const onMouseMove = (e) => {
     const dragStart = dragStartRef.current;
     if (!dragStart) return;
-    widthRef.current = clampQueryPanelWidth(dragStart.width + (dragStart.x - e.clientX), window.innerWidth);
+    widthRef.current = clampQueryPanelWidth(
+      dragStart.width + (dragStart.x - e.clientX),
+      window.innerWidth,
+      leftPanelWidth
+    );
     onResize(widthRef.current);
   };
 
@@ -41,7 +46,7 @@ export const QueryPanelResizeHandle = ({ onResize, onResizeEnd }) => {
     if (!direction) return;
     e.preventDefault();
     const width = getPanelWidth(e.currentTarget) + direction * QUERY_PANEL_RESIZE.keyboardStepPx;
-    onResizeEnd(clampQueryPanelWidth(width, window.innerWidth));
+    onResizeEnd(clampQueryPanelWidth(width, window.innerWidth, leftPanelWidth));
   };
 
   // The pointer leaves the thin handle mid-drag, so the resize cursor is held on the whole page.

@@ -6,12 +6,12 @@ const VIEWPORT_WIDTH = 1440;
 
 // The handle measures the panel it sits in when a drag starts; jsdom has no layout, so the panel
 // reports the width it would have on screen.
-const renderHandle = (panelWidth = 496) => {
+const renderHandle = (panelWidth = 496, leftPanelWidth = 0) => {
   const onResize = jest.fn();
   const onResizeEnd = jest.fn();
   render(
     <div data-testid="panel">
-      <QueryPanelResizeHandle onResize={onResize} onResizeEnd={onResizeEnd} />
+      <QueryPanelResizeHandle onResize={onResize} onResizeEnd={onResizeEnd} leftPanelWidth={leftPanelWidth} />
     </div>
   );
   screen.getByTestId('panel').getBoundingClientRect = () => ({ width: panelWidth });
@@ -47,6 +47,18 @@ test('stops at the left rail and at the default width', () => {
 
   fireEvent.mouseMove(window, { clientX: 1300 });
   expect(onResize).toHaveBeenLastCalledWith(496);
+});
+
+// Break this catches: the drag carries the query panel under an open left panel.
+test('stops at the edge of an open left panel', () => {
+  const { handle, onResize, onResizeEnd } = renderHandle(496, 350);
+
+  fireEvent.mouseDown(handle, { clientX: 944 });
+  fireEvent.mouseMove(window, { clientX: 0 });
+  fireEvent.mouseUp(window);
+
+  expect(onResize).toHaveBeenLastCalledWith(VIEWPORT_WIDTH - 54 - 350);
+  expect(onResizeEnd).toHaveBeenCalledWith(VIEWPORT_WIDTH - 54 - 350);
 });
 
 // Break this catches: a fast flick (press, move, release before React re-renders) is lost.

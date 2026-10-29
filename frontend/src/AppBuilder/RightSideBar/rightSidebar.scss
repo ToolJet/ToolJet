@@ -19,6 +19,12 @@
   height: calc(100vh - 48px);
 }
 
+// The left panel's popper wrapper sits at z-index 2 (popover.scss) so the menus it opens stay above
+// it. While a left panel is open the right panel drops below it, so a widened query panel slides under.
+.editor .right-panel-shell.right-panel-shell--below-left-panel {
+  z-index: 1;
+}
+
 .right-panel-shell--query {
   // Set inline from the dragged width (getRightPanelStyle); the fallback is the default width.
   width: var(--query-right-panel-width, min(496px, calc(100vw - 54px))) !important;

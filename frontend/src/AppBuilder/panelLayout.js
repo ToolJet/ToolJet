@@ -173,8 +173,11 @@ export const getQuerySearchFocusStyle = (surface) =>
       }
     : undefined;
 
-export const getRightPanelClassName = (activeTab) =>
-  `editor-sidebar right-panel-shell${activeTab === 'query' ? ' right-panel-shell--query' : ''}`;
+// An open left panel stacks above the right panel, so a widened query panel slides under it.
+export const getRightPanelClassName = (activeTab, isLeftPanelOpen = false) =>
+  `editor-sidebar right-panel-shell${activeTab === 'query' ? ' right-panel-shell--query' : ''}${
+    isLeftPanelOpen ? ' right-panel-shell--below-left-panel' : ''
+  }`;
 
 export const getAppBuilderTypographyStyle = () => ({
   '--app-builder-font-family': "'Inter', sans-serif",
@@ -183,7 +186,7 @@ export const getAppBuilderTypographyStyle = () => ({
 });
 
 // The query panel opens at defaultPx and widens from a handle on its left edge, as far as the left
-// navigation rail (railPx). The dragged width is stored in px and capped at the rail when rendered,
+// navigation rail (railPx), or as far as the left panel while one is open. The dragged width is stored in px and capped at the rail when rendered,
 // so a width chosen in a wide window still fits after the window shrinks.
 export const QUERY_PANEL_RESIZE = {
   defaultPx: 496,
@@ -194,9 +197,11 @@ export const QUERY_PANEL_RESIZE = {
 
 const QUERY_RIGHT_PANEL_MAX_WIDTH = `calc(100vw - ${QUERY_PANEL_RESIZE.railPx}px)`;
 
-export const clampQueryPanelWidth = (widthPx, viewportWidth) => {
-  const maxPx = viewportWidth - QUERY_PANEL_RESIZE.railPx;
-  const minPx = Math.min(QUERY_PANEL_RESIZE.defaultPx, maxPx);
+// When the window is too narrow for both, the default width wins and the left panel covers the edge.
+export const clampQueryPanelWidth = (widthPx, viewportWidth, leftPanelWidthPx = 0) => {
+  const spaceRightOfRailPx = viewportWidth - QUERY_PANEL_RESIZE.railPx;
+  const minPx = Math.min(QUERY_PANEL_RESIZE.defaultPx, spaceRightOfRailPx);
+  const maxPx = Math.max(minPx, spaceRightOfRailPx - leftPanelWidthPx);
   return Math.round(Math.min(Math.max(widthPx, minPx), maxPx));
 };
 

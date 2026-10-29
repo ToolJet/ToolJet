@@ -19,3 +19,19 @@ test('sizes the query panel from its dragged width variable', () => {
     /\.right-panel-shell--query\s*\{[^}]*width:\s*var\(--query-right-panel-width,\s*min\(496px, calc\(100vw - 54px\)\)\)\s*!important;/
   );
 });
+
+// The left panel's popper wrapper is pinned at a low z-index (popover.scss) so the menus it opens stay
+// above it; with a left panel open the right panel must sit below that, or a widened query panel
+// covers the left panel.
+test('stacks the right panel below an open left panel', () => {
+  const popoverStyles = fs.readFileSync(path.join(__dirname, '../../../_styles/popover.scss'), 'utf8');
+  const leftPanelZ = Number(
+    popoverStyles.match(/:has\(\.PopoverContent\.drawer-height\)\s*\{[^}]*z-index:\s*(\d+)/)[1]
+  );
+  const belowLeft = styles.match(
+    /\.editor \.right-panel-shell\.right-panel-shell--below-left-panel\s*\{[^}]*z-index:\s*(\d+)/
+  );
+
+  expect(belowLeft).not.toBeNull();
+  expect(Number(belowLeft[1])).toBeLessThan(leftPanelZ);
+});

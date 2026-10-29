@@ -382,6 +382,22 @@ describe('AB-PANEL-001 app builder panel composition', () => {
       expect(clampQueryPanelWidth(900, 500)).toBe(446);
     });
 
+    // Break this catches: with a left panel open, the drag carries the query panel under it.
+    it('stops a drag at the open left panel, never below the default width', () => {
+      expect(clampQueryPanelWidth(1600, 1440, 350)).toBe(1036);
+      expect(clampQueryPanelWidth(800, 1440, 350)).toBe(800);
+      expect(clampQueryPanelWidth(300, 1440, 350)).toBe(496);
+      // Too narrow for both: the panel keeps its default width and the left panel covers its edge.
+      expect(clampQueryPanelWidth(900, 800, 350)).toBe(496);
+    });
+
+    // Break this catches: a wide query panel covers an open left panel.
+    it('drops the right panel below an open left panel', () => {
+      expect(getRightPanelClassName('query', true)).toContain('right-panel-shell--below-left-panel');
+      expect(getRightPanelClassName('configuration', true)).toContain('right-panel-shell--below-left-panel');
+      expect(getRightPanelClassName('query', false)).not.toContain('right-panel-shell--below-left-panel');
+    });
+
     // Break this catches: a width chosen in a wide window overflows the rail after the window shrinks.
     it('renders a chosen width capped at the rail, and the default width when none is chosen', () => {
       expect(getQueryPanelWidth(null)).toBe('min(496px, calc(100vw - 54px))');
