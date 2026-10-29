@@ -26,9 +26,14 @@ export class TjdbRolloutSubstrateSchema1793250000300 implements MigrationInterfa
     }
     // An earlier revision of Migration A dropped this column on test databases; Migration A reads it.
     await queryRunner.query(`ALTER TABLE internal_tables ADD COLUMN IF NOT EXISTS configurations jsonb`);
+    // Here, not in Migration A: the ALTER takes an ACCESS EXCLUSIVE lock, which in the data phase would
+    // block every ToolJet Database read until the phase commits. The previous release creates tables
+    // without a co_relation_id; the default gives them one. Migration A fills the existing NULLs.
+    await queryRunner.query(`ALTER TABLE internal_tables ALTER COLUMN co_relation_id SET DEFAULT gen_random_uuid()`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`ALTER TABLE internal_tables ALTER COLUMN co_relation_id DROP DEFAULT`);
     await queryRunner.query(`DROP INDEX IF EXISTS organization_id_table_name_unique`);
     await queryRunner.dropColumn('internal_tables', 'deleted_at');
     await queryRunner.createUniqueConstraint(

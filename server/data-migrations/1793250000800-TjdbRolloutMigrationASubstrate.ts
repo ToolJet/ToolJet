@@ -25,6 +25,9 @@ type InternalTableRow = { id: string; organization_id: string; configurations: a
 
 export class TjdbRolloutMigrationASubstrate1793250000800 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // A second run on a test database that ran the earlier destructive revision: the schema migration
+    // re-added configurations empty, so copy them back from the relations the previous release needs.
+    await this.copyRelationConfigurationsToInternalTables(queryRunner, { onlyMissing: true });
     await this.dedupeAndLockDownCoRelationId(queryRunner);
 
     const tooljetDbConnection = new DataSource({ ...tooljetDbOrmconfig, name: `${MIGRATION_NAME}Tjdb` } as any);
@@ -67,11 +70,20 @@ export class TjdbRolloutMigrationASubstrate1793250000800 implements MigrationInt
     await queryRunner.query(`ALTER TABLE internal_tables ADD COLUMN IF NOT EXISTS configurations jsonb`);
     await queryRunner.query(`ALTER TABLE internal_tables ALTER COLUMN co_relation_id DROP NOT NULL`);
 
-    // Copy configurations back from the relations, where this release writes them. Prefer this
-    // migration's own row (id = internal_table_id) if present, else the development-environment
-    // relation, else the earliest — deterministic even when Migration B has created a second
-    // relation per table. Duplicate co_relation_id cleanup and column-identity repair are data
-    // changes, not shape — not undone.
+    // Copy configurations back from the relations, where this release writes them. Duplicate
+    // co_relation_id cleanup and column-identity repair are data changes, not shape — not undone.
+    await this.copyRelationConfigurationsToInternalTables(queryRunner, { onlyMissing: false });
+
+    // The co_relation_id default belongs to the schema migration and is removed by its down().
+    await queryRunner.query(`DROP INDEX IF EXISTS organization_id_co_relation_id_unique`);
+  }
+
+  // Prefers this migration's own row (id = internal_table_id), else the development-environment
+  // relation, else the earliest — deterministic even when Migration B has created a second relation.
+  private async copyRelationConfigurationsToInternalTables(
+    queryRunner: QueryRunner,
+    { onlyMissing }: { onlyMissing: boolean }
+  ): Promise<void> {
     await queryRunner.query(`
       UPDATE internal_tables it
       SET configurations = pick.configurations
@@ -82,10 +94,8 @@ export class TjdbRolloutMigrationASubstrate1793250000800 implements MigrationInt
         ORDER BY r.internal_table_id, (r.id = r.internal_table_id) DESC, e.priority ASC, r.created_at ASC
       ) pick
       WHERE pick.internal_table_id = it.id AND pick.configurations IS NOT NULL
+        ${onlyMissing ? 'AND it.configurations IS NULL' : ''}
     `);
-
-    await queryRunner.query(`DROP INDEX IF EXISTS organization_id_co_relation_id_unique`);
-    await queryRunner.query(`ALTER TABLE internal_tables ALTER COLUMN co_relation_id DROP DEFAULT`);
   }
 
   private async dedupeAndLockDownCoRelationId(queryRunner: QueryRunner): Promise<void> {
@@ -127,8 +137,7 @@ export class TjdbRolloutMigrationASubstrate1793250000800 implements MigrationInt
     }
 
     // No SET NOT NULL: the previous release creates tables without a co_relation_id, so it would
-    // break a rollback. The default gives those tables one instead. Lock it down a release later.
-    await queryRunner.query(`ALTER TABLE internal_tables ALTER COLUMN co_relation_id SET DEFAULT gen_random_uuid()`);
+    // break a rollback. The schema migration's default gives those tables one. Lock it down a release later.
     // Live tables only, like organization_id_table_name_unique: drop_table soft-deletes the row and it
     // keeps its co_relation_id, which a later import or git pull of the same table reuses.
     await queryRunner.query(`
