@@ -52,43 +52,21 @@ const CreateVersionModal = ({
     textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
   };
 
-  // Set the version to promote when modal opens or when developmentVersions/versionId changes
+  const initializedVersionId = React.useRef(null);
+  // A background refresh may replace every row object while the user types. Initialize
+  // once per opening/target, so refreshed metadata cannot overwrite the form.
   useEffect(() => {
-    // Only run when modal is open
     if (!showCreateAppVersion) {
+      initializedVersionId.current = null;
       return;
     }
-
-    // Wait for developmentVersions to be loaded
-    if (!developmentVersions?.length) {
-      return;
-    }
-
-    // If versionId prop is provided, ONLY use that specific version
-    if (versionId) {
-      const versionToPromote = developmentVersions.find((version) => version?.id === versionId);
-      if (versionToPromote) {
-        selectVersionForCreation(versionToPromote);
-      }
-      return;
-    }
-
-    // If no versionId prop, use selectedVersion from store
-    if (selectedVersion?.id) {
-      const selected = developmentVersions.find((version) => version?.id === selectedVersion?.id);
-      if (selected) {
-        selectVersionForCreation(selected);
-        return;
-      }
-    }
-
-    // Fallback: if no version is selected or found, use the first development version
-    if (developmentVersions.length > 0) {
-      const fallback = developmentVersions[0];
-      selectVersionForCreation(fallback);
-    }
+    const targetId = versionId || selectedVersion?.id || developmentVersions[0]?.id;
+    const target = developmentVersions.find((version) => version.id === targetId);
+    if (!target || initializedVersionId.current === target.id) return;
+    initializedVersionId.current = target.id;
+    selectVersionForCreation(target);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [developmentVersions, versionId, showCreateAppVersion]);
+  }, [developmentVersions, versionId, selectedVersion?.id, showCreateAppVersion]);
 
   const selectVersionForCreation = (version) => {
     setSelectedVersionForCreation(version);

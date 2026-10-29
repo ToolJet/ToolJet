@@ -477,9 +477,8 @@ it.each([false, true])(
     expect(state().queryPanel.selectedQuery.data_source_id).toBe('source-B');
     expect(screen.getByText('Source B')).toBeInTheDocument();
     if (plugin) expect(screen.getByText('Schema B')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /^v2/ }));
-    fireEvent.click(screen.getByText('v1', { selector: '[data-cy$="-library-version-name"]' }));
-    fireEvent.click(screen.getByRole('button', { name: /^v1/ }));
+    // Picker behavior is covered by lifecycleParity; this page test exercises source hydration.
+    await act(async () => state().queryLibrary.viewLibraryVersion('q1', 'saved'));
     expect(screen.getByText('Source A')).toBeInTheDocument();
     if (plugin) {
       expect(screen.getByText('Schema A')).toBeInTheDocument();
@@ -495,7 +494,7 @@ it.each([false, true])(
     await waitFor(() => expect(runs).toEqual([{ libraryVersionId: 'saved' }]));
     await waitFor(() => expect(state().queryPanel.isPreviewQueryLoading).toBe(false));
     fireEvent.click(screen.getByRole('button', { name: /^v1/ }));
-    fireEvent.click(screen.getByText('v2', { selector: '[data-cy$="-library-version-name"]' }));
+    fireEvent.click(await screen.findByText('v2', { selector: '[data-cy$="-version-name"]' }));
     expect(screen.getByText('Source B')).toBeInTheDocument();
     if (plugin) {
       expect(screen.getByText('Schema B')).toBeInTheDocument();

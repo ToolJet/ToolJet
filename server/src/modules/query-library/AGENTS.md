@@ -68,3 +68,9 @@ Recursive import uses `withLibraryImportLocks` before any child import. It walks
 - Catalog rows expose `DRAFT` or `PUBLISHED` status with UUIDs and verbatim names. Usage rows include `libraryQueryVersionId` and `DRAFT`/`PUBLISHED`/`MISSING` status, so a saved version named `draft` remains distinguishable.
 
 Verification: `ee/test/modules/query-library/e2e/library-import-export.spec.ts`, `ee/test/modules/data-queries/e2e/add-to-library.spec.ts`, and `test/modules/apps/unit/import-library-queries.spec.ts`.
+
+## User-facing lifecycle boundary
+
+Multiple named drafts are independent; saved content, name and description are immutable. Library routes remain EE/Cloud-only, and lifecycle commands preserve workspace/source/environment authorization and consumer credentials. There is no Query Library Git integration. The frontend uses the existing Modules lifecycle renderers through a resource adapter, including dependency warnings that preserve selection when dismissed.
+
+Real browser journeys live in `cypress-tests/cypress/e2e/happyPath/platform/eeTestcases/queryLibrary/versionLifecycle.cy.js`. The opt-in EE browser harness uses the standard test-license fixture and a real listening API; it does not establish signed-license deployment parity.

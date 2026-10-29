@@ -229,7 +229,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     return (
       <div
         className={cx(`datasource-picker p-0`, {
-          'disabled ': isFreezed,
+          'disabled ': !isQueryLibrary && isFreezed,
         })}
       >
         <DataSourcePicker darkMode={darkMode} />

@@ -199,3 +199,18 @@ it('keeps the Modules dependency message and acknowledgement through the shared 
   await userEvent.click(screen.getByRole('button', { name: 'I understand' }));
   expect(screen.queryByRole('dialog', { name: 'Dependent apps found!' })).not.toBeInTheDocument();
 });
+
+it('preserves typed Save metadata when refreshed lifecycle rows have the same identity', () => {
+  const lifecycle = value();
+  const form = (provided) => (
+    <VersionLifecycleProvider value={provided}>
+      <EditionSaveModal showCreateAppVersion setShowCreateAppVersion={() => {}} versionId={draft.id} />
+    </VersionLifecycleProvider>
+  );
+  const view = render(form(lifecycle));
+  fireEvent.change(cy('version-name-input-field'), { target: { value: 'Custom.Name' } });
+  fireEvent.change(cy('version-description-input-field'), { target: { value: 'Typed description' } });
+  view.rerender(form({ ...lifecycle, versions: [{ ...draft }, { ...saved }] }));
+  expect(cy('version-name-input-field')).toHaveValue('Custom.Name');
+  expect(cy('version-description-input-field')).toHaveValue('Typed description');
+});
