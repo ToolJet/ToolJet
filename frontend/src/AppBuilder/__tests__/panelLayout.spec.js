@@ -35,6 +35,7 @@ import {
   getQueryHeaderClassName,
   getQueryHeaderControlPresentation,
   getQueryDetailsClassName,
+  isCodeQueryLayout,
   getQueryDetailsStyle,
   getAppBuilderTypographyStyle,
   getQueryDetailsOverflowStyle,
@@ -385,6 +386,30 @@ describe('AB-PANEL-001 app builder panel composition', () => {
       'query-details query-details--right query-fields-stacked query-details-category--settings'
     );
     expect(getQueryDetailsClassName('bottom')).toBe('query-details');
+  });
+
+  // RunJS and RunPython are one code box: the panel never scrolls, only the code inside the box does.
+  it('lays out only the RunJS and RunPython setup tab as a code box', () => {
+    expect(isCodeQueryLayout('right', 1, 'runjs')).toBe(true);
+    expect(isCodeQueryLayout('right', 1, 'runpy')).toBe(true);
+    expect(isCodeQueryLayout('right', 3, 'runjs')).toBe(false);
+    expect(isCodeQueryLayout('right', 1, 'restapi')).toBe(false);
+    expect(isCodeQueryLayout('bottom', 1, 'runjs')).toBe(false);
+    expect(getQueryDetailsClassName('right', 1, 'runpy')).toBe(
+      'query-details query-details--right query-fields-stacked query-details-category--setup query-details--code'
+    );
+    expect(getQueryDetailsClassName('right', 3, 'runpy')).toBe(
+      'query-details query-details--right query-fields-stacked query-details-category--settings'
+    );
+  });
+
+  it('scrolls a code query inside its code box instead of the panel', () => {
+    const block = queryManagerStyles.slice(queryManagerStyles.indexOf('.query-details--code {'));
+    const codeBlock = block.slice(0, block.indexOf('\n  }\n') + 4);
+
+    expect(codeBlock).toMatch(/display: flex;\s*flex-direction: column;\s*overflow: hidden !important;/);
+    expect(codeBlock).toMatch(/\.cm-editor \{[^}]*height: 100% !important;[^}]*max-height: 100% !important;/);
+    expect(codeBlock).toMatch(/\.cm-scroller \{[^}]*overflow: auto;/);
   });
 
   // Break this catches: ToolJet Database Aggregate and Group by retain their legacy horizontal wrapper,

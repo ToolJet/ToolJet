@@ -3250,6 +3250,43 @@ $border-radius: 4px;
 // Right-side query configuration reuses the query editors but not the legacy
 // bottom-pane geometry. Keep these final overrides after the legacy rules.
 .right-sidebar-query-configuration .query-manager--right {
+  // RunJS / RunPython: the code box fills the panel down to the preview and is the only thing that
+  // scrolls. Every wrapper between the panel and the editor passes the remaining height down.
+  .query-details--code {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+
+    .query-code-layout,
+    .runjs-editor,
+    .runps-editor,
+    .code-hinter-wrapper {
+      display: flex;
+      flex: 1 1 0;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .query-hinter,
+    .codehinter-container,
+    .codehinter-multi-line-input {
+      flex: 1 1 0;
+      min-height: 0;
+      height: 100%;
+      overflow: hidden !important;
+    }
+
+    .cm-editor {
+      min-height: 0 !important;
+      height: 100% !important;
+      max-height: 100% !important;
+    }
+
+    .cm-scroller {
+      overflow: auto;
+    }
+  }
+
   .query-details--right {
     input:not([type='checkbox']):not([type='radio']):not([role='combobox']),
     textarea,

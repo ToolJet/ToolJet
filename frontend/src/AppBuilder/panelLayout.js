@@ -214,14 +214,21 @@ export const getQueryManagerClassName = (surface, darkMode) =>
 
 const QUERY_DETAILS_CATEGORY_BY_TAB = { 1: 'setup', 2: 'transformation', 3: 'settings' };
 
-export const getQueryDetailsClassName = (surface, activeTab) =>
+const CODE_QUERY_KINDS = new Set(['runjs', 'runpy']);
+
+// The RunJS and RunPython setup tab is one code box that fills the panel and scrolls inside itself;
+// the panel around it never scrolls.
+export const isCodeQueryLayout = (surface, activeTab, kind) =>
+  surface === 'right' && activeTab === 1 && CODE_QUERY_KINDS.has(kind);
+
+export const getQueryDetailsClassName = (surface, activeTab, kind) =>
   `query-details${
     surface === 'right'
       ? ` query-details--right query-fields-stacked${
           QUERY_DETAILS_CATEGORY_BY_TAB[activeTab]
             ? ` query-details-category--${QUERY_DETAILS_CATEGORY_BY_TAB[activeTab]}`
             : ''
-        }`
+        }${isCodeQueryLayout(surface, activeTab, kind) ? ' query-details--code' : ''}`
       : ''
   }`;
 

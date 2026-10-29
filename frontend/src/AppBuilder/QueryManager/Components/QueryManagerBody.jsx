@@ -11,6 +11,7 @@ import {
   getQueryDetailsStyle,
   getQueryDetailsOverflowStyle,
   getQueryTypographyClassName,
+  isCodeQueryLayout,
   PREVIEW_PANEL,
 } from '@/AppBuilder/panelLayout';
 import DataSourcePicker from './DataSourcePicker';
@@ -196,6 +197,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
       <div
         className={cx({
           'disabled ': isFreezed,
+          'query-code-layout': isCodeQueryLayout(surface, activeTab, selectedDataSource?.kind),
         })}
       >
         <div ref={paramListContainerRef} style={{ marginBottom: '16px' }}>
@@ -548,7 +550,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
 
   return (
     <div
-      className={cx(getQueryDetailsClassName(surface, activeTab), {
+      className={cx(getQueryDetailsClassName(surface, activeTab, selectedDataSource?.kind), {
         'tooljetdb-query-details': selectedDataSource?.kind === 'tooljetdb',
         disabled: !hasPermissions,
       })}
