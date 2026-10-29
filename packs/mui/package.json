@@ -25,7 +25,7 @@
     "@mui/x-date-pickers": "^9.16.0",
     "@tooljet/custom-component-sdk": "0.1.0-beta.3",
     "dayjs": "^1.11.23",
-    "dompurify": "^3.3.3",
+    "dompurify": "^3.4.17",
     "use-sync-external-store": "file:./shims/use-sync-external-store"
   },
   "devDependencies": {
