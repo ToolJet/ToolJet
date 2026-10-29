@@ -33,6 +33,34 @@ describe('editor error notifications', () => {
     expect(screen.getAllByRole('button', { name: 'View all' })).toHaveLength(1);
   });
 
+  // Break this catches: expanded errors replace deliberately empty messages with fallback text.
+  it('preserves empty messages when expanding and receiving more errors', () => {
+    render(<Toast groupErrors />);
+    act(() => {
+      toast.error('Valid failure');
+      toast.error('');
+      toast.success('Saved');
+      toast('Information');
+      toast('Warning', { icon: '⚠️' });
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+    const list = screen.getByRole('list', { name: 'Error messages' });
+    expect(
+      within(list)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent)
+    ).toEqual(['', 'Valid failure']);
+    act(() => toast.error(''));
+    expect(
+      within(list)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent)
+    ).toEqual(['', '', 'Valid failure']);
+    expect(screen.getByText('Saved')).toBeVisible();
+    expect(screen.getByText('Information')).toBeVisible();
+    expect(screen.getByText('Warning')).toBeVisible();
+  });
+
   // Break this catches: expanding creates a separate overlay or resets the latest toast's timer.
   it('expands inside the latest toast and expires on its original deadline', () => {
     render(<Toast groupErrors />);
@@ -118,6 +146,65 @@ describe('editor error notifications', () => {
     expect(expandedCard).toHaveStyle({ minWidth: '400px', minHeight: '120px' });
     expect(screen.getByText('Saved').parentElement.style.minWidth).toBe('');
     expect(screen.getByText('Saved').parentElement.style.minHeight).toBe('');
+  });
+
+  it.each(['', 'Short error', 'Long error '.repeat(30)])(
+    'keeps expanded text width stable during animation for latest message %p',
+    (latest) => {
+      const originalAnimate = HTMLElement.prototype.animate;
+      const animations = [];
+      HTMLElement.prototype.animate = jest.fn(function (frames, options) {
+        const animation = { cancel: jest.fn() };
+        animations.push({ element: this, frames, options, animation });
+        return animation;
+      });
+      try {
+        const { unmount } = render(<Toast groupErrors />);
+        act(() => {
+          toast.success('Saved');
+          toast('Information');
+          toast('Warning', { icon: '⚠️' });
+          toast.error('Earlier error');
+          toast.error(latest);
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+        const panel = screen.getByRole('list', { name: 'Error messages' }).parentElement;
+        expect(panel.parentElement).toHaveStyle({ alignItems: 'flex-start' });
+        const textAnimation = animations.find((entry) => entry.element === panel);
+        expect(textAnimation).toBeDefined();
+        expect(textAnimation.frames[0]).toEqual(textAnimation.frames[1]);
+        expect(textAnimation.frames[0]).toMatchObject({ minWidth: '400px', maxWidth: '400px' });
+        expect(textAnimation.options.duration).toBe(240);
+        const count = animations.length;
+        act(() => toast.error('New error'));
+        expect(animations).toHaveLength(count);
+        for (const message of ['Saved', 'Information', 'Warning']) expect(screen.getByText(message)).toBeVisible();
+        unmount();
+        animations.forEach(({ animation }) => expect(animation.cancel).toHaveBeenCalled());
+      } finally {
+        if (originalAnimate) HTMLElement.prototype.animate = originalAnimate;
+        else delete HTMLElement.prototype.animate;
+      }
+    }
+  );
+
+  it('does not animate or freeze the panel width when reduced motion is requested', () => {
+    const originalAnimate = HTMLElement.prototype.animate;
+    HTMLElement.prototype.animate = jest.fn();
+    window.matchMedia.mockReturnValue({ matches: true });
+    try {
+      render(<Toast groupErrors />);
+      act(() => {
+        toast.error('Earlier');
+        toast.error('');
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+      expect(HTMLElement.prototype.animate).not.toHaveBeenCalled();
+      expect(screen.getByRole('list', { name: 'Error messages' })).toBeVisible();
+    } finally {
+      if (originalAnimate) HTMLElement.prototype.animate = originalAnimate;
+      else delete HTMLElement.prototype.animate;
+    }
   });
 
   // Break this catches: incoming errors remount the expanded toast or reorder existing messages.

@@ -117,6 +117,7 @@ const GroupedToasts = ({ toastOptions }) => {
                   minWidth: panelErrors.initialSize.width,
                   minHeight: panelErrors.initialSize.height,
                   boxSizing: 'border-box',
+                  alignItems: 'flex-start',
                 }}
               >
                 {() => (

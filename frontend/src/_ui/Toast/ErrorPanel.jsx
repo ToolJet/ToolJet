@@ -24,6 +24,10 @@ export default function ErrorPanel({ errors, onClose, initialSize, onHeightChang
     const card = panelRef.current?.parentElement;
     if (!initialSize || !card?.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const target = card.getBoundingClientRect();
+    // Keep text at its final width while the outer card reveals it, avoiding reflow.
+    const width = `${panelRef.current.getBoundingClientRect().width}px`;
+    const textSize = { minWidth: width, maxWidth: width };
+    const textAnimation = panelRef.current.animate([textSize, textSize], { duration: 240 });
     const animation = card.animate(
       [
         {
@@ -36,7 +40,10 @@ export default function ErrorPanel({ errors, onClose, initialSize, onHeightChang
       ],
       { duration: 240, easing: 'cubic-bezier(0.2, 0, 0, 1)' }
     );
-    return () => animation.cancel();
+    return () => {
+      animation.cancel();
+      textAnimation.cancel();
+    };
   }, [initialSize]);
 
   return (
@@ -51,7 +58,7 @@ export default function ErrorPanel({ errors, onClose, initialSize, onHeightChang
             <div className="toast-error-panel__icon" aria-hidden="true">
               <ToastIcon toast={error} />
             </div>
-            <span>{error.message || 'Something went wrong. Please try again.'}</span>
+            <span>{error.message}</span>
           </li>
         ))}
       </ol>
