@@ -73,12 +73,14 @@ export class TjdbRolloutSubstrateSchema1793250000300 implements MigrationInterfa
     await queryRunner.query(
       `DROP TRIGGER IF EXISTS trg_mirror_relation_configurations ON internal_table_relations`
     );
+    // NOT NULL: internal_tables.configurations is NOT NULL, and create_table inserts the relation
+    // before it has configurations, then saves them.
     await queryRunner.query(`
       CREATE TRIGGER trg_mirror_relation_configurations
         AFTER INSERT OR UPDATE OF configurations
         ON internal_table_relations
         FOR EACH ROW
-        WHEN (NEW.id = NEW.internal_table_id)
+        WHEN (NEW.id = NEW.internal_table_id AND NEW.configurations IS NOT NULL)
         EXECUTE FUNCTION mirror_relation_configurations()
     `);
   }

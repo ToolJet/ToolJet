@@ -164,14 +164,22 @@ describe('Release migrations', () => {
             const configurationsOf = async () =>
               (await queryRunner.query(`SELECT configurations FROM internal_tables WHERE id = $1`, [tableId]))[0]
                 .configurations;
-            const insertRelation = (id: string, environmentId: string, configurations: object) =>
+            const insertRelation = (id: string, environmentId: string, configurations: object | null) =>
               queryRunner.query(
                 `INSERT INTO internal_table_relations (id, internal_table_id, environment_id, branch_id, configurations)
                  VALUES ($1, $2, $3, $4, $5)`,
                 [id, tableId, environmentId, branch.id, configurations]
               );
+            const created = await configurationsOf();
 
-            await insertRelation(tableId, byPriority[0].id, { columns: { column_names: { id: 'a' } } });
+            // create_table inserts the relation before it has configurations; internal_tables' column is NOT NULL.
+            await insertRelation(tableId, byPriority[0].id, null);
+            expect(await configurationsOf()).toEqual(created);
+
+            await queryRunner.query(`UPDATE internal_table_relations SET configurations = $1 WHERE id = $2`, [
+              { columns: { column_names: { id: 'a' } } },
+              tableId,
+            ]);
             expect(await configurationsOf()).toEqual({ columns: { column_names: { id: 'a' } } });
 
             await queryRunner.query(`UPDATE internal_table_relations SET configurations = $1 WHERE id = $2`, [
