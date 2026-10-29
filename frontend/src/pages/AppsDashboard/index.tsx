@@ -136,7 +136,7 @@ export default function AppsDashboard({
           <>
             <Separator className="tw-mx-[4.375rem] tw-w-auto" />
 
-            <NoAppsExist appType={appType} {...staticContentMappingByAppType[appType].emptyState} />
+            <NoAppsExist showContent appType={appType} {...staticContentMappingByAppType[appType].emptyState} />
           </>
         )}
       </div>
