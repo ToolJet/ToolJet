@@ -1,5 +1,5 @@
 import React, { Profiler } from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { seedApp } from '@/test/app-builder';
 import useTableStore from '../../../../_stores/tableStore';
@@ -221,7 +221,7 @@ describe('Table-ADDROWFORM-015 payload and test hooks', () => {
     expect(draft()).toEqual({ name: 'Ada', email: '' });
   });
 
-  test('Table-ADDROWFORM-015 Cancel closes the form and clears what was typed', async () => {
+  test('Table-ADDROWFORM-015 Cancel closes the form, fires the cancelled event once and clears what was typed', async () => {
     // Break this catches: a cancelled draft surviving into the next time the form opens.
     const { user, fireEvent, hide } = renderForm();
 
@@ -229,7 +229,8 @@ describe('Table-ADDROWFORM-015 payload and test hooks', () => {
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
     expect(hide).toHaveBeenCalledTimes(1);
-    expect(fireEvent).not.toHaveBeenCalled();
+    expect(fireEvent).toHaveBeenCalledTimes(1);
+    expect(fireEvent).toHaveBeenCalledWith('onAddNewRowCancelled');
     // hide is a stub here, so the form stays mounted and re-seeds a blank row; what was typed must be gone.
     expect(draft().name).toBe('');
   });
@@ -859,5 +860,132 @@ describe('Table-ADDROWFORM-027 validation runs on Add row', () => {
 
     expect(fireEvent).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+});
+
+describe('Table-ADDROWFORM-028 dialog placement', () => {
+  const dialogProps = { addNewRowIn: 'dialog' };
+
+  test('Table-ADDROWFORM-028 the dialog renders outside the table, with the same form in it', () => {
+    // Break this catches: the dialog still drawn inside the table box, clipped by it.
+    const { container } = renderForm({ properties: dialogProps });
+
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    const dialog = screen.getByRole('dialog', { name: 'Add row' });
+    expect(document.body).toContainElement(dialog);
+    expect(within(dialog).getByRole('group', { name: 'Name' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Add row' })).toBeInTheDocument();
+    expect(dialog.closest('.table-add-new-row') ?? dialog.querySelector('.table-add-new-row')).not.toBeNull();
+  });
+
+  test('Table-ADDROWFORM-028 the table placement stays inside the table', () => {
+    // Break this catches: every table opening a dialog, whatever its setting.
+    const { container } = renderForm({ properties: { addNewRowIn: 'table' } });
+
+    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(document.querySelector('[data-slot="dialog-overlay"]')).toBeNull();
+  });
+
+  test('Table-ADDROWFORM-028 the dialog is 500px wide and at most min(80vh, 720px) tall, whatever the table size', () => {
+    // Break this catches: the dialog following the table size, or growing past the screen.
+    renderForm({ properties: dialogProps });
+
+    const content = document.querySelector('[data-slot="dialog-content"]');
+    expect(content).toHaveClass('tw-max-w-[500px]');
+    expect(content).toHaveClass('tw-max-h-[min(80vh,720px)]');
+  });
+
+  test('Table-ADDROWFORM-028 select and multiselect menus open above the dialog', async () => {
+    // Break this catches: a menu opening behind the dialog (the builder puts Rocket dialogs at z-index 1050).
+    const { user } = renderForm({ columns: OPTION_COLUMNS, properties: dialogProps });
+
+    await user.click(within(field('Plan')).getByRole('combobox'));
+
+    const menuLayer = (await screen.findByRole('listbox')).closest('[data-slot="popover-content"]');
+    expect(menuLayer).toHaveClass('tw-z-[1060]');
+  });
+
+  test('Table-ADDROWFORM-028 typing and Add row work the same in the dialog', async () => {
+    // Break this catches: the dialog showing the form but not wired to the draft and the send.
+    const { user, fireEvent, hide } = renderForm({ properties: dialogProps });
+
+    await user.type(within(field('Name')).getByRole('textbox'), 'Ada');
+    await user.click(screen.getByRole('button', { name: 'Add row' }));
+
+    expect(draft().name).toBe('Ada');
+    expect(fireEvent).toHaveBeenCalledWith('onNewRowsAdded');
+    expect(hide).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Table-ADDROWFORM-029 Escape and outside clicks', () => {
+  test.each([['table'], ['dialog']])(
+    'Table-ADDROWFORM-029 Escape in the %s placement acts like Cancel',
+    async (placement) => {
+      // Break this catches: Escape doing nothing, or closing without the cancelled event and the draft reset.
+      const { user, fireEvent, hide } = renderForm({ properties: { addNewRowIn: placement } });
+
+      await user.type(within(field('Name')).getByRole('textbox'), 'Ada');
+      await user.keyboard('{Escape}');
+
+      expect(hide).toHaveBeenCalledTimes(1);
+      expect(fireEvent).toHaveBeenCalledTimes(1);
+      expect(fireEvent).toHaveBeenCalledWith('onAddNewRowCancelled');
+      expect(draft().name).toBe('');
+    }
+  );
+
+  test('Table-ADDROWFORM-029 clicking the dialog backdrop does not close it', async () => {
+    // Break this catches: an accidental click outside throwing away a half-filled form.
+    const { user, fireEvent, hide } = renderForm({ properties: { addNewRowIn: 'dialog' } });
+
+    await user.click(document.querySelector('[data-slot="dialog-overlay"]'));
+
+    expect(hide).not.toHaveBeenCalled();
+    expect(fireEvent).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Add row' })).toBeInTheDocument();
+  });
+
+  test('Table-ADDROWFORM-029 Escape that closes an open select menu does not also cancel the form', async () => {
+    // Break this catches: dismissing a dropdown throwing the whole form away.
+    const { user, fireEvent, hide } = renderForm({ columns: OPTION_COLUMNS });
+
+    await user.click(within(field('Plan')).getByRole('combobox'));
+    await screen.findByRole('listbox');
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(hide).not.toHaveBeenCalled();
+    expect(fireEvent).not.toHaveBeenCalled();
+  });
+});
+
+describe('Table-ADDROWFORM-030 dialog focus', () => {
+  test('Table-ADDROWFORM-030 focus moves into the dialog when it opens', async () => {
+    // Break this catches: focus staying on the page behind the dialog.
+    renderForm({ properties: { addNewRowIn: 'dialog' } });
+
+    await waitFor(() =>
+      expect(screen.getByRole('dialog', { name: 'Add row' }).contains(document.activeElement)).toBe(true)
+    );
+  });
+
+  test('Table-ADDROWFORM-030 focus returns to what opened the dialog once it closes', async () => {
+    // Break this catches: keyboard users landing back at the top of the page after closing the dialog.
+    const opener = document.createElement('button');
+    document.body.appendChild(opener);
+    opener.focus();
+    let unmount;
+    const { user, unmount: unmountForm } = renderForm({
+      properties: { addNewRowIn: 'dialog' },
+      hide: () => unmount(),
+    });
+    unmount = unmountForm;
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() => expect(opener).toHaveFocus());
+    opener.remove();
   });
 });
