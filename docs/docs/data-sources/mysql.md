@@ -155,7 +155,7 @@ Retrieve records from the selected table with optional filtering, sorting, and p
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/listrow-gui.png" alt="Mysql List Rows GUI"/>
 
-### Create Rows
+### Create Row
 Insert a new row into the selected table by providing values for the required columns.
 
 In the editor, ensure the **Columns** input is provided in `string` format.
@@ -171,39 +171,55 @@ Modify existing row values in the selected table based on the specified conditio
 In the editor, ensure the **Columns** input is provided in `string` format.
 
 #### Required Parameters
+- **Filter**: Apply conditions to identify which row(s) should be updated. At least one filter condition is required. Without one, the query fails with `At least one filter condition is required.`
 - **Columns**: Specify the column names and values to be updated in the selected row(s).
 
 #### Optional Parameters
-- **Filter**: Apply conditions to identify which row(s) should be updated.
+- **Allow this query to update multiple rows**: When enabled, the query can modify multiple rows at once. When disabled, the query fails with `Query matches more than one row. Enable "Allow this Query to modify multiple rows" to permit this.` if the filter matches more than one row.
+- **Consider query that updates zero records as success**: When enabled, a query that matches no rows is still treated as successful. When disabled, the query fails with `No rows were updated.` if no row matches the filter.
+
+Both toggles are off by default. When a toggle's condition is violated, the update is rolled back, so no rows are changed.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/updaterow-gui.png" alt="Mysql Update Rows GUI"/>
 
 ### Delete Rows
 Remove one or more rows from the selected table that match the given conditions.
 
+#### Required Parameters
+- **Filter**: Apply conditions to specify which row(s) should be deleted. At least one filter condition is required, even when **Limit** is set. This prevents deleting every row in the table by accident.
+
 #### Optional Parameters
-- **Filter**: Apply conditions to specify which row(s) should be deleted.
 - **Limit**: Specify the maximum number of rows to delete.
+- **Allow this query to delete multiple rows**: When enabled, the query can delete multiple rows at once. When disabled, the query fails with `Query matches more than one row. Enable "Allow this Query to delete multiple rows" to permit this.` if more than one row would be deleted.
+- **Consider query that deletes zero records as success**: When enabled, a query that matches no rows is still treated as successful. When disabled, the query fails with `No rows were deleted.` if no row matches the filter.
+
+Both toggles are off by default. The delete runs in a transaction, so when a toggle's condition is violated, it is rolled back and no rows are deleted.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/deleterow-gui.png" alt="Mysql Delete Rows GUI"/>
 
-### Upsert Rows
+### Upsert Row
 Insert a new row or update an existing row if a matching primary or unique key already exists.
 
 In the editor, ensure the **Columns** input is provided in `string` format.
 
 #### Required Parameters
-- **Primary key column(s)**: Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted.
+- **Primary key column(s)**: Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted. Enter a single column name, such as `id`, or an array for composite keys, such as `{{ ["id", "tenant_id"] }}`.
 - **Columns**: Provide the column names and values to be inserted or updated.
+
+#### Optional Parameters
+- **Allow this query to update multiple rows**: When enabled, the query can modify multiple rows at once. When disabled, the query fails with `Query matches more than one row. Enable "Allow this Query to modify multiple rows" to permit this.` if more than one row is affected.
+- **Consider query that updates zero records as success**: When enabled, a query that affects no rows is still treated as successful. When disabled, the query fails with `No rows were upserted.` if no row is affected.
+
+Both toggles are off by default. When a toggle's condition is violated, the upsert is rolled back.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/upsertrow-gui.png" alt="Mysql Upsert Rows GUI"/>
 
 ### Bulk Insert
-Inserts multiple rows into the table in a single operation using an array of records.
+Inserts multiple rows into the table using an array of records. All records are inserted in a single transaction. See [Transactions and batching](#transactions-and-batching-in-bulk-operations).
 
 #### Required Parameters
-- **Table** : Select the table into which multiple rows need to be inserted.
-- **Records to insert**: Provide the set of rows and corresponding column values to be inserted in a single operation.
+- **Table**: Select the table into which multiple rows need to be inserted.
+- **Records to insert**: An array of row objects to insert. If a record doesn't include a column that other records in the same batch include, that column is inserted as `NULL` for the record.
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -227,11 +243,11 @@ Inserts multiple rows into the table in a single operation using an array of rec
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/bulk-insert-gui.png" alt="Mysql Bulk Insert GUI"/>
 
 ### Bulk Update using Primary Key
-Update multiple existing rows at once by matching records using their primary key values.
+Update multiple existing rows at once by matching records using their primary key values. All records are updated in a single transaction. See [Transactions and batching](#transactions-and-batching-in-bulk-operations).
 
 #### Required Parameters
-- **Primary key column(s)**: Specify the primary key column(s) used to identify the rows that need to be updated.
-- **Records to update**: Provide multiple records with updated column values for the matching primary key rows. 
+- **Primary key column(s)**: Specify the primary key column(s) used to identify the rows that need to be updated. Enter a single column name, such as `id`, or an array for composite keys, such as `{{ ["id", "tenant_id"] }}`.
+- **Records to update**: Provide multiple records with updated column values for the matching primary key rows. Every record must include all primary key columns and at least one column to update, otherwise the query fails with an error such as `Row 2 is missing primary key column "id"`.
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -249,15 +265,23 @@ Update multiple existing rows at once by matching records using their primary ke
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/bulk-update-pk-gui.png" alt="Mysql Bulk Update key GUI"/>
 
 ### Bulk Upsert using Primary Key
-Insert multiple new rows or update existing ones by matching rows using primary key values.
+Insert multiple new rows or update existing ones by matching rows using primary key values. All records are upserted in a single transaction. See [Transactions and batching](#transactions-and-batching-in-bulk-operations).
 
 #### Required Parameters
-- **Primary key column(s)**: Specify the primary key column(s) used to determine whether each record should be updated or inserted.
-- **Records to upsert**: Provide multiple records that will be inserted as new rows or updated if matching primary key values already exist.
+- **Primary key column(s)**: Specify the primary key column(s) used to determine whether each record should be updated or inserted. Enter a single column name, such as `id`, or an array for composite keys, such as `{{ ["id", "tenant_id"] }}`.
+- **Records to upsert**: Provide multiple records that will be inserted as new rows or updated if matching primary key values already exist. Every record must include all primary key columns.
 
 In this operation, if a row with the matching primary key exists, it is updated; otherwise, a new row is inserted.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/bulk-upsert-pk-gui.png" alt="Mysql Bulk Upsert key GUI"/>
+
+### Transactions and Batching in Bulk Operations
+
+**Bulk insert**, **Bulk update using primary key**, and **Bulk upsert using primary key** run all of their statements inside a single transaction. If any statement fails, for example because of a constraint violation or a record with a missing primary key column, the whole operation is rolled back and no records are written. The query either applies every record or none of them.
+
+You don't need to split large arrays yourself. ToolJet automatically splits the records into batches so that no statement exceeds MySQL's limit on bound parameters. Each batch holds up to 64,000 parameters, so the number of records per batch is 64,000 divided by the number of columns in the records. For example, records with 8 columns are inserted in batches of 8,000. All batches still run in the same transaction.
+
+**Bulk insert** sends one multi-row `INSERT` statement per batch. **Bulk update using primary key** and **Bulk upsert using primary key** send one statement per record.
 
 :::tip
 Query results can be transformed using transformations. Learn more about transformations [here](/docs/app-builder/custom-code/transform-data).
