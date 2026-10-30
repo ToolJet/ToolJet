@@ -87,6 +87,12 @@ jobs:
                   TAG: ${{ github.event.release.tag_name }}
               run: |
                   branch=$(git config -f .gitmodules submodule.server/ee.branch)
+                  # The tag must sit on the release commit: tag name == v + .version at that commit
+                  version=$(gh api "repos/$REPO/contents/.version?ref=$TAG" --jq .content | base64 -d | tr -d '\n')
+                  if [[ "v$version" != "$TAG" ]]; then
+                    echo "::error::Release tag $TAG does not match .version ($version) at that commit."
+                    exit 1
+                  fi
                   status=$(gh api "repos/$REPO/compare/${branch}...${TAG}" --jq .status)
                   if [[ "$status" != "identical" && "$status" != "behind" ]]; then
                     echo "::error::Release tag $TAG is not on $branch, the branch .gitmodules tracks. Update branch in .gitmodules on the LTS branch."
