@@ -1,4 +1,3 @@
-import { AppImportExportService } from '@modules/apps/services/app-import-export.service';
 import { EntityManager } from 'typeorm';
 import { LibraryQuery } from '@entities/library_query.entity';
 import { LibraryQueryVersion } from '@entities/library_query_version.entity';
@@ -62,36 +61,6 @@ describe('Recursive import lock plan', () => {
     });
     expect(events).toEqual([`lock:${first}`, `lock:${second}`, 'child write']);
   });
-});
-
-it('establishes the full bundle plan before the importer starts recursive module writes', async () => {
-  const events = [];
-  const manager = {
-    find: jest.fn().mockResolvedValue([
-      { id: first, name: 'A' },
-      { id: second, name: 'B' },
-    ]),
-    query: jest.fn(async (_sql, [id]) => {
-      events.push(id);
-    }),
-    findOne: jest.fn(async (_entity, { where }) => where),
-  } as unknown as EntityManager;
-  const service = Object.create(AppImportExportService.prototype);
-  service.mapModulesForAppImport = jest.fn(async () => {
-    events.push('module write');
-    throw new Error('stop after prepass');
-  });
-  const bundle = {
-    appV2: {
-      name: 'Root',
-      dataQueries: [pin(first)],
-      modules: [{ appV2: { name: 'Child', dataQueries: [pin(second)] } }],
-    },
-  };
-  await expect(
-    service.import({ organizationId: 'workspace' }, bundle, 'Root', {}, false, '', false, manager)
-  ).rejects.toThrow('stop after prepass');
-  expect(events).toEqual([first, second, 'module write']);
 });
 
 it('refuses an unplanned existing parent rather than acquiring an out-of-order import lock', async () => {

@@ -8,10 +8,11 @@ module.exports = defineConfig({
   defaultCommandTimeout: 20000,
   responseTimeout: 30000,
   retries: 0,
-  screenshotsFolder: '../nakul-workflow/verification/query-library-task9/screenshots',
+  trashAssetsBeforeRuns: false,
+  screenshotsFolder: '../nakul-workflow/verification/query-library-license-gating/screenshots',
   e2e: {
-    baseUrl: 'http://localhost:8093',
+    baseUrl: process.env.QUERY_LIBRARY_FRONTEND_ORIGIN,
     supportFile: 'cypress/support/query-library.js',
-    specPattern: 'cypress/e2e/happyPath/platform/eeTestcases/queryLibrary/versionLifecycle.cy.js',
+    specPattern: 'cypress/e2e/happyPath/platform/eeTestcases/queryLibrary/{versionLifecycle,licensing}.cy.js',
   },
 });

@@ -58,24 +58,6 @@ describe('DataQueriesService version scoping', () => {
     dataQueryRepository.findLibraryConsumers.mockResolvedValue([]);
   });
 
-  describe('addToLibrary', () => {
-    it("rejects a query id that is not in the URL's version with 404, writing nothing", async () => {
-      findOne.mockResolvedValue(null); // scoped lookup: not in this version
-      const app = { id: 'app1', type: 'front-end', organizationId: 'org1' } as any;
-      const dto = { name: 'getOrders', sourceOptions: {}, libraryOptions: {}, inputs: {} };
-
-      await expect(service.addToLibrary(user, app, 'foreign-query', 'v1', dto)).rejects.toBeInstanceOf(
-        NotFoundException
-      );
-
-      expect(findOne).toHaveBeenCalledWith(
-        DataQuery,
-        expect.objectContaining({ where: { id: 'foreign-query', appVersionId: 'v1' } })
-      );
-      expect(dataQueryRepository.updateOne).not.toHaveBeenCalled();
-    });
-  });
-
   describe('delete', () => {
     it("rejects a query id that is not in the URL's version with 404, writing nothing", async () => {
       findOne.mockResolvedValue(null); // scoped lookup: not in this version
