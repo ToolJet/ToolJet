@@ -8,7 +8,6 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 export const CustomComponent = (props) => {
   const { height, properties, styles, id, setExposedVariable, dataCy, componentName, currentMode } = props;
   const { moduleId } = useModuleContext();
-  const exposedVariables = useStore((state) => state.getExposedValueOfComponent(id), shallow);
   const onEvent = useStore((state) => state.eventsSlice.onEvent, shallow);
   const { visibility, boxShadow, borderColor, borderRadius } = styles;
   const { code, data } = properties;
@@ -17,6 +16,9 @@ export const CustomComponent = (props) => {
   const messageEventListenerRef = useRef(null);
 
   const customPropRef = useRef(data);
+  // The data last published and sent to the frame. Kept here rather than read back from the store,
+  // which inside a ListView holds one value per row
+  const syncedDataRef = useRef();
 
   useEffect(() => {
     setCustomProps(data);
@@ -25,12 +27,13 @@ export const CustomComponent = (props) => {
   }, [JSON.stringify(data)]);
 
   useEffect(() => {
-    if (!isEqual(exposedVariables.data, customProps)) {
+    if (!isEqual(syncedDataRef.current, customProps)) {
+      syncedDataRef.current = customProps;
       setExposedVariable('data', customProps);
       sendMessageToIframe({ message: 'DATA_UPDATED' });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customProps, exposedVariables.data]);
+  }, [customProps]);
 
   useEffect(() => {
     sendMessageToIframe({ message: 'CODE_UPDATED' });

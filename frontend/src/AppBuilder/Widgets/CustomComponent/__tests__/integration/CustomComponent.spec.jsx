@@ -830,7 +830,7 @@ describe('CustomComponent inside a Listview', () => {
     });
   }
 
-  function renderListviewWithCustomComponent() {
+  function renderListviewWithCustomComponent(data = '{{ { row: listItem.name } }}') {
     store().setVariable('rows', [{ name: 'A' }, { name: 'B' }], MODULE_ID);
     const listview = componentDefinition('lv1', 'listview1', 'Listview', {
       dataSourceSelector: binding('rawJson'),
@@ -842,7 +842,7 @@ describe('CustomComponent inside a Listview', () => {
       disabledState: binding('{{false}}'),
       enablePagination: binding('{{false}}'),
     });
-    const cc = ccDefinition(ID, HANDLE, { data: binding('{{ { row: listItem.name } }}') });
+    const cc = ccDefinition(ID, HANDLE, { data: binding(data) });
     cc.component.parent = 'lv1';
     cc.component.definition.others = { showOnDesktop: binding('{{true}}'), showOnMobile: binding('{{false}}') };
 
@@ -890,6 +890,35 @@ describe('CustomComponent inside a Listview', () => {
 
     await waitFor(() => expect(rowData(0)).toEqual({ row: 'A', title: 'row 0 only' }));
     expect(rowData(1)).toEqual({ row: 'B' });
+  });
+
+  test('[CustomComponent-ISO-005] A later row still redraws after an earlier row made the same change', async () => {
+    // Break this catches: comparing a row's data against row 0's stored value
+    // instead of its own, so once row 0 holds the new data, an identical
+    // update from another row is taken as already applied and never reaches
+    // that row's frame.
+    renderListviewWithCustomComponent("{{ { title: 'Hi! There' } }}");
+    await waitFor(() => expect(rowData(1)).toEqual({ title: 'Hi! There' }));
+
+    const frames = [...document.querySelectorAll(`iframe[data-id="${ID}"]`)];
+    expect(frames).toHaveLength(2);
+    const [row0, row1] = frames.map((el) => recordFrameMessages(el));
+
+    deliver(
+      { from: 'customComponent', componentId: ID, message: 'UPDATE_DATA', updatedObj: { title: 'Hello World!!' } },
+      frames[0].contentWindow
+    );
+    await waitFor(() => expect(rowData(0)).toEqual({ title: 'Hello World!!' }));
+    await waitFor(() => expect(lastOfType(row0, 'DATA_UPDATED')?.data).toEqual({ title: 'Hello World!!' }));
+    await settleRows();
+    expect(rowData(1)).toEqual({ title: 'Hi! There' });
+
+    deliver(
+      { from: 'customComponent', componentId: ID, message: 'UPDATE_DATA', updatedObj: { title: 'Hello World!!' } },
+      frames[1].contentWindow
+    );
+    await waitFor(() => expect(lastOfType(row1, 'DATA_UPDATED')?.data).toEqual({ title: 'Hello World!!' }));
+    await waitFor(() => expect(rowData(1)).toEqual({ title: 'Hello World!!' }));
   });
 });
 
