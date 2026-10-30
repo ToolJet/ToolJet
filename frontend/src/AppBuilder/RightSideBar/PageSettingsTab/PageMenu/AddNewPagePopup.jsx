@@ -109,7 +109,9 @@ export const AddEditPagePopup = forwardRef(
     // never flips in time and the effect re-enters itself until React throws
     // "Maximum update depth exceeded" — one click created 50+ pages. The ref is
     // written before addNewPage() so the nested flush sees it already set.
-    const hasAutoSavedRef = useRef(false);
+    // Starts set when embedded: the right panel's copy shares newPagePopupConfig with the Pages panel's
+    // floating popups, and only those create the page.
+    const hasAutoSavedRef = useRef(embedded);
     const [error, setError] = useState(null);
 
     const isHomePage = page?.id === homePageId;
