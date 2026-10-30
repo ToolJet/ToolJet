@@ -2497,13 +2497,18 @@ body {
 .RichEditor-styleButton {
   color: #999;
   cursor: pointer;
-  margin-right: 16px;
-  padding: 2px 0;
+  margin-right: 12px;
+  padding: 2px 4px;
   display: inline-block;
+  border-radius: 4px;
 }
 
 .RichEditor-activeButton {
-  color: #5890ff;
+  // The Bold/Italic/list buttons are <img> icons, so a text-color-only rule
+  // renders no visible state — the background pill is the active indicator
+  // for every control, icon or text.
+  color: var(--cc-primary-brand, #5890ff);
+  background-color: var(--cc-surface3-surface, #e6e8eb);
 }
 
 .chart-data-input {

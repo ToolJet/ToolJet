@@ -8,10 +8,20 @@ import _ from 'lodash';
 
 const localizer = momentLocalizer(moment);
 
+// Parse an event date with the widget dateFormat, falling back to ISO-8601/native
+// parsing when the string does not match that format (e.g. 2026-10-23T09:00:00Z
+// under the default MM-DD-YYYY format) so manually supplied events still render.
+const parseEventDate = (value, dateFormat) => {
+  if (value instanceof Date) return value;
+  let parsed = moment(value, dateFormat);
+  if (!parsed.isValid()) parsed = moment(value);
+  return parsed.toDate();
+};
+
 const prepareEvent = (event, dateFormat) => ({
   ...event,
-  start: moment(event.start, dateFormat).toDate(),
-  end: moment(event.end, dateFormat).toDate(),
+  start: parseEventDate(event.start, dateFormat),
+  end: parseEventDate(event.end, dateFormat),
 });
 
 const parseDate = (date, dateFormat) => {
@@ -42,9 +52,13 @@ export default function Calendar({
 }) {
   const style = { height, borderRadius: `${styles.borderRadius}px`, overflow: 'hidden' };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
-  const events = Array.isArray(properties?.events)
-    ? properties?.events?.map((event) => prepareEvent(event, properties.dateFormat))
-    : [];
+  // Accept an array of events or a single bare event object (QA configures one object).
+  const rawEvents = Array.isArray(properties?.events)
+    ? properties?.events
+    : properties?.events && typeof properties?.events === 'object'
+      ? [properties.events]
+      : [];
+  const events = rawEvents.map((event) => prepareEvent(event, properties.dateFormat));
 
   const [currentView, setCurrentView] = useState(properties.defaultView || 'month');
   const defaultDate = parseDate(properties.defaultDate, properties.dateFormat);
@@ -56,6 +70,10 @@ export default function Calendar({
   const [currentDate, setCurrentDate] = useState(defaultDate);
   const [eventPopoverOptions, setEventPopoverOptions] = useState({ show: false });
   const isInitialRender = useRef(true);
+  // visibility moved from styles to properties (Additional Actions, bug-fix batch
+  // 2026-10-27). The styles fallback keeps unmigrated definitions (old exports /
+  // imports that bypass the data migration) rendering correctly.
+  const visibility = properties.visibility ?? styles?.visibility ?? true;
 
   const eventPropGetter = (event) => {
     const backgroundColor = event.color ?? 'var(--cc-primary-brand)';
@@ -130,7 +148,7 @@ export default function Calendar({
     <div
       id={id}
       style={{
-        display: styles.visibility ? 'block' : 'none',
+        display: visibility ? 'block' : 'none',
         boxShadow: styles.boxShadow,
         border: `1px solid ${styles.borderColor}`,
         borderRadius: `${styles.borderRadius}px`,

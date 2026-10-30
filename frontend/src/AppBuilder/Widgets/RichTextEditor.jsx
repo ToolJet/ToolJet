@@ -20,7 +20,12 @@ export default function RichTextEditor({
   componentType,
 }) {
   const isInitialRender = useRef(true);
-  const { visibility, disabledState, boxShadow } = styles;
+  const { boxShadow } = styles;
+  // visibility/disabledState moved from styles to properties (Additional Actions,
+  // bug-fix batch 2026-10-27). The styles fallback keeps unmigrated definitions
+  // (old exports/imports that bypass the data migration) rendering correctly.
+  const visibility = properties.visibility ?? styles?.visibility ?? true;
+  const disabledState = properties.disabledState ?? styles?.disabledState ?? false;
   const placeholder = properties.placeholder;
   const defaultValue = properties?.defaultValue ?? '';
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
@@ -46,7 +51,7 @@ export default function RichTextEditor({
     if (isDisabled !== disabledState) setIsDisabled(disabledState);
     if (isVisible !== visibility) setIsVisible(visibility);
     if (isLoading !== properties.loadingState) setIsLoading(properties.loadingState);
-  }, [properties.loadingState, styles.visibility, styles.disabledState]);
+  }, [properties.loadingState, visibility, disabledState]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
