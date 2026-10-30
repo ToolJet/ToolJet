@@ -9,6 +9,13 @@ ToolJet applications can be embedded publicly that is accessible to anyone witho
 
 Public embeds are commonly used for feedback forms, marketing dashboards, surveys, or customer-facing widgets where ease of access is more important than access control.
 
+:::info Public apps on ToolJet Cloud
+On ToolJet Cloud, public apps work only if your plan includes them. Contact ToolJet to check your plan.
+If your plan doesn't include public apps, anyone who opens a public app's URL or embed sees a **Feature not available** page with the message *Public apps are not available in your plan. Please upgrade to share this app.* This applies to every visitor, including signed-in workspace users, and to apps that were made public earlier. To give workspace users access again, turn off **Make application public**.
+
+Self-hosted ToolJet doesn't have this restriction.
+:::
+
 #### When to Use a Public Application
 
 - The data displayed or collected is **non-sensitive**
