@@ -40,7 +40,8 @@ export const QueryPanel = ({ darkMode }) => {
   const selectedQueryId = useStore((state) => state.queryPanel.selectedQuery?.id);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
-  const [activeTab, setActiveTab] = useState('inspect');
+  const activeTab = useStore((state) => state.queryPanel.runtimePanelTab);
+  const setActiveTab = useStore((state) => state.queryPanel.setRuntimePanelTab);
   // -1 / 1 when moving left / right across the tabs; drives the content's enter slide.
   const [tabDirection, setTabDirection] = useState(0);
   const tabRefs = useRef({});

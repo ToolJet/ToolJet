@@ -31,6 +31,8 @@ const toastIfQueryRunRestricted = (errorData) => {
 
 const initialState = {
   isQueryPaneExpanded: runtimePanelPreferences?.isExpanded ?? false,
+  // The runtime drawer's tab ('inspect' | 'debugger').
+  runtimePanelTab: 'inspect',
   isDraggingQueryPane: false,
   // eslint-disable-next-line no-constant-binary-expression
   queryPanelHeight: runtimePanelPreferences?.isExpanded ? 30 : 0,
@@ -106,6 +108,26 @@ export const createQueryPanelSlice = (set, get) => ({
         false,
         'setIsQueryPaneExpanded'
       ),
+    setRuntimePanelTab: (runtimePanelTab) =>
+      set(
+        (state) => {
+          state.queryPanel.runtimePanelTab = runtimePanelTab;
+        },
+        false,
+        'setRuntimePanelTab'
+      ),
+    // Every "inspect this" entry point (State inspector, Entity usage links) lands here.
+    openRuntimeInspector: (path) => {
+      get().setSelectedNodePath(path);
+      set(
+        (state) => {
+          state.queryPanel.runtimePanelTab = 'inspect';
+          state.queryPanel.isQueryPaneExpanded = true;
+        },
+        false,
+        'openRuntimeInspector'
+      );
+    },
     setQueryPanelHeight: (queryPanelHeight) => {
       const currentQueryPanelHeight = get().queryPanel.queryPanelHeight;
       if (currentQueryPanelHeight === queryPanelHeight) return;

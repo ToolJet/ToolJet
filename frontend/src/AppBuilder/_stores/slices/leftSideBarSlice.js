@@ -50,21 +50,8 @@ export const createLeftSideBarSlice = (set, get) => ({
     if (selectedSidebarItem === 'tooljetai' && isSidebarOpen) toggleLeftSidebar(false);
   },
   setPathToBeInspected: (pathToBeInspected) => set(() => ({ pathToBeInspected }), false, 'setPathToBeInspected'),
-  setComponentToInspect: (componentToInspect) => {
-    const {
-      setPathToBeInspected,
-      setSelectedSidebarItem,
-      toggleLeftSidebar,
-      selectedSidebarItem,
-      setSelectedNodePath,
-    } = get();
-    // setPathToBeInspected(['components', componentToInspect]);
-    setSelectedNodePath(`components.${componentToInspect}`);
-    if (selectedSidebarItem !== 'inspect') {
-      setSelectedSidebarItem('inspect');
-      toggleLeftSidebar(true);
-    }
-  },
+  setComponentToInspect: (componentToInspect) =>
+    get().queryPanel.openRuntimeInspector(`components.${componentToInspect}`),
   clearDependencyPanelSelection: () =>
     set(() => ({ dependencyPanelSelection: null }), false, 'clearDependencyPanelSelection'),
   /**
