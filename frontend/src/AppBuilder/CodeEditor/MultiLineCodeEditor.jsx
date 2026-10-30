@@ -79,6 +79,7 @@ const MultiLineCodeEditor = (props) => {
     onInputChange, // Added this prop to immediately handle value changes
     foldGutter = true, // controls the left gray bar
     componentId,
+    usePortalEditor = true, // the "pop out code editor" button, as in SingleLineCodeEditor
   } = props;
   const { moduleId: contextModuleId } = useModuleContext();
   const moduleId = props.moduleId || contextModuleId || 'canvas';
@@ -330,14 +331,16 @@ const MultiLineCodeEditor = (props) => {
       <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
         <CodeHinterBtns view={editorView} isPanelOpen={isSearchPanelOpen} copilotBtnSlot={copilotBtnSlot} />
 
-        <CodeHinter.PopupIcon
-          callback={handleTogglePopupExapand}
-          icon="portal-open"
-          tip="Pop out code editor into a new window"
-          isMultiEditor={true}
-          isQueryManager={isInsideQueryPane}
-          position={{ height: height }}
-        />
+        {usePortalEditor && (
+          <CodeHinter.PopupIcon
+            callback={handleTogglePopupExapand}
+            icon="portal-open"
+            tip="Pop out code editor into a new window"
+            isMultiEditor={true}
+            isQueryManager={isInsideQueryPane}
+            position={{ height: height }}
+          />
+        )}
 
         <CodeHinter.Portal
           isCopilotEnabled={false}

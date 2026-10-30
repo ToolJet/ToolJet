@@ -34,6 +34,8 @@ export class Runpy extends React.Component {
           onChange={(value) => changeOption(this, 'code', value)}
           componentName="Runpy"
           cyLabel={`runpy`}
+          // The query header opens the code in a new browser tab instead.
+          usePortalEditor={false}
           delayOnChange={false}
         />
       </div>

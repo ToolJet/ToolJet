@@ -34,6 +34,8 @@ const Runjs = (props) => {
         }}
         componentName="Runjs"
         cyLabel={`runjs`}
+        // The query header opens the code in a new browser tab instead.
+        usePortalEditor={false}
         delayOnChange={false}
       />
     </div>
