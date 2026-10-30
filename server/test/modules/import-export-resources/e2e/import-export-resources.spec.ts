@@ -31,6 +31,7 @@ import { App } from '@entities/app.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { Page } from '@entities/page.entity';
 import { Component } from '@entities/component.entity';
+import { Layout } from '@entities/layout.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { OrganizationGitHttps } from '@entities/gitsync_entities/organization_git_https.entity';
@@ -238,6 +239,58 @@ describe('ImportExportResourcesController', () => {
 
       expect(importResponse.body).toHaveProperty('imports');
       expect(importResponse.body.success).toBe(true);
+    });
+  });
+
+  describe('POST /api/v2/resources/import | layout sizing', () => {
+    // A FlexContainer child's grow and minimum width live on its layout. Import copied widthPx and fillWidth but
+    // dropped these two, so after a round trip the children lost how they share a row.
+    it("keeps a flex child layout's grow and minWidthPx through export and import", async () => {
+      const admin = await createAdmin(app, 'admin@tooljet.io');
+      const application = await seedApp(admin);
+      const version = await findEntityOrFail(AppVersion, { appId: application.id } as any);
+      const page = await findEntityOrFail(Page, { appVersionId: version.id } as any);
+      const child = await saveEntity(Component, {
+        name: 'flexchild1',
+        type: 'Text',
+        pageId: page.id,
+        properties: {},
+      } as any);
+      await saveEntity(Layout, {
+        type: 'desktop',
+        top: 0,
+        left: 0,
+        width: 10,
+        height: 40,
+        dimensionUnit: 'count',
+        grow: 2,
+        minWidthPx: 120,
+        componentId: child.id,
+      } as any);
+
+      const exported = await request(app.getHttpServer())
+        .post('/api/v2/resources/export')
+        .set('tj-workspace-id', admin.user.defaultOrganizationId)
+        .set('Cookie', admin.cookie)
+        .send({ app: [{ id: application.id }], organization_id: admin.user.defaultOrganizationId })
+        .expect(201);
+      const imported = await request(app.getHttpServer())
+        .post('/api/v2/resources/import')
+        .set('tj-workspace-id', admin.user.defaultOrganizationId)
+        .set('Cookie', admin.cookie)
+        .send({
+          organization_id: admin.user.defaultOrganizationId,
+          tooljet_version: exported.body.tooljet_version,
+          app: exported.body.app,
+        })
+        .expect(201);
+
+      const importedAppId = imported.body.imports.app[0].id;
+      const importedVersion = await findEntityOrFail(AppVersion, { appId: importedAppId } as any);
+      const importedPage = await findEntityOrFail(Page, { appVersionId: importedVersion.id } as any);
+      const importedChild = await findEntityOrFail(Component, { pageId: importedPage.id, name: 'flexchild1' } as any);
+      const layout = await findEntityOrFail(Layout, { componentId: importedChild.id, type: 'desktop' } as any);
+      expect(layout).toMatchObject({ grow: 2, minWidthPx: 120 });
     });
   });
 
