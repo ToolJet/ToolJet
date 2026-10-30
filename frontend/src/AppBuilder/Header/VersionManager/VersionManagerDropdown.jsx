@@ -41,6 +41,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     developmentVersions,
     setSelectedVersion,
     fetchDevelopmentVersions,
+    isAiBuildingApp,
   } = useStore(
     (state) => ({
       appId: state.appId ?? state.appStore.modules[moduleId]?.app?.appId,
@@ -56,6 +57,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       developmentVersions: state.developmentVersions,
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       setSelectedVersion: state.setSelectedVersion,
+      isAiBuildingApp: state.ai?.isLoading ?? false,
     }),
     shallow
   );
@@ -461,6 +463,22 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     setDeleteVersion({ versionId: '', versionName: '', isSynced: true, showModal: false });
   };
 
+  // An AI build writes to the version it started on. The pill is disabled while it runs, but a menu (or a
+  // dialog opened from it) that was already open would still let the user create, rename, promote or delete
+  // versions under the agent, so close them when a build starts.
+  useEffect(() => {
+    if (!isAiBuildingApp) return;
+    if (useVersionManagerStore.getState().isDropdownOpen) closeDropdown();
+    setOpenMenuVersionId(null);
+    setShowCreateDraftModal(false);
+    setShowPromoteModal(false);
+    setVersionToPromote(null);
+    setShowEditVersionModal(false);
+    setVersionToEdit(null);
+    resetDeleteModal();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAiBuildingApp]);
+
   const confirmDeleteVersion = () => {
     if (!deleteVersion.versionId) return;
     const deletingToast = toast.loading('Deleting version...');
@@ -657,7 +675,11 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         target={buttonRef.current}
         placement="bottom-end"
         rootClose
-        onHide={() => {
+        onHide={(event) => {
+          // Promote and Release open their dialogs from inside this menu, and those dialogs (and any
+          // full-screen view opened from them) render outside it. A click in them is not a click
+          // away from the menu; closing here would take the open dialog with it.
+          if (event?.target?.closest?.('.modal, [data-editor-overlay]')) return;
           if (!isPullingVersion) closeDropdown();
         }}
         popperConfig={{

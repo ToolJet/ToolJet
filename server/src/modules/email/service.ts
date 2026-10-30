@@ -17,6 +17,7 @@ import {
   SendUserBannedEmailPayload,
   SendWorkspaceBannedEmailPayload,
   SendAppBuildCompletedEmailPayload,
+  SendVersionReviewEmailPayload,
 } from '@modules/email/dto';
 import { EmailUtilService } from './util.service';
 import { IEmailService } from './interfaces/IService';
@@ -366,6 +367,45 @@ export class EmailService implements IEmailService {
     return await this.sendEmail(to, subject, {
       bodyContent: htmlEmailContent,
       footerText: 'You have received this email because you asked ToolJet to build an app',
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+    });
+  }
+
+  /**
+   * Version reviews: someone was asked to review, mentioned, or the review they opened or review
+   * was decided on or released. The button opens the review in the editor (?review=<id>).
+   */
+  async sendVersionReviewEmail(payload: SendVersionReviewEmailPayload) {
+    const { to, name, actorName, reason, note, appName, appSlug, workspaceSlug, organizationId } = payload;
+    const { reviewId, reviewTitle, versionName } = payload;
+    await this.init(organizationId);
+    const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
+    const basePath = this.SUB_PATH ? this.SUB_PATH : '/';
+    const reviewUrl = `${this.stripTrailingSlash(host)}${basePath}${workspaceSlug}/apps/${appSlug}?review=${reviewId}`;
+    const copy = {
+      review_requested: [`${actorName} asked you to review ${versionName} of ${appName}`, 'Review changes'],
+      mentioned: [`${actorName} mentioned you in a review of ${appName}`, 'Open the review'],
+      approved: [`${actorName} approved ${versionName} of ${appName}`, 'Open the review'],
+      changes_requested: [`${actorName} asked for changes to ${versionName} of ${appName}`, 'See what to change'],
+      released: [`${actorName} released ${versionName} of ${appName}`, 'Open the review'],
+      overridden: [`${actorName} allowed ${versionName} of ${appName} to go out without approval`, 'Open the review'],
+      rereview_requested: [`${actorName} made the changes and asked you to review ${versionName} of ${appName} again`, 'Review changes'],
+    }[reason];
+    if (!copy) return;
+    const [headline, buttonText] = copy;
+    const htmlEmailContent = this.compileTemplate('version_review.hbs', {
+      name: name || '',
+      headline,
+      buttonText,
+      reviewTitle,
+      note,
+      reviewUrl,
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+    });
+    return await this.sendEmail(to, headline, {
+      bodyContent: htmlEmailContent,
+      footerText: `You have received this email because you take part in reviews of ${appName}`,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
     });

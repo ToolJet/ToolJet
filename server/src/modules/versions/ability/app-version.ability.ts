@@ -24,6 +24,9 @@ export function defineAppVersionAbility(
     return;
   }
 
+  // Approving a review and releasing without one are workspace-level decisions.
+  if (isAdmin || superAdmin) can([FEATURE_KEY.REVIEW_APPROVE, FEATURE_KEY.REVIEW_OVERRIDE], App);
+
   if (isAdmin || superAdmin) {
     can(
       [
@@ -31,6 +34,8 @@ export function defineAppVersionAbility(
         FEATURE_KEY.DELETE,
         FEATURE_KEY.CREATE,
         FEATURE_KEY.GET_ONE,
+        FEATURE_KEY.COMPARE,
+        FEATURE_KEY.SNAPSHOT_RESTORE,
         FEATURE_KEY.UPDATE,
         FEATURE_KEY.UPDATE_SETTINGS,
         FEATURE_KEY.PROMOTE,
@@ -128,8 +133,11 @@ export function defineAppVersionAbility(
 
   const isAllEditable = !!userAppPermissions?.isAllEditable;
   const isAllViewable = !!userAppPermissions?.isAllViewable;
+  const canEditThisApp = isAllEditable || (!!resourceId && !!userAppPermissions?.editableAppsId?.includes(resourceId));
   if (userPermission.appPromote) {
     can([FEATURE_KEY.PROMOTE], App);
+    // Whoever may promote versions may approve one, but only on an app they can edit.
+    if (canEditThisApp) can([FEATURE_KEY.REVIEW_APPROVE], App);
   }
 
   if (isAllEditable) {
@@ -139,6 +147,8 @@ export function defineAppVersionAbility(
         FEATURE_KEY.DELETE,
         FEATURE_KEY.CREATE,
         FEATURE_KEY.GET_ONE,
+        FEATURE_KEY.COMPARE,
+        FEATURE_KEY.SNAPSHOT_RESTORE,
         FEATURE_KEY.UPDATE,
         FEATURE_KEY.UPDATE_SETTINGS,
         FEATURE_KEY.CREATE_COMPONENTS,
@@ -173,6 +183,8 @@ export function defineAppVersionAbility(
         FEATURE_KEY.DELETE,
         FEATURE_KEY.CREATE,
         FEATURE_KEY.GET_ONE,
+        FEATURE_KEY.COMPARE,
+        FEATURE_KEY.SNAPSHOT_RESTORE,
         FEATURE_KEY.UPDATE,
         FEATURE_KEY.UPDATE_SETTINGS,
         FEATURE_KEY.CREATE_COMPONENTS,
