@@ -6,6 +6,7 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { AppValidationService } from '@modules/app-validation/service';
 import { App } from '@entities/app.entity';
 
 describe('VersionUtilService.createVersion — version metadata forwarding', () => {
@@ -50,6 +51,10 @@ describe('VersionUtilService.createVersion — version metadata forwarding', () 
         {
           provide: GitSyncConfigsUtilService,
           useValue: { getDetails: jest.fn().mockResolvedValue({ isEnabled: false, options: {} }) },
+        },
+        {
+          provide: AppValidationService,
+          useValue: { check: jest.fn().mockResolvedValue({ errors: [], warnings: [] }) },
         },
       ],
     }).compile();

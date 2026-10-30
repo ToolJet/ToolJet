@@ -3,6 +3,7 @@ import { isEmpty } from 'lodash';
 import { EntityManager, In, QueryFailedError } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import * as proxy from 'express-http-proxy';
+import type { RequestHandler } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -27,6 +28,10 @@ export class PostgrestProxyService {
   // and start explicitly making request and handle the responses accordingly
   async proxy(req, res, next) {
     const organizationId = req.headers['tj-workspace-id'] || req.dataQuery?.app?.organizationId;
+
+    if (req.method === 'POST' && (await this.tableOperationsService.isRowLimitReached(organizationId))) {
+      throw new HttpException("You've reached your limit of rows in ToolJet database tables. Upgrade for more.", 451);
+    }
 
     const { dbUser, dbSchema } = isSQLModeDisabled()
       ? {
@@ -183,7 +188,7 @@ export class PostgrestProxyService {
     }
   }
 
-  protected httpProxy = proxy(this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001', {
+  protected httpProxy: RequestHandler = proxy(this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001', {
     proxyReqPathResolver: function (req) {
       return replaceUrlForPostgrest(req.url);
     },
@@ -193,7 +198,15 @@ export class PostgrestProxyService {
           ? JSON.parse(proxyResData.toString('utf8'))
           : proxyResData;
 
-        const errorMessage = postgrestResponse.message;
+        // PostgREST can return an empty object while its schema cache reloads after CREATE TABLE.
+        // Keep the explicit rejection visible to clients; an undefined message crashes the error
+        // formatter and leaves the insert hanging with an ambiguous outcome.
+        const errorMessage =
+          postgrestResponse.message ||
+          (proxyRes.statusCode === 404
+            ? 'Could not find the table in the PostgREST schema cache. Please retry.'
+            : `PostgREST rejected this request (HTTP ${proxyRes.statusCode}).`);
+        postgrestResponse.message = errorMessage;
         const errorContext: {
           origin: TooljetDbActions;
           internalTables: { id: string; tableName: string }[];

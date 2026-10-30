@@ -4,8 +4,8 @@ import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { getModifiedColor } from '../utils';
 import './link.scss';
-const tinycolor = require('tinycolor2');
 
 export const Link = ({
   id,
@@ -61,7 +61,7 @@ export const Link = ({
     opacity: isDisabled ? 0.5 : 1,
     pointerEvents: isDisabled ? 'none' : 'auto',
     fontWeight: '500',
-    '--link-hover-color': tinycolor(textColor).darken(8).toString(),
+    '--link-hover-color': getModifiedColor(textColor, 'hover'),
   };
   const iconSize = textSize + 2;
   // Update the state when the linkTarget or linkText changes
@@ -132,7 +132,16 @@ export const Link = ({
 
   if (isLoading) {
     return (
-      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow,
+        }}
+      >
         <center>
           <Loader width="16" absolute={false} />
         </center>
@@ -147,6 +156,7 @@ export const Link = ({
       ref={wrapperRef}
     >
       <a
+        className="focus-visible:tw-outline-none focus-visible:tw-underline focus-visible:tw-decoration-2 focus-visible:tw-underline-offset-2 focus-visible:!tw-decoration-interactive-focus-outline"
         {...(linkTargetState != '' ? { href: linkTargetState } : {})}
         target={targetType === 'new' && '_blank'}
         onClick={(event) => {
@@ -158,38 +168,52 @@ export const Link = ({
           fireEvent('onClick');
         }}
         onMouseOver={() => {
+          if (isDisabled) return;
           fireEvent('onHover');
         }}
-        style={{ width: '100%', textDecorationColor: textColor }}
+        style={{
+          width: '100%',
+          textDecorationColor: textColor,
+          margin: verticalAlignment === 'top' ? undefined : verticalAlignment === 'center' ? 'auto 0' : 'auto 0 0',
+        }}
         ref={clickRef}
-        disabled={isDisabled}
+        // `disabled` is a no-op on <a>: expose the state to assistive tech and drop it from the tab
+        // order instead (same change as #17013); the onClick guard blocks activation.
+        aria-disabled={isDisabled}
+        tabIndex={isDisabled ? -1 : undefined}
       >
         <span
-          className="d-flex"
           style={{
+            display: 'block',
             fontSize: textSize,
             cursor: 'auto',
-            justifyContent:
-              horizontalAlignment === 'left' ? 'flex-start' : horizontalAlignment === 'center' ? 'center' : 'flex-end',
             color: textColor,
             paddingBottom: verticalAlignment === 'bottom' ? '1px' : '0px',
           }}
         >
           {iconVisibility && (
-            <TablerIcon
-              iconName={icon}
-              style={{
-                width: `${iconSize}px`,
-                height: `${iconSize}px`,
-                minWidth: `${iconSize}px`,
-                minHeight: `${iconSize}px`,
-                marginRight: '4px',
-                marginTop: '2px',
-              }}
-              stroke={1.5}
-            />
+            // Inline, so the icon hugs the first line under every alignment. The zero-width space
+            // makes the box one text line tall, which centres the icon on that line at any size.
+            <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: '4px' }}>
+              &#8203;
+              <TablerIcon
+                iconName={icon}
+                style={{
+                  width: `${iconSize}px`,
+                  height: `${iconSize}px`,
+                  minWidth: `${iconSize}px`,
+                  minHeight: `${iconSize}px`,
+                }}
+                stroke={1.5}
+              />
+            </span>
           )}
-          <span className="link-text">{linkTextState}</span>
+          <span
+            className="link-text"
+            style={{ overflowWrap: 'anywhere', ...(isDisabled && { pointerEvents: 'none' }) }}
+          >
+            {linkTextState}
+          </span>
         </span>
       </a>
     </div>

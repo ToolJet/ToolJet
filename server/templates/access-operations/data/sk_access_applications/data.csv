@@ -1,0 +1,7 @@
+id,app_code,name,team,classification,roles,max_days,owner,revision
+,APP-1,Atlas CRM,Revenue operations,Standard,Sales representative;Revenue analyst,90,Maya Chen,1
+,APP-2,Ledger ERP,Finance,Restricted,Accounts payable;Financial analyst,30,Samuel Ortiz,1
+,APP-3,Snowflake,Data platform,Restricted,Read-only analyst;Data engineer,30,Priya Shah,1
+,APP-4,GitHub Enterprise,Engineering,Standard,Developer;Repository maintainer,90,Owen Brooks,1
+,APP-5,PeopleHub,People operations,Restricted,HR analyst;Payroll reviewer,30,Elena Rossi,1
+,APP-6,Figma Enterprise,Design,Standard,Editor;Viewer,180,Theo Clarke,1
