@@ -461,6 +461,22 @@ export const runWorkflowFromEditor = (timeout = 120000) => {
     .its("response.body.result");
 };
 
+// An app's workflow query runs the workflow's released version; the trigger
+// returns 404 "No released version found for this workflow" otherwise. With
+// multi-env licensed, release needs the version promoted to production, so
+// publish → dev→staging → staging→production → release. Env ids are read
+// inside cy.then so values set by earlier queued commands are used.
+export const releaseWorkflow = (workflowName) => {
+  cy.then(() => {
+    const workflowId = Cypress.env("workflowId");
+    cy.apiPublishDraftVersion("v1", "", workflowId);
+    cy.apiPromoteAppVersion(Cypress.env("environmentId"), workflowId).then(
+      () => cy.apiPromoteAppVersion(Cypress.env("stagingEnvId"), workflowId)
+    );
+    cy.apiReleaseApp(workflowName);
+  });
+};
+
 // An app's workflow query triggers the run the same synchronous way, so the
 // trigger response carries the workflow's result.
 export const previewWorkflowQueryInApp = (expectedText, timeout = 60000) => {
