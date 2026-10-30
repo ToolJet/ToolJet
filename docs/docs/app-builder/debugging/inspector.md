@@ -5,20 +5,22 @@ title: Inspecting Values
 
 ToolJet's Inspector is a built-in utility that provides real-time visibility into the data and state of your application. With Inspector, developers can quickly diagnose issues, understand the flow of data, and ensure that all components, queries, and variables are functioning as intended.
  
-Inspector is accessible via the left sidebar in the App Builder. It is divided into six main sections, each offering a different perspective into your application’s runtime environment:
+To open the Inspector, click the **Inspector** icon in the left sidebar of the App Builder. It shows the following sections, in this order, each offering a different perspective into your application’s runtime environment:
 
 - [Queries](#queries)
-- [Components](#components)
+- [Components (current page)](#components)
 - [Globals](#globals)
 - [Variables](#variables)
 - [Page](#page)
 - [Constants](#constants)
 
+When you're editing a module, the Inspector also shows an [Input](#input) section at the end.
+
 ## Accessing Inspector
 
 Values that are displayed inside the inspector can be referenced in other components and queries to create interactive applications. You can access the current state of components, queries, variables, page handle, and more directly from the inspector.
 
-You can refer to a value using the dot notation (e.g., `{{components.numberInput1.value}}`), or hover over any property in the inspector to copy its reference path. This makes it easy to connect components, reuse data, and configure logic throughout your application without writing extra code.
+You can refer to a value using the dot notation (e.g., `{{components.numberInput1.value}}`), or hover over any item in the Inspector, click the copy icon, and select **Copy path** to copy its reference path. Select **Copy value** to copy its current value instead. This makes it easy to connect components, reuse data, and configure logic throughout your application without writing extra code.
 
 For example, let's say you have a **Table** displaying a list of users, and you want to fetch the details of a particular user when they are selected. You can refer to the selected row's data using the reference path in the Inspector. 
 
@@ -39,7 +41,7 @@ Refer to the [Binding Data with Component](/docs/app-builder/connecting-with-dat
 
 ### Components
 
-The Components section provides a detailed view of each component present on your app’s canvas. You can see the current state, properties, and values of each component, helping you understand how data flows through your application and how components interact with each other. Only the components of the current page are visible in this section.
+The **Components (current page)** section provides a detailed view of each component present on your app’s canvas. You can see the current state, properties, and values of each component, helping you understand how data flows through your application and how components interact with each other. Only the components of the current page are visible in this section. Components placed inside another component, such as a **Container**, **Form**, **Modal**, or **Tabs**, are listed under their parent.
 
 Each component exposes a different set of states and CSAs based on its functionality. For example:
 - A **Text** component exposes a `text` state and a `setText` CSA.
@@ -75,3 +77,30 @@ The Page section displays page-specific properties (such as page handle and name
 ### Constants
 
 Workspace Constants are predefined values that you can use across different applications within your workspace. They are useful for storing frequently used data such as API URLs, configuration settings, or sensitive information like API keys and database credentials. In the inspector, you can view all constants as key-value pairs, secret constant values are masked for security.
+
+### Input
+
+The **Input** section appears only when you're editing a module. It lists the module's inputs and their current values, which you can reference inside the module as `{{input.<inputName>}}`.
+
+## Searching the Inspector
+
+Use the **Search** box at the top of the Inspector to find an item by name. Search matches the names of queries, components (including nested components), globals, variables, page properties, page variables, constants and, in modules, inputs. It doesn't search the properties or values inside an item. Sections that contain a match expand automatically, and the matching text is highlighted. Type at least two characters. To clear the search, click the clear icon in the search box.
+
+The search box is hidden while you're viewing an item's details.
+
+## Inspector Actions
+
+Hover over an item in the Inspector to see its quick actions:
+
+| Item | Hover actions |
+|:--|:--|
+| Query | **View query**: Opens the query in the query panel. |
+| Component | **Go to component**: Selects the component on the canvas and scrolls it into view. If the component can't be shown, for example because it's inside a closed modal, a message tells you what to open first. |
+| Any item | Copy icon: Select **Copy path** or **Copy value**. |
+
+Click an item to open its details. The header shows the item's path; click it to go back to the list. The menu (three dots) in the header has **Copy path** and **Copy value**, plus:
+
+- For queries: **Run Query** and **View query**.
+- For components: **Go to component** and **Delete Component**. **Delete Component** removes the component immediately, without asking for confirmation. It isn't available when the app version can't be edited, for example a released version.
+
+You can also jump straight to a component's details: click the **State inspector** icon on the component's handle on the canvas, or select **Inspect** from the component's menu in the properties panel.

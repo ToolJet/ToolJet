@@ -33,14 +33,20 @@ To create a Personal Access Token for a specific app–user combination, you can
 ```swift
 POST /api/ext/users/personal-access-token
 ```
-**Required Parameters**
+**Request Body Parameters**
 
-| Field           | Type   | Description                              |
-|:--------------- |:------ |:---------------------------------------- |
-| `email`         | string | Email of the user                        |
-| `appId`         | string | App ID to which the PAT should be scoped |
-| `sessionExpiry` | number | Session duration in minutes              |
-| `patExpiry`     | number | Token validity in seconds                |
+| Field           | Type    | Required                       | Description |
+|:--------------- |:------- |:------------------------------ |:----------- |
+| `email`         | string  | Either `email` or `userId`     | Email of the ToolJet user the token is for. |
+| `userId`        | string  | Either `email` or `userId`     | ID (UUID) of the ToolJet user. If you send both, `userId` is used. |
+| `appId`         | string  | Either `appId` or `appSlug`    | ID (UUID) of the app to scope the token to. |
+| `appSlug`       | string  | Either `appId` or `appSlug`    | Slug of the app to scope the token to. If you send both, `appId` is used. |
+| `sessionExpiry` | integer | No                             | How long the embedded session stays valid, in minutes. Minimum `1`. |
+| `patExpiry`     | integer | No                             | How long the token stays valid, in minutes. Minimum `1`. |
+
+:::info
+When you omit `patExpiry` or `sessionExpiry`, ToolJet uses the `PAT_EXPIRY` and `PAT_SESSION_EXPIRY` environment variables. Both are set in **days** and default to `10`.
+:::
 
 **cURL Request Example**
 
@@ -52,7 +58,7 @@ curl --location 'http://localhost:3000/api/ext/users/personal-access-token' \
   "email": "a1@tooljet.com",
   "appId": "8ba8bf0e-6b8f-4e07-abb9-6fd2d816fabc",
   "sessionExpiry": 60,
-  "patExpiry": 1000000
+  "patExpiry": 1440
 }'
 ```
 
@@ -61,7 +67,7 @@ curl --location 'http://localhost:3000/api/ext/users/personal-access-token' \
 ```js
 {
   "personalAccessToken": "pat_XXXX",
-  "redirectUrl": "http://your-domain.com/embed-apps/:appId?personal-access-token=pat_XXXX..."
+  "redirectUrl": "http://your-domain.com/embed-apps/:appId?personal-access-token=pat_XXXX&appSlug=:appSlug"
 }
 ```
 </details>
@@ -84,7 +90,6 @@ Upon visiting this URL:
 | Scope                   | Behavior                                                                       |
 |:----------------------- |:------------------------------------------------------------------------------ |
 | **App+User Scoped**     | Token only works for specified app and user.                                   |
-| **Single Active Token** | One PAT per app-user pair.                                                     |
 | **No Cross Workspace**  | Tokens become invalid if app moves to a different workspace.                   |
 | **JWT Strategy**        | All tokens are validated against expiry, scope, and permissions before access. |
 
@@ -93,10 +98,9 @@ Upon visiting this URL:
 | Status                  | Scenario                                 |
 |:----------------------- |:---------------------------------------- |
 | `404 Not Found`         | User does not exist                      |
-| `403 Forbidden`         | User doesn’t have access to the app      |
-| `400 Bad Request`       | Invalid payload                          |
-| `429 Too Many Requests` | >10 requests per minute for PAT creation |
-| `401 Unauthorized`      | Invalid or expired PAT on app access     |
+| `403 Forbidden`         | The external API is disabled (`ENABLE_EXTERNAL_API`), the license doesn't include it, or the `Authorization` header is missing or wrong |
+| `400 Bad Request`       | Invalid payload, neither `email` nor `userId` sent, or no app matches `appId` / `appSlug` |
+| `403 Forbidden`         | Invalid or expired PAT when the embed URL is opened |
 
 ## Best Practices
 
@@ -105,7 +109,7 @@ To use PATs securely and effectively:
 - Use HTTPS and proper security headers (like Content-Security-Policy) when embedding apps.
 - Regenerate tokens if user roles or app permissions change.
 - Avoid storing PATs in local storage or cookies, ToolJet uses in-memory storage for better isolation.
-- Validate app access before generating a PAT to avoid 403 errors.
+- The endpoint doesn't check whether the user can access the app. Check this in your backend before generating a PAT.
 - Log and monitor PAT usage and expiry events in production environments.
 - Apply per-PAT rate limiting to reduce abuse potential.
 - Only expose the token once, tokens are returned in plaintext only during creation.
