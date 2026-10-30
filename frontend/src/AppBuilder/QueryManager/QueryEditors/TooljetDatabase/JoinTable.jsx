@@ -17,7 +17,7 @@ import { ToolTip } from '@/_components';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
-    <div>
+    <div className="tooljetdb-operation-form tooljetdb-join-table">
       <SelectTableMenu darkMode={darkMode} />
     </div>
   );
@@ -101,7 +101,7 @@ const SelectTableMenu = ({ darkMode }) => {
   return (
     <div>
       {/* Join Section */}
-      <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
+      <div className="field-container tooljetdb-worflow-operations d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">From</label>
         <div className="field flex-grow-1 mt-1">
           {joins.map((join, joinIndex) => (
@@ -401,7 +401,7 @@ const RenderFilterSection = ({ darkMode }) => {
       tableInfo[LeftSideTableDetails?.table_name]?.find((col) => col.accessor === leftField?.columnName)?.dataType ===
         'jsonb';
     return (
-      <Row className="mb-2 mx-0" key={index}>
+      <Row className="mb-2 mx-0 tooljetdb-condition-row" key={index}>
         <Col sm="2" className="p-0">
           {index === 1 && (
             <DropDownSelect

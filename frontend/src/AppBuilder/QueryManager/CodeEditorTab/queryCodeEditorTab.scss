@@ -1,0 +1,57 @@
+// The code editor tab: a separate browser tab that only holds one query's code (QueryCodeEditorTab.jsx).
+.query-code-editor-tab-root {
+  height: 100vh;
+}
+
+.query-code-editor-tab {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--background-surface-layer-01);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border-weak);
+  }
+
+  &__title,
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  &__badge {
+    padding: 0 6px;
+    border: 1px solid var(--border-default);
+    border-radius: 4px;
+    color: var(--text-placeholder);
+  }
+
+  &__editor {
+    flex: 1;
+    min-height: 0;
+
+    // The in-page pop-out would open in the app tab, not here.
+    .codehinter-popup-icon {
+      display: none;
+    }
+
+    // The code fills the tab; the shared editor styles cap it at its content's height.
+    .codehinter-multi-line-input .cm-editor {
+      max-height: none !important;
+      border-radius: 0;
+    }
+  }
+
+  &__empty {
+    margin: auto;
+    padding: 24px;
+    color: var(--text-placeholder);
+  }
+}

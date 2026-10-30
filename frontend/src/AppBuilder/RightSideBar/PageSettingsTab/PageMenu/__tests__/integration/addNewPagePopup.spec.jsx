@@ -116,3 +116,26 @@ describe('AddEditPagePopup auto-create (mode: add)', () => {
     expect(created).toMatchObject({ name: 'Page 1', handle: 'page-1', type: 'default', isPageGroup: false });
   });
 });
+
+describe('AddEditPagePopup embedded in the right panel', () => {
+  // The page configuration panel embeds the popup and shares newPagePopupConfig with the Pages panel's
+  // floating popups. Only the floating "New page" popup may create the page.
+  test('New page with a page configuration open creates ONE page, not one per mounted popup', async () => {
+    seedFreshApp();
+    state().setEditingPage(state().modules.canvas.pages[0]);
+    state().setNewPagePopupConfig({ show: true, mode: 'edit', type: 'default' });
+    await act(async () => {
+      render(<AddEditPagePopup darkMode={false} embedded onClose={() => {}} />);
+    });
+
+    await act(async () => {
+      state().setNewPagePopupConfig({ show: true, mode: 'add', type: 'default' });
+      render(<AddEditPagePopup darkMode={false} />);
+    });
+    await act(async () => {
+      await settle();
+    });
+
+    expect(state().modules.canvas.pages.map((p) => p.name)).toEqual(['Home', 'Page 1']);
+  });
+});

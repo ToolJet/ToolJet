@@ -18,6 +18,7 @@ import { AddEditPagePopup } from './AddNewPagePopup';
 import { ToolTip } from '@/_components';
 import Skip from '@/_ui/Icon/solidIcons/Skip';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 export const PAGE_TYPES = {
   default: '',
@@ -57,6 +58,8 @@ export const PageMenuItem = withRouter(
     const editingPage = useStore((state) => state.editingPage);
     const editingPageName = useStore((state) => state.showEditPageNameInput);
     const switchPageWrapper = useStore((state) => state.switchPageWrapper);
+    const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
+    const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
     const [showPageOptions, toggleShowPageOptions] = useState(false);
     const [showEditPopover, setShowEditPopover] = useState(false);
     const [nestedPopoverOpen, setNestedPopoverOpen] = useState(false);
@@ -145,6 +148,30 @@ export const PageMenuItem = withRouter(
       [switchPageWrapper, page, currentPageId, moduleId]
     );
 
+    // Selecting a row opens its configuration. Only a page also switches the canvas: a nav item's switch is
+    // its runtime action (open the URL, leave for another app, fire its events).
+    const handleRowClick = useCallback(
+      (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if ((page?.type || 'default') === 'default') switchPageWrapper(page, currentPageId, moduleId);
+        setEditingPage(page);
+        setNewPagePopupConfig({ show: true, mode: 'edit', type: page?.type || 'default' });
+        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGE_CONFIGURATION);
+        setRightSidebarOpen(true);
+      },
+      [
+        switchPageWrapper,
+        page,
+        currentPageId,
+        moduleId,
+        setEditingPage,
+        setNewPagePopupConfig,
+        setActiveRightSideBarTab,
+        setRightSidebarOpen,
+      ]
+    );
+
     const handleOpenPopup = (type, page) => {
       setEditingPage(page);
       toggleShowPageOptions(false);
@@ -200,10 +227,7 @@ export const PageMenuItem = withRouter(
             position: 'relative',
             width: '100%',
           }}
-          onClick={(e) => {
-            e.preventDefault();
-            handleOpenPopup(page?.type || 'page', page);
-          }}
+          onClick={handleRowClick}
         >
           <div className="left" data-cy={`pages-name-${generateCypressDataCy(page?.name)}`}>
             <div className="main-page-icon-wrapper">{icon()}</div>

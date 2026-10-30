@@ -1,257 +1,245 @@
-import React, { useState, useRef, useCallback, useEffect, memo } from 'react';
-import { PanelBottomClose, PanelBottomOpen } from 'lucide-react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Bug, PanelBottomClose, PanelBottomOpen, ScanSearch } from 'lucide-react';
+import { isEmpty, isEqual } from 'lodash';
+import { diff } from 'deep-object-diff';
+import cx from 'classnames';
+import { shallow } from 'zustand/shallow';
 
 import { useEventListener } from '@/_hooks/use-event-listener';
-import { Tooltip } from 'react-tooltip';
-import { QueryDataPane } from './QueryDataPane';
-import QueryManager from '../QueryManager/QueryManager';
 import useWindowResize from '@/_hooks/useWindowResize';
-import { isEmpty, isEqual } from 'lodash';
-import cx from 'classnames';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
-import { shallow } from 'zustand/shallow';
-import QueryKeyHooks from './QueryKeyHooks';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
-// eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
+import RuntimeInspector from '@/AppBuilder/QueryPanel/RuntimeInspector/RuntimeInspector';
+import RuntimeDebugger from '@/AppBuilder/QueryPanel/RuntimeDebugger/RuntimeDebugger';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import {
+  RUNTIME_PANEL_ITEMS,
+  PANEL_MOTION,
+  getRuntimePanelContentStyle,
+  getRuntimePanelMeasuredHeight,
+  getRuntimePanelRightOffset,
+  getRuntimePanelTheme,
+  getRuntimeTabClickAction,
+} from '@/AppBuilder/panelLayout';
 
-const MemoizedQueryDataPane = memo(QueryDataPane);
-const MemoizedQueryManager = memo(QueryManager);
+const RUNTIME_PANEL_ICONS = { inspect: ScanSearch, debugger: Bug };
 
 export const QueryPanel = ({ darkMode }) => {
+  const { moduleId, appType } = useModuleContext();
   const setQueryPanelHeight = useStore((state) => state.queryPanel.setQueryPanelHeight);
   const isDraggingQueryPane = useStore((state) => state.queryPanel.isDraggingQueryPane, shallow);
   const setIsDraggingQueryPane = useStore((state) => state.queryPanel.setIsDraggingQueryPane, shallow);
   const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
-  // On mobile the query panel overlays the canvas via a higher z-index.
-  const isMobileLayout = useStore((state) => state.currentLayout === 'mobile', shallow);
-  const selectedQueryId = useStore((state) => state.queryPanel?.selectedQuery?.id, shallow);
-
-  const queryManagerPreferences = useRef(
-    JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
-      isExpanded: true,
-      queryPanelHeight: 100,
-    }
+  const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
+  const queryPanelWidth = useStore((state) => state.queryPanel.queryPanelWidth);
+  const unreadErrorCount = useStore((state) => state.debugger.unreadErrorCount);
+  const resetUnreadErrorCount = useStore((state) => state.debugger.resetUnreadErrorCount);
+  const selectedQueryId = useStore((state) => state.queryPanel.selectedQuery?.id);
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
+  const activeTab = useStore((state) => state.queryPanel.runtimePanelTab);
+  const setActiveTab = useStore((state) => state.queryPanel.setRuntimePanelTab);
+  // -1 / 1 when moving left / right across the tabs; drives the content's enter slide.
+  const [tabDirection, setTabDirection] = useState(0);
+  const tabRefs = useRef({});
+  const [tabIndicator, setTabIndicator] = useState(null);
+  const [renderPanelContent, setRenderPanelContent] = useState(isQueryPaneExpanded);
+  const panelPreferences = useRef(
+    JSON.parse(localStorage.getItem('runtimePanelPreferences')) ?? { isExpanded: false, panelTop: 70 }
   );
-  const queryPaneRef = useRef(null);
-  const [height, setHeight] = useState(
-    queryManagerPreferences.current?.queryPanelHeight >= 95
-      ? 50
-      : (queryManagerPreferences.current?.queryPanelHeight ?? 70)
-  );
-  const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
+  const panelRef = useRef(null);
+  const [height, setHeight] = useState(panelPreferences.current.panelTop ?? 70);
+  const [isResizeHandleActive, setResizeHandleActive] = useState(false);
   const [windowSize, isWindowResizing] = useWindowResize();
 
   useEffect(() => {
-    const queryPanelStoreListner = useStore.subscribe(({ queryPanel: { selectedQuery } }, prevState) => {
-      if (isEmpty(prevState?.queryPanel?.selectedQuery) || isEmpty(selectedQuery)) {
-        return;
-      }
-
-      if (prevState?.queryPanel?.selectedQuery?.id !== selectedQuery.id) {
-        return;
-      }
-
-      //removing updated_at since this value changes whenever the data is updated in the BE
+    const unsubscribe = useStore.subscribe(({ queryPanel: { selectedQuery } }, prevState) => {
+      if (isEmpty(prevState?.queryPanel?.selectedQuery) || isEmpty(selectedQuery)) return;
+      if (prevState?.queryPanel?.selectedQuery?.id !== selectedQuery.id) return;
       const formattedQuery = deepClone(selectedQuery);
+      const formattedPreviousQuery = deepClone(prevState?.queryPanel?.selectedQuery || {});
       delete formattedQuery.updated_at;
-
-      const formattedPrevQuery = deepClone(prevState?.queryPanel?.selectedQuery || {});
-      delete formattedPrevQuery.updated_at;
-
-      const diffResult = diff(formattedPrevQuery, formattedQuery);
-
-      // Skip saveData if only the name changed - renameQuery handles that separately
-      const isOnlyNameChange = Object.keys(diffResult).length === 1 && 'name' in diffResult;
-
-      if (!isEqual(formattedQuery, formattedPrevQuery) && !isOnlyNameChange) {
+      delete formattedPreviousQuery.updated_at;
+      const queryDiff = diff(formattedPreviousQuery, formattedQuery);
+      const onlyNameChanged = Object.keys(queryDiff).length === 1 && 'name' in queryDiff;
+      if (!isEqual(formattedQuery, formattedPreviousQuery) && !onlyNameChanged) {
         useStore.getState().dataQuery.saveData(selectedQuery);
       }
     });
-
-    return queryPanelStoreListner;
+    return unsubscribe;
   }, []);
-
-  // useEffect(() => {
-  //   onQueryPaneDragging(isDragging);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [isDragging]);
 
   useEffect(() => {
-    setQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
-    // if (isWindowResizing) {
-    //   onQueryPaneDragging(true);
-    // } else {
-    //   onQueryPaneDragging(false);
-    // }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [windowSize.height, isQueryPaneExpanded, isWindowResizing]);
+    const measuredHeight = panelRef.current?.offsetHeight ?? 0;
+    setQueryPanelHeight(getRuntimePanelMeasuredHeight(isQueryPaneExpanded, measuredHeight));
+  }, [windowSize.height, isQueryPaneExpanded, isWindowResizing, setQueryPanelHeight]);
 
-  const onMouseDown = useCallback(
-    (e) => {
-      if (isTopOfQueryPanel) {
-        e.preventDefault();
-        setIsDraggingQueryPane(true);
-      }
-    },
-    [isTopOfQueryPanel]
-  );
+  useEffect(() => {
+    if (isQueryPaneExpanded) {
+      setRenderPanelContent(true);
+      return undefined;
+    }
 
-  const onMouseUp = useCallback((e) => {
-    setIsDraggingQueryPane(false);
-    setQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
+    const exitTimer = window.setTimeout(() => setRenderPanelContent(false), PANEL_MOTION.durationMs);
+    return () => window.clearTimeout(exitTimer);
+  }, [isQueryPaneExpanded]);
 
-    const clientY = e.clientY;
-    const newHeight = Math.min(Math.max((clientY / window.innerHeight) * 100, 4.5), 94);
-    queryManagerPreferences.current = {
-      ...queryManagerPreferences.current,
-      queryPanelHeight: newHeight,
-      isExpanded: newHeight <= 94,
-    };
+  useEffect(() => {
+    if (!selectedQueryId) return;
+    setActiveRightSideBarTab('query');
+    setRightSidebarOpen(true);
+  }, [selectedQueryId, setActiveRightSideBarTab, setRightSidebarOpen]);
 
-    localStorage.setItem('queryManagerPreferences', JSON.stringify(queryManagerPreferences.current));
+  const persistPanel = useCallback((expanded, panelTop) => {
+    panelPreferences.current = { isExpanded: expanded, panelTop: panelTop ?? panelPreferences.current.panelTop };
+    localStorage.setItem('runtimePanelPreferences', JSON.stringify(panelPreferences.current));
   }, []);
 
+  const toggleRuntimePanel = useCallback(() => {
+    const expanded = !isQueryPaneExpanded;
+    setIsQueryPaneExpanded(expanded);
+    persistPanel(expanded, height);
+    if (!expanded) setQueryPanelHeight(0);
+  }, [height, isQueryPaneExpanded, persistPanel, setIsQueryPaneExpanded, setQueryPanelHeight]);
+
+  const selectTab = (tab) => {
+    if (getRuntimeTabClickAction(tab, activeTab, isQueryPaneExpanded) === 'close') {
+      toggleRuntimePanel();
+      return;
+    }
+    const tabIndex = (id) => RUNTIME_PANEL_ITEMS.findIndex((item) => item.id === id);
+    setTabDirection(Math.sign(tabIndex(tab) - tabIndex(activeTab)));
+    setActiveTab(tab);
+    if (tab === 'debugger') resetUnreadErrorCount();
+    if (!isQueryPaneExpanded) {
+      setIsQueryPaneExpanded(true);
+      persistPanel(true, height);
+    }
+  };
+
+  // Sliding underline: measured from the active tab so it glides between tabs of different widths.
+  useLayoutEffect(() => {
+    const tab = tabRefs.current[activeTab];
+    if (tab) setTabIndicator({ left: tab.offsetLeft, width: tab.offsetWidth });
+  }, [activeTab, unreadErrorCount]);
+
   const onMouseMove = useCallback(
-    (e) => {
-      if (queryPaneRef.current) {
-        const componentTop = Math.round(queryPaneRef.current.getBoundingClientRect().top);
-        const clientY = e.clientY;
-
-        const withinDraggableArea = clientY >= componentTop && clientY <= componentTop + 2;
-        if (withinDraggableArea !== isTopOfQueryPanel) {
-          setTopOfQueryPanel(withinDraggableArea);
-        }
-
-        if (isDraggingQueryPane) {
-          const newHeight = Math.min(Math.max((clientY / window.innerHeight) * 100, 4.5), 94);
-          setIsQueryPaneExpanded(newHeight <= 94);
-          setHeight(newHeight);
-        }
-      }
+    (event) => {
+      if (!panelRef.current) return;
+      const panelTop = Math.round(panelRef.current.getBoundingClientRect().top);
+      const overHandle = event.clientY >= panelTop && event.clientY <= panelTop + 3;
+      if (overHandle !== isResizeHandleActive) setResizeHandleActive(overHandle);
+      if (isDraggingQueryPane) setHeight(Math.min(Math.max((event.clientY / window.innerHeight) * 100, 45), 92));
     },
-    [isDraggingQueryPane, isTopOfQueryPanel, setIsQueryPaneExpanded]
+    [isDraggingQueryPane, isResizeHandleActive]
   );
 
   useEventListener('mousemove', onMouseMove);
-
   useEventListener(
     'mouseup',
-    (event) => {
-      if (isDraggingQueryPane) {
-        onMouseUp(event);
-      }
+    () => {
+      if (!isDraggingQueryPane) return;
+      setIsDraggingQueryPane(false);
+      persistPanel(true, height);
+      setQueryPanelHeight(getRuntimePanelMeasuredHeight(true, panelRef.current?.offsetHeight ?? 0));
     },
     document
   );
 
-  const toggleQueryEditor = useCallback(() => {
-    const newIsExpanded = !isQueryPaneExpanded;
-    setIsQueryPaneExpanded(newIsExpanded);
-    localStorage.setItem(
-      'queryManagerPreferences',
-      JSON.stringify({
-        isExpanded: newIsExpanded,
-        queryPanelHeight: newIsExpanded ? height : 95,
-      })
-    );
-    setQueryPanelHeight(newIsExpanded ? height : 95);
-  }, [height, isQueryPaneExpanded, setQueryPanelHeight, setIsQueryPaneExpanded]);
+  const rightPanelOffset = {
+    right: getRuntimePanelRightOffset(isRightSidebarOpen, activeRightSideBarTab, queryPanelWidth),
+  };
+  const runtimePanelTheme = getRuntimePanelTheme(darkMode);
+  const runtimePanelBarStyle = {
+    ...rightPanelOffset,
+    '--runtime-panel-background': runtimePanelTheme.panel,
+    '--runtime-panel-text': runtimePanelTheme.text,
+    '--runtime-panel-muted': runtimePanelTheme.muted,
+    '--runtime-panel-border': runtimePanelTheme.border,
+    '--runtime-panel-accent': runtimePanelTheme.accent,
+  };
 
   return (
-    <div className={cx({ 'dark-theme theme-dark': darkMode })}>
-      <div
-        className={cx('query-pane', isQueryPaneExpanded ? 'expanded' : 'collapsed', {
-          'query-pane--mobile': isMobileLayout,
-        })}
-        style={{
-          height: 40,
-          ...(isRightSidebarOpen && {
-            width: 'calc(100% - 396px)',
-          }),
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          zIndex: 2,
-        }}
-      >
-        <div
-          style={{ width: '288px', paddingLeft: '12px', height: '100%' }}
-          className="d-flex justify-content align-items-center"
-        >
-          <div
-            style={{
-              height: '100%',
-              paddingTop: isQueryPaneExpanded ? '2px' : '4px',
-              borderTop: isQueryPaneExpanded && '2px solid #4368E3',
-            }}
-          >
+    <div className={cx('runtime-panel', { 'dark-theme theme-dark': darkMode })}>
+      <div className="query-pane runtime-panel-bar" style={runtimePanelBarStyle}>
+        {RUNTIME_PANEL_ITEMS.map(({ id, label }) => {
+          const Icon = RUNTIME_PANEL_ICONS[id];
+          return (
             <button
-              data-cy="query-manager-toggle-button"
-              className="d-flex items-center justify-start mb-0 font-weight-500 text-dark select-none query-manager-toggle-button tw-gap-1.5"
-              onClick={toggleQueryEditor}
+              key={id}
+              ref={(node) => {
+                tabRefs.current[id] = node;
+              }}
+              className={cx('runtime-panel-tab', { active: activeTab === id })}
+              onClick={() => selectTab(id)}
+              data-cy={`runtime-panel-tab-${id}`}
             >
-              <span>
-                {isQueryPaneExpanded ? (
-                  <PanelBottomClose size="14" color="var(--icon-strong)" />
-                ) : (
-                  <PanelBottomOpen size="14" color="var(--icon-strong)" />
-                )}
-              </span>
-              <span>Queries</span>
+              {Icon && <Icon size={14} aria-hidden="true" />}
+              <span>{label}</span>
+              {id === 'debugger' && unreadErrorCount > 0 && (
+                <span className="runtime-panel-badge">{unreadErrorCount}</span>
+              )}
             </button>
-          </div>
-        </div>
+          );
+        })}
+        {tabIndicator && (
+          <span
+            className="runtime-panel-tab-indicator"
+            style={{ width: tabIndicator.width, transform: `translateX(${tabIndicator.left}px)` }}
+            aria-hidden="true"
+          />
+        )}
+        <button
+          className="runtime-panel-toggle"
+          onClick={toggleRuntimePanel}
+          aria-label="Toggle runtime panel"
+          // Kept from the old Queries toggle: Cypress specs open and close the bottom panel through it.
+          data-cy="query-manager-toggle-button"
+        >
+          {isQueryPaneExpanded ? <PanelBottomClose size={14} /> : <PanelBottomOpen size={14} />}
+        </button>
       </div>
       <div
-        ref={queryPaneRef}
-        onMouseDown={onMouseDown}
-        className={cx('query-pane', { 'query-pane--mobile': isMobileLayout })}
-        id="query-manager"
+        ref={panelRef}
+        className={cx('query-pane runtime-panel-content', isQueryPaneExpanded ? 'expanded' : 'collapsed')}
+        data-state={isQueryPaneExpanded ? 'open' : 'closed'}
         style={{
-          height: `calc(100% - ${isQueryPaneExpanded ? height : 100}%)`,
-          maxHeight: '93.5%',
-          ...(isRightSidebarOpen && {
-            width: 'calc(100% - 396px)',
-          }),
-          cursor: isDraggingQueryPane || isTopOfQueryPanel ? 'row-resize' : 'default',
-          ...(!isQueryPaneExpanded && {
-            border: 'none',
-          }),
-          ...((isTopOfQueryPanel || isDraggingQueryPane) && {
-            borderColor: 'var(--border-accent-weak, #97AEFC)',
-          }),
-          ...(isDraggingQueryPane && {
-            zIndex: 11,
-          }),
+          ...getRuntimePanelContentStyle(isQueryPaneExpanded, height),
+          ...rightPanelOffset,
+          cursor: isDraggingQueryPane || isResizeHandleActive ? 'row-resize' : 'default',
+        }}
+        onMouseDown={(event) => {
+          if (!isResizeHandleActive) return;
+          event.preventDefault();
+          setIsDraggingQueryPane(true);
         }}
       >
-        {isQueryPaneExpanded && (
-          <FallbackBoundary label="Query panel" location="Query Panel" darkMode={darkMode}>
-            <QueryKeyHooks isExpanded={isQueryPaneExpanded}>
-              <FallbackBoundary label="Query list" location="Query Panel Query list" darkMode={darkMode}>
-                <MemoizedQueryDataPane darkMode={darkMode} />
-              </FallbackBoundary>
-              <div className="query-definition-pane-wrapper">
-                <div className="query-definition-pane">
-                  <FallbackBoundary
-                    label="Query manager"
-                    location="Query Panel Query manager"
+        {renderPanelContent && (
+          <FallbackBoundary label="Runtime panel" location="Runtime Panel" darkMode={darkMode} resetKeys={[activeTab]}>
+            <div className="runtime-panel-body">
+              {/* Keyed by tab so each switch replays the enter animation. */}
+              <div
+                key={activeTab}
+                className="runtime-panel-view"
+                style={{ '--runtime-panel-view-offset': `${tabDirection * 12}px` }}
+              >
+                {activeTab === 'inspect' && (
+                  <RuntimeInspector
                     darkMode={darkMode}
-                    resetKeys={[selectedQueryId]}
-                  >
-                    <MemoizedQueryManager darkMode={darkMode} />
-                  </FallbackBoundary>
-                </div>
+                    moduleId={moduleId}
+                    appType={appType}
+                    onClose={toggleRuntimePanel}
+                  />
+                )}
+                {activeTab === 'debugger' && <RuntimeDebugger darkMode={darkMode} onClose={toggleRuntimePanel} />}
               </div>
-            </QueryKeyHooks>
+            </div>
           </FallbackBoundary>
         )}
       </div>
-      <Tooltip id="tooltip-for-query-panel-footer-btn" className="tooltip" />
     </div>
   );
 };

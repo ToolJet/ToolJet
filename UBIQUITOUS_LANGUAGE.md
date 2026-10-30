@@ -46,7 +46,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Custom Component** | A user-created component built with React for functionality beyond built-in components | — |
 | **Layout** | Positioning metadata (top, left, width, height) for a component on the canvas grid | — |
 | **Canvas** | The visual workspace area in the App-Builder where components are placed | — |
-| **Left Sidebar** | App-Builder panel containing Pages, Inspector, and Debugger | — |
+| **Left Sidebar** | App-Builder navigation rail and contextual panel containing Pages, Components, Queries, and Settings | — |
 | **Right Sidebar** | App-Builder panel for component properties and styles | — |
 | **Toolbar** | The top bar of the App-Builder with version management, undo/redo, preview, and release | — |
 | **Module** | A reusable app-level building block shared across apps (EE feature; app type `MODULE`) | "module" also means a NestJS backend module — always qualify |
@@ -75,8 +75,9 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Workspace Constant** | A reusable, non-secret value available across all apps in a workspace; resolved server-side; syntax: `{{constants.name}}` | Global Constant (acceptable), Workspace Variable / Environment Variable (deprecated docs terms) |
 | **Workspace Secret** | An encrypted workspace constant for sensitive data; masked in frontend; syntax: `{{secrets.name}}` | — |
 | **Environment-Specific Configuration** | Constants and secrets can hold different values per environment (dev/staging/prod) | — |
-| **Inspector** | The App-Builder panel for viewing all runtime state (sections: Queries, Components, Globals, Variables, Page, Constants) | Debugger (separate panel) |
-| **Debugger** | The App-Builder panel for debugging code execution errors | Console (the browser console is separate) |
+| **Inspector** | The Runtime Drawer tab for viewing runtime state: a split view with an entity list (sections: Queries, Components, Globals, Variables, Page, Constants) beside the selected entity's values | Debugger (separate tab) |
+| **Debugger** | The Runtime Drawer tab listing runtime logs (errors, warnings, info, success) from queries, transformations, events and component validation, filterable by level and page, beside the selected log's details | Console (the browser console is separate) |
+| **Runtime Drawer** | The collapsible bottom App-Builder panel containing Inspector and Debugger | Query Panel (legacy bottom panel) |
 | **Transformation** | A JavaScript/Python transform applied to query results before binding to components | — |
 
 ## Versioning & Deployment
@@ -107,9 +108,9 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **App-Level Data Source** | A data source scoped to a single app | "local" type (code term, not user-facing) |
 | **Data Source Version** | A branch-aware version row of a data source (`DataSourceVersion`; `is_default`, `branch_id`); its per-Environment options/credentials live in `DataSourceVersionOptions` — there is no single "the options", always resolve with an environment | DSV/DSVO (code shorthand) |
 | **Query** | A parameterized operation against a data source; created in the Query Panel | Data Query (formal alias, use when distinguishing from SQL queries) |
-| **Query Panel** | The App-Builder panel for creating and managing queries | — |
-| **Query Manager** | The left section of the Query Panel listing all queries | — |
-| **Query Editor** | The right section of the Query Panel for writing/configuring a query | — |
+| **Query Panel** | The App-Builder left contextual panel for creating and managing the query list | Bottom Query Panel (legacy) |
+| **Query Manager** | The query-list surface in the left contextual panel | — |
+| **Query Editor** | The right configuration panel for writing and configuring the selected query | — |
 | **ToolJet Database** | ToolJet's built-in PostgreSQL-backed database offering | TJDB (informal shorthand in docs) |
 | **Internal Table** | A table within ToolJet Database | — |
 | **Run JavaScript** | A special query type that executes JavaScript code instead of querying a data source | RunJS (code shorthand) |

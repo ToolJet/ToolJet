@@ -10,6 +10,7 @@ import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import './styles.css';
+import { getRestApiRequestPresentation } from '@/AppBuilder/QueryManager/utils';
 
 class Restapi extends React.Component {
   constructor(props) {
@@ -289,6 +290,8 @@ class Restapi extends React.Component {
     const dataSourceURL = this.props.selectedDataSource?.options?.url?.value;
     const queryName = this.props.queryName;
     const isWorkflowNode = queryName === 'workflowNode';
+    const requestPresentation = getRestApiRequestPresentation(this.props.surface, isWorkflowNode);
+    const useStackedRequestFields = requestPresentation.fieldsClassName.includes('--stacked');
 
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
     return (
@@ -296,25 +299,31 @@ class Restapi extends React.Component {
         {this.props.selectedDataSource?.scope == 'global' && <div className="form-label flex-shrink-0"></div>}{' '}
         <div className="flex-grow-1 overflow-hidden">
           <div className={`rest-api-methods-select-element-container ${isWorkflowNode ? 'workflow-rest-api' : ''}`}>
-            <div className={`d-flex ${isWorkflowNode ? 'mb-2' : ''}`}>
-              <p
-                className="text-placeholder font-weight-medium"
-                style={{ width: '100px', marginRight: '16px', marginBottom: '0px' }}
-                data-cy="restapi-request-label"
-              >
-                Request
-              </p>
-            </div>
+            {requestPresentation.showSectionLabel && (
+              <div className={`d-flex ${isWorkflowNode ? 'mb-2' : ''}`}>
+                <p
+                  className="text-placeholder font-weight-medium"
+                  style={{ width: '100px', marginRight: '16px', marginBottom: '0px' }}
+                  data-cy="restapi-request-label"
+                >
+                  Request
+                </p>
+              </div>
+            )}
             <div className="d-flex flex-column w-100">
-              <div className={`${isWorkflowNode ? '' : 'd-flex'} flex-row`}>
+              <div className={requestPresentation.fieldsClassName}>
                 <div
                   className={`me-2 ${isWorkflowNode ? 'mb-2' : ''}`}
-                  style={{ width: isWorkflowNode ? '150px' : '124px', height: '32px' }}
+                  style={{
+                    width: useStackedRequestFields ? '100%' : isWorkflowNode ? '150px' : '124px',
+                    height: useStackedRequestFields ? 'auto' : '32px',
+                  }}
                 >
                   <label className="font-weight-medium color-slate12" data-cy="restapi-method-label">
-                    Method
+                    {requestPresentation.methodLabel}
                   </label>
                   <Select
+                    animateMenu
                     options={[
                       { label: 'GET', value: 'get' },
                       { label: 'POST', value: 'post' },
@@ -328,9 +337,12 @@ class Restapi extends React.Component {
                     value={currentValue}
                     defaultValue={{ label: 'GET', value: 'get' }}
                     placeholder="Method"
-                    width={isWorkflowNode ? 150 : 100}
+                    width={useStackedRequestFields ? '100%' : isWorkflowNode ? 150 : 100}
                     height={32}
-                    styles={this.customSelectStyles(this.props.darkMode, isWorkflowNode ? 150 : 125)}
+                    styles={this.customSelectStyles(
+                      this.props.darkMode,
+                      useStackedRequestFields ? '100%' : isWorkflowNode ? 150 : 125
+                    )}
                     useCustomStyles={true}
                     customClassPrefix="restapi-method-select"
                     onMenuOpen={() => {
@@ -344,10 +356,10 @@ class Restapi extends React.Component {
                 </div>
                 <div
                   className={`field rest-methods-url ${dataSourceURL && 'data-source-exists'}`}
-                  style={{ width: isWorkflowNode ? '100%' : 'calc(100% - 248px)' }}
+                  style={{ width: useStackedRequestFields || isWorkflowNode ? '100%' : 'calc(100% - 248px)' }}
                 >
                   <div className="font-weight-medium color-slate12" data-cy="restapi-url-label">
-                    URL
+                    {requestPresentation.urlLabel}
                   </div>
                   <div className="d-flex h-100 w-100">
                     {dataSourceURL && (

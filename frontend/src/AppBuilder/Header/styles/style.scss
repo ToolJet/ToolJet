@@ -26,12 +26,75 @@
   }
 }
 
+.app-name-inline-action {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.app-name-inline-trigger,
+.app-name-inline-trigger:hover,
+.app-name-inline-trigger:focus,
+.app-name-inline-trigger:focus-visible,
+.app-name-inline-trigger:active {
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.app-name-inline-input {
+  padding-right: 4px !important;
+  padding-left: 4px !important;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.app-name-inline-actions {
+  animation: app-name-inline-actions-in 180ms ease-out both;
+}
+
+.app-name-inline-actions--exit {
+  animation: app-name-inline-actions-out 180ms ease-in both;
+}
+
+@keyframes app-name-inline-actions-in {
+  from {
+    max-width: 0;
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+
+  to {
+    max-width: 36px;
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes app-name-inline-actions-out {
+  from {
+    max-width: 36px;
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    max-width: 0;
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+}
+
 .global-settings-app-wrapper {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  max-width: 350px;
+  max-width: min(520px, 100%);
   margin-right: 10px;
 }
 
@@ -45,6 +108,179 @@
 .editor-header-actions {
   @media screen and (max-width: 768px) {
     width: 100%;
+  }
+}
+
+// Keep the editor header visually as quiet and deliberate as the compact left rail.
+// These rules only tune type and foreground color; control dimensions and layout stay unchanged.
+.header-container {
+  --editor-header-text: var(--text-default);
+  --editor-header-muted: var(--text-placeholder);
+  --editor-header-icon: var(--icon-default);
+  --editor-header-accent: var(--indigo9);
+  --editor-header-accent-soft: var(--indigo3);
+  --editor-header-accent-border: var(--indigo5);
+
+  .edit-app-name-button [data-cy='editor-app-name-input'] {
+    color: var(--editor-header-text) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    line-height: 18px !important;
+    letter-spacing: -0.01em;
+  }
+
+  .autosave-indicator {
+    color: var(--editor-header-muted);
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 14px;
+  }
+
+  .editor-header-actions,
+  .version-manager-container {
+    button,
+    a {
+      color: var(--editor-header-text);
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 18px;
+    }
+
+    svg {
+      color: var(--editor-header-icon);
+    }
+  }
+
+  .branch-dropdown-button .branch-name,
+  .version-switcher-button .version-name {
+    color: var(--editor-header-text);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 18px;
+  }
+
+  [data-cy='editor-preview-button'],
+  .version-switcher-button .environment-name,
+  [data-cy='editor-app-share-button'],
+  [data-cy='lifecycle-cta-button'] {
+    color: var(--editor-header-text) !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    line-height: 18px !important;
+  }
+
+  [data-cy='editor-preview-button'],
+  [data-cy='lifecycle-cta-button'],
+  .version-switcher-button {
+    border-color: var(--border-default) !important;
+    background: var(--surfaces-surface-01) !important;
+    box-shadow: none !important;
+
+    &:hover {
+      border-color: var(--border-strong) !important;
+      background: var(--surfaces-surface-02) !important;
+      box-shadow: none !important;
+    }
+  }
+
+  [data-cy='editor-preview-button'] svg,
+  [data-cy='lifecycle-cta-button'] svg {
+    width: 15px;
+    height: 15px;
+    color: var(--editor-header-icon);
+    stroke-width: 1.8;
+  }
+
+  [data-cy='editor-preview-button'] svg {
+    color: currentColor !important;
+    stroke: currentColor;
+    stroke-width: 1.8;
+  }
+
+  [data-cy='editor-preview-button'],
+  .version-switcher-button,
+  [data-cy='lifecycle-cta-button'],
+  [data-cy='editor-app-share-button'] {
+    box-sizing: border-box;
+    height: 32px !important;
+    min-height: 32px;
+    max-height: 32px;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+  }
+
+  [data-cy='editor-app-share-button'],
+  [data-cy='lifecycle-cta-button'] {
+    color: var(--editor-header-accent) !important;
+    background: var(--editor-header-accent-soft) !important;
+    border: 1px solid var(--editor-header-accent-border) !important;
+    border-radius: 6px;
+    box-shadow: none !important;
+
+    &:hover {
+      color: var(--editor-header-accent) !important;
+      background: var(--editor-header-accent-soft) !important;
+      border-color: var(--editor-header-accent) !important;
+    }
+
+    svg {
+      width: 15px;
+      height: 15px;
+      color: currentColor !important;
+      stroke: currentColor;
+      stroke-width: 1.8;
+    }
+  }
+
+  .lifecycle-cta-button {
+    margin-left: 8px;
+  }
+
+  [data-cy='lifecycle-cta-button'][data-unsynced='true'] {
+    color: var(--orange9) !important;
+    border-color: var(--orange8) !important;
+    background: var(--orange3) !important;
+  }
+
+  [data-cy='layout-toggle-buttons'] {
+    background: transparent;
+
+    button {
+      color: var(--editor-header-muted);
+      background: transparent !important;
+      border: 1px solid transparent !important;
+      border-radius: 6px;
+      box-shadow: none !important;
+
+      &:hover {
+        color: var(--editor-header-text);
+        background: var(--surfaces-surface-02) !important;
+      }
+
+      &[aria-selected='true'] {
+        color: var(--editor-header-accent);
+        background: var(--editor-header-accent-soft) !important;
+        border-color: var(--editor-header-accent-border) !important;
+      }
+
+      svg {
+        color: currentColor !important;
+        stroke: currentColor;
+      }
+    }
+  }
+
+  .branch-dropdown-container.single-branch .branch-dropdown-button {
+    .branch-name {
+      color: var(--editor-header-muted);
+      font-weight: 400;
+    }
+
+    svg,
+    svg path {
+      color: var(--editor-header-icon);
+      fill: currentColor;
+    }
   }
 }
 
@@ -67,7 +303,6 @@
 }
 
 .theme-dark {
-
   .undo-button,
   .redo-button {
     background: 0;
@@ -117,7 +352,7 @@
   height: 40px;
   border-radius: 6px;
 
-  >div {
+  > div {
     height: fit-content;
   }
 
@@ -136,7 +371,7 @@
     flex-wrap: nowrap;
     margin: 0;
 
-    &+.react-select__indicators {
+    & + .react-select__indicators {
       display: none;
     }
   }
@@ -171,7 +406,6 @@
   display: block;
 }
 
-
 .canvas-background-holder {
   display: flex;
   min-width: 120px;
@@ -198,7 +432,11 @@
   box-shadow: var(--elevation-100-box-shadow);
   cursor: pointer;
   text-decoration: none;
-  transition: background 0.15s, border 0.15s, box-shadow 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border 0.15s,
+    box-shadow 0.15s,
+    color 0.15s;
 
   svg {
     flex-shrink: 0;
@@ -255,8 +493,14 @@
   margin-right: 4px;
 }
 
-.release-buttons .license-tooltip+.navbar-seperator,
-.release-buttons .git-sync-manager+.navbar-seperator {
+.header-container .header-share-separator {
+  display: block;
+  margin-right: 12px;
+  margin-left: 12px;
+}
+
+.release-buttons .license-tooltip + .navbar-seperator,
+.release-buttons .git-sync-manager + .navbar-seperator {
   display: block;
 }
 

@@ -1,11 +1,11 @@
-const validSidebarItems = ['page', 'inspect', 'debugger', 'settings', 'dependencies'];
+const validSidebarItems = ['pages', 'components', 'queries', 'libraries', 'dependencies', 'apphistory', 'settings'];
 const storedIsSidebarPinned = localStorage.getItem('isLeftSideBarPinned') === 'true' ? true : false;
 const storedSelectedSidebarItem = !storedIsSidebarPinned
   ? null
   : localStorage.getItem('selectedSidebarItem') &&
       validSidebarItems.includes(localStorage.getItem('selectedSidebarItem'))
     ? localStorage.getItem('selectedSidebarItem')
-    : 'page';
+    : 'pages';
 
 const initialState = {
   isLeftSideBarPinned: storedIsSidebarPinned,
@@ -39,22 +39,19 @@ export const createLeftSideBarSlice = (set, get) => ({
       false,
       'setIsSidebarOpen'
     ),
-  setPathToBeInspected: (pathToBeInspected) => set(() => ({ pathToBeInspected }), false, 'setPathToBeInspected'),
-  setComponentToInspect: (componentToInspect) => {
-    const {
-      setPathToBeInspected,
-      setSelectedSidebarItem,
-      toggleLeftSidebar,
-      selectedSidebarItem,
-      setSelectedNodePath,
-    } = get();
-    // setPathToBeInspected(['components', componentToInspect]);
-    setSelectedNodePath(`components.${componentToInspect}`);
-    if (selectedSidebarItem !== 'inspect') {
-      setSelectedSidebarItem('inspect');
-      toggleLeftSidebar(true);
+  // The AI chat is the 'tooljetai' left panel. Opening it replaces whichever left panel is showing;
+  // closing it empties the left slot only when the chat is what's in it.
+  setAiChatOpen: (open) => {
+    if (open) {
+      set(() => ({ selectedSidebarItem: 'tooljetai', isSidebarOpen: true }), false, 'setAiChatOpen');
+      return;
     }
+    const { selectedSidebarItem, isSidebarOpen, toggleLeftSidebar } = get();
+    if (selectedSidebarItem === 'tooljetai' && isSidebarOpen) toggleLeftSidebar(false);
   },
+  setPathToBeInspected: (pathToBeInspected) => set(() => ({ pathToBeInspected }), false, 'setPathToBeInspected'),
+  setComponentToInspect: (componentToInspect) =>
+    get().queryPanel.openRuntimeInspector(`components.${componentToInspect}`),
   clearDependencyPanelSelection: () =>
     set(() => ({ dependencyPanelSelection: null }), false, 'clearDependencyPanelSelection'),
   /**

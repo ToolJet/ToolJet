@@ -46,8 +46,8 @@ export const useWriteQueryEntry = (scope = 'query') => {
     });
     const store = useStore.getState();
 
-    store.toggleLeftSidebar(true);
-    store.setSelectedSidebarItem('tooljetai');
+    // Opens the AI chat in the left panel.
+    store.setAiChatOpen(true);
 
     if (isPressed) {
       requestAnimationFrame(() => store.ai.triggerChatInputFocus());

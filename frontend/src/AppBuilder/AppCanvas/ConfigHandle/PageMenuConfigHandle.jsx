@@ -2,12 +2,8 @@ import React from 'react';
 import ConfigHandleButton from '@/_components/ConfigHandleButton';
 import useStore from '@/AppBuilder/_stores/store';
 import { PencilRuler } from 'lucide-react';
-import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const PageMenuConfigHandle = ({ position, isSidebarPinned, isMobile = false }) => {
-  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
-  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
-
   return (
     <div
       className="navigation-tooltip"
@@ -43,8 +39,8 @@ const PageMenuConfigHandle = ({ position, isSidebarPinned, isMobile = false }) =
           size={12}
           color="var(--icon-strong)"
           onClick={() => {
-            setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
-            setRightSidebarOpen(true);
+            useStore.getState().setSelectedSidebarItem('pages');
+            useStore.getState().toggleLeftSidebar(true);
           }}
         />
       </ConfigHandleButton>

@@ -30,6 +30,7 @@ import useCanvasMinWidth from './Hooks/useCanvasMinWidth';
 import useEnableMainCanvasScroll from './Hooks/useEnableMainCanvasScroll';
 
 import useCanvasResizing from './Hooks/useCanvasResizing';
+import { EDITOR_CANVAS_WIDTH, getRightPanelReservedWidth } from '@/AppBuilder/panelLayout';
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
@@ -61,6 +62,13 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
   const getPageId = useStore((state) => state.getCurrentPageId, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
+  const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
+  const queryPanelWidth = useStore((state) => state.queryPanel.queryPanelWidth);
+  const rightPanelReservedWidth = getRightPanelReservedWidth(
+    isRightSidebarOpen,
+    activeRightSideBarTab,
+    queryPanelWidth
+  );
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const pageKey = useStore((state) => state.pageKey);
@@ -155,6 +163,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     currentLayout,
     canvasMaxWidth,
     isRightSidebarOpen,
+    rightPanelReservedWidth,
     isViewerSidebarPinned,
     position,
     currentMode,
@@ -181,10 +190,11 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       borderLeft: currentMode === 'edit' && editorMarginLeft + 'px solid',
       height: currentMode === 'edit' ? canvasContainerHeight : '100%',
       background: canvasBgColor,
-      width: currentMode === 'edit' ? `calc(100% - 96px)` : '100%',
+      width: currentMode === 'edit' ? EDITOR_CANVAS_WIDTH : '100%',
       alignItems: 'unset',
       justifyContent: 'unset',
-      borderRight: currentMode === 'edit' && isRightSidebarOpen && `300px solid ${canvasBgColor}`,
+      // Reserve what the open right panel covers (the query editor is wider than the other tabs).
+      borderRight: currentMode === 'edit' && isRightSidebarOpen && `${rightPanelReservedWidth} solid ${canvasBgColor}`,
       padding: currentMode === 'edit' && '8px',
       paddingTop: currentMode === 'edit' && (isCurrentVersionLocked ? '38px' : '8px'),
     };
@@ -195,6 +205,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     editorMarginLeft,
     canvasContainerHeight,
     isRightSidebarOpen,
+    rightPanelReservedWidth,
     isCurrentVersionLocked,
   ]);
 

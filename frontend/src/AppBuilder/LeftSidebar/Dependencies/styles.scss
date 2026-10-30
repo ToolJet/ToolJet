@@ -263,9 +263,10 @@
   padding-right: 16px;
 }
 
-// Sits inside .inspector-header (which already supplies the 16px padding),
-// in place of the search input on the main tab.
+// Sits inside .inspector-header, in place of the search input on the main tab; its left padding
+// lines the breadcrumb up with the panel title.
 .dependency-breadcrumb-bar {
+  padding: 0 10px 8px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;

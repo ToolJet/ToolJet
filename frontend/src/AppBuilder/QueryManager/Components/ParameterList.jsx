@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ParameterDetails, { PillButton } from './ParameterDetails';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { Fade, OverlayTrigger, Popover } from 'react-bootstrap';
 import ParameterForm from './ParameterForm';
 import Warning from '@/_ui/Icon/solidIcons/Warning';
 import { generateCypressDataCy } from '../../../modules/common/helpers/cypressHelpers.js';
+import { getQueryPopoverMotion, QUERY_FIELD_LABEL_CLASS_NAME } from '@/AppBuilder/panelLayout';
 
 const ParameterList = ({
   parameters = [],
@@ -16,6 +17,7 @@ const ParameterList = ({
   const [showMore, setShowMore] = useState(false);
   const [selectedParameter, setSelectedParameter] = useState();
   const [formattedParameters, setFormattedParameters] = useState([]);
+  const parameterMotion = getQueryPopoverMotion('parameter');
   const containerWidth = containerRef.current?.offsetWidth || 0.8 * document.body.clientWidth - 635;
 
   useEffect(() => {
@@ -55,9 +57,9 @@ const ParameterList = ({
   }, [showMore]);
 
   return (
-    <div className="d-flex">
+    <div className="d-flex query-parameter-list">
       <p
-        className="text-placeholder font-weight-medium"
+        className={`text-placeholder font-weight-medium ${QUERY_FIELD_LABEL_CLASS_NAME}`}
         style={{ marginRight: '16px', marginBottom: '0px', width: '100px' }}
         data-cy="query-parameter-label"
       >
@@ -94,10 +96,13 @@ const ParameterList = ({
         placement={'bottom-end'}
         rootClose={true}
         show={showMore}
+        transition={parameterMotion.transition ? Fade : false}
         overlay={
           <Popover
             id="parameter-more-popover"
-            className={`query-manager-sort-filter-popup  ${darkMode && 'popover-dark-themed theme-dark dark-theme'}`}
+            className={`query-manager-sort-filter-popup ${parameterMotion.className} ${
+              darkMode && 'popover-dark-themed theme-dark dark-theme'
+            }`}
             style={{ minWidth: '270px', maxWidth: 'fit-content' }}
           >
             {selectedParameter ? (

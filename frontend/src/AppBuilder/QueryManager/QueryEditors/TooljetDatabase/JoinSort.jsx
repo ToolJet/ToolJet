@@ -66,7 +66,7 @@ export default function JoinSort({ darkMode }) {
             tableInfo[tableDetails?.table_name]?.find((col) => col.accessor === options?.columnName)?.dataType ===
             'jsonb';
           return (
-            <Row className="mb-2 mx-0 " key={i}>
+            <Row className="mb-2 mx-0 tooljetdb-condition-row" key={i}>
               <Col sm="6" className="p-0">
                 <DropDownSelect
                   buttonClasses={`border ${
