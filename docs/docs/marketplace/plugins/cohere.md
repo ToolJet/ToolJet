@@ -23,14 +23,12 @@ Use this operation to generate creative text content by selecting the desired mo
 
 **Required Parameters**
 
-- **Model**: The model to use for generating the text. The available models are:
-    - command-r7b-12-2024
+- **Model**: The model to use for generating the text. The default is `command-r-plus`. The available models are:
     - command-r-plus-08-2024
     - command-r-plus-04-2024
     - command-r-plus
     - command-r-08-2024
     - command-r-03-2024
-    - command-r
     - command
     - command-nightly
     - command-light

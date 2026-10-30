@@ -15,14 +15,16 @@ To connect to QuickBooks, the following credentials are required:
 
  - **Client ID**: Enter your Client ID. This identifies your ToolJet application to QuickBooks.
  - **Client Secret**: Enter your Client Secret. This secret will be stored in the encrypted form.
- - **Scope(s)**: Scope defines the permissions your ToolJet app will have in QuickBooks. You can modify the scopes based on your use case.
+ - **Scope(s)**: Scope defines the permissions your ToolJet app will have in QuickBooks. The field is pre-filled with `com.intuit.quickbooks.accounting`. You can modify the scopes based on your use case.
     :::note
     Ensure the scopes entered in the ToolJet data source configuration exactly match the scopes configured in your QuickBooks application settings. Any mismatch between the configured scopes and the requested scopes may cause the OAuth authentication flow to fail or restrict access to certain QuickBooks resources.
     :::
 - **Redirect URI**: ToolJet automatically generates a Redirect URI. This redirect URI is required for completing the OAuth authentication flow.
-- **Username**: QuickBooks account username used for authentication, if required by the configured flow or environment. 
-- **Password**: Password associated with the QuickBooks account used during authentication.
-- **Company ID**: Unique identifier of the QuickBooks company account whose resources and financial data will be accessed.
+- **Company ID**: The Company ID (Realm ID) of the QuickBooks company whose data your queries read and write. It's required, and every query uses it for `{companyid}` in the endpoint path.
+
+:::note
+Queries are sent to the QuickBooks Online sandbox API (`https://sandbox-quickbooks.api.intuit.com`), so use the Company ID of a sandbox company and the development keys of your QuickBooks app.
+:::
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/quickbooks/connection.png" alt="Quickbooks Connection page" />
 
@@ -42,55 +44,56 @@ All QuickBooks API endpoints require a **Company ID**, which uniquely identifies
 
 | Method | API Endpoint            | Description                                                  |
 | ------ | ----------------------- | ------------------------------------------------------------ |
-| POST | `/v3/company/{companyid}/account` | Update an account |
+| POST | `/v3/company/{companyid}/account` | Account Create |
 | GET | `/v3/company/{companyid}/account/{id}` | Account Read by Id |
-| POST | `/v3/company/{companyid}/query` | Vendor Credit - Read All |
-| POST | `/v3/company/{companyid}/attachable` | Attachable Delete |
+| POST | `/v3/company/{companyid}/query` | Query (read all records with a QuickBooks query) |
+| POST | `/v3/company/{companyid}/attachable` | Attachable Create |
 | GET | `/v3/company/{companyid}/attachable/{id}` | Attachable Read by Id |
 | POST | `/v3/company/{companyid}/upload` | Upload Attachments |
 | POST | `/v3/company/{companyid}/batch` | Batch |
-| POST | `/v3/company/{companyid}/bill` | Bill Delete |
+| POST | `/v3/company/{companyid}/bill` | Bill Create |
+| POST | `/v3/company/{companyid}/bill?operation=delete` | Bill Delete |
 | GET | `/v3/company/{companyid}/bill/{id}` | Bill- Get by Id |
-| POST | `/v3/company/{companyid}/billpayment` | Bill Payment Update |
+| POST | `/v3/company/{companyid}/billpayment` | Bill Payment Create |
 | GET | `/v3/company/{companyid}/billpayment/{id}` | Bill Payment Read by Id |
 | GET | `/v3/company/{companyid}/cdc` | CDC Read |
-| POST | `/v3/company/{companyid}/class` | Class Delete |
+| POST | `/v3/company/{companyid}/class` | Class Create |
 | GET | `/v3/company/{companyid}/class/{id}` | Class Read by Id |
 | GET | `/v3/company/{companyid}/companyinfo/{companyid}` | Company Info Read by Id |
-| POST | `/v3/company/{companyid}/creditmemo` | Credit Memo Delete |
+| POST | `/v3/company/{companyid}/creditmemo` | Credit Memo Create |
 | GET | `/v3/company/{companyid}/creditmemo/{id}` | Credit Memo Read by Id |
-| POST | `/v3/company/{companyid}/customer` | Customer Delete |
+| POST | `/v3/company/{companyid}/customer` | Customer Create |
 | GET | `/v3/company/{companyid}/customer/{id}` | Customer Read by Id |
-| POST | `/v3/company/{companyid}/department` | Department Delete |
+| POST | `/v3/company/{companyid}/department` | Department Create |
 | GET | `/v3/company/{companyid}/department/{id}` | Department Read by Id |
-| POST | `/v3/company/{companyid}/deposit` | Deposit Delete |
+| POST | `/v3/company/{companyid}/deposit` | Deposit Create |
 | GET | `/v3/company/{companyid}/deposit/{id}` | Deposit Read by Id |
-| POST | `/v3/company/{companyid}/employee` | Employee Delete |
+| POST | `/v3/company/{companyid}/employee` | Employee Create |
 | GET | `/v3/company/{companyid}/employee/{id}` | Employee Read by Id |
-| POST | `/v3/company/{companyid}/estimate` | Estimate Delete |
+| POST | `/v3/company/{companyid}/estimate` | Estimate Create |
 | GET | `/v3/company/{companyid}/estimate/{id}` | Estimate Read by Id |
 | GET | `/v3/company/{companyid}/exchangerate` | Exchange Rate - Get Details|
-| POST | `v3/company/{companyid}/inventoryadjustment` | Create Inventory Adjustment Copy |
-| POST | `/v3/company/{companyid}/invoice` | Invoice Delete |
+| POST | `/v3/company/{companyid}/inventoryadjustment` | Create Inventory Adjustment |
+| POST | `/v3/company/{companyid}/invoice` | Invoice Create |
 | GET | `/v3/company/{companyid}/invoice/{id}` | Invoice Read by Id |
-| POST | `/v3/company/{companyid}/item` | Item Delete |
+| POST | `/v3/company/{companyid}/item` | Item Create |
 | GET | `/v3/company/{companyid}/item/<id>` | Item Read by Id |
-| POST | `/v3/company/{companyid}/journalentry` | Journal Entry Delete |
+| POST | `/v3/company/{companyid}/journalentry` | Journal Entry Create |
 | GET | `/v3/company/{companyid}/journalentry/{id}` | Journal Entry Read by Id |
-| POST | `/v3/company/{companyid}/payment` | Payment Delete |
+| POST | `/v3/company/{companyid}/payment` | Payment Create |
 | GET | `/v3/company/{companyid}/payment/{id}` | Payment Read by Id |
-| POST | `/v3/company/{companyid}/paymentmethod` | Payment Method Delete |
+| POST | `/v3/company/{companyid}/paymentmethod` | Payment Method Create |
 | GET | `/v3/company/{companyid}/paymentmethod/{id}` | Payment Method Read by Id |
 | GET | `/v3/company/{companyid}/preferences` | Preferences Read |
 | POST | `/v3/company/{companyid}/preferences` | Preferences Update |
-| POST | `/v3/company/{companyid}/purchase` | Purchase Delete |
+| POST | `/v3/company/{companyid}/purchase` | Purchase Create |
 | GET | `/v3/company/{companyid}/purchase/{id}` | Purchase Read by Id |
-| POST | `/v3/company/{companyid}/purchaseorder` | Purchase Order Delete |
+| POST | `/v3/company/{companyid}/purchaseorder` | Purchase Order Create |
 | GET | `/v3/company/{companyid}/purchaseorder/{id}` | Purchase Order Read by Id |
-| POST | `/v3/company/{companyid}/refundreceipt` | Refund Receipt Delete |
+| POST | `/v3/company/{companyid}/refundreceipt` | Refund Receipt Create |
 | GET | `/v3/company/{companyid}/refundreceipt/{id}` | Refund Recipt- Read by Id |
 | GET | `/v3/company/{companyid}/reports/AccountList` | Report Account List |
-| GET | `/v3/company/{companyid}/reports/AgedPayablesDetail` | Report Aged Payables Detail |
+| GET | `/v3/company/{companyid}/reports/AgedPayableDetail` | Report Aged Payable Detail |
 | GET | `/v3/company/{companyid}/reports/AgedPayables` | Report Aged Payables |
 | GET | `/v3/company/{companyid}/reports/AgedReceivableDetail` | Report Aged Receivable Detail |
 | GET | `/v3/company/{companyid}/reports/AgedReceivables` | Report Aged Receivables |
@@ -112,21 +115,21 @@ All QuickBooks API endpoints require a **Company ID**, which uniquely identifies
 | GET | `/v3/company/{companyid}/reports/VendorBalance` | Report Vendor Balance |
 | GET | `/v3/company/{companyid}/reports/VendorBalanceDetail` | Report Vendor Balance Detail |
 | GET | `/v3/company/{companyid}/reports/VendorExpenses` | Report Vendor Expenses |
-| POST | `/v3/company/{companyid}/salesreceipt` | Sales Receipt-Void |
+| POST | `/v3/company/{companyid}/salesreceipt` | Sales Receipt Create |
 | GET | `/v3/company/{companyid}/salesreceipt/{id}` | Sales Receipt Read by Id |
 | POST | `/v3/company/{companyid}/taxagency` | Tax Agency Create |
 | GET | `/v3/company/{companyid}/taxagency/{id}` | Tax Agency Read by Id |
 | GET | `/v3/company/{companyid}/taxcode/{id}` | Tax Code Read by Id |
 | GET | `/v3/company/{companyid}/taxrate/{id}` | Tax Rate Read by Id |
 | POST | `/v3/company/{companyid}/taxservice/taxcode` | Tax Service Create |
-| POST | `/v3/company/{companyid}/term` | Term Delete |
+| POST | `/v3/company/{companyid}/term` | Term Create |
 | GET | `/v3/company/{companyid}/term/{id}` | Term Read by Id |
-| POST | `/v3/company/{companyid}/timeactivity` | Time Activity Delete |
-| POST | `/v3/company/{companyid}/transfer` | Transfer delete |
+| POST | `/v3/company/{companyid}/timeactivity` | Time Activity Create |
+| POST | `/v3/company/{companyid}/transfer` | Transfer Create |
 | GET | `/v3/company/{companyid}/transfer/{id}` | Transfer Read by Id |
-| POST | `/v3/company/{companyid}/vendor` | Vendor Delete |
+| POST | `/v3/company/{companyid}/vendor` | Vendor Create |
 | GET | `/v3/company/{companyid}/vendor/{id}` | Vendor Read by Id |
-| POST | `/v3/company/{companyid}/vendorcredit` | Vendor Credit Delete |
+| POST | `/v3/company/{companyid}/vendorcredit` | Vendor Credit Create |
 | GET | `/v3/company/{companyid}/vendorcredit/{id}` | Vendor Credit Read by Id |
 
 ## Example Queries

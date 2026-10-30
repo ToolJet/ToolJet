@@ -18,7 +18,10 @@ To connect Prometheus with ToolJet, you’ll need the following details:
 - **Prometheus server URL**
 - **Username**
 - **Password**
-- **CA certificate** or **Client Certificate**
+- **TLS settings**: How ToolJet handles TLS certificates when it connects to the server:
+  - **CA certificate**: Enter a PEM-encoded CA certificate in **CA Cert** to trust a server certificate signed by a private CA.
+  - **Client certificate**: For mutual TLS. Enter **Client Key** and **Client Cert**, and optionally **CA Cert**.
+  - **None**: No custom certificates. ToolJet verifies the server certificate against the default trusted CAs. This is also the behavior when no option is selected.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/prometheus/connection.png" alt="Configuring Prometheus in ToolJet" />
 

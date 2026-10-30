@@ -21,21 +21,21 @@ ToolJet supports a wide range of ClickUp operations, grouped into the following 
 
 | **Category**   | **Description**                                                     |
 | -------------- | ------------------------------------------------------------------- |
-| **Task**       | Create, retrieve, update, and delete tasks in your workspace.       |
-| **OAuth**      | Post the OAuth token.                                               |
-| **User**       | Access user-related data in your workspace.                         |
-| **Team**       | Interact with teams in ClickUp.                                     |
-| **Checklist**  | Manage checklists and checklist items within tasks.                 |
-| **View**       | Retrieve views available in a list (e.g., board, table, list view). |
-| **List**       | Access and manage lists inside folders or directly under spaces.    |
-| **Comment**    | Add or fetch comments associated with tasks.                        |
-| **Folder**     | Retrieve and manage folders within a space.                         |
-| **Space**      | Interact with spaces that organize folders and lists under a team.  |
-| **Goal**       | Manage goals and their progress within your workspace.              |
-| **Key Result** | Track measurable outcomes tied to specific goals.                   |
-| **Group**      | Manage task groups or assignee groups for better organization.      |
-| **Webhook**    | Create and manage webhooks for real-time ClickUp event tracking.    |
-| **Workspace**  | Access general workspace-level information and settings.            |
+| **Task**       | Create, retrieve, update, and delete tasks, and manage a task's comments, checklists, attachments, tags, dependencies, links, guests, custom field values, and tracked time. |
+| **OAuth**      | Exchange an OAuth authorization code for an access token. |
+| **User**       | Get the user that the API key belongs to. |
+| **Team**       | Work with a Workspace (the ClickUp API calls it a team): its seats and plan, spaces, goals, views, webhooks, users, guests, user groups, custom roles, custom fields, custom task types, task templates, filtered tasks, shared hierarchy, and time entries. |
+| **Checklist**  | Edit and delete checklists, and create, edit, and delete checklist items. Create a checklist from **Task**. |
+| **View**       | Get, update, and delete a view, and get its tasks and comments. |
+| **List**       | Get, update, and delete lists, and work with a list's tasks, comments, views, members, guests, and custom fields. |
+| **Comment**    | Update and delete comments, and get or create threaded replies. |
+| **Folder**     | Get, update, and delete folders, and work with a folder's lists, views, guests, and custom fields. |
+| **Space**      | Get, update, and delete spaces, and work with a space's folders, folderless lists, tags, views, and custom fields. |
+| **Goal**       | Get, update, and delete goals, and create key results. |
+| **Key Result** | Edit and delete key results. |
+| **Group**      | Get, update, and delete user groups. Create a group from **Team**. |
+| **Webhook**    | Update and delete webhooks. List and create webhooks from **Team**. |
+| **Workspace**  | ClickUp API v3 operations: Docs and pages, audit logs, privacy and access settings, and Chat channels and messages. |
 
 ### Operation Type
 
@@ -43,6 +43,7 @@ The plugin supports the following HTTP methods:
 - **GET** – Retrieve data (e.g., fetch a task, list users).
 - **POST** – Create new resources (e.g., create a task or comment).
 - **PUT** – Update existing resources (e.g., update task details).
+- **PATCH** – Partially update resources (e.g., update a Chat channel or message, or the privacy and access settings of an object).
 - **DELETE** – Remove resources (e.g., delete a checklist item or webhook).
 
 ## Navigating the ClickUp Hierarchy

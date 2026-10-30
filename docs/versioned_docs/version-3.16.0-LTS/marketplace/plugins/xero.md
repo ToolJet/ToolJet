@@ -29,8 +29,10 @@ To connect to Xero, the following credentials are required:
 
  - **Client Secret**: Enter your Client Secret. Click 'Edit' in ToolJet and enter the value. This secret will be stored in the encrypted form.
 
- - **Scope(s)**: Scope defines the permissions your ToolJet app will have in Xero. This field is pre-filled with commonly used scopes such as:
-"openid, profile, email, accounting.transactions,  accounting.reports.read, accounting.reports.tenninetynine.read"
+ - **Scope(s)**: Scope defines the permissions your ToolJet app will have in Xero. Enter scopes as a space-separated list. This field is pre-filled with the following scopes:
+`openid profile email offline_access accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.transactions accounting.transactions.read accounting.journals.read accounting.reports.read files files.read projects assets assets.read`
+
+ToolJet always requests `offline_access`, adding it if it isn't in the list, so the connection can refresh its access token.
 
 You can modify the scopes based on your use case.
 

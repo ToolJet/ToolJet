@@ -84,9 +84,20 @@ After installing a plugin (or for pre-installed plugins on ToolJet Cloud), confi
 
 <img className="screenshot-full img-full" src="/img/marketplace/overview/installed-plugin-v3.png" alt="Installed plugins" />
 
-{/* ## Updating a Plugin
+## Updating a Plugin (Self-Hosted Only)
 
-When a new version of an installed plugin is available, you'll see an update notification on the plugin card in the **Installed** tab. Click the update link to upgrade to the latest version. */}
+An installed plugin keeps the files it was installed with. Later changes to the plugin, such as new models, operations or connection fields, don't reach it automatically. The **Installed** tab shows an update link only when the plugin's version number changes. To load the latest files for an installed plugin:
+
+1. Set the `ENABLE_MARKETPLACE_DEV_MODE` environment variable to `true` and restart ToolJet.
+2. Go to **Settings** > **Marketplace** and open the **Installed** tab.
+3. Click the reload icon on the plugin card. ToolJet downloads the plugin's latest files and shows a **reloaded** message.
+4. Remove `ENABLE_MARKETPLACE_DEV_MODE` and restart ToolJet.
+
+Data sources and queries that use the plugin stay connected to it after a reload.
+
+:::caution
+While `ENABLE_MARKETPLACE_DEV_MODE` is `true`, ToolJet loads marketplace plugin code from the database on every query instead of caching it. Turn it off after you reload the plugins you need.
+:::
 
 ## Removing a Plugin (Self-Hosted Only)
 

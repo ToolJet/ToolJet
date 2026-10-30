@@ -29,7 +29,7 @@ Generate a Personal Access Token(PAT) by navigating to User Settings, then selec
 
 ### Get Azure Repository
 
-Retrieves details of a specific repository within your Azure DevOps project.
+Lists the repositories in an Azure DevOps project, with the details of each repository.
 
 #### Required Parameter
 
@@ -50,9 +50,10 @@ Project: test
 
 Fetches a list of commits made to a selected repository.
 
-#### Required Parameter
+#### Required Parameters
 
-- **Project**
+- **Project name** - Name of the Azure DevOps project.
+- **Repository commits** - Name or ID of the repository.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/azurerepos/commit-query.png" alt="get repository commits"/>
 
@@ -70,9 +71,10 @@ Repository commits: ToolJet
 
 Lists all branches available in a specified Azure repository.
 
-#### Required Parameter
+#### Required Parameters
 
-- **Project**
+- **Project name** - Name of the Azure DevOps project.
+- **Repository commits** - Name or ID of the repository.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/azurerepos/branch-query.png" alt="get repository branches"/>
 
@@ -90,9 +92,10 @@ Repository commits: ToolJet
 
 Retrieves information about recent pushes made to the repository.
 
-#### Required Parameter
+#### Required Parameters
 
-- **Project**
+- **Project name** - Name of the Azure DevOps project.
+- **Repository commits** - Name or ID of the repository.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins//azurerepos/push-query.png" alt="get repository pushes"/>
 
@@ -108,11 +111,15 @@ Repository commits: ToolJet
 
 ### Get Project Pull Requests
 
-Fetches pull requests associated with the selected project and repository.
+Fetches pull requests across all repositories in the selected project.
 
 #### Required Parameter
 
-- **Project**
+- **Project pull requests** - Name of the Azure DevOps project.
+
+#### Optional Parameter
+
+- **Status** - Filters pull requests by status: **All**, **Active**, **Completed**, or **Abandoned**.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/azurerepos/pr-query.png" alt="get project pull requests"/>
 

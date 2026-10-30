@@ -41,7 +41,7 @@ Use this operation to generate text content by controlling various parameters to
 
 **Optional Parameters**
 
-- **Max size**: Set the maximum length for the generated content.
+- **Max tokens**: Set the maximum number of tokens in the generated content.
 - **Temperature**: Adjust to control the creativity and diversity of the output.
 - **Top P**: Use to limit randomness by setting a probability threshold.
 - **Stop token(s)**: Specify tokens or phrases to end the content generation.

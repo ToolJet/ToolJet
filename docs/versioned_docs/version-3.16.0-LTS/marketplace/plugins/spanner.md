@@ -24,7 +24,7 @@ Use this to access Spanner’s native features and leverage its full scalability
 **Parameters**
 - **Database ID**: Identifier of the Spanner database to connect and execute queries against.
 - **SQL Query**: The SQL statement to be executed on the selected Spanner database.
-- **Query Mode** : Specifies the type of operation to perform on the database, such as executing read/write queries or applying schema changes (CREATE, ALTER, DROP).
+- **Query mode**: How ToolJet runs the statement. **Read-only (SELECT)** (default) returns the matching rows. **Write (INSERT, UPDATE, DELETE)** runs the statement in a read-write transaction and returns the number of affected rows. **Schema changes (CREATE, ALTER, DROP)** applies the statement as a schema update.
 - **SQL Parameters**: Key-value pairs used to safely pass dynamic values into the SQL query.
 - **Types**: Data types assigned to each SQL parameter to ensure correct query execution.
 - **Options**: Additional settings to customize query behavior.
@@ -43,6 +43,7 @@ Use this to access Spanner with PostgreSQL-compatible syntax and tooling, ideal 
 **Parameters**
 - **Database ID**: Identifier of the Spanner database to connect and execute queries against.
 - **SQL Query**: The SQL statement to be executed on the selected Spanner database.
+- **Query mode**: How ToolJet runs the statement. **Read-only (SELECT)** (default) returns the matching rows. **Write (INSERT, UPDATE, DELETE)** runs the statement in a read-write transaction and returns the number of affected rows. **Schema changes (CREATE, ALTER, DROP)** applies the statement as a schema update.
 - **SQL Parameters**: Key-value pairs used to safely pass dynamic values into the SQL query.
 - **Types**: Data types assigned to each SQL parameter to ensure correct query execution.
 - **Options**: Additional settings to customize query behavior.
