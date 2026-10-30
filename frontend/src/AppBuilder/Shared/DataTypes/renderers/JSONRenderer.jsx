@@ -70,14 +70,22 @@ export const JSONRenderer = ({
     }
   };
 
+  // `value` may be an object or a JSON string; the edited text is the formatted display string.
+  // Compare them as compact JSON so formatting differences don't read as an edit.
+  const toCompactJson = (val) => {
+    try {
+      return JSON.stringify(typeof val === 'string' ? JSON.parse(val) : val);
+    } catch (e) {
+      return val;
+    }
+  };
+
   const handleChange = (textContent) => {
-    if (value !== textContent) {
-      try {
-        const parsedValue = JSON.stringify(JSON.parse(textContent.replace(/\n/g, '')));
-        onChange?.(parsedValue);
-      } catch (e) {
-        // Invalid JSON, don't update
-      }
+    try {
+      const parsedValue = JSON.stringify(JSON.parse(textContent.replace(/\n/g, '')));
+      if (parsedValue !== toCompactJson(value)) onChange?.(parsedValue);
+    } catch (e) {
+      // Invalid JSON, don't update
     }
   };
 

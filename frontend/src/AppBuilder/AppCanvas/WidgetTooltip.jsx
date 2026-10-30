@@ -69,6 +69,7 @@ const WidgetTooltip = ({
             sideOffset={2}
             showArrow={false}
             data-cy="widget-tooltip"
+            style={{ maxWidth: 'var(--radix-tooltip-trigger-width)' }}
             className={cx(isHtml ? UNSTYLED_CLASSES : THEMED_CLASSES, themeClass)}
           >
             <TooltipBody content={trimmed} format={resolvedFormat} />
