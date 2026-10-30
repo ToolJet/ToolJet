@@ -5,7 +5,7 @@ Context for the Table's **Add new row** form. The rest of the widget has no note
 ## Domain terms
 
 - **Add new row form** — what the "Show add new row button" toggle opens: one row at a time, as a form (label above field), in the table or in a dialog. Replaced the old spreadsheet-style popup.
-- **Placement** — `addNewRowIn`: `table` (popover inside the table, 66.6% wide up to 500px, 80% high) or `dialog` (500px wide, up to `min(80vh, 720px)`). Anything else resolves to `table`.
+- **Placement** — `addNewRowIn`: `table` (popover inside the table, 66.6% wide up to 500px, 80% high) or `dialog` (500px wide, up to `min(80vh, 720px)`). Anything else resolves to `table`. The `table` popover dims the table behind it with its own overlay; the dialog uses Rocket's.
 - **Multiple rows** — `allowAddingMultipleRows`. A saved app without the key means **on** (it could add several rows before); a newly dropped Table gets **off**. The "missing means on" fallback lives in code (`initSlice.js`), the `false` only in the widget definition defaults. Do not move it.
 - **Columns to include** — `addNewRowColumns`: list of column keys, or unset for every eligible column.
 
