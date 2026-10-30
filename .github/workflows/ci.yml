@@ -962,14 +962,14 @@ jobs:
           retention-days: 1
 
   # ---------------------------------------------------------------------------
-  # 3c-bis. Migration import check — new or edited migrations must be self-contained:
-  # typeorm and Node built-ins only, no entities/helpers/modules. Those follow today's code,
-  # so importing them lets a later change silently alter an old migration. Use
-  # queryRunner.query() with SQL; a needed import stays if its line has
-  # '// migration-import-allowed: <reason>'. Existing migrations aren't checked until edited.
+  # 3c-bis. Migration entity check — new or edited migrations must not import TypeORM
+  # entities: entities follow today's schema, so a later change could silently alter an old
+  # migration. Use queryRunner.query() with SQL; a needed import stays if its line has
+  # '// migration-import-allowed: <reason>'. Other imports are fine. Existing migrations
+  # aren't checked until edited.
   # ---------------------------------------------------------------------------
   migration-import-check:
-    name: 'Migration import check'
+    name: 'Migration entity check'
     runs-on: ubuntu-latest
     needs: detect-changes
     if: github.event_name == 'pull_request' && needs.detect-changes.outputs.migrations == 'true'
@@ -979,7 +979,7 @@ jobs:
           fetch-depth: 2   # HEAD^1 = PR base
       - name: Test the import checker
         run: node --test scripts/check-migration-imports.test.mjs
-      - name: Fail if a new or edited migration imports project code
+      - name: Fail if a new or edited migration imports an entity
         shell: bash
         run: |
           mapfile -t files < <(git diff --name-only --diff-filter=AMR HEAD^1 HEAD -- server/migrations server/data-migrations)
