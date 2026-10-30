@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { LibraryQuery } from '@entities/library_query.entity';
 import { LibraryQueryFolder } from '@entities/library_query_folder.entity';
 import { LibraryQueryVersion } from '@entities/library_query_version.entity';
+import { LibraryQueryDraft } from '@entities/library_query_draft.entity';
 import { LibraryQueryState } from '@entities/library_query_state.entity';
 import { DataSource } from '@entities/data_source.entity';
 import { closeTestApp, createAdmin, getDefaultDataSource, initTestApp } from 'test-helper';
@@ -27,8 +28,6 @@ describe('LibraryQuerySchema', () => {
       .save({
         organizationId,
         name: 'Shared query',
-        kind: 'restapi',
-        options: {},
         ...extra,
       });
 
@@ -53,9 +52,16 @@ describe('LibraryQuerySchema', () => {
       organizationId,
       scope: 'global',
     });
-    const query = await createQuery({ dataSourceId: dataSource.id });
+    const query = await createQuery();
+    const draft = await connection.getRepository(LibraryQueryDraft).save({
+      libraryQueryId: query.id,
+      name: 'v1',
+      kind: 'restapi',
+      dataSourceId: dataSource.id,
+      options: {},
+    });
     await connection.getRepository(DataSource).delete(dataSource.id);
-    expect(await connection.getRepository(LibraryQuery).findOneByOrFail({ id: query.id })).toMatchObject({
+    expect(await connection.getRepository(LibraryQueryDraft).findOneByOrFail({ id: draft.id })).toMatchObject({
       dataSourceId: null,
     });
   });
@@ -65,6 +71,7 @@ describe('LibraryQuerySchema', () => {
     const query = await createQuery();
     await connection.getRepository(LibraryQueryVersion).save({
       libraryQueryId: query.id,
+      name: 'v1',
       versionNumber: 1,
       kind: 'restapi',
       options: {},
@@ -73,6 +80,18 @@ describe('LibraryQuerySchema', () => {
     await connection.getRepository(LibraryQuery).delete(query.id);
     expect(await connection.getRepository(LibraryQueryVersion).countBy({ libraryQueryId: query.id })).toBe(0);
     expect(await connection.getRepository(LibraryQueryState).countBy({ libraryQueryId: query.id })).toBe(0);
+  });
+
+  it.each([LibraryQueryDraft, LibraryQueryVersion])('should require a persisted name for %p', async (entity) => {
+    const query = await createQuery();
+    await expect(
+      getDefaultDataSource().manager.save(entity, {
+        libraryQueryId: query.id,
+        versionNumber: 1,
+        kind: 'restapi',
+        options: {},
+      })
+    ).rejects.toMatchObject({ code: '23502' });
   });
 
   it('should null folder_id when its folder is deleted', async () => {

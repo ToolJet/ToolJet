@@ -1,3 +1,4 @@
+import { lockLibraryPins } from '@modules/query-library/locking';
 import {
   BadRequestException,
   ConflictException,
@@ -34,8 +35,8 @@ import {
   libraryServerReferences,
   libraryTransformationOf,
   LIBRARY_QUERY_IS_CLIENT_SIDE,
-  parseLibraryVersionRef,
-  pickPinnedVersion,
+  parseLibraryReference,
+  resolveLibraryReference,
   replaceLibraryServerReferences,
   toLibraryRunEntity,
   toRunTarget,
@@ -50,7 +51,6 @@ import { IDataQueriesService, QueryCreateContext, QueryUpdateContext, QueryDelet
 import { App } from '@entities/app.entity';
 import { LibraryQuery } from '@entities/library_query.entity';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
-import { LibraryQueryVersion } from '@entities/library_query_version.entity';
 import {
   APP_LEVEL_OPTION_KEYS,
   assertLibraryConsumerOptions,
@@ -198,6 +198,7 @@ export class DataQueriesService implements IDataQueriesService {
         { appVersionId, organizationId: user.organizationId, manager }
       );
 
+      await lockLibraryPins(manager, user.organizationId, [{ kind: dataSource.kind, options }]);
       const dataQuery = await this.dataQueryRepository.createOne(
         {
           name,
@@ -235,6 +236,10 @@ export class DataQueriesService implements IDataQueriesService {
     const context = await this.beforeQueryUpdate(user, versionId, dataQueryId, updateDataQueryDto);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.query('SELECT id FROM data_queries WHERE id = $1 AND app_version_id = $2 FOR UPDATE', [
+        dataQueryId,
+        versionId,
+      ]);
       // Scoped to the URL's version: the guards and the promoted-version check above ran
       // against it, so a query of any other version (or app) must be unreachable here.
       const existing = await manager.findOne(DataQuery, {
@@ -271,6 +276,8 @@ export class DataQueriesService implements IDataQueriesService {
         { appVersionId: existing.appVersionId, organizationId: user.organizationId, manager }
       );
 
+      if (options !== undefined)
+        await lockLibraryPins(manager, user.organizationId, [{ kind: existing.dataSource?.kind, options }]);
       await this.dataQueryRepository.updateOne(dataQueryId, { name, options }, manager);
     });
 
@@ -377,7 +384,13 @@ export class DataQueriesService implements IDataQueriesService {
         },
         manager
       );
-      const released = await this.libraryLifecycleService.saveVersion(user, created, {}, manager);
+      const released = await this.libraryLifecycleService.saveDraft(
+        user,
+        created,
+        created.draftId,
+        { name: 'v1' },
+        manager
+      );
 
       const options = {
         ...splitAppLevelOptions(stored.options).appLevel,
@@ -386,6 +399,7 @@ export class DataQueriesService implements IDataQueriesService {
         libraryKind: kind,
         inputs: dto.inputs,
       };
+      await lockLibraryPins(manager, user.organizationId, [{ kind: LIBRARY_KIND, options }]);
       await this.dataQueryRepository.updateOne(dataQueryId, { options, dataSourceId: libraryStatic.id }, manager);
 
       return {
@@ -430,10 +444,13 @@ export class DataQueriesService implements IDataQueriesService {
 
   async bulkUpdateQueryOptions(user: User, dataQueriesOptions: IUpdatingReferencesOptions[]) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.query('SELECT id FROM data_queries WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE', [
+        dataQueriesOptions.map(({ id }) => id),
+      ]);
       const stored: DataQuery[] = [];
       for (const { id } of dataQueriesOptions) {
         stored.push(
-          await this.dataQueryRepository.findOneOrFail({
+          await manager.findOneOrFail(DataQuery, {
             where: { id, dataSource: { organizationId: user.organizationId } },
             relations: ['dataSource'],
           })
@@ -443,7 +460,11 @@ export class DataQueriesService implements IDataQueriesService {
       stored.forEach((query, i) =>
         assertLibraryConsumerOptions(query.dataSource?.kind, query.options, dataQueriesOptions[i].options)
       );
-      // Lock in id order, so two bulk updates over the same rows can't deadlock.
+      await lockLibraryPins(
+        manager,
+        user.organizationId,
+        stored.map((query, i) => ({ kind: query.dataSource?.kind, options: dataQueriesOptions[i].options }))
+      );
 
       if (stored.length) {
         const writes: QueryWrite[] = dataQueriesOptions.map(({ id, options }, position) => ({
@@ -500,7 +521,16 @@ export class DataQueriesService implements IDataQueriesService {
     // so the loaded options must NOT be written back.
     if (mode !== 'view' && ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) && !isEmpty(options)) {
       assertLibraryConsumerOptions(dataQuery.dataSource?.kind, dataQuery.options, options);
-      await this.dataQueryRepository.updateOne(dataQueryId, { options });
+      await dbTransactionWrap(async (manager: EntityManager) => {
+        await manager.query('SELECT id FROM data_queries WHERE id = $1 FOR UPDATE', [dataQueryId]);
+        const stored = await manager.findOneOrFail(DataQuery, {
+          where: { id: dataQueryId },
+          relations: { dataSource: true },
+        });
+        assertLibraryConsumerOptions(stored.dataSource?.kind, stored.options, options);
+        await lockLibraryPins(manager, user.organizationId, [{ kind: stored.dataSource?.kind, options }]);
+        await this.dataQueryRepository.updateOne(dataQueryId, { options }, manager);
+      });
       dataQuery['options'] = options;
     }
 
@@ -524,8 +554,7 @@ export class DataQueriesService implements IDataQueriesService {
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view', app);
   }
 
-  // The consumer's pinned version (or the draft).
-  // `libraryDraft` is the library query row behind the target; the run uses its app version.
+  // The consumer selects one explicit snapshot; the library identity only supplies workspace/name.
   protected async loadLibraryTarget(consumerQueryId: string, app: App) {
     const manager = this.dataQueryRepository.manager;
     const consumer = await this.dataQueryRepository.getOneById(consumerQueryId, {
@@ -538,11 +567,9 @@ export class DataQueriesService implements IDataQueriesService {
       : null;
     assertLibraryTarget({ consumer, library: primary, consumerApp: app });
 
-    const ref = parseLibraryVersionRef(consumer.options?.libraryQueryVersionId);
-    const pinned = ref.draft
-      ? null
-      : pickPinnedVersion(await manager.findOneBy(LibraryQueryVersion, { id: ref.versionId }), primary.id);
-    const target = toRunTarget(primary, pinned);
+    const ref = parseLibraryReference(consumer.options);
+    const { snapshot } = await resolveLibraryReference(primary.id, ref.id, manager);
+    const target = toRunTarget(primary, snapshot);
     assertSupportedLibraryKind(target.kind);
     return { consumer, target };
   }
@@ -699,6 +726,7 @@ export class DataQueriesService implements IDataQueriesService {
 
   async changeQueryDataSource(user: User, queryId: string, dataSource: DataSource, newDataSourceId: string) {
     return dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.query('SELECT id FROM data_queries WHERE id = $1 FOR UPDATE', [queryId]);
       const newDataSource = await this.dataSourceRepository.findOneOrFail({
         where: { id: newDataSourceId, organizationId: user.organizationId },
       });
@@ -709,7 +737,7 @@ export class DataQueriesService implements IDataQueriesService {
 
       const stored = await manager.findOne(DataQuery, {
         where: { id: queryId },
-        select: ['id', 'name', 'appVersionId'],
+        select: ['id', 'name', 'appVersionId', 'options'],
       });
       if (stored) {
         // Kind mismatch only warns here: workflows legitimately move queries across kinds.
@@ -727,6 +755,8 @@ export class DataQueriesService implements IDataQueriesService {
         );
       }
 
+      if (stored)
+        await lockLibraryPins(manager, user.organizationId, [{ kind: newDataSource.kind, options: stored.options }]);
       return this.dataQueryRepository.updateOne(queryId, { dataSourceId: newDataSource.id }, manager);
 
       // TODO: Audit logs

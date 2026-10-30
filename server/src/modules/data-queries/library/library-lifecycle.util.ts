@@ -1,16 +1,14 @@
-import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
+import { LibraryQueryDraft } from '@entities/library_query_draft.entity';
 import { LibraryQueryState } from '@entities/library_query_state.entity';
 import { LibraryQueryVersion } from '@entities/library_query_version.entity';
-import { isSameLibrarySnapshot, libraryVersionName } from './library-query.util';
-
-// Lifecycle of one library query, copying module versions: one Draft, frozen saved `vN` versions that move
-// Development → Staging → Production, and one Released version.
 
 export type LibraryVersionView = {
   id: string;
   name: string;
   versionNumber: number;
   description: string | null;
+  createdFromVersionId: string | null;
   createdFrom: string | null;
   environment: { id: string; name: string; priority: number } | null;
   isReleased: boolean;
@@ -20,38 +18,16 @@ export type LibraryVersionView = {
   options: Record<string, unknown>;
 };
 
+export type LibraryDraftView = Pick<
+  LibraryQueryDraft,
+  'id' | 'name' | 'description' | 'createdFromVersionId' | 'kind' | 'dataSourceId' | 'options' | 'createdAt'
+> & { createdFrom: string | null };
 export type LibraryQueryVersionsView = {
-  draft: { createdFrom: string | null; description: string | null } | null;
+  drafts: LibraryDraftView[];
   versions: LibraryVersionView[];
-  // The number the next Save version gets: deleted versions count, so a number is never reused.
   nextVersionNumber: number;
 };
-
-type DraftState = Pick<LibraryQueryState, 'hasDraft'>;
-type Snapshot = { kind: string; dataSourceId: string | null; options: unknown };
 type Environment = { name: string; priority: number; isDefault?: boolean };
-
-export function assertCanSaveDraft(
-  state: DraftState,
-  latest: (Snapshot & { versionNumber: number }) | null,
-  snapshot: Snapshot
-): void {
-  if (!state.hasDraft) throw new ConflictException('This query has no draft to save');
-  if (latest && isSameLibrarySnapshot(latest, snapshot)) {
-    throw new BadRequestException(`Nothing changed since ${libraryVersionName(latest)}`);
-  }
-}
-
-export function assertCanCreateDraft(state: DraftState, sourceVersion: object | null): void {
-  if (state.hasDraft) throw new ConflictException('Save or delete the current draft first');
-  if (!sourceVersion) throw new NotFoundException('Library query version not found');
-}
-
-// Deleting the only working copy of a never-saved query would leave nothing to edit.
-export function assertCanDiscardDraft(state: DraftState, savedCount: number): void {
-  if (!state.hasDraft) throw new ConflictException('This query has no draft');
-  if (savedCount === 0) throw new BadRequestException('Save a version before deleting the draft');
-}
 
 // A version with no environment (seeded outside Save version) starts below development.
 export function nextEnvironmentForPromote<T extends Environment>(current: Environment | null, environments: T[]): T {
@@ -77,13 +53,10 @@ export function assertVersionDeletable(
   if (version.id === state.releasedVersionId) throw new BadRequestException("The released version can't be deleted");
 }
 
-export function assertDraftEditable(state: DraftState): void {
-  if (!state.hasDraft) throw new BadRequestException('Create a draft version to edit this query');
-}
-
 type VersionRow = Pick<
   LibraryQueryVersion,
   | 'id'
+  | 'name'
   | 'versionNumber'
   | 'description'
   | 'createdFromVersionId'
@@ -98,16 +71,25 @@ type EnvironmentRow = { id: string; name: string; priority: number };
 
 // `rows` includes soft-deleted versions so "created from" still names a deleted source; they are not listed.
 export function toLibraryQueryVersionsView(
-  state: Pick<LibraryQueryState, 'hasDraft' | 'draftCreatedFromVersionId' | 'draftDescription' | 'releasedVersionId'>,
+  state: Pick<LibraryQueryState, 'releasedVersionId'>,
   rows: VersionRow[],
-  environments: EnvironmentRow[]
+  environments: EnvironmentRow[],
+  drafts: LibraryQueryDraft[]
 ): LibraryQueryVersionsView {
-  const names = new Map(rows.map((row) => [row.id, libraryVersionName(row)]));
+  const names = new Map(rows.map((row) => [row.id, row.name]));
   const nameOf = (id: string | null) => (id ? (names.get(id) ?? null) : null);
   return {
-    draft: state.hasDraft
-      ? { createdFrom: nameOf(state.draftCreatedFromVersionId), description: state.draftDescription ?? null }
-      : null,
+    drafts: drafts.map(({ id, name, description, createdFromVersionId, kind, dataSourceId, options, createdAt }) => ({
+      id,
+      name,
+      description: description ?? null,
+      createdFromVersionId,
+      createdFrom: nameOf(createdFromVersionId),
+      kind,
+      dataSourceId,
+      options,
+      createdAt,
+    })),
     versions: rows
       .filter((row) => !row.deletedAt)
       .sort((a, b) => b.versionNumber - a.versionNumber)
@@ -115,9 +97,10 @@ export function toLibraryQueryVersionsView(
         const environment = environments.find((env) => env.id === row.currentEnvironmentId);
         return {
           id: row.id,
-          name: libraryVersionName(row),
+          name: row.name,
           versionNumber: row.versionNumber,
           description: row.description ?? null,
+          createdFromVersionId: row.createdFromVersionId ?? null,
           createdFrom: nameOf(row.createdFromVersionId),
           environment: environment
             ? { id: environment.id, name: environment.name, priority: environment.priority }

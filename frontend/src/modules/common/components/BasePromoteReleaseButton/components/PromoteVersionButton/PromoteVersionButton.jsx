@@ -1,36 +1,23 @@
+import { useVersionLifecycle } from '@/AppBuilder/Header/VersionManager/VersionLifecycleContext';
+import { withAppVersionLifecycle } from '@/AppBuilder/Header/VersionManager/AppVersionLifecycleProvider';
 import React, { useState } from 'react';
 import cx from 'classnames';
-import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components/ToolTip';
 import '@/_styles/versions.scss';
 import { PromoteConfirmationModal } from './components';
-import useStore from '@/AppBuilder/_stores/store';
 import { Button } from '@/components/ui/Button/Button';
 import { ArrowBigUpDash } from 'lucide-react';
-import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useTranslation } from 'react-i18next';
 
 const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = false }) => {
   const [promoteModalData, setPromoteModalData] = useState(null);
-  const { moduleId } = useModuleContext();
-  const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
-  const { isPromoteVersionEnabled } = getCanPromoteAndRelease();
-  const { isSaving, editingVersion, appVersionEnvironment, environments, selectedEnvironment, currentEnvIndex } =
-    useStore(
-      (state) => ({
-        isSaving: state.appStore.modules[moduleId].app.isSaving,
-        editingVersion: version?.id || state.currentVersionId,
-        selectedEnvironment: state.selectedEnvironment,
-        environments: state.environments,
-        appVersionEnvironment: version?.currentEnvironmentId
-          ? state.environments?.find((env) => env.id === version.currentEnvironmentId)
-          : state.appVersionEnvironment,
-        currentEnvIndex: version?.currentEnvironmentId
-          ? state.environments?.findIndex((env) => env?.id === version.currentEnvironmentId)
-          : state.environments?.findIndex((env) => env?.id === state.appVersionEnvironment?.id),
-      }),
-      shallow
-    );
+  const { versions, selectedVersionId, selectedEnvironment, environments, capabilities = {} } = useVersionLifecycle();
+  const isPromoteVersionEnabled = capabilities.canPromote;
+  const isSaving = capabilities.isSaving;
+  const editingVersion = version?.id || selectedVersionId;
+  const selected = version || versions.find((v) => v.id === editingVersion);
+  const appVersionEnvironment = environments.find((env) => env.id === selected?.currentEnvironmentId);
+  const currentEnvIndex = environments.findIndex((env) => env.id === appVersionEnvironment?.id);
 
   // enable only after the environment details are loaded
   const shouldDisablePromote =
@@ -75,6 +62,7 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
         </ToolTip>
         <PromoteConfirmationModal
           data={promoteModalData}
+          darkMode={darkMode}
           editingVersion={editingVersion}
           onClose={() => setPromoteModalData(null)}
           fetchEnvironments={() => {}}
@@ -107,6 +95,7 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
       </ToolTip>
       <PromoteConfirmationModal
         data={promoteModalData}
+        darkMode={darkMode}
         editingVersion={editingVersion}
         onClose={() => setPromoteModalData(null)}
         fetchEnvironments={() => {}}
@@ -115,4 +104,4 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
   );
 };
 
-export default PromoteVersionButton;
+export default withAppVersionLifecycle(PromoteVersionButton);

@@ -30,7 +30,7 @@ const converted = {
     name: 'getCustomer',
     kind: 'library',
     data_source_id: 'static-lib-ds',
-    options: { libraryAppId: 'lib-app', libraryQueryId: 'lq1', libraryKind: 'restapi', inputs: { id: '{{1}}' } },
+    options: { libraryQueryId: 'lq1', libraryQueryVersionId: 'lv1', libraryKind: 'restapi', inputs: { id: '{{1}}' } },
   },
   libraryQueryId: 'lq1',
   libraryVersionId: 'lv1',
@@ -66,7 +66,7 @@ describe('addQueryToLibrary', () => {
     await state().dataQuery.addQueryToLibrary('q1', body, 'canvas');
 
     expect(stored()).toMatchObject({ id: 'q1', name: 'getCustomer', kind: 'library', data_source_id: 'static-lib-ds' });
-    expect(stored().options.libraryQueryId).toBe('lq1');
+    expect(stored().options).toMatchObject({ libraryQueryId: 'lq1', libraryQueryVersionId: 'lv1' });
     expect(state().queryPanel.selectedQuery.kind).toBe('library');
   });
 

@@ -1,4 +1,5 @@
 import { Module, DynamicModule } from '@nestjs/common';
+import { AuditLoggerService } from './service';
 import { SubModule } from '@modules/app/sub-module';
 
 @Module({})
@@ -10,6 +11,8 @@ export class AuditLogsModule extends SubModule {
 
     return this.cacheModule(cacheKey, {
       module: AuditLogsModule,
+      providers: [AuditLoggerService],
+      exports: [AuditLoggerService],
     });
   }
 }

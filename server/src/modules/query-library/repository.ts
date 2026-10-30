@@ -9,7 +9,6 @@ export class QueryLibraryRepository extends Repository<LibraryQuery> {
   findInWorkspace(id: string, organizationId: string, manager?: EntityManager): Promise<LibraryQuery | null> {
     return (manager ?? this.manager).findOne(LibraryQuery, {
       where: { id, organizationId },
-      relations: ['dataSource'],
     });
   }
   listForWorkspace(organizationId: string): Promise<LibraryQuery[]> {

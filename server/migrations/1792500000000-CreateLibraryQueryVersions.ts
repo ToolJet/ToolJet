@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
-// Workspace-owned query drafts and their immutable version snapshots.
+// Workspace-owned query identities and immutable saved snapshots.
 // Rows are soft-deleted, and version numbers are never reused.
 export class CreateLibraryQueryVersions1792500000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -33,9 +33,6 @@ export class CreateLibraryQueryVersions1792500000000 implements MigrationInterfa
           { name: 'id', type: 'uuid', isPrimary: true, default: 'gen_random_uuid()' },
           { name: 'organization_id', type: 'uuid' },
           { name: 'name', type: 'varchar' },
-          { name: 'kind', type: 'varchar' },
-          { name: 'data_source_id', type: 'uuid', isNullable: true },
-          { name: 'options', type: 'jsonb' },
           { name: 'folder_id', type: 'uuid', isNullable: true },
           { name: 'co_relation_id', type: 'uuid', isNullable: true },
           { name: 'created_by', type: 'uuid', isNullable: true },
@@ -49,12 +46,6 @@ export class CreateLibraryQueryVersions1792500000000 implements MigrationInterfa
             referencedTableName: 'organizations',
             referencedColumnNames: ['id'],
             onDelete: 'CASCADE',
-          },
-          {
-            columnNames: ['data_source_id'],
-            referencedTableName: 'data_sources',
-            referencedColumnNames: ['id'],
-            onDelete: 'SET NULL',
           },
           {
             columnNames: ['folder_id'],
@@ -72,6 +63,7 @@ export class CreateLibraryQueryVersions1792500000000 implements MigrationInterfa
         columns: [
           { name: 'id', type: 'uuid', isPrimary: true, default: 'gen_random_uuid()' },
           { name: 'library_query_id', type: 'uuid', isNullable: false },
+          { name: 'name', type: 'varchar', length: '25', isNullable: false },
           { name: 'version_number', type: 'integer', isNullable: false },
           { name: 'kind', type: 'varchar', isNullable: false },
           { name: 'data_source_id', type: 'uuid', isNullable: true },

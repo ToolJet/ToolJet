@@ -412,6 +412,8 @@ async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: 
 }
 
 export interface InitTestAppOptions {
+  /** Local browser harness origin; applied before Nest installs its routes. */
+  browserOrigin?: string;
   /** Edition to simulate. Default: 'ce'. Each edition loads different modules — gets its own cache slot. */
   edition?: 'ce' | 'ee' | 'cloud';
   /**
@@ -477,7 +479,9 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
   moduleBuilder.overrideProvider(LicenseTermsService).useValue(createResilientLicenseTermsMock(plan));
 
   const moduleRef = await moduleBuilder.compile();
-  const app = moduleRef.createNestApplication();
+  const app = moduleRef.createNestApplication(
+    options?.browserOrigin ? { cors: { origin: options.browserOrigin, credentials: true } } : {}
+  );
 
   await configureApp(app, moduleRef);
   await app.init();

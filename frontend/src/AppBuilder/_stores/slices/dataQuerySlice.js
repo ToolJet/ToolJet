@@ -7,12 +7,18 @@ import { isQueryRunnable } from '@/_helpers/utils';
 import { replaceQueryOptionsEntityReferencesWithIds } from '@/AppBuilder/_stores/utils';
 import { normalizeQueryTransformationOptions } from '@/AppBuilder/_stores/utils/appDataCaseConversion';
 import { clearQueryRerunTimer } from '@/AppBuilder/_stores/slices/componentsSlice';
-import { isQueryLibraryMode, isLibraryQueryLocked } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
+import {
+  isQueryLibraryMode,
+  isLibraryQueryLocked,
+  viewedLibraryDraft,
+  viewedLibraryVersionId,
+} from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 
 const initialState = {
   sortBy: 'custom',
   sortOrder: 'desc',
   isDeletingQueryInProcess: false,
+  dependencyWarning: null,
   creatingQueryInProcessId: null,
   queryConfirmationList: [],
   queuedActions: {},
@@ -33,6 +39,8 @@ export const createDataQuerySlice = (set, get) => {
     workspaceId: isQueryLibraryMode(get()) ? get().queryLibrary.workspaceId : workspace(),
     sessionId: get().queryLibrary.sessionId,
     versionId: isQueryLibraryMode(get()) ? undefined : get().currentVersionId,
+    queryId: get().queryPanel.selectedQuery?.id,
+    draftId: isQueryLibraryMode(get()) ? viewedLibraryDraft(get(), get().queryPanel.selectedQuery?.id)?.id : undefined,
   });
   const current = (target) =>
     target.sessionId === get().queryLibrary.sessionId &&
@@ -69,9 +77,7 @@ export const createDataQuerySlice = (set, get) => {
     const previous = writes.get(key);
     const record = { values: newValues, moduleId, target };
     const request = () =>
-      target.library
-        ? libraryQueryService.update(newValues.id, { name: newValues.name, options: newValues.options }, target)
-        : dataqueryService.update(newValues.id, target.versionId, newValues.name, newValues.options, undefined, target);
+      dataqueryService.update(newValues.id, target.versionId, newValues.name, newValues.options, undefined, target);
     const promise = previous ? previous.promise.catch(() => {}).then(request) : request();
     record.promise = promise;
     writes.set(key, record);
@@ -125,9 +131,97 @@ export const createDataQuerySlice = (set, get) => {
       });
     return promise;
   }, 500);
-  const saveData = (values, moduleId = 'canvas', target = destination()) => save(values, moduleId, target);
-  saveData.flush = () => save.flush();
-  saveData.cancel = () => save.cancel();
+  // Library drafts have independent throttle and write chains. A trailing edit from A can never
+  // replace B's queued edit; failed writes stay attached to their original workspace/draft.
+  const draftWrites = new Map();
+  // Transport tails outlive editor sessions; only retry/display records are session-scoped.
+  const draftOperations = new Map();
+  const trackDraftOperation = (key, promise) => {
+    draftOperations.set(key, promise);
+    const clear = () => {
+      if (draftOperations.get(key) === promise) draftOperations.delete(key);
+    };
+    promise.then(clear, clear);
+    return promise;
+  };
+  const draftKey = (target, queryId, draftId = target.draftId) => `${target.workspaceId}:${queryId}:${draftId}`;
+  const visibleDraft = (target, queryId) =>
+    current(target) &&
+    get().queryPanel.selectedQuery?.id === queryId &&
+    viewedLibraryVersionId(get(), queryId) === target.draftId;
+  const draftSaving = () =>
+    set((state) => {
+      state.queryLibrary.isSaving = [...draftWrites.values()].some(
+        (record) => visibleDraft(record.target, record.queryId) && record.pending
+      );
+      state.queryLibrary.saveError = [...draftWrites.values()].some(
+        (record) => visibleDraft(record.target, record.queryId) && !!record.error
+      );
+    });
+  const saveDraftData = (values, moduleId, target) => {
+    if (get().dataQuery.creatingQueryInProcessId === values.id) {
+      creationEdits.set(values.id, { values, moduleId, target });
+      return;
+    }
+    if (!target.draftId || target.draftId === 'draft') return Promise.reject(new Error('Select an editable draft'));
+    const key = draftKey(target, values.id);
+    let record = draftWrites.get(key);
+    if (!record || record.target.sessionId !== target.sessionId) {
+      const prior = record;
+      record = { target, queryId: values.id, values, revision: 0, pending: false, promise: prior?.promise };
+      record.send = throttle(() => {
+        const sent = record.values;
+        const sentRevision = record.revision;
+        record.pending = true;
+        record.error = null;
+        const request = () =>
+          libraryQueryService.updateDraft(values.id, target.draftId, { options: sent.options }, target);
+        const previous = draftOperations.get(key) ?? record.promise;
+        const promise = previous ? previous.catch(() => {}).then(request) : request();
+        record.promise = promise;
+        // Every source/options request advances the same tail. Subsequent autosaves must
+        // wait for this PATCH, rather than all subscribing to the original source PUT.
+        trackDraftOperation(key, promise);
+        draftSaving();
+        promise.then(
+          () => {
+            if (record.promise !== promise || draftWrites.get(key) !== record) return;
+            record.error = null;
+            record.pending = record.revision !== sentRevision;
+            draftSaving();
+          },
+          (error) => {
+            if (record.promise !== promise || draftWrites.get(key) !== record) return;
+            record.pending = record.revision !== sentRevision;
+            record.error = record.pending ? null : error;
+            if (!record.pending && visibleDraft(target, values.id)) toast.error('Query could not be saved.');
+            draftSaving();
+          }
+        );
+        return promise;
+      }, 500);
+      draftWrites.set(key, record);
+    }
+    record.values = values;
+    record.revision += 1;
+    record.pending = true;
+    record.error = null;
+    if (current(target))
+      get().queryLibrary.updateLibraryDraftSnapshot(values.id, target.draftId, { options: values.options });
+    const promise = record.send();
+    draftSaving();
+    return promise;
+  };
+  const saveData = (values, moduleId = 'canvas', target = destination()) =>
+    target.library ? saveDraftData(values, moduleId, target) : save(values, moduleId, target);
+  saveData.flush = () => {
+    save.flush();
+    for (const record of draftWrites.values()) record.send.flush();
+  };
+  saveData.cancel = () => {
+    save.cancel();
+    for (const record of draftWrites.values()) record.send.cancel();
+  };
   return {
     initializeDataQuerySlice: (moduleId = 'canvas') => {
       set(
@@ -141,23 +235,49 @@ export const createDataQuerySlice = (set, get) => {
     dataQuery: {
       ...initialState,
       failedSaves: {},
-      restoreLibrarySaves: (workspaceId) => {
+      clearLibraryDraftWrites: () => {
+        for (const record of draftWrites.values()) record.send.cancel();
+        draftWrites.clear();
+      },
+      libraryDraftWrite: (queryId, draftId) => {
+        const record = draftWrites.get(draftKey(destination(), queryId, draftId));
+        return record && current(record.target) && (record.pending || record.error) ? record : undefined;
+      },
+      refreshLibrarySaveStatus: draftSaving,
+      queueLibraryDraftOperation: (queryId, draftId, request) => {
+        const key = draftKey(destination(), queryId, draftId);
+        const record = draftWrites.get(key);
+        record?.send.flush();
+        const previous = draftOperations.get(key) ?? record?.promise;
+        const promise = Promise.resolve(previous)
+          .catch(() => {})
+          .then(request);
+        return trackDraftOperation(key, promise);
+      },
+      flushLibraryDraft: async (queryId, draftId) => {
+        if (!draftId || draftId === 'draft') throw new Error('Select an editable draft');
         const sessionId = get().queryLibrary.sessionId;
-        set((state) => {
-          for (const [key, record] of writes) {
-            if (!record.target.library || record.target.workspaceId !== workspaceId) continue;
-            record.target = { ...record.target, sessionId };
-            state.dataQuery.queryUpdates[record.values.id] = record.promise;
-          }
-          for (const [id, failed] of Object.entries(state.dataQuery.failedSaves)) {
-            if (!failed.target.library || failed.target.workspaceId !== workspaceId) continue;
-            failed.target = { ...failed.target, sessionId };
-            const record = writes.get(writeKey(failed.target, id));
-            if (!record || record.promise === failed.promise) state.dataQuery.queryUpdates[id] = failed.promise;
-          }
-          state.queryLibrary.saveError = Object.values(state.dataQuery.failedSaves).some(visibleFailure);
-          state.queryLibrary.isSaving = [...writes.values()].some((record) => current(record.target) && !record.error);
-        });
+        const key = draftKey(destination(), queryId, draftId);
+        while (true) {
+          if (get().queryLibrary.sessionId !== sessionId) throw new Error('Library session changed');
+          const record = draftWrites.get(key);
+          record?.send.flush();
+          const tail = draftOperations.get(key) ?? record?.promise;
+          // A previous session's failed transport is an ordering barrier, not this
+          // session's retry state. Current-session failures are checked below.
+          await Promise.resolve(tail).catch(() => {});
+          // An edit may have arrived while this request was pending. Dispatch any trailing
+          // edit and wait again until the tail we just awaited is still the latest one.
+          record?.send.flush();
+          if (tail !== (draftOperations.get(key) ?? record?.promise)) continue;
+          if (record?.error) throw record.error;
+          return;
+        }
+      },
+      retryLibraryDraftSave: (queryId, draftId) => {
+        const record = draftWrites.get(draftKey(destination(), queryId, draftId));
+        if (record)
+          return saveDraftData(record.values, 'canvas', { ...record.target, sessionId: get().queryLibrary.sessionId });
       },
       retryFailedSave: (id) => {
         const failed = get().dataQuery.failedSaves[id];
@@ -264,6 +384,10 @@ export const createDataQuerySlice = (set, get) => {
           : dataqueryService.create(appId, appVersionId, name, kind, options, dataSourceId, pluginId, folderId);
         return creation
           .then((data) => {
+            if (target.library && current(target)) {
+              get().queryLibrary.updateCreatedLibraryQuery(data, { kind, options, dataSourceId });
+              target.draftId = data.draftId;
+            }
             const queued = creationEdits.get(tempId);
             creationEdits.delete(tempId);
             const renamed = creationRenames.get(tempId);
@@ -275,7 +399,7 @@ export const createDataQuerySlice = (set, get) => {
               rename.catch((error) => toast.error(`Failed to rename query: ${error.message ?? error.error}`));
             }
             if (queued?.values?.id === tempId)
-              saveData({ ...queued.values, id: data.id }, queued.moduleId, queued.target);
+              saveData({ ...queued.values, id: data.id }, queued.moduleId, { ...queued.target, draftId: data.draftId });
             if (!current(target)) return;
             set((state) => {
               state.dataQuery.creatingQueryInProcessId = null;
@@ -354,6 +478,7 @@ export const createDataQuerySlice = (set, get) => {
       },
       renameQuery: (id, newName, moduleId = 'canvas') => {
         if (isLibraryQueryLocked(get(), id)) return false;
+
         const previousName = get().dataQuery.queries.modules[moduleId].find((query) => query.id === id)?.name;
         /** If query creation in progress, skips call and pushes the update to queue */
         if (get().dataQuery.creatingQueryInProcessId === id) {
@@ -387,11 +512,8 @@ export const createDataQuerySlice = (set, get) => {
               );
             });
 
-            const selectedQuery = get().queryPanel.selectedQuery;
-            get().renameQueryMapping(selectedQuery?.name, newName, selectedQuery?.id, moduleId);
-
-            const setSelectedQuery = get().queryPanel.setSelectedQuery;
-            setSelectedQuery(id);
+            get().renameQueryMapping(previousName, newName, id, moduleId);
+            if (get().queryPanel.selectedQuery?.id === id) get().queryPanel.setSelectedQuery(id);
             return true;
           })
           .catch((error) => {
@@ -409,6 +531,10 @@ export const createDataQuerySlice = (set, get) => {
             if (current(target)) setIsAppSaving(false);
           });
       },
+      closeDependencyWarning: () =>
+        set((state) => {
+          state.dataQuery.dependencyWarning = null;
+        }),
       deleteDataQueries: (queryId, moduleId = 'canvas') => {
         set((state) => {
           state.dataQuery.isDeletingQueryInProcess = true;
@@ -452,7 +578,15 @@ export const createDataQuerySlice = (set, get) => {
           })
           .catch((e) => {
             if (!current(target)) return;
-            if (e.statusCode === 403) {
+            if (target.library && e.code === 'LIBRARY_QUERY_IN_USE') {
+              set((state) => {
+                state.dataQuery.dependencyWarning = {
+                  sessionId: target.sessionId,
+                  title: 'Dependent apps or modules found!',
+                  message: 'Cannot delete this query as it is being used in one or more apps or modules.',
+                };
+              });
+            } else if (e.statusCode === 403) {
               toast.error('You do not have permission to delete this query.');
             } else {
               toast.error(`Failed to delete query: ${e.error}`);
@@ -622,13 +756,14 @@ export const createDataQuerySlice = (set, get) => {
         setIsAppSaving(true);
         const target = destination();
         const request = target.library
-          ? libraryQueryService.changeDataSource(selectedQuery?.id, newDataSource.id, target)
+          ? get().queryLibrary.changeLibraryDraftDataSource(selectedQuery?.id, target.draftId, newDataSource.id)
           : dataqueryService.changeQueryDataSource(selectedQuery?.id, newDataSource.id, appVersionId);
         return request
           .then(() => {
-            if (!current(target)) return;
+            if (!current(target) || (target.library && !visibleDraft(target, selectedQuery.id))) return;
             set((state) => {
               state.dataQuery.isUpdatingQueryInProcess = false;
+              if (target.library) return;
               state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) => {
                 if (query?.id === selectedQuery?.id) {
                   return { ...query, dataSourceId: newDataSource?.id, data_source_id: newDataSource?.id };
@@ -636,18 +771,18 @@ export const createDataQuerySlice = (set, get) => {
                 return query;
               });
             });
-            setSelectedQuery(selectedQuery.id);
+            setSelectedQuery(selectedQuery.id, moduleId, { fromServer: target.library });
             setSelectedDataSource(newDataSource);
           })
           .catch((error) => {
-            if (!current(target)) return;
+            if (!current(target) || (target.library && !visibleDraft(target, selectedQuery.id))) return;
             toast.error(`Failed to change data query: ${error.message ?? error.error}`);
             set((state) => {
               state.dataQuery.isUpdatingQueryInProcess = false;
             });
           })
           .finally(() => {
-            if (typeof target === 'undefined' || current(target)) setIsAppSaving(false);
+            if (current(target) && (!target.library || visibleDraft(target, selectedQuery.id))) setIsAppSaving(false);
           });
       },
       // Converts an app query into a library query in place (same id and name, so `queries.<name>`, events and
@@ -697,7 +832,16 @@ export const createDataQuerySlice = (set, get) => {
         }
         toast.success('Added to query library');
       },
-      updateDataQuery: (options, moduleId = 'canvas') => {
+      updateDataQuery: (options, moduleId = 'canvas', libraryContext) => {
+        if (
+          libraryContext &&
+          (!isQueryLibraryMode(get()) ||
+            libraryContext.sessionId !== get().queryLibrary.sessionId ||
+            libraryContext.workspaceId !== get().queryLibrary.workspaceId ||
+            libraryContext.queryId !== get().queryPanel.selectedQuery?.id ||
+            libraryContext.versionId !== viewedLibraryVersionId(get(), libraryContext.queryId))
+        )
+          return;
         // Library editor: only the draft is editable, so a shown saved version never overwrites it.
         if (isLibraryQueryLocked(get(), get().queryPanel.selectedQuery?.id)) return;
         const componentNameIdMapping = get().modules['canvas'].componentNameIdMapping;
@@ -715,8 +859,13 @@ export const createDataQuerySlice = (set, get) => {
           queryNameIdMapping
         );
 
+        if (isQueryLibraryMode(get())) {
+          const draftId = viewedLibraryDraft(get(), selectedQuery.id)?.id;
+          get().queryLibrary.updateLibraryDraftSnapshot(selectedQuery.id, draftId, { options: newOptions });
+        }
         set((state) => {
           state.dataQuery.isUpdatingQueryInProcess = false;
+          if (isQueryLibraryMode(get())) return;
           state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) => {
             if (query.id === selectedQuery.id) {
               return {

@@ -1,3 +1,4 @@
+import LibraryQueryDependencyWarning from '@/AppBuilder/QueryLibrary/LibraryQueryDependencyWarning';
 import React, { useState, useRef, useCallback, useEffect, memo } from 'react';
 import { PanelBottomClose, PanelBottomOpen } from 'lucide-react';
 
@@ -167,6 +168,7 @@ export const QueryPanel = ({ darkMode }) => {
 
   return (
     <div className={cx({ 'dark-theme theme-dark': darkMode })}>
+      <LibraryQueryDependencyWarning darkMode={darkMode} />
       <div
         className={cx('query-pane', isQueryPaneExpanded ? 'expanded' : 'collapsed', {
           'query-pane--mobile': isMobileLayout,

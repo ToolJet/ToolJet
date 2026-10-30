@@ -1,143 +1,203 @@
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { EntityManager, In } from 'typeorm';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSource } from '@entities/data_source.entity';
+import { AppEnvironment } from '@entities/app_environments.entity';
+import { LibraryQuery } from '@entities/library_query.entity';
+import { LibraryQueryDraft } from '@entities/library_query_draft.entity';
 import { LibraryQueryVersion } from '@entities/library_query_version.entity';
+import { LibraryQueryState } from '@entities/library_query_state.entity';
+import { LibraryQueryFolder } from '@entities/library_query_folder.entity';
 import { DataSourceScopes } from '@modules/data-sources/constants';
-import { isLibraryUuid, isSameLibrarySnapshot, LIBRARY_DRAFT, parseLibraryVersionRef } from './library-query.util';
+import { assertSupportedLibraryKind, isLibraryUuid, parseLibraryReference } from './library-query.util';
 
-// What an app export carries for the library queries it uses.
 export type LibraryExportSnapshot = { kind: string; dataSourceId: string | null; options: Record<string, unknown> };
-export type LibraryExportVersion = LibraryExportSnapshot & { id: string; versionNumber: number };
+export type LibraryExportDraft = LibraryExportSnapshot & {
+  id: string;
+  name: string;
+  description: string | null;
+  createdFromVersionId: string | null;
+};
+export type LibraryExportVersion = LibraryExportDraft & {
+  versionNumber: number;
+  environment: { name: string; priority: number } | null;
+};
 export type LibraryExportQuery = {
   id: string;
   coRelationId: string | null;
   name: string;
   folder: string | null;
-  draft: LibraryExportSnapshot;
+  releasedVersionId: string | null;
+  drafts: LibraryExportDraft[];
   versions: LibraryExportVersion[];
 };
 
-type DraftRow = {
-  id: string;
-  co_relation_id: string | null;
-  name: string;
-  data_source_id: string | null;
-  options: unknown;
-  kind: string;
-};
-type VersionRow = {
-  id: string;
-  library_query_id: string;
-  version_number: number;
-  kind: string;
-  data_source_id: string | null;
-  options: unknown;
-};
-type Entry = { draft: DraftRow; versions: Map<string, VersionRow> };
-
-// data_queries.options is simple-json (text); library_query_versions.options is jsonb.
-function toOptions(value: unknown): Record<string, unknown> {
-  if (typeof value === 'string') {
-    try {
-      return (JSON.parse(value) as Record<string, unknown>) ?? {};
-    } catch {
-      return {};
+// A single new format: no generated names, implicit drafts, foreign parent links or duplicate identities.
+export function assertLibraryExport(queries: LibraryExportQuery[]): void {
+  const queryIds = new Set<string>();
+  const snapshotIds = new Set<string>();
+  const invalid = () => {
+    throw new BadRequestException('Invalid named library query export');
+  };
+  const nullableId = (value: unknown) => value === null || isLibraryUuid(value);
+  for (const query of queries) {
+    if (
+      !query ||
+      !isLibraryUuid(query.id) ||
+      queryIds.has(query.id) ||
+      !nullableId(query.coRelationId) ||
+      typeof query.name !== 'string' ||
+      !query.name.trim() ||
+      query.name.length > 255 ||
+      !(query.folder === null || (typeof query.folder === 'string' && !!query.folder.trim())) ||
+      !Array.isArray(query.drafts) ||
+      !Array.isArray(query.versions) ||
+      'draft' in query ||
+      !nullableId(query.releasedVersionId) ||
+      !(query.drafts.length + query.versions.length)
+    )
+      invalid();
+    queryIds.add(query.id);
+    const names = new Set<string>();
+    const versionIds = new Set(query.versions.map((version) => version?.id));
+    const numbers = new Set<number>();
+    for (const snapshot of [...query.drafts, ...query.versions]) {
+      if (
+        !snapshot ||
+        !isLibraryUuid(snapshot.id) ||
+        snapshotIds.has(snapshot.id) ||
+        typeof snapshot.name !== 'string' ||
+        !/^[^\s~^:?*[\]\\@{]+$/.test(snapshot.name) ||
+        snapshot.name.length > 25 ||
+        names.has(snapshot.name) ||
+        !(
+          snapshot.description === null ||
+          (typeof snapshot.description === 'string' && snapshot.description.length <= 500)
+        ) ||
+        !nullableId(snapshot.createdFromVersionId) ||
+        (snapshot.createdFromVersionId !== null && !versionIds.has(snapshot.createdFromVersionId)) ||
+        !nullableId(snapshot.dataSourceId) ||
+        typeof snapshot.kind !== 'string' ||
+        !snapshot.options ||
+        typeof snapshot.options !== 'object' ||
+        Array.isArray(snapshot.options)
+      )
+        invalid();
+      assertSupportedLibraryKind(snapshot.kind);
+      snapshotIds.add(snapshot.id);
+      names.add(snapshot.name);
     }
+    for (const version of query.versions) {
+      if (
+        !Number.isInteger(version.versionNumber) ||
+        version.versionNumber < 1 ||
+        numbers.has(version.versionNumber) ||
+        !(
+          version.environment === null ||
+          (version.environment &&
+            typeof version.environment.name === 'string' &&
+            !!version.environment.name &&
+            Number.isInteger(version.environment.priority) &&
+            version.environment.priority > 0)
+        )
+      )
+        invalid();
+      numbers.add(version.versionNumber);
+      const visited = new Set<string>([version.id]);
+      let parent = version.createdFromVersionId;
+      while (parent) {
+        if (visited.has(parent)) invalid();
+        visited.add(parent);
+        parent = query.versions.find((row) => row.id === parent)?.createdFromVersionId;
+      }
+    }
+    if (query.releasedVersionId !== null && !versionIds.has(query.releasedVersionId)) invalid();
   }
-  return (value as Record<string, unknown>) ?? {};
 }
-
-// A malformed pin reads as draft, like the rest of the library code; the export must not fail on it.
-function pinnedVersionId(ref: unknown): string | null {
-  try {
-    const parsed = parseLibraryVersionRef(ref);
-    return parsed.draft ? null : parsed.versionId;
-  } catch {
-    return null;
-  }
-}
-
-// Library drafts are workspace-owned, including drafts whose data source was deleted.
-const DRAFT_SELECT = `SELECT dq.id, dq.co_relation_id, dq.name, dq.data_source_id, dq.options, dq.kind
-       FROM library_queries dq
-      WHERE dq.organization_id = $2`;
-
-const VERSION_COLUMNS = 'id, library_query_id, version_number, kind, data_source_id, options';
-
-const toSnapshotRow = (row: DraftRow | VersionRow) => ({ kind: row.kind, options: toOptions(row.options) });
 
 export async function collectLibraryExport(
   manager: EntityManager,
   organizationId: string,
   consumers: DataQuery[]
 ): Promise<LibraryExportQuery[]> {
-  const queryIds = new Set<string>();
-  const versionIds = new Set<string>();
-  for (const consumer of consumers) {
-    const options = toOptions(consumer.options);
-    if (!isLibraryUuid(options.libraryQueryId)) continue;
-    queryIds.add(options.libraryQueryId);
-    const versionId = pinnedVersionId(options.libraryQueryVersionId);
-    if (versionId) versionIds.add(versionId);
-  }
-  if (!queryIds.size) return [];
-
-  const entries = new Map<string, Entry>();
-  for (const row of (await manager.query(`${DRAFT_SELECT} AND dq.id = ANY($1::uuid[])`, [
-    [...queryIds],
-    organizationId,
-  ])) as DraftRow[]) {
-    entries.set(row.id, { draft: row, versions: new Map() });
-  }
-
-  const attach = (rows: VersionRow[]) => {
-    for (const row of rows) entries.get(row.library_query_id)?.versions.set(row.id, row);
-  };
-
-  if (entries.size && versionIds.size) {
-    attach(
-      await manager.query(
-        `SELECT ${VERSION_COLUMNS} FROM library_query_versions WHERE id = ANY($1::uuid[]) AND deleted_at IS NULL`,
-        [[...versionIds]]
-      )
-    );
-  }
-
-  // Nested folders: the mapping's parent is always the immediate folder.
-  const folderRows: { queryId: string; folder: string }[] = entries.size
-    ? await manager.query(
-        `SELECT q.id AS "queryId", f.name AS "folder"
-           FROM library_queries q
-           JOIN library_query_folders f ON f.id = q.folder_id AND f.organization_id = q.organization_id
-          WHERE q.id = ANY($1::uuid[])`,
-        [[...entries.keys()]]
-      )
-    : [];
-  const folderByQueryId = new Map(folderRows.map((row) => [row.queryId, row.folder]));
-
-  return [...entries.values()]
-    .map(
-      ({ draft, versions }): LibraryExportQuery => ({
-        id: draft.id,
-        coRelationId: draft.co_relation_id ?? null,
-        name: draft.name,
-        folder: folderByQueryId.get(draft.id) ?? null,
-        draft: { ...toSnapshotRow(draft), dataSourceId: draft.data_source_id ?? null },
-        versions: [...versions.values()]
-          .sort((a, b) => a.version_number - b.version_number)
-          .map((row) => ({
-            id: row.id,
-            versionNumber: row.version_number,
-            ...toSnapshotRow(row),
-            dataSourceId: row.data_source_id ?? null,
-          })),
-      })
-    )
+  const pins = consumers.map((consumer) => {
+    if (!isLibraryUuid(consumer.options?.libraryQueryId))
+      throw new BadRequestException('A library query ID is required');
+    return { queryId: consumer.options.libraryQueryId as string, id: parseLibraryReference(consumer.options).id };
+  });
+  if (!pins.length) return [];
+  const queries = await manager.find(LibraryQuery, {
+    where: { organizationId, id: In(pins.map((pin) => pin.queryId)) },
+  });
+  const ids = queries.map((query) => query.id);
+  if (!ids.length) return [];
+  const [drafts, versions, states, folders, environments] = await Promise.all([
+    manager.find(LibraryQueryDraft, { where: { libraryQueryId: In(ids) } }),
+    manager.find(LibraryQueryVersion, { where: { libraryQueryId: In(ids) } }),
+    manager.find(LibraryQueryState, { where: { libraryQueryId: In(ids) } }),
+    manager.find(LibraryQueryFolder, { where: { organizationId } }),
+    manager.find(AppEnvironment, { where: { organizationId } }),
+  ]);
+  const result = queries
+    .map((query): LibraryExportQuery => {
+      const ownVersions = versions.filter((row) => row.libraryQueryId === query.id);
+      const ownDrafts = drafts.filter((row) => row.libraryQueryId === query.id);
+      const releasedVersionId = states.find((state) => state.libraryQueryId === query.id)?.releasedVersionId ?? null;
+      const selected = new Set(pins.filter((pin) => pin.queryId === query.id).map((pin) => pin.id));
+      if (releasedVersionId) selected.add(releasedVersionId);
+      const include = (id: string) => {
+        const row = ownVersions.find((row) => row.id === id) ?? ownDrafts.find((row) => row.id === id);
+        if (!row) throw new NotFoundException('Library query version not found');
+        if (
+          row.createdFromVersionId &&
+          ownVersions.some((parent) => parent.id === row.createdFromVersionId) &&
+          !selected.has(row.createdFromVersionId)
+        ) {
+          selected.add(row.createdFromVersionId);
+          include(row.createdFromVersionId);
+        }
+      };
+      for (const id of selected) include(id);
+      const snapshot = (row: LibraryQueryDraft | LibraryQueryVersion): LibraryExportDraft => ({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        createdFromVersionId: ownVersions.some((parent) => parent.id === row.createdFromVersionId)
+          ? row.createdFromVersionId
+          : null,
+        kind: row.kind,
+        dataSourceId: row.dataSourceId,
+        options: row.options,
+      });
+      return {
+        id: query.id,
+        coRelationId: query.coRelationId,
+        name: query.name,
+        folder: folders.find((folder) => folder.id === query.folderId)?.name ?? null,
+        releasedVersionId,
+        drafts: ownDrafts
+          .filter((row) => selected.has(row.id) && !ownVersions.some((saved) => saved.id === row.id))
+          .map(snapshot),
+        versions: ownVersions
+          .filter((row) => selected.has(row.id))
+          .sort((a, b) => a.versionNumber - b.versionNumber)
+          .map((row) => {
+            const environment = environments.find((env) => env.id === row.currentEnvironmentId);
+            return {
+              ...snapshot(row),
+              versionNumber: row.versionNumber,
+              environment: environment ? { name: environment.name, priority: environment.priority } : null,
+            };
+          }),
+      };
+    })
     .sort((a, b) => a.name.localeCompare(b.name));
+  assertLibraryExport(result);
+  return result;
 }
 
 const snapshotsOf = (queries: LibraryExportQuery[]): LibraryExportSnapshot[] =>
-  queries.flatMap((query) => [query.draft, ...query.versions]);
+  queries.flatMap((query) => [...query.drafts, ...query.versions]);
 
 export const libraryDataSourceIds = (queries: LibraryExportQuery[]): string[] => [
   ...new Set(snapshotsOf(queries).flatMap((snapshot) => (snapshot.dataSourceId ? [snapshot.dataSourceId] : []))),
@@ -214,14 +274,6 @@ export function matchLibraryQuery<
   );
 }
 
-// `incoming` is already mapped to this workspace. A soft-deleted row never matches.
-export function matchLibraryVersion(
-  existing: LibraryQueryVersion[],
-  incoming: LibraryExportSnapshot
-): LibraryQueryVersion | null {
-  return existing.find((version) => !version.deletedAt && isSameLibrarySnapshot(version, incoming)) ?? null;
-}
-
 // A snapshot's data source is exported only when it is a global one, so an id that maps to nothing becomes null.
 // ToolJet DB table ids are remapped with the app's own remapper; an unmapped table id stays as it was.
 export function mapLibrarySnapshot<T extends LibraryExportSnapshot>(
@@ -239,18 +291,19 @@ export function mapLibrarySnapshot<T extends LibraryExportSnapshot>(
   return { ...snapshot, dataSourceId, options };
 }
 
-// New `options` for a consumer query, or null when its pins already point at the right rows. 'draft' and ids
-// the maps don't know stay as they are; that run fails readably.
+// Retained local UUIDs are validated with the final remapped pins by the import caller.
 export function remapLibraryConsumerOptions(
   options: Record<string, unknown>,
   queryMap: Record<string, string>,
   versionMap: Record<string, string>
 ): Record<string, unknown> | null {
+  if (!isLibraryUuid(options.libraryQueryId)) throw new BadRequestException('A library query ID is required');
   const queryId = options.libraryQueryId;
-  const versionId = options.libraryQueryVersionId;
+  const versionId = parseLibraryReference(options).id;
+  if (queryMap[queryId] && !versionMap[versionId])
+    throw new BadRequestException('The bundled library snapshot is missing');
   const nextQueryId = typeof queryId === 'string' ? (queryMap[queryId] ?? queryId) : queryId;
-  const nextVersionId =
-    typeof versionId === 'string' && versionId !== LIBRARY_DRAFT ? (versionMap[versionId] ?? versionId) : versionId;
+  const nextVersionId = versionMap[versionId] ?? versionId;
   if (nextQueryId === queryId && nextVersionId === versionId) return null;
   return { ...options, libraryQueryId: nextQueryId, libraryQueryVersionId: nextVersionId };
 }

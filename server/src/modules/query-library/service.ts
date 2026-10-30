@@ -1,3 +1,5 @@
+import { LibraryQueryInUseException } from './errors';
+import { lockLibraryQuery } from './locking';
 import {
   Injectable,
   BadRequestException,
@@ -10,6 +12,7 @@ import { isUUID } from 'class-validator';
 import { Response } from 'express';
 import { cloneDeep } from 'lodash';
 import { AppEnvironment } from '@entities/app_environments.entity';
+import { LibraryQueryDraft } from '@entities/library_query_draft.entity';
 import { LibraryQueryVersion } from '@entities/library_query_version.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
@@ -23,14 +26,12 @@ import { AbilityService } from '@modules/ability/interfaces/IService';
 import { MODULES } from '@modules/app/constants/modules';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { assertDraftEditable } from '@modules/data-queries/library/library-lifecycle.util';
 import {
   assertSupportedLibraryKind,
   consumerOptionUuidSql,
   LibraryConsumer,
   libraryUsedByMessage,
   assertLibraryDataSource,
-  toRunTarget,
   pickPinnedVersion,
   buildLibraryVariableMap,
   libraryServerReferences,
@@ -49,6 +50,7 @@ import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { QueryLibraryRepository } from './repository';
 import { CreateLibraryQueryDto, UpdateLibraryQueryDto } from './dto';
+import { LibraryDraftService } from './draft.service';
 import { LIBRARY_QUERY_AUDIT_KEYS } from './constants';
 
 @Injectable()
@@ -57,7 +59,8 @@ export class QueryLibraryService {
     protected readonly repository: QueryLibraryRepository,
     protected readonly dataSourcesRepository: DataSourcesRepository,
     protected readonly abilityService: AbilityService,
-    protected readonly queryRuntime: DataQueriesUtilService
+    protected readonly queryRuntime: DataQueriesUtilService,
+    protected readonly drafts: LibraryDraftService
   ) {}
 
   async listStaticDataSources(user: User): Promise<DataSource[]> {
@@ -73,20 +76,18 @@ export class QueryLibraryService {
     const manager = this.repository.manager;
     const current = await this.repository.findInWorkspace(query.id, user.organizationId);
     if (!current) throw new NotFoundException('Library query not found');
-    const version = dto.libraryVersionId
+    if ((dto.draftId !== undefined) === (dto.libraryVersionId !== undefined))
+      throw new BadRequestException('Supply exactly one of draftId or libraryVersionId');
+    const snapshot = dto.libraryVersionId
       ? pickPinnedVersion(
           await manager.findOne(LibraryQueryVersion, {
             where: { id: dto.libraryVersionId, libraryQueryId: current.id },
           }),
           current.id
         )
-      : null;
-    if (!version) {
-      const state = await manager.findOne(LibraryQueryState, { where: { libraryQueryId: current.id } });
-      assertDraftEditable(state ?? { hasDraft: true });
-    }
-    const target = toRunTarget(current, version);
-    if (!version && dto.options !== undefined) target.options = cloneDeep(dto.options);
+      : await this.drafts.getDraft(current.id, dto.draftId, manager);
+    const target = { kind: snapshot.kind, dataSourceId: snapshot.dataSourceId, options: cloneDeep(snapshot.options) };
+    if (dto.draftId && dto.options !== undefined) target.options = cloneDeep(dto.options);
     assertSupportedLibraryKind(target.kind);
     const dataSource = assertLibraryDataSource(await this.authorizeDataSource(user, target.dataSourceId));
     return { target, dataSource };
@@ -155,6 +156,7 @@ export class QueryLibraryService {
     if (!drafts.length) return { queries: [] };
     const ids = drafts.map(({ id }) => id);
     const versions = await manager.find(LibraryQueryVersion, { where: { libraryQueryId: In(ids) } });
+    const snapshots = await manager.find(LibraryQueryDraft, { where: { libraryQueryId: In(ids) } });
     const folders = await manager.find(LibraryQueryFolder, { where: { organizationId } });
     const folderNames = new Map(folders.map(({ id, name }) => [id, name]));
     const highest: { queryId: string; highest: number }[] = await manager.query(
@@ -169,7 +171,8 @@ export class QueryLibraryService {
       new Map(drafts.map(({ id, folderId }) => [id, folderNames.get(folderId)])),
       new Map(highest.map((row) => [row.queryId, row.highest])),
       new Map(environments.map(({ id, name, priority }) => [id, { id, name, priority }])),
-      new Map(states.map((state) => [state.libraryQueryId, state]))
+      new Map(states.map((state) => [state.libraryQueryId, state])),
+      snapshots
     );
   }
 
@@ -214,7 +217,11 @@ export class QueryLibraryService {
     return dataSource;
   }
 
-  async create(user: User, dto: CreateLibraryQueryDto, manager?: EntityManager): Promise<LibraryQuery> {
+  async create(
+    user: User,
+    dto: CreateLibraryQueryDto,
+    manager?: EntityManager
+  ): Promise<LibraryQuery & { draftId: string }> {
     return this.unique(() =>
       dbTransactionWrap(async (transaction: EntityManager) => {
         assertSupportedLibraryKind(dto.kind);
@@ -227,16 +234,22 @@ export class QueryLibraryService {
           transaction.create(LibraryQuery, {
             organizationId: user.organizationId,
             name: dto.name,
-            kind: dto.kind,
-            dataSourceId: dto.dataSourceId,
-            options: dto.options,
             folderId: dto.folderId ?? null,
             createdBy: user.id,
           })
         );
-        await transaction.save(LibraryQueryState, { libraryQueryId: query.id, hasDraft: true });
-        this.audit(user, query, LIBRARY_QUERY_AUDIT_KEYS.CREATE);
-        return query;
+        const draft = await this.drafts.createInitialDraft(
+          query.id,
+          {
+            kind: dto.kind,
+            dataSourceId: dto.dataSourceId,
+            options: dto.options,
+          },
+          transaction
+        );
+        await transaction.save(LibraryQueryState, { libraryQueryId: query.id, releasedVersionId: null });
+        this.audit(user, query, LIBRARY_QUERY_AUDIT_KEYS.CREATE, dto.kind);
+        return Object.assign(query, { draftId: draft.id });
       }, manager)
     );
   }
@@ -245,34 +258,20 @@ export class QueryLibraryService {
     return this.unique(() =>
       dbTransactionWrap(async (manager: EntityManager) => {
         const locked = await this.lock(user, query.id, manager);
-        await this.authorizeDataSource(user, locked.dataSourceId, manager);
         if (dto.folderId !== undefined) await this.folder(user, dto.folderId, manager);
-        // Assign only known draft fields, never a caller supplied source id or kind.
         if (dto.name !== undefined) locked.name = dto.name;
-        if (dto.options !== undefined) locked.options = dto.options;
         if (dto.folderId !== undefined) locked.folderId = dto.folderId;
         const saved = await manager.save(LibraryQuery, locked);
-        this.audit(user, saved, LIBRARY_QUERY_AUDIT_KEYS.UPDATE);
+        this.audit(user, saved, LIBRARY_QUERY_AUDIT_KEYS.UPDATE, await this.auditKind(manager, query.id));
         return saved;
       })
     );
   }
 
-  async changeDataSource(user: User, query: LibraryQuery, dataSource: DataSource): Promise<LibraryQuery> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const locked = await this.lock(user, query.id, manager);
-      const source = await this.authorizeDataSource(user, dataSource.id, manager);
-      locked.dataSourceId = source.id;
-      locked.kind = source.kind;
-      const saved = await manager.save(LibraryQuery, locked);
-      this.audit(user, saved, LIBRARY_QUERY_AUDIT_KEYS.UPDATE);
-      return saved;
-    });
-  }
-
   async delete(user: User, query: LibraryQuery): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await this.lock(user, query.id, manager, false);
+      await this.lock(user, query.id, manager);
+      const kind = await this.auditKind(manager, query.id);
       // Query the standalone model directly until the shared consumer helper is re-keyed.
       const consumers: LibraryConsumer[] = await manager.query(
         `
@@ -285,9 +284,9 @@ export class QueryLibraryService {
           AND data_source.kind = 'library' AND a.type::text IN ('front-end', 'module')`,
         [query.id, user.organizationId]
       );
-      if (consumers.length) throw new ConflictException(libraryUsedByMessage(consumers));
+      if (consumers.length) throw new LibraryQueryInUseException(libraryUsedByMessage(consumers));
       await manager.delete(LibraryQuery, { id: query.id, organizationId: user.organizationId });
-      this.audit(user, query, LIBRARY_QUERY_AUDIT_KEYS.DELETE);
+      this.audit(user, query, LIBRARY_QUERY_AUDIT_KEYS.DELETE, kind);
     });
   }
 
@@ -329,17 +328,22 @@ export class QueryLibraryService {
     if (!folder) throw new NotFoundException('Library query folder not found');
     return folder;
   }
-  private async lock(user: User, id: string, manager: EntityManager, editable = true): Promise<LibraryQuery> {
-    const query = await manager.findOne(LibraryQuery, {
-      where: { id, organizationId: user.organizationId },
-      lock: { mode: 'pessimistic_write' },
+  private async lock(user: User, id: string, manager: EntityManager): Promise<LibraryQuery> {
+    return lockLibraryQuery(manager, id, user.organizationId);
+  }
+  private async auditKind(manager: EntityManager, libraryQueryId: string): Promise<string | undefined> {
+    const saved = await manager.findOne(LibraryQueryVersion, {
+      where: { libraryQueryId },
+      order: { versionNumber: 'DESC' },
+      select: ['kind'],
     });
-    if (!query) throw new NotFoundException('Library query not found');
-    if (editable) {
-      const state = await manager.findOne(LibraryQueryState, { where: { libraryQueryId: id } });
-      assertDraftEditable(state ?? { hasDraft: true });
-    }
-    return query;
+    if (saved) return saved.kind;
+    const draft = await manager.findOne(LibraryQueryDraft, {
+      where: { libraryQueryId },
+      order: { createdAt: 'ASC' },
+      select: ['kind'],
+    });
+    return draft?.kind;
   }
   private async unique<T>(operation: () => Promise<T>): Promise<T> {
     try {
@@ -350,14 +354,14 @@ export class QueryLibraryService {
       throw error;
     }
   }
-  private audit(user: User, query: LibraryQuery, actionType: string): void {
+  private audit(user: User, query: LibraryQuery, actionType: string, kind?: string): void {
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: user.organizationId,
       resourceId: query.id,
       resourceName: query.name,
       actionType,
-      resourceData: { kind: query.kind },
+      resourceData: { kind },
     });
   }
 }

@@ -14,6 +14,7 @@ import { QueryLibraryRepository } from './repository';
 import { QueryLibraryAccessGuard } from './guards/query-library-access.guard';
 import { ValidateLibraryQueryGuard } from './guards/validate-library-query.guard';
 import { ValidateLibraryDataSourceGuard } from './guards/validate-library-data-source.guard';
+import { LibraryDraftService } from './draft.service';
 import { LibraryLifecycleService } from './lifecycle.service';
 export class QueryLibraryModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport = false): Promise<DynamicModule> {
@@ -21,10 +22,12 @@ export class QueryLibraryModule extends SubModule {
       'controller',
       'service',
     ]);
+    const { AuditLogsModule } = await this.getProviders(configs, 'audit-logs', ['module']);
     const { DataQueriesUtilService } = await this.getProviders(configs, 'data-queries', ['util.service']);
     return {
       module: QueryLibraryModule,
       imports: [
+        await AuditLogsModule.register(configs),
         await DataSourcesModule.register(configs),
         await AppEnvironmentsModule.register(configs),
         await AppPermissionsModule.register(configs),
@@ -45,6 +48,7 @@ export class QueryLibraryModule extends SubModule {
         VersionRepository,
         AppScopedThrottlerGuard,
         LibraryLifecycleService,
+        LibraryDraftService,
         QueryLibraryRepository,
         DataSourcesRepository,
         QueryLibraryAccessGuard,
@@ -52,7 +56,7 @@ export class QueryLibraryModule extends SubModule {
         ValidateLibraryDataSourceGuard,
       ],
       controllers: isMainImport ? [QueryLibraryController] : [],
-      exports: [BaseService, QueryLibraryRepository, LibraryLifecycleService],
+      exports: [BaseService, QueryLibraryRepository, LibraryLifecycleService, LibraryDraftService],
     };
   }
 }

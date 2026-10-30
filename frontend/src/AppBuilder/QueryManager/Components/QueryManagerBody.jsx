@@ -67,6 +67,8 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
        - Ref PR #6763
     */
   const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
+  const librarySessionId = useStore((state) => state.queryLibrary.sessionId);
+  const libraryWorkspaceId = useStore((state) => state.queryLibrary.workspaceId);
   const queryName = selectedQuery?.name ?? '';
 
   const editor = resolveQueryEditor({ selectedDataSource, selectedQuery });
@@ -111,8 +113,26 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     // Without this check, the old query's options would be written onto the newly selected query.
     const currentStoreQueryId = useStore.getState().queryPanel.selectedQuery?.id;
     if (currentStoreQueryId !== selectedQuery?.id) return;
+    if (
+      isQueryLibrary &&
+      (viewedLibraryVersion !== viewedLibraryVersionId(useStore.getState(), currentStoreQueryId) ||
+        librarySessionId !== useStore.getState().queryLibrary.sessionId ||
+        libraryWorkspaceId !== useStore.getState().queryLibrary.workspaceId)
+    )
+      return;
     const updatedOptions = cleanFocusedFields(newOptions);
-    updateDataQuery(deepClone({ ...options, ...updatedOptions }));
+    updateDataQuery(
+      deepClone({ ...options, ...updatedOptions }),
+      moduleId,
+      isQueryLibrary
+        ? {
+            sessionId: librarySessionId,
+            workspaceId: libraryWorkspaceId,
+            queryId: selectedQuery?.id,
+            versionId: viewedLibraryVersion,
+          }
+        : undefined
+    );
   };
 
   const optionchanged = (option, value) => {
@@ -129,7 +149,18 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     optionchanged(option, !currentValue);
   };
   const optionsChangedforParams = (newOptions) => {
-    updateDataQuery(deepClone(newOptions));
+    updateDataQuery(
+      deepClone(newOptions),
+      moduleId,
+      isQueryLibrary
+        ? {
+            sessionId: librarySessionId,
+            workspaceId: libraryWorkspaceId,
+            queryId: selectedQuery?.id,
+            versionId: viewedLibraryVersion,
+          }
+        : undefined
+    );
   };
 
   // Add/change/remove handlers for one named list in the query options: `inputs` in the library editor,
@@ -198,7 +229,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     return (
       <div
         className={cx(`datasource-picker p-0`, {
-          'disabled ': isFreezed,
+          'disabled ': !isQueryLibrary && isFreezed,
         })}
       >
         <DataSourcePicker darkMode={darkMode} />

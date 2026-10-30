@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Select from '@/_ui/Select';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { libraryQueryService } from '@/_services';
-import { LIBRARY_DRAFT } from '@/AppBuilder/_utils/libraryQuery';
 import { queryLibraryUrl } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
 
 const NO_FOLDER = 'No folder';
@@ -23,7 +22,7 @@ function groupByFolder(queries) {
 
 // The definition (kind, inputs) a pin points at: the draft, or one released version.
 const definitionOf = (query, pin) =>
-  pin === LIBRARY_DRAFT ? query?.draft : query?.versions?.find((version) => version.id === pin);
+  [...(query?.versions ?? []), ...(query?.drafts ?? [])].find((version) => version.id === pin);
 
 const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 const versionLabel = (version) =>
@@ -52,17 +51,17 @@ export function Library({ options = {}, optionsChanged, darkMode }) {
   }, []);
 
   const query = queries?.find((q) => q.id === options.libraryQueryId);
-  // A missing or empty pin (also V1-era rows) means draft.
-  const pin = options.libraryQueryVersionId || LIBRARY_DRAFT;
+  const pin = options.libraryQueryVersionId;
+  const isDraft = query?.drafts?.some((draft) => draft.id === pin);
   const definition = definitionOf(query, pin);
   const released = query?.versions?.find((version) => version.id === query.releasedVersionId);
-  const showReleasedBadge = !!released && pin !== LIBRARY_DRAFT && !!definition && released.id !== pin;
+  const showReleasedBadge = !!released && !isDraft && !!definition && released.id !== pin;
 
   const groupedQueries = useMemo(() => groupByFolder(queries ?? []), [queries]);
   const queryOptions = groupedQueries.flatMap((group) => group.options);
   const versionOptions = [
     ...(query?.versions ?? []).map((version) => ({ value: version.id, label: versionLabel(version) })),
-    { value: LIBRARY_DRAFT, label: DRAFT_LABEL },
+    ...(query?.drafts ?? []).map((draft) => ({ value: draft.id, label: `${draft.name} · ${DRAFT_LABEL}` })),
   ];
 
   // `@/_ui/Select` calls onChange with the option's value (not the option object).
@@ -81,7 +80,7 @@ export function Library({ options = {}, optionsChanged, darkMode }) {
 
   const pickQuery = (queryId) => {
     const next = queries.find((q) => q.id === queryId);
-    select(next, (next.versions?.find((v) => v.isReleased) ?? next.versions?.[0])?.id ?? LIBRARY_DRAFT);
+    select(next, (next?.versions?.find((v) => v.isReleased) ?? next?.versions?.[0] ?? next?.drafts?.[0])?.id);
   };
 
   const setInput = (name, value) =>
@@ -148,7 +147,7 @@ export function Library({ options = {}, optionsChanged, darkMode }) {
         </div>
       )}
 
-      {query && pin === LIBRARY_DRAFT && (
+      {query && isDraft && (
         <div className="tw-font-body-small tw-text-text-placeholder" data-cy="library-draft-notice">
           This app can&apos;t be released while this query uses the draft.
         </div>

@@ -4,7 +4,6 @@ import moment from 'moment';
 import axios from 'axios';
 
 export const LIBRARY_KIND = 'library';
-export const LIBRARY_DRAFT = 'draft';
 
 // Names `queries.x.run({ ... })` passes on: a library query's inputs, any other query's parameters.
 export const runArgNames = (query) =>

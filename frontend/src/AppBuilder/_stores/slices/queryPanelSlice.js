@@ -28,6 +28,8 @@ import {
   libraryRunEnvironment,
   viewedSavedLibraryVersion,
   withViewedLibraryVersion,
+  viewedLibraryDraft,
+  viewedLibraryVersionId,
 } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
@@ -123,6 +125,12 @@ export const createQueryPanelSlice = (set, get) => ({
       );
     }, // updateQueryPanelHeight
     setSelectedQuery: (queryId, moduleId = 'canvas', { fromServer = false } = {}) => {
+      if (isQueryLibraryMode(get()) && get().queryPanel.selectedQuery?.id !== queryId) {
+        get().dataQuery.saveData.flush?.();
+        for (const controller of queryAbortControllers.values()) controller.abort();
+        queryAbortControllers.clear();
+        get().queryPanel.setPreviewData('');
+      }
       set((state) => {
         if (queryId === null) {
           state.queryPanel.selectedQuery = null;
@@ -130,7 +138,10 @@ export const createQueryPanelSlice = (set, get) => ({
           return;
         }
 
-        const query = get().dataQuery.queries.modules[moduleId].find((query) => query.id === queryId);
+        const query = withViewedLibraryVersion(
+          get(),
+          get().dataQuery.queries.modules[moduleId].find((query) => query.id === queryId)
+        );
         if (!query) {
           // Unknown/stale id: treat as a deselection rather than leaving `undefined`
           state.queryPanel.selectedQuery = null;
@@ -146,6 +157,7 @@ export const createQueryPanelSlice = (set, get) => ({
         state.queryPanel.selectedDataSource = get().queryPanel.resolveDataSourceForQuery(query);
         return;
       });
+      if (isQueryLibraryMode(get())) get().dataQuery.refreshLibrarySaveStatus?.();
     },
     // Resolves the datasource a query belongs to from the loaded datasource lists, falling back to the
     // built-in/default sources (REST API, RunJS, RunPy, etc.). Single source of truth used both when a query
@@ -426,7 +438,13 @@ export const createQueryPanelSlice = (set, get) => ({
         modeStore,
       } = get();
       const librarySession = get().queryLibrary.sessionId;
-      const obsolete = () => librarySession !== get().queryLibrary.sessionId;
+      const librarySelection = viewedLibraryVersionId(get(), queryId);
+      const libraryQueryId = get().queryPanel.selectedQuery?.id;
+      const obsolete = () =>
+        librarySession !== get().queryLibrary.sessionId ||
+        (isQueryLibraryMode(get()) &&
+          (librarySelection !== viewedLibraryVersionId(get(), queryId) ||
+            libraryQueryId !== get().queryPanel.selectedQuery?.id));
       const selectedEnvironment = runEnvironment(get(), moduleId, queryId);
       const {
         queryPreviewData,
@@ -772,7 +790,11 @@ export const createQueryPanelSlice = (set, get) => ({
             selectedEnvironment?.id,
             libraryVersionId
               ? { libraryVersionId }
-              : { options: query.options, inputs: libraryEditorInput(query, parameters) },
+              : {
+                  draftId: viewedLibraryDraft(get(), query.id)?.id,
+                  options: query.options,
+                  inputs: libraryEditorInput(query, parameters),
+                },
             abortController?.signal,
             { workspaceId: get().queryLibrary.workspaceId }
           );
@@ -784,7 +806,11 @@ export const createQueryPanelSlice = (set, get) => ({
                 selectedEnvironment?.id,
                 viewedSavedLibraryVersion(get(), query.id)?.id
                   ? { libraryVersionId: viewedSavedLibraryVersion(get(), query.id).id }
-                  : { options: query.options, inputs: libraryEditorInput(query, parameters) },
+                  : {
+                      draftId: viewedLibraryDraft(get(), query.id)?.id,
+                      options: query.options,
+                      inputs: libraryEditorInput(query, parameters),
+                    },
                 abortController?.signal,
                 { workspaceId: get().queryLibrary.workspaceId }
               )
@@ -1016,7 +1042,13 @@ export const createQueryPanelSlice = (set, get) => ({
     ) => {
       const { eventsSlice, queryPanel, appStore, currentVersionId } = get();
       const librarySession = get().queryLibrary.sessionId;
-      const obsolete = () => librarySession !== get().queryLibrary.sessionId;
+      const libraryQueryId = query?.id;
+      const librarySelection = viewedLibraryVersionId(get(), libraryQueryId);
+      const obsolete = () =>
+        librarySession !== get().queryLibrary.sessionId ||
+        (isQueryLibraryMode(get()) &&
+          (librarySelection !== viewedLibraryVersionId(get(), libraryQueryId) ||
+            libraryQueryId !== get().queryPanel.selectedQuery?.id));
       const selectedEnvironment = runEnvironment(get(), moduleId, query?.id);
       query = withViewedLibraryVersion(get(), query);
       const {
@@ -1125,7 +1157,11 @@ export const createQueryPanelSlice = (set, get) => ({
                 selectedEnvironment?.id,
                 libraryVersionId
                   ? { libraryVersionId }
-                  : { options: query.options, inputs: libraryEditorInput(query, parameters) },
+                  : {
+                      draftId: viewedLibraryDraft(get(), query.id)?.id,
+                      options: query.options,
+                      inputs: libraryEditorInput(query, parameters),
+                    },
                 abortController?.signal,
                 { workspaceId: get().queryLibrary.workspaceId }
               )

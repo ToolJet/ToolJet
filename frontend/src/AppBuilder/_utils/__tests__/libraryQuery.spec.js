@@ -4,7 +4,6 @@ import {
   runLibraryTransformation,
   libraryTemplateState,
   mergeLibraryInputs,
-  LIBRARY_DRAFT,
   runArgNames,
 } from '../libraryQuery';
 
@@ -24,12 +23,6 @@ describe('libraryTemplateState', () => {
 
   it('defaults input to an empty object', () => {
     expect(libraryTemplateState({}).input).toEqual({});
-  });
-});
-
-describe('LIBRARY_DRAFT', () => {
-  it('is the draft pin sentinel', () => {
-    expect(LIBRARY_DRAFT).toBe('draft');
   });
 });
 

@@ -30,8 +30,8 @@ function UsageGroup({ title, entries, workspaceId }) {
                 </a>
                 <span>
                   {` · ${query.appVersionName} · ${query.name} · ${
-                    !query.versionName || query.versionName === 'draft' ? 'Draft' : query.versionName
-                  }${query.pinnedEnvironment ? ` · ${upperFirst(query.pinnedEnvironment)}` : ''}`}
+                    query.versionName
+                  }${query.status === 'DRAFT' ? ' · Draft' : ''}${query.pinnedEnvironment ? ` · ${upperFirst(query.pinnedEnvironment)}` : ''}`}
                 </span>
               </li>
             ))

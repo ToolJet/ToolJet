@@ -20,7 +20,13 @@ const cases = [
   ['listStaticDataSources', 'get', 'static-data-sources', [], undefined, []],
   ['create', 'post', 'queries', [createRequest], createRequest, query],
   ['update', 'patch', 'queries/q1', ['q1', { options: {} }], { options: {} }, query],
-  ['changeDataSource', 'put', 'queries/q1/data-source', ['q1', 'source1'], { dataSourceId: 'source1' }, query],
+  [
+    'changeDraftDataSource',
+    'put',
+    'queries/q1/drafts/d1/data-source',
+    ['q1', 'd1', 'source1'],
+    { dataSourceId: 'source1' },
+  ],
   ['del', 'delete', 'queries/q1', ['q1']],
   [
     'run',
@@ -32,9 +38,11 @@ const cases = [
   ['getCatalog', 'get', 'catalog', []],
   ['getUsage', 'get', 'usage', []],
   ['getVersions', 'get', 'queries/q1/versions', ['q1']],
-  ['saveVersion', 'post', 'queries/q1/versions/save', ['q1', { description: 'saved' }], { description: 'saved' }],
-  ['createDraft', 'post', 'queries/q1/versions/draft', ['q1', { fromVersionId: 'lv1' }], { fromVersionId: 'lv1' }],
-  ['discardDraft', 'delete', 'queries/q1/versions/draft', ['q1']],
+  ['saveDraft', 'post', 'queries/q1/drafts/d1/save', ['q1', 'd1', { name: 'v1' }], { name: 'v1' }],
+  ['getDraft', 'get', 'queries/q1/drafts/d1', ['q1', 'd1']],
+  ['updateDraft', 'patch', 'queries/q1/drafts/d1', ['q1', 'd1', { options: {} }], { options: {} }],
+  ['createDraft', 'post', 'queries/q1/drafts', ['q1', { fromVersionId: 'lv1' }], { fromVersionId: 'lv1' }],
+  ['deleteDraft', 'delete', 'queries/q1/drafts/d1', ['q1', 'd1']],
   ['promote', 'post', 'queries/q1/versions/lv1/promote', ['q1', 'lv1']],
   ['release', 'post', 'queries/q1/versions/lv1/release', ['q1', 'lv1']],
   ['deleteVersion', 'delete', 'queries/q1/versions/lv1', ['q1', 'lv1']],
@@ -84,5 +92,14 @@ it('keeps queued writes bound to their originating workspace and maps non-null i
 it('passes cancellation to library runs', async () => {
   const controller = new AbortController();
   controller.abort();
-  await expect(service.run('q1', 'env1', {}, controller.signal)).rejects.toMatchObject({ name: 'AbortError' });
+  await expect(service.run('q1', 'env1', { draftId: 'd1' }, controller.signal)).rejects.toMatchObject({
+    name: 'AbortError',
+  });
 });
+
+it.each([{}, { draftId: 'draft' }, { draftId: 'd1', libraryVersionId: 'v1' }])(
+  'rejects ambiguous or implicit run targets %j',
+  async (body) => {
+    await expect(service.run('q1', 'env1', body)).rejects.toThrow();
+  }
+);

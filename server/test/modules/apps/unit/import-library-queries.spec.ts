@@ -1,3 +1,4 @@
+import { DataQuery } from '@entities/data_query.entity';
 /**
  * AppImportExportService.importLibraryQueries. The manager is an in-memory fake; the real SQL and the
  * DB-backed flows run in the query-library/library-import-export e2e spec. Matching/mapping rules have their own unit spec in
@@ -9,6 +10,8 @@ import { LibraryQuery } from '@entities/library_query.entity';
 import { LibraryQueryState } from '@entities/library_query_state.entity';
 import { LibraryQueryFolder } from '@entities/library_query_folder.entity';
 import { DataSource } from '@entities/data_source.entity';
+import { LibraryQueryDraft } from '@entities/library_query_draft.entity';
+import { AppEnvironment } from '@entities/app_environments.entity';
 import { LibraryQueryVersion } from '@entities/library_query_version.entity';
 import { LibraryExportQuery } from '@modules/data-queries/library/library-export.util';
 
@@ -23,25 +26,37 @@ type Store = {
   folders: LibraryQueryFolder[];
   states: LibraryQueryState[];
   versions: LibraryQueryVersion[];
+  drafts: LibraryQueryDraft[];
   consumers: { id: string; options: unknown }[];
   updates: { id: string; options: Record<string, unknown> }[];
   counter: number;
 };
 
 function fakeManager(store: Store) {
-  const entities: Record<string, 'queries' | 'folders' | 'states' | 'versions'> = {
+  const entities: Record<string, 'queries' | 'folders' | 'states' | 'versions' | 'drafts'> = {
     LibraryQuery: 'queries',
     LibraryQueryFolder: 'folders',
     LibraryQueryState: 'states',
     LibraryQueryVersion: 'versions',
+    LibraryQueryDraft: 'drafts',
   };
   return {
     find: jest.fn(async (entity: { name: string }, { where }: { where: Record<string, unknown> }) => {
+      if (entity === DataQuery)
+        return store.consumers.map((consumer) => ({ ...consumer, dataSource: { kind: 'library' } }));
       if (entity === DataSource) return [{ id: id(850), kind: 'runjs' }];
-      const rows = store[entities[entity.name]] as Record<string, unknown>[];
+      if (entity === AppEnvironment) return [{ id: id(700), name: 'development', priority: 1 }];
+      const rows = store[entities[entity.name]] as unknown as Record<string, unknown>[];
       return rows.filter((row) => Object.entries(where).every(([key, value]) => row[key] === value));
     }),
-    findOne: jest.fn(async () => ({ id: id(700), priority: 1 })), // development AppEnvironment
+    findOne: jest.fn(async (entity, { where }) =>
+      entity === LibraryQuery
+        ? store.queries.find((row) => row.id === where.id && row.organizationId === where.organizationId)
+        : null
+    ),
+    findOneBy: jest.fn(async (entity, where) =>
+      store[entities[entity.name]].find((row) => Object.entries(where).every(([key, value]) => row[key] === value))
+    ),
     count: jest.fn(
       async (_entity: unknown, { where }: { where: Record<string, unknown> }) =>
         store.queries.filter((row) => row.organizationId === where.organizationId).length
@@ -76,15 +91,16 @@ function fakeManager(store: Store) {
 }
 
 type Perms = { isSuperAdmin?: boolean; isAdmin?: boolean; moduleCreate?: boolean };
-type ImportResult = { queries: Record<string, string>; versions: Record<string, string>; skipped: string[] };
+type ImportResult = { queries: Record<string, string>; versions: Record<string, string> };
 type Importer = { importLibraryQueries: (...args: unknown[]) => Promise<ImportResult> };
 
-function setup(overrides: Partial<Store> = {}, { library = true, perms = { isAdmin: true } as Perms } = {}) {
+function setup(overrides: Partial<Store> = {}, { perms = { isAdmin: true } as Perms } = {}) {
   const store: Store = {
     queries: [],
     folders: [],
     states: [],
     versions: [],
+    drafts: [],
     consumers: [],
     updates: [],
     counter: 0,
@@ -106,241 +122,187 @@ function setup(overrides: Partial<Store> = {}, { library = true, perms = { isAdm
   const resourceMapping = { dataSourceMapping: { [SRC_DS]: DST_DS }, appVersionMapping: { [id(700)]: id(701) } };
   const run = (exported: LibraryExportQuery[], tooljetDatabaseMapping: Record<string, { id: string }> = {}) =>
     service.importLibraryQueries(manager, exported, user, resourceMapping, tooljetDatabaseMapping);
-  return { store, run, manager, appsUtilService, abilityService, logger };
+  return { store, run, manager, appsUtilService, abilityService, logger, service };
 }
 
-const snapshot = (options: Record<string, unknown> = restOptions, kind = 'restapi') => ({
-  kind,
+const snapshot = (n: number, name: string, extra = {}) => ({
+  id: id(n),
+  name,
+  description: null,
+  createdFromVersionId: null,
+  kind: 'restapi',
   dataSourceId: SRC_DS,
-  options,
+  options: restOptions,
+  ...extra,
 });
 const exportedQuery = (extra: Partial<LibraryExportQuery> = {}): LibraryExportQuery => ({
   id: id(100),
   coRelationId: null,
   name: 'getInvoices',
   folder: null,
-  draft: snapshot(),
-  versions: [{ id: id(101), versionNumber: 1, ...snapshot() }],
+  releasedVersionId: null,
+  drafts: [snapshot(102, 'working')],
+  versions: [{ ...snapshot(101, 'saved'), versionNumber: 1, environment: { name: 'development', priority: 1 } }],
   ...extra,
 });
 const consumer = (versionId: string) => ({
   id: id(300),
   options: JSON.stringify({ libraryQueryId: id(100), libraryQueryVersionId: versionId, inputs: {} }),
 });
-
-describe('AppImportExportService.importLibraryQueries', () => {
-  it('creates the query and its versions in the library, then pins the consumer to the new rows', async () => {
+/** @group platform */
+describe('AppImportExportService named library import', () => {
+  it('imports independent named snapshots and maps consumers to the correct saved UUID', async () => {
     const { store, run } = setup({ consumers: [consumer(id(101))] });
     const result = await run([exportedQuery({ folder: 'Billing' })]);
-
-    expect(store.queries).toHaveLength(1);
-    expect(store.queries[0]).toMatchObject({
-      name: 'getInvoices',
-      organizationId: ORG,
-      dataSourceId: DST_DS,
-      options: restOptions,
-      coRelationId: id(100),
-    });
+    expect(store.queries).toMatchObject([{ name: 'getInvoices', organizationId: ORG, coRelationId: id(100) }]);
+    expect(store.queries[0]).not.toHaveProperty('options');
+    expect(store.drafts).toMatchObject([{ name: 'working', dataSourceId: DST_DS, options: restOptions }]);
     expect(store.versions).toMatchObject([
-      { versionNumber: 1, dataSourceId: DST_DS, kind: 'restapi', createdBy: id(2) },
+      { name: 'saved', versionNumber: 1, dataSourceId: DST_DS, currentEnvironmentId: id(700) },
     ]);
-    expect(store.folders).toMatchObject([{ name: 'Billing', organizationId: ORG }]);
-    expect(store.queries[0].folderId).toBe(store.folders[0].id);
-    expect(store.states).toMatchObject([{ libraryQueryId: store.queries[0].id, hasDraft: true }]);
-    expect(result.queries[id(100)]).toBe(store.queries[0].id);
-    expect(result.versions[id(101)]).toBe(store.versions[0].id);
-    expect(store.updates).toEqual([
+    expect(store.states).toMatchObject([{ libraryQueryId: store.queries[0].id, releasedVersionId: null }]);
+    expect(result.versions[id(102)]).toBe(store.drafts[0].id);
+    expect(store.updates).toMatchObject([
+      { options: { libraryQueryId: store.queries[0].id, libraryQueryVersionId: store.versions[0].id } },
+    ]);
+  });
+  it('keeps two same-content snapshots distinct when their names differ', async () => {
+    const { store, run } = setup();
+    await run([exportedQuery({ drafts: [snapshot(102, 'alpha'), snapshot(103, 'beta')] })]);
+    expect(store.drafts.map((row) => row.name)).toEqual(['alpha', 'beta']);
+    expect(new Set(store.drafts.map((row) => row.id)).size).toBe(2);
+  });
+  it('reuses snapshots only when status, name, content, metadata and parent all match', async () => {
+    const query = Object.assign(new LibraryQuery(), { id: id(100), name: 'getInvoices', organizationId: ORG });
+    const saved = Object.assign(new LibraryQueryVersion(), {
+      ...snapshot(101, 'saved'),
+      dataSourceId: DST_DS,
+      libraryQueryId: query.id,
+      versionNumber: 1,
+      currentEnvironmentId: id(700),
+    });
+    const { store, run } = setup(
       {
-        id: id(300),
-        options: { libraryQueryId: store.queries[0].id, libraryQueryVersionId: store.versions[0].id, inputs: {} },
+        queries: [query],
+        versions: [saved],
+        states: [Object.assign(new LibraryQueryState(), { libraryQueryId: query.id, releasedVersionId: null })],
       },
-    ]);
-  });
-
-  it('reuses a matching query and version and changes nothing on re-import', async () => {
-    const query = Object.assign(new LibraryQuery(), {
-      id: id(100),
-      name: 'getInvoices',
-      organizationId: ORG,
-      options: { draft: 'untouched' },
-      coRelationId: null,
-    });
-    const v1 = Object.assign(new LibraryQueryVersion(), {
-      id: id(101),
-      libraryQueryId: id(100),
-      versionNumber: 1,
-      kind: 'restapi',
-      dataSourceId: DST_DS,
-      options: restOptions,
-      deletedAt: null,
-    });
-    const { store, run } = setup({ queries: [query], versions: [v1], consumers: [consumer(id(101))] });
-    const result = await run([exportedQuery()]);
-
-    expect(store.queries).toHaveLength(1);
-    expect(store.queries[0].options).toEqual({ draft: 'untouched' });
+      { perms: {} }
+    );
+    expect(await run([exportedQuery({ drafts: [] })])).toMatchObject({ versions: { [id(101)]: id(101) } });
     expect(store.versions).toHaveLength(1);
-    expect(result).toEqual({ queries: { [id(100)]: id(100) }, versions: { [id(101)]: id(101) }, skipped: [] });
-    expect(store.updates).toEqual([]);
+    await expect(
+      run([
+        exportedQuery({
+          drafts: [],
+          versions: [{ ...exportedQuery().versions[0], description: 'Different metadata' }],
+        }),
+      ])
+    ).rejects.toMatchObject({ status: 409 });
   });
-
-  it('adds the next version number when the exported snapshot differs, leaving the draft alone', async () => {
-    const query = Object.assign(new LibraryQuery(), {
-      id: id(200),
-      name: 'getInvoices',
-      organizationId: ORG,
-      options: { draft: 'mine' },
-      coRelationId: null,
-    });
-    const own = Object.assign(new LibraryQueryVersion(), {
-      id: id(201),
-      libraryQueryId: id(200),
-      versionNumber: 1,
-      kind: 'restapi',
+  it('rejects same-name content under the other status', async () => {
+    const query = Object.assign(new LibraryQuery(), { id: id(100), name: 'getInvoices', organizationId: ORG });
+    const draft = Object.assign(new LibraryQueryDraft(), {
+      ...snapshot(9, 'saved'),
+      libraryQueryId: query.id,
       dataSourceId: DST_DS,
-      options: { ...restOptions, url: 'http://different' },
-      deletedAt: null,
     });
-    const { store, run } = setup({ queries: [query], versions: [own], consumers: [consumer(id(101))] });
-    const result = await run([exportedQuery()]);
-
-    expect(store.queries[0].options).toEqual({ draft: 'mine' });
-    expect(store.versions).toHaveLength(2);
-    expect(store.versions[1]).toMatchObject({ libraryQueryId: id(200), versionNumber: 2, options: restOptions });
-    expect(result.queries[id(100)]).toBe(id(200));
-    expect(result.versions[id(101)]).toBe(store.versions[1].id);
+    const { run } = setup({ queries: [query], drafts: [draft] });
+    await expect(run([exportedQuery({ drafts: [] })])).rejects.toMatchObject({ status: 409 });
   });
-
-  it('never reuses a number held by a soft-deleted version, and does not match it', async () => {
-    const query = Object.assign(new LibraryQuery(), {
-      id: id(200),
-      name: 'getInvoices',
-      organizationId: ORG,
-      options: {},
+  it('remaps ancestors before children and maps the Released pointer', async () => {
+    const query = exportedQuery({
+      drafts: [snapshot(102, 'working', { createdFromVersionId: id(101) })],
+      releasedVersionId: id(101),
+      versions: [
+        { ...snapshot(101, 'child', { createdFromVersionId: id(104) }), versionNumber: 2, environment: null },
+        { ...snapshot(104, 'parent'), versionNumber: 1, environment: null },
+      ],
     });
-    // The fake find() returns it too, so matchLibraryVersion itself has to skip it.
+    const { store, run } = setup();
+    const result = await run([query]);
+    expect(store.versions).toMatchObject([
+      { name: 'parent' },
+      { name: 'child', createdFromVersionId: result.versions[id(104)] },
+    ]);
+    expect(store.drafts[0].createdFromVersionId).toBe(result.versions[id(101)]);
+    expect(store.states[store.states.length - 1].releasedVersionId).toBe(result.versions[id(101)]);
+  });
+  it.each([null, { name: 'development', priority: 1 }])(
+    'validates a changed Released pointer against destination licence terms (%s)',
+    async (environment) => {
+      const { run, service, store } = setup();
+      const licence = jest
+        .spyOn(
+          service as unknown as { isMultiEnvironmentLicensed(organizationId: string): Promise<boolean> },
+          'isMultiEnvironmentLicensed'
+        )
+        .mockResolvedValue(true);
+      await expect(
+        run([
+          exportedQuery({
+            drafts: [],
+            releasedVersionId: id(101),
+            versions: [{ ...exportedQuery().versions[0], environment }],
+          }),
+        ])
+      ).rejects.toMatchObject({ status: 400 });
+      expect(licence).toHaveBeenCalledWith(ORG);
+      expect(store.states.every((state) => state.releasedVersionId === null)).toBe(true);
+    }
+  );
+
+  it('never reuses a number held by a deleted saved version', async () => {
+    const query = Object.assign(new LibraryQuery(), { id: id(100), name: 'getInvoices', organizationId: ORG });
     const deleted = Object.assign(new LibraryQueryVersion(), {
-      id: id(202),
-      libraryQueryId: id(200),
+      id: id(9),
+      libraryQueryId: query.id,
+      name: 'old',
       versionNumber: 3,
-      kind: 'restapi',
-      dataSourceId: DST_DS,
-      options: restOptions,
       deletedAt: new Date(),
     });
     const { store, run } = setup({ queries: [query], versions: [deleted] });
-    await run([exportedQuery()]);
-
-    expect(store.versions.filter((v) => !v.deletedAt)).toMatchObject([{ versionNumber: 4, options: restOptions }]);
+    await run([exportedQuery({ drafts: [] })]);
+    expect(store.versions[store.versions.length - 1].versionNumber).toBe(4);
   });
-
-  it('remaps ToolJet DB table ids in the draft and versions, and keeps an unmapped one', async () => {
+  it('remaps ToolJet DB tables in drafts and saved snapshots', async () => {
     const { store, run } = setup();
-    const tjdb = (table_id: string) => ({
-      kind: 'tooljetdb',
-      dataSourceId: SRC_DS,
-      options: { operation: 'list_rows', table_id },
-    });
+    const extra = { kind: 'tooljetdb', options: { operation: 'list_rows', table_id: 'orders-a' } };
     await run(
       [
         exportedQuery({
-          draft: tjdb('orders-a'),
-          versions: [
-            { id: id(101), versionNumber: 1, ...tjdb('orders-a') },
-            { id: id(102), versionNumber: 2, ...tjdb('gone') },
-          ],
+          drafts: [snapshot(102, 'working', extra)],
+          versions: [{ ...snapshot(101, 'saved', extra), versionNumber: 1, environment: null }],
         }),
       ],
       { 'orders-a': { id: 'orders-b' } }
     );
-
-    expect(store.queries[0].options).toMatchObject({ table_id: 'orders-b', organization_id: ORG });
-    expect(store.versions.map((v) => v.options.table_id)).toEqual(['orders-b', 'gone']);
+    expect(store.drafts[0].options).toMatchObject({ table_id: 'orders-b', organization_id: ORG });
+    expect(store.versions[0].options.table_id).toBe('orders-b');
   });
-
-  it('stores null for a version data source that maps to nothing and falls back to a static source for the draft', async () => {
+  it('retains null for sources that were not exported without inventing a static source', async () => {
     const { store, run } = setup();
-    const local = { kind: 'runjs', dataSourceId: id(999), options: { code: '' } };
-    await run([exportedQuery({ name: 'code', draft: local, versions: [{ id: id(101), versionNumber: 1, ...local }] })]);
-
-    expect(store.versions[0].dataSourceId).toBeNull();
-    expect(store.queries[0].dataSourceId).toBe(id(850));
+    await run([exportedQuery({ drafts: [snapshot(102, 'working', { dataSourceId: id(999) })] })]);
+    expect(store.drafts[0].dataSourceId).toBeNull();
   });
-
-  it('skips a query whose draft has no data source to land on', async () => {
-    const { store, run, logger } = setup();
-    const orphan = { kind: 'weirdplugin', dataSourceId: id(999), options: {} };
-    const result = await run([exportedQuery({ draft: orphan, versions: [] })]);
-
-    expect(store.queries).toEqual([]);
-    expect(result.queries).toEqual({});
-    expect(result.skipped).toEqual(['getInvoices']);
-    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('getInvoices'));
+  it.each([{}, { moduleCreate: false }])('refuses unauthorized library allocation before writing', async (perms) => {
+    const { run, manager } = setup({}, { perms });
+    await expect(run([exportedQuery()])).rejects.toThrow(ForbiddenException);
+    expect(manager.save).not.toHaveBeenCalled();
   });
-
-  describe('permission', () => {
-    const nobody: Perms = {};
-    const noWrites = (manager: ReturnType<typeof setup>['manager']) => expect(manager.save).not.toHaveBeenCalled();
-
-    it('refuses a user without module rights before creating the library', async () => {
-      const { run, manager } = setup({}, { library: false, perms: nobody });
-      await expect(run([exportedQuery()])).rejects.toThrow(ForbiddenException);
-      noWrites(manager);
-    });
-
-    it('refuses a user without module rights when a query would be created', async () => {
-      const { run, manager, store } = setup({}, { perms: nobody });
-      await expect(run([exportedQuery()])).rejects.toThrow(ForbiddenException);
-      noWrites(manager);
-      expect(store.queries).toEqual([]);
-    });
-
-    it('refuses a user without module rights when only a version would be added', async () => {
-      const query = Object.assign(new LibraryQuery(), { id: id(100), name: 'getInvoices', organizationId: ORG });
-      const { run, manager, store } = setup({ queries: [query] }, { perms: nobody });
-      await expect(run([exportedQuery()])).rejects.toThrow(ForbiddenException);
-      noWrites(manager);
-      expect(store.versions).toEqual([]);
-    });
-
-    it('lets a user without module rights re-import what already exists', async () => {
-      const query = Object.assign(new LibraryQuery(), { id: id(100), name: 'getInvoices', organizationId: ORG });
-      const v1 = Object.assign(new LibraryQueryVersion(), {
-        id: id(101),
-        libraryQueryId: id(100),
-        versionNumber: 1,
-        kind: 'restapi',
-        dataSourceId: DST_DS,
-        options: restOptions,
-        deletedAt: null,
-      });
-      const { run, manager, abilityService } = setup({ queries: [query], versions: [v1] }, { perms: nobody });
-      await expect(run([exportedQuery()])).resolves.toMatchObject({ queries: { [id(100)]: id(100) } });
-      noWrites(manager);
-      expect(abilityService.resourceActionsPermission).not.toHaveBeenCalled();
-    });
-
-    it.each([
-      ['a super admin', { isSuperAdmin: true }],
-      ['an admin', { isAdmin: true }],
-      ['a user with moduleCreate', { moduleCreate: true }],
-    ])('allows %s', async (_label, perms) => {
-      const { run, store } = setup({}, { library: false, perms });
+  it.each([{ isSuperAdmin: true }, { isAdmin: true }, { moduleCreate: true }])(
+    'allows a library writer',
+    async (perms) => {
+      const { run, store } = setup({}, { perms });
       await run([exportedQuery()]);
       expect(store.queries).toHaveLength(1);
-    });
-  });
-
-  it('does not let two incoming queries claim the same local row', async () => {
-    const query = Object.assign(new LibraryQuery(), { id: id(100), name: 'getInvoices', organizationId: ORG });
-    const { store, run } = setup({ queries: [query] });
-    const result = await run([
-      exportedQuery({ id: id(100), versions: [] }),
-      exportedQuery({ id: id(110), name: 'getInvoices', versions: [] }),
-    ]);
-
-    expect(result.queries[id(100)]).toBe(id(100));
-    expect(result.queries[id(110)]).not.toBe(id(100));
-    expect(store.queries).toHaveLength(2);
+    }
+  );
+  it('rejects an old implicit draft before any allocation', async () => {
+    const { run, manager } = setup();
+    const old = { ...exportedQuery(), draft: snapshot(102, 'implicit') };
+    delete old.drafts;
+    await expect(run([old])).rejects.toMatchObject({ status: 400 });
+    expect(manager.save).not.toHaveBeenCalled();
   });
 });

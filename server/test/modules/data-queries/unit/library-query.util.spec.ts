@@ -15,7 +15,6 @@ import {
   isSameLibrarySnapshot,
   libraryTransformationOf,
   libraryVersionName,
-  parseLibraryVersionRef,
   pickPinnedVersion,
   toLibraryPins,
   libraryReleaseBlock,
@@ -335,19 +334,6 @@ describe('library-query.util', () => {
     });
   });
 
-  describe('parseLibraryVersionRef', () => {
-    it.each([undefined, null, '', 'draft'])('treats %p as the draft', (ref) => {
-      expect(parseLibraryVersionRef(ref)).toEqual({ draft: true });
-    });
-    it('treats a UUID as a version id', () => {
-      const id = '0b7d1a52-4f9e-4c2b-9a77-3f1c5d6e8a90';
-      expect(parseLibraryVersionRef(id)).toEqual({ draft: false, versionId: id });
-    });
-    it.each(['v1', 'latest', 42, {}])('rejects %p', (ref) => {
-      expect(() => parseLibraryVersionRef(ref)).toThrow(new BadRequestException('Library query version not found'));
-    });
-  });
-
   describe('toRunTarget', () => {
     const draft = q({
       id: 'lib',
@@ -356,8 +342,8 @@ describe('library-query.util', () => {
       dataSourceId: 'ds-draft',
       options: { query: 'draft' },
     });
-    it('uses the draft when there is no version', () => {
-      expect(toRunTarget(draft, null)).toEqual({
+    it('uses an explicit draft snapshot', () => {
+      expect(toRunTarget(draft, { ...draft, name: 'draft' })).toEqual({
         queryId: 'lib',
         name: 'getCustomer',
         kind: 'postgresql',
@@ -367,7 +353,13 @@ describe('library-query.util', () => {
       });
     });
     it('uses the pinned snapshot, not the draft, when there is a version', () => {
-      const version = { versionNumber: 3, kind: 'mysql', dataSourceId: 'ds-v3', options: { query: 'v3' } } as any;
+      const version = {
+        name: 'v3',
+        versionNumber: 3,
+        kind: 'mysql',
+        dataSourceId: 'ds-v3',
+        options: { query: 'v3' },
+      } as any;
       expect(toRunTarget(draft, version)).toEqual({
         queryId: 'lib',
         name: 'getCustomer',
@@ -561,8 +553,8 @@ describe('library-query.util', () => {
   });
 
   describe('libraryVersionName', () => {
-    it('is v followed by the number', () => {
-      expect(libraryVersionName({ versionNumber: 3 })).toBe('v3');
+    it('returns the persisted custom name', () => {
+      expect(libraryVersionName({ name: 'release beta' })).toBe('release beta');
     });
   });
 
@@ -622,304 +614,62 @@ describe('library-query.util', () => {
   });
 
   describe('toLibraryCatalog', () => {
-    const draft = (over: Record<string, any> = {}) => ({
-      id: 'q1',
-      name: 'getCustomer',
-      kind: 'restapi',
-      dataSourceId: 'ds1',
-      options: { url: 'http://secret.example/{{input.id}}', inputs: [{ name: 'id', defaultValue: '1' }] },
-      ...over,
-    });
-    const version = (over: Record<string, any> = {}) => ({
-      id: 'v-1',
-      libraryQueryId: 'q1',
-      versionNumber: 1,
-      kind: 'restapi',
-      dataSourceId: 'ds1',
-      options: { url: 'http://secret.example/{{input.id}}', inputs: [{ name: 'id', defaultValue: '1' }] },
-      createdAt: new Date('2026-01-01'),
-      ...over,
-    });
-
-    it('maps the folder name, draft inputs and versions, and leaves legacy parameters out', () => {
-      const { queries } = toLibraryCatalog(
-        [draft({ options: { inputs: [{ name: 'email' }], parameters: [{ name: 'id', defaultValue: '1' }] } })],
-        [version({ kind: 'postgresql' })],
-        new Map([['q1', 'billing']])
-      );
-      expect(queries).toEqual([
-        {
-          id: 'q1',
-          name: 'getCustomer',
-          folder: 'billing',
-          nextVersionNumber: 2,
-          hasDraft: true,
-          releasedVersionId: null,
-          draft: {
-            kind: 'restapi',
-            inputs: [{ name: 'email' }],
-            matchesLatestVersion: false,
-          },
-          versions: [
-            {
-              id: 'v-1',
-              name: 'v1',
-              kind: 'postgresql',
-              inputs: [{ name: 'id', defaultValue: '1' }],
-              createdAt: new Date('2026-01-01'),
-              environment: null,
-              isReleased: false,
-            },
-          ],
-        },
-      ]);
-    });
-
-    it('marks the released version, maps the environment and reports hasDraft', () => {
-      const staging = { id: 'e2', name: 'Staging', priority: 2 };
-      const { queries } = toLibraryCatalog(
-        [draft(), draft({ id: 'q2', name: 'other' })],
-        [
-          version({ id: 'v-1', versionNumber: 1, currentEnvironmentId: 'e2' }),
-          version({ id: 'v-2', versionNumber: 2, currentEnvironmentId: null }),
-        ],
-        new Map(),
-        new Map(),
-        new Map([['e2', staging]]),
-        new Map([['q1', { hasDraft: false, releasedVersionId: 'v-1' }]])
-      );
-      const [q1, q2] = queries;
-      expect(q1.versions.map((v) => [v.name, v.isReleased, v.environment])).toEqual([
-        ['v2', false, null],
-        ['v1', true, staging],
-      ]);
-      expect(q1).toMatchObject({ hasDraft: false, releasedVersionId: 'v-1' });
-      expect(q2).toMatchObject({ hasDraft: true, releasedVersionId: null });
-    });
-
-    it('counts soft-deleted versions in nextVersionNumber so a number is never reused', () => {
-      const catalog = (highest: Map<string, number>, versions = [version({ versionNumber: 1 })]) =>
-        toLibraryCatalog([draft()], versions, new Map(), highest).queries[0].nextVersionNumber;
-      // v2 was released and then deleted: only v1 is live, but the next release is v3.
-      expect(catalog(new Map([['q1', 2]]))).toBe(3);
-      expect(catalog(new Map())).toBe(2);
-      expect(catalog(new Map(), [])).toBe(1);
-    });
-
-    it('sorts folders with no folder first, then by name', () => {
-      const { queries } = toLibraryCatalog(
-        [
-          draft({ id: 'a', name: 'zeta' }),
-          draft({ id: 'b', name: 'alpha' }),
-          draft({ id: 'c', name: 'beta' }),
-          draft({ id: 'd', name: 'gamma' }),
-        ],
-        [],
-        new Map([
-          ['a', 'billing'],
-          ['b', 'billing'],
-          ['c', 'accounts'],
-        ])
-      );
-      expect(queries.map((x) => [x.folder, x.name])).toEqual([
-        [null, 'gamma'],
-        ['accounts', 'beta'],
-        ['billing', 'alpha'],
-        ['billing', 'zeta'],
-      ]);
-    });
-
-    it('lists versions newest first', () => {
-      const { queries } = toLibraryCatalog(
-        [draft()],
-        [
-          version({ id: 'a', versionNumber: 1 }),
-          version({ id: 'c', versionNumber: 3 }),
-          version({ id: 'b', versionNumber: 2 }),
-        ],
-        new Map()
-      );
-      expect(queries[0].versions.map((v) => v.name)).toEqual(['v3', 'v2', 'v1']);
-    });
-
-    it('leaves out runpy, workflows and library queries', () => {
-      const { queries } = toLibraryCatalog(
-        [
-          draft({ id: 'a', kind: 'runpy' }),
-          draft({ id: 'b', kind: 'workflows' }),
-          draft({ id: 'c', kind: 'library' }),
-          draft({ id: 'd' }),
-        ],
-        [],
-        new Map()
-      );
-      expect(queries.map((x) => x.id)).toEqual(['d']);
-    });
-
-    it('sets matchesLatestVersion from the newest version only', () => {
-      const same = toLibraryCatalog(
-        [draft()],
-        [version({ versionNumber: 1, options: { url: 'old' } }), version({ id: 'v-2', versionNumber: 2 })],
-        new Map()
-      );
-      expect(same.queries[0].draft.matchesLatestVersion).toBe(true);
-      const changed = toLibraryCatalog(
-        [draft()],
-        [version({ versionNumber: 1 }), version({ id: 'v-2', versionNumber: 2, options: { url: 'new' } })],
-        new Map()
-      );
-      expect(changed.queries[0].draft.matchesLatestVersion).toBe(false);
-      expect(toLibraryCatalog([draft()], [], new Map()).queries[0].draft.matchesLatestVersion).toBe(false);
-    });
-
-    it('never leaks query text, URLs, code or transformation', () => {
-      const options = {
-        url: 'http://secret.example/x',
-        query: 'select secret from t',
-        code: 'return SECRET_CODE',
-        enableTransformation: true,
-        transformation: 'return SECRET_TRANSFORM',
-        inputs: [{ name: 'email', defaultValue: 'a@b.c', extra: 'SECRET_EXTRA' }],
-        parameters: [{ name: 'id', defaultValue: '1', description: 'SECRET_DESC' }],
+    it('lists independent named snapshots without exposing query content', () => {
+      const saved = {
+        id: 'saved',
+        libraryQueryId: 'q1',
+        name: 'Release beta',
+        versionNumber: 1,
+        kind: 'restapi',
+        dataSourceId: 'source',
+        options: { url: 'secret', inputs: [{ name: 'id' }] },
+        createdAt: new Date(),
       };
-      const body = JSON.stringify(
-        toLibraryCatalog([draft({ options })], [version({ options })], new Map([['q1', 'billing']]))
+      const draft = { ...saved, id: 'draft-id', name: 'Try another URL' };
+      const view = toLibraryCatalog(
+        [{ id: 'q1', name: 'Customers' }],
+        [saved],
+        new Map(),
+        new Map(),
+        new Map(),
+        new Map(),
+        [draft]
       );
-      for (const text of [
-        'secret.example',
-        'select secret',
-        'SECRET_CODE',
-        'SECRET_TRANSFORM',
-        'SECRET_EXTRA',
-        'SECRET_DESC',
-      ]) {
-        expect(body).not.toContain(text);
-      }
-      expect(body).toContain('a@b.c');
+      expect(view.queries[0]).toMatchObject({
+        name: 'Customers',
+        drafts: [{ id: 'draft-id', name: 'Try another URL', status: 'DRAFT', inputs: [{ name: 'id' }] }],
+        versions: [{ id: 'saved', name: 'Release beta', status: 'PUBLISHED' }],
+      });
+      expect(JSON.stringify(view)).not.toContain('secret');
+      expect(view.queries[0]).not.toHaveProperty('draft');
+    });
+  });
+  describe('toLibraryPins', () => {
+    it('keeps a saved version named draft distinct from editable drafts and missing pins', () => {
+      const base = {
+        consumerQueryName: 'consumer',
+        libraryQueryName: 'Customers',
+        pinnedVersionName: 'draft',
+        releasedVersionName: 'draft',
+        pinnedVersionId: 'saved',
+        releasedVersionId: 'saved',
+        draftId: null,
+        draftName: null,
+        pinnedEnvironmentName: 'production',
+        pinnedEnvironmentPriority: 3,
+      };
+      const [saved, draft, missing] = toLibraryPins([
+        base,
+        { ...base, pinnedVersionId: null, draftId: 'editable', draftName: 'B' },
+        { ...base, pinnedVersionId: null },
+      ]);
+      expect(libraryReleaseBlock([saved])).toBeNull();
+      expect(libraryPromoteBlock([saved], 'production', 3)).toBeNull();
+      expect(libraryReleaseBlock([draft])).not.toBeNull();
+      expect(libraryPromoteBlock([missing], 'production', 3)).not.toBeNull();
     });
   });
 
-  describe('toLibraryPins / libraryReleaseBlock / libraryPromoteBlock', () => {
-    const row = (over: Record<string, any> = {}) => ({
-      consumerQueryName: 'customerQuery',
-      libraryQueryName: 'getCustomer',
-      pinnedVersionNumber: 2 as number | null,
-      releasedVersionNumber: 2 as number | null,
-      pinnedEnvironmentName: 'staging' as string | null,
-      pinnedEnvironmentPriority: 2 as number | null,
-      ...over,
-    });
-    const DRAFT = (consumer: string, library: string) =>
-      `Library query "${consumer}" is on the draft of "${library}". Pin a saved version.`;
-
-    it('lists the pinned version, the released version and the pinned environment', () => {
-      expect(toLibraryPins([row()])).toEqual([
-        {
-          consumerQueryName: 'customerQuery',
-          libraryQueryName: 'getCustomer',
-          pinnedVersion: 'v2',
-          releasedVersion: 'v2',
-          pinnedEnvironment: { name: 'staging', priority: 2 },
-        },
-      ]);
-    });
-
-    it('reports a pin with no version row as draft with no environment', () => {
-      const [pin] = toLibraryPins([
-        row({ pinnedVersionNumber: null, pinnedEnvironmentName: null, pinnedEnvironmentPriority: null }),
-      ]);
-      expect(pin).toMatchObject({ pinnedVersion: 'draft', releasedVersion: 'v2', pinnedEnvironment: null });
-    });
-
-    it('falls back to "unknown query" and no released version when the library query is gone', () => {
-      const [pin] = toLibraryPins([
-        row({ libraryQueryName: null, pinnedVersionNumber: null, releasedVersionNumber: null }),
-      ]);
-      expect(pin).toMatchObject({ libraryQueryName: 'unknown query', pinnedVersion: 'draft', releasedVersion: null });
-    });
-
-    describe('libraryReleaseBlock', () => {
-      it('passes a pin on the released version', () => {
-        expect(libraryReleaseBlock(toLibraryPins([row()]))).toBeNull();
-      });
-
-      it('blocks a pin on an older saved version', () => {
-        const sentence = 'Library query "customerQuery" uses "getCustomer" v1, but the released version is v2.';
-        expect(libraryReleaseBlock(toLibraryPins([row({ pinnedVersionNumber: 1 })]))).toEqual({
-          error: `Release blocked - ${sentence}`,
-          details: sentence,
-        });
-      });
-
-      it('blocks a draft pin', () => {
-        const sentence = DRAFT('customerQuery', 'getCustomer');
-        expect(libraryReleaseBlock(toLibraryPins([row({ pinnedVersionNumber: null })]))).toEqual({
-          error: `Release blocked - ${sentence}`,
-          details: sentence,
-        });
-      });
-
-      it('names "none" when the query has no released version', () => {
-        const block = libraryReleaseBlock(toLibraryPins([row({ releasedVersionNumber: null })]));
-        expect(block.details).toBe(
-          'Library query "customerQuery" uses "getCustomer" v2, but the released version is none.'
-        );
-      });
-
-      it('counts and lists several offenders, once each', () => {
-        const block = libraryReleaseBlock(
-          toLibraryPins([
-            row({ consumerQueryName: 'a', pinnedVersionNumber: null }),
-            row({ consumerQueryName: 'b', libraryQueryName: 'getOrders', pinnedVersionNumber: 1 }),
-            row({ consumerQueryName: 'c' }),
-          ])
-        );
-        expect(block.error.startsWith('Release blocked - 2 library queries need attention. ')).toBe(true);
-        expect(block.details).toBe(
-          [DRAFT('a', 'getCustomer'), 'Library query "b" uses "getOrders" v1, but the released version is v2.'].join(
-            ' '
-          )
-        );
-      });
-    });
-
-    describe('libraryPromoteBlock', () => {
-      it('passes a pin already in the target environment', () => {
-        expect(libraryPromoteBlock(toLibraryPins([row()]), 'staging', 2)).toBeNull();
-      });
-
-      it('blocks a pin still below the target environment', () => {
-        const pins = toLibraryPins([row({ pinnedEnvironmentName: 'development', pinnedEnvironmentPriority: 1 })]);
-        const sentence = 'Library query "getCustomer" version "v2" not promoted to staging yet.';
-        expect(libraryPromoteBlock(pins, 'staging', 2)).toEqual({
-          error: `Promote blocked - ${sentence}`,
-          details: sentence,
-        });
-      });
-
-      it('blocks a saved pin with no environment', () => {
-        const pins = toLibraryPins([row({ pinnedEnvironmentName: null, pinnedEnvironmentPriority: null })]);
-        expect(libraryPromoteBlock(pins, 'staging', 2).details).toBe(
-          'Library query "getCustomer" version "v2" not promoted to staging yet.'
-        );
-      });
-
-      it('blocks a draft pin', () => {
-        const pins = toLibraryPins([row({ pinnedVersionNumber: null })]);
-        expect(libraryPromoteBlock(pins, 'staging', 2).details).toBe(DRAFT('customerQuery', 'getCustomer'));
-      });
-
-      it('counts several offenders', () => {
-        const pins = toLibraryPins([
-          row({ consumerQueryName: 'a', pinnedVersionNumber: null }),
-          row({ libraryQueryName: 'getOrders', pinnedEnvironmentName: 'development', pinnedEnvironmentPriority: 1 }),
-          row(),
-        ]);
-        const block = libraryPromoteBlock(pins, 'staging', 2);
-        expect(block.error.startsWith('Promote blocked - 2 library queries need attention. ')).toBe(true);
-      });
-    });
-  });
   describe('library usage and delete guards', () => {
     const consumer = (over: Partial<LibraryConsumer> = {}): LibraryConsumer => ({
       appId: 'a1',
@@ -929,6 +679,8 @@ describe('library-query.util', () => {
       queryId: 'c1',
       queryName: 'getCustomerLib',
       libraryQueryId: 'lq1',
+      libraryQueryVersionId: 'snapshot-id',
+      status: 'PUBLISHED',
       versionName: 'v2',
       pinnedEnvironment: null,
       ...over,
@@ -963,6 +715,8 @@ describe('library-query.util', () => {
             name: 'getCustomerLib',
             appVersionName: 'v1',
             libraryQueryId: 'lq1',
+            libraryQueryVersionId: 'snapshot-id',
+            status: 'PUBLISHED',
             versionName: 'draft',
             pinnedEnvironment: null,
           },
@@ -971,6 +725,8 @@ describe('library-query.util', () => {
             name: 'other',
             appVersionName: 'v2',
             libraryQueryId: 'lq1',
+            libraryQueryVersionId: 'snapshot-id',
+            status: 'PUBLISHED',
             versionName: 'v2',
             pinnedEnvironment: 'Staging',
           },

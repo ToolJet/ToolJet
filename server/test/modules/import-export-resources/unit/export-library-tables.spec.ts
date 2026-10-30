@@ -17,7 +17,7 @@ describe('ImportExportResourcesService.export library tables', () => {
   const TABLE = (n: string) => `00000000-0000-4000-8000-00000000000${n}`;
 
   const libraryQuery = (tableId: string) => ({
-    draft: { kind: 'tooljetdb', dataSourceId: null, options: { operation: 'list_rows', table_id: tableId } },
+    drafts: [{ kind: 'tooljetdb', dataSourceId: null, options: { operation: 'list_rows', table_id: tableId } }],
     versions: [],
   });
 
@@ -99,7 +99,7 @@ describe('ImportExportResourcesService.export library tables', () => {
   // mapping by that id, so the library snapshots must name the table the same way.
   it('names library tables in snapshots by the id the table export gave them', async () => {
     const query = {
-      draft: { kind: 'tooljetdb', dataSourceId: null, options: { operation: 'list_rows', table_id: TABLE('1') } },
+      drafts: [{ kind: 'tooljetdb', dataSourceId: null, options: { operation: 'list_rows', table_id: TABLE('1') } }],
       versions: [
         { id: 'v1', versionNumber: 1, kind: 'tooljetdb', dataSourceId: null, options: { table_id: TABLE('1') } },
       ],
@@ -109,7 +109,7 @@ describe('ImportExportResourcesService.export library tables', () => {
 
     const [exported] = (result.app[0].definition as { appV2: { libraryQueries: (typeof query)[] } }).appV2
       .libraryQueries;
-    expect(exported.draft.options.table_id).toBe(`portable-${TABLE('1')}`);
+    expect(exported.drafts[0].options.table_id).toBe(`portable-${TABLE('1')}`);
     expect(exported.versions[0].options.table_id).toBe(`portable-${TABLE('1')}`);
   });
 

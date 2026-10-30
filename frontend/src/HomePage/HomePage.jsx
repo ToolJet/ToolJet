@@ -1,3 +1,4 @@
+import DependencyWarningDialog from '@/_components/DependencyWarningDialog/DependencyWarningDialog';
 import React from 'react';
 import cx from 'classnames';
 import moment from 'moment';
@@ -2158,37 +2159,13 @@ class HomePageComponent extends React.Component {
             cancelButtonText="Cancel"
           />
 
-          <ModalBase
-            show={showDependentAppsModal}
-            handleClose={() => this.setState({ showDependentAppsModal: false })}
-            showHeader={false}
-            showFooter={false}
+          <DependencyWarningDialog
+            open={showDependentAppsModal}
+            title="Dependent apps found!"
+            message="Cannot delete this module as it is being used in one or more apps."
             darkMode={this.props.darkMode}
-            className="dependent-apps-modal"
-          >
-            <div className="tw-flex tw-flex-col tw-gap-6 tw-p-6">
-              <div className="tw-flex tw-flex-col tw-gap-2">
-                <SolidIcon name="warning" width="40" fill="var(--icon-danger)" />
-                <div className="tw-flex tw-flex-col tw-gap-[2px]">
-                  <div className="tw-font-medium tw-text-[16px] tw-leading-6 tw-text-default tw-opacity-80">
-                    Dependent apps found!
-                  </div>
-                  <div className="tw-font-normal tw-text-xs tw-leading-[18px] tw-text-default">
-                    Cannot delete this module as it is being used in one or more apps.
-                  </div>
-                </div>
-              </div>
-              <div className="tw-flex tw-justify-end">
-                <ButtonSolid
-                  variant="tertiary"
-                  onClick={() => this.setState({ showDependentAppsModal: false })}
-                  data-cy="dependent-apps-acknowledge-button"
-                >
-                  I understand
-                </ButtonSolid>
-              </div>
-            </div>
-          </ModalBase>
+            onClose={() => this.setState({ showDependentAppsModal: false })}
+          />
 
           <ConfirmDialog
             show={showRemoveAppFromFolderConfirmation}

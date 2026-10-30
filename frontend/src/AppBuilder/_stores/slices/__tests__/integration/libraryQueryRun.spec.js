@@ -36,6 +36,11 @@ function seedLibraryApp({ queries, mode = 'view', appType } = {}) {
   );
   state().setCurrentMode(mode, 'canvas');
   state().queryLibrary.setLibraryMode(appType === 'query_library');
+  if (appType === 'query_library') {
+    for (const query of queries)
+      state().queryLibrary.updateCreatedLibraryQuery({ id: query.id, draftId: `${query.id}-draft` }, query);
+    state().queryPanel.setSelectedQuery(queries[0]?.id, 'canvas', { fromServer: true });
+  }
   if (appType) state().setApp({ ...state().appStore.modules.canvas.app, appType }, 'canvas');
   seedApp({});
 }
@@ -418,6 +423,8 @@ describe('library query run', () => {
 
       await state().queryPanel.runQuery('r1', 'getCustomer', true, 'edit');
 
+      expect(body.draftId).toBe('r1-draft');
+      expect(body.libraryVersionId).toBeUndefined();
       expect(body.inputs).toEqual({ id: '7' });
       expect(body.options.url).toContain('{{input.id}}');
     });
@@ -474,16 +481,13 @@ describe('library query run', () => {
         await state().queryPanel.runQuery('r1', 'getCustomer', true, 'edit');
         expect(resolvedQuery('getCustomer').data).toBe(10);
 
-        useStore.getState().dataQuery.setQueries(
-          [
-            restQuery({
-              enableTransformation: true,
-              transformationLanguage: 'javascript',
-              transformation: 'return components',
-            }),
-          ],
-          'canvas'
-        );
+        state().queryLibrary.updateLibraryDraftSnapshot('r1', 'r1-draft', {
+          options: restQuery({
+            enableTransformation: true,
+            transformationLanguage: 'javascript',
+            transformation: 'return components',
+          }).options,
+        });
         await state().queryPanel.runQuery('r1', 'getCustomer', true, 'edit');
         expect(JSON.stringify(resolvedQuery('getCustomer').error)).toMatch(/components is not defined/);
       });

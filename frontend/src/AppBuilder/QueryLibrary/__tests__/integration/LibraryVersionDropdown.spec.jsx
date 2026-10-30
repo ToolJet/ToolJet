@@ -1,11 +1,6 @@
-/**
- * Per-query version dropdown of the library editor: environment tabs, Save version / Promote / Release /
- * Create draft version, the read-only view of a saved version, and the run environment.
- * Real store + MSW at the HTTP boundary.
- */
 import '@/test/setupMsw';
 import React from 'react';
-import { screen, waitFor, within } from '@testing-library/react';
+import { screen, waitFor, fireEvent, act, renderHook } from '@testing-library/react';
 import { render } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
@@ -13,414 +8,333 @@ import config from 'config';
 import { authenticationService } from '@/_services';
 import { server } from '@/test/msw/server';
 import useStore from '@/AppBuilder/_stores/store';
-import { seedApp } from '@/test/app-builder';
 import { createAppBuilderControls } from '@/test/app-builder/controls';
-import { BaseQueryManagerBody } from '@/AppBuilder/QueryManager/Components/QueryManagerBody';
-import {
-  LIBRARY_DRAFT,
-  isLibraryQueryLocked,
-  libraryRunEnvironment,
-  viewedLibraryVersionId,
-} from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import LibraryVersionDropdown from '../../LibraryVersionDropdown';
+import useLibraryVersionLifecycle from '../../useLibraryVersionLifecycle';
 
-// External icon package adapter: the lucide dynamic icon loader needs a bundler.
-jest.mock('lucide-react/dynamic.mjs', () => ({ DynamicIcon: () => null }));
-// Supply the actual schema to the existing external plugins-package test adapter.
-jest.mock('@tooljet/plugins/client', () => ({
-  allManifests: {},
-  allSvgs: {},
-  allOperations: { Postgresql: require('../../../../../../plugins/packages/postgresql/lib/operations.json') },
-}));
 const controls = createAppBuilderControls();
+const dev = { id: 'env-dev', name: 'development', priority: 1 };
+const staging = { id: 'env-stg', name: 'staging', priority: 2 };
+const prod = { id: 'env-prod', name: 'production', priority: 3 };
+const draft = {
+  id: 'draft-one',
+  name: 'candidate.one',
+  description: 'Change notes',
+  dataSourceId: 'source1',
+  kind: 'postgresql',
+  options: {},
+  createdFromVersionId: 'saved-one',
+  createdFrom: 'stable/one',
+};
+const saved = { ...draft, id: 'saved-one', name: 'stable/one', environment: dev, isReleased: false };
+const base = `${config.apiUrl}/query-library/queries/q1`;
+const cy = (value) => document.querySelector(`[data-cy="${value}"]`);
 let originalSession;
+let view;
+let writes;
+let requests;
 beforeEach(() => {
   originalSession = authenticationService.currentSessionValue;
   authenticationService.updateCurrentSession({
     ...originalSession,
+    admin: false,
+    super_admin: false,
+    user_permissions: {},
     data_source_group_permissions: { usable_data_sources_id: ['source1'] },
-    app_group_permissions: {
-      environment_access: { development: true, staging: true, production: true },
-    },
+    app_group_permissions: { environment_access: { development: true, staging: true, production: true } },
   });
   controls.observers.install();
   controls.geometry.textRange();
+  writes = [];
+  requests = [];
+  const originalFetch = global.fetch;
+  jest.spyOn(global, 'fetch').mockImplementation((url, options) => {
+    requests.push(String(url));
+    return originalFetch(url, options);
+  });
+  view = { drafts: [draft, { ...draft, id: 'draft-two', name: 'candidate.two' }], versions: [saved] };
+  useStore.getState().queryLibrary.beginLibrarySession('workspace1');
+  useStore.getState().queryLibrary.setLibraryEnvironments([dev, staging, prod]);
+  useStore.setState((s) => ({ license: { ...s.license, featureAccess: { multiEnvironment: true } } }));
+  server.use(
+    http.get(`${base}/versions`, () => HttpResponse.json(view)),
+    http.post(`${base}/drafts/:id/save`, async ({ request, params }) => {
+      const body = await request.json();
+      writes.push({ id: params.id, ...body });
+      const row = { ...draft, ...body, environment: dev };
+      view = { drafts: view.drafts.filter((v) => v.id !== params.id), versions: [row, saved] };
+      return HttpResponse.json(row);
+    })
+  );
 });
 afterEach(() => {
   authenticationService.updateCurrentSession(originalSession);
   controls.restore();
+  jest.restoreAllMocks();
 });
-
-const base = `${config.apiUrl}/query-library/queries/q1/versions`;
-const dev = { id: 'env-dev', name: 'development', priority: 1 };
-const staging = { id: 'env-stg', name: 'staging', priority: 2 };
-const production = { id: 'env-prod', name: 'production', priority: 3 };
-
-const version = (n, extra = {}) => ({
-  id: `lv${n}`,
-  name: `v${n}`,
-  versionNumber: n,
-  description: null,
-  createdFrom: null,
-  environment: dev,
-  isReleased: false,
-  createdAt: '2026-10-01',
-  kind: 'postgresql',
-  dataSourceId: 'source1',
-  options: { mode: 'sql', query: `select v${n}` },
-  ...extra,
-});
-
-const draftSource = { kind: 'postgresql', id: 'source1', scope: 'global', type: 'default' };
-const draftQuery = {
-  id: 'q1',
-  name: 'getCustomer',
-  kind: 'postgresql',
-  data_source_id: 'source1',
-  options: { mode: 'sql', query: 'select draft' },
-};
-const state = () => useStore.getState();
-
-function seed({ multiEnvironment = true } = {}) {
-  state().queryLibrary.setLibraryMode(true);
-  state().dataQuery.setQueries([draftQuery], 'canvas');
-  state().setQueryMapping('canvas');
-  state().initialiseResolvedQuery(['q1'], 'canvas');
-  state().setCurrentMode('edit', 'canvas');
-  seedApp({});
-  state().setApp({ ...state().appStore.modules.canvas.app, appType: 'query_library' }, 'canvas');
-  useStore.setState((s) => ({
-    currentVersionId: 'ver1',
-    globalDataSources: [draftSource],
-    environments: [dev, staging, production],
-    selectedEnvironment: dev,
-    license: { ...s.license, featureAccess: { ...s.license?.featureAccess, multiEnvironment } },
-    queryPanel: {
-      ...s.queryPanel,
-      selectedQuery: draftQuery,
-      selectedDataSource: draftSource,
-    },
-  }));
+async function open(darkMode = false) {
+  render(<LibraryVersionDropdown queryId="q1" darkMode={darkMode} />);
+  await waitFor(() => expect(cy('version-switcher-button')).toBeInTheDocument());
+  await userEvent.click(cy('version-switcher-button'));
+  await waitFor(() => expect(cy('candidate.one-version-name')).toBeInTheDocument());
 }
 
-// The server sends nextVersionNumber; by default the next number after the newest listed version.
-const withNext = (view) => ({ nextVersionNumber: (view.versions[0]?.versionNumber ?? 0) + 1, ...view });
-const listVersions = (view) =>
-  server.use(http.get(base, () => HttpResponse.json(withNext(typeof view === 'function' ? view() : view))));
-
-const renderDropdown = () => render(<LibraryVersionDropdown queryId="q1" darkMode={false} />);
-const sqlEditor = () => document.querySelector('[role="textbox"][data-language="sql"]');
-
-const pill = () => screen.findByRole('button', { name: /^v\d/ });
-const openDropdown = async () => userEvent.click(await pill());
-const versionNames = () =>
-  [...document.querySelectorAll('[data-cy$="-library-version-name"]')].map((el) => el.textContent);
-const openMenu = async (name) => userEvent.click(screen.getByRole('button', { name: `More actions for ${name}` }));
-const tab = (name) => screen.getByRole('button', { name });
-
-describe('LibraryVersionDropdown', () => {
-  // Break this catches: hiding every environment tab when multi-environment access is unavailable.
-  it('keeps Development available and shows locked Staging and Production without multi-environment access', async () => {
-    seed({ multiEnvironment: false });
-    listVersions({ draft: {}, versions: [] });
-    renderDropdown();
-    await openDropdown();
-
-    expect(tab('Development')).toBeEnabled();
-    expect(tab('Staging')).toBeDisabled();
-    expect(tab('Production')).toBeDisabled();
-    await userEvent.click(tab('Staging'));
-    expect(libraryRunEnvironment(state(), 'q1')).toEqual(dev);
-    expect(screen.getByRole('button', { name: 'Save version' })).toBeEnabled();
-  });
-
-  // Break this catches: a separate library toggle bypassing the shared environment permission checks.
-  it('disables environments the workspace member cannot access', async () => {
-    seed();
-    authenticationService.updateCurrentSession({
-      ...authenticationService.currentSessionValue,
-      app_group_permissions: { environment_access: { development: true, staging: false, production: true } },
-    });
-    listVersions({ draft: null, versions: [version(1)] });
-    renderDropdown();
-    await openDropdown();
-
-    expect(tab('Staging')).toBeDisabled();
-    expect(tab('Production')).toBeEnabled();
-    await userEvent.click(tab('Staging'));
-    expect(libraryRunEnvironment(state(), 'q1')).toEqual(dev);
-  });
-
-  it('shows v1 · Development and lists v1 under the Development tab only', async () => {
-    seed();
-    listVersions({ draft: null, versions: [version(1)] });
-    renderDropdown();
-
-    const button = await pill();
-    expect(within(button).getByText('v1')).toBeInTheDocument();
-    expect(within(button).getByText('Development')).toBeInTheDocument();
-
-    await openDropdown();
-    expect(versionNames()).toEqual(['v1']);
-    await userEvent.click(tab('Staging'));
-    expect(versionNames()).toEqual([]);
-    await userEvent.click(tab('Production'));
-    expect(versionNames()).toEqual([]);
-  });
-
-  it('saves the draft as v2 and then lists v2 created from v1', async () => {
-    seed();
-    let saved = false;
-    let body;
-    listVersions(() =>
-      saved
-        ? { draft: null, versions: [version(2, { createdFrom: 'v1' }), version(1)] }
-        : { draft: { createdFrom: 'v1', description: null }, versions: [version(1)] }
+it.each([false, true])(
+  'uses the shared save form and preserves custom metadata after save (dark=%s)',
+  async (darkMode) => {
+    await open(darkMode);
+    expect(cy('candidate.two-version-name')).toBeInTheDocument();
+    await userEvent.click(screen.getAllByText('Save version')[0]);
+    expect(cy('version-name-input-field')).toHaveValue('candidate.one');
+    expect(screen.getByText('Name and description cannot be edited after saving')).toBeInTheDocument();
+    fireEvent.change(cy('version-name-input-field'), { target: { value: 'release/one+!' } });
+    fireEvent.submit(cy('version-name-input-field').closest('form'));
+    await waitFor(() =>
+      expect(writes).toEqual([{ id: 'draft-one', name: 'release/one+!', description: 'Change notes' }])
     );
-    server.use(
-      http.post(`${base}/save`, async ({ request }) => {
-        body = await request.json();
-        saved = true;
-        return HttpResponse.json(version(2, { createdFrom: 'v1' }));
-      })
-    );
-    renderDropdown();
-    await openDropdown();
-
-    await userEvent.click(screen.getByRole('button', { name: 'Save version' }));
-
-    await waitFor(() => expect(versionNames()).toEqual(['v2', 'v1']));
-    expect(body).toEqual({});
-    expect(screen.getByText('created from v1')).toBeInTheDocument();
+    await userEvent.click(cy('version-switcher-button'));
+    await waitFor(() => expect(cy('release/one+!-version-name')).toBeInTheDocument());
+    expect(requests.every((url) => url.includes('/query-library/'))).toBe(true);
+  }
+);
+it('cancel leaves the draft unsaved', async () => {
+  await open();
+  await userEvent.click(screen.getAllByText('Save version')[0]);
+  await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+  expect(writes).toEqual([]);
+});
+it('browses environments without changing the editor selection', async () => {
+  await open();
+  await userEvent.click(screen.getByRole('button', { name: 'Staging' }));
+  expect(screen.getByText('No versions available')).toBeInTheDocument();
+  expect(useStore.getState().queryLibrary.runEnvironmentByQueryId.q1).toBeUndefined();
+});
+it('does not offer Edit details on a saved row', async () => {
+  await open();
+  await userEvent.click(cy('stable/one-version-more-menu-button'));
+  expect(screen.queryByText('Edit details')).not.toBeInTheDocument();
+});
+it('uses source access even when app editing grants exist', async () => {
+  authenticationService.updateCurrentSession({
+    ...authenticationService.currentSessionValue,
+    data_source_group_permissions: {},
+    app_group_permissions: { is_all_editable: true, environment_access: { development: true } },
   });
+  await open();
+  expect(cy('candidate.one-save-version-button')).toBeDisabled();
+});
 
-  it('promotes v1 and it moves to the Staging tab', async () => {
-    seed();
-    let promoted = false;
-    listVersions(() => ({ draft: null, versions: [version(1, promoted ? { environment: staging } : {})] }));
-    server.use(
-      http.post(`${base}/lv1/promote`, () => {
-        promoted = true;
-        return HttpResponse.json(version(1, { environment: staging }));
-      })
-    );
-    renderDropdown();
-    await openDropdown();
-
-    await openMenu('v1');
-    await userEvent.click(screen.getByRole('button', { name: 'Promote' }));
-    await userEvent.click(await screen.findByRole('button', { name: 'Promote to staging' }));
-
-    await waitFor(() => expect(promoted).toBe(true));
-    expect(await screen.findByRole('button', { name: /^v1\s*Staging/ })).toBeInTheDocument();
-    await openDropdown();
-    expect(versionNames()).toEqual(['v1']);
-    await userEvent.click(tab('Development'));
-    expect(versionNames()).toEqual([]);
+it('waits for a pending draft write before saving the same real ID', async () => {
+  await open();
+  let finish;
+  const pending = new Promise((resolve) => {
+    finish = resolve;
   });
-
-  it('does not offer Release for a development version with the multi-environment licence', async () => {
-    seed({ multiEnvironment: true });
-    listVersions({ draft: null, versions: [version(1)] });
-    renderDropdown();
-    await openDropdown();
-
-    await openMenu('v1');
-
-    expect(screen.getByRole('button', { name: 'Promote' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Release' })).not.toBeInTheDocument();
+  useStore.getState().dataQuery.queueLibraryDraftOperation('q1', draft.id, () => pending);
+  await userEvent.click(screen.getAllByText('Save version')[0]);
+  fireEvent.submit(cy('version-name-input-field').closest('form'));
+  expect(cy('version-name-input-field')).toBeDisabled();
+  expect(writes).toEqual([]);
+  await act(async () => {
+    finish();
+    await pending;
   });
-
-  it('disables Create draft version while a draft exists', async () => {
-    seed();
-    listVersions({ draft: { createdFrom: 'v1', description: null }, versions: [version(1)] });
-    renderDropdown();
-    await openDropdown();
-
-    expect(screen.getByRole('button', { name: /Create draft version/ })).toBeDisabled();
+  await waitFor(() => expect(writes[0]?.id).toBe(draft.id));
+});
+it('creates another named draft from a saved source while drafts already exist', async () => {
+  server.use(
+    http.post(`${base}/drafts`, async ({ request }) => {
+      const body = await request.json();
+      writes.push(body);
+      const created = { ...draft, id: 'draft-three', name: body.name, createdFromVersionId: body.fromVersionId };
+      view = { ...view, drafts: [...view.drafts, created] };
+      return HttpResponse.json(created);
+    })
+  );
+  await open();
+  await userEvent.click(screen.getByText('Create draft version'));
+  fireEvent.change(cy('version-name-input-field'), { target: { value: 'candidate/three' } });
+  fireEvent.submit(cy('version-name-input-field').closest('form'));
+  await waitFor(() => expect(writes).toEqual([{ name: 'candidate/three', fromVersionId: saved.id }]));
+  await userEvent.click(cy('version-switcher-button'));
+  await waitFor(() => expect(cy('candidate/three-version-name')).toBeInTheDocument());
+  expect(requests.every((url) => url.includes('/query-library/'))).toBe(true);
+});
+it('edits the chosen draft metadata through the shared form', async () => {
+  server.use(
+    http.patch(`${base}/drafts/:id`, async ({ request, params }) => {
+      const body = await request.json();
+      writes.push({ id: params.id, ...body });
+      const updated = { ...draft, ...body };
+      view = { ...view, drafts: [updated, view.drafts[1]] };
+      return HttpResponse.json(updated);
+    })
+  );
+  await open();
+  await userEvent.click(cy('candidate.one-version-more-menu-button'));
+  await userEvent.click(screen.getByText('Edit details'));
+  fireEvent.change(cy('edit-version-name-input-field'), { target: { value: 'patched+name' } });
+  fireEvent.submit(cy('edit-version-name-input-field').closest('form'));
+  await waitFor(() => expect(writes).toEqual([{ id: draft.id, name: 'patched+name', description: 'Change notes' }]));
+  expect(requests.every((url) => url.includes('/query-library/'))).toBe(true);
+});
+it('shows resource load errors and retries without turning them into an empty state', async () => {
+  server.use(
+    http.get(`${base}/versions`, () => HttpResponse.json({ message: 'Library unavailable' }, { status: 500 }))
+  );
+  render(<LibraryVersionDropdown queryId="q1" />);
+  await userEvent.click(cy('version-switcher-button'));
+  expect(await screen.findByRole('alert')).toHaveTextContent('Library unavailable');
+  expect(screen.queryByText('No versions available')).not.toBeInTheDocument();
+  await userEvent.click(cy('version-switcher-button'));
+  server.use(http.get(`${base}/versions`, () => HttpResponse.json(view)));
+  await userEvent.click(cy('version-switcher-button'));
+  await waitFor(() => expect(cy('candidate.one-version-name')).toBeInTheDocument());
+});
+it('does not use app-specific environment access and keeps unlicensed environments locked', async () => {
+  authenticationService.updateCurrentSession({
+    ...authenticationService.currentSessionValue,
+    app_group_permissions: {
+      is_all_editable: true,
+      environment_access: { development: true, production: true },
+      app_specific_environment_access: { unrelated: { staging: true } },
+    },
   });
+  await open();
+  expect(screen.getByRole('button', { name: 'Staging' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Production' })).toBeEnabled();
+});
 
-  it('shows a viewed saved version read-only, and the draft editable again', async () => {
-    seed();
-    listVersions({ draft: { createdFrom: 'v1', description: null }, versions: [version(1)] });
-    render(
-      <>
-        <LibraryVersionDropdown queryId="q1" darkMode={false} />
-        <BaseQueryManagerBody darkMode={false} activeTab={1} />
-      </>
-    );
-    await waitFor(() => expect(sqlEditor()).toBeInTheDocument());
-    expect(sqlEditor().closest('.disabled')).toBeNull();
-    expect(sqlEditor()).toHaveTextContent('select draft');
-
-    await openDropdown();
-    await userEvent.click(screen.getByText('v1', { selector: '[data-cy="v1-library-version-name"]' }));
-
-    await waitFor(() => expect(sqlEditor()).toHaveTextContent('select v1'));
-    expect(sqlEditor().closest('.disabled')).not.toBeNull();
-    // Edits are dropped while a saved version is shown, so the draft is never overwritten with it.
-    state().dataQuery.updateDataQuery({ query: 'select v1' });
-    expect(state().queryPanel.selectedQuery.options.query).toBe('select draft');
-
-    await userEvent.click(screen.getByText('v2', { selector: '[data-cy="v2-library-version-name"]' }));
-    await waitFor(() => expect(sqlEditor()).toHaveTextContent('select draft'));
-    await waitFor(() => expect(sqlEditor()).toBeInTheDocument());
-    expect(sqlEditor().closest('.disabled')).toBeNull();
-    expect(sqlEditor()).toHaveTextContent('select draft');
+it.each(['promote', 'release'])('calls only the library %s route for the selected saved ID', async (action) => {
+  const environment = action === 'release' ? prod : dev;
+  view = { drafts: view.drafts, versions: [{ ...saved, environment }] };
+  await act(async () => {
+    await useStore.getState().queryLibrary.loadLibraryVersions('q1');
+    useStore.getState().queryLibrary.viewLibraryVersion('q1', saved.id);
   });
+  server.use(
+    http.post(`${base}/versions/${saved.id}/${action}`, () => {
+      writes.push({ id: saved.id, action });
+      const updated = {
+        ...saved,
+        environment: action === 'promote' ? staging : prod,
+        isReleased: action === 'release',
+      };
+      view = { ...view, versions: [updated] };
+      return HttpResponse.json(updated);
+    })
+  );
+  render(<LibraryVersionDropdown queryId="q1" />);
+  await userEvent.click(cy('version-switcher-button'));
+  await waitFor(() => expect(cy(`${action}-version-button`)).toBeEnabled());
+  await userEvent.click(cy(`${action}-version-button`));
+  await userEvent.click(cy(action === 'release' ? 'yes-button' : 'promote-button'));
+  await waitFor(() => expect(writes).toEqual([{ id: saved.id, action }]));
+  expect(requests.every((url) => url.includes('/query-library/'))).toBe(true);
+});
 
-  it('runs the newest version of the selected tab on that environment', async () => {
-    seed();
-    let environmentId;
-    let previewBody;
-    listVersions({
-      draft: { createdFrom: 'v1', description: null },
-      versions: [version(2, { environment: staging }), version(1)],
-    });
-    server.use(
-      http.post(`${config.apiUrl}/query-library/queries/q1/run/:environmentId`, async ({ request, params }) => {
-        environmentId = params.environmentId;
-        previewBody = await request.json();
-        return HttpResponse.json({ status: 'ok', data: [] });
-      })
-    );
-    renderDropdown();
-    await openDropdown();
-
-    await userEvent.click(tab('Staging'));
-    await state().queryPanel.runQuery('q1', 'getCustomer');
-
-    expect(environmentId).toBe('env-stg');
-    expect(previewBody).toEqual({ libraryVersionId: 'lv2' });
+it('keeps a newer refresh success when the initial load rejects later', async () => {
+  const responses = [];
+  server.use(http.get(`${base}/versions`, () => new Promise((resolve) => responses.push(resolve))));
+  const { result } = renderHook(() => useLibraryVersionLifecycle({ queryId: 'q1' }));
+  await waitFor(() => expect(responses).toHaveLength(1));
+  const initialRequest = global.fetch.mock.results[0].value;
+  let refreshing;
+  act(() => {
+    refreshing = result.current.actions.refresh();
   });
-
-  it('locks the editor on the Production tab with a draft open, and never runs the draft there', async () => {
-    seed();
-    let calls = 0;
-    listVersions({ draft: { createdFrom: 'v1', description: null }, versions: [version(1)] });
-    server.use(
-      http.post(`${config.apiUrl}/query-library/queries/q1/run/:environmentId`, () => {
-        calls += 1;
-        return HttpResponse.json({ status: 'ok', data: [] });
-      })
-    );
-    renderDropdown();
-    await openDropdown();
-
-    await userEvent.click(tab('Production'));
-
-    expect(versionNames()).toEqual([]);
-    expect(viewedLibraryVersionId(state(), 'q1')).not.toBe(LIBRARY_DRAFT);
-    expect(isLibraryQueryLocked(state(), 'q1')).toBe(true);
-    await state().queryPanel.runQuery('q1', 'getCustomer');
-    expect(calls).toBe(0);
-
-    await userEvent.click(tab('Development'));
-    expect(viewedLibraryVersionId(state(), 'q1')).toBe(LIBRARY_DRAFT);
-    expect(isLibraryQueryLocked(state(), 'q1')).toBe(false);
+  await waitFor(() => expect(responses).toHaveLength(2));
+  await act(async () => {
+    responses[1](HttpResponse.json(view));
+    await refreshing;
   });
-
-  it('keeps the picked tab per query, so another query opens on its own default', async () => {
-    seed();
-    listVersions({ draft: { createdFrom: 'v1', description: null }, versions: [version(1)] });
-    renderDropdown();
-    await openDropdown();
-
-    await userEvent.click(tab('Staging'));
-
-    expect(libraryRunEnvironment(state(), 'q1')).toEqual(staging);
-    expect(libraryRunEnvironment(state(), 'q2')).toEqual(dev);
+  expect(result.current.loading).toBe(false);
+  expect(result.current.error).toBeNull();
+  await act(async () => {
+    responses[0](HttpResponse.json({ message: 'Obsolete failure' }, { status: 500 }));
+    await initialRequest;
   });
+  expect(result.current.error).toBeNull();
+  expect(result.current.loading).toBe(false);
+  expect(result.current.versions.map(({ id }) => id)).toEqual(['draft-one', 'draft-two', 'saved-one']);
+});
 
-  it('runs a saved version on another data source by its version id without draft options', async () => {
-    seed();
-    let body;
-    listVersions({ draft: {}, versions: [version(1, { dataSourceId: 'source-other' })] });
-    server.use(
-      http.post(`${config.apiUrl}/query-library/queries/q1/run/:environmentId`, async ({ request }) => {
-        body = await request.json();
-        return HttpResponse.json({ status: 'ok', data: [] });
-      })
-    );
-    renderDropdown();
-    await openDropdown();
-    await userEvent.click(screen.getByText('v1', { selector: '[data-cy="v1-library-version-name"]' }));
-    await state().queryPanel.runQuery('q1', 'getCustomer');
-    expect(body).toEqual({ libraryVersionId: 'lv1' });
+it('keeps loading for the current refresh after an older success, then shows the current failure', async () => {
+  const responses = [];
+  server.use(http.get(`${base}/versions`, () => new Promise((resolve) => responses.push(resolve))));
+  const { result } = renderHook(() => useLibraryVersionLifecycle({ queryId: 'q1' }));
+  await waitFor(() => expect(responses).toHaveLength(1));
+  const initialRequest = global.fetch.mock.results[0].value;
+  let refreshing;
+  act(() => {
+    refreshing = result.current.actions.refresh();
   });
-
-  it('labels the draft with the server next number, so a deleted v3 is not reused', async () => {
-    seed();
-    listVersions({
-      draft: { createdFrom: 'v2', description: null },
-      versions: [version(2), version(1)],
-      nextVersionNumber: 4,
-    });
-    renderDropdown();
-
-    expect(within(await pill()).getByText('v4')).toBeInTheDocument();
-    await openDropdown();
-    expect(versionNames()).toEqual(['v4', 'v2', 'v1']);
+  await waitFor(() => expect(responses).toHaveLength(2));
+  await act(async () => {
+    responses[0](HttpResponse.json(view));
+    await initialRequest;
   });
-
-  it('runs a promoted version on its environment before any tab is picked', async () => {
-    seed();
-    let promoted = false;
-    let environmentId;
-    listVersions(() => ({ draft: null, versions: [version(1, promoted ? { environment: staging } : {})] }));
-    server.use(
-      http.post(`${base}/lv1/promote`, () => {
-        promoted = true;
-        return HttpResponse.json(version(1, { environment: staging }));
-      }),
-      http.post(`${config.apiUrl}/query-library/queries/q1/run/:environmentId`, ({ params }) => {
-        environmentId = params.environmentId;
-        return HttpResponse.json({ status: 'ok', data: [] });
-      })
-    );
-    renderDropdown();
-    await openDropdown();
-    await openMenu('v1');
-    await userEvent.click(screen.getByRole('button', { name: 'Promote' }));
-    await userEvent.click(await screen.findByRole('button', { name: 'Promote to staging' }));
-    expect(await screen.findByRole('button', { name: /^v1\s*Staging/ })).toBeInTheDocument();
-
-    await state().queryPanel.runQuery('q1', 'getCustomer');
-
-    expect(environmentId).toBe('env-stg');
+  expect(result.current.loading).toBe(true);
+  await act(async () => {
+    responses[1](HttpResponse.json({ message: 'Current failure' }, { status: 500 }));
+    await refreshing;
   });
+  expect(result.current.loading).toBe(false);
+  expect(result.current.error).toBe('Current failure');
+});
 
-  it("moves the editor to the source version's data source and kind when a draft is created from it", async () => {
-    seed();
-    useStore.setState({
-      dataSources: [
-        { id: 'ds1', kind: 'postgresql', name: 'pg' },
-        { id: 'ds2', kind: 'restapi', name: 'api' },
-      ],
-    });
-    let drafted = false;
-    const v1 = version(1, { kind: 'restapi', dataSourceId: 'ds2', options: { url: 'http://x' } });
-    listVersions(() => ({ draft: drafted ? { createdFrom: 'v1', description: null } : null, versions: [v1] }));
-    server.use(
-      http.post(`${base}/draft`, () => {
-        drafted = true;
-        return HttpResponse.json(withNext({ draft: { createdFrom: 'v1', description: null }, versions: [v1] }));
-      })
-    );
-    renderDropdown();
-    await openDropdown();
-    await openMenu('v1');
-    await userEvent.click(screen.getByRole('button', { name: 'Create draft version from this' }));
-    await userEvent.click(
-      within(await screen.findByRole('dialog')).getByRole('button', { name: 'Create draft version' })
-    );
+it.each([
+  ['drafts', draft],
+  ['versions', saved],
+])('shows the shared dependency warning for a pinned %s row without changing selection', async (route, row) => {
+  server.use(
+    http.delete(`${base}/${route}/${row.id}`, () =>
+      HttpResponse.json({ statusCode: 409, code: 'LIBRARY_QUERY_IN_USE', message: 'Used by an app.' }, { status: 409 })
+    )
+  );
+  await open();
+  await act(async () => {
+    useStore.getState().queryLibrary.viewLibraryVersion('q1', row.id);
+  });
+  const selection = useStore.getState().queryLibrary.viewedVersionIdByQueryId.q1;
+  expect(selection).toBe(row.id);
+  await userEvent.click(cy(`${row.name}-version-more-menu-button`));
+  await userEvent.click(screen.getByText('Delete version'));
+  await userEvent.click(screen.getByRole('button', { name: 'Delete version' }));
+  const dialog = await screen.findByRole('dialog', { name: 'Dependent apps or modules found!' });
+  expect(dialog).toHaveTextContent('apps or modules');
+  await userEvent.click(screen.getByRole('button', { name: 'I understand' }));
+  expect(screen.queryByRole('dialog', { name: 'Dependent apps or modules found!' })).not.toBeInTheDocument();
+  expect(useStore.getState().queryLibrary.viewedVersionIdByQueryId.q1).toBe(selection);
+});
 
-    await waitFor(() => expect(state().queryPanel.selectedDataSource?.id).toBe('ds2'));
-    expect(state().queryPanel.selectedQuery).toMatchObject({
-      kind: 'restapi',
-      data_source_id: 'ds2',
-      options: { url: 'http://x' },
-    });
-    expect(state().dataQuery.queries.modules.canvas[0]).toMatchObject({ kind: 'restapi', data_source_id: 'ds2' });
+it.each([
+  { code: 'VERSION_RELEASED', message: 'Released version cannot be deleted' },
+  { message: 'The last version cannot be deleted' },
+  { code: 'OTHER_CONFLICT', message: 'Cannot delete this version.' },
+])('does not show dependency warnings for other lifecycle errors: $message', async (error) => {
+  let attempted = false;
+  server.use(
+    http.delete(`${base}/drafts/${draft.id}`, () => {
+      attempted = true;
+      return HttpResponse.json(error, { status: 409 });
+    })
+  );
+  await open();
+  await userEvent.click(cy(`${draft.name}-version-more-menu-button`));
+  await userEvent.click(screen.getByText('Delete version'));
+  await userEvent.click(screen.getByRole('button', { name: 'Delete version' }));
+  await waitFor(() => expect(attempted).toBe(true));
+  await waitFor(() => expect(screen.queryByRole('button', { name: 'Delete version' })).not.toBeInTheDocument());
+  expect(screen.queryByText('I understand')).not.toBeInTheDocument();
+});
+
+it('preserves saved parent UUIDs in the normalized lifecycle contract', async () => {
+  view.versions = [{ ...saved, createdFromVersionId: 'saved-parent', createdFrom: 'parent-version' }];
+  const { result } = renderHook(() => useLibraryVersionLifecycle({ queryId: 'q1' }));
+  await waitFor(() => expect(result.current.versions).toHaveLength(3));
+  expect(result.current.versions.find((version) => version.id === saved.id)).toMatchObject({
+    parentVersionId: 'saved-parent',
+    createdFromVersion: 'parent-version',
   });
 });

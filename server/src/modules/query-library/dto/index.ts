@@ -44,9 +44,6 @@ export class UpdateLibraryQueryDto {
   @MaxLength(255)
   @Matches(/\S/)
   name?: string;
-  @ValidateIf((_object, value) => value !== undefined)
-  @IsObject()
-  options?: Record<string, unknown>;
   @IsOptional()
   @IsUUID()
   folderId?: string | null;
@@ -59,13 +56,18 @@ export class ChangeLibraryDataSourceDto {
 export class LibraryQueryResponseDto {
   @Expose() id: string;
   @Expose() name: string;
-  @Expose() kind: string;
-  @Expose() dataSourceId: string | null;
-  @Expose() options: Record<string, unknown>;
   @Expose() folderId: string | null;
   @Expose() createdAt: Date;
   @Expose() updatedAt: Date;
 }
+@Exclude()
+export class LibraryQueryCreatedResponseDto extends LibraryQueryResponseDto {
+  @Expose() draftId: string;
+}
+export const toLibraryQueryCreatedResponse = (
+  query: LibraryQuery & { draftId: string }
+): LibraryQueryCreatedResponseDto =>
+  plainToInstance(LibraryQueryCreatedResponseDto, { ...toLibraryQueryResponse(query), draftId: query.draftId });
 @Exclude()
 export class LibraryFolderResponseDto {
   @Expose() id: string;
@@ -77,9 +79,6 @@ export const toLibraryQueryResponse = (query: LibraryQuery): LibraryQueryRespons
   plainToInstance(LibraryQueryResponseDto, {
     id: query.id,
     name: query.name,
-    kind: query.kind,
-    dataSourceId: query.dataSourceId ?? null,
-    options: query.options,
     folderId: query.folderId ?? null,
     createdAt: query.createdAt,
     updatedAt: query.updatedAt,

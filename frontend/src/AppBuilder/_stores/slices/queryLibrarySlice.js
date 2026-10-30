@@ -9,28 +9,26 @@ export const LIBRARY_DRAFT = 'draft';
 // starts from that query's own default.
 const pickedLibraryEnvironment = (state, queryId) => state.queryLibrary.runEnvironmentByQueryId[queryId] ?? null;
 
-// The version the library editor shows for a query: the one picked in the dropdown, else the draft, else the newest
-// saved version — limited to the picked environment tab, where the draft only lives in Development.
-// 'draft' | library version id; null until the query's versions are loaded, or when the picked tab has none.
+// Draft IDs and saved IDs share one lifecycle identity; the backend determines their status.
 export const viewedLibraryVersionId = (state, queryId) => {
   const view = state.queryLibrary.versionsByQueryId[queryId];
   if (!view) return null;
   const environment = pickedLibraryEnvironment(state, queryId);
-  const draftShown = !!view.draft && (!environment || environment.priority === 1);
-  const versions = environment
-    ? view.versions.filter((version) => version.environment?.id === environment.id)
-    : view.versions;
+  const rows = [
+    ...(!environment || environment.priority === 1 ? (view.drafts ?? []) : []),
+    ...(view.versions ?? []).filter((version) => !environment || version.environment?.id === environment.id),
+  ];
   const picked = state.queryLibrary.viewedVersionIdByQueryId[queryId];
-  if (picked === LIBRARY_DRAFT ? draftShown : versions.some((version) => version.id === picked)) return picked;
-  return draftShown ? LIBRARY_DRAFT : (versions[0]?.id ?? null);
+  return rows.find((row) => row.id === picked)?.id ?? rows[0]?.id ?? null;
 };
-
-// The saved version shown read-only, or null while the draft (or nothing) is shown.
-export const viewedSavedLibraryVersion = (state, queryId) => {
-  const id = viewedLibraryVersionId(state, queryId);
-  if (!id || id === LIBRARY_DRAFT) return null;
-  return state.queryLibrary.versionsByQueryId[queryId].versions.find((version) => version.id === id) ?? null;
-};
+export const viewedLibraryDraft = (state, queryId) =>
+  state.queryLibrary.versionsByQueryId[queryId]?.drafts?.find(
+    (draft) => draft.id === viewedLibraryVersionId(state, queryId)
+  ) ?? null;
+export const viewedSavedLibraryVersion = (state, queryId) =>
+  state.queryLibrary.versionsByQueryId[queryId]?.versions?.find(
+    (version) => version.id === viewedLibraryVersionId(state, queryId)
+  ) ?? null;
 
 // The environment the library editor shows and runs a query on: the tab picked in the version dropdown, else the
 // shown version's environment (the draft lives in Development), else Development.
@@ -46,37 +44,43 @@ export const libraryRunEnvironment = (state, queryId) => {
 // Only the draft, in Development, is editable: a shown saved version, another environment's tab, or a query with no
 // draft is read-only.
 export const isLibraryQueryLocked = (state, queryId) =>
-  !!state.queryLibrary.versionsByQueryId[queryId] &&
-  (viewedLibraryVersionId(state, queryId) !== LIBRARY_DRAFT ||
-    (libraryRunEnvironment(state, queryId)?.priority ?? 1) !== 1);
+  isQueryLibraryMode(state) &&
+  (!viewedLibraryDraft(state, queryId) || (libraryRunEnvironment(state, queryId)?.priority ?? 1) !== 1);
 
-// The query as the library editor shows and runs it: a shown saved version replaces the draft's kind and options.
 export const withViewedLibraryVersion = (state, query) => {
-  const version = query && viewedSavedLibraryVersion(state, query.id);
-  return version
+  if (!query || !isQueryLibraryMode(state)) return query;
+  const snapshot = viewedLibraryDraft(state, query.id) ?? viewedSavedLibraryVersion(state, query.id);
+  return snapshot
     ? {
         ...query,
-        kind: version.kind,
-        options: version.options,
-        data_source_id: version.dataSourceId ?? version.data_source_id,
-        dataSourceId: version.dataSourceId ?? version.data_source_id,
+        kind: snapshot.kind,
+        options: snapshot.options,
+        data_source_id: snapshot.dataSourceId,
+        dataSourceId: snapshot.dataSourceId,
       }
     : query;
 };
-
-// An empty environment tab has no version to run; saved versions resolve their own source on the server.
 export const libraryRunBlocker = (state, query) => {
-  if (!query || !state.queryLibrary.versionsByQueryId[query.id]) return null;
-  const version = viewedSavedLibraryVersion(state, query.id);
-  if (version) return null;
-  const environment = libraryRunEnvironment(state, query.id);
-  return environment && (environment.priority !== 1 || !state.queryLibrary.versionsByQueryId[query.id].draft)
-    ? `No version of this query in ${environment.name}`
-    : null;
+  if (!query || !isQueryLibraryMode(state)) return null;
+  return viewedLibraryVersionId(state, query.id)
+    ? null
+    : `No version of this query in ${libraryRunEnvironment(state, query.id)?.name ?? 'Development'}`;
 };
 
 export const createQueryLibrarySlice = (set, get) => {
   const context = () => ({ workspaceId: get().queryLibrary.workspaceId });
+  const refreshes = new Map();
+  const cancelSelection = () => {
+    get().dataQuery.saveData.flush?.();
+    for (const controller of queryAbortControllers.values()) controller.abort();
+    queryAbortControllers.clear();
+    set((state) => {
+      state.dataQuery.isUpdatingQueryInProcess = false;
+      state.queryPanel.queryPreviewData = '';
+      state.queryPanel.previewLoading = false;
+      state.queryPanel.isPreviewQueryLoading = false;
+    });
+  };
   const current = (sessionId) => get().queryLibrary.sessionId === sessionId;
   const clear = () => {
     for (const controller of queryAbortControllers.values()) controller.abort();
@@ -84,6 +88,7 @@ export const createQueryLibrarySlice = (set, get) => {
     set((state) => {
       state.queryPanel.selectedQuery = null;
       state.queryPanel.selectedDataSource = null;
+      state.dataQuery.isUpdatingQueryInProcess = false;
       state.queryPanel.queryPreviewData = '';
       state.queryPanel.previewLoading = false;
       state.queryPanel.isPreviewQueryLoading = false;
@@ -154,7 +159,7 @@ export const createQueryLibrarySlice = (set, get) => {
           state.queryLibrary.isLibraryMode = true;
           state.queryLibrary.workspaceId = workspaceId;
         });
-        get().dataQuery.restoreLibrarySaves(workspaceId);
+
         get().setCurrentMode('edit', 'canvas');
         return get().queryLibrary.sessionId;
       },
@@ -162,6 +167,7 @@ export const createQueryLibrarySlice = (set, get) => {
         if (sessionId !== undefined && !current(sessionId)) return;
         get().dataQuery.saveData.flush?.();
         get().dataQuery.saveData.cancel?.();
+        get().dataQuery.clearLibraryDraftWrites?.();
         clear();
         set((state) => {
           state.queryLibrary.isLibraryMode = false;
@@ -175,100 +181,189 @@ export const createQueryLibrarySlice = (set, get) => {
 
       loadLibraryVersions: async (queryId) => {
         const sessionId = get().queryLibrary.sessionId;
+        const token = Symbol(queryId);
+        refreshes.set(queryId, token);
         const view = await libraryQueryService.getVersions(queryId, context());
-        if (current(sessionId)) setView(queryId, view);
+        if (current(sessionId) && refreshes.get(queryId) === token) {
+          // Keep unsent/failed local options when a lifecycle refresh races autosave.
+          const drafts = (view.drafts ?? []).map((draft) => {
+            const pending = get().dataQuery.libraryDraftWrite?.(queryId, draft.id);
+            return pending ? { ...draft, options: pending.values.options } : draft;
+          });
+          setView(queryId, { ...view, drafts });
+          if (get().queryPanel.selectedQuery?.id === queryId)
+            get().queryPanel.setSelectedQuery(queryId, 'canvas', { fromServer: true });
+        }
         return view;
       },
-
-      viewLibraryVersion: (queryId, versionIdOrDraft) =>
-        set(
-          (state) => {
-            state.queryLibrary.viewedVersionIdByQueryId[queryId] = versionIdOrDraft;
-          },
-          false,
-          'viewLibraryVersion'
-        ),
+      updateCreatedLibraryQuery: (query, snapshot) =>
+        set((state) => {
+          state.queryLibrary.versionsByQueryId[query.id] = {
+            drafts: [
+              {
+                kind: snapshot.kind,
+                options: snapshot.options,
+                dataSourceId: snapshot.dataSourceId,
+                id: query.draftId,
+                name: 'v1',
+              },
+            ],
+            versions: [],
+          };
+          state.queryLibrary.viewedVersionIdByQueryId[query.id] = query.draftId;
+        }),
+      changeLibraryDraftDataSource: async (queryId, draftId, dataSourceId) => {
+        const sessionId = get().queryLibrary.sessionId;
+        const target = context();
+        await get().dataQuery.flushLibraryDraft(queryId, draftId);
+        if (!current(sessionId)) throw new Error('Library session changed');
+        const draft = await get().dataQuery.queueLibraryDraftOperation(queryId, draftId, () =>
+          libraryQueryService.changeDraftDataSource(queryId, draftId, dataSourceId, target)
+        );
+        if (current(sessionId)) {
+          const pending = get().dataQuery.libraryDraftWrite(queryId, draftId);
+          get().queryLibrary.updateLibraryDraftSnapshot(
+            queryId,
+            draftId,
+            pending ? { ...draft, options: pending.values.options } : draft
+          );
+        }
+        return draft;
+      },
+      updateLibraryDraftSnapshot: (queryId, draftId, patch) =>
+        set((state) => {
+          const draft = state.queryLibrary.versionsByQueryId[queryId]?.drafts?.find((row) => row.id === draftId);
+          if (draft) Object.assign(draft, patch);
+        }),
+      viewLibraryVersion: (queryId, versionId) => {
+        if (!versionId || versionId === LIBRARY_DRAFT) throw new Error('Select an explicit version ID');
+        cancelSelection();
+        set((state) => {
+          state.queryLibrary.viewedVersionIdByQueryId[queryId] = versionId;
+        });
+        get().dataQuery.refreshLibrarySaveStatus?.();
+        if (get().queryPanel.selectedQuery?.id === queryId)
+          get().queryPanel.setSelectedQuery(queryId, 'canvas', { fromServer: true });
+      },
 
       // Like a module's environment tabs: the tab shows its newest saved version (or none); the draft only on Development.
-      setLibraryRunEnvironment: (queryId, environment) =>
-        set(
+      setLibraryRunEnvironment: (queryId, environment) => {
+        cancelSelection();
+        return set(
           (state) => {
             state.queryLibrary.runEnvironmentByQueryId[queryId] = environment;
             delete state.queryLibrary.viewedVersionIdByQueryId[queryId];
           },
           false,
           'setLibraryRunEnvironment'
-        ),
+        );
+      },
 
-      saveLibraryVersion: async (queryId, { description } = {}) => {
+      saveLibraryDraft: async (queryId, draftId, body) => {
+        const selectedId = viewedLibraryVersionId(get(), queryId);
+        const selectedQueryId = get().queryPanel.selectedQuery?.id;
         const sessionId = get().queryLibrary.sessionId;
         const target = context();
-        // A throttled save can still be waiting for its trailing call: send it now and wait, so the saved version
-        // is the draft the user sees. A failed save means the server still has the old draft: save nothing.
-        get().dataQuery.saveData.flush?.();
-        try {
-          await get().dataQuery.queryUpdates[queryId];
-          const failed = get().dataQuery.failedSaves[queryId];
-          if (failed?.target.library && failed.target.workspaceId === target.workspaceId) throw failed.error;
-        } catch {
-          throw { error: 'Save the query before saving a version' };
-        }
-        const saved = await libraryQueryService.saveVersion(queryId, { description }, target);
+        await get().dataQuery.flushLibraryDraft(queryId, draftId);
+        if (!current(sessionId)) throw new Error('Library session changed');
+        const saved = await libraryQueryService.saveDraft(queryId, draftId, body, target);
         if (!current(sessionId)) return saved;
-        get().queryLibrary.viewLibraryVersion(queryId, saved.id);
         await reload(queryId);
+        if (
+          current(sessionId) &&
+          selectedId === viewedLibraryVersionId(get(), queryId) &&
+          selectedQueryId === get().queryPanel.selectedQuery?.id
+        )
+          get().queryLibrary.viewLibraryVersion(queryId, saved.id);
         return saved;
       },
-
-      createLibraryDraft: async (queryId, { fromVersionId, description } = {}) => {
+      saveLibraryVersion: (queryId, body) =>
+        get().queryLibrary.saveLibraryDraft(queryId, viewedLibraryDraft(get(), queryId)?.id, body),
+      editLibraryDraft: async (queryId, draftId, patch) => {
         const sessionId = get().queryLibrary.sessionId;
         const target = context();
-        get().dataQuery.saveData.flush?.();
-        await get().dataQuery.queryUpdates[queryId];
-        const view = await libraryQueryService.createDraft(queryId, { fromVersionId, description }, target);
-        if (!current(sessionId)) return view;
-        // The server copied the source version (content and data source) onto the query row: show the same in the
-        // editor, so the next autosave doesn't write the old content back over the new draft.
-        const source = view.versions.find((version) => version.id === fromVersionId);
-        set(
-          (state) => {
-            state.queryLibrary.versionsByQueryId[queryId] = view;
-            state.queryLibrary.viewedVersionIdByQueryId[queryId] = LIBRARY_DRAFT;
-            const query = source && state.dataQuery.queries.modules.canvas?.find((q) => q.id === queryId);
-            if (!query) return;
-            query.options = source.options;
-            query.kind = source.kind;
-            query.data_source_id = source.dataSourceId ?? source.data_source_id ?? null;
-            query.dataSourceId = query.data_source_id;
-          },
-          false,
-          'createLibraryDraft'
-        );
-        // Re-select so selectedQuery and its data source follow the row.
-        if (source && get().queryPanel.selectedQuery?.id === queryId)
-          get().queryPanel.setSelectedQuery(queryId, 'canvas', { fromServer: true });
-        return view;
+        await get().dataQuery.flushLibraryDraft(queryId, draftId);
+        if (!current(sessionId)) throw new Error('Library session changed');
+        const draft = await libraryQueryService.updateDraft(queryId, draftId, patch, target);
+        if (current(sessionId)) {
+          const pending = get().dataQuery.libraryDraftWrite(queryId, draftId);
+          get().queryLibrary.updateLibraryDraftSnapshot(
+            queryId,
+            draftId,
+            pending ? { ...draft, options: pending.values.options } : draft
+          );
+        }
+        return draft;
       },
-
-      discardLibraryDraft: async (queryId) => {
+      createLibraryDraft: async (queryId, body) => {
+        const selectedId = viewedLibraryVersionId(get(), queryId);
+        const selectedQueryId = get().queryPanel.selectedQuery?.id;
+        const selectedEnvironment = pickedLibraryEnvironment(get(), queryId);
         const sessionId = get().queryLibrary.sessionId;
-        const target = context();
-        get().dataQuery.saveData.flush?.();
-        await get().dataQuery.queryUpdates[queryId];
-        await libraryQueryService.discardDraft(queryId, target);
-        const queries = await libraryQueryService.list(target);
-        if (!current(sessionId)) return;
-        get().dataQuery.setQueries(queries);
-        if (get().queryPanel.selectedQuery?.id === queryId)
-          get().queryPanel.setSelectedQuery(queryId, 'canvas', { fromServer: true });
+        const ownsSelection = () =>
+          current(sessionId) &&
+          selectedId === viewedLibraryVersionId(get(), queryId) &&
+          selectedQueryId === get().queryPanel.selectedQuery?.id &&
+          selectedEnvironment === pickedLibraryEnvironment(get(), queryId);
+        const draft = await libraryQueryService.createDraft(queryId, body, context());
+        if (!current(sessionId)) return draft;
+        const selectCreated = ownsSelection();
         await reload(queryId);
+        if (selectCreated && ownsSelection()) {
+          cancelSelection();
+          set((state) => {
+            state.queryLibrary.runEnvironmentByQueryId[queryId] =
+              state.environments.find((environment) => environment.priority === 1) ?? null;
+            state.queryLibrary.viewedVersionIdByQueryId[queryId] = draft.id;
+          });
+          get().dataQuery.refreshLibrarySaveStatus?.();
+          get().queryPanel.setSelectedQuery(queryId, 'canvas', { fromServer: true });
+        }
+        return draft;
       },
+      deleteLibraryDraft: async (queryId, draftId) => {
+        const sessionId = get().queryLibrary.sessionId;
+        const target = context();
+        await get().dataQuery.flushLibraryDraft(queryId, draftId);
+        if (!current(sessionId)) throw new Error('Library session changed');
+        await libraryQueryService.deleteDraft(queryId, draftId, target);
+        if (current(sessionId)) {
+          await reload(queryId);
+          if (current(sessionId) && get().queryPanel.selectedQuery?.id === queryId)
+            get().queryPanel.setSelectedQuery(queryId, 'canvas', { fromServer: true });
+        }
+      },
+      discardLibraryDraft: (queryId) =>
+        get().queryLibrary.deleteLibraryDraft(queryId, viewedLibraryDraft(get(), queryId)?.id),
 
       promoteLibraryVersion: async (queryId, libraryVersionId) => {
         const sessionId = get().queryLibrary.sessionId;
+        const selectedId = viewedLibraryVersionId(get(), queryId);
+        const selectedQueryId = get().queryPanel.selectedQuery?.id;
+        const selectedEnvironment = pickedLibraryEnvironment(get(), queryId);
         const target = context();
         const promoted = await libraryQueryService.promote(queryId, libraryVersionId, target);
-        if (current(sessionId)) await reload(queryId);
+        if (!current(sessionId)) return promoted;
+        if (
+          selectedId === libraryVersionId &&
+          selectedId === viewedLibraryVersionId(get(), queryId) &&
+          selectedQueryId === queryId &&
+          selectedQueryId === get().queryPanel.selectedQuery?.id &&
+          selectedEnvironment === pickedLibraryEnvironment(get(), queryId)
+        ) {
+          cancelSelection();
+          // Move the selected snapshot and environment together before refreshing its view.
+          set((state) => {
+            const view = state.queryLibrary.versionsByQueryId[queryId];
+            view.versions = view.versions.map((row) => (row.id === promoted.id ? promoted : row));
+            state.queryLibrary.runEnvironmentByQueryId[queryId] =
+              state.environments.find((environment) => environment.id === promoted.environment?.id) ??
+              promoted.environment;
+            state.queryLibrary.viewedVersionIdByQueryId[queryId] = promoted.id;
+          });
+          get().queryPanel.setSelectedQuery(queryId, 'canvas', { fromServer: true });
+        }
+        await reload(queryId);
         return promoted;
       },
 

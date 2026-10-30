@@ -38,7 +38,10 @@ const catalog = {
       id: 'q1',
       name: 'getInvoices',
       folder: 'billing',
-      draft: { kind: 'postgresql', inputs: [{ name: 'region' }], matchesLatestVersion: false },
+      drafts: [
+        { id: 'draft1', name: 'experiment', kind: 'postgresql', inputs: [{ name: 'region' }] },
+        { id: 'draft2', name: 'candidate', kind: 'postgresql', inputs: [] },
+      ],
       releasedVersionId: 'ver2',
       versions: [version(2, ['region'], production, true), version(1, [], staging)],
     },
@@ -46,7 +49,7 @@ const catalog = {
       id: 'q2',
       name: 'getOrders',
       folder: null,
-      draft: { kind: 'postgresql', inputs: [], matchesLatestVersion: false },
+      drafts: [{ id: 'draft3', name: 'scratch', kind: 'postgresql', inputs: [] }],
       releasedVersionId: null,
       versions: [version(2, ['region', 'other']), version(1, ['other'])],
     },
@@ -55,7 +58,7 @@ const catalog = {
       name: 'getDraftOnly',
       folder: null,
       releasedVersionId: null,
-      draft: { kind: 'postgresql', inputs: [], matchesLatestVersion: false },
+      drafts: [{ id: 'draft3', name: 'scratch', kind: 'postgresql', inputs: [] }],
       versions: [],
     },
   ],
@@ -155,7 +158,7 @@ it('pins the newest saved version when none is Released, and the draft when none
   );
   await pick('getOrders', 'getDraftOnly');
   await waitFor(() =>
-    expect(optionsChanged).toHaveBeenLastCalledWith(expect.objectContaining({ libraryQueryVersionId: 'draft' }))
+    expect(optionsChanged).toHaveBeenLastCalledWith(expect.objectContaining({ libraryQueryVersionId: 'draft3' }))
   );
 });
 
@@ -189,14 +192,35 @@ it('shows the draft notice when the draft is chosen', async () => {
     inputs: {},
   });
   expect(screen.queryByText(/can't be released/)).not.toBeInTheDocument();
-  await pick('v2 · Production · Released', 'Draft (testing only)');
+  await pick('v2 · Production · Released', 'experiment · Draft (testing only)');
 
   expect(await screen.findByText("This app can't be released while this query uses the draft.")).toBeInTheDocument();
 });
 
-it('treats a pin with no version id as the draft', async () => {
-  renderLibrary({ libraryQueryId: 'q1', libraryKind: 'postgresql', inputs: {} });
-  expect(await screen.findByText("This app can't be released while this query uses the draft.")).toBeInTheDocument();
+it('leaves missing and sentinel pins unresolved without choosing another draft', async () => {
+  const changed = renderLibrary({ libraryQueryId: 'q1', libraryQueryVersionId: 'draft', inputs: {} });
+  await screen.findByText('Version');
+  expect(screen.queryByText(/can't be released/)).not.toBeInTheDocument();
+  expect(changed).not.toHaveBeenCalled();
+});
+
+it('selects each named draft by its own identity', async () => {
+  const changed = renderLibrary({ libraryQueryId: 'q1', libraryQueryVersionId: 'ver2', inputs: {} });
+  await pick('v2 · Production · Released', 'candidate · Draft (testing only)');
+  expect(changed).toHaveBeenLastCalledWith(expect.objectContaining({ libraryQueryVersionId: 'draft2', inputs: {} }));
+  await pick('candidate · Draft (testing only)', 'experiment · Draft (testing only)');
+  expect(changed).toHaveBeenLastCalledWith(
+    expect.objectContaining({ libraryQueryVersionId: 'draft1', inputs: { region: '' } })
+  );
+});
+
+it('keeps a saved version named draft saved', async () => {
+  useCatalog({
+    queries: [{ ...catalog.queries[0], versions: [{ ...catalog.queries[0].versions[0], name: 'draft' }] }],
+  });
+  renderLibrary({ libraryQueryId: 'q1', libraryQueryVersionId: 'ver2', inputs: {} });
+  expect(await screen.findByText('draft · Production · Released')).toBeInTheDocument();
+  expect(screen.queryByText(/can't be released/)).not.toBeInTheDocument();
 });
 
 it('offers the Released version when the pin is not it, and selects it on click', async () => {

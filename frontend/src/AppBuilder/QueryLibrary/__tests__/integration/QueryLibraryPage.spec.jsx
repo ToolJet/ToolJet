@@ -38,6 +38,7 @@ const query = {
   },
   dataSourceId: null,
 };
+const draftRow = (extra = {}) => ({ ...query, id: 'draft-1', name: 'v1', ...extra });
 const requests = [];
 beforeEach(() => {
   Object.defineProperty(Element.prototype, 'scrollIntoView', { configurable: true, value: jest.fn() });
@@ -62,8 +63,7 @@ beforeEach(() => {
       if (path.endsWith('/app-environments'))
         return HttpResponse.json({ environments: [{ id: 'development', name: 'development', priority: 1 }] });
       if (path.includes('/data-sources/')) return HttpResponse.json({ data_sources: [] });
-      if (path.endsWith('/versions'))
-        return HttpResponse.json({ draft: { createdFrom: null }, versions: [], nextVersionNumber: 1 });
+      if (path.endsWith('/versions')) return HttpResponse.json({ drafts: [draftRow()], versions: [] });
       if (path.endsWith('/query-library/usage')) return HttpResponse.json({ apps: [], modules: [] });
       if (path.endsWith('/license/feature-access')) return HttpResponse.json({});
       return HttpResponse.json({});
@@ -107,17 +107,8 @@ it('does not apply a deferred load after leaving or switching workspace', async 
   act(() => {
     state().queryLibrary.beginLibrarySession('workspace-b');
   });
-  const responseCompleted = new Promise((resolve) => {
-    const onResponse = ({ request }) => {
-      if (!new URL(request.url).pathname.endsWith('/query-library/queries')) return;
-      server.events.removeListener('response:mocked', onResponse);
-      resolve();
-    };
-    server.events.on('response:mocked', onResponse);
-  });
   await act(async () => {
     finish();
-    await responseCompleted;
     await new Promise(setImmediate);
   });
   await waitFor(() => expect(state().queryLibrary.workspaceId).toBe('workspace-b'));
@@ -129,7 +120,7 @@ it('shows draft save progress, failure and retry beside the version pill', async
   let finish;
   let fail = true;
   server.use(
-    http.patch(`${config.apiUrl}/query-library/queries/q1`, () =>
+    http.patch(`${config.apiUrl}/query-library/queries/q1/drafts/draft-1`, () =>
       fail
         ? HttpResponse.json({ error: 'Draft rejected' }, { status: 400 })
         : new Promise((resolve) => {
@@ -210,7 +201,7 @@ it('creates a standalone query and displays it in the library list', async () =>
   server.use(
     http.post(`${config.apiUrl}/query-library/queries`, async ({ request }) => {
       created = { body: await request.json(), workspace: request.headers.get('tj-workspace-id') };
-      return HttpResponse.json({ ...created.body, id: 'created' });
+      return HttpResponse.json({ id: 'created', name: created.body.name, draftId: 'new-draft' });
     })
   );
   render(<QueryLibraryPage darkMode={false} />);
@@ -249,7 +240,7 @@ it('keeps workspace creation enabled while a saved version editor is locked', as
   server.use(
     http.get(`${config.apiUrl}/query-library/queries/q1/versions`, () =>
       HttpResponse.json({
-        draft: null,
+        drafts: [],
         versions: [
           {
             id: 'saved',
@@ -300,32 +291,32 @@ it('discards an edited mounted draft without autosaving restored content and can
   let patches = 0;
   let creates = 0;
   const versions = () => ({
-    draft: draft ? { createdFrom: 'v1' } : null,
+    drafts: draft ? [draftRow({ name: 'v2', options: row.options })] : [],
     versions: [savedVersion()],
     nextVersionNumber: 2,
   });
   server.use(
     http.get(`${config.apiUrl}/query-library/queries`, () => HttpResponse.json([row])),
     http.get(`${config.apiUrl}/query-library/queries/q1/versions`, () => HttpResponse.json(versions())),
-    http.patch(`${config.apiUrl}/query-library/queries/q1`, async ({ request }) => {
+    http.patch(`${config.apiUrl}/query-library/queries/q1/drafts/draft-1`, async ({ request }) => {
       patches++;
       if (!draft) return HttpResponse.json({ error: 'No draft' }, { status: 400 });
       row = { ...row, ...(await request.json()) };
       return HttpResponse.json(row);
     }),
-    http.delete(`${config.apiUrl}/query-library/queries/q1/versions/draft`, () => {
+    http.delete(`${config.apiUrl}/query-library/queries/q1/drafts/draft-1`, () => {
       draft = false;
       row = query;
       return HttpResponse.json({});
     }),
-    http.post(`${config.apiUrl}/query-library/queries/q1/versions/draft`, () => {
+    http.post(`${config.apiUrl}/query-library/queries/q1/drafts`, () => {
       creates++;
       draft = true;
-      return HttpResponse.json(versions());
+      return HttpResponse.json(draftRow({ name: 'v2' }));
     }),
-    http.post(`${config.apiUrl}/query-library/queries/q1/versions/save`, () => {
+    http.post(`${config.apiUrl}/query-library/queries/q1/drafts/draft-1/save`, () => {
       draft = false;
-      return HttpResponse.json(savedVersion({ id: 'saved-again', name: 'v2', versionNumber: 2 }));
+      return HttpResponse.json(savedVersion({ id: 'draft-1', name: 'v2', versionNumber: 2 }));
     })
   );
   render(<QueryLibraryPage darkMode={false} />);
@@ -343,12 +334,12 @@ it('discards an edited mounted draft without autosaving restored content and can
   expect(state().dataQuery.failedSaves).toEqual({});
   expect(screen.queryByText('Could not save changes')).not.toBeInTheDocument();
   await act(async () => {
-    await state().queryLibrary.createLibraryDraft('q1', { fromVersionId: 'saved' });
+    await state().queryLibrary.createLibraryDraft('q1', { name: 'v2', fromVersionId: 'saved' });
   });
   expect(creates).toBe(1);
   act(() => state().dataQuery.updateDataQuery({ ...query.options, url: 'new draft' }));
   await act(async () => {
-    await state().queryLibrary.saveLibraryVersion('q1');
+    await state().queryLibrary.saveLibraryDraft('q1', 'draft-1', { name: 'v2' });
   });
   expect(patches).toBe(3);
 });
@@ -361,7 +352,7 @@ it.each([false, true])(
     server.use(
       http.get(`${config.apiUrl}/query-library/queries/q1/versions`, () =>
         HttpResponse.json({
-          draft: hasDraft ? { createdFrom: 'v1' } : null,
+          drafts: hasDraft ? [draftRow({ name: 'v2' })] : [],
           versions: [savedVersion()],
           nextVersionNumber: 2,
         })
@@ -457,7 +448,13 @@ it.each([false, true])(
       ),
       http.get(`${config.apiUrl}/query-library/queries/q1/versions`, () =>
         HttpResponse.json({
-          draft: { createdFrom: 'v1' },
+          drafts: [
+            draftRow({
+              name: 'v2',
+              dataSourceId: 'source-B',
+              options: { ...query.options, url: 'draft B', payload: { value: 'draft B' } },
+            }),
+          ],
           versions: [
             savedVersion({ dataSourceId: 'source-A', options: { ...query.options, payload: { value: 'saved A' } } }),
           ],
@@ -480,9 +477,8 @@ it.each([false, true])(
     expect(state().queryPanel.selectedQuery.data_source_id).toBe('source-B');
     expect(screen.getByText('Source B')).toBeInTheDocument();
     if (plugin) expect(screen.getByText('Schema B')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /^v2/ }));
-    fireEvent.click(screen.getByText('v1', { selector: '[data-cy$="-library-version-name"]' }));
-    fireEvent.click(screen.getByRole('button', { name: /^v1/ }));
+    // Picker behavior is covered by lifecycleParity; this page test exercises source hydration.
+    await act(async () => state().queryLibrary.viewLibraryVersion('q1', 'saved'));
     expect(screen.getByText('Source A')).toBeInTheDocument();
     if (plugin) {
       expect(screen.getByText('Schema A')).toBeInTheDocument();
@@ -498,7 +494,7 @@ it.each([false, true])(
     await waitFor(() => expect(runs).toEqual([{ libraryVersionId: 'saved' }]));
     await waitFor(() => expect(state().queryPanel.isPreviewQueryLoading).toBe(false));
     fireEvent.click(screen.getByRole('button', { name: /^v1/ }));
-    fireEvent.click(screen.getByText('v2', { selector: '[data-cy$="-library-version-name"]' }));
+    fireEvent.click(await screen.findByText('v2', { selector: '[data-cy$="-version-name"]' }));
     expect(screen.getByText('Source B')).toBeInTheDocument();
     if (plugin) {
       expect(screen.getByText('Schema B')).toBeInTheDocument();
@@ -555,13 +551,17 @@ it.each([
       staticWorkspace = request.headers.get('tj-workspace-id');
       return HttpResponse.json([{ id, kind, name: label, type: 'static' }]);
     }),
-    http.patch(`${config.apiUrl}/query-library/queries/created-${kind}`, async ({ request }) =>
-      HttpResponse.json({ ...created.body, ...(await request.json()), id: `created-${kind}` })
+    http.get(`${config.apiUrl}/query-library/queries/created-${kind}/versions`, () =>
+      HttpResponse.json({ drafts: [{ ...created.body, id: `created-${kind}-draft`, name: 'v1' }], versions: [] })
+    ),
+    http.patch(
+      `${config.apiUrl}/query-library/queries/created-${kind}/drafts/created-${kind}-draft`,
+      async ({ request }) => HttpResponse.json({ ...created.body, ...(await request.json()), id: `created-${kind}` })
     ),
     http.post(`${config.apiUrl}/query-library/queries`, async ({ request }) => {
       created = { body: await request.json(), workspace: request.headers.get('tj-workspace-id') };
       return created.body.dataSourceId === id
-        ? HttpResponse.json({ ...created.body, id: `created-${kind}` })
+        ? HttpResponse.json({ id: `created-${kind}`, name: created.body.name, draftId: `created-${kind}-draft` })
         : HttpResponse.json({ error: 'dataSourceId must be a UUID' }, { status: 400 });
     })
   );

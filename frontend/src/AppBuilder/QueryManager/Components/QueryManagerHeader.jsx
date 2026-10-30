@@ -15,7 +15,11 @@ import { Button } from 'react-bootstrap';
 import { decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
-import { isQueryLibraryMode, isLibraryQueryLocked } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
+import {
+  isQueryLibraryMode,
+  viewedLibraryDraft,
+  isLibraryQueryLocked,
+} from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import { useContainerWidth } from '@/_hooks/useContainerWidth';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
@@ -53,13 +57,9 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
     }),
     shallow
   );
-  const retryFailedSave = useStore((state) => state.dataQuery.retryFailedSave);
-  const failedSaves = useStore((state) => state.dataQuery.failedSaves);
-  const libraryWorkspaceId = useStore((state) => state.queryLibrary.workspaceId);
-  const retryLibrarySaves = () =>
-    Object.entries(failedSaves).forEach(([id, failure]) => {
-      if (failure.target?.library && failure.target.workspaceId === libraryWorkspaceId) retryFailedSave(id);
-    });
+  const draftId = useStore((state) => viewedLibraryDraft(state, state.queryPanel.selectedQuery?.id)?.id);
+  const retryDraftSave = useStore((state) => state.dataQuery.retryLibraryDraftSave);
+  const retryLibrarySaves = () => retryDraftSave(selectedQuery?.id, draftId);
   const headerRef = useRef(null);
   const headerWidth = useContainerWidth(headerRef);
 

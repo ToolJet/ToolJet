@@ -41,7 +41,7 @@ export default function QueryLibraryPage({ darkMode }) {
     const sessionId = useStore.getState().queryLibrary.beginLibrarySession(workspaceId);
     const controller = new AbortController();
     const current = () => !controller.signal.aborted && useStore.getState().queryLibrary.isCurrentSession(sessionId);
-    const context = { workspaceId };
+    const context = { workspaceId, signal: controller.signal };
     const read = (path) =>
       fetch(`${config.apiUrl}/${path}`, {
         headers: authHeader(false, workspaceId),

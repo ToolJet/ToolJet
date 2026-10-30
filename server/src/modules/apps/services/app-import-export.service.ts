@@ -1,5 +1,18 @@
-import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { isEmpty, set } from 'lodash';
+import {
+  lockLibraryPins,
+  lockLibraryQuery,
+  withLibraryImportLocks,
+  registerImportedLibraryQuery,
+} from '@modules/query-library/locking';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
+import { isEmpty, isEqual, set } from 'lodash';
 import { isUUID } from 'class-validator';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
@@ -71,16 +84,20 @@ import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import {
+  assertLibraryExport,
   collectLibraryExport,
+  LibraryExportDraft,
+  LibraryExportVersion,
   findLibraryExportDataSources,
   LibraryExportQuery,
   mapLibrarySnapshot,
   matchLibraryQuery,
-  matchLibraryVersion,
   remapLibraryConsumerOptions,
 } from '@modules/data-queries/library/library-export.util';
 import { LIBRARY_KIND } from '@modules/data-queries/library/library-query.util';
+import { assertCanRelease } from '@modules/data-queries/library/library-lifecycle.util';
 import { LibraryQuery } from '@entities/library_query.entity';
+import { LibraryQueryDraft } from '@entities/library_query_draft.entity';
 import { LibraryQueryFolder } from '@entities/library_query_folder.entity';
 import { LibraryQueryState } from '@entities/library_query_state.entity';
 import { LibraryQueryVersion } from '@entities/library_query_version.entity';
@@ -504,10 +521,10 @@ export class AppImportExportService {
         })
         .getMany();
 
-      // Library queries this app uses travel with it: front-end apps only, like modules. Their data sources export the
+      // App and module library pins travel in file exports. Their data sources export the
       // same way the app's own do, so they join the global list before options are collected.
       const libraryQueries =
-        withLibraryQueries && appToExport.type === APP_TYPES.FRONT_END
+        withLibraryQueries && [APP_TYPES.FRONT_END, APP_TYPES.MODULE].includes(appToExport.type)
           ? await collectLibraryExport(
               manager,
               appToExport.organizationId,
@@ -773,7 +790,9 @@ export class AppImportExportService {
             }
           }
 
-          const moduleExport = await this.export(user, resolvedId, { version_id: versionDbId }, parentBranchId);
+          const moduleExport = await this.export(user, resolvedId, { version_id: versionDbId }, parentBranchId, {
+            withLibraryQueries,
+          });
           // Travels with appV2 so writeReferencedModules can check the actual pin outcome
           // instead of inferring it from versionType (see comment there).
           moduleApps.push({ ...moduleExport, isPinnedToVersion });
@@ -859,8 +878,8 @@ export class AppImportExportService {
       };
       if (appToExport?.type === APP_TYPES.FRONT_END) {
         appToExport['modules'] = moduleApps; //Sending all app related modules
-        if (libraryQueries.length) appToExport['libraryQueries'] = libraryQueries;
       }
+      if (libraryQueries.length) appToExport['libraryQueries'] = libraryQueries;
       entitiesToRemoveTimestamps.forEach((entityName) => {
         const entity = appToExport[entityName];
         if (entity) {
@@ -1444,120 +1463,132 @@ export class AppImportExportService {
     branchId?: string,
     isTemplateApp = false
   ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      if (typeof appParamsObj !== 'object') {
-        throw new BadRequestException('Invalid params for app import');
-      }
-      let appParams = appParamsObj;
+    return await dbTransactionWrap(
+      (manager: EntityManager) =>
+        withLibraryImportLocks(manager, user.organizationId, appParamsObj, isGitApp, async () => {
+          if (typeof appParamsObj !== 'object') {
+            throw new BadRequestException('Invalid params for app import');
+          }
+          let appParams = appParamsObj;
 
-      if (appParams?.appV2) {
-        appParams = { ...appParams.appV2 };
-      }
+          if (appParams?.appV2) {
+            appParams = { ...appParams.appV2 };
+          }
 
-      // appParams.name can be null when the file was exported from a git-enabled
-      // workspace where the module only exists on a feature branch (no default-branch
-      // DRAFT version → resolveMetadataVersion returns null → app.name stays null).
-      // appName (user-provided) is always used as the final name (line below), so
-      // allow it as a fallback here to avoid a spurious 400 on device imports.
-      if (!appParams?.name && !appName) {
-        throw new BadRequestException('Invalid params for app import');
-      }
+          // appParams.name can be null when the file was exported from a git-enabled
+          // workspace where the module only exists on a feature branch (no default-branch
+          // DRAFT version → resolveMetadataVersion returns null → app.name stays null).
+          // appName (user-provided) is always used as the final name (line below), so
+          // allow it as a fallback here to avoid a spurious 400 on device imports.
+          if (!appParams?.name && !appName) {
+            throw new BadRequestException('Invalid params for app import');
+          }
 
-      const moduleResourceMappings = await this.mapModulesForAppImport(
-        manager,
-        appParams,
-        user,
-        externalResourceMappings,
-        isGitApp,
-        tooljetVersion,
-        branchId
-      );
+          const moduleResourceMappings = await this.mapModulesForAppImport(
+            manager,
+            appParams,
+            user,
+            externalResourceMappings,
+            isGitApp,
+            tooljetVersion,
+            branchId
+          );
 
-      const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
-        ? appParams
-        : convertSinglePageSchemaToMultiPageSchema(appParams);
-      schemaUnifiedAppParams.name = appName;
+          const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
+            ? appParams
+            : convertSinglePageSchemaToMultiPageSchema(appParams);
+          schemaUnifiedAppParams.name = appName;
 
-      const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
-      const isNormalizedAppDefinitionSchema = cloning
-        ? true
-        : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
+          const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
+          const isNormalizedAppDefinitionSchema = cloning
+            ? true
+            : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
-      const currentTooljetVersion = !cloning ? tooljetVersion : null;
-      const existingAppId = appParamsObj.existingAppId;
-      const importedApp = await this.createImportedAppForUser(
-        manager,
-        schemaUnifiedAppParams,
-        user,
-        isGitApp,
-        existingAppId,
-        branchId
-      );
+          const currentTooljetVersion = !cloning ? tooljetVersion : null;
+          const existingAppId = appParamsObj.existingAppId;
+          const importedApp = await this.createImportedAppForUser(
+            manager,
+            schemaUnifiedAppParams,
+            user,
+            isGitApp,
+            existingAppId,
+            branchId
+          );
 
-      const resourceMapping = await this.setupImportedAppAssociations(
-        manager,
-        importedApp,
-        schemaUnifiedAppParams,
-        user,
-        externalResourceMappings,
-        isNormalizedAppDefinitionSchema,
-        currentTooljetVersion,
-        moduleResourceMappings,
-        undefined,
-        branchId,
-        cloning,
-        isGitApp,
-        isTemplateApp
-      );
-      await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
-      await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
+          const resourceMapping = await this.setupImportedAppAssociations(
+            manager,
+            importedApp,
+            schemaUnifiedAppParams,
+            user,
+            externalResourceMappings,
+            isNormalizedAppDefinitionSchema,
+            currentTooljetVersion,
+            moduleResourceMappings,
+            undefined,
+            branchId,
+            cloning,
+            isGitApp,
+            isTemplateApp
+          );
+          await this.updateEntityReferencesForImportedApp(manager, resourceMapping, isGitApp);
+          await this.remapCustomComponentLibraries(manager, user.organizationId, resourceMapping);
 
-      // Library queries the app uses travel with its export; the app's pins are re-pointed at this workspace's rows.
-      // Never from git: the library is not synced to git, so a git pull leaves the library untouched.
-      if (!isGitApp && Array.isArray(appParams.libraryQueries) && appParams.libraryQueries.length) {
-        await this.importLibraryQueries(
-          manager,
-          appParams.libraryQueries,
-          user,
-          resourceMapping,
-          externalResourceMappings['tooljet_database'] ?? {}
-        );
-      }
+          // Library queries the app uses travel with its export; the app's pins are re-pointed at this workspace's rows.
+          // Never from git: the library is not synced to git, so a git pull leaves the library untouched.
+          if (!isGitApp && Array.isArray(appParams.libraryQueries) && appParams.libraryQueries.length) {
+            await this.importLibraryQueries(
+              manager,
+              appParams.libraryQueries,
+              user,
+              resourceMapping,
+              externalResourceMappings['tooljet_database'] ?? {}
+            );
+          }
 
-      // Update latest version as editing version
-      const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
+          // Imported rows are provisional until remapping finishes. Validate/lock the final
+          // pins before this transaction may commit, including Git and clone imports.
+          const importedQueries = await manager.find(DataQuery, {
+            where: { appVersionId: In(Object.values(resourceMapping.appVersionMapping)) },
+            relations: { dataSource: true },
+          });
+          await lockLibraryPins(manager, user.organizationId, importedQueries);
 
-      // When multiple versions are imported, branch-type versions are excluded.
-      // Filter here to match so the editing version is set to a version that was actually created.
-      const importedAppVersions =
-        importingAppVersions.length > 1
-          ? importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION)
-          : importingAppVersions;
+          // Update latest version as editing version
+          const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
 
-      await this.setEditingVersionAsLatestVersion(manager, resourceMapping.appVersionMapping, importedAppVersions);
+          // When multiple versions are imported, branch-type versions are excluded.
+          // Filter here to match so the editing version is set to a version that was actually created.
+          const importedAppVersions =
+            importingAppVersions.length > 1
+              ? importingAppVersions.filter((v: any) => !v.versionType || v.versionType === AppVersionType.VERSION)
+              : importingAppVersions;
 
-      const newApp = await manager.findOne(App, {
-        where: { id: importedApp.id },
-      });
-      return { newApp, resourceMapping };
-    }, manager);
+          await this.setEditingVersionAsLatestVersion(manager, resourceMapping.appVersionMapping, importedAppVersions);
+
+          const newApp = await manager.findOne(App, {
+            where: { id: importedApp.id },
+          });
+          return { newApp, resourceMapping };
+        }),
+      manager
+    );
   }
 
-  /**
-   * Brings the library queries bundled in an app export into this workspace's library: a query matches by
-   * co_relation_id, id, then name (its draft is left alone) or is created; each exported version is reused when an
-   * identical one exists, else added as the next number. Then the imported app's library consumers are re-pointed
-   * at the resulting ids. Returns the exported id -> local id maps and the names of queries it had to skip (no data
-   * source to land on). The library is Module-permissioned, so the first write needs module_create unless the
-   * import creates nothing.
-   */
+  // CE has no multi-environment licence; EE resolves the destination workspace's terms.
+  protected async isMultiEnvironmentLicensed(_organizationId: string): Promise<boolean> {
+    return false;
+  }
+
+  // Import named snapshots under the recursive parent-lock plan, then remap exact consumer UUIDs.
+  // A conflicting name rejects the entire transaction; saved content and metadata remain immutable.
   protected async importLibraryQueries(
     manager: EntityManager,
     exported: LibraryExportQuery[],
     user: User,
     resourceMapping: AppResourceMappings,
     tooljetDatabaseMapping: Record<string, { id: string }> = {}
-  ): Promise<{ queries: Record<string, string>; versions: Record<string, string>; skipped: string[] }> {
+  ): Promise<{ queries: Record<string, string>; versions: Record<string, string> }> {
+    assertLibraryExport(exported);
     const organizationId = user.organizationId;
     let canWrite = false;
     const requireWrite = async () => {
@@ -1572,34 +1603,41 @@ export class AppImportExportService {
     };
     const remapTables = (options: Record<string, unknown>) =>
       this.replaceTooljetDbTableIds(options, tooljetDatabaseMapping, organizationId);
-    const map = <T extends LibraryExportQuery['draft']>(snapshot: T): T =>
+    const map = <T extends LibraryExportDraft>(snapshot: T): T =>
       mapLibrarySnapshot(snapshot, resourceMapping.dataSourceMapping, remapTables);
 
-    // Imported drafts stay editable; saved versions start in Development and remain unreleased.
-    const developmentEnvironment = await manager.findOne(AppEnvironment, { where: { organizationId, priority: 1 } });
+    const environments = await manager.find(AppEnvironment, { where: { organizationId } });
     const existing = await manager.find(LibraryQuery, { where: { organizationId } });
-    const folders = await manager.find(LibraryQueryFolder, { where: { organizationId } });
-    const staticSources = await manager.find(DataSource, {
-      where: { organizationId, type: DataSourceTypes.STATIC, scope: DataSourceScopes.GLOBAL },
+    // Match first and lock in ID order before allocating imported snapshots.
+    const lockClaims = new Set<string>();
+    const matchedIds = exported
+      .map((incoming) => {
+        const target = matchLibraryQuery(existing, incoming, lockClaims);
+        if (target) lockClaims.add(target.id);
+        return target?.id;
+      })
+      .filter(Boolean);
+    // Include retained local pins in the same order as matched bundle parents.
+    const pendingPins = await manager.find(DataQuery, {
+      where: { appVersionId: In(Object.values(resourceMapping.appVersionMapping)) },
+      relations: { dataSource: true },
     });
+    const bundledIds = new Set(exported.map((incoming) => incoming.id));
+    const retainedIds = pendingPins
+      .filter((query) => query.dataSource?.kind === LIBRARY_KIND && !bundledIds.has(query.options?.libraryQueryId))
+      .map((query) => query.options?.libraryQueryId)
+      .filter((id) => typeof id === 'string' && isUUID(id));
+    for (const id of [...new Set([...matchedIds, ...retainedIds])].sort()) {
+      await lockLibraryQuery(manager, id, organizationId);
+    }
+    const folders = await manager.find(LibraryQueryFolder, { where: { organizationId } });
     const queries: Record<string, string> = {};
     const versions: Record<string, string> = {};
-    const skipped: string[] = [];
     const claimed = new Set<string>();
 
     for (const incoming of exported) {
       let target = matchLibraryQuery(existing, incoming, claimed);
       if (!target) {
-        const draft = map(incoming.draft);
-        // A draft needs a data source; one that wasn't exported falls back to the workspace's static one of its kind.
-        const dataSourceId = draft.dataSourceId ?? staticSources.find((source) => source.kind === draft.kind)?.id;
-        if (!dataSourceId) {
-          skipped.push(incoming.name);
-          this.transactionLogger.warn(
-            `[app-import] Skipped library query "${incoming.name}": no data source of kind "${draft.kind}" in this workspace`
-          );
-          continue;
-        }
         await requireWrite();
         let folderId: string | null = null;
         if (incoming.folder) {
@@ -1613,47 +1651,117 @@ export class AppImportExportService {
         target = await manager.save(
           manager.create(LibraryQuery, {
             name: incoming.name,
-            kind: draft.kind,
             organizationId,
-            options: draft.options,
-            dataSourceId,
             folderId,
             coRelationId: incoming.coRelationId ?? incoming.id,
             createdBy: user.id,
           })
         );
-        await manager.save(LibraryQueryState, { libraryQueryId: target.id, hasDraft: true });
+        registerImportedLibraryQuery(manager, target.id);
+        await manager.save(LibraryQueryState, { libraryQueryId: target.id, releasedVersionId: null });
         existing.push(target);
       }
       claimed.add(target.id);
       queries[incoming.id] = target.id;
 
+      // All existing parents were acquired by the recursive prepass; new ones were registered above.
+      await lockLibraryQuery(manager, target.id, organizationId);
       const own = await manager.find(LibraryQueryVersion, { where: { libraryQueryId: target.id } });
-      // Soft-deleted rows count, so a number is never reused (same rule as release).
+      const ownDrafts = await manager.find(LibraryQueryDraft, { where: { libraryQueryId: target.id } });
       const [{ highest }]: { highest: number }[] = await manager.query(
         'SELECT COALESCE(MAX(version_number), 0)::int AS highest FROM library_query_versions WHERE library_query_id = $1',
         [target.id]
       );
       let nextNumber = highest + 1;
-      for (const version of incoming.versions) {
-        const mapped = map(version);
-        let match = matchLibraryVersion(own, mapped);
-        if (!match) {
-          await requireWrite();
-          match = await manager.save(
+      const importSnapshot = async (snapshot: LibraryExportDraft, saved: boolean): Promise<string> => {
+        const mapped = map(snapshot);
+        const parent = snapshot.createdFromVersionId;
+        const createdFromVersionId = parent ? await importVersion(parent) : null;
+        const environment = saved ? (snapshot as LibraryExportVersion).environment : null;
+        const localEnvironment =
+          environment &&
+          environments.find((row) => row.name === environment.name && row.priority === environment.priority);
+        if (environment && !localEnvironment) throw new BadRequestException('Library version environment not found');
+        const currentEnvironmentId = localEnvironment?.id ?? null;
+        const rows = saved ? own : ownDrafts;
+        const sameName = rows.find((row) => row.name === mapped.name);
+        const otherStatus = (saved ? ownDrafts : own).some((row) => row.name === mapped.name);
+        if (
+          otherStatus ||
+          (sameName &&
+            !isEqual(
+              {
+                kind: sameName.kind,
+                dataSourceId: sameName.dataSourceId,
+                options: sameName.options,
+                description: sameName.description,
+                createdFromVersionId: own.some((parent) => parent.id === sameName.createdFromVersionId)
+                  ? sameName.createdFromVersionId
+                  : null,
+              },
+              {
+                kind: mapped.kind,
+                dataSourceId: mapped.dataSourceId,
+                options: mapped.options,
+                description: mapped.description,
+                createdFromVersionId,
+              }
+            ))
+        )
+          throw new ConflictException('A draft or saved version with this name already exists');
+        if (sameName) {
+          // Content is immutable; importing must not silently move an existing version between environments.
+          if (saved && (sameName as LibraryQueryVersion).currentEnvironmentId !== currentEnvironmentId)
+            throw new ConflictException('The named library version has a different environment');
+          return sameName.id;
+        }
+        await requireWrite();
+        const fields = {
+          id: uuid(),
+          libraryQueryId: target.id,
+          name: mapped.name,
+          description: mapped.description,
+          createdFromVersionId,
+          kind: mapped.kind,
+          dataSourceId: mapped.dataSourceId,
+          options: mapped.options,
+        };
+        if (saved) {
+          const row = await manager.save(
+            LibraryQueryVersion,
             manager.create(LibraryQueryVersion, {
-              libraryQueryId: target.id,
+              ...fields,
               versionNumber: nextNumber++,
-              kind: mapped.kind,
-              dataSourceId: mapped.dataSourceId,
-              options: mapped.options,
               createdBy: user.id,
-              currentEnvironmentId: developmentEnvironment?.id ?? null,
+              currentEnvironmentId,
             })
           );
-          own.push(match);
+          own.push(row);
+          return row.id;
         }
-        versions[version.id] = match.id;
+        const row = await manager.save(LibraryQueryDraft, manager.create(LibraryQueryDraft, fields));
+        ownDrafts.push(row);
+        return row.id;
+      };
+      const importVersion = async (id: string): Promise<string> => {
+        if (versions[id]) return versions[id];
+        const version = incoming.versions.find((row) => row.id === id);
+        versions[id] = await importSnapshot(version, true);
+        return versions[id];
+      };
+      for (const version of [...incoming.versions].sort((a, b) => a.versionNumber - b.versionNumber))
+        await importVersion(version.id);
+      for (const draft of incoming.drafts) versions[draft.id] = await importSnapshot(draft, false);
+      const releasedVersionId = incoming.releasedVersionId ? versions[incoming.releasedVersionId] : null;
+      const state = await manager.findOneBy(LibraryQueryState, { libraryQueryId: target.id });
+      if (!state || state.releasedVersionId !== releasedVersionId) {
+        await requireWrite();
+        if (releasedVersionId) {
+          const released = own.find((version) => version.id === releasedVersionId);
+          const environment = environments.find((row) => row.id === released.currentEnvironmentId) ?? null;
+          assertCanRelease(environment, await this.isMultiEnvironmentLicensed(organizationId));
+        }
+        await manager.save(LibraryQueryState, { libraryQueryId: target.id, releasedVersionId });
       }
     }
 
@@ -1671,7 +1779,7 @@ export class AppImportExportService {
       const remapped = remapLibraryConsumerOptions(options ?? {}, queries, versions);
       if (remapped) await manager.update(DataQuery, { id: consumer.id }, { options: remapped as DataQuery['options'] });
     }
-    return { queries, versions, skipped };
+    return { queries, versions };
   }
 
   /**
@@ -2509,6 +2617,15 @@ export class AppImportExportService {
         appResourceMappings.componentsMapping,
         appResourceMappings.pagesMapping
       );
+    }
+
+    // Direct Git pull callers bypass import(); their pins are already local UUIDs.
+    if (isGitApp || source === 'git') {
+      const queries = await manager.find(DataQuery, {
+        where: { appVersionId: In(appVersionIds) },
+        relations: { dataSource: true },
+      });
+      await lockLibraryPins(manager, user.organizationId, queries);
     }
 
     return appResourceMappings;

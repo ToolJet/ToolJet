@@ -1,3 +1,4 @@
+import { UpdateLibraryDraftDto } from '../dto/lifecycle';
 import { RunLibraryDraftDto } from '../dto/execution';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
@@ -22,15 +23,17 @@ export class ValidateLibraryDataSourceGuard implements CanActivate {
     // Global pipes strip unknown properties before route pipes run. Reject them here, before that happens.
     const dtoType =
       request.method === 'PATCH'
-        ? UpdateLibraryQueryDto
+        ? request.params.draftId
+          ? UpdateLibraryDraftDto
+          : UpdateLibraryQueryDto
         : request.method === 'PUT'
           ? ChangeLibraryDataSourceDto
           : CreateLibraryQueryDto;
     const dto = plainToInstance(dtoType as typeof CreateLibraryQueryDto, request.body);
     const errors = validateSync(dto, { whitelist: true, forbidNonWhitelisted: true });
     if (errors.length) throw new BadRequestException(errors.flatMap((error) => Object.values(error.constraints ?? {})));
-    // PATCH always authorizes the stored draft. Unknown body overrides are rejected by the DTO pipe.
-    const sourceId = request.method === 'PATCH' ? request.tj_library_query.dataSourceId : request.body.dataSourceId;
+    if (request.method === 'PATCH') return true; // The locked mutation authorizes the explicit stored snapshot.
+    const sourceId = request.body.dataSourceId;
     const dataSource = await this.service.authorizeDataSource(request.user, sourceId);
     request.tj_data_source = dataSource;
     request.tj_resource_id = dataSource?.id;

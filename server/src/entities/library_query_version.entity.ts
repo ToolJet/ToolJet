@@ -8,6 +8,9 @@ export class LibraryQueryVersion extends BaseEntity {
   @Column({ name: 'library_query_id', type: 'uuid' })
   libraryQueryId: string;
 
+  @Column({ length: 25 })
+  name: string;
+
   @Column({ name: 'version_number', type: 'integer' })
   versionNumber: number;
 
@@ -30,7 +33,7 @@ export class LibraryQueryVersion extends BaseEntity {
   @Column({ name: 'created_from_version_id', type: 'uuid', nullable: true })
   createdFromVersionId: string | null;
 
-  @Column({ name: 'description', type: 'varchar', nullable: true })
+  @Column({ name: 'description', type: 'varchar', length: 500, nullable: true })
   description: string | null;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })

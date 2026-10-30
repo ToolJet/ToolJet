@@ -1,10 +1,33 @@
 import { Exclude, Expose, Type, plainToInstance } from 'class-transformer';
-import { IsObject, IsOptional, IsUUID, ValidateIf } from 'class-validator';
+import {
+  IsObject,
+  IsOptional,
+  IsUUID,
+  ValidateIf,
+  Validate,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
+
+@ValidatorConstraint({ name: 'libraryRunTarget', async: false })
+class LibraryRunTargetConstraint implements ValidatorConstraintInterface {
+  validate(_value: unknown, args: import('class-validator').ValidationArguments): boolean {
+    const dto = args.object as RunLibraryDraftDto;
+    return (dto.draftId !== undefined) !== (dto.libraryVersionId !== undefined);
+  }
+  defaultMessage(): string {
+    return 'Supply exactly one of draftId or libraryVersionId';
+  }
+}
 
 export class RunLibraryDraftDto {
-  @IsOptional()
+  @ValidateIf((object, value) => value !== undefined || object.draftId === undefined)
   @IsUUID()
   libraryVersionId?: string;
+  @Validate(LibraryRunTargetConstraint)
+  @ValidateIf((object, value) => value !== undefined || object.libraryVersionId === undefined)
+  @IsUUID()
+  draftId?: string;
   @IsOptional()
   @IsObject()
   inputs?: Record<string, unknown>;
@@ -25,12 +48,16 @@ class LibraryEnvironmentResponseDto {
 }
 @Exclude()
 class LibraryCatalogDraftResponseDto {
+  @Expose() status: 'DRAFT';
+  @Expose() id: string;
+  @Expose() name: string;
+  @Expose() createdAt: Date;
   @Expose() kind: string;
   @Expose() @Type(() => LibraryInputResponseDto) inputs: LibraryInputResponseDto[];
-  @Expose() matchesLatestVersion: boolean;
 }
 @Exclude()
 class LibraryCatalogVersionResponseDto {
+  @Expose() status: 'PUBLISHED';
   @Expose() id: string;
   @Expose() name: string;
   @Expose() kind: string;
@@ -45,9 +72,8 @@ class LibraryCatalogQueryResponseDto {
   @Expose() name: string;
   @Expose() folder: string | null;
   @Expose() nextVersionNumber: number;
-  @Expose() hasDraft: boolean;
   @Expose() releasedVersionId: string | null;
-  @Expose() @Type(() => LibraryCatalogDraftResponseDto) draft: LibraryCatalogDraftResponseDto;
+  @Expose() @Type(() => LibraryCatalogDraftResponseDto) drafts: LibraryCatalogDraftResponseDto[];
   @Expose() @Type(() => LibraryCatalogVersionResponseDto) versions: LibraryCatalogVersionResponseDto[];
 }
 @Exclude()
@@ -56,6 +82,8 @@ export class LibraryCatalogResponseDto {
 }
 @Exclude()
 class LibraryUsageQueryResponseDto {
+  @Expose() libraryQueryVersionId: string;
+  @Expose() status: 'DRAFT' | 'PUBLISHED' | 'MISSING';
   @Expose() id: string;
   @Expose() name: string;
   @Expose() appVersionName: string;

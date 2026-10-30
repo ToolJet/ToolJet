@@ -13,6 +13,8 @@ const pin = (overrides) => ({
   appVersionName: 'v1',
   libraryQueryId: 'q1',
   versionName: 'v2',
+  libraryQueryVersionId: 'saved-v2',
+  status: 'PUBLISHED',
   ...overrides,
 });
 const rows = (heading) =>
@@ -121,7 +123,10 @@ describe('LibraryUsagePanel', () => {
             {
               id: 'a1',
               name: 'Support portal',
-              queries: [pin({ versionName: 'draft' }), pin({ id: 'c9', name: 'otherUse', libraryQueryId: 'q2' })],
+              queries: [
+                pin({ versionName: 'experiment', status: 'DRAFT' }),
+                pin({ id: 'c9', name: 'otherUse', libraryQueryId: 'q2' }),
+              ],
             },
             { id: 'a2', name: 'Unrelated app', queries: [pin({ id: 'c8', libraryQueryId: 'q2' })] },
           ],
@@ -132,7 +137,7 @@ describe('LibraryUsagePanel', () => {
     render(<LibraryUsagePanel libraryQueryId="q1" />);
 
     expect(await screen.findByText('Used by apps (1)')).toBeInTheDocument();
-    expect(rows('Used by apps (1)')).toEqual(['Support portal · v1 · getCustomer · Draft']);
+    expect(rows('Used by apps (1)')).toEqual(['Support portal · v1 · getCustomer · experiment · Draft']);
     expect(screen.queryByText('Unrelated app')).not.toBeInTheDocument();
   });
 
@@ -143,4 +148,15 @@ describe('LibraryUsagePanel', () => {
     expect(await screen.findByText("Couldn't load usage")).toBeInTheDocument();
     expect(screen.queryByText('None')).not.toBeInTheDocument();
   });
+});
+
+it('renders a saved name draft verbatim', async () => {
+  server.use(
+    http.get(usageUrl, () =>
+      HttpResponse.json({ apps: [{ id: 'a1', name: 'Portal', queries: [pin({ versionName: 'draft' })] }], modules: [] })
+    )
+  );
+  render(<LibraryUsagePanel libraryQueryId="q1" />);
+  await screen.findByText('Used by apps (1)');
+  expect(rows('Used by apps (1)')).toEqual(['Portal · v1 · getCustomer · draft']);
 });

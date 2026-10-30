@@ -1786,8 +1786,10 @@ export class AppsUtilService implements IAppsUtilService {
     const rows: LibraryPinRow[] = await manager.query(
       `SELECT dq.name AS "consumerQueryName",
               lq.name AS "libraryQueryName",
-              lv.version_number AS "pinnedVersionNumber",
-              rv.version_number AS "releasedVersionNumber",
+              lv.name AS "pinnedVersionName",
+              lv.id AS "pinnedVersionId",
+              ld.id AS "draftId", ld.name AS "draftName",
+              rv.name AS "releasedVersionName", rv.id AS "releasedVersionId",
               pe.name AS "pinnedEnvironmentName",
               pe.priority AS "pinnedEnvironmentPriority"
          FROM data_queries dq
@@ -1795,6 +1797,8 @@ export class AppsUtilService implements IAppsUtilService {
          LEFT JOIN library_queries lq ON lq.id = ${consumerOptionUuidSql('libraryQueryId')} AND lq.organization_id = $2
          LEFT JOIN library_query_versions lv ON lv.id = ${consumerOptionUuidSql('libraryQueryVersionId')}
                                             AND lv.library_query_id = lq.id AND lv.deleted_at IS NULL
+         LEFT JOIN library_query_drafts ld ON ld.id = ${consumerOptionUuidSql('libraryQueryVersionId')}
+                                          AND ld.library_query_id = lq.id AND ld.deleted_at IS NULL
          LEFT JOIN app_environments pe ON pe.id = lv.current_environment_id
          LEFT JOIN library_query_states st ON st.library_query_id = lq.id
          LEFT JOIN library_query_versions rv ON rv.id = st.released_version_id AND rv.deleted_at IS NULL

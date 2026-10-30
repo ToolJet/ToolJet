@@ -108,20 +108,3 @@ export class AddToLibraryDto {
   @IsObject()
   inputs: Record<string, string>;
 }
-
-export class SaveLibraryVersionDto {
-  @IsString()
-  @IsOptional()
-  @Transform(({ value }) => (typeof value === 'string' ? sanitizeInput(value) : value))
-  description?: string;
-}
-
-export class CreateLibraryDraftDto {
-  @IsUUID()
-  fromVersionId: string;
-
-  @IsString()
-  @IsOptional()
-  @Transform(({ value }) => (typeof value === 'string' ? sanitizeInput(value) : value))
-  description?: string;
-}

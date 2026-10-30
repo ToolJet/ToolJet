@@ -10,14 +10,21 @@ const editorQuery = ({ dataSourceId, folderId, createdAt, updatedAt, ...query })
   created_at: createdAt,
   updated_at: updatedAt,
 });
-const request = (path, method = 'GET', body, context = {}, signal) =>
+const request = (path, method = 'GET', body, context = {}, signal = context.signal) =>
   fetch(`${config.apiUrl}/query-library/${path}`, {
     method,
     headers: authHeader(false, context.workspaceId),
     credentials: 'include',
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     ...(signal ? { signal } : {}),
-  }).then(handleResponse);
+  })
+    .then(handleResponse)
+    .catch((error) => Promise.reject(error.data?.code ? { ...error, code: error.data.code } : error));
+const explicitId = (id) => {
+  if (!id || id === 'draft') throw new Error('An explicit draft or saved version ID is required');
+  return id;
+};
+const draftPath = (id, draftId) => `queries/${id}/drafts/${explicitId(draftId)}`;
 const versions = (id) => `queries/${id}/versions`;
 
 export const libraryQueryService = {
@@ -25,17 +32,22 @@ export const libraryQueryService = {
   list: (context) => request('queries', 'GET', undefined, context).then((queries) => queries.map(editorQuery)),
   create: (body, context) => request('queries', 'POST', body, context).then(editorQuery),
   update: (id, body, context) => request(`queries/${id}`, 'PATCH', body, context).then(editorQuery),
-  changeDataSource: (id, dataSourceId, context) =>
-    request(`queries/${id}/data-source`, 'PUT', { dataSourceId }, context).then(editorQuery),
   del: (id, context) => request(`queries/${id}`, 'DELETE', undefined, context),
-  run: (id, environmentId, body = {}, signal, context) =>
-    request(`queries/${id}/run/${environmentId}`, 'POST', body, context, signal),
+  run: async (id, environmentId, body = {}, signal, context) => {
+    if (!!body.draftId === !!body.libraryVersionId) throw new Error('Choose exactly one draft or saved version');
+    explicitId(body.draftId || body.libraryVersionId);
+    return request(`queries/${id}/run/${environmentId}`, 'POST', body, context, signal);
+  },
   getCatalog: (context) => request('catalog', 'GET', undefined, context),
   getUsage: (context) => request('usage', 'GET', undefined, context),
   getVersions: (id, context) => request(versions(id), 'GET', undefined, context),
-  saveVersion: (id, body = {}, context) => request(`${versions(id)}/save`, 'POST', body, context),
-  createDraft: (id, body = {}, context) => request(`${versions(id)}/draft`, 'POST', body, context),
-  discardDraft: (id, context) => request(`${versions(id)}/draft`, 'DELETE', undefined, context),
+  getDraft: (id, draftId, context) => request(draftPath(id, draftId), 'GET', undefined, context),
+  updateDraft: (id, draftId, patch, context) => request(draftPath(id, draftId), 'PATCH', patch, context),
+  changeDraftDataSource: (id, draftId, dataSourceId, context) =>
+    request(`${draftPath(id, draftId)}/data-source`, 'PUT', { dataSourceId }, context),
+  saveDraft: (id, draftId, body, context) => request(`${draftPath(id, draftId)}/save`, 'POST', body, context),
+  createDraft: (id, body, context) => request(`queries/${id}/drafts`, 'POST', body, context),
+  deleteDraft: (id, draftId, context) => request(draftPath(id, draftId), 'DELETE', undefined, context),
   promote: (id, versionId, context) => request(`${versions(id)}/${versionId}/promote`, 'POST', undefined, context),
   release: (id, versionId, context) => request(`${versions(id)}/${versionId}/release`, 'POST', undefined, context),
   deleteVersion: (id, versionId, context) => request(`${versions(id)}/${versionId}`, 'DELETE', undefined, context),

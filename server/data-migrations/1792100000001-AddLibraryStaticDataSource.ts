@@ -54,5 +54,7 @@ export class AddLibraryStaticDataSource1792100000001 implements MigrationInterfa
     console.log(`${MIGRATION_NAME}: [SUCCESS] Add librarydefault data source finished.`);
   }
 
-  public async down(): Promise<void> {}
+  public async down(): Promise<void> {
+    // Keep default sources: user queries may reference them, so removing them would invalidate those queries.
+  }
 }

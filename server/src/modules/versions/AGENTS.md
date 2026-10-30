@@ -56,3 +56,5 @@ Owns the AppVersion lifecycle: named development snapshots of an App. Create/clo
 - `git-sync` — branching flags (`isBranchingEnabled`), `version-rename-commit` event, EE git tags/freeze
 - `app-history` (EE) — before/after hooks queue deltas via `AppHistoryUtilService`
 - `licensing` — gates multi-environment, JS libraries, page/query/component permissions
+
+- CE and EE version-copy paths batch-lock all source library-query parents in sorted ID order before copying consumers. They resolve live draft/saved pins with the same manager used for the cloned rows, so a concurrent library delete either sees the committed copy or makes the copy fail.

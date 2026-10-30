@@ -34,7 +34,16 @@ const state = () => useStore.getState();
 const runjs = { id: 'q1', name: 'getCustomer', kind: 'runjs', options: { code: '', parameters: [{ name: 'limit' }] } };
 
 function seed(appType) {
-  state().queryLibrary.setLibraryMode(appType === 'query_library');
+  if (appType === 'query_library') {
+    state().queryLibrary.beginLibrarySession('workspace-a');
+    useStore.setState((s) => ({
+      queryLibrary: {
+        ...s.queryLibrary,
+        versionsByQueryId: { q1: { drafts: [{ ...runjs, id: 'draft-a', name: 'v1' }], versions: [] } },
+        viewedVersionIdByQueryId: { q1: 'draft-a' },
+      },
+    }));
+  } else state().queryLibrary.endLibrarySession();
   state().setApp({ ...state().appStore.modules.canvas.app, appType }, 'canvas');
   state().dataQuery.setQueries([runjs], 'canvas');
   useStore.setState((s) => ({
@@ -85,4 +94,10 @@ describe('QueryManagerBody inputs', () => {
     expect(screen.queryByRole('button', { name: /^add / })).not.toBeInTheDocument();
     expect(screen.queryByText(/read documentation/i)).not.toBeInTheDocument();
   });
+});
+
+it('keeps the empty library source picker usable before any draft exists', () => {
+  state().queryLibrary.beginLibrarySession('workspace-a');
+  const { container } = render(<BaseQueryManagerBody darkMode={false} activeTab={1} />);
+  expect(container.querySelector('.datasource-picker')).not.toHaveClass('disabled');
 });

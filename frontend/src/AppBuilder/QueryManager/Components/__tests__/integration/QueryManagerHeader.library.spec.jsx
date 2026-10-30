@@ -24,8 +24,12 @@ global.ResizeObserver = class {
 const state = () => useStore.getState();
 
 function seed(appType) {
-  state().queryLibrary.setLibraryMode(appType === 'query_library');
+  if (appType === 'query_library') state().queryLibrary.beginLibrarySession('workspace-a');
+  else state().queryLibrary.endLibrarySession();
   state().setApp({ ...state().appStore.modules.canvas.app, appType }, 'canvas');
+  state().dataQuery.setQueries([{ id: 'q1', name: 'getCustomer', kind: 'restapi', options: {} }]);
+  state().setQueryMapping('canvas');
+  state().initialiseResolvedQuery(['q1'], 'canvas');
   useStore.setState((s) => ({
     currentVersionId: 'ver1',
     queryPanel: { ...s.queryPanel, selectedQuery: { id: 'q1', name: 'getCustomer', kind: 'restapi', options: {} } },
@@ -41,7 +45,11 @@ describe('QueryManagerHeader in a query library app', () => {
   beforeEach(() => {
     server.use(
       http.get(`${config.apiUrl}/query-library/queries/q1/versions`, () =>
-        HttpResponse.json({ draft: { createdFrom: null, description: null }, versions: [], nextVersionNumber: 1 })
+        HttpResponse.json({
+          drafts: [{ id: 'draft-a', name: 'v1', kind: 'restapi', options: {} }],
+          versions: [],
+          nextVersionNumber: 1,
+        })
       )
     );
   });
@@ -66,7 +74,7 @@ describe('QueryManagerHeader in a query library app', () => {
     server.use(
       http.get(`${config.apiUrl}/query-library/queries/q1/versions`, () =>
         HttpResponse.json({
-          draft: null,
+          drafts: [],
           nextVersionNumber: 2,
           versions: [{ id: 'lv1', name: 'v1', versionNumber: 1, environment: null, isReleased: false, options: {} }],
         })
@@ -99,6 +107,11 @@ it('allows preview of an accessible saved source when the draft source is inacce
   });
   try {
     state().queryLibrary.beginLibrarySession('workspace-a');
+    state().dataQuery.setQueries([
+      { id: 'q1', name: 'savedSource', kind: 'restapi', data_source_id: 'source-B', options: {} },
+    ]);
+    state().setQueryMapping('canvas');
+    state().initialiseResolvedQuery(['q1'], 'canvas');
     useStore.setState((s) => ({
       queryPanel: {
         ...s.queryPanel,
@@ -109,7 +122,7 @@ it('allows preview of an accessible saved source when the draft source is inacce
     server.use(
       http.get(`${config.apiUrl}/query-library/queries/q1/versions`, () =>
         HttpResponse.json({
-          draft: { createdFrom: null },
+          drafts: [{ id: 'draft-a', name: 'Branch', kind: 'restapi', dataSourceId: 'source-B', options: {} }],
           nextVersionNumber: 2,
           versions: [
             { id: 'saved', name: 'v1', versionNumber: 1, kind: 'restapi', dataSourceId: 'source-A', options: {} },
@@ -117,11 +130,13 @@ it('allows preview of an accessible saved source when the draft source is inacce
         })
       )
     );
+    await state().queryLibrary.loadLibraryVersions('q1');
     state().queryLibrary.viewLibraryVersion('q1', 'saved');
     renderHeader();
     await screen.findByRole('button', { name: /^v1/ });
     expect(screen.getByRole('button', { name: 'Preview' })).toBeEnabled();
-    expect(state().queryPanel.selectedQuery.data_source_id).toBe('source-B');
+    expect(state().queryPanel.selectedQuery.data_source_id).toBe('source-A');
+    expect(state().queryLibrary.versionsByQueryId.q1.drafts[0].dataSourceId).toBe('source-B');
   } finally {
     authenticationService.updateCurrentSession(original);
   }
