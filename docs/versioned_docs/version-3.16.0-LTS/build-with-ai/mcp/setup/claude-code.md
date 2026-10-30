@@ -8,13 +8,68 @@ import TabItem from '@theme/TabItem';
 
 Connect ToolJet MCP to Claude Code so your agent can build and modify applications in your ToolJet workspace, whether that's ToolJet Cloud or your own self-hosted domain.
 
+You can connect with OAuth on ToolJet Cloud, or with a personal access token on ToolJet Cloud or a self-hosted instance. To compare the two, see [Choose an Authentication Method](/docs/build-with-ai/mcp/setup#choose-an-authentication-method).
+
 ## Prerequisites
 
 - Claude Code installed.
-- Node.js 20 or newer, available to Claude Code.
+- For the personal access token method: Node.js 20 or newer, available to Claude Code.
 - Access to the ToolJet workspace you want the agent to build in.
 
-## How It Works
+## Connect with OAuth
+
+:::info Available on ToolJet Cloud
+OAuth is available on ToolJet Cloud only. On a self-hosted instance, [connect with a personal access token](#connect-with-a-personal-access-token).
+:::
+
+**Claude Code > ToolJet's hosted MCP server > ToolJet workspace**
+
+Claude Code connects to the MCP server that ToolJet hosts, and you authorize it by signing in to your workspace in the browser. There's no token to create and no server to run on your machine.
+
+### Step 1: Copy the Server Command
+
+1. In ToolJet Cloud, open the workspace you want the agent to build in.
+2. Open the **Build ToolJet apps from your coding agent** dialog.
+3. Under **Connect your agent**, select **OAuth**, then select **Claude Code**.
+4. Copy the command. The server URL in it ends with your workspace ID, so each workspace has its own URL.
+
+### Step 2: Add the Server
+
+Run the command in your terminal. It looks like this, with your workspace's URL in place of `<workspace-mcp-url>`:
+
+```bash
+claude mcp add --transport http tooljet-oauth '<workspace-mcp-url>'
+```
+
+### Step 3: Sign In and Approve Access
+
+1. Open Claude Code in the same directory, run `/mcp`, select **tooljet-oauth**, and authenticate. Claude Code opens ToolJet in your browser.
+2. Sign in to the workspace with any method it allows, such as password or SSO. If you're already signed in, ToolJet skips this step.
+3. Review the permissions the client is requesting, and check the callback address shown under the buttons. For what each permission allows, see [What You Approve](/docs/build-with-ai/mcp/setup#what-you-approve).
+4. Click **Allow access**. Your browser returns you to Claude Code.
+
+### Step 4: Install the App-Builder Skill
+
+The OAuth connection gives your agent ToolJet's tools. To also give it the `tooljet-app-builder` skill, which teaches the agent ToolJet's app model and build recipe, install the skill-only plugin:
+
+```
+/plugin marketplace add ToolJet/tooljet-mcp
+/plugin install tooljet-app-builder-skills@tooljet
+```
+
+Install `tooljet-app-builder-skills`, not the `tooljet-app-builder` plugin used with a personal access token. That plugin also registers a local server, and using both loads the same guidance twice. Restart Claude Code after installing.
+
+### Step 5: Verify the Connection
+
+Ask your agent whether it can reach ToolJet:
+
+> Can you connect to ToolJet?
+
+The agent should confirm the connection and name your workspace. To see or revoke the connection later, go to **Profile settings > Connected AI clients** in ToolJet.
+
+## Connect with a Personal Access Token
+
+### How It Works
 
 **Claude Code > ToolJet MCP server > ToolJet workspace**
 
@@ -22,7 +77,7 @@ The ToolJet plugin runs the ToolJet MCP server on your machine and installs the 
 
 A token only works in the workspace it was created in, and every tool call runs with the permissions of the token's owner. The token you choose decides what the agent can see and change.
 
-## Step 1: Create a Personal Access Token
+### Step 1: Create a Personal Access Token
 
 1. In ToolJet, open the workspace you want the agent to build in.
 2. Go to **Profile settings > Personal access tokens** and click **Create new token**.
@@ -30,7 +85,7 @@ A token only works in the workspace it was created in, and every tool call runs 
 
 <img className="screenshot-full img-full" src="/img/tooljet-ai/mcp/pat.png" alt="Personal access tokens in Profile settings" />
 
-## Step 2: Set Your Environment Variables
+### Step 2: Set Your Environment Variables
 
 The server reads two variables from the environment Claude Code is launched from.
 
@@ -51,7 +106,7 @@ The agent acts with the permissions of the token's owner in that workspace, so c
 
 Set the variables in one of these two places, **before** launching Claude Code.
 
-### Option 1: Your Shell Profile
+#### Option 1: Your Shell Profile
 
 The right choice if you launch Claude Code from a terminal. Adding the variables to your shell profile makes them persist across sessions.
 
@@ -112,11 +167,11 @@ Close and reopen PowerShell to load the variables.
 
 Launch Claude Code from that same terminal once the variables are set.
 
-### Option 2: Claude Code Settings File
+#### Option 2: Claude Code Settings File
 
 More reliable than a shell profile if you launch Claude Code from VS Code, the desktop app, or an application icon, since those may never read your shell profile. Set the variables for every project, or for one project only.
 
-#### All Projects
+##### All Projects
 
 Add this `env` block to `~/.claude/settings.json`. If the file already contains other settings, add `env` alongside them rather than replacing the file:
 
@@ -129,7 +184,7 @@ Add this `env` block to `~/.claude/settings.json`. If the file already contains 
 }
 ```
 
-#### A Single Project
+##### A Single Project
 
 Use this when different projects connect to different ToolJet instances. The variables apply only when Claude Code runs in that directory.
 
@@ -146,7 +201,7 @@ Add the same block to `.claude/settings.local.json` inside the project:
 
 Restart Claude Code for the change to take effect. Note that `/config` manages common settings such as theme and model, but does not expose `env`; that block is edited by hand.
 
-### Verify Before You Continue
+#### Verify Before You Continue
 
 If you used your shell profile, confirm the variables are set in the terminal you'll launch Claude Code from. Both must print a value; if either is empty, the server reports a missing-variable error at startup.
 
@@ -172,11 +227,11 @@ echo $env:TOOLJET_PAT
 
 </Tabs>
 
-## Step 3: Install the Plugin
+### Step 3: Install the Plugin
 
 The plugin registers two things together: the MCP server and the `tooljet-app-builder` skill. Claude Code offers two ways to install it, and the difference is whether the source is registered for future updates.
 
-### Install Through the Marketplace
+#### Install Through the Marketplace
 
 Run these two commands in order. The first registers the ToolJet repository as a plugin marketplace, and the second installs the plugin from its catalog:
 
@@ -187,7 +242,7 @@ Run these two commands in order. The first registers the ToolJet repository as a
 
 Because the marketplace stays registered, you can pull newer versions later with `/plugin marketplace update tooljet`. This is the recommended option.
 
-### Install Directly From the Repository
+#### Install Directly From the Repository
 
 This is a single command, and no marketplace is registered:
 
@@ -199,7 +254,7 @@ The install is a one-time snapshot. There is no registered source to refresh, so
 
 Restart Claude Code after installing either way.
 
-## Step 4: Verify the Connection
+### Step 4: Verify the Connection
 
 Ask your agent whether it can reach ToolJet:
 
