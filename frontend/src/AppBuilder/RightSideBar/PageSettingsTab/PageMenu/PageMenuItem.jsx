@@ -144,6 +144,17 @@ export const PageMenuItem = withRouter(
         e.stopPropagation();
         e.preventDefault();
         switchPageWrapper(page, currentPageId, moduleId);
+      },
+      [switchPageWrapper, page, currentPageId, moduleId]
+    );
+
+    // Selecting a row opens its configuration. Only a page also switches the canvas: a nav item's switch is
+    // its runtime action (open the URL, leave for another app, fire its events).
+    const handleRowClick = useCallback(
+      (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if ((page?.type || 'default') === 'default') switchPageWrapper(page, currentPageId, moduleId);
         setEditingPage(page);
         setNewPagePopupConfig({ show: true, mode: 'edit', type: page?.type || 'default' });
         setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGE_CONFIGURATION);
@@ -216,7 +227,7 @@ export const PageMenuItem = withRouter(
             position: 'relative',
             width: '100%',
           }}
-          onClick={handlePageSwitch}
+          onClick={handleRowClick}
         >
           <div className="left" data-cy={`pages-name-${generateCypressDataCy(page?.name)}`}>
             <div className="main-page-icon-wrapper">{icon()}</div>
