@@ -5,71 +5,62 @@ import { disallowedImports } from './check-migration-imports.mjs';
 
 const sources = (code) => disallowedImports(code).map((v) => v.source);
 
-test('allows typeorm, its subpaths and Node built-ins', () => {
+test('allows everything that is not an entity: typeorm, built-ins, helpers, modules, Nest, relative paths, npm', () => {
   assert.deepEqual(
-    sources(`import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
-import { Table } from 'typeorm/schema-builder/table/Table';
+    sources(`import { MigrationInterface, QueryRunner } from 'typeorm';
 import { randomUUID } from 'node:crypto';
-import * as fs from 'fs';`),
-    []
-  );
-});
-
-test('flags entities, helpers, modules, Nest, relative paths and npm packages', () => {
-  assert.deepEqual(
-    sources(`import { Component } from 'src/entities/component.entity';
-import { App } from '@entities/app.entity';
 import { processDataInBatches } from '@helpers/migration.helper';
-import { AppsService } from '@modules/apps/service';
+import { DEFAULT_GROUP_PERMISSIONS } from '@modules/group-permissions/constants';
 import { NestFactory } from '@nestjs/core';
 import { getEnvVars } from '../scripts/database-config-utils';
 import { ormconfig } from 'ormconfig';
 import { cloneDeep } from 'lodash';`),
-    [
-      'src/entities/component.entity',
-      '@entities/app.entity',
-      '@helpers/migration.helper',
-      '@modules/apps/service',
-      '@nestjs/core',
-      '../scripts/database-config-utils',
-      'ormconfig',
-      'lodash',
-    ]
+    []
   );
 });
 
-test('catches multi-line, type-only, side-effect, re-export, require and dynamic imports', () => {
+test('flags entities in every path style', () => {
+  assert.deepEqual(
+    sources(`import { App } from '@entities/app.entity';
+import { Component } from 'src/entities/component.entity';
+import { Organization } from '../src/entities/organization.entity';
+import { Thing } from '@modules/things/thing.entity';`),
+    ['@entities/app.entity', 'src/entities/component.entity', '../src/entities/organization.entity', '@modules/things/thing.entity']
+  );
+});
+
+test('catches entities in multi-line, type-only, side-effect, re-export, require and dynamic imports', () => {
   assert.deepEqual(
     disallowedImports(`import {
-  ComponentJsonRow,
-  transform,
-} from '@helpers/component-migration.helper';
-import type { App } from '@entities/app.entity';
-import '@helpers/setup';
-export { x } from '../shared';
-const { v4 } = require('uuid');
-const mod = await import('@modules/apps/service');`),
+  App,
+  AppVersion,
+} from '@entities/app.entity';
+import type { User } from '@entities/user.entity';
+import '@entities/setup.entity';
+export { Org } from '../src/entities/organization.entity';
+const { Page } = require('src/entities/page.entity');
+const mod = await import('@entities/component.entity');`),
     [
-      { line: 4, source: '@helpers/component-migration.helper' },
-      { line: 5, source: '@entities/app.entity' },
-      { line: 6, source: '@helpers/setup' },
-      { line: 7, source: '../shared' },
-      { line: 8, source: 'uuid' },
-      { line: 9, source: '@modules/apps/service' },
+      { line: 4, source: '@entities/app.entity' },
+      { line: 5, source: '@entities/user.entity' },
+      { line: 6, source: '@entities/setup.entity' },
+      { line: 7, source: '../src/entities/organization.entity' },
+      { line: 8, source: 'src/entities/page.entity' },
+      { line: 9, source: '@entities/component.entity' },
     ]
   );
 });
 
-test('a marker with a reason on the import line allows it; a bare marker does not', () => {
+test('a marker with a reason on the import line allows an entity; a bare marker does not', () => {
   assert.deepEqual(
-    sources(`import { getEnvVars } from '../scripts/database-config-utils'; // migration-import-allowed: needs TOOLJET_DB_USER
-import { cloneDeep } from 'lodash'; // migration-import-allowed:`),
-    ['lodash']
+    sources(`import { App } from '@entities/app.entity'; // migration-import-allowed: one-off backfill reviewed with team
+import { User } from '@entities/user.entity'; // migration-import-allowed:`),
+    ['@entities/user.entity']
   );
 });
 
 test('ignores imports inside comments', () => {
-  assert.deepEqual(sources(`// import { App } from '@entities/app.entity';\n/* const x = require('lodash'); */`), []);
+  assert.deepEqual(sources(`// import { App } from '@entities/app.entity';\n/* const x = require('src/entities/x.entity'); */`), []);
 });
 
 test('does not mistake SQL "from" inside an exported class for a re-export', () => {
