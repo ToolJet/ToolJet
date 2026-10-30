@@ -282,7 +282,7 @@ describe('Table-ADDROWFORM-016 Figma metrics', () => {
     expect(footer).toHaveClass('tw-h-[70px]');
     expect(body).toHaveClass('tw-gap-4');
     expect(body).toHaveClass('tw-py-4');
-    expect(body).toHaveClass('tw-pl-4');
+    expect(body).toHaveClass('tw-px-4');
     expect(dialog).toContainElement(header);
   });
 
@@ -1245,5 +1245,44 @@ describe('Table-ADDROWFORM-036 date picker popup in the dialog', () => {
 
     expect(input.value).not.toBe('');
     expect(draft().joined).not.toBe('');
+  });
+});
+
+describe('Table-ADDROWFORM-047 equal left and right padding', () => {
+  test('Table-ADDROWFORM-047 header, body and footer pad 16px on both sides, and the scrollbar space is split evenly', () => {
+    // Break this catches: more room on the left than on the right of the fields (a one-sided scrollbar gutter).
+    renderForm();
+    const header = screen.getByRole('heading', { name: 'Add row' }).parentElement;
+    const footer = screen.getByRole('button', { name: 'Add row' }).parentElement;
+    const body = document.querySelector('[data-cy="add-new-row-0"]');
+
+    for (const band of [header, body, footer]) {
+      expect(band).toHaveClass('tw-px-4');
+      expect(band.className).not.toMatch(/tw-p[lr]-/);
+    }
+    expect(body.style.scrollbarGutter).toBe('stable both-edges');
+  });
+});
+
+describe('Table-ADDROWFORM-048 scrollbar', () => {
+  // jsdom draws no scrollbars; the class carries the table's own `scrollbar-color` rule (table-component.scss),
+  // which is what the table body uses, so the browser draws its own scrollbar in the table's colour.
+  const SCROLL_AREA = 'table-add-new-row-scroll';
+
+  test('Table-ADDROWFORM-048 the form body uses the table scrollbar colour', () => {
+    // Break this catches: the body falling back to the browser's default scrollbar colour.
+    renderForm();
+    const body = document.querySelector('[data-cy="add-new-row-0"]');
+
+    expect(body).toHaveClass(SCROLL_AREA);
+  });
+
+  test('Table-ADDROWFORM-048 the select and multiselect option lists use it too', async () => {
+    // Break this catches: the option lists keeping the browser's default scrollbar colour.
+    const { user } = renderForm({ columns: OPTION_COLUMNS });
+
+    await user.click(within(field('Plan')).getByRole('combobox'));
+
+    expect(screen.getByRole('listbox')).toHaveClass(SCROLL_AREA);
   });
 });

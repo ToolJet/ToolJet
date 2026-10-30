@@ -208,3 +208,19 @@ describe('Table-ADDROWFORM-035 nested columns in the column list', () => {
     expect(onChange).toHaveBeenCalledWith('addNewRowColumns', null);
   });
 });
+
+describe('Table-ADDROWFORM-049 cog icon', () => {
+  test("Table-ADDROWFORM-049 the cog is the design's bolt icon, the same size and colour as the fx button beside it", () => {
+    // Break this catches: a toothed gear or a differently sized or coloured icon next to fx (Figma frame 2674:71989).
+    setup();
+    const cog = screen.getByRole('button', { name: 'Configure add new row' });
+    const icon = cog.querySelector('svg');
+
+    expect(icon).toHaveClass('lucide-bolt');
+    // the fx button draws a 16px icon in slate 9 inside the shared fx-button box
+    expect(icon).toHaveAttribute('width', '16');
+    expect(icon).toHaveAttribute('height', '16');
+    expect(cog).toHaveClass('fx-button');
+    expect(cog.className).toContain('tw-text-[var(--slate9)]');
+  });
+});
