@@ -1206,19 +1206,12 @@ export const createComponentsSlice = (set, get) => ({
     } = get();
     const components = getCurrentPageComponents(moduleId);
 
-    //TODO: Replace with object of component types
-    const resolvedComponentValues = {};
-    startDependencyBatch();
-    Object.entries(components).forEach(([componentId, component]) => {
-      resolvedComponentValues[componentId] = addToDependencyGraph(moduleId, componentId, component.component);
-    });
-    flushDependencyBatch();
-
-    setResolvedComponents(resolvedComponentValues, moduleId);
-
     // Pre-populate default exposed values for all components in a single store write.
     // This prevents 600+ individual set() calls during component mount in RenderWidget
     // (setDefaultExposedValues will early-return since values already exist).
+    // Runs before the components are resolved below, so a binding to another component's
+    // default (e.g. `{{components.qrscanner1.lastDetectedValue}}`) resolves against it: a
+    // widget's mount-time write of that same default is an equal value, which never cascades.
     set(
       (state) => {
         Object.entries(components).forEach(([componentId, component]) => {
@@ -1252,6 +1245,16 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'batchSetDefaultExposedValues'
     );
+
+    //TODO: Replace with object of component types
+    const resolvedComponentValues = {};
+    startDependencyBatch();
+    Object.entries(components).forEach(([componentId, component]) => {
+      resolvedComponentValues[componentId] = addToDependencyGraph(moduleId, componentId, component.component);
+    });
+    flushDependencyBatch();
+
+    setResolvedComponents(resolvedComponentValues, moduleId);
 
     resolveOthers(moduleId);
 
