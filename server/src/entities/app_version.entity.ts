@@ -136,6 +136,12 @@ export class AppVersion extends BaseEntity {
   @Column({ name: 'is_public', default: true, nullable: true })
   isPublic: boolean;
 
+  // Branch-scoped webhook enablement for workflows. Fifth member of the branch-scoped
+  // metadata set above; propagated across a branch's version rows by a DB trigger. NULL until
+  // backfilled - readers fall back to apps.workflow_enabled.
+  @Column({ name: 'workflow_enabled', nullable: true })
+  workflowEnabled: boolean | null;
+
   // Static origin marker: the row originated from git sync (branch_id was set before backfill).
   // Also the canonical-row tiebreaker: synced rows sort first when resolving metadata.
   @Column({ name: 'is_synced', default: false })

@@ -1,7 +1,13 @@
-import React, { createContext, useContext, ReactNode, Dispatch, SetStateAction } from 'react';
+import React, { useContext, ReactNode, Dispatch, SetStateAction } from 'react';
+// Single context object, defined in context.js so components can read it without pulling in
+// index.jsx's import chain. This file only adds the provider + hook sugar on top; both
+// `useContext(TooljetDatabaseContext)` and `useTooljetDatabaseContext()` therefore resolve against
+// the same provider.
+import { TooljetDatabaseContext } from './context';
 
 export type TooljetDatabaseContextValue = {
   canEditTjdb: boolean;
+  canEditSchema: boolean;
   organizationId: string | null;
   setOrganizationId: Dispatch<SetStateAction<string | null>>;
   selectedTable: string;
@@ -12,6 +18,8 @@ export type TooljetDatabaseContextValue = {
   setSelectedTableData: Dispatch<SetStateAction<unknown[]>>;
   tables: unknown[];
   setTables: Dispatch<SetStateAction<unknown[]>>;
+  tablesLoaded: boolean;
+  setTablesLoaded: Dispatch<SetStateAction<boolean>>;
   columns: unknown[];
   setColumns: Dispatch<SetStateAction<unknown[]>>;
   totalRecords: number;
@@ -23,21 +31,15 @@ export type TooljetDatabaseContextValue = {
   buildPaginationQuery: (...args: unknown[]) => unknown;
   resetSortQuery: (...args: unknown[]) => unknown;
   resetFilterQuery: (...args: unknown[]) => unknown;
-  queryFilters: Record<string, unknown>;
-  setQueryFilters: Dispatch<SetStateAction<Record<string, unknown>>>;
-  sortFilters: Record<string, unknown>;
-  setSortFilters: Dispatch<SetStateAction<Record<string, unknown>>>;
+  resetAll: (...args: unknown[]) => unknown;
   selectRows: unknown[];
   setSelectRows: Dispatch<SetStateAction<unknown[]>>;
-  pageCount: number;
-  setPageCount: Dispatch<SetStateAction<number>>;
-  pageSize: number;
-  setPageSize: Dispatch<SetStateAction<number>>;
   handleRefetchQuery: (...args: unknown[]) => unknown;
   foreignKeys: unknown[];
   configurations: Record<string, unknown>;
   setForeignKeys: Dispatch<SetStateAction<unknown[]>>;
   setConfigurations: Dispatch<SetStateAction<Record<string, unknown>>>;
+  getConfigurationProperty: (header: string, property: string, fallback?: unknown) => unknown;
 };
 
 type TooljetDatabaseProviderProps = {
@@ -45,48 +47,11 @@ type TooljetDatabaseProviderProps = {
   children: ReactNode;
 };
 
-const TooljetDatabaseContext = createContext<TooljetDatabaseContextValue>({
-  canEditTjdb: false,
-  organizationId: null,
-  setOrganizationId: () => {},
-  selectedTable: '',
-  setSelectedTable: () => {},
-  searchParam: '',
-  setSearchParam: () => {},
-  selectedTableData: [],
-  setSelectedTableData: () => {},
-  tables: [],
-  setTables: () => {},
-  columns: [],
-  setColumns: () => {},
-  totalRecords: 0,
-  setTotalRecords: () => {},
-  loadingState: false,
-  setLoadingState: () => {},
-  handleBuildFilterQuery: () => {},
-  handleBuildSortQuery: () => {},
-  buildPaginationQuery: () => {},
-  resetSortQuery: () => {},
-  resetFilterQuery: () => {},
-  queryFilters: {},
-  setQueryFilters: () => {},
-  sortFilters: {},
-  setSortFilters: () => {},
-  selectRows: [],
-  setSelectRows: () => {},
-  pageCount: 1,
-  setPageCount: () => {},
-  pageSize: 50,
-  setPageSize: () => {},
-  handleRefetchQuery: () => {},
-  foreignKeys: [],
-  configurations: {},
-  setForeignKeys: () => [],
-  setConfigurations: () => {},
-});
-
 export const TooljetDatabaseProvider = ({ value, children }: TooljetDatabaseProviderProps) => (
   <TooljetDatabaseContext.Provider value={value}>{children}</TooljetDatabaseContext.Provider>
 );
 
-export const useTooljetDatabaseContext = (): TooljetDatabaseContextValue => useContext(TooljetDatabaseContext);
+export const useTooljetDatabaseContext = (): TooljetDatabaseContextValue =>
+  useContext(TooljetDatabaseContext) as TooljetDatabaseContextValue;
+
+export { TooljetDatabaseContext };

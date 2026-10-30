@@ -18,6 +18,7 @@ const shared: Config.InitialProjectOptions = {
   moduleFileExtensions: ['js', 'json', 'ts', 'node'],
   testEnvironment: 'node',
   globalSetup: '<rootDir>/test/jest-global-setup.ts',
+  globalTeardown: '<rootDir>/test/jest-global-teardown.ts',
   setupFiles: ['<rootDir>/test/jest-setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/test/jest-transaction-setup.ts'],
   testRegex: 'test/modules/.*/unit/.*spec\\.ts$',
@@ -63,6 +64,9 @@ const config: Config.InitialOptions = {
   // Global-only options: Jest ignores these inside a project.
   verbose: true,
   testTimeout: 30000,
+  // CI: recycle a worker once it holds >25% of RAM between spec files, so a leak
+  // cannot grow until the OS SIGKILLs it. Not a CLI flag; global-only.
+  ...(process.env.CI ? { workerIdleMemoryLimit: 0.25 } : {}),
   ...coverageConfig(isCE),
   coverageDirectory: '<rootDir>/coverage-unit',
 };
