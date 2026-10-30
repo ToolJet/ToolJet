@@ -1,4 +1,7 @@
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { McpDelegationGuard } from '@modules/mcp-oauth/delegation.guard';
+import { McpOAuthScopeInterceptor } from '@modules/mcp-oauth/scope.interceptor';
+import { McpOAuthModule } from '@modules/mcp-oauth/module';
+import { APP_GUARD, APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core';
 import { PatScopeInterceptor } from '@modules/personal-access-tokens/interceptors/pat-scope.interceptor';
 import { OnModuleInit, DynamicModule, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { GetConnection } from './database/getConnection';
@@ -15,6 +18,9 @@ import { MetaModule } from '@modules/meta/module';
 import { SessionModule } from '@modules/session/module';
 import { EncryptionModule } from '@modules/encryption/module';
 import { AppController } from './controller';
+import { MigrationRunsController } from './migration-runs/controller';
+import { MigrationRunsService } from './migration-runs/service';
+import { FeatureAbilityFactory } from './ability';
 import { AppService } from './service';
 import { AppUtilService } from './util.service';
 import { ProfileModule } from '@modules/profile/module';
@@ -85,6 +91,7 @@ import { ExpressAdapter } from '@bull-board/express';
 import * as basicAuth from 'express-basic-auth';
 import { MfaCleanupScheduler } from '@modules/auth/scheduler';
 import { OtelMiddleware } from './middlewares/otel.middleware';
+import { MigrationGateMiddleware } from './middlewares/migration-gate.middleware';
 import { WorkspaceContextModule } from '@modules/workspace-context/module';
 import { NotificationsModule } from '@modules/notifications/module';
 
@@ -96,7 +103,9 @@ export class AppModule implements OnModuleInit, NestModule {
   ) {}
 
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(OtelMiddleware).forRoutes('*'); // global
+    // MigrationGateMiddleware first: while a deploy is migrating there is nothing worth
+    // tracing about a request we are about to reject.
+    consumer.apply(MigrationGateMiddleware, OtelMiddleware).forRoutes('*'); // global
   }
 
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -113,6 +122,7 @@ export class AppModule implements OnModuleInit, NestModule {
      * ████████████████████████████████████████████████████████████████████
      */
     const baseImports = [
+      await McpOAuthModule.register(configs),
       await AbilityModule.forRoot(configs),
       await LicenseModule.forRoot(configs),
       await FilesModule.register(configs, true),
@@ -238,17 +248,21 @@ export class AppModule implements OnModuleInit, NestModule {
 
     return {
       module: AppModule,
-      imports: [...modules, ...imports],
-      controllers: [AppController],
+      imports: [DiscoveryModule, ...modules, ...imports],
+      controllers: [AppController, MigrationRunsController],
       providers: [
         /* Bound here rather than in main.ts so enforcement is part of the module graph: any
            consumer that builds this module gets it, including the e2e harness, which never runs
            main.ts. Registering it only at bootstrap made the check depend on the entry point. */
+        { provide: APP_GUARD, useClass: McpDelegationGuard },
+        { provide: APP_INTERCEPTOR, useClass: McpOAuthScopeInterceptor },
         { provide: APP_INTERCEPTOR, useClass: PatScopeInterceptor },
         ShutdownHook,
         GetConnection,
         AppService,
         AppUtilService,
+        MigrationRunsService,
+        FeatureAbilityFactory,
         ...schedulerProviders,
       ],
     };

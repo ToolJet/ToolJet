@@ -206,6 +206,7 @@ export const baseComponentProperties = (
       'StarRating',
       'CircularProgressBar',
       'Kanban',
+      'Html',
       'ProgressBar',
       'AudioRecorder',
       'Camera',

@@ -59,6 +59,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'ReorderableList',
   'KeyValuePair',
   'ColorPicker',
+  'Html',
   'FileButton',
   'ButtonGroupV2',
   'Listview',

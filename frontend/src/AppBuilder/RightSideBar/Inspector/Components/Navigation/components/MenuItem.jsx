@@ -39,6 +39,7 @@ export const MenuItem = ({
       <div
         ref={optionBtnRef}
         className={`page-menu-item ${darkMode ? 'dark-theme theme-dark' : ''} ${isEditing ? 'is-selected' : ''}`}
+        data-list-item-id={String(item?.id ?? '')}
         onClick={(e) => {
           e.preventDefault();
           setShowEditPopover(!showEditPopover);
