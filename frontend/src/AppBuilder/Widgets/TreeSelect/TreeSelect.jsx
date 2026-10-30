@@ -6,7 +6,7 @@ import 'react-checkbox-tree/lib/react-checkbox-tree.css';
 import { isExpectedDataType } from '@/_helpers/utils.js';
 import TreeSelectCheckbox from './TreeSelectCheckbox';
 import Label from '@/_ui/Label';
-import { useTreeSelect } from './useTreeSelect';
+import { useTreeSelect, toggleCascade } from './useTreeSelect';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -115,10 +115,18 @@ const TreeSelect = ({
 
   // Recursively filter hidden items and resolve per-node disabled state
   // We do not map the custom labels yet so useTreeSelect creates the correct path/leaf maps
+  // The upstream tree throws on a duplicate value, so later duplicates and their subtrees are skipped (D-02)
+  const seenValues = new Set();
   const filterNodes = (items) => {
-    if (!Array.isArray(items)) return items;
+    if (!Array.isArray(items)) return [];
     return items
+      .filter((item) => item !== null && typeof item === 'object' && !Array.isArray(item))
       .filter((item) => getResolvedValue(item.visible) !== false)
+      .filter((item) => {
+        if (seenValues.has(item.value)) return false;
+        seenValues.add(item.value);
+        return true;
+      })
       .map((item) => {
         if (!advanced) {
           if (getResolvedValue(item.selected)) {
@@ -131,16 +139,12 @@ const TreeSelect = ({
         return {
           ...item,
           disabled: getResolvedValue(item.disable) === true,
-          children: item.children ? filterNodes(item.children) : undefined,
+          children: Array.isArray(item.children) ? filterNodes(item.children) : undefined,
         };
       });
   };
 
-  const rawData = !advanced
-    ? filterNodes(options)
-    : isExpectedDataType(properties.data, 'array')
-      ? filterNodes(properties.data)
-      : [];
+  const rawData = filterNodes(advanced ? properties.data : options);
 
   const evaluatedCheckedData = !advanced ? derivedChecked : checkedData;
   const evaluatedExpandedData = !advanced ? derivedExpanded : expandedData;
@@ -184,53 +188,7 @@ const TreeSelect = ({
       }
     } else {
       const newCheckedSet = new Set(checked);
-      let targetNode = null;
-      let targetPath = [];
-      const findNode = (nodes, val, path = []) => {
-        for (const node of nodes) {
-          if (node.value === val) {
-            targetNode = node;
-            targetPath = [...path, node];
-            return true;
-          }
-          if (node.children) {
-            if (findNode(node.children, val, [...path, node])) return true;
-          }
-        }
-        return false;
-      };
-      findNode(rawData, nodeValue);
-
-      if (targetNode) {
-        if (isCurrentlyChecked) {
-          const removeDescendants = (node) => {
-            newCheckedSet.delete(node.value);
-            if (node.children) node.children.forEach(removeDescendants);
-          };
-          removeDescendants(targetNode);
-          targetPath.forEach((p) => newCheckedSet.delete(p.value));
-        } else {
-          const addDescendants = (node) => {
-            newCheckedSet.add(node.value);
-            if (node.children) node.children.forEach(addDescendants);
-          };
-          addDescendants(targetNode);
-          for (let i = targetPath.length - 2; i >= 0; i--) {
-            const parent = targetPath[i];
-            const allChildrenChecked = parent.children.every((child) => newCheckedSet.has(child.value));
-            if (allChildrenChecked) {
-              newCheckedSet.add(parent.value);
-            } else {
-              // Not all children selected — remove this ancestor and all higher ancestors
-              // so pre-existing selections (e.g. from checkedData) don't stay as "fully checked"
-              for (let j = i; j >= 0; j--) {
-                newCheckedSet.delete(targetPath[j].value);
-              }
-              break;
-            }
-          }
-        }
-      }
+      toggleCascade(rawData, newCheckedSet, nodeValue, isCurrentlyChecked);
       newChecked = Array.from(newCheckedSet);
     }
     handleCheck(newChecked);
@@ -266,6 +224,8 @@ const TreeSelect = ({
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
+            // Keyboard Space clicks the input itself; its onChange already handled the toggle
+            if (e.target.type === 'checkbox') return;
             if (processedItem.disabled || isDisabled) return;
             // Always pass actual checked state (not display state) so toggle logic is correct
             handleCustomCheck(item.value, isChecked);
@@ -352,6 +312,7 @@ const TreeSelect = ({
       checkModel="all"
       noCascade={true}
       disabled={isDisabled}
+      expandDisabled={isDisabled}
       id={inputId}
       icons={{
         check: (

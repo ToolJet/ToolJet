@@ -366,6 +366,8 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'ToggleSwitchV2',
   'TreeSelect',
   'VerticalDivider',
+  'Spinner',
+  'BoundedBox',
 ];
 
 @Injectable()
@@ -4640,7 +4642,7 @@ export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
  * @param {NewRevampedComponent[]} componentTypes - An array of component types for which to perform property migration.
  * @returns {object} An object containing the modified properties, styles, and general information.
  */
-function migrateProperties(
+export function migrateProperties(
   componentType: NewRevampedComponent | PartialRevampedComponent | 'ModuleViewer',
   component: Component,
   componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
@@ -4662,6 +4664,28 @@ function migrateProperties(
 
   if (MAX_LIMIT_COMPONENT_TYPES.includes(componentType) && properties.maxLimit === undefined) {
     properties.maxLimit = { value: '' };
+  }
+
+  // Old exports, versioned or not, still carry these keys where the Move*KeysToProperties data migrations found them.
+  const MOVED_STYLE_KEYS: Record<string, string[]> = {
+    Spinner: ['visibility'],
+    BoundedBox: ['visibility', 'disabledState'],
+  };
+  if (MOVED_STYLE_KEYS[componentType]) {
+    for (const key of MOVED_STYLE_KEYS[componentType]) {
+      if (styles[key] !== undefined) {
+        if (properties[key] === undefined) {
+          properties[key] = styles[key];
+        }
+        delete styles[key];
+      }
+    }
+    if (general?.tooltip !== undefined) {
+      if (properties.tooltip === undefined) {
+        properties.tooltip = general.tooltip;
+      }
+      delete general.tooltip;
+    }
   }
 
   if (TOOLTIP_FORMAT_COMPONENT_TYPES.includes(componentType) && properties.tooltipFormat === undefined) {

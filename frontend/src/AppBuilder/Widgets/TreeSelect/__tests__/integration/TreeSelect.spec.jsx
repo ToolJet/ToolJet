@@ -68,6 +68,7 @@ const widget = () => document.querySelector(`[data-cy="${HANDLE}"]`);
 const row = (label) => screen.getByText(label).closest('li');
 const checkbox = (label) => within(row(label)).getAllByRole('checkbox')[0];
 const toggle = (label) => row(label).querySelector('.rct-collapse-btn');
+const errorBoundary = () => document.querySelector('[data-cy="error-boundary-fallback"]');
 const setProperty = (property, value, paramType = 'properties') =>
   tree.session.store.act(() => tree.setComponentProperty(ID, property, value, paramType));
 
@@ -113,16 +114,17 @@ describe('TreeSelect widget', () => {
       },
     });
 
-    await waitFor(() => expect(exposed().checked).toEqual(['static-root', 'enabled', 'disabled']));
+    // D-07: the selected parent's cascade skips its disabled child.
+    await waitFor(() => expect(exposed().checked).toEqual(['static-root', 'enabled']));
     expect(exposed().expanded).toEqual(['static-root']);
     expect(screen.queryByText('Hidden child')).not.toBeInTheDocument();
     expect(screen.queryByText('Ignored dynamic node')).not.toBeInTheDocument();
 
     await tree.session.user.click(screen.getByText('Disabled child'));
-    expect(exposed().checked).toEqual(['static-root', 'enabled', 'disabled']);
+    expect(exposed().checked).toEqual(['static-root', 'enabled']);
 
     await tree.session.user.click(screen.getByText('Enabled child'));
-    await waitFor(() => expect(exposed().checked).toEqual(['disabled']));
+    await waitFor(() => expect(exposed().checked).toEqual([]));
   });
 
   test('[TreeSelect-SEL-001] cascade toggles descendants and publishes literal paths with exact events', async () => {
@@ -170,6 +172,41 @@ describe('TreeSelect widget', () => {
       unchecks: 1,
       changes: 3,
     });
+  });
+
+  test('[TreeSelect-SEL-003] cascade check, uncheck, completion and checkedData skip disabled descendants', async () => {
+    // Break this catches: cascading into disabled nodes or requiring disabled children before a parent counts as full.
+    tree.render({
+      currentMode: 'view',
+      properties: {
+        data: binding([
+          node('Parent one', 'p1', [node('Enabled one', 'e1'), node('Disabled one', 'd1', null, { disabled: true })]),
+          node('Parent two', 'p2', [node('Enabled two', 'e2'), node('Disabled two', 'd2', null, { disabled: true })]),
+        ]),
+        checkedData: binding(['p2', 'd2']),
+        expandedData: binding(['p1', 'p2']),
+      },
+    });
+    await screen.findByText('Disabled one');
+    await waitFor(() => expect(exposed().checked).toEqual(['p2', 'e2', 'd2']));
+
+    await tree.session.user.click(screen.getByText('Parent one'));
+    await waitFor(() => expect(exposed().checked).toEqual(['p2', 'e2', 'd2', 'p1', 'e1']));
+    expect(checkbox('Disabled one')).not.toBeChecked();
+    expect(checkbox('Parent one')).toBeChecked();
+
+    await tree.session.user.click(screen.getByText('Parent two'));
+    await waitFor(() => expect(exposed().checked).toEqual(['d2', 'p1', 'e1']));
+    expect(checkbox('Disabled two')).toBeChecked();
+
+    await tree.session.user.click(screen.getByText('Parent one'));
+    await waitFor(() => expect(exposed().checked).toEqual(['d2']));
+    await tree.session.user.click(screen.getByText('Enabled one'));
+    await waitFor(() => expect(exposed().checked).toEqual(['d2', 'e1', 'p1']));
+
+    await setProperty('checkedData', ['p1']);
+    await waitFor(() => expect(exposed().checked).toEqual(['p1', 'e1']));
+    expect(checkbox('Disabled one')).not.toBeChecked();
   });
 
   test('[TreeSelect-SEL-002] independent mode changes only the actual target', async () => {
@@ -229,10 +266,11 @@ describe('TreeSelect widget', () => {
       leafPathStrings: ['root-branch-leaf-a'],
     });
 
+    // D-08/D-10: in cascading mode select adds descendants and deselect removes the node and its ancestors.
     await tree.act('selectOptions', ['branch', 'leaf-a', 'other']);
-    expect(exposed().checkedPathStrings).toEqual(['root-branch', 'root-branch-leaf-a', 'other']);
-    expect(exposed().leafPathStrings).toEqual(['root-branch-leaf-a', 'other']);
-    await tree.act('deselectOptions', ['branch', 'other']);
+    expect(exposed().checkedPathStrings).toEqual(['root-branch', 'root-branch-leaf-a', 'root-branch-leaf-b', 'other']);
+    expect(exposed().leafPathStrings).toEqual(['root-branch-leaf-a', 'root-branch-leaf-b', 'other']);
+    await tree.act('deselectOptions', ['leaf-b', 'other']);
     expect(exposed().checked).toEqual(['leaf-a']);
     expect(exposed().checkedPathArray).toEqual([['root', 'branch', 'leaf-a']]);
 
@@ -246,6 +284,107 @@ describe('TreeSelect widget', () => {
       leafPathArray: [],
       leafPathStrings: [],
     });
+  });
+
+  test('[TreeSelect-ACT-003] selectOptions cascades like a click in cascading mode and stays exact in independent mode', async () => {
+    // Break this catches: the action storing raw values without the cascade, or cascading into disabled nodes.
+    tree.render({
+      currentMode: 'view',
+      properties: {
+        data: binding([
+          node('Root', 'root', [
+            node('Branch', 'branch', [node('Leaf A', 'leaf-a'), node('Leaf B', 'leaf-b', null, { disabled: true })]),
+            node('Leaf C', 'leaf-c'),
+          ]),
+        ]),
+      },
+    });
+    await screen.findByText('Leaf B');
+
+    await tree.act('selectOptions', 'branch');
+    await waitFor(() => expect(exposed().checked).toEqual(['branch', 'leaf-a']));
+    expect(checkbox('Leaf A')).toBeChecked();
+    expect(checkbox('Leaf B')).not.toBeChecked();
+    expect(exposed().leafPathStrings).toEqual(['root-branch-leaf-a']);
+
+    await tree.act('selectOptions', ['branch', 'leaf-c']);
+    await waitFor(() => expect(exposed().checked).toEqual(['branch', 'leaf-a', 'leaf-c', 'root']));
+    expect(checkbox('Root')).toBeChecked();
+
+    await setProperty('allowIndependentSelection', true);
+    await tree.act('selectOptions', 'branch');
+    await waitFor(() => expect(exposed().checked).toEqual(['branch']));
+  });
+
+  test('[TreeSelect-ACT-004] deselectOptions cascades like an un-click in cascading mode and stays exact in independent mode', async () => {
+    // Break this catches: the action removing only the given values, leaving descendants checked or ancestors fully checked.
+    tree.render({
+      currentMode: 'view',
+      properties: {
+        data: binding([
+          node('Root', 'root', [
+            node('Branch', 'branch', [node('Leaf A', 'leaf-a'), node('Leaf B', 'leaf-b', null, { disabled: true })]),
+            node('Leaf C', 'leaf-c'),
+          ]),
+        ]),
+        checkedData: binding(['root', 'leaf-b']),
+      },
+    });
+    await screen.findByText('Leaf B');
+    await waitFor(() => expect(exposed().checked).toEqual(['root', 'branch', 'leaf-a', 'leaf-b', 'leaf-c']));
+
+    // D-10: the parent's enabled descendants and its ancestors go; the disabled child keeps its state (D-07).
+    await tree.act('deselectOptions', 'branch');
+    await waitFor(() => expect(exposed().checked).toEqual(['leaf-b', 'leaf-c']));
+    expect(checkbox('Leaf A')).not.toBeChecked();
+    expect(checkbox('Leaf B')).toBeChecked();
+    expect(checkbox('Root')).not.toBeChecked();
+    expect(exposed().leafPathStrings).toEqual(['root-branch-leaf-b', 'root-leaf-c']);
+
+    await tree.act('selectOptions', 'root');
+    await waitFor(() => expect(exposed().checked).toEqual(['root', 'branch', 'leaf-a', 'leaf-c']));
+    await tree.act('deselectOptions', 'leaf-a');
+    await waitFor(() => expect(exposed().checked).toEqual(['leaf-c']));
+    expect(checkbox('Branch')).not.toBeChecked();
+
+    await tree.act('selectOptions', ['leaf-c', 'ghost']);
+    await tree.act('deselectOptions', 'ghost');
+    await waitFor(() => expect(exposed().checked).toEqual(['leaf-c']));
+
+    await setProperty('allowIndependentSelection', true);
+    await tree.act('selectOptions', ['branch', 'leaf-a']);
+    await tree.act('deselectOptions', 'branch');
+    await waitFor(() => expect(exposed().checked).toEqual(['leaf-a']));
+  });
+
+  test('[TreeSelect-ACT-002] selection actions publish paths from the replacement data tree', async () => {
+    // Break this catches: action closures registered once that keep the initial tree's path and leaf maps.
+    tree.render({ currentMode: 'view' });
+    await screen.findByText('Root');
+
+    await setProperty('data', [
+      node('New top', 'new-top', [
+        node('Middle', 'middle', [node('Replacement leaf', 'replacement-leaf'), node('Sibling leaf', 'sibling-leaf')]),
+      ]),
+    ]);
+    await setProperty('expandedData', ['new-top', 'middle']);
+    expect(await screen.findByText('Replacement leaf')).toBeInTheDocument();
+
+    await tree.act('selectOptions', 'replacement-leaf');
+    await waitFor(() =>
+      expect(exposed()).toMatchObject({
+        checked: ['replacement-leaf'],
+        checkedPathArray: [['new-top', 'middle', 'replacement-leaf']],
+        checkedPathStrings: ['new-top-middle-replacement-leaf'],
+        leafPathArray: [['new-top', 'middle', 'replacement-leaf']],
+        leafPathStrings: ['new-top-middle-replacement-leaf'],
+      })
+    );
+
+    await tree.act('deselectOptions', 'replacement-leaf');
+    await waitFor(() => expect(exposed().checked).toEqual([]));
+    expect(exposed().checkedPathStrings).toEqual([]);
+    expect(exposed().leafPathStrings).toEqual([]);
   });
 
   test('[TreeSelect-EXP-001] expansion interaction and expandedData both control the exposed value', async () => {
@@ -423,6 +562,19 @@ describe('TreeSelect widget', () => {
     expect(exposed().isValid).toBe(false);
   });
 
+  test('[TreeSelect-FORM-003] Form formData carries the TreeSelect selection and follows later changes', async () => {
+    // Break this catches: the Form value-key list not reading `checked`, leaving TreeSelect out of submitted data.
+    tree.renderInsideForm();
+    await screen.findByText('Leaf A');
+
+    await tree.session.user.click(screen.getByText('Leaf A'));
+    await waitFor(() => expect(tree.exposed('form1').data?.[HANDLE]?.checked).toEqual(['leaf-a']));
+    await waitFor(() => expect(tree.exposed('form1').formData).toEqual({ [HANDLE]: ['leaf-a'] }));
+
+    await tree.session.user.click(screen.getByText('Leaf B'));
+    await waitFor(() => expect(tree.exposed('form1').formData).toEqual({ [HANDLE]: ['leaf-a', 'leaf-b', 'branch'] }));
+  });
+
   test('[TreeSelect-RENDER-001] new label mode exposes associations, state, and registered inline styles', async () => {
     // Break this catches: disconnecting the label ID, dropping inline styles, or applying black option text in dark mode.
     tree.render({
@@ -533,5 +685,180 @@ describe('TreeSelect widget', () => {
     expect(screen.queryByText('Root')).not.toBeInTheDocument();
     await waitFor(() => expect(exposed().checked).toEqual(['static-only']));
     expect(exposed().checkedPathStrings).toEqual(['static-only']);
+  });
+
+  test('[TreeSelect-STATE-002] global disabled state blocks node clicks and events until enabled', async () => {
+    // Break this catches: conveying disabled only through ARIA while the custom label click handler stays active.
+    tree.render({
+      currentMode: 'view',
+      properties: { disabledState: binding('{{true}}') },
+      events: [event('onCheck', 'checks'), event('onUnCheck', 'unchecks'), event('onChange', 'changes')],
+    });
+    await screen.findByText('Leaf A');
+
+    await tree.session.user.click(screen.getByText('Branch'));
+    await drain();
+    expect(exposed().checked).toEqual([]);
+    expect(checkbox('Leaf A')).not.toBeChecked();
+    expect(tree.variables().checks).toBeUndefined();
+    expect(tree.variables().changes).toBeUndefined();
+
+    await setProperty('disabledState', false);
+    await waitFor(() => expect(exposed().isDisabled).toBe(false));
+    await tree.session.user.click(screen.getByText('Branch'));
+    await drain();
+    await waitFor(() => expect(exposed().checked).toEqual(['branch', 'leaf-a', 'leaf-b']));
+    expect(tree.variables()).toMatchObject({ checks: 1, changes: 1 });
+  });
+
+  test.each([
+    { via: 'property', disable: () => undefined, properties: { disabledState: binding('{{true}}') } },
+    { via: 'setDisable', disable: () => tree.act('setDisable', true), properties: {} },
+  ])(
+    '[TreeSelect-STATE-003] disabled via $via blocks keyboard selection and expansion until enabled',
+    async ({ via, disable, properties }) => {
+      // Break this catches: leaving the expand button or node checkbox keyboard-operable while the widget is disabled.
+      tree.render({
+        currentMode: 'view',
+        properties: { expandedData: binding(['root']), ...properties },
+        events: [event('onCheck', 'checks'), event('onChange', 'changes')],
+      });
+      await screen.findByText('Branch');
+      await disable();
+      await waitFor(() => expect(exposed().isDisabled).toBe(true));
+
+      toggle('Branch').focus();
+      await tree.session.user.keyboard('{Enter}');
+      await drain();
+      expect(exposed().expanded).toEqual(['root']);
+      expect(screen.queryByText('Leaf A')).not.toBeInTheDocument();
+      checkbox('Branch').focus();
+      await tree.session.user.keyboard(' ');
+      await drain();
+      expect(exposed().checked).toEqual([]);
+      expect(checkbox('Branch')).not.toBeChecked();
+      expect(tree.variables().checks).toBeUndefined();
+      expect(tree.variables().changes).toBeUndefined();
+
+      if (via === 'property') await setProperty('disabledState', false);
+      else await tree.act('setDisable', false);
+      await waitFor(() => expect(exposed().isDisabled).toBe(false));
+
+      toggle('Branch').focus();
+      await tree.session.user.keyboard('{Enter}');
+      await waitFor(() => expect(exposed().expanded).toEqual(['root', 'branch']));
+      checkbox('Branch').focus();
+      await tree.session.user.keyboard(' ');
+      await waitFor(() => expect(exposed().checked).toEqual(['branch', 'leaf-a', 'leaf-b']));
+      expect(tree.variables()).toMatchObject({ checks: 1, changes: 1 });
+    }
+  );
+
+  test('[TreeSelect-DATA-003] non-array dynamic data renders an empty tree and clears stale state', async () => {
+    // Break this catches: using the array-check result as a boolean so the raw object reaches half-check traversal.
+    tree.render({ currentMode: 'view', properties: { checkedData: binding(['branch']) } });
+    await waitFor(() => expect(exposed().checked).toEqual(['branch', 'leaf-a', 'leaf-b']));
+
+    await setProperty('data', { label: 'Not a list', value: 'object' });
+    await waitFor(() => expect(screen.queryByText('Leaf A')).not.toBeInTheDocument());
+    expect(errorBoundary()).toBeNull();
+    expect(widget()).not.toBeNull();
+    expect(screen.queryByText('Not a list')).not.toBeInTheDocument();
+    await waitFor(() => expect(exposed().checked).toEqual([]));
+    expect(exposed().checkedPathArray).toEqual([]);
+    expect(exposed().leafPathStrings).toEqual([]);
+
+    // D-01: the Schema validation runs on resolution and logs the top-level type error.
+    tree.render({ currentMode: 'view', properties: { data: binding({ label: 'Not a list', value: 'object' }) } });
+    await waitFor(() => expect(widget()).not.toBeNull());
+    await drain();
+    const errors = store().debugger.logs.filter((entry) => entry.componentId === ID && entry.logLevel === 'error');
+    expect(errors.map((entry) => entry.message)).toContain(
+      'Expected a value of type array, but received {"label":"Not a list","value":"object"}'
+    );
+  });
+
+  test.each([
+    { mode: 'dynamic', key: 'data', advanced: '{{true}}' },
+    { mode: 'static', key: 'options', advanced: '{{false}}' },
+  ])(
+    '[TreeSelect-DATA-005] $mode mode skips null, non-object and non-array-children entries',
+    async ({ key, advanced }) => {
+      // Break this catches: reading flags on a null entry or walking non-array children during render or cascade.
+      const malformed = [
+        null,
+        'just text',
+        node('Valid parent', 'valid', [node('Kid', 'kid')], { expanded: true }),
+        { ...node('Odd kids', 'odd'), children: { label: 'Hidden object', value: 'hidden-object' } },
+        { ...node('Text kids', 'text-kids'), children: 'abc' },
+      ];
+      tree.render({
+        currentMode: 'view',
+        properties: { advanced: binding(advanced), [key]: binding(malformed), expandedData: binding(['valid']) },
+      });
+
+      expect(await screen.findByText('Kid')).toBeInTheDocument();
+      expect(errorBoundary()).toBeNull();
+      expect(screen.getByText('Odd kids')).toBeInTheDocument();
+      expect(screen.getByText('Text kids')).toBeInTheDocument();
+      expect(screen.queryByText('Hidden object')).not.toBeInTheDocument();
+      expect(screen.queryByText('just text')).not.toBeInTheDocument();
+
+      await tree.session.user.click(screen.getByText('Valid parent'));
+      await waitFor(() => expect(exposed().checked).toEqual(['valid', 'kid']));
+      await tree.session.user.click(screen.getByText('Odd kids'));
+      await waitFor(() => expect(exposed().checked).toEqual(['valid', 'kid', 'odd']));
+      expect(exposed().leafPathStrings).toEqual(['valid-kid', 'odd']);
+      await tree.session.user.click(screen.getByText('Valid parent'));
+      await waitFor(() => expect(exposed().checked).toEqual(['odd']));
+      expect(errorBoundary()).toBeNull();
+      // D-01: only the top level is validated, so malformed entries never coerce the whole list to [].
+      expect(
+        store().debugger.logs.filter((entry) => entry.componentId === ID && entry.logLevel === 'error')
+      ).toHaveLength(0);
+    }
+  );
+
+  test('[TreeSelect-DATA-006] non-array static options render an empty tree without crashing', async () => {
+    // Break this catches: normalizing only the dynamic branch so a static object reaches half-check traversal.
+    tree.render({
+      currentMode: 'view',
+      properties: {
+        advanced: binding('{{false}}'),
+        options: binding([node('Static pick', 'static-pick', null, { selected: true })]),
+      },
+    });
+    await waitFor(() => expect(exposed().checked).toEqual(['static-pick']));
+
+    await setProperty('options', { label: 'Lonely', value: 'lonely' });
+    await waitFor(() => expect(screen.queryByText('Static pick')).not.toBeInTheDocument());
+    expect(errorBoundary()).toBeNull();
+    expect(widget()).not.toBeNull();
+    expect(screen.queryByText('Lonely')).not.toBeInTheDocument();
+    await waitFor(() => expect(exposed().checked).toEqual([]));
+    expect(exposed().checkedPathArray).toEqual([]);
+  });
+
+  test('[TreeSelect-DATA-004] duplicate values keep the first node and skip later duplicates with their subtrees', async () => {
+    // Break this catches: passing duplicate values to the upstream tree, which throws, or keeping the later duplicate.
+    tree.render({ currentMode: 'view' });
+    await screen.findByText('Root');
+
+    await setProperty('data', [
+      node('Shop A', 'shop-a', [node('Store', 'store'), node('Till', 'till')]),
+      node('Shop B', 'shop-b', [node('Store copy', 'store', [node('Deep', 'deep')]), node('Shelf', 'shelf')]),
+    ]);
+    await setProperty('expandedData', ['shop-a', 'shop-b']);
+    expect(await screen.findByText('Shelf')).toBeInTheDocument();
+    expect(errorBoundary()).toBeNull();
+    expect(screen.getByText('Store')).toBeInTheDocument();
+    expect(screen.queryByText('Store copy')).not.toBeInTheDocument();
+    expect(screen.queryByText('Deep')).not.toBeInTheDocument();
+
+    await tree.session.user.click(screen.getByText('Shop B'));
+    await waitFor(() => expect(exposed().checked).toEqual(['shop-b', 'shelf']));
+    await tree.session.user.click(screen.getByText('Store'));
+    await waitFor(() => expect(exposed().checked).toEqual(['shop-b', 'shelf', 'store']));
+    expect(exposed().leafPathStrings).toEqual(['shop-b-shelf', 'shop-a-store']);
   });
 });
