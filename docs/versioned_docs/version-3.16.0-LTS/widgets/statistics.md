@@ -10,7 +10,7 @@ title: Statistics
 - Commonly used in dashboards, executive summaries, and analytics applications.
 - Helps stakeholders make quick, informed decisions.
 
-<img className="screenshot-full img-full" src="/img/widgets/statistics/preview.png" alt="Drag a New Chat Component" />
+<img className="screenshot-full img-full" src="/img/widgets/statistics/preview.png" alt="Statistics component" />
 
 ## Data
 
@@ -32,15 +32,16 @@ title: Statistics
 | **Value** | The metric or data point displayed in secondary value. |
 | **Prefix Text** | Text or symbol displayed before the value (e.g., `$` for currency). |
 | **Suffix Text** | Text or symbol displayed after the value (e.g., `%` for percentage). |
-| **Trend** | Indicator showing performance trend, such as positive or negative. |
+| **Trend** | Indicator showing the performance trend: `positive` (default) shows an up arrow in the positive color, `negative` shows a down arrow in the negative color, and `none` hides the arrow. |
 
 ### Layout
 
 | **Property** | **Description** |
 |:-------------|:----------------|
 | **Data** | Choose the alignment of the data (left, center, or right). |
-| **Secondary Value** | Decide how the secondary value is aligned (vertical or horizontal). |
-| **Icon** | Select an icon to display, or hide it and adjust its alignment (left or right). |
+| **Secondary Value** | Choose whether the secondary value is stacked above its label (vertical) or placed beside it (horizontal). |
+| **Icon** | Select the icon to display. Use the eye toggle to show or hide it. |
+| **Icon direction** | Places the icon to the left or right of the data. Shown as two unlabeled icon buttons below **Icon**, only when **Data** is set to left or right. With center alignment, the icon sits above the data. Default: right. |
 
 ## Component Specific Actions (CSA)
 
@@ -48,10 +49,10 @@ The following actions of the component can be controlled using the component-spe
 
 | **Action** | **Description** | **RunJS Query** |
 |:-----------|:----------------|:----------------|
-| **setPrimaryValue**   | Updates the primary metric value displayed in the component. | `{{components.statistics1.setPrimaryValue}}`  |
-| **setSecondaryValue** | Updates the secondary metric value displayed. | `{{components.statistics1.setSecondaryValue}}` |
-| **setLoading**        | Toggles the loading state of the component. | `{{components.statistics1.setLoading}}`      |
-| **setVisibility**     | Shows or hides the component on the page. | `{{components.statistics1.setVisibility}}`  |
+| **setPrimaryValue**   | Updates the primary metric value displayed in the component. | `await components.statistics1.setPrimaryValue('100')`  |
+| **setSecondaryValue** | Updates the secondary metric value displayed. | `await components.statistics1.setSecondaryValue('5')` |
+| **setLoading**        | Toggles the loading state of the component. | `await components.statistics1.setLoading(true)`      |
+| **setVisibility**     | Shows or hides the component on the page. | `await components.statistics1.setVisibility(false)`  |
 
 
 ## Exposed Variables
@@ -72,6 +73,8 @@ The following actions of the component can be controlled using the component-spe
 | :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
 | Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking **fx** and entering a logical expression. |
 | Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking **fx** and entering a logical expression. |
+| Dynamic height | Automatically adjusts the component's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Total Deals` ). |
 
 ## Devices

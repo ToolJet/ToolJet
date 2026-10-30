@@ -60,6 +60,7 @@ The following actions of the component can be controlled using the component-spe
 | :------------------------------------------- | :-------------------------------------------------| :---------------------------------------------------------- |
 | Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable | Enables or disables the component. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Select an option.` ). |
 
@@ -78,7 +79,9 @@ The following actions of the component can be controlled using the component-spe
 | -------------| ----------------| ------------------------- |
 | **Style** | Choose whether to keep the label in **standard** or **legacy** style. | Dropdown: *Standard*, *Legacy* |
 | **Label color** | Change the color of the label text. | Color picker / HEX / RGBA / Custom Themes |
+| **Size** | Sets the font size of the label, in pixels. Defaults to `12`. | Enter a number or click on **fx** and enter code that returns a number. |
 | **Alignment** | Adjust the placement of the label relative to the component. | *Side* / *Top* and *Left* / *Right* |
+| **Direction** | When alignment is set to `side`, places the label to the left or right of the field. | Select **Left** or **Right** using the icon toggles. |
 | **Width** | Sets the width of the label. | Keep `Auto width` for standard sizing, or deselect to adjust using a slider or an **fx** expression returning a numeric value. |
 
 ### Icon
