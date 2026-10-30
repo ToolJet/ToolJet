@@ -56,7 +56,18 @@ export class DataSourcesService implements IDataSourcesService {
       // remove workflowsdefault data source from static data sources
       dataSources = dataSources.filter((dataSource) => dataSource.kind !== 'workflows');
     }
-    const decamelizedDatasources = decamelizeKeys(dataSources);
+    const decamelizedDatasources = decamelizeKeys(dataSources) as { plugin?: Record<string, { data: unknown }> }[];
+    // Plugin schemas are opaque, mixed-case blobs the frontend reads verbatim (commonFields,
+    // dependsOn, autoFetch, invokeMethod). `decamelizeKeys` recurses into them and renames those
+    // keys, so restore the plugin file payloads unchanged.
+    dataSources.forEach((dataSource, index) => {
+      const plugin = dataSource.plugin;
+      const serializedPlugin = decamelizedDatasources[index]?.plugin;
+      if (!plugin || !serializedPlugin) return;
+      if (plugin.operationsFile) serializedPlugin['operations_file'].data = plugin.operationsFile.data;
+      if (plugin.manifestFile) serializedPlugin['manifest_file'].data = plugin.manifestFile.data;
+      if (plugin.iconFile) serializedPlugin['icon_file'].data = plugin.iconFile.data;
+    });
     return { data_sources: decamelizedDatasources };
   }
 
