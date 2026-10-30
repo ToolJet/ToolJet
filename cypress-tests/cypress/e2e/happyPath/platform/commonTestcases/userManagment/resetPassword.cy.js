@@ -19,7 +19,7 @@ describe("Password reset functionality", () => {
     cy.visit("/");
     cy.apiLogin();
     cleanAllUsers();
-    // cy.mhDeleteAll();
+    cy.mhDeleteAll();
     cy.apiConfigureSmtp(smtpConfig);
   });
 
@@ -97,7 +97,8 @@ describe("Password reset functionality", () => {
 
     // Use the correct API for cypress-mh if you have customized endpoints
     cy.wait(2000);
-    cy.mhGetMailsByRecipient(data.email)
+    cy.mhGetMailsByRecipient(data.email, 50, { timeout: 60000 })
+      .should("have.length.at.least", 1)
       .mhFilterBySubject("Reset your password")
       .then((mails) => {
         expect(mails).to.have.length.greaterThan(0);

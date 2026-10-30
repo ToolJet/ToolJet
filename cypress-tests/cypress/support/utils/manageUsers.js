@@ -408,7 +408,9 @@ export const fetchAndVisitInviteLink = (
 };
 
 export const fetchAndVisitInviteLinkViaMH = (email) => {
-  cy.mhGetMailsByRecipient(email).then((mails) => {
+  cy.mhGetMailsByRecipient(email, 50, { timeout: 60000 })
+    .should("have.length.at.least", 1)
+    .then((mails) => {
     expect(mails).to.have.length.greaterThan(0);
     const lastMail = mails[mails.length - 1];
     const mailContent = lastMail && lastMail.Content ? lastMail.Content : {};

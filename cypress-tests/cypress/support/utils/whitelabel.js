@@ -158,7 +158,7 @@ export const verifyInvitationEmail = (
   email,
   whiteLabelConfig = {},
   maxRetries = 10,
-  retryDelay = 1000
+  retryDelay = 2000
 ) => {
   if (!Cypress.env("mailHogUrl")) {
     Cypress.env("mailHogUrl", "http://localhost:8025/");

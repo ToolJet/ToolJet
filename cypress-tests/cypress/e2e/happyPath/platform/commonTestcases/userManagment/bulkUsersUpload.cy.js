@@ -137,7 +137,7 @@ describe("Bulk User Upload", () => {
   beforeEach(() => {
     const firstName = fake.firstName;
     const workspaceName = firstName.toLowerCase();
-    // cy.mhDeleteAll();
+    cy.mhDeleteAll();
     cy.apiLogin();
     cy.apiCreateWorkspace(firstName, workspaceName);
     cy.visit(`${workspaceName}`);
@@ -203,7 +203,7 @@ describe("Bulk User Upload", () => {
     cy.wait(5000);
     const invitedUserEmails = ["test1@gmail.com","test3@gmail.com","test12@gmail.com"];
     invitedUserEmails.forEach((email)=>{
-      cy.mhGetMailsByRecipient(email).should("have.length.at.least", 1);
+      cy.mhGetMailsByRecipient(email, 50, { timeout: 60000 }).should("have.length.at.least", 1);
     })
 
     common.navigateToManageGroups();
