@@ -57,7 +57,7 @@ Okta can be configured as the Identity Provider for SAML, which is an authentica
 9. Copy the **Metadata URL**. This URL will retrieve the XML metadata file for the Okta application.
     <img className="screenshot-full img-m" src="/img/user-management/sso/saml/okta-sign-on.png" alt="Okta Sign On" />
 
-10. Paste the metadata URL into the **Identity provider metadata** field in the ToolJet SAML configuration.
+10. Open the metadata URL, copy the XML it returns, and paste it into the **Identity provider metadata** field in the ToolJet SAML configuration.
 
 11. Ensure that Audience URI (SP Entity ID) from the XML file is added to the Configure SAML tab in the Okta application configuration.
 

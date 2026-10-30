@@ -42,14 +42,41 @@ Role Required: <br/>
 3.  On the right, you'll see toggles to enable SSO via different clients. All the client toggles are disabled by default. Turn on the toggle in front of OpenID Connect.
     <img className="screenshot-full img-full" src="/img/user-management/sso/oidc/sso-menu.png" alt="Add user button" />
 
-4.  After turning it on, a modal will appear. Click on **App provider** and fill the input fields for parameters such as Name, Client ID, and Well known URL. At the top right of the modal, there is a toggle to enable this provider. Turn it on, and then, without entering any parameters, click on the Save changes button. This will generate a Redirect URL, which you will need to obtain the credentials from the Identity Provider.
+4.  After turning it on, a modal will appear. Click on **Add provider** and fill the input fields for parameters such as Name, Client ID, and Well known URL. At the top right of the modal, there is a toggle to enable this provider. Turn it on, and then, without entering any parameters, click on the Save changes button. This will generate a Redirect URL, which you will need to obtain the credentials from the Identity Provider.
     <img className="screenshot-full img-m" src="/img/user-management/sso/oidc/multi-tenant/config-v2.png" alt="Add user button" />
 
 5.  Open the modal again and choose the Grant type. ToolJet supports Authorization Code, which requires a Client ID and Client Secret, and Authorization Code with PKCE, which does not require a Client Secret.
 
-6.  After selecting the grant type, provide the Client ID, Client Secret / Code Verifier, and Well-Known URL from your identity provider. Once done, click Save changes at the bottom of the modal.
+6.  After selecting the grant type, provide the **Client ID**, **Client secret** (or **Code verifier (optional)** for PKCE), and **Well known URL** from your identity provider. Optionally, enter additional scopes in **Custom Scopes**. See [Custom Scopes](#custom-scopes). Once done, click **Save changes** at the bottom of the modal.
 
 Upon saving, OIDC SSO will be successfully enabled using your configured Identity Provider, allowing your users to seamlessly authenticate via OpenID Connect for enhanced security and ease of use.
+
+## Custom Scopes
+
+ToolJet always requests the `openid`, `email`, `profile`, and `offline_access` scopes. To request more, enter them in the **Custom Scopes** field of the OIDC provider, separated by commas. For example, `groups, roles`. Custom scopes are added to the default scopes. They don't replace them.
+
+<img className="screenshot-full img-l" src="/img/user-management/sso/oidc/custom-scopes.png" alt="OIDC provider form with groups and roles entered in Custom Scopes" />
+
+When **Enable group sync** is on and **Custom Scopes** is empty, ToolJet also requests the `groups` scope, except for Microsoft Entra ID. If you enter any custom scopes, ToolJet no longer adds `groups` automatically, so include `groups` in **Custom Scopes** if your identity provider needs it.
+
+:::info
+The scopes must be supported by your identity provider and allowed for the client application you created there.
+:::
+
+## OIDC Environment Variables
+
+These optional environment variables apply to self-hosted deployments.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `OIDC_CONNECTION_TIMEOUT` | Timeout, in milliseconds, for every HTTP request ToolJet makes to the identity provider: well known URL discovery, token exchange, userinfo, and token refresh. Increase it if sign-in times out against a slow identity provider. | `3500` |
+| `OIDC_GROUPS_DELIMITER` | Format of the group claim used by group sync. Leave it unset if the claim is a JSON array, for example `["admins", "sales"]`. Set it to `space` if the claim is a single space-separated string, for example `"admins sales"`. | Unset |
+
+:::caution
+When `OIDC_GROUPS_DELIMITER` is `space`, ToolJet only reads the group claim if it's a string. If your identity provider returns the claim as an array, no groups are synced. `space` is the only supported value.
+:::
+
+ToolJet looks for the group claim in the userinfo response first, then in the ID token, then in the access token if it's a JWT. To learn more, refer to [OIDC group sync](/docs/user-management/group-sync/workspace-level/oidc).
 
 ## Configuring Multiple OIDC Providers
 

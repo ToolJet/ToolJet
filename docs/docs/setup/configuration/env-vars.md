@@ -153,11 +153,15 @@ By default, an account is locked after 5 failed login attempts. You can control 
 
 #### Invite Link Expiry
 
-- `LINK_EXPIRY_MINUTES`: Controls how long workspace invite, forgot password, and email verification links remain valid (in minutes). Default: **1440 minutes (24 hours)**.
+- `LINK_EXPIRY_MINUTES`: Controls how long workspace invite, forgot password, and email verification links remain valid (in minutes). Default: `0`, which means the links don't expire.
 
 #### Password Expiry
 
-- `PASSWORD_EXPIRY_DAYS`: Controls how long a password remains valid before the user is required to reset it (in days). Default: **30 days**. Set to `0` to disable password expiry.
+- `PASSWORD_EXPIRY_DAYS`: Number of days a password stays valid. Each time a user sets or changes a password, ToolJet sets it to expire this many days later. Default: `0`, which means passwords don't expire.
+
+  - Passwords set before you turn this on don't expire until the user next changes them.
+  - Setting it back to `0` doesn't clear expiry dates that are already set. Those passwords still expire.
+  - When a password has expired, the user resets it before signing in. See [Expired Password](/docs/user-management/profile-management/reset-password#expired-password).
 
 #### Two-Factor Authentication
 
@@ -186,6 +190,17 @@ Limits for [bulk uploading users](/docs/user-management/onboard-users/bulk-invit
 - `ORG_USERS_BULK_UPLOAD_MAX_ROWS`: Maximum number of user rows per file. Default: **250**.
 
 Both values must be positive numbers. Any other value falls back to the default.
+
+#### SCIM Provisioning
+
+<PlanBadge type="enterprise" />
+
+Settings for [SCIM provisioning](/api/scim/) from an identity provider. SCIM also needs a license that includes SCIM.
+
+- `SCIM_ENABLED`: Set to `true` to turn on the SCIM API at `/api/scim/v2`. Any other value turns it off. Default: unset (off).
+- `SCIM_HEADER_AUTH_TOKEN`: Token the identity provider sends as `Authorization: Bearer <token>`. No default. Use a long random value.
+- `SCIM_BASIC_AUTH_USER`: Username for HTTP Basic authentication. No default.
+- `SCIM_BASIC_AUTH_PASS`: Password for HTTP Basic authentication. No default.
 
 #### Restrict Signups
 
@@ -371,6 +386,15 @@ Enable Google or GitHub SSO with these environment variables:
 - `SSO_ACCEPTED_DOMAINS`: Comma-separated list of allowed email domains
 - `SSO_DISABLE_SIGNUPS=true`: Restricts signups to existing users
 
+**OpenID Connect:**
+
+- `OIDC_CONNECTION_TIMEOUT`: Timeout in milliseconds for HTTP requests to the OIDC identity provider (discovery, token, userinfo, and refresh). Default: `3500`.
+- `OIDC_GROUPS_DELIMITER=space`: Reads the group sync claim as a space-separated string instead of a JSON array. Unset by default. See [OIDC Environment Variables](/docs/user-management/sso/oidc/setup#oidc-environment-variables).
+
+**SAML:**
+
+- `SAML_SET_ENTITY_ID_REDIRECT_URL=true` or `SAML_SET_ENTITY_ID_SERVER_URL=true`: Uses the SAML Redirect URL as ToolJet's SP entity ID instead of the identity provider's `entityID`. Unset by default. See [Setting the Service Provider Entity ID](/docs/user-management/sso/saml/setup#setting-the-service-provider-entity-id).
+
 #### Group Synchronization
 
 If any of the following environment variables are set to true, group synchronization will be skipped during the login process for the respective SSO provider:
@@ -394,7 +418,11 @@ This is required when the assets for the client are to be loaded from elsewhere 
 
 #### Log File Path
 
-- `LOG_FILE_PATH`: Path to store audit logs (e.g., `tooljet/log/tooljet-audit.log`)
+- `LOG_FILE_PATH`: Folder, relative to the home directory of the user running the server, where ToolJet writes audit log files (e.g., `rsyslog`). Files are written to `<home>/<LOG_FILE_PATH>/tooljet_log/<process_id>-<YYYY-MM-DD>/audit.log`, with a new file each day. Unset by default, so no file is written. See [Setup Log File Generation](/docs/security/audit-logs/setup-rsyslog).
+
+#### Audit Log Retention
+
+- `AUDIT_LOGS_RETENTION_PERIOD`: Number of days to keep audit logs in the database. Default: `90`. Set to `0` to keep logs indefinitely. A cleanup job runs daily at 2:00 AM server time.
 
 #### Embedding Private Apps
 

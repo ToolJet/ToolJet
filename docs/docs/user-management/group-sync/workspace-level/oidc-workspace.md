@@ -57,31 +57,24 @@ To set up OIDC group synchronization in ToolJet follow these steps:
 
 ## Custom Scopes
 
-OIDC providers often allow requesting additional custom scopes beyond the standard ones. These scopes define what information or permissions an application can access, such as groups, roles, or directory access permissions. 
-ToolJet includes the following scopes by default:
-```
-OIDC_CUSTOM_SCOPES=openid, email, profile
-```
-When group synchronization is enabled and no custom scopes are configured, ToolJet automatically adds:
-```
-OIDC_CUSTOM_SCOPES=groups
-```
+ToolJet always requests the `openid`, `email`, `profile`, and `offline_access` scopes. When group sync is enabled and no custom scopes are set, ToolJet also requests `groups`, except for Microsoft Entra ID.
 
-### Configuration
-
-You can override or extend the default scopes using the `OIDC_CUSTOM_SCOPES` environment variable in the self-hosted version of ToolJet.
-
-Set scopes in your `.env` file using comma-separated values:
-```
-OIDC_CUSTOM_SCOPES=groups,roles,offline_access
-```
+To request more scopes, enter them in the **Custom Scopes** field of the OpenID Connect configuration, separated by commas. They're added to the default scopes. If you set any custom scopes, ToolJet no longer adds `groups` automatically, so include it yourself if your identity provider needs it.
 
 ### Provider-Specific Examples
 
-| **Provider** | **Required Scope** | **Extended Scope Example** |
-|:------------:|:------------------:|:--------------------------:|
-| Okta | `OIDC_CUSTOM_SCOPES=groups` | `OIDC_CUSTOM_SCOPES=groups,roles` |
-| Azure Entra ID (Microsoft) | `OIDC_CUSTOM_SCOPES=Group.Read.All` | `OIDC_CUSTOM_SCOPES= Group.Read.All,Directory.Read.All` |
+| **Provider** | **Custom Scopes value** | **Extended example** |
+|:------------:|:-----------------------:|:--------------------:|
+| Okta | `groups` | `groups, roles` |
+| Azure Entra ID (Microsoft) | `Group.Read.All` | `Group.Read.All, Directory.Read.All` |
+
+:::info Upgrading from `OIDC_CUSTOM_SCOPES`
+Earlier versions read scopes from the `OIDC_CUSTOM_SCOPES` environment variable. When you upgrade, ToolJet copies its value into the **Custom Scopes** field of every OpenID Connect configuration. After that, ToolJet no longer reads the variable, so manage scopes in the UI.
+:::
+
+### Group Claim Format
+
+By default, the group claim must be a JSON array. If your identity provider sends groups as a space-separated string, set `OIDC_GROUPS_DELIMITER=space`. Refer to [OIDC Environment Variables](/docs/user-management/sso/oidc/setup#oidc-environment-variables).
 
 :::note
 - Custom scopes must be supported by your OIDC provider.

@@ -23,10 +23,10 @@ Role Required: **Admin** <br/>
    <img className="screenshot-full img-m" src="/img/sso/saml/enable-v3.png" alt="SSO :SAMP" />
 
 4. Enter the following configuration details:
-   - **SSO Name**: Enter the name of your SAML provider. This name will be displayed on the login page.
+   - **Name**: Enter the name of your SAML provider. This name will be displayed on the login page.
    - **Identity provider metadata**: Upload the data from the metadata file provided by your SAML provider. This file contains the SAML configuration details.
    - **Enable group sync**: Toggle it on to enable the group sync.
-   - **Group Attribute**: Enter the name of the attribute that contains the group information of the user. This attribute is used to map the user to the appropriate group.
+   - **Group attribute**: Enter the name of the attribute that contains the group information of the user. This attribute is used to map the user to the appropriate group.
    - **Redirect URL**: Copy the redirect URL provided and paste it in the SAML provider's configuration page.
 
    <br/>
@@ -40,6 +40,17 @@ Role Required: **Admin** <br/>
    :::
 
 5. Once configured, click **Save Changes**.
+
+## Setting the Service Provider Entity ID
+
+By default, ToolJet uses the `entityID` from the identity provider metadata you pasted as the issuer (SP entity ID) in its SAML requests. Some identity providers, such as Microsoft Entra ID, require the issuer to match the SP entity ID registered with them. For these, set either of the following environment variables to `true` on self-hosted deployments:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SAML_SET_ENTITY_ID_REDIRECT_URL` | When `true`, ToolJet uses the SAML **Redirect URL** (`<host>/api/sso/saml/<config-id>`) as its SP entity ID. | Unset |
+| `SAML_SET_ENTITY_ID_SERVER_URL` | Same effect as `SAML_SET_ENTITY_ID_REDIRECT_URL`. Setting either one is enough. | Unset |
+
+With either variable set, register the **Redirect URL** from the SAML configuration as the SP entity ID (also called Identifier or Audience URI) in your identity provider.
 
 ## Logging in with SAML
 

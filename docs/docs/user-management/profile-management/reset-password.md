@@ -19,6 +19,18 @@ When password login is enabled then there are two ways through which a user can 
 
     <img className="screenshot-full" src="/img/user-management/profile-management/reset-password/mail.png" alt="General Settings: Reset Password" />
 
+## Expired Password
+
+If your instance sets [`PASSWORD_EXPIRY_DAYS`](/docs/setup/env-vars#password-expiry), passwords expire that many days after they're set. When a user signs in with an expired password, ToolJet opens the **Password expired** page instead of signing them in.
+
+1. Check the email address, which is already filled in, and click **Send a reset link**.
+
+    <img className="screenshot-full img-s" src="/img/user-management/profile-management/reset-password/password-expired.png" alt="Password expired page with the email address filled in" />
+
+2. Open the link in the email and set a new password. It must be different from the current password.
+
+The reset link for an expired password doesn't expire. Requesting it again sends the same link. The new password gets a fresh expiry date.
+
 ## Super Admin Reset Password
 
 If a user forgets their password or it needs to be updated, the super admin can easily reset the password for any user in the instance by following these steps:

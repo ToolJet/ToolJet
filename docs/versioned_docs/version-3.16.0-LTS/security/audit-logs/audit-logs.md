@@ -12,7 +12,9 @@ The audit log is the report of all the activities done in your ToolJet account. 
 
 ### Date Range
 
-Retrieve the log of events that occurred within the specified date and time range using the range picker. By default, the system loads 24-hour logs for the initial view. The maximum duration that can be specified for the "from" and "to" dates is 30 days.
+Use the **Date Range Picker** to fetch events between a start and end date and time. When you open the page, it shows the last 24 hours. Turn on **Show Latest activity** to return to that view.
+
+The longest range you can select depends on your license, up to 30 days. On a Business license it's up to 14 days, and the range must fall within the last 14 days.
 
 :::info
 Pagination at the bottom allows navigation through the pages, with each page displaying a maximum of 7 logs.
@@ -22,109 +24,143 @@ Pagination at the bottom allows navigation through the pages, with each page dis
 
 ## Audit Log Retention Period
 
-By default, audit logs are retained for 90 days. However, admins can customize this retention period by setting the following environment variable:
+By default, ToolJet keeps audit logs for 90 days. A cleanup job runs every day at 2:00 AM server time and deletes logs older than the retention period from all workspaces. To change the period, set `AUDIT_LOGS_RETENTION_PERIOD` to the number of days to keep:
 
-```js
-AUDIT_LOGS_RETENTION_PERIOD;
+```bash
+AUDIT_LOGS_RETENTION_PERIOD=180
 ```
 
-To retain audit logs indefinitely, set the variable to 0.
+To keep audit logs indefinitely, set the variable to `0`.
 
 ## Filter Audit Logs
 
-You can apply filters to the audited events based on the following criteria.
+Use the filters below the date range to narrow the events, then click **Filter**. Selected filters appear under **Filter By:**. Click **Clear all filters** to remove them.
 
 ## Select Users
 
-Choose a specific user from the dropdown list to view all their activities.
+Use **Users** to show only events performed by specific users. Search by name or email.
 
 ## Select Apps
 
-The dropdown will display all the apps associated with your account. Select an app to filter the logs related to that particular app.
+Use **Apps** to show only events on specific apps.
 
 ## Select Resources
 
-| <div style={{ width:"100px"}}> Resources </div> | <div style={{ width:"100px"}}> Description </div>                                                                                            |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| User                                            | Filter all the User events like `USER_LOGIN`, `USER_SIGNUP`, `USER_INVITE`, AND `USER_INVITE_REDEEM`.                                        |
-| App                                             | Filter all the App events like `APP_CREATE`, `APP_UPDATE`,`APP_DELETE`,`APP_IMPORT`,`APP_EXPORT`,`APP_CLONE`.                                |
-| Data Query                                      | Filters the events associated with Data Query like `DATA_QUERY_RUN`.                                                                         |
-| Group Permission                                | All the events associated with Group Permissions will be filtered. Group Permissions include `GROUP_CREATE`, `GROUP_UPDATE`, `GROUP_DELETE`. |
-| App Group Permission                            | Within each group, you can set apps for read or edit privileges. These events get recorded as App Group Permissions.                         |
+| <div style={{ width:"100px"}}> Resources </div> | <div style={{ width:"100px"}}> Description </div> |
+| --- | --- |
+| User | Sign-in, sign-up, invitation, profile, password, and user management events. |
+| Group Permission | Creating, updating, duplicating, and deleting groups, and adding or removing group members. |
+| Group Granular Permission | Creating, updating, and deleting app and data source permissions within a group. |
+| Workspaces | Creating, updating, archiving, and unarchiving workspaces. |
+| Workspace Login Settings | Changes to the workspace's general login settings. |
+| SSO | Changes to the workspace's SSO configuration. |
+| App | App, app version, import, export, and clone events. |
+| Data Source | Creating, updating, and deleting data sources. |
+| Query | Query runs. |
+
+:::info
+**Group Permission** and **Group Granular Permission** filter the same underlying resource type, so selecting either one returns events from both. The same applies to **Workspace Login Settings** and **SSO**.
+:::
+
+<img className="screenshot-full img-full" src="/img/enterprise/audit_logs/filters-resources-v3.png" alt="Audit log filters with the Resources dropdown open" />
 
 ## Select Actions
 
+**Actions** lists the events for the selected resources, or all events if you haven't selected a resource.
+
 ### User
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>                                                                     |
-| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| USER_LOGIN                                    | This event is recorded everytime a user logins.                                                                       |
-| USER_SIGNUP                                   | This event is recorded everytime a new signup is made.                                                                |
-| USER_INVITE                                   | You can invite users to your account from `Manage Users` section and an event is audited everytime an invite is sent. |
-| USER_INVITE_REDEEM                            | This event is recorded whenever an invite is redeemed.                                                                |
-| USER_LOGOUT                                   | This event is recorded whenever a user logs out.                                                                      |
-| USER_ARCHIVE                                  | This event is recorded whenever a user is archived.                                                                   |
-| USER_UNARCHIVE                                | This event is recorded whenever a user is unarchived.                                                                 |
-| USER_PROFILE_UPDATE                           | This event is recorded whenever a user's name or avatar is updated.                                                   |
-| USER_PASSWORD_FORGOT                          | This event is recorded whenever a user requests forgot password link from the login screen.                           |
-| USER_PASSWORD_RESET                           | This event is recorded whenever a super admin resets a user password at the instance level.                           |
-| USER_PASSWORD_UPDATE                          | This event is recorded whenever a user update the password from profile settings.                                     |
-| USER_DETAILS_UPDATE                           | This event is recorded whenever a super admin updates the user details.                                               |
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> |
+| --- | --- |
+| USER_LOGIN | A user signs in with a password or SSO. If two-factor authentication is on, the event is recorded once the password is accepted. |
+| USER_LOGOUT | A user logs out. |
+| USER_SIGNUP | A user activates a new account from the sign-up email, or sets up an account from an invitation. |
+| USER_INVITE | An admin invites a user to the workspace, individually or through bulk upload. |
+| USER_INVITE_REDEEM | An existing user accepts an invitation to a workspace. |
+| USER_ARCHIVE | A user is archived from a workspace, or from all workspaces by a super admin. |
+| USER_UNARCHIVE | A user is unarchived in a workspace, or in all workspaces by a super admin. |
+| USER_PROFILE_UPDATE | A user changes their name, avatar, or preferences. |
+| USER_PASSWORD_FORGOT | A user requests a password reset link from the login page. |
+| USER_PASSWORD_RESET | A user sets a new password from a reset link, or a super admin resets a user's password. |
+| USER_PASSWORD_UPDATE | A user changes their password from profile settings. |
+| USER_DETAILS_UPDATE | A super admin updates a user's name, or a bulk upload updates an existing user. |
+| SET_AS_SUPERADMIN | A super admin changes a user's type to or from super admin. The event is recorded in every workspace the user belongs to. |
 
-### User Groups and Permissions
+### Group Permission
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>                                                                               |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| SET_AS_SUPERADMIN                             | This event is recorded whenever a user is promoted to super admin.                                                              |
-| GROUP_PERMISSION_CREATE                       | This event is recorded whenever a group is created.                                                                             |
-| GROUP_PERMISSION_UPDATE                       | This event is recorded whenever an app or user is added to or removed from a group, or the permissions for a group are updated. |
-| GROUP_PERMISSION_DELETE                       | This event is recorded whenever a user group is deleted from an account.                                                        |
-| GROUP_PERMISSION_DUPLICATE                    | This event is recorded whenever a group and permission is duplicated.                                                           |
-| USER_ADD_TO_GROUP                             | This event is recorded whenever a user is added to a group.                                                                     |
-| USER_REMOVE_FROM_GROUP                        | This event is recorded whenever a user is removed from a group.                                                                 |
-| GRANULAR_PERMISSION_APP_CREATE                | This event is recorded whenever an app level granular permission is created.                                                    |
-| GRANULAR_PERMISSION_APP_UPDATE                | This event is recorded whenever an app level granular permission is updated.                                                    |
-| GRANULAR_PERMISSION_APP_DELETE                | This event is recorded whenever an app level granular permission is deleted.                                                    |
-| GRANULAR_PERMISSION_DATA_SOURCE_CREATE        | This event is recorded whenever a data source level permission is created.                                                      |
-| GRANULAR_PERMISSION_DATA_SOURCE_UPDATE        | This event is recorded whenever a data source level permission is updated.                                                      |
-| GRANULAR_PERMISSION_DATA_SOURCE_DELETE        | This event is recorded whenever a data source level permission is deleted.                                                      |
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> |
+| --- | --- |
+| GROUP_PERMISSION_CREATE | A group is created. |
+| GROUP_PERMISSION_UPDATE | A group's name or permissions are updated. |
+| GROUP_PERMISSION_DELETE | A group is deleted. |
+| GROUP_PERMISSION_DUPLICATE | A group is duplicated. |
+| USER_ADD_TO_GROUP | Users are added to a group. |
+| USER_REMOVE_FROM_GROUP | A user is removed from a group. |
 
-### Workspace
+### Group Granular Permission
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>                    |
-| --------------------------------------------- | -------------------------------------------------------------------- |
-| WORKSPACE_CREATE                              | This event is recorded whenever a new workspace is created.          |
-| WORKSPACE_UPDATE                              | This event is recorded whenever a workspace name or slug is updated. |
-| WORKSPACE_ARCHIVE                             | This event is recorded whenever a workspace is archived.             |
-| WORKSPACE_UNARCHIVE                           | This event is recorded whenever a workspace is unarchived.           |
-| WORKSPACE_LOGIN_SETTINGS_UPDATE               | This event is recorded whenever workspace login settings is updated. |
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> |
+| --- | --- |
+| GRANULAR_PERMISSION_APP_CREATE | An app permission is added to a group. |
+| GRANULAR_PERMISSION_APP_UPDATE | An app permission in a group is updated. |
+| GRANULAR_PERMISSION_APP_DELETE | An app permission is removed from a group. |
+| GRANULAR_PERMISSION_DATA_SOURCE_CREATE | A data source permission is added to a group. |
+| GRANULAR_PERMISSION_DATA_SOURCE_UPDATE | A data source permission in a group is updated. |
+| GRANULAR_PERMISSION_DATA_SOURCE_DELETE | A data source permission is removed from a group. |
+
+### Workspaces
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> |
+| --- | --- |
+| WORKSPACE_CREATE | A workspace is created. |
+| WORKSPACE_UPDATE | A workspace's name or slug is updated. |
+| WORKSPACE_ARCHIVE | A workspace is archived. |
+| WORKSPACE_UNARCHIVE | A workspace is unarchived. |
+
+### Workspace Login Settings and SSO
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> |
+| --- | --- |
+| WORKSPACE_LOGIN_SETTINGS_UPDATE | The workspace's general login settings are updated. |
+| SSO_UPDATE | An SSO provider's configuration for the workspace is updated. |
+| INSTANCE_SSO_INHERIT | The workspace's setting to show instance-level SSO is turned on or off. |
 
 ### App
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>                                                                                            |
-| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| APP_CREATE                                    | This event is recorded when a user creates a new app.                                                                                        |
-| APP_UPDATE                                    | This event is recorded whenever actions like renaming the app, making the app public, editing shareable link, or deploying the app are made. |
-| APP_PROMOTE                                   | This event is recorded whenever an application's environment is promoted.                                                                    |
-| APP_RELEASE                                   | This event is recorded whenever an application is released.                                                                                  |
-| APP_SHARE                                     | This event is recorded whenever an application is shared.                                                                                    |
-| APP_PUBLIC_UPDATE                             | This event is recorded whenever an application is made public.                                                                               |
-| APP_DELETE                                    | This event is recorded whenever a user deletes an app from the dashboard.                                                                    |
-| APP_IMPORT                                    | This event is recorded whenever a user imports an app.                                                                                       |
-| APP_EXPORT                                    | This event is recorded whenever an app is exported.                                                                                          |
-| APP_CLONE                                     | This event is recorded whenever a clone of the existing app is created.                                                                      |
-| APP_VERSION_CREATE                            | This event is recorded whenever a new version of an application is created.                                                                  |
-| APP_VERSION_UPDATE                            | This event is recorded whenever a version of an application is updated.                                                                      |
-| APP_VERSION_DELETE                            | This event is recorded whenever a version of an application is deleted.                                                                      |
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> |
+| --- | --- |
+| APP_UPDATE | An app's name, slug, or icon is changed, or a version's app or page settings are updated. |
+| APP_PUBLIC_UPDATE | An app is made public or private. |
+| APP_RELEASE | A version of an app is released. |
+| APP_PROMOTE | A version is promoted to the next environment. |
+| APP_IMPORT | An app is imported. |
+| APP_EXPORT | An app is exported. |
+| APP_CLONE | An app is cloned. |
 
-### Data Source
+### Data Source and Query
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div>                                                |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| DATA_SOURCE_CREATE                            | This event is recorded whenever a new data source is created.                                    |
-| DATA_SOURCE_UPDATE                            | This event is recorded whenever a data source is updated.                                        |
-| DATA_SOURCE_DELETE                            | This event is recorded whenever a data source is deleted.                                        |
-| DATA_QUERY_RUN                                | This event is logged whenever a query run either from the query editor or from the launched app. |
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> |
+| --- | --- |
+| DATA_SOURCE_CREATE | A data source is created. |
+| DATA_SOURCE_UPDATE | A data source is updated. |
+| DATA_SOURCE_DELETE | A data source is deleted. |
+| DATA_QUERY_RUN | A query runs from the query editor or a released app. |
+
+### Other Recorded Events
+
+These events appear in the log list but not in **Actions**. To find app and version events, select the **App** resource without selecting an action.
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"100px"}}> Description </div> |
+| --- | --- |
+| APP_CREATE | An app is created. |
+| APP_DELETE | An app is deleted. |
+| APP_VERSION_CREATE | A new version of an app is created. |
+| APP_VERSION_UPDATE | A version of an app is updated, such as renamed. |
+| APP_VERSION_DELETE | A version of an app is deleted. |
+| CREATE_WORKFLOW | A workflow is created. |
+| WORKFLOW_RUN | A workflow finishes running. The `metadata` contains the execution logs for each node. |
+| delete_organization_sso | An SSO provider configuration is deleted from the workspace. |
+| verifyOrganizationToken | An active user opens an invitation link to join another workspace. |
 
 ## Understanding Log Information
 
@@ -190,7 +226,7 @@ Here, `{process_id}` is a placeholder for the unique process identifier, and `{d
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"100px"}}> Description </div>                                |
 | ---------------------------------------------- | -------------------------------------------------------------------------------- |
-| LOG_FILE_PATH                                  | the path where the log file will be created ( eg: tooljet/log/tooljet-audit.log) |
+| LOG_FILE_PATH | Folder, relative to the home directory, where ToolJet creates audit log files (e.g., `rsyslog`). |
 
 <details id="tj-dropdown">
 <summary>Example Log file data</summary>
