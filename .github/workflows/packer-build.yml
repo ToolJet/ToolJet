@@ -10,7 +10,6 @@ on:
       branch:
         description: "Branch to build from (e.g. lts-3.16)"
         required: true
-        default: "lts-3.16"
       version:
         description: "RELEASE_VERSION"
         required: true
@@ -35,6 +34,10 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "Manual dispatch — always build"
             echo "should_build=true" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event.release.tag_name }}" != *-lts ]]; then
+            # AMIs ship the LTS line only; pre-release tags build from main, not an LTS branch
+            echo "Skipping AMI build: ${{ github.event.release.tag_name }} is not an LTS release"
+            echo "should_build=false" >> $GITHUB_OUTPUT
           else
             TAG="${GITHUB_REF#refs/*/}"
             # Extract patch number: v3.20.100-lts → 100
@@ -55,10 +58,32 @@ jobs:
     name: packer-ee
 
     steps:
+      # Release: the LTS branch .gitmodules tracks at the tag, so cutting a new LTS needs no edit here.
+      # Fails if the tag isn't on that branch (.gitmodules not bumped on the new LTS branch).
+      - name: Resolve branch to build
+        id: branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ github.event.release.tag_name }}
+          INPUT_BRANCH: ${{ github.event.inputs.branch }}
+        run: |
+          if [[ -n "$INPUT_BRANCH" ]]; then
+            echo "name=$INPUT_BRANCH" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          branch=$(gh api "repos/$REPO/contents/.gitmodules?ref=$TAG" --jq .content | base64 -d | git config -f /dev/stdin submodule.server/ee.branch)
+          status=$(gh api "repos/$REPO/compare/${branch}...${TAG}" --jq .status)
+          if [[ "$status" != "identical" && "$status" != "behind" ]]; then
+            echo "::error::Release tag $TAG is not on $branch, the branch .gitmodules tracks. Update branch in .gitmodules on the LTS branch."
+            exit 1
+          fi
+          echo "name=$branch" >> "$GITHUB_OUTPUT"
+
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: refs/heads/${{ github.event.inputs.branch || 'lts-3.16' }}
+          ref: refs/heads/${{ steps.branch.outputs.name }}
 
       - name: Setting tag
         if: "${{ github.event.inputs.version != '' }}"
@@ -100,6 +125,8 @@ jobs:
       - name: Validate PAT
         run: |
           sed -i "s|CUSTOM_GITHUB_TOKEN|${{ secrets.CUSTOM_GITHUB_TOKEN }}|g" ./deploy/ec2/ee/setup_machine.sh
+          # No-op on branches whose setup script still hardcodes lts-3.16
+          sed -i "s|BUILD_BRANCH_NAME|${{ steps.branch.outputs.name }}|g" ./deploy/ec2/ee/setup_machine.sh
 
       # build artifact
       - name: Build Artifact
@@ -136,6 +163,6 @@ jobs:
         if: success()
         run: |
           ami_name="tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy"
-          message="✅ *ToolJet Enterprise AWS AMI Published*\nVersion: \`${{ env.RELEASE_VERSION }}\`\nType: 🔒 LTS Release\nBranch: \`${{ github.event.inputs.branch || 'lts-3.16' }}\`\nRegion: \`${{ github.event.inputs.region || 'us-west-1' }}\`\nAMI Name: \`${ami_name}\`"
+          message="✅ *ToolJet Enterprise AWS AMI Published*\nVersion: \`${{ env.RELEASE_VERSION }}\`\nType: 🔒 LTS Release\nBranch: \`${{ steps.branch.outputs.name }}\`\nRegion: \`${{ github.event.inputs.region || 'us-west-1' }}\`\nAMI Name: \`${ami_name}\`"
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
