@@ -1,0 +1,12 @@
+﻿{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "lib",
+    "target": "es2017"
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
