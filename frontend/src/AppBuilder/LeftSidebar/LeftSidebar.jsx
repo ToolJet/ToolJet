@@ -310,14 +310,13 @@ export const BaseLeftSidebar = ({
         })}
 
         {renderCommonItems()}
-        {featureAccess?.appHistory && (
-          <AppHistoryIcon
-            darkMode={darkMode}
-            selectedSidebarItem={selectedSidebarItem}
-            handleSelectedSidebarItem={handleSelectedSidebarItem}
-            setSideBarBtnRefs={setSideBarBtnRefs}
-          />
-        )}
+        {/* Shown on every plan: below Pro it opens the upgrade prompt (the edition's component decides). */}
+        <AppHistoryIcon
+          darkMode={darkMode}
+          selectedSidebarItem={selectedSidebarItem}
+          handleSelectedSidebarItem={handleSelectedSidebarItem}
+          setSideBarBtnRefs={setSideBarBtnRefs}
+        />
         {featureAccess?.appJsLibraries && (
           <AppLibrariesIcon
             darkMode={darkMode}

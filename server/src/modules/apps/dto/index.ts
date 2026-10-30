@@ -173,4 +173,10 @@ export class VersionReleaseDto {
   @IsUUID()
   @Transform(({ value }) => sanitizeInput(value))
   versionToBeReleased: string;
+
+  // The released version the Release dialog showed ('' for none): a release by someone else since is refused
+  // rather than silently replaced (release-baseline.ts). Absent, nothing is checked.
+  @IsOptional()
+  @IsString()
+  expectedReleasedVersionId?: string;
 }

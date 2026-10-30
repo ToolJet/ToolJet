@@ -411,7 +411,11 @@ const useAppData = (
         // branch_id. The branch is resolved async (URL name -> id) by AppsRoute; without this
         // gate the load can race ahead with no branch_id and hydrate on the default branch.
         appDataPromise = whenBranchResolved().then(() =>
-          isPreviewForVersion ? appVersionService.getAppVersionData(appId, versionId, mode) : appService.fetchApp(appId)
+          isPreviewForVersion && queryParams.snapshot && mode !== 'edit'
+            ? appVersionService.getSnapshotDefinition(appId, versionId, queryParams.snapshot)
+            : isPreviewForVersion
+              ? appVersionService.getAppVersionData(appId, versionId, mode)
+              : appService.fetchApp(appId)
         );
       }
     }
@@ -754,7 +758,7 @@ const useAppData = (
           setModuleDefinition(appData.modules);
         }
 
-        // A snapshot's queries come with its definition; the version's own are the edited ones.
+        // A stored snapshot's queries come with its definition; the version's own may differ.
         const queryData =
           isPublicAccess || (mode !== 'edit' && appData.is_public) || (mode !== 'edit' && queryParams.snapshot)
             ? appData
@@ -1036,7 +1040,8 @@ const useAppData = (
     setOnBrandColors(root, themeObj?.brand?.colors?.primary?.[mode]);
     // The theme's font, for component packs (their shadow roots read --cc-font-family, else the page font).
     const font = typeof themeObj?.text?.font === 'string' ? themeObj.text.font.trim() : '';
-    if (font) root.style.setProperty('--cc-font-family', `'${font.replace(/'/g, '')}', ui-sans-serif, system-ui, sans-serif`);
+    if (font)
+      root.style.setProperty('--cc-font-family', `'${font.replace(/'/g, '')}', ui-sans-serif, system-ui, sans-serif`);
     else root.style.removeProperty('--cc-font-family');
     detectThemeChange();
   }, [darkMode, appMode, selectedTheme, !!themeAccess]);
