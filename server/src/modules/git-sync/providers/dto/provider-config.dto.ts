@@ -55,7 +55,25 @@ export class GitLabConfigDTO extends BaseConfigDTO {
   gitLabEnterpriseUrl?: string;
 }
 
-export type ProviderConfigDTO = GithubHttpsConfigDTO | GitLabConfigDTO;
+export class BitbucketConfigDTO extends BaseConfigDTO {
+  @IsString()
+  @IsNotEmpty()
+  branchName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  bitbucketWorkspace: string;
+
+  @IsString()
+  @IsNotEmpty()
+  bitbucketRepoSlug: string;
+
+  @IsString()
+  @IsNotEmpty()
+  bitbucketAccessToken: string;
+}
+
+export type ProviderConfigDTO = GithubHttpsConfigDTO | GitLabConfigDTO | BitbucketConfigDTO;
 
 export class UpdateGitEnvConfigDTO {
   @IsBoolean()
