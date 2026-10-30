@@ -27,7 +27,7 @@ import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import { ArrowLeft, Minus, ArrowRight } from 'lucide-react';
 import { buttonDisplayOf } from '@/AppBuilder/Widgets/NewTable/_utils/rowActionIcon';
 
-const CustomOption = (props) => {
+export const ColumnTypeOption = (props) => {
   const ColumnIcon = getColumnIcon(props.data.value);
   const isDeprecated = checkIfTableColumnDeprecated(props.data.value);
 
@@ -165,7 +165,7 @@ export const PropertiesTabElements = ({
               ]}
               components={{
                 DropdownIndicator,
-                Option: CustomOption,
+                Option: ColumnTypeOption,
                 SingleValue: CustomValueContainer,
               }}
               onChange={(value) => {
