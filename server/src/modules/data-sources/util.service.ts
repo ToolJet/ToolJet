@@ -1146,7 +1146,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     let result = str;
     for (let i = 0; i < matches.length; i++) {
-      result = result.replace(matches[i][0], replacements[i]);
+      // Function replacement: a string replacement would interpret `$` sequences ($$, $&, $`, $') in the secret.
+      result = result.replace(matches[i][0], () => replacements[i]);
     }
 
     return result;

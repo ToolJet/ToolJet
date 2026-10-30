@@ -58,6 +58,8 @@ const shared: Config.InitialProjectOptions = {
     '@instance-settings/(.*)': '<rootDir>/ee/instance-settings/$1',
     '@otel/(.*)': '<rootDir>/src/otel/$1',
     '^mariadb$': '<rootDir>/test/__mocks__/mariadb.ts',
+    // Mock ibm_db — native binding can't resolve its DB2 client DLLs under Jest on Windows
+    '^ibm_db$': '<rootDir>/test/__mocks__/ibm_db.ts',
   },
 };
 
