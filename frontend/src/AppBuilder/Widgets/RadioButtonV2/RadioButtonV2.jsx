@@ -344,7 +344,8 @@ export const RadioButtonV2 = ({
                         : switchOnBackgroundColor,
                       '--selected-border-color': borderColor,
                       '--selected-handle-color': option.isDisabled ? 'var(--icons-default)' : handleColor,
-                      border: `1px solid ${option.isDisabled ? 'var(--surfaces-surface-03)' : borderColor}`,
+                      border:
+                        !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : `1px solid ${borderColor}`),
                     }}
                   ></span>
                 </label>
