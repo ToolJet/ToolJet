@@ -1,7 +1,7 @@
-import { MigrationProgress } from '@helpers/migration.helper';
+import { MigrationProgress } from '@helpers/migration.helper'; // migration-import-allowed: required progress logging
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-const MIGRATION_NAME = 'BackfillWorkflowEnabledOnAppVersions1787800000000';
+const MIGRATION_NAME = 'BackfillWorkflowEnabledOnAppVersions1793250000900';
 const BATCH_SIZE = 2000;
 
 /**
@@ -11,7 +11,7 @@ const BATCH_SIZE = 2000;
  * resolves, so writing it everywhere is what keeps existing behaviour identical. Scoped to
  * apps.type = 'workflow' — no other app type has the concept.
  */
-export class BackfillWorkflowEnabledOnAppVersions1787800000000 implements MigrationInterface {
+export class BackfillWorkflowEnabledOnAppVersions1793250000900 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const [{ count }] = await queryRunner.query(
       `SELECT COUNT(*) FROM app_versions av JOIN apps a ON a.id = av.app_id WHERE a.type = 'workflow'`
@@ -46,7 +46,7 @@ export class BackfillWorkflowEnabledOnAppVersions1787800000000 implements Migrat
            FROM apps a
            WHERE a.id = av.app_id
              AND av.id = ANY($1::uuid[])
-             AND av.workflow_enabled IS DISTINCT FROM a.workflow_enabled`,
+             AND av.workflow_enabled IS NULL`,
         [ids]
       );
       progress.show();

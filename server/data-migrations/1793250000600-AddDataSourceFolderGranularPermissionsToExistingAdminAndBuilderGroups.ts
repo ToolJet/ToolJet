@@ -1,10 +1,10 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { ResourceType, USER_ROLE } from '@modules/group-permissions/constants';
-import { DEFAULT_GRANULAR_PERMISSIONS_NAME } from '@modules/group-permissions/constants/granular_permissions';
-import { GranularPermissions } from '@entities/granular_permissions.entity';
-import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
+import { ResourceType, USER_ROLE } from '@modules/group-permissions/constants'; // migration-import-allowed: role and resource names the seed writes
+import { DEFAULT_GRANULAR_PERMISSIONS_NAME } from '@modules/group-permissions/constants/granular_permissions'; // migration-import-allowed: default permission name, as runtime seeding uses
+import { GranularPermissions } from '@entities/granular_permissions.entity'; // migration-import-allowed: saves through the entity, as runtime seeding does
+import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity'; // migration-import-allowed: saves through the entity, as runtime seeding does
 
-const MIGRATION_NAME = 'AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups1787200000000';
+const MIGRATION_NAME = 'AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups1793250000600';
 
 /**
  * Backfills data-source-folder permissions on the admin, builder AND end-user default groups of
@@ -19,11 +19,11 @@ const MIGRATION_NAME = 'AddDataSourceFolderGranularPermissionsToExistingAdminAnd
  *   is meaningful/editable for end users.
  * - custom groups are never touched (queries scoped to type = 'default').
  *
- * Idempotent: skips any group that already has a DATA_SOURCE_FOLDER granular permission, and the
- * coarse-column update is a plain set. Runs under migrationsTransactionMode 'all', so all DB work
+ * Idempotent: skips any group that already has a DATA_SOURCE_FOLDER granular permission, coarse
+ * columns included. Runs under migrationsTransactionMode 'all', so all DB work
  * goes through queryRunner.manager (the shared batch transaction).
  */
-export class AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups1787200000000 implements MigrationInterface {
+export class AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups1793250000600 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const manager = queryRunner.manager;
 
@@ -58,15 +58,6 @@ export class AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGrou
         const seed = ROLE_SEED[name];
         if (!seed) continue;
 
-        await manager.query(
-          `
-            UPDATE permission_groups
-            SET data_source_folder_create = $2, data_source_folder_delete = $2
-            WHERE id = $1
-          `,
-          [groupId, seed.coarse]
-        );
-
         const existingPermission = await manager.find(GranularPermissions, {
           where: { groupId, type: ResourceType.DATA_SOURCE_FOLDER },
         });
@@ -76,6 +67,16 @@ export class AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGrou
           );
           continue;
         }
+
+        // After the skip, so a second run keeps create/delete flags an admin has changed since.
+        await manager.query(
+          `
+            UPDATE permission_groups
+            SET data_source_folder_create = $2, data_source_folder_delete = $2
+            WHERE id = $1
+          `,
+          [groupId, seed.coarse]
+        );
 
         const granularPermissions = manager.create(GranularPermissions, {
           name: DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.DATA_SOURCE_FOLDER],
@@ -101,5 +102,8 @@ export class AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGrou
     console.log(`${MIGRATION_NAME}: [SUCCESS] Seeding data-source-folder permissions finished.`);
   }
 
-  public async down(_queryRunner: QueryRunner): Promise<void> {}
+  public async down(_queryRunner: QueryRunner): Promise<void> {
+    // One-way: the seeded permissions match what new workspaces get, and admins may have edited them
+    // since. The schema migration's down() drops the coarse columns.
+  }
 }

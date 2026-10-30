@@ -75,7 +75,8 @@ export class WebhookGuard implements CanActivate {
           })
         : null);
 
-    if (!enablementSource?.workflowEnabled) {
+    // NULL until the data migration backfills the version row - the app-level flag is what it will copy.
+    if (!(enablementSource?.workflowEnabled ?? workflowApp.workflowEnabled)) {
       throw new HttpException(`Webhook endpoint disabled or doesn't exists`, 403);
     }
 
