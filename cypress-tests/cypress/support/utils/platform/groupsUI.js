@@ -1,5 +1,6 @@
 import { commonSelectors } from "Selectors/common";
 import { groupsSelector } from "Selectors/platform/manageGroups";
+import { dataSourceFolderPermissionSelectors as dsFolderPerm } from "Selectors/platform/dataSourceFolders";
 import { groupsText } from "Texts/platform/manageGroups";
 
 export const verifyAdminHelperText = (index = 0) => {
@@ -77,7 +78,6 @@ export const verifyDeleteConfirmationModal = () => {
     cy.get(groupsSelector.cancelButton).should("be.visible").and("be.enabled");
 };
 
-
 export const verifyEnvironmentSelectionStateInModal = (role,userType, envOptionList) => {
     const builderEnvOptions = [
         { label: "All environments", checked: false },
@@ -130,7 +130,6 @@ export const selectEnvironments = (envs) => {
 };
 
 export const verifyGranularEditModal = (role, userType) => {
-
     cy.get(groupsSelector.permissionsLink).should("be.visible").click();
     cy.get(groupsSelector.granularLink).should("be.visible").click();
     cy.get(groupsSelector.granularAccessPermission, { timeout: 15000 }).realHover();
@@ -220,7 +219,6 @@ export const verifyGranularAddModal = (role) => {
     cy.verifyElement(groupsSelector.cancelButton, groupsText.cancelButton);
     cy.get(groupsSelector.cancelButton).click();
 };
-
 
 export const verifyEnduserHelperText = (index = 0) => {
     cy.get(groupsSelector.helperTextAdminAppAccess)
@@ -330,6 +328,52 @@ export const verifyGranularPermissionModalUI = (
         );
     }
 
+    if (resourceType === "folder") {
+        cy.verifyElement(dsFolderPerm.sharedModalEditFolderLabel, "Edit folder");
+        cy.verifyElement(
+            dsFolderPerm.sharedModalEditFolderHelperText,
+            "Rename the folder, add, remove and edit apps in the folder"
+        );
+        cy.verifyElement(groupsSelector.editAppsPermissionLabel, "Edit apps");
+        cy.verifyElement(groupsSelector.editAppsPermissionHelperText, "Edit apps in the folder");
+        cy.verifyElement(groupsSelector.viewAppsPermissionLabel, "View apps");
+        cy.verifyElement(groupsSelector.viewAppsPermissionHelperText, "View apps in the folder");
+        cy.get(dsFolderPerm.sharedModalEnvironmentContainer).should("be.visible");
+        cy.verifyElement(dsFolderPerm.sharedModalEnvironmentLabel, "Environment");
+        cy.verifyElement(dsFolderPerm.sharedModalComingSoonChip, "Coming Soon");
+    }
+
+    // Data source folders carry a FOURTH control the other resource types do not: "Restrict query run" is an independent checkbox, not a tier radio, and it is rendered inverted (checked === restricted, default unchecked === unrestricted).
+    if (resourceType === "data_source_folder") {
+        cy.verifyElement(dsFolderPerm.sharedModalEditFolderLabel, "Edit folder");
+        cy.verifyElement(
+            dsFolderPerm.sharedModalEditFolderHelperText,
+            "Rename the folder, move and edit data sources in the folder"
+        );
+        cy.verifyElement(dsFolderPerm.sharedModalConfigureLabel, "Configure");
+        cy.verifyElement(
+            dsFolderPerm.sharedModalConfigureHelperText,
+            "Access and edit connection details of data sources in the folder"
+        );
+        cy.verifyElement(dsFolderPerm.sharedModalBuildWithLabel, "Build with");
+        cy.verifyElement(
+            dsFolderPerm.sharedModalBuildWithHelperText,
+            "Use data sources in the folder in apps & workflows"
+        );
+        cy.verifyElement(
+            dsFolderPerm.sharedModalRestrictQueryRunLabel,
+            "Restrict query run"
+        );
+        cy.verifyElement(
+            dsFolderPerm.sharedModalRestrictQueryRunHelperText,
+            "Prevent running queries on data sources in the folder"
+        );
+
+        cy.get(dsFolderPerm.sharedModalEnvironmentContainer).should("be.visible");
+        cy.verifyElement(dsFolderPerm.sharedModalEnvironmentLabel, "Environment");
+        cy.verifyElement(dsFolderPerm.sharedModalComingSoonChip, "Coming Soon");
+    }
+
     // Resources section
     cy.get(groupsSelector.resourceLabel).verifyVisibleElement(
         "have.text",
@@ -337,21 +381,35 @@ export const verifyGranularPermissionModalUI = (
     );
     cy.get(groupsSelector.allAppsRadio).should("be.visible");
 
-    if (isEdit) {
-        cy.verifyElement(groupsSelector.allAppsLabel, groupsText.allAppsLabel);
+    // The radio itself is always data-cy="all-apps-radio", but its LABEL and helper text build their data-cy from the resource name — `all-data-source-folders-label` for this type — so the apps-shaped constants below only match resourceType "app".
+    if (resourceType === "data_source_folder") {
+        cy.verifyElement(
+            dsFolderPerm.allResourcesLabel,
+            "All data source folders"
+        );
+    } else if (resourceType === "folder") {
+        cy.verifyElement(groupsSelector.allAppFoldersLabel, "All app folders");
     } else {
-        cy.verifyElement(groupsSelector.allAppsLabel, groupsText.groupChipText);
-    }
+        if (isEdit) {
+            cy.verifyElement(groupsSelector.allAppsLabel, groupsText.allAppsLabel);
+        } else {
+            cy.verifyElement(groupsSelector.allAppsLabel, groupsText.groupChipText);
+        }
 
-    cy.verifyElement(
-        groupsSelector.allAppsHelperText,
-        groupsText.allAppsHelperText
-    );
+        cy.verifyElement(
+            groupsSelector.allAppsHelperText,
+            groupsText.allAppsHelperText
+        );
+    }
     cy.get(groupsSelector.customRadio).should("be.visible");
     cy.verifyElement(groupsSelector.customLabel, groupsText.customLabel);
     cy.verifyElement(
         groupsSelector.customHelperText,
-        groupsText.customHelperText
+        resourceType === "data_source_folder"
+            ? "Select specific data source folders you want to add to the group"
+            : resourceType === "folder"
+              ? "Select specific app folders you want to add to the group"
+              : groupsText.customHelperText
     );
 
     cy.verifyElement(

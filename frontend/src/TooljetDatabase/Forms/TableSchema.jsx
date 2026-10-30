@@ -280,8 +280,10 @@ function TableSchema({
 
               <ToolTip
                 message={
-                  columnDetails[index]?.constraints_type?.is_primary_key === true
-                    ? 'Primary key data type cannot be modified'
+                  isEditMode
+                    ? columnDetails[index]?.constraints_type?.is_primary_key === true
+                      ? 'Primary key data type cannot be modified'
+                      : 'Data type can be changed only from the column’s edit option'
                     : columnDetails[index]?.data_type === 'timestamp with time zone'
                       ? 'Date with time'
                       : null
@@ -289,10 +291,7 @@ function TableSchema({
                 placement="top"
                 tooltipClassName="tootip-table"
                 style={getToolTipPlacementStyle(index, isEditMode, columnDetails)}
-                show={
-                  (isEditMode && columnDetails[index]?.constraints_type?.is_primary_key === true ? true : false) ||
-                  columnDetails[index]?.data_type === 'timestamp with time zone'
-                }
+                show={isEditMode || columnDetails[index]?.data_type === 'timestamp with time zone'}
               >
                 <div className="p-0 datatype-dropdown" data-cy="type-dropdown-field">
                   <Select
@@ -365,9 +364,13 @@ function TableSchema({
                     onMenuClose={() => {
                       setColumnSelection({ index: 0, value: '' });
                     }}
-                    isDisabled={
-                      isEditMode && columnDetails[index]?.constraints_type?.is_primary_key === true ? true : false
-                    }
+                    // Type changes are single-column-only, in EditColumnForm: a cast's success
+                    // depends on the rows, so batching it with data-independent deltas means one
+                    // dirty column wedges the whole batch (and promote commits per migration).
+                    // A non-PK type change through this path reaches `edit_table` → `changeColumns`,
+                    // which emits no USING clause and raises a raw Postgres 42804 — the failure
+                    // mode this permanently closes.
+                    isDisabled={isEditMode}
                     classNames={{
                       control: (state) =>
                         cx({

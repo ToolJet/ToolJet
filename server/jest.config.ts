@@ -18,6 +18,7 @@ const shared: Config.InitialProjectOptions = {
   moduleFileExtensions: ['js', 'json', 'ts', 'node'],
   testEnvironment: 'node',
   globalSetup: '<rootDir>/test/jest-global-setup.ts',
+  globalTeardown: '<rootDir>/test/jest-global-teardown.ts',
   setupFiles: ['<rootDir>/test/jest-setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/test/jest-transaction-setup.ts'],
   testRegex: 'test/modules/.*/unit/.*spec\\.ts$',

@@ -502,6 +502,8 @@ export const createDataQuerySlice = (set, get) => ({
       setSelectedQuery(selectedQuery?.id);
     },
     saveData: throttle((newValues, moduleId = 'canvas') => {
+      // Frozen versions (e.g. synced default-branch draft) reject saves — skip editor-filled defaults.
+      if (get().getShouldFreeze()) return;
       /** If query creation in progress, skips call and pushes the update to queue */
       if (get().dataQuery.creatingQueryInProcessId && get().dataQuery.creatingQueryInProcessId === newValues.id) {
         set((state) => {

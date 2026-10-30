@@ -374,14 +374,20 @@ export class AppsRepository extends Repository<App> {
   }
   async findAllOrganizationWorkflows(
     organizationId: string,
-    workflowIds?: string[]
-  ): Promise<{ id: string; name: string }[]> {
+    workflowIds?: string[],
+    activeBranchId?: string
+  ): Promise<{ id: string; name: string; co_relation_id: string }[]> {
     if (workflowIds && !workflowIds.length) return [];
 
     const defaultBranchId = await this.getDefaultBranchId(this.manager, organizationId);
     const qb = this.createQueryBuilder('app')
       .select(['app.id AS id'])
-      .addSelect('COALESCE(av_meta.app_name, app.name) AS name')
+      .addSelect(
+        activeBranchId
+          ? 'COALESCE(av_branch.app_name, av_meta.app_name, app.name) AS name'
+          : 'COALESCE(av_meta.app_name, app.name) AS name'
+      )
+      .addSelect('app.co_relation_id AS co_relation_id')
       .where('app.organizationId = :organizationId', { organizationId })
       .andWhere('app.type = :type', { type: APP_TYPES.WORKFLOW });
     if (workflowIds) {
@@ -401,6 +407,20 @@ export class AppsRepository extends Repository<App> {
          )`,
       { defaultBranchId }
     );
+    if (activeBranchId) {
+      qb.innerJoin(
+        'app_versions',
+        'av_branch',
+        `av_branch.app_id = app.id AND av_branch.branch_id = :activeBranchId
+           AND av_branch.id = (
+             SELECT av_pick.id FROM app_versions av_pick
+             WHERE av_pick.app_id = app.id AND av_pick.branch_id = :activeBranchId
+             ORDER BY av_pick.is_stub ASC, av_pick.updated_at DESC
+             LIMIT 1
+           )`,
+        { activeBranchId }
+      );
+    }
     return await qb.orderBy('app.created_at', 'ASC').getRawMany();
   }
 
@@ -509,5 +529,6 @@ export class AppsRepository extends Repository<App> {
     app.slug = version.slug ?? app.slug;
     app.icon = version.icon ?? app.icon;
     app.isPublic = version.isPublic ?? app.isPublic;
+    app.workflowEnabled = version.workflowEnabled ?? app.workflowEnabled;
   }
 }
