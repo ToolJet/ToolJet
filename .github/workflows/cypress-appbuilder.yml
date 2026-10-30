@@ -17,24 +17,22 @@ env:
   TIMESTAMP: ${{ github.run_number }}-${{ github.run_attempt }}
 
 jobs:
-  Cypress-AppBuilder:
+  # Builds and pushes the EE image once; every Cypress-AppBuilder machine pulls it.
+  Build-Image:
     runs-on: ubuntu-22.04
 
     if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-appbuilder-ee')
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-appbuilder-ee') ||
+      github.event_name == 'workflow_dispatch'
 
-    strategy:
-      fail-fast: false
-      matrix:
-        edition:
-          - ee
+    outputs:
+      # only the digest: GitHub drops a job output that contains a secret's value,
+      # and the image name contains the Docker Hub username. The machines pull by
+      # digest, not by the branch tag: the tag is shared with other label-triggered
+      # runs on this branch, so pulling it could get another run's image.
+      digest: ${{ steps.push.outputs.digest }}
 
     steps:
-      - name: Debug labels and matrix edition
-        run: |
-          echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
-          echo "Matrix edition: ${{ matrix.edition }}"
-
       - name: Free up disk space
         run: |
           echo "Available disk space before cleanup:"
@@ -61,20 +59,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-
-            # ← VPN: Connect before any step that needs private resource
-      - name: Set VPN API URL
-        run: |
-          SERVER_HOST=$(echo "${{ secrets.VPN_SERVER }}" | cut -d: -f1)
-          echo "VPN_API_URL=https://${SERVER_HOST}:9100" >> $GITHUB_ENV
-
-      - name: Connect to VPN
-        uses: adishM98/auth-vpn@v2.3.0
-        with:
-          server: ${{ secrets.VPN_SERVER }}
-          api-key: ${{ secrets.VPN_API_KEY }}
-          api-url: ${{ env.VPN_API_URL }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
 
       - name: Set DOCKER_CLI_EXPERIMENTAL
         run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
@@ -88,20 +73,15 @@ jobs:
       - name: Set SAFE_BRANCH_NAME
         run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
 
-      - name: Log selected matrix
-        run: |
-          echo "Selected edition: ${{ matrix.edition }}"
-          echo "Matrix: ${{ toJSON(matrix) }}"
-
       - name: Build EE Docker image
-        if: matrix.edition == 'ee'
+        id: push
         run: |
           echo "Building EE Docker image..."
           docker buildx build \
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
             --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
-            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            --build-arg BRANCH_NAME=${{ env.BRANCH_NAME }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
             --load \
@@ -110,11 +90,55 @@ jobs:
           echo "Pushing EE Docker image..."
           docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
-          echo "Cleaning up build cache..."
-          docker builder prune -af
+          # RepoDigests is "<name>@sha256:…"; keep only the sha256 part (see outputs)
+          DIGEST=$(docker inspect --format '{{index .RepoDigests 0}}' tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee | cut -d@ -f2)
+          echo "Pushed $DIGEST"
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
-          echo "Disk space after build:"
-          df -h
+  Cypress-AppBuilder:
+    runs-on: ubuntu-22.04
+    needs: Build-Image
+
+    strategy:
+      fail-fast: false
+      matrix:
+        edition:
+          - ee
+        # one entry per machine; specs are split by cypress-tests/ci-shard.js
+        shard: [1, 2, 3, 4, 5, 6]
+
+    steps:
+      - name: Debug labels and matrix edition
+        run: |
+          echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
+          echo "Matrix: ${{ toJSON(matrix) }}"
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
+
+      # Only chainingOfQueries.cy.js reaches a private host (pg_host), and it runs on
+      # the first machine (see SHARD_GROUPS), so only that machine joins the VPN.
+      - name: Set VPN API URL
+        if: strategy.job-index == 0
+        run: |
+          SERVER_HOST=$(echo "${{ secrets.VPN_SERVER }}" | cut -d: -f1)
+          echo "VPN_API_URL=https://${SERVER_HOST}:9100" >> $GITHUB_ENV
+
+      - name: Connect to VPN
+        if: strategy.job-index == 0
+        uses: adishM98/auth-vpn@v2.3.0
+        with:
+          server: ${{ secrets.VPN_SERVER }}
+          api-key: ${{ secrets.VPN_API_KEY }}
+          api-url: ${{ env.VPN_API_URL }}
+
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set up environment variables
         run: |
@@ -170,12 +194,8 @@ jobs:
 
       - name: Update docker-compose file
         run: |
-          # Update docker-compose.yaml with the appropriate image based on edition
-          if [ "${{ matrix.edition }}" = "ce" ]; then
-            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
-          elif [ "${{ matrix.edition }}" = "ee" ]; then
-            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
-          fi
+          # The image Build-Image pushed, by digest
+          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv@${{ needs.Build-Image.outputs.digest }}|' docker-compose.yaml
 
       - name: view docker-compose file
         run: cat docker-compose.yaml
@@ -417,6 +437,22 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS_MARKETPLACE }}
           dir: "./cypress-tests"
 
+      # updateLicense.cy.js licenses the first machine; the others get the same call here.
+      - name: Seeding (Update License)
+        if: strategy.job-index != 0
+        run: |
+          # The key is part of a larger secret, so GitHub doesn't mask it on its own.
+          LICENSE_KEY=$(jq -r '.license_keys.valid' cypress-tests/cypress.env.json)
+          echo "::add-mask::$LICENSE_KEY"
+          jq -n --arg key "$LICENSE_KEY" '{key: $key}' | curl --fail -sS -o /dev/null \
+            -b /tmp/tj_cookies.txt \
+            -X PATCH \
+            'http://localhost:3000/api/license' \
+            -H 'Content-Type: application/json' \
+            -H "tj-workspace-id: $TJ_ORG_ID" \
+            --data @-
+          echo "License updated"
+
       - name: Install Cypress & deps
         uses: cypress-io/github-action@v6
         with:
@@ -426,7 +462,20 @@ jobs:
       - name: App Builder
         working-directory: ./cypress-tests
         env:
-          CELL: "App Builder / ${{ matrix.edition }}"
+          CELL: "App Builder / ${{ matrix.edition }} (${{ matrix.shard }}/${{ strategy.job-total }})"
+          SHARD_INDEX: ${{ strategy.job-index }}
+          SHARD_TOTAL: ${{ strategy.job-total }}
+          # One group per machine, in machine order, balanced on spec durations from a
+          # full CI run (~19 min of specs each). Specs matching no group go to the
+          # machine with the fewest specs. The first group holds the license spec (runs
+          # first) and chainingOfQueries.cy.js, the one spec that needs the VPN.
+          SHARD_GROUPS: >-
+            /licensing/,/globals/,/pages/,/querymanager/,components/datePickerHappyPath,components/modalHappyPath,components/textHappyPath,/components/button/,filebutton/propertiesFx,filebutton/stylesFx,filebutton/userflow,filebutton/basics;
+            /components/numberInput/,filebutton/canvas,filebutton/contexts,filebutton/customerIssues;
+            /components/passwordInput/,filebutton/styles.cy.js;
+            /components/toggleSwitchV2/,filebutton/csa;
+            /components/textInput/,/components/table/;
+            /components/checkbox/,filebutton/properties.cy.js,filebutton/events,filebutton/inspector
           BROWSER: chrome
           CONFIG_FILE: cypress-appbuilder.config.js
           CYPRESS_CONFIG: "baseUrl=http://localhost:3000"
@@ -437,7 +486,7 @@ jobs:
         working-directory: ./cypress-tests
         run: |
           if [ ! -f summary.json ]; then
-            printf '{"cell":"App Builder / %s","result":"failure","stats":null}\n' '${{ matrix.edition }}' > summary.json
+            printf '{"cell":"App Builder / %s (%s/%s)","result":"failure","stats":null}\n' '${{ matrix.edition }}' '${{ matrix.shard }}' '${{ strategy.job-total }}' > summary.json
           fi
           cat summary.json
 
@@ -445,7 +494,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cypress-summary-appbuilder-${{ matrix.edition }}
+          name: cypress-summary-appbuilder-${{ matrix.edition }}-${{ matrix.shard }}
           path: cypress-tests/summary.json
           retention-days: 7
 
@@ -453,12 +502,12 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: screenshots-appbuilder-${{ matrix.edition }}
+          name: screenshots-appbuilder-${{ matrix.edition }}-${{ matrix.shard }}
           path: cypress-tests/cypress/screenshots
 
        # ← VPN: Disconnect — always runs even if earlier steps fail
       - name: Disconnect VPN
-        if: always()
+        if: always() && strategy.job-index == 0
         uses: adishM98/auth-vpn/disconnect@v2.3.0
 
   Cypress-AppBuilder-Subpath:
@@ -587,13 +636,16 @@ jobs:
 
   notify-slack:
     needs:
+      - Build-Image
       - Cypress-AppBuilder
       - Cypress-AppBuilder-Subpath
-    # Run after the matrix whenever at least one test job actually ran (not all
-    # skipped — avoids posting on unrelated labels).
+    # Run after the matrix whenever at least one job actually ran (not all
+    # skipped — avoids posting on unrelated labels). A failed Build-Image skips
+    # Cypress-AppBuilder, so it counts on its own.
     if: >-
       always() &&
-      (needs.Cypress-AppBuilder.result != 'skipped' ||
+      (needs.Build-Image.result != 'skipped' ||
+       needs.Cypress-AppBuilder.result != 'skipped' ||
        needs.Cypress-AppBuilder-Subpath.result != 'skipped')
     runs-on: ubuntu-latest
     steps:
@@ -614,9 +666,12 @@ jobs:
           CHANNEL: ${{ secrets.SLACK_CHANNEL_ID }}
           # Suite name rendered in the Slack headline (e.g. "❌ Cypress App Builder Failed").
           SUITE: App Builder
+          # one "App Builder / ee" row for the 6 Cypress-AppBuilder machines
+          COMBINE_SHARDS: "true"
           # Red unless every test job that ran passed (skipped cells don't count).
           OVERALL: >-
-            ${{ (needs.Cypress-AppBuilder.result == 'failure' ||
+            ${{ (needs.Build-Image.result == 'failure' ||
+                 needs.Cypress-AppBuilder.result == 'failure' ||
                  needs.Cypress-AppBuilder-Subpath.result == 'failure')
                 && 'failure' || 'success' }}
           REPO: ${{ github.repository }}

@@ -42,7 +42,49 @@ function fmtDuration(ms) {
   return `${m}m ${Math.round(s - m * 60)}s`;
 }
 
-const cells = loadCells();
+// COMBINE_SHARDS=true: merge one suite's per-machine cells, e.g.
+// "App Builder / ee (1/6)" … "(6/6)", into a single "App Builder / ee" row.
+// Counts add up; duration is the slowest machine, since they run side by side.
+// "(n/m)" gives the machine count, so a machine with no summary still shows up.
+const SHARD_SUFFIX = /^(.*) \((\d+)\/(\d+)\)$/;
+function combineShards(cells) {
+  const groups = new Map();
+  for (const c of cells) {
+    const m = String(c.cell).match(SHARD_SUFFIX);
+    if (!m) {
+      groups.set(String(c.cell), { cell: String(c.cell), total: 0, parts: [c] });
+      continue;
+    }
+    const group = groups.get(m[1]) || { cell: m[1], total: 0, parts: [] };
+    group.total = Math.max(group.total, Number(m[3]));
+    group.parts.push(c);
+    groups.set(m[1], group);
+  }
+  return [...groups.values()].map(({ cell, total, parts }) => {
+    if (!total) return parts[0];
+    const ran = parts.filter((p) => p.stats);
+    const sum = (key) => ran.reduce((n, p) => n + (p.stats[key] || 0), 0);
+    return {
+      cell,
+      machines: total,
+      missing: total - ran.length,
+      stats: ran.length
+        ? {
+            tests: sum("tests"),
+            passes: sum("passes"),
+            failures: sum("failures"),
+            pending: sum("pending"),
+            skipped: sum("skipped"),
+            duration: Math.max(...ran.map((p) => p.stats.duration || 0)),
+          }
+        : null,
+      failedSpecs: parts.flatMap((p) => p.failedSpecs || []),
+    };
+  });
+}
+
+const cells =
+  env.COMBINE_SHARDS === "true" ? combineShards(loadCells()) : loadCells();
 
 const totals = { tests: 0, passes: 0, failures: 0, pending: 0, duration: 0 };
 for (const c of cells) {
@@ -65,13 +107,38 @@ const rows = cells.map((c) => {
   const s = c.stats;
   const name = String(c.cell).padEnd(nameWidth);
   if (!s) return `⚠️  ${name}  no results (run crashed)`;
-  const status = (s.failures || 0) > 0 ? "❌" : "✅";
+  const status = (s.failures || 0) > 0 ? "❌" : c.missing ? "⚠️ " : "✅";
   let detail = `${s.passes || 0} passed`;
   if (s.failures) detail += `, ${s.failures} failed`;
   if (s.pending) detail += `, ${s.pending} pending`;
-  detail += `  (${fmtDuration(s.duration)})`;
+  detail += c.machines
+    ? `  (${fmtDuration(s.duration)} on ${c.machines} machines)`
+    : `  (${fmtDuration(s.duration)})`;
+  if (c.missing) detail += `, ${c.missing} without results`;
   return `${status}  ${name}  ${detail}`;
 });
+
+// Failed specs and their failed tests, so the channel sees what broke without
+// opening the run. Capped to stay under Slack's 3000-char section limit.
+const failedSpecs = cells.flatMap((c) => c.failedSpecs || []);
+let failedList = "";
+if (failedSpecs.length) {
+  const lines = [];
+  for (const f of failedSpecs) {
+    lines.push(`✖ ${String(f.spec).replace(/^cypress\/e2e\//, "")}`);
+    for (const t of f.tests || []) lines.push(`    ${t}`);
+  }
+  const LIMIT = 2700;
+  let text = "";
+  let shown = 0;
+  for (const line of lines) {
+    if (text.length + line.length + 1 > LIMIT) break;
+    text += line + "\n";
+    shown += 1;
+  }
+  if (shown < lines.length) text += `… ${lines.length - shown} more lines in the run\n`;
+  failedList = "```\n" + text + "```";
+}
 
 const passed = env.OVERALL === "success";
 // Coloured bar down the left of the attachment — instant green/red signal.
@@ -172,6 +239,17 @@ const payload = {
           type: "section",
           text: { type: "mrkdwn", text: `*Results by browser*\n${breakdown}` },
         },
+        ...(failedList
+          ? [
+              {
+                type: "section",
+                text: {
+                  type: "mrkdwn",
+                  text: `*Failed specs (${failedSpecs.length})*\n${failedList}`,
+                },
+              },
+            ]
+          : []),
         { type: "actions", elements: buttons },
         {
           type: "context",

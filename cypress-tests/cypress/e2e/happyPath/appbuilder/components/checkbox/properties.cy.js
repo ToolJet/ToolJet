@@ -19,7 +19,7 @@ describe('Checkbox — properties facet', { testIsolation: false }, () => {
 
     beforeEach(() => {
         cy.apiLogin();
-        cy.apiCreateApp(`${fake.companyName}-Checkbox-Properties-App`);
+        cy.apiCreateApp(`${fake.companyName}-${Date.now()}-Checkbox-Properties-App`);
         cy.openApp();
         cy.dragAndDropWidget('Checkbox', 500, 100);
         cy.get('[data-cy="query-manager-toggle-button"]').click();
