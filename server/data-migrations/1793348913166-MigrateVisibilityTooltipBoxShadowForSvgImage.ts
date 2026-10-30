@@ -4,7 +4,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 const MIGRATION_NAME = 'MigrateVisibilityTooltipBoxShadowForSvgImage';
 const TYPE = 'SvgImage';
 
-export class MigrateVisibilityTooltipBoxShadowForSvgImage1792139820443 implements MigrationInterface {
+export class MigrateVisibilityTooltipBoxShadowForSvgImage1793348913165 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const batchSize = 100;
     let offset = 0;
@@ -26,10 +26,10 @@ export class MigrateVisibilityTooltipBoxShadowForSvgImage1792139820443 implement
     while (true) {
       const components = await queryRunner.query(
         `SELECT id, properties, styles, general_properties, general_styles
-           FROM components
-           WHERE type = $1
-           ORDER BY "created_at" ASC
-           LIMIT $2 OFFSET $3`,
+            FROM components
+            WHERE type = $1
+            ORDER BY "created_at" ASC
+            LIMIT $2 OFFSET $3`,
         [TYPE, batchSize, offset]
       );
       if (components.length === 0) break;
@@ -43,7 +43,7 @@ export class MigrateVisibilityTooltipBoxShadowForSvgImage1792139820443 implement
     // snapshots don't resurrect the old shape.
     const versions: { app_version_id: string }[] = await queryRunner.query(
       `SELECT DISTINCT p.app_version_id FROM components c
-         INNER JOIN pages p ON c.page_id = p.id WHERE c.type = $1`,
+          INNER JOIN pages p ON c.page_id = p.id WHERE c.type = $1`,
       [TYPE]
     );
     await deleteAppHistoryForStructuralMigration(
@@ -104,8 +104,8 @@ export class MigrateVisibilityTooltipBoxShadowForSvgImage1792139820443 implement
 
       await queryRunner.query(
         `UPDATE components
-           SET properties = $1, styles = $2, general_properties = $3, general_styles = $4
-           WHERE id = $5`,
+            SET properties = $1, styles = $2, general_properties = $3, general_styles = $4
+            WHERE id = $5`,
         [
           JSON.stringify(properties),
           JSON.stringify(styles),
@@ -122,5 +122,8 @@ export class MigrateVisibilityTooltipBoxShadowForSvgImage1792139820443 implement
     return updatedCount;
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // One-way: visibility, tooltip and boxShadow now live in their new buckets, and the stale
+    // undo/redo history was deleted. The original per-component placement was not recorded.
+  }
 }
