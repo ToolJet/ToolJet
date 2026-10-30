@@ -1,5 +1,6 @@
 /**
  * RunJS and RunPython label their code box "Code", in the same style as the "Parameters" label above it.
+ * The label row sits first, above the code box.
  */
 import React from 'react';
 import { screen } from '@testing-library/react';
@@ -25,5 +26,5 @@ test.each([
   expect(label).toHaveClass(QUERY_FIELD_LABEL_CLASS_NAME);
 
   const editor = container.querySelector(`.${editorClassName}`);
-  expect(editor.firstElementChild).toBe(label);
+  expect(editor.firstElementChild).toContainElement(label);
 });

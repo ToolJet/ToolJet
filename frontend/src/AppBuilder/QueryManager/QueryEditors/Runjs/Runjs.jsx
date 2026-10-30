@@ -3,7 +3,7 @@ import { defaults } from 'lodash';
 import { Card } from 'react-bootstrap';
 import ParameterList from '../../Components/ParameterList';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import { QUERY_FIELD_LABEL_CLASS_NAME } from '@/AppBuilder/panelLayout';
+import QueryCodeLabel from '../../Components/QueryCodeLabel';
 
 const Runjs = (props) => {
   const initialOptions = defaults({ ...props.options }, { code: '//Type your JavaScript code here' });
@@ -15,12 +15,7 @@ const Runjs = (props) => {
 
   return (
     <div className="runjs-editor mb-3 !tw-mb-0 ">
-      <p
-        className={`text-placeholder font-weight-medium tw-mb-2 tw-shrink-0 ${QUERY_FIELD_LABEL_CLASS_NAME}`}
-        data-cy="query-code-label"
-      >
-        Code
-      </p>
+      <QueryCodeLabel />
       <CodeHinter
         renderCopilot={props.renderCopilot}
         type="multiline"
@@ -34,7 +29,7 @@ const Runjs = (props) => {
         }}
         componentName="Runjs"
         cyLabel={`runjs`}
-        // The query header opens the code in a new browser tab instead.
+        // The "Code" label's button opens the code in a new tab instead.
         usePortalEditor={false}
         delayOnChange={false}
       />
