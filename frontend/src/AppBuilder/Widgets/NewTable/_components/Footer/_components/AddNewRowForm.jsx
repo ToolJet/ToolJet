@@ -18,6 +18,10 @@ const POPOVER_STYLE = {
   zIndex: 100,
 };
 
+// Dims the table behind the popover (the dialog placement has its own overlay). It covers the whole table and
+// sits just under the popover, so clicks on the table do nothing while the form is open.
+const OVERLAY_STYLE = { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: 99 };
+
 // The popover fades out before it closes (the dialog fades through its own exit animation).
 export const FADE_OUT_MS = 150;
 const FADE_OUT_STYLE = { opacity: 0, transition: `opacity ${FADE_OUT_MS}ms ease-out`, pointerEvents: 'none' };
@@ -51,7 +55,7 @@ export const AddNewRowForm = ({
   const isDialog = variant === 'dialog';
   const Heading = isDialog ? DialogPrimitive.Title : 'h2';
 
-  return (
+  const form = (
     <div
       {...(!isDialog && {
         role: 'dialog',
@@ -166,5 +170,18 @@ export const AddNewRowForm = ({
         </Button>
       </div>
     </div>
+  );
+
+  if (isDialog) return form;
+  return (
+    <>
+      <div
+        data-cy="add-new-row-overlay"
+        aria-hidden="true"
+        className="tw-bg-black/50"
+        style={{ ...OVERLAY_STYLE, ...(closing && FADE_OUT_STYLE) }}
+      />
+      {form}
+    </>
   );
 };
