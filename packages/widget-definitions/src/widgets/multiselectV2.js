@@ -439,7 +439,7 @@ export const multiselectV2Config = {
       loadingState: { value: '{{false}}' },
       schema: {
         value:
-          "{{[\t{label: 'option1',value: 1,caption: null,disable: false,visible: true,default: true},{label: 'option2',value: 2,caption: null,disable: false,visible: true},{label: 'option3',value: 3,caption: null,disable: false,visible: true}\t]}}",
+          "{{[\t{label: 'option1',value: 1,caption: null,icon: 'IconHome2',iconVisibility: false,image: null,disable: false,visible: true,default: true},{label: 'option2',value: 2,caption: null,icon: 'IconHome2',iconVisibility: false,image: null,disable: false,visible: true},{label: 'option3',value: 3,caption: null,icon: 'IconHome2',iconVisibility: false,image: null,disable: false,visible: true}\t]}}",
       },
       options: {
         value: [
@@ -447,6 +447,8 @@ export const multiselectV2Config = {
             label: 'option1',
             value: '1',
             caption: null,
+            icon: { value: 'IconHome2' },
+            iconVisibility: false,
             disable: { value: false },
             visible: { value: true },
             default: { value: false },
@@ -455,6 +457,8 @@ export const multiselectV2Config = {
             label: 'option2',
             value: '2',
             caption: null,
+            icon: { value: 'IconHome2' },
+            iconVisibility: false,
             disable: { value: false },
             visible: { value: true },
             default: { value: true },
@@ -463,6 +467,8 @@ export const multiselectV2Config = {
             label: 'option3',
             value: '3',
             caption: null,
+            icon: { value: 'IconHome2' },
+            iconVisibility: false,
             disable: { value: false },
             visible: { value: true },
             default: { value: false },
