@@ -549,6 +549,19 @@ describe('RadioButtonV2', () => {
       await waitFor(() => expect(overrideSpan.style.color).toBe('rgb(255, 0, 0)'));
     });
 
+    test('[RadioButtonV2-STY-006] the configured border applies to the checked option as well as unchecked ones', async () => {
+      // Break this catches: the inline `border` going back to `!isChecked && ...`, which renders `border: false` once checked (RadioButtonV2.jsx:347).
+      const { container } = harness.render({
+        properties: { options: binding([option('A', 'a', { isDefault: true }), option('B', 'b')]) },
+        styles: { borderColor: binding('#e53e3e') },
+      });
+
+      await waitFor(() => expect(screen.getByRole('radio', { name: 'A' })).toBeChecked());
+      const checkmarks = container.querySelectorAll('.checkmark');
+      expect(checkmarks[0].style.border).toBe('1px solid #e53e3e');
+      expect(checkmarks[1].style.border).toBe('1px solid #e53e3e');
+    });
+
     test('[RadioButtonV2-STY-004] label-width style keys only apply together when alignment=side and auto=false', async () => {
       // Break this catches: getLabelWidthOfInput's 'ofField' branch stops scaling (`(labelWidth/100)*70`), or Label stops ignoring _width when auto=true.
       let { container } = harness.render({
