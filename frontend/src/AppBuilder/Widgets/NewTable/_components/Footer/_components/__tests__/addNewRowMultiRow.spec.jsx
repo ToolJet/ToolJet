@@ -526,3 +526,15 @@ describe('Table-ADDROWFORM-045 the app theme colour', () => {
     await act(async () => release());
   });
 });
+
+describe('Table-ADDROWFORM-048 scrollbar of the "…" row menu', () => {
+  test('Table-ADDROWFORM-048 the menu of hidden rows uses the table scrollbar colour', async () => {
+    // Break this catches: the row menu keeping the browser's default scrollbar colour while the rest of the form follows the table.
+    const { user } = renderForm();
+    await addRows(user, 11);
+
+    await user.click(screen.getByRole('button', { name: 'More rows' }));
+
+    expect(screen.getByRole('menu')).toHaveClass('table-add-new-row-scroll');
+  });
+});
