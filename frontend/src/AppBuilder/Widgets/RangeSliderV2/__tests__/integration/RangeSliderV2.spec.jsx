@@ -452,6 +452,47 @@ describe('RangeSliderV2', () => {
       await waitFor(() => expect(widget.exposed().value).toBe(100));
     });
 
+    test('[RangeSliderV2-DEF-004] a default and a maximum that change together keep the new default', async () => {
+      // Two bindings fed by one query land in a single commit. The reset effect and the bounds
+      // effect both run in it, and the bounds effect's closure still holds the PREVIOUS value —
+      // so without the guard it clamps 150 to the new ceiling and publishes 100 over the 60 the
+      // reset effect just set. The configured default is the one the user can see; it must win.
+      const { container } = widget.render({
+        properties: { ...SINGLE, min: binding('{{0}}'), max: binding('{{200}}'), value: binding('{{150}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(150));
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(RS, 'value', '{{60}}', 'properties');
+        widget.setComponentProperty(RS, 'max', '{{100}}', 'properties');
+      });
+
+      await waitFor(() => expect(widget.exposed().value).toBe(60));
+      expect(valueNow(handle(container))).toBe(60);
+    });
+
+    test('[RangeSliderV2-BIND-003] a bounds change is still honoured long after a default change', async () => {
+      // Break this catches: suppressing the bounds effect with a flag that is only cleared by the
+      // bounds effect itself. The default moves in one commit and the ceiling in a LATER, unrelated
+      // one, so a flag armed by the first commit must not still be armed when the second arrives.
+      const { container } = widget.render({
+        properties: { ...SINGLE, min: binding('{{0}}'), max: binding('{{200}}'), value: binding('{{50}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(50));
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(RS, 'value', '{{150}}', 'properties');
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(150));
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(RS, 'max', '{{100}}', 'properties');
+      });
+
+      await waitFor(() => expect(widget.exposed().value).toBe(100));
+      expect(valueNow(handle(container))).toBe(100);
+    });
+
     test('[RangeSliderV2-BIND-003] lowering max under the live value pulls the value down with it', async () => {
       // D-02 reversed 2026-10-14, and the half that bites hardest: min/max are
       // usually bound, so a query returning a smaller ceiling used to strand the

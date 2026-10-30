@@ -56,6 +56,9 @@ export const RangeSliderV2 = ({
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
   const sliderRef = useRef(null);
+  // The inputs as the value effect last saw them,
+  // so it can tell a default change from a bounds change when both are possible in one commit.
+  const prevInputs = useRef(null);
 
   const [defaultSliderValue, setDefaultSliderValue] = useState(value);
   const [defaultRangeValue, setDefaultRangeValue] = useState([startValue, endValue]);
@@ -68,8 +71,6 @@ export const RangeSliderV2 = ({
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
 
   const toArray = (data) => (Array.isArray(data) ? data : [data, max]);
-  const singleHandleValue = !enableTwoHandle ? (Array.isArray(value) ? value[0] : value) : 50;
-  const twoHandlesArray = enableTwoHandle ? toArray(value) : [0, 100];
 
   // Only clamp against bounds that actually bound something.
   // min/max are usually bound expressions, and a transient non-number or inverted pair
@@ -95,19 +96,22 @@ export const RangeSliderV2 = ({
     fireEvent('onChange');
   };
 
-  const resetFn = async () => {
-    let defaultValue;
-    if (enableTwoHandle === 'slider') {
-      defaultValue = clampToBounds(value ?? min);
-      setDefaultSliderValue(defaultValue);
-    } else {
-      const start = clampToBounds(startValue ?? min);
-      const end = clampToBounds(endValue ?? max);
-      defaultValue = [start, end];
-      setDefaultRangeValue(defaultValue);
-    }
-    setExposedVariable('value', defaultValue);
+  // Clamp into the current bounds, store, publish: the same three steps whatever brought us here,
+  // so they live in one place. Called with NO argument it uses the configured default — that is
+  // exactly what `reset()` means. Called with a value it republishes THAT value clamped, which is
+  // what a bounds move needs, since resurrecting the default would discard a value the user chose.
+  const publishValue = (next) => {
+    const single = enableTwoHandle === 'slider';
+    const configuredDefault = single ? (value ?? min) : [startValue ?? min, endValue ?? max];
+    const source = next === undefined ? configuredDefault : next;
+    const clamped = single ? clampToBounds(source) : source.map(clampToBounds);
+
+    if (single) setDefaultSliderValue(clamped);
+    else setDefaultRangeValue(clamped);
+    setExposedVariable('value', clamped);
   };
+
+  const resetFn = async () => publishValue();
 
   useEffect(() => {
     if (auto) {
@@ -149,37 +153,43 @@ export const RangeSliderV2 = ({
   }, [min, max]);
 
   useEffect(() => {
-    if (isInitialRender.current) return;
-    resetFn();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, enableTwoHandle, startValue, endValue]);
-
-  useEffect(() => {
     setExposedVariable('reset', resetFn);
   }, [enableTwoHandle, value, min, max, startValue, endValue]);
 
-  // When the bounds move, pull the LIVE value inside them.
-  // Deliberately not the reset effect: re-running that would republish the configured default
+  // ONE effect for both jobs, because a default change and a bounds change can land in the same commit — two bindings fed by one query do exactly that.
+  // Asking which inputs actually moved states the precedence outright instead of leaving it to the order the effects happen to be declared in.
   useEffect(() => {
-    if (enableTwoHandle === 'slider') {
-      if (!Number.isFinite(defaultSliderValue)) return;
-      const clamped = clampToBounds(defaultSliderValue);
-      if (clamped !== defaultSliderValue) {
-        setDefaultSliderValue(clamped);
-        setExposedVariable('value', clamped);
-      }
-    } else {
-      const [start, end] = toArray(defaultRangeValue);
-      if (!Number.isFinite(start) || !Number.isFinite(end)) return;
-      const clampedStart = clampToBounds(start);
-      const clampedEnd = clampToBounds(end);
-      if (clampedStart !== start || clampedEnd !== end) {
-        setDefaultRangeValue([clampedStart, clampedEnd]);
-        setExposedVariable('value', [clampedStart, clampedEnd]);
-      }
+    const prev = prevInputs.current;
+    prevInputs.current = { value, startValue, endValue, enableTwoHandle, min, max };
+
+    const defaultChanged =
+      prev === null ||
+      value !== prev.value ||
+      startValue !== prev.startValue ||
+      endValue !== prev.endValue ||
+      enableTwoHandle !== prev.enableTwoHandle;
+
+    // `prev === null` is the first run.
+    // Either way `resetFn` clamps against the bounds as they stand right now, so it needs nothing from the branch below.
+    if (defaultChanged) {
+      resetFn();
+      return;
     }
+
+    if (min === prev.min && max === prev.max) return;
+
+    // Bounds moved on their own: pull the LIVE value inside them, passed in explicitly so the
+    // configured default is not resurrected over a value the user chose.
+    const live = enableTwoHandle === 'slider' ? defaultSliderValue : toArray(defaultRangeValue);
+    const parts = enableTwoHandle === 'slider' ? [live] : live;
+
+    // A value that is not a usable number is left exactly as it is, so a half-resolved binding
+    // cannot destroy it. Republish only when clamping would move something — an untouched value
+    // should cost no render.
+    if (!parts.every(Number.isFinite)) return;
+    if (parts.some((part) => clampToBounds(part) !== part)) publishValue(live);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [min, max]);
+  }, [value, startValue, endValue, enableTwoHandle, min, max]);
 
   useEffect(() => {
     if (disabled !== properties.disabledState) setDisabled(properties.disabledState);
