@@ -17,13 +17,12 @@
   &__message {
     flex: 1;
     min-width: 0;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
+    max-height: max(20px, calc(100dvh - 128px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
     overflow-wrap: anywhere;
     line-height: 20px;
-    max-height: 40px;
 
     > div {
       display: block;
@@ -32,6 +31,8 @@
   }
 
   &__summary {
+    min-height: 30px;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     flex-wrap: wrap;
@@ -107,7 +108,7 @@
     list-style: none;
     overflow-y: auto;
     overscroll-behavior: contain;
-    max-height: min(320px, 50dvh);
+    max-height: min(max(20px, calc(100dvh - 112px)), max(min(320px, 50dvh), calc(var(--collapsed-height) - 64px)));
     // Match flex container canvases: reserve the gutter and reveal the thin scrollbar on hover.
     scrollbar-gutter: stable;
     scrollbar-width: thin;

@@ -52,7 +52,13 @@ export default function ErrorPanel({ errors, onClose, initialSize, onHeightChang
         <span className="editor-error-toast__label">Errors ({errors.length})</span>
         <button className="btn-close" type="button" aria-label="Dismiss errors" onClick={onClose} />
       </div>
-      <ol ref={listRef} className="toast-error-panel__list" tabIndex={0} aria-label="Error messages">
+      <ol
+        ref={listRef}
+        className="toast-error-panel__list"
+        style={{ '--collapsed-height': `${initialSize.height}px` }}
+        tabIndex={0}
+        aria-label="Error messages"
+      >
         {[...errors].reverse().map((error) => (
           <li key={error.id}>
             <div className="toast-error-panel__icon" aria-hidden="true">

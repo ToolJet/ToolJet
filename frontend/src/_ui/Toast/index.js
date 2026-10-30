@@ -45,6 +45,9 @@ const GroupedToasts = ({ toastOptions }) => {
   const { toasts } = useToasterStore(toastOptions);
   const [panelErrors, setPanelErrors] = useState(null);
   const hidden = useRef(new Set());
+  const previousErrors = useRef(new Map());
+  const previousTop = useRef(new Map());
+  const quietErrors = useRef(new Set());
   const groups = useMemo(() => {
     const groups = new Map();
     toasts.forEach((t) => {
@@ -57,8 +60,36 @@ const GroupedToasts = ({ toastOptions }) => {
     return groups;
   }, [toasts]);
 
+  // Suppress the entry animation only if the previous error was already at the top.
+  const replacements = useMemo(() => {
+    const ids = new Set();
+    groups.forEach((errors, position) => {
+      const previous = previousErrors.current.get(position) || [];
+      if (previousTop.current.get(position) === previous[0] && errors.some((error) => previous.includes(error.id))) {
+        errors.filter((error) => !previous.includes(error.id)).forEach((error) => ids.add(error.id));
+      }
+    });
+    return ids;
+  }, [groups]);
+
   useEffect(() => {
     const currentIds = new Set(toasts.map((t) => t.id));
+    replacements.forEach((id) => quietErrors.current.add(id));
+    for (const id of quietErrors.current) {
+      if (!currentIds.has(id)) quietErrors.current.delete(id);
+    }
+    previousErrors.current = new Map(
+      [...groups].map(([position, errors]) => [position, errors.map((error) => error.id)])
+    );
+    const top = new Map();
+    toasts.forEach((t) => {
+      if (!t.visible) return;
+      const position = t.position || 'top-center';
+      const errors = groups.get(position) || [];
+      if (errors.some((error) => error.id === t.id) && errors[0].id !== t.id) return;
+      if (!top.has(position)) top.set(position, t.id);
+    });
+    previousTop.current = top;
     for (const id of hidden.current) {
       if (!currentIds.has(id)) hidden.current.delete(id);
     }
@@ -67,7 +98,7 @@ const GroupedToasts = ({ toastOptions }) => {
       if (errors.length < 2) return;
       errors.slice(1).forEach((t) => hidden.current.add(t.id));
     });
-  }, [toasts, groups]);
+  }, [toasts, groups, replacements]);
 
   useEffect(() => {
     if (!panelErrors) return;
@@ -118,6 +149,7 @@ const GroupedToasts = ({ toastOptions }) => {
                   minHeight: panelErrors.initialSize.height,
                   boxSizing: 'border-box',
                   alignItems: 'flex-start',
+                  ...(t.visible && quietErrors.current.has(t.id) ? { animation: 'none', opacity: 1 } : {}),
                 }}
               >
                 {() => (
@@ -142,53 +174,70 @@ const GroupedToasts = ({ toastOptions }) => {
             textContent(t.message) !== null
           )
             return null;
-          const grouped = t.type === 'error' && errors.length > 1 && errors.some((error) => error.id === t.id);
+          const grouped = t.type === 'error' && textContent(t.message) !== null;
           // Already-hidden members must not reappear during their exit/remove delay.
           if (t.type === 'error' && !t.visible && hidden.current.has(t.id)) return null;
           if (!grouped) return <StandardToast notification={t} />;
           // Empty wrappers measure zero, so hidden errors occupy neither height nor gutters.
-          if (t.id !== errors[0].id) return null;
+          if (errors.length && t.id !== errors[0].id) return null;
           const dismissErrors = () => {
             errors.forEach((error) => hidden.current.add(error.id));
-            errors.forEach((error) => toast.dismiss(error.id));
+            (errors.length ? errors : [t]).forEach((error) => toast.dismiss(error.id));
           };
           return (
-            <ToastBar toast={t}>
+            <ToastBar
+              toast={t}
+              style={{
+                width: 400,
+                height: 'auto',
+                maxWidth: 'calc(100vw - 32px)',
+                boxSizing: 'border-box',
+                ...(t.visible && (replacements.has(t.id) || quietErrors.current.has(t.id))
+                  ? { animation: 'none', opacity: 1 }
+                  : {}),
+              }}
+            >
               {({ icon, message }) => (
                 <div className="editor-error-toast">
                   <div className="editor-error-toast__summary">
                     <span className="editor-error-toast__label">Latest error</span>
-                    <span className="editor-error-toast__count" role="status">
-                      +{errors.length - 1} more {errors.length === 2 ? 'error' : 'errors'}
-                    </span>
-                    <button
-                      className="editor-error-toast__action"
-                      onClick={(event) => {
-                        const card = event.currentTarget.closest('.editor-error-toast').parentElement;
-                        const { width, height } = card.getBoundingClientRect();
-                        setPanelErrors({
-                          initialSize: { width, height },
-                          id: t.id,
-                          errors: [...errors]
-                            .reverse()
-                            .map((error) => ({ ...error, message: textContent(error.message) })),
-                        });
-                        // Keep the latest toast and its existing timer; absorb the older errors.
-                        errors
-                          .filter((error) => error.id !== t.id)
-                          .forEach((error) => {
-                            hidden.current.add(error.id);
-                            toast.remove(error.id);
-                          });
-                      }}
-                    >
-                      View all
-                      <ChevronRight size={14} aria-hidden="true" />
-                    </button>
+                    {errors.length > 1 && (
+                      <>
+                        <span className="editor-error-toast__count" role="status">
+                          +{errors.length - 1} more {errors.length === 2 ? 'error' : 'errors'}
+                        </span>
+                        <button
+                          className="editor-error-toast__action"
+                          onClick={(event) => {
+                            const card = event.currentTarget.closest('.editor-error-toast').parentElement;
+                            const { width, height } = card.getBoundingClientRect();
+                            setPanelErrors({
+                              initialSize: { width, height },
+                              id: t.id,
+                              errors: [...errors]
+                                .reverse()
+                                .map((error) => ({ ...error, message: textContent(error.message) })),
+                            });
+                            // Keep the latest toast and its existing timer; absorb the older errors.
+                            errors
+                              .filter((error) => error.id !== t.id)
+                              .forEach((error) => {
+                                hidden.current.add(error.id);
+                                toast.remove(error.id);
+                              });
+                          }}
+                        >
+                          View all
+                          <ChevronRight size={14} aria-hidden="true" />
+                        </button>
+                      </>
+                    )}
                   </div>
                   <div className="editor-error-toast__header">
                     {icon}
-                    <div className="editor-error-toast__message">{message}</div>
+                    <div className="editor-error-toast__message" tabIndex={0}>
+                      {message}
+                    </div>
                     <button
                       className="btn-close"
                       aria-label="Dismiss errors"

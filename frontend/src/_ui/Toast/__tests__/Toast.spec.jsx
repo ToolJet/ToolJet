@@ -16,6 +16,65 @@ describe('editor error notifications', () => {
     jest.restoreAllMocks();
   });
 
+  // Break this catches: single errors lose their title, or replacements replay the entry animation.
+  it('keeps collapsed height automatic and replaces errors without replaying entry animation', () => {
+    render(<Toast groupErrors />);
+    act(() => toast.error('First'));
+    expect(screen.getByText('Latest error')).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'View all' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/more error/)).not.toBeInTheDocument();
+    const firstCard = screen.getByText('First').closest('.editor-error-toast').parentElement;
+    expect(firstCard).toHaveStyle({ width: '400px', height: 'auto' });
+    act(() => jest.advanceTimersByTime(400));
+    act(() => {
+      toast.success('Saved');
+      toast('Information');
+      toast('Warning', { icon: '⚠️' });
+      toast.error('Long replacement '.repeat(30));
+    });
+    const replacement = screen
+      .getByText('Long replacement '.repeat(30).trim())
+      .closest('.editor-error-toast').parentElement;
+    expect(replacement).toHaveStyle({ width: '400px', height: 'auto', animation: 'none', opacity: '1' });
+    expect(screen.queryByText('First')).not.toBeInTheDocument();
+    expect(screen.getByText('+1 more error')).toBeVisible();
+    for (const message of ['Saved', 'Information', 'Warning']) expect(screen.getByText(message)).toBeVisible();
+    act(() => toast.error(''));
+    expect(screen.getByText('Latest error').closest('.editor-error-toast').parentElement).toHaveStyle({
+      width: '400px',
+      height: 'auto',
+      animation: 'none',
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+    expect(screen.getByRole('list', { name: 'Error messages' })).toBeVisible();
+    expect(
+      screen.getByRole('list', { name: 'Error messages' }).closest('.toast-error-panel').parentElement
+    ).toHaveStyle({ animation: 'none' });
+    fireEvent.click(screen.getByRole('button', { name: 'Dismiss errors' }));
+    act(() => jest.advanceTimersByTime(1001));
+    act(() => toast.error('Fresh burst'));
+    expect(screen.getByText('Fresh burst').closest('.editor-error-toast').parentElement.style.animation).not.toBe(
+      'none'
+    );
+  });
+
+  // Break this catches: suppressing entry animation when an error moves above another toast.
+  it.each(['success', 'info', 'warning'])('animates a replacement when %s is above the error', (type) => {
+    render(<Toast groupErrors />);
+    act(() => toast.error('Original error'));
+    act(() => {
+      if (type === 'success') toast.success('Other notification');
+      else toast('Other notification', type === 'warning' ? { icon: '⚠️' } : {});
+    });
+    act(() => toast.error('New error'));
+    const card = screen.getByText('New error').closest('.editor-error-toast').parentElement;
+    expect(card.style.animation).not.toBe('none');
+    expect(screen.getByText('Other notification')).toBeVisible();
+    expect(screen.getByText('+1 more error')).toBeVisible();
+    act(() => toast('Later notification'));
+    expect(card.style.animation).not.toBe('none');
+  });
+
   // Break this catches: a request burst renders one overlay per failure.
   it('shows only the latest error and counts the other active errors, preserving success notifications', () => {
     render(<Toast groupErrors />);
@@ -124,6 +183,21 @@ describe('editor error notifications', () => {
     } finally {
       window.ResizeObserver = OriginalResizeObserver;
     }
+  });
+
+  // Break this catches: a tall collapsed toast expands into an empty card with a tiny list.
+  it('allows a tall expanded list to use the height reserved by the collapsed toast', () => {
+    HTMLElement.prototype.getBoundingClientRect.mockReturnValue({ height: 600, width: 400 });
+    render(<Toast groupErrors />);
+    act(() => {
+      toast.error('First long error');
+      toast.error('Second long error');
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'View all' }));
+    const list = screen.getByRole('list', { name: 'Error messages' });
+    expect(list.style.getPropertyValue('--collapsed-height')).toBe('600px');
+    expect(within(list).getByText('First long error')).toBeVisible();
+    expect(within(list).getByText('Second long error')).toBeVisible();
   });
 
   it('keeps the collapsed dimensions as the expanded card minimum without sizing ordinary toasts', () => {
@@ -352,7 +426,9 @@ describe('editor error notifications', () => {
     expect(screen.queryByText(/more error/)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'View all' })).not.toBeInTheDocument();
     fireEvent.click(
-      within(screen.getByText('Long failure').parentElement).getByRole('button', { name: 'Dismiss notification' })
+      within(screen.getByText('Long failure').closest('.editor-error-toast')).getByRole('button', {
+        name: 'Dismiss errors',
+      })
     );
     act(() => jest.advanceTimersByTime(1001));
     expect(screen.queryByText('Long failure')).not.toBeInTheDocument();
@@ -371,11 +447,12 @@ describe('editor error notifications', () => {
     expect(screen.queryByRole('button', { name: 'View all' })).not.toBeInTheDocument();
   });
 
-  // Break this catches: an isolated error takes the grouped layout/history/dismissal path.
-  it('keeps a single error on the original path, including exit delay', () => {
+  // Break this catches: the new single-error layout changes expiry or exit delay.
+  it('keeps single-error expiry and exit delay with the persistent title', () => {
     render(<Toast groupErrors />);
     act(() => toast.error('Single failure', { duration: 1000 }));
-    expect(screen.getByRole('button', { name: 'Dismiss notification' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Dismiss errors' })).toBeVisible();
+    expect(screen.getByText('Latest error')).toBeVisible();
     expect(screen.queryByRole('button', { name: 'View all' })).not.toBeInTheDocument();
     act(() => jest.advanceTimersByTime(1001));
     expect(screen.getByText('Single failure')).toBeInTheDocument();
