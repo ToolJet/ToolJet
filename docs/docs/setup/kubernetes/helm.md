@@ -21,18 +21,30 @@ This repository contains Helm charts for deploying [ToolJet](https://github.com/
 ### From Helm repo
 
 ```bash
-helm repo add tooljet https://github.com/ToolJet/helm-charts.git
+helm repo add tooljet https://tooljet.github.io/helm-charts
 helm install tooljet tooljet/tooljet
 ```
 
 ### From the Source
 
-1. Clone the repository and navigate to this directory
+1. Clone the [helm-charts](https://github.com/ToolJet/helm-charts) repository and go to the chart: `git clone https://github.com/ToolJet/helm-charts.git && cd helm-charts/charts/tooljet`
 2. Run `helm dependency update`
 3. It is recommended but optional to modify the values in the `values.yaml` file, such as usernames, passwords, persistence settings, etc.
 4. Run `helm install -n $NAMESPACE --create-namespace $RELEASE .`
 
 Remember to replace the variables with your specific configuration values.
+
+:::warning
+Set your own values for `apps.tooljet.secret.data.lockbox_key` (`openssl rand -hex 32`), `apps.tooljet.secret.data.secret_key_base` (`openssl rand -hex 64`) and `env.PGRST_JWT_SECRET` (`openssl rand -hex 32`). The published chart ships fixed example values for these keys.
+
+The bundled PostgreSQL and Redis subcharts pull `bitnami/postgresql` and `bitnami/redis` images that are no longer available on Docker Hub. Either use an external PostgreSQL (`postgresql.enabled: false` and `external_postgresql.enabled: true`), or point the subcharts at the `bitnamilegacy` images:
+
+```bash
+helm install tooljet tooljet/tooljet -f values.yaml \
+  --set postgresql.image.repository=bitnamilegacy/postgresql \
+  --set redis.image.repository=bitnamilegacy/redis
+```
+:::
 
 ## ToolJet Database
 
@@ -50,7 +62,7 @@ For a multi-service or multi-pod setup, it is recommended to use an external Red
 
 **When to Enable Redis?** <br/>
 
-- If **ReplicaSet > 1**, Redis **must be enabled** inside `values.yaml` for session management.
+- The chart always deploys a separate worker (`tooljet-worker-deployment`) next to the main ToolJet deployment, and both run with `WORKER=true`. Without `redis.enabled: true` or an external `REDIS_HOST`, each pod uses its own built-in Redis and they don't share a job queue. Enable Redis or configure an external instance for every Helm install.
 
 Enabling or Disabling Redis in `values.yaml`
 
@@ -222,7 +234,7 @@ env:
 If this is a new installation of the application, you may start directly with the latest version. This upgrade guide is only for existing installations.
 :::
 
-New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [_ToolJet Docker Hub_](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [_ToolJet Docker Hub_](https://hub.docker.com/r/tooljet/tooljet/tags) page. LTS tags use the format `vX.Y.Z-lts`, for example `tooljet/tooljet:v3.20.251-lts`. The `tooljet/tooljet:ee-lts-latest` tag always points to the newest LTS release.
 
 ### Prerequisites for Upgrading
 
