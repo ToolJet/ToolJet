@@ -9,6 +9,8 @@ import { authenticationService } from '@/_services';
 import { server } from '@/test/msw/server';
 import useStore from '@/AppBuilder/_stores/store';
 import { createAppBuilderControls } from '@/test/app-builder/controls';
+import { AppBuilderTestSession } from '@/test/app-builder';
+import { viewedLibraryVersionId, libraryRunEnvironment } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import LibraryVersionDropdown from '../../LibraryVersionDropdown';
 import useLibraryVersionLifecycle from '../../useLibraryVersionLifecycle';
 
@@ -336,5 +338,96 @@ it('preserves saved parent UUIDs in the normalized lifecycle contract', async ()
   expect(result.current.versions.find((version) => version.id === saved.id)).toMatchObject({
     parentVersionId: 'saved-parent',
     createdFromVersion: 'parent-version',
+  });
+});
+
+describe('cumulative environment membership', () => {
+  let session;
+  let multiEnvironment;
+  beforeEach(() => {
+    multiEnvironment = true;
+    view.versions = [
+      { ...saved, id: 'saved-dev', name: 'saved-dev', environment: dev },
+      { ...saved, id: 'saved-stg', name: 'saved-stg', environment: staging },
+      { ...saved, id: 'saved-prod', name: 'saved-prod', environment: prod },
+    ];
+    session = new AppBuilderTestSession({
+      scenario: {
+        surface: 'app-editor',
+        capabilities: {
+          network: [
+            { url: `${base}/versions`, json: () => view },
+            { url: `${config.apiUrl}/license/access`, json: () => ({ multiEnvironment }) },
+          ],
+        },
+      },
+    });
+  });
+
+  async function openMenu() {
+    await session.user.click(cy('version-switcher-button'));
+    await waitFor(() => expect(document.querySelector('#version-manager-popover')).toBeInTheDocument());
+  }
+
+  // Break this catches: the dropdown lists only a version's furthest promoted environment.
+  it.each([
+    ['Development', ['saved-dev', 'saved-stg', 'saved-prod'], true],
+    ['Staging', ['saved-stg', 'saved-prod'], false],
+    ['Production', ['saved-prod'], false],
+  ])('lists every reached version in %s', async (tab, expected, hasDrafts) => {
+    session.render(<LibraryVersionDropdown queryId="q1" />);
+    await waitFor(() => expect(session.store.read((s) => s.queryLibrary.versionsByQueryId.q1)).toBeDefined());
+    await openMenu();
+    await session.user.click(screen.getByRole('button', { name: tab }));
+    for (const name of ['saved-dev', 'saved-stg', 'saved-prod']) {
+      expect(!!cy(`${name}-version-name`)).toBe(expected.includes(name));
+    }
+    expect(!!cy('candidate.one-version-name')).toBe(hasDrafts);
+    expect(!!cy('candidate.two-version-name')).toBe(hasDrafts);
+  });
+
+  // Break this catches: listing works but store selection silently falls back after choosing an earlier tab.
+  it.each([dev, staging, prod])('selects and retains the same Production UUID in $name', async (target) => {
+    session.render(<LibraryVersionDropdown queryId="q1" />);
+    await waitFor(() => expect(session.store.read((s) => s.queryLibrary.versionsByQueryId.q1)).toBeDefined());
+    await openMenu();
+    await session.user.click(screen.getByRole('button', { name: target.name[0].toUpperCase() + target.name.slice(1) }));
+    expect(session.store.read((s) => s.queryLibrary.runEnvironmentByQueryId.q1)).toBeUndefined();
+    await session.user.click(cy('saved-prod-version-name'));
+    expect(session.store.read((s) => viewedLibraryVersionId(s, 'q1'))).toBe('saved-prod');
+    expect(session.store.read((s) => libraryRunEnvironment(s, 'q1'))).toEqual(target);
+    await openMenu();
+    expect(cy('saved-prod-version-name')).toBeInTheDocument();
+    expect(cy('saved-prod-save-version-button')).not.toBeInTheDocument();
+    if (target.id !== prod.id) {
+      expect(cy('promote-version-button')).not.toBeInTheDocument();
+      expect(cy('release-version-button')).not.toBeInTheDocument();
+    }
+    await session.user.click(cy('saved-prod-version-more-menu-button'));
+    expect(screen.queryByText('Edit details')).not.toBeInTheDocument();
+    expect(session.store.read((s) => s.queryLibrary.versionsByQueryId.q1.versions[2].environment)).toEqual(prod);
+    await session.user.click(
+      screen.getByRole('button', { name: target.id === prod.id ? 'Development' : 'Production' })
+    );
+    expect(session.store.read((s) => libraryRunEnvironment(s, 'q1'))).toEqual(target);
+    await session.user.click(cy('version-switcher-button'));
+    await openMenu();
+    expect(cy('saved-dev-version-name') !== null).toBe(target.id === dev.id);
+    expect(cy('saved-stg-version-name') !== null).toBe(target.id !== prod.id);
+    expect(session.store.read((s) => viewedLibraryVersionId(s, 'q1'))).toBe('saved-prod');
+  });
+
+  // Break this catches: cumulative filtering accidentally enables unlicensed higher-environment tabs.
+  it('preserves the single-environment view and locks higher tabs', async () => {
+    multiEnvironment = false;
+    await session.store.act((s) => s.updateFeatureAccess());
+    await waitFor(() => expect(session.store.read((s) => s.isLicenseFetched)).toBe(true));
+    session.render(<LibraryVersionDropdown queryId="q1" />);
+    await waitFor(() => expect(session.store.read((s) => s.queryLibrary.versionsByQueryId.q1)).toBeDefined());
+    await session.user.click(cy('version-switcher-button'));
+    await waitFor(() => expect(cy('saved-prod-version-name')).toBeInTheDocument());
+    expect(cy('candidate.one-version-name')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Staging' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Production' })).toBeDisabled();
   });
 });

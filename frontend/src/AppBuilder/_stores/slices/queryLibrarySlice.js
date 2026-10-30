@@ -1,5 +1,6 @@
 import { libraryQueryService } from '@/_services';
 import { queryAbortControllers } from '@/AppBuilder/_utils/queryAbort';
+import { isLibraryVersionInEnvironment } from '@/AppBuilder/_utils/libraryVersionEnvironment';
 
 export const isQueryLibraryMode = (state) => !!state.queryLibrary?.isLibraryMode;
 
@@ -14,9 +15,12 @@ export const viewedLibraryVersionId = (state, queryId) => {
   const view = state.queryLibrary.versionsByQueryId[queryId];
   if (!view) return null;
   const environment = pickedLibraryEnvironment(state, queryId);
+  const membership = { targetEnvironment: environment, environments: state.environments };
   const rows = [
-    ...(!environment || environment.priority === 1 ? (view.drafts ?? []) : []),
-    ...(view.versions ?? []).filter((version) => !environment || version.environment?.id === environment.id),
+    ...(isLibraryVersionInEnvironment({ ...membership, isDraft: true }) ? (view.drafts ?? []) : []),
+    ...(view.versions ?? []).filter((version) =>
+      isLibraryVersionInEnvironment({ ...membership, versionEnvironment: version.environment })
+    ),
   ];
   const picked = state.queryLibrary.viewedVersionIdByQueryId[queryId];
   return rows.find((row) => row.id === picked)?.id ?? rows[0]?.id ?? null;

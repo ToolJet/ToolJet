@@ -5,6 +5,7 @@ import { libraryRunEnvironment, viewedLibraryVersionId } from '@/AppBuilder/_sto
 import { authenticationService } from '@/_services';
 import { canUseDataSourceForQuery } from '@/_helpers';
 import { getEnvironmentOptions } from '@/AppBuilder/Header/VersionManager/environmentOptions';
+import { isLibraryVersionInEnvironment } from '@/AppBuilder/_utils/libraryVersionEnvironment';
 
 export default function useLibraryVersionLifecycle({ queryId }) {
   const { view, selectedVersionId, environments, selectedEnvironment, featureAccess, library, workspaceId, sessionId } =
@@ -122,7 +123,16 @@ export default function useLibraryVersionLifecycle({ queryId }) {
       canRelease: !readOnly,
       isSaving: library.isSaving,
       visibleVersionIds: versions
-        .filter((version) => !multiEnvironment || version.currentEnvironmentId === browsedEnvironment?.id)
+        .filter(
+          (version) =>
+            !multiEnvironment ||
+            isLibraryVersionInEnvironment({
+              isDraft: version.status === 'DRAFT',
+              versionEnvironment: version.environment,
+              targetEnvironment: browsedEnvironment,
+              environments,
+            })
+        )
         .map(({ id }) => id),
       developmentVersionIds: versions.map(({ id }) => id),
       environmentOptions,
@@ -144,7 +154,7 @@ export default function useLibraryVersionLifecycle({ queryId }) {
         const target = browsing.current || selectedEnvironment;
         if (!accessible(target?.id)) return;
         if (target?.id === selectedEnvironment?.id && id === selectedVersionId) return;
-        if (target?.id !== selectedEnvironment?.id) library.setLibraryRunEnvironment(queryId, target);
+        library.setLibraryRunEnvironment(queryId, target);
         library.viewLibraryVersion(queryId, id);
       },
       saveDraft: (id, values) => library.saveLibraryDraft(queryId, id, values),
