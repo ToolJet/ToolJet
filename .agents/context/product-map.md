@@ -101,3 +101,7 @@ graph TD
 
 - **Inference:** The public repository is intentionally both the CE implementation and the stable contract/base layer extended by private editions. Evidence: dynamic module selection in `SubModule.getProviders` and the documented edition inheritance/composition patterns in `AGENTS.md`.
 - **Inference:** The App + Version aggregate is the dominant product boundary because pages, components, events, queries, release state, and most access checks converge on it.
+
+### Query cache refresh events
+
+Builders can select **Refresh Query Cache** alongside **Run query** in the event action list, with the same query and parameter controls. It uses the existing `run-query` event with `refreshCache: true`; cache availability remains edition-dependent. Existing saved refresh events display this action automatically. Evidence: `frontend/src/AppBuilder/RightSideBar/Inspector/ActionTypes.js::getEventActionId`, `EventManager.jsx`, and `frontend/src/AppBuilder/_stores/slices/eventsSlice.js`.

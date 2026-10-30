@@ -6,6 +6,12 @@ export const ActionTypes = [
     group: 'run-action',
   },
   {
+    name: 'Refresh Query Cache',
+    id: 'refresh-query-cache',
+    options: [{ queryId: '' }],
+    group: 'run-action',
+  },
+  {
     name: 'Reset query',
     id: 'reset-query',
     options: [{ queryId: '' }],
@@ -168,3 +174,13 @@ export const ActionTypes = [
     group: 'other',
   },
 ];
+
+// Refresh is an editor choice, persisted as a normal query run with its existing flag.
+// Keeping the execution contract preserves query parameters, references and saved apps.
+export const getEventActionId = (event) =>
+  event.actionId === 'run-query' && event.refreshCache === true ? 'refresh-query-cache' : event.actionId;
+
+export const getEventActionChanges = (actionId) =>
+  actionId === 'refresh-query-cache'
+    ? { actionId: 'run-query', refreshCache: true }
+    : { actionId, refreshCache: undefined };
