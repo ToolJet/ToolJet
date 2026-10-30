@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, Query, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { VersionService } from './service';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
@@ -17,6 +18,32 @@ import { PromoteVersionDto } from './dto';
 import { IVersionControllerV2 } from './interfaces/IControllerV2';
 import { GitDirtyFlagInterceptor } from '@modules/git-sync-configs/interceptors/git-dirty-flag.interceptor';
 import { MarksAppVersionDirty } from '@modules/git-sync-configs/decorators/marks-git-dirty.decorator';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
+import { getConnectionInstance } from '@helpers/database.helper';
+import { getAppDataRevision } from '@modules/apps/app-data-revision';
+
+// ETag for the released version: changes with the version row (e.g. promote) and everything the
+// released-app cache key covers (getAppDataRevision). Other versions aren't tracked by the change
+// stamps, so they aren't cached. The mode is part of it because view responses are permission-filtered
+// and edit responses aren't. Null = no caching.
+async function releasedVersionETag(
+  app: AppEntity,
+  versionId: string,
+  mode: string | undefined,
+  userId: string,
+  getLicenseTerms: () => Promise<unknown>
+): Promise<string | null> {
+  if (versionId !== app.currentVersionId) return null;
+  const manager = getConnectionInstance().manager;
+  const version = await manager.findOne(AppVersion, {
+    where: { id: versionId, appId: app.id },
+    select: ['id', 'status', 'updatedAt'],
+  });
+  if (version?.status !== AppVersionStatus.PUBLISHED) return null;
+  const revision = await getAppDataRevision(manager, app, { versionId, userId, licenseTerms: await getLicenseTerms() });
+  if (!revision) return null;
+  return `"v-${versionId}-${mode ?? ''}-${version.updatedAt.getTime()}-${revision}"`;
+}
 
 @InitModule(MODULES.VERSION)
 @Controller({
@@ -43,7 +70,27 @@ export class VersionControllerV2 implements IVersionControllerV2 {
   @InitFeature(FEATURE_KEY.GET_ONE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id/versions/:versionId')
-  getVersion(@User() user: UserEntity, @App() app: AppEntity, @Query('mode') mode?: string) {
+  async getVersion(
+    @User() user: UserEntity,
+    @App() app: AppEntity,
+    @Param('versionId') versionId: string,
+    @Query('mode') mode: string,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    // The released version is cached by the browser but revalidated on every load (no-cache), so
+    // an unchanged version costs a 304 instead of rebuilding and downloading the payload.
+    const etag = await releasedVersionETag(app, versionId, mode, user.id, () =>
+      this.versionService.getViewerLicenseTerms(app.organizationId)
+    );
+    if (etag) {
+      res.set({ 'Cache-Control': 'private, no-cache', ETag: etag });
+      if (req.headers['if-none-match'] === etag) {
+        res.status(304);
+        return;
+      }
+    }
+
     return this.versionService.getVersion(app, user, mode);
   }
 

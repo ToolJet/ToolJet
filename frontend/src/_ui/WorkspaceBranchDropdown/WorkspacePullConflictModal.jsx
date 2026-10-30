@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
+import { createPortal } from 'react-dom';
 import cx from 'classnames';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -172,8 +172,8 @@ function ConflictRow({
                       {group.conflictField === 'slug' || group.conflictField === 'invalid_name'
                         ? item.name
                         : item.coRelationId
-                        ? `#${item.coRelationId.slice(0, 8)}`
-                        : item.name}
+                          ? `#${item.coRelationId.slice(0, 8)}`
+                          : item.name}
                     </span>
 
                     {/* invalid_name is one-sided — no counterpart for the badge to contrast against. */}
@@ -294,7 +294,7 @@ export function PullConflictModal({
     await onResolve?.(resolutions);
   };
 
-  return ReactDOM.createPortal(
+  return createPortal(
     <div className="pull-conflict-modal-overlay" onClick={handleOverlayClick}>
       <div className={`pull-conflict-modal${darkMode ? ' theme-dark dark-theme' : ''}`}>
         {/* HEADER */}

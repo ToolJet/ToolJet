@@ -50,11 +50,11 @@ describe("Custom groups UI and Functionality verification", () => {
   const appPermissionName = "Apps";
   const workflowPermissionName = "Workflows";
   const datasourcePermissionName = "  Data sources";
-  const folderPermissionName = "Folders";
+  const folderPermissionName = "App folders";
   const permissionName2 = "Permission2";
   const data = {
     firstName: fake.firstName,
-    email: fake.email.toLowerCase().replaceAll("[^A-Za-z]", ""),
+    email: `${fake.firstName.toLowerCase()}${Date.now()}@example.com`,
   };
 
   const visitGroupsSettingsPage = () => {
@@ -362,7 +362,7 @@ describe("Custom groups UI and Functionality verification", () => {
         );
         cy.apiCreateGranularPermission(
           groupName3,
-          "Folders",
+          "App folders",
           "folder",
           { canEditFolder: true, canEditApps: false, canViewApps: false },
           []

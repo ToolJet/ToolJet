@@ -352,7 +352,7 @@ class BaseManageGroupPermissionResources extends React.Component {
           <SolidIcon name="informationcircle" fill="#3E63DD" /> {text}
           <a
             style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
-            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
+            href="https://docs.tooljet.com/docs/user-management/role-based-access/user-roles#permissions-for-user-roles"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -1772,8 +1772,8 @@ class BaseManageGroupPermissionResources extends React.Component {
                                     selectedAdminUsers.length !== 0
                                       ? '#ffffff'
                                       : this.props.darkMode
-                                      ? '#131620'
-                                      : '#C1C8CD'
+                                        ? '#131620'
+                                        : '#C1C8CD'
                                   }
                                   iconWidth="16"
                                   className="add-users-button"

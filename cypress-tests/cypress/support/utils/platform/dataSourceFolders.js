@@ -210,20 +210,37 @@ export const uiRunQueryInBuilder = (queryName) => {
   return cy.wait("@builderQueryRun").its("response.body");
 };
 
+let releasedAppVisits = 0;
+
 export const visitReleasedAppAndCaptureQueryRun = (slug) => {
-  cy.intercept("POST", "/api/data-queries/*/run").as("releasedQueryRun");
+  const alias = `releasedQueryRun${(releasedAppVisits += 1)}`;
+  cy.intercept("POST", "/api/data-queries/*/run").as(alias);
   cy.visit(`/applications/${slug}`);
-  return cy.wait("@releasedQueryRun").its("response.body");
+  return cy.wait(`@${alias}`).its("response.body");
 };
 
 export const openGroupGranularAccess = (groupName) => {
   const groupTitle = (name) => `[data-cy="${cyParamName(name)}-title"]`;
+  uiWatchGranularPermissions();
   cy.visit(`/${Cypress.env("workspaceSlug")}/workspace-settings/groups`);
   // The page auto-selects Admin once it loads; a click that lands before that is overridden, so wait for Admin's header, click, then wait for the clicked group's header.
   cy.get(groupTitle("Admin"), { timeout: 30000 }).should("be.visible");
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.get(groupTitle(groupName)).should("be.visible");
+  uiOpenGranularAccessTab({ waitForUsers: !ROLE_GROUPS.includes(groupName) });
+};
+
+export const uiWatchGranularPermissions = () => {
+  cy.intercept("GET", "**/v2/group-permissions/*/granular-permissions").as("granularPermissions");
+  cy.intercept("GET", "**/users/addable-users*").as("addableUsers");
+};
+
+const ROLE_GROUPS = ["Admin", "Builder", "End-user"];
+
+export const uiOpenGranularAccessTab = ({ waitForUsers = true } = {}) => {
   cy.get(groupsSelector.granularLink).click();
+  cy.wait("@granularPermissions");
+  if (waitForUsers) cy.wait("@addableUsers");
 };
 
 export const uiOpenAddDataSourceFolderGrant = () => {
@@ -232,7 +249,7 @@ export const uiOpenAddDataSourceFolderGrant = () => {
 };
 
 export const uiOpenEditDataSourceFolderGrant = () => {
-  cy.get(dsFolderPerm.granularAccessRow).realHover();
+  cy.get(dsFolderPerm.granularAccessRow).trigger("mouseover").realHover();
   cy.get(dsFolderPerm.editGranularAccess).click({ force: true });
 };
 

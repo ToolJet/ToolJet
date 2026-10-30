@@ -11,8 +11,8 @@ import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { authenticationService } from '@/_services';
 import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
-import EnvironmentSwitcher from '@/TooljetDatabase/EnvironmentSwitcher';
 import { AlertCircle } from 'lucide-react';
+import { TJDB_HEADER_SLOT_ID } from '@/TooljetDatabase/HeaderSlotPortal';
 
 function Header({
   featureAccess,
@@ -224,7 +224,8 @@ function Header({
               {Object.keys(featureAccess).length > 0 && (
                 <LicenseBanner limits={featureAccess} showNavBarActions={true} />
               )}
-              {isDatabasePage && <EnvironmentSwitcher />}
+              {/* The TJDB page portals its environment switcher in here: it needs the page's context, which this Header sits above. */}
+              {isDatabasePage && <div id={TJDB_HEADER_SLOT_ID} className="tw-contents" />}
             </div>
           </div>
         </div>

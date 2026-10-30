@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { groupBy, isEmpty } from 'lodash';
 import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
 import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
@@ -7,12 +6,6 @@ import { defaultSources, workflowDefaultSources } from '../constants';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
 import { Virtuoso } from 'react-virtuoso';
-import {
-  DataBaseSources,
-  ApiSources,
-  CloudStorageSources,
-  AiSources,
-} from '@/modules/common/components/DataSourceComponents';
 import { canCreateDataSource } from '@/_helpers';
 import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
@@ -26,13 +19,9 @@ const ITEM_HEIGHTS = {
   'defaults-header': 40,
   'defaults-new-folder': 32,
   'defaults-item': 32,
-  'group-header': 40,
-  'group-item': 32,
   'folder-header': 32,
   'folder-item': 32,
   'stray-item': 32,
-  'sample-header': 40,
-  'sample-item': 32,
   'group-end': 8,
   'section-space': 8,
 };
@@ -46,11 +35,13 @@ function DataSourceSelect({
   staticDataSources: defaultDataSources,
   onQueryCreate,
   skipClosePopup = false,
-  sampleDataSources = [],
   allowNewFolder = false,
   onQueryStart,
   queryFoldersLicensed = true,
   folderId,
+  // Workflow editor supplies its own folders (it loads getForApp into the workflow store, not the
+  // app-builder one). Everywhere else the folders come straight off the app-builder store.
+  dataSourceFolders: dataSourceFoldersProp,
 }) {
   const dataSources = useStore((state) => state.globalDataSources);
   const globalDataSources = useStore((state) => state.globalDataSources)?.filter(
@@ -60,17 +51,16 @@ function DataSourceSelect({
     (gds) => gds.type === DATA_SOURCE_TYPE.STATIC
   );
   const sampleDataSource = useStore((state) => state.sampleDataSource);
-  const dataSourceFolders = useStore((state) => state.dataSourceFolders);
+  const storeDataSourceFolders = useStore((state) => state.dataSourceFolders);
+  const dataSourceFolders = dataSourceFoldersProp ?? storeDataSourceFolders;
   const createFolder = useStore((state) => state.queryFolders?.createFolder);
   const currentVersionId = useStore((state) => state.currentVersionId);
 
   const [userDefinedSources, setUserDefinedSources] = useState(
     [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource].filter(Boolean)
   );
-  const [dataSourcesKinds, setDataSourcesKinds] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [defaultsCollapsed, setDefaultsCollapsed] = useState(false);
-  const [collapsedKinds, setCollapsedKinds] = useState(new Set());
   // Data-source folders start collapsed; a folder is shown expanded while searching so matches surface.
   const [expandedFolders, setExpandedFolders] = useState(new Set());
 
@@ -113,12 +103,6 @@ function DataSourceSelect({
       Boolean
     );
     setUserDefinedSources(allDataSources);
-    const dataSourceKindsList = [...DataBaseSources, ...ApiSources, ...CloudStorageSources, ...AiSources];
-    allDataSources.forEach(({ plugin }) => {
-      if (isEmpty(plugin)) return;
-      dataSourceKindsList.push({ name: plugin.name, kind: plugin.pluginId });
-    });
-    setDataSourcesKinds(dataSourceKindsList);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSources]);
 
@@ -131,15 +115,6 @@ function DataSourceSelect({
   const handleNewFolder = () => {
     createFolder?.('New folder', currentVersionId);
     if (!skipClosePopup) closePopup();
-  };
-
-  const toggleKind = (kind) => {
-    setCollapsedKinds((prev) => {
-      const next = new Set(prev);
-      if (next.has(kind)) next.delete(kind);
-      else next.add(kind);
-      return next;
-    });
   };
 
   const toggleFolder = (folderId) => {
@@ -172,34 +147,16 @@ function DataSourceSelect({
     const showNewFolder = allowNewFolder && !workflowDataSources && !!createFolder;
     const showDefaultsSection = filteredDefaults.length > 0;
 
-    // User-defined sources
+    // User-defined sources — connected sources are grouped by their data-source folder (folders
+    // first, then stray sources flat) instead of by kind. Same in the app builder and the workflow
+    // editor's "Add new node" panel.
     const availableDataSources = workflowDataSources ? workflowDataSources : userDefinedSources;
-    const filteredUserDefined = availableDataSources
-      .filter((ds) => ds.type !== DATA_SOURCE_TYPE.STATIC)
-      .filter((ds) => {
-        if (!searchTerm) return true;
-        return ds.name.toLowerCase().includes(term) || (ds.kind || '').toLowerCase().includes(term);
-      })
-      .sort((a, b) => {
-        if (a.type === 'sample' && b.type !== 'sample') return -1;
-        if (b.type === 'sample' && a.type !== 'sample') return 1;
-        return 0;
-      });
-    const groupedUserDefined = Object.entries(groupBy(filteredUserDefined, 'kind'));
-
-    // Non-workflow: connected sources are grouped by their data-source folder (folders first, then
-    // stray sources flat) instead of by kind. Workflow mode keeps the kind grouping above.
     const nonStaticSources = availableDataSources.filter((ds) => ds.type !== DATA_SOURCE_TYPE.STATIC);
-    const { folders: dsFolderGroups, stray: strayDataSources } = workflowDataSources
-      ? { folders: [], stray: [] }
-      : buildDataSourceFolderGroups(nonStaticSources, dataSourceFolders, searchTerm);
-
-    // Sample data sources (workflow mode, prop)
-    const filteredSampleDS = sampleDataSources.filter((ds) => {
-      if (!searchTerm) return true;
-      return ds.name.toLowerCase().includes(term) || (ds.kind || '').toLowerCase().includes(term);
-    });
-    const groupedSampleDS = Object.entries(groupBy(filteredSampleDS, 'kind'));
+    const { folders: dsFolderGroups, stray: strayDataSources } = buildDataSourceFolderGroups(
+      nonStaticSources,
+      dataSourceFolders,
+      searchTerm
+    );
 
     const items = [];
 
@@ -226,44 +183,18 @@ function DataSourceSelect({
       items.push({ type: 'group-end', key: 'defaults-end' });
     }
 
-    if (workflowDataSources) {
-      // Workflow mode: keep the group-by-kind accordions.
-      groupedUserDefined.forEach(([kind, sources]) => {
-        const kindName =
-          dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind.charAt(0).toUpperCase() + kind.slice(1);
-        const isCollapsed = collapsedKinds.has(kind);
-        items.push({ type: 'group-header', kind, kindName, representative: sources[0], isCollapsed });
-        if (!isCollapsed) {
-          sources.forEach((source) => items.push({ type: 'group-item', source, kind }));
-          items.push({ type: 'group-end', key: `${kind}-end` });
-        }
-      });
-    } else {
-      // Non-workflow: data-source folders (collapsed by default; expanded while searching) separated
-      // by whitespace only — no rules between them — then stray (unfoldered) sources as a flat list.
-      dsFolderGroups.forEach(({ folder, sources }) => {
-        const isExpanded = expandedFolders.has(folder.id) || !!term;
-        items.push({ type: 'folder-header', folder, isExpanded });
-        if (isExpanded) {
-          sources.forEach((source) => items.push({ type: 'folder-item', source }));
-          // Whitespace between folders — no horizontal rule.
-          items.push({ type: 'group-end', key: `folder-${folder.id}-end`, noBorder: true });
-        }
-      });
-      strayDataSources.forEach((source) => items.push({ type: 'stray-item', source }));
-    }
-
-    groupedSampleDS.forEach(([kind, sources]) => {
-      const kindName =
-        dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind.charAt(0).toUpperCase() + kind.slice(1);
-      const sampleKind = `sample-${kind}`;
-      const isCollapsed = collapsedKinds.has(sampleKind);
-      items.push({ type: 'sample-header', kind, sampleKind, kindName, representative: sources[0], isCollapsed });
-      if (!isCollapsed) {
-        sources.forEach((source) => items.push({ type: 'sample-item', source }));
-        items.push({ type: 'group-end', key: `${sampleKind}-end` });
+    // Data-source folders (collapsed by default; expanded while searching) separated by whitespace
+    // only — no rules between them — then stray (unfoldered) sources as a flat list.
+    dsFolderGroups.forEach(({ folder, sources }) => {
+      const isExpanded = expandedFolders.has(folder.id) || !!term;
+      items.push({ type: 'folder-header', folder, isExpanded });
+      if (isExpanded) {
+        sources.forEach((source) => items.push({ type: 'folder-item', source }));
+        // Whitespace between folders — no horizontal rule.
+        items.push({ type: 'group-end', key: `folder-${folder.id}-end`, noBorder: true });
       }
     });
+    strayDataSources.forEach((source) => items.push({ type: 'stray-item', source }));
 
     // No divider directly above the external "Add new data source" row — a trailing section end
     // would draw a bottom border right against that button, so drop it.
@@ -273,12 +204,9 @@ function DataSourceSelect({
   }, [
     searchTerm,
     userDefinedSources,
-    sampleDataSources,
     dataSources,
     defaultDataSources,
     workflowDataSources,
-    collapsedKinds,
-    dataSourcesKinds,
     defaultsCollapsed,
     allowNewFolder,
     createFolder,
@@ -355,49 +283,6 @@ function DataSourceSelect({
           </div>
         );
 
-      case 'group-header':
-        return (
-          <button
-            style={{
-              ...accordionHeaderStyle,
-              borderBottom: item.isCollapsed ? '1px solid var(--border-weak, #e4e7eb)' : 'none',
-            }}
-            onClick={() => toggleKind(item.kind)}
-            data-cy={`ds-group-${item.kind}`}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <DataSourceIcon source={item.representative} height={16} />
-              <span
-                style={{
-                  fontWeight: 500,
-                  fontSize: '12px',
-                  color: 'var(--text-default, #1b1f24)',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {item.kindName}
-              </span>
-            </div>
-            <SolidIcon name={item.isCollapsed ? 'TriangleUpCenter' : 'TriangleDownCenter'} width="16" height="16" />
-          </button>
-        );
-
-      case 'group-item':
-        return (
-          <div style={{ padding: '0 8px' }}>
-            <button
-              style={itemStyle}
-              className="ds-select-item"
-              onClick={() => handleSourceClick(item.source)}
-              data-tooltip-id="tooltip-for-add-query-dd-option"
-              data-tooltip-content={decodeEntities(item.source.name)}
-              data-cy={`ds-${String(item.source.name).toLowerCase().replace(/\s+/g, '-')}`}
-            >
-              <span style={itemTextStyle}>{decodeEntities(item.source.name)}</span>
-            </button>
-          </div>
-        );
-
       case 'folder-header':
         return (
           <div style={{ padding: '0 8px' }}>
@@ -448,46 +333,6 @@ function DataSourceSelect({
               data-cy={`ds-${String(item.source.name).toLowerCase().replace(/\s+/g, '-')}`}
             >
               <DataSourceIcon source={item.source} height={16} />
-              <span style={itemTextStyle}>{decodeEntities(item.source.name)}</span>
-            </button>
-          </div>
-        );
-
-      case 'sample-header':
-        return (
-          <button
-            style={{
-              ...accordionHeaderStyle,
-              borderBottom: item.isCollapsed ? '1px solid var(--border-weak, #e4e7eb)' : 'none',
-            }}
-            onClick={() => toggleKind(item.sampleKind)}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <DataSourceIcon source={item.representative} height={16} />
-              <span
-                style={{
-                  fontWeight: 500,
-                  fontSize: '12px',
-                  color: 'var(--text-default, #1b1f24)',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {item.kindName}
-              </span>
-            </div>
-            <SolidIcon name={item.isCollapsed ? 'TriangleUpCenter' : 'TriangleDownCenter'} width="16" height="16" />
-          </button>
-        );
-
-      case 'sample-item':
-        return (
-          <div style={{ padding: '0 8px' }}>
-            <button
-              style={itemStyle}
-              className="ds-select-item"
-              onClick={() => handleSourceClick(item.source)}
-              data-cy={`ds-${String(item.source.name).toLowerCase().replace(/\s+/g, '-')}`}
-            >
               <span style={itemTextStyle}>{decodeEntities(item.source.name)}</span>
             </button>
           </div>
@@ -559,15 +404,15 @@ function DataSourceSelect({
         style={{ height: listHeight }}
         data={flatItems}
         itemKey={(_, item) =>
-          item.type === 'group-item' || item.type === 'sample-item' || item.type === 'folder-item'
-            ? `${item.type}-${item.source.id}`
+          item.type === 'folder-item'
+            ? `folder-item-${item.source.id}`
             : item.type === 'stray-item'
-            ? `stray-${item.source.id}`
-            : item.type === 'folder-header'
-            ? `folder-header-${item.folder.id}`
-            : item.type === 'group-end' || item.type === 'section-space'
-            ? item.key
-            : `${item.type}-${item.kind ?? 'defaults'}`
+              ? `stray-${item.source.id}`
+              : item.type === 'folder-header'
+                ? `folder-header-${item.folder.id}`
+                : item.type === 'group-end' || item.type === 'section-space'
+                  ? item.key
+                  : `${item.type}-defaults`
         }
         itemContent={(_, item) => renderItem(item)}
       />

@@ -1,4 +1,5 @@
 import { commonSelectors } from 'Selectors/common';
+import { dataSourceFolderSelectors as dsFolder } from 'Selectors/platform/dataSourceFolders';
 import { folderGrantSelectors } from 'Selectors/platform/folderPermissions';
 import { groupsSelector } from 'Selectors/platform/manageGroups';
 import { apiCreateGroup } from 'Support/utils/manageGroups';
@@ -63,14 +64,14 @@ describe('Workflows — Folder Permissions: End User Role', { retries: 0 }, () =
     cy.get(grant.editRow).click({ force: true });
     cy.get(grant.editItemsRadio).should('be.enabled').click({ force: true });
     cy.get(groupsSelector.confimButton).click();
-    cy.get(commonSelectors.modalComponent).should('contain.text', 'Cannot add this permission to the group');
-    cy.get(commonSelectors.modalComponent).should('contain.text', email);
-    cy.get(commonSelectors.cancelButton).click();
+    cy.get(dsFolder.roleConflictModal).should('contain.text', 'Cannot add this permission to the group');
+    cy.get(dsFolder.roleConflictModal).should('contain.text', email);
+    cy.get(dsFolder.roleConflictModalClose).click();
 
     cy.visit(`/${wsSlug}/workspace-settings/groups`);
     cy.get(groupsSelector.groupLink(editGroupName)).click();
     uiAddUserToGroup(outsider);
-    cy.get(commonSelectors.modalComponent).should('contain.text', 'Cannot add an end-user to this group');
-    cy.get(commonSelectors.modalComponent).should('contain.text', outsider);
+    cy.get(dsFolder.roleConflictModal).should('contain.text', 'Cannot add an end-user to this group');
+    cy.get(dsFolder.roleConflictModal).should('contain.text', outsider);
   });
 });

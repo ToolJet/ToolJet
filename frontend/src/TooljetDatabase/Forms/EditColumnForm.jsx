@@ -1,11 +1,11 @@
-import React, { useState, useContext, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import cx from 'classnames';
 import Select, { components } from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import defaultStyles from '@/_ui/Select/styles';
 import { toast } from 'react-hot-toast';
-import { tooljetDatabaseService } from '@/_services';
-import { TooljetDatabaseContext } from '../index';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import { shallow } from 'zustand/shallow';
 import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, renderDatatypeIcon } from '../constants';
@@ -85,7 +85,7 @@ const ColumnForm = ({
     foreignKeys,
     configurations,
     setConfigurations,
-  } = useContext(TooljetDatabaseContext);
+  } = useTooljetDatabaseContext();
   const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore(
     (state) => ({
       queryFilters: state.queryFilters,
@@ -753,8 +753,11 @@ const ColumnForm = ({
   // whichever of those last ran used to clobber what the others had decided, e.g. clearing the
   // column name and then toggling NOT NULL would re-enable Save with an empty name.
   const [inputError, setInputError] = useState(false);
+  // A default is only demanded when NOT NULL is being switched on: a column that is already NOT NULL
+  // holds a value in every row, so renaming it (or changing anything else) needs no default.
+  const isSwitchingOnNotNull = isNotNull === true && !nullValue;
   const disabledSaveButton =
-    columnName === '' || inputError || (dataType?.value !== 'serial' && isNotNull === true && isEmpty(defaultValue));
+    columnName === '' || inputError || (dataType?.value !== 'serial' && isSwitchingOnNotNull && isEmpty(defaultValue));
 
   useEffect(() => {
     const currentType = selectedColumn?.dataType;
@@ -964,8 +967,8 @@ const ColumnForm = ({
                 {selectedColumn?.constraints_type?.is_primary_key
                   ? 'A primary key’s type cannot be changed.'
                   : isForeignKey
-                  ? 'A column under a foreign key needs both sides changed together — use a SQL migration.'
-                  : 'An auto-incrementing column’s type cannot be changed.'}
+                    ? 'A column under a foreign key needs both sides changed together — use a SQL migration.'
+                    : 'An auto-incrementing column’s type cannot be changed.'}
               </div>
             )}
             {castReport?.status === 'loading' && (
@@ -1166,8 +1169,8 @@ const ColumnForm = ({
                         selectedColumn?.dataType === 'serial'
                           ? 'Auto-generated'
                           : foreignKeyDefaultValue?.value === null || defaultValue === null
-                          ? 'Null'
-                          : 'Enter a value'
+                            ? 'Null'
+                            : 'Enter a value'
                       }
                       onChange={(value) => {
                         setForeignKeyDefaultValue(value);
@@ -1209,12 +1212,12 @@ const ColumnForm = ({
                 dataType?.value === 'serial'
                   ? 'Foreign key relation cannot be created for serial type column'
                   : dataType?.value === 'boolean'
-                  ? 'Foreign key relation cannot be created for boolean type column'
-                  : dataType?.value === 'timestamp with time zone'
-                  ? 'Foreign key relation cannot be created for this data type'
-                  : dataType?.value === 'jsonb'
-                  ? 'Foreign key relation cannot be created for JSON data type'
-                  : 'Fill in column details to create a foreign key relation'
+                    ? 'Foreign key relation cannot be created for boolean type column'
+                    : dataType?.value === 'timestamp with time zone'
+                      ? 'Foreign key relation cannot be created for this data type'
+                      : dataType?.value === 'jsonb'
+                        ? 'Foreign key relation cannot be created for JSON data type'
+                        : 'Fill in column details to create a foreign key relation'
               }
               placement="top"
               tooltipClassName="tootip-table"
@@ -1326,10 +1329,10 @@ const ColumnForm = ({
               selectedColumn.constraints_type.is_primary_key === true
                 ? 'Primary key values cannot be null'
                 : selectedColumn.dataType === 'serial' &&
-                  (selectedColumn.constraints_type.is_primary_key !== true ||
-                    selectedColumn.constraints_type.is_primary_key === true)
-                ? 'Serial data type cannot have null value'
-                : null
+                    (selectedColumn.constraints_type.is_primary_key !== true ||
+                      selectedColumn.constraints_type.is_primary_key === true)
+                  ? 'Serial data type cannot have null value'
+                  : null
             }
             placement="top"
             tooltipClassName="tooltip-table-edit-column"
@@ -1373,16 +1376,16 @@ const ColumnForm = ({
               selectedColumn.constraints_type.is_primary_key === true
                 ? 'Primary key values must be unique'
                 : selectedColumn.dataType === 'serial' &&
-                  (selectedColumn.constraints_type.is_primary_key !== true ||
-                    selectedColumn.constraints_type.is_primary_key === true)
-                ? 'Serial data type value must be unique'
-                : selectedColumn.dataType === 'boolean'
-                ? 'Unique constraint cannot be added for boolean type column'
-                : selectedColumn.dataType === 'timestamp with time zone'
-                ? 'Unique constraint cannot be added for this type column'
-                : selectedColumn.dataType === 'jsonb'
-                ? 'Unique constraint cannot be added for JSON type column'
-                : null
+                    (selectedColumn.constraints_type.is_primary_key !== true ||
+                      selectedColumn.constraints_type.is_primary_key === true)
+                  ? 'Serial data type value must be unique'
+                  : selectedColumn.dataType === 'boolean'
+                    ? 'Unique constraint cannot be added for boolean type column'
+                    : selectedColumn.dataType === 'timestamp with time zone'
+                      ? 'Unique constraint cannot be added for this type column'
+                      : selectedColumn.dataType === 'jsonb'
+                        ? 'Unique constraint cannot be added for JSON type column'
+                        : null
             }
             placement="top"
             tooltipClassName="tooltip-table-edit-column"

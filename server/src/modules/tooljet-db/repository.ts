@@ -2,7 +2,7 @@ import { App } from '@entities/app.entity';
 import { InternalTable } from '@entities/internal_table.entity';
 import { Injectable } from '@nestjs/common';
 import { isEmpty } from 'lodash';
-import { Brackets, DataSource, EntityManager, Repository } from 'typeorm';
+import { Brackets, DataSource, EntityManager, In, Repository } from 'typeorm';
 import { findTenantSchema, tableNamesInSqlQuery } from 'src/helpers/tooljet_db.helper';
 
 // Shared between findTables and findDependents - a join_tables query references a table through
@@ -41,6 +41,14 @@ export interface ForeignKeyDependent {
 export class InternalTableRepository extends Repository<InternalTable> {
   constructor(private dataSource: DataSource) {
     super(App, dataSource.createEntityManager());
+  }
+
+  async findExistingIds(ids: string[], organizationId: string): Promise<Set<string>> {
+    if (ids.length === 0) return new Set();
+    const tables = await this.dataSource
+      .getRepository(InternalTable)
+      .find({ where: { id: In(ids), organizationId }, select: ['id'] });
+    return new Set(tables.map(({ id }) => id));
   }
 
   async findTables(appId: string): Promise<{ table_id: string }[]> {
@@ -109,7 +117,13 @@ export class InternalTableRepository extends Repository<InternalTable> {
         'dq.name AS dq_name',
         'dq.options AS dq_options',
         'a.id AS app_id',
-        'a.name AS app_name',
+        // apps.name is NULL for front-end apps and modules (metadata lives on app_versions);
+        // workflows still keep it on apps.
+        `COALESCE(a.name, (
+          SELECT av_name.app_name FROM app_versions av_name
+          WHERE av_name.app_id = a.id AND av_name.app_name IS NOT NULL
+          ORDER BY av_name.created_at DESC LIMIT 1
+        )) AS app_name`,
         'a.type AS app_type',
       ])
       .getRawMany();

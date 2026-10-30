@@ -69,12 +69,15 @@ logic is in `server/ee/git-sync/`.
   different problems: `app_id` exempts sibling rows of the same workflow (which intentionally share
   one slug), `id` exempts the row being updated. Dropping either one breaks a real flow. The
   workflow branch shipped without `av.id` (1782500000000) and broke hydration for every
-  git-pulled workflow; fixed by 1787900000000.
+  git-pulled workflow; fixed by 1793250001000.
 - **Redact secrets AFTER `ctx.isEnabled()`, never before.** For `useEnvConfig` orgs that call reaches
   `GitSyncConfigsUtilService.getDetails`, which replaces `orgGit.gitHttps` wholesale — reinstating
   `githubPrivateKey` if it was stripped earlier. `getDetails` now shallow-clones its argument, but
   the ordering in `findAppGitConfigs` is still the guard that matters.
 - **The app-git import lane creates referenced workflow rows, and gates them.** `createGitApp` (and the two tag-import helpers) pre-create + hydrate embedded **workflows** as well as modules, via `pullAndHydrateWorkflowRefs` → `hydrateReferencedWorkflowStubs`. Creating them requires `workflowCreate` (`assertWorkflowCreatePermission`), asserted **before** hydration — after it, the check would always see zero missing. Workflows reached through a module are handled by `hydrateStubApp` step 6b during that module's hydration, so this lane must not walk into modules.
+- Pull / create-branch clone the default `organization_git_sync_branches` row's `branch_name`, not the
+  configured branch. Env config keeps it in sync via `reconcileDefaultBranchName` (`ee/git-sync/default-branch.util.ts`)
+  on restart hydration and on toggle; renames must also invalidate `RemoteBranchCacheService`.
 - Testing: don't extend the monolithic git-sync lifecycle `it()` block in the e2e suite — write standalone specs instead (see `server/docs/testing.md`, Determinism).
 
 ## Related modules

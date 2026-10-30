@@ -2,10 +2,10 @@ import React, { useState, useEffect, useContext } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { toast } from 'react-hot-toast';
 import { isEmpty } from 'lodash';
-import { TooljetDatabaseContext } from '../index';
-import { tooljetDatabaseService } from '@/_services';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { ListItem } from '../TableListItem';
-import { BreadCrumbContext } from '../../App/App';
+import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import Search from '../Search';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Button } from '@/components/ui/Button/Button';
@@ -17,10 +17,11 @@ const List = () => {
     searchParam,
     selectedTable,
     setTables,
+    setTablesLoaded,
     setSelectedTable,
     loadingState,
     setLoadingState,
-  } = useContext(TooljetDatabaseContext);
+  } = useTooljetDatabaseContext();
   const [loading, setLoading] = useState(false);
   const [showInput, setShowInput] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
@@ -38,6 +39,7 @@ const List = () => {
       return;
     }
 
+    setTablesLoaded(true);
     if (!isEmpty(data?.result)) {
       setTables(data.result || []);
       if (localStorage.getItem('tableDetails')) {

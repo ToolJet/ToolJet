@@ -42,7 +42,6 @@ import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
 import { InternalTable } from '@entities/internal_table.entity';
-import { readWorkflowQueryRefs } from '@helpers/workflow_query_options.helper';
 import { tableNamesInSqlQuery } from '@helpers/tooljet_db.helper';
 import { isUUID } from 'class-validator';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from '@modules/versions/module-ref.util';
@@ -1749,33 +1748,37 @@ export class AppsUtilService implements IAppsUtilService {
     }
   }
 
-  /**
-   * Twin of checkModuleInUseByApps: blocks deleting a workflow still referenced by a
-   * workflow-node DataQuery (DataSource.kind === 'workflows') elsewhere. `options.workflowId`
-   * is a co_relation_id post-B9, but matched against both id and co_relation_id below for rows
-   * the migration hasn't reached yet — same tolerance as resolveAllWorkflowRefsForVersion.
-   */
-  async checkWorkflowInUseByApps(workflowApp: App, manager: EntityManager): Promise<void> {
+  /** Twin of checkModuleInUseByApps, scoped the same way, naming the consuming apps for workflow-node DataQuery references. */
+  async checkWorkflowInUseByApps(workflowApp: App, manager: EntityManager, branchId?: string): Promise<void> {
     if (!workflowApp?.co_relation_id) return;
     try {
       // Self-ref excluded so a workflow can reference itself without blocking its own
       // deletion — mirrors checkModuleInUseByApps.
-      const rows: { options: Record<string, any>; ownerAppId: string }[] = await manager
+      const query = manager
         .createQueryBuilder(DataQuery, 'dq')
         .innerJoin('dq.dataSource', 'dataSource')
         .innerJoin('dq.appVersion', 'appVersion')
-        .select('dq.options', 'options')
-        .addSelect('appVersion.appId', 'ownerAppId')
+        .innerJoin(App, 'app', 'app.id = appVersion.appId')
+        .select('DISTINCT COALESCE(appVersion.app_name, app.name)', 'appName')
         .where('dataSource.kind = :kind', { kind: 'workflows' })
-        .getRawMany();
+        .andWhere(`COALESCE(dq.options::jsonb ->> 'workflowId', dq.options::jsonb ->> 'workflow_id') IN (:...ids)`, {
+          ids: [workflowApp.id, workflowApp.co_relation_id],
+        })
+        .andWhere('app.id != :selfId', { selfId: workflowApp.id });
 
-      const referencedByOtherApp = rows.some((r) => {
-        if (r.ownerAppId === workflowApp.id) return false;
-        const { workflowId } = readWorkflowQueryRefs(r.options);
-        return workflowId === workflowApp.id || workflowId === workflowApp.co_relation_id;
-      });
-      if (referencedByOtherApp) {
-        throw new BadRequestException('Workflow is still referenced by another app or module.');
+      if (branchId) {
+        query.andWhere('appVersion.branchId = :branchId', { branchId });
+      } else {
+        query.andWhere('app.organizationId = :orgId', { orgId: workflowApp.organizationId });
+      }
+
+      const consumingApps = await query.getRawMany();
+
+      const appNames = consumingApps.map((r) => r.appName).filter(Boolean);
+      if (appNames.length > 0) {
+        throw new BadRequestException(
+          `Cannot delete workflow "${workflowApp.name}" — it is referenced by: ${appNames.join(', ')}. Remove the workflow queries before deleting.`
+        );
       }
     } catch (error) {
       if (error instanceof BadRequestException) throw error;

@@ -1,24 +1,27 @@
-import React, { useState, useMemo, useEffect, useContext } from 'react';
-import Layout from '@/_ui/Layout';
+import React, { useState, useMemo, useEffect } from 'react';
 import TooljetDatabasePage from './TooljetDatabasePage';
 import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
 import { authenticationService } from '../_services/authentication.service';
-import { BreadCrumbContext } from '@/App/App';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { pageTitles, fetchAndSetWindowTitle } from '@white-label/whiteLabelling';
-import { hasBuilderRole } from '@/_helpers/utils';
+import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
 import { TooljetDatabaseContext } from './context';
+import { TooljetDatabaseProvider } from './TooljetDatabaseContext';
+import { HeaderSlotPortal } from './HeaderSlotPortal';
+import EnvironmentSwitcher from './EnvironmentSwitcher';
 import { useTjdbActions, useIsDevelopmentEnvironment } from './_stores/tjdbStore';
 import './styles/styles.scss';
 
 export { TooljetDatabaseContext };
 
-export const TooljetDatabase = (props) => {
+const TooljetDatabase = () => {
   const [organizationId, setOrganizationId] = useState(
     authenticationService?.currentSessionValue?.current_organization_id
   );
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
+  // `tables` starts empty, so "no tables yet" and "workspace has none" look the same until the first list fetch succeeds.
+  const [tablesLoaded, setTablesLoaded] = useState(false);
   const [searchParam, setSearchParam] = useState('');
   const [selectedTable, setSelectedTable] = useState({});
   const [selectedTableData, setSelectedTableData] = useState([]);
@@ -26,22 +29,18 @@ export const TooljetDatabase = (props) => {
   const [totalRecords, setTotalRecords] = useState(0);
   const [loadingState, setLoadingState] = useState(false);
 
-  const [collapseSidebar, setCollapseSidebar] = useState(false);
   const [configurations, setConfigurations] = useState({});
   const [foreignKeys, setForeignKeys] = useState([]);
   const { loadEnvironments, resetStore } = useTjdbActions();
 
-  const toggleCollapsibleSidebar = () => {
-    setCollapseSidebar(!collapseSidebar);
-  };
+  const { collapseSidebar, setCollapseSidebar, setEnableCollapsibleSidebar } = useOutletContext();
   const navigate = useNavigate();
   const { admin, user_permissions } = authenticationService.currentSessionValue;
-  const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
   const canEditTjdb = admin || !!user_permissions?.tjdb_c_r_u_d;
   const isDevelopmentEnvironment = useIsDevelopmentEnvironment();
   const canEditSchema = canEditTjdb && isDevelopmentEnvironment;
 
-  if (!admin && !isBuilder) {
+  if (!canAccessTooljetDbDashboard()) {
     navigate('/');
   }
 
@@ -78,6 +77,8 @@ export const TooljetDatabase = (props) => {
       setOrganizationId,
       tables,
       setTables,
+      tablesLoaded,
+      setTablesLoaded,
       columns,
       setColumns,
       selectedTable,
@@ -106,6 +107,7 @@ export const TooljetDatabase = (props) => {
       searchParam,
       organizationId,
       tables,
+      tablesLoaded,
       columns,
       selectedTable,
       selectedTableData,
@@ -116,14 +118,13 @@ export const TooljetDatabase = (props) => {
     ]
   );
 
-  const { updateSidebarNAV } = useContext(BreadCrumbContext);
-
   useEffect(() => {
-    updateSidebarNAV('');
-    // if (state.id && state.name) {
-    //   setSelectedTable({ id: state.id, table_name: state.name });
-    // }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setEnableCollapsibleSidebar(true);
+
+    return () => {
+      setCollapseSidebar(false);
+      setEnableCollapsibleSidebar(false);
+    };
   }, []);
 
   useEffect(() => {
@@ -139,21 +140,15 @@ export const TooljetDatabase = (props) => {
   }, [selectedTable]);
 
   return (
-    // Wraps Layout (not just the page content) so Header - rendered by Layout above
-    // {children} - can also read this context: the environment switcher lives in the page header,
-    // next to the breadcrumb, not inside the table view.
-    <TooljetDatabaseContext.Provider value={value}>
-      <Layout
-        switchDarkMode={props.switchDarkMode}
-        darkMode={props.darkMode}
-        enableCollapsibleSidebar={true}
-        collapseSidebar={collapseSidebar}
-        toggleCollapsibleSidebar={toggleCollapsibleSidebar}
-      >
-        <div className="page-wrapper tooljet-database">
-          <TooljetDatabasePage totalTables={tables.length || 0} collapseSidebar={collapseSidebar} />
-        </div>
-      </Layout>
-    </TooljetDatabaseContext.Provider>
+    <div className="page-wrapper tooljet-database">
+      <TooljetDatabaseProvider value={value}>
+        <HeaderSlotPortal>
+          <EnvironmentSwitcher />
+        </HeaderSlotPortal>
+        <TooljetDatabasePage totalTables={tables.length || 0} collapseSidebar={collapseSidebar} />
+      </TooljetDatabaseProvider>
+    </div>
   );
 };
+
+export default TooljetDatabase;

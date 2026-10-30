@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import cx from 'classnames';
 import { tooljetDatabaseService, authenticationService } from '@/_services';
-import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
+import { ToolJetDbOperationsProvider } from './ToolJetDbOperationsContext';
 import { ListRows } from './ListRows';
 import { CreateRow } from './CreateRow';
 import { UpdateRows } from './UpdateRows';
@@ -540,7 +540,7 @@ const ToolJetDbOperations = ({
   const ComponentToRender = getComponent(operation);
 
   return (
-    <TooljetDatabaseContext.Provider value={value}>
+    <ToolJetDbOperationsProvider value={value}>
       {/* table name dropdown */}
 
       {!isSqlModeDisabled() && (
@@ -564,14 +564,14 @@ const ToolJetDbOperations = ({
                   activeTab === 'GUI mode' && !darkMode
                     ? 'white'
                     : activeTab === 'GUI mode' && darkMode
-                    ? '#242f3c'
-                    : 'transparent',
+                      ? '#242f3c'
+                      : 'transparent',
                 color:
                   activeTab === 'GUI mode' && !darkMode
                     ? '#3E63DD'
                     : activeTab === 'GUI mode' && darkMode
-                    ? 'white'
-                    : '#687076',
+                      ? 'white'
+                      : '#687076',
               }}
               className="row-tab-content"
               data-cy="tooljetdb-gui-mode-tab"
@@ -586,14 +586,14 @@ const ToolJetDbOperations = ({
                   activeTab === 'SQL mode' && !darkMode
                     ? 'white'
                     : activeTab === 'SQL mode' && darkMode
-                    ? '#242f3c'
-                    : 'transparent',
+                      ? '#242f3c'
+                      : 'transparent',
                 color:
                   activeTab === 'SQL mode' && !darkMode
                     ? '#3E63DD'
                     : activeTab === 'SQL mode' && darkMode
-                    ? 'white'
-                    : '#687076',
+                      ? 'white'
+                      : '#687076',
               }}
               className="row-tab-content"
               data-cy="tooljetdb-sql-mode-tab"
@@ -706,7 +706,7 @@ const ToolJetDbOperations = ({
           />
         </div>
       )}
-    </TooljetDatabaseContext.Provider>
+    </ToolJetDbOperationsProvider>
   );
 };
 
