@@ -125,6 +125,8 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Comment** | An individual message within a thread | — |
 | **Multiplayer Editing** | Real-time collaborative editing of an app by multiple users simultaneously (EE feature) | — |
 | **Audit Log** | A compliance record of user actions (who did what, when); retention varies by plan | — |
+| **Audit Event** | One immutable audit record in the newer format (`audit_events`): action (`<resource>.<verb>`), outcome (success/denied), actor, target, field-level changes. Written by the audit engine from a route's audit spec (EE feature) | Audit log entry (legacy `audit_logs` rows) |
+| **Actor** | Who made an audited request: a user session, a Personal Access Token (token owner plus token), or `api_key` (the External API shared secret, no user) | — |
 | **Git Sync** | Bidirectional sync between a workspace and a Git repository — apps, data sources, and modules pushed/pulled per Workspace Branch (EE feature) | Version control (docs use that for app Versions, a different feature) |
 | **Correlation ID** | Portable identity (`co_relation_id`) carried by apps, versions, components, and data sources so entities survive git/zip round-trips; unique only per workspace — git clones share it, always scope lookups | Git id (adapter-internal term) |
 | **Import** | Loading an app definition (JSON) into a workspace from another ToolJet instance | — |

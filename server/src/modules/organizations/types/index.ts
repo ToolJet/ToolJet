@@ -11,6 +11,13 @@ interface Features {
   [FEATURE_KEY.WORKSPACE_ARCHIVE]: FeatureConfig;
   [FEATURE_KEY.WORKSPACE_UNARCHIVE]: FeatureConfig;
   [FEATURE_KEY.SET_DEFAULT]: FeatureConfig;
+  [FEATURE_KEY.CREATE_WORKSPACE_V2]: FeatureConfig;
+  [FEATURE_KEY.LIST_WORKSPACES_V2]: FeatureConfig;
+  [FEATURE_KEY.GET_WORKSPACE_V2]: FeatureConfig;
+  [FEATURE_KEY.UPDATE_WORKSPACE_V2]: FeatureConfig;
+  [FEATURE_KEY.ARCHIVE_WORKSPACE_V2]: FeatureConfig;
+  [FEATURE_KEY.UNARCHIVE_WORKSPACE_V2]: FeatureConfig;
+  [FEATURE_KEY.SET_DEFAULT_WORKSPACE_V2]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

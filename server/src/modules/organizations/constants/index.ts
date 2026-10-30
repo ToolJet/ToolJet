@@ -28,4 +28,13 @@ export enum FEATURE_KEY {
   CREATE = 'create',
   CHECK_UNIQUE_ONBOARDING = 'check_unique_onboarding',
   SET_DEFAULT = 'set_default',
+
+  // External API v2 (/api/v2/ext/workspaces). Same domain, so same module: rules sit beside the dashboard ones.
+  CREATE_WORKSPACE_V2 = 'CREATE_WORKSPACE_V2',
+  LIST_WORKSPACES_V2 = 'LIST_WORKSPACES_V2',
+  GET_WORKSPACE_V2 = 'GET_WORKSPACE_V2',
+  UPDATE_WORKSPACE_V2 = 'UPDATE_WORKSPACE_V2',
+  ARCHIVE_WORKSPACE_V2 = 'ARCHIVE_WORKSPACE_V2',
+  UNARCHIVE_WORKSPACE_V2 = 'UNARCHIVE_WORKSPACE_V2',
+  SET_DEFAULT_WORKSPACE_V2 = 'SET_DEFAULT_WORKSPACE_V2',
 }

@@ -39,6 +39,52 @@ CE only defines v2 interfaces/DTOs/stub controllers — no route decorators, so 
 `ExternalApiSecurityGuard` + `InitFeature`. Gating is two-layered: `FeatureAbilityGuard`
 (license on the plan — CE 404s, starter 451s) then `ExternalApiSecurityGuard` (bearer token).
 
+**Workspaces v2 is different** (`workspaces.controller.v2.ts`). It accepts a workspace PAT
+(`Bearer tj_pat_…`) or the shared secret (`Basic …`):
+- **Guard order:** class-level `ExternalApiAuthGuard` (`ee/external-apis/guards/`) runs before the
+  permission guard. It sets `req.tj_auth` (`'pat'` | `'api_key'`) and `req.tj_workspace`
+  (`:workspaceIdentifier`, resolved once).
+- **Shared secret:** `AbilityGuard` sees `tj_auth === 'api_key'` and checks only the instance licence.
+- **PAT callers:** go through CASL in the organizations ability (next section).
+- **Reads:** list and get are limited to the caller's active memberships unless super admin.
+- **Audit events:** these routes write them (`audit-logs/AGENTS.md`).
+
+### Where v2 permissions live
+
+A v2 resource's feature keys, `FeatureConfig` (licence, audit spec) and CASL rules live in its
+**domain module**, beside the dashboard's — not in this module. Workspaces v2 is the reference:
+- **Keys, config and rules:** `organizations/constants` (keys + config) and
+  `organizations/ability/index.ts` (rules). One `can([DASHBOARD_KEY, V2_KEY])` per shared predicate;
+  v2-only conditions sit next to it.
+- **Controller:** stays in `ExternalApiModule` (moving it would cycle: the auth guard needs
+  `ExternalApiUtilService`). It declares `@InitModule(MODULES.ORGANIZATIONS)` and uses
+  `@ee/organizations/ability/guard`.
+- **Factory:** `ModuleRef.resolve` is strict, so `module.ts` provides the domain's edition factory
+  (`getProviders(configs, 'organizations', ['ability'])`), as `setup-organization` and `app-git` do.
+
+To move another v2 resource when it gets PAT support:
+- **One controller has one module id.** Split controllers that span domains; Users v2 spans `USER`
+  and `ORGANIZATION_USER`.
+- **Per-resource rules** (apps, modules, folders, groups, versions, data sources) read `tj_app` /
+  `tj_resource_id`. Resolve the path identifier into them before the permission guard, as
+  `ExternalApiAuthGuard` does with `tj_workspace`, or non-admins are always denied.
+- **Session PATs** (`PatScopeInterceptor`) are scoped by the domain module's bundle once the id
+  changes. Bearer PATs are not.
+
+| v2 resource | Domain module | Dashboard keys it shares rules with |
+|---|---|---|
+| Workspaces | `ORGANIZATIONS` | `CREATE`, `UPDATE`, `GET`, `WORKSPACE_ARCHIVE`/`UNARCHIVE`, `SET_DEFAULT` |
+| Workspace Users | `ORGANIZATION_USER` | `USER_INVITE`, `USER_BULK_UPLOAD`, `USER_UPDATE`, `USER_ARCHIVE`/`UNARCHIVE`, `VIEW_ALL_USERS` |
+| Users (instance) | `USER` + `ORGANIZATION_USER` | `GET_ALL_USERS`, `UPDATE_USER_TYPE_INSTANCE`, `USER_ARCHIVE_ALL`/`UNARCHIVE_ALL` |
+| Apps | `APP` | `CREATE`, `UPDATE`, `DELETE`, `GET_ONE`, `GET`; release → `RELEASE` |
+| App import / export | `IMPORT_EXPORT_RESOURCES` | `APP_RESOURCE_IMPORT`, `APP_RESOURCE_EXPORT` |
+| Modules | `MODULES` | `CREATE_MODULE`, `IMPORT_MODULE`, `UPDATE_MODULE`, `DELETE_MODULE`, `EXPORT_MODULE` |
+| Folders | `FOLDER` | `CREATE_FOLDER`, `UPDATE_FOLDER`, `DELETE_FOLDER` |
+| Groups | `GROUP_PERMISSIONS` | group CRUD and member features |
+| Constants | `ORGANIZATION_CONSTANT` | `CREATE`, `UPDATE`, `DELETE`, `GET_SECRETS` |
+| Versions | `VERSION` | `APP_VERSION_CREATE`/`UPDATE`/`DELETE`, `PROMOTE` |
+| Data sources | `GLOBAL_DATA_SOURCE` | `GET`, `TEST_CONNECTION`, `QUERIES_LINKED_TO_DATASOURCE` |
+
 ## Invariants & gotchas
 
 - **Archive/unarchive are symmetric by design** for Users v2: both the dedicated
@@ -77,10 +123,16 @@ CE only defines v2 interfaces/DTOs/stub controllers — no route decorators, so 
   error, since elsewhere the 451 just propagates and the outer transaction rolls back. Bulk
   create short-circuits the rest of the batch on a limit hit; bulk update does not (only
   role-changing entries hit the check).
+- **Guard metadata is inherited.** Never put class-level `@UseGuards` on a CE stub controller
+  whose EE subclass needs its own guard order: `@UseGuards` appends to the parent's list, so the
+  stub's guards run first.
 - **Workspace Users v2 group listing is custom groups only** — excludes the default role groups
   (admin/builder/end-user), surfaced instead via the `role` field on the Workspace User itself.
 
 ## Related modules
 
+- `organizations` — owns the Workspaces v2 feature keys, config and permission rules.
+- `audit-logs` — the `denied` hook and the `audit_events` table.
+- `personal-access-tokens` — `authenticatePatRequest` is shared with `PatAuthGuard`.
 - `users`, `organizations` (Organization = Workspace) — v2 Users delegates directly to `User`/
   `OrganizationUser` entity operations rather than a `UsersService`/`OrganizationsService` layer.

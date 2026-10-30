@@ -21,6 +21,7 @@ import {
   ListWorkspaceUserGroupsV2QueryDto,
 } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
+import { User } from '@entities/user.entity';
 
 export interface IExternalApisController {
   // Gets list of all users in the system
@@ -89,9 +90,9 @@ export interface IExternalApisUsersControllerV2 {
 export interface IExternalApisWorkspacesControllerV2 {
   createWorkspace(dto: CreateWorkspaceV2Dto): Promise<any>;
 
-  listWorkspaces(query: ListWorkspacesV2QueryDto): Promise<any>;
+  listWorkspaces(query: ListWorkspacesV2QueryDto, user?: User): Promise<any>;
 
-  getWorkspace(workspaceIdentifier: string): Promise<any>;
+  getWorkspace(workspaceIdentifier: string, user?: User): Promise<any>;
 
   updateWorkspace(workspaceIdentifier: string, dto: UpdateWorkspaceV2Dto): Promise<any>;
 
