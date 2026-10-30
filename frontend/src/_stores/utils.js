@@ -1,5 +1,6 @@
 import { create as _create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { immer } from 'zustand/middleware/immer';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
@@ -26,6 +27,15 @@ export const resetAllStores = () => {
   for (const resetter of resetters) {
     resetter();
   }
+};
+
+export const createZustandStoreWithImmer = (storeCreatorFn, options) => {
+  return create(
+    devtools(immer(storeCreatorFn), {
+      name: options?.storeName ?? 'Unknown store',
+      enabled: process.env.NODE_ENV === 'development',
+    })
+  );
 };
 
 const defaultComponent = {

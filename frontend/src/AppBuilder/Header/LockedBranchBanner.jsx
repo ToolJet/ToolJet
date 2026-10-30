@@ -1,5 +1,7 @@
 import React from 'react';
 import cx from 'classnames';
+import { LockKeyhole } from 'lucide-react';
+
 import '@/_styles/locked-branch-banner.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
@@ -18,6 +20,7 @@ const LockedBranchBanner = ({
   pageContext = '',
   variant = 'inline',
   licenseLockMessage = '',
+  showNewBanner = false,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -33,8 +36,18 @@ const LockedBranchBanner = ({
       : isLicenseLock
         ? licenseLockMessage || 'Your plan has expired. Renew your plan or disable git sync to continue.'
         : reason === 'main_config_branch'
-          ? `Master is locked. Create a branch to add or ${pageContextText}.`
+          ? `${branchName} branch is locked. Create a branch to add or edit ${pageContextText}.`
           : 'This branch has been merged and is now read-only';
+
+  if (showNewBanner) {
+    return (
+      <div className="tw-flex tw-justify-center tw-items-center tw-gap-1 tw-py-1.5 tw-px-2.5 tw-bg-interactive-default">
+        {reason === 'main_config_branch' && <LockKeyhole size={16} color="var(--icon-strong)" />}
+
+        <p className="tw-text-text-default tw-font-body-default tw-mb-0">{reasonText}</p>
+      </div>
+    );
+  }
 
   return (
     <div className={cx({ 'dark-theme': darkMode })}>

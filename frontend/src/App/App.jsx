@@ -71,6 +71,8 @@ import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
 import UpgradePlanModal from '@/modules/common/components/UpgradePlanModal';
+import AppsDashboard from '@/pages/AppsDashboard';
+import ReactQueryClientProvider from './ReactQueryClientProvider';
 
 const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
 
@@ -86,14 +88,17 @@ const AppWrapper = (props) => {
   // NOTE: BrowserRouter removed - now handled by RootRouter.jsx
   // App.jsx is now wrapped by RootRouter which provides the router context
   return (
-    <Suspense fallback={null}>
-      <AppWithRouter
-        props={props}
-        isAppDarkMode={isAppDarkMode} // This is the dark mode only for appbuilder's canvas + viewer
-        darkMode={isTJDarkMode} // This is the dark mode of entire platform
-        updateIsTJDarkMode={updateIsTJDarkMode}
-      />
-    </Suspense>
+    // As we are not using react-query for viewer, so have added provider here. In future we can move it higher if required
+    <ReactQueryClientProvider>
+      <Suspense fallback={null}>
+        <AppWithRouter
+          props={props}
+          isAppDarkMode={isAppDarkMode} // This is the dark mode only for appbuilder's canvas + viewer
+          darkMode={isTJDarkMode} // This is the dark mode of entire platform
+          updateIsTJDarkMode={updateIsTJDarkMode}
+        />
+      </Suspense>
+    </ReactQueryClientProvider>
   );
 };
 
@@ -403,17 +408,30 @@ class AppComponent extends React.Component {
                   }
                 />
                 {isWorkflowsFeatureEnabled() && (
-                  <Route
-                    exact
-                    path="/:workspaceId/workflows/*"
-                    element={
-                      <DesktopOnlyRoute darkMode={darkMode}>
-                        <PrivateRoute darkMode={darkMode}>
-                          <Workflows switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                        </PrivateRoute>
-                      </DesktopOnlyRoute>
-                    }
-                  />
+                  <>
+                    <Route
+                      exact
+                      path="/:workspaceId/workflows/"
+                      element={
+                        <DesktopOnlyRoute darkMode={darkMode}>
+                          <PrivateRoute darkMode={darkMode}>
+                            <Workflows switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                          </PrivateRoute>
+                        </DesktopOnlyRoute>
+                      }
+                    />
+
+                    <Route
+                      path="/:workspaceId/old-workflows"
+                      element={
+                        <DesktopOnlyRoute darkMode={darkMode}>
+                          <PrivateRoute darkMode={darkMode}>
+                            <HomePage appType="workflow" switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                          </PrivateRoute>
+                        </DesktopOnlyRoute>
+                      }
+                    />
+                  </>
                 )}
                 {/* EE renders migrations inside its instance settings shell (settings/*). */}
                 {fetchEdition() === 'ce' && (
@@ -428,17 +446,6 @@ class AppComponent extends React.Component {
                     }
                   />
                 )}
-                <Route
-                  exact
-                  path="/:workspaceId/modules"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'module'} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
 
                 {getDataSourcesRoutes({ ...mergedProps, darkMode })}
                 {/* DUPLICATE VIEWER ROUTES REMOVED - handled by ViewerApp.jsx */}
@@ -508,7 +515,38 @@ class AppComponent extends React.Component {
                 />
                 <Route
                   exact
+                  path="/:workspaceId/old-modules"
+                  element={
+                    <DesktopOnlyRoute darkMode={darkMode}>
+                      <PrivateRoute>
+                        <HomePage appType="module" switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                      </PrivateRoute>
+                    </DesktopOnlyRoute>
+                  }
+                />
+                <Route
+                  exact
+                  path="/:workspaceId/modules"
+                  element={
+                    <DesktopOnlyRoute darkMode={darkMode}>
+                      <PrivateRoute>
+                        <AppsDashboard appType="module" switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                      </PrivateRoute>
+                    </DesktopOnlyRoute>
+                  }
+                />
+                <Route
+                  exact
                   path="/:workspaceId"
+                  element={
+                    <PrivateRoute>
+                      <AppsDashboard appType="front-end" switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  exact
+                  path="/:workspaceId/old-apps"
                   element={
                     <PrivateRoute darkMode={darkMode}>
                       <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'front-end'} />

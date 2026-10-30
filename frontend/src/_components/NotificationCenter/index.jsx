@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { BrushCleaning, Bell } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { IconBellCheck } from '@tabler/icons-react';
-import { BrushCleaning } from 'lucide-react';
 import { ToolTip } from '@/_components/ToolTip';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useNotificationsStore, useNotificationsActions } from '@/_stores/notificationsStore';
 import NotificationRow from './NotificationRow';
 import ErrorDetailModal from './ErrorDetailModal';
@@ -23,6 +24,8 @@ export const NotificationCenter = ({ darkMode }) => {
   const actions = useNotificationsActions();
 
   const { t } = useTranslation();
+
+  const [showOverlay, setShowOverlay] = useState(false);
 
   // Refresh badge count on mount + open the live socket (pushes deltas, backfills on reconnect)
   React.useEffect(() => {
@@ -140,17 +143,32 @@ export const NotificationCenter = ({ darkMode }) => {
 
   return (
     <>
-      <OverlayTrigger onEntering={handleOpen} rootClose trigger="click" placement="right-end" overlay={overlay}>
-        <div>
+      <OverlayTrigger
+        onEntering={handleOpen}
+        rootClose
+        trigger="click"
+        placement="right-end"
+        overlay={overlay}
+        show={showOverlay}
+        onToggle={(newShowOverlayState) => setShowOverlay(newShowOverlayState)}
+      >
+        {/* Had to use function instead of JSX element directly because button is wrapped inside a tooltip and trigger props contains ref to which element the overlay should be attached */}
+        {(triggerProps) => (
           <ToolTip message="Notifications" placement="right">
-            <div className="notification-center-nav-item cursor-pointer tj-leftsidebar-icon-items">
-              <SolidIcon data-cy="notifications-icon" name="notification" fill="var(--slate8)" />
+            <button
+              type="button"
+              className={cn('tw-relative cursor-pointer tj-leftsidebar-icon-items', {
+                active: showOverlay,
+              })}
+              {...triggerProps}
+            >
+              <Bell data-cy="notifications-icon" size={16} />
               {unreadCount > 0 && (
                 <span className="notification-center-badge badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
               )}
-            </div>
+            </button>
           </ToolTip>
-        </div>
+        )}
       </OverlayTrigger>
       <ErrorDetailModal notification={detailNotification} show={!!detailNotification} onClose={actions.closeDetail} />
     </>
