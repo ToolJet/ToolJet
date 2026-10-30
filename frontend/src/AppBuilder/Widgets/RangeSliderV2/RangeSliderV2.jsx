@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
@@ -24,8 +24,18 @@ export const RangeSliderV2 = ({
   id,
 }) => {
   const isInitialRender = useRef(true);
+  // Per mounted instance, not per component id: ListView gives every row the same component
+  // id, so an id derived from it alone collides across rows and names every handle after the first.
+  const reactId = useId();
+  const labelElementId = `${reactId}-label`;
   const labelRef = useRef(null);
   const { value, min, max, enableTwoHandle, label, schema, endValue, startValue, stepSize } = properties;
+
+  // `stripPercent` is deliberately NOT in the widget config:
+  // a data migration writes it onto components that already existed,
+  // so nothing shows in the inspector and a newly dropped slider never carries it.
+  // Present means "render marks the pre-fix way".
+  const stripPercent = properties.stripPercent;
 
   const {
     trackColor,
@@ -46,6 +56,9 @@ export const RangeSliderV2 = ({
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
   const sliderRef = useRef(null);
+  // The inputs as the value effect last saw them,
+  // so it can tell a default change from a bounds change when both are possible in one commit.
+  const prevInputs = useRef(null);
 
   const [defaultSliderValue, setDefaultSliderValue] = useState(value);
   const [defaultRangeValue, setDefaultRangeValue] = useState([startValue, endValue]);
@@ -58,22 +71,47 @@ export const RangeSliderV2 = ({
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
 
   const toArray = (data) => (Array.isArray(data) ? data : [data, max]);
-  const singleHandleValue = !enableTwoHandle ? (Array.isArray(value) ? value[0] : value) : 50;
-  const twoHandlesArray = enableTwoHandle ? toArray(value) : [0, 100];
 
-  const resetFn = async () => {
-    let defaultValue;
-    if (enableTwoHandle === 'slider') {
-      defaultValue = value ?? min;
-      setDefaultSliderValue(defaultValue);
-    } else {
-      const start = startValue ?? min;
-      const end = endValue ?? max;
-      defaultValue = [start, end];
-      setDefaultRangeValue(defaultValue);
-    }
-    setExposedVariable('value', defaultValue);
+  // Only clamp against bounds that actually bound something.
+  // min/max are usually bound expressions, and a transient non-number or inverted pair
+  // during load would otherwise collapse a live value to NaN or to a floor it never had
+  // and it would never come back once the binding resolved.
+  const hasUsableBounds = Number.isFinite(min) && Number.isFinite(max) && max > min;
+  const clampToBounds = (v) => (hasUsableBounds && typeof v === 'number' ? Math.min(Math.max(v, min), max) : v);
+
+  const setValueAction = async (newValue) => {
+    // Clamping here puts the action on the same promise as the default and the bounds:
+    // what is published is a position the handle can actually draw.
+    const next = clampToBounds(Number(newValue));
+    setDefaultSliderValue(next);
+    setExposedVariable('value', next);
+    fireEvent('onChange');
   };
+
+  const setRangeValueAction = async (num1, num2) => {
+    // Same promise as `setValueAction`.
+    const next = [clampToBounds(Number(num1)), clampToBounds(Number(num2))];
+    setDefaultRangeValue(next);
+    setExposedVariable('value', next);
+    fireEvent('onChange');
+  };
+
+  // Clamp into the current bounds, store, publish: the same three steps whatever brought us here,
+  // so they live in one place. Called with NO argument it uses the configured default — that is
+  // exactly what `reset()` means. Called with a value it republishes THAT value clamped, which is
+  // what a bounds move needs, since resurrecting the default would discard a value the user chose.
+  const publishValue = (next) => {
+    const single = enableTwoHandle === 'slider';
+    const configuredDefault = single ? (value ?? min) : [startValue ?? min, endValue ?? max];
+    const source = next === undefined ? configuredDefault : next;
+    const clamped = single ? clampToBounds(source) : source.map(clampToBounds);
+
+    if (single) setDefaultSliderValue(clamped);
+    else setDefaultRangeValue(clamped);
+    setExposedVariable('value', clamped);
+  };
+
+  const resetFn = async () => publishValue();
 
   useEffect(() => {
     if (auto) {
@@ -89,16 +127,8 @@ export const RangeSliderV2 = ({
       isLoading: properties?.loadingState,
       isVisible: properties?.visibility,
       isDisabled: properties?.disabledState,
-      setValue: async function (value) {
-        setDefaultSliderValue(value);
-        setExposedVariable('value', Number(value));
-        fireEvent('onChange');
-      },
-      setRangeValue: async function (num1, num2) {
-        setDefaultRangeValue([num1, num2]);
-        setExposedVariable('value', [num1, num2]);
-        fireEvent('onChange');
-      },
+      setValue: setValueAction,
+      setRangeValue: setRangeValueAction,
       setVisibility: async function (value) {
         setVisibility(!!value);
         setExposedVariable('isVisible', !!value);
@@ -116,15 +146,50 @@ export const RangeSliderV2 = ({
     isInitialRender.current = false;
   }, []);
 
+  // Re-registered when the bounds move, so both actions clamp against the bounds in force at the moment they run.
   useEffect(() => {
-    if (isInitialRender.current) return;
-    resetFn();
+    setExposedVariables({ setValue: setValueAction, setRangeValue: setRangeValueAction });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, enableTwoHandle, startValue, endValue]);
+  }, [min, max]);
 
   useEffect(() => {
     setExposedVariable('reset', resetFn);
   }, [enableTwoHandle, value, min, max, startValue, endValue]);
+
+  // ONE effect for both jobs, because a default change and a bounds change can land in the same commit — two bindings fed by one query do exactly that.
+  // Asking which inputs actually moved states the precedence outright instead of leaving it to the order the effects happen to be declared in.
+  useEffect(() => {
+    const prev = prevInputs.current;
+    prevInputs.current = { value, startValue, endValue, enableTwoHandle, min, max };
+
+    const defaultChanged =
+      prev === null ||
+      value !== prev.value ||
+      startValue !== prev.startValue ||
+      endValue !== prev.endValue ||
+      enableTwoHandle !== prev.enableTwoHandle;
+
+    // `prev === null` is the first run.
+    // Either way `resetFn` clamps against the bounds as they stand right now, so it needs nothing from the branch below.
+    if (defaultChanged) {
+      resetFn();
+      return;
+    }
+
+    if (min === prev.min && max === prev.max) return;
+
+    // Bounds moved on their own: pull the LIVE value inside them, passed in explicitly so the
+    // configured default is not resurrected over a value the user chose.
+    const live = enableTwoHandle === 'slider' ? defaultSliderValue : toArray(defaultRangeValue);
+    const parts = enableTwoHandle === 'slider' ? [live] : live;
+
+    // A value that is not a usable number is left exactly as it is, so a half-resolved binding
+    // cannot destroy it. Republish only when clamping would move something — an untouched value
+    // should cost no render.
+    if (!parts.every(Number.isFinite)) return;
+    if (parts.some((part) => clampToBounds(part) !== part)) publishValue(live);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, startValue, endValue, enableTwoHandle, min, max]);
 
   useEffect(() => {
     if (disabled !== properties.disabledState) setDisabled(properties.disabledState);
@@ -169,6 +234,8 @@ export const RangeSliderV2 = ({
     } else {
       onRangeChange([min, min]);
     }
+    // A Form clear changes the value, so it announces it like the input widgets already do.
+    fireEvent('onChange');
   });
 
   const rangeStyles = {
@@ -280,7 +347,7 @@ export const RangeSliderV2 = ({
             direction={direction}
             widthType={widthType}
             inputId={`component-${id}`}
-            id={`${id}-label`}
+            id={labelElementId}
             fontSize={labelFontSizeValue}
           />
 
@@ -293,11 +360,11 @@ export const RangeSliderV2 = ({
                 max={max}
                 defaultValue={defaultRangeValue}
                 onChange={onRangeChange}
-                onAfterChange={() => fireEvent('onChange')}
+                onChangeComplete={() => fireEvent('onChange')}
                 value={defaultRangeValue}
                 ref={sliderRef}
                 id={`component-${id}`}
-                ariaLabelledByForHandle={`${id}-label`}
+                ariaLabelledByForHandle={labelElementId}
                 ariaLabelForHandle={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
                 trackStyle={rangeStyles.trackStyle}
                 railStyle={rangeStyles.railStyle}
@@ -306,13 +373,18 @@ export const RangeSliderV2 = ({
                 activeDotStyle={rangeStyles.activeDotStyle}
                 marks={(Array.isArray(schema) ? schema : []).reduce((acc, item) => {
                   if (item && typeof item === 'object' && item.value !== undefined && item.label !== undefined) {
+                    const minValue = typeof min === 'number' ? min : Number(min);
                     const maxValue = typeof max === 'number' ? max : Number(max);
                     const itemValue = Number(item.value);
 
-                    if (!isNaN(maxValue) && !isNaN(itemValue) && itemValue <= maxValue) {
+                    // A mark outside the track cannot be reached, at either end.
+                    const withinMin = isNaN(minValue) || itemValue >= minValue;
+                    const withinMax = isNaN(maxValue) || itemValue <= maxValue;
+
+                    if (!isNaN(itemValue) && withinMin && withinMax) {
                       acc[item.value] = {
                         style: { color: markerLabel },
-                        label: String(item.label).replace('%', ''),
+                        label: stripPercent ? String(item.label).replace('%', '') : String(item.label),
                       };
                     }
                   }
@@ -336,10 +408,10 @@ export const RangeSliderV2 = ({
                 value={defaultSliderValue}
                 ref={sliderRef}
                 id={`component-${id}`}
-                ariaLabelledByForHandle={`${id}-label`}
+                ariaLabelledByForHandle={labelElementId}
                 ariaLabelForHandle={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
                 onChange={onSliderChange}
-                onAfterChange={() => fireEvent('onChange')}
+                onChangeComplete={() => fireEvent('onChange')}
                 trackStyle={rangeStyles.trackStyle}
                 railStyle={rangeStyles.railStyle}
                 handleStyle={rangeStyles.handleStyle}
@@ -347,13 +419,18 @@ export const RangeSliderV2 = ({
                 activeDotStyle={rangeStyles.activeDotStyle}
                 marks={(Array.isArray(schema) ? schema : []).reduce((acc, item) => {
                   if (item && typeof item === 'object' && item.value !== undefined && item.label !== undefined) {
+                    const minValue = typeof min === 'number' ? min : Number(min);
                     const maxValue = typeof max === 'number' ? max : Number(max);
                     const itemValue = Number(item.value);
 
-                    if (!isNaN(maxValue) && !isNaN(itemValue) && itemValue <= maxValue) {
+                    // A mark outside the track cannot be reached, at either end.
+                    const withinMin = isNaN(minValue) || itemValue >= minValue;
+                    const withinMax = isNaN(maxValue) || itemValue <= maxValue;
+
+                    if (!isNaN(itemValue) && withinMin && withinMax) {
                       acc[item.value] = {
                         style: { color: markerLabel },
-                        label: String(item.label).replace('%', ''),
+                        label: stripPercent ? String(item.label).replace('%', '') : String(item.label),
                       };
                     }
                   }
@@ -363,7 +440,8 @@ export const RangeSliderV2 = ({
                 handleRender={(node, handleProps) => {
                   return (
                     <OverlayTrigger
-                      show={handleProps.dragging}
+                      // `undefined` leaves the overlay UNCONTROLLED so hover can open it;
+                      show={handleProps.dragging || undefined}
                       placement="top"
                       overlay={<Tooltip key={handleProps.value}>{handleProps.value}</Tooltip>}
                     >

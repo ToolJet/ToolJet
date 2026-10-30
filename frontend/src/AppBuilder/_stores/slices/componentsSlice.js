@@ -908,9 +908,14 @@ export const createComponentsSlice = (set, get) => ({
     const isLegitimateFalsyOptionValue =
       (widgetValue === false && optionValueWidgets.includes(componentType)) ||
       (widgetValue === '' && componentType === 'DropdownV2');
+    // Widgets where 0 is the ABSENCE of a value rather than a value.
+    // A NumberInput at 0 is answered; a StarRating at 0 is unrated.
+    const zeroMeansEmptyWidgets = ['StarRating'];
+
     const isEmpty = Array.isArray(widgetValue)
       ? widgetValue.length === 0
-      : !widgetValue && widgetValue !== 0 && !isLegitimateFalsyOptionValue;
+      : (!widgetValue && widgetValue !== 0 && !isLegitimateFalsyOptionValue) ||
+        (widgetValue === 0 && zeroMeansEmptyWidgets.includes(componentType));
 
     if (resolvedMandatory == true && isEmpty) {
       return {
@@ -1206,16 +1211,6 @@ export const createComponentsSlice = (set, get) => ({
     } = get();
     const components = getCurrentPageComponents(moduleId);
 
-    //TODO: Replace with object of component types
-    const resolvedComponentValues = {};
-    startDependencyBatch();
-    Object.entries(components).forEach(([componentId, component]) => {
-      resolvedComponentValues[componentId] = addToDependencyGraph(moduleId, componentId, component.component);
-    });
-    flushDependencyBatch();
-
-    setResolvedComponents(resolvedComponentValues, moduleId);
-
     // Pre-populate default exposed values for all components in a single store write.
     // This prevents 600+ individual set() calls during component mount in RenderWidget
     // (setDefaultExposedValues will early-return since values already exist).
@@ -1253,9 +1248,19 @@ export const createComponentsSlice = (set, get) => ({
       'batchSetDefaultExposedValues'
     );
 
+    //TODO: Replace with object of component types
+    let resolvedComponentValues = {};
+
+    startDependencyBatch();
+    Object.entries(components).forEach(([componentId, component]) => {
+      resolvedComponentValues[componentId] = addToDependencyGraph(moduleId, componentId, component.component);
+    });
+    flushDependencyBatch();
+
+    setResolvedComponents(resolvedComponentValues, moduleId);
     resolveOthers(moduleId);
 
-    // Register query option dependencies for queries with runOnDependencyChange enabled.
+    // Register query option dependencies for queries with runOnDependencyChange enabled
     const queries = get().dataQuery?.queries?.modules?.[moduleId] || [];
     queries.forEach((query) => {
       if (query.options?.runOnDependencyChange) {
