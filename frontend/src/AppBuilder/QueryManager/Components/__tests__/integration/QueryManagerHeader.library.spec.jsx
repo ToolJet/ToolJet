@@ -1,3 +1,8 @@
+beforeEach(() => {
+  useStore.setState((state) => ({
+    license: { featureAccess: { ...state.license.featureAccess, queryLibraryEnabled: true } },
+  }));
+});
 /**
  * Tabs and version dropdown of the query header in a query library app vs a normal app.
  * Real store; the version dropdown's versions call goes through MSW.

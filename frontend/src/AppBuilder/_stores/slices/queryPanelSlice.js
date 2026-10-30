@@ -1,9 +1,10 @@
+import { getEditionSpecificSlice } from '@/modules/common/helpers/getEditionSpecificSlice';
 import { toast } from 'react-hot-toast';
 import { AsyncQueryHandler } from '@/AppBuilder/_utils/async-query-handler';
 import _, { isEmpty } from 'lodash';
 import { resolveReferences, loadPyodide, hasCircularDependency } from '@/_helpers/utils';
 import { fetchOAuthToken, fetchOauthTokenForSlackAndGSheet } from '@/AppBuilder/_utils/auth';
-import { dataqueryService, workflowExecutionsService, libraryQueryService } from '@/_services';
+import { dataqueryService, workflowExecutionsService } from '@/_services';
 import moment from 'moment';
 import axios from 'axios';
 import { validateMultilineCode } from '@/_helpers/utility';
@@ -12,16 +13,7 @@ import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAb
 import { ABORT_UNSUPPORTED_KINDS, defaultSources, TJ_QUERY_ERROR_TYPE } from '@/AppBuilder/QueryManager/constants';
 import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import {
-  executeLibraryJS,
-  LIBRARY_KIND,
-  LIBRARY_QUERY_IS_CLIENT_SIDE,
-  libraryTemplateState,
-  mergeLibraryInputs,
-  raceAbort,
-  runArgNames,
-  runLibraryTransformation,
-} from '@/AppBuilder/_utils/libraryQuery';
+import { LIBRARY_KIND, libraryTemplateState, mergeLibraryInputs, runArgNames } from '@/AppBuilder/_utils/libraryQuery';
 import {
   isQueryLibraryMode,
   libraryRunBlocker,
@@ -38,8 +30,6 @@ const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPre
 const toastIfQueryRunRestricted = (errorData) => {
   if (errorData?.data?.type === TJ_QUERY_ERROR_TYPE.FORBIDDEN) toast.error(errorData.data.responseObject.responseBody);
 };
-
-const LIBRARY_PYTHON_ERROR = 'Library transformations must be JavaScript';
 
 const resolveLibraryDefault = (value) => resolveReferences(value, undefined);
 
@@ -785,7 +775,7 @@ export const createQueryPanelSlice = (set, get) => ({
           });
         } else if (isQueryLibraryMode(get())) {
           const libraryVersionId = viewedSavedLibraryVersion(get(), queryId)?.id;
-          queryExecutionPromise = libraryQueryService.run(
+          queryExecutionPromise = get().queryPanel.runStandaloneLibraryQuery(
             queryId,
             selectedEnvironment?.id,
             libraryVersionId
@@ -801,7 +791,7 @@ export const createQueryPanelSlice = (set, get) => ({
         } else if (isSavedLibraryVersion) {
           // The builder run endpoint runs (and saves) the query row, which is the draft; preview runs the options sent.
           queryExecutionPromise = isQueryLibraryMode(get())
-            ? libraryQueryService.run(
+            ? get().queryPanel.runStandaloneLibraryQuery(
                 query.id,
                 selectedEnvironment?.id,
                 viewedSavedLibraryVersion(get(), query.id)?.id
@@ -1152,7 +1142,7 @@ export const createQueryPanelSlice = (set, get) => ({
         } else {
           const libraryVersionId = viewedSavedLibraryVersion(get(), query.id)?.id;
           queryExecutionPromise = isQueryLibraryMode(get())
-            ? libraryQueryService.run(
+            ? get().queryPanel.runStandaloneLibraryQuery(
                 query.id,
                 selectedEnvironment?.id,
                 libraryVersionId
@@ -1575,34 +1565,15 @@ export const createQueryPanelSlice = (set, get) => ({
       const currentState = getResolvedState(moduleId);
       const appType = getAppType(moduleId);
 
-      if (isQueryLibraryMode(get())) {
-        // Same restricted scope consumers get: input, utilities, data. Library transformations are JavaScript only.
-        if (transformationLanguage === 'python') {
-          return { status: 'failed', data: { message: LIBRARY_PYTHON_ERROR, description: LIBRARY_PYTHON_ERROR } };
-        }
-        const outcome = await runLibraryTransformation({
-          code: transformation,
+      if (isQueryLibraryMode(get()))
+        return get().queryPanel.runLibraryEditorTransformation({
+          transformation,
+          transformationLanguage,
           data,
-          input: libraryEditorInput(query, parameters),
-          constants: currentState?.constants,
-          currentUser: currentState?.globals?.currentUser,
+          query,
+          moduleId,
+          parameters,
         });
-        if (outcome.status !== 'failed') return outcome.data;
-        // Same debugger entry the normal JavaScript path writes on failure.
-        get().debugger.log({
-          logLevel: 'error',
-          type: 'transformation',
-          kind: query.kind,
-          key: `${query.name}, transformation`,
-          message: outcome.message,
-          error: outcome.data,
-          isTransformation: true,
-          isQuerySuccessLog: false,
-          errorTarget: 'Queries',
-        });
-        // Callers expect the transformed value itself on success, `{ status: 'failed', ... }` on failure.
-        return outcome;
-      }
 
       if (transformationLanguage === 'python') {
         result = await runPythonTransformation(currentState, data, transformation, query, mode);
@@ -1763,80 +1734,18 @@ export const createQueryPanelSlice = (set, get) => ({
     // server answers LIBRARY_QUERY_IS_CLIENT_SIDE). Inputs are resolved here, against the consumer app's state;
     // `runInputs` (from the consumer's `queries.x.run({ ... })`) override them for this run. The library's own transformation
     // (restricted scope) runs here too, so callers get the data the app's own pipeline should see.
-    runLibraryQuery: async (query, moduleId = 'canvas', { runInputs, signal } = {}) => {
-      const { appStore, currentVersionId, selectedEnvironment, isPublicAccess } = get();
-      const { currentAppEnvironmentId, environmentId } = appStore.modules[moduleId]?.app ?? {};
-      const isReleasedApp = appStore.modules.canvas.app?.isReleasedApp;
-      const envId =
-        isPublicAccess || (isReleasedApp && !isPublicAccess)
-          ? undefined
-          : (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id;
-
-      const state = get().getAllExposedValues(moduleId);
-      // A blank input box means "use the library default", so it's left out rather than sent as ''.
-      const filledInputs = _.omitBy(query.options?.inputs ?? {}, (raw) => raw === '' || raw === undefined);
-      const inputs = {
-        ...get().resolveReferences(moduleId, filledInputs, state, {}, {}),
-        ..._.omitBy(runInputs ?? {}, _.isUndefined),
-      };
-      const resolvedState = get().getResolvedState(moduleId);
-
-      const withTransformation = async (result, code, input) => {
-        const rest = _.omit(result, ['libraryTransformation', 'libraryScope']);
-        if (typeof code !== 'string' || result?.status === 'failed') return rest;
-        const transformed = await runLibraryTransformation({
-          code,
-          data: result?.data,
-          input,
-          constants: resolvedState?.constants,
-          currentUser: resolvedState?.globals?.currentUser,
-        });
-        return transformed.status === 'failed' ? libraryFailure(transformed.data) : { ...rest, data: transformed.data };
-      };
-
-      // Server runs send back the scope they resolved (declared names, defaults applied), so the transformation
-      // sees what the query itself saw rather than the raw runtime values.
-      const withServerTransformation = (result) =>
-        withTransformation(result, result?.libraryTransformation, result?.libraryScope?.input ?? {});
-
-      const runInBrowser = async () => {
-        const definition = await dataqueryService.getLibraryDefinition(query.id, signal);
-        const input = mergeLibraryInputs(definition.inputs, inputs, resolveLibraryDefault);
-        const result = await executeLibraryJS({
-          code: definition.code,
-          input,
-          constants: resolvedState?.constants,
-          currentUser: resolvedState?.globals?.currentUser,
-        });
-        return withTransformation(result, definition.transformation, input);
-      };
-
-      // Cancelling must settle a RunJS run right away, even while the user code is still awaiting.
-      const runInBrowserCancellable = () => raceAbort(runInBrowser(), signal);
-
-      if (query.options?.libraryKind === 'runjs') return runInBrowserCancellable();
-      try {
-        const result = await dataqueryService.runLibrary(query.id, { inputs }, currentVersionId, envId, signal);
-        return await withServerTransformation(result);
-      } catch (error) {
-        // handleResponse rejects with { error: <message>, data, statusCode }
-        if (error?.error === LIBRARY_QUERY_IS_CLIENT_SIDE || error?.data?.message === LIBRARY_QUERY_IS_CLIENT_SIDE) {
-          return runInBrowserCancellable();
-        }
-        throw error;
-      }
-    },
+    runLibraryQuery: async () => ({
+      status: 'failed',
+      message: 'Query Library is unavailable',
+      data: { message: 'Query Library is unavailable', description: 'Query Library is unavailable' },
+    }),
     // RunJS inside a query library app: the same restricted scope consumers get (no components/variables/page/actions),
     // so authors see exactly what consumers will.
-    runLibraryEditorJS: (query, suppliedInputs, moduleId = 'canvas') => {
-      const resolvedState = get().getResolvedState(moduleId);
-      return executeLibraryJS({
-        code: query.options?.code,
-        input: libraryEditorInput(query, suppliedInputs),
-        constants: resolvedState?.constants,
-        currentUser: resolvedState?.globals?.currentUser,
-      });
-    },
+    runLibraryEditorJS: async () => ({
+      status: 'failed',
+      message: 'Query Library is unavailable',
+      data: { message: 'Query Library is unavailable', description: 'Query Library is unavailable' },
+    }),
     triggerWorkflow: async (
       moduleId,
       query,
@@ -2245,5 +2154,16 @@ export const createQueryPanelSlice = (set, get) => ({
 
       return false; // Indicates that expansion was not needed
     },
+    runStandaloneLibraryQuery: async () => ({
+      status: 'failed',
+      message: 'Query Library is unavailable',
+      data: { message: 'Query Library is unavailable', description: 'Query Library is unavailable' },
+    }),
+    runLibraryEditorTransformation: async () => ({
+      status: 'failed',
+      message: 'Query Library is unavailable',
+      data: { message: 'Query Library is unavailable', description: 'Query Library is unavailable' },
+    }),
+    ...getEditionSpecificSlice('createQueryLibraryQueryPanelSlice')(set, get).queryPanel,
   },
 });

@@ -1,3 +1,8 @@
+beforeEach(() => {
+  useStore.setState((state) => ({
+    license: { featureAccess: { ...state.license.featureAccess, queryLibraryEnabled: true } },
+  }));
+});
 /**
  * Running a `library` query from an app: server path for SQL/REST kinds, browser path for RunJS,
  * fallback when the server says the query is client-side, and failures through the normal query
@@ -43,6 +48,7 @@ function seedLibraryApp({ queries, mode = 'view', appType } = {}) {
   }
   if (appType) state().setApp({ ...state().appStore.modules.canvas.app, appType }, 'canvas');
   seedApp({});
+  useStore.setState({ license: { featureAccess: { queryLibraryEnabled: true } } });
 }
 
 const resolvedQuery = (name) => state().getResolvedState('canvas').queries[name];
@@ -546,4 +552,29 @@ describe('library query run', () => {
       expect(JSON.stringify(result)).toMatch(/components is not defined/);
     });
   });
+});
+
+it.each([undefined, false])('refuses local and consumer execution without effective access %s', async (enabled) => {
+  const requests = [];
+  server.use(
+    http.post(`${config.apiUrl}/data-queries/c1/library-definition`, ({ request }) => {
+      requests.push(request.url);
+      return HttpResponse.json({ code: 'globalThis.__libraryLicenseRuns += 1;', inputs: [] });
+    })
+  );
+  seedLibraryApp({ queries: [{ ...libraryQuery, options: { ...libraryQuery.options, libraryKind: 'runjs' } }] });
+  useStore.setState({ license: { featureAccess: { queryLibraryEnabled: enabled } } });
+  globalThis.__libraryLicenseRuns = 0;
+  const result = await state().queryPanel.runLibraryQuery({
+    ...libraryQuery,
+    options: { ...libraryQuery.options, libraryKind: 'runjs' },
+  });
+  const editorResult = await state().queryPanel.runLibraryEditorJS({
+    options: { code: 'globalThis.__libraryLicenseRuns += 1;' },
+  });
+  expect(result.status).toBe('failed');
+  expect(editorResult.status).toBe('failed');
+  expect(requests).toHaveLength(0);
+  expect(globalThis.__libraryLicenseRuns).toBe(0);
+  delete globalThis.__libraryLicenseRuns;
 });

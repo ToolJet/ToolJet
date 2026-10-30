@@ -26,3 +26,5 @@ export {
   AiBuilder,
   Modules,
 };
+
+export { default as QueryLibrary } from './QueryLibrary';

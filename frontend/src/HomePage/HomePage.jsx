@@ -1,3 +1,4 @@
+import { isQueryLibraryEnabled } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
 import DependencyWarningDialog from '@/_components/DependencyWarningDialog/DependencyWarningDialog';
 import React from 'react';
 import cx from 'classnames';
@@ -324,7 +325,7 @@ class HomePageComponent extends React.Component {
       this.fetchFolders();
       this.fetchApps(1);
     }
-    if (Object.keys(this.props.featureAccess).length && !this.state.featureAccess) {
+    if (prevProps.featureAccess !== this.props.featureAccess) {
       this.setState({ featureAccess: this.props.featureAccess, featuresLoaded: this.props.featuresLoaded });
     }
     if (this.state.shouldRedirect && !prevState.shouldRedirect) {
@@ -2600,7 +2601,10 @@ class HomePageComponent extends React.Component {
                       navigate={this.props.navigate}
                       darkMode={this.props.darkMode}
                       hasModuleAccess={this.props.hasModuleAccess}
-                      hasQueryLibraryAccess={authenticationService.currentSessionValue?.role?.name !== 'end-user'}
+                      hasQueryLibraryAccess={
+                        isQueryLibraryEnabled(this.props.featureAccess) &&
+                        authenticationService.currentSessionValue?.role?.name !== 'end-user'
+                      }
                     />
                   </>
                 ) : (

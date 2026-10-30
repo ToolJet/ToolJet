@@ -1,3 +1,8 @@
+beforeEach(() => {
+  useStore.setState((state) => ({
+    license: { featureAccess: { ...state.license.featureAccess, queryLibraryEnabled: true } },
+  }));
+});
 import '@/test/setupMsw';
 import { http, HttpResponse } from 'msw';
 import { waitFor } from '@testing-library/react';

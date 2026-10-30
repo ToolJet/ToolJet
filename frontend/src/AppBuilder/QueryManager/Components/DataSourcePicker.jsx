@@ -41,11 +41,12 @@ function DataSourcePicker({ darkMode }) {
   const createDataQuery = useStore((state) => state.dataQuery.createDataQuery);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
 
+  const queryLibraryAccess = useStore((state) => state.license.featureAccess);
   const staticDataSourcesFullObject = useStore((state) => state.globalDataSources)?.filter(
     (gds) => gds.type === DATA_SOURCE_TYPE.STATIC
   );
   const updatedStaticDataSources = staticDataSources
-    .filter((source) => source.kind !== 'library' || isQueryLibraryEnabled())
+    .filter((source) => source.kind !== 'library' || isQueryLibraryEnabled(queryLibraryAccess))
     .filter((source) => !isQueryLibrary || !LIBRARY_UNSUPPORTED_KINDS.includes(source.kind))
     .filter((source) => {
       if (source.kind === 'workflows') {

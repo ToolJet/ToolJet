@@ -1,11 +1,5 @@
 // frontend/src/AppBuilder/_utils/__tests__/libraryQuery.spec.js
-import {
-  executeLibraryJS,
-  runLibraryTransformation,
-  libraryTemplateState,
-  mergeLibraryInputs,
-  runArgNames,
-} from '../libraryQuery';
+import { libraryTemplateState, mergeLibraryInputs, runArgNames } from '../libraryQuery';
 
 describe('libraryTemplateState', () => {
   it('exposes input, constants and globals.currentUser only', () => {
@@ -86,66 +80,5 @@ describe('runArgNames', () => {
     expect(runArgNames({ kind: 'library', options: { inputs: { region: '', id: '1' } } })).toEqual(['region', 'id']);
     expect(runArgNames({ kind: 'runjs', options: { parameters: [{ name: 'limit' }] } })).toEqual(['limit']);
     expect(runArgNames({ kind: 'runjs', options: {} })).toEqual([]);
-  });
-});
-
-describe('executeLibraryJS', () => {
-  it('sees lodash and no parameters', async () => {
-    const res = await executeLibraryJS({ code: 'return [_.sum([1, 2, 3]), typeof parameters]' });
-    expect(res).toEqual({ status: 'ok', data: [6, 'undefined'] });
-  });
-
-  it('sees input', async () => {
-    const res = await executeLibraryJS({ code: 'return input.region', input: { region: 'eu' } });
-    expect(res).toEqual({ status: 'ok', data: 'eu' });
-  });
-
-  it('has no access to app state', async () => {
-    const res = await executeLibraryJS({ code: 'return components.table1.data' });
-    expect(res.status).toBe('failed');
-    expect(res.data.message).toMatch(/components is not defined/);
-  });
-
-  it('exposes globals.currentUser only', async () => {
-    const res = await executeLibraryJS({
-      code: 'return [globals.currentUser.email, globals.theme]',
-      currentUser: { email: 'a@b.c' },
-    });
-    expect(res.data).toEqual(['a@b.c', undefined]);
-  });
-
-  it('has no queries object', async () => {
-    const res = await executeLibraryJS({ code: 'return typeof queries' });
-    expect(res).toEqual({ status: 'ok', data: 'undefined' });
-  });
-});
-
-describe('runLibraryTransformation', () => {
-  it('transforms data', async () => {
-    const res = await runLibraryTransformation({ code: 'return data.map(r => r.id)', data: [{ id: 1 }] });
-    expect(res).toEqual({ status: 'ok', data: [1] });
-  });
-
-  it('has no access to variables', async () => {
-    const res = await runLibraryTransformation({ code: 'return variables.x', data: [] });
-    expect(res.status).toBe('failed');
-    expect(res.data.message).toMatch(/variables is not defined/);
-  });
-
-  it('has no queries object', async () => {
-    const res = await runLibraryTransformation({ code: 'return queries', data: [] });
-    expect(res.status).toBe('failed');
-    expect(res.data.message).toMatch(/queries is not defined/);
-  });
-
-  it('reads input, constants, globals.currentUser and lodash', async () => {
-    const res = await runLibraryTransformation({
-      code: 'return [input.region, constants.c, globals.currentUser.email, _.sum(data)]',
-      data: [1, 2],
-      input: { region: 'eu' },
-      constants: { c: 'k' },
-      currentUser: { email: 'a@b.c' },
-    });
-    expect(res).toEqual({ status: 'ok', data: ['eu', 'k', 'a@b.c', 3] });
   });
 });

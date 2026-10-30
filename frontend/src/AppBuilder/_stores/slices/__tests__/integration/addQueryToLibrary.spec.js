@@ -1,3 +1,8 @@
+beforeEach(() => {
+  useStore.setState((state) => ({
+    license: { featureAccess: { ...state.license.featureAccess, queryLibraryEnabled: true } },
+  }));
+});
 /**
  * "Add to query library": the store flushes any pending save, posts the stored options to the server and
  * swaps the query in place to the converted library row. Real composed store + MSW at the HTTP boundary.

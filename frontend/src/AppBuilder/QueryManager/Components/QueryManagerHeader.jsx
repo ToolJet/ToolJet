@@ -1,3 +1,4 @@
+import { isQueryLibraryEnabled } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
 import React, { useState, forwardRef, useRef, useEffect, useCallback } from 'react';
 import RenameIcon from '../Icons/RenameIcon';
 import cx from 'classnames';
@@ -298,6 +299,8 @@ const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
 };
 
 const RunButton = ({ buttonLoadingState, iconOnly }) => {
+  const libraryEnabled = useStore((state) => isQueryLibraryEnabled(state.license.featureAccess));
+  const isQueryLibrary = useStore(isQueryLibraryMode);
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const runQuery = useStore((state) => state.queryPanel.runQuery);
   const isInDraft = selectedQuery?.status === 'draft';
@@ -318,7 +321,7 @@ const RunButton = ({ buttonLoadingState, iconOnly }) => {
           variant="secondary"
           onClick={() => runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true, undefined, true)}
           leadingIcon="play"
-          disabled={isInDraft || isActive}
+          disabled={isInDraft || isActive || ((isQueryLibrary || selectedQuery?.kind === 'library') && !libraryEnabled)}
           isLoading={isLoading}
           iconOnly={iconOnly}
           className={iconOnly ? '' : isMac ? '!tw-w-[88px]' : '!tw-w-[120px]'}

@@ -1,4 +1,9 @@
-import {} from '@/AppBuilder/_stores/store';
+beforeEach(() => {
+  useStore.setState((state) => ({
+    license: { featureAccess: { ...state.license.featureAccess, queryLibraryEnabled: true } },
+  }));
+});
+import useStore from '@/AppBuilder/_stores/store';
 import config from 'config';
 import { AppBuilderTestSession } from '@/test/app-builder';
 import {
@@ -37,6 +42,7 @@ beforeEach(async () => {
     },
   });
   await session.store.act(async (state) => {
+    useStore.setState({ license: { featureAccess: { queryLibraryEnabled: true } } });
     state.queryLibrary.beginLibrarySession('workspace1');
     state.queryLibrary.setLibraryMode(true);
     state.queryLibrary.setLibraryEnvironments([dev, staging, prod]);

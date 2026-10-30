@@ -1,7 +1,4 @@
 // frontend/src/AppBuilder/_utils/libraryQuery.js
-import _ from 'lodash';
-import moment from 'moment';
-import axios from 'axios';
 
 export const LIBRARY_KIND = 'library';
 
@@ -11,9 +8,6 @@ export const runArgNames = (query) =>
     ? Object.keys(query.options?.inputs ?? {})
     : (query?.options?.parameters ?? []).map((parameter) => parameter.name);
 export const LIBRARY_QUERY_IS_CLIENT_SIDE = 'LIBRARY_QUERY_IS_CLIENT_SIDE';
-
-// Built from a string so Babel's async transform can't rewrite it to a plain Function (same as queryPanelSlice).
-const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
 
 // Rejects with an AbortError as soon as `signal` fires, even if `promise` (e.g. user code) never settles.
 // The promise's later result is ignored.
@@ -27,8 +21,6 @@ export function raceAbort(promise, signal) {
     promise.then(resolve, reject).finally(() => signal.removeEventListener('abort', onAbort));
   });
 }
-
-const failed = (message) => ({ status: 'failed', data: { message, description: message } });
 
 // Names a library query's {{ }} templates may use. The server resolves the same set for consumers
 // (server/src/modules/data-queries/library/library-query.util.ts), so the library editor matches it.
@@ -72,47 +64,4 @@ export function mergeLibraryInputs(definitions = [], inputs = {}, resolveTemplat
         : resolveDefault(defaultValue, resolveTemplate);
     return acc;
   }, {});
-}
-
-// Library RunJS and transformations get inputs and utilities only. Anything not in this list —
-// components, variables, page, actions — is simply not defined, so it throws ReferenceError.
-// `extra` adds named values on top (data for transformations).
-async function runInLibraryScope({ code, input, constants, currentUser, timers, extra = {} }) {
-  const scope = {
-    moment,
-    _,
-    axios,
-    constants,
-    globals: { currentUser },
-    input,
-    ...extra,
-    setTimeout: timers.setTimeout,
-    setInterval: timers.setInterval,
-    clearTimeout: timers.clearTimeout,
-    clearInterval: timers.clearInterval,
-  };
-  try {
-    const fn = new AsyncFunction(...Object.keys(scope), code ?? '');
-    return { status: 'ok', data: await fn(...Object.values(scope)) };
-  } catch (err) {
-    return failed(err?.message || 'JS execution failed');
-  }
-}
-
-const defaultTimers = { setTimeout, setInterval, clearTimeout, clearInterval };
-
-export async function executeLibraryJS({ code, input = {}, constants = {}, currentUser = {}, timers = defaultTimers }) {
-  return runInLibraryScope({ code, input, constants, currentUser, timers });
-}
-
-// Same restricted scope plus `data`.
-export function runLibraryTransformation({ code, data, input = {}, constants = {}, currentUser = {} }) {
-  return runInLibraryScope({
-    code,
-    input,
-    constants,
-    currentUser,
-    timers: defaultTimers,
-    extra: { data },
-  });
 }

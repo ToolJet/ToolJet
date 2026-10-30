@@ -23,6 +23,7 @@ const sources = [
   { id: 's2', kind: 'library', name: 'librarydefault', type: 'static' },
 ];
 beforeEach(async () => {
+  useStore.setState({ license: { featureAccess: { queryLibraryEnabled: true } } });
   server.use(
     http.get(`${config.apiUrl}/data-sources/workspace/environments/development/versions/version`, () =>
       HttpResponse.json({ data_sources: sources })
@@ -50,7 +51,7 @@ describe.each([
   });
 
   it('isQueryLibraryEnabled', () => {
-    expect(isQueryLibraryEnabled()).toBe(shown);
+    expect(isQueryLibraryEnabled({ queryLibraryEnabled: true })).toBe(shown);
   });
 
   it('data source picker (empty query panel)', () => {
@@ -72,4 +73,18 @@ describe('already-saved library queries in CE', () => {
     config.TOOLJET_EDITION = 'ce';
     expect(isQueryRunnable({ kind: 'library' })).toBe(true);
   });
+});
+
+it('removes discovery reactively when effective access is revoked', () => {
+  config.TOOLJET_EDITION = 'ee';
+  const view = wrap(<DataSourcePicker darkMode={false} />);
+  expect(document.querySelector('[data-cy="library-add-query-card"]')).toBeInTheDocument();
+  useStore.setState({ license: { featureAccess: { queryLibraryEnabled: false } } });
+  view.rerender(
+    <MemoryRouter>
+      <DataSourcePicker darkMode={false} />
+    </MemoryRouter>
+  );
+  expect(document.querySelector('[data-cy="library-add-query-card"]')).toBeNull();
+  expect(document.querySelector('[data-cy="restapi-add-query-card"]')).toBeInTheDocument();
 });

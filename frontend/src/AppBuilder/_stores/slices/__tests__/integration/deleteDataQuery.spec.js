@@ -26,6 +26,7 @@ function seedBoundText() {
   state().setQueryMapping('canvas');
   state().initialiseResolvedQuery(['q1'], 'canvas');
   state().setCurrentMode('view', 'canvas');
+  useStore.setState({ license: { featureAccess: { queryLibraryEnabled: true } } });
   seedApp({
     t1: componentDefinition('t1', 'text1', 'Text', { text: binding('{{queries.getCustomer.data}}') }),
   });

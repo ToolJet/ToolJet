@@ -6,6 +6,8 @@ import { authenticationService } from '@/_services/authentication.service';
 const initialState = {
   featureAccess: {},
   featuresLoaded: false,
+  featureAccessWorkspaceId: null,
+  featureAccessRequestId: 0,
   hasModuleAccess: true, // Default to true, will be updated after permission check
   moduleAccessLoading: false, // Track if module access check is in progress
 };
@@ -15,10 +17,24 @@ export const useLicenseStore = create(
     (set, get) => ({
       ...initialState,
       actions: {
-        fetchFeatureAccess: () => {
-          licenseService.getFeatureAccess().then((data) => {
-            set({ featureAccess: data, featuresLoaded: true });
+        fetchFeatureAccess: async () => {
+          const workspaceId = authenticationService.currentSessionValue?.current_organization_id;
+          const requestId = get().featureAccessRequestId + 1;
+          set({
+            featureAccess: {},
+            featuresLoaded: false,
+            featureAccessWorkspaceId: workspaceId,
+            featureAccessRequestId: requestId,
           });
+          const current = () =>
+            get().featureAccessRequestId === requestId &&
+            authenticationService.currentSessionValue?.current_organization_id === workspaceId;
+          try {
+            const data = await licenseService.getFeatureAccess({ workspaceId });
+            if (current()) set({ featureAccess: data, featuresLoaded: true });
+          } catch {
+            if (current()) set({ featureAccess: {}, featuresLoaded: true });
+          }
         },
 
         checkModuleAccess: () => {

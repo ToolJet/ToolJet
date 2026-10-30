@@ -8,4 +8,10 @@ Saved versions remain visible and selectable in every environment they have reac
 
 Environment tabs browse locally until a version is selected; opening resets browsing to the committed editor environment. Source permissions use `canUseDataSourceForQuery`; workspace environment defaults come from `app_group_permissions.environment_access`, matching the library backend guard without app-specific grants. Administrators retain workspace access. Source deletion (`dataSourceId: null`) must not block surviving draft metadata editing.
 
-Library adapters supply real environment/license metadata and disable Git capabilities. Never initialize a fake app or call app/Git endpoints for a library action. Integration coverage lives in `__tests__/integration/LibraryVersionDropdown.spec.jsx`; shared module/library parity lives in `../Header/VersionManager/__tests__/integration/lifecycleParity.spec.jsx`.
+Library adapters supply real environment/license metadata and disable Git capabilities. Never initialize a fake app or call app/Git endpoints for a library action. Integration coverage follows the selected edition implementation; shared module/library parity lives in `../Header/VersionManager/__tests__/integration/lifecycleParity.spec.jsx`.
+
+## Edition and license boundary
+
+These public component paths are facades; the editor and lifecycle adapter are selected through the QueryLibrary module registry. CE keeps inert queryLibrary state so ordinary panels can read session and selection fields safely. Pure selectors tolerate absent selection maps. Feature implementations and their tests live with the selected edition module. Shared lifecycle dialogs remain in Header/VersionManager.
+
+The page checks the effective workspace entitlement before beginning an editor session or requesting library content. Missing/false access, loading, failure and stale workspace responses grant no access. Consumers, discovery controls and local execution react to the current effective flag.

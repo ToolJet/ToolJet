@@ -1,19 +1,6 @@
-import React from 'react';
-import useStore from '@/AppBuilder/_stores/store';
-import DependencyWarningDialog from '@/_components/DependencyWarningDialog/DependencyWarningDialog';
+import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 
-export default function LibraryQueryDependencyWarning({ darkMode }) {
-  const warning = useStore((state) => state.dataQuery.dependencyWarning);
-  const sessionId = useStore((state) => state.queryLibrary.sessionId);
-  const isLibraryMode = useStore((state) => state.queryLibrary.isLibraryMode);
-  const close = useStore((state) => state.dataQuery.closeDependencyWarning);
-  return (
-    <DependencyWarningDialog
-      open={!!warning && isLibraryMode && warning.sessionId === sessionId}
-      title={warning?.title}
-      message={warning?.message}
-      darkMode={darkMode}
-      onClose={close}
-    />
-  );
+function LibraryQueryDependencyWarning() {
+  return null;
 }
+export default withEditionSpecificComponent(LibraryQueryDependencyWarning, 'QueryLibrary');

@@ -102,3 +102,9 @@ graph TD
 
 - **Inference:** The public repository is intentionally both the CE implementation and the stable contract/base layer extended by private editions. Evidence: dynamic module selection in `SubModule.getProviders` and the documented edition inheritance/composition patterns in `AGENTS.md`.
 - **Inference:** The App + Version aggregate is the dominant product boundary because pages, components, events, queries, release state, and most access checks converge on it.
+
+### Query Library entitlement boundary
+
+Query Library has an independent effective `queryLibraryEnabled` flag (`LICENSE_FIELD.QUERY_LIBRARY`), separate from Modules. Valid effective licenses omitting the entire `queryLibrary` object receive access automatically; present terms require `enabled === true`. Invalid/expired/missing licenses use disabled basic terms. CE feature operations remain unavailable. Management, generic consumer writes/execution and recursive file transport enforce access without removing stored definitions or pins. Consumer requests use the app workspace; ordinary queries remain available.
+
+Public contracts: `server/src/modules/licensing/configs/LicenseBase.ts`, `server/src/modules/query-library/module.ts`, `server/src/modules/data-queries/service.ts`, `server/src/modules/apps/services/app-import-export.service.ts`. Frontend facades and inert state use existing edition registries; discovery/local execution require explicit effective access, and the editor fetches workspace access before management content. `server/src/modules/apps/app-data-revision.ts` includes effective Query Library access in released-viewer revision inputs.

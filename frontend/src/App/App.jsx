@@ -7,7 +7,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute, SuperAdminRoute } from '@/Routes';
 import { DesktopOnlyPrivateRoute, DesktopOnlyAdminRoute } from '@/Routes/ComposedGuards';
 import { HomePage } from '@/HomePage';
-import { isQueryLibraryEnabled } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
+import { isQueryLibraryEditionSupported } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
 import './lazyPageStyles';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
@@ -440,7 +440,7 @@ class AppComponent extends React.Component {
                     </DesktopOnlyRoute>
                   }
                 />
-                {isQueryLibraryEnabled() && (
+                {isQueryLibraryEditionSupported() && (
                   <Route
                     exact
                     path="/:workspaceId/query-library"

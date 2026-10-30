@@ -182,3 +182,9 @@ Browser verification: `cypress-tests/cypress/e2e/happyPath/platform/eeTestcases/
 Query Library consumer creation keeps query/snapshot selection local in the existing Library editor until Create query sends both UUIDs. Draft autosave overlays cover only unsent, in-flight or failed revisions; successful revisions yield to fresh server data. Session exit clears retry/display state but retains transport tails by workspace/query/draft until settled, so a new session cannot overtake old writes. Creating a draft selects its UUID together with the configured Development environment only while the request still owns selection.
 
 - Library promotion follows the selected saved UUID into its returned environment atomically. Delayed promotion must not steal a different query, session, version or environment selection.
+
+## Query Library license and edition composition
+
+Public QueryLibrary entry components are edition-selected facades, and the public state slice keeps an inert shape for ordinary panels. EE supplies editor components, lifecycle adapter, feature state, browser execution and draft transport through existing module/slice registries. Pure input, snapshot-selection and environment helpers remain shared. Cloud selects the EE implementation.
+
+Discovery and local execution require explicit server-computed queryLibraryEnabled === true; absence/loading/failure denies access. Routes register by edition, then the selected page loads the workspace license before any management request. Workspace access loads clear prior flags and ignore late responses from a different workspace/request. Released/public consumers request access for the consumer app workspace. Runtime uses selected nested queryPanel/dataQuery actions, preserving autosave queues, cancellation and session checks.

@@ -81,6 +81,7 @@ function DataSourceSelect({
     }
   }, [selectRef]);
 
+  const queryLibraryAccess = useStore((state) => state.license.featureAccess);
   const handleChangeDataSource = (source) => {
     const extraProps = { callbackFunction: onQueryCreate };
     if (folderId) extraProps.folderId = folderId;
@@ -150,7 +151,7 @@ function DataSourceSelect({
     const defaultsList = (workflowDataSources ? defaultDataSources || [] : staticSources).filter(
       (ds) =>
         !(workflowDataSources && ds.kind === 'library') &&
-        (ds.kind !== 'library' || isQueryLibraryEnabled()) &&
+        (ds.kind !== 'library' || isQueryLibraryEnabled(queryLibraryAccess)) &&
         (!isQueryLibrary || !LIBRARY_UNSUPPORTED_KINDS.includes(ds.kind))
     );
     const filteredDefaults = searchTerm

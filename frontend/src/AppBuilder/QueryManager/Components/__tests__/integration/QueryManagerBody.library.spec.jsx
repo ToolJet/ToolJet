@@ -1,3 +1,8 @@
+beforeEach(() => {
+  useStore.setState((state) => ({
+    license: { featureAccess: { ...state.license.featureAccess, queryLibraryEnabled: true } },
+  }));
+});
 /**
  * Inputs list in place of Parameters in a query library app. Real store; ParameterList is stubbed to a
  * button per list (its popover form needs a code editor), so the handlers the body wires are what's under test.

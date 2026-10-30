@@ -67,6 +67,9 @@ async function setup(
         },
       },
     });
+    _useStore.setState((state) => ({
+      license: { featureAccess: { ...state.license.featureAccess, queryLibraryEnabled: true } },
+    }));
     await session.store.act((state) => state.queryLibrary.beginLibrarySession('org-1'));
     await session.store.act((state) => state.queryLibrary.setLibraryEnvironments(environments));
     await session.store.act((state) => state.queryLibrary.loadLibraryVersions('query-one'));
@@ -178,7 +181,9 @@ describe.each(['module', 'library'])('%s lifecycle parity', (kind) => {
     expect(cy('yes-button')).toHaveTextContent('Yes');
   });
   it.each([false, true])('uses the same ordered promotion confirmation (dark=%s)', async (darkMode) => {
-    await setup([saved, draft], false, [{ url: `${config.apiUrl}/license/access`, json: { multiEnvironment: true } }]);
+    await setup([saved, draft], false, [
+      { url: `${config.apiUrl}/license/access`, json: { multiEnvironment: true, queryLibraryEnabled: true } },
+    ]);
     await session.store.act('updateFeatureAccess');
     render(dropdown(darkMode));
     await open();
