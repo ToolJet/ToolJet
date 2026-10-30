@@ -134,6 +134,7 @@ export enum LICENSE_FIELD {
   MFA = 'mfaEnabled',
   PLAN = 'plan',
   MODULES = 'modulesEnabled',
+  QUERY_LIBRARY = 'queryLibraryEnabled',
   CUSTOM_GROUPS = 'customGroupsEnabled',
   APP_PAGES_ENABLED = 'appPagesEnabled',
   APP_PAGES_HEADER_AND_LOGO = 'appPagesHeaderAndLogoEnabled',
