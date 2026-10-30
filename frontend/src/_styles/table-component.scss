@@ -817,6 +817,13 @@
 }
 
 // Size and position are set inline by AddNewRowForm (relative to the table); the layout is utility classes.
+// Scrolling areas of the add new row form (fields, option lists, row menu): the same declaration the table body uses
+// (.jet-data-table), so the browser draws its own scrollbar, in the table's colour. slate 4 when the area renders
+// outside the table, as the dialog and the menus do.
+.table-add-new-row-scroll {
+  scrollbar-color: var(--cc-table-scroll-bar-color, var(--slate4)) transparent;
+}
+
 // Select, multiselect, tags and boolean are Rocket components; the date picker is still the table's renderer
 // (it owns the format, timezone and unix-timestamp handling), restyled below to the Figma field: a 36px bordered
 // input with the calendar icon on the left (frame 2628:86086).
