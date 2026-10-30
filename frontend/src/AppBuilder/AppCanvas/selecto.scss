@@ -62,10 +62,35 @@
     }
 }
 
-// A flex child often sits flush against its container's edge, and the container clips overflow: an outline drawn
-// outside the widget lost its top or sides there. Inside a flex container it is drawn just inside the edge.
-.main-editor-canvas .flex-container-canvas .widget-target {
-    outline-offset: -1px;
+// The selection and hover outline is drawn inside the widget's box, on a layer above its content. As a CSS outline
+// outside the box it was cut wherever the widget met an edge: a container's or flex row's clipping canvas, or the
+// canvas's first column, which an app's page menu covers. As an outline inside the box, the widget's own rounded
+// border (an input's) painted over its top-left corner. The config handle (z-index 100) stays above it.
+.widget-target.active-target:not(.module-container),
+.main-editor-canvas .widget-target:not(.module-container):not(:has(.widget-target:hover)):hover {
+    outline: none !important;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border: 1px solid #4af;
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    &.dynamic-height-target::after {
+        border-color: #9747FF;
+    }
+}
+
+// A flex container clips its children to its rounded inner corner: the outline of a flex child takes that radius
+// (measured by selectionCorner.js) so the clip follows its corner instead of cutting it.
+.flex-container-canvas .widget-target.active-target,
+.main-editor-canvas .flex-container-canvas .widget-target:not(:has(.widget-target:hover)):hover {
+    &::after {
+        border-radius: var(--tj-selection-corner, 0px);
+    }
 }
 
 .main-editor-canvas .nested-target:not(:has(.nested-target:hover)):hover {

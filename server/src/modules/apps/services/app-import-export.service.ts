@@ -2173,6 +2173,8 @@ export class AppImportExportService {
                   newLayout.height = layout.height;
                   if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
                   if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
+                  if (layout.grow != null) newLayout.grow = layout.grow;
+                  if (layout.minWidthPx != null) newLayout.minWidthPx = layout.minWidthPx;
                   newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
                   componentLayouts.push(newLayout);
@@ -2818,6 +2820,8 @@ export class AppImportExportService {
                 newLayout.height = layout.height;
                 if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
                 if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
+                if (layout.grow != null) newLayout.grow = layout.grow;
+                if (layout.minWidthPx != null) newLayout.minWidthPx = layout.minWidthPx;
                 newLayout.component = savedComponent;
                 newLayout.co_relation_id = layout.id;
 

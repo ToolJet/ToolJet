@@ -252,7 +252,16 @@ export const Modal = function Modal({
         animation={false}
         onShow={() => onShowModal()}
         onHide={() => onHideModal()}
-        onEscapeKeyDown={() => hideOnEsc && onHideModal()}
+        onEscapeKeyDown={(e) => {
+          // A nested Radix overlay (PopoverMenu / Select) dismisses on Escape in the
+          // capture phase and calls preventDefault() on the same event; this handler
+          // runs later in the bubble phase, so `defaultPrevented` tells us the inner
+          // layer already consumed the keypress — bail so we don't also close the
+          // modal (see #5308).
+          if (e.defaultPrevented) return;
+          e.preventDefault();
+          hideOnEsc && onHideModal();
+        }}
         id="modal-container"
         component-id={id}
         backdrop={'static'}
