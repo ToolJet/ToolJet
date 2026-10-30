@@ -5,11 +5,17 @@
  * and fail on the extensionless relative import below. Keep the ts-node loader.
  */
 import type { Config } from '@jest/types';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import { coverageConfig } from './jest-coverage.config';
+
+// server/ee is a private submodule, absent on community clones
+const eeTestRoot = join(__dirname, '../ee/test');
 
 const config: Config.InitialOptions = {
   moduleFileExtensions: ['js', 'json', 'ts', 'node'],
   rootDir: '.',
+  roots: ['<rootDir>', ...(existsSync(eeTestRoot) ? ['<rootDir>/../ee/test'] : [])],
   testEnvironment: 'node',
   globalSetup: '<rootDir>/../test/jest-global-setup.ts',
   setupFiles: ['<rootDir>/../test/jest-setup.ts'],

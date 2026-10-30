@@ -31,6 +31,9 @@ export class SsoConfigOidcGroupSync {
   @Column({ name: 'claim_name', type: 'varchar', nullable: true })
   claimName: string;
 
+  @Column({ name: 'delimiter', type: 'varchar', nullable: true })
+  delimiter: string | null;
+
   @Column({ name: 'group_mapping', type: 'jsonb', nullable: true })
   groupMapping: Record<string, string>;
 
