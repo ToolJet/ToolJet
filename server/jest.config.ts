@@ -32,6 +32,7 @@ const shared: Config.InitialProjectOptions = {
   },
   moduleNameMapper: {
     '^ormconfig$': '<rootDir>/ormconfig.ts',
+    '^data-migration-config$': '<rootDir>/data-migration-config.ts',
     '^src/(.*)': '<rootDir>/src/$1',
     '^scripts/(.*)': '<rootDir>/scripts/$1',
     '^lib/(.*)': '<rootDir>/lib/$1',
@@ -41,6 +42,7 @@ const shared: Config.InitialProjectOptions = {
     '@entities/(.*)': '<rootDir>/src/entities/$1',
     '@controllers/(.*)': '<rootDir>/src/controllers/$1',
     '@modules/(.*)': '<rootDir>/src/modules/$1',
+    '^@migrations/(.*)': '<rootDir>/migrations/$1',
     '@ee/(.*)': '<rootDir>/ee/$1',
     '@apps/(.*)': '<rootDir>/ee/apps/$1',
     '@helpers/(.*)': '<rootDir>/src/helpers/$1',

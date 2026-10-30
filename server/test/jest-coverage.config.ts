@@ -37,14 +37,7 @@ export function coverageConfig(isCE: boolean): Partial<Config.InitialOptions> {
       '!src/main.ts',
       '!src/migration-helpers/**',
     ],
-    coveragePathIgnorePatterns: [
-      '/node_modules/',
-      '/dist/',
-      '/test/',
-      '/__mocks__/',
-      '/migrations/',
-      '/data-migrations/',
-    ],
+    coveragePathIgnorePatterns: ['/node_modules/', '/dist/', '/test/', '/__mocks__/', '/migrations/'],
     // 'lcov' would work too but internally composes 'lcovonly' + 'html' (istanbul-reports
     // lib/lcov/index.js), rendering the whole HTML tree a second time into lcov-report/.
     coverageReporters: ['html', 'lcovonly', 'json', 'json-summary'],

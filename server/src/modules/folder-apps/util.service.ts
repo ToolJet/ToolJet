@@ -5,6 +5,7 @@ import { EntityManager, Equal, In, IsNull, Or, SelectQueryBuilder } from 'typeor
 import { IFolderAppsUtilService } from './interfaces/IUtilService';
 import { AppBase } from '@entities/app_base.entity';
 import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
+import { onBranch } from '@helpers/branch_scope.helper';
 import { FolderApp } from '@entities/folder_app.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
@@ -102,7 +103,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       .leftJoin('apps', 'app_search', 'folder_apps.app_id = app_search.id')
       .where(
         branchId
-          ? 'folder_apps.folderId IN (:...folderIds) AND folder_apps.branchId = :branchId'
+          ? `folder_apps.folderId IN (:...folderIds) AND ${onBranch('folder_apps.branch_id', 'branchId')}`
           : 'folder_apps.folderId IN (:...folderIds) AND folder_apps.branchId IS NULL',
         branchId ? { folderIds, branchId } : { folderIds }
       );
@@ -111,7 +112,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       query.leftJoin(
         'app_versions',
         'av_search',
-        'av_search.app_id = app_search.id AND av_search.branch_id = :searchBranchId',
+        `av_search.app_id = app_search.id AND ${onBranch('av_search.branch_id', 'searchBranchId')}`,
         { searchBranchId: branchId }
       );
     } else {
@@ -150,7 +151,9 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
 
     if (branchId) {
       // App must exist in app_versions on this branch — INNER JOIN enforces that.
-      query.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', { branchId });
+      query.innerJoinAndSelect('apps.appVersions', 'appVersions', onBranch('appVersions.branch_id', 'branchId'), {
+        branchId,
+      });
     }
 
     if (searchKey) {
@@ -194,7 +197,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         'folderApp.app',
         'app',
         branchId
-          ? 'folderApp.folderId = :id AND folderApp.branch_id = :branchId'
+          ? `folderApp.folderId = :id AND ${onBranch('folderApp.branch_id', 'branchId')}`
           : 'folderApp.folderId = :id AND folderApp.branch_id IS NULL',
         branchId ? { id: folder.id, branchId } : { id: folder.id }
       );
@@ -205,7 +208,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       folderAppsQuery.innerJoin(
         'app_versions',
         'av_folder',
-        'av_folder.app_id = app.id AND av_folder.branch_id = :folderBranchId',
+        `av_folder.app_id = app.id AND ${onBranch('av_folder.branch_id', 'folderBranchId')}`,
         { folderBranchId: branchId }
       );
     }

@@ -24,8 +24,6 @@ export interface MigrationStatus {
   state: MigrationState;
   startedAt?: string;
   toVersion?: string;
-  /** While running: data migrations finished out of those pending. Counts only, the endpoint is public. */
-  progress?: { done: number; total: number };
 }
 
 export interface MigrationRun {
@@ -112,10 +110,7 @@ function owningMigration(run: RunProgress): string | null {
 type StatusRow = Pick<
   MigrationRunRow,
   'status' | 'to_version' | 'started_at' | 'error' | 'heartbeat_age_ms' | 'lock_held'
-> & { done_count: number; total_count: number };
-
-const PROGRESS_COLUMNS = `(SELECT count(*) FROM jsonb_array_elements(r.migrations) m WHERE m->>'status' = 'done')::int AS done_count,
-  COALESCE(jsonb_array_length(r.migrations), 0) AS total_count`;
+>;
 
 const latestRunsSql = (columns: string) =>
   `SELECT ${columns}, EXTRACT(EPOCH FROM now() - r.heartbeat_at) * 1000 AS heartbeat_age_ms, held.running AS lock_held
@@ -162,6 +157,17 @@ const currentVersion = (): string => globalThis.TOOLJET_VERSION ?? 'unknown';
 const isNewerRelease = (version: string): boolean =>
   !!semver.valid(version) && !!semver.valid(currentVersion()) && semver.gt(version, currentVersion());
 
+/** Detached group: kills npm and the runner under it, so its open transaction rolls back. */
+async function stopChild(child: ChildProcess | null, exit: Promise<void> | null): Promise<void> {
+  if (!child?.pid) return;
+  try {
+    process.kill(-child.pid, 'SIGTERM');
+  } catch {
+    // Already gone (ESRCH): its exit handler records the result.
+  }
+  await Promise.race([exit, new Promise((resolve) => setTimeout(resolve, SHUTDOWN_WAIT_MS))]);
+}
+
 /**
  * MIGRATION_MODE=async: runs the migration runner as a child of the serving process and
  * tracks it in `migration_runs`. `status()` also reports a migration another server runs, from its
@@ -177,6 +183,9 @@ export class MigrationRunsService implements OnApplicationShutdown {
   private statusRead: Promise<MigrationStatus> | null = null;
   private pool: Pool | null = null;
   private childExit: Promise<void> | null = null;
+  /** Separate from `child`: a cleanup run never blocks a migration run. */
+  private cleanupChild: ChildProcess | null = null;
+  private cleanupExit: Promise<void> | null = null;
   private finalWrite: Promise<void> | null = null;
   private shuttingDown = false;
   private jobsTimer: NodeJS.Timeout | null = null;
@@ -258,10 +267,7 @@ export class MigrationRunsService implements OnApplicationShutdown {
       const [{ migrating }] = await this.query<{ migrating: boolean }>(HELD_MIGRATION_LOCKS_SQL);
       // Read every second on every server: only the columns the state needs, not the log tail.
       const [latest] = this.enabled
-        ? await this.query<StatusRow>(
-            latestRunsSql(`r.status, r.to_version, r.started_at, r.error, ${PROGRESS_COLUMNS}`),
-            [1]
-          )
+        ? await this.query<StatusRow>(latestRunsSql('r.status, r.to_version, r.started_at, r.error'), [1])
         : [];
       if (latest) {
         const state = effectiveStatus(latest);
@@ -273,8 +279,6 @@ export class MigrationRunsService implements OnApplicationShutdown {
             state: stopped ? 'running' : state,
             startedAt: new Date(latest.started_at).toISOString(),
             toVersion: latest.to_version,
-            ...((stopped || state === 'running') &&
-              latest.total_count > 0 && { progress: { done: latest.done_count, total: latest.total_count } }),
           };
         }
       }
@@ -308,16 +312,8 @@ export class MigrationRunsService implements OnApplicationShutdown {
     this.shuttingDown = true;
     if (this.jobsTimer) clearInterval(this.jobsTimer);
     if (this.deadRunTimer) clearInterval(this.deadRunTimer);
-    if (this.child?.pid) {
-      try {
-        // Detached group: kill npm and the runner under it. The open transaction rolls back.
-        process.kill(-this.child.pid, 'SIGTERM');
-      } catch {
-        // Already gone (ESRCH): its exit handler records the result.
-      }
-      // Let the exit handler record "failed" before the pool closes, so the row does not wait out the stale rule.
-      await Promise.race([this.childExit, new Promise((resolve) => setTimeout(resolve, SHUTDOWN_WAIT_MS))]);
-    }
+    // Let the exit handler record "failed" before the pool closes, so the row does not wait out the stale rule.
+    await Promise.all([stopChild(this.child, this.childExit), stopChild(this.cleanupChild, this.cleanupExit)]);
     await this.finalWrite;
     await this.pool?.end().catch(() => undefined);
   }
@@ -440,6 +436,27 @@ export class MigrationRunsService implements OnApplicationShutdown {
         }
         if (await this.updateRun(runId, run, 'succeeded')) await this.dropEarlierLogs(runId);
       });
+      // After the status write, so writes have reopened before cleanup starts.
+      if (succeeded) void this.finalWrite.then(() => this.runCleanupChild());
+    });
+  }
+
+  /** Output goes to the pod log only. A failed step stays pending for the next boot; the run stays succeeded. */
+  private runCleanupChild(): void {
+    if (this.shuttingDown || this.cleanupChild) return;
+    const child = spawn(setupCommand(process.env), {
+      shell: true,
+      detached: true,
+      stdio: ['ignore', 'inherit', 'inherit'],
+      env: { ...process.env, MIGRATION_PHASE: 'cleanup' },
+    });
+    this.cleanupChild = child;
+    this.cleanupExit = new Promise((resolve) => child.once('close', () => resolve()));
+    child.on('close', (code) => {
+      this.cleanupChild = null;
+      if (code && code !== SKIPPED_EXIT_CODE) {
+        console.warn(`[migrations] Cleanup migrations stopped (exit ${code}); the rest run on the next boot.`);
+      }
     });
   }
 

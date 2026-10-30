@@ -40,6 +40,9 @@
       "@otel/*": [
         "src/otel/*"
       ],
+      "@migrations/*": [
+        "migrations/*"
+      ],
     },
   },
   "exclude": [

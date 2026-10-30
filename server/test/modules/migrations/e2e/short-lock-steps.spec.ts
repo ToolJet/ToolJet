@@ -1,0 +1,153 @@
+/**
+ * Covers: migration-helpers/with-short-lock.ts
+ * @group database
+ */
+import { DataSource, QueryRunner } from 'typeorm';
+import { notNullSteps, setNotNull, SHORT_LOCK_TIMEOUT_MS, withShortLock } from 'src/migration-helpers/with-short-lock';
+import { createScratchDatabase, dropScratchDatabase, postgres, waitFor } from '../fixtures/harness';
+
+describe('migration-helpers/with-short-lock', () => {
+  const database = `tooljet_short_lock_${process.pid}`;
+  let db: DataSource;
+  let runner: QueryRunner;
+
+  beforeAll(async () => {
+    await createScratchDatabase(database);
+    db = await new DataSource({ type: 'postgres', ...postgres, database }).initialize();
+  }, 60_000);
+
+  beforeEach(async () => {
+    await db.query('DROP TABLE IF EXISTS widgets; CREATE TABLE widgets (id int, name text)');
+    runner = db.createQueryRunner();
+    await runner.connect();
+  });
+
+  afterEach(async () => {
+    await runner.release();
+  });
+
+  afterAll(async () => {
+    await db?.destroy().catch(() => undefined);
+    await dropScratchDatabase(database);
+  }, 60_000);
+
+  /** Another session reads the table inside an open transaction, as a long report query would. */
+  async function holdReadLock(): Promise<QueryRunner> {
+    const reader = db.createQueryRunner();
+    await reader.connect();
+    await reader.startTransaction();
+    await reader.query('SELECT * FROM widgets');
+    return reader;
+  }
+
+  describe('withShortLock(): each step in its own short transaction, so live traffic is never blocked for long', () => {
+    it('should give up after its attempts when a reader holds the table, waiting only briefly each time', async () => {
+      const reader = await holdReadLock();
+      const startedAt = Date.now();
+
+      await expect(
+        withShortLock(runner, ['ALTER TABLE widgets DROP COLUMN IF EXISTS name'], { attempts: 2, retryDelayMs: 0 })
+      ).rejects.toMatchObject({ driverError: { code: '55P03' } });
+
+      expect(Date.now() - startedAt).toBeLessThan(2 * SHORT_LOCK_TIMEOUT_MS + 1500);
+      await reader.rollbackTransaction();
+      await reader.release();
+    }, 30_000);
+
+    it('should let readers queued behind its waiting ALTER through once it gives up', async () => {
+      const reader = await holdReadLock();
+      try {
+        const step = withShortLock(runner, ['ALTER TABLE widgets DROP COLUMN IF EXISTS name'], { attempts: 1 });
+        await waitFor(
+          'the ALTER to queue',
+          () => db.query(`SELECT 1 FROM pg_locks WHERE relation = 'widgets'::regclass AND NOT granted`),
+          (rows) => rows.length > 0
+        );
+        const startedAt = Date.now();
+
+        // Queued behind the ALTER: it would wait as long as the reader holds the table.
+        const queued = await Promise.race([
+          db.query('SELECT count(*) FROM widgets').then(() => Date.now() - startedAt),
+          new Promise<'stalled'>((resolveStalled) => setTimeout(() => resolveStalled('stalled'), 10_000)),
+        ]);
+
+        expect(queued).toBeLessThan(SHORT_LOCK_TIMEOUT_MS + 1000);
+        await expect(step).rejects.toMatchObject({ driverError: { code: '55P03' } });
+      } finally {
+        await reader.rollbackTransaction();
+        await reader.release();
+      }
+    }, 30_000);
+
+    it('should succeed on a retry once the reader lets go', async () => {
+      const reader = await holdReadLock();
+      setTimeout(() => void reader.rollbackTransaction().then(() => reader.release()), SHORT_LOCK_TIMEOUT_MS / 2);
+
+      await withShortLock(runner, ['ALTER TABLE widgets DROP COLUMN IF EXISTS name'], { lockTimeoutMs: 200 });
+
+      const columns = await db.query(
+        `SELECT 1 FROM information_schema.columns WHERE table_name = 'widgets' AND column_name = 'name'`
+      );
+      expect(columns).toEqual([]);
+    }, 30_000);
+
+    it('should run inside a transaction the caller already opened, without committing it', async () => {
+      await runner.startTransaction();
+      const [{ lock_timeout: before }] = await runner.query('SHOW lock_timeout');
+
+      await withShortLock(runner, ['ALTER TABLE widgets DROP COLUMN IF EXISTS name']);
+      // Its own transaction would be a savepoint here, and its SET LOCAL would outlive it.
+      const [{ lock_timeout: after }] = await runner.query('SHOW lock_timeout');
+      await runner.rollbackTransaction();
+
+      expect(after).toBe(before);
+      expect(
+        await db.query(
+          `SELECT is_nullable FROM information_schema.columns WHERE table_name = 'widgets' AND column_name = 'name'`
+        )
+      ).toEqual([{ is_nullable: 'YES' }]);
+    });
+  });
+
+  describe('setNotNull(): making a column required without locking the table for a full scan', () => {
+    it('should add a check, verify old rows against it, set NOT NULL, then drop the check', () => {
+      expect(notNullSteps('widgets', 'name')).toEqual([
+        [
+          'ALTER TABLE "widgets" DROP CONSTRAINT IF EXISTS "widgets_name_not_null", ' +
+            'ADD CONSTRAINT "widgets_name_not_null" CHECK ("name" IS NOT NULL) NOT VALID',
+        ],
+        ['ALTER TABLE "widgets" VALIDATE CONSTRAINT "widgets_name_not_null"'],
+        [
+          'ALTER TABLE "widgets" ALTER COLUMN "name" SET NOT NULL',
+          'ALTER TABLE "widgets" DROP CONSTRAINT IF EXISTS "widgets_name_not_null"',
+        ],
+      ]);
+    });
+
+    it('should make the column required and leave no extra check behind', async () => {
+      await db.query(`INSERT INTO widgets VALUES (1, 'a')`);
+
+      await setNotNull(runner, 'widgets', 'name');
+
+      expect(
+        await db.query(
+          `SELECT is_nullable FROM information_schema.columns WHERE table_name = 'widgets' AND column_name = 'name'`
+        )
+      ).toEqual([{ is_nullable: 'NO' }]);
+      expect(await db.query(`SELECT conname FROM pg_constraint WHERE conrelid = 'widgets'::regclass`)).toEqual([]);
+    });
+
+    it('should fail when a row holds NULL, and leave nothing behind that would refuse new NULL writes', async () => {
+      await db.query('INSERT INTO widgets VALUES (1, NULL)');
+
+      await expect(setNotNull(runner, 'widgets', 'name')).rejects.toMatchObject({ driverError: { code: '23514' } });
+
+      expect(
+        await db.query(
+          `SELECT is_nullable FROM information_schema.columns WHERE table_name = 'widgets' AND column_name = 'name'`
+        )
+      ).toEqual([{ is_nullable: 'YES' }]);
+      await expect(db.query('INSERT INTO widgets VALUES (2, NULL)')).resolves.toBeDefined();
+    });
+  });
+});

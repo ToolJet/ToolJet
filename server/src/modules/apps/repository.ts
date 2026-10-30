@@ -9,6 +9,7 @@ import { SessionAppData } from './types';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { isUUID } from 'class-validator';
 import { APP_TYPES } from './constants';
+import { appVersionOnBranch, appVersionOnDefaultBranch, nullBranchLast } from '@helpers/branch_scope.helper';
 
 @Injectable()
 export class AppsRepository extends Repository<App> {
@@ -97,15 +98,15 @@ export class AppsRepository extends Repository<App> {
     // its default-branch row. Without this the query becomes `av.branch_id = NULL` and every
     // git-off app (whose rows live on the default branch) 404s.
     const resolvedDefaultBranchId = defaultBranchId ?? (await this.getDefaultBranchId(this.manager, organizationId));
-    if (!resolvedDefaultBranchId) return null;
 
     const resolvedVersion = await this.dataSource
       .getRepository(AppVersion)
       .createQueryBuilder('av')
       .innerJoinAndSelect('av.app', 'app')
       .where('av.slug = :slug', { slug })
-      .andWhere('av.branch_id = :branchId', { branchId: resolvedDefaultBranchId })
-      .orderBy('av.is_synced', 'DESC')
+      .andWhere(appVersionOnBranch('av', 'branchId'), { branchId: resolvedDefaultBranchId })
+      .orderBy(nullBranchLast('av.branch_id'), 'ASC')
+      .addOrderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
       .getOne();
 
@@ -136,9 +137,11 @@ export class AppsRepository extends Repository<App> {
       .getRepository(AppVersion)
       .createQueryBuilder('av')
       .innerJoinAndSelect('av.app', 'app')
-      .innerJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
+      .leftJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id')
       .where('av.slug = :slug', { slug })
-      .orderBy('av.is_synced', 'DESC')
+      .andWhere(appVersionOnDefaultBranch('av', 'wb'))
+      .orderBy(nullBranchLast('av.branch_id'), 'ASC')
+      .addOrderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
       .getOne();
 
@@ -158,9 +161,11 @@ export class AppsRepository extends Repository<App> {
       .getRepository(AppVersion)
       .createQueryBuilder('av')
       .innerJoinAndSelect('av.app', 'app')
-      .innerJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
+      .leftJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id')
       .where('av.slug = :slug', { slug })
-      .orderBy('av.is_synced', 'DESC')
+      .andWhere(appVersionOnDefaultBranch('av', 'wb'))
+      .orderBy(nullBranchLast('av.branch_id'), 'ASC')
+      .addOrderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
       .getOne();
 
@@ -201,9 +206,10 @@ export class AppsRepository extends Repository<App> {
       .innerJoinAndSelect('av.app', 'app')
       .where('av.app_name = :name', { name })
       .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
-      .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
+      .andWhere(appVersionOnBranch('av', 'branchId'), { branchId: defaultBranchId })
       .andWhere('app.organization_id = :organizationId', { organizationId })
-      .orderBy('av.is_synced', 'DESC')
+      .orderBy(nullBranchLast('av.branch_id'), 'ASC')
+      .addOrderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
       .getOne();
 
@@ -297,10 +303,10 @@ export class AppsRepository extends Repository<App> {
         .innerJoin(
           'app_versions',
           'av_meta',
-          `av_meta.app_id = app.id AND av_meta.branch_id = :branchId AND av_meta.id = (
+          `av_meta.app_id = app.id AND av_meta.id = (
             SELECT av_inner.id FROM app_versions av_inner
-            WHERE av_inner.app_id = app.id AND av_inner.branch_id = :branchId
-            ORDER BY av_inner.updated_at DESC
+            WHERE av_inner.app_id = app.id AND ${appVersionOnBranch('av_inner', 'branchId')}
+            ORDER BY ${nullBranchLast('av_inner.branch_id')}, av_inner.updated_at DESC
             LIMIT 1
           )`,
           { branchId }
@@ -317,13 +323,12 @@ export class AppsRepository extends Repository<App> {
       qb.leftJoin(
         'app_versions',
         'av_meta',
-        `av_meta.app_id = app.id AND av_meta.branch_id = :defaultBranchId
-           AND av_meta.version_type = 'version' AND av_meta.status = 'DRAFT' AND av_meta.is_stub = false
+        `av_meta.app_id = app.id
            AND av_meta.id = (
              SELECT av_inner.id FROM app_versions av_inner
-             WHERE av_inner.app_id = app.id AND av_inner.branch_id = :defaultBranchId
+             WHERE av_inner.app_id = app.id AND ${appVersionOnBranch('av_inner', 'defaultBranchId')}
                AND av_inner.version_type = 'version' AND av_inner.status = 'DRAFT' AND av_inner.is_stub = false
-             ORDER BY av_inner.is_synced DESC, av_inner.updated_at DESC
+             ORDER BY ${nullBranchLast('av_inner.branch_id')}, av_inner.is_synced DESC, av_inner.updated_at DESC
              LIMIT 1
            )`,
         { defaultBranchId }
@@ -358,13 +363,12 @@ export class AppsRepository extends Repository<App> {
     qb.leftJoin(
       'app_versions',
       'av_meta',
-      `av_meta.app_id = app.id AND av_meta.branch_id = :defaultBranchId
-         AND av_meta.version_type = 'version' AND av_meta.status = 'DRAFT' AND av_meta.is_stub = false
+      `av_meta.app_id = app.id
          AND av_meta.id = (
            SELECT av_inner.id FROM app_versions av_inner
-           WHERE av_inner.app_id = app.id AND av_inner.branch_id = :defaultBranchId
+           WHERE av_inner.app_id = app.id AND ${appVersionOnBranch('av_inner', 'defaultBranchId')}
              AND av_inner.version_type = 'version' AND av_inner.status = 'DRAFT' AND av_inner.is_stub = false
-           ORDER BY av_inner.is_synced DESC, av_inner.updated_at DESC
+           ORDER BY ${nullBranchLast('av_inner.branch_id')}, av_inner.is_synced DESC, av_inner.updated_at DESC
            LIMIT 1
          )`,
       { defaultBranchId }
@@ -441,9 +445,11 @@ export class AppsRepository extends Repository<App> {
       .createQueryBuilder('av')
       .innerJoinAndSelect('av.app', 'app')
       .leftJoinAndSelect('app.appVersions', 'appVersions')
-      .innerJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
+      .leftJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id')
       .where('av.slug = :slug', { slug: idOrSlug })
-      .orderBy('av.is_synced', 'DESC')
+      .andWhere(appVersionOnDefaultBranch('av', 'wb'))
+      .orderBy(nullBranchLast('av.branch_id'), 'ASC')
+      .addOrderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
       .getOne();
 
@@ -490,15 +496,15 @@ export class AppsRepository extends Repository<App> {
     // is_public (propagation triggers). Read from any non-stub row — no version_type /
     // status / git-on-off branching; is_synced sorts the canonical row first.
     const targetBranchId = branchId ?? (await this.getDefaultBranchId(manager, app.organizationId));
-    if (!targetBranchId) return null;
 
     return manager
       .getRepository(AppVersion)
       .createQueryBuilder('av')
       .where('av.app_id = :appId', { appId: app.id })
-      .andWhere('av.branch_id = :branchId', { branchId: targetBranchId })
+      .andWhere(appVersionOnBranch('av', 'branchId'), { branchId: targetBranchId })
       .andWhere('av.is_stub = false')
-      .orderBy('av.is_synced', 'DESC')
+      .orderBy(nullBranchLast('av.branch_id'), 'ASC')
+      .addOrderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
       .getOne();
   }
