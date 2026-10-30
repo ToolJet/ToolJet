@@ -119,14 +119,14 @@ For more info, refer **[here](https://docs.snowflake.com/en/user-guide/oauth-ext
 :::
 
 ### Bearer Token Auth
-This authentication method uses a pre-generated bearer token for secure, token-based access to Snowflake, eliminating the need to pass username and password in requests. The Bearer tokens authenticate requests to Snowflake REST APIs via the Authorization header.
+This authentication method uses a pre-generated bearer token for secure, token-based access to Snowflake, so you don't need to provide a username and password. Enter the token in the **Bearer token** field.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/datasource-reference/snowflake/bearer-auth.png" alt="ToolJet - Snowflake connection" />
 
 :::info
-- After completing the configuration and authorization, Snowflake sends an authorization code to ToolJet, which is automatically exchanged for a Bearer Access Token used for subsequent queries.
+- The bearer token is a Snowflake programmatic access token (PAT). ToolJet connects with the token you enter, using Snowflake's `PROGRAMMATIC_ACCESS_TOKEN` authenticator. There is no OAuth authorization step, and no authorization code is exchanged.
 
-- The Bearer token is same as the PAT token key. Refer **[here](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens)** on how to generate a token key.
+- Refer **[here](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens)** on how to generate a token.
 :::
 
 **Generate a Programmatic Access Token (PAT) in Snowflake :**
@@ -165,7 +165,7 @@ This is an authentication method that uses an RSA key pair (public/private) inst
 Please refer to **[Key Pair Auth Docs](https://docs.snowflake.com/en/user-guide/key-pair-auth)** on how to generate the private key and passphrase.
 :::
 
-## Dynamic Connection Paramaters
+## Dynamic Connection Parameters
 
 You can enable **Allow dynamic connection parameters** in the data source configuration page to directly use the values in the query builder.
 
@@ -192,8 +192,14 @@ select * from "SNOWFLAKE_SAMPLE_DATA"."WEATHER"."DAILY_14_TOTAL" limit 10;
 1. Create a new query and select the Snowflake data source.
 2. Select the GUI mode from the dropdown.
 3. Select the operation you want to perform.
-4. Fetch and select the **Table name**.
+4. Fetch and select the **Table**. The dropdown lists the base tables in the data source's database, limited to the **Schema** set on the data source if one is configured.
 5. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
+
+:::info Identifiers are case-sensitive
+In GUI mode, ToolJet wraps table and column names in double quotes, for example `"ID"`. Quoted identifiers are case-sensitive in Snowflake, so column names must match the case stored in Snowflake exactly. Snowflake stores names created without quotes in uppercase, so a column created as `firstname` must be referenced as `FIRSTNAME`.
+
+Columns picked from the column dropdowns already use the stored case. Take care with column names you type yourself, such as the keys in **Records to insert**, **Records to update**, and **Records to upsert**. The examples on this page use lowercase keys, which only match columns that were created with quoted lowercase names. For a table created without quotes, use uppercase keys such as `{ "ID": 101, "FIRSTNAME": "John" }`.
+:::
 
 ### List Rows
 Retrieves and displays rows from the selected table based on optional filters, sorting, and limits.
@@ -217,7 +223,7 @@ Insert a new row into the selected table by providing values for the required co
 In the editor, ensure the **Columns** input is provided in `string` format.
 
 #### Optional Parameter
-- **Columns**: Specifies the table columns and their corresponding values to be inserted when creating a new row. 
+- **Columns**: Specifies the table columns and their corresponding values to be inserted when creating a new row. If no columns are provided, the row is inserted with `DEFAULT VALUES`.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/create-rows-gui.png" alt="Snowflake create rows gui" />
 
@@ -226,19 +232,31 @@ Modify existing row values in the selected table based on the specified conditio
 
 In the editor, ensure the **Columns** input is provided in `string` format.
 
-#### Required Parameter
+#### Required Parameters
+- **Filter**: Apply conditions to identify which row(s) should be updated. At least one filter condition is required. Without one, the query fails with `Update rows requires at least one filter condition`.
 - **Columns**: Specify the column names and values to be updated in the selected row(s).
 
-#### Optional Parameter
-- **Filter**: Apply conditions to identify which row(s) should be updated.
+#### Optional Parameters
+- **Allow this query to update multiple rows**: When enabled, the query can modify multiple rows at once. When disabled, the query fails with `Query matches more than one row. Enable "Allow this Query to modify multiple rows" to permit this.` if the filter matches more than one row.
+- **Consider query that updates zero records as success**: When enabled, a query that matches no rows is still treated as successful. When disabled, the query fails with `No rows were updated.` if no row matches the filter.
+
+Both toggles are off by default. The update runs in a transaction, so when a toggle's condition is violated, it is rolled back and no rows are changed. A successful query returns the number of affected rows as `rowsAffected`.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/update-rows-gui.png" alt="Snowflake update rows gui" />
 
 ### Delete Rows
-Removes either all rows from the table or that match the specified filter conditions.
+Removes the rows that match the specified filter conditions.
 
-#### Optional Parameter
-- **Filter**: Specifies conditions to determine which rows should be deleted from the table.
+#### Required Parameter
+- **Filter**: Specifies conditions to determine which rows should be deleted from the table. At least one filter condition is required. Without one, the query fails with `Delete rows requires at least one filter condition to prevent accidental mass deletions`.
+
+#### Optional Parameters
+- **Allow this query to delete multiple rows**: When enabled, the query can delete multiple rows at once. When disabled, the query fails with `Query matches more than one row. Enable "Allow this Query to modify multiple rows" to permit this.` if more than one row would be deleted.
+- **Consider query that deletes zero records as success**: When enabled, a query that matches no rows is still treated as successful. When disabled, the query fails with `No rows were deleted.` if no row matches the filter.
+
+Both toggles are off by default. The delete runs in a transaction, so when a toggle's condition is violated, it is rolled back and no rows are deleted.
+
+Unlike some other SQL data sources, Snowflake's **Delete rows** operation has no **Limit** option, because Snowflake doesn't support `LIMIT` in `DELETE` statements. Use **Filter** to target the rows to delete.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/delete-rows-gui.png" alt="Snowflake delete rows gui" />
 
@@ -246,16 +264,29 @@ Removes either all rows from the table or that match the specified filter condit
 Inserts a new row or updates an existing row if a matching primary key already exists. In the editor, ensure to the input the **Columns** in `string` format.
 
 #### Required Parameters
-- **Primary Key column(s)**: Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted.
+- **Primary key column(s)**: One or more primary key columns used to detect conflicts. Enter a single column name, such as `id`, or an array for composite keys, such as `{{ ["id", "tenant_id"] }}`. At least one is required.
 - **Columns**: Defines the column–value pairs that will be inserted or updated in the row.
+
+#### Optional Parameters
+- **Allow this query to upsert multiple rows**: When enabled, the query can affect multiple rows at once. When disabled, the query fails with `Query matches more than one row. Enable "Allow this Query to modify multiple rows" to permit this.` if more than one row is affected.
+- **Consider query that upserts zero records as success**: When enabled, a query that affects no rows is still treated as successful. When disabled, the query fails with `No rows were upserted.` if no row is affected.
+
+Both toggles are off by default. The upsert runs in a transaction, so when a toggle's condition is violated, it is rolled back.
+
+#### How Upsert Works in Snowflake
+ToolJet runs the upsert as a Snowflake `MERGE` statement that matches on the primary key column(s):
+- **A row with the same primary key exists**: Only the non-primary-key columns you provide in **Columns** are updated. Other columns keep their current values.
+- **No row with that primary key exists**: A new row is inserted with the columns you provide.
+- **Only primary key columns are provided**: Existing rows aren't changed, and a new row is inserted if no match exists.
+- **All primary key values are empty**: ToolJet skips the `MERGE` and runs a plain `INSERT` with the non-primary-key columns. Snowflake then fills the key, for example from a column default or identity. If no non-primary-key columns are provided either, the query fails with `No non-primary-key columns provided to insert`.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/upsert-rows-gui.png" alt="Snowflake upsert rows gui" />
 
 ### Bulk Insert
-Inserts multiple rows into the table in a single operation using an array of records.
+Inserts multiple rows into the table using an array of records. All records are inserted in a single transaction. See [Transactions and batching](#transactions-and-batching-in-bulk-operations).
 
 #### Required Parameter
-- **Records to Insert**: An array of objects representing multiple rows to be inserted into the selected table in a single operation.
+- **Records to insert**: An array of row objects to insert. If a record doesn't include a column that other records in the same batch include, that column is inserted as `NULL` for the record.
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -272,11 +303,11 @@ Inserts multiple rows into the table in a single operation using an array of rec
 <img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/bulk-insert-gui.png" alt="Snowflake bulk insert gui" />
 
 ### Bulk Update using Primary Key
-Updates multiple rows at once by matching each record with its corresponding primary key.
+Updates multiple rows at once by matching each record with its corresponding primary key. All records are updated in a single transaction. See [Transactions and batching](#transactions-and-batching-in-bulk-operations).
 
 #### Required Parameters
-- **Primary Key columns**: Specifies the column(s) used to uniquely identify the rows that should be updated.
-- **Records to Update**: An array of objects containing the primary key and the column values to be updated for each row. 
+- **Primary key column(s)**: One or more primary key columns. Enter a single column name, such as `id`, or an array for composite keys, such as `{{ ["id", "tenant_id"] }}`.
+- **Records to update**: An array of row objects to update. Each row must include all primary key column values and at least one column to update, otherwise the query fails with an error such as `Row 2 is missing primary key column "id"`.
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -293,13 +324,13 @@ Updates multiple rows at once by matching each record with its corresponding pri
 <img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/bulk-update-gui.png" alt="Snowflake bulk update gui" />
 
 ### Bulk Upsert using Primary Key
-Inserts new rows or updates existing rows in bulk based on matching primary key values.
+Inserts new rows or updates existing rows in bulk based on matching primary key values. All records are upserted in a single transaction. See [Transactions and batching](#transactions-and-batching-in-bulk-operations).
 
 #### Required Parameters
-- **Primary Key columns**: Specifies the column(s) used to determine whether a row already exists for updating or if a new row should be inserted.
-- **Records to Upsert**: An array of objects containing primary key values and column data that will be inserted as new rows or used to update existing rows.
+- **Primary key column(s)**: One or more primary key columns used to detect conflicts. Enter a single column name, such as `id`, or an array for composite keys, such as `{{ ["id", "tenant_id"] }}`.
+- **Records to upsert**: An array of row objects to insert or update. Each row must include all primary key column values.
 
-This basically means If the row exists then update, if not do insert. 
+Each record is upserted with a `MERGE` statement, following the same rules as [Upsert Row](#how-upsert-works-in-snowflake). If the row exists, the columns in the record are updated. If it doesn't, the record is inserted.
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -313,6 +344,14 @@ This basically means If the row exists then update, if not do insert.
 </details>
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/snowflake/bulk-upsert-gui.png" alt="Snowflake bulk update gui" />
+
+### Transactions and Batching in Bulk Operations
+
+**Bulk insert**, **Bulk update using primary key**, and **Bulk upsert using primary key** run all of their statements inside a single transaction. If any statement fails, the whole operation is rolled back and no records are written. The query either applies every record or none of them.
+
+You don't need to split large arrays yourself. ToolJet automatically splits the records into batches so that no statement exceeds Snowflake's limit of 16,384 bound parameters. The number of records per batch is 16,384 divided by the number of columns in the records. For example, records with 8 columns are inserted in batches of 2,048. All batches still run in the same transaction.
+
+**Bulk insert** sends one multi-row `INSERT` statement per batch. **Bulk update using primary key** and **Bulk upsert using primary key** send one statement per record. Each operation returns the total number of affected rows as `rowsAffected`.
 
 :::tip
 Query results can be transformed using transformations. Read our [transformations](/docs/app-builder/custom-code/transform-data) documentation to learn more.
