@@ -27,4 +27,22 @@ describe('ToolTip in App Builder', () => {
     expect(tooltip).toHaveTextContent('Desktop layout');
     expect(document.querySelector('.app-builder-tooltip')).toBeInTheDocument();
   });
+
+  // The tooltip is portalled to <body>; the editor's fixed right sidebar sits at z-index 1041, so the
+  // tooltip has to stack above it or buttons inside the query panel show nothing.
+  it('APPBUILDER-TOOLTIP-002 stacks above the editor sidebar', async () => {
+    render(
+      <AppBuilderTooltipProvider>
+        <ToolTip message="Open code editor in a new tab">
+          <button type="button">Open</button>
+        </ToolTip>
+      </AppBuilderTooltipProvider>
+    );
+
+    fireEvent.pointerMove(screen.getByRole('button', { name: 'Open' }), { pointerType: 'mouse' });
+    act(() => jest.advanceTimersByTime(450));
+    await screen.findByRole('tooltip');
+
+    expect(document.querySelector('.app-builder-tooltip')).toHaveClass('!tw-z-[1070]');
+  });
 });

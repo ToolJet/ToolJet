@@ -33,7 +33,8 @@ export function ToolTip({
           side={placement === 'left' || placement === 'right' || placement === 'bottom' ? placement : 'top'}
           sideOffset={7}
           showArrow={false}
-          className={`app-builder-tooltip !tw-rounded-[5px] !tw-px-2 !tw-py-[5px] !tw-text-xs !tw-font-normal !tw-leading-4 !tw-shadow-elevation-200 ${tooltipClassName}`}
+          // Portalled to <body>: stack above the editor's fixed sidebars (1041) like Bootstrap tooltips (1070).
+          className={`app-builder-tooltip !tw-z-[1070] !tw-rounded-[5px] !tw-px-2 !tw-py-[5px] !tw-text-xs !tw-font-normal !tw-leading-4 !tw-shadow-elevation-200 ${tooltipClassName}`}
           style={{ width: rest?.width ?? 'auto', maxWidth: rest?.maxWidth ?? undefined }}
         >
           {message}
