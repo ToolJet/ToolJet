@@ -182,10 +182,11 @@ mkdir -p "$BUILD_DIR"
 
 git config --global url."https://x-access-token:CUSTOM_GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
 
-#The below url will be edited dynamically when actions is triggered
-git clone -b lts-3.16 https://github.com/ToolJet/ToolJet.git "$BUILD_DIR" && cd "$BUILD_DIR"
+# BUILD_BRANCH_NAME is replaced with the branch to build by packer-build.yml, like the token above
+git clone -b BUILD_BRANCH_NAME https://github.com/ToolJet/ToolJet.git "$BUILD_DIR" && cd "$BUILD_DIR"
 git submodule update --init --recursive
-git submodule foreach 'git checkout lts-3.16 || true'
+# Same branch in submodules if it exists, otherwise the branch .gitmodules tracks
+BRANCH_NAME=BUILD_BRANCH_NAME git submodule foreach 'sh "$toplevel/docker/LTS/submodule-checkout.sh"'
 
 # Token only needed for the clone above; drop it now so it never ends up baked into the build artifacts
 git config --global --unset url."https://x-access-token:CUSTOM_GITHUB_TOKEN@github.com/".insteadOf

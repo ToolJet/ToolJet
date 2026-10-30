@@ -6,12 +6,10 @@ RUN mkdir -p /app
 
 WORKDIR /app
 
-# Set GitHub token and branch as build arguments
-ARG CUSTOM_GITHUB_TOKEN
+# GitHub token is a BuildKit secret (--secret id=github_token), mounted only for the steps that
+# fetch private repos and passed to git via env, so it never lands in a layer, the image config
+# or the build provenance like a build arg does.
 ARG BRANCH_NAME
-
-# Clone and checkout the frontend repository
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
 RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
@@ -20,48 +18,30 @@ RUN git clone https://github.com/ToolJet/ToolJet.git .
 # The branch name needs to be changed the branch with modularisation in CE repo
 RUN git checkout ${BRANCH_NAME}
 
-# Handle submodules - try normal submodule update first, if it fails clone directly from base repo
-RUN if git submodule update --init --recursive; then \
+# Handle submodules - try normal submodule update first, if it fails clone directly from base repo.
+# Either way, checkout the same branch in submodules if it exists, otherwise the branch .gitmodules tracks
+COPY ./docker/LTS/submodule-checkout.sh /tmp/submodule-checkout.sh
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    if git submodule update --init --recursive; then \
   echo "Submodules initialized successfully"; \
-  # Checkout the same branch in submodules if it exists, otherwise fallback to lts-3.16
-  git submodule foreach " \
-    if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-       git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-      git checkout ${BRANCH_NAME}; \
-    else \
-      echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to lts-3.16'; \
-      git checkout lts-3.16; \
-    fi"; \
+  git submodule foreach 'sh /tmp/submodule-checkout.sh' || exit 1; \
 else \
   echo "Submodule update failed, likely a forked repo. Cloning EE submodules directly from base repo."; \
   # Clone frontend/ee submodule directly
   if [ ! -d "frontend/ee" ]; then \
     mkdir -p frontend/ee; \
-    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-frontend.git frontend/ee; \
+    git clone https://github.com/ToolJet/ee-frontend.git frontend/ee; \
   fi; \
-  # Clone server/ee submodule directly  
+  # Clone server/ee submodule directly
   if [ ! -d "server/ee" ]; then \
     mkdir -p server/ee; \
-    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-server.git server/ee; \
+    git clone https://github.com/ToolJet/ee-server.git server/ee; \
   fi; \
-  # Checkout the same branch in EE submodules if it exists, otherwise fallback to lts-3.16
-  cd frontend/ee && \
-  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-    git checkout ${BRANCH_NAME}; \
-  else \
-    echo "Branch ${BRANCH_NAME} not found in frontend/ee, falling back to lts-3.16"; \
-    git checkout lts-3.16; \
-  fi && \
-  cd ../../server/ee && \
-  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-    git checkout ${BRANCH_NAME}; \
-  else \
-    echo "Branch ${BRANCH_NAME} not found in server/ee, falling back to lts-3.16"; \
-    git checkout lts-3.16; \
-  fi && \
-  cd ../..; \
+  for sm in frontend/ee server/ee; do \
+    (cd "$sm" && name="$sm" toplevel=/app sha1=$(git -C /app rev-parse "HEAD:$sm") sh /tmp/submodule-checkout.sh) || exit 1; \
+  done; \
 fi
 
 # Scripts for building

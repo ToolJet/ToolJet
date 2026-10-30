@@ -12,7 +12,6 @@ on:
             branch:
                 description: "Branch to deploy from"
                 required: true
-                default: "lts-3.16"
             plugin_name:
                 description: "Plugin name to deploy individually (leave empty to deploy all)"
                 required: false
@@ -20,7 +19,7 @@ on:
 
 env:
     PR_NUMBER: ${{ github.event.number }}
-    BRANCH_NAME: ${{ (github.event_name == 'release' && 'lts-3.16') || github.event.inputs.branch || github.head_ref || github.ref_name }}
+    BRANCH_NAME: ${{ github.event.inputs.branch || github.head_ref || github.ref_name }}
 
 permissions:
     contents: read
@@ -77,11 +76,35 @@ jobs:
               with:
                   ref: ${{ github.event.pull_request.head.ref }}
 
-            - name: Checkout lts-3.16 for LTS release
+            # LTS branch = what .gitmodules tracks at the release tag (Sync repo checked out the tag),
+            # so cutting a new LTS branch needs no edit here. Fails if the tag isn't on that branch.
+            - name: Resolve LTS branch from .gitmodules
+              if: github.event_name == 'release'
+              id: lts
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  REPO: ${{ github.repository }}
+                  TAG: ${{ github.event.release.tag_name }}
+              run: |
+                  branch=$(git config -f .gitmodules submodule.server/ee.branch)
+                  # The tag must sit on the release commit: tag name == v + .version at that commit
+                  version=$(gh api "repos/$REPO/contents/.version?ref=$TAG" --jq .content | base64 -d | tr -d '\n')
+                  if [[ "v$version" != "$TAG" ]]; then
+                    echo "::error::Release tag $TAG does not match .version ($version) at that commit."
+                    exit 1
+                  fi
+                  status=$(gh api "repos/$REPO/compare/${branch}...${TAG}" --jq .status)
+                  if [[ "$status" != "identical" && "$status" != "behind" ]]; then
+                    echo "::error::Release tag $TAG is not on $branch, the branch .gitmodules tracks. Update branch in .gitmodules on the LTS branch."
+                    exit 1
+                  fi
+                  echo "branch=$branch" >> "$GITHUB_OUTPUT"
+
+            - name: Checkout LTS branch for LTS release
               if: github.event_name == 'release'
               uses: actions/checkout@v3
               with:
-                  ref: lts-3.16
+                  ref: refs/heads/${{ steps.lts.outputs.branch }}
 
             - name: Checkout specified branch
               if: github.event_name == 'workflow_dispatch'

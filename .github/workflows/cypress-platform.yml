@@ -131,12 +131,14 @@ jobs:
       # EE dockerfile build below
       - name: Build EE Docker image
         if: matrix.edition == 'ee' && !inputs.image
+        env:
+          CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         run: |
           echo "Building EE Docker image..."
           docker buildx build \
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
-            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --secret id=github_token,env=CUSTOM_GITHUB_TOKEN \
             --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
@@ -610,12 +612,14 @@ jobs:
 
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
+        env:
+          CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         run: |
           echo "Building EE Docker image..."
           docker buildx build \
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
-            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --secret id=github_token,env=CUSTOM_GITHUB_TOKEN \
             --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
@@ -1032,12 +1036,14 @@ jobs:
 
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
+        env:
+          CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         run: |
           echo "Building EE Docker image..."
           docker buildx build \
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
-            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --secret id=github_token,env=CUSTOM_GITHUB_TOKEN \
             --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
@@ -1467,12 +1473,14 @@ jobs:
 
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
+        env:
+          CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         run: |
           echo "Building EE Docker image..."
           docker buildx build \
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
-            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --secret id=github_token,env=CUSTOM_GITHUB_TOKEN \
             --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \

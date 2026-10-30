@@ -71,6 +71,12 @@ jobs:
           push: true
           tags: ${{ steps.taggen.outputs.tag }}
           platforms: linux/amd64
+          # Transition: branches without the secret change (e.g. lts-3.16) still read the token as a
+          # build arg. provenance: false keeps it out of the image attestation. Drop both once every
+          # buildable branch uses the secret.
+          provenance: false
+          secrets: |
+            github_token=${{ secrets.CUSTOM_GITHUB_TOKEN }}
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ github.event.inputs.branch_name }}
