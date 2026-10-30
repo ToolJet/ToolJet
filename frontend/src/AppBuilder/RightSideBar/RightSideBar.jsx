@@ -7,6 +7,7 @@ import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { RIGHT_SIDE_BAR_TAB } from './rightSidebarConstants';
 import QueryManager from '@/AppBuilder/QueryManager/QueryManager';
+import QueryKeyHooks from '@/AppBuilder/QueryPanel/QueryKeyHooks';
 import {
   getQueryHeaderControlPresentation,
   getLeftPanelState,
@@ -128,7 +129,10 @@ export const RightSideBar = ({ darkMode }) => {
                       setRightSidebarOpen(false);
                     }}
                   />
-                  <QueryManager darkMode={darkMode} surface="right" />
+                  {/* Run, preview and stop shortcuts, live while the query is on screen. */}
+                  <QueryKeyHooks isExpanded={isRightSidebarOpen}>
+                    <QueryManager darkMode={darkMode} surface="right" />
+                  </QueryKeyHooks>
                 </div>
               </FallbackBoundary>
             )}
