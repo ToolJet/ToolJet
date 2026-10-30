@@ -1,0 +1,43 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Cloudflare D1 datasource",
+  "description": "A schema defining Cloudflare D1 datasource",
+  "type": "database",
+  "source": {
+    "name": "Cloudflare D1",
+    "kind": "cloudflare_d1",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "account_id": {
+        "type": "string"
+      },
+      "api_token": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "account_id": {
+      "label": "Account ID",
+      "key": "account_id",
+      "type": "text",
+      "description": "Enter your Cloudflare account ID"
+    },
+    "api_token": {
+      "label": "API token",
+      "key": "api_token",
+      "type": "password",
+      "description": "Enter your Cloudflare API token"
+    }
+  },
+  "required": [
+    "account_id",
+    "api_token"
+  ]
+}
