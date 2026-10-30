@@ -280,7 +280,7 @@ export class DataQueriesService implements IDataQueriesService {
     versionId: string,
     dto: AddToLibraryDto
   ): Promise<{
-    query: { id: string; name: string; kind: string; data_source_id: string; options: Record<string, unknown> };
+    query: { id: string; name: string; kind: 'library'; data_source_id: string; options: Record<string, unknown> };
     libraryQueryId: string;
     libraryVersionId: string;
   }> {

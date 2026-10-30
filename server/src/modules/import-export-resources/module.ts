@@ -1,3 +1,4 @@
+import { QueryLibraryModule } from '@modules/query-library/module';
 import { DynamicModule } from '@nestjs/common';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { EncryptionModule } from '@modules/encryption/module';
@@ -37,6 +38,7 @@ export class ImportExportResourcesModule extends SubModule {
     return this.cacheModule(cacheKey, {
       module: ImportExportResourcesModule,
       imports: [
+        await QueryLibraryModule.register(configs),
         await EncryptionModule.register(configs),
         await TooljetDbModule.register(configs),
         await UsersModule.register(configs),

@@ -307,3 +307,23 @@ export function remapLibraryConsumerOptions(
   if (nextQueryId === queryId && nextVersionId === versionId) return null;
   return { ...options, libraryQueryId: nextQueryId, libraryQueryVersionId: nextVersionId };
 }
+
+// Restrict inspection to the supported transport structure; pins count even without bundled definitions.
+export function hasLibraryContent(bundle: unknown): boolean {
+  if (!bundle || typeof bundle !== 'object') return false;
+  const value = bundle as Record<string, unknown>;
+  if (value.appV2) return hasLibraryContent(value.appV2);
+  if (value.app) return Array.isArray(value.app) ? value.app.some(hasLibraryContent) : hasLibraryContent(value.app);
+  if (Array.isArray(value.libraryQueries) && value.libraryQueries.length) return true;
+  if (
+    Array.isArray(value.dataQueries) &&
+    value.dataQueries.some((row: Record<string, unknown>) => {
+      const options = row?.options as Record<string, unknown> | undefined;
+      return (
+        row?.kind === 'library' || options?.libraryQueryId !== undefined || options?.libraryQueryVersionId !== undefined
+      );
+    })
+  )
+    return true;
+  return Array.isArray(value.modules) && value.modules.some(hasLibraryContent);
+}
