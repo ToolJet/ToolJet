@@ -830,7 +830,7 @@ describe('CustomComponent inside a Listview', () => {
     });
   }
 
-  function renderListviewWithCustomComponent(data = '{{ { row: listItem.name } }}') {
+  function renderListviewWithCustomComponent(data = '{{ { row: listItem.name } }}', properties = {}) {
     store().setVariable('rows', [{ name: 'A' }, { name: 'B' }], MODULE_ID);
     const listview = componentDefinition('lv1', 'listview1', 'Listview', {
       dataSourceSelector: binding('rawJson'),
@@ -842,7 +842,7 @@ describe('CustomComponent inside a Listview', () => {
       disabledState: binding('{{false}}'),
       enablePagination: binding('{{false}}'),
     });
-    const cc = ccDefinition(ID, HANDLE, { data: binding(data) });
+    const cc = ccDefinition(ID, HANDLE, { data: binding(data), ...properties });
     cc.component.parent = 'lv1';
     cc.component.definition.others = { showOnDesktop: binding('{{true}}'), showOnMobile: binding('{{false}}') };
 
@@ -890,6 +890,28 @@ describe('CustomComponent inside a Listview', () => {
 
     await waitFor(() => expect(rowData(0)).toEqual({ row: 'A', title: 'row 0 only' }));
     expect(rowData(1)).toEqual({ row: 'B' });
+  });
+
+  test('[CustomComponent-ISO-006] Every ListView row loads the author code', async () => {
+    // Break this catches: storing the unresolved code once for the whole
+    // component while the row-scoped properties are stored per row, so a row
+    // renders with no code and its frame stays blank until the component is
+    // moved. The code carries JSX double braces, which must reach the frame
+    // as typed, never evaluated.
+    const authored = "const Row = () => <div style={{ color: 'red' }}>row</div>;";
+    renderListviewWithCustomComponent(undefined, { code: { value: authored, skipResolve: true } });
+    await waitFor(() => expect(rowData(1)).toEqual({ row: 'B' }));
+
+    const frames = [...document.querySelectorAll(`iframe[data-id="${ID}"]`)];
+    expect(frames).toHaveLength(2);
+    const seen = frames.map((el) => recordFrameMessages(el));
+
+    frames.forEach((el) => deliver({ from: 'customComponent', componentId: ID, message: 'INIT' }, el.contentWindow));
+
+    for (const rowSeen of seen) {
+      await waitFor(() => expect(lastOfType(rowSeen, 'INIT_RESPONSE')).toBeDefined());
+      expect(lastOfType(rowSeen, 'INIT_RESPONSE').code).toBe(authored);
+    }
   });
 
   test('[CustomComponent-ISO-005] A later row still redraws after an earlier row made the same change', async () => {
