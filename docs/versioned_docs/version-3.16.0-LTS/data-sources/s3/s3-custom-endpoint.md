@@ -14,6 +14,7 @@ In this guide, we will see how we can connect to different **S3 compatible objec
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/s3-custom/connection.png" alt="Custom Endpoint - S3 hosts" />
 
 - To get the **Credentials** which is **Access Key** and **Secret Key**, you'll need to go to the Minio console to generate the keys
+- Set **Authentication** to **Use IAM Access Keys**. The **Custom Endpoint** toggle is available only in this mode.
 - Enable the **Custom Endpoint** toggle switch, and enter the custom host URL i.e where your Minio server API is exposed 
 - Once entered the details, you can click on the **Test Connection** button to check the connection
 
@@ -32,7 +33,7 @@ If you are using standard Amazon S3 (e.g., `https://s3.amazonaws.com` or region-
 
 ## Path-Style vs Virtual-Host-Style Access
 
-S3 supports two URL access patterns for addressing objects in ToolJet. The correct style depends on your storage provider.
+S3 supports two URL access patterns for addressing objects. When **Custom Endpoint** is enabled, ToolJet always uses path-style access, and you can't switch to virtual-hosted style. Make sure your storage provider supports path-style access.
 
 ### Virtual-Hosted Style (Default for AWS S3)
 In virtual-hosted style, the bucket name is part of the domain. This is the default access pattern used by AWS S3.

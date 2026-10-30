@@ -3,7 +3,7 @@ id: authentication
 title: Authentication
 ---
 
-ToolJet’s REST API data source supports various authentication types to authenticate the user with the REST API service. The supported authentication types are Basic, Bearer, and OAuth 2.0.
+ToolJet’s REST API data source supports various authentication types to authenticate the user with the REST API service. The supported authentication types are Basic, Bearer, OAuth 2.0, and AWS v4.
 
 ## Basic Authentication
 
@@ -56,6 +56,10 @@ ToolJet’s REST API data source supports OAuth 2.0 as the authentication type. 
 - **Authorization Code Grant Type**: This grant type is used by confidential and public clients to exchange an authorization code for an access token.
 - **Client Credentials Grant Type**: This grant type is used by clients to obtain an access token outside of the context of a user.
 
+:::caution
+The **Grant type** dropdown also lists **Authorization code with PKCE**, but ToolJet doesn't send a code challenge or code verifier for it, so the flow doesn't work with providers that require PKCE. Use **Authorization code** or **Client credentials**.
+:::
+
 ### Setting up Google Cloud Platform
 
 :::info
@@ -87,16 +91,18 @@ Let's follow the steps to authorize ToolJet to access your Google profile data:
 1. Go to the **Data Sources** page from the ToolJet dashboard, select API category on sidebar and choose the **REST API** data source.
 2. In the **Base URL** field, enter the base URL `https://www.googleapis.com/oauth2/v1/userinfo`; the base URL specifies the network address of the API service.
 3. Select **Authentication** type as _OAuth 2.0_
-4. Keep the default values for **Grant Type**, **Add Access Token To**, and **Header Prefix** i.e. _Authorization Code_, _Request Header_, and _Bearer_ respectively.
+4. Keep the default values for **Grant type**, **Add access token to**, and **Header prefix**, i.e. _Authorization code_, _Request header_, and `Bearer ` respectively.
 5. Enter **Access Token URL**: `https://oauth2.googleapis.com/token`; this token allows users to verify their identity, and in return, receive a unique access token.
 6. Enter the **Client ID** and **Client Secret** that we generated from the [Google Console](http://console.developers.google.com/).
-7. In the **Scope** field, enter `https://www.googleapis.com/auth/userinfo.profile`; Scope is a mechanism in OAuth 2.0 to limit an application's access to a user's account. Check the scopes available for [Google OAuth2 API here](https://developers.google.com/identity/protocols/oauth2/scopes#oauth2).
+7. In the **Scope(s)** field, replace the default `read, write` with `https://www.googleapis.com/auth/userinfo.profile`; Scope is a mechanism in OAuth 2.0 to limit an application's access to a user's account. Check the scopes available for [Google OAuth2 API here](https://developers.google.com/identity/protocols/oauth2/scopes#oauth2).
 8. Enter **Authorization URL:** `https://accounts.google.com/o/oauth2/v2/auth`; the Authorization URL requests authorization from the user and redirects to retrieve an authorization code from identity server.
 9. Create three **Custom Authentication Parameters:**
    1. **response_type**: code ( `code` refers to the Authorization Code)
    2. **client_id**: Client ID
    3. **redirect_url**: `http://localhost:8082/oauth2/authorize` if using ToolJet locally or enter this `https://app.tooljet.com/oauth2/authorize` if using ToolJet Cloud.
-10. Keep the default selection for **Client Authentication** and **Save** the data source.
+10. Keep the default selection for **Client authentication**, **Send client credentials in body**. The other option is **Send as basic auth header**.
+11. Optionally, turn on **Authentication required for all users**. When it's on, each user authorizes with their own Google account the first time they run a query from this data source. When it's off, all users share one token.
+12. **Save** the data source.
 
 <img class="screenshot-full img-l" src="/img/how-to/oauth2-authorization/restapi-v2.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0" />
 
@@ -110,7 +116,7 @@ Let's follow the steps to authorize ToolJet to access your Google profile data:
 4. Select the **Grant Type** as _Client credentials_.
 5. Enter **Access Token URL**: `https://oauth2.googleapis.com/token`; this token allows users to verify their identity, and in return, receive a unique access token.
 6. Enter the **Client ID** and **Client Secret** that we generated from the [Google Console](http://console.developers.google.com/).
-7. In the **Scope** field, enter `https://www.googleapis.com/auth/userinfo.profile`; Scope is a mechanism in OAuth 2.0 to limit an application's access to a user's account. Check the scopes available for [Google OAuth2 API here](https://developers.google.com/identity/protocols/oauth2/scopes#oauth2).
+7. In the **Scope(s)** field, replace the default `read, write` with `https://www.googleapis.com/auth/userinfo.profile`; Scope is a mechanism in OAuth 2.0 to limit an application's access to a user's account. Check the scopes available for [Google OAuth2 API here](https://developers.google.com/identity/protocols/oauth2/scopes#oauth2).
 8. Enter the **Audience**, used to specify the intended recipient of the access token and depends on the identity provider (IdP) you are using.
 
 <img class="screenshot-full img-full" src="/img/how-to/oauth2-authorization/restapi-client.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0" />

@@ -56,13 +56,19 @@ Authenticates with Databricks using OAuth on behalf of the signed-in user, enabl
 
 - **Host**: The server hostname or the IP address of your Databricks Warehouse.
 
-- **HTTP Path**: The API endpoint path for the Databricks resource you want to access.
+- **HTTP path**: The API endpoint path for the Databricks resource you want to access.
+
+- **Client ID**: The client ID of the OAuth application you registered in Databricks.
+
+- **Client secret**: The client secret of that OAuth application.
 
 #### Optional Parameters
- 
-- **Connection options**: Specifies additional Databricks connection properties as key-value pairs to customize connection behavior and query execution.
 
-- **Redirect URI**: The callback URL where Databricks redirects users after successful OAuth authentication to complete the sign-in process.
+- **Connection options**: Key-value pairs for the connection. ToolJet reads only the `default_catalog` and `default_schema` keys, which set the catalog and schema that queries run against.
+
+- **Redirect URI**: Read-only. Copy this URL and add it as a redirect URL in your Databricks OAuth application. Databricks redirects users here after they sign in.
+
+ToolJet requests the `sql` and `offline_access` scopes.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/databricks/connection-oauth.png" alt="Databricks: OAuth Connection" />
 
@@ -72,6 +78,23 @@ Authenticates with Databricks using OAuth on behalf of the signed-in user, enabl
 2. Select the **Databricks** datasource added in previous step.
 3. Select the **SQL Mode** from the dropdown.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
+
+### SQL Parameters
+
+In SQL mode, you can use named parameters with the `:parameter_name` syntax and set their values under **SQL Parameters**. Click **Add SQL parameter**, enter the parameter name without the colon as the key, and enter a static value or a `{{ }}` expression as the value.
+
+ToolJet substitutes the values into the query before sending it to Databricks. String values are wrapped in single quotes, with any single quotes inside them escaped. Values that resolve to numbers or booleans are inserted as they are, and `null` or `undefined` values become `NULL`. Placeholders without a matching key are left unchanged.
+
+**Example:**
+
+```sql
+SELECT * FROM customers WHERE country = :country
+```
+
+SQL Parameters:
+
+- Key: `country`
+- Value: `{{ components.countrySelect.value }}`
 
 :::tip
 You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/app-builder/custom-code/transform-data)

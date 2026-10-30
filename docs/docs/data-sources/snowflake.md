@@ -9,6 +9,15 @@ ToolJet can connect to Snowflake databases to read and write data.
 
 To establish a connection with the Snowflake data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview/)** page from the ToolJet dashboard and choose Snowflake as the data source.
 
+The following fields appear for every authentication type:
+
+- **Account**: Your Snowflake account identifier, for example `xy12345.us-east-1`. Required.
+- **Database**: The default database for the connection.
+- **Schema**: The default schema for the connection.
+- **Warehouse**: The warehouse that runs your queries.
+- **Role**: The role used for the session.
+- **Authentication type**: Select **Basic**, **OAuth 2.0**, **Bearer token**, or **Key pair**. Defaults to **Basic**.
+
 ## Authentication Methods
 
 ### Basic Authentication 
@@ -26,7 +35,7 @@ You can find snowflake docs on network policies **[here](https://docs.snowflake.
 ToolJet requires the following to connect to Snowflake database.
 
 - **Account**
-- **Username/Login name**
+- **Username**
 - **Password**
 
 Use your Snowflake **Account Identifier** as the value for the **Account** field.
@@ -106,6 +115,8 @@ Ensure that you use at least one valid set of Authorization and Token URLs (pref
 
 Uses ToolJet’s preconfigured OAuth application to simplify authentication without requiring you to create and manage your own OAuth app.
 
+The **ToolJet app** option is available only on ToolJet Cloud. On self-hosted ToolJet, **OAuth 2.0** uses **Custom app** only.
+
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/datasource-reference/snowflake/oauth-tj-app2.png" alt="ToolJet - Snowflake connection" />
 
 :::info
@@ -160,6 +171,12 @@ ALLOWED_IP_LIST = ('0.0.0.0/0');
 This is an authentication method that uses an RSA key pair (public/private) instead of a username/password. It's ideal for service accounts, automation, and CI/CD pipelines.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/datasource-reference/snowflake/key-pair-auth.png" alt="ToolJet - Snowflake connection"/>
+
+ToolJet requires the following for key pair authentication:
+
+- **Username**: The Snowflake username. Required.
+- **Private key**: The RSA private key in PEM format. Required.
+- **Private key passphrase**: The passphrase for the private key. Only required if the private key is encrypted.
 
 :::info
 Please refer to **[Key Pair Auth Docs](https://docs.snowflake.com/en/user-guide/key-pair-auth)** on how to generate the private key and passphrase.

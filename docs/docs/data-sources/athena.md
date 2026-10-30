@@ -18,7 +18,7 @@ ToolJet requires the following to connect to your Athena.
 - **Region**
 
 :::info
-You can also configure for **[additional optional parameters](https://github.com/ghdna/athena-express)**.
+Amazon Athena authenticates with an IAM access key and secret key only. Other AWS authentication methods, such as instance credentials or a role ARN, aren't available for this data source.
 :::
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-connection-v3.png" alt="Athena connection" />
@@ -35,6 +35,18 @@ Refer [Amazon Athena documentation](https://docs.aws.amazon.com/athena/latest/ug
 :::
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-query-v3.png" alt="Athena Query" />
+
+### Pagination
+
+Use these optional fields below the query editor to page through large results:
+
+| Field | Description |
+|-------|-------------|
+| **Pagination** | Maximum number of rows to return per request. Leave it empty to let Athena decide the page size. |
+| **Next token** | The `NextToken` value from a previous response. Fetches the next page of results. |
+| **Query execution id** | The `QueryExecutionId` value from a previous response. When set, ToolJet doesn't run the SQL query again; it fetches the results of that execution. |
+
+Each response returns the rows in `Items`, along with `Count`, `QueryExecutionId`, `DataScannedInMB`, `QueryCostInUSD`, `EngineExecutionTimeInMillis`, and `S3Location`. When more rows remain, the response also includes `NextToken`. To fetch the next page, set both **Query execution id** and **Next token** from the previous response, so ToolJet reads the next page of the same execution instead of running the query again.
 
 ## SQL Query Examples
 

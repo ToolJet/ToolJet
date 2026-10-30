@@ -9,10 +9,11 @@ ToolJet can connect to MinIo and perform various operation on them.
 
 To establish a connection with the MinIo data source, click on the **+ Add new data source** button located on the query panel or navigate to the [Data Sources](/docs/data-sources/overview) page from the ToolJet dashboard.
 
-ToolJet requires the following to connect to your DynamoDB:
+ToolJet requires the following to connect to your MinIO server:
 
-- **Host**
-- **Port**
+- **Host**: The hostname of your MinIO server, without `http://` or `https://`. Pre-filled with `play.min.io`.
+- **Port**: Pre-filled with `9000`.
+- **SSL**: Turn on to connect over HTTPS. It's on by default; turn it off if your server only accepts HTTP.
 - **Access key**
 - **Secret key**
 

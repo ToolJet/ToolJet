@@ -17,16 +17,17 @@ To connect ToolJet with Redis, you need to provide the following connection deta
 - **Port**: The port number used by the Redis server (default is 6379).
 - **Username**: The username used for authentication.
 - **Password**: The password used for authentication.
+- **Database**: The numeric index of the Redis logical database to use, for example `0` or `2`. If left empty, Redis uses database `0`.
 - **TLS**: Toggle to enable/disable TLS connection.
-- **TLS Certificate**: Choose the type of TLS certificate (None, CA certificate, or Client certificate).
+- **TLS certificate**: Choose the type of TLS certificate (None, CA certificate, or Client certificate). With **None**, ToolJet connects over TLS without verifying the server certificate.
 
 Depending on the TLS certificate option selected, you may need to provide additional information:
 - For **CA certificate**:
-  - **CA Cert**: The CA certificate for TLS connection.
+  - **CA cert**: The CA certificate for TLS connection.
 - For **Client certificate**:
-  - **CA Cert**: The CA certificate for TLS connection.
-  - **Client Key**: The client key for TLS connection.
-  - **Client Cert**: The client certificate for TLS connection.
+  - **CA cert**: The CA certificate for TLS connection.
+  - **Client key**: The client key for TLS connection.
+  - **Client cert**: The client certificate for TLS connection.
 
 ## Querying Redis
 

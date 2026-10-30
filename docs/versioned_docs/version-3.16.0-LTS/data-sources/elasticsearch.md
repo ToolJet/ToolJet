@@ -15,17 +15,21 @@ Please make sure the **Host/IP** of the database is accessible from your VPC if 
 
 To connect to your Elasticsearch cluster, the following details are required:
 
-- **Host**
-- **Port**
+- **Host**: The form pre-fills `localhost`.
+- **Port**: The form pre-fills `9200`.
+- **SSL**: When on, ToolJet connects over `https`. When off, it connects over `http`. On by default.
 - **Username**
 - **Password**
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/connection-v4.png" alt="Elasticsearch Connection" />
 
-ToolJet also supports SSL certificate-based connections:
+When **SSL** is on, select an **SSL certificate** option:
 
--  CA certificate
--  Client certificate
+- **None**: Connects over HTTPS without a custom certificate.
+- **CA certificate**: Verifies the server certificate against the certificate you enter in **CA cert**.
+- **Client certificate**: Authenticates with **Client key** and **Client cert**, and verifies the server certificate against **Root cert**.
+
+The certificate settings apply only when **SSL** is on.
 
 ## Querying Elasticsearch
 

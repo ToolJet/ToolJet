@@ -12,9 +12,11 @@ To establish a connection with the SAP HANA datasource, you can either click on 
 ToolJet requires the following to connect to your SAP HANA database:
 
 - **Host**
-- **Port**
+- **Port**: The form pre-fills `443`. ToolJet encrypts the connection only when the port is `443`. On any other port, the connection is unencrypted.
 - **Username**
 - **Password**
+
+You can also enter a **Database name** to connect to a specific database.
 
 :::info
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
