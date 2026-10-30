@@ -98,7 +98,7 @@ export const iconConfig = {
     },
     padding: {
       type: 'switch',
-      displayName: 'Padding',
+      displayName: 'Margin',
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         defaultValue: 'default',
@@ -108,7 +108,7 @@ export const iconConfig = {
         { displayName: 'Default', value: 'default' },
         { displayName: 'None', value: 'none' },
       ],
-      accordian: 'Icon',
+      accordian: 'container',
     },
     boxShadow: {
       type: 'boxShadow',

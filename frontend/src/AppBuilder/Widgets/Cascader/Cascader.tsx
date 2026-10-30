@@ -155,7 +155,7 @@ export const Cascader = ({
   const showSelectedPath = hasValue && !isOptionsLoading;
   const showClear = showClearBtn && hasValue && !interactionBlocked;
 
-  const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
+  const _height = `${height}px`;
   const _width = getLabelWidthOfInput(widthType, labelWidth);
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
   const isTopAlignment = alignment === 'top';
