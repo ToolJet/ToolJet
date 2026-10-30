@@ -5,6 +5,9 @@ import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
+// The dynamic-height floor subtracts this so a one-line label measures exactly the authored height.
+const WRAPPER_PADDING_TOP = 3;
+
 export const Checkbox = ({
   height,
   properties,
@@ -214,7 +217,7 @@ export const Checkbox = ({
           gap: '6px',
           justifyContent: `${loading ? 'center' : alignment === 'left' ? 'space-between' : 'start'}`,
           height: isDynamicHeightEnabled ? 'auto' : height,
-          ...(isDynamicHeightEnabled && { minHeight: typeof height === 'number' ? `${height}px` : height }),
+          ...(isDynamicHeightEnabled && { minHeight: height - WRAPPER_PADDING_TOP }),
           whiteSpace: isDynamicHeightEnabled ? 'normal' : 'nowrap',
         }}
         data-cy={dataCy}
@@ -346,7 +349,7 @@ export const Checkbox = ({
       className="checkbox-component"
       style={{
         justifyContent: `${loadingState ? 'center' : 'flex-start'}`,
-        paddingTop: '3px',
+        paddingTop: `${WRAPPER_PADDING_TOP}px`,
       }}
     >
       {renderCheckBox()}

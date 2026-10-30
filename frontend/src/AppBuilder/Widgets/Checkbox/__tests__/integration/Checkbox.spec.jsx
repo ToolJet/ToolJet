@@ -865,6 +865,20 @@ describe('Checkbox', () => {
       expect(labelEl(container).parentElement).toHaveStyle({ overflowWrap: 'anywhere' });
     });
 
+    test('[Checkbox-HEIGHT-003] a label that fits on one line keeps the authored height', async () => {
+      // Break this catches: flooring the row at the full authored height under the wrapper's top
+      // padding, so the measured box comes out that padding taller and pushes neighbours down.
+      const fixed = widget.render({ properties: { dynamicHeight: binding('{{false}}') }, currentMode: 'view' });
+      await waitFor(() => expect(labelEl(fixed.container)).toBeInTheDocument());
+      const authoredHeight = parseFloat(rowEl(fixed.container).style.height);
+
+      const { container } = widget.render({ properties: { dynamicHeight: binding('{{true}}') }, currentMode: 'view' });
+      await waitFor(() => expect(labelEl(container)).toBeInTheDocument());
+      const wrapper = container.querySelector('.checkbox-component');
+
+      expect(parseFloat(wrapper.style.paddingTop) + parseFloat(rowEl(container).style.minHeight)).toBe(authoredHeight);
+    });
+
     test('[Checkbox-HEIGHT-002] dynamic height stays inert on the editor canvas', async () => {
       // Break this catches: reflowing while the builder is sizing the box, which the platform reserves for view mode.
       const { container } = widget.render({
