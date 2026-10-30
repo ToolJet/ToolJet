@@ -9,7 +9,6 @@ on:
       branch:
         description: "Branch to deploy"
         required: true
-        default: "lts-3.16"
 
 jobs:
   deploy-storybook:
@@ -20,7 +19,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.branch || 'lts-3.16' }}
+          ref: ${{ inputs.branch }}
+
+      # Production = the LTS branch .gitmodules tracks; anything else is a preview deploy
+      - name: Resolve LTS branch from .gitmodules
+        id: lts
+        run: echo "branch=$(git config -f .gitmodules submodule.server/ee.branch)" >> "$GITHUB_OUTPUT"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -41,8 +45,8 @@ jobs:
         uses: nwtgck/actions-netlify@v3
         with:
           publish-dir: frontend/storybook-static
-          production-branch: lts-3.16
-          production-deploy: ${{ github.event_name == 'pull_request' || inputs.branch == 'lts-3.16' }}
+          production-branch: ${{ steps.lts.outputs.branch }}
+          production-deploy: ${{ github.event_name == 'pull_request' || inputs.branch == steps.lts.outputs.branch }}
           deploy-message: |
             Storybook deploy from ${{ github.event_name == 'workflow_dispatch' && inputs.branch || github.ref_name }} @ ${{ github.sha }}
           github-token: ${{ secrets.GITHUB_TOKEN }}

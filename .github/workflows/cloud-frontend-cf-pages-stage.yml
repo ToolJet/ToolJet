@@ -53,7 +53,14 @@ jobs:
           echo "🔀 Attempting to checkout '$BRANCH' in each submodule and validating"
 
           BRANCH="$BRANCH" git submodule foreach --recursive bash -c '
-            name="$sm_path"
+            # foreach does not export $name/$toplevel to bash -c, so derive them from the superproject
+            TOP=$(git rev-parse --show-superproject-working-tree)
+            name=${PWD#"$TOP"/}
+            # Fallback = the branch .gitmodules tracks on this LTS branch (bump it on each LTS cut)
+            FALLBACK=$(git config -f "$TOP/.gitmodules" "submodule.$name.branch") || {
+              echo "❌ $name: no branch set in .gitmodules"
+              exit 1
+            }
             echo ""
             echo "Entering '\''$name'\''"
             echo "↪ $name: trying to checkout branch '\''$BRANCH'\''"
@@ -73,24 +80,24 @@ jobs:
               echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo 'unknown')"
               echo "✅ $name: checked out branch $BRANCH"
             else
-              echo "⚠️ $name: branch '$BRANCH' not found on origin. Falling back to 'lts-3.16'"
+              echo "⚠️ $name: branch '$BRANCH' not found on origin. Falling back to $FALLBACK"
               PREV=$(git rev-parse --short HEAD || echo "unknown")
-              git fetch origin lts-3.16:lts-3.16 || {
-                echo "❌ $name: fetch failed for lts-3.16"
+              git fetch origin "$FALLBACK:$FALLBACK" || {
+                echo "❌ $name: fetch failed for $FALLBACK"
                 exit 1
               }
-              git checkout lts-3.16 || {
-                echo "❌ $name: fallback to lts-3.16 failed"
+              git checkout "$FALLBACK" || {
+                echo "❌ $name: fallback to $FALLBACK failed"
                 exit 1
               }
               echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo 'unknown')"
-              echo "✅ $name: now on branch lts-3.16"
+              echo "✅ $name: now on branch $FALLBACK"
             fi
 
             CURRENT=$(git rev-parse --abbrev-ref HEAD)
             echo "🔎 $name: current branch = $CURRENT"
-            if [ "$CURRENT" != "$BRANCH" ] && [ "$CURRENT" != "lts-3.16" ]; then
-              echo "❌ $name: unexpected branch state — wanted '$BRANCH' or fallback 'lts-3.16', got '$CURRENT'"
+            if [ "$CURRENT" != "$BRANCH" ] && [ "$CURRENT" != "$FALLBACK" ]; then
+              echo "❌ $name: unexpected branch state — wanted $BRANCH or fallback $FALLBACK, got $CURRENT"
               exit 1
             fi
           '

@@ -536,8 +536,9 @@ jobs:
           platforms: linux/amd64
           cache-from: type=gha,scope=ee-lts-pr-${{ env.PR_NUMBER }}
           cache-to: type=gha,mode=min,scope=ee-lts-pr-${{ env.PR_NUMBER }}
+          secrets: |
+            github_token=${{ secrets.CUSTOM_GITHUB_TOKEN }}
           build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ env.BRANCH_NAME }}
 
       - name: Get Registry Credential ID
@@ -605,8 +606,7 @@ jobs:
                 {"key": "REDIS_PASSWORD", "value": ""},
                 {"key": "WORKER", "value": "true"},
                 {"key": "TOOLJET_MARKETPLACE_URL", "value": "${{ secrets.MARKETPLACE_BUCKET }}"},
-                {"key": "BRANCH_NAME", "value": "${{ env.BRANCH_NAME }}"},
-                {"key": "CUSTOM_GITHUB_TOKEN", "value": "${{ secrets.CUSTOM_GITHUB_TOKEN }}"}
+                {"key": "BRANCH_NAME", "value": "${{ env.BRANCH_NAME }}"}
               ],
               "image": {
                 "ownerId": "${{ env.RENDER_OWNER_ID }}",
@@ -775,8 +775,9 @@ jobs:
           platforms: linux/amd64
           cache-from: type=gha,scope=ee-lts-pr-${{ env.PR_NUMBER }}
           cache-to: type=gha,mode=min,scope=ee-lts-pr-${{ env.PR_NUMBER }}
+          secrets: |
+            github_token=${{ secrets.CUSTOM_GITHUB_TOKEN }}
           build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ env.BRANCH_NAME }}
 
       - name: Trigger Render Redeploy
@@ -1019,8 +1020,9 @@ jobs:
           platforms: linux/amd64
           cache-from: type=gha,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
           cache-to: type=gha,mode=min,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
+          secrets: |
+            github_token=${{ secrets.CUSTOM_GITHUB_TOKEN }}
           build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ env.BRANCH_NAME }}
 
       - name: Get Registry Credential ID
@@ -1088,8 +1090,7 @@ jobs:
                 {"key": "REDIS_PASSWORD", "value": ""},
                 {"key": "WORKER", "value": "true"},
                 {"key": "TOOLJET_MARKETPLACE_URL", "value": "${{ secrets.MARKETPLACE_BUCKET }}"},
-                {"key": "BRANCH_NAME", "value": "${{ env.BRANCH_NAME }}"},
-                {"key": "CUSTOM_GITHUB_TOKEN", "value": "${{ secrets.CUSTOM_GITHUB_TOKEN }}"}
+                {"key": "BRANCH_NAME", "value": "${{ env.BRANCH_NAME }}"}
               ],
               "image": {
                 "ownerId": "${{ env.RENDER_OWNER_ID }}",
@@ -1258,8 +1259,9 @@ jobs:
           platforms: linux/amd64
           cache-from: type=gha,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
           cache-to: type=gha,mode=min,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
+          secrets: |
+            github_token=${{ secrets.CUSTOM_GITHUB_TOKEN }}
           build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ env.BRANCH_NAME }}
 
       - name: Trigger Render Redeploy
