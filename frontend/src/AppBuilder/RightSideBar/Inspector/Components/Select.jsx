@@ -17,6 +17,7 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
 import { sortArray } from '@/AppBuilder/Widgets/DropdownV2/utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import { nextFreeOption, optionRowId, validateOptionValue } from './selectOptionUtils';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -75,6 +76,9 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const [options, setOptions] = useState([]);
   const [markedAsDefault, setMarkedAsDefault] = useState(_markedAsDefault);
   const [hoveredOptionIndex, setHoveredOptionIndex] = useState(null);
+  // Remounting a row's value field is what snaps a refused value back to the stored one.
+  const [valueFieldResetKeys, setValueFieldResetKeys] = useState({});
+  const resetValueField = (index) => setValueFieldResetKeys((prev) => ({ ...prev, [index]: (prev[index] || 0) + 1 }));
   const validations = Object.keys(componentMeta.validation || {});
   let properties = [];
   let additionalActions = [];
@@ -112,18 +116,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   };
 
   const generateNewOptions = () => {
-    let found = false;
-    let label = '';
-    let currentNumber = options.length + 1;
-    let value = currentNumber;
-    while (!found) {
-      label = `option${currentNumber}`;
-      value = currentNumber.toString();
-      if (options.find((option) => option.label === label) === undefined) {
-        found = true;
-      }
-      currentNumber += 1;
-    }
+    const { label, value } = nextFreeOption(options);
     return {
       value,
       label,
@@ -160,7 +153,16 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     updateOptions(_options);
   };
 
-  const handleValueChange = (value, index) => {
+  const handleValueChange = (rawValue, index) => {
+    // Existing duplicates are left alone; only new collisions are refused.
+    const [isValid] = validateOptionValue(options, rawValue, index);
+    if (!isValid) {
+      resetValueField(index);
+      return;
+    }
+    const value = typeof rawValue === 'string' ? rawValue.trim() : rawValue;
+    if (value !== rawValue) resetValueField(index);
+
     const _options = options.map((option, i) => {
       if (i === index) {
         return {
@@ -328,6 +330,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               {'Option value'}
             </label>
             <CodeHinter
+              key={valueFieldResetKeys[index] || 0}
               type={'basic'}
               initialValue={item?.value}
               theme={darkMode ? 'monokai' : 'default'}
@@ -335,6 +338,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               lineNumbers={false}
               placeholder={'Option value'}
               onChange={(value) => handleValueChange(value, index)}
+              validationFn={(value) => validateOptionValue(options, value, index)}
             />
           </div>
           {isCaptionEnabled && (
@@ -432,7 +436,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               <div className="w-100" {...droppableProps} ref={innerRef}>
                 {options?.map((item, index) => {
                   return (
-                    <Draggable key={item?.value} draggableId={item?.value} index={index}>
+                    <Draggable key={optionRowId(item, index)} draggableId={optionRowId(item, index)} index={index}>
                       {(provided, snapshot) => (
                         <div
                           key={index}
@@ -458,7 +462,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                               }
                             }}
                           >
-                            <div key={item?.value} data-list-item-id={String(item?.value ?? '')}>
+                            <div key={optionRowId(item, index)} data-list-item-id={String(item?.value ?? '')}>
                               <ListGroup.Item
                                 style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
                                 onMouseEnter={() => setHoveredOptionIndex(index)}

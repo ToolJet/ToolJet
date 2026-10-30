@@ -683,8 +683,8 @@ export const createResolvedSlice = (set, get) => {
     },
 
     updateChildComponentsLength: (parentId, length, data = [], moduleId = 'canvas', parentIndices = []) => {
-      const { getContainerChildrenMapping } = get();
-      const childComponents = getContainerChildrenMapping(parentId, moduleId);
+      const { getRowScopedDescendants } = get();
+      const childComponents = getRowScopedDescendants(parentId, moduleId);
       if (parentIndices.length === 0) {
         // Seed rows in the same set() as the array conversion. A helper opening its own set() from
         // in here reads pre-draft state and leaves a hybrid { 0: {...}, properties: {...} }.

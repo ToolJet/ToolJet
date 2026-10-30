@@ -15,15 +15,17 @@ export const listViewComponentSlice = (set, get) => {
     _pendingDeriveChain.set(key, { nearestListviewId, indices, moduleId });
     if (!_deriveChainScheduled) {
       _deriveChainScheduled = true;
-      queueMicrotask(() => {
-        _deriveChainScheduled = false;
-        const pending = [..._pendingDeriveChain.values()];
-        _pendingDeriveChain.clear();
-        pending.forEach(({ nearestListviewId: lvId, indices: idx, moduleId: mid }) => {
-          get()._deriveListviewChain(lvId, idx, mid);
-        });
-      });
+      queueMicrotask(() => _flushDeriveChain());
     }
+  };
+
+  const _flushDeriveChain = () => {
+    _deriveChainScheduled = false;
+    const pending = [..._pendingDeriveChain.values()];
+    _pendingDeriveChain.clear();
+    pending.forEach(({ nearestListviewId: lvId, indices: idx, moduleId: mid }) => {
+      get()._deriveListviewChain(lvId, idx, mid);
+    });
   };
 
   // Microtask batch for setExposedValuesPerRow outside an explicit batch window.
@@ -43,72 +45,81 @@ export const listViewComponentSlice = (set, get) => {
     }
     if (!_perRowFlushScheduled) {
       _perRowFlushScheduled = true;
-      queueMicrotask(() => {
-        _perRowFlushScheduled = false;
-        const pending = [..._pendingPerRow.values()];
-        _pendingPerRow.clear();
+      queueMicrotask(() => _flushPendingPerRow());
+    }
+  };
 
-        const skipKeysMap = new Map();
-        set(
-          (state) => {
-            for (const { componentId: cid, values: cvalues, indices: cidx, moduleId: cmod } of pending) {
-              const skipKeys = new Set();
-              skipKeysMap.set(`${cid}|${cidx.join('.')}|${cmod}`, skipKeys);
-              const components = state.resolvedStore.modules[cmod].exposedValues.components;
-              if (!Array.isArray(components[cid])) components[cid] = [];
-              let current = components[cid];
-              for (let i = 0; i < cidx.length - 1; i++) {
-                const idx = cidx[i];
-                if (!current[idx]) current[idx] = [];
-                else if (!Array.isArray(current[idx])) current[idx] = [current[idx]];
-                current = current[idx];
-              }
-              const lastIdx = cidx[cidx.length - 1];
-              if (!current[lastIdx] || typeof current[lastIdx] !== 'object' || Array.isArray(current[lastIdx])) {
-                current[lastIdx] = {};
-              }
-              Object.entries(cvalues).forEach(([k, v]) => {
-                if (isEqual(v, current[lastIdx][k])) {
-                  skipKeys.add(k);
-                } else {
-                  current[lastIdx][k] = v;
-                }
-              });
-            }
-          },
-          false,
-          { type: 'scheduleExposedValuesPerRow_flush' }
-        );
+  // Shared by the microtask above and by fireEvent, which must not read a row value that is still
+  // queued: the write is scheduled, then the handler runs synchronously before the microtask does.
+  const _flushPendingPerRow = () => {
+    _perRowFlushScheduled = false;
+    const pending = [..._pendingPerRow.values()];
+    if (pending.length === 0) return;
+    _pendingPerRow.clear();
 
+    const skipKeysMap = new Map();
+    set(
+      (state) => {
         for (const { componentId: cid, values: cvalues, indices: cidx, moduleId: cmod } of pending) {
-          const skipKeys = skipKeysMap.get(`${cid}|${cidx.join('.')}|${cmod}`) ?? new Set();
+          const skipKeys = new Set();
+          skipKeysMap.set(`${cid}|${cidx.join('.')}|${cmod}`, skipKeys);
+          const components = state.resolvedStore.modules[cmod].exposedValues.components;
+          if (!Array.isArray(components[cid])) components[cid] = [];
+          let current = components[cid];
+          for (let i = 0; i < cidx.length - 1; i++) {
+            const idx = cidx[i];
+            if (!current[idx]) current[idx] = [];
+            else if (!Array.isArray(current[idx])) current[idx] = [current[idx]];
+            current = current[idx];
+          }
+          const lastIdx = cidx[cidx.length - 1];
+          if (!current[lastIdx] || typeof current[lastIdx] !== 'object' || Array.isArray(current[lastIdx])) {
+            current[lastIdx] = {};
+          }
           Object.entries(cvalues).forEach(([k, v]) => {
-            if (typeof v !== 'function' && !skipKeys.has(k)) {
-              get().updateDependencyValues(`components.${cid}.${k}`, cmod, []);
+            if (isEqual(v, current[lastIdx][k])) {
+              skipKeys.add(k);
+            } else {
+              current[lastIdx][k] = v;
             }
           });
-          const parentId = get().getComponentDefinition(cid, cmod)?.component?.parent;
-          const nearestListviewId = parentId ? get().findNearestSubcontainerAncestor(parentId, cmod) : null;
-          if (nearestListviewId) {
-            scheduleDeriveChain(nearestListviewId, cidx, cmod);
-          }
+        }
+      },
+      false,
+      { type: 'scheduleExposedValuesPerRow_flush' }
+    );
+
+    for (const { componentId: cid, values: cvalues, indices: cidx, moduleId: cmod } of pending) {
+      const skipKeys = skipKeysMap.get(`${cid}|${cidx.join('.')}|${cmod}`) ?? new Set();
+      Object.entries(cvalues).forEach(([k, v]) => {
+        if (typeof v !== 'function' && !skipKeys.has(k)) {
+          get().updateDependencyValues(`components.${cid}.${k}`, cmod, []);
         }
       });
+      const parentId = get().getComponentDefinition(cid, cmod)?.component?.parent;
+      const nearestListviewId = parentId ? get().findNearestSubcontainerAncestor(parentId, cmod) : null;
+      if (nearestListviewId) {
+        scheduleDeriveChain(nearestListviewId, cidx, cmod);
+      }
     }
   };
 
   return {
+    flushPendingPerRowWrites: () => {
+      _flushPendingPerRow();
+      _flushDeriveChain();
+    },
+
     // Per-row exposed value write for ListView children.
     // After writing, derives the parent ListView's children/data directly in the store.
     setExposedValuePerRow: (componentId, property, value, indices, moduleId = 'canvas') => {
       if (typeof value !== 'function' && get().isExposedValueBatching()) {
-        // Only register a dep path when this is an update to an existing row slot.
-        // Brand-new row slots have no downstream dependents yet, so dep traversal is a no-op.
+        // A row slot created ahead of mount already has dependents, so a first write into it notifies them.
         const existingComponents = get().resolvedStore.modules[moduleId]?.exposedValues?.components;
         const lastIdx = indices[indices.length - 1];
         let existingRow = Array.isArray(existingComponents?.[componentId]) ? existingComponents[componentId] : null;
         for (let i = 0; existingRow && i < indices.length - 1; i++) existingRow = existingRow[indices[i]];
-        const isUpdate = existingRow?.[lastIdx]?.[property] !== undefined;
+        const isUpdate = existingRow?.[lastIdx] !== undefined;
 
         get().bufferExposedValueMutation(
           (state) => {
@@ -237,8 +248,8 @@ export const listViewComponentSlice = (set, get) => {
 
     // Initialize exposed value arrays for all children of a ListView
     initExposedValueArrayForChildren: (listviewId, rowCount, moduleId = 'canvas', parentIndices = []) => {
-      const { getContainerChildrenMapping } = get();
-      const childComponents = getContainerChildrenMapping(listviewId, moduleId);
+      const { getRowScopedDescendants } = get();
+      const childComponents = getRowScopedDescendants(listviewId, moduleId);
       let pruned = false;
       set((state) => {
         const components = state.resolvedStore.modules[moduleId].exposedValues.components;
@@ -359,15 +370,24 @@ export const listViewComponentSlice = (set, get) => {
       const collectDescendants = (containerId) => {
         const children = getContainerChildrenMapping(containerId, moduleId);
         const slotChildren = slotChildrenByBase[containerId] || [];
-        // Combine direct children (base ID) and slot-keyed children (e.g. Tabs).
-        // A child can only have one parent so there is no overlap between the two arrays.
-        const allChildren = children.length > 0 ? children : slotChildren;
+        // A child has one parent, so base and slot children (Container header/footer, Tabs) never overlap.
+        const allChildren = [...children, ...slotChildren];
         for (const childId of allChildren) {
           allDescendants.push(childId);
           collectDescendants(childId);
         }
       };
-      collectDescendants(listviewId);
+      // An inner row also reads its outer rows' components, so start from the outermost list (D-15).
+      const { getComponentDefinition, findNearestSubcontainerAncestor } = get();
+      let outermostId = listviewId;
+      let ancestorParent = getComponentDefinition(listviewId, moduleId)?.component?.parent;
+      while (ancestorParent) {
+        const enclosing = findNearestSubcontainerAncestor(ancestorParent, moduleId);
+        if (!enclosing || enclosing === outermostId) break;
+        outermostId = enclosing;
+        ancestorParent = getComponentDefinition(enclosing, moduleId)?.component?.parent;
+      }
+      collectDescendants(outermostId);
 
       if (allDescendants.length === 0) return null;
 
@@ -407,13 +427,18 @@ export const listViewComponentSlice = (set, get) => {
     //
     // The scoped object is shared across rows — we just overwrite the values each iteration.
     // This works because resolveDynamicValues is synchronous and doesn't hold references.
-    updateRowScope: (scopeCtx, rowIndex) => {
+    updateRowScope: (scopeCtx, rowPath) => {
       const { scoped, descendantIds, components } = scopeCtx;
+      // A nested list stores a sibling per outer row, then per inner row, so one index is not enough.
+      const path = Array.isArray(rowPath) ? rowPath : [rowPath];
       for (const childId of descendantIds) {
-        const val = components[childId];
-        if (Array.isArray(val)) {
-          scoped[childId] = val[rowIndex] ?? {};
+        let val = components[childId];
+        if (!Array.isArray(val)) continue;
+        for (const index of path) {
+          if (!Array.isArray(val)) break;
+          val = val[index];
         }
+        scoped[childId] = val ?? {};
       }
     },
 
@@ -421,8 +446,9 @@ export const listViewComponentSlice = (set, get) => {
     // For outerIndices=[] (top-level): writes to exposedValues.components[listviewId].children[rowIndex]
     // For outerIndices=[i] (nested): writes to exposedValues.components[listviewId][i].children[rowIndex]
     deriveListviewExposedData: (listviewId, rowIndex, outerIndices, moduleId = 'canvas') => {
-      const { getContainerChildrenMapping, getComponentNameFromId } = get();
-      const childIds = getContainerChildrenMapping(listviewId);
+      const { getRowScopedDescendants, getComponentNameFromId } = get();
+      // Reaches behind a wrapper, matching the slots the row already prepares for its descendants.
+      const childIds = getRowScopedDescendants(listviewId, moduleId);
       const exposedComponents = get().resolvedStore.modules[moduleId]?.exposedValues?.components;
 
       // Build row data for the given rowIndex

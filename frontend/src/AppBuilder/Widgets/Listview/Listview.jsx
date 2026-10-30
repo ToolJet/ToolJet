@@ -35,6 +35,7 @@ export const Listview = function Listview({
   const parentIndices = useMemo(() => contextPath.map((s) => s.index), [contextPath]);
   const childComponentCount = useStore((state) => (state.containerChildrenMapping?.[id] || []).length);
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
+  const deriveListviewExposedData = useStore((state) => state.deriveListviewExposedData, shallow);
   const initExposedValueArrayForChildren = useStore((state) => state.initExposedValueArrayForChildren, shallow);
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const isWidgetInContainerDragging = useStore(
@@ -50,7 +51,7 @@ export const Listview = function Listview({
     showBorder,
     rowsPerPage = 10,
     enablePagination = false,
-    mode = 'list',
+    mode: rawMode = 'list',
     columns = 1,
     dataSourceSelector,
     dynamicHeight,
@@ -65,7 +66,13 @@ export const Listview = function Listview({
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const borderColor = styles.borderColor ?? 'transparent';
-  const rowPerPageValue = Number(rowsPerPage) ? +rowsPerPage || 10 : 10;
+  // A page size has to be a whole number of at least one: a negative runs the slice backwards and
+  // returns nothing, and a fraction lands mid-record and hands neighbouring pages different sizes.
+  const requestedRowsPerPage = Math.floor(Number(rowsPerPage));
+  const rowPerPageValue = requestedRowsPerPage >= 1 ? requestedRowsPerPage : 10;
+  // Two places compare this against their own lower-case literal, so a capitalised value would
+  // match neither and the row and its canvas would pick different modes.
+  const mode = String(rawMode ?? 'list').toLowerCase();
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
 
   const computedStyles = {
@@ -121,30 +128,6 @@ export const Listview = function Listview({
 
   // children/data are now derived directly in the store by deriveListviewExposedData.
   // onRecordOrRowClicked reads from the store imperatively at click time.
-  const onRecordOrRowClicked = useCallback(
-    (index) => {
-      setSelectedRowIndex(index);
-      const state = useStore.getState();
-      let lvExposed = state.resolvedStore.modules[moduleId]?.exposedValues?.components?.[id];
-      // For nested ListView, navigate to current row's exposed values
-      if (Array.isArray(lvExposed) && parentIndices.length > 0) {
-        for (const idx of parentIndices) {
-          lvExposed = lvExposed?.[idx];
-          if (!lvExposed) break;
-        }
-      }
-      const selectedRow = lvExposed?.children?.[index];
-      setExposedVariables({
-        selectedRecordId: index,
-        selectedRecord: selectedRow,
-        selectedRowId: index,
-        selectedRow: selectedRow,
-      });
-      fireEvent('onRecordClicked');
-      fireEvent('onRowClicked');
-    },
-    [id, moduleId, parentIndices, setExposedVariables, fireEvent]
-  );
 
   useEffect(() => {
     if (columns < 1) {
@@ -156,6 +139,31 @@ export const Listview = function Listview({
   const pageChanged = (page) => {
     setCurrentPage(page);
   };
+  // A delete or add must not lose the reader's place; only a page past the new end moves, to the last one.
+  const prevRecordCount = useRef(_.isArray(data) ? data.length : 0);
+  const recordCount = _.isArray(data) ? data.length : 0;
+  if (prevRecordCount.current !== recordCount) {
+    prevRecordCount.current = recordCount;
+    const lastPage = Math.max(1, Math.ceil(recordCount / rowPerPageValue));
+    if (currentPage > lastPage) setCurrentPage(lastPage);
+    // A selection outlives its record otherwise, and a handler acts on a row the data no longer has.
+    if (selectedRowIndex !== undefined && selectedRowIndex >= recordCount) {
+      setSelectedRowIndex(undefined);
+      setExposedVariables({
+        selectedRecordId: undefined,
+        selectedRecord: undefined,
+        selectedRowId: undefined,
+        selectedRow: undefined,
+      });
+    }
+  }
+  // A copy of the clicked item must not outlive a change to the records it came from (D-10).
+  const prevDataRef = useRef(data);
+  if (prevDataRef.current !== data) {
+    const contentChanged = !_.isEqual(prevDataRef.current, data);
+    prevDataRef.current = data;
+    if (contentChanged) setExposedVariables({ selectedListItem: undefined });
+  }
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
   const filteredData = _.isArray(data)
@@ -175,9 +183,15 @@ export const Listview = function Listview({
     childComponentCount !== prevChildComponentCount.current ||
     parentIndicesChanged
   ) {
+    const childrenChanged = childComponentCount !== prevChildComponentCount.current;
     prevFilteredDataRef.current = filteredData;
     prevParentIndicesRef.current = parentIndices;
     prevChildComponentCount.current = childComponentCount;
+
+    // A child leaving writes nothing, so only an explicit re-derive drops it from the published rows.
+    if (childrenChanged) {
+      filteredData.forEach((_row, rowIndex) => deriveListviewExposedData(id, rowIndex, parentIndices, moduleId));
+    }
 
     // Adding listItem as key value pair to the customResolvables
     const listItems = filteredData.map((listItem) => {
@@ -189,10 +203,45 @@ export const Listview = function Listview({
     if (listItems.length > 0) {
       updateCustomResolvables(id, listItems, 'listItem', moduleId, parentIndices);
     }
-    // Size children's per-row exposed values to the row count. Runs for an empty list too:
-    // it is what prunes the removed rows from this Listview's children/data.
+    // Runs even at zero rows: this is the call that drops rows the data no longer has.
     initExposedValueArrayForChildren(id, filteredData.length, moduleId, parentIndices);
   }
+
+  const onRecordOrRowClicked = useCallback(
+    (index) => {
+      // Position in the whole data, so the shrink check below works on every page.
+      setSelectedRowIndex(startIndexOfRowInThePage + index);
+      // The clicked child's own write is still queued; read after it lands or selectedRecord is stale.
+      useStore.getState().flushPendingPerRowWrites?.();
+      const state = useStore.getState();
+      let lvExposed = state.resolvedStore.modules[moduleId]?.exposedValues?.components?.[id];
+      // For nested ListView, navigate to current row's exposed values
+      if (Array.isArray(lvExposed) && parentIndices.length > 0) {
+        for (const idx of parentIndices) {
+          lvExposed = lvExposed?.[idx];
+          if (!lvExposed) break;
+        }
+      }
+      const selectedRow = lvExposed?.children?.[index];
+      setExposedVariables({
+        selectedRecordId: index,
+        selectedRecord: selectedRow,
+        selectedRowId: index,
+        selectedRow: selectedRow,
+        // The data item itself: selectedRecordId is page-relative, so it cannot find it past page one.
+        selectedListItem: filteredData[index],
+      });
+      // Every row event carries its record, so a handler on the list itself can read {{listItem}}.
+      const fireRowEvent = (name) =>
+        fireEvent(name, {
+          customVariables: { listItem: filteredData[index] },
+          sourceSubContainerIndex: [...parentIndices, index],
+        });
+      fireRowEvent('onRecordClicked');
+      fireRowEvent('onRowClicked');
+    },
+    [id, moduleId, parentIndices, setExposedVariables, fireEvent, filteredData, startIndexOfRowInThePage]
+  );
 
   const renderedRowCount = filteredData.length;
 
@@ -212,10 +261,11 @@ export const Listview = function Listview({
         <Spinner />
       ) : (
         <>
-          <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}>
+          <div role="list" className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}>
             {filteredData.map((_listItem, index) => (
               <ListviewSubcontainer
-                key={index}
+                // Keyed by record: a page-local key makes React reuse row 0's children on every page.
+                key={startIndexOfRowInThePage + index}
                 id={id}
                 index={index}
                 moduleId={moduleId}
@@ -245,7 +295,8 @@ export const Listview = function Listview({
                 borderColor,
                 margin: '1px',
                 borderTop: 0,
-                ...(isDynamicHeightEnabled ? { marginTop: 'auto' } : { left: '1px', right: '1px' }),
+                // fixed-bottom brings z-index 1030, which paints the pager over the widget's config handle.
+                ...(isDynamicHeightEnabled ? { marginTop: 'auto' } : { left: '1px', right: '1px', zIndex: 1 }),
               }}
             >
               <div style={{ backgroundColor }}>
