@@ -25,6 +25,7 @@ export enum FEATURE_KEY {
   HUMAN_IN_THE_LOOP = 'human_in_the_loop',
   LIST_APPROVAL_REQUESTS = 'list_approval_requests',
   LIST_WORKSPACE_EXECUTIONS = 'list_workspace_executions',
+  LIST_WORKFLOW_CONSUMERS = 'list_workflow_consumers',
 }
 
 // Queue and job name constants

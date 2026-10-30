@@ -396,6 +396,31 @@ export class AppsRepository extends Repository<App> {
     return await qb.addSelect('app.type AS type').andWhere('app.id IN (:...appIds)', { appIds }).getRawMany();
   }
 
+  // Apps, modules and workflows with a Workflow query calling this workflow, in any version.
+  async findWorkflowConsumers(
+    organizationId: string,
+    workflowId: string
+  ): Promise<{ id: string; name: string; type: string }[]> {
+    const qb = await this.canonicalAppNamesQuery(organizationId);
+    return await qb
+      .addSelect('app.type AS type')
+      .andWhere('app.id != :workflowId', { workflowId })
+      .andWhere(
+        `EXISTS (
+          SELECT 1 FROM data_queries dq
+          JOIN data_sources ds ON ds.id = dq.data_source_id
+          JOIN app_versions av ON av.id = dq.app_version_id
+          WHERE av.app_id = app.id
+            AND ds.kind = 'workflows'
+            AND dq.options::jsonb ->> 'workflowId' = :workflowIdText
+        )`,
+        // Separate binding: a shared one is typed uuid and fails against JSON text.
+        { workflowIdText: workflowId }
+      )
+      .orderBy('COALESCE(av_meta.app_name, app.name)', 'ASC')
+      .getRawMany();
+  }
+
   // apps.name is NULL; the name lives on app_versions.app_name.
   private async canonicalAppNamesQuery(organizationId: string) {
     const defaultBranchId = await this.getDefaultBranchId(this.manager, organizationId);

@@ -156,6 +156,7 @@
   "workflows | workflows | human_in_the_loop | POST | /workflow-approvals/:token/resolve | version=(default) | src/modules/workflows/controllers/workflow-approvals.controller.ts | WorkflowApprovalsController.resolve",
   "workflows | workflows | list_approval_requests | GET | /workflow-approvals | version=(default) | src/modules/workflows/controllers/workflow-approvals.controller.ts | WorkflowApprovalsController.list",
   "workflows | workflows | list_approval_requests | POST | /workflow-approvals/by-id/:id/resolve | version=(default) | src/modules/workflows/controllers/workflow-approvals.controller.ts | WorkflowApprovalsController.resolveById",
+  "workflows | workflows | list_workflow_consumers | GET | /workflows/:id/consumers | version=(default) | src/modules/workflows/controllers/workflows.controller.ts | WorkflowsController.consumers",
   "workflows | workflows | list_workflow_executions | GET | /workflow_executions/all/:appVersionId | version=(default) | src/modules/workflows/controllers/workflow-executions.controller.ts | WorkflowExecutionsController.index",
   "workflows | workflows | list_workflow_schedules | GET | /workflow-schedules | version=(default) | src/modules/workflows/controllers/workflow-schedules.controller.ts | WorkflowSchedulesController.findAll",
   "workflows | workflows | list_workspace_executions | GET | /workflow_executions/workspace | version=(default) | src/modules/workflows/controllers/workflow-executions.controller.ts | WorkflowExecutionsController.listForWorkspace",

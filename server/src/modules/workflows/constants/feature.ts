@@ -54,5 +54,6 @@ export const FEATURES: FeaturesConfig = {
     },
     [FEATURE_KEY.LIST_APPROVAL_REQUESTS]: {},
     [FEATURE_KEY.LIST_WORKSPACE_EXECUTIONS]: {},
+    [FEATURE_KEY.LIST_WORKFLOW_CONSUMERS]: {},
   },
 };
