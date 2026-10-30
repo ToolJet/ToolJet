@@ -62,7 +62,8 @@ export const RightSideBar = ({ darkMode }) => {
         className={cx(
           getRightPanelClassName(displayedTab, isLeftPanelOpen),
           { 'dark-theme theme-dark': darkMode },
-          { 'tw-pointer-events-none': shouldFreeze }
+          // The query panel freezes its own controls; Run, Preview and close stay usable on a frozen version.
+          { 'tw-pointer-events-none': shouldFreeze && displayedTab !== RIGHT_SIDE_BAR_TAB.QUERY }
         )}
         data-state={isRightSidebarOpen ? 'open' : 'closed'}
       >
