@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
-import { Search, Settings, X } from 'lucide-react';
+import { Bolt, Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Rocket/Popover/Popover';
 import { Checkbox } from '@/components/ui/Checkbox/Checkbox';
@@ -68,9 +68,9 @@ export const AddNewRowConfig = ({
           type="button"
           aria-label="Configure add new row"
           data-cy="add-new-row-config-button"
-          className="tw-flex tw-h-6 tw-w-6 tw-items-center tw-justify-center tw-rounded-md tw-border-0 tw-bg-transparent tw-text-icon-default hover:tw-bg-interactive-hover data-[state=open]:tw-bg-interactive-hover"
+          className="fx-button unselectable tw-flex tw-items-center tw-justify-center tw-border-0 tw-bg-transparent tw-p-0 tw-text-[var(--slate9)] data-[state=open]:tw-bg-[var(--slate4)]"
         >
-          <Settings size={16} />
+          <Bolt size={16} strokeWidth={1.75} />
         </button>
       </PopoverTrigger>
       <PopoverContent
