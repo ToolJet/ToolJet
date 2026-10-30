@@ -1,5 +1,5 @@
 /**
- * A RunJS/RunPython query's code can be edited in a separate browser tab. The app tab opens that tab
+ * A RunJS/RunPython query's code, or a PostgreSQL query's SQL, can be edited in a separate browser tab. The app tab opens that tab
  * with window.open and renders the editor into it, so the tab shares the app's store: edits land in
  * the same query, save through the app tab's autosave, and follow its freeze state. The tab lives as
  * long as the app tab does.
@@ -28,6 +28,20 @@ const state = () => useStore.getState();
 
 const runjsQuery = { id: 'q-js', name: 'jsQuery', kind: 'runjs', options: { code: 'return 1;' }, data_source_id: null };
 const runpyQuery = { id: 'q-py', name: 'pyQuery', kind: 'runpy', options: { code: 'print(1)' }, data_source_id: null };
+const postgresQuery = {
+  id: 'q-pg',
+  name: 'pgQuery',
+  kind: 'postgresql',
+  options: { mode: 'sql', query: 'SELECT 1' },
+  data_source_id: null,
+};
+const tjdbQuery = {
+  id: 'q-tjdb',
+  name: 'tjdbQuery',
+  kind: 'tooljetdb',
+  options: { operation: 'sql_execution', sql_execution: { sqlQuery: 'SELECT 1' } },
+  data_source_id: null,
+};
 const restQuery = { id: 'q-rest', name: 'restQuery', kind: 'restapi', options: { url: '' }, data_source_id: null };
 
 // A browser tab the app opened: its own document, closable, with its own page lifecycle events.
@@ -87,7 +101,7 @@ beforeEach(() => {
   seedApp({});
   act(() => {
     state().setCurrentVersionId('version-1');
-    state().dataQuery.setQueries([runjsQuery, runpyQuery, restQuery]);
+    state().dataQuery.setQueries([runjsQuery, runpyQuery, postgresQuery, tjdbQuery, restQuery]);
   });
   tab = makeTab();
   jest.spyOn(window, 'open').mockImplementation(() => tab);
@@ -102,7 +116,7 @@ afterEach(() => {
 });
 
 describe('opening the code editor in a new tab', () => {
-  test('is offered for RunJS and RunPython queries only', () => {
+  test('is offered for RunJS, RunPython and PostgreSQL queries only', () => {
     render(<OpenCodeEditorTabButton />);
     act(() => state().queryPanel.setSelectedQuery('q-rest'));
     expect(openButton()).toBeNull();
@@ -111,6 +125,9 @@ describe('opening the code editor in a new tab', () => {
     expect(openButton()).toBeTruthy();
 
     act(() => state().queryPanel.setSelectedQuery('q-js'));
+    expect(openButton()).toBeTruthy();
+
+    act(() => state().queryPanel.setSelectedQuery('q-pg'));
     expect(openButton()).toBeTruthy();
   });
 
@@ -168,6 +185,33 @@ describe('editing in the tab', () => {
     const stored = state().dataQuery.queries.modules.canvas.find((query) => query.id === 'q-py');
     expect(stored.options.code).toBe('print(2)');
     expect(state().queryPanel.selectedQuery.options.code).toBe('return 1;');
+  });
+
+  test("edits a PostgreSQL query's SQL", async () => {
+    openTab('q-pg');
+    expect(tabEditor().state.doc.toString()).toBe('SELECT 1');
+    expect(tabRoot().textContent).toContain('SQL');
+
+    act(() => state().queryPanel.setSelectedQuery('q-js'));
+    typeInTab('SELECT 2');
+
+    await waitFor(() => expect(saves).toHaveLength(1));
+    expect(saves[0]).toMatchObject({ id: 'q-pg', body: { options: { mode: 'sql', query: 'SELECT 2' } } });
+    const stored = state().dataQuery.queries.modules.canvas.find((query) => query.id === 'q-pg');
+    expect(stored.options).toMatchObject({ mode: 'sql', query: 'SELECT 2' });
+    expect(stored.options.code).toBeUndefined();
+  });
+
+  test("edits a ToolJet Database query's SQL, which it keeps under sql_execution", async () => {
+    openTab('q-tjdb');
+    expect(tabEditor().state.doc.toString()).toBe('SELECT 1');
+
+    act(() => state().queryPanel.setSelectedQuery('q-js'));
+    typeInTab('SELECT 2');
+
+    await waitFor(() => expect(saves).toHaveLength(1));
+    const stored = state().dataQuery.queries.modules.canvas.find((query) => query.id === 'q-tjdb');
+    expect(stored.options).toEqual({ operation: 'sql_execution', sql_execution: { sqlQuery: 'SELECT 2' } });
   });
 
   test('shows the edit in the query panel when that query is selected', async () => {

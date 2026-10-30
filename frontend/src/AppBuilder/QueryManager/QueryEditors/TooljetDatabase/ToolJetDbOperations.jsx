@@ -22,6 +22,7 @@ import config from 'config';
 
 import './styles.scss';
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import QueryCodeLabel from '@/AppBuilder/QueryManager/Components/QueryCodeLabel';
 import Select from '@/_ui/Select';
 import { getTooljetDbModeControlPresentation, TOOLJET_DB_MODE_OPTIONS } from '@/AppBuilder/panelLayout';
 
@@ -665,21 +666,25 @@ const ToolJetDbOperations = ({
           className={cx('mt-3', { 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}
           data-cy="tooljetdb-sql-mode-section"
         >
-          {/*<label className="form-label flex-shrink-0" style={{ minWidth: '100px' }}></label>*/}
-          <CodeHinter
-            type="multiline"
-            initialValue={options?.sql_execution?.sqlQuery ?? 'SELECT * from users'}
-            lang="sql"
-            height={150}
-            onChange={(value) => {
-              optionchanged('sql_execution', { sqlQuery: value });
-            }}
-            componentName="TooljetDatabase"
-            delayOnChange={false}
-            className="w-100"
-            renderCopilot={renderCopilot}
-            cyLabel="tooljetdb-sql-query-input"
-          />
+          <div className="w-100">
+            <QueryCodeLabel />
+            <CodeHinter
+              type="multiline"
+              initialValue={options?.sql_execution?.sqlQuery ?? 'SELECT * from users'}
+              lang="sql"
+              height={150}
+              onChange={(value) => {
+                optionchanged('sql_execution', { sqlQuery: value });
+              }}
+              componentName="TooljetDatabase"
+              delayOnChange={false}
+              className="w-100"
+              renderCopilot={renderCopilot}
+              cyLabel="tooljetdb-sql-query-input"
+              // The "Code" label's button opens the SQL in a new tab instead.
+              usePortalEditor={false}
+            />
+          </div>
         </div>
       )}
     </ToolJetDbOperationsProvider>

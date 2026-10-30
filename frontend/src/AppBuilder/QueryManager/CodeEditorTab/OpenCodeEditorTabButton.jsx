@@ -3,15 +3,16 @@ import { toast } from 'react-hot-toast';
 import useStore from '@/AppBuilder/_stores/store';
 import { ToolTip } from '@/_components';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
-import { CODE_EDITOR_TAB_KINDS, openCodeEditorTabWindow } from './codeEditorTabWindows';
+import { openCodeEditorTabWindow } from './codeEditorTabWindows';
+import { getQueryCodeField } from './queryCodeFields';
 
-// Opens the selected RunJS/RunPython query's code editor in a new browser tab.
+// Opens the selected query's code editor (RunJS, RunPython, SQL) in a new browser tab.
 const OpenCodeEditorTabButton = () => {
   const queryId = useStore((state) => state.queryPanel.selectedQuery?.id);
   const kind = useStore((state) => state.queryPanel.selectedQuery?.kind);
   const openCodeEditorTab = useStore((state) => state.queryPanel.openCodeEditorTab);
 
-  if (!queryId || !CODE_EDITOR_TAB_KINDS.includes(kind)) return null;
+  if (!queryId || !getQueryCodeField(kind)) return null;
 
   const onClick = () => {
     if (openCodeEditorTabWindow(queryId)) openCodeEditorTab(queryId);

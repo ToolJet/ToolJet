@@ -2,8 +2,6 @@
 // it holds only the ids (queryPanel.codeEditorTabQueryIds).
 const tabs = new Map();
 
-export const CODE_EDITOR_TAB_KINDS = ['runjs', 'runpy'];
-
 export const codeEditorTabWindowName = (queryId) => `tj-query-code-${queryId}`;
 
 // Must run inside the click handler, or the browser blocks the new tab.

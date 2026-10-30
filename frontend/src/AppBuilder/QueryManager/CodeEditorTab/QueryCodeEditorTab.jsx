@@ -3,17 +3,14 @@ import useStore from '@/AppBuilder/_stores/store';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
-import { CODE_EDITOR_TAB_KINDS } from './codeEditorTabWindows';
+import { getQueryCode, getQueryCodeField, withQueryCode } from './queryCodeFields';
 import './queryCodeEditorTab.scss';
 
 // Typing is written to the query after this pause, and right away on blur, run or tab close.
 const EDIT_COMMIT_DELAY_MS = 300;
 const HEADER_HEIGHT_PX = 49;
 
-const LANGUAGE_BY_KIND = { runjs: 'javascript', runpy: 'python' };
-const KIND_LABEL = { runjs: 'JavaScript', runpy: 'Python' };
-
-// The code editor of one RunJS/RunPython query, rendered into its own browser tab.
+// The code editor of one RunJS/RunPython/SQL query, rendered into its own browser tab.
 const QueryCodeEditorTab = ({ queryId, ownerDocument, flushRef }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
   const query = useStore((state) => state.dataQuery.queries.modules[moduleId]?.find(({ id }) => id === queryId));
@@ -23,6 +20,7 @@ const QueryCodeEditorTab = ({ queryId, ownerDocument, flushRef }) => {
     (state) => state.resolvedStore.modules[moduleId]?.exposedValues?.queries?.[queryId]?.isLoading ?? false
   );
   const runQuery = useStore((state) => state.queryPanel.runQuery);
+  const codeField = getQueryCodeField(query?.kind);
   const pendingCode = useRef(null);
   const commitTimer = useRef(null);
 
@@ -39,8 +37,8 @@ const QueryCodeEditorTab = ({ queryId, ownerDocument, flushRef }) => {
 
     const { dataQuery, queryPanel } = useStore.getState();
     const current = dataQuery.queries.modules[moduleId]?.find(({ id }) => id === queryId);
-    if (!current || current.options?.code === code) return;
-    dataQuery.updateDataQueryById(queryId, { ...current.options, code }, moduleId);
+    if (!getQueryCodeField(current?.kind) || getQueryCode(current.kind, current.options) === code) return;
+    dataQuery.updateDataQueryById(queryId, withQueryCode(current.kind, current.options, code), moduleId);
     // The query panel autosaves the selected query; any other query is saved here.
     if (queryPanel.selectedQuery?.id !== queryId) {
       const updated = useStore.getState().dataQuery.queries.modules[moduleId].find(({ id }) => id === queryId);
@@ -61,7 +59,7 @@ const QueryCodeEditorTab = ({ queryId, ownerDocument, flushRef }) => {
 
   useEffect(() => () => clearTimeout(commitTimer.current), []);
 
-  if (!query || !CODE_EDITOR_TAB_KINDS.includes(query.kind)) {
+  if (!query || !codeField) {
     return (
       <div className="query-code-editor-tab" data-cy="query-code-editor-tab">
         <div className="query-code-editor-tab__empty" data-cy="query-code-editor-tab-unavailable">
@@ -83,7 +81,7 @@ const QueryCodeEditorTab = ({ queryId, ownerDocument, flushRef }) => {
           <span className="tw-font-title-default tw-text-default" data-cy="query-code-editor-tab-name">
             {query.name}
           </span>
-          <span className="tw-font-body-small tw-text-placeholder">{KIND_LABEL[query.kind]}</span>
+          <span className="tw-font-body-small tw-text-placeholder">{codeField.label}</span>
           {shouldFreeze && (
             <span className="query-code-editor-tab__badge tw-font-body-small" data-cy="query-code-editor-tab-read-only">
               Read only
@@ -111,8 +109,8 @@ const QueryCodeEditorTab = ({ queryId, ownerDocument, flushRef }) => {
       <div className="query-code-editor-tab__editor">
         <CodeHinter
           type="multiline"
-          initialValue={query.options?.code ?? ''}
-          lang={LANGUAGE_BY_KIND[query.kind]}
+          initialValue={getQueryCode(query.kind, query.options) ?? ''}
+          lang={codeField.lang}
           height={`calc(100vh - ${HEADER_HEIGHT_PX}px)`}
           className="query-hinter"
           onInputChange={scheduleCommit}
