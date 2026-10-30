@@ -11,21 +11,34 @@ To explore the exposed variables, click the **Inspector** icon on the left sideb
 
 The `globals.currentUser` object contains information about the currently logged in user.
 
+- **id**: `{{globals.currentUser.id}}`
 - **email**: `{{globals.currentUser.email}}`
 - **firstName**: `{{globals.currentUser.firstName}}`
 - **lastName**: `{{globals.currentUser.lastName}}`
+- **avatarId**: `{{globals.currentUser.avatarId}}`
 - **groups**: `{{globals.currentUser.groups}}`
-- **role**: `{{globals.currentUser.role}}`
-- **ssoUserInfo**: `{{globals.currentUser.ssoUserInfo}}`
+- **role**: `{{globals.currentUser.role}}`. The user's role, for example `admin`, `builder` or `end-user`.
+- **ssoUserInfo**: `{{globals.currentUser.ssoUserInfo}}`. Only set when the user signed in with SSO.
+- **metadata**: `{{globals.currentUser.metadata}}`. Only set when the user has metadata.
 
 ### About groups
 
-The `groups` variable is an array that contains the names of the groups the user belongs to. Example usage:
+The `groups` variable is an array that contains the names of the groups the user belongs to. It always starts with `all_users` and ends with the user's role, for example `["all_users", "Operations", "admin"]`. Example usage:
 
 ```js
 {{ globals.currentUser.groups.includes("admin") }}
 ```
 
+
+## Other globals
+
+| Variable | Description |
+|----------|-------------|
+| `globals.theme.name` | The app's current theme: `light` or `dark`. |
+| `globals.mode.value` | `edit` in the app builder, `view` in the released app and preview. |
+| `globals.environment.id`, `globals.environment.name` | The current environment, for example `development`. |
+| `globals.appVersion.name` | The name of the app version, for example `v1`. |
+| `globals.urlparams` | The URL's query parameters as an object. For `?id=5`, `{{globals.urlparams.id}}` is `"5"`. |
 
 ## Example: Disable a Button if the User Is Not an Admin
 

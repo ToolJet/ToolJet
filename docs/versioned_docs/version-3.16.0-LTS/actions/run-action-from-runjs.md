@@ -13,10 +13,10 @@ This page is a quick-reference of every action's RunJS syntax, grouped the same 
 
 | Action | RunJS syntax |
 | --- | --- |
-| [Run Query](/docs/actions/run-query) | `queries.<queryName>.run()` or `await actions.runQuery('<queryName>')` |
+| [Run Query](/docs/actions/run-query) | `queries.<queryName>.run(<params>)` or `await actions.runQuery('<queryName>', <params>)` |
 | [Reset Query](/docs/actions/reset-query) | `queries.<queryName>.reset()` or `await actions.resetQuery('<queryName>')` |
 | [Abort Query](/docs/actions/abort-query) | `queries.<queryName>.abort()` or `await actions.abortQuery('<queryName>')` |
-| [Show Alert](/docs/actions/show-alert) | `actions.showAlert('<alertType>', '<message>')` |
+| [Show Alert](/docs/actions/show-alert) | `actions.showAlert('<alertType>', '<message>')`, where `alertType` is `info`, `success`, `warning` or `error` |
 
 <a id="show-modal"></a>
 
@@ -28,15 +28,15 @@ This page is a quick-reference of every action's RunJS syntax, grouped the same 
 | [Show Modal](/docs/actions/show-modal) | `actions.showModal('<modalName>')` |
 | [Close Modal](/docs/actions/close-modal) | `actions.closeModal('<modalName>')` |
 | [Set Table Page](/docs/actions/set-table-page) | Not available via `actions.*` — use `await components.<tableName>.setPage(<pageIndex>)` |
-| [Scroll Component into View](/docs/actions/scroll-component-into-view) | `actions.scrollComponentInToView('<componentName>')` |
+| [Scroll Component into View](/docs/actions/scroll-component-into-view) | `actions.scrollComponentInToView('<componentName>', { block: '<block>' })` |
 
 ## Navigation
 
 | Action | RunJS syntax |
 | --- | --- |
-| [Switch Page](/docs/actions/switch-page) | `await actions.switchPage('<pageHandle>')` (optionally with query params — see the action's page) |
-| [Go to App](/docs/actions/go-to-app) | `actions.goToApp('<slug>', queryParams)` |
-| [Open Web Page](/docs/actions/open-webpage) | Not available via `actions.*` — use `window.open('<url>', '_blank')` |
+| [Switch Page](/docs/actions/switch-page) | `await actions.switchPage('<pageHandle>', [['key', 'value']])`. The handle isn't case-sensitive. While you preview a query, the page doesn't switch. |
+| [Go to App](/docs/actions/go-to-app) | `actions.goToApp('<slug>', [['key', 'value']])`. Query params are an array of `[key, value]` pairs. |
+| [Open Web Page](/docs/actions/open-webpage) | Not available via `actions.*` — use `window.open('<url>', '_blank')`, or `'_self'` for the current tab |
 
 <a id="set-variables"></a>
 
@@ -56,10 +56,27 @@ This page is a quick-reference of every action's RunJS syntax, grouped the same 
 | Action | RunJS syntax |
 | --- | --- |
 | [Logout](/docs/actions/logout) | `actions.logout()` |
-| [Generate File](/docs/actions/generate-file) | `actions.generateFile('<fileName>', '<fileType>', '<data>')` |
+| [Generate File](/docs/actions/generate-file) | `actions.generateFile('<fileName>', '<fileType>', <data>)`, where `fileType` is `csv`, `plaintext` or `pdf`. All three arguments are required. |
 | [Set Local Storage](/docs/actions/set-localstorage) | `actions.setLocalStorage('<key>', '<value>')` |
 | [Copy to Clipboard](/docs/actions/copy-to-clipboard) | `actions.copyToClipboard('<contentToCopy>')` |
-| [Toggle App Mode](/docs/actions/toggle-app-mode) | `actions.toggleAppMode('<light\|dark>')` |
+| [Toggle App Mode](/docs/actions/toggle-app-mode) | `actions.toggleAppMode('<light\|dark>')`, or `actions.toggleAppMode()` to switch to the other theme |
+
+## Logging
+
+Write messages to the Debugger in the left sidebar from a RunJS query. See [Understanding Logs](/docs/app-builder/debugging/understanding-logs). Each entry is labelled **Custom Log** and shows the query name and line number.
+
+| Function | Description |
+| --- | --- |
+| `actions.log('<message>')` | Adds an entry to the **All logs** tab. |
+| `actions.logInfo('<message>')` | Same as `actions.log`. |
+| `actions.logError('<message>')` | Adds an error entry, shown in red in **All logs** and also listed in the **Errors** tab. |
+
+```js
+actions.log('Fetched ' + data.length + ' orders');
+if (data.length === 0) {
+  actions.logError('No orders found');
+}
+```
 
 ## Reading query and variable data
 

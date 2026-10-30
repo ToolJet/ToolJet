@@ -10,7 +10,8 @@ The **Set Table Page** action changes the current page index of a Table componen
 | Parameter | Description | Default |
 | --- | --- | --- |
 | Table | The Table component to page | — |
-| Page Index | Numerical value for the page index, e.g. `{{2}}` | — |
+| Page index | The page to show. Pages are numbered from 1, so `{{2}}` shows the second page. | `{{1}}` |
+| Run Only If | Optional condition. The action runs only when it resolves to a truthy value, for example `{{components.checkbox1.value}}`. Wrap the condition in `{{ }}`. See [Run Only If](/docs/app-builder/events/event-triggers#run-only-if). | Empty |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
 <img className="screenshot-full img-s" src="/img/actions/settablepage/settablepage-v2.png" alt="ToolJet - Action reference - Open webpage" />
