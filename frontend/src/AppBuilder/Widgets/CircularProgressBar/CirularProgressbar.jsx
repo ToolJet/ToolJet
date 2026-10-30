@@ -5,6 +5,12 @@ import cx from 'classnames';
 import 'react-circular-progressbar/dist/styles.css';
 import './circularProgressbar.scss';
 
+// Text that is not a number (e.g. setValue('abc')) becomes 0. No clamp: negative and >100 values are allowed.
+const toProgress = (value) => {
+  const number = Number(value);
+  return Number.isNaN(number) ? 0 : number;
+};
+
 export const CircularProgressBar = function CircularProgressBar({
   height,
   properties,
@@ -31,7 +37,7 @@ export const CircularProgressBar = function CircularProgressBar({
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isVisible: visibility,
     isLoading: loadingState,
-    value: progress,
+    value: toProgress(progress),
   });
 
   const label = labelType === 'custom' ? text : `${exposedVariablesTemporaryState.value}%`;
@@ -81,10 +87,10 @@ export const CircularProgressBar = function CircularProgressBar({
     const exposedVariables = {
       isLoading: loadingState,
       isVisible: visibility,
-      value: progress,
+      value: toProgress(progress),
       setValue: async function (value) {
-        setExposedVariable('value', value);
-        updateExposedVariablesState('value', value);
+        setExposedVariable('value', toProgress(value));
+        updateExposedVariablesState('value', toProgress(value));
       },
       setVisibility: async function (value) {
         setExposedVariable('isVisible', value);
@@ -116,8 +122,8 @@ export const CircularProgressBar = function CircularProgressBar({
     {
       dep: progress,
       sideEffect: () => {
-        setExposedVariable('value', progress);
-        updateExposedVariablesState('value', progress);
+        setExposedVariable('value', toProgress(progress));
+        updateExposedVariablesState('value', toProgress(progress));
       },
     },
   ]);
