@@ -20,8 +20,11 @@ The following permissions can be configured for the given resources:
 | | Delete | Allows users of the group to delete modules from the workspace. This is blocked if the module is being used in any app. |
 | **Folder** | Create/Delete | Allows users of the group to create or delete folders to organize resources. |
 | **Workspace constants/variables** | Create/Update/Delete | Allows users of the group to define, modify, or remove constants and variables used across the workspace. |
+| **ToolJet Database** | Create/Update/Delete | Allows users of the group to create, rename, and delete [ToolJet Database](/docs/tooljet-db/tooljet-database) tables, add, edit, and delete columns, and manage foreign keys. Users without it can still add, edit, and delete rows in existing tables. The default Admin and Builder groups have this permission, and the End-user group doesn't. |
 | **Workflows** | Create | Allows users of the group to create new workflows within the workspace. |
 | | Delete | Allows users of the group to delete workflows from the workspace. |
+
+<img className="screenshot-full img-l" src="/img/user-management/rbac/access-control/tooljet-database-permission.png" alt="ToolJet Database permission in a group's Permissions tab" />
 
 To configure view or edit access, please refer to **[Granular Access Control](#granular-access-control)**.
 
