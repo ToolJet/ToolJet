@@ -191,13 +191,19 @@ export const QueryPanel = ({ darkMode }) => {
             aria-hidden="true"
           />
         )}
-        <button className="runtime-panel-toggle" onClick={toggleRuntimePanel} aria-label="Toggle runtime panel">
+        <button
+          className="runtime-panel-toggle"
+          onClick={toggleRuntimePanel}
+          aria-label="Toggle runtime panel"
+          // Kept from the old Queries toggle: Cypress specs open and close the bottom panel through it.
+          data-cy="query-manager-toggle-button"
+        >
           {isQueryPaneExpanded ? <PanelBottomClose size={14} /> : <PanelBottomOpen size={14} />}
         </button>
       </div>
       <div
         ref={panelRef}
-        className={cx('query-pane runtime-panel-content', { expanded: isQueryPaneExpanded })}
+        className={cx('query-pane runtime-panel-content', isQueryPaneExpanded ? 'expanded' : 'collapsed')}
         data-state={isQueryPaneExpanded ? 'open' : 'closed'}
         style={{
           ...getRuntimePanelContentStyle(isQueryPaneExpanded, height),
