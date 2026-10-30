@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { Checkbox, Input, Popover, PopoverContent, PopoverTrigger, Switch, Textarea } from '@/components/ui/Rocket';
 import { HTMLRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/HTMLRenderer';
 import { MarkdownRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/MarkdownRenderer';
+import { SCROLL_AREA_CLASS } from '../../../_utils/addNewRowTheme';
 
 // Figma frame 2628:86086 draws every control 36px high with 14px text, a size between Rocket's default (32) and
 // large (40), so each Rocket control below overrides its height and font size.
@@ -180,7 +181,7 @@ const OptionsMenu = ({ options, multiple, isSelected, onPick }) => {
         <div
           role="listbox"
           aria-multiselectable={multiple || undefined}
-          className="react-select__menu-list"
+          className={`react-select__menu-list ${SCROLL_AREA_CLASS}`}
           style={{ maxHeight: '300px', overflowY: 'auto' }}
         >
           {visible.length === 0 && <div className="tw-p-3 tw-text-center tw-text-text-placeholder">No options</div>}

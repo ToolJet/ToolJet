@@ -3,7 +3,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
 import { getRowCountLabel } from '../../../_utils/addNewRowChips';
-import { THEME_PRIMARY_BUTTON_CLASS } from '../../../_utils/addNewRowTheme';
+import { SCROLL_AREA_CLASS, THEME_PRIMARY_BUTTON_CLASS } from '../../../_utils/addNewRowTheme';
 import { AddNewRowPicker } from './AddNewRowPicker';
 
 // Sized against the table the popover sits in: 66.6% of its width (at most 500px) and 80% of its height, centred.
@@ -22,8 +22,9 @@ const POPOVER_STYLE = {
 export const FADE_OUT_MS = 150;
 const FADE_OUT_STYLE = { opacity: 0, transition: `opacity ${FADE_OUT_MS}ms ease-out`, pointerEvents: 'none' };
 
-// Thin scrollbar in a reserved gutter, so the fields keep the same width whether or not the body scrolls.
-const BODY_STYLE = { overflowY: 'auto', flex: 1, scrollbarWidth: 'thin', scrollbarGutter: 'stable' };
+// Any room a classic scrollbar takes is split evenly between both edges, so the fields stay centred between equal
+// paddings whether or not the body scrolls.
+const BODY_STYLE = { overflowY: 'auto', flex: 1, scrollbarGutter: 'stable both-edges' };
 
 const FIELD_LAYOUT_CLASS = {
   stacked: 'tw-flex-col tw-gap-0.5',
@@ -91,7 +92,7 @@ export const AddNewRowForm = ({
         data-cy={`add-new-row-${rows?.active ?? 0}`}
         // the fieldset below locks every native control; inert covers the custom ones (select, chips, date...)
         inert={saving ? '' : undefined}
-        className={cn('tw-flex tw-flex-col tw-gap-4 tw-py-4 tw-pl-4 tw-pr-2', saving && 'tw-opacity-50')}
+        className={cn('tw-flex tw-flex-col tw-gap-4 tw-px-4 tw-py-4', SCROLL_AREA_CLASS, saving && 'tw-opacity-50')}
         style={BODY_STYLE}
       >
         <fieldset disabled={saving} className="tw-m-0 tw-flex tw-min-w-0 tw-flex-col tw-gap-4 tw-border-0 tw-p-0">

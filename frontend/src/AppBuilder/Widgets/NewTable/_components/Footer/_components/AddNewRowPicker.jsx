@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Rocket';
 import { getRowChips } from '../../../_utils/addNewRowChips';
-import { THEME_PRIMARY_BUTTON_CLASS } from '../../../_utils/addNewRowTheme';
+import { SCROLL_AREA_CLASS, THEME_PRIMARY_BUTTON_CLASS } from '../../../_utils/addNewRowTheme';
 
 const CHIP_CLASS = 'tw-min-w-8 tw-px-2 tw-text-base [font-family:inherit]';
 const SELECTED_CLASS = 'tw-bg-button-outline-pressed';
@@ -57,6 +57,7 @@ const MoreRows = ({ hidden, invalidRows, disabled, darkMode, onSelect }) => {
         className={cn(
           MENU_LAYER_CLASS,
           'tw-max-h-[240px] tw-w-auto tw-min-w-[72px] tw-overflow-y-auto tw-p-1',
+          SCROLL_AREA_CLASS,
           // the menu renders in a portal, outside the themed form
           darkMode && 'dark-theme'
         )}
