@@ -2,7 +2,12 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { EntityManager, QueryRunner } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import { findTenantSchema, isSQLModeDisabled, transferTableOwnershipToTenant } from 'src/helpers/tooljet_db.helper';
+import {
+  findTenantSchema,
+  isSQLModeDisabled,
+  transferSequenceOwnershipToTenant,
+  transferTableOwnershipToTenant,
+} from 'src/helpers/tooljet_db.helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
@@ -540,16 +545,12 @@ export class TooljetDbEnvironmentAssignmentService {
       // The sequence is created as the TJDB admin (this connection), never the twin table's new
       // owner - `ALTER SEQUENCE ... OWNED BY` below requires both to match, or Postgres
       // refuses with "sequence must have same owner as table it is linked to". Skipped, same as
-      // transferTableOwnershipToTenant, when the tenant role doesn't exist (pre-per-tenant-role
-      // workspace) - the twin table's own transfer above already left it admin-owned in that case,
-      // so leaving the sequence admin-owned too keeps them matching.
+      // the table, when the tenant role doesn't exist (pre-per-tenant-role workspace) - the twin
+      // table's own transfer above already left it admin-owned in that case, so leaving the
+      // sequence admin-owned too keeps them matching.
       if (!isSQLModeDisabled()) {
-        const dbUser = `user_${organizationId}`;
-        const [role] = await tjdbQueryRunner.query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [dbUser]);
-        if (role) {
-          const sequenceName = createStatement.replace('CREATE SEQUENCE IF NOT EXISTS ', '');
-          await tjdbQueryRunner.query(`ALTER SEQUENCE ${sequenceName} OWNER TO "${dbUser}"`);
-        }
+        const sequenceName = createStatement.replace('CREATE SEQUENCE IF NOT EXISTS ', '');
+        await transferSequenceOwnershipToTenant(tjdbQueryRunner, schema, sequenceName, `user_${organizationId}`);
       }
     }
     for (let index = 0; index < columns.length; index++) {

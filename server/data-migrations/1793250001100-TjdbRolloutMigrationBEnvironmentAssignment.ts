@@ -22,6 +22,13 @@ const MIGRATION_NAME = 'TjdbRolloutMigrationBEnvironmentAssignment1793250001100'
 // this only converts "hangs the deploy forever" into "fails fast with a clear cause".
 const NEST_BOOT_TIMEOUT_MS = 120_000;
 
+// One line per skipped table, not a stack trace: a table whose workspace schema is missing or
+// unreachable is a data problem the run carries past, and hundreds of traces read as a failed deploy.
+const describeTableFailure = (error: unknown): string => {
+  const { message, code } = (error ?? {}) as { message?: string; code?: string };
+  return code ? `${message} (${code})` : String(message ?? error);
+};
+
 /**
  * "Migration B": corrects migration A's unconditional development placement for licensed
  * workspaces. A licensed workspace's pre-existing TJDB tables are production data (released apps
@@ -242,6 +249,7 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1793250001100 implements 
       `${MIGRATION_NAME}: [START] Assigning TJDB data to environments: ${organizations.length} workspace(s).`
     );
     const progress = new MigrationProgress(MIGRATION_NAME, organizations.length || 1);
+    let skippedTables = 0;
 
     for (const { id: organizationId } of organizations) {
       try {
@@ -274,9 +282,11 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1793250001100 implements 
             // one subtransaction for the rest of the workspace's run.
             await appManager.query(`ROLLBACK TO SAVEPOINT tjdb_env_assignment`);
             await appManager.query(`RELEASE SAVEPOINT tjdb_env_assignment`);
-            console.error(
-              `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} assignment failed; continuing.`,
-              error
+            skippedTables++;
+            console.warn(
+              `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} assignment skipped: ${describeTableFailure(
+                error
+              )}`
             );
           }
         }
@@ -294,9 +304,10 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1793250001100 implements 
           } catch (error) {
             await appManager.query(`ROLLBACK TO SAVEPOINT tjdb_env_fk_replay`);
             await appManager.query(`RELEASE SAVEPOINT tjdb_env_fk_replay`);
-            console.error(
-              `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} foreign-key replay failed; continuing.`,
-              error
+            console.warn(
+              `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} foreign-key replay skipped: ${describeTableFailure(
+                error
+              )}`
             );
           }
         }
@@ -307,7 +318,10 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1793250001100 implements 
       }
     }
 
-    console.log(`${MIGRATION_NAME}: [SUCCESS] Environment assignment finished.`);
+    console.log(
+      `${MIGRATION_NAME}: [SUCCESS] Environment assignment finished.` +
+        (skippedTables ? ` ${skippedTables} table(s) skipped, listed above.` : '')
+    );
   }
 }
 

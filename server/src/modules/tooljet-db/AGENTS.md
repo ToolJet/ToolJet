@@ -169,7 +169,10 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 - A physical table is owned by `user_<organizationId>`, never the TJDB admin —
   `transferTableOwnershipToTenant` runs after every physical `CREATE TABLE` (`applyCreateTable`,
   migration B's `LIKE`-clone, `replayBaselineMigration`); Postgres requires ownership, not a grant, to
-  run DDL as the tenant role.
+  run DDL as the tenant role. On managed Postgres the admin is not a superuser, and a non-superuser
+  can only hand an object to a role with CREATE on its schema: the helper grants CREATE for the one
+  `ALTER ... OWNER TO` and revokes it in the same transaction. CI runs as a superuser, which skips the
+  check; `tenant-ownership-transfer.spec.ts` reproduces it with `SET ROLE`.
 - `recordRawSql` writes `resultingSchema` and `appliedAt` together (no pending window) — there's no
   shape-based predicate `adjudicatePending` could apply to arbitrary SQL.
 - Revert's destructiveness check has two separate discriminators: `add_column` is read off the
