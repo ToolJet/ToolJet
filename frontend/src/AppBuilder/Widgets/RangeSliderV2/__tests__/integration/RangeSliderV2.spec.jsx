@@ -675,7 +675,10 @@ describe('RangeSliderV2', () => {
       expect(typeof widget.exposed().value).toBe('number');
     });
 
-    test('[RangeSliderV2-ACT-001] setValue(null) publishes zero', async () => {
+    test('[RangeSliderV2-ACT-001] setValue(null) publishes zero, clamped into the bounds', async () => {
+      // `Number(null)` is 0, and 0 is below this slider's floor, so what gets published is the
+      // floor. Changed 2026-10-30 with the clamp: this used to publish 0 and leave the handle
+      // sitting at 20, which is the divergence the clamp exists to remove.
       widget.render({
         properties: { ...SINGLE, min: binding('{{20}}'), max: binding('{{100}}'), value: binding('{{50}}') },
       });
@@ -683,7 +686,63 @@ describe('RangeSliderV2', () => {
 
       await widget.act('setValue', null);
 
-      await waitFor(() => expect(widget.exposed().value).toBe(0));
+      await waitFor(() => expect(widget.exposed().value).toBe(20));
+    });
+
+    test('[RangeSliderV2-ACT-001] setValue above the maximum publishes the maximum', async () => {
+      // Break this catches: dropping the clamp from the action. The handle cannot render past
+      // the ceiling, so an unclamped publish leaves `value` describing a position the slider
+      // never shows — the same split the default and bounds paths already refuse to produce.
+      const { container } = widget.render({
+        properties: { ...SINGLE, min: binding('{{0}}'), max: binding('{{200}}'), value: binding('{{50}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(50));
+
+      await widget.act('setValue', 300);
+
+      await waitFor(() => expect(widget.exposed().value).toBe(200));
+      expect(valueNow(handle(container))).toBe(200);
+    });
+
+    test('[RangeSliderV2-ACT-001] setValue clamps against the CURRENT maximum, not the mounted one', async () => {
+      // Break this catches: the action reading `min`/`max` from the closure it was registered
+      // with. It is registered once, on mount, so a bound ceiling that later moves would be
+      // invisible to it and it would keep clamping to a number the slider no longer offers.
+      const { container } = widget.render({
+        properties: { ...SINGLE, min: binding('{{0}}'), max: binding('{{200}}'), value: binding('{{50}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(50));
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(RS, 'max', '{{100}}', 'properties');
+      });
+      await waitFor(() => expect(handle(container).getAttribute('aria-valuemax')).toBe('100'));
+
+      await widget.act('setValue', 150);
+
+      await waitFor(() => expect(widget.exposed().value).toBe(100));
+      expect(valueNow(handle(container))).toBe(100);
+    });
+
+    test('[RangeSliderV2-ACT-001] a value set as a string is still clamped when the maximum drops', async () => {
+      // Break this catches: storing the raw argument instead of the converted number. The
+      // exposed value was converted either way, but the internal value kept the string, and
+      // `Number.isFinite('150')` is false — so the bounds effect skipped it and the published
+      // value stayed above a ceiling the handle had already moved below.
+      const { container } = widget.render({
+        properties: { ...SINGLE, min: binding('{{0}}'), max: binding('{{200}}'), value: binding('{{50}}') },
+      });
+      await waitFor(() => expect(widget.exposed().value).toBe(50));
+
+      await widget.act('setValue', '150');
+      await waitFor(() => expect(widget.exposed().value).toBe(150));
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(RS, 'max', '{{100}}', 'properties');
+      });
+
+      await waitFor(() => expect(valueNow(handle(container))).toBe(100));
+      expect(widget.exposed().value).toBe(100);
     });
 
     test('[RangeSliderV2-ACT-002] setRangeValue moves both handles and publishes the pair', async () => {
@@ -705,6 +764,75 @@ describe('RangeSliderV2', () => {
       expect(valueNow(handles(container)[0])).toBe(35);
       expect(valueNow(handles(container)[1])).toBe(65);
       await waitFor(() => expect(widget.variables().calls).toBe(1));
+    });
+
+    test('[RangeSliderV2-ACT-002] setRangeValue clamps the pair into the bounds', async () => {
+      // Break this catches: publishing the arguments verbatim. A pair outside
+      // [min, max] leaves the exposed value describing a position neither
+      // handle is on, and the handles cannot travel there to agree with it.
+      const { container } = widget.render({
+        properties: {
+          ...RANGE,
+          min: binding('{{0}}'),
+          max: binding('{{100}}'),
+          startValue: binding('{{20}}'),
+          endValue: binding('{{70}}'),
+        },
+      });
+      await waitFor(() => expect(widget.exposed().value).toEqual([20, 70]));
+
+      await widget.act('setRangeValue', -50, 300);
+
+      await waitFor(() => expect(widget.exposed().value).toEqual([0, 100]));
+      expect(valueNow(handles(container)[0])).toBe(0);
+      expect(valueNow(handles(container)[1])).toBe(100);
+    });
+
+    test('[RangeSliderV2-ACT-002] a pair set as strings is converted and clamped', async () => {
+      // Break this catches: clamping without converting. `clampInto` returns a
+      // non-number untouched, so a string pair would slip past the clamp AND
+      // past the bounds effect, which gates on `Number.isFinite`.
+      const { container } = widget.render({
+        properties: {
+          ...RANGE,
+          min: binding('{{0}}'),
+          max: binding('{{100}}'),
+          startValue: binding('{{20}}'),
+          endValue: binding('{{70}}'),
+        },
+      });
+      await waitFor(() => expect(widget.exposed().value).toEqual([20, 70]));
+
+      await widget.act('setRangeValue', '10', '150');
+
+      await waitFor(() => expect(widget.exposed().value).toEqual([10, 100]));
+      expect(valueNow(handles(container)[0])).toBe(10);
+      expect(valueNow(handles(container)[1])).toBe(100);
+    });
+
+    test('[RangeSliderV2-ACT-002] setRangeValue clamps against the CURRENT maximum, not the mounted one', async () => {
+      // Break this catches: reading min/max from the mount closure. The action
+      // is registered once, so without a live read it would clamp against the
+      // bounds the widget happened to have when it first rendered.
+      widget.render({
+        properties: {
+          ...RANGE,
+          min: binding('{{0}}'),
+          max: binding('{{200}}'),
+          startValue: binding('{{20}}'),
+          endValue: binding('{{70}}'),
+        },
+      });
+      await waitFor(() => expect(widget.exposed().value).toEqual([20, 70]));
+
+      await widget.session.store.act(async () => {
+        widget.setComponentProperty(RS, 'max', '{{100}}', 'properties');
+      });
+      await waitFor(() => expect(widget.exposed().value).toEqual([20, 70]));
+
+      await widget.act('setRangeValue', 10, 150);
+
+      await waitFor(() => expect(widget.exposed().value).toEqual([10, 100]));
     });
 
     test('[RangeSliderV2-ACT-003] setValue on a range slider publishes a scalar the handles do not show', async () => {
@@ -757,9 +885,9 @@ describe('RangeSliderV2', () => {
       await waitFor(() => expect(Number.isNaN(widget.exposed().value)).toBe(true));
     });
 
-    test('[RangeSliderV2-ACT-003] setRangeValue does not convert its arguments', async () => {
-      // CHARACTERIZATION (D-03): the pair is published verbatim, so a bound
-      // comparison compares strings.
+    test('[RangeSliderV2-ACT-003] setRangeValue with non-numeric input publishes NaN', async () => {
+      // CHARACTERIZATION (D-03), the mirror of the setValue case above: the
+      // clamp converts, and Math.min/Math.max carry NaN straight through.
       widget.render({
         properties: {
           ...RANGE,
@@ -771,9 +899,10 @@ describe('RangeSliderV2', () => {
       });
       await waitFor(() => expect(widget.exposed().value).toEqual([20, 70]));
 
-      await widget.act('setRangeValue', '10', '20');
+      await widget.act('setRangeValue', 'abc', 50);
 
-      await waitFor(() => expect(widget.exposed().value).toEqual(['10', '20']));
+      await waitFor(() => expect(Number.isNaN(widget.exposed().value[0])).toBe(true));
+      expect(widget.exposed().value[1]).toBe(50);
     });
 
     test('[RangeSliderV2-ACT-004] the state actions update both the flag and the control', async () => {

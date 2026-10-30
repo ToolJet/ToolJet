@@ -131,6 +131,7 @@ export const Rating = ({
     }
 
     setExposedVariable('value', newValue);
+    applyValidation(newValue);
     fireEvent('onChange');
 
     // Announced after the rating is registered, so the live region never describes a value that was not committed.

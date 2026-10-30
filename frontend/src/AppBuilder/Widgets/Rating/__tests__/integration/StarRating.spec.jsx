@@ -26,6 +26,7 @@ import { componentDefinition } from '@/test/app-builder';
 import {
   createWidgetHarness,
   countInvocationsOn,
+  setVariableOn,
   binding,
   drain,
   store,
@@ -991,6 +992,29 @@ describe('StarRating', () => {
       await waitFor(() => expect(widget.exposed().value).toBe(3));
       await waitFor(() => expect(widget.exposed().isValid).toBe(true));
       expect(container.querySelector('[data-cy$="-invalid-feedback"]')).toBeNull();
+    });
+
+    test('[StarRating-VAL-001] an On change handler sees the validity of the rating that triggered it', async () => {
+      // Break this catches: leaving the validity publish to the effect that watches the rating.
+      // That effect runs after the commit, so the handler would still be reading the validity of
+      // the rating the user just replaced — a Run only if gated on `isValid` would skip the very
+      // click that satisfied the field, and only fire on the one after it.
+      const { container } = widget.render({
+        properties: { maxRating: binding('{{5}}'), defaultSelected: binding('{{0}}') },
+        validation: { mandatory: binding('{{true}}') },
+        // Captures what the handler OBSERVES at dispatch time, not what is true afterwards.
+        events: setVariableOn(SR, 'onChange', {
+          key: 'seenValid',
+          value: '{{components.starrating1.isValid}}',
+        }),
+      });
+      await waitFor(() => expect(widget.exposed().isValid).toBe(false));
+
+      await widget.session.user.click(icons(container)[2]);
+
+      await waitFor(() => expect(widget.exposed().value).toBe(3));
+      await waitFor(() => expect(widget.exposed().isValid).toBe(true));
+      await waitFor(() => expect(widget.variables().seenValid).toBe(true));
     });
 
     test('[StarRating-VAL-001] the error appears once the user has interacted and the rating is still empty', async () => {

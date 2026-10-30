@@ -78,6 +78,23 @@ export const RangeSliderV2 = ({
   const hasUsableBounds = Number.isFinite(min) && Number.isFinite(max) && max > min;
   const clampToBounds = (v) => (hasUsableBounds && typeof v === 'number' ? Math.min(Math.max(v, min), max) : v);
 
+  const setValueAction = async (newValue) => {
+    // Clamping here puts the action on the same promise as the default and the bounds:
+    // what is published is a position the handle can actually draw.
+    const next = clampToBounds(Number(newValue));
+    setDefaultSliderValue(next);
+    setExposedVariable('value', next);
+    fireEvent('onChange');
+  };
+
+  const setRangeValueAction = async (num1, num2) => {
+    // Same promise as `setValueAction`.
+    const next = [clampToBounds(Number(num1)), clampToBounds(Number(num2))];
+    setDefaultRangeValue(next);
+    setExposedVariable('value', next);
+    fireEvent('onChange');
+  };
+
   const resetFn = async () => {
     let defaultValue;
     if (enableTwoHandle === 'slider') {
@@ -106,16 +123,8 @@ export const RangeSliderV2 = ({
       isLoading: properties?.loadingState,
       isVisible: properties?.visibility,
       isDisabled: properties?.disabledState,
-      setValue: async function (value) {
-        setDefaultSliderValue(value);
-        setExposedVariable('value', Number(value));
-        fireEvent('onChange');
-      },
-      setRangeValue: async function (num1, num2) {
-        setDefaultRangeValue([num1, num2]);
-        setExposedVariable('value', [num1, num2]);
-        fireEvent('onChange');
-      },
+      setValue: setValueAction,
+      setRangeValue: setRangeValueAction,
       setVisibility: async function (value) {
         setVisibility(!!value);
         setExposedVariable('isVisible', !!value);
@@ -132,6 +141,12 @@ export const RangeSliderV2 = ({
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
   }, []);
+
+  // Re-registered when the bounds move, so both actions clamp against the bounds in force at the moment they run.
+  useEffect(() => {
+    setExposedVariables({ setValue: setValueAction, setRangeValue: setRangeValueAction });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [min, max]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
