@@ -301,7 +301,7 @@ export const createEventsSlice = (set, get) => ({
       // names are safe here. Return: prevents double-execution for names that ALSO
       // appear in the standard list.
       if (options?.isCustomComponentEvent) {
-        return executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
+        return executeActionsForEventId(eventName, events, mode, customVariables, moduleId, sourceSubContainerIndex);
       }
 
       if (eventName === 'onPageLoad') {
