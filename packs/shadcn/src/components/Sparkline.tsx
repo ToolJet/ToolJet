@@ -2,7 +2,17 @@ import React, { useEffect, useMemo } from 'react';
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, ReferenceArea, Tooltip, XAxis, YAxis } from 'recharts';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ChartFrame, InlineTip, useSvgId } from '../lib/ui2/charts/chartParts';
-import { MAX_ROWS, animated, axisLabel, clamp, curveOf, formatter, isRecord, isSet, num } from '../lib/ui2/charts/chartModel';
+import {
+  MAX_ROWS,
+  animated,
+  axisLabel,
+  clamp,
+  curveOf,
+  formatter,
+  isRecord,
+  isSet,
+  num,
+} from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 
@@ -48,15 +58,44 @@ type ControlSdk = { useControlState?: () => { disabled: boolean; loading: boolea
 
 // Tiny trend for KPI cards, no axes or grid.
 export const Sparkline = () => {
-  const [data] = ToolJet.useStateArray({ name: 'data', label: 'Data', description: 'Numbers, or { x, y } objects.', initialValue: [12, 18, 15, 22, 19, 26, 24, 31] });
-  const [type] = ToolJet.useStateEnumeration({ name: 'type', label: 'Type', enumDefinition: ['line', 'area', 'bar'], initialValue: 'area', inspector: 'switch' });
-  const [curve] = ToolJet.useStateEnumeration({ name: 'curve', label: 'Curve', enumDefinition: ['monotone', 'linear', 'step'], initialValue: 'monotone', inspector: 'switch' });
+  const [data] = ToolJet.useStateArray({
+    name: 'data',
+    label: 'Data',
+    description: 'Numbers, or { x, y } objects.',
+    initialValue: [12, 18, 15, 22, 19, 26, 24, 31],
+  });
+  const [type] = ToolJet.useStateEnumeration({
+    name: 'type',
+    label: 'Type',
+    enumDefinition: ['line', 'area', 'bar'],
+    initialValue: 'area',
+    inspector: 'switch',
+  });
+  const [curve] = ToolJet.useStateEnumeration({
+    name: 'curve',
+    label: 'Curve',
+    enumDefinition: ['monotone', 'linear', 'step'],
+    initialValue: 'monotone',
+    inspector: 'switch',
+  });
   const [strokeWidth] = ToolJet.useStateNumber({ name: 'strokeWidth', label: 'Line width (px)', initialValue: 2 });
   const [showEndDot] = ToolJet.useStateBoolean({ name: 'showEndDot', label: 'End dot', initialValue: true });
-  const [colorByTrend] = ToolJet.useStateBoolean({ name: 'colorByTrend', label: 'Color by trend', initialValue: false });
-  const [lowerIsBetter] = ToolJet.useStateBoolean({ name: 'lowerIsBetter', label: 'Lower is better', initialValue: false });
+  const [colorByTrend] = ToolJet.useStateBoolean({
+    name: 'colorByTrend',
+    label: 'Color by trend',
+    initialValue: false,
+  });
+  const [lowerIsBetter] = ToolJet.useStateBoolean({
+    name: 'lowerIsBetter',
+    label: 'Lower is better',
+    initialValue: false,
+  });
   const [showBand] = ToolJet.useStateBoolean({ name: 'showBand', label: 'Min/max band', initialValue: false });
-  const [bandMin] = ToolJet.useStateString({ name: 'bandMin', label: 'Band from (blank = data min)', initialValue: '' });
+  const [bandMin] = ToolJet.useStateString({
+    name: 'bandMin',
+    label: 'Band from (blank = data min)',
+    initialValue: '',
+  });
   const [bandMax] = ToolJet.useStateString({ name: 'bandMax', label: 'Band to (blank = data max)', initialValue: '' });
   const [showTooltip] = ToolJet.useStateBoolean({ name: 'showTooltip', label: 'Tooltip', initialValue: false });
   const [valuePrefix] = ToolJet.useStateString({ name: 'valuePrefix', label: 'Value prefix', initialValue: '' });
@@ -64,7 +103,11 @@ export const Sparkline = () => {
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No data' });
   const [animate] = ToolJet.useStateBoolean({ name: 'animate', label: 'Animate', initialValue: true });
   const [, setTrend] = ToolJet.useStateString({ name: 'trend', initialValue: 'flat', inspector: 'hidden' });
-  const [, setLastValue] = ToolJet.useStateNumber({ name: 'lastValue', initialValue: null as unknown as number, inspector: 'hidden' });
+  const [, setLastValue] = ToolJet.useStateNumber({
+    name: 'lastValue',
+    initialValue: null as unknown as number,
+    inspector: 'hidden',
+  });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const onDoubleClick = ToolJet.useEventCallback({ name: 'onDoubleClick' });
   const control = (ToolJet as unknown as ControlSdk).useControlState?.() ?? { disabled: false, loading: false };
@@ -73,13 +116,17 @@ export const Sparkline = () => {
   const negativeColor = useThemeColor('negativeColor', 'Color when trend is down', TOKEN.error);
   const bandColor = useThemeColor('bandColor', 'Band color', TOKEN.muted);
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 4 });
+  ToolJet.useComponentSettings({ role: 'sparkline', fit: false, loading: 'own', defaultWidth: 8, defaultHeight: 4 });
   const fillId = useSvgId('ui2-spark');
 
   const { points, last, trend } = useMemo(() => {
     const parsed = sparkPoints(data);
     const ys = finite(parsed);
-    return { points: parsed, last: ys.length ? ys[ys.length - 1] : null, trend: trendOf(parsed, lowerIsBetter === true) };
+    return {
+      points: parsed,
+      last: ys.length ? ys[ys.length - 1] : null,
+      trend: trendOf(parsed, lowerIsBetter === true),
+    };
   }, [data, lowerIsBetter]);
   useEffect(() => {
     setTrend(trend);
@@ -91,8 +138,12 @@ export const Sparkline = () => {
   const color =
     colorByTrend === true && trend !== 'flat'
       ? trend === 'up'
-        ? isSet(positiveColor) ? positiveColor : 'var(--sc-success, var(--ui-success))'
-        : isSet(negativeColor) ? negativeColor : 'var(--sc-destructive, var(--ui-destructive))'
+        ? isSet(positiveColor)
+          ? positiveColor
+          : 'var(--sc-success, var(--ui-success))'
+        : isSet(negativeColor)
+          ? negativeColor
+          : 'var(--sc-destructive, var(--ui-destructive))'
       : line;
   const band = showBand === true ? bandRange(points, bandMin, bandMax) : null;
   const width = clamp(strokeWidth, 0.5, 6, 2);
@@ -113,7 +164,17 @@ export const Sparkline = () => {
   const shared = [
     <XAxis key="x" dataKey="i" hide />,
     <YAxis key="y" hide domain={type === 'bar' ? [0, 'dataMax'] : ['dataMin', 'dataMax']} />,
-    band ? <ReferenceArea key="band" y1={band.y1} y2={band.y2} fill={isSet(bandColor) ? bandColor : 'var(--ui-muted)'} fillOpacity={1} stroke="none" ifOverflow="extendDomain" /> : null,
+    band ? (
+      <ReferenceArea
+        key="band"
+        y1={band.y1}
+        y2={band.y2}
+        fill={isSet(bandColor) ? bandColor : 'var(--ui-muted)'}
+        fillOpacity={1}
+        stroke="none"
+        ifOverflow="extendDomain"
+      />
+    ) : null,
     showTooltip === true ? (
       <Tooltip
         key="tip"
@@ -149,7 +210,16 @@ export const Sparkline = () => {
         ) : type === 'line' ? (
           <LineChart data={points} margin={margin}>
             {shared}
-            <Line dataKey="y" type={curveOf(curve)} stroke={color} strokeWidth={width} dot={dot} activeDot={showTooltip === true ? { r: dotRadius, strokeWidth: 0, fill: color } : false} connectNulls isAnimationActive={isAnimationActive} />
+            <Line
+              dataKey="y"
+              type={curveOf(curve)}
+              stroke={color}
+              strokeWidth={width}
+              dot={dot}
+              activeDot={showTooltip === true ? { r: dotRadius, strokeWidth: 0, fill: color } : false}
+              connectNulls
+              isAnimationActive={isAnimationActive}
+            />
           </LineChart>
         ) : (
           <AreaChart data={points} margin={margin}>

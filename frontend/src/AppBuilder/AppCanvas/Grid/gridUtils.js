@@ -7,6 +7,7 @@ import {
   RESTRICTED_WIDGETS_CONFIG,
   RESTRICTED_WIDGET_SLOTS_CONFIG,
 } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
+import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 
 export function correctBounds(layout, bounds) {
   layout = scaleLayouts(layout);
@@ -489,13 +490,14 @@ export const handleActivateTargets = (parentId) => {
     'Accordion',
     'Table',
     'LibraryComponent',
+    'PackComponent',
   ];
 
   const newParentType = document.getElementById('canvas-' + parentId)?.getAttribute('component-type');
   let _parentId = parentId;
   if (isTabsType(newParentType)) {
     _parentId = getTabId(parentId);
-  } else if (newParentType === 'LibraryComponent') {
+  } else if (isSdkComponentType(newParentType)) {
     // A ToolJet.Slot canvas (`<componentId>-<slotName>`): outline that slot, not the whole component.
     _parentId = getTabId(parentId);
   } else if (WIDGETS_WITH_CANVAS_OUTLINE.includes(newParentType)) {

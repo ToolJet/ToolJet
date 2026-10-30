@@ -35,7 +35,17 @@ const WORD_TAG: Record<string, string> = { destructive: 'error', warning: 'warni
 const badgeTag = (value: unknown, colors: unknown) =>
   colorFor(value, colors) ?? WORD_TAG[BADGE_BY_WORD[String(value).toLowerCase()] ?? ''] ?? toneTag(value);
 
-const CardBody = ({ card, fields, badgeColors, expanded }: { card: BoardCard; fields: CardFields; badgeColors: unknown; expanded: boolean }) => {
+const CardBody = ({
+  card,
+  fields,
+  badgeColors,
+  expanded,
+}: {
+  card: BoardCard;
+  fields: CardFields;
+  badgeColors: unknown;
+  expanded: boolean;
+}) => {
   const badge = fields.badge ? card[fields.badge] : undefined;
   const avatar = fields.avatar ? card[fields.avatar] : undefined;
   const meta = fields.meta ? card[fields.meta] : undefined;
@@ -102,11 +112,23 @@ const CardBody = ({ card, fields, badgeColors, expanded }: { card: BoardCard; fi
   );
 };
 
-const KanbanCard = ({ kb, card, columnId, helpId }: { kb: KanbanModel; card: BoardCard; columnId: string; helpId: string }) => {
+const KanbanCard = ({
+  kb,
+  card,
+  columnId,
+  helpId,
+}: {
+  kb: KanbanModel;
+  card: BoardCard;
+  columnId: string;
+  helpId: string;
+}) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const contentHeight = useContentHeight(contentRef, kb.collapsedHeight);
   const expanded = kb.expandedKeys.has(card.__key);
-  const clamp = kb.custom ? { collapsible: false, maxHeight: undefined } : cardClamp(kb.collapsedHeight, contentHeight, expanded);
+  const clamp = kb.custom
+    ? { collapsible: false, maxHeight: undefined }
+    : cardClamp(kb.collapsedHeight, contentHeight, expanded);
   const draggable = kb.draggable && !kb.picked;
   return (
     <Card
@@ -149,12 +171,20 @@ const KanbanCard = ({ kb, card, columnId, helpId }: { kb: KanbanModel; card: Boa
           }}
         />
       ) : null}
-      <div className={cls('tj-ant-kb-clamp', !!clamp.maxHeight && 'is-clamped')} style={clamp.collapsible ? { maxHeight: clamp.maxHeight } : undefined}>
+      <div
+        className={cls('tj-ant-kb-clamp', !!clamp.maxHeight && 'is-clamped')}
+        style={clamp.collapsible ? { maxHeight: clamp.maxHeight } : undefined}
+      >
         <div ref={contentRef}>
           {kb.custom ? (
             <ToolJet.RowSlot name="card" index={kb.order.get(card.__key) ?? 0} item={strip(card)} />
           ) : (
-            <CardBody card={card} fields={kb.fields} badgeColors={kb.badgeColors} expanded={card.__key === kb.openKey} />
+            <CardBody
+              card={card}
+              fields={kb.fields}
+              badgeColors={kb.badgeColors}
+              expanded={card.__key === kb.openKey}
+            />
           )}
         </div>
       </div>
@@ -178,11 +208,23 @@ const KanbanCard = ({ kb, card, columnId, helpId }: { kb: KanbanModel; card: Boa
 };
 
 /** A column's card list: scrolls inside the board, fading out at the bottom while more cards are below. */
-const CardList = ({ collapsed, depsKey, children }: { collapsed: boolean; depsKey: string; children: React.ReactNode }) => {
+const CardList = ({
+  collapsed,
+  depsKey,
+  children,
+}: {
+  collapsed: boolean;
+  depsKey: string;
+  children: React.ReactNode;
+}) => {
   const ref = useRef<HTMLDivElement>(null);
   const moreBelow = useMoreAhead(ref, 'y', [depsKey, collapsed]);
   return (
-    <div ref={ref} className={cls('tj-ant-kb-list', moreBelow && 'has-more-below')} style={collapsed ? { display: 'none' } : undefined}>
+    <div
+      ref={ref}
+      className={cls('tj-ant-kb-list', moreBelow && 'has-more-below')}
+      style={collapsed ? { display: 'none' } : undefined}
+    >
       {children}
     </div>
   );
@@ -221,8 +263,11 @@ const Board = ({ kb, loading }: { kb: KanbanModel; loading: boolean }) => {
       </span>
       {kb.columnViews.map(({ column, cards, hidden, isCollapsed, over, fill, style, dropLineAt }) => {
         const toggle = () => kb.toggleColumn(column.id);
-        const dropLine = (before: string | null) => (dropLineAt(before) ? <div className="tj-ant-kb-drop" aria-hidden="true" /> : null);
-        const count = kb.showCount ? <Badge className="tj-ant-kb-count" count={column.cards.length} showZero overflowCount={9999} /> : null;
+        const dropLine = (before: string | null) =>
+          dropLineAt(before) ? <div className="tj-ant-kb-drop" aria-hidden="true" /> : null;
+        const count = kb.showCount ? (
+          <Badge className="tj-ant-kb-count" count={column.cards.length} showZero overflowCount={9999} />
+        ) : null;
         return (
           <section
             key={column.id}
@@ -287,7 +332,13 @@ const Board = ({ kb, loading }: { kb: KanbanModel; loading: boolean }) => {
                 </Button>
               ) : null}
               {kb.allowAdd ? (
-                <Button type="text" block className="tj-ant-kb-btn" icon={<PlusOutlined />} onClick={() => kb.onAdd(column)}>
+                <Button
+                  type="text"
+                  block
+                  className="tj-ant-kb-btn"
+                  icon={<PlusOutlined />}
+                  onClick={() => kb.onAdd(column)}
+                >
                   Add card
                 </Button>
               ) : null}
@@ -302,7 +353,12 @@ const Board = ({ kb, loading }: { kb: KanbanModel; loading: boolean }) => {
         );
       })}
       {kb.moreColumns > 0 ? (
-        <Button type="text" className="tj-ant-kb-btn" style={{ alignSelf: 'flex-start', width: 'auto' }} onClick={kb.showMoreColumns}>
+        <Button
+          type="text"
+          className="tj-ant-kb-btn"
+          style={{ alignSelf: 'flex-start', width: 'auto' }}
+          onClick={kb.showMoreColumns}
+        >
           Show {Math.min(kb.moreColumns, 50)} more
         </Button>
       ) : null}
@@ -314,17 +370,57 @@ const Board = ({ kb, loading }: { kb: KanbanModel; loading: boolean }) => {
 // fields (title, description, badge, tags, progress, meta, avatar, details) or a row of ToolJet components (cardLayout
 // custom, {{listItem}}). Drag or keyboard moves, add and delete buttons and the actions change the board at once and
 // publish updatedCardData with the last moved, added, updated or removed card and an event, for a query to save.
+// What the board tells ToolJet about itself (useComponentSettings).
+const KANBAN_SETTINGS = {
+  role: 'kanban',
+  fit: false,
+  loading: 'own',
+  usage:
+    "A board of Ant Cards: dataSource (the cards) grouped by statusField into columns [{id, title, color}] (a status no column lists gets its own column). cardLayout 'fields' shows titleField, descriptionField, badgeField (a Tag; badgeColors maps value to colour), tagsField, progressField (0 to 100), metaField, avatarField (name or image URL) and detailsField (Descriptions on the clicked card); 'custom' makes each card a row of ToolJet components reading {{cardData}} or {{listItem}} (cardHeight). density, collapsedHeight, columnWidth (empty fills the board), showCount, collapsibleColumns, collapsedColumns, emptyText. Cards move by drag or keyboard (allowDrag): onCardMoved with lastCardMovement {cardId, from, to, card, destinationColumnId} and updatedCardData (every card). onCardSelected (lastSelectedCard), allowAdd (onAddCardClick, addCardColumn), allowDelete (onCardRemoved, lastRemovedCard), onUpdate after every change; actions addCard(card, columnId), moveCard(cardId, columnId), deleteCard(cardId), updateCardData(cardId, values). Styles: column and card colours, radii, gap, progressColor, cardShadow.",
+  roleProps: { data: 'dataSource' },
+  slots: [{ name: 'card', kind: 'rows', variable: 'cardData' }],
+};
+
 export const Kanban = () => {
   const { disabled, loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   const kb = useKanban({
+    settings: KANBAN_SETTINGS,
     dataName: 'dataSource',
     radiusHints: { column: RADIUS_LG_HINT, card: RADIUS_LG_HINT },
     sample: [
-      { id: 1, title: 'Draft the brief', description: 'Goals, audience and timeline', status: 'todo', priority: 'High', owner: 'Ada Lovelace' },
-      { id: 2, title: 'Collect references', description: 'Three competitor sites', status: 'todo', priority: 'Low', owner: 'Alan Turing' },
-      { id: 3, title: 'Review designs', description: 'Home and pricing pages', status: 'doing', priority: 'Medium', owner: 'Grace Hopper' },
-      { id: 4, title: 'Ship v1', description: 'Release notes and announcement', status: 'done', priority: 'Normal', owner: 'Katherine Johnson' },
+      {
+        id: 1,
+        title: 'Draft the brief',
+        description: 'Goals, audience and timeline',
+        status: 'todo',
+        priority: 'High',
+        owner: 'Ada Lovelace',
+      },
+      {
+        id: 2,
+        title: 'Collect references',
+        description: 'Three competitor sites',
+        status: 'todo',
+        priority: 'Low',
+        owner: 'Alan Turing',
+      },
+      {
+        id: 3,
+        title: 'Review designs',
+        description: 'Home and pricing pages',
+        status: 'doing',
+        priority: 'Medium',
+        owner: 'Grace Hopper',
+      },
+      {
+        id: 4,
+        title: 'Ship v1',
+        description: 'Release notes and announcement',
+        status: 'done',
+        priority: 'Normal',
+        owner: 'Katherine Johnson',
+      },
     ],
     columns: [
       { id: 'todo', title: 'To do' },

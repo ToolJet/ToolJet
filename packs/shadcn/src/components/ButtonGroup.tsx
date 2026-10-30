@@ -20,7 +20,8 @@ export const ButtonGroup = () => {
     name: 'buttons',
     label: 'Buttons',
     inspector: 'options',
-    description: 'Array of { label, value, icon, disabled, variant, tooltip } objects, or plain strings. An empty label with an icon is an icon button.',
+    description:
+      'Array of { label, value, icon, disabled, variant, tooltip } objects, or plain strings. An empty label with an icon is an icon button.',
     initialValue: [
       { label: 'Day', value: 'day' },
       { label: 'Week', value: 'week' },
@@ -36,11 +37,27 @@ export const ButtonGroup = () => {
     initialValue: 'single',
     inspector: 'switch',
   });
-  const [defaultValue] = ToolJet.useStateString({ name: 'defaultValue', label: 'Default selected (value, or a list when multiple)', initialValue: '' });
+  const [defaultValue] = ToolJet.useStateString({
+    name: 'defaultValue',
+    label: 'Default selected (value, or a list when multiple)',
+    initialValue: '',
+  });
   // Exposed: the selected value (single), the list of them (multiple), '' with none. Read back only as a button's value.
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Selected value (single)', initialValue: 'week' });
-  const [selected, setSelected] = ToolJet.useStateArray({ name: 'selected', label: 'Selected values (multiple)', initialValue: [] });
-  const [allowDeselect] = ToolJet.useStateBoolean({ name: 'allowDeselect', label: 'Allow deselecting (single)', initialValue: false });
+  const [value, setValue] = ToolJet.useStateString({
+    name: 'value',
+    label: 'Selected value (single)',
+    initialValue: 'week',
+  });
+  const [selected, setSelected] = ToolJet.useStateArray({
+    name: 'selected',
+    label: 'Selected values (multiple)',
+    initialValue: [],
+  });
+  const [allowDeselect] = ToolJet.useStateBoolean({
+    name: 'allowDeselect',
+    label: 'Allow deselecting (single)',
+    initialValue: false,
+  });
   const [variant] = ToolJet.useStateEnumeration({
     name: 'variant',
     label: 'Variant',
@@ -67,7 +84,12 @@ export const ButtonGroup = () => {
   });
   const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', initialValue: false });
   // The pack's earlier Disable, hidden for the host's Disable (setDisable) but still honoured when an app saved it on.
-  const [legacyDisabled] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable (legacy)', initialValue: false, inspector: 'hidden' });
+  const [legacyDisabled] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable (legacy)',
+    initialValue: false,
+    inspector: 'hidden',
+  });
   const [, setLastClicked] = ToolJet.useStateObject({ name: 'lastClicked', initialValue: {}, inspector: 'hidden' });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
@@ -81,7 +103,7 @@ export const ButtonGroup = () => {
   const iconColor = useThemeColor('iconColor', 'Icon color', TOKEN.text);
   const labelColor = useThemeColor('labelColor', 'Label color', TOKEN.text);
   const radius = useThemeRadius('borderRadius', 'Group radius');
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 4 });
+  ToolJet.useComponentSettings({ role: 'buttongroup', fit: true, loading: 'own', defaultWidth: 10, defaultHeight: 4 });
 
   const kind = mode === 'none' ? 'actions' : mode;
   const source = useStable(buttons);
@@ -90,7 +112,12 @@ export const ButtonGroup = () => {
   // button has: a value no button has (the sample 'week' beside custom buttons) is no selection.
   const known = new Set(items.map((b) => String(b.value)));
   const one = Array.isArray(value) ? value[0] : value;
-  const wanted = kind === 'multiple' ? list(selected).map(String) : kind === 'single' && one !== '' && one != null ? [String(one)] : [];
+  const wanted =
+    kind === 'multiple'
+      ? list(selected).map(String)
+      : kind === 'single' && one !== '' && one != null
+        ? [String(one)]
+        : [];
   const keys = [...new Set(wanted)].filter((k) => known.has(k));
   const live = useRef({ kind, items, keys });
   live.current = { kind, items, keys };
@@ -116,7 +143,8 @@ export const ButtonGroup = () => {
       firstRun.current = false;
       if (defaultValue === '' || defaultValue == null) return;
     }
-    const raw = typeof defaultValue === 'string' && defaultValue.trim().startsWith('[') ? safeJson(defaultValue) : defaultValue;
+    const raw =
+      typeof defaultValue === 'string' && defaultValue.trim().startsWith('[') ? safeJson(defaultValue) : defaultValue;
     apply(initialSelection(raw, live.current.kind, live.current.items));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stableDefault, kind]);
@@ -132,7 +160,11 @@ export const ButtonGroup = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signature, JSON.stringify(value), JSON.stringify(selected)]);
 
-  const check = ToolJet.useValidation({ section: 'choice', value: kind === 'multiple' ? keys : keys[0] ?? '', present: keys.length > 0 });
+  const check = ToolJet.useValidation({
+    kind: 'choice',
+    value: kind === 'multiple' ? keys : (keys[0] ?? ''),
+    present: keys.length > 0,
+  });
   const disabled = control.disabled || legacyDisabled === true;
   const click = (button: GroupButton) => {
     if (disabled || button.disabled) return;
@@ -144,9 +176,16 @@ export const ButtonGroup = () => {
     onClick();
     if (changed) onChange();
   };
-  ToolJet.useAction({ name: 'setSelected', displayName: 'Set selected', params: [{ handle: 'selected', displayName: 'Value (or a list)' }] }, (v) => {
-    apply(initialSelection(v, live.current.kind, live.current.items));
-  });
+  ToolJet.useAction(
+    {
+      name: 'setSelected',
+      displayName: 'Set selected',
+      params: [{ handle: 'selected', displayName: 'Value (or a list)' }],
+    },
+    (v) => {
+      apply(initialSelection(v, live.current.kind, live.current.items));
+    }
+  );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => apply([]));
 
   const look = VARIANTS.includes(variant) ? variant : 'outline';
@@ -166,7 +205,13 @@ export const ButtonGroup = () => {
 
   return (
     <div className="ui" style={vars}>
-      <Field label={label} description={description} error={check.error} required={check.required} className="n2-group-field">
+      <Field
+        label={label}
+        description={description}
+        error={check.error}
+        required={check.required}
+        className="n2-group-field"
+      >
         {items.length ? (
           <div className={cn('n2-group-row', fullWidth && 'is-full')}>
             <div
@@ -190,7 +235,9 @@ export const ButtonGroup = () => {
                     data-state={kind === 'actions' ? undefined : isOn ? 'on' : 'off'}
                     aria-pressed={kind === 'actions' ? undefined : isOn}
                     disabled={disabled || button.disabled}
-                    title={button.tooltip || (!button.label ? String(button.value) : fullWidth ? button.label : undefined)}
+                    title={
+                      button.tooltip || (!button.label ? String(button.value) : fullWidth ? button.label : undefined)
+                    }
                     aria-label={!button.label ? String(button.value) : undefined}
                     onClick={() => click(button)}
                     className={cn(

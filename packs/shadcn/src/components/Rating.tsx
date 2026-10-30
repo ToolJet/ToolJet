@@ -3,11 +3,11 @@ import { Circle, Heart, Star } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Field } from '../lib/Field';
 import { cn } from '../lib/cn';
-import { TJ } from '../lib/ui2/inputs/sdk';
+import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
 import { TOKEN } from '../lib/styleDefaults';
-import { useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
+import { useReseed } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import { InlineLoading } from '../lib/ui2/loading/look';
 import '../styles/ui2-inputs.css';
@@ -27,11 +27,11 @@ const SIZES: Record<string, number> = { sm: 16, default: 20, lg: 28 };
 const ICONS: Record<string, LucideIcon> = { star: Star, heart: Heart, circle: Circle };
 
 export const Rating = () => {
-  const [label] = TJ.useStateString({ name: 'label', label: 'Label', initialValue: 'Rating' });
-  const [description] = TJ.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
-  const [defaultValue] = TJ.useStateNumber({ name: 'defaultValue', label: 'Default value', initialValue: 4 });
-  const [maxProp] = TJ.useStateNumber({ name: 'max', label: 'Number of icons (1 to 10)', initialValue: 5 });
-  const [icon] = TJ.useStateEnumeration({
+  const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: 'Rating' });
+  const [description] = ToolJet.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
+  const [defaultValue] = ToolJet.useStateNumber({ name: 'defaultValue', label: 'Default value', initialValue: 4 });
+  const [maxProp] = ToolJet.useStateNumber({ name: 'max', label: 'Number of icons (1 to 10)', initialValue: 5 });
+  const [icon] = ToolJet.useStateEnumeration({
     name: 'icon',
     label: 'Icon',
     enumDefinition: ['star', 'heart', 'circle'],
@@ -39,7 +39,7 @@ export const Rating = () => {
     initialValue: 'star',
     inspector: 'switch',
   });
-  const [size] = TJ.useStateEnumeration({
+  const [size] = ToolJet.useStateEnumeration({
     name: 'size',
     label: 'Size',
     enumDefinition: ['sm', 'default', 'lg'],
@@ -47,19 +47,27 @@ export const Rating = () => {
     initialValue: 'default',
     inspector: 'switch',
   });
-  const [allowHalf] = TJ.useStateBoolean({ name: 'allowHalf', label: 'Allow half values', initialValue: false });
-  const [allowClear] = TJ.useStateBoolean({ name: 'allowClear', label: 'Click the current value to clear', initialValue: true });
-  const [readOnly] = TJ.useStateBoolean({ name: 'readOnly', label: 'Read only', initialValue: false });
-  const [showValue] = TJ.useStateBoolean({ name: 'showValue', label: 'Show value text', initialValue: false });
-  const [valueLabels] = TJ.useStateArray({
+  const [allowHalf] = ToolJet.useStateBoolean({ name: 'allowHalf', label: 'Allow half values', initialValue: false });
+  const [allowClear] = ToolJet.useStateBoolean({
+    name: 'allowClear',
+    label: 'Click the current value to clear',
+    initialValue: true,
+  });
+  const [readOnly] = ToolJet.useStateBoolean({ name: 'readOnly', label: 'Read only', initialValue: false });
+  const [showValue] = ToolJet.useStateBoolean({ name: 'showValue', label: 'Show value text', initialValue: false });
+  const [valueLabels] = ToolJet.useStateArray({
     name: 'valueLabels',
     label: 'Value labels (one per icon)',
     placeholder: "['Poor', 'Fair', 'Good', 'Great', 'Excellent']",
     initialValue: [],
   });
   // Exposed: the rating, 0 for none.
-  const [rawValue, setValue] = TJ.useStateNumber({ name: 'value', initialValue: defaultValue, inspector: 'hidden' });
-  const onChange = TJ.useEventCallback({ name: 'onChange' });
+  const [rawValue, setValue] = ToolJet.useStateNumber({
+    name: 'value',
+    initialValue: defaultValue,
+    inspector: 'hidden',
+  });
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
 
   const max = M.clampMax(maxProp);
   const half = allowHalf === true;
@@ -76,20 +84,22 @@ export const Rating = () => {
     if (keptOnMount && rawValue !== null && (rawValue as unknown) !== '' && Number(rawValue) !== value) setValue(value);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  TJ.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (v) =>
-    setValue(M.normalizeRating(v, max, half))
+  ToolJet.useAction(
+    { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (v) => setValue(M.normalizeRating(v, max, half))
   );
-  TJ.useAction({ name: 'clear', displayName: 'Clear' }, () => setValue(0));
+  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => setValue(0));
   // The native Star rating's resetValue(): back to the default.
-  TJ.useAction({ name: 'resetValue', displayName: 'Reset value' }, () => setValue(M.normalizeRating(defaultValue, max, half)));
+  ToolJet.useAction({ name: 'resetValue', displayName: 'Reset value' }, () =>
+    setValue(M.normalizeRating(defaultValue, max, half))
+  );
 
-  const fieldId = TJ.useFieldId();
-  const control = TJ.useControlState();
+  const fieldId = ToolJet.useFieldId();
+  const control = ToolJet.useControlState();
   // No icons is no rating, though 0 is a number.
-  const check = TJ.useValidation({ section: 'choice', value, present: value > 0 });
-  const rule = useRuleCheck(check, '');
+  const rule = ToolJet.useValidation({ kind: 'choice', value, present: value > 0 });
   const looks = useLooks(LOOKS);
-  TJ.useComponentSettings({ defaultWidth: 6, defaultHeight: 5 });
+  ToolJet.useComponentSettings({ role: 'rating', fit: true, loading: 'own', defaultWidth: 6, defaultHeight: 5 });
 
   const [hover, setHover] = useState<number | null>(null);
   const radios = useRef<(HTMLSpanElement | null)[]>([]);
@@ -172,7 +182,12 @@ export const Rating = () => {
                     className={cn('ui2-rating-item', interactive && 'is-interactive')}
                     style={{ width: px, height: px }}
                   >
-                    <Icon className={fill === 'full' ? on : 'ui2-rating-off'} width={px} height={px} strokeWidth={1.5} />
+                    <Icon
+                      className={fill === 'full' ? on : 'ui2-rating-off'}
+                      width={px}
+                      height={px}
+                      strokeWidth={1.5}
+                    />
                     {fill === 'half' ? (
                       <span className="ui2-rating-half">
                         <Icon className={on} width={px} height={px} strokeWidth={1.5} />

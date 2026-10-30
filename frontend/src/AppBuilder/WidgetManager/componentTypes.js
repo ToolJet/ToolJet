@@ -46,7 +46,7 @@ export const componentTypes = widgets.map((widget) => {
     ...combineProperties(widget, universalProps),
     definition: combineProperties(widget.definition, universalProps.definition, true),
   };
-  if (widget.component === 'LibraryComponent') {
+  if (widget.component === 'LibraryComponent' || widget.component === 'PackComponent') {
     delete combined.styles.cssClass;
     delete combined.definition.styles.cssClass;
   }

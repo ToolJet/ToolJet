@@ -2,7 +2,15 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { Check, Copy, X } from 'lucide-react';
 import { cn } from '../lib/cn';
-import { colorFor, isSet, keyValueItems, keyValueText, linkHref, styleVars, type KeyValueRow } from '../lib/ui2/display/lists/model';
+import {
+  colorFor,
+  isSet,
+  keyValueItems,
+  keyValueText,
+  linkHref,
+  styleVars,
+  type KeyValueRow,
+} from '../lib/ui2/display/lists/model';
 import { useWidth } from '../lib/ui2/display/lists/parts';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { PairsSkel } from '../lib/ui2/loading/shapes';
@@ -43,13 +51,27 @@ const CopyButton = ({ value }: { value: string }) => {
   );
 };
 
-const Value = ({ row, shown, emptyText, badgeColors }: { row: KeyValueRow; shown: string; emptyText: string; badgeColors: unknown }) => {
+const Value = ({
+  row,
+  shown,
+  emptyText,
+  badgeColors,
+}: {
+  row: KeyValueRow;
+  shown: string;
+  emptyText: string;
+  badgeColors: unknown;
+}) => {
   const empty = <span className="u2l-kv-empty">{emptyText}</span>;
   if (row.type === 'boolean') {
     if (!isSet(row.value)) return empty;
     return (
       <span className="u2l-kv-bool">
-        {shown === 'Yes' ? <Check size={16} className="is-yes" aria-hidden="true" /> : <X size={16} className="is-no" aria-hidden="true" />}
+        {shown === 'Yes' ? (
+          <Check size={16} className="is-yes" aria-hidden="true" />
+        ) : (
+          <X size={16} className="is-no" aria-hidden="true" />
+        )}
         {shown}
       </span>
     );
@@ -58,7 +80,10 @@ const Value = ({ row, shown, emptyText, badgeColors }: { row: KeyValueRow; shown
   if (row.type === 'badge') {
     const colour = colorFor(shown, badgeColors) ?? (isSet(row.color) ? String(row.color) : undefined);
     return (
-      <span className={cn('u2l-kv-badge', colour && 'is-colored')} style={colour ? ({ ['--tg' as string]: colour } as React.CSSProperties) : undefined}>
+      <span
+        className={cn('u2l-kv-badge', colour && 'is-colored')}
+        style={colour ? ({ ['--tg' as string]: colour } as React.CSSProperties) : undefined}
+      >
         {shown}
       </span>
     );
@@ -69,12 +94,21 @@ const Value = ({ row, shown, emptyText, badgeColors }: { row: KeyValueRow; shown
     if (!href) return <span className="u2l-kv-text">{label}</span>;
     const external = /^https?:/i.test(href);
     return (
-      <a className="u2l-kv-link" href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined}>
+      <a
+        className="u2l-kv-link"
+        href={href}
+        target={external ? '_blank' : undefined}
+        rel={external ? 'noopener noreferrer' : undefined}
+      >
         {label}
       </a>
     );
   }
-  return <span className={cn('u2l-kv-text', (row.type === 'number' || row.type === 'currency') && 'is-figure')}>{shown}</span>;
+  return (
+    <span className={cn('u2l-kv-text', (row.type === 'number' || row.type === 'currency') && 'is-figure')}>
+      {shown}
+    </span>
+  );
 };
 
 // UI 2.0's Key-value list: label and value pairs (an object, [{ label, value, type }] or [label, value] pairs), with
@@ -94,8 +128,20 @@ export const KeyValue = () => {
       { label: 'Renews', value: '2026-11-14', type: 'date' },
     ] as unknown as Record<string, unknown>,
   });
-  const [columns] = ToolJet.useStateEnumeration({ name: 'columns', label: 'Columns', enumDefinition: ['1', '2', '3', '4'], initialValue: '1', inspector: 'switch' });
-  const [layout] = ToolJet.useStateEnumeration({ name: 'layout', label: 'Layout', enumDefinition: ['stacked', 'inline'], initialValue: 'inline', inspector: 'switch' });
+  const [columns] = ToolJet.useStateEnumeration({
+    name: 'columns',
+    label: 'Columns',
+    enumDefinition: ['1', '2', '3', '4'],
+    initialValue: '1',
+    inspector: 'switch',
+  });
+  const [layout] = ToolJet.useStateEnumeration({
+    name: 'layout',
+    label: 'Layout',
+    enumDefinition: ['stacked', 'inline'],
+    initialValue: 'inline',
+    inspector: 'switch',
+  });
   const [labelWidth] = ToolJet.useStateString({
     name: 'labelWidth',
     label: 'Label width (side by side; px or %)',
@@ -104,17 +150,40 @@ export const KeyValue = () => {
   } as Parameters<typeof ToolJet.useStateString>[0]);
   const [dividers] = ToolJet.useStateBoolean({ name: 'dividers', label: 'Dividers', initialValue: true });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty value text', initialValue: '—' });
-  const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency (currency rows)', initialValue: 'USD', section: 'Formats for typed rows' });
-  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Number locale', initialValue: 'en-US', section: 'Formats for typed rows' });
-  const [dateFormat] = ToolJet.useStateString({ name: 'dateFormat', label: 'Date format (date rows)', initialValue: 'DD MMM YYYY', section: 'Formats for typed rows' });
+  const [currency] = ToolJet.useStateString({
+    name: 'currency',
+    label: 'Currency (currency rows)',
+    initialValue: 'USD',
+    section: 'Formats for typed rows',
+  });
+  const [locale] = ToolJet.useStateString({
+    name: 'locale',
+    label: 'Number locale',
+    initialValue: 'en-US',
+    section: 'Formats for typed rows',
+  });
+  const [dateFormat] = ToolJet.useStateString({
+    name: 'dateFormat',
+    label: 'Date format (date rows)',
+    initialValue: 'DD MMM YYYY',
+    section: 'Formats for typed rows',
+  });
   const [badgeColors] = ToolJet.useStateObject({
     name: 'badgeColors',
     label: 'Badge colours by value',
     initialValue: { Active: '#16a34a' },
     section: 'Formats for typed rows',
   });
-  const [allowCopy] = ToolJet.useStateBoolean({ name: 'allowCopy', label: 'Copy button on hover', initialValue: false });
-  const [, setLastClickedField] = ToolJet.useStateObject({ name: 'lastClickedField', initialValue: {}, inspector: 'hidden' });
+  const [allowCopy] = ToolJet.useStateBoolean({
+    name: 'allowCopy',
+    label: 'Copy button on hover',
+    initialValue: false,
+  });
+  const [, setLastClickedField] = ToolJet.useStateObject({
+    name: 'lastClickedField',
+    initialValue: {},
+    inspector: 'hidden',
+  });
   const onFieldClick = ToolJet.useEventCallback({ name: 'onFieldClick' });
   const labelColor = useThemeColor('labelColor', 'Label color', TOKEN.mutedText);
   const valueColor = useThemeColor('valueColor', 'Value color', TOKEN.text);
@@ -122,7 +191,7 @@ export const KeyValue = () => {
   const linkColor = useThemeColor('linkColor', 'Link color', TOKEN.brand);
   const ld = useLoadingLook();
   const { disabled } = ToolJet.useControlState();
-  ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 26 });
+  ToolJet.useComponentSettings({ role: 'keyvalue', fit: true, loading: 'own', defaultWidth: 14, defaultHeight: 26 });
 
   const [rootRef, width] = useWidth<HTMLDivElement>();
   const rows = useMemo(() => keyValueItems(data), [data]);
@@ -153,7 +222,11 @@ export const KeyValue = () => {
       return;
     }
     const list = e.currentTarget.parentElement;
-    if (list) moveRovingFocus(e, Array.from(list.children).filter((el): el is HTMLElement => el.classList.contains('u2l-kv-row')));
+    if (list)
+      moveRovingFocus(
+        e,
+        Array.from(list.children).filter((el): el is HTMLElement => el.classList.contains('u2l-kv-row'))
+      );
   };
   const vars = styleVars([
     [labelColor, '--lk-label'],
@@ -163,7 +236,11 @@ export const KeyValue = () => {
   ]);
 
   return (
-    <LoadingFrame loading={ld.loading} minHeight={120} look={ld.skeleton ? <PairsSkel inline={inline} /> : <LoadingBox />}>
+    <LoadingFrame
+      loading={ld.loading}
+      minHeight={120}
+      look={ld.skeleton ? <PairsSkel inline={inline} /> : <LoadingBox />}
+    >
       <div ref={rootRef} className="ui u2l-root ui-scroll" style={vars}>
         {rows.length === 0 ? (
           <p className="u2l-kv-none">No details</p>
@@ -175,7 +252,11 @@ export const KeyValue = () => {
               return (
                 <div
                   key={row.key}
-                  className={cn('u2l-kv-row ui-focus', inline ? 'is-inline' : 'is-stacked', dividers && index < lastRowStart && 'has-divider')}
+                  className={cn(
+                    'u2l-kv-row ui-focus',
+                    inline ? 'is-inline' : 'is-stacked',
+                    dividers && index < lastRowStart && 'has-divider'
+                  )}
                   role={holdsControl ? undefined : 'button'}
                   tabIndex={live && index === tabStop ? 0 : -1}
                   onFocus={(e) => {
@@ -184,7 +265,10 @@ export const KeyValue = () => {
                   onKeyDown={(e) => onRowKeyDown(e, row)}
                   onClick={() => activate(row)}
                 >
-                  <dt className="u2l-kv-label" style={inline ? { width: cssSize(labelWidth, '40%'), flexShrink: 0 } : undefined}>
+                  <dt
+                    className="u2l-kv-label"
+                    style={inline ? { width: cssSize(labelWidth, '40%'), flexShrink: 0 } : undefined}
+                  >
                     {row.label}
                   </dt>
                   <dd className="u2l-kv-value">

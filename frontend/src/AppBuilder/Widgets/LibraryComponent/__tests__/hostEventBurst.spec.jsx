@@ -19,7 +19,15 @@ installBrowserStubs();
 let fire;
 const Harness = ({ fireEvent }) => {
   const { fireHostEvent } = usePackHost(
-    { id: 'input1', width: 200, height: 40, currentLayout: 'desktop', darkMode: false, setExposedVariable: () => {}, fireEvent },
+    {
+      id: 'input1',
+      width: 200,
+      height: 40,
+      currentLayout: 'desktop',
+      darkMode: false,
+      setExposedVariable: () => {},
+      fireEvent,
+    },
     {}
   );
   fire = fireHostEvent;

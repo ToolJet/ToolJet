@@ -7,7 +7,7 @@ import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str } from '../lib/data';
 import { ControlSkeleton } from '../lib/Loading';
-import { typeRule, useRuleCheck } from '../lib/typeRule';
+import { typeRule } from '../lib/typeRule';
 import { useValueSetter } from '../lib/sameValue';
 
 // Ant's Input: value, placeholder, allowClear, maxLength/showCount, prefix/suffix, addonBefore/addonAfter, variant,
@@ -15,8 +15,17 @@ import { useValueSetter } from '../lib/sameValue';
 // Type email or url also checks the format, as UI 2.0's Input does: a bad address is reported once the field is left.
 export const Input = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Label' });
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'The text; also the value resetFields returns to.', initialValue: '' });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Enter your input' });
+  const [value, setValue] = ToolJet.useStateString({
+    name: 'value',
+    label: 'Value',
+    description: 'The text; also the value resetFields returns to.',
+    initialValue: '',
+  });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Enter your input',
+  });
   const [type] = ToolJet.useStateEnumeration({
     name: 'type',
     label: 'Type',
@@ -24,10 +33,26 @@ export const Input = (props: Record<string, unknown>) => {
     initialValue: 'text',
   });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: false });
-  const [maxLength] = ToolJet.useStateNumber({ name: 'maxLength', label: 'Max length', description: '0 for no limit.', initialValue: 0, min: 0 });
+  const [maxLength] = ToolJet.useStateNumber({
+    name: 'maxLength',
+    label: 'Max length',
+    description: '0 for no limit.',
+    initialValue: 0,
+    min: 0,
+  });
   const [showCount] = ToolJet.useStateBoolean({ name: 'showCount', label: 'Show count', initialValue: false });
-  const [prefix] = ToolJet.useStateString({ name: 'prefix', label: 'Prefix', description: 'Text, or an icon name such as SearchOutlined.', initialValue: '' });
-  const [suffix] = ToolJet.useStateString({ name: 'suffix', label: 'Suffix', description: 'Text, or an icon name such as MailOutlined.', initialValue: '' });
+  const [prefix] = ToolJet.useStateString({
+    name: 'prefix',
+    label: 'Prefix',
+    description: 'Text, or an icon name such as SearchOutlined.',
+    initialValue: '',
+  });
+  const [suffix] = ToolJet.useStateString({
+    name: 'suffix',
+    label: 'Suffix',
+    description: 'Text, or an icon name such as MailOutlined.',
+    initialValue: '',
+  });
   const [addonBefore] = ToolJet.useStateString({ name: 'addonBefore', label: 'Addon before', initialValue: '' });
   const [addonAfter] = ToolJet.useStateString({ name: 'addonAfter', label: 'Addon after', initialValue: '' });
   const look = useControlLook();
@@ -39,9 +64,20 @@ export const Input = (props: Record<string, unknown>) => {
   const ref = useRef<InputRef>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = useRuleCheck(ToolJet.useValidation({ section: 'text', value }), typeRule(type, value));
+  const check = ToolJet.useValidation({ kind: 'text', value, rule: typeRule(type, value) });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'input',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's Input in a Form.Item: label, value, placeholder, extra (help text), allowClear, prefix/suffix, addonBefore/addonAfter; onChange, onPressEnter; setFieldValue, resetFields (back to the value property). The Validation section sets isValid.",
+    roleProps: { description: 'extra' },
+    roleEvents: { onEnterPressed: 'onPressEnter' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
 
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));

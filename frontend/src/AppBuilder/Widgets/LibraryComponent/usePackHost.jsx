@@ -26,7 +26,8 @@ const filled = (value) =>
 
 // The widget's Validation section judged on the component's value, as native inputs do: isValid and isMandatory are
 // published, and the error shows once the field was touched. 0 and false are values.
-const useHostValidation = (latest, value, present) => {
+// `rule` is the component's own check (a format or range message, '' when it passes), checked before the section's.
+export const useHostValidation = (latest, value, present, rule) => {
   const { validate, validation, setExposedVariable, exposed, judged } = latest.current;
   // Which exposed variable this is the value of, so an event fired right after the value changes can judge the new
   // value first (see fireHostEvent).
@@ -35,9 +36,8 @@ const useHostValidation = (latest, value, present) => {
     if (!key) for (const [k, v] of exposed) if (k !== 'isValid' && k !== 'isMandatory' && Object.is(v, value)) key = k;
     judged.current = { key: key ?? judged.current.key, value };
   }
-  const status =
-    (typeof validate === 'function' ? validate((present ?? filled(value)) ? value : undefined) : null) || {};
-  const isValid = status.isValid !== false;
+  const status = (typeof validate === 'function' ? validate(present ?? filled(value) ? value : undefined) : null) || {};
+  const isValid = status.isValid !== false && !rule;
   const isMandatory = validation?.mandatory === true;
   const [touched, setTouched] = useState(false);
   // A Form around the field shows its message after a failed submit, and clearForm hides it again.
@@ -52,11 +52,11 @@ const useHostValidation = (latest, value, present) => {
   return useMemo(
     () => ({
       isValid,
-      error: touched && !isValid ? status.validationError || 'Invalid value' : '',
+      error: touched && !isValid ? rule || status.validationError || 'Invalid value' : '',
       required: isMandatory,
       touch: () => setTouched(true),
     }),
-    [isValid, touched, status.validationError, isMandatory]
+    [isValid, touched, rule, status.validationError, isMandatory]
   );
 };
 
@@ -446,6 +446,8 @@ export const usePackHost = (
       if (typeof judge === 'function' && key && exposed.current.has(key)) {
         const now = exposed.current.get(key);
         if (!Object.is(now, value) && typeof now !== 'boolean') {
+          // Only the Validation section can judge the new value here: the component's own rule (useValidation's
+          // `rule`) is worked out as it renders, so it applies once the component draws the new value.
           const status = judge(filled(now) ? now : undefined) || {};
           latest.current.setExposedVariable('isValid', status.isValid !== false);
         }
@@ -479,7 +481,7 @@ export const usePackHost = (
       loading,
       fieldId: `tj-pack-${id}`,
       // eslint-disable-next-line react-hooks/rules-of-hooks -- called by ToolJet.useValidation on every render of the component
-      useValidation: (value, present) => useHostValidation(latest, value, present),
+      useValidation: (value, present, rule) => useHostValidation(latest, value, present, rule),
       setRows,
       rowSlotAttr: (index) => rowSlotAttr(id, index),
       registerPopupSlot,

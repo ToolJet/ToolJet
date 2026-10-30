@@ -1,7 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
-import { SHADOWS, isSet, itemKeys, pageOf, positive, px, styleVars, toText, type Row } from '../lib/ui2/display/lists/model';
+import {
+  SHADOWS,
+  isSet,
+  itemKeys,
+  pageOf,
+  positive,
+  px,
+  styleVars,
+  toText,
+  type Row,
+} from '../lib/ui2/display/lists/model';
 import { Chip, Pager, RecordAvatar, onKeyActivate } from '../lib/ui2/display/lists/parts';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { useRecordSelection, type SelectableRecord } from '../lib/ui2/display/lists/useRecordSelection';
@@ -24,7 +34,13 @@ export const ListView = () => {
       { id: 3, name: 'Grace Hopper', email: 'grace@example.com', role: 'Operations' },
     ],
   });
-  const [mode] = ToolJet.useStateEnumeration({ name: 'mode', label: 'Layout', enumDefinition: ['list', 'grid'], initialValue: 'list', inspector: 'switch' });
+  const [mode] = ToolJet.useStateEnumeration({
+    name: 'mode',
+    label: 'Layout',
+    enumDefinition: ['list', 'grid'],
+    initialValue: 'list',
+    inspector: 'switch',
+  });
   const [columns] = ToolJet.useStateNumber({
     name: 'columns',
     label: 'Grid columns',
@@ -51,25 +67,77 @@ export const ListView = () => {
   } as Parameters<typeof ToolJet.useStateNumber>[0]);
   const [gap] = ToolJet.useStateNumber({ name: 'gap', label: 'Gap between items (px)', initialValue: 8 });
   const [titleField] = ToolJet.useStateString({ name: 'titleField', label: 'Title field', initialValue: 'name' });
-  const [subtitleField] = ToolJet.useStateString({ name: 'subtitleField', label: 'Subtitle field', initialValue: 'email' });
-  const [imageField] = ToolJet.useStateString({ name: 'imageField', label: 'Avatar field (image URL or a name)', initialValue: 'image' });
+  const [subtitleField] = ToolJet.useStateString({
+    name: 'subtitleField',
+    label: 'Subtitle field',
+    initialValue: 'email',
+  });
+  const [imageField] = ToolJet.useStateString({
+    name: 'imageField',
+    label: 'Avatar field (image URL or a name)',
+    initialValue: 'image',
+  });
   const [showAvatar] = ToolJet.useStateBoolean({ name: 'showAvatar', label: 'Show avatar', initialValue: true });
-  const [badgeField] = ToolJet.useStateString({ name: 'badgeField', label: 'Badge field (a chip toned by its words)', initialValue: 'role' });
+  const [badgeField] = ToolJet.useStateString({
+    name: 'badgeField',
+    label: 'Badge field (a chip toned by its words)',
+    initialValue: 'role',
+  });
   const [metaField] = ToolJet.useStateString({ name: 'metaField', label: 'Right-side field', initialValue: '' });
-  const [actionLabel] = ToolJet.useStateString({ name: 'actionLabel', label: 'Action button label (empty hides it)', initialValue: 'View' });
-  const [idField] = ToolJet.useStateString({ name: 'idField', label: 'Id field (for selection across data changes)', initialValue: 'id' });
-  const [showBorder] = ToolJet.useStateBoolean({ name: 'showBorder', label: 'Dividers between items (list)', initialValue: false });
-  const [highlightSelectedRow] = ToolJet.useStateBoolean({ name: 'highlightSelectedRow', label: 'Highlight selected item', initialValue: true });
-  const [enablePagination] = ToolJet.useStateBoolean({ name: 'enablePagination', label: 'Pagination', initialValue: false });
+  const [actionLabel] = ToolJet.useStateString({
+    name: 'actionLabel',
+    label: 'Action button label (empty hides it)',
+    initialValue: 'View',
+  });
+  const [idField] = ToolJet.useStateString({
+    name: 'idField',
+    label: 'Id field (for selection across data changes)',
+    initialValue: 'id',
+  });
+  const [showBorder] = ToolJet.useStateBoolean({
+    name: 'showBorder',
+    label: 'Dividers between items (list)',
+    initialValue: false,
+  });
+  const [highlightSelectedRow] = ToolJet.useStateBoolean({
+    name: 'highlightSelectedRow',
+    label: 'Highlight selected item',
+    initialValue: true,
+  });
+  const [enablePagination] = ToolJet.useStateBoolean({
+    name: 'enablePagination',
+    label: 'Pagination',
+    initialValue: false,
+  });
   const [rowsPerPage] = ToolJet.useStateNumber({ name: 'rowsPerPage', label: 'Items per page', initialValue: 10 });
-  const [serverSidePagination] = ToolJet.useStateBoolean({ name: 'serverSidePagination', label: 'Server-side pagination (data is one page)', initialValue: false });
-  const [totalRecords] = ToolJet.useStateNumber({ name: 'totalRecords', label: 'Total items (server-side)', initialValue: 0 });
+  const [serverSidePagination] = ToolJet.useStateBoolean({
+    name: 'serverSidePagination',
+    label: 'Server-side pagination (data is one page)',
+    initialValue: false,
+  });
+  const [totalRecords] = ToolJet.useStateNumber({
+    name: 'totalRecords',
+    label: 'Total items (server-side)',
+    initialValue: 0,
+  });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No items' });
-  const [, setSelectedItemId] = ToolJet.useStateString({ name: 'selectedItemId', initialValue: '', inspector: 'hidden' });
+  const [, setSelectedItemId] = ToolJet.useStateString({
+    name: 'selectedItemId',
+    initialValue: '',
+    inspector: 'hidden',
+  });
   const [, setSelectedItem] = ToolJet.useStateObject({ name: 'selectedItem', initialValue: {}, inspector: 'hidden' });
   // UI 2.0's native names: selectedRecordId is the item's index on the page, selectedRecord the item.
-  const [, setSelectedRecord] = ToolJet.useStateObject({ name: 'selectedRecord', initialValue: {}, inspector: 'hidden' });
-  const [, setSelectedRecordId] = ToolJet.useStateNumber({ name: 'selectedRecordId', initialValue: -1, inspector: 'hidden' });
+  const [, setSelectedRecord] = ToolJet.useStateObject({
+    name: 'selectedRecord',
+    initialValue: {},
+    inspector: 'hidden',
+  });
+  const [, setSelectedRecordId] = ToolJet.useStateNumber({
+    name: 'selectedRecordId',
+    initialValue: -1,
+    inspector: 'hidden',
+  });
   const [pageIndex, setPageIndex] = ToolJet.useStateNumber({ name: 'pageIndex', initialValue: 1, inspector: 'hidden' });
   const onRecordClicked = ToolJet.useEventCallback({ name: 'onRecordClicked' });
   const onPageChanged = ToolJet.useEventCallback({ name: 'onPageChanged' });
@@ -100,11 +168,26 @@ export const ListView = () => {
   const emptyTextColor = useThemeColor('emptyTextColor', 'Empty message color', TOKEN.mutedText);
   const ld = useLoadingLook();
   // The sample rows' height, in whole rows: 30 left a 64px band under them at the drop.
-  ToolJet.useComponentSettings({ defaultWidth: 30, defaultHeight: 24 });
+  ToolJet.useComponentSettings({
+    role: 'listview',
+    fit: true,
+    loading: 'own',
+    usage:
+      "A list of items: itemContent 'fields' (titleField, subtitleField, metaField) or 'components' (rows of child components reading {{listItem}}, rowHeight).",
+    defaultWidth: 30,
+    defaultHeight: 24,
+  });
 
   const idKey = isSet(idField) && String(idField).trim() ? String(idField) : 'id';
   const paged = useMemo(
-    () => pageOf(Array.isArray(data) ? data : [], { enablePagination, serverSidePagination, rowsPerPage, totalRecords, page: Number(pageIndex) || 1 }),
+    () =>
+      pageOf(Array.isArray(data) ? data : [], {
+        enablePagination,
+        serverSidePagination,
+        rowsPerPage,
+        totalRecords,
+        page: Number(pageIndex) || 1,
+      }),
     [data, enablePagination, serverSidePagination, rowsPerPage, totalRecords, pageIndex]
   );
   // Client-side data shorter than the current page: follow the clamp (no event: the user did not page).
@@ -136,13 +219,19 @@ export const ListView = () => {
     return { records: list, repeated: keyed.repeated };
   }, [data, idKey, pageSize]);
   // The page's keys, by the item's position in the whole data, as the selection's records are.
-  const keys = useMemo(() => records.slice(pageStart, pageStart + items.length).map((r) => r.key), [records, pageStart, items.length]);
+  const keys = useMemo(
+    () => records.slice(pageStart, pageStart + items.length).map((r) => r.key),
+    [records, pageStart, items.length]
+  );
   const warned = useRef(false);
   useEffect(() => {
     if (warned.current || !repeated.length) return;
     warned.current = true;
     console.warn(
-      `[ListView] Item ids should be unique: ${repeated.slice(0, 5).map((id) => JSON.stringify(id)).join(', ')} ` +
+      `[ListView] Item ids should be unique: ${repeated
+        .slice(0, 5)
+        .map((id) => JSON.stringify(id))
+        .join(', ')} ` +
         `${repeated.length === 1 ? 'is' : 'are'} held by more than one item in the "${idKey}" field. A selected item whose ` +
         'id is repeated stays selected only while it is the same record; a change that leaves that unclear clears it.'
     );
@@ -171,20 +260,33 @@ export const ListView = () => {
   };
   const selectedIndex = selection.selectedKey === null ? -1 : keys.indexOf(selection.selectedKey);
 
-  ToolJet.useAction({ name: 'selectItem', displayName: 'Select item', params: [{ handle: 'id', displayName: 'Item id' }] }, (id) => {
-    const record = records.find((r) => isSet(r.row[idKey]) && String(r.row[idKey]) === String(id));
-    if (record) selection.pick(record, false);
-  });
+  ToolJet.useAction(
+    { name: 'selectItem', displayName: 'Select item', params: [{ handle: 'id', displayName: 'Item id' }] },
+    (id) => {
+      const at = records.findIndex((r) => isSet(r.row[idKey]) && String(r.row[idKey]) === String(id));
+      if (at < 0) return;
+      selection.pick(records[at], false);
+      // Client-side paging: show the page the item is on, or the selection is invisible (team testing, 2026-10-29). As
+      // setPage, this fires no onPageChanged.
+      if (Number.isFinite(pageSize)) setPageIndex(Math.floor(at / pageSize) + 1);
+    }
+  );
   ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => clearSelection());
   // As on the native Table, setPage does not fire onPageChanged.
-  ToolJet.useAction({ name: 'setPage', displayName: 'Set page', params: [{ handle: 'page', displayName: 'Page' }] }, (p) => goTo(p, false));
+  ToolJet.useAction(
+    { name: 'setPage', displayName: 'Set page', params: [{ handle: 'page', displayName: 'Page' }] },
+    (p) => goTo(p, false)
+  );
 
   const grid = mode === 'grid';
   const cols = grid ? Math.min(24, Math.max(1, Math.floor(Number(columns)) || 1)) : 1;
   const space = Math.min(200, Math.max(0, Number(gap) || 0));
   const outline = itemVariant === 'outline';
   const framed = outline || isSet(itemBorderColor);
-  const dividers = !grid && showBorder;
+  // Plain items with dividers stay flush and the gap is split above and below each item's content, so the divider sits
+  // in the middle of it; a bordered card is its own divider and keeps the gap between cards. The gap had no effect once
+  // dividers were on (team testing, 2026-10-29).
+  const dividers = !grid && showBorder && !framed;
   const vars = styleVars([
     [accent, '--ui-primary'],
     [accent, '--ui-ring', (v) => `color-mix(in srgb, ${String(v)} 35%, transparent)`],
@@ -203,20 +305,42 @@ export const ListView = () => {
   const showPager = enablePagination && (items.length > 0 || paged.page > 1);
 
   return (
-    <LoadingFrame loading={ld.loading} minHeight={120} look={ld.skeleton ? <ListSkel rowHeight={Number(rowHeight) || 72} gap={space} /> : <LoadingBox />}>
+    <LoadingFrame
+      loading={ld.loading}
+      minHeight={120}
+      look={ld.skeleton ? <ListSkel rowHeight={Number(rowHeight) || 72} gap={space} /> : <LoadingBox />}
+    >
       <div
         className="ui u2l-root u2l-listview"
-        style={{ ...vars, background: isSet(background) ? String(background) : 'transparent', padding: isSet(padding) ? px(padding) : 0 }}
+        style={{
+          ...vars,
+          background: isSet(background) ? String(background) : 'transparent',
+          padding: isSet(padding) ? px(padding) : 0,
+        }}
       >
         {items.length === 0 ? (
           <div className="u2l-list-empty">{toText(emptyText) || 'No items'}</div>
         ) : (
           <div className="u2l-list-scroll">
-            <div role="list" className="u2l-list-items" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: dividers ? 0 : space }}>
+            <div
+              role="list"
+              className="u2l-list-items"
+              style={{
+                gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+                gap: dividers ? 0 : space,
+                ...(dividers ? { ['--lv-divider-gap' as string]: `${space}px` } : {}),
+              }}
+            >
               {items.map((item, i) => {
                 const row = (item && typeof item === 'object' ? item : {}) as Row;
                 const selected = highlightSelectedRow !== false && i === selectedIndex;
-                const cls = cn('u2l-list-item', selected && 'is-selected', framed && 'is-framed', dividers && 'has-divider', grid && 'is-grid');
+                const cls = cn(
+                  'u2l-list-item',
+                  selected && 'is-selected',
+                  framed && 'is-framed',
+                  dividers && 'has-divider',
+                  grid && 'is-grid'
+                );
                 if (asRows)
                   return (
                     <div
@@ -224,7 +348,10 @@ export const ListView = () => {
                       role="listitem"
                       tabIndex={0}
                       className={cn(cls, 'is-canvas')}
-                      style={{ ...itemStyle, height: Math.min(1200, Math.max(24, Number(rowHeight) || 72)) }}
+                      style={{
+                        ...itemStyle,
+                        height: Math.min(1200, Math.max(24, Number(rowHeight) || 72)) + (dividers ? space : 0),
+                      }}
                       onClickCapture={() => pick(i)}
                       onKeyDown={(e) => e.target === e.currentTarget && onKeyActivate(() => pick(i))(e)}
                     >
@@ -247,7 +374,9 @@ export const ListView = () => {
                     onClick={() => pick(i)}
                     onKeyDown={(e) => e.target === e.currentTarget && onKeyActivate(() => pick(i))(e)}
                   >
-                    {showAvatar ? <RecordAvatar src={image} name={image || !avatar ? title : avatar} size={40} /> : null}
+                    {showAvatar ? (
+                      <RecordAvatar src={image} name={image || !avatar ? title : avatar} size={40} />
+                    ) : null}
                     <span className="u2l-list-text">
                       <span className="u2l-list-title">{title}</span>
                       {subtitle ? <span className="u2l-list-subtitle">{subtitle}</span> : null}
@@ -262,7 +391,9 @@ export const ListView = () => {
                             className="ui-btn ui-btn--outline ui-btn--sm u2l-list-action"
                             onClick={(e) => {
                               e.stopPropagation();
-                              pick(i);
+                              // Selects the item for the action's handler without firing the item's own click: both
+                              // handlers ran (team testing, 2026-10-29).
+                              pick(i, false);
                               onActionClicked();
                             }}
                           >
@@ -279,8 +410,16 @@ export const ListView = () => {
         )}
         {showPager ? (
           <nav aria-label="Pagination" className="u2l-pager">
-            <span className="u2l-pager-label">{paged.pageCount ? `Page ${paged.page} of ${paged.pageCount}` : `Page ${paged.page}`}</span>
-            <Pager page={paged.page} pageCount={paged.pageCount} hasPrevious={paged.hasPrevious} hasNext={paged.hasNext} onPage={(p) => goTo(p)} />
+            <span className="u2l-pager-label">
+              {paged.pageCount ? `Page ${paged.page} of ${paged.pageCount}` : `Page ${paged.page}`}
+            </span>
+            <Pager
+              page={paged.page}
+              pageCount={paged.pageCount}
+              hasPrevious={paged.hasPrevious}
+              hasNext={paged.hasNext}
+              onPage={(p) => goTo(p)}
+            />
           </nav>
         ) : null}
       </div>

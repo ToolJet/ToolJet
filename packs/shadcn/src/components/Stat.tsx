@@ -56,7 +56,15 @@ const Sparkline = ({ data, type }: { data: unknown; type: string }) => {
           <path d={paths.area} fill={`url(#${gradient})`} stroke="none" />
         </>
       )}
-      <path d={paths.line} fill="none" stroke="currentColor" strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" />
+      <path
+        d={paths.line}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        vectorEffect="non-scaling-stroke"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
     </svg>
   );
 };
@@ -72,9 +80,22 @@ export const Stat = () => {
     enumLabels: { auto: 'Auto', number: 'Number', currency: 'Currency', percent: 'Percent', compact: 'Compact' },
     initialValue: 'auto',
   });
-  const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency (ISO code, e.g. USD)', initialValue: 'USD' });
-  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
-  const [change, setChange] = ToolJet.useStateString({ name: 'change', label: 'Change (e.g. +12.5%)', initialValue: '' });
+  const [currency] = ToolJet.useStateString({
+    name: 'currency',
+    label: 'Currency (ISO code, e.g. USD)',
+    initialValue: 'USD',
+  });
+  const [locale] = ToolJet.useStateString({
+    name: 'locale',
+    label: 'Locale',
+    description: LOCALE_HINT,
+    initialValue: '',
+  });
+  const [change, setChange] = ToolJet.useStateString({
+    name: 'change',
+    label: 'Change (e.g. +12.5%)',
+    initialValue: '',
+  });
   const [changeFormat] = ToolJet.useStateEnumeration({
     name: 'changeFormat',
     label: 'Change format',
@@ -91,12 +112,17 @@ export const Stat = () => {
     initialValue: 'up',
     inspector: 'switch',
   });
-  const [changeLabel] = ToolJet.useStateString({ name: 'changeLabel', label: 'Change context (e.g. vs last month)', initialValue: '' });
+  const [changeLabel] = ToolJet.useStateString({
+    name: 'changeLabel',
+    label: 'Change context (e.g. vs last month)',
+    initialValue: '',
+  });
   const [footnote] = ToolJet.useStateString({ name: 'footnote', label: 'Footnote', initialValue: '' });
   const [iconName] = ToolJet.useStateString({
     name: 'icon',
     label: 'Icon (lucide name, e.g. wallet)',
     inspector: 'icon',
+    iconSet: 'lucide',
     description: 'Any lucide name (wallet, trending-up, TrendingUp) or Tabler name (IconCurrencyDollar).',
     initialValue: '',
   });
@@ -116,7 +142,11 @@ export const Stat = () => {
     initialValue: 'square',
     inspector: 'switch',
   });
-  const [trendData] = ToolJet.useStateString({ name: 'trendData', label: 'Trend data (numbers or [{ x, y }])', initialValue: '' });
+  const [trendData] = ToolJet.useStateString({
+    name: 'trendData',
+    label: 'Trend data (numbers or [{ x, y }])',
+    initialValue: '',
+  });
   const [sparklineType] = ToolJet.useStateEnumeration({
     name: 'sparklineType',
     label: 'Trend line',
@@ -137,31 +167,64 @@ export const Stat = () => {
   });
   const [card] = ToolJet.useStateBoolean({ name: 'card', label: 'Show as card', initialValue: true });
   // UI 2.0's exposed names for the figure and the change (the native Statistics' names).
-  const [, setPrimaryLabel] = ToolJet.useStateString({ name: 'primaryLabel', initialValue: 'Total revenue', inspector: 'hidden' });
-  const [, setPrimaryValue] = ToolJet.useStateString({ name: 'primaryValue', initialValue: '1250', inspector: 'hidden' });
-  const [, setSecondaryLabel] = ToolJet.useStateString({ name: 'secondaryLabel', initialValue: '', inspector: 'hidden' });
-  const [, setSecondaryValue] = ToolJet.useStateString({ name: 'secondaryValue', initialValue: '', inspector: 'hidden' });
+  const [, setPrimaryLabel] = ToolJet.useStateString({
+    name: 'primaryLabel',
+    initialValue: 'Total revenue',
+    inspector: 'hidden',
+  });
+  const [, setPrimaryValue] = ToolJet.useStateString({
+    name: 'primaryValue',
+    initialValue: '1250',
+    inspector: 'hidden',
+  });
+  const [, setSecondaryLabel] = ToolJet.useStateString({
+    name: 'secondaryLabel',
+    initialValue: '',
+    inspector: 'hidden',
+  });
+  const [, setSecondaryValue] = ToolJet.useStateString({
+    name: 'secondaryValue',
+    initialValue: '',
+    inspector: 'hidden',
+  });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   // A number stays a number, so the figure keeps grouping its digits; NaN or Infinity (arithmetic on data not loaded)
   // is no figure and shows empty, not exposed as NaN.
   ToolJet.useAction(
-    { name: 'setPrimaryValue', displayName: 'Set primary value', params: [{ handle: 'text', displayName: 'Value', defaultValue: '' }] },
+    {
+      name: 'setPrimaryValue',
+      displayName: 'Set primary value',
+      params: [{ handle: 'text', displayName: 'Value', defaultValue: '' }],
+    },
     (next: unknown) => setValue((typeof next === 'number' ? (Number.isFinite(next) ? next : '') : text(next)) as string)
   );
   ToolJet.useAction(
-    { name: 'setSecondaryValue', displayName: 'Set secondary value', params: [{ handle: 'text', displayName: 'Change', defaultValue: '' }] },
+    {
+      name: 'setSecondaryValue',
+      displayName: 'Set secondary value',
+      params: [{ handle: 'text', displayName: 'Change', defaultValue: '' }],
+    },
     (next: unknown) => setChange(text(next))
   );
   // The Trend a change written as words points (a figure's own sign wins).
   ToolJet.useAction(
-    { name: 'setTrend', displayName: 'Set trend', params: [{ handle: 'trend', displayName: 'Trend (up, down or neutral)', defaultValue: 'up' }] },
+    {
+      name: 'setTrend',
+      displayName: 'Set trend',
+      params: [{ handle: 'trend', displayName: 'Trend (up, down or neutral)', defaultValue: 'up' }],
+    },
     (next: unknown) => {
       const trend = text(next).trim().toLowerCase();
       if (TRENDS.includes(trend)) setTrend(trend as 'up');
     }
   );
   // The card's own (rounded) shadow: the host's boxShadow, in the Container section, would draw a second, square one.
-  const boxShadow = ToolJet.useStyleString({ name: 'cardShadow', label: 'Card shadow', inspector: 'boxShadow', initialValue: '0px 0px 0px 0px #00000040' });
+  const boxShadow = ToolJet.useStyleString({
+    name: 'cardShadow',
+    label: 'Card shadow',
+    inspector: 'boxShadow',
+    initialValue: '0px 0px 0px 0px #00000040',
+  });
   const backgroundColor = useThemeColor('backgroundColor', 'Card background', TOKEN.surface);
   const borderColor = useThemeColor('borderColor', 'Card border color', TOKEN.border);
   const borderRadius = useThemeRadius('borderRadius', 'Card radius');
@@ -178,7 +241,13 @@ export const Stat = () => {
     name: 'valueFontFamily',
     label: 'Value typeface',
     enumDefinition: ['theme', 'sans', 'serif', 'display', 'mono'],
-    enumLabels: { theme: 'Theme font', sans: 'Sans serif', serif: 'Serif', display: 'Display serif', mono: 'Monospace' },
+    enumLabels: {
+      theme: 'Theme font',
+      sans: 'Sans serif',
+      serif: 'Serif',
+      display: 'Display serif',
+      mono: 'Monospace',
+    },
     initialValue: 'theme',
   });
   const labelTextTransform = ToolJet.useStyleEnumeration({
@@ -188,9 +257,21 @@ export const Stat = () => {
     enumLabels: { none: 'As typed', uppercase: 'UPPERCASE', lowercase: 'lowercase', capitalize: 'Capitalize' },
     initialValue: 'none',
   });
-  const labelLetterSpacing = ToolJet.useStyleString({ name: 'labelLetterSpacing', label: 'Label letter spacing (px, or em like 0.12em)', initialValue: '' });
+  const labelLetterSpacing = ToolJet.useStyleString({
+    name: 'labelLetterSpacing',
+    label: 'Label letter spacing (px, or em like 0.12em)',
+    initialValue: '',
+  });
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 12 });
+  ToolJet.useComponentSettings({
+    role: 'stat',
+    fit: true,
+    loading: 'own',
+    usage:
+      'A KPI card, UI 2.0 Stat names: label, value (valueFormat auto/number/currency/percent/compact, currency), change (changeFormat; a leading figure goes in the chip, its sign sets the direction, else trend up/down/neutral) with changeLabel, footnote, icon (any lucide or Tabler name; iconPosition right/left/top, iconStyle square/circle/none), trendData with sparklineType area/line, progress (0 to 100) with progressLabel, size sm/default/lg, card.',
+    defaultWidth: 10,
+    defaultHeight: 12,
+  });
 
   useEffect(() => {
     setPrimaryLabel(text(label));
@@ -208,7 +289,11 @@ export const Stat = () => {
     const el = rootRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
     const measure = () =>
-      setBox((prev) => (prev.width === el.clientWidth && prev.height === el.clientHeight ? prev : { width: el.clientWidth, height: el.clientHeight }));
+      setBox((prev) =>
+        prev.width === el.clientWidth && prev.height === el.clientHeight
+          ? prev
+          : { width: el.clientWidth, height: el.clientHeight }
+      );
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
@@ -238,7 +323,11 @@ export const Stat = () => {
   const veiled = ld.skeleton;
   const iconNode = Glyph ? (
     <Veil on={veiled} className="ui-stat-veil-fixed">
-      <span className={cn('ui-stat-icon', `is-${iconShape}`)} style={{ width: iconBox, height: iconBox }} aria-hidden="true">
+      <span
+        className={cn('ui-stat-icon', `is-${iconShape}`)}
+        style={{ width: iconBox, height: iconBox }}
+        aria-hidden="true"
+      >
         <Glyph size={iconSize} />
       </span>
     </Veil>
@@ -250,7 +339,8 @@ export const Stat = () => {
   // The label's two-line reserve (figures level across a row of Stats) only where the box has room for it; a box too
   // short even for one label line over the figure sets the label beside the figure.
   const valueLine = VALUE_LINE[size] ?? VALUE_LINE.default;
-  const reserveLabel = !box.height || box.height >= (isCard ? CARD_PADDING_Y : 0) + LABEL_TWO_LINES + ROW_GAP + valueLine;
+  const reserveLabel =
+    !box.height || box.height >= (isCard ? CARD_PADDING_Y : 0) + LABEL_TWO_LINES + ROW_GAP + valueLine;
   const inline = box.height > 0 && box.height < (isCard ? STACK_ROOM : 0) + valueLine;
   const context = [split.context, text(changeLabel)].filter(Boolean).join(' · ');
   const figureChip = !!figure || /^[+\-−±]?\s?[$€£¥₹]?\d/.test(split.chip || '');
@@ -258,13 +348,15 @@ export const Stat = () => {
   const changeBadge = split.chip ? (
     <Veil on={veiled} className={figureChip ? 'ui-stat-veil-fixed' : 'ui-stat-veil-words'}>
       <span
-      className={cn('ui-stat-chip', figureChip ? 'is-figure' : 'is-words', isSet(trendColor) && 'is-toned')}
-      style={isSet(trendColor) ? { ['--ui-stat-tone' as string]: String(trendColor) } : undefined}
-      title={text(change)}
-    >
-      {TrendIcon ? <TrendIcon size={12} data-direction={trend} /> : null}
-      {/* A figure stays on one line (a long one shortened); words wrap rather than being cut. */}
-      <span className="ui-stat-chip-text">{figureChip ? (figure ? figure.text : compactFigure(split.chip)) : split.chip}</span>
+        className={cn('ui-stat-chip', figureChip ? 'is-figure' : 'is-words', isSet(trendColor) && 'is-toned')}
+        style={isSet(trendColor) ? { ['--ui-stat-tone' as string]: String(trendColor) } : undefined}
+        title={text(change)}
+      >
+        {TrendIcon ? <TrendIcon size={12} data-direction={trend} /> : null}
+        {/* A figure stays on one line (a long one shortened); words wrap rather than being cut. */}
+        <span className="ui-stat-chip-text">
+          {figureChip ? (figure ? figure.text : compactFigure(split.chip)) : split.chip}
+        </span>
       </span>
     </Veil>
   ) : null;
@@ -276,7 +368,10 @@ export const Stat = () => {
     <div className={cn('ui-stat-content', reserveLabel ? 'is-roomy' : 'is-short', inline && 'is-inline')}>
       {Glyph && iconPosition === 'top' ? <div className="ui-stat-top">{iconNode}</div> : null}
       <div className="ui-stat-head">
-        <span title={labelText || undefined} className={cn('ui-stat-label', labelText && (reserveLabel ? 'is-reserved' : 'is-single'))}>
+        <span
+          title={labelText || undefined}
+          className={cn('ui-stat-label', labelText && (reserveLabel ? 'is-reserved' : 'is-single'))}
+        >
           {labelText}
         </span>
         {badgeInHeader ? changeBadge : null}
@@ -345,7 +440,8 @@ export const Stat = () => {
   const vars: Record<string, string | undefined> = {
     '--ui-stat-bg': css(backgroundColor),
     '--ui-stat-border': css(borderColor),
-    '--ui-stat-radius': isSet(borderRadius) && !Number.isNaN(Number(borderRadius)) ? `${Number(borderRadius)}px` : undefined,
+    '--ui-stat-radius':
+      isSet(borderRadius) && !Number.isNaN(Number(borderRadius)) ? `${Number(borderRadius)}px` : undefined,
     '--ui-stat-label': css(labelColor),
     '--ui-stat-value': css(valueColor),
     '--ui-stat-help': css(footnoteColor),
@@ -363,7 +459,12 @@ export const Stat = () => {
   return (
     <div ref={rootRef} className="ui ui-stat-root" style={vars as React.CSSProperties}>
       <div
-        className={cn('ui-stat', isCard && 'is-card', isCard && box.width > 0 && box.width < NARROW_CARD && 'is-narrow', !reserveLabel && 'is-short')}
+        className={cn(
+          'ui-stat',
+          isCard && 'is-card',
+          isCard && box.width > 0 && box.width < NARROW_CARD && 'is-narrow',
+          !reserveLabel && 'is-short'
+        )}
         onClick={onClick}
         style={isCard && shadow ? { boxShadow: shadow } : undefined}
       >

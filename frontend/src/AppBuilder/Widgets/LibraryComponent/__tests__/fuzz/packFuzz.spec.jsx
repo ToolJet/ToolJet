@@ -55,7 +55,13 @@ const HOSTILE = [
   ['object', { a: 1 }],
   ['mixed list', [null, 1, 'a', {}, [], NaN]],
   // UI 2.0's facts shape, bound to a text property by an app built for UI 2.0 (an Ant Hero's meta crashed the page).
-  ['facts list', [{ label: 'Open', value: 12 }, { label: 'Overdue', value: 3 }]],
+  [
+    'facts list',
+    [
+      { label: 'Open', value: 12 },
+      { label: 'Overdue', value: 3 },
+    ],
+  ],
   ['large list', bigList],
   ['long text', 'x'.repeat(20000)],
 ];

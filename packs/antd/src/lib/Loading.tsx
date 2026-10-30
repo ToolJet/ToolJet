@@ -3,7 +3,7 @@ import { Skeleton, Spin } from 'antd';
 import { ChartLoading } from '@ant-design/charts-util';
 import { useIsDark } from './AntProvider';
 
-// Ant's own loading looks for components that read ToolJet.useControlState().loading ("loading": "own" in pack.json).
+// Ant's own loading looks for components that read ToolJet.useControlState().loading (useComponentSettings loading: 'own').
 // Each keeps its content mounted underneath (hidden, or under the spinner), so typed values and scroll survive.
 
 /** Ant's nested Spin over the content: the content stays in place, faded, with the spinner on top. `as` sizes the

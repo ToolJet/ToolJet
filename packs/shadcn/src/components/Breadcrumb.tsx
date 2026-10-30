@@ -20,27 +20,33 @@ export const Breadcrumb = () => {
     description: 'Strings or { title, value } objects; the last is the current page.',
     initialValue: ['Home', 'Section', 'Page'],
   });
-  const [, setLastClickedItem] = ToolJet.useStateObject({ name: 'lastClickedItem', initialValue: {}, inspector: 'hidden' });
+  const [, setLastClickedItem] = ToolJet.useStateObject({
+    name: 'lastClickedItem',
+    initialValue: {},
+    inspector: 'hidden',
+  });
   const onItemClicked = ToolJet.useEventCallback({ name: 'onItemClicked' });
   const { disabled } = ToolJet.useControlState();
   const textColor = useThemeColor('textColor', 'Breadcrumb link color', TOKEN.mutedText);
   const currentColor = useThemeColor('currentColor', 'Current page color', TOKEN.text);
   const separatorColor = useThemeColor('separatorColor', 'Separator color', TOKEN.mutedText);
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 3 });
+  ToolJet.useComponentSettings({ role: 'breadcrumb', fit: false, loading: 'own', defaultWidth: 14, defaultHeight: 3 });
 
   const all = list(items);
   const trail: unknown[] = all.length > MAX_CRUMBS ? [all[0], ELLIPSIS, ...all.slice(-(MAX_CRUMBS - 2))] : all;
   // The index in the whole trail of each drawn item (the ellipsis hides some).
   const indexes =
-    all.length > MAX_CRUMBS ? [0, -1, ...Array.from({ length: MAX_CRUMBS - 2 }, (_, k) => all.length - (MAX_CRUMBS - 2) + k)] : all.map((_, k) => k);
+    all.length > MAX_CRUMBS
+      ? [0, -1, ...Array.from({ length: MAX_CRUMBS - 2 }, (_, k) => all.length - (MAX_CRUMBS - 2) + k)]
+      : all.map((_, k) => k);
   const titleOf = (it: unknown) => (isRecord(it) ? text(it.title ?? it.label ?? it.value) : text(it));
   const click = (it: unknown, index: number) => {
     if (disabled || it === ELLIPSIS) return;
     const entry = isRecord(it) ? it : { title: titleOf(it) };
     const title = titleOf(it);
     // UI 2.0's shape (title, index), with the pack's label and value too.
-    setLastClickedItem({ ...entry, title, label: title, value: isRecord(it) ? it.value ?? title : title, index });
+    setLastClickedItem({ ...entry, title, label: title, value: isRecord(it) ? (it.value ?? title) : title, index });
     onItemClicked();
   };
 
@@ -67,7 +73,12 @@ export const Breadcrumb = () => {
                     {titleOf(it)}
                   </span>
                 ) : (
-                  <button type="button" disabled={disabled} className={cn('n2-crumb', !disabled && 'is-link')} onClick={() => click(it, indexes[i])}>
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    className={cn('n2-crumb', !disabled && 'is-link')}
+                    onClick={() => click(it, indexes[i])}
+                  >
                     {titleOf(it)}
                   </button>
                 )}

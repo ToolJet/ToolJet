@@ -27,7 +27,7 @@ export const Card = () => {
   });
   const radius = useThemeRadius('borderRadius', 'Border radius');
   const padding = ToolJet.useStyleNumber({ name: 'padding', label: 'Padding', initialValue: 16, section: 'Spacing' });
-  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 40 });
+  ToolJet.useComponentSettings({ role: 'card', fit: false, defaultWidth: 16, defaultHeight: 40 });
   const title = displayText(rawTitle);
   const description = displayText(rawDescription);
 
@@ -35,7 +35,12 @@ export const Card = () => {
   return (
     <div
       className="ui ui-card"
-      style={{ background, borderRadius: radius === "" || radius == null ? "calc(var(--ui-radius) + 4px)" : radius, padding, borderTop: `4px solid ${accent}` }}
+      style={{
+        background,
+        borderRadius: radius === '' || radius == null ? 'calc(var(--ui-radius) + 4px)' : radius,
+        padding,
+        borderTop: `4px solid ${accent}`,
+      }}
     >
       <div className="ui-card-title">{title}</div>
       {description && <div className="ui-card-description">{description}</div>}

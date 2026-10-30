@@ -16,7 +16,7 @@ export const THEME_COLOR = {
   danger: 'var(--cc-error-systemStatus)',
 } as const;
 
-type Extra = { section?: string; description?: string; visibleWhen?: { key: string; value: unknown } };
+type Extra = { section?: string; description?: string; visibleWhen?: { key: string; value: string | number | boolean | null } };
 
 /**
  * A colour style whose default is the theme colour it draws. Left at that default (or cleared, or a saved app's

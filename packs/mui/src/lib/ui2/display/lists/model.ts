@@ -2,7 +2,8 @@
 // _display/displayModel.ts, NewTable chipTone / avatarHue), ported for the List view, Record list, Card grid and
 // Key-value list. Every function takes whatever the author bound and never throws.
 
-import { localeFor, moneyDigits, numberFormat } from '../../../locale';
+import { contentKey } from '../../../contentKey';
+import { currencyCode, localeFor, moneyDigits, moneyStyle, numberFormat } from '../../../locale';
 
 export type Row = Record<string, unknown>;
 
@@ -129,13 +130,12 @@ export const styleVars = (pairs: [unknown, string, ((v: unknown) => string)?][])
 const FORMATS = ['number', 'currency', 'percent', 'compact'];
 export const VALUE_FORMATS = ['auto', ...FORMATS, 'date', 'datetime'];
 const nf = numberFormat;
-const currencyCode = (c: unknown) => (isNonBlankString(c) && /^[A-Za-z]{3}$/.test(c.trim()) ? c.trim().toUpperCase() : 'USD');
 const isNumericFigure = (v: unknown): v is number | string =>
   typeof v === 'number' ? Number.isFinite(v) : typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v.trim());
 
 const formatNumber = (n: number, format: string, currency?: unknown, locale?: unknown): string => {
   const where = localeFor(currency, locale);
-  if (format === 'currency') return nf(where, { style: 'currency', currency: currencyCode(currency), ...moneyDigits(n, where) }).format(n);
+  if (format === 'currency') return nf(where, moneyStyle(currencyCode(currency), moneyDigits(n, where))).format(n);
   if (format === 'compact') return nf(where, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
   if (format === 'percent') return `${nf(where, { maximumFractionDigits: 1 }).format(n)}%`;
   return nf(where, { maximumFractionDigits: 2 }).format(n);
@@ -284,7 +284,8 @@ export const cardItems = (data: unknown, f: Record<string, unknown> = {}): CardI
   const badgeKeys = [...new Set([...(isNonBlankString(f.badgeField) ? [f.badgeField.trim()] : []), ...fieldList(f.badgeFields)])];
   const items = data.flatMap((row: unknown, index: number) => {
     if (!isRecord(row)) return [];
-    const titleKey = isNonBlankString(f.titleField) && f.titleField in row ? f.titleField : firstTextField(row);
+    // A named title field that the row lacks shows a blank title, not another field (team testing, 2026-10-29).
+    const titleKey = isNonBlankString(f.titleField) ? f.titleField : firstTextField(row);
     const id = isNonBlankString(f.idField) ? row[f.idField] : row.id;
     const title = titleKey ? toText(row[titleKey]) : '';
     const badges = badgeKeys.map((k) => toText(row[k]).trim()).filter(Boolean).slice(0, 4);
@@ -295,7 +296,7 @@ export const cardItems = (data: unknown, f: Record<string, unknown> = {}): CardI
     const avatarImage = isImageUrl(avatarValue) ? avatarValue.trim() : '';
     return [
       {
-        key: toText(id) || String(index),
+        key: toText(id) || contentKey(row),
         keyFromId: !!toText(id),
         title,
         subtitle:
@@ -356,14 +357,14 @@ export const recordItems = (data: unknown, f: Record<string, unknown> = {}): Rec
   const format = typeof f.valueFormat === 'string' && VALUE_FORMATS.includes(f.valueFormat) ? f.valueFormat : 'auto';
   const items = data.flatMap((row: unknown, index: number) => {
     if (!isRecord(row)) return [];
-    const titleKey = isNonBlankString(f.titleField) && f.titleField in row ? f.titleField : firstTextField(row);
+    const titleKey = isNonBlankString(f.titleField) ? f.titleField : firstTextField(row);
     const title = titleKey ? toText(row[titleKey]) : '';
     const id = isNonBlankString(f.idField) ? row[f.idField] : row.id;
     const avatarValue = isNonBlankString(f.avatarField) ? row[f.avatarField] : undefined;
     const image = isImageUrl(avatarValue) ? avatarValue.trim() : '';
     return [
       {
-        key: toText(id) || String(index),
+        key: toText(id) || contentKey(row),
         keyFromId: !!toText(id),
         title,
         image,
@@ -429,8 +430,8 @@ export const pageWindow = (page: number, count: number | null): (number | string
   return out;
 };
 
-export const itemKey = (item: unknown, idField: string, index: number): string =>
-  isRecord(item) && isSet(item[idField]) ? String(item[idField]) : `#${index}`;
+export const itemKey = (item: unknown, idField: string, _index?: number): string =>
+  isRecord(item) && isSet(item[idField]) ? String(item[idField]) : contentKey(item);
 
 export const SHADOWS: Record<string, string> = {
   none: 'none',
@@ -493,7 +494,7 @@ export const keyValueText = (row: KeyValueRow, defaults: { currency?: string; lo
       const locale = toText(own.locale) || defaults.locale || 'en-US';
       const options: Intl.NumberFormatOptions =
         type === 'currency'
-          ? { style: 'currency', currency: currencyCode(own.currency ?? row.currency ?? defaults.currency), minimumFractionDigits: digits ?? 2, maximumFractionDigits: digits ?? 2 }
+          ? moneyStyle(currencyCode(own.currency ?? row.currency ?? defaults.currency), { minimumFractionDigits: digits ?? 2, maximumFractionDigits: digits ?? 2 })
           : { minimumFractionDigits: digits ?? 0, maximumFractionDigits: digits ?? 2 };
       return wrap(nf(locale, options).format(n));
     }

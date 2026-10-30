@@ -25,7 +25,11 @@ const toItems = (raw: unknown): Item[] =>
     .slice(0, MAX_SECTIONS)
     .map((t, i) =>
       isRecord(t)
-        ? { value: text(t.value) || `item-${i + 1}`, title: text(t.title ?? t.label), content: text(t.content ?? t.children) }
+        ? {
+            value: text(t.value) || `item-${i + 1}`,
+            title: text(t.title ?? t.label),
+            content: text(t.content ?? t.children),
+          }
         : { value: `item-${i + 1}`, title: text(t), content: '' }
     );
 
@@ -44,7 +48,11 @@ export const Accordion = () => {
     ],
   });
   const [multiple] = ToolJet.useStateBoolean({ name: 'multiple', label: 'Several open at once', initialValue: false });
-  const [defaultOpen] = ToolJet.useStateArray({ name: 'defaultOpen', label: 'Open by default (indexes)', initialValue: [] });
+  const [defaultOpen] = ToolJet.useStateArray({
+    name: 'defaultOpen',
+    label: 'Open by default (indexes)',
+    initialValue: [],
+  });
   // The pack's open item by value, kept for apps that set it; it follows the first open section.
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Open item (value)', initialValue: '' });
   const [, setOpenIndexes] = ToolJet.useStateArray({ name: 'openIndexes', initialValue: [], inspector: 'hidden' });
@@ -57,10 +65,15 @@ export const Accordion = () => {
   const textColor = useThemeColor('textColor', 'Item content color', TOKEN.mutedText);
   const dividerColor = useThemeColor('dividerColor', 'Divider color', TOKEN.border);
   const iconColor = useThemeColor('iconColor', 'Chevron color', TOKEN.mutedText);
-  const borderColor = ToolJet.useStyleString({ name: 'borderColor', label: 'Divider (legacy)', inspector: 'color', initialValue: '' });
+  const borderColor = ToolJet.useStyleString({
+    name: 'borderColor',
+    label: 'Divider (legacy)',
+    inspector: 'color',
+    initialValue: '',
+  });
   const ld = useLoadingLook();
   // The three sample sections (159px) in whole rows: 18 left a 17px band under them at the drop, 16 cuts the last.
-  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 17 });
+  ToolJet.useComponentSettings({ role: 'accordion', fit: true, loading: 'own', defaultWidth: 16, defaultHeight: 17 });
 
   const source = useStable(rawItems);
   const items = useMemo(() => toItems(source), [source]);
@@ -96,7 +109,7 @@ export const Accordion = () => {
   // Republished when what is open changes, and when the section at the first open index is replaced by another: new
   // items under the same open index drew the new section but left the exposed value on the old one (Codex review
   // RELATED-02, 2026-10-27).
-  const openValue = open.length ? items[Number(open[0])]?.value ?? '' : '';
+  const openValue = open.length ? (items[Number(open[0])]?.value ?? '') : '';
   useEffect(() => publish(open), [open.join(','), openValue]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // onExpand when a section opens, onCollapse when one closes, onChange after: the native Accordion's events.
@@ -116,28 +129,41 @@ export const Accordion = () => {
   // expand(index) / collapse(index) open or close one section (all of them without an index) and fire onExpand or
   // onCollapse when that changes what is open (a section already open or closed fires nothing); a single-open accordion
   // keeps one section open.
-  ToolJet.useAction({ name: 'expand', displayName: 'Expand', params: [{ handle: 'index', displayName: 'Index (empty: all)' }] }, (index) => {
-    const one = sectionKey(index, live.current.count);
-    if (!noIndex(index) && one === null) return;
-    const every = Array.from({ length: live.current.count }, (_, k) => String(k));
-    const next = live.current.multiple ? (one === null ? every : [...new Set([...openRef.current, one])]) : [one ?? every[0]].filter(Boolean);
-    if (same(next, openRef.current)) return;
-    apply(next, false);
-    onExpand();
-  });
-  ToolJet.useAction({ name: 'collapse', displayName: 'Collapse', params: [{ handle: 'index', displayName: 'Index (empty: all)' }] }, (index) => {
-    const one = sectionKey(index, live.current.count);
-    if (!noIndex(index) && one === null) return;
-    const next = one === null ? [] : openRef.current.filter((k) => k !== one);
-    if (same(next, openRef.current)) return;
-    apply(next, false);
-    onCollapse();
-  });
+  ToolJet.useAction(
+    { name: 'expand', displayName: 'Expand', params: [{ handle: 'index', displayName: 'Index (empty: all)' }] },
+    (index) => {
+      const one = sectionKey(index, live.current.count);
+      if (!noIndex(index) && one === null) return;
+      const every = Array.from({ length: live.current.count }, (_, k) => String(k));
+      const next = live.current.multiple
+        ? one === null
+          ? every
+          : [...new Set([...openRef.current, one])]
+        : [one ?? every[0]].filter(Boolean);
+      if (same(next, openRef.current)) return;
+      apply(next, false);
+      onExpand();
+    }
+  );
+  ToolJet.useAction(
+    { name: 'collapse', displayName: 'Collapse', params: [{ handle: 'index', displayName: 'Index (empty: all)' }] },
+    (index) => {
+      const one = sectionKey(index, live.current.count);
+      if (!noIndex(index) && one === null) return;
+      const next = one === null ? [] : openRef.current.filter((k) => k !== one);
+      if (same(next, openRef.current)) return;
+      apply(next, false);
+      onCollapse();
+    }
+  );
   // The pack's earlier actions.
-  ToolJet.useAction({ name: 'open', displayName: 'Open item', params: [{ handle: 'value', displayName: 'Item value' }] }, (v) => {
-    const i = live.current.items.findIndex((it) => it.value === String(v ?? ''));
-    if (i >= 0) apply(live.current.multiple ? [...new Set([...openRef.current, String(i)])] : [String(i)]);
-  });
+  ToolJet.useAction(
+    { name: 'open', displayName: 'Open item', params: [{ handle: 'value', displayName: 'Item value' }] },
+    (v) => {
+      const i = live.current.items.findIndex((it) => it.value === String(v ?? ''));
+      if (i >= 0) apply(live.current.multiple ? [...new Set([...openRef.current, String(i)])] : [String(i)]);
+    }
+  );
   ToolJet.useAction({ name: 'collapseAll', displayName: 'Collapse all' }, () => apply([]));
 
   const vars = lookVars([
@@ -167,7 +193,13 @@ export const Accordion = () => {
             {sections}
           </AccordionPrimitive.Root>
         ) : (
-          <AccordionPrimitive.Root type="single" collapsible value={open[0] ?? ''} onValueChange={change} disabled={disabled}>
+          <AccordionPrimitive.Root
+            type="single"
+            collapsible
+            value={open[0] ?? ''}
+            onValueChange={change}
+            disabled={disabled}
+          >
             {sections}
           </AccordionPrimitive.Root>
         )}

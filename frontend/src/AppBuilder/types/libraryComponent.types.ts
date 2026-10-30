@@ -7,11 +7,13 @@ export interface ManifestProp {
   label?: string;
   type: 'boolean' | 'enumeration' | string;
   inspector?: string;
+  // The icon set an `inspector: 'icon'` prop's picker offers: Tabler (ToolJet's own, the default) or lucide.
+  iconSet?: 'tabler' | 'lucide';
   enumValues?: string[];
   enumLabels?: Record<string, string>;
   default?: unknown;
   section?: string;
-  // v2 manifest (packages/pack-tools/build.mjs): what the SDK hook call declared beyond the CLI's static fields.
+  // Presentation fields the CLI reads from each SDK hook call.
   description?: string;
   placeholder?: string;
   min?: number;
@@ -37,6 +39,8 @@ export type ManifestValidationKind = 'text' | 'choice' | 'date';
 export interface ManifestSlot {
   name: string;
   kind?: string;
+  // rows only: what the row's components call their item instead of {{listItem}} (a kanban card's cardData)
+  variable?: string;
 }
 
 export interface ManifestActionParam {
@@ -70,6 +74,8 @@ export interface ManifestComponent {
   role?: string;
   usage?: string;
   fit?: boolean;
+  // 'own': the component draws its own loading look (useControlState().loading), so the host draws no overlay.
+  loading?: 'own';
 }
 
 export interface LibraryManifest {

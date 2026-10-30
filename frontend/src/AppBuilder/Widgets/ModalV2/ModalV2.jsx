@@ -84,7 +84,7 @@ export const ModalV2 = function Modal({
   const computedTriggerButtonLabel =
     typeof triggerButtonLabel === 'number'
       ? String(triggerButtonLabel)
-      : (textOr(triggerButtonLabel, null) ?? 'Show Modal');
+      : textOr(triggerButtonLabel, null) ?? 'Show Modal';
   const normalizedTriggerButtonTextSize = Number(triggerButtonTextSize);
   const computedTriggerButtonFontSize = Number.isFinite(normalizedTriggerButtonTextSize)
     ? normalizedTriggerButtonTextSize
@@ -95,8 +95,8 @@ export const ModalV2 = function Modal({
   const computedTriggerButtonFontWeight = normalizedTriggerButtonFontWeight
     ? normalizedTriggerButtonFontWeight
     : normalizedTriggerButtonFontWeight === '0'
-      ? 0
-      : 'normal';
+    ? 0
+    : 'normal';
   const isInitialRender = useRef(true);
   const title = properties.title ?? '';
   const titleAlignment = properties.titleAlignment ?? 'left';

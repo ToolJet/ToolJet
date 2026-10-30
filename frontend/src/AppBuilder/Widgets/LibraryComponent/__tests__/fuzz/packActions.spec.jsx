@@ -169,7 +169,8 @@ const show = (v) => {
 };
 
 // The first value of a component's own option-like prop (options, items, tabs, steps...), for a valid argument.
-const LIST_PROPS = /^(options|items|tabs|steps|data|columns|cards|panels|slides|markers|tags|suggestions|nodes|treeData|menuItems|links|segments|fields)$/;
+const LIST_PROPS =
+  /^(options|items|tabs|steps|data|columns|cards|panels|slides|markers|tags|suggestions|nodes|treeData|menuItems|links|segments|fields)$/;
 const firstOf = (defaults, keys = ['value', 'id', 'key', 'name']) => {
   for (const [name, v] of Object.entries(defaults)) {
     if (!LIST_PROPS.test(name) || !Array.isArray(v) || !v.length) continue;
@@ -195,7 +196,9 @@ const validArg = (param, defaults) => {
     const first = firstOf(defaults);
     return first === undefined ? ['a'] : [first];
   }
-  if (/^(value|option|selected|key|keys|id|tabId|item|cardId|columnId|columnKey|country|countryCode|currency)$/i.test(h)) {
+  if (
+    /^(value|option|selected|key|keys|id|tabId|item|cardId|columnId|columnKey|country|countryCode|currency)$/i.test(h)
+  ) {
     const first = firstOf(defaults, /column/i.test(h) ? ['id', 'key', 'value'] : undefined);
     if (first !== undefined) return /keys/i.test(h) ? [first] : first;
     if (/country/i.test(h)) return 'US';
@@ -410,7 +413,9 @@ if (!packs.length) test.skip('pack actions (set PACK_ACTIONS=shadcn,antd,mui to 
           const stateChanged = Object.keys(exposed).some((k) => STATE_KEY.test(k) && !same(before[k], exposed[k]));
           const anyChangeEvent = stepFired.some((e) => changeEvents.has(e.name));
           if (stateChanged && !anyChangeEvent)
-            problems.add(`${label}: the exposed state changed but no change event fired (${[...changeEvents].join(', ')})`);
+            problems.add(
+              `${label}: the exposed state changed but no change event fired (${[...changeEvents].join(', ')})`
+            );
         }
         for (const m of drawnMismatch(exposed, roots())) problems.add(`${label}: ${m}`);
         const counts = {};
@@ -446,7 +451,8 @@ if (!packs.length) test.skip('pack actions (set PACK_ACTIONS=shadcn,antd,mui to 
         for (const [label, junk] of JUNK) {
           await step(`${a}(${label})`, call(a, Array(arity).fill(junk)), { single: true });
           // The first parameter junk, the rest valid: a two-argument action with one bad half.
-          if (params.length > 1) await step(`${a}(${label}, valid...)`, call(a, [junk, ...valid.slice(1)]), { single: true });
+          if (params.length > 1)
+            await step(`${a}(${label}, valid...)`, call(a, [junk, ...valid.slice(1)]), { single: true });
         }
         const first = await step(`${a}(valid ${show(valid)})`, call(a, valid), { single: true });
         // The same call again: only an action that moves on (next, toggle) may change anything the second time.
@@ -461,13 +467,17 @@ if (!packs.length) test.skip('pack actions (set PACK_ACTIONS=shadcn,antd,mui to 
           const spaced = { counts: {} };
           await mount();
           for (let i = 0; i < BURST; i++) {
-            const r = await step(`${a} x${BURST}${label}, one frame apart (call ${i + 1})`, call(a, argsAt(i)), { quiet: true });
-            for (const [eventName, n] of Object.entries(r.counts)) spaced.counts[eventName] = (spaced.counts[eventName] ?? 0) + n;
+            const r = await step(`${a} x${BURST}${label}, one frame apart (call ${i + 1})`, call(a, argsAt(i)), {
+              quiet: true,
+            });
+            for (const [eventName, n] of Object.entries(r.counts))
+              spaced.counts[eventName] = (spaced.counts[eventName] ?? 0) + n;
             spaced.state = r.state;
           }
           const drain = () => new Promise((resolve) => setTimeout(resolve, 150));
           const tail = await step(`${a} x${BURST}${label}, one frame apart (settling)`, drain, { quiet: true });
-          for (const [eventName, n] of Object.entries(tail.counts)) spaced.counts[eventName] = (spaced.counts[eventName] ?? 0) + n;
+          for (const [eventName, n] of Object.entries(tail.counts))
+            spaced.counts[eventName] = (spaced.counts[eventName] ?? 0) + n;
           spaced.state = tail.state;
           await mount();
           const burst = await step(
@@ -541,7 +551,13 @@ if (!packs.length) test.skip('pack actions (set PACK_ACTIONS=shadcn,antd,mui to 
         .slice(0, 4);
       for (const [i, el] of targets.entries()) {
         totals.uiClicks += 1;
-        const label = `click ${el.getAttribute('role') || el.tagName.toLowerCase()} ${i + 1} (${(el.getAttribute('aria-label') || el.textContent || '').trim().slice(0, 24)})`;
+        const label = `click ${el.getAttribute('role') || el.tagName.toLowerCase()} ${i + 1} (${(
+          el.getAttribute('aria-label') ||
+          el.textContent ||
+          ''
+        )
+          .trim()
+          .slice(0, 24)})`;
         await step(
           label,
           () => {

@@ -6,8 +6,10 @@ import { ActionTypes } from './ActionTypes';
 import {
   mergeStaticAndDynamicActions,
   resolveLibraryComponentActions,
+  resolveManifestActions,
 } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import { useCustomComponentLibrariesStore } from '@/_stores/customComponentLibrariesStore';
+import { useBuiltinPacksStore } from '@/_stores/builtinPacksStore';
 import {
   Popover,
   PopoverTrigger,
@@ -79,6 +81,7 @@ export const EventManager = ({
   const components = useStore((state) => state.getCurrentPageComponents());
   const libraryPins = useStore((state) => state.globalSettings?.customComponentLibraries);
   const libraryManifests = useCustomComponentLibrariesStore((state) => state.manifests);
+  const packManifests = useBuiltinPacksStore((state) => state.manifests);
   const pages = useStore((state) => _.get(state, 'modules.canvas.pages', []), shallow).filter(
     (page) => !page.disabled && !page.isPageGroup
   );
@@ -247,6 +250,13 @@ export const EventManager = ({
       // libraryManifests is real Zustand state, so this re-evaluates (and the open action
       // picker re-renders) once an in-flight manifest fetch resolves elsewhere.
       const dynamicActions = resolveLibraryComponentActions(componentDef, libraryManifests, libraryPins);
+      return mergeStaticAndDynamicActions(staticActions, dynamicActions);
+    }
+    if (componentDef?.component?.component === 'PackComponent') {
+      // The pack's manifest is fetched once its component draws on the canvas; packManifests is Zustand state, so
+      // the action picker re-renders when it arrives.
+      const { pack, componentName } = componentDef.component.definition?.properties ?? {};
+      const dynamicActions = resolveManifestActions(packManifests[pack?.value], componentName?.value);
       return mergeStaticAndDynamicActions(staticActions, dynamicActions);
     }
     return staticActions;

@@ -36,7 +36,7 @@ export const Progress = () => {
   // The pack's earlier name for the bar color; Bar color wins when both are set.
   const accent = ToolJet.useStyleString({ name: 'accentColor', label: 'Fill', inspector: 'color', initialValue: '' });
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 4 });
+  ToolJet.useComponentSettings({ role: 'progress', fit: false, loading: 'own', defaultWidth: 12, defaultHeight: 4 });
 
   const pct = Math.min(100, Math.max(0, Number(value) || 0));
   const bar = css(barColor) || css(accent);
@@ -62,7 +62,10 @@ export const Progress = () => {
           value={pct}
           aria-label={label || 'Progress'}
         >
-          <ProgressPrimitive.Indicator className="ui-progress-bar" style={{ transform: `translateX(-${100 - pct}%)` }} />
+          <ProgressPrimitive.Indicator
+            className="ui-progress-bar"
+            style={{ transform: `translateX(-${100 - pct}%)` }}
+          />
         </ProgressPrimitive.Root>
       </div>
     </LoadingFrame>

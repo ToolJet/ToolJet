@@ -35,9 +35,23 @@ import {
 const cls = (...names: (string | false | null | undefined)[]) => names.filter(Boolean).join(' ');
 // A card's text: a stored ISO date or timestamp as a short date, anything else as written.
 const shown = (value: unknown): string => cardDateLabel(value) ?? String(value);
-const BADGE_COLOR: Record<string, ChipProps['color']> = { destructive: 'error', warning: 'warning', success: 'success' };
+const BADGE_COLOR: Record<string, ChipProps['color']> = {
+  destructive: 'error',
+  warning: 'warning',
+  success: 'success',
+};
 
-const CardBody = ({ card, fields, badgeColors, expanded }: { card: BoardCard; fields: CardFields; badgeColors: unknown; expanded: boolean }) => {
+const CardBody = ({
+  card,
+  fields,
+  badgeColors,
+  expanded,
+}: {
+  card: BoardCard;
+  fields: CardFields;
+  badgeColors: unknown;
+  expanded: boolean;
+}) => {
   const badge = fields.badge ? card[fields.badge] : undefined;
   const avatar = fields.avatar ? card[fields.avatar] : undefined;
   const meta = fields.meta ? card[fields.meta] : undefined;
@@ -46,7 +60,10 @@ const CardBody = ({ card, fields, badgeColors, expanded }: { card: BoardCard; fi
   const details = expanded && fields.details ? cardDetails(card[fields.details]) : [];
   const mapped = isSet(badge) ? badgeLook(badge, badgeColors) : null;
   const word = isSet(badge) ? BADGE_BY_WORD[String(badge).toLowerCase()] : undefined;
-  const tone = !mapped && word !== 'secondary' ? (BADGE_COLOR[word ?? ''] as 'error' | 'warning' | 'success' | undefined) : undefined;
+  const tone =
+    !mapped && word !== 'secondary'
+      ? (BADGE_COLOR[word ?? ''] as 'error' | 'warning' | 'success' | undefined)
+      : undefined;
   return (
     <>
       <Typography variant="body2" className="tj-mui-kb-card-title">
@@ -80,7 +97,7 @@ const CardBody = ({ card, fields, badgeColors, expanded }: { card: BoardCard; fi
               label={String(badge)}
               className={mapped ? 'tj-mui-kb-badge is-mapped' : 'tj-mui-kb-badge'}
               style={mapped ?? undefined}
-              color={mapped ? 'default' : BADGE_COLOR[word ?? ''] ?? 'default'}
+              color={mapped ? 'default' : (BADGE_COLOR[word ?? ''] ?? 'default')}
               variant={mapped || word === 'secondary' ? 'filled' : 'outlined'}
               // An outlined status chip writes its palette colour on the paper: as readable ink (lib/ink.ts).
               sx={tone ? (t) => ({ color: themeInk(t.palette[tone].main, t, 0) }) : undefined}
@@ -92,7 +109,11 @@ const CardBody = ({ card, fields, badgeColors, expanded }: { card: BoardCard; fi
             </Typography>
           ) : null}
           {isSet(avatar) ? (
-            <Avatar className="tj-mui-kb-avatar" src={isImage(avatar) ? String(avatar) : undefined} title={isImage(avatar) ? undefined : String(avatar)}>
+            <Avatar
+              className="tj-mui-kb-avatar"
+              src={isImage(avatar) ? String(avatar) : undefined}
+              title={isImage(avatar) ? undefined : String(avatar)}
+            >
               {isImage(avatar) ? null : initials(avatar)}
             </Avatar>
           ) : null}
@@ -118,11 +139,23 @@ const CardBody = ({ card, fields, badgeColors, expanded }: { card: BoardCard; fi
   );
 };
 
-const KanbanCard = ({ kb, card, columnId, helpId }: { kb: KanbanModel; card: BoardCard; columnId: string; helpId: string }) => {
+const KanbanCard = ({
+  kb,
+  card,
+  columnId,
+  helpId,
+}: {
+  kb: KanbanModel;
+  card: BoardCard;
+  columnId: string;
+  helpId: string;
+}) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const contentHeight = useContentHeight(contentRef, kb.collapsedHeight);
   const expanded = kb.expandedKeys.has(card.__key);
-  const clamp = kb.custom ? { collapsible: false, maxHeight: undefined } : cardClamp(kb.collapsedHeight, contentHeight, expanded);
+  const clamp = kb.custom
+    ? { collapsible: false, maxHeight: undefined }
+    : cardClamp(kb.collapsedHeight, contentHeight, expanded);
   const draggable = kb.draggable && !kb.picked;
   return (
     <Card
@@ -164,12 +197,20 @@ const KanbanCard = ({ kb, card, columnId, helpId }: { kb: KanbanModel; card: Boa
           <Close fontSize="inherit" />
         </IconButton>
       ) : null}
-      <div className={cls('tj-mui-kb-clamp', !!clamp.maxHeight && 'is-clamped')} style={clamp.collapsible ? { maxHeight: clamp.maxHeight } : undefined}>
+      <div
+        className={cls('tj-mui-kb-clamp', !!clamp.maxHeight && 'is-clamped')}
+        style={clamp.collapsible ? { maxHeight: clamp.maxHeight } : undefined}
+      >
         <div ref={contentRef}>
           {kb.custom ? (
             <ToolJet.RowSlot name="card" index={kb.order.get(card.__key) ?? 0} item={strip(card)} />
           ) : (
-            <CardBody card={card} fields={kb.fields} badgeColors={kb.badgeColors} expanded={card.__key === kb.openKey} />
+            <CardBody
+              card={card}
+              fields={kb.fields}
+              badgeColors={kb.badgeColors}
+              expanded={card.__key === kb.openKey}
+            />
           )}
         </div>
       </div>
@@ -193,11 +234,23 @@ const KanbanCard = ({ kb, card, columnId, helpId }: { kb: KanbanModel; card: Boa
 };
 
 /** A column's card list: scrolls inside the board, fading out at the bottom while more cards are below. */
-const CardList = ({ collapsed, depsKey, children }: { collapsed: boolean; depsKey: string; children: React.ReactNode }) => {
+const CardList = ({
+  collapsed,
+  depsKey,
+  children,
+}: {
+  collapsed: boolean;
+  depsKey: string;
+  children: React.ReactNode;
+}) => {
   const ref = useRef<HTMLDivElement>(null);
   const moreBelow = useMoreAhead(ref, 'y', [depsKey, collapsed]);
   return (
-    <div ref={ref} className={cls('tj-mui-kb-list', moreBelow && 'has-more-below')} style={collapsed ? { display: 'none' } : undefined}>
+    <div
+      ref={ref}
+      className={cls('tj-mui-kb-list', moreBelow && 'has-more-below')}
+      style={collapsed ? { display: 'none' } : undefined}
+    >
       {children}
     </div>
   );
@@ -258,7 +311,14 @@ const boardSx = (t: Theme) => {
       '&:focus-visible': { outline: 'none', boxShadow: `inset 0 0 0 2px ${alpha(primary, 0.4)}` },
     },
     '&.is-compact .tj-mui-kb-col, &.is-compact .tj-mui-kb-list': { gap: '6px' },
-    '& .tj-mui-kb-head': { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', minHeight: 28, padding: '0 4px' },
+    '& .tj-mui-kb-head': {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: '8px',
+      minHeight: 28,
+      padding: '0 4px',
+    },
     '& .tj-mui-kb-col.is-collapsed .tj-mui-kb-head': { padding: 0 },
     '& .tj-mui-kb-title': {
       display: 'flex',
@@ -400,10 +460,22 @@ const boardSx = (t: Theme) => {
       '& > div': { minWidth: 0 },
       '& > div.is-long': { gridColumn: 'span 2' },
       '& dt': { display: 'block', color: `var(--kb-card-text, ${text2})` },
-      '& dd': { margin: 0, color: `var(--kb-card-title, ${t.palette.text.primary})`, fontWeight: 500, overflowWrap: 'break-word' },
+      '& dd': {
+        margin: 0,
+        color: `var(--kb-card-title, ${t.palette.text.primary})`,
+        fontWeight: 500,
+        overflowWrap: 'break-word',
+      },
       '& > div.is-long dd': { fontWeight: 400, whiteSpace: 'pre-line' },
     },
-    '& .tj-mui-kb-sr': { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' },
+    '& .tj-mui-kb-sr': {
+      position: 'absolute',
+      width: 1,
+      height: 1,
+      overflow: 'hidden',
+      clip: 'rect(0 0 0 0)',
+      whiteSpace: 'nowrap',
+    },
     // Reloading keeps the board on screen under a faded layer with MUI's LinearProgress along the top.
     '& .tj-mui-kb-reload': {
       position: 'absolute',
@@ -435,8 +507,11 @@ const Board = ({ kb, loading }: { kb: KanbanModel; loading: boolean }) => {
       </span>
       {kb.columnViews.map(({ column, cards, hidden, isCollapsed, over, fill, style, dropLineAt }) => {
         const toggle = () => kb.toggleColumn(column.id);
-        const dropLine = (before: string | null) => (dropLineAt(before) ? <div className="tj-mui-kb-drop" aria-hidden="true" /> : null);
-        const count = kb.showCount ? <Chip size="small" className="tj-mui-kb-count" label={column.cards.length} /> : null;
+        const dropLine = (before: string | null) =>
+          dropLineAt(before) ? <div className="tj-mui-kb-drop" aria-hidden="true" /> : null;
+        const count = kb.showCount ? (
+          <Chip size="small" className="tj-mui-kb-count" label={column.cards.length} />
+        ) : null;
         return (
           <section
             key={column.id}
@@ -469,7 +544,13 @@ const Board = ({ kb, loading }: { kb: KanbanModel; loading: boolean }) => {
               <div className="tj-mui-kb-head-end">
                 {count}
                 {!isCollapsed && kb.collapsibleColumns ? (
-                  <IconButton size="small" className="tj-mui-kb-fold" title={`Collapse ${column.title}`} aria-label={`Collapse ${column.title}`} onClick={toggle}>
+                  <IconButton
+                    size="small"
+                    className="tj-mui-kb-fold"
+                    title={`Collapse ${column.title}`}
+                    aria-label={`Collapse ${column.title}`}
+                    onClick={toggle}
+                  >
                     <ChevronLeft fontSize="small" />
                   </IconButton>
                 ) : null}
@@ -490,12 +571,23 @@ const Board = ({ kb, loading }: { kb: KanbanModel; loading: boolean }) => {
               )}
               {cards.length ? dropLine(null) : null}
               {hidden > 0 ? (
-                <Button size="small" color="inherit" className="tj-mui-kb-btn" onClick={() => kb.showMoreCards(column.id)}>
+                <Button
+                  size="small"
+                  color="inherit"
+                  className="tj-mui-kb-btn"
+                  onClick={() => kb.showMoreCards(column.id)}
+                >
                   Show {Math.min(hidden, 100)} more
                 </Button>
               ) : null}
               {kb.allowAdd ? (
-                <Button size="small" color="inherit" className="tj-mui-kb-btn" startIcon={<Add />} onClick={() => kb.onAdd(column)}>
+                <Button
+                  size="small"
+                  color="inherit"
+                  className="tj-mui-kb-btn"
+                  startIcon={<Add />}
+                  onClick={() => kb.onAdd(column)}
+                >
                   Add card
                 </Button>
               ) : null}
@@ -510,7 +602,13 @@ const Board = ({ kb, loading }: { kb: KanbanModel; loading: boolean }) => {
         );
       })}
       {kb.moreColumns > 0 ? (
-        <Button size="small" color="inherit" className="tj-mui-kb-btn" sx={{ alignSelf: 'flex-start', whiteSpace: 'nowrap' }} onClick={kb.showMoreColumns}>
+        <Button
+          size="small"
+          color="inherit"
+          className="tj-mui-kb-btn"
+          sx={{ alignSelf: 'flex-start', whiteSpace: 'nowrap' }}
+          onClick={kb.showMoreColumns}
+        >
           Show {Math.min(kb.moreColumns, 50)} more
         </Button>
       ) : null}
@@ -527,10 +625,21 @@ const Board = ({ kb, loading }: { kb: KanbanModel; loading: boolean }) => {
 // (title, description, badge, tags, progress, meta, avatar, details) or a row of ToolJet components (cardLayout custom,
 // reading {{cardData}}, as UI 2.0's, or {{listItem}}). Drag or keyboard moves, add and delete buttons and the actions
 // change the board at once and publish updatedCardData with the last moved, added, updated or removed card and an event, for a query to save.
+// What the board tells ToolJet about itself (useComponentSettings).
+const KANBAN_SETTINGS = {
+  role: 'kanban',
+  fit: false,
+  loading: 'own',
+  usage:
+    "MUI Kanban: data (the cards) grouped by statusField into columns [{id, title, color}] (a status no column lists gets its own column). cardLayout 'fields' shows titleField, descriptionField, badgeField (a Chip; badgeColors maps value to colour), tagsField, progressField (0 to 100), metaField, avatarField (name or image URL) and detailsField (shown on the clicked card); 'custom' makes each card a row of ToolJet components reading {{cardData}} or {{listItem}} (cardHeight). density, collapsedHeight, columnWidth (empty fills the board), showCount, collapsibleColumns, collapsedColumns, emptyText. Cards move by drag or keyboard (allowDrag): onCardMoved with lastCardMovement {cardId, from, to, card, destinationColumnId} and updatedCardData (every card). onCardSelected (lastSelectedCard), allowAdd (onAddCardClick, addCardColumn), allowDelete (onCardRemoved, lastRemovedCard), onUpdate after every change; actions addCard(card, columnId), moveCard(id, columnId), deleteCard(id), updateCardData(id, value). Styles: column and card colours, radii, gap, progressColor, cardShadow.",
+  slots: [{ name: 'card', kind: 'rows', variable: 'cardData' }],
+};
+
 export const Kanban = () => {
   const { disabled, loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
   const kb = useKanban({
+    settings: KANBAN_SETTINGS,
     dataName: 'data',
     sample: SAMPLE.kanban,
     columns: SAMPLE.kanbanColumns,

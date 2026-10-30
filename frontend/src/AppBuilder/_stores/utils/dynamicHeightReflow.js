@@ -532,6 +532,11 @@ export const resolveContainerHeight = ({
     const component = getResolvedComponent(componentId, context);
     containerHeight = ui2RowFloor(componentType, component?.properties);
   }
+  // A UI 2.0 row or card is floored at its row (card) height the same way.
+  if (isUi2RowContext) {
+    const component = getResolvedComponent(componentId, context);
+    containerHeight = ui2RowFloor(componentType, component?.properties);
+  }
 
   // Explicit dynamic-height opt-out: the container stays at its authored
   // height and does NOT derive height from children. This is the toggle-off

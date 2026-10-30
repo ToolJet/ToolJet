@@ -121,15 +121,11 @@ RUN node server/scripts/compress-templates.js
 RUN npm install -g @nestjs/cli && npm install -g copyfiles
 RUN npm --prefix server run build && npm prune --production --prefix server
 
-# Built-in component packs (packs/builtin.json): each pack is built and packaged under server/builtin-packs, which the
-# server installs into every workspace (ee custom-component-libraries/builtin-packs.ts).
-COPY ./packages/pack-tools/ ./packages/pack-tools/
+# Built-in component packs: each pack in packs/builtin.json is built with the custom component CLI (cli/) into
+# server/builtin-packs, which the server serves to every workspace like native widgets.
+COPY ./cli/ ./cli/
 COPY ./packs/ ./packs/
-RUN npm --prefix packages/pack-tools install --no-audit --no-fund \
-    && for dir in $(node -e "console.log(require('./packs/builtin.json').packs.map((p) => p.dir).join(' '))"); do \
-         npm --prefix "$dir" ci --no-audit --no-fund; \
-       done \
-    && node packages/pack-tools/bundle-builtin.mjs
+RUN npm --prefix cli ci --include=dev && npm --prefix cli run build && node packs/build-builtin.mjs --install
 
 # Install dependencies for PostgREST, curl, tar, etc.
 RUN apt-get update && apt-get install -y \

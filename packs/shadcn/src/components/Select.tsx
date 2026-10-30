@@ -7,7 +7,19 @@ import { usePortalContainer } from '../lib/usePortalContainer';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { popupLayerStyle } from '../lib/popupLayer';
 import { cn } from '../lib/cn';
-import { choiceKey, defaultKey, isDisabledOption, keyForValue, optionKey, optionsByKey, shownOptions, toChoiceOptions, uniqueKeys, wantedValue, type ChoiceOption } from '../lib/ui2/choice/options';
+import {
+  choiceKey,
+  defaultKey,
+  isDisabledOption,
+  keyForValue,
+  optionKey,
+  optionsByKey,
+  shownOptions,
+  toChoiceOptions,
+  uniqueKeys,
+  wantedValue,
+  type ChoiceOption,
+} from '../lib/ui2/choice/options';
 import { fieldVars, lookVars, useDropRemovedChoices, useFocusEvents, useResetOn } from '../lib/ui2/choice/looks';
 import { choiceValidationValue } from '../lib/ui2/choice/validationValue';
 import { useBusy, useFieldStyles } from '../lib/ui2/choice/fieldStyles';
@@ -27,7 +39,8 @@ export const Select = () => {
     name: 'options',
     label: 'Options',
     inspector: 'options',
-    description: "Labels that differ from values: [{ label: 'Standard', value: 'std' }, { label: 'Premium', value: 'pro' }]",
+    description:
+      "Labels that differ from values: [{ label: 'Standard', value: 'std' }, { label: 'Premium', value: 'pro' }]",
     placeholder: "['Standard', 'Premium'] or [{ label, value }]",
     initialValue: [
       { label: 'One', value: 1 },
@@ -40,18 +53,38 @@ export const Select = () => {
     description: 'An x in the box, and a click on the chosen option, clear it. Off while the field is mandatory.',
     initialValue: true,
   });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Select an option' });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Select an option',
+  });
   const [defaultValue] = ToolJet.useStateString({ name: 'defaultValue', label: 'Default value', initialValue: '' });
   // Exposed values. `value` was the pack's default value: an app that set it still starts on it.
   const [legacyValue, setValue] = ToolJet.useStateString({ name: 'value', initialValue: '', inspector: 'hidden' });
-  const [, setSelectedOption] = ToolJet.useStateObject({ name: 'selectedOption', initialValue: {}, inspector: 'hidden' });
+  const [, setSelectedOption] = ToolJet.useStateObject({
+    name: 'selectedOption',
+    initialValue: {},
+    inspector: 'hidden',
+  });
   const [, setSelectedLabel] = ToolJet.useStateString({ name: 'selectedLabel', initialValue: '', inspector: 'hidden' });
-  const [disabledProp] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
+  const [disabledProp] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable',
+    initialValue: false,
+    inspector: 'hidden',
+  });
   const onSelect = ToolJet.useEventCallback({ name: 'onSelect' });
   const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
   const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
   const styles = useFieldStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
+  ToolJet.useComponentSettings({
+    role: 'select',
+    fit: true,
+    loading: 'own',
+    usage: 'One choice from options [{label,value}]: value is the picked value; selectedOption; onSelect.',
+    defaultWidth: 10,
+    defaultHeight: 7,
+  });
   const { disabled, loading } = useBusy(disabledProp);
   const fieldId = ToolJet.useFieldId();
 
@@ -61,12 +94,17 @@ export const Select = () => {
   const keyFor = (o: ChoiceOption) => optionKey(o, choiceKey);
   const byKey = optionsByKey(options, choiceKey);
   // Live: an action reads the key as last chosen, ahead of the next render.
-  const [key, setKey, keyRef] = useLiveState(() => defaultKey(defaultValue, options) || defaultKey(legacyValue, options));
+  const [key, setKey, keyRef] = useLiveState(
+    () => defaultKey(defaultValue, options) || defaultKey(legacyValue, options)
+  );
   const [open, setOpen] = useState(false);
   // A new default value starts the selection again.
   useResetOn(defaultValue, () => setKey(defaultKey(defaultValue, options)));
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
-  ToolJet.useFormClear(() => { setOpen(false); setKey(''); });
+  ToolJet.useFormClear(() => {
+    setOpen(false);
+    setKey('');
+  });
   const selected = byKey.get(key);
   // An option that is removed takes its choice with it, so it does not come back selected when it reappears.
   useDropRemovedChoices(options.map(keyFor), key ? [key] : [], () => setKey(''), false);
@@ -79,7 +117,7 @@ export const Select = () => {
   useEffect(() => expose(selected), [key, JSON.stringify(selected)]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // A picked option counts even when its value is false, 0 or '' (an "All" choice); only no pick is empty.
-  const check = ToolJet.useValidation({ section: 'choice', value: choiceValidationValue(selected), present: !!selected });
+  const check = ToolJet.useValidation({ kind: 'choice', value: choiceValidationValue(selected), present: !!selected });
   const focus = useFocusEvents(onFocus, onBlur, check.touch);
   // Set while a close by useOwnerGuard is under way: focus does not go back to a trigger that cannot take input.
   const ownerClosed = useRef(false);
@@ -115,7 +153,10 @@ export const Select = () => {
     // The option already chosen: nothing changes and nothing fires.
     if (option && !isDisabledOption(option) && k !== keyRef.current) choose(k);
   };
-  ToolJet.useAction({ name: 'selectOption', displayName: 'Select option', params: [{ handle: 'value', displayName: 'Value' }] }, selectByValue);
+  ToolJet.useAction(
+    { name: 'selectOption', displayName: 'Select option', params: [{ handle: 'value', displayName: 'Value' }] },
+    selectByValue
+  );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => choose('', false));
   ToolJet.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => triggerRef.current?.focus());
   ToolJet.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => {
@@ -151,7 +192,11 @@ export const Select = () => {
             >
               <SelectPrimitive.Trigger
                 ref={triggerRef}
-                className={cn('ui-select-trigger uc-trigger', clearable && key && 'has-clear', loading && 'uc-is-loading')}
+                className={cn(
+                  'ui-select-trigger uc-trigger',
+                  clearable && key && 'has-clear',
+                  loading && 'uc-is-loading'
+                )}
                 // role="combobox" takes no name from its content: without a label, the placeholder names it.
                 aria-label={label ? undefined : placeholder || 'Select'}
                 {...fieldAria(fieldId, check.error, check.required, !!description)}
@@ -171,14 +216,14 @@ export const Select = () => {
               {container ? (
                 <SelectPrimitive.Portal container={container}>
                   <SelectPrimitive.Content
-                  className="ui-popup ui-menu uc-select-menu"
-                  position="popper"
-                  sideOffset={4}
-                  style={popVars}
-                  onCloseAutoFocus={(e) => {
-                    if (ownerClosed.current) e.preventDefault();
-                  }}
-                >
+                    className="ui-popup ui-menu uc-select-menu"
+                    position="popper"
+                    sideOffset={4}
+                    style={popVars}
+                    onCloseAutoFocus={(e) => {
+                      if (ownerClosed.current) e.preventDefault();
+                    }}
+                  >
                     <SelectPrimitive.Viewport>
                       {shown.map((o, i) => {
                         const k = shownKeys[i];

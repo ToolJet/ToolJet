@@ -38,7 +38,17 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-const COMPONENTS = { Select, RadioGroup, ToggleGroup, MultiSelect, Combobox, DropdownMenu, KeyValue, Questionnaire, SplitPane };
+const COMPONENTS = {
+  Select,
+  RadioGroup,
+  ToggleGroup,
+  MultiSelect,
+  Combobox,
+  DropdownMenu,
+  KeyValue,
+  Questionnaire,
+  SplitPane,
+};
 
 // Mounts one pack component; `exposed` holds its exposed values, `events` the events it fired, `actions` its actions.
 const mount = async (name, props, hostExtra = {}) => {
@@ -100,7 +110,13 @@ describe('SP-08: a required single choice valued false', () => {
     const calls = [];
     const { exposed } = await mount(
       'Select',
-      { options: [{ label: 'False value', value: false }, { label: 'One', value: 1 }], defaultValue: false },
+      {
+        options: [
+          { label: 'False value', value: false },
+          { label: 'One', value: 1 },
+        ],
+        defaultValue: false,
+      },
       {
         useValidation: (value, present) => {
           calls.push({ value, present });
@@ -181,7 +197,11 @@ describe('SP-22: keyboard focus inside the shadow root', () => {
 
   it('ToggleGroup: ArrowRight skips a disabled option to the next', async () => {
     const { root } = await mount('ToggleGroup', {
-      options: [{ label: 'Alpha', value: 'alpha' }, { label: 'Blocked', value: 'blocked', disabled: true }, { label: 'Beta', value: 'beta' }],
+      options: [
+        { label: 'Alpha', value: 'alpha' },
+        { label: 'Blocked', value: 'blocked', disabled: true },
+        { label: 'Beta', value: 'beta' },
+      ],
       defaultValue: 'alpha',
     });
     const buttons = () => Array.from(root().querySelectorAll('button'));
@@ -231,9 +251,13 @@ describe('SP-22: keyboard focus inside the shadow root', () => {
 });
 
 describe('SP-23: removing a MultiSelect chip from its focused Remove button', () => {
-  it('keeps focus in the field, on the next chip\'s Remove', async () => {
+  it("keeps focus in the field, on the next chip's Remove", async () => {
     const { exposed, root } = await mount('MultiSelect', {
-      options: [{ label: 'Alpha', value: 'alpha' }, { label: 'Beta', value: 'beta' }, { label: 'Gamma', value: 'gamma' }],
+      options: [
+        { label: 'Alpha', value: 'alpha' },
+        { label: 'Beta', value: 'beta' },
+        { label: 'Gamma', value: 'gamma' },
+      ],
       defaultValue: ['alpha', 'beta'],
     });
     const remove = (label) => root().querySelector(`[aria-label="Remove ${label}"]`);
@@ -249,37 +273,43 @@ describe('SP-24: a popup closed because its owner stopped taking input', () => {
   const disableOwner = (widget) => widget().parentElement.setAttribute('aria-disabled', 'true');
   const enableOwner = (widget) => widget().parentElement.removeAttribute('aria-disabled');
 
-  test.each(['Combobox', 'MultiSelect'])('%s: empties the search, counts as a blur, and focuses again afterwards', async (name) => {
-    const { events, root, widget } = await mount(name, {
-      options: [{ label: 'Alpha', value: 'alpha' }, { label: 'Beta', value: 'beta' }],
-      defaultValue: name === 'MultiSelect' ? [] : '',
-    });
-    const field = () => root().querySelector(name === 'Combobox' ? 'button[role="combobox"]' : '[role="combobox"]');
-    act(() => field().focus());
-    fireEvent.click(field());
-    await waitFor(() => expect(popupRoot()?.querySelector('input')).toBeTruthy());
-    const search = popupRoot().querySelector('input');
-    act(() => search.focus());
-    fireEvent.change(search, { target: { value: 'Beta' } });
-    act(() => field().blur());
-    await settle();
-    const count = (e) => events.filter((x) => x === e).length;
-    expect(count('onFocus')).toBe(1);
-    disableOwner(widget);
-    await waitFor(() => expect(popupRoot()?.querySelector('input')).toBeFalsy());
-    await settle();
-    expect(count('onBlur')).toBe(1);
-    enableOwner(widget);
-    act(() => field().focus());
-    await settle();
-    act(() => field().blur());
-    await settle();
-    expect(count('onFocus')).toBe(2);
-    expect(count('onBlur')).toBe(2);
-    fireEvent.click(field());
-    await waitFor(() => expect(popupRoot()?.querySelector('input')).toBeTruthy());
-    expect(popupRoot().querySelector('input').value).toBe('');
-  });
+  test.each(['Combobox', 'MultiSelect'])(
+    '%s: empties the search, counts as a blur, and focuses again afterwards',
+    async (name) => {
+      const { events, root, widget } = await mount(name, {
+        options: [
+          { label: 'Alpha', value: 'alpha' },
+          { label: 'Beta', value: 'beta' },
+        ],
+        defaultValue: name === 'MultiSelect' ? [] : '',
+      });
+      const field = () => root().querySelector(name === 'Combobox' ? 'button[role="combobox"]' : '[role="combobox"]');
+      act(() => field().focus());
+      fireEvent.click(field());
+      await waitFor(() => expect(popupRoot()?.querySelector('input')).toBeTruthy());
+      const search = popupRoot().querySelector('input');
+      act(() => search.focus());
+      fireEvent.change(search, { target: { value: 'Beta' } });
+      act(() => field().blur());
+      await settle();
+      const count = (e) => events.filter((x) => x === e).length;
+      expect(count('onFocus')).toBe(1);
+      disableOwner(widget);
+      await waitFor(() => expect(popupRoot()?.querySelector('input')).toBeFalsy());
+      await settle();
+      expect(count('onBlur')).toBe(1);
+      enableOwner(widget);
+      act(() => field().focus());
+      await settle();
+      act(() => field().blur());
+      await settle();
+      expect(count('onFocus')).toBe(2);
+      expect(count('onBlur')).toBe(2);
+      fireEvent.click(field());
+      await waitFor(() => expect(popupRoot()?.querySelector('input')).toBeTruthy());
+      expect(popupRoot().querySelector('input').value).toBe('');
+    }
+  );
 
   it('DropdownMenu: exposes isOpen false and fires onClose once', async () => {
     const { exposed, events, root, widget } = await mount('DropdownMenu', { items: ['Edit', 'Archive'] });
@@ -297,7 +327,10 @@ describe('SP-24: a popup closed because its owner stopped taking input', () => {
 
 describe('SP-27: an empty bound default', () => {
   it('MultiSelect: clears the earlier selection', async () => {
-    const options = [{ label: 'Alpha', value: 'alpha' }, { label: 'Beta', value: 'beta' }];
+    const options = [
+      { label: 'Alpha', value: 'alpha' },
+      { label: 'Beta', value: 'beta' },
+    ];
     const { exposed, rerender } = await mount('MultiSelect', { options, defaultValue: ['alpha'] });
     await waitFor(() => expect(exposed.values).toEqual(['alpha']));
     rerender({ options, defaultValue: [] });

@@ -3,6 +3,8 @@ const execa = require('execa');
 const path = require('path');
 const fs = require('fs');
 
+import { formatError } from '../../lib/log';
+
 export default class Install extends Command {
   static flags = {
     plugin: Flags.string({ required: true }),
@@ -19,10 +21,7 @@ export default class Install extends Command {
     const pluginPath = path.join('plugins', 'packages', `${plugin}`);
 
     if (!fs.existsSync(pluginPath)) {
-      this.log(
-        '\x1b[41m%s\x1b[0m',
-        'Error : Plugin not found, make sure that you are running this command in Tooljet directory'
-      );
+      this.log(formatError('Plugin not found, make sure that you are running this command in Tooljet directory'));
       process.exit(1);
     }
 

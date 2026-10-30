@@ -10,7 +10,7 @@ import { iconOrText } from '../lib/icons';
 import { str } from '../lib/data';
 import { toNumber } from '../lib/format';
 import { FieldSkeleton, Loading } from '../lib/loading';
-import { typeRule, useRuleCheck } from '../lib/typeRule';
+import { typeRule } from '../lib/typeRule';
 import { useValueSetter } from '../lib/sameValue';
 
 const adornment = (position: 'start' | 'end', content: React.ReactNode) =>
@@ -53,18 +53,50 @@ export const TextField = () => {
   const field = useFieldProps({ label: 'Name' });
   const [value, setValue] = useStateText({ name: 'value', label: 'Value', initialValue: '' });
   const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: 'Enter your name' });
-  const [type] = ToolJet.useStateEnumeration({ name: 'type', label: 'Type', enumDefinition: ['text', 'email', 'password', 'url', 'tel', 'search'], initialValue: 'text' });
-  const [startAdornment] = useStateText({ name: 'startAdornment', label: 'Start adornment', description: 'Text, or an icon name such as Search.', initialValue: '' });
-  const [endAdornment] = useStateText({ name: 'endAdornment', label: 'End adornment', description: 'Text, or an icon name such as Mail.', initialValue: '' });
-  const [maxLength] = ToolJet.useStateNumber({ name: 'maxLength', label: 'Max length', description: '0 for no limit.', initialValue: 0, min: 0 });
+  const [type] = ToolJet.useStateEnumeration({
+    name: 'type',
+    label: 'Type',
+    enumDefinition: ['text', 'email', 'password', 'url', 'tel', 'search'],
+    initialValue: 'text',
+  });
+  const [startAdornment] = useStateText({
+    name: 'startAdornment',
+    label: 'Start adornment',
+    description: 'Text, or an icon name such as Search.',
+    initialValue: '',
+  });
+  const [endAdornment] = useStateText({
+    name: 'endAdornment',
+    label: 'End adornment',
+    description: 'Text, or an icon name such as Mail.',
+    initialValue: '',
+  });
+  const [maxLength] = ToolJet.useStateNumber({
+    name: 'maxLength',
+    label: 'Max length',
+    description: '0 for no limit.',
+    initialValue: 0,
+    min: 0,
+  });
   const look = useTextFieldLook();
   const events = useTextEvents();
   const ref = useRef<HTMLInputElement>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = useRuleCheck(ToolJet.useValidation({ section: 'text', value }), typeRule(type, value));
+  const check = ToolJet.useValidation({ kind: 'text', value, rule: typeRule(type, value) });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
+  ToolJet.useComponentSettings({
+    role: 'input',
+    fit: true,
+    loading: 'own',
+    usage:
+      "MUI's TextField: label, value, placeholder, helperText, type, variant (outlined, filled, standard), size (small, medium), startAdornment/endAdornment (text or an icon name); onChange, onEnterKeyDown, onFocus, onBlur; setValue, clear, focus, blur. The Validation section sets error and required.",
+    roleProps: { description: 'helperText', inputType: 'type' },
+    roleEvents: { onEnterPressed: 'onEnterKeyDown' },
+    roleActions: { setText: 'setValue', setFocus: 'focus', setBlur: 'blur' },
+    defaultWidth: 10,
+    defaultHeight: 7,
+  });
   const [revealed, setRevealed] = useState(false);
   const isPassword = type === 'password';
 
@@ -74,7 +106,10 @@ export const TextField = () => {
     if (!valueSetter.set(next)) return;
     events.onChange();
   };
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(str(next)));
+  ToolJet.useAction(
+    { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (next) => change(str(next))
+  );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change(''));
   useFocusActions(ref);
   const end = iconOrText(endAdornment);
@@ -132,15 +167,33 @@ export const MultilineTextField = () => {
   const [value, setValue] = useStateText({ name: 'value', label: 'Value', initialValue: '' });
   const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: 'Add a note...' });
   const [minRows] = ToolJet.useStateNumber({ name: 'minRows', label: 'Min rows', initialValue: 3, min: 1, max: 40 });
-  const [maxRows] = ToolJet.useStateNumber({ name: 'maxRows', label: 'Max rows', description: '0 for no limit.', initialValue: 8, min: 0, max: 80 });
+  const [maxRows] = ToolJet.useStateNumber({
+    name: 'maxRows',
+    label: 'Max rows',
+    description: '0 for no limit.',
+    initialValue: 8,
+    min: 0,
+    max: 80,
+  });
   const look = useTextFieldLook();
   const events = useTextEvents();
   const ref = useRef<HTMLInputElement>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ section: 'text', value });
+  const check = ToolJet.useValidation({ kind: 'text', value });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 12 });
+  ToolJet.useComponentSettings({
+    role: 'textarea',
+    fit: true,
+    loading: 'own',
+    usage:
+      "MUI's TextField multiline: label, value, placeholder, helperText, minRows/maxRows (grows between them), variant, size; onChange; Ctrl/Cmd+Enter fires onEnterKeyDown.",
+    roleProps: { description: 'helperText', rows: 'minRows' },
+    roleEvents: { onEnterPressed: 'onEnterKeyDown' },
+    roleActions: { setText: 'setValue', setFocus: 'focus', setBlur: 'blur' },
+    defaultWidth: 12,
+    defaultHeight: 12,
+  });
 
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
@@ -148,7 +201,10 @@ export const MultilineTextField = () => {
     if (!valueSetter.set(next)) return;
     events.onChange();
   };
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(str(next)));
+  ToolJet.useAction(
+    { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (next) => change(str(next))
+  );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change(''));
   useFocusActions(ref);
 
@@ -191,22 +247,64 @@ export const MultilineTextField = () => {
 // startAdornment / endAdornment (a unit or currency sign); onChange, onEnterKeyDown, onFocus, onBlur.
 export const NumberField = () => {
   const field = useFieldProps({ label: 'Quantity' });
-  const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', description: 'A number; empty for none.', initialValue: null });
+  const [value, setValue] = ToolJet.useStateNumber({
+    name: 'value',
+    label: 'Value',
+    description: 'A number; empty for none.',
+    initialValue: null,
+  });
   const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: '0' });
-  const [min] = ToolJet.useStateNumber({ name: 'min', label: 'Min', description: 'Empty for no minimum.', initialValue: null });
-  const [max] = ToolJet.useStateNumber({ name: 'max', label: 'Max', description: 'Empty for no maximum.', initialValue: null });
+  const [min] = ToolJet.useStateNumber({
+    name: 'min',
+    label: 'Min',
+    description: 'Empty for no minimum.',
+    initialValue: null,
+  });
+  const [max] = ToolJet.useStateNumber({
+    name: 'max',
+    label: 'Max',
+    description: 'Empty for no maximum.',
+    initialValue: null,
+  });
   const [step] = ToolJet.useStateNumber({ name: 'step', label: 'Step', initialValue: 1, min: 0 });
-  const [startAdornment] = useStateText({ name: 'startAdornment', label: 'Start adornment', description: 'A unit or sign such as $, or an icon name.', initialValue: '' });
-  const [endAdornment] = useStateText({ name: 'endAdornment', label: 'End adornment', description: 'A unit such as kg or %.', initialValue: '' });
+  const [startAdornment] = useStateText({
+    name: 'startAdornment',
+    label: 'Start adornment',
+    description: 'A unit or sign such as $, or an icon name.',
+    initialValue: '',
+  });
+  const [endAdornment] = useStateText({
+    name: 'endAdornment',
+    label: 'End adornment',
+    description: 'A unit such as kg or %.',
+    initialValue: '',
+  });
   const look = useTextFieldLook();
   const events = useTextEvents();
   const ref = useRef<HTMLInputElement>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const num = toNumber(value);
-  const check = ToolJet.useValidation({ section: 'text', value: num === null ? '' : String(num), present: num !== null });
+  const check = ToolJet.useValidation({ kind: 'text', value: num === null ? '' : String(num), present: num !== null });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 7 });
+  ToolJet.useComponentSettings({
+    role: 'numberinput',
+    fit: true,
+    loading: 'own',
+    usage:
+      "A number in MUI's TextField (type number): label, value (a number, empty for none), min, max, step, startAdornment (e.g. $) / endAdornment (e.g. kg), helperText; onChange, onEnterKeyDown; out-of-range input is clamped on blur.",
+    roleProps: {
+      description: 'helperText',
+      minValue: 'min',
+      maxValue: 'max',
+      prefix: 'startAdornment',
+      suffix: 'endAdornment',
+    },
+    roleEvents: { onEnterPressed: 'onEnterKeyDown' },
+    roleActions: { setText: 'setValue', setFocus: 'focus', setBlur: 'blur' },
+    defaultWidth: 8,
+    defaultHeight: 7,
+  });
   const lo = toNumber(min);
   const hi = toNumber(max);
 
@@ -216,7 +314,10 @@ export const NumberField = () => {
     if (!valueSetter.set(next as number)) return;
     events.onChange();
   };
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(toNumber(next)));
+  ToolJet.useAction(
+    { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (next) => change(toNumber(next))
+  );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change(null));
   useFocusActions(ref);
   // A number input's unfinished draft ('-', '1e') reads as an empty value, so clearForm, which empties an already empty
@@ -242,7 +343,10 @@ export const NumberField = () => {
           disabled={disabled}
           {...checkProps(check, field.helperText)}
           slotProps={{
-            input: { startAdornment: adornment('start', iconOrText(startAdornment)), endAdornment: adornment('end', iconOrText(endAdornment)) },
+            input: {
+              startAdornment: adornment('start', iconOrText(startAdornment)),
+              endAdornment: adornment('end', iconOrText(endAdornment)),
+            },
             htmlInput: { min: lo ?? undefined, max: hi ?? undefined, step: Number(step) > 0 ? Number(step) : 'any' },
           }}
           onChange={(e) => change(e.target.value === '' ? null : toNumber(e.target.value))}
@@ -252,7 +356,8 @@ export const NumberField = () => {
           onFocus={() => events.onFocus()}
           onBlur={() => {
             // Out-of-range input is clamped on blur, as a number field does.
-            if (num !== null && ((lo !== null && num < lo) || (hi !== null && num > hi))) change(hi !== null && num > hi ? hi : (lo as number));
+            if (num !== null && ((lo !== null && num < lo) || (hi !== null && num > hi)))
+              change(hi !== null && num > hi ? hi : (lo as number));
             check.touch();
             events.onBlur();
           }}

@@ -12,15 +12,33 @@ export const Checkbox = (props: Record<string, unknown>) => {
   const [children] = ToolJet.useStateString({ name: 'children', label: 'Label', initialValue: 'Checkbox' });
   const [checked, setChecked] = ToolJet.useStateBoolean({ name: 'checked', label: 'Checked', initialValue: false });
   const publishValue = useFormValue(checked, 'boolean');
-  const [indeterminate] = ToolJet.useStateBoolean({ name: 'indeterminate', label: 'Indeterminate', initialValue: false });
-  const [extra] = ToolJet.useStateString({ name: 'extra', label: 'Extra', description: 'Help text under the checkbox.', initialValue: '' });
+  const [indeterminate] = ToolJet.useStateBoolean({
+    name: 'indeterminate',
+    label: 'Indeterminate',
+    initialValue: false,
+  });
+  const [extra] = ToolJet.useStateString({
+    name: 'extra',
+    label: 'Extra',
+    description: 'Help text under the checkbox.',
+    initialValue: '',
+  });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const guard = useOwnEventGuard();
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ section: 'choice', value: checked, present: checked === true });
+  const check = ToolJet.useValidation({ kind: 'choice', value: checked, present: checked === true });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 3 });
+  ToolJet.useComponentSettings({
+    role: 'checkbox',
+    fit: true,
+    loading: 'own',
+    usage: "Ant's Checkbox: children is its label; checked; onChange; setFieldValue(checked), toggle.",
+    roleProps: { label: 'children', description: 'extra' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 10,
+    defaultHeight: 3,
+  });
 
   // checked and the Form's value published together before onChange; a value it already has changes nothing and
   // fires nothing (lib/sameValue).
@@ -34,7 +52,11 @@ export const Checkbox = (props: Record<string, unknown>) => {
     guard(onChange);
   };
   ToolJet.useAction(
-    { name: 'setFieldValue', displayName: 'Set checked', params: [{ handle: 'checked', displayName: 'Checked', type: 'toggle' }] },
+    {
+      name: 'setFieldValue',
+      displayName: 'Set checked',
+      params: [{ handle: 'checked', displayName: 'Checked', type: 'toggle' }],
+    },
     (next) => change(String(next) === 'true')
   );
   ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(props.checked === true));
@@ -53,7 +75,13 @@ export const Checkbox = (props: Record<string, unknown>) => {
           style={{ marginBottom: 0 }}
         >
           <SpinOver loading={loading}>
-            <AntCheckbox id={fieldId} checked={checked} indeterminate={indeterminate} disabled={disabled} onChange={(e) => change(e.target.checked)}>
+            <AntCheckbox
+              id={fieldId}
+              checked={checked}
+              indeterminate={indeterminate}
+              disabled={disabled}
+              onChange={(e) => change(e.target.checked)}
+            >
               {children}
               {check.required ? <span className="tj-ant-required"> *</span> : null}
             </AntCheckbox>

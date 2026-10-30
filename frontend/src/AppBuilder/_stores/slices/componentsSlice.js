@@ -37,6 +37,7 @@ import {
 } from './componentsSliceUtils';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 
 // ======================
 // SECTION: Query re-run on dependency change
@@ -2235,7 +2236,8 @@ export const createComponentsSlice = (set, get) => ({
       return;
     }
     const { component } = componentDef;
-    const oldValue = component.definition[paramType][property];
+    // A section can be missing: pack and custom library components get definition.validation only from the server
+    const oldValue = component.definition[paramType]?.[property];
     const parentId = component.parent;
     if (Array.isArray(oldValue?.value)) {
       const resolvedComponent = { [componentId]: deepClone(getResolvedComponent(componentId, null, moduleId) ?? {}) };
@@ -2519,11 +2521,11 @@ export const createComponentsSlice = (set, get) => ({
     );
   },
   setFocusedParentId: (parentId) => {
-    (set((state) => {
+    set((state) => {
       state.focusedParentId = parentId;
     }),
       false,
-      { type: 'setFocusedParentId', payload: { parentId } });
+      { type: 'setFocusedParentId', payload: { parentId } };
   },
   saveComponentChanges: (diff, type, operation, moduleId = 'canvas', { onCycleReject } = {}) => {
     set(
@@ -3219,13 +3221,13 @@ export const createComponentsSlice = (set, get) => ({
     const resolvedAuto = resolveDynamicValues(auto?.value + '', getAllExposedValues(moduleId)) ?? false;
     const labelType = componentDefinition?.component?.definition?.properties?.labelType;
     const resolvedLabelType = labelType
-      ? (resolveDynamicValues(labelType.value + '', getAllExposedValues(moduleId)) ?? 'auto')
+      ? resolveDynamicValues(labelType.value + '', getAllExposedValues(moduleId)) ?? 'auto'
       : undefined;
     const legacyInputSizeProperty = componentDefinition?.component?.definition?.properties?.legacyInputSize;
     const resolvedLegacyInputSize =
       resolvedStyleLegacyInputSize ??
       (legacyInputSizeProperty
-        ? (resolveDynamicValues(legacyInputSizeProperty.value + '', getAllExposedValues(moduleId)) ?? false)
+        ? resolveDynamicValues(legacyInputSizeProperty.value + '', getAllExposedValues(moduleId)) ?? false
         : false);
 
     const { alignment: resolvedAlignment, isDynamicAlignment } = resolveInputCanvasAlignment({
@@ -3617,8 +3619,8 @@ export const createComponentsSlice = (set, get) => ({
     // For ListView, we use the last index (immediate parent's row index)
     const lastIndex = Array.isArray(indices) ? indices[indices.length - 1] : indices;
 
-    // A v2 pack list's rows (LibraryComponent with ToolJet.RowSlot) keep per-row values the native List view's way.
-    if (parentType === 'Listview' || parentType === 'ShadListView' || parentType === 'LibraryComponent') {
+    // A pack or library list's rows (ToolJet.RowSlot) keep per-row values the native List view's way.
+    if (parentType === 'Listview' || isSdkComponentType(parentType)) {
       let parentComponent = getExposedValueOfComponent(baseParentId, moduleId);
       if (lastIndex == null) {
         return undefined;

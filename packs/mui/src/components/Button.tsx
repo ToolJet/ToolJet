@@ -10,20 +10,59 @@ import { lookOf } from '../lib/field';
 // the look; size, fullWidth, disableElevation, startIcon / endIcon (icon names), href; a Tooltip title. Event onClick.
 export const Button = () => {
   const [children] = useStateText({ name: 'children', label: 'Text', initialValue: 'Button' });
-  const [variantProp] = ToolJet.useStateEnumeration({ name: 'variant', label: 'Variant', enumDefinition: ['text', 'outlined', 'contained'], initialValue: 'contained' });
+  const [variantProp] = ToolJet.useStateEnumeration({
+    name: 'variant',
+    label: 'Variant',
+    enumDefinition: ['text', 'outlined', 'contained'],
+    initialValue: 'contained',
+  });
   const [colorProp] = ToolJet.useStateEnumeration({
     name: 'color',
     label: 'Color',
     enumDefinition: ['inherit', 'primary', 'secondary', 'success', 'error', 'info', 'warning'],
     initialValue: 'primary',
   });
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium', 'large'], initialValue: 'medium' });
-  const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', description: 'Stretch the button to the width of its box; off, it is as wide as its label.', initialValue: true });
-  const [disableElevation] = ToolJet.useStateBoolean({ name: 'disableElevation', label: 'Disable elevation', initialValue: false });
-  const [startIcon] = useStateText({ name: 'startIcon', label: 'Start icon', description: `An icon name: ${ICON_NAMES.join(', ')}.`, initialValue: '' });
-  const [endIcon] = useStateText({ name: 'endIcon', label: 'End icon', description: 'An icon name, as startIcon.', initialValue: '' });
-  const [href] = useStateText({ name: 'href', label: 'Href', description: 'Makes the button a link.', initialValue: '' });
-  const [tooltip] = useStateText({ name: 'tooltip', label: 'Tooltip', description: 'Tooltip title shown on hover.', initialValue: '' });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['small', 'medium', 'large'],
+    initialValue: 'medium',
+  });
+  const [fullWidth] = ToolJet.useStateBoolean({
+    name: 'fullWidth',
+    label: 'Full width',
+    description: 'Stretch the button to the width of its box; off, it is as wide as its label.',
+    initialValue: true,
+  });
+  const [disableElevation] = ToolJet.useStateBoolean({
+    name: 'disableElevation',
+    label: 'Disable elevation',
+    initialValue: false,
+  });
+  const [startIcon] = useStateText({
+    name: 'startIcon',
+    label: 'Start icon',
+    description: `An icon name: ${ICON_NAMES.join(', ')}.`,
+    initialValue: '',
+  });
+  const [endIcon] = useStateText({
+    name: 'endIcon',
+    label: 'End icon',
+    description: 'An icon name, as startIcon.',
+    initialValue: '',
+  });
+  const [href] = useStateText({
+    name: 'href',
+    label: 'Href',
+    description: 'Makes the button a link.',
+    initialValue: '',
+  });
+  const [tooltip] = useStateText({
+    name: 'tooltip',
+    label: 'Tooltip',
+    description: 'Tooltip title shown on hover.',
+    initialValue: '',
+  });
   const { variant, color } = lookOf(variantProp, colorProp);
   const onClickEvent = ToolJet.useEventCallback({ name: 'onClick' });
   // Inside a Form whose submit button this is, a click submits it first, as the native Button does.
@@ -35,7 +74,27 @@ export const Button = () => {
   const { disabled, loading } = ToolJet.useControlState();
   const ref = useRef<HTMLButtonElement>(null);
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 6, defaultHeight: 4 });
+  ToolJet.useComponentSettings({
+    role: 'button',
+    fit: false,
+    loading: 'own',
+    usage:
+      "MUI's Button: children is its text; variant (text, outlined, contained) with color (inherit, primary, secondary, success, error, info, warning); size, fullWidth, disableElevation, startIcon/endIcon (MUI icon names such as Add, Save, Delete), href, tooltip; onClick.",
+    roleProps: { text: 'children', variant: 'variant' },
+    roleValues: {
+      variant: {
+        default: { variant: 'contained', color: 'primary' },
+        secondary: { variant: 'outlined', color: 'inherit' },
+        outline: { variant: 'outlined', color: 'primary' },
+        ghost: { variant: 'text', color: 'inherit' },
+        destructive: { variant: 'contained', color: 'error' },
+        link: { variant: 'text', color: 'primary' },
+      },
+    },
+    labelCase: 'upper',
+    defaultWidth: 6,
+    defaultHeight: 4,
+  });
 
   ToolJet.useAction({ name: 'click', displayName: 'Click' }, () => {
     if (!disabled && !loading) onClick();
