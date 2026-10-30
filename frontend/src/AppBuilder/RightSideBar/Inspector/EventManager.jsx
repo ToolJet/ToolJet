@@ -4,7 +4,7 @@ import { useNewEventAutoPopoverOpen } from './hooks/useNewEventAutoPopoverOpen';
 import { AlertTriangle, ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
 import { ToolTip } from '@/_components';
 import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
-import { ActionTypes } from './ActionTypes';
+import { ActionTypes, getEventActionId, getEventActionChanges } from './ActionTypes';
 import {
   mergeStaticAndDynamicActions,
   resolveLibraryComponentActions,
@@ -622,10 +622,10 @@ export const EventManager = ({
               <FieldRow label={t('editor.inspector.eventManager.action', 'Action')} dataCy="action-label">
                 <div data-cy="action-selection">
                   <RocketSelect
-                    value={event.actionId}
+                    value={getEventActionId(event)}
                     onValueChange={(value) => {
                       dismissEventPopoverAutoOpen();
-                      handlerChanged(index, 'actionId', value);
+                      handlerChanged(index, getEventActionChanges(value));
                     }}
                     open={autoOpenActionSelect && index === focusedEventIndex ? true : undefined}
                     onOpenChange={(open) => {
@@ -1199,7 +1199,7 @@ export const EventManager = ({
             {({ innerRef, droppableProps, placeholder }) => (
               <div {...droppableProps} ref={innerRef}>
                 {events.map((event, index) => {
-                  const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
+                  const actionMeta = ActionTypes.find((action) => action.id === getEventActionId(event.event));
                   const goToAppValidation =
                     event.event.actionId === 'go-to-app'
                       ? isLinkedAppValid(event.event.correlationId, linkedAppsMap)

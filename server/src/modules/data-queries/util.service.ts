@@ -459,6 +459,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       dataSourceType?: string;
       appMode?: string;
       environmentId?: string;
+      cacheStatus?: string;
     }
   ): Promise<void> {
     // Runs inside every query's finally block. Bail before the two cached name lookups so
@@ -489,6 +490,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         queryText: parsedQueryOptions?.['query'] || '',
         queryType: parsedQueryOptions?.['mode'] || 'unknown',
         versionName: dataQuery?.appVersion?.name,
+        cacheStatus: context.cacheStatus,
       });
     } catch (error) {
       // Observability must never break query execution

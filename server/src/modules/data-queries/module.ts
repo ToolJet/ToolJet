@@ -16,6 +16,8 @@ import { AppHistoryModule } from '@modules/app-history/module';
 import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { DataQueryFolderMappingRepository } from '@modules/data-query-folders/repository';
 import { AppScopedThrottlerGuard } from './throttler/app-scoped-throttler.guard';
+import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 function parsePositiveInt(raw: unknown, fallback: number): number {
   if (raw === undefined || raw === null || raw === '') return fallback;
@@ -36,6 +38,20 @@ export class DataQueriesModule extends SubModule {
         'util.service',
         'guards/git-sync-query-edit.guard',
       ]);
+
+    // Query response caching is EE/Cloud only. Skipped in migration/get-context mode so a
+    // migration never opens the cache's Redis connection.
+    const cacheProviders = [];
+    const cacheExports = [];
+    const edition = getTooljetEdition();
+    if ((edition === TOOLJET_EDITIONS.EE || edition === TOOLJET_EDITIONS.Cloud) && !configs?.IS_GET_CONTEXT) {
+      const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
+      const { queryResultCacheProviders, queryResultCacheExports } = await import(
+        `${importPath}/data-queries/cache/query-result-cache.providers`
+      );
+      cacheProviders.push(...queryResultCacheProviders);
+      cacheExports.push(...queryResultCacheExports);
+    }
 
     return this.cacheModule(cacheKey, {
       module: DataQueriesModule,
@@ -70,8 +86,9 @@ export class DataQueriesModule extends SubModule {
         DataQueryFolderMappingRepository,
         AppScopedThrottlerGuard,
         GitSyncQueryEditGuard,
+        ...cacheProviders,
       ],
-      exports: [DataQueriesUtilService],
+      exports: [DataQueriesUtilService, ...cacheExports],
       controllers: isMainImport ? [DataQueriesController] : [],
     });
   }

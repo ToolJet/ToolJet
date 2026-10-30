@@ -46,5 +46,8 @@ Workflows are visual automations: a graph of nodes/edges stored as an app-versio
 - `apps` — workflow is an App (`APP_TYPES.WORKFLOW`); versions/environments come from apps/versions modules.
 - `data-queries` / `data-sources` — query nodes execute real data queries through `DataQueriesModule`.
 - `external-apis` — `'workflows'` is a `DefaultDataSourceKind`: front-end apps trigger workflows as queries (`FEATURE_KEY.EXECUTE_WORKFLOW_FROM_APP`).
+- `data-queries` (EE response cache) — app-triggered **sync** runs (`POST workflow_executions/:id/trigger` with `queryId`)
+  can be served from the query response cache (`ee/data-queries/cache/workflow-query-cache.ts`): settings from the
+  calling app's saved workflow query, keyed on workflow version + params; a hit creates no execution row.
 - `background-processor` — unrelated; contains no workflow code. Workflow workers live in this module behind `WORKER=true`.
 - `licensing` — `LICENSE_FIELD.WORKFLOWS` limits; `ai` module backs `AgentNodeService`.

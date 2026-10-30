@@ -460,6 +460,14 @@ export default class LicenseBase {
     return !!this._features?.['queryFolders'];
   }
 
+  // Missing from the license means off: no cache reads or writes.
+  public get queryResponseCache(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.queryResponseCache;
+    }
+    return !!this._features?.['queryResponseCache'];
+  }
+
   public get customComponentLibraries(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.customComponentLibraries;
@@ -631,6 +639,7 @@ export default class LicenseBase {
       appHistory: this.appHistory,
       appJsLibraries: this.appJsLibraries,
       queryFolders: this.queryFolders,
+      queryResponseCache: this.queryResponseCache,
       workspaceEnv: this.workspaceEnv,
       customComponentLibraries: this.customComponentLibraries,
       aiPlan: this.aiPlan,

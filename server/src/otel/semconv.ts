@@ -48,6 +48,8 @@ export const ATTR = {
   QUERY_NAME: 'tooljet.query.name',
   QUERY_TYPE: 'tooljet.query.type',
   QUERY_TEXT: 'tooljet.query.text',
+  // EE query response cache: hit | miss | refresh | bypass. Absent when the cache is not in play.
+  QUERY_CACHE_STATUS: 'tooljet.query.cache_status',
   DATA_SOURCE_TYPE: 'tooljet.data_source.type',
 
   // Workspace environment, not where the server runs.

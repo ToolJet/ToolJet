@@ -54,6 +54,7 @@ export interface QueryMetricPayload {
   queryText?: string; // only labeled if OTEL_INCLUDE_QUERY_TEXT=true
   queryType?: string; // 'sql' | 'gui' | etc.
   versionName?: string;
+  cacheStatus?: string; // EE response cache only; omitted elsewhere so CE label sets stay unchanged
 }
 
 function categorizeError(error: unknown): string {
@@ -91,6 +92,7 @@ export const recordQueryMetric = (payload: QueryMetricPayload) => {
       queryText = '',
       queryType = 'unknown',
       versionName = 'unknown',
+      cacheStatus,
     } = payload;
 
     const failed = status === 'failure' || !!error;
@@ -111,6 +113,11 @@ export const recordQueryMetric = (payload: QueryMetricPayload) => {
       [ATTR.APP_VERSION]: versionName,
       [ATTR.QUERY_TEXT]: process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? queryText : '',
     };
+
+    // A hit's duration is a cache read, so durations are only comparable within one cache status.
+    if (cacheStatus) {
+      labels[ATTR.QUERY_CACHE_STATUS] = cacheStatus;
+    }
 
     // Set only on failure — absence marks success, so no `status` label, no failures counter.
     if (failed) {

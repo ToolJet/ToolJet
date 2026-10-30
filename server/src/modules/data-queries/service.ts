@@ -7,7 +7,13 @@ import { Response } from 'express';
 import { DataQueryRepository } from './repository';
 import { decamelizeKeys } from 'humps';
 import { serializeDataQueries } from './serialization.helper';
-import { CreateDataQueryDto, IUpdatingReferencesOptions, ListTablesDto, UpdateDataQueryDto } from './dto';
+import {
+  CreateDataQueryDto,
+  IUpdatingReferencesOptions,
+  ListTablesDto,
+  RunDataQueryDto,
+  UpdateDataQueryDto,
+} from './dto';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { FEATURE_KEY } from './constants';
 import { isEmpty } from 'lodash';
@@ -20,6 +26,12 @@ import { DataQueriesUtilService } from '@modules/data-queries/util.service';
 import { AppValidationService } from '@modules/app-validation/service';
 import { lockForValidation } from '@modules/app-validation/lock';
 import { QueryWrite } from '@modules/app-validation/types';
+import { DataQueryExecutionOptions } from './interfaces/IUtilService';
+
+/** Maps a run request's cache instruction to execution options. Ignored by editions without a cache. */
+export function runExecutionOptions(dto: RunDataQueryDto): DataQueryExecutionOptions | undefined {
+  return dto?.cacheControl === 'refresh' ? { responseCache: { refresh: true, clearAll: true } } : undefined;
+}
 
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
@@ -301,7 +313,7 @@ export class DataQueriesService implements IDataQueriesService {
     user: User,
     dataQueryId: string,
     environmentId: string,
-    updateDataQueryDto: UpdateDataQueryDto,
+    updateDataQueryDto: RunDataQueryDto,
     ability: AppAbility,
     dataSource: DataSource,
     response: Response,
@@ -323,13 +335,22 @@ export class DataQueriesService implements IDataQueriesService {
       dataQuery['options'] = options;
     }
 
-    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app);
+    return this.runAndGetResult(
+      user,
+      dataQuery,
+      resolvedOptions,
+      response,
+      environmentId,
+      mode,
+      app,
+      runExecutionOptions(updateDataQueryDto)
+    );
   }
 
   async runQueryForApp(
     user: User,
     dataQueryId: string,
-    updateDataQueryDto: UpdateDataQueryDto,
+    updateDataQueryDto: RunDataQueryDto,
     response: Response,
     app?: App
   ) {
@@ -340,7 +361,16 @@ export class DataQueriesService implements IDataQueriesService {
       appVersion: true,
     });
 
-    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view', app);
+    return this.runAndGetResult(
+      user,
+      dataQuery,
+      resolvedOptions,
+      response,
+      undefined,
+      'view',
+      app,
+      runExecutionOptions(updateDataQueryDto)
+    );
   }
 
   async preview(user: User, dataQuery: DataQuery, environmentId: string, options: any, response: Response, app?: App) {
@@ -354,7 +384,8 @@ export class DataQueriesService implements IDataQueriesService {
     response: Response,
     environmentId?: string,
     mode?: string,
-    app?: App
+    app?: App,
+    opts?: DataQueryExecutionOptions
   ): Promise<object> {
     let result = {};
 
@@ -367,7 +398,7 @@ export class DataQueriesService implements IDataQueriesService {
         environmentId,
         mode,
         app,
-        undefined // opts parameter
+        opts
       );
     } catch (error) {
       if (error.constructor.name === 'QueryError') {

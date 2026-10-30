@@ -634,7 +634,7 @@ export const createEventsSlice = (set, get) => ({
             }
             case 'run-query': {
               try {
-                const { queryId, queryName, component, eventId, callbackFns } = event;
+                const { queryId, queryName, component, eventId, callbackFns, refreshCache } = event;
                 const params = event['parameters'];
                 if (!queryId && !queryName) {
                   throw new Error('No query selected');
@@ -673,7 +673,8 @@ export const createEventsSlice = (set, get) => ({
                   false,
                   false,
                   updatedModuleId,
-                  callbackFns
+                  callbackFns,
+                  refreshCache === true ? { refreshCache: true } : undefined
                 );
               } catch (error) {
                 get().eventsSlice.logError('run_query', 'run-query', error, eventObj, {
@@ -1127,7 +1128,7 @@ export const createEventsSlice = (set, get) => ({
       const { executeAction } = eventsSlice;
       const currentComponents = Object.entries(getCurrentPageComponents(moduleId));
 
-      const runQuery = (queryName = '', parameters, moduleId = 'canvas', callbackFns) => {
+      const runQuery = (queryName = '', parameters, moduleId = 'canvas', callbackFns, runOptions) => {
         const query = dataQuery.queries.modules[moduleId].find((query) => {
           const isFound = query.name === queryName;
           if (isPreview) {
@@ -1160,6 +1161,7 @@ export const createEventsSlice = (set, get) => ({
           queryName: query.name,
           parameters: processedParams,
           callbackFns,
+          refreshCache: runOptions?.refreshCache === true,
         };
 
         return executeAction(event, mode, {}, moduleId);
