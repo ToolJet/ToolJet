@@ -1,20 +1,20 @@
 // Every inspector element funnels through Elements/Code (which pulls the whole
 // CodeMirror/mdxeditor tree jsdom can't run — same reasoning as
-// conditionallyRenderResolution.spec.js in this directory). The stub is
+// integration/conditionallyRenderResolution.spec.js). The stub is
 // param-aware so the spec can assert WHICH controls the real DefaultComponent
 // list/filter logic placed in each accordion, without faking any of that logic.
-jest.mock('../../Elements/Code', () => {
+jest.mock('../Elements/Code', () => {
   const React = require('react');
   return {
     Code: ({ param }) => React.createElement('div', { 'data-testid': `inspector-element-${param.name}` }),
   };
 });
-jest.mock('../../Components/Form/_components', () => ({ LabeledDivider: () => null }));
+jest.mock('../Components/Form/_components', () => ({ LabeledDivider: () => null }));
 
 import React from 'react';
 import { render, screen, within } from '@testing-library/react';
 import { seedApp, componentDefinition } from '@/test/app-builder';
-import { DefaultComponent } from '../../Components/DefaultComponent';
+import { DefaultComponent } from '../Components/DefaultComponent';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager/componentTypes';
 
 // The inspector always receives the universal-merged meta (tooltip under
