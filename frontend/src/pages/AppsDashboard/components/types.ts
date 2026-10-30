@@ -47,6 +47,7 @@ interface ActionDialogBaseProps extends Omit<HTMLAttributes<HTMLElement>, 'title
   titleIcon?: ReactNode;
   classes?: ActionDialogClasses | null;
   modality?: boolean;
+  showCloseButton?: boolean;
 }
 
 interface ActionDialogWithFooterProps extends ActionDialogBaseProps {

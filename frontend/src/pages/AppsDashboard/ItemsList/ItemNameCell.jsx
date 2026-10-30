@@ -44,7 +44,7 @@ export default function ItemNameCell({ row, depth }) {
           <AppIcon icon={item.icon} color="blue" />
         )}
       </span>
-      <TruncatedText as="span" content={item.name} className="tw-pl-2 tw-font-body-large tw-text-text-default">
+      <TruncatedText as="span" arrow content={item.name} className="tw-pl-2 tw-font-body-large tw-text-text-default">
         {item.name}
       </TruncatedText>
       {/* Figma 3766-109288: status buttons trail the name, pin first. */}

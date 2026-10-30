@@ -1,4 +1,5 @@
 import React from 'react';
+import { X } from 'lucide-react';
 import { Slot } from '@radix-ui/react-slot';
 
 import { cn } from '@/lib/utils';
@@ -18,6 +19,7 @@ export default function ActionDialog({
   classes = null,
   modality = true,
   hasFooter = true,
+  showCloseButton = false,
   ...dialogBodyProps
 }: ActionDialogProps) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -38,13 +40,25 @@ export default function ActionDialog({
         )}
       >
         {title && (
-          <DialogHeader className="tw-border-b tw-border-border-weak tw-px-6 tw-py-4">
+          <DialogHeader className="tw-border-b tw-border-border-weak tw-px-6 tw-py-4 tw-justify-between">
             <DialogTitle
               className="tw-font-title-x-large tw-text-text-default"
               data-cy={`${generateCypressDataCy(title)}-title`}
             >
               {titleIcon} {title}
             </DialogTitle>
+
+            {showCloseButton && (
+              <Button
+                isLucid
+                iconOnly
+                variant="ghost"
+                size="default"
+                {...(cancelBtnProps?.onClick && { onClick: cancelBtnProps.onClick })}
+              >
+                <X size={16} />
+              </Button>
+            )}
           </DialogHeader>
         )}
 

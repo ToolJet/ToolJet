@@ -84,7 +84,7 @@
     --docked-column-shadow: rgba(15, 23, 41, 0.12);
     --interactive-hover: rgba(136, 144, 153, 0.12);
     --interactive-selected: rgba(136, 144, 153, 0.18);
-    --interactive-disabled: rgba(255, 255, 255, 0);
+    --interactive-disabled: rgba(204, 209, 213, 0.3);
     --interactive-focus-outline: #4368E3;
     // Figma: Interactive/focusActive
     --interactive-focus-active: #4368E3;
@@ -273,7 +273,7 @@
     --controls-base-inactive: rgba(133, 140, 148, 0.12);
     --interactive-hover: rgba(133, 140, 148, 0.12);
     --interactive-selected: rgba(133, 140, 148, 0.18);
-    --interactive-disabled: rgba(0, 0, 0, 0);
+    --interactive-disabled: #121518;
     --interactive-focus-outline: #4A6DD9;
     // Figma: Interactive/focusActive
     --interactive-focus-active: #4A6DD9;
