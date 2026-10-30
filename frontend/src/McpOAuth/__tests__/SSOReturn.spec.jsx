@@ -51,10 +51,12 @@ beforeEach(() => {
   authenticationService.getInviteFlowIndetifier.mockReturnValue('stale-invite');
   authenticationService.signInViaOAuth.mockResolvedValue({ current_organization_id: 'orchard-workspace' });
   interactionRequests = [];
-  server.use(http.get(interactionUrl, ({ request }) => {
-    interactionRequests.push(request);
-    return HttpResponse.json({ organizationId: 'orchard-workspace' });
-  }));
+  server.use(
+    http.get(interactionUrl, ({ request }) => {
+      interactionRequests.push(request);
+      return HttpResponse.json({ organizationId: 'orchard-workspace' });
+    })
+  );
 });
 afterEach(() => {
   config.apiUrl = originalApiUrl;
