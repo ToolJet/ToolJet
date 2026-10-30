@@ -1,5 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
+import { QueryLibraryService } from '@modules/query-library/service';
+import { LibraryDraftService } from '@modules/query-library/draft.service';
+import { LibraryLifecycleService } from '@modules/query-library/lifecycle.service';
 import { initTestApp, closeTestApp } from 'test-helper';
 /** @group platform */
 describe('QueryLibraryController on CE', () => {
@@ -10,6 +13,11 @@ describe('QueryLibraryController on CE', () => {
   afterAll(async () => {
     await closeTestApp(app);
   }, 60000);
+  it('refuses feature services even when raw license terms could enable them', async () => {
+    await expect(app.get(QueryLibraryService).assertEnabled('workspace')).rejects.toMatchObject({ status: 404 });
+    await expect(app.get(LibraryDraftService).getDraft('query', 'draft', null)).rejects.toMatchObject({ status: 404 });
+    await expect(app.get(LibraryLifecycleService).getState(null, 'query')).rejects.toMatchObject({ status: 404 });
+  });
   it('should 404 every query-library route on CE', async () => {
     for (const path of ['queries', 'catalog', 'usage', 'static-data-sources'])
       await request(app.getHttpServer()).get(`/api/query-library/${path}`).expect(404);

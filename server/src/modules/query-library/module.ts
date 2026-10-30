@@ -14,13 +14,22 @@ import { QueryLibraryRepository } from './repository';
 import { QueryLibraryAccessGuard } from './guards/query-library-access.guard';
 import { ValidateLibraryQueryGuard } from './guards/validate-library-query.guard';
 import { ValidateLibraryDataSourceGuard } from './guards/validate-library-data-source.guard';
+import { FeatureAbilityFactory } from './ability';
+import { FeatureAbilityGuard } from './ability/guard';
 import { LibraryDraftService } from './draft.service';
 import { LibraryLifecycleService } from './lifecycle.service';
 export class QueryLibraryModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport = false): Promise<DynamicModule> {
-    const { QueryLibraryController, QueryLibraryService } = await this.getProviders(configs, 'query-library', [
+    const {
+      QueryLibraryController,
+      QueryLibraryService,
+      LibraryLifecycleService: SelectedLifecycle,
+      LibraryDraftService: SelectedDraft,
+    } = await this.getProviders(configs, 'query-library', [
       'controller',
       'service',
+      'lifecycle.service',
+      'draft.service',
     ]);
     const { AuditLogsModule } = await this.getProviders(configs, 'audit-logs', ['module']);
     const { DataQueriesUtilService } = await this.getProviders(configs, 'data-queries', ['util.service']);
@@ -47,8 +56,10 @@ export class QueryLibraryModule extends SubModule {
         { provide: BaseRuntime, useClass: DataQueriesUtilService },
         VersionRepository,
         AppScopedThrottlerGuard,
-        LibraryLifecycleService,
-        LibraryDraftService,
+        { provide: LibraryLifecycleService, useClass: SelectedLifecycle },
+        { provide: LibraryDraftService, useClass: SelectedDraft },
+        FeatureAbilityFactory,
+        FeatureAbilityGuard,
         QueryLibraryRepository,
         DataSourcesRepository,
         QueryLibraryAccessGuard,

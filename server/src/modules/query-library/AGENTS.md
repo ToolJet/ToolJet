@@ -74,3 +74,7 @@ Verification: `ee/test/modules/query-library/e2e/library-import-export.spec.ts`,
 Multiple named drafts are independent; saved content, name and description are immutable. Library routes remain EE/Cloud-only, and lifecycle commands preserve workspace/source/environment authorization and consumer credentials. There is no Query Library Git integration. The frontend uses the existing Modules lifecycle renderers through a resource adapter, including dependency warnings that preserve selection when dismissed.
 
 Real browser journeys live in `cypress-tests/cypress/e2e/happyPath/platform/eeTestcases/queryLibrary/versionLifecycle.cy.js`. The opt-in EE browser harness uses the standard test-license fixture and a real listening API; it does not establish signed-license deployment parity.
+
+## License and edition boundary
+
+CE owns unavailable service contracts, storage entities, DTOs, referential-integrity helpers and provider tokens. QueryLibraryModule selects service, lifecycle and draft providers by edition; EE and Cloud supply feature implementations. Every management feature requires the independent QUERY_LIBRARY effective entitlement through FeatureAbilityGuard before role/resource checks. Shared consumers and transport use the selected assertEnabled(workspaceId) policy: CE returns 404; unlicensed EE returns 451. Revocation never removes stored data.
