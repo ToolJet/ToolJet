@@ -325,5 +325,28 @@ describe('ImportExportResourcesController', () => {
       expect(refs.length).toBeGreaterThanOrEqual(3); // seed consumer + 2 imports
       expect(refs.every((r) => r === moduleCoRelationId)).toBe(true);
     });
+
+    it('does not reuse a same-named front-end app as the module on import', async () => {
+      const source = await createAdmin(app, 'source@tooljet.io');
+      const { consumerApp } = await seedModuleAndConsumer(source);
+      const exportBody = await exportApp(source, consumerApp.id);
+
+      // Target workspace has a front-end app named like the module, and no module.
+      const target = await createAdmin(app, 'target@tooljet.io');
+      const targetOrgId = target.user.defaultOrganizationId;
+      const lookalike = await createApplication(app, {
+        name: 'shared-module',
+        user: target.user as any,
+        type: 'front-end',
+      } as any);
+      await createApplicationVersion(app, lookalike as any);
+
+      await importPayload(target, exportBody, 'consumer-copy');
+
+      expect(await countEntities(App, { organizationId: targetOrgId, type: 'module' } as any)).toBe(1);
+      const [ref] = await moduleViewerRefs(targetOrgId);
+      expect(ref).not.toBe(lookalike.co_relation_id);
+      expect(await findEntity(App, { co_relation_id: ref, type: 'module' } as any)).toBeTruthy();
+    });
   });
 });
