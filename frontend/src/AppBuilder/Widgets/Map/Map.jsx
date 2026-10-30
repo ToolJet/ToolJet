@@ -137,14 +137,12 @@ export default function Map({
       southWest: mapBounds.getSouthWest()?.toJSON(),
     };
 
+    // Publish only — never write the map's own center back into `mapCenter`. The
+    // lib pushes every new `center` prop through map.setCenter(), and the SDK
+    // answers even an unchanged setCenter with another `idle`, so syncing it made
+    // every drag/zoom/pan fire onBoundsChange twice. `mapCenter` carries only
+    // app-driven recenters (initialLocation, setLocation, place pick).
     const newCenter = gmap.center?.toJSON();
-    // Identity-stable sync: a fresh object every idle would change the GoogleMap
-    // `center` prop, which re-centers the map, which fires `idle` again — an
-    // infinite publish/event loop. Keep the previous state object when the
-    // coordinates have not actually moved.
-    setMapCenter((previous) =>
-      previous && newCenter && previous.lat === newCenter.lat && previous.lng === newCenter.lng ? previous : newCenter
-    );
     const exposedVariables = {
       bounds,
       center: addMapUrlToJson(newCenter),

@@ -269,6 +269,52 @@ describe('Map widget', () => {
     expect(widget.variables().onBoundsChangeCount).toBeUndefined();
   });
 
+  test('[Map-BOUNDS-003] one settled drag/zoom/pan fires onBoundsChange once; an app recenter still fires once', async () => {
+    // Break this catches: handleIdle writing the map's OWN center back into the
+    // GoogleMap `center` prop (bug-fix 2026-10-30, QA: On bounds change fired twice
+    // for every drag, zoom or keyboard pan). The lib re-applies the new center via
+    // map.setCenter and the real SDK settles AGAIN (a second idle) even for unchanged
+    // coordinates - live: drag, wheel zoom and arrow pan each fired 2 events. The
+    // setLocation half catches a fix that swallows the idle after an app recenter.
+    widget.render({ events: counter('onBoundsChange') });
+    await waitFor(() => expect(typeof mapProps().onLoad).toBe('function'));
+
+    // SDK-faithful instance: it starts at initialLocation (like the real map);
+    // setCenter moves the map, then the SDK settles with `idle` - even when the
+    // coordinates did not change (live-verified 2026-10-30).
+    let sdkCenter = { lat: 40.7128, lng: -73.935242 };
+    const gmap = {
+      ...fakeGmap(),
+      center: { toJSON: () => ({ ...sdkCenter }) },
+      setCenter: (next) => {
+        sdkCenter = { lat: next.lat, lng: next.lng };
+        mapProps().onIdle();
+      },
+    };
+    await widget.session.store.act(async () => {
+      mapProps().onLoad(gmap);
+    });
+    await widget.session.store.act(async () => {
+      mapProps().onIdle(); // initial load settle: publishes, no event
+    });
+
+    // A user drag/zoom/pan: the SDK moves the map itself, then settles once.
+    sdkCenter = { lat: 43, lng: -71 };
+    await widget.session.store.act(async () => {
+      mapProps().onIdle();
+    });
+
+    await waitFor(() => expect(exposed().center).toMatchObject({ lat: 43, lng: -71 }));
+    expect(widget.variables().onBoundsChangeCount).toBe(1);
+
+    // An app-driven recenter: setCenter -> exactly one settle -> exactly one event.
+    await widget.act('setLocation', 12, 34);
+
+    await waitFor(() => expect(widget.variables().onBoundsChangeCount).toBeGreaterThanOrEqual(2));
+    expect(widget.variables().onBoundsChangeCount).toBe(2);
+    expect(exposed().center).toMatchObject({ lat: 12, lng: 34 });
+  });
+
   // --- Search -----------------------------------------------------------------
 
   test('[Map-SEARCH-001] canSearch gates the search input', async () => {

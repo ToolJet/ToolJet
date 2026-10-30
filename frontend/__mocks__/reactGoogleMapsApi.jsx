@@ -37,7 +37,22 @@ const useJsApiLoader = (options) => {
 const LoadScript = ({ children }) => React.createElement(React.Fragment, null, children);
 
 const GoogleMap = ({ children, onLoad, onClick, onDragEnd, center, ...rest }) => {
-  latestProps.googleMap = { onLoad, onClick, onDragEnd, center, ...rest };
+  // Lib fidelity: the real GoogleMap (componentDidUpdate -> applyUpdaterToNextProps)
+  // pushes a `center` prop whose IDENTITY changed to the SDK via map.setCenter -
+  // even when the coordinates are unchanged. The instance is whatever the spec hands
+  // to onLoad; a fake without setCenter opts out of modeling the SDK's reaction.
+  const instanceRef = React.useRef(null);
+  const appliedCenterRef = React.useRef(center);
+  React.useEffect(() => {
+    if (appliedCenterRef.current === center) return;
+    appliedCenterRef.current = center;
+    instanceRef.current?.setCenter?.(center);
+  });
+  const handleLoad = (instance) => {
+    instanceRef.current = instance;
+    return onLoad?.(instance);
+  };
+  latestProps.googleMap = { onLoad: handleLoad, onClick, onDragEnd, center, ...rest };
   // Markers re-push on every render; reset here (the parent renders before its
   // children) so the array reflects only the current render's markers.
   latestProps.markers = [];
