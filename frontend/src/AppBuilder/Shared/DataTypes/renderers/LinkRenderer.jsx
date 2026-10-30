@@ -41,7 +41,7 @@ export const LinkRenderer = ({
   };
 
   return (
-    <div className="h-100 d-flex align-items-center">
+    <div className="h-100 d-flex align-items-safe-center">
       <div className="w-100">
         <a
           className={getUnderlineClass()}
