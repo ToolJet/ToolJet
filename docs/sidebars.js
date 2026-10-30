@@ -874,6 +874,7 @@ const sidebars = {
         },
         "tooljet-db/data-types",
         "tooljet-db/table-operations",
+        "tooljet-db/environments",
         "tooljet-db/querying-tooljet-db"
       ]
     },
