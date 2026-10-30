@@ -1564,6 +1564,11 @@ export class AppImportExportService {
     if (consumers.length) throw new NotFoundException('Query Library is unavailable');
     return [];
   }
+  // Resource imports call this before writing to the separate ToolJet DB transaction.
+  async assertImportAccess(user: User, bundle: unknown): Promise<void> {
+    await this.assertLibraryImportAccess(user, bundle);
+  }
+
   protected async assertLibraryImportAccess(user: User, bundle: unknown): Promise<void> {
     if (hasLibraryContent(bundle)) throw new NotFoundException('Query Library is unavailable');
   }

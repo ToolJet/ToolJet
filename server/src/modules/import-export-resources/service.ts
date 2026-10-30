@@ -133,6 +133,12 @@ export class ImportExportResourcesService {
     isTemplateApp = false,
     manager?: EntityManager
   ) {
+    const importingUser = Object.assign(new User(), user, {
+      organizationId: importResourcesDto.organization_id ?? user.organizationId,
+    });
+    for (const app of importResourcesDto.app ?? []) {
+      await this.appImportExportService.assertImportAccess(importingUser, app.definition);
+    }
     let tableNameMapping = {};
     const imports = { app: [], tooljet_database: [], tableNameMapping: {} };
     const importingVersion = importResourcesDto.tooljet_version;

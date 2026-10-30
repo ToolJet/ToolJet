@@ -548,7 +548,6 @@ export class DataQueriesService implements IDataQueriesService {
       const newDataSource = await this.dataSourceRepository.findOneOrFail({
         where: { id: newDataSourceId, organizationId: user.organizationId },
       });
-      await this.assertLibraryConsumerAccess(user.organizationId, newDataSource.kind, dataSource?.kind);
       // FIXME: Disabling this check as workflows can change data source of a query with different kind
       // if (dataSource.kind !== newDataSource.kind && dataSource) {
       //   throw new BadRequestException();
@@ -556,8 +555,10 @@ export class DataQueriesService implements IDataQueriesService {
 
       const stored = await manager.findOne(DataQuery, {
         where: { id: queryId },
-        select: ['id', 'name', 'appVersionId', 'options'],
+        select: { id: true, name: true, appVersionId: true, options: true, dataSource: { kind: true } },
+        relations: { dataSource: true },
       });
+      await this.assertLibraryConsumerAccess(user.organizationId, newDataSource.kind, stored?.dataSource?.kind);
       if (stored) {
         // Kind mismatch only warns here: workflows legitimately move queries across kinds.
         await this.appValidationService.check(
