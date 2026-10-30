@@ -75,7 +75,7 @@ export default function Chart({
 
   const jsonChartData = isDescriptionJson ? JSON.parse(jsonData).data : [];
 
-  const chartLayout = isDescriptionJson ? (JSON.parse(jsonData).layout ?? {}) : {};
+  const chartLayout = isDescriptionJson ? JSON.parse(jsonData).layout ?? {} : {};
 
   const updatedBgColor = ['#fff', '#ffffff'].includes(modifiedBackgroundColor)
     ? darkMode
@@ -85,7 +85,7 @@ export default function Chart({
 
   const fontColor = getColor(updatedBgColor);
 
-  const authorTitle = plotFromJson ? (chartLayout?.title ?? title) : title;
+  const authorTitle = plotFromJson ? chartLayout?.title ?? title : title;
   // An author may write the title either way round: `title: 'Sales'` or the
   // modern `title: { text: 'Sales' }`. Passing the object straight through would
   // nest it as title.text.text, which Plotly cannot read — it falls back to its

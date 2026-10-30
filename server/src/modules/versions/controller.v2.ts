@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Put, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, Query, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { VersionService } from './service';
 import { InitModule } from '@modules/app/decorators/init-module';
@@ -16,6 +16,8 @@ import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { PromoteVersionDto } from './dto';
 import { IVersionControllerV2 } from './interfaces/IControllerV2';
+import { GitDirtyFlagInterceptor } from '@modules/git-sync-configs/interceptors/git-dirty-flag.interceptor';
+import { MarksAppVersionDirty } from '@modules/git-sync-configs/decorators/marks-git-dirty.decorator';
 import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { getConnectionInstance } from '@helpers/database.helper';
 import { getAppDataRevision } from '@modules/apps/app-data-revision';
@@ -94,6 +96,8 @@ export class VersionControllerV2 implements IVersionControllerV2 {
 
   @InitFeature(FEATURE_KEY.APP_VERSION_UPDATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @UseInterceptors(GitDirtyFlagInterceptor)
+  @MarksAppVersionDirty()
   @Put(':id/versions/:versionId')
   updateVersion(@User() user, @App() app: AppEntity, @Body() appVersionUpdateDto: AppVersionUpdateDto) {
     return this.versionService.update(app, user, appVersionUpdateDto);
@@ -101,6 +105,8 @@ export class VersionControllerV2 implements IVersionControllerV2 {
 
   @InitFeature(FEATURE_KEY.UPDATE_SETTINGS)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @UseInterceptors(GitDirtyFlagInterceptor)
+  @MarksAppVersionDirty()
   @Put([':id/versions/:versionId/global_settings', ':id/versions/:versionId/page_settings'])
   updateGlobalSettings(
     @User() user: UserEntity,

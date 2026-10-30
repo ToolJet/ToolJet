@@ -42,9 +42,9 @@ function statusLine(activeEnv, nextEnv, missingInNextCount) {
   if (!nextEnv) {
     return 'Production is not up to date with latest changes. Apply migration from development to staging, and then to production to see them reflected here.';
   }
-  return `${capitalize(activeEnv.name)} is ${missingInNextCount} migration${missingInNextCount === 1 ? '' : 's'} ahead of ${
-    nextEnv.name
-  }`;
+  return `${capitalize(activeEnv.name)} is ${missingInNextCount} migration${
+    missingInNextCount === 1 ? '' : 's'
+  } ahead of ${nextEnv.name}`;
 }
 
 const MigrationHistoryDrawer = ({

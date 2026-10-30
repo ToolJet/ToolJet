@@ -44,7 +44,7 @@ export default function ExportCsvModal({
     setSelectedEnvironmentId(
       envHasRelation(relationsByEnvironment, viewedEnvironmentId)
         ? viewedEnvironmentId
-        : (environments.find((env) => envHasRelation(relationsByEnvironment, env.id))?.id ?? null)
+        : environments.find((env) => envHasRelation(relationsByEnvironment, env.id))?.id ?? null
     );
 
     tooljetDatabaseService.getTableMigrations(organizationId, tableId).then(({ data, error }) => {
