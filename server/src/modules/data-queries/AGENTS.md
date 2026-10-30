@@ -55,11 +55,12 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   License: `QueryResultCacheService.begin` bypasses (no read, write or token change) unless the workspace license
   has `features.queryResponseCache` (`LICENSE_FIELD.QUERY_RESPONSE_CACHE`); a missing key or failed check means off.
   The builder disables the toggle with the upgrade crown; Clear stays available to free entries saved earlier.
-  Memory: Redis is shared with BullMQ (`noeviction`). `RedisQueryCacheStore` enforces fixed
-  `QUERY_CACHE_MAX_WORKSPACE_BYTES` / `QUERY_CACHE_MAX_TOTAL_BYTES` (0 = no writes). Published entries
+  Memory: Redis is shared with BullMQ (`noeviction`). `RedisQueryCacheStore` enforces one fixed
+  `QUERY_CACHE_MAX_TOTAL_BYTES` budget (0 = no writes). Workspaces share it without individual caps;
+  one workspace can exhaust caching for others. `QUERY_CACHE_MAX_WORKSPACE_BYTES` is retired and ignored. Published entries
   charge `MEMORY USAGE` plus `3 × key length + 512` for query/global tracking. A separate 2048-byte
   `@overhead` record charges container overhead once per query until its last entry/pending/purge record
-  is removed; both quota checks include it. Token-only queries reserve this overhead before creation;
+  is removed; all admission checks include it. Token-only queries reserve this overhead before creation;
   admission failure bypasses caching. Clear does not create a replacement token; refresh admits one normally. Every pending save has
   its own charged staging record; the entry record is a zero-byte publication owner until confirm.
   Reserve → plain `SET … PXAT` to `<entry>:pending:<reservationId>` → confirm atomically checks ownership,
@@ -73,7 +74,7 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   ended. Accounting/index keys have no TTL: they disappear when their last record is reclaimed. With no
   writes, expired records remain charged; the next writes clean them up. Redis server time controls expiry.
   Usage/expiry keys are outside query hash tags, so the cache requires single-node Redis.
-  Rollout from the earlier window-expiring ledger requires stopping old cache writers and draining
+  Rollout from any earlier ledger (including workspace counters) requires stopping old cache writers and draining
   their `tj:qc:*` cache keys first; mixed ledger implementations are not compatible. Do not flush shared Redis.
 
 ## Invariants & gotchas
