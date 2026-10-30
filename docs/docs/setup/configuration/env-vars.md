@@ -442,28 +442,48 @@ Example: `LANGUAGE=fr` (for French).
 
 #### Observability
 
-ToolJet supports OpenTelemetry (OTEL) for comprehensive observability and monitoring. Enable metrics collection to monitor application performance, query executions, and system health.
+ToolJet supports OpenTelemetry (OTEL) for traces, metrics, and log streaming on the Enterprise edition and ToolJet Cloud. All variables are optional. Nothing is exported unless `ENABLE_OTEL=true`.
 
-**Basic Configuration:**
-
-- `ENABLE_OTEL`: Set to `true` to enable OpenTelemetry metrics collection (default: `false`)
-- `OTEL_EXPORTER_OTLP_TRACES`: OTLP traces endpoint URL (default: `http://localhost:4318/v1/traces`)
-- `OTEL_EXPORTER_OTLP_METRICS`: OTLP metrics endpoint URL (default: `http://localhost:4318/v1/metrics`)
-- `OTEL_SERVICE_NAME`: Service identifier for metrics (default: `tooljet`)
-- `OTEL_EXPORTER_OTLP_HEADERS`: Authentication headers for OTLP endpoint (optional, format: `key1=value1,key2=value2`)
-
-**Advanced Configuration:**
-
-- `OTEL_LOG_LEVEL`: Debug logging level for OTEL (use `debug` for detailed logs)
-- `OTEL_ACTIVE_USER_WINDOW_MINUTES`: Activity window for concurrent user tracking in minutes (default: `5`)
-- `OTEL_MAX_TRACKED_USERS`: Maximum number of tracked users/sessions (default: `10000`)
-- `OTEL_INCLUDE_QUERY_TEXT`: Include actual query text in metrics - **WARNING:** Creates high cardinality (default: `false`)
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `ENABLE_OTEL` | Set to `true` to turn on OpenTelemetry traces and metrics. Also required for log streaming and frontend metrics. | unset (off) |
+| `OTEL_EXPORTER_OTLP_TRACES` | OTLP traces endpoint URL. | `http://localhost:4318/v1/traces` |
+| `OTEL_EXPORTER_OTLP_METRICS` | OTLP metrics endpoint URL. | `http://localhost:4318/v1/metrics` |
+| `OTEL_EXPORTER_OTLP_LOGS` | Full OTLP logs endpoint URL, for example `http://<collector-host>:4318/v1/logs`. When set together with `ENABLE_OTEL=true`, ToolJet streams server logs and browser error records to this endpoint. Leave unset to turn log streaming off. | unset |
+| `OTEL_HEADER` | Full value of the `Authorization` header sent to the traces and metrics endpoints, for example `Bearer <token>`. | unset |
+| `SERVICE_NAME` | Value of the `service.name` resource attribute on traces, metrics, and log records. | `tooljet` |
+| `SERVICE_VERSION` | Value of the `service.version` resource attribute. Set it to your ToolJet release. | `unknown` |
+| `ENABLE_OTEL_FRONTEND` | Set to `true` to collect errors, web vitals, and app load times from users' browsers. Requires `ENABLE_OTEL=true`. | unset (off) |
+| `OTEL_FRONTEND_FLUSH_INTERVAL_SECONDS` | How often each browser sends frontend metrics, in seconds. Clamped between `5` and `600`. | `30` |
+| `FRONTEND_METRICS_THROTTLE_LIMIT` | Maximum frontend metrics requests per user in each throttle window. Requests over the limit receive HTTP `429`. | `60` |
+| `FRONTEND_METRICS_THROTTLE_TTL` | Length of the frontend metrics throttle window, in milliseconds. | `60000` |
+| `OTEL_LOG_LEVEL` | Set to `debug` to print OpenTelemetry SDK diagnostics to the console. Does not change the application log level. | unset |
+| `OTEL_ACTIVE_USER_WINDOW_MINUTES` | Activity window for concurrent user tracking, in minutes. | `5` |
+| `OTEL_MAX_TRACKED_USERS` | Maximum number of users tracked for the active users metric. | `10000` |
+| `OTEL_INCLUDE_QUERY_TEXT` | Set to `true` to include the query text in the `tooljet.query.text` metric label. Creates high cardinality. | `false` |
 
 :::warning High Cardinality
 Only enable `OTEL_INCLUDE_QUERY_TEXT=true` for debugging. This creates high cardinality metrics that can impact Prometheus performance. Use an OTEL Collector to filter this label in production.
 :::
 
-For comprehensive setup instructions, metrics details, and Grafana dashboard integration, see the [OpenTelemetry Observability](/docs/tj-setup/observability/observability-otel) documentation.
+For comprehensive setup instructions, metric names, log streaming, and frontend metrics, see the [OpenTelemetry Observability](/docs/tj-setup/observability/observability-otel) documentation.
+
+#### Logging
+
+These variables control the ToolJet server's logs. When [log streaming](/docs/tj-setup/observability/observability-otel#log-streaming) is on, the same level applies to stdout and to the OTLP logs endpoint.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `LOG_LEVEL` | Server log level: `trace`, `debug`, `info`, `warn`, `error`, or `fatal`. Takes priority over `ORM_LOGGING`. Invalid values are ignored. | When unset: derived from `ORM_LOGGING` (`all` gives `debug`, `error` gives `error`), otherwise `warn` |
+| `ORM_LOGGING` | Database query logging: `all` logs every query, `error` logs only query errors, and blank logs query errors and slow queries. In development mode, every query is logged. Also used as the server log level when `LOG_LEVEL` is unset. | blank |
+| `LOGGER_REDACT` | Comma-separated list of extra fields to redact from HTTP request logs, for example `req.body.ssn,req.body.card`. Passwords, tokens, API keys, cookies, and authorization headers are always redacted. | unset |
+| `QUERY_LOG_MAX_LENGTH` | Maximum number of characters of SQL text written to database query logs. Longer queries are truncated. Outside development mode (`NODE_ENV=development`), query parameter values are never logged, only their count. | `300` |
+
+:::info
+Since v3.20.214-lts, production JSON logs write the level as a word, for example `"level":"info"`, instead of a number such as `"level":30`. Update any log pipeline rules that match numeric levels.
+
+In production, the default log level is `warn`, so successful HTTP requests and other `info` records aren't logged. Set `LOG_LEVEL=info` to include them.
+:::
 
 ## <br/>
 
