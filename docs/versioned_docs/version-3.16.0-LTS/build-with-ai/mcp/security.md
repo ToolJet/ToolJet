@@ -9,7 +9,7 @@ Connecting an AI agent to your ToolJet workspace gives it real access to real da
 
 An agent connected over MCP acts with the permissions of your access token and can run read queries against the data sources in that workspace. Because an agent's exploration is not deterministic and depends on the model you use, assume that any data reachable from that workspace may be read while it works.
 
-This is the single most important thing to internalize before connecting. You are not granting access to one app or one table. You are granting access to everything the token's owner can reach in that workspace.
+This is the single most important thing to internalize before connecting. You are not granting access to one app or one table. You are granting access to everything the token's owner can reach in that workspace within the areas a personal access token is allowed to use: apps, data, workflows, and workspace users and groups. A token can't reach workspace settings, workspace constants and secrets, instance settings, or audit logs, even if its owner can. See [What a Token Can Access](/docs/user-management/profile-management/personal-access-tokens#what-a-token-can-access).
 
 ## Scope the Token to One Workspace
 
@@ -18,7 +18,8 @@ A personal access token's session is pinned to the workspace it was created in a
 - Create the token **in the workspace you actually want the agent to build in**, not in one with broader access.
 - Prefer a workspace whose data you are comfortable exposing over your most sensitive one.
 - Create separate tokens for separate workspaces rather than reusing one broadly scoped token.
-- Revoke tokens you no longer use. A token stays valid until it is revoked.
+- Pick the shortest expiration date that fits your work. Every token has an expiration date and stops working after it.
+- Revoke tokens you no longer use. Revoking a token takes effect immediately. See [Manage and Revoke Tokens](/docs/user-management/profile-management/personal-access-tokens#manage-and-revoke-tokens).
 
 ## Keep Development and Production Separate
 
@@ -28,7 +29,7 @@ We recommend connecting MCP only to instances whose development environment poin
 
 ## Protect the Token
 
-The token is a credential with the same reach as the account that created it. Treat it accordingly.
+The token is a credential with the same reach as the account that created it, within the token's allowed areas. Treat it accordingly.
 
 - **Keep it out of version control.** It sits in plain text in your shell profile or your client's configuration file. If that file lives in a repository, the token is in your git history.
 - **Use a project-local file that is already ignored.** For a single project, `.claude/settings.local.json` is git-ignored by default; `.claude/settings.json` is not.
@@ -53,4 +54,5 @@ The number of tokens consumed by an operation depends on the model you select, i
 ## Related
 
 - [Setup](/docs/build-with-ai/mcp/setup) — create a token and configure your client
+- [Personal Access Tokens](/docs/user-management/profile-management/personal-access-tokens) — create, expire, and revoke tokens, and what a token can access
 - [Supported Tools](/docs/build-with-ai/mcp/supported-tools) — everything an agent can do once connected
