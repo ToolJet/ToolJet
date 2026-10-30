@@ -1286,3 +1286,56 @@ describe('Table-ADDROWFORM-048 scrollbar', () => {
     expect(screen.getByRole('listbox')).toHaveClass(SCROLL_AREA);
   });
 });
+
+describe('Table-ADDROWFORM-050 overlay on the table', () => {
+  const overlay = () => document.querySelector('[data-cy="add-new-row-overlay"]');
+
+  test('Table-ADDROWFORM-050 the form inside the table dims the whole table behind it', () => {
+    // Break this catches: the table staying fully bright, so it looks usable while the form is open.
+    const { container } = renderForm();
+
+    expect(container).toContainElement(overlay());
+    expect(overlay()).toHaveStyle({ position: 'absolute', top: '0px', right: '0px', bottom: '0px', left: '0px' });
+    expect(overlay()).toHaveClass('tw-bg-black/50');
+  });
+
+  test('Table-ADDROWFORM-050 the overlay sits under the form and over the table', () => {
+    // Break this catches: the overlay covering the form, so nothing in it can be clicked.
+    renderForm();
+    const popover = screen.getByRole('dialog', { name: 'Add row' });
+
+    expect(Number(overlay().style.zIndex)).toBeGreaterThan(0);
+    expect(Number(overlay().style.zIndex)).toBeLessThan(Number(popover.style.zIndex));
+  });
+
+  test('Table-ADDROWFORM-050 a click on the overlay keeps the form and what was typed', async () => {
+    // Break this catches: a stray click on the dimmed table throwing away a half-filled form.
+    const { user, hide } = renderForm();
+    await user.type(within(field('Name')).getByRole('textbox'), 'Ada');
+
+    expect(overlay()).not.toBeNull();
+    await user.click(overlay());
+
+    expect(hide).not.toHaveBeenCalled();
+    expect(draft().name).toBe('Ada');
+  });
+
+  test('Table-ADDROWFORM-050 the overlay fades out together with the form', async () => {
+    // Break this catches: the table snapping back to full brightness before the form has gone.
+    setReducedMotion(false);
+    const { user, hide } = renderForm();
+
+    await user.click(screen.getByRole('button', { name: 'Add row' }));
+
+    expect(overlay()).toHaveStyle({ opacity: '0' });
+    await waitFor(() => expect(hide).toHaveBeenCalledTimes(1));
+  });
+
+  test('Table-ADDROWFORM-050 the dialog placement has no second overlay (the dialog brings its own)', () => {
+    // Break this catches: a dialog drawn over two stacked dimming layers.
+    renderForm({ properties: { addNewRowIn: 'dialog' } });
+
+    expect(overlay()).toBeNull();
+    expect(document.querySelector('[data-slot="dialog-overlay"]')).not.toBeNull();
+  });
+});
