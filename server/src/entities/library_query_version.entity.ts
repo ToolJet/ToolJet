@@ -5,8 +5,8 @@ export class LibraryQueryVersion extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'data_query_id' })
-  dataQueryId: string;
+  @Column({ name: 'library_query_id', type: 'uuid' })
+  libraryQueryId: string;
 
   @Column({ name: 'version_number', type: 'integer' })
   versionNumber: number;
@@ -22,6 +22,16 @@ export class LibraryQueryVersion extends BaseEntity {
 
   @Column({ name: 'created_by', type: 'uuid', nullable: true })
   createdBy: string | null;
+
+  // Environment this version has been promoted to; null until promoted (a promote/release gate only).
+  @Column({ name: 'current_environment_id', type: 'uuid', nullable: true })
+  currentEnvironmentId: string | null;
+
+  @Column({ name: 'created_from_version_id', type: 'uuid', nullable: true })
+  createdFromVersionId: string | null;
+
+  @Column({ name: 'description', type: 'varchar', nullable: true })
+  description: string | null;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

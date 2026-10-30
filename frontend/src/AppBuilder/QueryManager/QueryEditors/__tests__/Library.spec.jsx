@@ -20,14 +20,17 @@ beforeAll(() => {
   };
 });
 
-const version = (n, inputs, parameters = []) => ({
+const version = (n, inputs, environment = null, isReleased = false) => ({
   id: `ver${n}`,
   name: `v${n}`,
   kind: 'postgresql',
   inputs: inputs.map((name) => ({ name, defaultValue: name === 'region' ? 'eu' : '' })),
-  parameters,
   createdAt: `2026-03-0${n}`,
+  environment,
+  isReleased,
 });
+const production = { id: 'e2', name: 'production', priority: 3 };
+const staging = { id: 'e1', name: 'staging', priority: 2 };
 
 const catalog = {
   queries: [
@@ -35,28 +38,35 @@ const catalog = {
       id: 'q1',
       name: 'getInvoices',
       folder: 'billing',
-      draft: { kind: 'postgresql', inputs: [{ name: 'region' }], parameters: [], matchesLatestVersion: false },
-      versions: [
-        version(2, ['region'], [{ name: 'limit', defaultValue: '10' }]),
-        version(1, [], [{ name: 'limit', defaultValue: '5' }]),
-      ],
+      draft: { kind: 'postgresql', inputs: [{ name: 'region' }], matchesLatestVersion: false },
+      releasedVersionId: 'ver2',
+      versions: [version(2, ['region'], production, true), version(1, [], staging)],
     },
     {
       id: 'q2',
       name: 'getOrders',
       folder: null,
-      draft: { kind: 'postgresql', inputs: [], parameters: [], matchesLatestVersion: false },
+      draft: { kind: 'postgresql', inputs: [], matchesLatestVersion: false },
+      releasedVersionId: null,
       versions: [version(2, ['region', 'other']), version(1, ['other'])],
+    },
+    {
+      id: 'q3',
+      name: 'getDraftOnly',
+      folder: null,
+      releasedVersionId: null,
+      draft: { kind: 'postgresql', inputs: [], matchesLatestVersion: false },
+      versions: [],
     },
   ],
 };
 
 function useCatalog(body = catalog) {
   server.use(
-    http.get(`${config.apiUrl}/apps`, () =>
-      HttpResponse.json({ apps: [{ id: 'lib1', slug: 'query-library', app_versions: [{ id: 'libv' }] }] })
-    ),
-    http.get(`${config.apiUrl}/data-queries/libv/library-catalog`, () => HttpResponse.json(body))
+    http.get(`${config.apiUrl}/apps`, () => {
+      throw new Error('Library must not load apps');
+    }),
+    http.get(`${config.apiUrl}/query-library/catalog`, () => HttpResponse.json(body))
   );
 }
 
@@ -102,7 +112,7 @@ it('groups queries by folder with no library picker', async () => {
   expect(screen.queryByText('Library')).not.toBeInTheDocument();
   expect(screen.getByRole('link', { name: /open in library/i })).toHaveAttribute(
     'href',
-    expect.stringContaining('/apps/query-library')
+    expect.stringContaining('/query-library')
   );
 });
 
@@ -113,7 +123,7 @@ it('prefixes "Open in library" with the deployment sub-path', async () => {
     renderLibrary();
     expect(await screen.findByRole('link', { name: /open in library/i })).toHaveAttribute(
       'href',
-      '/tooljet/ws1/apps/query-library'
+      '/tooljet/ws1/query-library'
     );
   } finally {
     delete window.public_config;
@@ -121,7 +131,7 @@ it('prefixes "Open in library" with the deployment sub-path', async () => {
   }
 });
 
-it('picking a query pins its newest version and copies kind, inputs and parameters', async () => {
+it('picking a query pins its Released version and copies kind and inputs', async () => {
   const optionsChanged = renderLibrary();
   await pick('Select a query', 'getInvoices');
 
@@ -131,11 +141,28 @@ it('picking a query pins its newest version and copies kind, inputs and paramete
       libraryQueryVersionId: 'ver2',
       libraryKind: 'postgresql',
       inputs: { region: '' },
-      parameters: [{ name: 'limit', defaultValue: '10' }],
     })
   );
   expect(await screen.findByText('region')).toBeInTheDocument();
-  expect(screen.getByText('v2')).toBeInTheDocument();
+  expect(screen.getByText('v2 · Production · Released')).toBeInTheDocument();
+});
+
+it('pins the newest saved version when none is Released, and the draft when none is saved', async () => {
+  const optionsChanged = renderLibrary();
+  await pick('Select a query', 'getOrders');
+  await waitFor(() =>
+    expect(optionsChanged).toHaveBeenLastCalledWith(expect.objectContaining({ libraryQueryVersionId: 'ver2' }))
+  );
+  await pick('getOrders', 'getDraftOnly');
+  await waitFor(() =>
+    expect(optionsChanged).toHaveBeenLastCalledWith(expect.objectContaining({ libraryQueryVersionId: 'draft' }))
+  );
+});
+
+it('labels versions with environment and Released', async () => {
+  renderLibrary({ libraryQueryId: 'q1', libraryQueryVersionId: 'ver2', libraryKind: 'postgresql', inputs: {} });
+  await userEvent.click(await screen.findByText('v2 · Production · Released'));
+  expect(await screen.findByRole('option', { name: 'v1 · Staging' })).toBeInTheDocument();
 });
 
 it('switching version drops inputs the version no longer has and keeps the rest', async () => {
@@ -144,7 +171,6 @@ it('switching version drops inputs the version no longer has and keeps the rest'
     libraryQueryVersionId: 'ver2',
     libraryKind: 'postgresql',
     inputs: { region: '{{1}}', other: '{{2}}' },
-    parameters: [],
   });
   await pick('v2', 'v1');
 
@@ -155,50 +181,15 @@ it('switching version drops inputs the version no longer has and keeps the rest'
   );
 });
 
-it('keeps a parameter value the builder edited across versions', async () => {
-  const optionsChanged = renderLibrary({
-    libraryQueryId: 'q1',
-    libraryQueryVersionId: 'ver2',
-    libraryKind: 'postgresql',
-    inputs: { region: '' },
-    parameters: [{ name: 'limit', defaultValue: '99' }],
-  });
-  await pick('v2', 'v1');
-
-  await waitFor(() =>
-    expect(optionsChanged).toHaveBeenLastCalledWith(
-      expect.objectContaining({ libraryQueryVersionId: 'ver1', parameters: [{ name: 'limit', defaultValue: '99' }] })
-    )
-  );
-});
-
-it('takes the new version default for a parameter the builder left untouched', async () => {
-  const optionsChanged = renderLibrary({
-    libraryQueryId: 'q1',
-    libraryQueryVersionId: 'ver2',
-    libraryKind: 'postgresql',
-    inputs: { region: '' },
-    parameters: [{ name: 'limit', defaultValue: '10' }],
-  });
-  await pick('v2', 'v1');
-
-  await waitFor(() =>
-    expect(optionsChanged).toHaveBeenLastCalledWith(
-      expect.objectContaining({ parameters: [{ name: 'limit', defaultValue: '5' }] })
-    )
-  );
-});
-
 it('shows the draft notice when the draft is chosen', async () => {
   renderLibrary({
     libraryQueryId: 'q1',
     libraryQueryVersionId: 'ver2',
     libraryKind: 'postgresql',
     inputs: {},
-    parameters: [],
   });
   expect(screen.queryByText(/can't be released/)).not.toBeInTheDocument();
-  await pick('v2', 'Draft (testing only)');
+  await pick('v2 · Production · Released', 'Draft (testing only)');
 
   expect(await screen.findByText("This app can't be released while this query uses the draft.")).toBeInTheDocument();
 });
@@ -208,38 +199,35 @@ it('treats a pin with no version id as the draft', async () => {
   expect(await screen.findByText("This app can't be released while this query uses the draft.")).toBeInTheDocument();
 });
 
-it('offers the newest version when the pin is older, and selects it on click', async () => {
+it('offers the Released version when the pin is not it, and selects it on click', async () => {
   const optionsChanged = renderLibrary({
     libraryQueryId: 'q1',
     libraryQueryVersionId: 'ver1',
     libraryKind: 'postgresql',
     inputs: {},
-    parameters: [{ name: 'limit', defaultValue: '5' }],
   });
-  await userEvent.click(await screen.findByRole('button', { name: 'v2 available' }));
+  await userEvent.click(await screen.findByRole('button', { name: 'v2 released' }));
 
   await waitFor(() =>
     expect(optionsChanged).toHaveBeenLastCalledWith(
       expect.objectContaining({
         libraryQueryVersionId: 'ver2',
         inputs: { region: '' },
-        parameters: [{ name: 'limit', defaultValue: '10' }],
       })
     )
   );
-  expect(screen.queryByRole('button', { name: 'v2 available' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'v2 released' })).not.toBeInTheDocument();
 });
 
-it('shows no badge on the newest version', async () => {
+it('shows no badge on the Released version', async () => {
   renderLibrary({
     libraryQueryId: 'q1',
     libraryQueryVersionId: 'ver2',
     libraryKind: 'postgresql',
     inputs: {},
-    parameters: [],
   });
   await screen.findByText('Version');
-  expect(screen.queryByText(/available/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/ released$/)).not.toBeInTheDocument();
 });
 
 it('shows the input fields with the default as placeholder', async () => {
@@ -248,7 +236,6 @@ it('shows the input fields with the default as placeholder', async () => {
     libraryQueryVersionId: 'ver2',
     libraryKind: 'postgresql',
     inputs: {},
-    parameters: [],
   });
   expect(await screen.findByText('region')).toBeInTheDocument();
   await waitFor(() => expect(document.querySelector('.cm-placeholder')).toHaveTextContent('Default: eu'));
@@ -261,7 +248,9 @@ it('says so when the library has no queries', async () => {
 });
 
 it('says the library could not be loaded, not that it is empty, when the fetch fails', async () => {
-  server.use(http.get(`${config.apiUrl}/apps`, () => HttpResponse.json({ message: 'down' }, { status: 500 })));
+  server.use(
+    http.get(`${config.apiUrl}/query-library/catalog`, () => HttpResponse.json({ message: 'down' }, { status: 500 }))
+  );
   renderLibrary();
   expect(await screen.findByText("Couldn't load the query library")).toBeInTheDocument();
   expect(screen.queryByText('No queries in the query library yet')).not.toBeInTheDocument();

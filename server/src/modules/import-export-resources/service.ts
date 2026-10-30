@@ -14,7 +14,11 @@ import { EntityManager, In } from 'typeorm';
 import { InternalTable } from '@entities/internal_table.entity';
 import { isLibraryUuid } from '@modules/data-queries/library/library-query.util';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { libraryTooljetDbTableIds, LibraryExportQuery } from '@modules/data-queries/library/library-export.util';
+import {
+  libraryTooljetDbTableIds,
+  LibraryExportQuery,
+  remapLibraryTooljetDbTables,
+} from '@modules/data-queries/library/library-export.util';
 
 @Injectable()
 export class ImportExportResourcesService {
@@ -58,11 +62,11 @@ export class ImportExportResourcesService {
     // Appended to the caller's own array, like the foreign-key tables the table export adds: git push zips that
     // array against the result to map local ids to co_relation_ids.
     const tableList = exportResourcesDto.tooljet_database;
+    type ExportedDefinition = { appV2: { libraryQueries?: LibraryExportQuery[] } };
+    const libraryQueries = (resourcesExport.app ?? []).flatMap(
+      (exportedApp) => (exportedApp.definition as ExportedDefinition).appV2.libraryQueries ?? []
+    );
     if (tableList) {
-      type ExportedDefinition = { appV2: { libraryQueries?: LibraryExportQuery[] } };
-      const libraryQueries = (resourcesExport.app ?? []).flatMap(
-        (exportedApp) => (exportedApp.definition as ExportedDefinition).appV2.libraryQueries ?? []
-      );
       // A table deleted since the snapshot was taken is skipped by the table export, which would shift git push's
       // index-based mapping of the entries after it. Only append tables that still exist in this workspace.
       const candidateIds = libraryTooljetDbTableIds(libraryQueries).filter(isLibraryUuid);
@@ -82,14 +86,25 @@ export class ImportExportResourcesService {
 
     if (tableList?.length) {
       const exportedDbs: ImportTooljetDatabaseDto[] = [];
+      const portableTables: Record<string, { id: string }> = {};
       for (const tjdb of tableList) {
         const exportedDb = await this.tooljetDbImportExportService.export(
           exportResourcesDto.organization_id,
           tjdb,
           tableList
         );
-        if (exportedDb) exportedDbs.push(exportedDb);
+        if (!exportedDb) continue;
+        exportedDbs.push(exportedDb);
+        portableTables[tjdb.table_id] = { id: exportedDb.id };
       }
+      // Library snapshots still name tables by this workspace's ids; rename them to the ids the tables travel under.
+      remapLibraryTooljetDbTables(libraryQueries, (options) =>
+        this.appImportExportService.replaceTooljetDbTableIds(
+          options,
+          portableTables,
+          exportResourcesDto.organization_id
+        )
+      );
 
       if (exportedDbs.length > 0) resourcesExport.tooljet_database = exportedDbs;
     }

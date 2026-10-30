@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import { isEmpty } from 'lodash';
+import { shallow } from 'zustand/shallow';
 import { QueryManagerHeader } from './Components/QueryManagerHeader';
 import QueryManagerBody from './Components/QueryManagerBody';
 import { CodeHinterContext } from '@/AppBuilder/CodeBuilder/CodeHinterContext';
 import { resolveReferences } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
+import { isQueryLibraryMode, withViewedLibraryVersion } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
@@ -18,7 +20,7 @@ const QUERY_TAB_IDS = { setup: 1, transformation: 2, settings: 3 };
 
 const QueryManager = ({ mode, darkMode }) => {
   const { moduleId } = useModuleContext();
-  const isQueryLibrary = useStore((state) => state.getAppType(moduleId) === 'query_library');
+  const isQueryLibrary = useStore((state) => isQueryLibraryMode(state));
   // TODO to be moved into queryPanelStore and reimplemented
   const runQuery = useStore((state) => state.queryPanel.runQuery);
   const loadingDataSources = useStore((state) => state.loadingDataSources);
@@ -26,7 +28,7 @@ const QueryManager = ({ mode, darkMode }) => {
   const sampleDataSource = useStore((state) => state.sampleDataSource);
   const globalDataSources = useStore((state) => state.globalDataSources);
   const queryToBeRun = useStore((state) => state.queryPanel.queryToBeRun);
-  const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
+  const selectedQuery = useStore((state) => withViewedLibraryVersion(state, state.queryPanel.selectedQuery), shallow);
   const setSelectedDataSource = useStore((state) => state.queryPanel.setSelectedDataSource);
   const resolveDataSourceForQuery = useStore((state) => state.queryPanel.resolveDataSourceForQuery);
   const setQueryToBeRun = useStore((state) => state.queryPanel.setQueryToBeRun);
@@ -59,21 +61,21 @@ const QueryManager = ({ mode, darkMode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryToBeRun]);
 
-  // This effect only re-resolves the datasource when the datasource lists change.
+  // Follow the viewed snapshot as well as source-list refreshes, without replacing the editable draft.
   useEffect(() => {
     const resolved = resolveDataSourceForQuery(selectedQuery);
     setSelectedDataSource(resolved);
-    // selectedQuery + selectedDataSource are kept in sync atomically inside setSelectedQuery,
-    // so query switches don't need handling here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataSources, globalDataSources, sampleDataSource]);
+  }, [dataSources, globalDataSources, sampleDataSource, selectedQuery?.data_source_id, selectedQuery?.kind]);
 
-  // Library templates also read `{{input.x}}`. Empty groups are left out so autocomplete shows no bare `parameters` / `input`.
+  // Library templates read `{{input.x}}` instead of `{{parameters.x}}`. An empty group is left out so autocomplete
+  // shows no bare `parameters` / `input`.
   const codeHinterContext = Object.fromEntries(
-    Object.entries({
-      parameters: resolveDefaults(selectedQuery?.options?.parameters),
-      ...(isQueryLibrary && { input: resolveDefaults(selectedQuery?.options?.inputs) }),
-    }).filter(([, value]) => !isEmpty(value))
+    Object.entries(
+      isQueryLibrary
+        ? { input: resolveDefaults(selectedQuery?.options?.inputs) }
+        : { parameters: resolveDefaults(selectedQuery?.options?.parameters) }
+    ).filter(([, value]) => !isEmpty(value))
   );
 
   return (

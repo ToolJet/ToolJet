@@ -22,16 +22,21 @@ describe('ImportExportResourcesService.export library tables', () => {
   });
 
   // `existingTableIds` stands in for the workspace's internal tables; the lookup is org-scoped.
-  function build(libraryQueries: unknown[], existingTableIds: string[] = [TABLE('1'), TABLE('2'), TABLE('3')]) {
+  function build(
+    libraryQueries: unknown[],
+    existingTableIds: string[] = [TABLE('1'), TABLE('2'), TABLE('3')],
+    portableId: (tableId: string) => string = (tableId) => tableId
+  ) {
     const findTables = jest.fn(async (_entity: unknown, options: { where: { id: { _value: string[] } } }) =>
       options.where.id._value.filter((id) => existingTableIds.includes(id)).map((id) => ({ id }))
     );
     const exportTable = jest.fn(async (_org: string, table: { table_id: string }) => ({
-      id: table.table_id,
+      id: portableId(table.table_id),
     }));
     const service = new ImportExportResourcesService(
       {
         export: jest.fn(async () => ({ appV2: { id: 'app1', ...(libraryQueries.length && { libraryQueries }) } })),
+        replaceTooljetDbTableIds: AppImportExportService.prototype.replaceTooljetDbTableIds,
       } as unknown as AppImportExportService,
       { export: exportTable } as unknown as TooljetDbImportExportService,
       { manager: { find: findTables } } as unknown as InternalTableRepository,
@@ -88,6 +93,24 @@ describe('ImportExportResourcesService.export library tables', () => {
     expect(exportTable.mock.calls.map(([, table]) => table.table_id)).toEqual([TABLE('1'), TABLE('2')]);
     expect(result.tooljet_database).toHaveLength(2);
     expect(findTables.mock.calls[0][1]).toMatchObject({ where: { organizationId: 'org1' } });
+  });
+
+  // A table exported for the first time gets a fresh co_relation_id and travels under it; import keys its table
+  // mapping by that id, so the library snapshots must name the table the same way.
+  it('names library tables in snapshots by the id the table export gave them', async () => {
+    const query = {
+      draft: { kind: 'tooljetdb', dataSourceId: null, options: { operation: 'list_rows', table_id: TABLE('1') } },
+      versions: [
+        { id: 'v1', versionNumber: 1, kind: 'tooljetdb', dataSourceId: null, options: { table_id: TABLE('1') } },
+      ],
+    };
+    const { service } = build([query], undefined, (tableId) => `portable-${tableId}`);
+    const result = await service.export(user, dto([]));
+
+    const [exported] = (result.app[0].definition as { appV2: { libraryQueries: (typeof query)[] } }).appV2
+      .libraryQueries;
+    expect(exported.draft.options.table_id).toBe(`portable-${TABLE('1')}`);
+    expect(exported.versions[0].options.table_id).toBe(`portable-${TABLE('1')}`);
   });
 
   it('skips the table lookup when no library table ids are found', async () => {

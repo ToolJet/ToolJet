@@ -9,6 +9,7 @@ const routes = [
   { path: '/:workspace_id/home', breadcrumb: 'Home' },
   { path: '/:worspace_id', breadcrumb: 'Applications' },
   { path: '/:workspace_id/modules', breadcrumb: 'Modules' },
+  { path: '/:workspace_id/query-library', breadcrumb: 'Query library' },
   { path: '/:worspace_id/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
   { path: '/:worpsace_id/audit-logs', breadcrumb: ' ' },

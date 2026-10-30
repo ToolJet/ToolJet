@@ -14,7 +14,6 @@ import {
   matchLibraryVersion,
   remapLibraryConsumerOptions,
 } from '@modules/data-queries/library/library-export.util';
-import { findSiblingNames } from '@modules/data-queries/library/library-query.util';
 import { LibraryQueryVersion } from '@entities/library_query_version.entity';
 
 const id = (n: number): string => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
@@ -33,7 +32,7 @@ type DraftRow = {
 };
 type VersionRow = {
   id: string;
-  data_query_id: string;
+  library_query_id: string;
   version_number: number;
   kind: string;
   data_source_id: string | null;
@@ -42,7 +41,7 @@ type VersionRow = {
 
 function fakeManager(drafts: DraftRow[], versions: VersionRow[], folders: Record<string, string> = {}) {
   const query = jest.fn(async (sql: string, params: unknown[]) => {
-    if (sql.includes('FROM data_query_folder_mappings')) {
+    if (sql.includes('JOIN library_query_folders')) {
       return Object.entries(folders)
         .filter(([queryId]) => (params[0] as string[]).includes(queryId))
         .map(([queryId, folder]) => ({ queryId, folder }));
@@ -52,19 +51,21 @@ function fakeManager(drafts: DraftRow[], versions: VersionRow[], folders: Record
       return wanted
         .map(
           (queryId) =>
-            versions.filter((v) => v.data_query_id === queryId).sort((a, b) => b.version_number - a.version_number)[0]
+            versions
+              .filter((v) => v.library_query_id === queryId)
+              .sort((a, b) => b.version_number - a.version_number)[0]
         )
         .filter(Boolean);
     }
     if (sql.includes('FROM library_query_versions')) {
       return versions.filter((v) => (params[0] as string[]).includes(v.id));
     }
-    if (sql.includes('FROM data_queries dq') && sql.includes('dq.name = ANY')) {
+    if (sql.includes('FROM library_queries dq') && sql.includes('dq.name = ANY')) {
       return drafts.filter(
         (d) => (params[0] as string[]).includes(d.app_version_id) && (params[3] as string[]).includes(d.name)
       );
     }
-    if (sql.includes('FROM data_queries dq')) return drafts.filter((d) => (params[0] as string[]).includes(d.id));
+    if (sql.includes('FROM library_queries dq')) return drafts.filter((d) => (params[0] as string[]).includes(d.id));
     throw new Error(`unexpected SQL: ${sql}`);
   });
   return { manager: { query } as unknown as EntityManager, query };
@@ -86,7 +87,7 @@ const version = (
   options: Record<string, unknown>
 ): VersionRow => ({
   id: id(queryN * 100 + versionNumber),
-  data_query_id: id(queryN),
+  library_query_id: id(queryN),
   version_number: versionNumber,
   kind,
   data_source_id: kind === 'runjs' ? DS_RUNJS : DS_REST,
@@ -94,12 +95,6 @@ const version = (
 });
 const consumer = (libraryQueryId: string, libraryQueryVersionId?: string) =>
   ({ kind: 'library', options: { libraryQueryId, libraryQueryVersionId } }) as unknown as DataQuery;
-
-describe('findSiblingNames', () => {
-  it('finds every queries.<name> call once', () => {
-    expect(findSiblingNames('await queries.getA.run(); queries.getB.run({})')).toEqual(['getA', 'getB']);
-  });
-});
 
 describe('collectLibraryExport', () => {
   const restOptions = { method: 'get', url: 'http://x/', url_params: [], headers: [], body: [] };
@@ -149,48 +144,16 @@ describe('collectLibraryExport', () => {
     expect(query).not.toHaveBeenCalled();
   });
 
-  it('adds the draft and latest version of a RunJS sibling, transitively', async () => {
+  it('does not pull in other library queries a RunJS query names', async () => {
     const { manager } = fakeManager(
       [
         draft(1, 'runner', 'runjs', { code: 'return queries.getA.run()' }),
-        draft(2, 'getA', 'runjs', { code: 'return 1' }), // draft code does not call getB; v3 does
-        draft(3, 'getB', 'restapi', restOptions),
-        draft(4, 'unrelated', 'restapi', restOptions),
+        draft(2, 'getA', 'runjs', { code: 'return 1' }),
       ],
-      [
-        version(1, 1, 'runjs', { code: 'return queries.getA.run()' }),
-        version(2, 1, 'runjs', { code: 'return 0' }),
-        version(2, 3, 'runjs', { code: 'return queries.getB.run()' }),
-        version(3, 1, 'restapi', restOptions),
-        version(3, 2, 'restapi', restOptions),
-      ]
+      [version(1, 1, 'runjs', { code: 'return queries.getA.run()' }), version(2, 1, 'runjs', { code: 'return 1' })]
     );
     const result = await collectLibraryExport(manager, 'org1', [consumer(id(1), id(101))]);
-    const byName = Object.fromEntries(result.map((q) => [q.name, q]));
-    expect(Object.keys(byName).sort()).toEqual(['getA', 'getB', 'runner']);
-    expect(byName.runner.versions.map((v) => v.versionNumber)).toEqual([1]);
-    expect(byName.getA.versions.map((v) => v.versionNumber)).toEqual([3]);
-    expect(byName.getB.versions.map((v) => v.versionNumber)).toEqual([2]);
-  });
-
-  it('follows a call found only in the draft, and stops on a cycle', async () => {
-    const { manager } = fakeManager(
-      [draft(1, 'a', 'runjs', { code: 'queries.b.run()' }), draft(2, 'b', 'runjs', { code: 'queries.a.run()' })],
-      [version(2, 1, 'runjs', { code: '' })]
-    );
-    const result = await collectLibraryExport(manager, 'org1', [consumer(id(1), 'draft')]);
-    expect(result.map((q) => q.name)).toEqual(['a', 'b']);
-    expect(result.find((q) => q.name === 'b')?.versions.map((v) => v.versionNumber)).toEqual([1]);
-    expect(result.find((q) => q.name === 'a')?.versions).toEqual([]);
-  });
-
-  it('keeps an unreleased sibling with its draft only', async () => {
-    const { manager } = fakeManager(
-      [draft(1, 'a', 'runjs', { code: 'queries.b.run()' }), draft(2, 'b', 'restapi', restOptions)],
-      []
-    );
-    const result = await collectLibraryExport(manager, 'org1', [consumer(id(1), 'draft')]);
-    expect(result.find((q) => q.name === 'b')?.versions).toEqual([]);
+    expect(result.map((q) => q.name)).toEqual(['runner']);
   });
 });
 
@@ -255,7 +218,7 @@ describe('library import helpers', () => {
   const version = (row: Partial<LibraryQueryVersion>): LibraryQueryVersion =>
     ({
       id: id(1),
-      dataQueryId: id(2),
+      libraryQueryId: id(2),
       versionNumber: 1,
       kind: 'restapi',
       dataSourceId: DS_REST,

@@ -8,10 +8,7 @@ export const dataqueryService = {
   run,
   runLibrary,
   getLibraryDefinition,
-  getLibraryUsage,
-  releaseLibraryQuery,
-  deleteLibraryQueryVersion,
-  getLibraryCatalog,
+  addToLibrary,
   update,
   del,
   preview,
@@ -61,14 +58,19 @@ function createWorkflowQuery(app_id, app_version_id, name, kind, options, data_s
   return fetch(`${config.apiUrl}/data-queries/workflow-node`, requestOptions).then(handleResponse);
 }
 
-function update(id, versionId, name, options, dataSourceId) {
+function update(id, versionId, name, options, dataSourceId, context = {}) {
   const body = {
     options,
     name,
     data_source_id: dataSourceId,
   };
 
-  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(false, context.workspaceId),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
   return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
@@ -122,59 +124,39 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode, 
   return fetch(url, requestOptions).then(handleResponse);
 }
 
-function runLibrary(queryId, { inputs, parameters } = {}, versionId, environmentId, libraryQueryId, signal) {
-  const hasEditorContext = versionId && environmentId && environmentId !== 'undefined';
-  const url = hasEditorContext
-    ? `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/run-library/${environmentId}`
-    : `${config.apiUrl}/data-queries/${queryId}/run-library`;
+function runLibrary(queryId, { inputs } = {}, versionId, environmentId, signal) {
+  const url = `${config.apiUrl}/data-queries/${queryId}/run-library`;
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({
-      inputs: inputs ?? {},
-      ...(parameters && { parameters }),
-      ...(libraryQueryId && { libraryQueryId }),
-    }),
+    body: JSON.stringify({ inputs: inputs ?? {} }),
     signal,
   };
   return fetch(url, requestOptions).then(handleResponse);
 }
 
-function getLibraryDefinition(queryId, libraryQueryId, signal) {
+function getLibraryDefinition(queryId, signal) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify(libraryQueryId ? { libraryQueryId } : {}),
+    body: JSON.stringify({}),
     signal,
   };
   return fetch(`${config.apiUrl}/data-queries/${queryId}/library-definition`, requestOptions).then(handleResponse);
 }
 
-function getLibraryUsage(libraryVersionId) {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/data-queries/${libraryVersionId}/library-usage`, requestOptions).then(handleResponse);
-}
-
-function releaseLibraryQuery(queryId, versionId) {
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/library-release`, requestOptions).then(
+function addToLibrary(queryId, versionId, { name, sourceOptions, libraryOptions, inputs }) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ name, sourceOptions, libraryOptions, inputs }),
+  };
+  return fetch(`${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/add-to-library`, requestOptions).then(
     handleResponse
   );
-}
-
-function deleteLibraryQueryVersion(queryId, versionId, libraryVersionId) {
-  const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
-  return fetch(
-    `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/library-versions/${libraryVersionId}`,
-    requestOptions
-  ).then(handleResponse);
-}
-
-function getLibraryCatalog(versionId) {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/data-queries/${versionId}/library-catalog`, requestOptions).then(handleResponse);
 }
 
 function preview(query, options, versionId, environmentId, signal) {

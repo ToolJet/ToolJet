@@ -11,6 +11,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { QueryRenameInput } from './QueryRenameInput';
+import { isLibraryQueryLocked } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import { EllipsisVerticalIcon } from 'lucide-react';
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
@@ -25,6 +26,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+
+  const isLibraryLocked = useStore((state) => isLibraryQueryLocked(state, dataQuery.id));
 
   const renamingQueryId = useStore((state) => state.queryPanel.renamingQueryId);
   const setRenamingQuery = useStore((state) => state.queryPanel.setRenamingQuery);
@@ -44,16 +47,15 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   const isRestricted = dataQuery.permissions && dataQuery.permissions.length !== 0;
 
-  const updateQueryName = (dataQuery, newName) => {
+  const updateQueryName = async (dataQuery, newName) => {
     const { name } = dataQuery;
     if (name === newName) {
       return setRenamingQuery(null);
     }
     const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
     if (newName && !isNewQueryNameAlreadyExists) {
-      renameQuery(dataQuery?.id, newName);
       setRenamingQuery(null);
-      updateQuerySuggestions(name, newName);
+      if (await renameQuery(dataQuery?.id, newName)) updateQuerySuggestions(name, newName);
     } else {
       if (isNewQueryNameAlreadyExists) {
         toast.error('Query name already exists');
@@ -131,7 +133,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                     className="text-truncate"
                     onDoubleClick={(e) => {
                       e.stopPropagation();
-                      if (!shouldFreeze) setRenamingQuery(dataQuery.id);
+                      if (!shouldFreeze && !isLibraryLocked) setRenamingQuery(dataQuery.id);
                     }}
                   >
                     {decodeEntities(dataQuery.name)}

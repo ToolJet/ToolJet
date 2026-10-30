@@ -25,11 +25,9 @@ const renderAndOpen = async (type) => {
   return (await screen.findByText(/^Back to /)).closest('a');
 };
 
-// Back link for each app type. query_library used to build `query_librarys`, which is not a route key
-// and crashed getPrivateRoute in the App Builder header.
+// Back link for each supported app type.
 describe('BaseLogoNavDropdown back link', () => {
   test.each([
-    ['query_library', 'Back to apps', '/ws1'],
     ['front-end', 'Back to apps', '/ws1'],
     ['module', 'Back to modules', '/ws1/modules'],
     ['workflow', 'Back to workflows', '/ws1/workflows'],

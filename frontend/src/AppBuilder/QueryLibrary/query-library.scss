@@ -1,10 +1,18 @@
-// ponytail: CSS override of the bottom-docked query pane; a dedicated layout comes with Phase 2 polish.
+.home-page-content.query-library-home {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 .query-library-editor {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 240px;
   grid-template-rows: minmax(0, 1fr);
-  margin-top: 48px; // EditorHeader is out of flow (fixed, 48px); start below it
-  height: calc(100vh - 48px);
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  > div { min-width: 0; }
 
   // Toggle bar is the first child of the QueryPanel wrapper; its inline `display: flex` needs !important to lose.
   .query-pane:first-child { display: none !important; }

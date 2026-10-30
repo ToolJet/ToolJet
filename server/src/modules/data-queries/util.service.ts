@@ -82,7 +82,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
     // Hoist these variables to function scope for access in finally block
     let dataSource: DataSource;
-    let appToUse: App;
+    let appToUse: App | NonNullable<NonNullable<DataQueryExecutionOptions['library']>['standalone']>;
     let effectiveAppName: string | undefined;
     let effectiveIsPublic: boolean | undefined;
     let resolvedEnvironmentId: string | undefined;
@@ -90,7 +90,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     try {
       dataSource = dataQuery?.dataSource;
       // Use passed app parameter first, fallback to dataQuery.app (which may be undefined)
-      appToUse = app || dataQuery?.app;
+      appToUse = opts?.library?.standalone || app || dataQuery?.app;
       if (!(dataSource && appToUse)) {
         throw new UnauthorizedException();
       }
@@ -98,7 +98,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       // Lazy-load appVersion: branchId drives env resolution; isPublic and appName
       // carry the branch-specific metadata for non-workflows (workflows keep these on apps.*).
-      if (!dataQuery.appVersion && dataQuery.appVersionId) {
+      if (!opts?.library?.standalone && !dataQuery.appVersion && dataQuery.appVersionId) {
         dataQuery.appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
           return manager.findOne(AppVersion, {
             where: { id: dataQuery.appVersionId },
@@ -109,11 +109,13 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       // Branch-aware: resolve branchId from appVersion when version type is 'branch'
       // default branch version type is version
-      const branchId = dataQuery?.appVersion?.branchId || undefined;
+      const branchId = opts?.library ? undefined : dataQuery?.appVersion?.branchId || undefined;
 
       // Every type carries isPublic/appName on its own app_versions row now — use the
       // dataQuery's own version row directly.
-      const metaSource: { isPublic?: boolean; appName?: string } | undefined = dataQuery?.appVersion;
+      const metaSource: { isPublic?: boolean; appName?: string } | undefined = opts?.library?.standalone
+        ? { isPublic: false, appName: opts.library.standalone.name }
+        : dataQuery?.appVersion;
       effectiveIsPublic = metaSource?.isPublic;
       effectiveAppName = metaSource?.appName;
       // Removed: appVersionId path — released (VERSION-type) versions now use is_default DSV.

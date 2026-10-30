@@ -7,7 +7,6 @@ import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute, SuperAdminRoute } from '@/Routes';
 import { DesktopOnlyPrivateRoute, DesktopOnlyAdminRoute } from '@/Routes/ComposedGuards';
 import { HomePage } from '@/HomePage';
-import QueryLibraryRedirect from '@/AppBuilder/QueryLibrary/QueryLibraryRedirect';
 import { isQueryLibraryEnabled } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
 import './lazyPageStyles';
 import { Authorize } from '@/Oauth2';
@@ -448,7 +447,12 @@ class AppComponent extends React.Component {
                     element={
                       <DesktopOnlyRoute darkMode={darkMode}>
                         <PrivateRoute darkMode={darkMode}>
-                          <QueryLibraryRedirect />
+                          <HomePage
+                            key="query-library"
+                            appType="query_library"
+                            darkMode={darkMode}
+                            switchDarkMode={this.switchDarkMode}
+                          />
                         </PrivateRoute>
                       </DesktopOnlyRoute>
                     }

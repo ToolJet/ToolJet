@@ -8,6 +8,7 @@ import { changeOption } from '../utils';
 import { BaseUrl } from './BaseUrl';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import './styles.css';
 
@@ -173,10 +174,8 @@ class Restapi extends React.Component {
   initizalizeRetryNetworkErrorsToggle = () => {
     const isRetryNetworkErrorToggleUnused = this.props.options.retry_network_errors === null;
     if (isRetryNetworkErrorToggleUnused) {
-      const isStaticRestapi = this.props.selectedDataSource.id == 'null';
-      if (!isStaticRestapi) {
-        console.log('ToggleValue', this.props.selectedDataSource.options.retry_network_errors.value);
-      }
+      const isStaticRestapi =
+        this.props.selectedDataSource.type === DATA_SOURCE_TYPE.STATIC || this.props.selectedDataSource.id === 'null';
       const retryNetworkErrors = isStaticRestapi
         ? true
         : this.props.selectedDataSource.options.retry_network_errors.value;

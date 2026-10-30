@@ -1,33 +1,29 @@
 /** @jest-environment node */
-import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import {
   assertLibraryTarget,
   assertLibraryDataSource,
-  assertNotCalledByReleasedVersions,
-  calledByReleasedVersion,
   libraryUsedByMessage,
   toLibraryUsage,
   LibraryConsumer,
   assertReleasableLibraryDraft,
-  assertSameLibrary,
   assertSupportedLibraryKind,
   buildLibraryVariableMap,
   libraryServerReferences,
   withoutLibraryRequestDetails,
   replaceLibraryServerReferences,
   isSameLibrarySnapshot,
-  findSiblingNames,
-  latestReleaseOrThrow,
   libraryTransformationOf,
   libraryVersionName,
   parseLibraryVersionRef,
   pickPinnedVersion,
-  toLibrarySiblings,
   toLibraryPins,
   libraryReleaseBlock,
+  libraryPromoteBlock,
   toLibraryCatalog,
   toLibraryRunEntity,
   toRunTarget,
+  LibraryRunValues,
 } from '../../../../src/modules/data-queries/library/library-query.util';
 
 const q = (over: Record<string, any> = {}) =>
@@ -37,7 +33,7 @@ describe('library-query.util', () => {
   describe('buildLibraryVariableMap', () => {
     it('fills globals.currentUser from the signed-in user, not from the client', () => {
       const { variableMap } = buildLibraryVariableMap(
-        { query: 'where owner = {{globals.currentUser.email}}', parameters: [] },
+        { query: 'where owner = {{globals.currentUser.email}}', inputs: [] },
         {},
         { currentUser: { id: 'u1', email: 'a@b.c', firstName: 'A', lastName: 'B' } }
       );
@@ -45,60 +41,61 @@ describe('library-query.util', () => {
     });
 
     it('gives logged-out (public app) runs an empty currentUser instead of failing', () => {
-      const { variableMap } = buildLibraryVariableMap({ query: '{{globals.currentUser.email}}', parameters: [] }, {});
+      const { variableMap } = buildLibraryVariableMap({ query: '{{globals.currentUser.email}}', inputs: [] }, {});
       expect(variableMap['{{globals.currentUser.email}}']).toBeUndefined();
     });
 
-    it('resolves {{parameters.x}} from supplied parameter values', () => {
+    it('resolves {{input.x}} from supplied input values', () => {
       const { variableMap } = buildLibraryVariableMap(
-        { query: 'select * from c where id = {{parameters.id}}', parameters: [{ name: 'id', defaultValue: '1' }] },
-        { parameters: { id: 42 } }
+        { query: 'select * from c where id = {{input.id}}', inputs: [{ name: 'id', defaultValue: '1' }] },
+        { inputs: { id: 42 } }
       );
-      expect(variableMap['{{parameters.id}}']).toBe(42);
+      expect(variableMap['{{input.id}}']).toBe(42);
     });
 
-    it('falls back to the default when the parameter value is missing', () => {
-      const { parameters } = buildLibraryVariableMap(
-        { query: '{{parameters.id}}', parameters: [{ name: 'id', defaultValue: '7' }] },
+    it('has no parameters: they are neither resolved nor returned', () => {
+      const result = buildLibraryVariableMap(
+        { query: '{{typeof parameters}}', parameters: [{ name: 'id', defaultValue: '7' }] },
+        { parameters: { id: 1 } } as unknown as LibraryRunValues
+      );
+      expect(result.variableMap['{{typeof parameters}}']).toBe('undefined');
+      expect(result).not.toHaveProperty('parameters');
+      expect(result.scope).toEqual({ input: {} });
+    });
+
+    it('falls back to the default when the input value is missing', () => {
+      const { input } = buildLibraryVariableMap(
+        { query: '{{input.id}}', inputs: [{ name: 'id', defaultValue: '7' }] },
         undefined
       );
-      expect(parameters).toEqual({ id: '7' });
-    });
-
-    it('evaluates a {{…}} default, so {{5}} becomes the number 5', () => {
-      const { parameters } = buildLibraryVariableMap(
-        { query: '{{parameters.n}}', parameters: [{ name: 'n', defaultValue: '{{5}}' }] },
-        {}
-      );
-      expect(parameters.n).toBe(5);
+      expect(input).toEqual({ id: '7' });
     });
 
     it('keeps object and array inputs intact', () => {
       const row = { id: 1, tags: ['a'] };
       const { variableMap } = buildLibraryVariableMap(
         {
-          body: '{{parameters.row}}',
-          ids: '{{parameters.ids.join(",")}}',
-          parameters: [{ name: 'row' }, { name: 'ids' }],
+          body: '{{input.row}}',
+          ids: '{{input.ids.join(",")}}',
+          inputs: [{ name: 'row' }, { name: 'ids' }],
         },
-        { parameters: { row, ids: [1, 2] } }
+        { inputs: { row, ids: [1, 2] } }
       );
-      expect(variableMap['{{parameters.row}}']).toEqual(row);
-      expect(variableMap['{{parameters.ids.join(",")}}']).toBe('1,2');
+      expect(variableMap['{{input.row}}']).toEqual(row);
+      expect(variableMap['{{input.ids.join(",")}}']).toBe('1,2');
     });
 
     it('ignores supplied values that are not declared', () => {
-      const { parameters, input } = buildLibraryVariableMap(
-        { query: 'x', parameters: [{ name: 'id' }], inputs: [{ name: 'region' }] },
-        { parameters: { id: 1, evil: 2 }, inputs: { region: 'a', evil: 3 } }
+      const { input } = buildLibraryVariableMap(
+        { query: 'x', inputs: [{ name: 'region' }] },
+        { inputs: { region: 'a', evil: 3 } }
       );
-      expect(parameters).toEqual({ id: 1 });
       expect(input).toEqual({ region: 'a' });
     });
 
     it('leaves constants, secrets and globals.server for server-side resolution', () => {
       const { variableMap } = buildLibraryVariableMap(
-        { url: '{{constants.base}}/{{secrets.key}}/{{globals.server.x}}', parameters: [] },
+        { url: '{{constants.base}}/{{secrets.key}}/{{globals.server.x}}', inputs: [] },
         {}
       );
       expect(Object.keys(variableMap)).toEqual([]);
@@ -106,28 +103,30 @@ describe('library-query.util', () => {
 
     it('builds keys from newline-flattened text, matching parseQueryOptions lookups', () => {
       const { variableMap } = buildLibraryVariableMap(
-        { query: 'select {{\nparameters.id\n}}', parameters: [{ name: 'id' }] },
-        { parameters: { id: 3 } }
+        { query: 'select {{\ninput.id\n}}', inputs: [{ name: 'id' }] },
+        { inputs: { id: 3 } }
       );
-      expect(variableMap['{{ parameters.id }}']).toBe(3);
+      expect(variableMap['{{ input.id }}']).toBe(3);
     });
 
     it('turns a bad variable template into a BadRequest that names the template', () => {
-      const run = () => buildLibraryVariableMap({ query: '{{parameters.a.b}}', parameters: [{ name: 'a' }] }, {});
+      const run = () => buildLibraryVariableMap({ query: '{{input.a.b}}', inputs: [{ name: 'a' }] }, {});
       expect(run).toThrow(BadRequestException);
-      expect(run).toThrow('Could not resolve {{parameters.a.b}}');
+      expect(run).toThrow('Could not resolve {{input.a.b}}');
     });
 
     it('should keep a constants default as text for the server to resolve', () => {
-      const { parameters, input } = buildLibraryVariableMap(
+      const { input } = buildLibraryVariableMap(
         {
-          query: '{{parameters.n}} {{input.r}}',
-          inputs: [{ name: 'r', defaultValue: 'eu-{{constants.region}}-{{1+1}}' }],
-          parameters: [{ name: 'n', defaultValue: '{{constants.x}}' }],
+          query: '{{input.n}} {{input.r}}',
+          inputs: [
+            { name: 'r', defaultValue: 'eu-{{constants.region}}-{{1+1}}' },
+            { name: 'n', defaultValue: '{{constants.x}}' },
+          ],
         },
         {}
       );
-      expect(parameters.n).toBe('{{constants.x}}');
+      expect(input.n).toBe('{{constants.x}}');
       expect(input.r).toBe('eu-{{constants.region}}-2');
     });
 
@@ -139,14 +138,14 @@ describe('library-query.util', () => {
       it('should never expand a supplied value that names a secret', () => {
         const { variableMap, scope } = buildLibraryVariableMap(
           {
-            query: "select '{{parameters.m}}' as label",
-            parameters: [{ name: 'n', defaultValue: '{{secrets.k}}' }, { name: 'm' }],
+            query: "select '{{input.m}}' as label",
+            inputs: [{ name: 'n', defaultValue: '{{secrets.k}}' }, { name: 'm' }],
           },
-          { parameters: { m: '{{secrets.k}}' } },
+          { inputs: { m: '{{secrets.k}}' } },
           { resolveServerText }
         );
-        expect(variableMap['{{parameters.m}}']).toBe('{{secrets.k}}');
-        expect(scope.parameters).toEqual({ n: '{{secrets.k}}', m: '{{secrets.k}}' });
+        expect(variableMap['{{input.m}}']).toBe('{{secrets.k}}');
+        expect(scope.input).toEqual({ n: '{{secrets.k}}', m: '{{secrets.k}}' });
       });
 
       it('should let an expression run over a constants default', () => {
@@ -215,16 +214,17 @@ describe('library-query.util', () => {
         }
       });
 
-      it('should collect the distinct references from input and parameter defaults only', () => {
+      it('should collect the distinct references from input defaults only', () => {
         expect(
           libraryServerReferences({
             query: '{{constants.fromQuery}}',
-            inputs: [{ name: 'a', defaultValue: '{{constants.region}}/{{ secrets.k }}' }],
-            parameters: [
+            inputs: [
+              { name: 'a', defaultValue: '{{constants.region}}/{{ secrets.k }}' },
               { name: 'b', defaultValue: '{{constants.region}}' },
               { name: 'c', defaultValue: '{{globals.server.x}}' },
               { name: 'd', defaultValue: 5 },
             ],
+            parameters: [{ name: 'e', defaultValue: '{{constants.fromParameter}}' }],
           })
         ).toEqual(['{{constants.region}}', '{{secrets.k}}']);
       });
@@ -232,7 +232,7 @@ describe('library-query.util', () => {
 
     it('should resolve moment in a template', () => {
       const { variableMap } = buildLibraryVariableMap(
-        { query: "{{moment('2026-01-02').format('YYYY')}}", parameters: [] },
+        { query: "{{moment('2026-01-02').format('YYYY')}}", inputs: [] },
         {}
       );
       expect(variableMap["{{moment('2026-01-02').format('YYYY')}}"]).toBe('2026');
@@ -240,54 +240,55 @@ describe('library-query.util', () => {
 
     it('should resolve lodash in a template', () => {
       const { variableMap } = buildLibraryVariableMap(
-        { query: '{{_.sum(parameters.nums)}}', parameters: [{ name: 'nums' }] },
-        { parameters: { nums: [1, 2] } }
+        { query: '{{_.sum(input.nums)}}', inputs: [{ name: 'nums' }] },
+        { inputs: { nums: [1, 2] } }
       );
-      expect(variableMap['{{_.sum(parameters.nums)}}']).toBe(3);
+      expect(variableMap['{{_.sum(input.nums)}}']).toBe(3);
     });
 
     it('should resolve moment and lodash in a default', () => {
-      const { parameters } = buildLibraryVariableMap(
+      const { input } = buildLibraryVariableMap(
         {
           query: 'x',
-          parameters: [
+          inputs: [
             { name: 'year', defaultValue: "{{moment('2026-01-02').format('YYYY')}}" },
             { name: 'total', defaultValue: '{{_.sum([1,2])}}' },
           ],
         },
         {}
       );
-      expect(parameters).toEqual({ year: '2026', total: 3 });
+      expect(input).toEqual({ year: '2026', total: 3 });
     });
 
     it('should resolve a mixed-text default', () => {
-      const { parameters, input } = buildLibraryVariableMap(
+      const { input } = buildLibraryVariableMap(
         {
           query: 'x',
-          parameters: [
+          inputs: [
             { name: 'a', defaultValue: '{{1}}-{{2}}' },
             { name: 'b', defaultValue: 'id-{{1+1}}' },
             { name: 'c', defaultValue: 'row {{({ k: 1 })}}' },
+            { name: 'i', defaultValue: '{{3}}{{4}}' },
           ],
-          inputs: [{ name: 'i', defaultValue: '{{3}}{{4}}' }],
         },
         {}
       );
-      expect(parameters).toEqual({ a: '1-2', b: 'id-2', c: 'row {"k":1}' });
-      expect(input).toEqual({ i: '34' });
+      expect(input).toEqual({ a: '1-2', b: 'id-2', c: 'row {"k":1}', i: '34' });
     });
 
     it('should ignore inherited property names', () => {
-      const { input, parameters } = buildLibraryVariableMap(
+      const { input } = buildLibraryVariableMap(
         {
           query: 'x',
-          inputs: [{ name: 'constructor', defaultValue: 'x' }],
-          parameters: [{ name: 'toString', defaultValue: 'y' }],
+          inputs: [
+            { name: 'constructor', defaultValue: 'x' },
+            { name: 'toString', defaultValue: 'y' },
+          ],
         },
         {}
       );
       expect(input.constructor).toBe('x');
-      expect(parameters.toString).toBe('y');
+      expect(input.toString).toBe('y');
     });
 
     it('should not scan the transformation for templates', () => {
@@ -296,50 +297,25 @@ describe('library-query.util', () => {
           query: '{{input.a}}',
           inputs: [{ name: 'a', defaultValue: '1' }],
           enableTransformation: true,
-          transformation: 'return data.map((r) => ({{parameters.nope.x}}))',
+          transformation: 'return data.map((r) => ({{input.nope.x}}))',
         },
         {}
       );
       expect(Object.keys(variableMap)).toEqual(['{{input.a}}']);
     });
 
-    it('should resolve input and parameters separately', () => {
-      const { variableMap } = buildLibraryVariableMap(
-        {
-          query: 'where r = {{input.region}} limit {{parameters.limit}}',
-          inputs: [{ name: 'region', defaultValue: 'apac' }],
-          parameters: [{ name: 'limit', defaultValue: '10' }],
-        },
-        { inputs: { region: 'emea' }, parameters: {} }
-      );
-      expect(variableMap['{{input.region}}']).toBe('emea');
-      expect(variableMap['{{parameters.limit}}']).toBe('10');
-    });
-
     it('should fall back per name, not per object', () => {
-      const { input, parameters } = buildLibraryVariableMap(
+      const { input } = buildLibraryVariableMap(
         {
-          query: '{{input.region}} {{parameters.limit}}',
-          inputs: [{ name: 'region', defaultValue: 'apac' }],
-          parameters: [{ name: 'limit', defaultValue: '10' }],
+          query: '{{input.region}} {{input.limit}}',
+          inputs: [
+            { name: 'region', defaultValue: 'apac' },
+            { name: 'limit', defaultValue: '10' },
+          ],
         },
-        { parameters: { limit: 5 } }
+        { inputs: { limit: 5 } }
       );
-      expect(input.region).toBe('apac');
-      expect(parameters.limit).toBe(5);
-    });
-
-    it('should not let a parameter named like an input leak across', () => {
-      const { variableMap } = buildLibraryVariableMap(
-        {
-          query: '{{input.x}} {{parameters.x}}',
-          inputs: [{ name: 'x' }],
-          parameters: [{ name: 'x' }],
-        },
-        { inputs: { x: 1 }, parameters: { x: 2 } }
-      );
-      expect(variableMap['{{input.x}}']).toBe(1);
-      expect(variableMap['{{parameters.x}}']).toBe(2);
+      expect(input).toEqual({ region: 'apac', limit: 5 });
     });
 
     it('evaluates a {{…}} input default, so {{5}} becomes the number 5', () => {
@@ -350,13 +326,9 @@ describe('library-query.util', () => {
       expect(input.n).toBe(5);
     });
 
-    it('does not scan the inputs or parameters definitions for templates', () => {
+    it('does not scan the inputs definitions for templates', () => {
       const { variableMap } = buildLibraryVariableMap(
-        {
-          query: 'select 1',
-          inputs: [{ name: 'a', defaultValue: '{{1+1}}' }],
-          parameters: [{ name: 'b', defaultValue: '{{2+2}}' }],
-        },
+        { query: 'select 1', inputs: [{ name: 'a', defaultValue: '{{1+1}}' }] },
         {}
       );
       expect(Object.keys(variableMap)).toEqual([]);
@@ -407,21 +379,6 @@ describe('library-query.util', () => {
     });
   });
 
-  describe('findSiblingNames', () => {
-    it('returns the sibling names, deduped', () => {
-      expect(findSiblingNames('await queries.getA.run(); queries.getB.run({}); queries.getA')).toEqual([
-        'getA',
-        'getB',
-      ]);
-    });
-    it('returns nothing when there are no sibling calls', () => {
-      expect(findSiblingNames('return 1')).toEqual([]);
-    });
-    it('does not match names that merely end in queries', () => {
-      expect(findSiblingNames('myqueries.x; this.queries.y')).toEqual(['y']);
-    });
-  });
-
   describe('assertLibraryTarget', () => {
     const consumer = q({ id: 'c1', kind: 'library' });
     const org = { organizationId: 'o1' };
@@ -430,43 +387,34 @@ describe('library-query.util', () => {
       expect(() =>
         assertLibraryTarget({
           consumer: q({ kind: 'restapi' }),
-          library: q(),
+          library: q({ organizationId: 'o1' }),
           consumerApp: org,
-          libraryApp: { ...org, type: 'query_library' },
         })
       ).toThrow(new BadRequestException('Not a library query'));
     });
 
     it('404s when the library query is gone', () => {
-      expect(() => assertLibraryTarget({ consumer, library: null, consumerApp: org, libraryApp: null })).toThrow(
+      expect(() => assertLibraryTarget({ consumer, library: null, consumerApp: org })).toThrow(
         new NotFoundException('Library query not found')
       );
     });
 
-    it('403s across workspaces', () => {
+    it('404s across workspaces', () => {
       expect(() =>
         assertLibraryTarget({
           consumer,
-          library: q(),
+          library: q({ organizationId: 'o2' }),
           consumerApp: org,
-          libraryApp: { organizationId: 'o2', type: 'query_library' },
         })
-      ).toThrow(ForbiddenException);
-    });
-
-    it('rejects a target that is not inside a query library app', () => {
-      expect(() =>
-        assertLibraryTarget({ consumer, library: q(), consumerApp: org, libraryApp: { ...org, type: 'front-end' } })
-      ).toThrow(new BadRequestException('Not a query library'));
+      ).toThrow(NotFoundException);
     });
 
     it('does not judge the draft kind: a pinned version may still run after the draft changed kind', () => {
       expect(() =>
         assertLibraryTarget({
           consumer,
-          library: q({ kind: 'runpy' }),
+          library: q({ kind: 'runpy', organizationId: 'o1' }),
           consumerApp: org,
-          libraryApp: { ...org, type: 'query_library' },
         })
       ).not.toThrow();
     });
@@ -481,27 +429,6 @@ describe('library-query.util', () => {
     });
   });
 
-  describe('assertSameLibrary', () => {
-    const runjsPrimary = () => q({ kind: 'runjs' });
-
-    it('allows a sibling in the same library version when the primary is RunJS', () => {
-      expect(() => assertSameLibrary(runjsPrimary(), q({ id: 'q2' }))).not.toThrow();
-    });
-    it('403s a sibling when the primary is not RunJS — only library RunJS calls siblings', () => {
-      expect(() => assertSameLibrary(q({ kind: 'postgresql' }), q({ id: 'q2' }))).toThrow(
-        new ForbiddenException('Only RunJS library queries can run other library queries')
-      );
-    });
-    it('403s a query from another library', () => {
-      expect(() => assertSameLibrary(runjsPrimary(), q({ id: 'q2', appVersionId: 'v9' }))).toThrow(
-        new ForbiddenException('Library query is not in the same library')
-      );
-    });
-    it('404s a missing sibling', () => {
-      expect(() => assertSameLibrary(runjsPrimary(), null)).toThrow(NotFoundException);
-    });
-  });
-
   describe('toLibraryRunEntity', () => {
     it('runs the target under the consumer id and permissions, with cloned options', () => {
       const draft = q({ id: 'lib', appVersionId: 'lib-av', appVersion: { id: 'lib-av' }, options: { query: 'draft' } });
@@ -513,7 +440,7 @@ describe('library-query.util', () => {
       } as any);
       const dataSource = { id: 'ds-v2', kind: 'postgresql' } as any;
       const consumer = q({ id: 'c1', appVersionId: 'consumer-av', permissions: [{ id: 'p' }] });
-      const entity = toLibraryRunEntity(target, draft, dataSource, consumer);
+      const entity = toLibraryRunEntity(target, dataSource, consumer);
       expect(entity.id).toBe('c1');
       expect(entity.name).toBe('getCustomer');
       expect(entity.permissions).toEqual([{ id: 'p' }]);
@@ -521,15 +448,15 @@ describe('library-query.util', () => {
       expect(entity.dataSourceId).toBe('ds-v2');
       expect(entity.dataSource).toBe(dataSource);
       // The library lives on its own app version (default branch), not the consumer's.
-      expect(entity.appVersionId).toBe('lib-av');
-      expect(entity.appVersion).toBe(draft.appVersion);
+      expect(entity.appVersionId).toBe('consumer-av');
+      expect(entity.appVersion).toBe(consumer.appVersion);
       expect(entity.options).toEqual({ query: 'x' });
       expect(entity.options).not.toBe(target.options);
     });
   });
 
   describe('pickPinnedVersion', () => {
-    const version = { id: 'ver1', dataQueryId: 'lib' } as any;
+    const version = { id: 'ver1', libraryQueryId: 'lib' } as any;
     it('returns the version of the same library query', () => {
       expect(pickPinnedVersion(version, 'lib')).toBe(version);
     });
@@ -539,18 +466,6 @@ describe('library-query.util', () => {
     it('404s a version that belongs to another library query', () => {
       expect(() => pickPinnedVersion(version, 'other')).toThrow(
         new NotFoundException('Library query version not found')
-      );
-    });
-  });
-
-  describe('latestReleaseOrThrow', () => {
-    it('returns the release', () => {
-      const release = { versionNumber: 2 } as any;
-      expect(latestReleaseOrThrow('helper', release)).toBe(release);
-    });
-    it('400s a sibling that was never released', () => {
-      expect(() => latestReleaseOrThrow('helper', null)).toThrow(
-        new BadRequestException('Library query "helper" has no released version')
       );
     });
   });
@@ -645,23 +560,6 @@ describe('library-query.util', () => {
     });
   });
 
-  describe('toLibrarySiblings', () => {
-    const drafts = [
-      { id: 'a', name: 'a', kind: 'runjs' },
-      { id: 'b', name: 'b', kind: 'postgresql' },
-    ];
-    it('uses the latest version kind for a released sibling and the draft kind otherwise', () => {
-      const versions = [
-        { dataQueryId: 'a', versionNumber: 1, kind: 'runjs' },
-        { dataQueryId: 'a', versionNumber: 2, kind: 'restapi' },
-      ];
-      expect(toLibrarySiblings(drafts, versions)).toEqual([
-        { id: 'a', name: 'a', kind: 'restapi', released: true },
-        { id: 'b', name: 'b', kind: 'postgresql', released: false },
-      ]);
-    });
-  });
-
   describe('libraryVersionName', () => {
     it('is v followed by the number', () => {
       expect(libraryVersionName({ versionNumber: 3 })).toBe('v3');
@@ -729,21 +627,21 @@ describe('library-query.util', () => {
       name: 'getCustomer',
       kind: 'restapi',
       dataSourceId: 'ds1',
-      options: { url: 'http://secret.example/{{parameters.id}}', parameters: [{ name: 'id', defaultValue: '1' }] },
+      options: { url: 'http://secret.example/{{input.id}}', inputs: [{ name: 'id', defaultValue: '1' }] },
       ...over,
     });
     const version = (over: Record<string, any> = {}) => ({
       id: 'v-1',
-      dataQueryId: 'q1',
+      libraryQueryId: 'q1',
       versionNumber: 1,
       kind: 'restapi',
       dataSourceId: 'ds1',
-      options: { url: 'http://secret.example/{{parameters.id}}', parameters: [{ name: 'id', defaultValue: '1' }] },
+      options: { url: 'http://secret.example/{{input.id}}', inputs: [{ name: 'id', defaultValue: '1' }] },
       createdAt: new Date('2026-01-01'),
       ...over,
     });
 
-    it('maps the folder name, draft fields and versions', () => {
+    it('maps the folder name, draft inputs and versions, and leaves legacy parameters out', () => {
       const { queries } = toLibraryCatalog(
         [draft({ options: { inputs: [{ name: 'email' }], parameters: [{ name: 'id', defaultValue: '1' }] } })],
         [version({ kind: 'postgresql' })],
@@ -755,10 +653,11 @@ describe('library-query.util', () => {
           name: 'getCustomer',
           folder: 'billing',
           nextVersionNumber: 2,
+          hasDraft: true,
+          releasedVersionId: null,
           draft: {
             kind: 'restapi',
             inputs: [{ name: 'email' }],
-            parameters: [{ name: 'id', defaultValue: '1' }],
             matchesLatestVersion: false,
           },
           versions: [
@@ -766,13 +665,36 @@ describe('library-query.util', () => {
               id: 'v-1',
               name: 'v1',
               kind: 'postgresql',
-              inputs: [],
-              parameters: [{ name: 'id', defaultValue: '1' }],
+              inputs: [{ name: 'id', defaultValue: '1' }],
               createdAt: new Date('2026-01-01'),
+              environment: null,
+              isReleased: false,
             },
           ],
         },
       ]);
+    });
+
+    it('marks the released version, maps the environment and reports hasDraft', () => {
+      const staging = { id: 'e2', name: 'Staging', priority: 2 };
+      const { queries } = toLibraryCatalog(
+        [draft(), draft({ id: 'q2', name: 'other' })],
+        [
+          version({ id: 'v-1', versionNumber: 1, currentEnvironmentId: 'e2' }),
+          version({ id: 'v-2', versionNumber: 2, currentEnvironmentId: null }),
+        ],
+        new Map(),
+        new Map(),
+        new Map([['e2', staging]]),
+        new Map([['q1', { hasDraft: false, releasedVersionId: 'v-1' }]])
+      );
+      const [q1, q2] = queries;
+      expect(q1.versions.map((v) => [v.name, v.isReleased, v.environment])).toEqual([
+        ['v2', false, null],
+        ['v1', true, staging],
+      ]);
+      expect(q1).toMatchObject({ hasDraft: false, releasedVersionId: 'v-1' });
+      expect(q2).toMatchObject({ hasDraft: true, releasedVersionId: null });
     });
 
     it('counts soft-deleted versions in nextVersionNumber so a number is never reused', () => {
@@ -877,96 +799,125 @@ describe('library-query.util', () => {
     });
   });
 
-  describe('toLibraryPins / libraryReleaseBlock', () => {
+  describe('toLibraryPins / libraryReleaseBlock / libraryPromoteBlock', () => {
     const row = (over: Record<string, any> = {}) => ({
       consumerQueryName: 'customerQuery',
       libraryQueryName: 'getCustomer',
-      libraryAppVersionId: 'lib-av',
-      pinnedVersionNumber: 1 as number | null,
-      latestVersionNumber: 3 as number | null,
-      pinnedKind: 'runjs' as string | null,
-      pinnedOptions: { code: 'return queries.getOrders.run()' } as unknown,
+      pinnedVersionNumber: 2 as number | null,
+      releasedVersionNumber: 2 as number | null,
+      pinnedEnvironmentName: 'staging' as string | null,
+      pinnedEnvironmentPriority: 2 as number | null,
       ...over,
     });
-    const siblings = (...entries: [string, number | null][]) =>
-      entries.map(([name, latestVersionNumber]) => ({ libraryAppVersionId: 'lib-av', name, latestVersionNumber }));
+    const DRAFT = (consumer: string, library: string) =>
+      `Library query "${consumer}" is on the draft of "${library}". Pin a saved version.`;
 
-    it('lists the pinned version, the latest version and the versions siblings run', () => {
-      const pins = toLibraryPins([row()], siblings(['getOrders', 8], ['other', 2]));
-      expect(pins).toEqual([
+    it('lists the pinned version, the released version and the pinned environment', () => {
+      expect(toLibraryPins([row()])).toEqual([
         {
           consumerQueryName: 'customerQuery',
           libraryQueryName: 'getCustomer',
-          pinnedVersion: 'v1',
-          latestVersion: 'v3',
-          siblings: [{ name: 'getOrders', runsVersion: 'v8' }],
+          pinnedVersion: 'v2',
+          releasedVersion: 'v2',
+          pinnedEnvironment: { name: 'staging', priority: 2 },
         },
       ]);
     });
 
-    it('ignores sibling names that match no library query', () => {
-      const [pin] = toLibraryPins([row({ pinnedOptions: { code: 'queries.nope.run()' } })], siblings(['getOrders', 8]));
-      expect(pin.siblings).toEqual([]);
+    it('reports a pin with no version row as draft with no environment', () => {
+      const [pin] = toLibraryPins([
+        row({ pinnedVersionNumber: null, pinnedEnvironmentName: null, pinnedEnvironmentPriority: null }),
+      ]);
+      expect(pin).toMatchObject({ pinnedVersion: 'draft', releasedVersion: 'v2', pinnedEnvironment: null });
     });
 
-    it('reports a pin with no version row as draft and skips the sibling scan', () => {
-      const [pin] = toLibraryPins(
-        [row({ pinnedVersionNumber: null, pinnedOptions: null })],
-        siblings(['getOrders', 8])
-      );
-      expect(pin).toMatchObject({ pinnedVersion: 'draft', latestVersion: 'v3', siblings: [] });
+    it('falls back to "unknown query" and no released version when the library query is gone', () => {
+      const [pin] = toLibraryPins([
+        row({ libraryQueryName: null, pinnedVersionNumber: null, releasedVersionNumber: null }),
+      ]);
+      expect(pin).toMatchObject({ libraryQueryName: 'unknown query', pinnedVersion: 'draft', releasedVersion: null });
     });
 
-    it('falls back to "unknown query" and no latest version when the library query is gone', () => {
-      const [pin] = toLibraryPins(
-        [row({ libraryQueryName: null, pinnedVersionNumber: null, latestVersionNumber: null })],
-        []
-      );
-      expect(pin).toMatchObject({ libraryQueryName: 'unknown query', pinnedVersion: 'draft', latestVersion: null });
+    describe('libraryReleaseBlock', () => {
+      it('passes a pin on the released version', () => {
+        expect(libraryReleaseBlock(toLibraryPins([row()]))).toBeNull();
+      });
+
+      it('blocks a pin on an older saved version', () => {
+        const sentence = 'Library query "customerQuery" uses "getCustomer" v1, but the released version is v2.';
+        expect(libraryReleaseBlock(toLibraryPins([row({ pinnedVersionNumber: 1 })]))).toEqual({
+          error: `Release blocked - ${sentence}`,
+          details: sentence,
+        });
+      });
+
+      it('blocks a draft pin', () => {
+        const sentence = DRAFT('customerQuery', 'getCustomer');
+        expect(libraryReleaseBlock(toLibraryPins([row({ pinnedVersionNumber: null })]))).toEqual({
+          error: `Release blocked - ${sentence}`,
+          details: sentence,
+        });
+      });
+
+      it('names "none" when the query has no released version', () => {
+        const block = libraryReleaseBlock(toLibraryPins([row({ releasedVersionNumber: null })]));
+        expect(block.details).toBe(
+          'Library query "customerQuery" uses "getCustomer" v2, but the released version is none.'
+        );
+      });
+
+      it('counts and lists several offenders, once each', () => {
+        const block = libraryReleaseBlock(
+          toLibraryPins([
+            row({ consumerQueryName: 'a', pinnedVersionNumber: null }),
+            row({ consumerQueryName: 'b', libraryQueryName: 'getOrders', pinnedVersionNumber: 1 }),
+            row({ consumerQueryName: 'c' }),
+          ])
+        );
+        expect(block.error.startsWith('Release blocked - 2 library queries need attention. ')).toBe(true);
+        expect(block.details).toBe(
+          [DRAFT('a', 'getCustomer'), 'Library query "b" uses "getOrders" v1, but the released version is v2.'].join(
+            ' '
+          )
+        );
+      });
     });
 
-    it('only scans RunJS versions for siblings', () => {
-      const [pin] = toLibraryPins([row({ pinnedKind: 'postgresql' })], siblings(['getOrders', 8]));
-      expect(pin.siblings).toEqual([]);
-    });
+    describe('libraryPromoteBlock', () => {
+      it('passes a pin already in the target environment', () => {
+        expect(libraryPromoteBlock(toLibraryPins([row()]), 'staging', 2)).toBeNull();
+      });
 
-    it('blocks nothing when every pin is released', () => {
-      expect(libraryReleaseBlock(toLibraryPins([row()], siblings(['getOrders', 8])))).toBeNull();
-    });
+      it('blocks a pin still below the target environment', () => {
+        const pins = toLibraryPins([row({ pinnedEnvironmentName: 'development', pinnedEnvironmentPriority: 1 })]);
+        const sentence = 'Library query "getCustomer" version "v2" not promoted to staging yet.';
+        expect(libraryPromoteBlock(pins, 'staging', 2)).toEqual({
+          error: `Promote blocked - ${sentence}`,
+          details: sentence,
+        });
+      });
 
-    it('words a single draft offender', () => {
-      const pins = toLibraryPins([row({ pinnedVersionNumber: null })], []);
-      const sentence =
-        'Library query "customerQuery" is not on a released version. Pick a released version of "getCustomer".';
-      expect(libraryReleaseBlock(pins)).toEqual({ error: `Release blocked - ${sentence}`, details: sentence });
-    });
+      it('blocks a saved pin with no environment', () => {
+        const pins = toLibraryPins([row({ pinnedEnvironmentName: null, pinnedEnvironmentPriority: null })]);
+        expect(libraryPromoteBlock(pins, 'staging', 2).details).toBe(
+          'Library query "getCustomer" version "v2" not promoted to staging yet.'
+        );
+      });
 
-    it('words an unreleased sibling offender', () => {
-      const pins = toLibraryPins([row()], siblings(['getOrders', null]));
-      const sentence =
-        'Library query "getCustomer" v1 calls "getOrders", which has no released version. Release "getOrders" first.';
-      expect(libraryReleaseBlock(pins)).toEqual({ error: `Release blocked - ${sentence}`, details: sentence });
-    });
+      it('blocks a draft pin', () => {
+        const pins = toLibraryPins([row({ pinnedVersionNumber: null })]);
+        expect(libraryPromoteBlock(pins, 'staging', 2).details).toBe(DRAFT('customerQuery', 'getCustomer'));
+      });
 
-    it('counts and lists several offenders, once each', () => {
-      const pins = toLibraryPins(
-        [
+      it('counts several offenders', () => {
+        const pins = toLibraryPins([
           row({ consumerQueryName: 'a', pinnedVersionNumber: null }),
-          row({ consumerQueryName: 'b', libraryQueryName: 'getOrders', pinnedVersionNumber: null }),
-          row({ consumerQueryName: 'c' }),
-          row({ consumerQueryName: 'd' }),
-        ],
-        siblings(['getOrders', null])
-      );
-      const block = libraryReleaseBlock(pins);
-      expect(block.error.startsWith('Release blocked - 3 library queries need a released version. ')).toBe(true);
-      expect(block.details).toBe(
-        [
-          'Library query "a" is not on a released version. Pick a released version of "getCustomer".',
-          'Library query "b" is not on a released version. Pick a released version of "getOrders".',
-          'Library query "getCustomer" v1 calls "getOrders", which has no released version. Release "getOrders" first.',
-        ].join(' ')
-      );
+          row({ libraryQueryName: 'getOrders', pinnedEnvironmentName: 'development', pinnedEnvironmentPriority: 1 }),
+          row(),
+        ]);
+        const block = libraryPromoteBlock(pins, 'staging', 2);
+        expect(block.error.startsWith('Promote blocked - 2 library queries need attention. ')).toBe(true);
+      });
     });
   });
   describe('library usage and delete guards', () => {
@@ -979,6 +930,7 @@ describe('library-query.util', () => {
       queryName: 'getCustomerLib',
       libraryQueryId: 'lq1',
       versionName: 'v2',
+      pinnedEnvironment: null,
       ...over,
     });
     const moduleConsumer = consumer({
@@ -1001,13 +953,27 @@ describe('library-query.util', () => {
       it('names the app version and the pin on each query, and groups queries by app', () => {
         const usage = toLibraryUsage([
           consumer({ appVersionName: 'v1', versionName: 'draft' }),
-          consumer({ queryId: 'c3', queryName: 'other', appVersionName: 'v2' }),
+          consumer({ queryId: 'c3', queryName: 'other', appVersionName: 'v2', pinnedEnvironment: 'Staging' }),
         ]);
         expect(usage.modules).toEqual([]);
         expect(usage.apps).toHaveLength(1);
         expect(usage.apps[0].queries).toEqual([
-          { id: 'c1', name: 'getCustomerLib', appVersionName: 'v1', libraryQueryId: 'lq1', versionName: 'draft' },
-          { id: 'c3', name: 'other', appVersionName: 'v2', libraryQueryId: 'lq1', versionName: 'v2' },
+          {
+            id: 'c1',
+            name: 'getCustomerLib',
+            appVersionName: 'v1',
+            libraryQueryId: 'lq1',
+            versionName: 'draft',
+            pinnedEnvironment: null,
+          },
+          {
+            id: 'c3',
+            name: 'other',
+            appVersionName: 'v2',
+            libraryQueryId: 'lq1',
+            versionName: 'v2',
+            pinnedEnvironment: 'Staging',
+          },
         ]);
       });
     });
@@ -1035,63 +1001,6 @@ describe('library-query.util', () => {
         expect(message).toBe(
           'Used by 1 app(s) and 1 module(s): Sales CRM · v1, Sales CRM · v2, Address block · v3. Remove it from those first.'
         );
-      });
-    });
-
-    describe('calledByReleasedVersion', () => {
-      const rows = [
-        { queryId: 'x', queryName: 'formatAddress', versionNumber: 1, code: 'return queries.getCustomer.run()' },
-        { queryId: 'y', queryName: 'other', versionNumber: 1, code: 'return queries.getCustomerLater.run()' },
-      ];
-
-      it('finds the released caller of a query by exact name', () => {
-        expect(calledByReleasedVersion('getCustomer', rows)).toEqual({ caller: 'formatAddress', versionNumber: 1 });
-        expect(calledByReleasedVersion('getCust', rows)).toBeNull();
-        expect(calledByReleasedVersion('unused', rows)).toBeNull();
-      });
-
-      it('names the oldest calling version, since that is the one to retire first', () => {
-        const several = [{ ...rows[0], versionNumber: 3 }, rows[0], { ...rows[0], versionNumber: 2 }];
-        expect(calledByReleasedVersion('getCustomer', several)).toEqual({ caller: 'formatAddress', versionNumber: 1 });
-      });
-
-      it('ignores a query calling itself when asked to', () => {
-        expect(
-          calledByReleasedVersion('formatAddress', [{ ...rows[0], code: 'queries.formatAddress' }], 'x')
-        ).toBeNull();
-        expect(
-          calledByReleasedVersion('formatAddress', [{ ...rows[0], code: 'queries.formatAddress' }])
-        ).not.toBeNull();
-      });
-
-      it('copes with a missing code', () => {
-        expect(calledByReleasedVersion('getCustomer', [{ ...rows[0], code: null }])).toBeNull();
-      });
-    });
-
-    describe('assertNotCalledByReleasedVersions', () => {
-      const managerReturning = (rows: unknown[]) => ({ query: jest.fn().mockResolvedValue(rows) }) as any;
-
-      it('should refuse when a released version calls the query', async () => {
-        const manager = managerReturning([
-          { queryId: 'x', queryName: 'formatAddress', versionNumber: 1, code: 'queries.getCustomer.run()' },
-        ]);
-        await expect(assertNotCalledByReleasedVersions('lav1', 'getCustomer', manager)).rejects.toThrow(
-          new BadRequestException(
-            "getCustomer is called by formatAddress v1. Release a version of formatAddress that doesn't call it, then delete the older versions that do."
-          )
-        );
-        // Only live versions of the library's own queries are read.
-        const [sql, params] = manager.query.mock.calls[0];
-        expect(sql).toContain('deleted_at IS NULL');
-        expect(params[0]).toBe('lav1');
-      });
-
-      it('passes when nothing released calls it', async () => {
-        const manager = managerReturning([
-          { queryId: 'x', queryName: 'formatAddress', versionNumber: 1, code: 'queries.other.run()' },
-        ]);
-        await expect(assertNotCalledByReleasedVersions('lav1', 'getCustomer', manager)).resolves.toBeUndefined();
       });
     });
   });

@@ -12,8 +12,7 @@ const pin = (overrides) => ({
   consumerQueryName: 'getCustomer',
   libraryQueryName: 'customerLookup',
   pinnedVersion: 'v1',
-  latestVersion: 'v1',
-  siblings: [],
+  releasedVersion: 'v1',
   ...overrides,
 });
 const renderDialog = (props) =>
@@ -22,38 +21,40 @@ const renderDialog = (props) =>
   );
 
 describe('ReleaseConfirmation library notices', () => {
-  it('warns when a query is pinned to an older released version', async () => {
+  it('warns when a query is not pinned to the released version', async () => {
     server.use(
-      http.get(pinsUrl, () => HttpResponse.json({ pins: [pin({ pinnedVersion: 'v1', latestVersion: 'v3' })] }))
+      http.get(pinsUrl, () => HttpResponse.json({ pins: [pin({ pinnedVersion: 'v1', releasedVersion: 'v3' })] }))
     );
     renderDialog();
 
-    expect(await screen.findByText('getCustomer uses customerLookup v1; v3 is available.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('getCustomer uses customerLookup v1; the released version is v3.')
+    ).toBeInTheDocument();
   });
 
-  it('does not warn for pins on the latest version or on draft', async () => {
-    server.use(
-      http.get(pinsUrl, () =>
-        HttpResponse.json({
-          pins: [pin(), pin({ consumerQueryName: 'other', pinnedVersion: 'draft', latestVersion: 'v3' })],
-        })
-      )
-    );
+  it('does not warn for a pin on the released version', async () => {
+    server.use(http.get(pinsUrl, () => HttpResponse.json({ pins: [pin()] })));
     renderDialog();
 
     await waitFor(() => expect(screen.getByText(/Are you sure you want to release/)).toBeInTheDocument());
     expect(screen.queryByTestId('library-release-notices')).not.toBeInTheDocument();
   });
 
-  it('says which version a called sibling will run', async () => {
+  it('warns for a draft pin and for a query with no released version', async () => {
     server.use(
       http.get(pinsUrl, () =>
-        HttpResponse.json({ pins: [pin({ siblings: [{ name: 'formatName', runsVersion: 'v2' }] })] })
+        HttpResponse.json({
+          pins: [
+            pin({ consumerQueryName: 'a', pinnedVersion: 'draft', releasedVersion: 'v3' }),
+            pin({ consumerQueryName: 'b', releasedVersion: null }),
+          ],
+        })
       )
     );
     renderDialog();
 
-    expect(await screen.findByText('customerLookup v1 calls formatName; it will run v2.')).toBeInTheDocument();
+    expect(await screen.findByText('a uses customerLookup draft; the released version is v3.')).toBeInTheDocument();
+    expect(screen.getByText('b uses customerLookup v1; the released version is none.')).toBeInTheDocument();
   });
 
   it('shows no notice section when there are no pins', async () => {
@@ -77,12 +78,12 @@ describe('ReleaseConfirmation library notices', () => {
 
   it("drops the previous version's notices when the version changes or the dialog closes", async () => {
     server.use(
-      http.get(pinsUrl, () => HttpResponse.json({ pins: [pin({ pinnedVersion: 'v1', latestVersion: 'v3' })] })),
+      http.get(pinsUrl, () => HttpResponse.json({ pins: [pin({ pinnedVersion: 'v1', releasedVersion: 'v3' })] })),
       http.get(`${config.apiUrl}/apps/app1/versions/ver2/library-pins`, () => HttpResponse.json({ pins: [] }))
     );
     const props = { show: true, appId: 'app1', versionId: 'ver1', onClose: jest.fn(), onConfirm: jest.fn() };
     const { rerender } = render(<ReleaseConfirmation {...props} />);
-    const old = 'getCustomer uses customerLookup v1; v3 is available.';
+    const old = 'getCustomer uses customerLookup v1; the released version is v3.';
     expect(await screen.findByText(old)).toBeInTheDocument();
 
     rerender(<ReleaseConfirmation {...props} versionId="ver2" />);
@@ -95,24 +96,22 @@ describe('ReleaseConfirmation library notices', () => {
     expect(screen.queryByText(old)).not.toBeInTheDocument();
   });
 
-  it('lists each notice once, including a pin that is out of date and has siblings', async () => {
-    const sibling = { name: 'formatName', runsVersion: 'v2' };
+  it('lists each notice once', async () => {
     server.use(
       http.get(pinsUrl, () =>
         HttpResponse.json({
           pins: [
-            pin({ consumerQueryName: 'a', siblings: [sibling] }),
-            pin({ consumerQueryName: 'b', siblings: [sibling] }),
-            pin({ consumerQueryName: 'c', libraryQueryName: 'other', latestVersion: 'v4', siblings: [sibling] }),
+            pin({ consumerQueryName: 'a', releasedVersion: 'v3' }),
+            pin({ consumerQueryName: 'a', releasedVersion: 'v3' }),
+            pin({ consumerQueryName: 'c', libraryQueryName: 'other', releasedVersion: 'v4' }),
           ],
         })
       )
     );
     renderDialog();
 
-    expect(await screen.findByText('c uses other v1; v4 is available.')).toBeInTheDocument();
-    expect(screen.getAllByText('customerLookup v1 calls formatName; it will run v2.')).toHaveLength(1);
-    expect(screen.getByText('other v1 calls formatName; it will run v2.')).toBeInTheDocument();
-    expect(screen.getAllByRole('listitem')).toHaveLength(3);
+    expect(await screen.findByText('c uses other v1; the released version is v4.')).toBeInTheDocument();
+    expect(screen.getAllByText('a uses customerLookup v1; the released version is v3.')).toHaveLength(1);
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
   });
 });

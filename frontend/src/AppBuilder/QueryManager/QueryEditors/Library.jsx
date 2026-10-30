@@ -1,10 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Select from '@/_ui/Select';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import { dataqueryService } from '@/_services';
-import { getWorkspaceId } from '@/_helpers/utils';
+import { libraryQueryService } from '@/_services';
 import { LIBRARY_DRAFT } from '@/AppBuilder/_utils/libraryQuery';
-import { findQueryLibrary, libraryAppUrl } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
+import { queryLibraryUrl } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
 
 const NO_FOLDER = 'No folder';
 const DRAFT_LABEL = 'Draft (testing only)';
@@ -22,12 +21,17 @@ function groupByFolder(queries) {
     .map(([label, options]) => ({ label, options }));
 }
 
-// The definition (kind, inputs, parameters) a pin points at: the draft, or one released version.
+// The definition (kind, inputs) a pin points at: the draft, or one released version.
 const definitionOf = (query, pin) =>
   pin === LIBRARY_DRAFT ? query?.draft : query?.versions?.find((version) => version.id === pin);
 
+const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1);
+const versionLabel = (version) =>
+  [version.name, version.environment && capitalize(version.environment.name), version.isReleased && 'Released']
+    .filter(Boolean)
+    .join(' · ');
+
 export function Library({ options = {}, optionsChanged, darkMode }) {
-  const [library, setLibrary] = useState(null);
   const [queries, setQueries] = useState(null); // null while loading
   const [loadFailed, setLoadFailed] = useState(false);
 
@@ -35,10 +39,8 @@ export function Library({ options = {}, optionsChanged, darkMode }) {
     let cancelled = false;
     (async () => {
       try {
-        const found = await findQueryLibrary();
-        const catalog = found ? await dataqueryService.getLibraryCatalog(found.versionId) : null;
+        const catalog = await libraryQueryService.getCatalog();
         if (cancelled) return;
-        setLibrary(found);
         setQueries(catalog?.queries ?? []);
       } catch {
         if (!cancelled) setLoadFailed(true);
@@ -53,13 +55,13 @@ export function Library({ options = {}, optionsChanged, darkMode }) {
   // A missing or empty pin (also V1-era rows) means draft.
   const pin = options.libraryQueryVersionId || LIBRARY_DRAFT;
   const definition = definitionOf(query, pin);
-  const latest = query?.versions?.[0];
-  const hasNewerVersion = !!latest && pin !== LIBRARY_DRAFT && !!definition && latest.id !== pin;
+  const released = query?.versions?.find((version) => version.id === query.releasedVersionId);
+  const showReleasedBadge = !!released && pin !== LIBRARY_DRAFT && !!definition && released.id !== pin;
 
   const groupedQueries = useMemo(() => groupByFolder(queries ?? []), [queries]);
   const queryOptions = groupedQueries.flatMap((group) => group.options);
   const versionOptions = [
-    ...(query?.versions ?? []).map((version) => ({ value: version.id, label: version.name })),
+    ...(query?.versions ?? []).map((version) => ({ value: version.id, label: versionLabel(version) })),
     { value: LIBRARY_DRAFT, label: DRAFT_LABEL },
   ];
 
@@ -67,12 +69,6 @@ export function Library({ options = {}, optionsChanged, darkMode }) {
   const select = (nextQuery, nextPin) => {
     const next = definitionOf(nextQuery, nextPin);
     if (!next) return;
-    // A parameter value the builder hasn't changed from the previous definition's default follows the new one.
-    const parameters = (next.parameters ?? []).map((parameter) => {
-      const current = options.parameters?.find((p) => p.name === parameter.name);
-      const previousDefault = definition?.parameters?.find((p) => p.name === parameter.name)?.defaultValue;
-      return current && current.defaultValue !== previousDefault ? { ...parameter, ...current } : parameter;
-    });
     const inputs = Object.fromEntries((next.inputs ?? []).map(({ name }) => [name, options.inputs?.[name] ?? '']));
     optionsChanged({
       ...options,
@@ -80,13 +76,12 @@ export function Library({ options = {}, optionsChanged, darkMode }) {
       libraryQueryVersionId: nextPin,
       libraryKind: next.kind,
       inputs,
-      parameters,
     });
   };
 
   const pickQuery = (queryId) => {
     const next = queries.find((q) => q.id === queryId);
-    select(next, next.versions?.[0]?.id ?? LIBRARY_DRAFT);
+    select(next, (next.versions?.find((v) => v.isReleased) ?? next.versions?.[0])?.id ?? LIBRARY_DRAFT);
   };
 
   const setInput = (name, value) =>
@@ -122,8 +117,8 @@ export function Library({ options = {}, optionsChanged, darkMode }) {
             darkMode={darkMode}
           />
         </div>
-        {library && (
-          <a href={libraryAppUrl(`/${getWorkspaceId()}/apps/${library.slug}`)} target="_blank" rel="noreferrer">
+        {queries && (
+          <a href={queryLibraryUrl()} target="_blank" rel="noreferrer">
             Open in library
           </a>
         )}
@@ -140,14 +135,14 @@ export function Library({ options = {}, optionsChanged, darkMode }) {
               darkMode={darkMode}
             />
           </div>
-          {hasNewerVersion && (
+          {showReleasedBadge && (
             <button
               type="button"
               className="tw-font-body-small tw-text-text-accent tw-bg-transparent tw-border-0 tw-p-0"
-              onClick={() => select(query, latest.id)}
+              onClick={() => select(query, released.id)}
               data-cy="library-newer-version"
             >
-              {`${latest.name} available`}
+              {`${released.name} released`}
             </button>
           )}
         </div>

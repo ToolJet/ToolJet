@@ -1,11 +1,15 @@
+import '@/test/setupMsw';
+import { http, HttpResponse } from 'msw';
+import { server } from '@/test/msw/server';
+import useStore from '@/AppBuilder/_stores/store';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { VirtuosoMockContext } from 'react-virtuoso';
 import config from 'config';
 import { isQueryLibraryEnabled } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
-import DataSourcePicker from '../Components/DataSourcePicker';
-import DataSourceSelect from '../Components/DataSourceSelect';
+import DataSourcePicker from '../../Components/DataSourcePicker';
+import DataSourceSelect from '../../Components/DataSourceSelect';
 import { isQueryRunnable } from '@/_helpers/utils';
 
 // fetchEdition() reads config.TOOLJET_EDITION on every call, so flipping it flips the edition.
@@ -14,23 +18,20 @@ afterAll(() => {
   config.TOOLJET_EDITION = originalEdition;
 });
 
-// The pickers only read a handful of store fields; a plain state object is enough.
-const mockState = {
-  dataSources: [],
-  globalDataSources: [
-    { id: 's1', kind: 'restapi', name: 'restapidefault', type: 'static' },
-    { id: 's2', kind: 'library', name: 'librarydefault', type: 'static' },
-  ],
-  sampleDataSource: null,
-  currentVersionId: 'v1',
-  getAppType: () => 'front-end',
-  dataQuery: { createDataQuery: jest.fn() },
-  queryPanel: { setPreviewData: jest.fn() },
-};
-jest.mock('@/AppBuilder/_stores/store', () => ({
-  __esModule: true,
-  default: (selector) => selector(mockState),
-}));
+const sources = [
+  { id: 's1', kind: 'restapi', name: 'restapidefault', type: 'static' },
+  { id: 's2', kind: 'library', name: 'librarydefault', type: 'static' },
+];
+beforeEach(async () => {
+  server.use(
+    http.get(`${config.apiUrl}/data-sources/workspace/environments/development/versions/version`, () =>
+      HttpResponse.json({ data_sources: sources })
+    )
+  );
+  await new Promise((resolve) =>
+    useStore.getState().fetchGlobalDataSources('workspace', 'version', 'development', { onSuccess: resolve })
+  );
+});
 
 const wrap = (ui) =>
   render(

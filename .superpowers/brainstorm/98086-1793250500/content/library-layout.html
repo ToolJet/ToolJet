@@ -1,0 +1,84 @@
+<h2>Query library screen, without the app header</h2>
+<p class="subtitle">Everything you have today (query list, editor, "Used by" panel) stays. The difference is what frames it and how you get back to the dashboard.</p>
+
+<style>
+  .shot{display:flex;height:260px;border:1px solid #d0d5dd;border-radius:6px;overflow:hidden;font-size:11px;background:#fff;color:#344054}
+  .rail{width:28px;background:#f2f4f7;border-right:1px solid #e4e7ec;display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:8px}
+  .rail i{width:14px;height:14px;border-radius:3px;background:#d0d5dd;display:block}
+  .rail i.on{background:#4368e3}
+  .list{width:110px;border-right:1px solid #e4e7ec;padding:6px;display:flex;flex-direction:column;gap:4px}
+  .list .row{padding:3px 4px;border-radius:3px}
+  .list .row.sel{background:#eef2ff}
+  .list .top{display:flex;justify-content:space-between;color:#667085;margin-bottom:4px}
+  .ed{flex:1;display:flex;flex-direction:column}
+  .edbar{display:flex;gap:6px;align-items:center;padding:6px;border-bottom:1px solid #e4e7ec}
+  .pill{border:1px solid #d0d5dd;border-radius:3px;padding:1px 5px}
+  .code{margin:8px;flex:1;border:1px solid #e4e7ec;border-radius:3px;padding:6px;font-family:monospace;color:#4368e3}
+  .used{width:90px;border-left:1px solid #e4e7ec;padding:6px}
+  .tabs{display:flex;gap:10px;padding:6px 8px;border-bottom:1px solid #e4e7ec;color:#667085}
+  .tabs b{color:#4368e3}
+  .back{color:#4368e3}
+  .hdr{height:22px;border-bottom:1px solid #e4e7ec;display:flex;align-items:center;gap:6px;padding:0 8px;color:#98a2b3;text-decoration:line-through}
+</style>
+
+<div class="section">
+  <div class="label">Today</div>
+  <div class="mockup"><div class="mockup-body">
+    <div style="border:1px solid #d0d5dd;border-radius:6px;overflow:hidden">
+      <div class="hdr">» Demo-query-library ☁ (app header, being removed)</div>
+      <div class="shot" style="border:0;border-radius:0;height:180px">
+        <div class="list"><div class="top"><span>+</span><span>⌕</span></div><div class="row">restapi1</div><div class="row">New folder</div><div class="row sel">runjs1</div></div>
+        <div class="ed"><div class="edbar"><span class="pill">runjs1</span><span class="pill">v2 · Development</span><span>Setup</span><span class="pill">Preview</span></div><div class="code">console.log('brilliant')</div></div>
+        <div class="used"><b>Used by apps (1)</b><br>query-library-test<br><br><b>Used by modules (0)</b></div>
+      </div>
+    </div>
+  </div></div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Inside the dashboard's left rail</h3>
+      <p>The workspace icon rail stays on the left, like on the Apps page, so you go back with one click. Nothing on top.</p>
+      <div class="shot">
+        <div class="rail"><i></i><i class="on"></i><i></i><i></i><i></i></div>
+        <div class="list"><div class="top"><span>Query library</span><span>+ ⌕</span></div><div class="row">restapi1</div><div class="row">New folder</div><div class="row sel">runjs1</div></div>
+        <div class="ed"><div class="edbar"><span class="pill">runjs1</span><span class="pill">v2 · Development</span><span>Setup</span><span class="pill">Preview</span></div><div class="code">console.log('brilliant')</div></div>
+        <div class="used"><b>Used by apps (1)</b><br>query-library-test<br><br><b>Used by modules (0)</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Keep the Apps / Modules / Query library tabs</h3>
+      <p>Rail plus the same three tabs you clicked to get here, so the library sits right next to Apps and Modules.</p>
+      <div class="shot">
+        <div class="rail"><i></i><i class="on"></i><i></i><i></i><i></i></div>
+        <div style="flex:1;display:flex;flex-direction:column">
+          <div class="tabs"><span>Apps</span><span>Modules</span><b>Query library</b></div>
+          <div style="flex:1;display:flex">
+            <div class="list"><div class="top"><span>+</span><span>⌕</span></div><div class="row">restapi1</div><div class="row">New folder</div><div class="row sel">runjs1</div></div>
+            <div class="ed"><div class="edbar"><span class="pill">runjs1</span><span class="pill">v2 · Dev</span><span class="pill">Preview</span></div><div class="code">console.log('brilliant')</div></div>
+            <div class="used"><b>Used by apps (1)</b><br>query-library-test</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Full screen, small back link</h3>
+      <p>No rail and no header. Only a "← Dashboard" link above the query list. The most room for the editor.</p>
+      <div class="shot">
+        <div class="list"><div class="top"><span class="back">← Dashboard</span></div><div class="top"><span>Query library</span><span>+ ⌕</span></div><div class="row">restapi1</div><div class="row">New folder</div><div class="row sel">runjs1</div></div>
+        <div class="ed"><div class="edbar"><span class="pill">runjs1</span><span class="pill">v2 · Development</span><span>Setup</span><span class="pill">Preview</span></div><div class="code">console.log('brilliant')</div></div>
+        <div class="used"><b>Used by apps (1)</b><br>query-library-test<br><br><b>Used by modules (0)</b></div>
+      </div>
+    </div>
+  </div>
+</div>

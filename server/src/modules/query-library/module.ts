@@ -1,0 +1,58 @@
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { AppScopedThrottlerGuard } from '@modules/data-queries/throttler/app-scoped-throttler.guard';
+import { DataQueriesUtilService as BaseRuntime } from '@modules/data-queries/util.service';
+import { AppEnvironmentsModule } from '@modules/app-environments/module';
+import { AppPermissionsModule } from '@modules/app-permissions/module';
+import { VersionRepository } from '@modules/versions/repository';
+import { DynamicModule } from '@nestjs/common';
+import { SubModule } from '@modules/app/sub-module';
+import { DataSourcesModule } from '@modules/data-sources/module';
+import { DataSourcesRepository } from '@modules/data-sources/repository';
+import { QueryLibraryService as BaseService } from './service';
+import { QueryLibraryRepository } from './repository';
+import { QueryLibraryAccessGuard } from './guards/query-library-access.guard';
+import { ValidateLibraryQueryGuard } from './guards/validate-library-query.guard';
+import { ValidateLibraryDataSourceGuard } from './guards/validate-library-data-source.guard';
+import { LibraryLifecycleService } from './lifecycle.service';
+export class QueryLibraryModule extends SubModule {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport = false): Promise<DynamicModule> {
+    const { QueryLibraryController, QueryLibraryService } = await this.getProviders(configs, 'query-library', [
+      'controller',
+      'service',
+    ]);
+    const { DataQueriesUtilService } = await this.getProviders(configs, 'data-queries', ['util.service']);
+    return {
+      module: QueryLibraryModule,
+      imports: [
+        await DataSourcesModule.register(configs),
+        await AppEnvironmentsModule.register(configs),
+        await AppPermissionsModule.register(configs),
+        ThrottlerModule.forRootAsync({
+          imports: [ConfigModule],
+          inject: [ConfigService],
+          useFactory: (config: ConfigService) => [
+            {
+              ttl: Number(config.get('DATA_QUERY_RUN_TTL') ?? 1000),
+              limit: Number(config.get('DATA_QUERY_RUN_LIMIT') ?? 50),
+            },
+          ],
+        }),
+      ],
+      providers: [
+        { provide: BaseService, useClass: QueryLibraryService },
+        { provide: BaseRuntime, useClass: DataQueriesUtilService },
+        VersionRepository,
+        AppScopedThrottlerGuard,
+        LibraryLifecycleService,
+        QueryLibraryRepository,
+        DataSourcesRepository,
+        QueryLibraryAccessGuard,
+        ValidateLibraryQueryGuard,
+        ValidateLibraryDataSourceGuard,
+      ],
+      controllers: isMainImport ? [QueryLibraryController] : [],
+      exports: [BaseService, QueryLibraryRepository, LibraryLifecycleService],
+    };
+  }
+}

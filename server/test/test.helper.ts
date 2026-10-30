@@ -20,3 +20,5 @@ export * from './helpers/workflows';
 
 // --- Custom Component Libraries: entity factories, PAT minting, upload fixtures ---
 export * from './helpers/custom-component-libraries';
+
+export * from './helpers/query-library.helper';

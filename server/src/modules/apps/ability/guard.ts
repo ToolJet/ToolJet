@@ -16,7 +16,6 @@ export class FeatureAbilityGuard extends AbilityGuard {
           resourceType: MODULES.APP,
         };
       case APP_TYPES.MODULE:
-      case APP_TYPES.QUERY_LIBRARY:
         return {
           resourceType: MODULES.MODULES,
         };

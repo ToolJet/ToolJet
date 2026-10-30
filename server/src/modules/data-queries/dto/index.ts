@@ -84,23 +84,44 @@ export class ListTablesDto {
   limit?: number;
 }
 
-export class LibraryDefinitionDto {
-  @IsUUID()
-  @IsOptional()
-  libraryQueryId?: string;
-}
-
 export class RunLibraryQueryDto {
   @IsObject()
   @IsOptional()
   inputs?: Record<string, unknown>;
+}
 
-  // Runtime values passed to `.run()`; missing names fall back to the version's defaults.
+export class AddToLibraryDto {
+  @IsString()
+  @Transform(({ value }) => sanitizeInput(value))
+  @IsNotEmpty()
+  name: string;
+
+  // The app query's options as the client saw them; compared with the stored row to refuse a stale conversion.
   @IsObject()
-  @IsOptional()
-  parameters?: Record<string, unknown>;
+  sourceOptions: Record<string, unknown>;
 
-  @IsUUID()
+  // The query logic for the library copy: app references already turned into `{{input.x}}`.
+  @IsObject()
+  libraryOptions: Record<string, unknown>;
+
+  // Input name -> the original expression the app fills it with.
+  @IsObject()
+  inputs: Record<string, string>;
+}
+
+export class SaveLibraryVersionDto {
+  @IsString()
   @IsOptional()
-  libraryQueryId?: string;
+  @Transform(({ value }) => (typeof value === 'string' ? sanitizeInput(value) : value))
+  description?: string;
+}
+
+export class CreateLibraryDraftDto {
+  @IsUUID()
+  fromVersionId: string;
+
+  @IsString()
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' ? sanitizeInput(value) : value))
+  description?: string;
 }

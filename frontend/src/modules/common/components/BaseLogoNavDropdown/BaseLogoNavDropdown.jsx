@@ -11,8 +11,6 @@ import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 // App type -> where the "Back to ..." link goes (key in `routes`) and how it reads.
 const GO_BACK_TARGETS = {
   'front-end': { routeKey: 'dashboard', label: 'apps' },
-  // The library has no list page (one per workspace), so going back lands on the dashboard.
-  query_library: { routeKey: 'dashboard', label: 'apps' },
 };
 
 const BaseLogoNavDropdown = ({ darkMode, showWorkflows = false, type = 'front-end' }) => {

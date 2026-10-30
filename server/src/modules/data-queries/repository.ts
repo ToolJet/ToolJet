@@ -37,11 +37,11 @@ export class DataQueryRepository extends Repository<DataQuery> {
 
   findLibraryConsumers(
     organizationId: string,
-    libraryAppVersionId: string,
     libraryQueryId?: string,
-    libraryVersionId?: string
+    libraryVersionId?: string,
+    manager: EntityManager = this.manager
   ) {
-    return queryLibraryConsumers(this.manager, organizationId, libraryAppVersionId, libraryQueryId, libraryVersionId);
+    return queryLibraryConsumers(manager, organizationId, libraryQueryId, libraryVersionId);
   }
 
   async findPublicParentAppForModuleQuery(moduleAppId: string, dataQueryId: string): Promise<App | null> {

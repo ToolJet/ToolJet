@@ -7,26 +7,17 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { appsService } from '@/_services/apps.service';
 
-// Non-blocking notices; the server release gate is the real check.
+// The server release gate is the real check; this tells the user which pins it will block.
 const libraryNotices = (pins) => [
   ...new Set(
-    pins.flatMap((pin) => {
-      const { consumerQueryName, libraryQueryName, pinnedVersion, latestVersion, siblings = [] } = pin;
-      const notices = [];
-      // versions are named `v${n}`; drafts are blocked by the gate, not here
-      const outOfDate = /^v\d+$/.test(pinnedVersion) && latestVersion && latestVersion !== pinnedVersion;
-      if (outOfDate) {
-        notices.push(`${consumerQueryName} uses ${libraryQueryName} ${pinnedVersion}; ${latestVersion} is available.`);
-      }
-      siblings.forEach((sibling) => {
-        if (sibling.runsVersion) {
-          notices.push(
-            `${libraryQueryName} ${pinnedVersion} calls ${sibling.name}; it will run ${sibling.runsVersion}.`
-          );
-        }
-      });
-      return notices;
-    })
+    pins
+      .filter((pin) => pin.pinnedVersion !== pin.releasedVersion)
+      .map(
+        ({ consumerQueryName, libraryQueryName, pinnedVersion, releasedVersion }) =>
+          `${consumerQueryName} uses ${libraryQueryName} ${pinnedVersion}; the released version is ${
+            releasedVersion ?? 'none'
+          }.`
+      )
   ),
 ];
 

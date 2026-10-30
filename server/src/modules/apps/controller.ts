@@ -9,7 +9,7 @@ import { User as UserEntity } from '@entities/user.entity';
 import { AppCreateDto, AppListDto, AppUpdateDto, VersionReleaseDto } from './dto';
 import { FeatureAbilityGuard } from './ability/guard';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
-import { APP_TYPES, FEATURE_KEY } from './constants';
+import { FEATURE_KEY } from './constants';
 import { AbilityDecorator as Ability, AppAbility } from '@modules/app/decorators/ability.decorator';
 import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
 import { App as AppEntity } from '@entities/app.entity';
@@ -183,9 +183,7 @@ export class AppsController implements IAppsController {
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id')
   show(@User() user: UserEntity, @App() app: AppEntity) {
-    // The query library lives only on the default branch; a feature-branch header must not make it a stub.
-    const branchId = app.type === APP_TYPES.QUERY_LIBRARY ? undefined : user.branchId;
-    return skipAppEditingVersionHydration.run(true, () => this.appsService.getOne(app, user, branchId));
+    return skipAppEditingVersionHydration.run(true, () => this.appsService.getOne(app, user, user.branchId));
   }
 
   @InitFeature(FEATURE_KEY.GET_BY_SLUG)

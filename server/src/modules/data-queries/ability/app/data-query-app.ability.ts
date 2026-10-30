@@ -13,7 +13,6 @@ export function defineDataQueryAppAbility(
 ): void {
   const appId = app?.id;
   const { superAdmin, isAdmin, userPermission, isEndUser } = UserAllPermissions;
-  // Query libraries ride the module permission bucket too.
   const isModule = isModuleLikeAppType(app?.type);
   // Modules resolve via their own MODULES.MODULES bucket (granular module permissions),
   // not the front-end app bucket — same mapping the guard used to fetch it.

@@ -2,15 +2,8 @@ import { EntityManager, In } from 'typeorm';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSource } from '@entities/data_source.entity';
 import { LibraryQueryVersion } from '@entities/library_query_version.entity';
-import { APP_TYPES } from '@modules/apps/constants';
 import { DataSourceScopes } from '@modules/data-sources/constants';
-import {
-  findSiblingNames,
-  isLibraryUuid,
-  isSameLibrarySnapshot,
-  LIBRARY_DRAFT,
-  parseLibraryVersionRef,
-} from './library-query.util';
+import { isLibraryUuid, isSameLibrarySnapshot, LIBRARY_DRAFT, parseLibraryVersionRef } from './library-query.util';
 
 // What an app export carries for the library queries it uses.
 export type LibraryExportSnapshot = { kind: string; dataSourceId: string | null; options: Record<string, unknown> };
@@ -28,14 +21,13 @@ type DraftRow = {
   id: string;
   co_relation_id: string | null;
   name: string;
-  app_version_id: string;
   data_source_id: string | null;
   options: unknown;
   kind: string;
 };
 type VersionRow = {
   id: string;
-  data_query_id: string;
+  library_query_id: string;
   version_number: number;
   kind: string;
   data_source_id: string | null;
@@ -65,15 +57,12 @@ function pinnedVersionId(ref: unknown): string | null {
   }
 }
 
-// Org scope: only a `query_library` app of this workspace can own the query.
-const DRAFT_SELECT = `SELECT dq.id, dq.co_relation_id, dq.name, dq.app_version_id, dq.data_source_id, dq.options, ds.kind
-       FROM data_queries dq
-       JOIN data_sources ds ON ds.id = dq.data_source_id
-       JOIN app_versions av ON av.id = dq.app_version_id
-       JOIN apps a ON a.id = av.app_id
-      WHERE a.organization_id = $2 AND a.type::text = $3`;
+// Library drafts are workspace-owned, including drafts whose data source was deleted.
+const DRAFT_SELECT = `SELECT dq.id, dq.co_relation_id, dq.name, dq.data_source_id, dq.options, dq.kind
+       FROM library_queries dq
+      WHERE dq.organization_id = $2`;
 
-const VERSION_COLUMNS = 'id, data_query_id, version_number, kind, data_source_id, options';
+const VERSION_COLUMNS = 'id, library_query_id, version_number, kind, data_source_id, options';
 
 const toSnapshotRow = (row: DraftRow | VersionRow) => ({ kind: row.kind, options: toOptions(row.options) });
 
@@ -94,18 +83,15 @@ export async function collectLibraryExport(
   if (!queryIds.size) return [];
 
   const entries = new Map<string, Entry>();
-  const loadDrafts = (sql: string, params: unknown[]): Promise<DraftRow[]> => manager.query(sql, params);
-
-  for (const row of await loadDrafts(`${DRAFT_SELECT} AND dq.id = ANY($1::uuid[])`, [
+  for (const row of (await manager.query(`${DRAFT_SELECT} AND dq.id = ANY($1::uuid[])`, [
     [...queryIds],
     organizationId,
-    APP_TYPES.QUERY_LIBRARY,
-  ])) {
+  ])) as DraftRow[]) {
     entries.set(row.id, { draft: row, versions: new Map() });
   }
 
   const attach = (rows: VersionRow[]) => {
-    for (const row of rows) entries.get(row.data_query_id)?.versions.set(row.id, row);
+    for (const row of rows) entries.get(row.library_query_id)?.versions.set(row.id, row);
   };
 
   if (entries.size && versionIds.size) {
@@ -117,62 +103,13 @@ export async function collectLibraryExport(
     );
   }
 
-  // RunJS code may call siblings by name: pull in each sibling's draft and latest release, transitively.
-  // `scanned` keeps a call cycle from looping.
-  const scanned = new Set<string>();
-  const handledSiblings = new Set<string>();
-  for (;;) {
-    const wanted = new Map<string, Set<string>>();
-    for (const entry of entries.values()) {
-      const snapshots: { key: string; row: DraftRow | VersionRow }[] = [
-        { key: `d:${entry.draft.id}`, row: entry.draft },
-        ...[...entry.versions.values()].map((row) => ({ key: `v:${row.id}`, row })),
-      ];
-      for (const { key, row } of snapshots) {
-        if (scanned.has(key)) continue;
-        scanned.add(key);
-        if (row.kind !== 'runjs') continue;
-        for (const name of findSiblingNames(String(toOptions(row.options).code ?? ''))) {
-          const names = wanted.get(entry.draft.app_version_id) ?? new Set<string>();
-          names.add(name);
-          wanted.set(entry.draft.app_version_id, names);
-        }
-      }
-    }
-    if (!wanted.size) break;
-
-    const rows = await loadDrafts(
-      `${DRAFT_SELECT} AND dq.app_version_id = ANY($1::uuid[]) AND dq.name = ANY($4::text[])`,
-      [
-        [...wanted.keys()],
-        organizationId,
-        APP_TYPES.QUERY_LIBRARY,
-        [...new Set([...wanted.values()].flatMap((names) => [...names]))],
-      ]
-    );
-    const fresh = rows.filter((row) => wanted.get(row.app_version_id)?.has(row.name) && !handledSiblings.has(row.id));
-    if (!fresh.length) break;
-    for (const row of fresh) {
-      handledSiblings.add(row.id);
-      if (!entries.has(row.id)) entries.set(row.id, { draft: row, versions: new Map() });
-    }
-    attach(
-      await manager.query(
-        `SELECT DISTINCT ON (data_query_id) ${VERSION_COLUMNS} FROM library_query_versions
-          WHERE data_query_id = ANY($1::uuid[]) AND deleted_at IS NULL
-          ORDER BY data_query_id, version_number DESC`,
-        [fresh.map((row) => row.id)]
-      )
-    );
-  }
-
   // Nested folders: the mapping's parent is always the immediate folder.
   const folderRows: { queryId: string; folder: string }[] = entries.size
     ? await manager.query(
-        `SELECT m.child_id AS "queryId", f.name AS "folder"
-           FROM data_query_folder_mappings m
-           JOIN data_query_folders f ON f.id = m.parent_id
-          WHERE m.child_type = 'query' AND m.child_id = ANY($1::uuid[])`,
+        `SELECT q.id AS "queryId", f.name AS "folder"
+           FROM library_queries q
+           JOIN library_query_folders f ON f.id = q.folder_id AND f.organization_id = q.organization_id
+          WHERE q.id = ANY($1::uuid[])`,
         [[...entries.keys()]]
       )
     : [];
@@ -231,6 +168,17 @@ export function libraryTooljetDbTableIds(queries: LibraryExportQuery[]): string[
   return [...ids];
 }
 
+// Rewrites the table ids of every ToolJet DB snapshot in place. The export carries a table under its portable id
+// (co_relation_id, minted on first export) and import maps tables by that id, so snapshots must use it too.
+export function remapLibraryTooljetDbTables(
+  queries: LibraryExportQuery[],
+  remap: (options: Record<string, unknown>) => Record<string, unknown>
+): void {
+  for (const snapshot of snapshotsOf(queries)) {
+    if (snapshot.kind === 'tooljetdb') snapshot.options = remap(snapshot.options);
+  }
+}
+
 // The data sources the snapshots point at. Only this workspace's global ones travel (workspace and static
 // data sources); import maps them like the app's own.
 export async function findLibraryExportDataSources(
@@ -249,7 +197,9 @@ export async function findLibraryExportDataSources(
 // Same strict order as Modules: the portable co_relation_id (the exporter's own id when it has none), then the
 // exporter's id (re-importing into the workspace the export came from finds the original), then the name.
 // `taken` holds local rows another incoming query already claimed, so two incoming queries never share a row.
-export function matchLibraryQuery<Q extends { id: string; co_relation_id?: string | null; name: string }>(
+export function matchLibraryQuery<
+  Q extends { id: string; co_relation_id?: string | null; coRelationId?: string | null; name: string },
+>(
   existing: Q[],
   incoming: Pick<LibraryExportQuery, 'id' | 'coRelationId' | 'name'>,
   taken: ReadonlySet<string> = new Set()
@@ -257,7 +207,7 @@ export function matchLibraryQuery<Q extends { id: string; co_relation_id?: strin
   const free = existing.filter((query) => !taken.has(query.id));
   const key = incoming.coRelationId ?? incoming.id;
   return (
-    free.find((query) => query.co_relation_id === key) ??
+    free.find((query) => (query.coRelationId ?? query.co_relation_id) === key) ??
     free.find((query) => query.id === incoming.id) ??
     free.find((query) => query.name === incoming.name) ??
     null

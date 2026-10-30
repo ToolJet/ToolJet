@@ -35,6 +35,7 @@ function seedLibraryApp({ queries, mode = 'view', appType } = {}) {
     'canvas'
   );
   state().setCurrentMode(mode, 'canvas');
+  state().queryLibrary.setLibraryMode(appType === 'query_library');
   if (appType) state().setApp({ ...state().appStore.modules.canvas.app, appType }, 'canvas');
   seedApp({});
 }
@@ -67,8 +68,6 @@ describe('library query run', () => {
           kind: 'runjs',
           code: 'return input.id * 2',
           inputs: [{ name: 'id' }],
-          parameters: [],
-          siblings: [],
         })
       )
     );
@@ -108,8 +107,6 @@ describe('library query run', () => {
           kind: 'runjs',
           code: 'return input.id',
           inputs: [{ name: 'id', defaultValue: '2' }],
-          parameters: [],
-          siblings: [],
         })
       )
     );
@@ -128,7 +125,7 @@ describe('library query run', () => {
         HttpResponse.json({ statusCode: 400, message: 'LIBRARY_QUERY_IS_CLIENT_SIDE' }, { status: 400 })
       ),
       http.post(`${config.apiUrl}/data-queries/c1/library-definition`, () =>
-        HttpResponse.json({ id: 'lq1', name: 'x', kind: 'runjs', code: 'return 7', parameters: [], siblings: [] })
+        HttpResponse.json({ id: 'lq1', name: 'x', kind: 'runjs', code: 'return 7' })
       )
     );
     seedLibraryApp({ queries: [libraryQuery] });
@@ -161,8 +158,6 @@ describe('library query run', () => {
           name: 'boom',
           kind: 'runjs',
           code: 'throw new Error("kaboom")',
-          parameters: [],
-          siblings: [],
         })
       )
     );
@@ -193,33 +188,7 @@ describe('library query run', () => {
     expect(result).toEqual({ status: 'ok', data: [{ id: 42 }] });
   });
 
-  it('previews without sending a default naming constants or secrets', async () => {
-    let body;
-    server.use(
-      http.post(`${config.apiUrl}/data-queries/c1/run-library`, async ({ request }) => {
-        body = await request.json();
-        return HttpResponse.json({ status: 'ok', data: [] });
-      })
-    );
-    const query = {
-      ...libraryQuery,
-      options: {
-        ...libraryQuery.options,
-        parameters: [
-          { name: 'key', defaultValue: '{{constants.a}}-{{ constants.b }}' },
-          { name: 'token', defaultValue: 'Bearer {{ secrets.token }}' },
-          { name: 'limit', defaultValue: '{{5 * 2}}' },
-        ],
-      },
-    };
-    seedLibraryApp({ queries: [query] });
-
-    await state().queryPanel.previewQuery(query, true);
-
-    expect(body.parameters).toEqual({ limit: 10 });
-  });
-
-  describe('runtime parameters, inputs and the library transformation', () => {
+  describe('run inputs and the library transformation', () => {
     const consumer = (extra = {}) => ({
       ...libraryQuery,
       name: 'q',
@@ -234,13 +203,11 @@ describe('library query run', () => {
           kind: 'runjs',
           code: 'return 1',
           inputs: [],
-          parameters: [],
-          siblings: [],
           ...extra,
         })
       );
 
-    it('should send each run its own runtime parameters', async () => {
+    it('should let each run override the inputs the app fills', async () => {
       const bodies = [];
       server.use(
         http.post(`${config.apiUrl}/data-queries/c1/run-library`, async ({ request }) => {
@@ -248,16 +215,17 @@ describe('library query run', () => {
           return HttpResponse.json({ status: 'ok', data: [] });
         })
       );
-      seedLibraryApp({ queries: [consumer({ parameters: [{ name: 'limit', defaultValue: '10' }] })] });
+      seedLibraryApp({ queries: [consumer({ inputs: { id: '{{1 + 41}}', region: '' } })] });
 
-      await state().queryPanel.runQuery('c1', 'q', true, 'view', { limit: 2 });
-      await state().queryPanel.runQuery('c1', 'q', true, 'view', { limit: 5 });
+      await state().queryPanel.runQuery('c1', 'q', true, 'view', { id: 2 });
+      await state().queryPanel.runQuery('c1', 'q', true, 'view', { region: 'eu', id: undefined });
+      await state().queryPanel.runQuery('c1', 'q', true, 'view');
 
-      expect(bodies.map((b) => b.parameters.limit)).toEqual([2, 5]);
-      expect(bodies.map((b) => b.inputs)).toEqual([{ id: 42 }, { id: 42 }]);
+      expect(bodies.map((b) => b.inputs)).toEqual([{ id: 2 }, { id: 42, region: 'eu' }, { id: 42 }]);
+      expect(bodies.some((b) => 'parameters' in b)).toBe(false);
     });
 
-    it('should leave a default naming constants or secrets for the server to resolve', async () => {
+    it("should pass queries.x.run({ ... }) to a library query's inputs, dropping undeclared names", async () => {
       let body;
       server.use(
         http.post(`${config.apiUrl}/data-queries/c1/run-library`, async ({ request }) => {
@@ -267,19 +235,14 @@ describe('library query run', () => {
       );
       seedLibraryApp({
         queries: [
-          consumer({
-            parameters: [
-              { name: 'key', defaultValue: '{{constants.a}}-{{ constants.b }}' },
-              { name: 'token', defaultValue: 'Bearer {{ secrets.token }}' },
-              { name: 'limit', defaultValue: '{{5 * 2}}' },
-            ],
-          }),
+          consumer(),
+          { id: 'j1', name: 'caller', kind: 'runjs', options: { code: 'await queries.q.run({ id: 7, extra: 1 })' } },
         ],
       });
 
-      await state().queryPanel.runQuery('c1', 'q', true, 'view');
+      await state().queryPanel.runQuery('j1', 'caller', true, 'view');
 
-      expect(body.parameters).toEqual({ limit: 10 });
+      expect(body).toEqual({ inputs: { id: 7 } });
     });
 
     it('should apply the library transformation before the app transformation', async () => {
@@ -309,39 +272,17 @@ describe('library query run', () => {
           HttpResponse.json({
             status: 'ok',
             data: 10,
-            libraryTransformation: 'return [data, input.id, parameters.limit, parameters.undeclared]',
-            libraryScope: { input: { id: 'from-server' }, parameters: { limit: 5 } },
+            libraryTransformation: 'return [data, input.id, input.undeclared, typeof parameters]',
+            libraryScope: { input: { id: 'from-server' } },
           })
         )
       );
-      seedLibraryApp({ queries: [consumer({ parameters: [{ name: 'limit', defaultValue: '5' }] })] });
+      seedLibraryApp({ queries: [consumer()] });
 
       await state().queryPanel.runQuery('c1', 'q', true, 'view', { undeclared: 'leak' });
 
-      // Not the raw runtime values: `undeclared` is not in the server's scope and `id` is the server's.
-      expect(resolvedQuery('q').data).toEqual([10, 'from-server', 5, undefined]);
-    });
-
-    it('should run a sibling transformation with the scope the server resolved', async () => {
-      server.use(
-        definition({
-          code: 'return queries.rel.run({ n: 1, extra: 2 })',
-          siblings: [{ id: 's1', name: 'rel', kind: 'postgresql', released: true }],
-        }),
-        http.post(`${config.apiUrl}/data-queries/c1/run-library`, () =>
-          HttpResponse.json({
-            status: 'ok',
-            data: 'rows',
-            libraryTransformation: 'return [data, parameters.n, parameters.extra]',
-            libraryScope: { input: {}, parameters: { n: 1 } },
-          })
-        )
-      );
-      seedLibraryApp({ queries: [consumer({ libraryKind: 'runjs' })] });
-
-      await state().queryPanel.runQuery('c1', 'q', true, 'view');
-
-      expect(resolvedQuery('q').data).toEqual(['rows', 1, undefined]);
+      // Not the raw run values: `undeclared` is not in the server's scope and `id` is the server's.
+      expect(resolvedQuery('q').data).toEqual([10, 'from-server', undefined, 'undefined']);
     });
 
     it('should fail the query when the library transformation touches the app', async () => {
@@ -360,24 +301,24 @@ describe('library query run', () => {
       expect(onEvent.mock.calls.map(([name]) => name)).toContain('onDataQueryFailure');
     });
 
-    it('should run a RunJS library query with input and parameters', async () => {
-      server.use(
-        definition({ code: 'return input.a + parameters.b', inputs: [{ name: 'a' }], parameters: [{ name: 'b' }] })
-      );
-      seedLibraryApp({ queries: [consumer({ libraryKind: 'runjs', inputs: { a: '{{1}}' } })] });
+    it('should run a RunJS library query with the app inputs and the run inputs', async () => {
+      server.use(definition({ code: 'return input.a + input.b', inputs: [{ name: 'a' }, { name: 'b' }] }));
+      seedLibraryApp({ queries: [consumer({ libraryKind: 'runjs', inputs: { a: '{{1}}', b: '' } })] });
 
       await state().queryPanel.runQuery('c1', 'q', true, 'view', { b: 2 });
 
       expect(resolvedQuery('q').data).toBe(3);
     });
 
-    it('should apply a RunJS library transformation with the resolved input and parameters', async () => {
+    it('should apply a RunJS library transformation with the resolved input', async () => {
       server.use(
         definition({
           code: 'return 5',
-          inputs: [{ name: 'a', defaultValue: '3' }],
-          parameters: [{ name: 'b', defaultValue: '4' }],
-          transformation: 'return data + input.a + parameters.b',
+          inputs: [
+            { name: 'a', defaultValue: '3' },
+            { name: 'b', defaultValue: '4' },
+          ],
+          transformation: 'return data + input.a + input.b',
         })
       );
       seedLibraryApp({ queries: [consumer({ libraryKind: 'runjs', inputs: {} })] });
@@ -386,36 +327,13 @@ describe('library query run', () => {
 
       expect(resolvedQuery('q').data).toBe('534');
     });
-
-    it('should run a sibling with only its parameters and refuse an unreleased one', async () => {
-      const bodies = [];
-      server.use(
-        definition({
-          code: 'return [await queries.rel.run({ n: 1 }), await queries.draftOnly.run().catch((e) => e.message)]',
-          siblings: [
-            { id: 's1', name: 'rel', kind: 'postgresql', released: true },
-            { id: 's2', name: 'draftOnly', kind: 'postgresql', released: false },
-          ],
-        }),
-        http.post(`${config.apiUrl}/data-queries/c1/run-library`, async ({ request }) => {
-          bodies.push(await request.json());
-          return HttpResponse.json({ status: 'ok', data: 'rows' });
-        })
-      );
-      seedLibraryApp({ queries: [consumer({ libraryKind: 'runjs' })] });
-
-      await state().queryPanel.runQuery('c1', 'q', true, 'view');
-
-      expect(bodies).toEqual([{ inputs: {}, parameters: { n: 1 }, libraryQueryId: 's1' }]);
-      expect(resolvedQuery('q').data).toEqual(['rows', 'Library query "draftOnly" has no released version']);
-    });
   });
 
   describe('cancelling a RunJS library query', () => {
     const jsConsumer = { ...libraryQuery, options: { ...libraryQuery.options, libraryKind: 'runjs' } };
-    const definition = (code, siblings = []) =>
+    const definition = (code) =>
       http.post(`${config.apiUrl}/data-queries/c1/library-definition`, () =>
-        HttpResponse.json({ id: 'lq1', name: 'x', kind: 'runjs', code, inputs: [], parameters: [], siblings })
+        HttpResponse.json({ id: 'lq1', name: 'x', kind: 'runjs', code, inputs: [] })
       );
     const waitFor = async (check) => {
       for (let i = 0; i < 100 && !check(); i++) await new Promise((r) => setTimeout(r, 10));
@@ -437,32 +355,10 @@ describe('library query run', () => {
       expect(resolvedQuery('getCustomerLib').isLoading).toBe(false);
       expect(onEvent.mock.calls.map(([name]) => name)).not.toContain('onDataQuerySuccess');
     });
-
-    it('should abort an in-flight sibling request', async () => {
-      let started = false;
-      let signalAborted = false;
-      server.use(
-        definition('return await queries.rel.run()', [{ id: 's1', name: 'rel', kind: 'postgresql', released: true }]),
-        http.post(`${config.apiUrl}/data-queries/c1/run-library`, async ({ request }) => {
-          started = true;
-          request.signal.addEventListener('abort', () => (signalAborted = true));
-          await new Promise((r) => setTimeout(r, 300));
-          return HttpResponse.json({ status: 'ok', data: 'rows' });
-        })
-      );
-      seedLibraryApp({ queries: [jsConsumer] });
-
-      const run = state().queryPanel.runQuery('c1', 'getCustomerLib', true, 'view');
-      await waitFor(() => started);
-      state().queryPanel.abortQuery('c1');
-
-      await expect(run).resolves.toEqual({ status: 'aborted' });
-      await waitFor(() => signalAborted);
-    });
   });
 
   describe('inside a query library app', () => {
-    const jsQuery = (id, name, code, parameters = []) => ({ id, name, kind: 'runjs', options: { code, parameters } });
+    const jsQuery = (id, name, code, inputs = []) => ({ id, name, kind: 'runjs', options: { code, inputs } });
 
     it('runs RunJS with the restricted scope (no components)', async () => {
       seedLibraryApp({
@@ -478,42 +374,19 @@ describe('library query run', () => {
       expect(q.error.message).toMatch(/components is not defined/);
     });
 
-    it('merges parameter defaults and runs runjs siblings with their own defaults', async () => {
+    it('has no queries object in library RunJS', async () => {
       seedLibraryApp({
-        queries: [
-          jsQuery('j1', 'base', 'return parameters.n * 2', [{ name: 'n', defaultValue: '3' }]),
-          jsQuery('j2', 'outer', 'return (await queries.base.run({ n: 5 })) + 1'),
-          jsQuery('j3', 'withDefault', 'return await queries.base.run()'),
-        ],
+        queries: [jsQuery('j1', 'base', 'return 1'), jsQuery('j2', 'outer', 'return await queries.base.run()')],
         mode: 'edit',
         appType: 'query_library',
       });
 
       await state().queryPanel.runQuery('j2', 'outer', true, 'edit');
-      expect(resolvedQuery('outer').data).toBe(11);
 
-      await state().queryPanel.runQuery('j3', 'withDefault', true, 'edit');
-      expect(resolvedQuery('withDefault').data).toBe(6);
+      expect(resolvedQuery('outer').error.message).toMatch(/queries is not defined/);
     });
 
-    it('caps sibling nesting (a <-> b) with the nesting error, not a stack overflow', async () => {
-      seedLibraryApp({
-        queries: [
-          jsQuery('j1', 'a', 'await Promise.resolve(); return await queries.b.run()'),
-          jsQuery('j2', 'b', 'await Promise.resolve(); return await queries.a.run()'),
-        ],
-        mode: 'edit',
-        appType: 'query_library',
-      });
-
-      await state().queryPanel.runQuery('j1', 'a', true, 'edit');
-
-      const message = resolvedQuery('a').error.message;
-      expect(message).toBe('Library query nesting is too deep');
-      expect(message).not.toMatch(/call stack/i);
-    });
-
-    // Server-side library queries resolve templates with parameters + globals.currentUser only
+    // Server-side library queries resolve templates with input + globals.currentUser only
     // (library-query.util.ts); the library editor must resolve them the same way.
     it('resolves SQL/REST templates in the library editor with the same names consumers get', async () => {
       let body;
@@ -522,6 +395,7 @@ describe('library query run', () => {
         return HttpResponse.json({ status: 'ok', data: [] });
       };
       server.use(
+        http.post(`${config.apiUrl}/query-library/queries/r1/run/:environmentId`, capture),
         http.post(`${config.apiUrl}/data-queries/r1/versions/:versionId/run/:environmentId`, capture),
         http.post(`${config.apiUrl}/data-queries/r1/versions/:versionId/run`, capture),
         http.post(`${config.apiUrl}/data-queries/r1/run`, capture)
@@ -533,8 +407,8 @@ describe('library query run', () => {
             name: 'getCustomer',
             kind: 'restapi',
             options: {
-              url: 'http://x/{{parameters.id}}/{{typeof components}}/{{typeof globals.currentUser}}',
-              parameters: [{ name: 'id', defaultValue: '7' }],
+              url: 'http://x/{{input.id}}/{{typeof parameters}}/{{typeof components}}/{{typeof globals.currentUser}}',
+              inputs: [{ name: 'id', defaultValue: '7' }],
             },
           },
         ],
@@ -544,11 +418,8 @@ describe('library query run', () => {
 
       await state().queryPanel.runQuery('r1', 'getCustomer', true, 'edit');
 
-      expect(body.resolvedOptions).toMatchObject({
-        '{{parameters.id}}': '7',
-        '{{typeof components}}': 'undefined',
-        '{{typeof globals.currentUser}}': 'object',
-      });
+      expect(body.inputs).toEqual({ id: '7' });
+      expect(body.options.url).toContain('{{input.id}}');
     });
 
     describe('input and transformations', () => {
@@ -559,6 +430,7 @@ describe('library query run', () => {
           return HttpResponse.json({ status: 'ok', data: [1] });
         };
         server.use(
+          http.post(`${config.apiUrl}/query-library/queries/r1/run/:environmentId`, handler),
           http.post(`${config.apiUrl}/data-queries/r1/versions/:versionId/run/:environmentId`, handler),
           http.post(`${config.apiUrl}/data-queries/r1/versions/:versionId/run`, handler),
           http.post(`${config.apiUrl}/data-queries/r1/run`, handler)
@@ -582,7 +454,7 @@ describe('library query run', () => {
 
         await state().queryPanel.runQuery('r1', 'getCustomer', true, 'edit');
 
-        expect(seen.body.resolvedOptions).toMatchObject({ '{{input.x}}': '9' });
+        expect(seen.body.inputs).toEqual({ x: '9' });
       });
 
       it('should run the library transformation with input and the restricted scope', async () => {

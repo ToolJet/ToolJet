@@ -16,6 +16,7 @@ import { AppHistoryModule } from '@modules/app-history/module';
 import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { DataQueryFolderMappingRepository } from '@modules/data-query-folders/repository';
 import { AppScopedThrottlerGuard } from './throttler/app-scoped-throttler.guard';
+import { QueryLibraryModule } from '@modules/query-library/module';
 
 function parsePositiveInt(raw: unknown, fallback: number): number {
   if (raw === undefined || raw === null || raw === '') return fallback;
@@ -40,6 +41,7 @@ export class DataQueriesModule extends SubModule {
     return this.cacheModule(cacheKey, {
       module: DataQueriesModule,
       imports: [
+        await QueryLibraryModule.register(configs),
         await AppEnvironmentsModule.register(configs),
         await DataSourcesModule.register(configs),
         await AppPermissionsModule.register(configs),
@@ -65,6 +67,7 @@ export class DataQueriesModule extends SubModule {
         OrganizationRepository,
         DataQueriesService,
         DataQueriesUtilService,
+
         AppFeatureAbilityFactory,
         DataSourceFeatureAbilityFactory,
         DataQueryFolderMappingRepository,

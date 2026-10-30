@@ -18,6 +18,7 @@ import { isQueryLibraryEnabled } from '@/AppBuilder/QueryLibrary/queryLibraryApp
 import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import useStore from '@/AppBuilder/_stores/store';
+import { isQueryLibraryMode } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 import { ToolTip } from '@/_components';
@@ -56,7 +57,7 @@ function DataSourceSelect({
     (gds) => gds.type === DATA_SOURCE_TYPE.STATIC
   );
   const sampleDataSource = useStore((state) => state.sampleDataSource);
-  const isQueryLibrary = useStore((state) => state.getAppType() === 'query_library');
+  const isQueryLibrary = useStore((state) => isQueryLibraryMode(state));
   const createFolder = useStore((state) => state.queryFolders?.createFolder);
   const currentVersionId = useStore((state) => state.currentVersionId);
 

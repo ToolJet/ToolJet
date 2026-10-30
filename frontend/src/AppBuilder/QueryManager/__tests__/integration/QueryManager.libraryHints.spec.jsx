@@ -35,6 +35,7 @@ const query = {
 };
 
 function seed(appType, selected = query) {
+  state().queryLibrary.setLibraryMode(appType === 'query_library');
   state().setApp({ ...state().appStore.modules.canvas.app, appType }, 'canvas');
   useStore.setState((s) => ({ queryPanel: { ...s.queryPanel, selectedQuery: selected } }));
 }
@@ -42,25 +43,18 @@ function seed(appType, selected = query) {
 const hints = () => screen.getByTestId('hints').textContent.split(',').filter(Boolean);
 
 describe('QueryManager code hints', () => {
-  it('offers input.<name> in a query library app, next to parameters', () => {
+  it('offers input.<name> and no parameters in a query library app', () => {
     seed('query_library');
-    render(<QueryManager mode="edit" darkMode={false} />);
-
-    expect(hints()).toEqual(expect.arrayContaining(['input', 'input.region', 'parameters.limit']));
-  });
-
-  it('offers input.<name> even when the query has no parameters', () => {
-    seed('query_library', { ...query, options: { ...query.options, parameters: [] } });
     render(<QueryManager mode="edit" darkMode={false} />);
 
     expect(hints()).toEqual(['input', 'input.region']);
   });
 
-  it('offers parameters but no bare input when the library query has no inputs', () => {
+  it('offers no bare input when the library query has no inputs', () => {
     seed('query_library', { ...query, options: { ...query.options, inputs: [] } });
     render(<QueryManager mode="edit" darkMode={false} />);
 
-    expect(hints()).toEqual(['parameters', 'parameters.limit']);
+    expect(hints()).toEqual([]);
   });
 
   it('offers no input hints in a normal app', () => {

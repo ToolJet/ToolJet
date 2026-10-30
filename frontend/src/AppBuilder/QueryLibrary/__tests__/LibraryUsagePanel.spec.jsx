@@ -6,7 +6,7 @@ import { server } from '@/test/msw/server';
 import config from 'config';
 import LibraryUsagePanel from '../LibraryUsagePanel';
 
-const usageUrl = `${config.apiUrl}/data-queries/ver1/library-usage`;
+const usageUrl = `${config.apiUrl}/query-library/usage`;
 const pin = (overrides) => ({
   id: 'c1',
   name: 'getCustomer',
@@ -32,7 +32,7 @@ describe('LibraryUsagePanel', () => {
         })
       )
     );
-    render(<LibraryUsagePanel versionId="ver1" libraryQueryId="q1" />);
+    render(<LibraryUsagePanel libraryQueryId="q1" />);
 
     expect(await screen.findByText('Used by apps (1)')).toBeInTheDocument();
     expect(screen.getByText('Used by modules (1)')).toBeInTheDocument();
@@ -48,6 +48,21 @@ describe('LibraryUsagePanel', () => {
     );
   });
 
+  it('shows the pinned version environment next to the version', async () => {
+    server.use(
+      http.get(usageUrl, () =>
+        HttpResponse.json({
+          apps: [{ id: 'a1', name: 'Support portal', queries: [pin({ pinnedEnvironment: 'staging' })] }],
+          modules: [],
+        })
+      )
+    );
+    render(<LibraryUsagePanel libraryQueryId="q1" />);
+
+    expect(await screen.findByText('Used by apps (1)')).toBeInTheDocument();
+    expect(rows('Used by apps (1)')).toEqual(['Support portal · v1 · getCustomer · v2 · Staging']);
+  });
+
   it('prefixes app links with the deployment sub-path', async () => {
     window.public_config = { SUB_PATH: '/tooljet/' };
     window.history.pushState({}, '', '/tooljet/ws1/apps/home');
@@ -57,7 +72,7 @@ describe('LibraryUsagePanel', () => {
           HttpResponse.json({ apps: [{ id: 'a1', name: 'Support portal', queries: [pin()] }], modules: [] })
         )
       );
-      render(<LibraryUsagePanel versionId="ver1" libraryQueryId="q1" />);
+      render(<LibraryUsagePanel libraryQueryId="q1" />);
 
       expect(await screen.findByRole('link', { name: 'Support portal' })).toHaveAttribute(
         'href',
@@ -69,13 +84,30 @@ describe('LibraryUsagePanel', () => {
     }
   });
 
+  it('shows both groups at 0 with None when nothing uses the query', async () => {
+    server.use(http.get(usageUrl, () => HttpResponse.json({ apps: [], modules: [] })));
+    render(<LibraryUsagePanel libraryQueryId="q1" />);
+
+    expect(await screen.findByText('Used by apps (0)')).toBeInTheDocument();
+    expect(screen.getByText('Used by modules (0)')).toBeInTheDocument();
+    expect(screen.getAllByText('None')).toHaveLength(2);
+  });
+
+  it('shows both groups at 0 with None while creating a query', () => {
+    render(<LibraryUsagePanel />);
+
+    expect(screen.getByText('Used by apps (0)')).toBeInTheDocument();
+    expect(screen.getByText('Used by modules (0)')).toBeInTheDocument();
+    expect(screen.getAllByText('None')).toHaveLength(2);
+  });
+
   it('shows None for a group with no consumers', async () => {
     server.use(
       http.get(usageUrl, () =>
         HttpResponse.json({ apps: [{ id: 'a1', name: 'Support portal', queries: [pin()] }], modules: [] })
       )
     );
-    render(<LibraryUsagePanel versionId="ver1" libraryQueryId="q1" />);
+    render(<LibraryUsagePanel libraryQueryId="q1" />);
 
     expect(await screen.findByText('Used by modules (0)')).toBeInTheDocument();
     expect(within(screen.getByText('Used by modules (0)').closest('section')).getByText('None')).toBeInTheDocument();
@@ -97,7 +129,7 @@ describe('LibraryUsagePanel', () => {
         })
       )
     );
-    render(<LibraryUsagePanel versionId="ver1" libraryQueryId="q1" />);
+    render(<LibraryUsagePanel libraryQueryId="q1" />);
 
     expect(await screen.findByText('Used by apps (1)')).toBeInTheDocument();
     expect(rows('Used by apps (1)')).toEqual(['Support portal · v1 · getCustomer · Draft']);
@@ -106,7 +138,7 @@ describe('LibraryUsagePanel', () => {
 
   it('says it could not load usage instead of claiming nothing uses the query', async () => {
     server.use(http.get(usageUrl, () => HttpResponse.json({ message: 'boom' }, { status: 500 })));
-    render(<LibraryUsagePanel versionId="ver1" libraryQueryId="q1" />);
+    render(<LibraryUsagePanel libraryQueryId="q1" />);
 
     expect(await screen.findByText("Couldn't load usage")).toBeInTheDocument();
     expect(screen.queryByText('None')).not.toBeInTheDocument();

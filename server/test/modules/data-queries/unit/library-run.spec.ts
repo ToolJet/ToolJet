@@ -20,6 +20,9 @@ describe('DataQueriesService library runs', () => {
     { manager: { findOneBy, find }, getAll } as unknown as DataQueryRepository,
     { resolveLibraryServerReferences } as unknown as DataQueriesUtilService,
     null,
+    null,
+    null,
+    null,
     null
   );
   const runAndGetResult = jest.fn();
@@ -38,9 +41,9 @@ describe('DataQueriesService library runs', () => {
     target: { queryId: 'q1', name: 'getCustomer', kind, dataSourceId: 'ds1', options, versionName: 'draft' },
   });
   const options = {
-    url: 'http://x/{{input.id}}/{{parameters.limit}}',
-    inputs: [{ name: 'id', defaultValue: '1' }],
-    parameters: [
+    url: 'http://x/{{input.id}}/{{input.limit}}',
+    inputs: [
+      { name: 'id', defaultValue: '1' },
       { name: 'limit', defaultValue: '{{5}}' },
       { name: 'unused', defaultValue: 'u' },
     ],
@@ -60,7 +63,7 @@ describe('DataQueriesService library runs', () => {
     const result = await service.runLibraryQuery(
       user,
       'c1',
-      dto({ inputs: { id: 9 }, parameters: { limit: 2, evil: 1 } }),
+      dto({ inputs: { id: 9, limit: 2, evil: 1 } }),
       response,
       app
     );
@@ -69,7 +72,7 @@ describe('DataQueriesService library runs', () => {
       status: 'ok',
       data: [1],
       libraryTransformation: 'return data',
-      libraryScope: { input: { id: 9 }, parameters: { limit: 2, unused: 'u' } },
+      libraryScope: { input: { id: 9, limit: 2, unused: 'u' } },
     });
   });
 
@@ -80,7 +83,7 @@ describe('DataQueriesService library runs', () => {
 
     const result = (await service.runLibraryQuery(user, 'c1', dto({}), response, app)) as { libraryScope: unknown };
 
-    expect(result.libraryScope).toEqual({ input: { id: '1' }, parameters: { limit: 5, unused: 'u' } });
+    expect(result.libraryScope).toEqual({ input: { id: '1', limit: 5, unused: 'u' } });
   });
 
   it('sends neither transformation nor scope when no transformation is enabled', async () => {
@@ -93,9 +96,12 @@ describe('DataQueriesService library runs', () => {
 
   describe('server references in defaults', () => {
     const withReferences = {
-      url: 'http://x/{{input.region.toUpperCase()}}/{{parameters.m}}',
-      inputs: [{ name: 'region', defaultValue: '{{constants.region}}' }],
-      parameters: [{ name: 'n', defaultValue: '{{secrets.k}}' }, { name: 'm' }],
+      url: 'http://x/{{input.region.toUpperCase()}}/{{input.m}}',
+      inputs: [
+        { name: 'region', defaultValue: '{{constants.region}}' },
+        { name: 'n', defaultValue: '{{secrets.k}}' },
+        { name: 'm' },
+      ],
       enableTransformation: true,
       transformation: 'return data',
     };
@@ -119,7 +125,7 @@ describe('DataQueriesService library runs', () => {
         { id: 'ds1' },
         'org1',
         'env1',
-        'br1',
+        undefined,
         user
       );
       const variableMap = runAndGetResult.mock.calls[0][2];
@@ -132,15 +138,14 @@ describe('DataQueriesService library runs', () => {
       const result = (await service.runLibraryQuery(
         user,
         'c1',
-        dto({ parameters: { m: '{{secrets.k}}' } }),
+        dto({ inputs: { m: '{{secrets.k}}' } }),
         response,
         app
       )) as { libraryScope: unknown };
 
-      expect(runAndGetResult.mock.calls[0][2]['{{parameters.m}}']).toBe('{{secrets.k}}');
+      expect(runAndGetResult.mock.calls[0][2]['{{input.m}}']).toBe('{{secrets.k}}');
       expect(result.libraryScope).toEqual({
-        input: { region: '{{constants.region}}' },
-        parameters: { n: '{{secrets.k}}', m: '{{secrets.k}}' },
+        input: { region: '{{constants.region}}', n: '{{secrets.k}}', m: '{{secrets.k}}' },
       });
     });
 

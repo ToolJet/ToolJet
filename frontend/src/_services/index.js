@@ -37,3 +37,4 @@ export * from './workspace_branches.service';
 export * from './custom-domain.service';
 export * from './dataQueryFolder.service';
 export * from './migrations.service';
+export * from './libraryQuery.service';

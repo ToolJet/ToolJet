@@ -80,6 +80,9 @@ import {
   remapLibraryConsumerOptions,
 } from '@modules/data-queries/library/library-export.util';
 import { LIBRARY_KIND } from '@modules/data-queries/library/library-query.util';
+import { LibraryQuery } from '@entities/library_query.entity';
+import { LibraryQueryFolder } from '@entities/library_query_folder.entity';
+import { LibraryQueryState } from '@entities/library_query_state.entity';
 import { LibraryQueryVersion } from '@entities/library_query_version.entity';
 import { AppsUtilService } from '../util.service';
 
@@ -1542,7 +1545,7 @@ export class AppImportExportService {
 
   /**
    * Brings the library queries bundled in an app export into this workspace's library: a query matches by
-   * co_relation_id then name (its draft is left alone) or is created; each exported version is reused when an
+   * co_relation_id, id, then name (its draft is left alone) or is created; each exported version is reused when an
    * identical one exists, else added as the next number. Then the imported app's library consumers are re-pointed
    * at the resulting ids. Returns the exported id -> local id maps and the names of queries it had to skip (no data
    * source to land on). The library is Module-permissioned, so the first write needs module_create unless the
@@ -1567,19 +1570,15 @@ export class AppImportExportService {
       }
       canWrite = true;
     };
-    let library = await this.appsUtilService.findWorkspaceQueryLibrary(manager, organizationId);
-    if (!library) {
-      await requireWrite();
-      library = await this.appsUtilService.getOrCreateWorkspaceQueryLibrary(manager, user);
-    }
-    const libraryVersionId = library.versionId;
     const remapTables = (options: Record<string, unknown>) =>
       this.replaceTooljetDbTableIds(options, tooljetDatabaseMapping, organizationId);
     const map = <T extends LibraryExportQuery['draft']>(snapshot: T): T =>
       mapLibrarySnapshot(snapshot, resourceMapping.dataSourceMapping, remapTables);
 
-    const existing = await manager.find(DataQuery, { where: { appVersionId: libraryVersionId } });
-    const folders = await manager.find(DataQueryFolder, { where: { appVersionId: libraryVersionId } });
+    // Imported drafts stay editable; saved versions start in Development and remain unreleased.
+    const developmentEnvironment = await manager.findOne(AppEnvironment, { where: { organizationId, priority: 1 } });
+    const existing = await manager.find(LibraryQuery, { where: { organizationId } });
+    const folders = await manager.find(LibraryQueryFolder, { where: { organizationId } });
     const staticSources = await manager.find(DataSource, {
       where: { organizationId, type: DataSourceTypes.STATIC, scope: DataSourceScopes.GLOBAL },
     });
@@ -1602,49 +1601,37 @@ export class AppImportExportService {
           continue;
         }
         await requireWrite();
-        target = await manager.save(
-          manager.create(DataQuery, {
-            name: incoming.name,
-            options: draft.options,
-            dataSourceId,
-            appVersionId: libraryVersionId,
-            co_relation_id: incoming.coRelationId ?? incoming.id,
-          })
-        );
-        existing.push(target);
+        let folderId: string | null = null;
         if (incoming.folder) {
           let folder = folders.find((candidate) => candidate.name === incoming.folder);
           if (!folder) {
-            folder = await manager.save(
-              manager.create(DataQueryFolder, { name: incoming.folder, appVersionId: libraryVersionId })
-            );
-            await manager.save(
-              manager.create(DataQueryFolderMapping, {
-                parentId: null,
-                childId: folder.id,
-                childType: ChildType.FOLDER,
-                index: folders.length,
-              })
-            );
+            folder = await manager.save(manager.create(LibraryQueryFolder, { name: incoming.folder, organizationId }));
             folders.push(folder);
           }
-          await manager.save(
-            manager.create(DataQueryFolderMapping, {
-              parentId: folder.id,
-              childId: target.id,
-              childType: ChildType.QUERY,
-              index: await manager.count(DataQueryFolderMapping, { where: { parentId: folder.id } }),
-            })
-          );
+          folderId = folder.id;
         }
+        target = await manager.save(
+          manager.create(LibraryQuery, {
+            name: incoming.name,
+            kind: draft.kind,
+            organizationId,
+            options: draft.options,
+            dataSourceId,
+            folderId,
+            coRelationId: incoming.coRelationId ?? incoming.id,
+            createdBy: user.id,
+          })
+        );
+        await manager.save(LibraryQueryState, { libraryQueryId: target.id, hasDraft: true });
+        existing.push(target);
       }
       claimed.add(target.id);
       queries[incoming.id] = target.id;
 
-      const own = await manager.find(LibraryQueryVersion, { where: { dataQueryId: target.id } });
+      const own = await manager.find(LibraryQueryVersion, { where: { libraryQueryId: target.id } });
       // Soft-deleted rows count, so a number is never reused (same rule as release).
       const [{ highest }]: { highest: number }[] = await manager.query(
-        'SELECT COALESCE(MAX(version_number), 0)::int AS highest FROM library_query_versions WHERE data_query_id = $1',
+        'SELECT COALESCE(MAX(version_number), 0)::int AS highest FROM library_query_versions WHERE library_query_id = $1',
         [target.id]
       );
       let nextNumber = highest + 1;
@@ -1655,12 +1642,13 @@ export class AppImportExportService {
           await requireWrite();
           match = await manager.save(
             manager.create(LibraryQueryVersion, {
-              dataQueryId: target.id,
+              libraryQueryId: target.id,
               versionNumber: nextNumber++,
               kind: mapped.kind,
               dataSourceId: mapped.dataSourceId,
               options: mapped.options,
               createdBy: user.id,
+              currentEnvironmentId: developmentEnvironment?.id ?? null,
             })
           );
           own.push(match);

@@ -12,6 +12,7 @@ import { canCreateDataSource } from '@/_helpers';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import '../queryManager.theme.scss';
 import useStore from '@/AppBuilder/_stores/store';
+import { isQueryLibraryMode } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import { staticDataSources, LIBRARY_UNSUPPORTED_KINDS } from '../constants';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { isQueryLibraryEnabled } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
@@ -22,7 +23,7 @@ function DataSourcePicker({ darkMode }) {
   const sampleDataSource = useStore((state) => state.sampleDataSource);
   const createFolder = useStore((state) => state.queryFolders?.createFolder);
   const currentVersionId = useStore((state) => state.currentVersionId);
-  const isQueryLibrary = useStore((state) => state.getAppType() === 'query_library');
+  const isQueryLibrary = useStore((state) => isQueryLibraryMode(state));
   const allUserDefinedSources = [...dataSources, ...globalDataSources].filter(
     (ds) => ds.type !== DATA_SOURCE_TYPE.STATIC && !ds.is_dummy
   );

@@ -1,11 +1,10 @@
 import { UserEntity } from '@modules/app/decorators/user.decorator';
 import { DataSourceEntity } from '@modules/app/decorators/data-source.decorator';
-import { CreateDataQueryDto, LibraryDefinitionDto, RunLibraryQueryDto, UpdateDataQueryDto } from '../dto';
+import { AddToLibraryDto, CreateDataQueryDto, RunLibraryQueryDto, UpdateDataQueryDto } from '../dto';
 import { UpdatingReferencesOptionsDto } from '../dto';
 import { AppAbility } from '@modules/casl/casl-ability.factory';
 import { App } from '@entities/app.entity';
 import { UpdateSourceDto } from '../dto';
-import { LibraryCatalog } from '../library/library-query.util';
 import { Response } from 'express';
 export interface IDataQueriesController {
   index(user: UserEntity, app: App, versionId: string, mode?: string): Promise<object>;
@@ -25,13 +24,17 @@ export interface IDataQueriesController {
     updateDataQueryDto: UpdateDataQueryDto
   ): Promise<void>;
 
-  releaseLibraryQuery(
+  addToLibrary(
     user: UserEntity,
     app: App,
-    dataQueryId: string
-  ): Promise<{ id: string; name: string; versionNumber: number; createdAt: Date }>;
-
-  deleteLibraryQueryVersion(app: App, dataQueryId: string, libraryVersionId: string): Promise<void>;
+    dataQueryId: string,
+    versionId: string,
+    dto: AddToLibraryDto
+  ): Promise<{
+    query: { id: string; name: string; kind: 'library'; data_source_id: string; options: Record<string, unknown> };
+    libraryQueryId: string;
+    libraryVersionId: string;
+  }>;
 
   bulkUpdate(user: UserEntity, updatingReferencesOptions: UpdatingReferencesOptionsDto): Promise<object>;
 
@@ -57,25 +60,12 @@ export interface IDataQueriesController {
     response: Response
   ): Promise<object>;
 
-  libraryUsage(app: App, versionId: string): Promise<object>;
-
-  libraryCatalog(app: App, versionId: string): Promise<LibraryCatalog>;
-
-  getLibraryDefinition(user: UserEntity, app: App, dataQueryId: string, dto: LibraryDefinitionDto): Promise<object>;
+  getLibraryDefinition(user: UserEntity, app: App, dataQueryId: string): Promise<object>;
 
   runLibraryQuery(
     user: UserEntity,
     app: App,
     dataQueryId: string,
-    dto: RunLibraryQueryDto,
-    response: Response
-  ): Promise<object>;
-
-  runLibraryQueryOnBuilder(
-    user: UserEntity,
-    app: App,
-    dataQueryId: string,
-    environmentId: string,
     dto: RunLibraryQueryDto,
     response: Response
   ): Promise<object>;

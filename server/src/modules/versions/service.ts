@@ -130,7 +130,7 @@ export class VersionService implements IVersionService {
     // No-op in CE, EE overrides to capture history
   }
   async getAllVersions(app: App, branchId?: string): Promise<{ versions: Array<AppVersion> }> {
-    const effectiveBranchId = app.type === 'workflow' || app.type === APP_TYPES.QUERY_LIBRARY ? undefined : branchId;
+    const effectiveBranchId = app.type === APP_TYPES.WORKFLOW ? undefined : branchId;
     let gitEnabled = false;
     let defaultBranchId: string | null = null;
     if (app.type !== APP_TYPES.WORKFLOW) {
@@ -184,9 +184,6 @@ export class VersionService implements IVersionService {
   }
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto) {
-    if (app.type === APP_TYPES.QUERY_LIBRARY) {
-      throw new BadRequestException('Query libraries have a single version');
-    }
     const context = await this.beforeVersionCreate(app, user, versionCreateDto);
     let result;
     // Git single-branch keeps exactly one draft on the default branch. When the caller opts to
@@ -580,10 +577,6 @@ export class VersionService implements IVersionService {
     draftVersionDto: DraftVersionDto,
     manager?: EntityManager
   ): Promise<AppVersion> {
-    // The replace path below skips createVersion, so guard here too.
-    if (app.type === APP_TYPES.QUERY_LIBRARY) {
-      throw new BadRequestException('Query libraries have a single version');
-    }
     const { versionFromId, versionType } = draftVersionDto;
     const parentVersion = await this.versionRepository.findVersion(versionFromId);
     const childVersionApps = await this.versionRepository.findParentVersionApps(versionFromId);
