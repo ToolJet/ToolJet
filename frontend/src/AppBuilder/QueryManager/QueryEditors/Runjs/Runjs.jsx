@@ -3,6 +3,7 @@ import { defaults } from 'lodash';
 import { Card } from 'react-bootstrap';
 import ParameterList from '../../Components/ParameterList';
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import { QUERY_FIELD_LABEL_CLASS_NAME } from '@/AppBuilder/panelLayout';
 
 const Runjs = (props) => {
   const initialOptions = defaults({ ...props.options }, { code: '//Type your JavaScript code here' });
@@ -14,6 +15,12 @@ const Runjs = (props) => {
 
   return (
     <div className="runjs-editor mb-3 !tw-mb-0 ">
+      <p
+        className={`text-placeholder font-weight-medium tw-mb-2 tw-shrink-0 ${QUERY_FIELD_LABEL_CLASS_NAME}`}
+        data-cy="query-code-label"
+      >
+        Code
+      </p>
       <CodeHinter
         renderCopilot={props.renderCopilot}
         type="multiline"
