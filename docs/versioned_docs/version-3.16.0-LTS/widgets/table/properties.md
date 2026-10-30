@@ -46,6 +46,9 @@ Example - Passing a query data:
 
 Go to the **[Table Columns](/docs/widgets/table/table-columns)** guide to know more about supported column types.
 
+**Lock column schema**: When this toggle is on, the configured columns are kept as they are: changes in the data no longer add or remove columns. It's off by default, and only shown when **Use dynamic column** is off.
+To stop columns from being added or removed when the shape of the data changes, turn on **[Lock column schema](/docs/widgets/table/table-columns#lock-column-schema)**.
+
 ## Action Buttons (Deprecated)
 
 :::warning
@@ -77,14 +80,13 @@ Below are the button text properties that you can set.
 | Row clicked                                 | This event is triggered when a Table row is clicked. The `selectedRowId` and `selectedRow` exposed variables of the Table store the ID and data of the selected row, respectively.                              |
 | Save changes                                | If any cell of the Table is edited, the **Save changes** button appears at the footer of the Table. Save changes event is triggered when this button is clicked.                                                |
 | Page changed                                | If server-side pagination is enabled, this event is fired when the current page is changed. Page changed event is triggered after updating the `pageIndex` variable.                                            |
-| Next page                                   | Fired specifically when the user navigates to the **next** page. Use this instead of **Page changed** when you need to distinguish forward navigation from backward navigation in server-side pagination.        |
-| Previous page                               | Fired specifically when the user navigates to the **previous** page. Use this instead of **Page changed** when you need to distinguish backward navigation from forward navigation in server-side pagination.    |
 | Search                                      | Search event is triggered when a text is entered to the search input box of the Table. `searchText` variable is updated before triggering this event.                                                           |
 | Cancel changes                              | If any cell of the Table is edited, the **Discard changes** button appears at the footer of the Table. Cancel changes event is triggered when this button is clicked.                                           |
-| Sort applied                                | This event is triggered when the column name header is clicked to apply sorting. The `sortApplied` variable is updated with an object having `column` and `direction` values.                                   |
+| Sort applied                                | This event is triggered when the column name header is clicked to apply sorting. The `sortApplied` variable is updated with an array holding the applied sort's `column`, `columnKey` and `direction`.                                   |
 | Cell value changed                          | If any cell of the Table is edited, the cell value changed event is triggered.                                                                                                                                  |
 | Filter changed                              | Triggeres when filter is added, removed, or updated. `filters` variable of the Table is updated to reflect the status of filters applied. The objects will have properties: `condition`, `value`, and `column`. |
 | Add new rows                                | Triggeres when the **Save** button is clicked from the Add new row modal.                                                                                                                                       |
+| Download data | Triggered when the download button is clicked while pagination is server-side or disabled and a **Download data** handler exists. The CSV, Excel and PDF menu doesn't appear: use this event to export data with your own query. It isn't triggered by `downloadTableData()`. |
 | Row expanded                                | Fired when a row is expanded. The `lastExpandedRow` and `currentExpandedRows` exposed variables are updated before this event fires.                                                                            |
 | Refresh                                     | Fired when the refresh button is clicked. If the Table's **Data** property is bound to a query, that query is re-run first; the event fires once it completes. If data comes from a variable or other source, the event fires immediately — use it to run any custom logic or update the data source manually. |
 | Header clicked                              | Fired when a column header is clicked. The `selectedColumnHeader` exposed variable is updated with the clicked column's `key`, `name`, and `index` before this event fires.                                     |
@@ -107,7 +109,7 @@ Expandable rows let end users reveal additional content beneath a row — such a
 | <div style={{ width:"170px"}}> Property </div> | Description                                                                                                                                 |
 | :--------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
 | Enable expandable rows                         | Toggles expandable rows on or off. When enabled, each row shows a chevron icon that the user can click to expand or collapse the row.       |
-| Expansion height                               | Sets the height (in pixels) of the expanded content area. Defaults to 300 px.                                                               |
+| Expanded row height                            | Sets the height (in pixels) of the expanded content area. Defaults to 229 px. Visible only when **Enable expandable rows** is turned on.    |
 
 When a row is expanded, you can drag components into the expanded container from the component panel. All components inside the expanded area have access to **`rowData`** — a resolvable variable that holds the data of the row they belong to, similar to `listItem` in a List View.
 
@@ -165,20 +167,20 @@ When Server-side filter is enabled, applying filters will not automatically filt
 
 ## Pagination
 
-Pagination helps manage the display of large data sets by dividing them into manageable segments. Client-side pagination is enabled by default. When enabled, an additional property, **Number of rows per page**, becomes available to set the number of records per page. The default value is set to 10; if disabled, all records will appear on a single page.
+Pagination helps manage the display of large data sets by dividing them into manageable segments. Use the **Enable pagination** toggle (on by default) to turn it on or off; when it's off, the pagination footer is hidden and all rows appear on one page. Client-side pagination is enabled by default. When enabled, an additional property, **Number of rows per page**, becomes available to set the number of records per page. The default value is set to 10; if disabled, all records will appear on a single page.
 
 The pagination footer always shows **First**, **Previous**, **Next**, and **Last** page buttons directly in the table footer — no more hunting through overflow menus.
 
 #### Server-side pagination
 
-Server-side pagination can be used to run a query whenever the page is changed. Under events section, you can use the `Page changed` event to execute a query along with the `pageIndex` exposed variable. `pageIndex` can be used to query the next set of results when the page is changed. Use the **Next page** and **Previous page** events when you need to distinguish the direction of navigation.
+Server-side pagination can be used to run a query whenever the page is changed. Under events section, you can use the `Page changed` event to execute a query along with the `pageIndex` exposed variable. `pageIndex` can be used to query the next set of results when the page is changed.
 
 When Server-side pagination is enabled, you'll be able to set the following additional Table properties:
 
 - **Enable previous page button**: Toggle this off to disable the previous page button from the Table.
 - **Enable next page button**: Toggle this off to disable the next page button from the Table.
 - **Total records server side**: Set the total number of records on the server. Used to compute page count.
-- **Server-side rows per page**: Set the number of records fetched per page from the server. When both this and **Total records server side** are provided, the Table calculates and displays the total page count and enables **First** and **Last** page navigation.
+- **Number of rows per page**: Set the number of records fetched per page from the server. When both this and **Total records server side** are provided, the Table calculates and displays the total page count and enables **First** and **Last** page navigation.
 
 :::tip
 Check this how-to guide to learn more about **[server-side pagination](/docs/widgets/table/serverside-operations/pagination)**.
