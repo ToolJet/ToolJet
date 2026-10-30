@@ -84,6 +84,21 @@ export const timelineConfig = {
   exposedVariables: {
     value: {},
   },
+  actions: [
+    {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue:
+            "{{[{ title: 'New event', subTitle: 'Subtitle', date: '01/01/2026', iconBackgroundColor: 'var(--cc-primary-brand)' }]}}",
+          type: 'code',
+        },
+      ],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },

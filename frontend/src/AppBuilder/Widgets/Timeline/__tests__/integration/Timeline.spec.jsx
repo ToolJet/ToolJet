@@ -1,8 +1,9 @@
 /**
- * Timeline: the 14 approved Engineering scenarios in
- * frontend/ee/test/app-builder/widgets/Timeline/TESTING.md. Characterization
- * branch — `production_changes: forbidden` — every test here protects
- * Timeline.jsx's current behavior, none of it changes.
+ * Timeline: the approved Engineering scenarios in
+ * frontend/ee/test/app-builder/widgets/Timeline/TESTING.md. The 2026-09-11
+ * scenarios are characterization tests of Timeline.jsx's existing behavior;
+ * the setValue action (D-05, tj-ee#4681) is RED/GREEN: Timeline-CSA-001..004
+ * and the widened Timeline-VAR-001.
  *
  * Real store, real RenderWidget, real Timeline / getSafeRenderableValue /
  * useDynamicHeight. Nothing about the widget is mocked. Shared setup lives in
@@ -52,6 +53,7 @@ const titleOf = (li) => li.querySelector('.list-timeline-title')?.textContent;
 const subtitleOf = (li) => li.querySelector('.text-muted')?.textContent;
 const dateOf = (li) => li.querySelector('.list-timeline-time')?.textContent;
 const iconOf = (li) => li.querySelector('.list-timeline-icon');
+const titles = (container) => [...items(container)].map(titleOf);
 
 async function setProperty(name, value, paramType = 'properties') {
   await widget.session.store.act(() => widget.setComponentProperty(ID, name, value, paramType));
@@ -236,6 +238,10 @@ describe('Timeline: exposed value', () => {
     );
     await waitFor(() => expect(items(container)).toHaveLength(0));
     expect(widget.exposed().value).toEqual({});
+
+    await widget.act('setValue', [{ title: 'Set' }]);
+    await waitFor(() => expect(items(container)).toHaveLength(1));
+    expect(widget.exposed().value).toEqual({});
   });
 });
 
@@ -392,5 +398,89 @@ describe('Timeline: dynamic height', () => {
     await waitFor(() => expect(items(container)).toHaveLength(3));
     expect(card()).toHaveStyle({ height: '36px', overflow: 'auto' });
     expect(card().style.minHeight).toBe('');
+  });
+
+  test('[Timeline-CSA-004] items set with setValue follow hideDate and drive the dynamic-height reflow', async () => {
+    // Break this catches: the reflow keyed on `data` only, leaving a stale height after setValue.
+    const { container } = widget.render({
+      properties: { dynamicHeight: binding('{{true}}'), hideDate: binding('{{true}}') },
+      currentMode: 'view',
+    });
+    const layoutElement = container.querySelector('[data-cy="draggable-widget-timeline1"]');
+    layoutElement.classList.add(`ele-${ID}`);
+    layoutElement.dataset.layoutContext = 'root';
+    layoutElement.dataset.moduleId = 'canvas';
+    await waitFor(() => expect(tempLayout()?.height).toBe(OFFSET_HEIGHT));
+
+    // Let the mount reflow settle so only setValue can write the next temp layout.
+    await widget.session.store.act((state) => state.clearTemporaryLayouts());
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(tempLayout()).toBeUndefined();
+    await widget.act('setValue', [{ title: 'Only', date: 'hidden' }]);
+
+    await waitFor(() => expect(titles(container)).toEqual(['Only']));
+    expect(container.querySelector('.list-timeline-time')).toBeNull();
+    expect(list(container)).toHaveClass('list-timeline-simple');
+    await waitFor(() => expect(tempLayout()?.height).toBe(OFFSET_HEIGHT));
+  });
+});
+
+describe('Timeline: setValue', () => {
+  beforeEach(() => widget.setup());
+  afterEach(() => widget.teardown());
+
+  test('[Timeline-CSA-001] setValue replaces the rendered items', async () => {
+    // Break this catches: setValue missing, or rendering its items with a different field mapping than data.
+    const { container } = widget.render();
+    await waitFor(() => expect(items(container)).toHaveLength(3));
+
+    await widget.act('setValue', [
+      { title: 'A', subTitle: 'first', date: 'd1', iconBackgroundColor: '#ff0000' },
+      { title: 'B', subTitle: 'second', date: 'd2', iconBackgroundColor: '#00ff00' },
+    ]);
+
+    await waitFor(() => expect(titles(container)).toEqual(['A', 'B']));
+    const rows = items(container);
+    expect(subtitleOf(rows[0])).toBe('first');
+    expect(dateOf(rows[1])).toBe('d2');
+    expect(iconOf(rows[0]).style.backgroundColor).toBe('rgb(255, 0, 0)');
+  });
+
+  test('[Timeline-CSA-002] a setValue override survives non-changes and yields to a real data change', async () => {
+    // Break this catches: an override wiped by any re-render, or one that ignores a later data change.
+    const { container } = widget.render({ properties: { data: binding("{{[{title:'P'}]}}") } });
+    await waitFor(() => expect(titles(container)).toEqual(['P']));
+
+    await widget.act('setValue', [{ title: 'S' }]);
+    await waitFor(() => expect(titles(container)).toEqual(['S']));
+
+    await setProperty('hideDate', '{{true}}');
+    await waitFor(() => expect(list(container)).toHaveClass('list-timeline-simple'));
+    expect(titles(container)).toEqual(['S']);
+
+    await setProperty('data', "{{[{title:'P'}]}}");
+    expect(titles(container)).toEqual(['S']);
+
+    await setProperty('data', "{{[{title:'Q'}]}}");
+    await waitFor(() => expect(titles(container)).toEqual(['Q']));
+  });
+
+  test.each([
+    ['an object', { a: 1 }],
+    ['a string', 'abc'],
+    ['a number', 5],
+    ['null', null],
+  ])('[Timeline-CSA-003] setValue with %s renders zero items without crashing', async (_label, value) => {
+    // Break this catches: setValue bypassing the isArray guard — the shared validator never sees CSA input.
+    const { container } = widget.render();
+    await waitFor(() => expect(items(container)).toHaveLength(3));
+
+    await widget.act('setValue', value);
+
+    await waitFor(() => expect(items(container)).toHaveLength(0));
+    expect(container.querySelector('[data-cy="error-boundary-fallback"]')).toBeNull();
+
+    await widget.act('setValue', [{ title: 'back' }]);
+    await waitFor(() => expect(titles(container)).toEqual(['back']));
   });
 });

@@ -2,8 +2,9 @@
  * Tags' approved Engineering contract.
  *
  * Contract: frontend/ee/test/app-builder/widgets/Tags/TESTING.md
- * Characterization branch: production_changes is forbidden. Tags-BND-002
- * (non-array `data` crash) is deferred per D-01 and has no test here.
+ * The 2026-09-30 scenarios are characterization tests. The setValue action
+ * (D-04, tj-ee#4681) and the non-array guard (revised D-01) are RED/GREEN:
+ * Tags-CSA-001..004, Tags-BND-002 and the widened Tags-VAR-001.
  */
 import { screen, waitFor, within } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
@@ -390,7 +391,17 @@ describe('Tags widget', () => {
 
     const exposed = widget.exposed();
     expect(Object.keys(exposed).sort()).toEqual(
-      ['id', 'isDisabled', 'isLoading', 'isVisible', 'setDisable', 'setLoading', 'setVisibility', 'tags'].sort()
+      [
+        'id',
+        'isDisabled',
+        'isLoading',
+        'isVisible',
+        'setDisable',
+        'setLoading',
+        'setValue',
+        'setVisibility',
+        'tags',
+      ].sort()
     );
     expect(exposed.id).toBe(ID);
     expect(Array.isArray(exposed.tags)).toBe(true);
@@ -457,5 +468,111 @@ describe('Tags widget', () => {
     expect(instance().querySelector('img')).toBeNull();
     expect(instance().querySelector('script')).toBeNull();
     expect(badges()[0].children).toHaveLength(0);
+  });
+
+  test.each([
+    ['an object', '{a: 1}'],
+    ['a number', '5'],
+    ['a plain string', "'abc'"],
+  ])('[Tags-BND-002] non-array data (%s) renders zero tags instead of crashing', async (_label, literal) => {
+    // Break this catches: `.map` on a non-array `data` taking the whole widget down to the error boundary.
+    const { container } = widget.render({ properties: dynamic(literal) });
+
+    await waitFor(() => expect(widget.exposed().tags).toEqual([]));
+    expect(container.querySelector('[data-cy="error-boundary-fallback"]')).toBeNull();
+    expect(badges()).toHaveLength(0);
+  });
+
+  test('[Tags-CSA-001] setValue replaces the rendered tags and tags in Dynamic mode', async () => {
+    // Break this catches: setValue skipping the data normalisation (visibility, legacy color, icon) or not republishing tags.
+    widget.render({ properties: dynamic("[{title:'a'},{title:'b'}]") });
+    await mounted();
+
+    await widget.act('setValue', [
+      {
+        title: 'x',
+        backgroundColor: 'rgb(3, 3, 3)',
+        textColor: 'rgb(4, 4, 4)',
+        icon: 'IconHome',
+        iconVisibility: true,
+      },
+      { title: 'y', color: 'rgb(5, 5, 5)' },
+      { title: 'gone', visible: false },
+    ]);
+
+    await waitFor(() => expect(titles()).toEqual(['x', 'y']));
+    expect(widget.exposed().tags).toEqual(['x', 'y']);
+    expect(badge('x').style.backgroundColor).toBe('rgb(3, 3, 3)');
+    expect(badge('x').style.color).toBe('rgb(4, 4, 4)');
+    expect(badge('y').style.backgroundColor).toBe('rgb(5, 5, 5)');
+    await waitFor(() => expect(icon('x')).not.toBeNull());
+    expect(icon('y')).toBeNull();
+    expect(widget.exposed()).not.toHaveProperty('value');
+  });
+
+  test('[Tags-CSA-002] setValue replaces the rendered tags in static mode too', async () => {
+    // Break this catches: setValue only overriding the Dynamic-mode source.
+    widget.render();
+    await mounted();
+    expect(titles()).toEqual(['success', 'info', 'warning', 'danger']);
+
+    await widget.act('setValue', [{ title: 'only' }]);
+
+    await waitFor(() => expect(titles()).toEqual(['only']));
+    expect(widget.exposed().tags).toEqual(['only']);
+  });
+
+  test('[Tags-CSA-003] a setValue override survives non-changes and yields to a real property change', async () => {
+    // Break this catches: an override wiped by any re-render, or one that ignores later property changes.
+    widget.render({ properties: dynamic("[{title:'a'}]") });
+    await mounted();
+
+    await widget.act('setValue', [{ title: 's' }]);
+    await waitFor(() => expect(titles()).toEqual(['s']));
+
+    await setProperty('overflow', 'scroll');
+    await waitFor(() => expect(wrapper().style.flexWrap).toBe('nowrap'));
+    expect(titles()).toEqual(['s']);
+
+    await setProperty('data', "{{[{title:'a'}]}}");
+    expect(titles()).toEqual(['s']);
+    expect(widget.exposed().tags).toEqual(['s']);
+
+    await setProperty('data', "{{[{title:'b'}]}}");
+    await waitFor(() => expect(titles()).toEqual(['b']));
+    expect(widget.exposed().tags).toEqual(['b']);
+
+    await widget.act('setValue', [{ title: 's2' }]);
+    await waitFor(() => expect(titles()).toEqual(['s2']));
+    await setProperty('advanced', '{{false}}');
+    await waitFor(() => expect(titles()).toEqual(['success', 'info', 'warning', 'danger']));
+
+    await widget.act('setValue', [{ title: 's3' }]);
+    await waitFor(() => expect(titles()).toEqual(['s3']));
+    await setProperty('options', [staticOption('z')]);
+    await waitFor(() => expect(titles()).toEqual(['z']));
+    expect(widget.exposed().tags).toEqual(['z']);
+  });
+
+  test.each([
+    ['an object', { a: 1 }],
+    ['a number', 5],
+    ['a string', 'abc'],
+    ['null', null],
+  ])('[Tags-CSA-004] setValue with %s renders zero tags instead of crashing', async (_label, value) => {
+    // Break this catches: a non-array argument reaching `.map` and crashing the widget.
+    const { container } = widget.render({ properties: dynamic("[{title:'a'}]") });
+    await mounted();
+
+    await widget.act('setValue', value);
+
+    await waitFor(() => expect(badges()).toHaveLength(0));
+    expect(container.querySelector('[data-cy="error-boundary-fallback"]')).toBeNull();
+    expect(screen.getByRole('group', { name: 'Tags display: 0 tags' })).toBeInTheDocument();
+    expect(widget.exposed().tags).toEqual([]);
+    expect(widget.exposed().setVisibility).toBeInstanceOf(Function);
+
+    await widget.act('setValue', [{ title: 'back' }]);
+    await waitFor(() => expect(titles()).toEqual(['back']));
   });
 });
