@@ -132,6 +132,25 @@ describe('exposed value -> dependent resolved value', () => {
   });
 });
 
+describe('app load', () => {
+  test("a binding to another component's default exposed value resolves on load", () => {
+    // Break this catches: initDependencyGraph resolving components before it writes the
+    // default exposed values. No mount write repairs it: a widget publishing its default
+    // writes an equal value, which never cascades (see above).
+    seedApp({
+      c1: componentDefinition('c1', 'textinput1', 'TextInput'),
+      c2: componentDefinition('c2', 'qrscanner1', 'QrScanner'),
+      c3: componentDefinition('c3', 'text1', 'Text', {
+        text: binding(
+          '{{JSON.stringify([components.textinput1.value, components.qrscanner1.lastDetectedValue, components.qrscanner1.id])}}'
+        ),
+      }),
+    });
+
+    expect(state().getResolvedComponent('c3').properties.text).toBe('["","","c2"]');
+  });
+});
+
 describe('store isolation', () => {
   test('a previous test cannot leak exposed values into this one', () => {
     seedInputAndLabel();
