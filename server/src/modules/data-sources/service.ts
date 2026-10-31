@@ -6,7 +6,7 @@ import { User } from '@entities/user.entity';
 import { decode } from 'js-base64';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { decamelizeKeys } from 'humps';
-import { DataSourceScopes, DataSourceTypes } from './constants';
+import { DataSourceScopes, DataSourceTypes, DefaultDataSourceKinds } from './constants';
 import {
   AuthorizeDataSourceOauthDto,
   CreateDataSourceDto,
@@ -28,6 +28,9 @@ import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
+
+// Built-in kinds with no plugin manifest; `restapi` is excluded because it ships one and users create it.
+const MANIFESTLESS_BUILT_IN_KINDS: string[] = DefaultDataSourceKinds.filter((kind) => kind !== 'restapi');
 
 @Injectable()
 export class DataSourcesService implements IDataSourcesService {
@@ -68,11 +71,13 @@ export class DataSourcesService implements IDataSourcesService {
     const selectedEnvironmentId =
       query.environmentId || (await this.appEnvironmentsUtilService.get(user.organizationId, null, true))?.id;
 
-    const dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, {
+    const allDataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, {
       environmentId: selectedEnvironmentId,
       types: [DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE],
       branchId: query.branchId,
     });
+    // Built-in kinds are `static`-type rows, never user-listed; a stray `default`-type one has no schema to render.
+    const dataSources = allDataSources.filter((dataSource) => !MANIFESTLESS_BUILT_IN_KINDS.includes(dataSource.kind));
     for (const dataSource of dataSources) {
       const parseIfNeeded = (data: any) => {
         if (typeof data === 'object' && data !== null) return data;
