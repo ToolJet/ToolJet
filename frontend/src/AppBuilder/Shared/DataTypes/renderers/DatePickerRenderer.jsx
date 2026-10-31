@@ -12,40 +12,43 @@ const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
 /**
  * DatepickerInput - Custom input component for the datepicker
  */
-const DatepickerInput = forwardRef(({ value, onClick, styles, readOnly, onInputChange, onInputFocus, id }, ref) => (
-  <div className="table-column-datepicker-input-container">
-    {readOnly ? (
-      <div className="h-100 w-100 overflow-hidden" style={{ color: styles?.color }}>
-        {value}
-      </div>
-    ) : (
-      <>
-        <input
-          className={cx('table-column-datepicker-input text-truncate', {
-            'pointer-events-none': readOnly,
-          })}
-          value={value}
-          onClick={onClick}
-          ref={ref}
-          style={styles}
-          onChange={onInputChange}
-          onFocus={onInputFocus}
-          id={id}
-        />
-        {!readOnly && (
-          <span className="cell-icon-display">
-            <SolidIcon
-              width="16"
-              fill="var(--borders-strong)"
-              name="calender"
-              className="table-column-datepicker-input-icon"
-            />
-          </span>
-        )}
-      </>
-    )}
-  </div>
-));
+const DatepickerInput = forwardRef(
+  ({ value, onClick, styles, readOnly, onInputChange, onInputFocus, id, placeholder }, ref) => (
+    <div className="table-column-datepicker-input-container">
+      {readOnly ? (
+        <div className="h-100 w-100 overflow-hidden" style={{ color: styles?.color }}>
+          {value}
+        </div>
+      ) : (
+        <>
+          <input
+            className={cx('table-column-datepicker-input text-truncate', {
+              'pointer-events-none': readOnly,
+            })}
+            value={value}
+            onClick={onClick}
+            ref={ref}
+            style={styles}
+            onChange={onInputChange}
+            onFocus={onInputFocus}
+            id={id}
+            placeholder={placeholder}
+          />
+          {!readOnly && (
+            <span className="cell-icon-display">
+              <SolidIcon
+                width="16"
+                fill="var(--borders-strong)"
+                name="calender"
+                className="table-column-datepicker-input-icon"
+              />
+            </span>
+          )}
+        </>
+      )}
+    </div>
+  )
+);
 
 /**
  * Get combined date/time format string
@@ -142,6 +145,9 @@ export const DatePickerRenderer = ({
   validationError,
   setIsInputFocused,
   isInputFocused,
+  placeholder,
+  // where the calendar renders; a modal dialog passes an element inside itself, or its calendar sits underneath
+  portalId = 'component-portal',
   widgetType,
   id,
 }) => {
@@ -353,6 +359,8 @@ export const DatePickerRenderer = ({
             e?.stopPropagation();
           }}
           value={isInputFocused ? inputValue : computeDateString(date)}
+          // react-datepicker hands this to the custom input as its placeholder
+          placeholderText={placeholder}
           dateFormat={!isDateSelectionEnabled && isTimeChecked ? 'HH:mm' : dateDisplayFormat}
           customInput={
             <DatepickerInput
@@ -367,7 +375,7 @@ export const DatePickerRenderer = ({
               id={id}
             />
           }
-          portalId="component-portal"
+          portalId={portalId}
           showTimeSelect={isTimeChecked}
           showTimeSelectOnly={!isDateSelectionEnabled && isTimeChecked}
           showMonthDropdown

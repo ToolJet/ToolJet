@@ -803,8 +803,7 @@
   }
 }
 
-.table-filters,
-.table-add-new-row {
+.table-filters {
   position: absolute;
   top: 2.85rem;
   width: 80%;
@@ -817,14 +816,86 @@
   overflow: hidden;
 }
 
-.table-add-new-row {
-  padding: 8px;
-  color: var(--slate12) !important;
+// Size and position are set inline by AddNewRowForm (relative to the table); the layout is utility classes.
+// Scrolling areas of the add new row form (fields, option lists, row menu): the same declaration the table body uses
+// (.jet-data-table), so the browser draws its own scrollbar, in the table's colour. slate 4 when the area renders
+// outside the table, as the dialog and the menus do.
+.table-add-new-row-scroll {
+  scrollbar-color: var(--cc-table-scroll-bar-color, var(--slate4)) transparent;
+}
 
-  // no !important here: the th reads columnBackgroundColor/columnTitleColor inline, same as the main table header
-  .th {
-    background-color: var(--cc-surface2-surface);
-    color: var(--cc-primary-text);
+// Select, multiselect, tags and boolean are Rocket components; the date picker is still the table's renderer
+// (it owns the format, timezone and unix-timestamp handling), restyled below to the Figma field: a 36px bordered
+// input with the calendar icon on the left (frame 2628:86086).
+.table-add-new-row {
+  color: var(--slate12);
+
+  .table-add-new-row-field-control {
+    // The date renderer draws its own error line under the field; the form shows one error line for every field
+    // type instead, so hide it, and tint the input when the form flags the field.
+    .invalid-feedback-date,
+    .invalid-feedback {
+      display: none !important;
+    }
+
+    &[data-invalid='true'] .table-column-datepicker-input {
+      border-color: var(--border-danger-strong);
+      background: var(--background-error-weak);
+    }
+
+    // The table's date renderer centres and shrink-wraps itself (a cell); in the form it should fill the row.
+    > div {
+      width: 100%;
+      align-items: stretch !important;
+    }
+
+    .react-datepicker-wrapper,
+    .react-datepicker__input-container,
+    .table-column-datepicker-input-container {
+      display: block;
+      width: 100%;
+    }
+
+    .table-column-datepicker-input {
+      height: 36px;
+      padding: 8px 12px 8px 34px;
+      border: 1px solid var(--border-default);
+      border-radius: 6px;
+      background: var(--background-surface-layer-01);
+      color: var(--text-default);
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 20px;
+
+      &:hover {
+        border-color: var(--border-strong);
+      }
+
+      &:focus {
+        outline: none;
+        border-color: var(--border-accent-strong);
+      }
+
+      &::placeholder {
+        color: var(--text-placeholder);
+      }
+    }
+
+    // always visible, and on the left instead of the table cell's hover-only right-hand icon
+    .cell-icon-display {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      display: flex;
+      transform: translateY(-50%);
+      visibility: visible !important;
+      pointer-events: none;
+    }
+
+    .table-column-datepicker-input-icon {
+      position: static;
+      transform: none;
+    }
   }
 }
 
