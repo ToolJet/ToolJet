@@ -347,6 +347,9 @@ export class McpOAuthService implements OnModuleInit {
   private async workspaceReference(value: unknown, manager: EntityManager) {
     let reference = stringParam(value, 'workspace').trim();
     let idOnly = false;
+    // The workspace-entry form also accepts a domain without its HTTPS scheme.
+    // Resolve it through the same trusted-origin checks as a full URL.
+    if (/^[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+(?:[:/?#]|$)/.test(reference)) reference = `https://${reference}`;
     if (/^https?:\/\//i.test(reference)) {
       let url: URL;
       try { url = new URL(reference); } catch { throw new OAuthFailure('invalid_target', 'Use a workspace URL, ID or slug'); }
@@ -396,7 +399,7 @@ export class McpOAuthService implements OnModuleInit {
     return this.dataSource.transaction(async (manager) => {
       await manager.query('SELECT id FROM mcp_oauth_artifacts WHERE id = $1 FOR UPDATE', [hash(id)]);
       const row = await this.interaction(id, csrf, manager, origin);
-      if (row.payload.organizationId) throw new OAuthFailure('invalid_request', 'Workspace already selected');
+      // Browser binding is sufficient to deny access, including before required workspace SSO.
       await this.store(manager).consume(row.id);
       const redirect = new URL(row.payload.params.redirect_uri);
       redirect.searchParams.set('state', row.payload.params.state);

@@ -1,0 +1,39 @@
+.login-form .mcp-workspace-link {
+  display: block;
+  margin: 16px auto 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-brand);
+  font: inherit;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--interactive-focus-outline);
+    outline-offset: 4px;
+  }
+}
+
+.mcp-workspace-login {
+  .signup-info {
+    margin-top: 12px;
+  }
+
+  .mcp-workspace-back {
+    margin: 24px 0 0;
+    color: var(--text-placeholder);
+  }
+
+  .submit-button {
+    width: 100%;
+
+    svg {
+      display: none;
+    }
+  }
+
+  .mcp-workspace-error {
+    color: var(--text-danger);
+    margin-bottom: 16px;
+  }
+}

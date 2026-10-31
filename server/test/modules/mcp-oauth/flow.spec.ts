@@ -266,6 +266,26 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       const selected = await oauth.selectWorkspace(root.id, root.csrf, slug, settings.TOOLJET_HOST);
       expect((await oauth.preview(selected.id, selected.csrf)).organizationSlug).toBe(slug);
     });
+    test('accepts a bare workspace URL through the existing origin validation', async () => {
+      const root = await oauth.start(request({ resource: resourceBase }));
+      await expect(oauth.selectWorkspace(root.id, root.csrf, 'unknown.synthetic.example/garden', settings.TOOLJET_HOST))
+        .rejects.toMatchObject({ error: 'invalid_target' });
+      const child = await oauth.selectWorkspace(root.id, root.csrf, 'tooljet.synthetic.example/login/garden', settings.TOOLJET_HOST);
+      expect((await oauth.preview(child.id, child.csrf)).organizationId).toBe(organizationId);
+    });
+    test('cancels a bound interaction before workspace login without granting access', async () => {
+      const { consent } = await choose();
+      await expect(oauth.cancelSelection(consent.id, 'wrong-cookie', settings.TOOLJET_HOST))
+        .rejects.toMatchObject({ error: 'invalid_request' });
+      await expect(oauth.cancelSelection(consent.id, consent.csrf, 'https://untrusted.synthetic.example'))
+        .rejects.toMatchObject({ error: 'invalid_request' });
+      const callback = new URL((await oauth.cancelSelection(consent.id, consent.csrf, settings.TOOLJET_HOST)).redirectUrl);
+      expect(callback.searchParams.get('error')).toBe('access_denied');
+      expect(callback.searchParams.get('state')).toBe('synthetic-state');
+      expect(callback.searchParams.has('code')).toBe(false);
+      await expect(oauth.preview(consent.id, consent.csrf)).rejects.toMatchObject({ error: 'invalid_request' });
+      expect(await db.query('SELECT id FROM mcp_oauth_grants')).toHaveLength(0);
+    });
     test('workspace discovery verifies signed browser cookies and live sessions with the real account guard', async () => {
       const otherId = randomUUID();
       const otherWorkspace = randomUUID();
@@ -394,10 +414,11 @@ databaseTests('MCP OAuth with real PostgreSQL and the OAuth engine', () => {
       return { ...flow, ticket };
     };
 
-    test('shared selection bootstraps the selected custom domain without changing its resource', async () => {
+    test.each(['https://orchard.synthetic.example/home', 'orchard.synthetic.example'])
+    ('shared selection bootstraps custom-domain reference %s without changing its resource', async reference => {
       const chooser = await oauth.start(request({ resource: resourceBase }));
       expect(new URL(chooser.location).origin).toBe(settings.TOOLJET_HOST);
-      const selected = await oauth.selectWorkspace(chooser.id, chooser.csrf, `${customOrigin}/home`, settings.TOOLJET_HOST);
+      const selected = await oauth.selectWorkspace(chooser.id, chooser.csrf, reference, settings.TOOLJET_HOST);
       expect(new URL(selected.location).origin).toBe(customOrigin);
       const ticket = new URLSearchParams(new URL(selected.location).hash.slice(1)).get('bootstrap');
       const csrf = await oauth.bootstrapBrowser(selected.id, ticket, 'S'.repeat(43), customOrigin);

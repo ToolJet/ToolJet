@@ -40,6 +40,8 @@ export default function ConsentPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [needsLogin, setNeedsLogin] = useState(false);
+  const [workspaces, setWorkspaces] = useState(null);
+  const [workspace, setWorkspace] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -47,6 +49,8 @@ export default function ConsentPage() {
     setEmail(null);
     setAccountId(null);
     setNeedsLogin(false);
+    setWorkspaces(null);
+    setWorkspace('');
     setError('');
     const load = async () => {
       if (window.top !== window.self) throw new Error('Open this connection in a separate browser tab to continue.');
@@ -84,10 +88,12 @@ export default function ConsentPage() {
       const info = await response.json();
       if (!active) return;
       setFlow(info);
-      if (!info.organizationId) return;
-      const session = await fetch(`${api()}/interactions/${id}/session`, {
+      const session = await fetch(`${api()}/interactions/${id}/${info.organizationId ? 'session' : 'workspaces'}`, {
         credentials: 'include',
-        headers: { 'tj-workspace-id': info.organizationId, 'x-tooljet-oauth-origin': window.location.origin },
+        headers: {
+          ...(info.organizationId ? { 'tj-workspace-id': info.organizationId } : {}),
+          'x-tooljet-oauth-origin': window.location.origin,
+        },
       });
       if (!active) return;
       if (session.status === 401) {
@@ -115,6 +121,10 @@ export default function ConsentPage() {
       if (active) {
         setEmail(user.email);
         setAccountId(user.accountId);
+        if (!info.organizationId) {
+          setWorkspaces(user.workspaces);
+          if (user.workspaces.length === 1) setWorkspace(user.workspaces[0].id);
+        }
         try {
           sessionStorage.removeItem(`tj_mcp_login_${id}`);
         } catch {
@@ -128,19 +138,54 @@ export default function ConsentPage() {
     };
   }, [id]);
 
-  const decide = async (allow) => {
+  const selectWorkspace = async () => {
     setBusy(true);
     setError('');
     try {
-      const response = await fetch(`${api()}/interactions/${id}`, {
+      const response = await fetch(`${api()}/interactions/${id}/workspace`, {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'tj-workspace-id': flow.organizationId,
           'x-tooljet-oauth-csrf': flow.csrfToken,
         },
-        body: JSON.stringify({ allow, accountId }),
+        body: JSON.stringify({ workspace }),
+      });
+      if (!response.ok)
+        throw new Error('This workspace or connection link is unavailable. Start again from your AI client.');
+      const result = await response.json();
+      // Selection consumes the root. Continue with its immutable child, never mutate the root again.
+      // If a fresh login is required, keep the selected workspace on the consent surface first.
+      const target = new URL(result.redirectUrl, window.location.origin);
+      const selectedId = target.searchParams.get('request');
+      if (target.origin === window.location.origin && /^[A-Za-z0-9_-]{43}$/.test(selectedId || '')) {
+        try {
+          sessionStorage.setItem(`tj_mcp_login_${selectedId}`, '1');
+        } catch {
+          /* Manual sign-in still works. */
+        }
+      }
+      window.location.assign(result.redirectUrl);
+    } catch (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+  };
+
+  const decide = async (allow) => {
+    setBusy(true);
+    setError('');
+    try {
+      const cancelWithoutSession = !allow && (!flow.organizationId || needsLogin);
+      const response = await fetch(`${api()}/interactions/${id}${cancelWithoutSession ? '/cancel' : ''}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(flow.organizationId ? { 'tj-workspace-id': flow.organizationId } : {}),
+          'x-tooljet-oauth-csrf': flow.csrfToken,
+        },
+        body: JSON.stringify(cancelWithoutSession ? {} : { allow, accountId }),
       });
       if (response.status === 401) {
         setEmail(null);
@@ -158,7 +203,7 @@ export default function ConsentPage() {
 
   // Keep consent hidden during the session check and while leaving for login.
   const choosingWorkspace = flow && !flow.organizationId;
-  if (!choosingWorkspace && !email && !error && !needsLogin) {
+  if (!email && !error && !needsLogin) {
     return (
       <main className={pageClassName}>
         <p role="status">Connecting to ToolJet…</p>
@@ -166,7 +211,8 @@ export default function ConsentPage() {
     );
   }
 
-  const hasConsent = Boolean(flow && email);
+  const hasConsent = Boolean(flow && (email || (needsLogin && flow.organizationId)));
+  const canApprove = Boolean(flow?.organizationId && email && accountId && !needsLogin);
 
   return (
     <main className={pageClassName}>
@@ -191,23 +237,39 @@ export default function ConsentPage() {
               {error}
             </p>
           )}
-          {choosingWorkspace && <WorkspacePicker flow={flow} endpoint={`${api()}/interactions/${id}`} />}
           {hasConsent && (
             <>
-              <div className="mcp-oauth-account">
-                <span className="mcp-oauth-avatar" aria-hidden="true">
-                  {email.charAt(0).toUpperCase()}
-                </span>
-                <div>
-                  <p>
-                    <strong>{flow.clientName}</strong> wants to access your ToolJet account
-                  </p>
-                  <p className="mcp-oauth-muted">{email}</p>
+              {email && (
+                <div className="mcp-oauth-account">
+                  <span className="mcp-oauth-avatar" aria-hidden="true">
+                    {email.charAt(0).toUpperCase()}
+                  </span>
+                  <div>
+                    <p>
+                      <strong>{flow.clientName}</strong> wants to access your ToolJet account
+                    </p>
+                    <p className="mcp-oauth-muted">{email}</p>
+                  </div>
                 </div>
-              </div>
+              )}
+              {choosingWorkspace && (
+                <WorkspacePicker workspaces={workspaces} workspace={workspace} onChange={setWorkspace} busy={busy} />
+              )}
+              {needsLogin && (
+                <p role="status" className="mcp-oauth-muted">
+                  Sign in to {flow.organizationName} using one of its allowed methods before approving access. If this
+                  workspace requires SSO, complete its SSO sign-in to continue.
+                </p>
+              )}
               <section className="mcp-oauth-permissions" aria-labelledby="mcp-oauth-permissions-title">
                 <h2 id="mcp-oauth-permissions-title">
-                  Access requested in <span>{flow.organizationName}</span>
+                  {flow.organizationName ? (
+                    <>
+                      Access requested in <span>{flow.organizationName}</span>
+                    </>
+                  ) : (
+                    'Access requested'
+                  )}
                 </h2>
                 <ul>
                   {flow.scopes.map((scope) => {
@@ -237,9 +299,20 @@ export default function ConsentPage() {
                   <button type="button" disabled={busy} onClick={() => decide(false)}>
                     Cancel
                   </button>
-                  <button type="button" className="mcp-oauth-primary" disabled={busy} onClick={() => decide(true)}>
-                    {busy ? 'Please wait…' : 'Allow access'}
-                  </button>
+                  {needsLogin ? (
+                    <a className="mcp-oauth-signin" href={flow.loginUrl}>
+                      Sign in to this workspace
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      className="mcp-oauth-primary"
+                      disabled={busy || (choosingWorkspace ? !workspace : !canApprove)}
+                      onClick={choosingWorkspace ? selectWorkspace : () => decide(true)}
+                    >
+                      {busy ? 'Please wait…' : choosingWorkspace ? 'Continue' : 'Allow access'}
+                    </button>
+                  )}
                 </div>
                 <p className="mcp-oauth-callback mcp-oauth-muted">
                   Authorizing will redirect to <code dir="ltr">{flow.redirectUri}</code>
@@ -251,13 +324,18 @@ export default function ConsentPage() {
               </footer>
             </>
           )}
-          {flow && needsLogin && (
-            <a className="mcp-oauth-signin" href={flow.loginUrl}>
-              Sign in to this workspace
-            </a>
+          {flow && needsLogin && !hasConsent && (
+            <div className="mcp-oauth-actions">
+              <button type="button" disabled={busy} onClick={() => decide(false)}>
+                Cancel
+              </button>
+              <a className="mcp-oauth-signin" href={flow.loginUrl}>
+                Sign in to ToolJet
+              </a>
+            </div>
           )}
         </section>
-        {hasConsent && (
+        {hasConsent && flow.organizationId && (
           <p className="mcp-oauth-disconnect mcp-oauth-muted">
             You can disconnect anytime in{' '}
             <a

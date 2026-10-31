@@ -21,6 +21,7 @@ const LoginForm = ({
   whiteLabelText,
   appName,
   appSlug,
+  onWorkspaceSignIn,
 }) => {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
@@ -201,8 +202,8 @@ const LoginForm = ({
                             redirectTo || `/applications/${appSlug}`
                           )}`
                         : paramOrganizationSlug
-                        ? `/forgot-password?oid=${paramOrganizationSlug}`
-                        : '/forgot-password'
+                          ? `/forgot-password?oid=${paramOrganizationSlug}`
+                          : '/forgot-password'
                     }
                     hint={''}
                   />
@@ -230,6 +231,11 @@ const LoginForm = ({
                 </div>
               )}
             </>
+          )}
+          {onWorkspaceSignIn && (
+            <button type="button" className="mcp-workspace-link" onClick={onWorkspaceSignIn}>
+              Sign in with your workspace <span aria-hidden="true">→</span>
+            </button>
           )}
         </OnboardingFormInsideWrapper>
       </OnboardingUIWrapper>
