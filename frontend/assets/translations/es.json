@@ -57,17 +57,17 @@
     },
     "slack": {
         "authorize": "Autorizar",
-        "connectToolJetToSlack": "ToolJet puede conectarse a Slack, listar usuarios, enviar mensajes, etc. Por favor seleccione los permisos apropiados.",
+        "connectToolJetToSlack": "{{whiteLabelText}} puede conectarse a Slack, listar usuarios, enviar mensajes, etc. Por favor seleccione los permisos apropiados.",
         "chatWrite": "chat:escribir",
-        "listUsersAndSendMessage": "Tu aplicación de Tooljet será capaz de listar usuarios y enviar mensajes a ellos y a los canales.",
+        "listUsersAndSendMessage": "Tu aplicación de {{whiteLabelText}} será capaz de listar usuarios y enviar mensajes a ellos y a los canales.",
         "connectSlack": "Conectar a Slack"
     },
     "googleSheets": {
         "readOnly": "Solo lectura",
-        "enableReadAndWrite": "Si deseas que ToolJet pueda modificar tus hojas de Google Sheet, asegurate de seleccionar permisos de lectura y escritura.",
-        "readDataFromSheets": "Tus aplicaciones de ToolJet sólo pueden leer datos de tus hojas de Google Sheets.",
+        "enableReadAndWrite": "Si deseas que tus aplicaciones de {{whiteLabelText}} puedan modificar tus hojas de Google Sheet, asegurate de seleccionar permisos de lectura y escritura.",
+        "readDataFromSheets": "Tus aplicaciones de {{whiteLabelText}} sólo pueden leer datos de tus hojas de Google Sheets.",
         "readWrite": "Lectura y escritura",
-        "readModifySheets": "Tus aplicaciones de ToolJet pueden leer, modificar y más en tus hojas de Google Sheets.",
+        "readModifySheets": "Tus aplicaciones de {{whiteLabelText}} pueden leer, modificar y más en tus hojas de Google Sheets.",
         "toGoogleSheets": "a Google Sheets"
     },
     "profile": {
@@ -81,7 +81,7 @@
         "password": "Contraseña",
         "acceptInvite": "Aceptar invitación",
         "successfullyVerifiedEmail": "Correo verificado con éxito",
-        "setupTooljet": "Configurar ToolJet"
+        "setupTooljet": "Configurar {{whiteLabelText}}"
     },
     "loginSignupPage": {
         "forgotPassword": "Olvidaste la contraseña",
@@ -102,13 +102,13 @@
         "emailConfirmLink": "Por favor revisa tu correo para el link de confirmación",
         "newPassword": "Nueva contraseña",
         "passwordConfirmation": "Confirmar contraseña",
-        "newToTooljet": "¿Nuevo en ToolJet?",
+        "newToTooljet": "¿Nuevo en {{whiteLabelText}}?",
         "newToWorkspace": "¿Nuevo en este espacio de trabajo?",
         "enterWorkEmail": "Ingresa tu correo electrónico",
         "enterPassword": "Ingresa tu contraseña",
         "forgot": "¿Lo olvidaste?",
         "workEmail": "Correo electrónico",
-        "joinTooljet": "Unete a ToolJet",
+        "joinTooljet": "Unete a {{whiteLabelText}}",
         "getStartedForFree": "Empieza gratis",
         "passwordCharacter": "La contraseña debe contener al menos 5 carácteres",
         "enterFullName": "Ingresa tu nombre completo",
@@ -133,7 +133,7 @@
             "save": "Guardar",
             "create": "Crear versión",
             "editVersion": "Editar versión",
-            "deleteVersion": "¿Quieres eliminar esta versión?",
+            "deleteVersion": "¿Quieres eliminar esta versión ({{version}})?",
             "enterVersionName": "Introducir nombre de la versión",
             "versionAlreadyReleased": "La versión ya fue creada anteriormente, por favor crea una nueva versión o cambia a una versión diferente para seguir realizando cambios."
         },
