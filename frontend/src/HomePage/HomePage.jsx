@@ -38,7 +38,12 @@ import { LicenseTooltip } from '@/LicenseTooltip';
 import ModalBase from '@/_ui/Modal';
 import FolderFilter from './FolderFilter';
 import { useLicenseStore } from '@/_stores/licenseStore';
-import { getFolderGroupPermissions, appTypeToDisplayNameMapping, getFolderPermissionField } from './helper';
+import {
+  getFolderGroupPermissions,
+  appTypeToDisplayNameMapping,
+  getFolderPermissionField,
+  isAppNameTakenError,
+} from './helper';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
@@ -196,12 +201,12 @@ class HomePageComponent extends React.Component {
         break;
       case !!templateId: {
         this.setState({ showAIOnboardingLoadingScreen: true });
-        if (templateId) {
-          /*TODO: I Believe the people who will try the templates from site should be new to tooljet. so making name unique for existed user can be do it in sometime */
-          this.deployApp(new Event('deploy'), `${templateId.replace(/-/g, ' ')}`, {
-            id: templateId,
-          });
-        }
+        const { activeBranchId } = useWorkspaceBranchesStore.getState();
+        libraryAppService
+          .defaultAppName(templateId, activeBranchId)
+          .then(({ name } = {}) => name || templateId.replace(/-/g, ' '))
+          .catch(() => templateId.replace(/-/g, ' '))
+          .then((appName) => this.deployApp(new Event('deploy'), appName, { id: templateId }));
         break;
       }
       default:
@@ -780,13 +785,11 @@ class HomePageComponent extends React.Component {
       this.eraseAIOnboardingRelatedCookies();
     } catch (e) {
       this.setState({ deploying: false, showAIOnboardingLoadingScreen: false });
-      toast.error(e.error);
       this.eraseAIOnboardingRelatedCookies();
-      if (e.statusCode === 409) {
-        return false;
-      } else {
-        return e;
-      }
+      // false keeps the name modal open and shows the error there, so no toast
+      if (isAppNameTakenError(e)) return false;
+      toast.error(e.error);
+      return e;
     }
   };
 
@@ -1484,27 +1487,26 @@ class HomePageComponent extends React.Component {
       this.setState({ showSwitchBranchForCreate: true });
       return;
     }
-    try {
-      const { plugins_to_be_installed = [], plugins_detail_by_id = {} } =
-        (await libraryAppService.findDependentPluginsInTemplate?.(template.id)) || {};
+    const { activeBranchId } = useWorkspaceBranchesStore.getState();
+    const [pluginsResult, nameResult] = await Promise.allSettled([
+      libraryAppService.findDependentPluginsInTemplate(template.id),
+      libraryAppService.defaultAppName(template.id, activeBranchId),
+    ]);
+    if (pluginsResult.status === 'rejected') console.error('Error checking template plugins:', pluginsResult.reason);
 
-      this.setState({
-        showCreateAppFromTemplateModal: true,
-        selectedTemplate: template,
-        ...(plugins_to_be_installed.length && {
-          shouldAutoImportPlugin: true,
-          dependentPlugins: plugins_to_be_installed,
-          dependentPluginsDetail: { ...plugins_detail_by_id },
-        }),
-      });
-    } catch (error) {
-      console.error('Error checking template plugins:', error);
-      // Continue with template creation without plugins
-      this.setState({
-        showCreateAppFromTemplateModal: true,
-        selectedTemplate: template,
-      });
-    }
+    const { plugins_to_be_installed = [], plugins_detail_by_id = {} } =
+      (pluginsResult.status === 'fulfilled' && pluginsResult.value) || {};
+    const defaultAppName = nameResult.status === 'fulfilled' ? nameResult.value?.name : undefined;
+
+    this.setState({
+      showCreateAppFromTemplateModal: true,
+      selectedTemplate: { ...template, defaultAppName },
+      ...(plugins_to_be_installed.length && {
+        shouldAutoImportPlugin: true,
+        dependentPlugins: plugins_to_be_installed,
+        dependentPluginsDetail: { ...plugins_detail_by_id },
+      }),
+    });
   };
 
   closeCreateAppFromTemplateModal = () => {

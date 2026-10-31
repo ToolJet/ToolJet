@@ -21,3 +21,9 @@ export const getFolderPermissionField = (userPermissions, appType, action) => {
   const prefix = FOLDER_TYPE_PREFIX_BY_APP_TYPE[appType] ?? '';
   return userPermissions?.[`${prefix}folder_${action}`];
 };
+
+// A taken app name comes back as 409 from the database constraint, but as 400 "This app name is already taken."
+// from the name pre-check. The 400 is part of the external API contract, so the client accepts both.
+export const isAppNameTakenError = (error) =>
+  error?.statusCode === 409 ||
+  (error?.statusCode === 400 && typeof error?.error === 'string' && /name is already taken/i.test(error.error));
