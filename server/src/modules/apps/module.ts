@@ -27,6 +27,21 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { SubModule } from '@modules/app/sub-module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { DashboardActivityService } from './dashboard/activity.service';
+import { DashboardActivityInterceptor } from './dashboard/activity.interceptor';
+import { DashboardAppsController } from './dashboard/dashboard.controller';
+import { DashboardService } from './dashboard/dashboard.service';
+import { PinsController } from './dashboard/pins.controller';
+import { PinsService } from './dashboard/pins.service';
+import { DashboardBulkMoveController } from './dashboard/bulk-move.controller';
+import { BulkMoveService } from './dashboard/bulk-move.service';
+import { BulkDeleteService } from './dashboard/bulk-delete.service';
+import { DashboardBulkFolderDeleteController } from './dashboard/bulk-folder-delete.controller';
+import { BulkFolderDeleteService } from './dashboard/bulk-folder-delete.service';
+import { DataSource } from 'typeorm';
+import { AbilityService } from '@modules/ability/interfaces/IService';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 @Module({})
 export class AppsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -59,6 +74,9 @@ export class AppsModule extends SubModule {
       'services/page.util.service',
       'subscribers/apps.subscriber',
     ]);
+    const { GitSyncConfigsUtilService } = await this.getProviders(configs, 'git-sync-configs', ['util.service']);
+    const { FolderAppsUtilService } = await this.getProviders(configs, 'folder-apps', ['util.service']);
+    const { FoldersService } = await this.getProviders(configs, 'folders', ['service']);
 
     return this.cacheModule(cacheKey, {
       module: AppsModule,
@@ -76,7 +94,16 @@ export class AppsModule extends SubModule {
         await UsersModule.register(configs),
         await GitSyncConfigsModule.register(configs),
       ],
-      controllers: isMainImport ? [AppsController, WorkflowController] : [],
+      controllers: isMainImport
+        ? [
+            AppsController,
+            WorkflowController,
+            DashboardAppsController,
+            PinsController,
+            DashboardBulkMoveController,
+            DashboardBulkFolderDeleteController,
+          ]
+        : [],
       providers: [
         AppsService,
         WorkflowService,
@@ -97,6 +124,40 @@ export class AppsModule extends SubModule {
         UserSessionRepository,
         UserRepository,
         GroupPermissionsRepository,
+        DashboardActivityService,
+        // Factory: the service is CE-only, but its deps must be the edition-resolved classes.
+        {
+          provide: DashboardService,
+          useFactory: (dataSource, abilityService, appsUtilService, gitSyncConfigsUtilService) =>
+            new DashboardService(dataSource, abilityService, appsUtilService, gitSyncConfigsUtilService),
+          inject: [DataSource, AbilityService, AppsUtilService, GitSyncConfigsUtilService],
+        },
+        PinsService,
+        {
+          provide: BulkMoveService,
+          useFactory: (dataSource, dashboardService, folderAppsUtilService) =>
+            new BulkMoveService(dataSource, dashboardService, folderAppsUtilService),
+          inject: [DataSource, DashboardService, FolderAppsUtilService],
+        },
+        {
+          provide: BulkDeleteService,
+          useFactory: (dashboardService, appsService, appsRepository, eventEmitter) =>
+            new BulkDeleteService(dashboardService, appsService, appsRepository, eventEmitter),
+          inject: [DashboardService, AppsService, AppsRepository, EventEmitter2],
+        },
+        {
+          provide: BulkFolderDeleteService,
+          useFactory: (dataSource, dashboardService, foldersService, bulkDeleteService, appsRepository) =>
+            new BulkFolderDeleteService(
+              dataSource,
+              dashboardService,
+              foldersService,
+              bulkDeleteService,
+              appsRepository
+            ),
+          inject: [DataSource, DashboardService, FoldersService, BulkDeleteService, AppsRepository],
+        },
+        ...(isMainImport ? [{ provide: APP_INTERCEPTOR, useClass: DashboardActivityInterceptor }] : []),
       ],
       exports: [AppsUtilService, AppImportExportService],
     });
