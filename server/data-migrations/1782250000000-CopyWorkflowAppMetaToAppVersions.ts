@@ -9,9 +9,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * live in their own migration.
  *
  * Ordering: dedupe apps.slug -> backfill app_versions from apps -> zero out
- * apps.*. 1782300000000 installs the uniqueness trigger AFTER this runs, so
- * the trigger never fires during this migration's own UPDATEs (CREATE
- * TRIGGER doesn't validate existing rows, only future writes).
+ * apps.*.
  *
  * apps.slug keeps its existing entity-level UNIQUE constraint (APP_SLUG_UNIQUE
  * / "UQ_35eef0fb1f3f2b435b8b6d82ba0", from `@Column({ unique: true })` on
@@ -21,6 +19,11 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  *
  * down() is a schema-only no-op, matching this migration family's
  * established convention of not reverting data on rollback.
+ *
+ * A data migration: 3.21.58 reads workflow name/slug/icon from apps.*, and async mode's schema phase
+ * must leave a database 3.21.58 still runs on. Moved from migrations/ under the same name, so databases
+ * that already ran it do not run it again. The slug trigger from 1782300000000 already exists
+ * when this runs; step 1's dedupe keeps step 2 from tripping it.
  */
 export class CopyWorkflowAppMetaToAppVersions1782250000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
