@@ -2,7 +2,7 @@ import React, { forwardRef, useEffect, useRef } from 'react';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { IconX } from '@tabler/icons-react';
-import moment from 'moment-timezone';
+import { parseDateInputText, parseDateRangeInput } from './utils';
 
 export const DatepickerInput = forwardRef(
   ({
@@ -19,6 +19,7 @@ export const DatepickerInput = forwardRef(
     displayFormat,
     setDisplayTimestamp,
     setTextInputFocus,
+    onTextParse,
     IconElement,
     showValidationError,
     setShowValidationError,
@@ -79,16 +80,16 @@ export const DatepickerInput = forwardRef(
             const inputVal = e.target.value;
             setDisplayTimestamp(inputVal);
             if (datepickerSelectionType === 'range') {
-              const [start, end] = inputVal.split('-');
-              const parsedStartDate = moment(start, displayFormat);
-              const parsedEndDate = moment(end, displayFormat);
-              if (parsedStartDate.isValid() && parsedEndDate.isValid()) {
-                onInputChange([parsedStartDate.toDate(), parsedEndDate.toDate()]);
+              const parsed = parseDateRangeInput(inputVal, displayFormat);
+              onTextParse?.(parsed);
+              if (parsed.isComplete) {
+                onInputChange([parsed.startDate, parsed.endDate]);
               }
             } else {
-              const parsedDate = moment(inputVal, displayFormat);
-              if (parsedDate.isValid()) {
-                onInputChange(parsedDate.toDate());
+              const parsed = parseDateInputText(inputVal, displayFormat);
+              onTextParse?.(parsed);
+              if (!parsed.isEmpty && !parsed.hasError) {
+                onInputChange(parsed.date);
               }
             }
           }}

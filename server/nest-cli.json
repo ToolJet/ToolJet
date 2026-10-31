@@ -6,6 +6,7 @@
       { "include": "assets/**/*", "outDir": "./dist/src", "watchAssets": true },
       { "include": "mails/**/*","outDir": "./dist/src/", "watchAssets": true }
     ],
-    "watchAssets": true
+    "watchAssets": true,
+    "watchPaths": ["../packages/widget-definitions/src"]
   }
 }

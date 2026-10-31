@@ -44,6 +44,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
       const organizationSlug = INVITE_EXPIRY_MESSAGES.includes(message)
         ? exception?.response?.organizationSlug
         : undefined;
+      // AppValidationException: clients (e.g. the MCP) need the full problem list.
+      const validationIssues = Array.isArray(exception?.response?.issues) ? exception.response.issues : undefined;
+      const validationWarnings = Array.isArray(exception?.response?.warnings) ? exception.response.warnings : [];
 
       if (exception instanceof HttpException) {
         errorResponse = { status: exception.getStatus(), message };
@@ -62,6 +65,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message: errorResponse.message,
         code: code,
         ...(organizationSlug && { organizationSlug }),
+        ...(validationIssues && { issues: validationIssues, warnings: validationWarnings }),
       });
     } catch (error) {
       this.logger.error('Error while processing uncaught exception', (error as any).stack);

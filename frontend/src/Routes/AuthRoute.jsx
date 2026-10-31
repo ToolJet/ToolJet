@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useSessionManagement } from '@/_hooks/useSessionManagement';
-import { getPathname, getRedirectURL, isCustomDomain, redirectToMainHost } from '@/_helpers/routes';
+import {
+  getPathname,
+  getRedirectURL,
+  isCustomDomain,
+  isMcpOAuthConsentPath,
+  redirectToMainHost,
+} from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { authenticationService, loginConfigsService, sessionService } from '@/_services';
 import { customDomainService } from '@/_services/custom-domain.service';
@@ -29,6 +35,13 @@ export const AuthRoute = ({ children }) => {
   const { organizationId: organizationSlug } = params;
   const location = useLocation();
   const isSignUpRoute = location.pathname.startsWith('/signup');
+  const searchParams = new URLSearchParams(location.search);
+  const oauthReturn = searchParams.get('redirectTo');
+  const requiresMcpReauthentication =
+    location.pathname.startsWith('/login/') &&
+    Boolean(organizationSlug) &&
+    isMcpOAuthConsentPath(oauthReturn) &&
+    searchParams.get('oauth_reauthenticate') === '1';
   const navigate = useNavigate();
 
   useEffect(
@@ -42,15 +55,16 @@ export const AuthRoute = ({ children }) => {
   useEffect(
     () => onValidSession(),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isGettingConfigs, isValidSession, id]
+    [isGettingConfigs, isValidSession, id, location.search]
   );
 
   useEffect(() => {
     const isComingFromPasswordReset =
       location?.state?.from === '/reset-password' || location?.state?.from === '/forgot-password';
-    if ((isInvalidSession || isComingFromPasswordReset) && !isGettingConfigs) setLoading(false);
+    if ((isInvalidSession || isComingFromPasswordReset || requiresMcpReauthentication) && !isGettingConfigs)
+      setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isInvalidSession, isGettingConfigs]);
+  }, [isInvalidSession, isGettingConfigs, requiresMcpReauthentication]);
 
   const initialize = () => {
     const isSuperAdminLogin = location.pathname.startsWith('/login/super-admin');
@@ -144,6 +158,12 @@ export const AuthRoute = ({ children }) => {
 
   const onValidSession = () => {
     if (isValidSession && !isGettingConfigs && !isUserLoggingIn) {
+      // Consent can require fresh workspace login evidence. Keep the existing
+      // session while letting the normal password/SSO flow establish it.
+      if (requiresMcpReauthentication) {
+        setLoading(false);
+        return;
+      }
       const {
         current_organization_name,
         current_organization_id,
@@ -155,7 +175,7 @@ export const AuthRoute = ({ children }) => {
         setOrganizationName(current_organization_name);
         const shouldRedirect = !organizationSlug || (!isGettingConfigs && current_organization_id === organizationId);
         if (shouldRedirect || isSignUpRoute) {
-          const redirectPath = getRedirectURL('/');
+          const redirectPath = getRedirectURL(isMcpOAuthConsentPath(oauthReturn) ? oauthReturn : '/');
           navigate(redirectPath);
         }
       }

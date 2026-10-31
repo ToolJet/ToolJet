@@ -9,6 +9,8 @@ import { onInvitedUserSignUpSuccess, onLoginSuccess } from '@/_helpers/platform/
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { fetchEdition } from '@/modules/common/helpers/utils';
+import { isMcpOAuthConsentPath } from '@/_helpers/routes';
+import { loadMcpOAuthLoginContext, ssoStateRedirect } from '@/McpOAuth/loginContext';
 // import pako from 'pako';
 
 export function Authorize({ navigate }) {
@@ -17,30 +19,20 @@ export function Authorize({ navigate }) {
   const router = useRouter();
   const organizationId = authenticationService.getLoginOrganizationId();
   const organizationSlug = authenticationService.getLoginOrganizationSlug();
-  // Prefer cookie (same-domain flow); fall back to state param encoded by SSO buttons
-  // for custom-domain flows where the cookie is inaccessible on the base-domain callback.
-  // Google (implicit/hash flow): state arrives in the URL hash fragment.
-  // GitHub (code flow): state arrives as a query param (?state=...).
-  let redirectUrl = getCookie('redirectPath');
-  if (!redirectUrl) {
-    let stateParam = null;
-    if (window.location.hash) {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      stateParam = hashParams.get('state');
-    } else if (router.query.state) {
-      stateParam = router.query.state;
-    }
-    if (stateParam) {
-      try {
-        const stateObj = JSON.parse(decodeURIComponent(stateParam));
-        redirectUrl = stateObj?.redirectTo || null;
-      } catch {
-        // malformed state — ignore
-      }
-    }
-  }
-  const signupOrganizationSlug = authenticationService.getSignupOrganizationSlug();
-  const inviteFlowIdentifier = authenticationService.getInviteFlowIndetifier();
+  const stateRedirect = ssoStateRedirect(
+    new URLSearchParams(window.location.hash.slice(1)).get('state') || router.query.state
+  );
+  const cookieRedirect = getCookie('redirectPath');
+  // An explicit MCP return survives a custom-domain -> canonical callback and
+  // takes precedence over unrelated cookies left on the canonical host.
+  const mcpReturn = isMcpOAuthConsentPath(stateRedirect)
+    ? stateRedirect
+    : !stateRedirect && isMcpOAuthConsentPath(cookieRedirect)
+      ? cookieRedirect
+      : null;
+  const redirectUrl = mcpReturn || cookieRedirect || stateRedirect;
+  const signupOrganizationSlug = mcpReturn ? null : authenticationService.getSignupOrganizationSlug();
+  const inviteFlowIdentifier = mcpReturn ? null : authenticationService.getInviteFlowIndetifier();
 
   useEffect(() => {
     const errorMessage = router.query.error_description || router.query.error;
@@ -88,6 +80,13 @@ export function Authorize({ navigate }) {
     /* If the params has SAMLResponse the SAML auth is success */
     if (router.query.saml_response_id) {
       authParams.samlResponseId = router.query.saml_response_id;
+    }
+
+    if (mcpReturn) {
+      loadMcpOAuthLoginContext(mcpReturn)
+        .then((context) => signIn(authParams, configs, utmParams, context))
+        .catch((err) => setError(err.message));
+      return;
     }
 
     let subsciption;
@@ -280,7 +279,7 @@ export function Authorize({ navigate }) {
       /* empty */
     }
   };
-  const signIn = (authParams, configs, utmParams) => {
+  const signIn = (authParams, configs, utmParams, mcpContext) => {
     const handleAuthResponse = ({ redirect_url, ...restResponse }) => {
       const { organization_id, current_organization_id, email } = restResponse;
       // Submit a lightweight HubSpot form submission with hutk + page context to set Original source from web
@@ -343,6 +342,14 @@ export function Authorize({ navigate }) {
         setError(`${configs.name} login failed - ${errMessage}`);
       }
     };
+
+    if (mcpContext) {
+      authenticationService
+        .signInViaOAuth(router.query.configId, router.query.origin, authParams, mcpContext)
+        .then(handleAuthResponse)
+        .catch(handleAuthError);
+      return;
+    }
 
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
 

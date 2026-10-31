@@ -1,9 +1,9 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import CreateColumnForm from '../../Forms/ColumnForm';
-import { TooljetDatabaseContext } from '../../index';
-import { tooljetDatabaseService } from '@/_services';
+import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { getColumnDataType } from '../../constants';
 
 const CreateColumnDrawer = ({
@@ -22,7 +22,7 @@ const CreateColumnDrawer = ({
     pageSize,
     setForeignKeys,
     setConfigurations,
-  } = useContext(TooljetDatabaseContext);
+  } = useTooljetDatabaseContext();
 
   return (
     <>

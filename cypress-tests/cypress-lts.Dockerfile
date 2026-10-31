@@ -1,9 +1,9 @@
-FROM node:22.15.1 AS builder
+FROM node:22.23.4 AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@10.9.2 && npm cache clean --force
+RUN npm i -g npm@10.9.9 && npm cache clean --force
 
 RUN mkdir -p /app
 WORKDIR /app
@@ -99,12 +99,12 @@ RUN apt-get update && \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 
-RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
-    && tar -xf node-v22.15.1-linux-x64.tar.xz \
-    && mv node-v22.15.1-linux-x64 /usr/local/lib/nodejs \
+RUN curl -O https://nodejs.org/dist/v22.23.4/node-v22.23.4-linux-x64.tar.xz \
+    && tar -xf node-v22.23.4-linux-x64.tar.xz \
+    && mv node-v22.23.4-linux-x64 /usr/local/lib/nodejs \
     && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
     && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
-    && rm node-v22.15.1-linux-x64.tar.xz
+    && rm node-v22.23.4-linux-x64.tar.xz
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production
@@ -148,6 +148,8 @@ COPY --from=builder /app/plugins/node_modules ./app/plugins/node_modules
 COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
 COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
 COPY --from=builder /app/frontend/build ./app/frontend/build
+# copy widget-definitions (server node_modules symlinks to this)
+COPY --from=builder /app/packages/widget-definitions ./app/packages/widget-definitions
 COPY --from=builder /app/server/package.json ./app/server/package.json
 COPY --from=builder /app/server/.version ./app/server/.version
 COPY --from=builder /app/server/ee/keys ./app/server/ee/keys

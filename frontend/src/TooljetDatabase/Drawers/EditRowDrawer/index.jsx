@@ -1,9 +1,9 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import EditRowForm from '../../Forms/EditRowForm';
-import { TooljetDatabaseContext } from '../../index';
-import { tooljetDatabaseService } from '@/_services';
+import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { listAllPrimaryKeyColumns } from '../../constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
@@ -27,7 +27,7 @@ const EditRowDrawer = ({
     // totalRecords,
     pageSize,
     // selectedTableData,
-  } = useContext(TooljetDatabaseContext);
+  } = useTooljetDatabaseContext();
   const [selectedRowObj, setSelectedRowObj] = useState({});
 
   React.useEffect(() => {

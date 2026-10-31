@@ -1,6 +1,6 @@
 ---
 name: component-config-reader
-description: Extracts the test surface (properties, styles, events, defaults, nested variants) from a ToolJet app-builder component's config file at `frontend/src/AppBuilder/WidgetManager/widgets/{name}.js`. Emits YAML with source file:line citations. Never reads docs files or live DOM — scope is config only.
+description: Extracts the test surface (properties, styles, events, defaults, nested variants) from a ToolJet app-builder component's config file at `packages/widget-definitions/src/widgets/{name}.js`. Emits YAML with source file:line citations. Never reads docs files or live DOM — scope is config only.
 tools:
   - Read
   - Grep
@@ -23,8 +23,8 @@ Given a component name (e.g., `button`, `table`, `textInput`):
 ### Step 1: Locate the config file
 
 Try paths in order:
-1. `frontend/src/AppBuilder/WidgetManager/widgets/{name}.js`
-2. `frontend/src/AppBuilder/WidgetManager/widgets/{name}.jsx`
+1. `packages/widget-definitions/src/widgets/{name}.js`
+2. `packages/widget-definitions/src/widgets/{name}.jsx`
 3. Search the central manifest `frontend/src/AppBuilder/WidgetManager/configs/widgetConfig.js` for the import path
 
 If not found, emit:
@@ -76,7 +76,7 @@ nested_variants:
   - parent: columns
     discriminator: type
     values: [string, number, text, dropdown, multiselect, badge, tag, date, boolean, image, select, link, toggleSwitch, radio]
-    source: frontend/src/AppBuilder/WidgetManager/widgets/table.js:{line}
+    source: packages/widget-definitions/src/widgets/table.js:{line}
 ```
 
 If none, emit `nested_variants: []`.
@@ -88,7 +88,7 @@ Output to the final message (no file write). Full shape:
 ```yaml
 component: <name>
 runtimeCandidate: <name_lowercased_alphanumeric_only>1
-config_path: frontend/src/AppBuilder/WidgetManager/widgets/<name>.js
+config_path: packages/widget-definitions/src/widgets/<name>.js
 surface:
   properties:
     - name: <property_name>

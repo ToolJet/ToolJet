@@ -47,6 +47,7 @@ const Tabs = ({
                 <button
                   type="button"
                   role="tab"
+                  data-tab-key={eventKey}
                   className={cx('nav-link', { active: isActive, disabled })}
                   onClick={() => !disabled && handleTabClick(eventKey)}
                   aria-selected={isActive}

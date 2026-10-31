@@ -1,4 +1,6 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { invalidateUserCredentials } from '@modules/mcp-oauth/revocation';
+import { McpOAuthService } from '@modules/mcp-oauth/service';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { DeepPartial, EntityManager, MoreThanOrEqual, Not } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { UserSessions } from '@entities/user_sessions.entity';
@@ -38,6 +40,9 @@ import { SessionType } from '@modules/external-apis/constants';
 
 @Injectable()
 export class SessionUtilService {
+  @Inject(McpOAuthService)
+  protected readonly mcpOAuthService: McpOAuthService;
+
   constructor(
     protected readonly configService: ConfigService,
     protected readonly userRepository: UserRepository,
@@ -51,10 +56,15 @@ export class SessionUtilService {
     protected readonly jwtService: JwtService
   ) {}
 
-  async terminateAllSessions(userId: string): Promise<void> {
+  async terminateAllSessions(userId: string, exceptSessionId?: string, manager?: EntityManager): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.delete(UserSessions, { userId });
-    });
+      // Administrative termination also invalidates external credentials on the Cloud OAuth rollout.
+      // Ordinary logout uses its separate session-only path.
+      if (this.configService.get<string>('TOOLJET_EDITION')?.toLowerCase() === 'cloud') {
+        await invalidateUserCredentials(manager, userId);
+      }
+      await manager.delete(UserSessions, { userId, ...(exceptSessionId ? { id: Not(exceptSessionId) } : {}) });
+    }, manager);
   }
 
   sign(JWTPayload: any): string {
@@ -101,12 +111,41 @@ export class SessionUtilService {
           `IP: ${clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${
             request?.headers['user-agent'] || 'unknown'
           }`,
-          manager
+          manager,
+          user.passwordExpiry
         );
         sessionId = session.id;
       }
 
+      // Only actual login callers set this marker; workspace switching never invents new proof.
+      const {
+        oauthAuthenticationMethod,
+        oauthAuthenticationProviderId,
+        oauthAuthenticationMcpVerified,
+        oauthAuthenticationReset: explicitReset,
+        ...publicExtraData
+      } = extraData || {};
+      // Legacy OIDC may use a configured verifier; its browser login cannot authorize MCP consent.
+      const oauthAuthenticationReset =
+        explicitReset || (oauthAuthenticationMethod === 'openid' && oauthAuthenticationMcpVerified !== true);
+      let workspaceAuthentication =
+        !isPatLogin && !oauthAuthenticationReset && loggedInUser?.id === user.id
+          ? loggedInUser.workspaceAuthentication
+          : undefined;
+      if (!isPatLogin && !oauthAuthenticationReset && oauthAuthenticationMethod) {
+        try {
+          workspaceAuthentication = await this.mcpOAuthService.captureAuthentication(
+            organization?.id,
+            oauthAuthenticationMethod,
+            oauthAuthenticationProviderId
+          );
+        } catch {
+          // Ordinary login remains available; OAuth fails closed without its signed evidence.
+          workspaceAuthentication = undefined;
+        }
+      }
       const JWTPayload: JWTPayload = {
+        ...(workspaceAuthentication ? { workspaceAuthentication } : {}),
         sessionId: sessionId,
         username: user.id,
         sub: user.email,
@@ -161,7 +200,7 @@ export class SessionUtilService {
           : { noWorkspaceAttachedInTheSession: true }),
         ...permissionData,
         noActiveWorkspaces,
-        ...(extraData ? extraData : {}),
+        ...publicExtraData,
         ...(isPatLogin ? { signedPat } : {}),
       };
 
@@ -298,14 +337,19 @@ export class SessionUtilService {
     }, manager);
   }
 
-  async createSession(userId: string, device: string, manager?: EntityManager): Promise<UserSessions> {
+  async createSession(
+    userId: string,
+    device: string,
+    manager?: EntityManager,
+    passwordExpiry?: Date | null
+  ): Promise<UserSessions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const session = await manager.save(
         manager.create(UserSessions, {
           userId,
           device,
           createdAt: new Date(),
-          expiry: this.getSessionExpiry(),
+          expiry: this.getSessionExpiry(passwordExpiry),
           lastLoggedIn: new Date(),
         })
       );
@@ -314,16 +358,18 @@ export class SessionUtilService {
     }, manager);
   }
 
-  getSessionExpiry(): Date {
+  getSessionExpiry(passwordExpiry?: Date | null): Date {
     // default expiry 10 days (14400 minutes)
     const now = new Date();
-    return new Date(
+    const expiry = new Date(
       now.getTime() +
         (this.configService.get<string>('USER_SESSION_EXPIRY')
           ? this.configService.get<number>('USER_SESSION_EXPIRY')
           : 14400) *
           60000
     );
+    // A session must never outlive the user's password. Users without a password expiry are uncapped.
+    return passwordExpiry && passwordExpiry < expiry ? passwordExpiry : expiry;
   }
 
   async generateInviteSignupPayload(
@@ -341,7 +387,8 @@ export class SessionUtilService {
       `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
         request?.headers['user-agent'] || 'unknown'
       }`,
-      manager
+      manager,
+      user.passwordExpiry
     );
     const sessionId = session.id;
 
@@ -548,7 +595,13 @@ export class SessionUtilService {
           throw new UnauthorizedException('User session expired');
         }
 
-        session.expiry = this.getSessionExpiry();
+        // Password expired while the session was live (e.g. expiry shortened after login)
+        const passwordExpiry = session.user?.passwordExpiry;
+        if (passwordExpiry && new Date(passwordExpiry) < now) {
+          throw new UnauthorizedException('Password expired');
+        }
+
+        session.expiry = this.getSessionExpiry(passwordExpiry ? new Date(passwordExpiry) : null);
       }
 
       // Update last_logged_in

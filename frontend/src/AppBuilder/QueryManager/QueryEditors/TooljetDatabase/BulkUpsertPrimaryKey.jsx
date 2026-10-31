@@ -1,6 +1,5 @@
-import React, { useContext, useEffect } from 'react';
-import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
-import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
+import React, { useEffect } from 'react';
+import { useToolJetDbOperationsContext } from './ToolJetDbOperationsContext';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export const BulkUpsertPrimaryKey = () => {
@@ -9,7 +8,7 @@ export const BulkUpsertPrimaryKey = () => {
     bulkUpsertPrimaryKey,
     handleBulkUpsertRowsOptionChanged,
     handlePrimaryKeyOptionChangedForBulkUpsert,
-  } = useContext(TooljetDatabaseContext);
+  } = useToolJetDbOperationsContext();
 
   useEffect(() => {
     const primaryKeys = columns.reduce((acc, column) => {

@@ -1,0 +1,12 @@
+{
+  "$sources": {
+    "types": "component_layouts rows are keyed desktop/mobile (frontend stores layouts per device)",
+    "canvasColumns": "frontend/src/AppBuilder/AppCanvas/appCanvasConstants.js NO_OF_GRIDS",
+    "fields": "grid units written by the editor drag math; widthPx appears in stored rows alongside the grid width"
+  },
+  "types": ["desktop", "mobile"],
+  "positionFields": ["top", "left"],
+  "sizeFields": ["width", "height"],
+  "extraNumericFields": ["widthPx"],
+  "canvasColumns": 43
+}

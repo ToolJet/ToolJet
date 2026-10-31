@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import cx from 'classnames';
 import { tooljetDatabaseService, authenticationService } from '@/_services';
-import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
+import { ToolJetDbOperationsProvider } from './ToolJetDbOperationsContext';
 import { ListRows } from './ListRows';
 import { CreateRow } from './CreateRow';
 import { UpdateRows } from './UpdateRows';
@@ -547,7 +547,7 @@ const ToolJetDbOperations = ({
   const ComponentToRender = getComponent(operation);
 
   return (
-    <TooljetDatabaseContext.Provider value={value}>
+    <ToolJetDbOperationsProvider value={value}>
       {/* table name dropdown */}
 
       {!isSqlModeDisabled() && (
@@ -713,7 +713,7 @@ const ToolJetDbOperations = ({
           />
         </div>
       )}
-    </TooljetDatabaseContext.Provider>
+    </ToolJetDbOperationsProvider>
   );
 };
 

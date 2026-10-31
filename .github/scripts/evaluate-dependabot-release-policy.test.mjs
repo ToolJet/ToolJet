@@ -105,13 +105,21 @@ test('does not block a runtime High that is still within its deadline', () => {
   assert.equal(result.status, 0, result.stderr);
 });
 
-test('blocks an overdue development Critical from 31 December 2026', () => {
+test('blocks a development Critical as soon as it is open, like a runtime one', () => {
   const result = evaluate(
-    [alert({ severity: 'critical', scope: 'development', createdAt: '2026-11-01T00:00:00Z' })],
-    '2026-12-31T00:00:00Z'
+    [alert({ severity: 'critical', scope: 'development', createdAt: '2026-10-22T00:00:00Z' })],
+    '2026-10-22T01:00:00Z'
   );
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /overdue since/);
+  assert.match(result.stderr, /unresolved development Critical/);
+});
+
+test('does not block a development Critical before 1 October 2026', () => {
+  const result = evaluate(
+    [alert({ severity: 'critical', scope: 'development' })],
+    '2026-09-30T23:59:59Z'
+  );
+  assert.equal(result.status, 0, result.stderr);
 });
 
 test('blocks an overdue moderate alert from 31 December 2026 (30-day window)', () => {

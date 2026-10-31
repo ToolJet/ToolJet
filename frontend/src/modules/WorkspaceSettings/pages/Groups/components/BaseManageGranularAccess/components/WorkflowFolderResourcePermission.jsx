@@ -1,8 +1,9 @@
-import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import { pickEditionSpecificComponent } from '@/modules/common/helpers/pickEditionSpecificComponent';
+import EEWorkflowFolderResourcePermissions from '@ee/modules/WorkspaceSettings/components/WorkflowFolderResourcePermissions';
 
-function WorkflowFolderResourcePermissions() {
-  return <></>;
-}
+const WorkflowFolderResourcePermissions = pickEditionSpecificComponent({
+  ee: EEWorkflowFolderResourcePermissions,
+  cloudSameAsEE: true,
+});
 
-export default withEditionSpecificComponent(WorkflowFolderResourcePermissions, 'WorkspaceSettings');
+export default WorkflowFolderResourcePermissions;
