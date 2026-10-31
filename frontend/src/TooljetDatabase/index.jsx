@@ -32,10 +32,11 @@ const TooljetDatabase = () => {
   const navigate = useNavigate();
   const { admin, user_permissions } = authenticationService.currentSessionValue;
   const canEditTjdb = admin || !!user_permissions?.tjdb_c_r_u_d;
+  const isAuthorized = canAccessTooljetDbDashboard();
 
-  if (!canAccessTooljetDbDashboard()) {
-    navigate('/');
-  }
+  useEffect(() => {
+    if (!isAuthorized) navigate('/');
+  }, [isAuthorized, navigate]);
 
   const {
     handleBuildFilterQuery,
@@ -117,17 +118,23 @@ const TooljetDatabase = () => {
   );
 
   useEffect(() => {
+    if (!isAuthorized) return;
+
     setEnableCollapsibleSidebar(true);
 
     return () => {
       setCollapseSidebar(false);
       setEnableCollapsibleSidebar(false);
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthorized]);
 
   useEffect(() => {
+    if (!isAuthorized) return;
     fetchAndSetWindowTitle({ page: `${selectedTable?.table_name || pageTitles.DATABASE}` });
-  }, [selectedTable]);
+  }, [selectedTable, isAuthorized]);
+
+  if (!isAuthorized) return null;
 
   return (
     <div className="page-wrapper tooljet-database">
