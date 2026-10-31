@@ -137,7 +137,7 @@ describe("Bulk User Upload", () => {
   beforeEach(() => {
     const firstName = fake.firstName;
     const workspaceName = firstName.toLowerCase();
-    cy.mhDeleteAll();
+    // cy.mhDeleteAll();
     cy.apiLogin();
     cy.apiCreateWorkspace(firstName, workspaceName);
     cy.visit(`${workspaceName}`);

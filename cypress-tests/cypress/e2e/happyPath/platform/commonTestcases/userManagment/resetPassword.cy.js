@@ -19,7 +19,7 @@ describe("Password reset functionality", () => {
     cy.visit("/");
     cy.apiLogin();
     cleanAllUsers();
-    cy.mhDeleteAll();
+    // cy.mhDeleteAll();
     cy.apiConfigureSmtp(smtpConfig);
   });
 

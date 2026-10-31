@@ -39,9 +39,9 @@ describe("user invite flow cases", () => {
     cy.apiConfigureSmtp(smtpConfig);
     // cy.mhDeleteAll();
   });
-  after(() => {
-    cy.mhDeleteAll();
-  });
+  // after(() => {
+  //   cy.mhDeleteAll();
+  // });
 
   it("Should verify the user archive functionality", () => {
     cy.intercept("GET", "/assets/translations/en.json").as("translations");
