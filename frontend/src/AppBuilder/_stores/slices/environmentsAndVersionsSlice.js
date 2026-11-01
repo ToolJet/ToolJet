@@ -335,7 +335,11 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       // AND removes the git tag in one server-side call; non-git workspaces (incl. CE) use the
       // versions endpoint. (This replaces the old versions→app-git moduleRef git-tag cleanup.)
       const orgGit = useStore.getState().orgGit;
-      const isGitSyncEnabled = !!(orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled);
+      const isGitSyncEnabled = !!(
+        orgGit?.git_https?.is_enabled ||
+        orgGit?.git_lab?.is_enabled ||
+        orgGit?.git_bitbucket?.is_enabled
+      );
       if (isGitSyncEnabled) {
         await gitSyncService.deleteVersion(appId, versionId);
       } else {
@@ -512,8 +516,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
               'is_maintenance_on' in data
                 ? data.is_maintenance_on
                 : 'isMaintenanceOn' in data
-                  ? data.isMaintenanceOn
-                  : false,
+                ? data.isMaintenanceOn
+                : false,
             homePageId: data.editing_version?.homePageId || data.editing_version?.home_page_id,
           },
           moduleId
@@ -574,8 +578,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           get().globalSettings?.appMode && get().globalSettings.appMode !== 'auto'
             ? get().globalSettings.appMode
             : localStorage.getItem('darkMode') === 'true'
-              ? 'dark'
-              : 'light';
+            ? 'dark'
+            : 'light';
         get().setResolvedGlobals('theme', { name: exposedTheme }, moduleId);
         get().setResolvedGlobals(
           'urlparams',

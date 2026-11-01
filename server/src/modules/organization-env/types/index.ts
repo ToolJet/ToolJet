@@ -18,6 +18,13 @@ export interface GitLabEnvConfig {
   gitlabEnterpriseUrl?: string;
 }
 
+export interface BitbucketEnvConfig {
+  bitbucketWorkspace: string;
+  bitbucketRepoSlug: string;
+  bitbucketBranch: string;
+  bitbucketAccessToken?: string;
+}
+
 export type EnvProviderState = { isEnabled: boolean; isFinalized: boolean };
 
 export interface OidcEnvConfig {

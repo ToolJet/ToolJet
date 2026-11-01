@@ -11,9 +11,11 @@ import {
 import { Organization } from './organization.entity';
 import { OrganizationGitHttps } from './gitsync_entities/organization_git_https.entity';
 import { OrganizationGitLab } from './gitsync_entities/organization_gitlab.entity';
+import { OrganizationBitbucket } from './gitsync_entities/organization_bitbucket.entity';
 export enum GITConnectionType {
   GITHUB_HTTPS = 'github_https',
   GITLAB = 'gitlab',
+  BITBUCKET = 'bitbucket',
   DISABLED = 'disabled',
 }
 @Entity({ name: 'organization_git_sync' })
@@ -67,7 +69,10 @@ export class OrganizationGitSync extends BaseEntity {
   @OneToOne(() => OrganizationGitLab, (gitLab) => gitLab.orgGitSync, {})
   gitLab: OrganizationGitLab;
 
+  @OneToOne(() => OrganizationBitbucket, (gitBitbucket) => gitBitbucket.orgGitSync, {})
+  gitBitbucket: OrganizationBitbucket;
+
   get isEnabled(): boolean {
-    return !!(this.gitHttps?.isEnabled || this.gitLab?.isEnabled);
+    return !!(this.gitHttps?.isEnabled || this.gitLab?.isEnabled || this.gitBitbucket?.isEnabled);
   }
 }

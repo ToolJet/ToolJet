@@ -18,18 +18,34 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { buildGitPrUrl } from '@/_helpers/gitPrUrl';
 
 // Provider-neutral git config reads. orgGit carries whichever provider is active — git_https for
-// GitHub, git_lab for GitLab — so reading only git_https broke Create PR / default-branch detection
-// on GitLab workspaces (repoUrl came back empty → "Unable to determine repository URL").
+// GitHub, git_lab for GitLab, git_bitbucket for Bitbucket — so reading only a subset broke
+// Create PR / default-branch detection on the other providers' workspaces (repoUrl came back
+// empty → "Unable to determine repository URL"). Bitbucket has no stored repo URL field, so it's
+// built from workspace + repo slug to match the bitbucket.org/<owner>/<repo> shape buildGitPrUrl expects.
 const resolveRepoUrl = (orgGit) =>
-  orgGit?.git_https?.https_url || orgGit?.git_https?.repository || orgGit?.git_lab?.gitlab_url || '';
+  orgGit?.git_https?.https_url ||
+  orgGit?.git_https?.repository ||
+  orgGit?.git_lab?.gitlab_url ||
+  (orgGit?.git_bitbucket?.bitbucket_workspace && orgGit?.git_bitbucket?.bitbucket_repo_slug
+    ? `https://bitbucket.org/${orgGit.git_bitbucket.bitbucket_workspace}/${orgGit.git_bitbucket.bitbucket_repo_slug}`
+    : '');
 const resolveDefaultBranchName = (orgGit) =>
-  orgGit?.git_https?.github_branch || orgGit?.git_lab?.gitlab_branch || 'main';
+  orgGit?.git_https?.github_branch ||
+  orgGit?.git_lab?.gitlab_branch ||
+  orgGit?.git_bitbucket?.bitbucket_branch ||
+  'main';
 // Only assert a provider when one is actually known/enabled; otherwise leave it undefined so
 // buildGitPrUrl falls back to host detection instead of mislabeling the repo as GitHub.
 const resolveGitType = (orgGit) =>
   orgGit?.git_type ||
   orgGit?.gitType ||
-  (orgGit?.git_lab?.is_enabled ? 'gitlab' : orgGit?.git_https?.is_enabled ? 'github_https' : undefined);
+  (orgGit?.git_lab?.is_enabled
+    ? 'gitlab'
+    : orgGit?.git_https?.is_enabled
+    ? 'github_https'
+    : orgGit?.git_bitbucket?.is_enabled
+    ? 'bitbucket'
+    : undefined);
 
 export function BranchDropdown({ appId, organizationId }) {
   const [showDropdown, setShowDropdown] = useState(false);
