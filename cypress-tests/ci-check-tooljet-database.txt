@@ -1,0 +1,1 @@
+Dummy change to trigger the ToolJet Database Cypress workflow. Delete this file and close the PR.
