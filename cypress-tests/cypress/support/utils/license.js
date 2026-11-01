@@ -538,6 +538,78 @@ export const getCurrentCountFromBanner = (resourceType) => {
     });
 };
 
+export const getCurrentCountFromLimitCounter = () => {
+  return cy
+    .get(licenseSelectors.limitCounter)
+    .invoke("text")
+    .then((counterText) => {
+      const ratioMatch = counterText.match(/(\d+)\s*\/\s*(\d+)/);
+      if (ratioMatch) {
+        return {
+          current: parseInt(ratioMatch[1]),
+          total: parseInt(ratioMatch[2]),
+        };
+      }
+      cy.log(`Warning: No ratio found in limit counter text: "${counterText}"`);
+      return null;
+    });
+};
+
+export const verifyLimitCounter = ({ canUpgrade = true } = {}) => {
+  cy.get(licenseSelectors.limitCounter)
+    .should("be.visible")
+    .find("[aria-label]")
+    .invoke("attr", "aria-label")
+    .should("match", /You've used \d+ of your \d+ .+ limit on this plan/);
+
+  if (canUpgrade) {
+    cy.get(licenseSelectors.limitCounterUpgrade)
+      .should("be.visible")
+      .and("contain.text", "Upgrade");
+  }
+};
+
+export const verifyLimitReachedModal = (
+  expectedTitle,
+  { canUpgrade = true, dismiss = "not-now", bodyText } = {}
+) => {
+  cy.get(licenseSelectors.limitReachedModal, { timeout: 10000 })
+    .should("be.visible")
+    .and("contain.text", expectedTitle);
+
+  if (bodyText) {
+    const bodyLines = Array.isArray(bodyText) ? bodyText : [bodyText];
+    bodyLines.forEach((line) => {
+      cy.get(licenseSelectors.limitReachedModal).should("contain.text", line);
+    });
+  }
+
+  cy.get(licenseSelectors.limitReachedModal).should(
+    "contain.text",
+    canUpgrade
+      ? "Upgrade your plan to continue building."
+      : "Ask your admin to upgrade your plan to continue building."
+  );
+
+  cy.get(licenseSelectors.limitReachedNotNow)
+    .should("be.visible")
+    .and("contain.text", "Not now");
+  if (canUpgrade) {
+    cy.get(licenseSelectors.limitReachedUpgrade)
+      .should("be.visible")
+      .and("contain.text", "Upgrade");
+  } else {
+    cy.get(licenseSelectors.limitReachedUpgrade).should("not.exist");
+  }
+
+  if (dismiss === "not-now") {
+    cy.get(licenseSelectors.limitReachedNotNow).click();
+    cy.get(licenseSelectors.limitReachedModal).should("not.exist");
+  } else if (dismiss === "upgrade") {
+    cy.get(licenseSelectors.limitReachedUpgrade).click();
+  }
+};
+
 export const waitForLicenseUpdate = (timeout = 2000) => {
   cy.wait(timeout);
 };
@@ -647,7 +719,11 @@ export const changeRoleAndExpectLimit = (
 };
 
 export const openInviteUserModal = (name, email, role) => {
-  cy.get(commonSelectors.cancelButton).click();
+  cy.get("body").then(($body) => {
+    if ($body.find(commonSelectors.cancelButton).length > 0) {
+      cy.get(commonSelectors.cancelButton).click();
+    }
+  });
   cy.get(commonSelectors.manageGroupsOption).click();
   cy.get(commonSelectors.manageUsersOption).click({ force: true });
   fillUserInviteForm(name, email);
