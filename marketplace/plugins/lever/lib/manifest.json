@@ -1,0 +1,49 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Lever datasource",
+  "description": "A schema defining Lever datasource",
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "Lever",
+    "kind": "lever",
+    "type": "api"
+  },
+  "properties": {
+    "environment": {
+      "type": "string",
+      "title": "Environment",
+      "description": "Lever environment to connect to"
+    },
+    "apiKey": {
+      "type": "string",
+      "title": "API Key",
+      "description": "Enter your Lever API Key"
+    }
+  },
+  "tj:encrypted": ["apiKey"],
+  "required": ["apiKey"],
+  "tj:ui:properties": {
+    "environment": {
+      "order": 10,
+      "$ref": "#/properties/environment",
+      "key": "environment",
+      "label": "Environment",
+      "widget": "dropdown",
+      "list": [
+        { "name": "Production", "value": "production" },
+        { "name": "Sandbox", "value": "sandbox" }
+      ],
+      "help_text": "Production uses api.lever.co, Sandbox uses api.sandbox.lever.co. Defaults to Production."
+    },
+    "apiKey": {
+      "order": 20,
+      "$ref": "#/properties/apiKey",
+      "key": "apiKey",
+      "label": "API Key",
+      "widget": "password-v3",
+      "placeholder": "Lever API key",
+      "help_text": "Generate an API key in Lever under Settings > Integrations and API > Lever API credentials."
+    }
+  }
+}
