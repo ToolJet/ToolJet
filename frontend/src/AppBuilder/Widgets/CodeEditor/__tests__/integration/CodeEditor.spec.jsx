@@ -195,6 +195,28 @@ describe('CodeEditor widget', () => {
   });
 
   describe('component actions', () => {
+    test('[CodeEditor-CSA-005] setValue publishes immediately, so a later action reads the new value', async () => {
+      // Break this catches: routing the setValue CSA through the 500ms typing debounce. A button
+      // with two handlers — control-component setValue, then set-variable reading
+      // {{components.codeeditor1.value}} — runs them back to back, so the second one reads the
+      // store before a debounced write has landed and captures the PREVIOUS text. The debounce
+      // exists to throttle keystrokes; a programmatic set is a single deliberate write and must be
+      // visible the moment it returns, as it already is for JSON Editor and Text Input.
+      const container = await mounted(codeEditor.render().container);
+      await codeEditor.act('setValue', 'old text');
+      await expectValue('old text');
+
+      await codeEditor.act('setValue', 'new text');
+
+      // No waitFor and no debounce settle: the value has to be readable right now.
+      expect(codeEditor.exposed()?.value).toBe('new text');
+      expect(documentText(container)).toBe('new text');
+
+      // And nothing scheduled earlier may arrive late and put the old text back.
+      await settleDebounce();
+      expect(codeEditor.exposed()?.value).toBe('new text');
+    });
+
     test('[CodeEditor-CSA-001] setValue replaces the document and settles into the exposed value', async () => {
       // Break this catches: losing the setExposedVariable('setValue') registration breaks every RunJS
       // query and event handler that fills this editor programmatically.
@@ -442,7 +464,11 @@ describe('CodeEditor widget', () => {
       const { container, unmount } = codeEditor.render();
       await mounted(container);
 
-      await codeEditor.act('setValue', 'scheduled');
+      // Typing is the debounced path. The setValue CSA deliberately publishes straight away
+      // (CodeEditor-CSA-005), so it cannot be used to leave a write pending.
+      await userEvent.click(surface());
+      await userEvent.type(surface(), 'scheduled');
+      expect(documentText(container)).toBe('scheduled');
       expect(codeEditor.exposed()?.value).toBe(''); // still inside the debounce window
 
       unmount();

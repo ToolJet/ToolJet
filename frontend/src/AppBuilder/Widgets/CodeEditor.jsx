@@ -98,7 +98,13 @@ const CodeEditor = ({
   useEffect(() => {
     const _setValue = (value) => {
       if (typeof value === 'string') {
-        codeChanged(value);
+        // Publish NOW rather than through the typing debounce. A single click can run several
+        // handlers back to back — set this editor, then read `components.<id>.value` into a
+        // variable — and a debounced write would not have landed by the time the next handler
+        // reads, handing it the previous text. A programmatic set is one deliberate write, not a
+        // stream of keystrokes, so it does not need throttling.
+        codeChanged.cancel(); // a keystroke write still pending would otherwise land after this
+        setExposedVariable('value', value);
         setValue(value);
         setForceDynamicHeightUpdate((prev) => !prev);
       }
