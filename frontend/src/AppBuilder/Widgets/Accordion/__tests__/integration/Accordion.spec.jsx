@@ -41,6 +41,21 @@ const headerSlot = () => document.querySelector(`[data-cy="${NAME}-header-sectio
 // The wrapper between the root and the body sub-canvas. It carries the body background;
 // the root is transparent and only supplies the rounded clip (D-06).
 const contentWrapper = () => root()?.querySelector('.widget-type-container');
+// The element useSubContainerResizable owns: it carries the live inline height during a drag.
+const resizeSlot = () => headerSlot()?.querySelector('.resizable-slot') ?? root()?.querySelector('.resizable-slot');
+
+/**
+ * Drags the header handle down by `byPx` and returns the slot's resulting inline height.
+ * jsdom reports clientHeight as 0, so the drag starts from 0 and the delta IS the pre-clamp
+ * height — which is what makes the ceiling observable at this layer.
+ */
+function dragHeaderBy(byPx) {
+  const handle = root().querySelector('.resize-handle');
+  fireEvent.mouseDown(handle, { clientY: 0, button: 0 });
+  fireEvent.mouseMove(document, { clientY: byPx });
+  fireEvent.mouseUp(document);
+  return resizeSlot().style.height;
+}
 const content = () => document.querySelector('.widget-type-container');
 const chevron = () => screen.queryByRole('button', { name: /accordion/i });
 const childOf = (parent, id, name, text) => {
@@ -702,6 +717,18 @@ describe('Accordion: styles', () => {
     expect(contentWrapper().style.backgroundColor).toBe('rgb(1, 2, 3)');
   });
 
+  // Break this catches: a `cond && string` guard inside a template literal, which stringifies
+  // the boolean when the condition is false — every Accordion shipped a literal `false` class.
+  test('[Accordion-STYLE-009] the content wrapper carries no stringified boolean in its class list', async () => {
+    harness.render();
+    await waitFor(() => expect(contentWrapper()).toBeTruthy());
+    expect([...contentWrapper().classList]).toEqual(['widget-type-container']);
+
+    harness.render({ properties: { dynamicHeight: binding('{{true}}') }, currentMode: 'view' });
+    await waitFor(() => expect(contentWrapper()).toBeTruthy());
+    expect([...contentWrapper().classList]).toEqual([`dynamic-${ID}`, 'widget-type-container']);
+  });
+
   // Break this catches: clamping an unparseable radius to the documented default. The shipped
   // behaviour emits the invalid declaration NaNpx, which the browser drops — square corners,
   // not 6px. Accordion carries its own copy of this expression, so it is re-asserted here.
@@ -935,6 +962,59 @@ describe('Accordion: which children it accepts', () => {
     }
     expect(canAdd(`${ID}-header`, 'Text')).not.toBe(false);
   });
+});
+
+// `widgetHeight` is fixed per harness, so each height needs its own; separate tests because
+// the harness teardown does not unmount and RTL's auto-cleanup between tests is what keeps
+// the second from reading the first's DOM.
+const dragCeilingAt = async (widgetHeight) => {
+  const local = createWidgetHarness({
+    componentType: 'Accordion',
+    handle: NAME,
+    id: ID,
+    capabilities: { dnd: true },
+    widgetHeight,
+    widgetWidth: 600,
+  });
+  await local.setup();
+  local.render({ currentMode: 'edit' });
+  await waitFor(() => expect(root().querySelector('.resize-handle')).toBeTruthy());
+  return dragHeaderBy(5000);
+};
+
+// Break this catches: the drag ceiling drifting from the CSS ceiling. The shared slot falls
+// back to a flat 400 when the prop is absent, which is unrelated to the widget height (D-09).
+test('[Accordion-HDR-006] a short widget caps the header below the shared 400 fallback', async () => {
+  // RenderWidget passes `widgetHeight - 4` as `height`; (200-4) - 110 = 86, snapped to 90.
+  expect(await dragCeilingAt(200)).toBe('90px');
+});
+
+// Break this catches: the same ceiling in the other direction — a flat 400 would stop the
+// drag short of what a tall Accordion's CSS already allows.
+test('[Accordion-HDR-006] a tall widget caps the header above the shared 400 fallback', async () => {
+  // (600-4) - 110 = 486, snapped to 490.
+  expect(await dragCeilingAt(600)).toBe('490px');
+});
+
+// Break this catches: firing a transition event when nothing transitioned (D-08). A query
+// wired to On expand re-ran on every expand() call, including ones that changed nothing.
+test('[Accordion-EXP-007] expand and collapse are no-ops against the state already held', async () => {
+  harness.render({ events: countInvocationsOn(ID, 'onExpand', { key: 'expands' }) });
+  await waitFor(() => expect(chevron()).toBeTruthy());
+
+  // Mounts expanded, so expand() must do nothing at all.
+  await harness.act('expand');
+  await drain();
+  expect(harness.variables()?.expands ?? 0).toBe(0);
+  expect(harness.exposed().isExpanded).toBe(true);
+
+  // A real transition still fires, and a repeat of it does not.
+  await harness.act('collapse');
+  await harness.act('expand');
+  await waitFor(() => expect(harness.variables()?.expands).toBe(1));
+  await harness.act('expand');
+  await drain();
+  expect(harness.variables()?.expands).toBe(1);
 });
 
 describe('Accordion: nested in other containers', () => {

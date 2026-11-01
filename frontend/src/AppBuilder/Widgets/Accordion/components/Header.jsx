@@ -13,6 +13,7 @@ const Header = (props) => {
     width,
     isDynamicHeightEnabled,
     headerBackgroundColor,
+    currentMode,
     darkMode,
     headerHeight,
     isExpanded,
@@ -24,7 +25,7 @@ const Header = (props) => {
   } = props;
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
-  const activeSlot = useActiveSlot(id); // Track the active slot for this widget
+  const activeSlot = useActiveSlot(id, currentMode === 'edit'); // Track the active slot for this widget
   const headerMaxHeight = isDynamicHeightEnabled ? 10000 : parseInt(height, 10) - 100 - 10;
 
   const headerBgColor = useMemo(() => {
@@ -64,6 +65,7 @@ const Header = (props) => {
           slotStyle={accordionHeaderContainerStyles}
           id={`${id}-header`}
           height={headerHeight}
+          maxHeight={headerMaxHeight}
           width={width}
           darkMode={darkMode}
           isDisabled={isDisabled}

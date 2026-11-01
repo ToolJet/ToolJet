@@ -39,7 +39,11 @@ export const Accordion = ({
     isLoading: loadingState,
     isExpanded: true, // State for expanding/collapsing accordion component
   });
+
   const accordionRef = useRef(null);
+  const isExpandedRef = useRef(null);
+  isExpandedRef.current = exposedVariablesTemporaryState.isExpanded;
+
   // Disabled accordion blocks the mouse via `data-disabled`; `inert` also removes the child
   // components from the tab order (runtime only — keeps the builder editable).
   useDisableInert(accordionRef, exposedVariablesTemporaryState.isDisabled);
@@ -75,11 +79,13 @@ export const Accordion = ({
     setExposedVariables({
       ...exposedVariablesTemporaryState,
       expand: async function () {
+        if (isExpandedRef.current) return;
         setExposedVariable('isExpanded', true);
         updateExposedVariablesState('isExpanded', true);
         fireEvent('onExpand');
       },
       collapse: async function () {
+        if (!isExpandedRef.current) return;
         setExposedVariable('isExpanded', false);
         updateExposedVariablesState('isExpanded', false);
         fireEvent('onCollapse');
@@ -201,6 +207,7 @@ export const Accordion = ({
               width={width}
               isDynamicHeightEnabled={isDynamicHeightEnabled}
               headerBackgroundColor={styles.headerBackgroundColor}
+              currentMode={currentMode}
               darkMode={darkMode}
               headerHeight={headerHeight}
               isExpanded={exposedVariablesTemporaryState.isExpanded}
@@ -220,7 +227,7 @@ export const Accordion = ({
           )}
           <div
             style={accordionContentStyles}
-            className={`${dynamicHeight && `dynamic-${id}`} widget-type-container`}
+            className={`${dynamicHeight ? `dynamic-${id}` : ''} widget-type-container`.trim()}
             data-disabled={exposedVariablesTemporaryState.isDisabled}
           >
             <ContainerComponent
