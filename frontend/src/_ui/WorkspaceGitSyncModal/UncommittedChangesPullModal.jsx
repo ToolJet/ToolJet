@@ -9,10 +9,11 @@ import { getWorkspaceId } from '@/_helpers/utils';
 const TYPE_ICON_MAP = {
   app: 'apps',
   module: 'module',
+  workflow: 'workflows',
   datasource: 'datasource',
 };
 
-// Apps and modules share the editor route (slug-based); datasources have their own page.
+// Apps, modules and workflows share the editor route (slug-based); datasources have their own page.
 function resourceUrl(resource) {
   const workspaceId = getWorkspaceId();
   if (resource.type === 'datasource') return `/${workspaceId}/data-sources/${resource.id}`;

@@ -26,11 +26,10 @@ const initialState = {
   // per-datasource one. Computed client-side from the already-loaded datasource list, same as
   // hasUnsyncedDatasources above.
   hasUncommittedDatasources: false,
-  // Same idea, for the Applications and Modules lists — kept as two separate flags (not one
-  // combined signal) since HomePage is shared between the two pages (gated by appType) and each
-  // page's tag must reflect only its own resource type.
+  // One flag per list page (HomePage serves Applications, Modules and Workflows).
   hasUncommittedApps: false,
   hasUncommittedModules: false,
+  hasUncommittedWorkflows: false,
   // When false (single-branch mode) only the default branch is available; the UI hides feature
   // branches and disables branch create / switch. Defaults to true (multi-branch).
   isMultiBranchingEnabled: true,
@@ -252,7 +251,7 @@ export const useWorkspaceBranchesStore = create(
                     ...(options.onlyUnsyncedDatasources && { hasUnsyncedDatasources: false }),
                     lastDatasourcePushAt: Date.now(),
                   }
-                : { hasUncommittedApps: false, hasUncommittedModules: false }),
+                : { hasUncommittedApps: false, hasUncommittedModules: false, hasUncommittedWorkflows: false }),
             });
             return result;
           } catch (error) {
@@ -329,6 +328,10 @@ export const useWorkspaceBranchesStore = create(
 
         setHasUncommittedModules(value) {
           set({ hasUncommittedModules: value });
+        },
+
+        setHasUncommittedWorkflows(value) {
+          set({ hasUncommittedWorkflows: value });
         },
 
         async fetchRemoteBranches() {

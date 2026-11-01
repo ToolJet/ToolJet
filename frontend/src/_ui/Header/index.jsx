@@ -26,6 +26,7 @@ function Header({
   const hasUncommittedDatasources = useWorkspaceBranchesStore((s) => s.hasUncommittedDatasources);
   const hasUncommittedApps = useWorkspaceBranchesStore((s) => s.hasUncommittedApps);
   const hasUncommittedModules = useWorkspaceBranchesStore((s) => s.hasUncommittedModules);
+  const hasUncommittedWorkflows = useWorkspaceBranchesStore((s) => s.hasUncommittedWorkflows);
   // Git set up but the license is expired/invalid → keep the git-sync UI visible but frozen.
   const gitLicenseLocked = isGitSyncConfigured && isGitSyncLicenseInvalid(featureAccess);
   const currentSession = authenticationService.currentSessionValue;
@@ -93,8 +94,9 @@ function Header({
   const isDatabasePage = location.pathname.split('/').filter(Boolean).includes('database');
   const isDataSourcesPage = location.pathname.split('/').includes('data-sources');
   const isModulesPage = location.pathname.split('/').includes('modules');
-  // Everything isGitSupportedPage covers besides data-sources/modules is the Applications root.
-  const isApplicationsPage = isGitSupportedPage && !isDataSourcesPage && !isModulesPage;
+  const isWorkflowsPage = location.pathname.split('/').includes('workflows');
+  // Everything isGitSupportedPage covers besides data-sources/modules/workflows is the Applications root.
+  const isApplicationsPage = isGitSupportedPage && !isDataSourcesPage && !isModulesPage && !isWorkflowsPage;
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
@@ -198,12 +200,11 @@ function Header({
                     })}
                     aria-disabled={gitLicenseLocked || undefined}
                   >
-                    {/* Aggregate signal, not per-resource — and kept separate per page/resource
-                        type: datasources, apps, and modules each get their own flag rather than
-                        one combined signal. See gitsync/uncomitted-cahnge-detection.md. */}
+                    {/* Aggregate signal, one flag per page/resource type. */}
                     {((isDataSourcesPage && hasUncommittedDatasources) ||
                       (isApplicationsPage && hasUncommittedApps) ||
-                      (isModulesPage && hasUncommittedModules)) && (
+                      (isModulesPage && hasUncommittedModules) ||
+                      (isWorkflowsPage && hasUncommittedWorkflows)) && (
                       <div
                         className="tw-flex tw-items-center tw-gap-1 tw-px-2 tw-shrink-0"
                         data-cy="uncommitted-changes-tag"

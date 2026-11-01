@@ -334,9 +334,8 @@ const CreateVersionModal = ({
     try {
       const onFeatureBranch = effectiveIsBranchingEnabled && effectiveBranchName;
       const body = {
-        // developmentVersions rows don't carry app_name (only version-level fields), unlike
-        // GitSyncModal's selectedVersion — use the app-level name instead.
-        gitAppName: appName,
+        // The workflow editor has no app name in this store; fall back to the version's, then the id.
+        gitAppName: appName || selectedVersionForCreation.appName || selectedVersionForCreation.app_name || appId,
         versionId: selectedVersionForCreation.id,
         lastCommitMessage: `Auto-commit before saving version "${versionName.trim()}"`,
         gitVersionName: onFeatureBranch ? effectiveBranchName : configuredGitBranch,
