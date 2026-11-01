@@ -577,7 +577,7 @@ const TabContent = memo(function TabContent({
     <div
       data-disabled={disable}
       activetab={tab.id}
-      className={`tab-pane active ${isDynamicHeightEnabled && isActive && `dynamic-${id}`}`}
+      className={`tab-pane active ${isDynamicHeightEnabled && isActive ? `dynamic-${id}` : ''}`.trim()}
       style={{
         display: 'block',
         height: '100%',
