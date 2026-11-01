@@ -59,7 +59,10 @@ describe('shared URL workspace chooser', () => {
   const workspaces = (items = [], status = 200) =>
     server.use(
       http.get(`${interactionUrl()}/workspaces`, () =>
-        HttpResponse.json({ email: 'operator@synthetic.example', workspaces: items }, { status })
+        HttpResponse.json(
+          { email: 'operator@synthetic.example', accountId: 'synthetic-operator', workspaces: items },
+          { status }
+        )
       )
     );
   beforeEach(() =>
@@ -103,7 +106,7 @@ describe('shared URL workspace chooser', () => {
     ]);
     let submitted;
     server.use(
-      http.post(`${interactionUrl()}/workspace`, async ({ request }) => {
+      http.post(interactionUrl(), async ({ request }) => {
         submitted = {
           csrf: request.headers.get('x-tooljet-oauth-csrf'),
           body: await request.json(),
@@ -119,7 +122,7 @@ describe('shared URL workspace chooser', () => {
     await waitFor(() => expect(window.location.hash).toBe('#selected-workspace'));
     expect(submitted).toEqual({
       csrf: 'synthetic-csrf',
-      body: { workspace: 'meadow' },
+      body: { allow: true, accountId: 'synthetic-operator', workspaceId: 'meadow' },
     });
   });
   test('handles an account with no eligible workspaces without enabling continuation', async () => {
@@ -143,7 +146,7 @@ describe('shared URL workspace chooser', () => {
   });
   test('shows a safe retry message after selection fails', async () => {
     workspaces([{ id: 'orchard', name: 'Orchard operations' }]);
-    server.use(http.post(`${interactionUrl()}/workspace`, () => HttpResponse.json({}, { status: 400 })));
+    server.use(http.post(interactionUrl(), () => HttpResponse.json({}, { status: 400 })));
     render(<ConsentPage />);
     fireEvent.click(await screen.findByRole('button', { name: 'Continue' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('workspace or connection link is unavailable');
@@ -198,7 +201,7 @@ test('offers manual sign-in when browser storage is unavailable', async () => {
   render(<ConsentPage />);
   expect(await screen.findByRole('link', { name: 'Sign in to this workspace' })).toHaveAttribute('href', flow.loginUrl);
   expect(screen.queryByRole('button', { name: 'Allow access' })).not.toBeInTheDocument();
-  expect(screen.getByText(/one of its allowed methods/)).toBeVisible();
+  expect(screen.queryByRole('list')).not.toBeInTheDocument();
 });
 test('scrubs and exchanges custom-domain bootstrap before loading consent', async () => {
   window.history.replaceState({}, '', `/mcp/consent?request=${requestId}#bootstrap=${'B'.repeat(43)}`);
@@ -424,4 +427,37 @@ test('allows cancellation of a signed-out shared flow when automatic login is un
   render(<ConsentPage />);
   fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
   await waitFor(() => expect(window.location.hash).toBe('#cancelled-shared-root'));
+});
+
+test.each([false, true])(
+  'finishes an approved selection without repeating consent (returned from login: %s)',
+  async (returned) => {
+    preview({ ...flow, approvalPending: true });
+    if (returned) sessionStorage.setItem(`tj_mcp_login_${requestId}`, '1');
+    decision({ redirectUrl: '#connected' });
+    render(<ConsentPage />);
+    await waitFor(() => expect(window.location.hash).toBe('#connected'));
+    expect(requests.decision).toHaveLength(1);
+    expect(requests.decision[0].body).toEqual({ allow: true, accountId: 'synthetic-user', resume: true });
+    expect(requests.decision[0].request.headers.get('x-tooljet-oauth-csrf')).toBe(flow.csrfToken);
+    expectHiddenConsent();
+  }
+);
+
+test('sends an approved selection directly to required workspace login', async () => {
+  preview({ ...flow, approvalPending: true, loginUrl: '#required-workspace-sso' });
+  session(401);
+  render(<ConsentPage />);
+  await waitFor(() => expect(window.location.hash).toBe('#required-workspace-sso'));
+  expectHiddenConsent();
+  expect(requests.decision).toHaveLength(0);
+});
+
+test('does not resume approval after account or membership changes', async () => {
+  preview({ ...flow, approvalPending: true });
+  session(403);
+  render(<ConsentPage />);
+  expect(await screen.findByRole('alert')).toHaveTextContent('different account or your workspace access changed');
+  expect(requests.decision).toHaveLength(0);
+  expectHiddenConsent();
 });

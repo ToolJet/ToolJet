@@ -202,3 +202,9 @@ test('waits for a slow context lookup before making credential fields interactiv
   await screen.findByRole('button', { name: /Sign in with your workspace/ });
   expect(screen.getByRole('textbox', { name: /Email/ })).toHaveValue('operator@synthetic.example');
 });
+
+test('a trailing-slash shared login retains the verified workspace-entry path', async () => {
+  mount(entry.replace('/login?', '/login/?'));
+  fireEvent.click(await screen.findByRole('button', { name: /Sign in with your workspace/ }));
+  expect(screen.getByRole('textbox', { name: 'Workspace URL' })).toBeVisible();
+});

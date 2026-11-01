@@ -129,7 +129,17 @@ export class McpOAuthController {
   @Post('interactions/:id/workspace')
   async selectWorkspace(@Param('id') id: string, @Body() body: WorkspaceInput, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
-    const flow = await this.oauth.selectWorkspace(id, this.csrf(req, id), body.workspace, this.origin(req));
+    this.oauth.assertEnabled();
+    if ((body.workspace !== undefined) === (body.workspaceId !== undefined))
+      throw new OAuthFailure('invalid_request', 'Choose one workspace reference');
+    const idOnly = body.workspaceId !== undefined;
+    const flow = await this.oauth.selectWorkspace(
+      id,
+      this.csrf(req, id),
+      idOnly ? body.workspaceId : body.workspace,
+      this.origin(req),
+      idOnly
+    );
     this.bindBrowser(res, flow);
     res.clearCookie(this.oauth.cookieName(id), { path: new URL(this.oauth.settings().issuer).pathname });
     res.json({ redirectUrl: flow.location });
@@ -142,22 +152,39 @@ export class McpOAuthController {
     res.json(result);
   }
   @Get('interactions/:id/session')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(McpOAuthAccountGuard)
   async session(@Param('id') id: string, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
     const flow = await this.oauth.interaction(id, this.csrf(req, id), undefined, this.origin(req));
-    await this.oauth.assertCurrentAuthentication(req.user as User, flow.payload.organizationId);
-    res.json({ email: (req.user as User).email, accountId: (req.user as User).id });
+    const user = await this.oauth.workspaceUser(req.user as User, flow.payload.organizationId);
+    if (flow.payload.approvalAccountId && flow.payload.approvalAccountId !== user.id)
+      throw new OAuthFailure('access_denied', 'Sign in with the account that approved this connection', 403);
+    await this.oauth.assertCurrentAuthentication(user, flow.payload.organizationId);
+    res.json({ email: user.email, accountId: user.id });
   }
   @Post('interactions/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(McpOAuthAccountGuard)
   async consent(@Param('id') id: string, @Body() body: ConsentInput, @Req() req: Request, @Res() res: Response) {
     this.headers(res);
     if (typeof body.allow !== 'boolean') throw new OAuthFailure('invalid_request', 'Choose Allow or Cancel');
     // A different tab may have signed in as another user since consent was displayed.
     if (body.accountId !== undefined && body.accountId !== (req.user as User).id)
       throw new UnauthorizedException();
-    const result = await this.oauth.consent(id, this.csrf(req, id), req.user as User, body.allow, this.origin(req));
+    if (body.resume !== undefined && typeof body.resume !== 'boolean')
+      throw new OAuthFailure('invalid_request', 'Invalid continuation');
+    if (body.workspaceId !== undefined) {
+      if (!body.allow || body.resume || body.accountId !== (req.user as User).id)
+        throw new OAuthFailure('invalid_request', 'Approve a workspace for the signed-in account');
+      const selected = await this.oauth.selectWorkspace(id, this.csrf(req, id), body.workspaceId,
+        this.origin(req), true, req.user as User);
+      this.bindBrowser(res, selected);
+      res.clearCookie(this.oauth.cookieName(id), { path: new URL(this.oauth.settings().issuer).pathname });
+      res.status(200).json({ redirectUrl: selected.location });
+      return;
+    }
+    const flow = await this.oauth.interaction(id, this.csrf(req, id), undefined, this.origin(req));
+    const user = await this.oauth.workspaceUser(req.user as User, flow.payload.organizationId);
+    const result = await this.oauth.consent(id, this.csrf(req, id), user, body.allow, this.origin(req), body.resume === true);
     res.clearCookie(this.oauth.cookieName(id), { path: new URL(this.oauth.settings().issuer).pathname });
     res.status(200).json(result);
   }

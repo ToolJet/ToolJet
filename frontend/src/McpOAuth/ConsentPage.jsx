@@ -114,10 +114,35 @@ export default function ConsentPage() {
       }
       if (session.status === 403)
         throw new Error(
-          'You do not have access to connect an AI client in this workspace. Contact your workspace administrator.'
+          info.approvalPending
+            ? 'This connection was approved for a different account or your workspace access changed. Start again from your AI client.'
+            : 'You do not have access to connect an AI client in this workspace. Contact your workspace administrator.'
         );
       if (!session.ok) throw new Error('Unable to verify access to this workspace. Please sign in again.');
       const user = await session.json();
+      if (info.approvalPending) {
+        // Continue already approved this immutable request on the server. Finish
+        // after the workspace policy check (including a required SSO round trip).
+        const completed = await fetch(`${api()}/interactions/${id}`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'tj-workspace-id': info.organizationId,
+            'x-tooljet-oauth-csrf': info.csrfToken,
+          },
+          body: JSON.stringify({ allow: true, accountId: user.accountId, resume: true }),
+        });
+        if (!active) return;
+        if (completed.status === 401) {
+          window.location.assign(info.loginUrl);
+          return;
+        }
+        if (!completed.ok) throw new Error('Unable to complete this connection. Start again from your AI client.');
+        const result = await completed.json();
+        window.location.assign(result.redirectUrl);
+        return;
+      }
       if (active) {
         setEmail(user.email);
         setAccountId(user.accountId);
@@ -142,29 +167,23 @@ export default function ConsentPage() {
     setBusy(true);
     setError('');
     try {
-      const response = await fetch(`${api()}/interactions/${id}/workspace`, {
+      const response = await fetch(`${api()}/interactions/${id}`, {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'x-tooljet-oauth-csrf': flow.csrfToken,
         },
-        body: JSON.stringify({ workspace }),
+        body: JSON.stringify({ allow: true, accountId, workspaceId: workspace }),
       });
+      if (response.status === 401) {
+        window.location.assign(flow.loginUrl);
+        return;
+      }
       if (!response.ok)
         throw new Error('This workspace or connection link is unavailable. Start again from your AI client.');
       const result = await response.json();
-      // Selection consumes the root. Continue with its immutable child, never mutate the root again.
-      // If a fresh login is required, keep the selected workspace on the consent surface first.
-      const target = new URL(result.redirectUrl, window.location.origin);
-      const selectedId = target.searchParams.get('request');
-      if (target.origin === window.location.origin && /^[A-Za-z0-9_-]{43}$/.test(selectedId || '')) {
-        try {
-          sessionStorage.setItem(`tj_mcp_login_${selectedId}`, '1');
-        } catch {
-          /* Manual sign-in still works. */
-        }
-      }
+      // The child retains the approval and finishes without another consent card.
       window.location.assign(result.redirectUrl);
     } catch (err) {
       setError(err.message);
@@ -211,7 +230,7 @@ export default function ConsentPage() {
     );
   }
 
-  const hasConsent = Boolean(flow && (email || (needsLogin && flow.organizationId)));
+  const hasConsent = Boolean(flow && email && !needsLogin);
   const canApprove = Boolean(flow?.organizationId && email && accountId && !needsLogin);
 
   return (
@@ -254,12 +273,6 @@ export default function ConsentPage() {
               )}
               {choosingWorkspace && (
                 <WorkspacePicker workspaces={workspaces} workspace={workspace} onChange={setWorkspace} busy={busy} />
-              )}
-              {needsLogin && (
-                <p role="status" className="mcp-oauth-muted">
-                  Sign in to {flow.organizationName} using one of its allowed methods before approving access. If this
-                  workspace requires SSO, complete its SSO sign-in to continue.
-                </p>
               )}
               <section className="mcp-oauth-permissions" aria-labelledby="mcp-oauth-permissions-title">
                 <h2 id="mcp-oauth-permissions-title">
@@ -307,7 +320,7 @@ export default function ConsentPage() {
                     <button
                       type="button"
                       className="mcp-oauth-primary"
-                      disabled={busy || (choosingWorkspace ? !workspace : !canApprove)}
+                      disabled={busy || (choosingWorkspace ? !workspace || !accountId : !canApprove)}
                       onClick={choosingWorkspace ? selectWorkspace : () => decide(true)}
                     >
                       {busy ? 'Please wait…' : choosingWorkspace ? 'Continue' : 'Allow access'}
@@ -330,7 +343,7 @@ export default function ConsentPage() {
                 Cancel
               </button>
               <a className="mcp-oauth-signin" href={flow.loginUrl}>
-                Sign in to ToolJet
+                {flow.organizationId ? 'Sign in to this workspace' : 'Sign in to ToolJet'}
               </a>
             </div>
           )}

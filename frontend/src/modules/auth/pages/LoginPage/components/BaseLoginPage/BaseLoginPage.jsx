@@ -31,7 +31,7 @@ const BaseLoginPage = ({ configs, organizationId, currentOrganizationName, handl
   const currentReturn = new URLSearchParams(locationRef.search).get('redirectTo');
   const previousMcpReturn = useRef(false);
   const sharedMcpLogin =
-    locationRef.pathname === '/login' &&
+    locationRef.pathname.replace(/\/+$/, '') === '/login' &&
     !organizationId &&
     !params?.organizationId &&
     Boolean(currentReturn) &&

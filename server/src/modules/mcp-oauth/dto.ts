@@ -16,9 +16,13 @@ export interface InteractionPreviewResponse {
   scopes: string[];
   csrfToken: string;
   loginUrl: string;
+  approvalPending: boolean;
 }
 // Inputs remain unknown until the existing protocol validation has checked them.
-export interface ConsentInput { allow: unknown; accountId?: unknown }
+export interface ConsentInput { allow: unknown; accountId?: unknown; workspaceId?: unknown; resume?: unknown }
 export interface BootstrapInput { ticket: unknown; nonce: unknown }
-export interface WorkspaceInput { workspace: unknown }
+export interface WorkspaceInput {
+  workspace?: unknown;
+  workspaceId?: unknown;
+}
 export interface ViewerInput { app_id: unknown }

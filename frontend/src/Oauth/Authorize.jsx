@@ -390,9 +390,14 @@ export function Authorize({ navigate }) {
 
   const baseRoute = signupOrganizationSlug ? '/signup' : '/login';
   const slug = signupOrganizationSlug ? signupOrganizationSlug : organizationSlug;
-  const errorURL = `${baseRoute}${error && slug ? `/${slug}` : '/'}${
-    !signupOrganizationSlug && redirectUrl ? `?redirectTo=${redirectUrl}` : ''
-  }`;
+  const errorURL = mcpReturn
+    ? `/login${error && slug ? `/${slug}` : ''}?${new URLSearchParams({
+        redirectTo: mcpReturn,
+        oauth_reauthenticate: '1',
+      })}`
+    : `${baseRoute}${error && slug ? `/${slug}` : '/'}${
+        !signupOrganizationSlug && redirectUrl ? `?redirectTo=${redirectUrl}` : ''
+      }`;
   return (
     <div>
       <TJLoader />
