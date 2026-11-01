@@ -57,7 +57,7 @@ export const Container = ({
   });
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
-  const activeSlot = useActiveSlot(id); // Track the active slot for this widget
+  const activeSlot = useActiveSlot(id, currentMode === 'edit'); // Track the active slot for this widget
   const { borderRadius, borderColor, boxShadow, headerDividerColor } = styles;
   const headerMaxHeight = isDynamicHeightEnabled ? 10000 : parseInt(height, 10) - 100 - 10;
   const contentBgColor = useMemo(() => {
@@ -132,6 +132,7 @@ export const Container = ({
               slotStyle={containerHeaderStyles}
               id={`${id}-header`}
               height={headerHeight}
+              maxHeight={headerMaxHeight}
               width={width}
               darkMode={darkMode}
               isDisabled={isDisabled}
@@ -143,7 +144,7 @@ export const Container = ({
           )}
           <div
             style={containerContentStyles}
-            className={`${properties.dynamicHeight && `dynamic-${id}`} widget-type-container`}
+            className={`${properties.dynamicHeight ? `dynamic-${id}` : ''} widget-type-container`.trim()}
             data-disabled={isDisabled}
           >
             <ContainerComponent

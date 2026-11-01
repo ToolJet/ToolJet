@@ -5,7 +5,7 @@
  * Every test title starts with its approved scenario ID; the `// Break this catches:`
  * comment names the production edit its oracle is meant to catch.
  */
-import { waitFor } from '@testing-library/react';
+import { fireEvent, waitFor } from '@testing-library/react';
 import { createWidgetHarness, binding, drain } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
 import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
@@ -60,6 +60,21 @@ const headerRegion = () => document.querySelector(`[data-cy="${NAME}-header-sect
 // The wrapper between the root and the body sub-canvas. It carries the body background;
 // the root is transparent and only supplies the rounded clip (D-08).
 const contentWrapper = () => root()?.querySelector('.widget-type-container');
+// The element useSubContainerResizable owns: it carries the live inline height during a drag.
+const resizeSlot = () => headerRegion()?.querySelector('.resizable-slot');
+
+/**
+ * Drags the header handle down by `byPx` and returns the slot's resulting inline height.
+ * jsdom reports clientHeight as 0, so the drag starts from 0 and the delta IS the new height
+ * before clamping — which is exactly what makes the ceiling observable here.
+ */
+function dragHeaderBy(byPx) {
+  const handle = headerRegion().querySelector('.resize-handle');
+  fireEvent.mouseDown(handle, { clientY: 0, button: 0 });
+  fireEvent.mouseMove(document, { clientY: byPx });
+  fireEvent.mouseUp(document);
+  return resizeSlot().style.height;
+}
 
 describe('Container: base rendering', () => {
   // Break this catches: the body sub-canvas no longer being mounted (e.g. an early
@@ -559,6 +574,55 @@ describe('Container: styles', () => {
     expect(bodyCanvas().style.backgroundColor).toBe('transparent');
     // The colour lives on the wrapper instead.
     expect(contentWrapper().style.backgroundColor).toBe('rgb(1, 2, 3)');
+  });
+
+  // Break this catches: a `cond && string` guard inside a template literal. When the condition
+  // is false it stringifies the boolean, so every Container shipped a literal `false` class.
+  test('[Container-STYLE-007] the content wrapper carries no stringified boolean in its class list', async () => {
+    harness.render();
+    await waitFor(() => expect(contentWrapper()).toBeTruthy());
+
+    expect([...contentWrapper().classList]).toEqual(['widget-type-container']);
+
+    harness.render({ properties: { dynamicHeight: binding('{{true}}') }, currentMode: 'view' });
+    await waitFor(() => expect(contentWrapper()).toBeTruthy());
+    expect([...contentWrapper().classList]).toEqual([`dynamic-${ID}`, 'widget-type-container']);
+  });
+
+  // Break this catches: the drag ceiling drifting away from the CSS ceiling, in either
+  // direction. The shared slot falls back to a flat 400 when the prop is absent, which is
+  // unrelated to the widget's height (D-10).
+  // `widgetHeight` is fixed per harness, so each height needs its own; the two cases are
+  // separate tests because the harness teardown does not unmount, and RTL's auto-cleanup
+  // between tests is what keeps the second from reading the first's DOM.
+  const dragCeilingAt = async (widgetHeight) => {
+    const local = createWidgetHarness({
+      componentType: 'Container',
+      handle: NAME,
+      id: ID,
+      capabilities: { dnd: true },
+      widgetHeight,
+      widgetWidth: 600,
+    });
+    await local.setup();
+    local.render({ currentMode: 'edit' });
+    await waitFor(() => expect(headerRegion()).toBeTruthy());
+    return dragHeaderBy(5000);
+  };
+
+  // Break this catches: the drag ceiling drifting from the CSS ceiling. The shared slot falls
+  // back to a flat 400 when the prop is absent, which is unrelated to the widget's height, so
+  // a short Container could store a header taller than it renders (D-10).
+  test('[Container-HDR-006] a short widget caps the header below the shared 400 fallback', async () => {
+    // RenderWidget passes `widgetHeight - 4` as `height`; (200-4) - 110 = 86, snapped to 90.
+    expect(await dragCeilingAt(200)).toBe('90px');
+  });
+
+  // Break this catches: the same ceiling in the other direction — a flat 400 would stop the
+  // drag short of what a tall Container's CSS already allows.
+  test('[Container-HDR-006] a tall widget caps the header above the shared 400 fallback', async () => {
+    // (600-4) - 110 = 486, snapped to 490.
+    expect(await dragCeilingAt(600)).toBe('490px');
   });
 
   // Break this catches: "tidying" the parseFloat away, or clamping the radius to the
