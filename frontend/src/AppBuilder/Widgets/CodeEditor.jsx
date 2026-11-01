@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 import CodeMirror from '@uiw/react-codemirror';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
@@ -52,9 +52,18 @@ const CodeEditor = ({
     componentType,
   });
 
-  const codeChanged = debounce((code) => {
-    setExposedVariable('value', code);
-  }, 500);
+  // Memoized so there is ONE debounced write to cancel.
+  // Built in the component body it was rebuilt every render, leaving a separate pending timer per keystroke.
+  const codeChanged = useMemo(
+    () =>
+      debounce((code) => {
+        setExposedVariable('value', code);
+      }, 500),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
+  useEffect(() => () => codeChanged.cancel(), [codeChanged]);
 
   const updateValue = (val) => {
     setValue(val);
@@ -95,6 +104,9 @@ const CodeEditor = ({
       }
     };
     setExposedVariable('setValue', _setValue);
+
+    // Publish the starting value
+    setExposedVariable('value', value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
