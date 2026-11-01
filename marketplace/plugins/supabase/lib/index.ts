@@ -225,13 +225,23 @@ export default class Supabase implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const supabaseClient = await this.getConnection(sourceOptions);
+    const { project_url, service_role_secret } = sourceOptions;
 
     try {
-      const res = await supabaseClient.from('').select('1');
+      // Validates the project URL and key the same way queries do
+      await this.getConnection(sourceOptions);
 
-      if (res.error) {
-        throw new QueryError(`Connection test failed`, res.error, {});
+      // postgrest-js >= 2.84 rejects from(''), so probe the PostgREST root directly
+      const res = await fetch(`${project_url.replace(/\/+$/, '')}/rest/v1/`, {
+        headers: {
+          apikey: service_role_secret,
+          Authorization: `Bearer ${service_role_secret}`,
+        },
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.message || `Request failed with status ${res.status}`);
       }
 
       return {
