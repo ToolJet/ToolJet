@@ -54,6 +54,10 @@ logic is in `server/ee/git-sync/`.
 - `co_relation_id` is the cross-branch/cross-instance identity for app entities; adapter
   auto-generates missing git-ids on push and rewrites *all* UUID references (including UUIDs embedded
   inside strings) via `replaceEmbeddedUUIDsInAllStrings`. Breaking this mapping orphans entities on pull.
+- Nothing enforces one `apps` row per `co_relation_id` (`idx_apps_co_relation_id` is non-unique), yet every pull
+  lookup keys on it and keeps only the first match — duplicates then trip the `enforce_app_versions_*` name/slug
+  triggers. `logConflictingRows` (`ee/platform-git-sync/pull.service.ts`) logs the colliding rows as versioned
+  JSON; paste that line into `check-pull-error.html` at the repo root to get the app, the rule and the repair SQL.
 - Only one provider strategy is active per org; `deleteConfig` must still succeed when config rows
   are already gone (error swallowed) and evicts both branch and git-object caches for the repo.
 - Both caches fail open: Redis down -> `remote-branch-cache` returns null (refetch), cache set errors
