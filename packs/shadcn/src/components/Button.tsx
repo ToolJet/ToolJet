@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
 import { isSet, lookVars, px } from '../lib/ui2/nav/look';
-import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
+import { TOKEN, useThemeColor, useThemeHover, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
 const VARIANTS = ['default', 'secondary', 'outline', 'ghost', 'destructive', 'link'];
@@ -99,7 +99,13 @@ export const Button = () => {
     (t) => setOverride(t === undefined || t === null ? '' : String(t))
   );
   const backgroundColor = useThemeColor('backgroundColor', 'Button background', TOKEN.brand);
-  const hoverBackgroundColor = useThemeColor('hoverBackgroundColor', 'Button hover background', TOKEN.brand);
+  // Brand is the default variant's fill, so there it is the hover colour as shown; the other variants keep their own hover.
+  const hoverBackgroundColor = useThemeHover(
+    'hoverBackgroundColor',
+    'Button hover background',
+    TOKEN.brand,
+    oneOf(VARIANTS, variant) === 'default'
+  );
   const textColor = useThemeColor('textColor', 'Button text color', TOKEN.surface);
   const borderColor = useThemeColor('borderColor', 'Button border color', 'transparent');
   const radius = useThemeRadius('borderRadius', 'Button radius');

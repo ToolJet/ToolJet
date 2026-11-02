@@ -39,6 +39,16 @@ type StyleOptions = Record<string, unknown>;
 export const useThemeColor = (name: string, label: string, token: Token, options: StyleOptions = {}): string =>
   unlessDefault(ToolJet.useStyleString({ name, label, inspector: 'color', initialValue: token, ...options }), token) as string;
 
+/**
+ * A hover background that does what it shows: with `applyDefault`, the declared default (Brand) is a colour like any
+ * other and is returned, instead of '' (unset, which derives the hover from the background). Without it, it behaves
+ * as useThemeColor, for variants whose hover is not the default's fill.
+ */
+export const useThemeHover = (name: string, label: string, token: Token, applyDefault: boolean): string => {
+  const value = ToolJet.useStyleString({ name, label, inspector: 'color', initialValue: token }) as string;
+  return applyDefault ? value : (unlessDefault(value, token) as string);
+};
+
 /** A number style (px) with the value it draws as its default. */
 export const useDrawnNumber = (name: string, label: string, drawn: number, options: StyleOptions = {}) =>
   unlessDefault(ToolJet.useStyleNumber({ name, label, initialValue: drawn, ...options }), drawn) as number | '';

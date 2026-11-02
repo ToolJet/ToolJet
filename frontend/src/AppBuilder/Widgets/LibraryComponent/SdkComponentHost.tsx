@@ -20,7 +20,7 @@ const Loader = LoaderJs as React.ComponentType<any>;
 // Styles the host widget applies itself; every other style key is the bundle's (ToolJet.useStyleX).
 const HOST_STYLE_KEYS = new Set(['boxShadow']);
 // The host's standard properties: the component reads them through ToolJet.useControlState, never as its own props.
-const HOST_PROPERTY_KEYS = ['visibility', 'loadingState', 'disabledState', 'dynamicHeight'];
+const HOST_PROPERTY_KEYS = ['visibility', 'collapseWhenHidden', 'loadingState', 'disabledState', 'dynamicHeight'];
 
 /** What a host widget (LibraryComponent, PackComponent) resolved its instance to draw. */
 export interface SdkComponentSource {

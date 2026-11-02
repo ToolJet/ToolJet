@@ -48,13 +48,20 @@ export const formatRevisionLabel = (revision: string | undefined): string | unde
 // manifest-driven Properties list so dynamic CCL props never crowd these out.
 // disabledState is offered only to a component whose manifest declares controlState: anything else never reads
 // it, so the toggle would do nothing. It is listed even when the host config lacks it (the panel then renders
-// it from DISABLED_STATE_META, appended last).
+// it from DISABLED_STATE_META, appended last). dynamicHeight likewise only for a component that can size to its
+// content (manifest fit: true); the host ignores it for any other.
 export const additionalActionProps = (
   componentMeta: { properties?: Record<string, { section?: string }> },
-  controlState = false
+  controlState = false,
+  fit = false
 ): string[] => {
   const keys = Object.entries(componentMeta.properties ?? {})
-    .filter(([key, prop]) => prop.section === 'additionalActions' && (controlState || key !== 'disabledState'))
+    .filter(
+      ([key, prop]) =>
+        prop.section === 'additionalActions' &&
+        (controlState || key !== 'disabledState') &&
+        (fit || key !== 'dynamicHeight')
+    )
     .map(([key]) => key);
   return controlState && !keys.includes('disabledState') ? [...keys, 'disabledState'] : keys;
 };

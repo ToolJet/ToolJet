@@ -60,12 +60,15 @@
   border-color: var(--lk-border);
 }
 .n2-btn-fill {
-  height: auto;
-  min-height: max(100%, 32px);
+  height: 100%;
+  min-height: 32px;
+  overflow: hidden;
 }
-/* A long label wraps (the spinner before it keeps its size) and the button grows to fit it. */
+/* A long label wraps inside the button's box and is cut at its bottom edge; the spinner before it keeps its size. */
 .n2-btn-label {
   min-width: 0;
+  max-height: 100%;
+  overflow: hidden;
   white-space: normal;
   overflow-wrap: anywhere;
 }
