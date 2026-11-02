@@ -189,14 +189,14 @@ export const renameWidgetFromMenu = (widgetName, newName) => {
 /**
  * @tjBlock  canvas
  * @tjUsage  deleteWidgetFromMenu('button1')
- * @tjDom    ⋮ menu → Delete → confirm modal-component → Yes
+ * @tjDom    ⋮ menu → Delete → confirm entity-delete-modal → Delete
  */
 export const deleteWidgetFromMenu = (widgetName) => {
   selectComponentInspectorMenuOption(widgetName, "delete");
   // Deleting from the ⋮ menu raises the same confirmation modal as the
   // config-handle trash (deleteComponentAndVerify) — confirm it.
-  cy.get('[data-cy="modal-component"]').should("be.visible");
-  cy.get(commonSelectors.yesButton).click();
+  cy.get(commonSelectors.entityDeleteModal).should("be.visible");
+  cy.get(commonSelectors.entityDeleteConfirm).click();
   cy.wait(1000);
 };
 

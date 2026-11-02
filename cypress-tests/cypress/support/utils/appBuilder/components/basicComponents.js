@@ -62,7 +62,7 @@ export const verifyComponentinrightpannel = (widgetName) => {
 /**
  * @tjBlock  canvas
  * @tjUsage  deleteComponentAndVerify('button1')
- * @tjDom    hover widget → <name>-delete-component-button → confirm modal yesButton
+ * @tjDom    hover widget → <name>-delete-component-button → confirm entity-delete-modal → Delete
  */
 export const deleteComponentAndVerify = (widgetName) => {
   cy.waitForElement(commonWidgetSelector.draggableWidget(widgetName));
@@ -78,8 +78,8 @@ export const deleteComponentAndVerify = (widgetName) => {
         .last()
         .realClick();
     });
-  cy.get('[data-cy="modal-component"]').should("be.visible");
-  cy.get(commonSelectors.yesButton).click();
+  cy.get(commonSelectors.entityDeleteModal).should("be.visible");
+  cy.get(commonSelectors.entityDeleteConfirm).click();
   cy.wait(1000);
   cy.notVisible(commonWidgetSelector.draggableWidget(widgetName));
 };

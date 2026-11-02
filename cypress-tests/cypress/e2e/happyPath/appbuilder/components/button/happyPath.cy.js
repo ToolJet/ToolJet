@@ -571,7 +571,7 @@ describe(
     openEditorSidebar(buttonText.defaultWidgetName);
     cy.get('[data-cy="component-inspector-options"]').click();
     cy.get('[data-cy="component-inspector-delete-button"]').click();
-    cy.get('[data-cy="yes-button"]').click();
+    cy.get(commonSelectors.entityDeleteConfirm).click();
     // Assert only the platform-agnostic prefix: the undo hint renders as
     // "(⌘ + Z to undo)" on macOS but "(Ctrl + Z to undo)" on Linux CI
     // (componentsSlice.js isMac branch), so matching the full string is flaky.
@@ -589,7 +589,7 @@ describe(
     // selected, but click to be deterministic, then delete via keyboard.
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.realPress("Backspace");
-    cy.get('[data-cy="yes-button"]').click();
+    cy.get(commonSelectors.entityDeleteConfirm).click();
     // Assert only the platform-agnostic prefix: the undo hint renders as
     // "(⌘ + Z to undo)" on macOS but "(Ctrl + Z to undo)" on Linux CI
     // (componentsSlice.js isMac branch), so matching the full string is flaky.

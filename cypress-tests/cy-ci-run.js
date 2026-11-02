@@ -46,7 +46,8 @@ if (shardTotal > 1) {
     total: shardTotal,
     groups: (process.env.SHARD_GROUPS || "")
       .split(";")
-      .map((group) => group.split(",").filter(Boolean))
+      // trimmed, so a YAML folded block can put one group per line
+      .map((group) => group.split(",").map((part) => part.trim()).filter(Boolean))
       .filter((group) => group.length),
   });
   console.log(`Shard ${Number(process.env.SHARD_INDEX || 0) + 1}/${shardTotal} runs ${specs.length} specs:`);
@@ -75,6 +76,15 @@ cypress
         skipped: results.totalSkipped,
         duration: results.totalDuration,
       },
+      // which specs failed, for the Slack message (a failing hook marks its test failed)
+      failedSpecs: (results.runs || [])
+        .filter((run) => run.stats && run.stats.failures > 0)
+        .map((run) => ({
+          spec: run.spec.relative,
+          tests: (run.tests || [])
+            .filter((test) => test.state === "failed")
+            .map((test) => [].concat(test.title).join(" › ")),
+        })),
     });
     process.exit(results.totalFailed > 0 ? 1 : 0);
   })
