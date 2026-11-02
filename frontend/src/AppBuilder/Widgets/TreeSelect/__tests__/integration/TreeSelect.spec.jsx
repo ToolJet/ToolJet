@@ -861,4 +861,125 @@ describe('TreeSelect widget', () => {
     await waitFor(() => expect(exposed().checked).toEqual(['shop-b', 'shelf', 'store']));
     expect(exposed().leafPathStrings).toEqual(['shop-b-shelf', 'shop-a-store']);
   });
+
+  test('[TreeSelect-DATA-007] static values equal as text keep the first node and do not crash', async () => {
+    // Break this catches: deduplicating by strict equality, so '1' and 1 both reach the tree library, which compares as text and throws.
+    tree.render({
+      currentMode: 'view',
+      properties: {
+        advanced: binding('{{false}}'),
+        options: binding([
+          node('One', '1'),
+          node('Uno', '{{1}}'),
+          node('Yes', '{{true}}'),
+          node('Yes text', 'true'),
+          node('Obj A', '{{ { x: 1 } }}'),
+          node('Obj B', '{{ { x: 2 } }}'),
+        ]),
+      },
+    });
+
+    expect(await screen.findByText('One')).toBeInTheDocument();
+    expect(errorBoundary()).toBeNull();
+    expect(screen.getByText('Yes')).toBeInTheDocument();
+    expect(screen.getByText('Obj A')).toBeInTheDocument();
+    expect(screen.queryByText('Uno')).not.toBeInTheDocument();
+    expect(screen.queryByText('Yes text')).not.toBeInTheDocument();
+    expect(screen.queryByText('Obj B')).not.toBeInTheDocument();
+
+    await tree.session.user.click(screen.getByText('One'));
+    await waitFor(() => expect(exposed().checked).toEqual(['1']));
+  });
+
+  test('[TreeSelect-DATA-007] dynamic values equal as text keep the first node and do not crash', async () => {
+    // Break this catches: fixing only the static branch of the shared node filter.
+    tree.render({ currentMode: 'view' });
+    await screen.findByText('Root');
+
+    await setProperty('data', [node('One', '1'), node('Uno', 1), node('Yes', true), node('Yes text', 'true')]);
+    expect(await screen.findByText('One')).toBeInTheDocument();
+    expect(errorBoundary()).toBeNull();
+    expect(screen.getByText('Yes')).toBeInTheDocument();
+    expect(screen.queryByText('Uno')).not.toBeInTheDocument();
+    expect(screen.queryByText('Yes text')).not.toBeInTheDocument();
+  });
+
+  test('[TreeSelect-DATA-008] a label that resolves to an object renders as text instead of crashing', async () => {
+    // Break this catches: handing a resolved object label straight to React, which throws for the whole widget.
+    tree.render({
+      currentMode: 'view',
+      properties: {
+        advanced: binding('{{false}}'),
+        options: binding([node('{{ { x: 1 } }}', 'obj'), node('Plain', 'plain')]),
+      },
+    });
+
+    expect(await screen.findByText('Plain')).toBeInTheDocument();
+    expect(errorBoundary()).toBeNull();
+    expect(screen.getByText('[object Object]')).toBeInTheDocument();
+  });
+
+  test('[TreeSelect-DATA-008] a dynamic object label renders as text instead of crashing', async () => {
+    // Break this catches: guarding only the static branch.
+    tree.render({ currentMode: 'view' });
+    await screen.findByText('Root');
+
+    await setProperty('data', [node({ x: 1 }, 'obj'), node('Plain', 'plain')]);
+    expect(await screen.findByText('Plain')).toBeInTheDocument();
+    expect(errorBoundary()).toBeNull();
+    expect(screen.getByText('[object Object]')).toBeInTheDocument();
+  });
+
+  const duplicateLogs = () =>
+    tree.session.store
+      .read((state) => state.debugger.logs)
+      .filter((log) => log.componentId === ID && /Duplicate option value/.test(log.message));
+
+  test('[TreeSelect-DATA-009] saved duplicate values are reported to the debugger once, naming the options', async () => {
+    // Break this catches: skipping the duplicate silently, or logging on every render instead of once per data.
+    tree.render({
+      properties: {
+        advanced: binding('{{false}}'),
+        options: binding([node('One', '1'), node('Uno', '{{1}}'), node('Two', '2')]),
+      },
+    });
+    expect(await screen.findByText('One')).toBeInTheDocument();
+
+    await waitFor(() => expect(duplicateLogs()).toHaveLength(1));
+    expect(duplicateLogs()[0]).toMatchObject({
+      key: `${HANDLE} - Option value`,
+      logLevel: 'error',
+      errorTarget: 'Component Property',
+      message: 'Duplicate option value "1" is used by options: "One", "Uno". Option values must be unique.',
+    });
+
+    await tree.session.user.click(screen.getByText('Two'));
+    await waitFor(() => expect(exposed().checked).toEqual(['2']));
+    expect(duplicateLogs()).toHaveLength(1);
+  });
+
+  test('[TreeSelect-DATA-009] a data change that introduces a duplicate is reported, and unique values stay silent', async () => {
+    // Break this catches: reporting only on mount, or flagging values that are not duplicates.
+    tree.render({ properties: { advanced: binding('{{false}}'), options: binding([node('A', 'a'), node('B', 'b')]) } });
+    expect(await screen.findByText('B')).toBeInTheDocument();
+    expect(duplicateLogs()).toHaveLength(0);
+
+    await setProperty('options', [node('A', 'a'), node('B', 'b'), node('Child host', 'h', [node('B again', 'b')])]);
+    await waitFor(() => expect(duplicateLogs()).toHaveLength(1));
+    expect(duplicateLogs()[0].message).toBe(
+      'Duplicate option value "b" is used by options: "B", "B again". Option values must be unique.'
+    );
+  });
+
+  test('[TreeSelect-DATA-009] dynamic duplicate values are reported the same way', async () => {
+    // Break this catches: reporting only in the static branch of the shared node filter.
+    tree.render({ currentMode: 'view' });
+    await screen.findByText('Root');
+
+    await setProperty('data', [node('Yes', true), node('Yes text', 'true')]);
+    await waitFor(() => expect(duplicateLogs()).toHaveLength(1));
+    expect(duplicateLogs()[0].message).toBe(
+      'Duplicate option value "true" is used by options: "Yes", "Yes text". Option values must be unique.'
+    );
+  });
 });

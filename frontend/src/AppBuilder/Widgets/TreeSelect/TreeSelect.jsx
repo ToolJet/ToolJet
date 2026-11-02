@@ -1,4 +1,4 @@
-import React, { useRef, useId } from 'react';
+import React, { useRef, useId, useEffect } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import CheckboxTree from 'react-checkbox-tree';
 // eslint-disable-next-line import/no-unresolved
@@ -19,6 +19,8 @@ import {
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { cn } from '@/lib/utils';
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import { duplicateValueMessage, logOptionProblem } from './optionProblems';
 import './treeSelect.scss';
 
 const TreeSelect = ({
@@ -37,6 +39,7 @@ const TreeSelect = ({
   subContainerIndex,
   validate,
   validation,
+  componentName,
 }) => {
   const {
     label,
@@ -116,15 +119,22 @@ const TreeSelect = ({
   // Recursively filter hidden items and resolve per-node disabled state
   // We do not map the custom labels yet so useTreeSelect creates the correct path/leaf maps
   // The upstream tree throws on a duplicate value, so later duplicates and their subtrees are skipped (D-02)
-  const seenValues = new Set();
+  const seenValues = new Map();
+  const duplicateLabels = new Map();
   const filterNodes = (items) => {
     if (!Array.isArray(items)) return [];
     return items
       .filter((item) => item !== null && typeof item === 'object' && !Array.isArray(item))
       .filter((item) => getResolvedValue(item.visible) !== false)
       .filter((item) => {
-        if (seenValues.has(item.value)) return false;
-        seenValues.add(item.value);
+        // Compared as text, the way the upstream tree keys its nodes: '1' and 1 are one value to it.
+        const key = String(item.value);
+        const label = String(getSafeRenderableValue(item.label));
+        if (seenValues.has(key)) {
+          duplicateLabels.set(key, [...(duplicateLabels.get(key) ?? [seenValues.get(key)]), label]);
+          return false;
+        }
+        seenValues.set(key, label);
         return true;
       })
       .map((item) => {
@@ -145,6 +155,16 @@ const TreeSelect = ({
   };
 
   const rawData = filterNodes(advanced ? properties.data : options);
+
+  const duplicateMessages = [...duplicateLabels].map(([value, labels]) => duplicateValueMessage(value, labels));
+  const duplicateSignature = duplicateMessages.join('\n');
+  // Logged once per distinct set of duplicates: the skipped nodes are otherwise invisible to the builder.
+  useEffect(() => {
+    duplicateMessages.forEach((message) =>
+      logOptionProblem({ componentId: id, componentName, field: 'Option value', message })
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [duplicateSignature]);
 
   const evaluatedCheckedData = !advanced ? derivedChecked : checkedData;
   const evaluatedExpandedData = !advanced ? derivedExpanded : expandedData;
@@ -248,7 +268,7 @@ const TreeSelect = ({
               handleCustomCheck(item.value, isChecked);
             }}
           />
-          {item.label}
+          {getSafeRenderableValue(item.label)}
         </div>
       );
 

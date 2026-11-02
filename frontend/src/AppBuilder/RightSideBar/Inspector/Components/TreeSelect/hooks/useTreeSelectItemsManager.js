@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { objectLabelMessage, logOptionProblem } from '@/AppBuilder/Widgets/TreeSelect/optionProblems';
+import { validateOptionValue, validateOptionLabel, duplicateValueLogMessage } from './treeSelectOptionValidation';
 
 export const useTreeSelectItemsManager = (component, paramUpdated) => {
   const [treeItems, setTreeItems] = useState([]);
@@ -73,8 +75,28 @@ export const useTreeSelectItemsManager = (component, paramUpdated) => {
     };
   };
 
+  const validateItemField = (propertyPath, value, itemValue) => {
+    if (propertyPath === 'value') return validateOptionValue(treeItems, value, itemValue, getResolvedValue);
+    if (propertyPath === 'label') return validateOptionLabel(value, getResolvedValue);
+    return [true, null];
+  };
+
   // Event handlers
+  // Returns false when the edit is refused, so the field can snap back to the stored value.
   const handleItemChange = (propertyPath, value, itemValue, parentValue = null) => {
+    const [isValid] = validateItemField(propertyPath, value, itemValue);
+    if (!isValid) {
+      const isValue = propertyPath === 'value';
+      logOptionProblem({
+        componentId: component?.id,
+        componentName: component?.component?.name,
+        field: isValue ? 'Option value' : 'Option label',
+        message: isValue
+          ? duplicateValueLogMessage(treeItems, value, itemValue, getResolvedValue)
+          : objectLabelMessage(String(getResolvedValue(itemValue))),
+      });
+      return false;
+    }
     const updateItems = (items) => {
       return items.map((item) => {
         if (parentValue && item.value === parentValue && item.children) {
@@ -98,6 +120,7 @@ export const useTreeSelectItemsManager = (component, paramUpdated) => {
       });
     };
     updateTreeItems(updateItems(treeItems));
+    return true;
   };
 
   const handleDeleteItem = (itemValue, parentValue = null) => {
@@ -200,6 +223,7 @@ export const useTreeSelectItemsManager = (component, paramUpdated) => {
     expandedItems,
     toggleItemExpanded,
     handleItemChange,
+    validateItemField,
     handleDeleteItem,
     handleAddItem,
     handleAddNestedItem,
