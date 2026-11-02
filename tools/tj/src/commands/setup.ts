@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Command } from '../args.ts';
 import { processEnv, readEnv, withoutDotEnv, writeEnv } from '../env.ts';
@@ -38,6 +39,75 @@ async function syncSubmodules(repo: Repo) {
 
 const lockHash = (dir: string) => createHash('sha1').update(readFileSync(join(dir, 'package-lock.json'))).digest('hex');
 
+type Lock = { packages?: Record<string, { version?: string; optional?: boolean; peer?: boolean }> };
+const readLock = (file: string): Lock | undefined => {
+  try {
+    return JSON.parse(readFileSync(file, 'utf8'));
+  } catch {
+    return undefined;
+  }
+};
+
+// npm's hidden lockfile (node_modules/.package-lock.json) lists what is on disk. Every installed
+// entry must match the lock, and every locked entry must be installed unless optional.
+export function installedFrom(lock: Lock, hidden: Lock) {
+  const want = lock.packages ?? {};
+  const have = hidden.packages ?? {};
+  for (const [k, v] of Object.entries(have)) if (want[k]?.version !== v.version) return false;
+  return Object.entries(want).every(([k, v]) => k in have || !k.includes('node_modules/') || v.optional || v.peer);
+}
+
+// Workspace packages keep their own node_modules (e.g. plugins/packages/<x>/node_modules).
+export const nestedModules = (hidden: Lock) =>
+  [...new Set(Object.keys(hidden.packages ?? {}).map((k) => /^(?!node_modules\/)(.+?\/node_modules)\//.exec(k)?.[1]))].filter(
+    (x): x is string => !!x,
+  );
+
+// Copy-on-write (APFS clonefile / reflink): near-instant, and the copies never share writes.
+const cloneDir = (repo: Repo, from: string, to: string) =>
+  run(`clone ${to}`, 'cp', process.platform === 'darwin' ? ['-cR', from, to] : ['-R', '--reflink=auto', from, to], {
+    cwd: repo.root,
+    log: logFile(repo.root, 'clone'),
+  });
+
+async function reuseModules(repo: Repo, d: string, dir: string) {
+  const lock = readLock(join(dir, 'package-lock.json'));
+  if (!lock || existsSync(join(dir, 'node_modules'))) return false;
+  for (const w of await worktrees(repo.main)) {
+    if (w.path === repo.root) continue;
+    const from = d === 'root' ? w.path : join(w.path, d);
+    const hidden = readLock(join(from, 'node_modules', '.package-lock.json'));
+    if (!hidden || !installedFrom(lock, hidden)) continue;
+    try {
+      for (const m of ['node_modules', ...nestedModules(hidden)])
+        if (existsSync(join(from, m)) && !existsSync(join(dir, m))) await cloneDir(repo, join(from, m), join(dir, m));
+      return from;
+    } catch {
+      await rm(join(dir, 'node_modules'), { recursive: true, force: true });
+      return false;
+    }
+  }
+  return false;
+}
+
+async function reusePluginsBuild(repo: Repo, hash: string) {
+  for (const w of await worktrees(repo.main)) {
+    if (w.path === repo.root || loadState(w.path).deps?.['plugins:build'] !== hash) continue;
+    const from = join(w.path, 'plugins');
+    const to = join(repo.root, 'plugins');
+    const dists = ['dist', ...readdirSync(join(from, 'packages')).map((p) => join('packages', p, 'dist'))].filter(
+      (x) => existsSync(join(from, x)) && !existsSync(join(to, x)),
+    );
+    try {
+      await Promise.all(dists.map((x) => cloneDir(repo, join(from, x), join(to, x))));
+      return w.path;
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
 async function installDeps(repo: Repo, state: State, dirs: string[], force: boolean) {
   state.deps ??= {};
   const deps = state.deps;
@@ -47,19 +117,27 @@ async function installDeps(repo: Repo, state: State, dirs: string[], force: bool
       const hash = lockHash(dir);
       if (!force && deps[d] === hash && existsSync(join(dir, 'node_modules'))) return ui.info(`${d}: deps up to date`);
       const t = Date.now();
-      ui.step(`${d}: npm ci`);
-      await run(`${d} npm ci`, 'npm', ['ci', '--prefer-offline', '--no-audit', '--no-fund'], { cwd: dir, log: logFile(repo.root, `npm-${d}`) });
+      const from = !force && (await reuseModules(repo, d, dir));
+      if (from) ui.ok(`${d}: deps cloned from ${from} ${since(t)}`);
+      else {
+        ui.step(`${d}: npm ci`);
+        await run(`${d} npm ci`, 'npm', ['ci', '--prefer-offline', '--no-audit', '--no-fund'], { cwd: dir, log: logFile(repo.root, `npm-${d}`) });
+        ui.ok(`${d}: deps installed ${since(t)}`);
+      }
       deps[d] = hash;
-      ui.ok(`${d}: deps installed ${since(t)}`);
     }),
   );
   const pluginsHash = (await capture('git', ['rev-parse', 'HEAD:plugins'], { cwd: repo.root })).out || deps.plugins;
   if (force || deps['plugins:build'] !== pluginsHash || !existsSync(join(repo.root, 'plugins', 'dist'))) {
     const t = Date.now();
-    ui.step('plugins: build');
-    await run('plugins build', 'npm', ['run', 'build'], { cwd: join(repo.root, 'plugins'), log: logFile(repo.root, 'plugins-build') });
+    const from = !force && (await reusePluginsBuild(repo, pluginsHash));
+    if (from) ui.ok(`plugins: build cloned from ${from} ${since(t)}`);
+    else {
+      ui.step('plugins: build');
+      await run('plugins build', 'npm', ['run', 'build'], { cwd: join(repo.root, 'plugins'), log: logFile(repo.root, 'plugins-build') });
+      ui.ok(`plugins: built ${since(t)}`);
+    }
     deps['plugins:build'] = pluginsHash;
-    ui.ok(`plugins: built ${since(t)}`);
   } else ui.info('plugins: build up to date');
 }
 

@@ -5,14 +5,13 @@ its absence tells the generators to build a `dropdown-component-flip` operations
 
 ## 1. Understand the source
 
-- **npm package**: `npm view <pkg> --json` for version, entry point, and repository; read the
-  README and type definitions to find the client constructor, its auth options, and the public
-  methods.
+- **npm package**: `npm view <pkg> --json`; read README and type definitions for the client
+  constructor, auth options, and public methods.
 - **Database driver**: connection parameters (host, port, database, user, password, SSL, or a
   connection URL and token) and what users run (a raw query, plus any structured operations).
-- **API docs URL**: fetch the docs; list endpoints, auth, request and response formats. If a page
-  is an app shell with no content, follow its links to the real docs host. If the provider
-  publishes an OpenAPI spec, say so and ask whether to switch to `intake-openapi.md`.
+- **API docs URL**: list endpoints, auth, request and response formats. App shell with no
+  content → follow links to the real docs host. Provider publishes an OpenAPI spec → say so and
+  ask whether to switch to `intake-openapi.md`.
 - **Description only**: ask until operations and auth are concrete.
 
 ## 2. Auth type
@@ -33,10 +32,9 @@ its absence tells the generators to build a `dropdown-component-flip` operations
   (`list_customers`), a `displayName`, and typed `parameters`.
 - Databases: usually a single query operation (SQL or the native query language) plus a few
   structured ones only when the PRD asks.
-- Note parameters that depend on each other (the docs say "required when X is set") and have
-  the backend fill a sensible default rather than failing.
-- Endpoints on several hosts: list the host per operation; `backend.md`, Dependencies, says how
-  to wire them.
+- Interdependent parameters ("required when X is set"): have the backend fill a sensible
+  default rather than fail.
+- Several hosts: list the host per operation (wiring: `backend.md`, Dependencies).
 - Parameter `widget`: `codehinter` by default (it accepts `{{ }}` expressions), `dropdown` for
   closed enums (with `options`), `toggle` for booleans.
 

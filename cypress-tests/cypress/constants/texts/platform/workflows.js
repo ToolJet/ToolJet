@@ -6,7 +6,7 @@ export const workflowsText = {
   harperdbNodeName: "harperdb1",
   runjsInputField: "runjs-input-field",
   pgsqlQueryInputField: "query-input-field",
-  harperdbInputField: "sql-query-input-field",
+  harperdbInputField: "sql_query-input-field",
   restapiUrlInputField: "url-input-field",
   workflowNameInputField: "workflow-name-input",
   exportWFOption: "export-workflow",

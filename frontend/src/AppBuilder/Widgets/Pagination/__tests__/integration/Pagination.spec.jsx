@@ -15,8 +15,9 @@
  * alone (D-02), and re-selecting the active page fires `onPageChange` again (D-06).
  */
 import { screen, waitFor, within } from '@testing-library/react';
-import { paginationConfig as frontendConfig } from '@/AppBuilder/WidgetManager/widgets/pagination';
-import { paginationConfig as serverConfig } from '../../../../../../../server/src/modules/apps/services/widget-config/pagination';
+import { paginationConfig as frontendConfig } from '@tooljet/widget-definitions';
+// eslint-disable-next-line import/no-relative-packages
+import serverWidgets from '../../../../../../../server/src/modules/apps/services/widget-config';
 import { componentDefinition } from '@/test/app-builder';
 import {
   createWidgetHarness,
@@ -25,6 +26,8 @@ import {
   store,
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+
+const serverConfig = serverWidgets.paginationConfig;
 
 const ID = 'pag1';
 const HANDLE = 'pagination1';

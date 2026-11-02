@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { ChangesComponent } from '../TooljetDatabase/constants';
 import cx from 'classnames';
 
 export function ConfirmDialog({
@@ -24,17 +23,10 @@ export function ConfirmDialog({
   confirmButtonIconWidth = '',
   confirmButtonIconFill,
   confirmIcon,
-  currentPrimaryKeyIcons = {},
-  newPrimaryKeyIcons = {},
-  isEditToolJetDbTable = false,
-  foreignKeyChanges = [],
-  existingReferencedTableName = '',
-  existingReferencedColumnName = '',
-  currentReferencedTableName = '',
-  currentReferencedColumnName = '',
   staticBackdrop = false,
   cancelButtonDisabled = false,
   hideCloseIcon = false,
+  children,
 }) {
   darkMode = darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const [showModal, setShow] = useState(show);
@@ -94,17 +86,7 @@ export function ConfirmDialog({
         </Modal.Header>
       )}
       <Modal.Body className="confirm-dialogue-body" data-cy="modal-message">
-        {isEditToolJetDbTable && (
-          <ChangesComponent
-            currentPrimaryKeyIcons={currentPrimaryKeyIcons}
-            newPrimaryKeyIcons={newPrimaryKeyIcons}
-            foreignKeyChanges={foreignKeyChanges}
-            existingReferencedTableName={existingReferencedTableName}
-            existingReferencedColumnName={existingReferencedColumnName}
-            currentReferencedTableName={currentReferencedTableName}
-            currentReferencedColumnName={currentReferencedColumnName}
-          />
-        )}
+        {children}
         {message}
       </Modal.Body>
       <Modal.Footer

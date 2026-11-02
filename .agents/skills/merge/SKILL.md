@@ -1,49 +1,34 @@
 ---
 name: merge
 description: >-
-  Merge a source branch into the current branch across all ToolJet repos (root + server/ee +
-  frontend/ee submodules). Handles conflicts, stashing, and submodule ordering. Use when asked to
-  merge, sync with, or bring in changes from another branch.
+  Merges a source branch into the current branch across all ToolJet repos (root + server/ee +
+  frontend/ee submodules), handling conflicts, stashing, submodule gitlinks and ordering. Use when
+  asked to merge, sync with, update from, or bring in changes from another branch.
 ---
 
-Merge a source branch into the current branch across all repos (root + submodules).
+User input: `$ARGUMENTS` — empty: merge the branch's base (Branch policy); otherwise the whole input is the **source branch**.
 
-User input: $ARGUMENTS
-
-**Usage:**
 ```
 /merge                  # merge the branch's base (open PR base, else main)
 /merge main             # merge main into current branch
 /merge feature/foo      # merge feature/foo into current branch
 ```
 
-Parse the input:
-- If empty: the source is the branch's base, inferred from context (see Branch policy below)
-- Otherwise: use the entire input as the **source branch** name.
-
----
-
 ## Branch policy
 
 With no source given, merge the branch's base:
 - the base of its open PR (`gh pr view --json baseRefName`);
-- otherwise, the remote's default branch: `main`, read from `git ls-remote --symref origin HEAD`, because a local `origin/HEAD` goes stale.
+- otherwise the remote's default branch, `main`, read from `git ls-remote --symref origin HEAD` (local `origin/HEAD` goes stale).
 
-If the context points at a release line (e.g. an `lts-*` backport) or is unclear, ask the user.
+Release line (e.g. an `lts-*` backport) or unclear → ask the user.
 
 **Gotcha:** a merge commit runs the pre-commit hook on every incoming file. An untracked file inside a submodule (e.g. a stray lock file in `server/ee`) makes lint-staged fail with "Unstaged changes could not be restored". Move such files aside, commit, then put them back.
 
-## Shell environment notes
-
-> **IMPORTANT:** The Bash tool executes in zsh via `eval`. Two known constraints:
-> 1. `for` loops cause `git: command not found` — **never use loops**. Use inline per-repo commands instead.
-> 2. Always use full paths for coreutils: `/usr/bin/head`, `/usr/bin/sed`, `/usr/bin/find`.
-
----
+**Shell:** Bash runs in zsh via `eval`; `for` loops fail with `git: command not found`. **Never use loops** — inline per-repo commands. Full paths for coreutils: `/usr/bin/head`, `/usr/bin/sed`, `/usr/bin/find`.
 
 ## Phase 1 — Analysis (single Bash call)
 
-Run the following script. Replace `<source>` with the parsed source branch name.
+Replace `<source>`:
 
 ```bash
 SOURCE="<source>"
@@ -113,14 +98,10 @@ else
 fi
 ```
 
-Parse the output before proceeding to Phase 2.
+## Phase 2 — Merge
 
----
-
-## Phase 2 — Merge Execution
-
-### If all repos are up to date
-Print a summary and stop:
+### All repos up to date
+Print and stop:
 ```
 All repos are up to date with `<source>`.
 
@@ -131,41 +112,41 @@ All repos are up to date with `<source>`.
 | root | <branch> | up to date |
 ```
 
-### Otherwise, process repos in order: server/ee → frontend/ee → root
+### Otherwise: server/ee → frontend/ee → root
 
-For each repo that is NOT up to date and where source branch EXISTS on remote, run a **separate Bash call** per repo (do not combine into one script with loops).
+For each repo NOT up to date whose source branch EXISTS on the remote, a **separate Bash call** per repo.
 
-#### If current branch IS the source branch (fast-forward):
+#### Current branch IS the source (fast-forward)
 ```bash
 git -C <path> pull --ff-only origin <source>
 ```
 
-#### If dirty:
+#### Dirty
 ```bash
 git -C <path> stash push -m "merge-auto-stash-$(date +%Y%m%d-%H%M%S)" && git -C <path> merge origin/<source> --no-edit && git -C <path> stash pop
 ```
 
-If the merge step fails (conflicts): run `git -C <path> diff --name-only --diff-filter=U` to list conflicted files. Do NOT pop stash. Note as conflicted and continue to the next repo.
+Merge fails (conflicts) → list them with `git -C <path> diff --name-only --diff-filter=U`. Do NOT pop the stash. Note as conflicted, continue to the next repo.
 
-#### If clean:
+#### Clean
 ```bash
 git -C <path> merge origin/<source> --no-edit
 ```
 
-If conflicts, same handling as above.
+Conflicts → same handling.
 
-#### Skip if source branch missing
+#### Source branch missing → skip
 ```
 ⚠ <repo>: source branch `<source>` not found on remote — skipping
 ```
 
 ### Submodule gitlink conflicts in root
 
-Root's merge of a submodule pointer can fail with `Failed to merge submodule <path> (commits not present)`. This means the pinned commit is not in the local submodule clone.
+`Failed to merge submodule <path> (commits not present)` = the pinned commit isn't in the local submodule clone.
 
-**Root's gitlink is the authority, not the submodule's own branch.** Root `main` frequently pins submodule commits that are not reachable from the submodule's `main` — release commits pushed as pointers without a branch. Merging the submodule's `origin/main` instead produces a pointer that does not match what root wants.
+**Root's gitlink is the authority, not the submodule's branch.** Root `main` often pins submodule commits unreachable from the submodule's `main` (release commits pushed as pointers without a branch); merging the submodule's `origin/main` gives the wrong pointer.
 
-Resolve it:
+Resolve:
 
 1. Read the commit root wants: `git -C <root> ls-tree origin/<source> <submodule path>`
 2. Fetch it by SHA — it may not be on any branch: `git -C <submodule> fetch origin <sha>`
@@ -173,11 +154,9 @@ Resolve it:
 4. If the submodule had no local commits of its own, check it out directly instead: `git -C <submodule> checkout --detach <sha>`
 5. Back in root: `git -C <root> add <submodule path>`
 
-Verify before committing — `git -C <root> submodule status` must show no `+` or `-` prefix, meaning each gitlink matches its checked-out HEAD.
+Before committing, `git -C <root> submodule status` must show no `+` or `-` prefix (each gitlink matches its checked-out HEAD).
 
-### After all repos are processed
-
-Print a summary table:
+### Summary
 ```
 ## Merge Summary
 
@@ -190,7 +169,7 @@ Source: `<source>`
 | root | <branch> | <n> commits | ✓ merged / ✓ up to date / ⚠ skipped / ✗ conflicts |
 ```
 
-### If any repo had conflicts
+### Conflicts
 
 List conflicted files per repo, then offer to resolve them one at a time:
 1. Read each conflicted file
@@ -199,14 +178,11 @@ List conflicted files per repo, then offer to resolve them one at a time:
 4. Pop stash if one was created: `git -C <path> stash pop`
 5. If stash pop conflicts, report separately — do NOT abort the merge
 
-### If no conflicts
-Print: `All merges completed cleanly.`
-
----
+No conflicts → print `All merges completed cleanly.`
 
 ## Rules
 
-1. **Process order**: always server/ee → frontend/ee → root (submodules before root).
+1. **Order:** server/ee → frontend/ee → root (owned by `commit`).
 2. **Continue through all repos** even if one has conflicts — report everything at the end.
 3. **Never** force-push, reset --hard, clean, or use --no-verify.
 4. **Named stash entries** (`merge-auto-stash-<timestamp>`) for easy identification.
@@ -214,8 +190,7 @@ Print: `All merges completed cleanly.`
 6. **Fast-forward** if current branch IS the source branch.
 7. Missing source branch on a submodule = skip with warning, not failure.
 8. Stash pop conflicts are separate from merge conflicts — report but don't abort.
-9. **No loops** — always use inline per-repo commands (see shell environment notes).
-10. **Always use `git -C <path>`** — never `cd <path> && git`.
+9. **No loops**; **always `git -C <path>`**, never `cd <path> && git`.
 
 ## Related skills
 

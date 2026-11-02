@@ -15,9 +15,14 @@ export interface IGroupPermissionsControllerV2 {
   update(user: UserEntity, id: string, updateGroupDto: UpdateGroupPermissionDto): Promise<GroupPermissions>;
   delete(user: UserEntity, id: string): Promise<void>;
   duplicateGroup(user: UserEntity, groupId: string, duplicateGroupDto: DuplicateGroupDto): Promise<GroupPermissions>;
-  createGroupUsers(user: UserEntity, groupId: string, addGroupUserDto: AddGroupUserDto): Promise<void>;
+  createGroupUsers(
+    user: UserEntity,
+    userPermissions: UserPermissions,
+    groupId: string,
+    addGroupUserDto: AddGroupUserDto
+  ): Promise<void>;
   getAllGroupUser(user: UserEntity, searchInput: string, group: GroupPermissions): Promise<GroupUsers[]>;
-  deleteGroupUser(user: UserEntity, id: string): Promise<void>;
+  deleteGroupUser(user: UserEntity, userPermissions: UserPermissions, id: string): Promise<void>;
   getAddableGroupUser(user: UserEntity, groupId: string, searchInput: string): Promise<UserEntity[]>;
 }
 

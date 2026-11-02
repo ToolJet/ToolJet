@@ -1,6 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
-import { BaseManageOrgConstants } from '@/modules/common/components';
+
+import { pickEditionSpecificComponent } from '@/modules/common/helpers/pickEditionSpecificComponent';
+import BaseManageOrgConstants from '@/modules/common/components/BaseManageOrgConstants';
+import EEManageOrgConstants from '@ee/modules/WorkspaceSettings/components/ManageOrgConstants';
 
 const ManageOrgConstants = (props) => {
   const getCurrentEnvironment = (orgEnvironments) => {
@@ -10,4 +12,8 @@ const ManageOrgConstants = (props) => {
   return <BaseManageOrgConstants {...mergedProps} />;
 };
 
-export default withEditionSpecificComponent(ManageOrgConstants, 'WorkspaceSettings');
+export default pickEditionSpecificComponent({
+  ce: ManageOrgConstants,
+  ee: EEManageOrgConstants,
+  cloudSameAsEE: true,
+});

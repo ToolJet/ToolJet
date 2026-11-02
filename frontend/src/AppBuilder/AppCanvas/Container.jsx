@@ -22,7 +22,7 @@ import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
 import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveableGhost';
-import { findNewParentIdFromMousePosition } from './Grid/gridUtils';
+import { findNewParentIdFromMousePosition, isPointerOverCanvasArea } from './Grid/gridUtils';
 import { computeFlexInsertIndex } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { FlexContainerDropIndicator } from '@/AppBuilder/Widgets/FlexContainer/FlexContainerDropIndicator';
 
@@ -83,6 +83,21 @@ const Container = React.memo(
     );
     const flexDirectionForFlex = isFlexContainer ? (flexEffectiveDirection ?? flexDirection) : flexDirection;
 
+    function getContainerCanvasWidth() {
+      if (canvasWidth !== undefined) {
+        if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
+        if (id === 'canvas') return canvasWidth;
+        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
+      }
+      if (componentType === 'canvas-header' || componentType === 'canvas-footer') {
+        return realCanvasRef?.current?.offsetWidth - 2 * PAGE_CANVAS_HEADER_FOOTER_PADDING;
+      }
+      return realCanvasRef?.current?.offsetWidth;
+    }
+
+    const containerCanvasWidth = getContainerCanvasWidth();
+    const gridWidth = containerCanvasWidth / NO_OF_GRIDS;
+
     // Initialize ghost moveable hook
     const { activateMoveableGhost, deactivateMoveableGhost, updateGhostSize } = useDropVirtualMoveableGhost();
 
@@ -112,17 +127,7 @@ const Container = React.memo(
     useEffect(() => {
       if (id !== 'canvas' || !isDragging || !clientOffset || !draggedItem?.component?.defaultSize) return;
 
-      const canvasArea = document.getElementsByClassName('tj-canvas-area')?.[0];
-      if (!canvasArea) return;
-
-      const canvasAreaRect = canvasArea.getBoundingClientRect();
-      const isPointerInsideCanvasArea =
-        clientOffset.x >= canvasAreaRect.left &&
-        clientOffset.x <= canvasAreaRect.right &&
-        clientOffset.y >= canvasAreaRect.top &&
-        clientOffset.y <= canvasAreaRect.bottom;
-
-      if (!isPointerInsideCanvasArea) return;
+      if (!isPointerOverCanvasArea(clientOffset.x, clientOffset.y)) return;
 
       const hoveredCanvasId = findNewParentIdFromMousePosition(clientOffset.x, clientOffset.y, id);
       if (hoveredCanvasId) {
@@ -205,21 +210,6 @@ const Container = React.memo(
       (id === 'canvas' || componentType === 'ModuleContainer') &&
       components.length === 0 &&
       !isDragging;
-
-    function getContainerCanvasWidth() {
-      if (canvasWidth !== undefined) {
-        if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
-        if (id === 'canvas') return canvasWidth;
-        return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
-      }
-      if (componentType === 'canvas-header' || componentType === 'canvas-footer') {
-        return realCanvasRef?.current?.offsetWidth - 2 * PAGE_CANVAS_HEADER_FOOTER_PADDING;
-      }
-      return realCanvasRef?.current?.offsetWidth;
-    }
-
-    const containerCanvasWidth = getContainerCanvasWidth();
-    const gridWidth = containerCanvasWidth / NO_OF_GRIDS;
 
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);

@@ -8,7 +8,7 @@ import { FolderHasAppsModal } from './FolderHasAppsModal';
 import { ConfirmDialog, ToolTip } from '@/_components';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { BreadCrumbContext } from '@/App/App';
+import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox } from '@/_components/SearchBox';
 import _ from 'lodash';

@@ -92,7 +92,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v2
               with:
-                  node-version: 22.15.1
+                  node-version: 22.23.4
 
             - name: Configure AWS Credentials
               uses: aws-actions/configure-aws-credentials@v4

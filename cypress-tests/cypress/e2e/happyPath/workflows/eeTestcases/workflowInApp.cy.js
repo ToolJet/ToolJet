@@ -5,6 +5,7 @@ import {
   createPostgresDataSource,
   verifyTextInResponseOutputLimited,
   previewWorkflowQueryInApp,
+  releaseWorkflow,
   cleanupWorkflows,
   cleanupApps,
   cleanupDataSources,
@@ -50,6 +51,7 @@ describe("Workflows - running from an app", () => {
     cy.apiExecuteWorkflow(workflowsText.jsonValuePlaceholder);
     cy.apiValidateLogs();
     cy.apiValidateLogsWithData(workflowsText.jsonValuePlaceholder);
+    releaseWorkflow(data.workflowName);
 
     cy.apiCreateApp(data.appName);
     cy.openApp();
@@ -82,6 +84,7 @@ describe("Workflows - running from an app", () => {
       clearBeforeTyping: true,
     });
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
+    releaseWorkflow(data.workflowName);
 
     cy.apiCreateApp(data.appName);
     cy.openApp();

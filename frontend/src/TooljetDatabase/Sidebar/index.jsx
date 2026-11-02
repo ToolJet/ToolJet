@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import List from '../TableList';
 import CreateTableDrawer from '../Drawers/CreateTableDrawer';
 import { OrganizationList } from '@/modules/dashboard/components';
 import cx from 'classnames';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
-import { authenticationService, tooljetDatabaseService } from '@/_services';
-import { TooljetDatabaseContext } from '../index';
+import { authenticationService } from '@/_services/authentication.service';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 
 export default function Sidebar({ collapseSidebar }) {
   const [bannerVisible, setBannerVisible] = useState(false);
@@ -14,7 +15,7 @@ export default function Sidebar({ collapseSidebar }) {
   const isAdmin = authenticationService.currentSessionValue?.admin === true;
   // totalRecords changes after any row add/delete/bulk-upload on the open table - used purely
   // as a signal to re-check the workspace-wide row limit, not as the limit's own count.
-  const { totalRecords } = useContext(TooljetDatabaseContext);
+  const { totalRecords } = useTooljetDatabaseContext();
 
   useEffect(() => {
     async function fetchRowsLimit() {

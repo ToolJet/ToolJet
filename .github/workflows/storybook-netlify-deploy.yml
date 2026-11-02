@@ -25,7 +25,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22.15.1"
+          node-version: "22.23.4"
           cache: "npm"
           cache-dependency-path: frontend/package.json
 

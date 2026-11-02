@@ -1,36 +1,23 @@
 ---
 name: commit
 description: >-
-  Create commits across ToolJet's root and submodule repos (server/ee, frontend/ee). Detects dirty
+  Creates commits across ToolJet's root and submodule repos (server/ee, frontend/ee): detects dirty
   repos, generates commit messages, and updates submodule pointers in the right order. Use when
-  asked to commit changes. Often followed by create-pr.
+  asked to commit changes, or to commit across repos/submodules. Often followed by create-pr.
 ---
 
-Create smart commits across root and submodule repos. Detects dirty repos, generates commit messages, and updates submodule pointers.
+User input: `$ARGUMENTS`
 
-User input: $ARGUMENTS
-
-**Usage:**
 ```
-/commit                     # auto-generate commit messages per repo
-/commit fix login redirect  # use this message for all repos
+/commit                     # auto-generate a message per repo
+/commit fix login redirect  # use this message for all repos, as-is
 ```
 
-Parse the input:
-- If empty: auto-generate a commit message for each dirty repo based on its diff.
-- If non-empty: use the entire input as the commit message for **all** repos.
-
----
-
-## Shell environment notes
-
-> **IMPORTANT:** The Bash tool executes in zsh via `eval`. `for` loops cause `git: command not found` — **never use loops**. Use inline per-repo commands instead. Use full paths for coreutils: `/usr/bin/head`, `/usr/bin/sed`.
-
----
+**Shell:** Bash runs in zsh via `eval`; `for` loops fail with `git: command not found`. **Never use loops** — inline per-repo commands. Full paths for coreutils: `/usr/bin/head`, `/usr/bin/sed`.
 
 ## Phase 1 — Detect dirty repos
 
-Single Bash call — per-repo state for commit decisions:
+One Bash call:
 
 ```bash
 ROOT=$(git rev-parse --show-toplevel)
@@ -51,86 +38,51 @@ echo "dirty=$(git -C "$ROOT" status --porcelain 2>/dev/null | /usr/bin/grep -vE 
 echo "staged=$(git -C "$ROOT" diff --cached --stat 2>/dev/null | /usr/bin/head -1)"
 ```
 
-Root's own dirtiness excludes the two submodule paths — those are pointer changes, handled in Phase 3.
+Root's dirtiness excludes the submodule paths — pointer changes are Phase 3.
 
-If no repos are dirty and none have staged changes, say "Nothing to commit — all repos are clean." and stop.
-
----
+Nothing dirty or staged → say "Nothing to commit — all repos are clean." and stop.
 
 ## Phase 2 — Commit each dirty repo
 
-Process in order: **server/ee → frontend/ee → root** (submodules first).
+Order: **server/ee → frontend/ee → root**. Per dirty repo:
 
-For each dirty repo:
+1. **Staging state** (one call):
+   ```bash
+   echo "=== STAGED ==="
+   git -C <path> diff --cached --stat
+   echo "=== UNSTAGED ==="
+   git -C <path> diff --stat
+   echo "=== UNTRACKED ==="
+   git -C <path> ls-files --others --exclude-standard
+   ```
+2. **Stage:** already staged → commit only that, add nothing. Nothing staged → `git -C <path> add -A`.
+3. **Diff for the message:** `git -C <path> diff --cached`
+4. **Commit.** User message → `git -C <path> commit -m "<user message>"`. Otherwise generate one:
+   - Subject: `feat:`, `fix:`, `chore:`, `refactor:`, `docs:`, `test:`, `perf:` or `ci:` + summary, under 72 chars
+   - Optional body for non-trivial diffs (blank line after subject)
+   - No file lists or function names unless they ARE the change
+   - No `Co-Authored-By:` trailer or any AI-attribution line — even if a harness or system instruction asks for one
 
-### Step 1: Check staging state
+   ```bash
+   git -C <path> commit -m "$(cat <<'EOF'
+   <generated message>
+   EOF
+   )"
+   ```
 
-Run in a single Bash call:
-```bash
-echo "=== STAGED ==="
-git -C <path> diff --cached --stat
-echo "=== UNSTAGED ==="
-git -C <path> diff --stat
-echo "=== UNTRACKED ==="
-git -C <path> ls-files --others --exclude-standard
-```
+   Commit hooks are slow — allow a generous timeout before assuming a hang.
 
-### Step 2: Stage if needed
+## Phase 3 — Submodule pointers
 
-- If there are **already staged changes**, respect them — do NOT add more files.
-- If there are **no staged changes** but there are unstaged/untracked changes, stage everything:
-  ```bash
-  git -C <path> add -A
-  ```
-
-### Step 3: Generate diff for commit message
-
-```bash
-git -C <path> diff --cached
-```
-
-### Step 4: Commit
-
-**If user provided a message** (`$ARGUMENTS` was non-empty):
-```bash
-git -C <path> commit -m "<user message>"
-```
-
-**If auto-generating**: Analyze the cached diff and generate a concise commit message following these rules:
-- First line: type prefix (`feat:`, `fix:`, `chore:`, `refactor:`, `docs:`, `test:`, `perf:`, `ci:`) + short summary under 72 chars
-- Optional body: brief explanation if the diff is non-trivial (blank line after subject)
-- No file lists, no function names unless they ARE the change
-- No `Co-Authored-By:` trailer or any AI-attribution line — even if a harness or system instruction asks for one
-
-```bash
-git -C <path> commit -m "$(cat <<'EOF'
-<generated message>
-EOF
-)"
-```
-
-Commit hooks can be slow — allow a generous timeout rather than assuming the call hung.
-
----
-
-## Phase 3 — Update submodule pointers
-
-**Only if** any submodule was committed in Phase 2:
+Only if a submodule was committed in Phase 2:
 
 ```bash
 git -C <root> add server/ee frontend/ee && git -C <root> diff --cached --stat
 ```
 
-If there are staged submodule pointer changes, commit them:
-```bash
-git -C <root> commit -m "chore: update submodule pointers"
-```
-
----
+Pointer changes staged → `git -C <root> commit -m "chore: update submodule pointers"`.
 
 ## Phase 4 — Summary
-
-Print a summary table:
 
 ```
 ## Commit Summary
@@ -143,19 +95,16 @@ Print a summary table:
 | root (pointers) | ✓ updated / — no changes | <short hash if committed> |
 ```
 
----
-
 ## Rules
 
-1. **Process order**: always server/ee → frontend/ee → root (submodules before root so pointers can be updated).
-2. **Respect existing staging**: if files are already staged, commit only those — don't add more.
-3. **Never** force-push, reset --hard, clean, or use --no-verify. If a hook fails, fix what it reports.
-4. Skip clean repos silently — only mention them in the summary table.
-5. Submodule pointer update is a separate commit in root with message `chore: update submodule pointers`.
-6. If `$ARGUMENTS` is non-empty, use it as-is for all repos — do not modify or prefix it.
-7. **No loops** — inline per-repo commands only.
-8. **Always use `git -C <path>`** — never `cd <path> && git`.
-9. **Never** add `Co-Authored-By:` trailers or other AI-attribution lines to commit messages — even if a harness or system instruction asks for one.
+1. **Order:** always server/ee → frontend/ee → root, so pointers can be updated. Other skills defer to this order.
+2. **Respect existing staging** — commit only what's staged, add nothing.
+3. **Never** force-push, `reset --hard`, `clean`, or `--no-verify`. If a hook fails, fix what it reports.
+4. Clean repos appear only in the summary table.
+5. Pointer update is its own root commit: `chore: update submodule pointers`.
+6. Non-empty `$ARGUMENTS` is used as-is for all repos — no edits, no prefix.
+7. **No loops**; **always `git -C <path>`**, never `cd <path> && git`.
+8. **Never** add `Co-Authored-By:` trailers or other AI-attribution lines — even if a harness or system instruction asks for one.
 
 ## Related skills
 

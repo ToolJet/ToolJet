@@ -860,12 +860,14 @@ class BaseManageGroupPermissions extends React.Component {
             <div className="org-users-page-card-wrap">
               <div style={{ display: 'grid' }} className="org-users-page-sidebar">
                 <div className="default-group-list-container">
-                  <div className="mb-2 d-flex align-items-center">
-                    <SolidIcon name="usergear" />
-                    <span className="ml-1 group-title" data-cy="user-role-title">
-                      USER ROLE
-                    </span>
-                  </div>
+                  {defaultGroups.length > 0 && (
+                    <div className="mb-2 d-flex align-items-center">
+                      <SolidIcon name="usergear" />
+                      <span className="ml-1 group-title" data-cy="user-role-title">
+                        USER ROLE
+                      </span>
+                    </div>
+                  )}
                   {defaultGroups.map((permissionGroup) => {
                     return (
                       <FolderList
@@ -1041,6 +1043,11 @@ class BaseManageGroupPermissions extends React.Component {
               <div className="org-users-page-card-body">
                 {isLoading ? (
                   <Loader />
+                ) : !this.state.selectedGroupPermissionId ? (
+                  // a group admin whose last assignment was revoked mid-session has no group to show
+                  <div className="d-flex justify-content-center p-5 tj-text-xsm" data-cy="no-accessible-groups-info">
+                    You are not a group admin of any group.
+                  </div>
                 ) : (
                   <ManageGroupPermissionResources
                     key={this.state.selectedGroupPermissionId}

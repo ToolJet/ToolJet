@@ -61,6 +61,9 @@ logic is in `server/ee/git-sync/`.
 - Version rename/match on pull: `findMatchingVersion(appId, gitVersionName)` +
   `deleteMatchingVersionIfExists` in EE `base-git-util.service.ts` — pulls replace the matching version.
 - SSH keys are written to temp files per operation and cleaned up (`writeSSHKeyToFile`/`cleanupSSHKeys`).
+- Pull / create-branch clone the default `organization_git_sync_branches` row's `branch_name`, not the
+  configured branch. Env config keeps it in sync via `reconcileDefaultBranchName` (`ee/git-sync/default-branch.util.ts`)
+  on restart hydration and on toggle; renames must also invalidate `RemoteBranchCacheService`.
 - Testing: don't extend the monolithic git-sync lifecycle `it()` block in the e2e suite — write standalone specs instead (see `server/docs/testing.md`, Determinism).
 
 ## Related modules

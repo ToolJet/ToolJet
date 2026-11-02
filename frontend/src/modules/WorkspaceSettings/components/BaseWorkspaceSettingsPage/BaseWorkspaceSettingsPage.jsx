@@ -2,17 +2,16 @@ import React, { useEffect, useState, useContext } from 'react';
 import cx from 'classnames';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { fetchEdition } from '@/modules/common/helpers/utils';
-import Layout from '@/_ui/Layout';
 import Beta from '@/_ui/Beta';
 import { authenticationService, licenseService } from '@/_services';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { redirectToErrorPage } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
-import { BreadCrumbContext } from '@/App/App';
+import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import { checkConditionsForRoute } from '@/_helpers/utils';
 import { OrganizationList } from '@/modules/dashboard/components';
 
-export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
+export default function WorkspaceSettingsPage({ extraLinks }) {
   const workspaceSettingsLinks = constructWorkspaceSettingsLinks(extraLinks);
   const admin = authenticationService.currentSessionValue?.admin;
   const [selectedTab, setSelectedTab] = useState(admin ? workspaceSettingsLinks[0].id : 'workspacevariables');
@@ -122,7 +121,7 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
   };
 
   return (
-    <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
+    <>
       <div className="wrapper organization-settings-page">
         <div className="row gx-0">
           <div className="organization-page-sidebar col ">
@@ -184,7 +183,7 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 }
 

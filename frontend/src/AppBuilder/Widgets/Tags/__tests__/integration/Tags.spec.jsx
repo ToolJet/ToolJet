@@ -7,7 +7,7 @@
  */
 import { screen, waitFor, within } from '@testing-library/react';
 import { componentDefinition } from '@/test/app-builder';
-import { tagsConfig } from '@/AppBuilder/WidgetManager/widgets/tags';
+import { tagsConfig } from '@tooljet/widget-definitions';
 import { binding, createWidgetHarness } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 const ID = 't1';
