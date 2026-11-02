@@ -33,7 +33,6 @@ function AddEditResourcePermissionsModal({
   selectedEnvironments,
   setSelectedEnvironments,
   isBasicPlan,
-  isMultiEnvironmentRestricted,
 }) {
   const isCustom = currentState?.isCustom;
   const newPermissionName = currentState?.newPermissionName;
@@ -139,7 +138,6 @@ function AddEditResourcePermissionsModal({
             isBuilderLevel={isBuilderLevel}
             hasEndUsers={hasEndUsers}
             isBasicPlan={isBasicPlan}
-            isMultiEnvironmentRestricted={isMultiEnvironmentRestricted}
           />
         );
 

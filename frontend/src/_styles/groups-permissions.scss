@@ -134,14 +134,6 @@
 
 .permission-manager-modal {
     color: none;
-    .modal-title {
-        flex: 1;
-        min-width: 0;
-    }
-    &.modal-base .modal-footer {
-        z-index: 0;
-    }
-
     .permission-manager-title {
         display: flex;
         align-items: center;
@@ -172,7 +164,7 @@
 
 
 .delete-icon-cont {
-    margin-left: auto;
+    margin-left: 130px;
 
     .icon-class{
         border: none !important;

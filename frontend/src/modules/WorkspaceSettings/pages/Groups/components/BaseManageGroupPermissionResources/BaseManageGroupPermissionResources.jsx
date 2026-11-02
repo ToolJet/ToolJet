@@ -1705,9 +1705,6 @@ class BaseManageGroupPermissionResources extends React.Component {
                       isBasicPlan={isBasicPlan}
                       isFeatureEnabled={isFeatureEnabled}
                       isModulesEnabled={isModulesEnabled}
-                      isMultiEnvironmentRestricted={
-                        !isCE && featureAccess !== undefined && !featureAccess?.multiEnvironment
-                      }
                       hasEndUsers={hasEndUsers}
                       isAdmin={isAdmin}
                     />
