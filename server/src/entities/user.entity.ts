@@ -132,6 +132,12 @@ export class User extends BaseEntity {
   @Column({ name: 'company_size' })
   companySize: string;
 
+  // Cloud only: when this user's account last claimed a trial license, on any workspace. Null
+  // means never claimed. Self-hosted enforces "one trial per instance" separately, via the single
+  // LICENSE_KEY row in instance_settings, so this column is unused there.
+  @Column({ name: 'trial_claimed_at', type: 'timestamptz', nullable: true, default: null })
+  trialClaimedAt: Date | null;
+
   @Column({ name: 'auto_activated', default: false })
   autoActivated: boolean;
 
