@@ -103,6 +103,11 @@ No change may break existing saved applications. Always ask: would an app saved 
 - Event definitions live in `eventsSlice`, not in component definitions
 - **Refresh Query Cache** in the event action list is an editor alias for `run-query` with `refreshCache: true`. Preserve this saved contract so parameters, references, and existing events use the normal Run Query path. Selecting another action removes the refresh flag.
 
+- Query result Preview displays `metadata.cache` from the corresponding completed run only when the selected query
+  explicitly enables response caching. Disabling caching hides prior feedback immediately. Every new preview result clears
+  the previous cache status unless its own metadata is supplied; loading hides the old status. Status reports saved/not
+  saved without inferring a refusal reason. Synchronous workflow previews use the workflow result metadata.
+
 ### Bundles and performance
 
 - Viewer (`/applications/*`) and editor are separate lazy bundles via `RootRouter.jsx`. Never import editor-only code into viewer paths

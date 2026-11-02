@@ -105,3 +105,11 @@ graph TD
 ### Query cache refresh events
 
 Builders can select **Refresh Query Cache** alongside **Run query** in the event action list, with the same query and parameter controls. It uses the existing `run-query` event with `refreshCache: true`; cache availability remains edition-dependent. Existing saved refresh events display this action automatically. Evidence: `frontend/src/AppBuilder/RightSideBar/Inspector/ActionTypes.js::getEventActionId`, `EventManager.jsx`, and `frontend/src/AppBuilder/_stores/slices/eventsSlice.js`.
+
+### Query cache feedback and disable control
+
+For queries with response caching explicitly enabled, Query Preview displays cache hit/miss/refresh/bypass and
+saved/not-saved outcomes using response metadata. Queries without caching show no cache feedback. It does not
+infer why storage failed. Evidence: `frontend/src/AppBuilder/QueryManager/Components/Preview.jsx` and `QueryCacheStatus.jsx`.
+The shared cache budget defaults to 128 MiB; setting `QUERY_CACHE_MAX_TOTAL_BYTES=0` bypasses cache reads and writes
+without purging retained entries. Environment configuration: `.env.example`.
