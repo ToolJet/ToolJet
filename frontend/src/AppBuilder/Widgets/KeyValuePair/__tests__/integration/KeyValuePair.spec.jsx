@@ -21,6 +21,7 @@
 import React from 'react';
 import { waitFor, fireEvent } from '@testing-library/react';
 import { widgets } from '@/AppBuilder/WidgetManager/configs/widgetConfig';
+import useStore from '@/AppBuilder/_stores/store';
 import { componentDefinition } from '@/test/app-builder';
 import { createWidgetHarness, binding, store, MODULE_ID, setVariableOn } from '@/AppBuilder/Widgets/widgetHarness';
 
@@ -522,6 +523,15 @@ describe('KeyValuePair: auto-generated fields (store integration)', () => {
     // The write targeted only this component's own id, not any sibling's fields.
     const ownFields = store().getComponentDefinition(ID)?.component?.definition?.properties?.fields?.value;
     expect(ownFields.every((f) => f.key === 'city')).toBe(true);
+    // ...and the sibling only ever got fields generated from its own data.
+    await waitFor(() =>
+      expect(
+        useStore.getState().getComponentDefinition(otherId)?.component?.definition?.properties?.fields?.value
+      ).toEqual(expect.arrayContaining([expect.objectContaining({ key: 'country' })]))
+    );
+    const siblingFields = useStore.getState().getComponentDefinition(otherId)?.component?.definition?.properties
+      ?.fields?.value;
+    expect(siblingFields.every((f) => f.key === 'country')).toBe(true);
   });
 
   test('[KeyValuePair-AUTOGEN-008] a key in fieldDeletionHistory is never resurrected through the real store', async () => {
