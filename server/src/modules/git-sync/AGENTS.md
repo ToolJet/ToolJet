@@ -54,10 +54,21 @@ logic is in `server/ee/git-sync/`.
 - `co_relation_id` is the cross-branch/cross-instance identity for app entities; adapter
   auto-generates missing git-ids on push and rewrites *all* UUID references (including UUIDs embedded
   inside strings) via `replaceEmbeddedUUIDsInAllStrings`. Breaking this mapping orphans entities on pull.
-- Nothing enforces one `apps` row per `co_relation_id` (`idx_apps_co_relation_id` is non-unique), yet every pull
-  lookup keys on it and keeps only the first match — duplicates then trip the `enforce_app_versions_*` name/slug
-  triggers. `logConflictingRows` (`ee/platform-git-sync/pull.service.ts`) logs the colliding rows as versioned
-  JSON; paste that line into `check-pull-error.html` at the repo root to get the app, the rule and the repair SQL.
+- **One `apps` row per `co_relation_id`**, per organization and type. Every pull lookup keys on it and
+  keeps only the first match, so duplicates trip the `enforce_app_versions_*` name/slug triggers and the
+  pull fails on every run. `idx_apps_co_relation_id` is non-unique and `CREATE TRIGGER` never validates
+  existing rows, so duplicates accumulated silently until data-migrations/1793400000000 detached them and
+  added `idx_apps_org_type_co_relation_id_unique`. `logConflictingRows`
+  (`ee/platform-git-sync/pull.service.ts`) logs the colliding rows as versioned JSON; paste that line into
+  `check-pull-error.html` at the repo root to get the app, the rule and the repair SQL.
+- **A temp-app import must never reuse the identity of the app it is importing into.** Both import lanes
+  build a throwaway app, drain its versions onto the real app and delete it: `hydrateStubApp`
+  (`ee/platform-git-sync/pull.service.ts`, via `withTempAppIdentity`) and `importAndAttachVersion`
+  (`ee/app-git/shared/app-git-operations.util.ts`). They run with `isGitApp=true`, which tells
+  `createImportedAppForUser` to preserve `appV2.co_relation_id` verbatim instead of minting a fresh one —
+  so the temp row would be a second `apps` row holding the target's identity, which the unique index above
+  rejects. Nulling the field is not enough: the fallback is `co_relation_id ?? id`, and `id` is the
+  identity an export without a `co_relation_id` was given. Override it with a fresh UUID.
 - Only one provider strategy is active per org; `deleteConfig` must still succeed when config rows
   are already gone (error swallowed) and evicts both branch and git-object caches for the repo.
 - Both caches fail open: Redis down -> `remote-branch-cache` returns null (refetch), cache set errors
