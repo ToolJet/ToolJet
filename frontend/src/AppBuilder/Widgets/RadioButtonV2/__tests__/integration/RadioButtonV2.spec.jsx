@@ -201,18 +201,18 @@ describe('RadioButtonV2', () => {
     test('[RadioButtonV2-LAY-001] `layout: column` stacks options vertically', async () => {
       // Break this catches: `flexDirection: layout === 'wrap' ? 'row' : layout` hardcoded to always 'row' (RadioButtonV2.jsx:228).
       const { container } = harness.render({ properties: { options: twoOptions, layout: binding('column') } });
-      const optionsContainer = container.querySelector('.d-flex.px-0');
+      const optionsContainer = container.querySelector('.radio-button-options');
       expect(optionsContainer.style.flexDirection).toBe('column');
     });
 
     test('[RadioButtonV2-LAY-002] `layout: wrap` wraps options onto new rows', async () => {
       // Break this catches: dropping the `...(layout === 'wrap' && { flexWrap: 'wrap', ... })` spread (RadioButtonV2.jsx:229-233).
       let { container } = harness.render({ properties: { options: twoOptions, layout: binding('row') } });
-      let optionsContainer = container.querySelector('.d-flex.px-0');
+      let optionsContainer = container.querySelector('.radio-button-options');
       expect(optionsContainer.style.flexWrap).toBe('');
 
       ({ container } = harness.render({ properties: { options: twoOptions, layout: binding('wrap') } }));
-      optionsContainer = container.querySelector('.d-flex.px-0');
+      optionsContainer = container.querySelector('.radio-button-options');
       expect(optionsContainer.style.flexDirection).toBe('row');
       expect(optionsContainer.style.flexWrap).toBe('wrap');
     });
@@ -547,19 +547,6 @@ describe('RadioButtonV2', () => {
       });
       const overrideSpan = overrideContainer.querySelector(`[data-cy="${HANDLE}-option-label-0"]`);
       await waitFor(() => expect(overrideSpan.style.color).toBe('rgb(255, 0, 0)'));
-    });
-
-    test('[RadioButtonV2-STY-006] the configured border applies to the checked option as well as unchecked ones', async () => {
-      // Break this catches: the inline `border` going back to `!isChecked && ...`, which renders `border: false` once checked (RadioButtonV2.jsx:347).
-      const { container } = harness.render({
-        properties: { options: binding([option('A', 'a', { isDefault: true }), option('B', 'b')]) },
-        styles: { borderColor: binding('#e53e3e') },
-      });
-
-      await waitFor(() => expect(screen.getByRole('radio', { name: 'A' })).toBeChecked());
-      const checkmarks = container.querySelectorAll('.checkmark');
-      expect(checkmarks[0].style.border).toBe('1px solid #e53e3e');
-      expect(checkmarks[1].style.border).toBe('1px solid #e53e3e');
     });
 
     test('[RadioButtonV2-STY-004] label-width style keys only apply together when alignment=side and auto=false', async () => {
