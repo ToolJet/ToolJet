@@ -126,8 +126,8 @@ export const DetailTab = ({ subject, groups, moduleId, onSelect, darkMode }: Det
       entry.kind === 'component'
         ? getComponentDisplayName(componentType)
         : entry.kind === 'action'
-        ? 'Action'
-        : KIND_SUBTITLES[entry.kind];
+          ? 'Action'
+          : KIND_SUBTITLES[entry.kind];
 
     // Only event-driven relationships carry a tag line; bindings explain themselves
     // through the hover tooltip instead.
