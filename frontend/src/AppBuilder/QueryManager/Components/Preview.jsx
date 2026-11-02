@@ -6,6 +6,7 @@ import ArrowDownTriangle from '@/_ui/Icon/solidIcons/ArrowDownTriangle';
 import { useEventListener } from '@/_hooks/use-event-listener';
 import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 import useStore from '@/AppBuilder/_stores/store';
+import { QueryCacheStatus } from './QueryCacheStatus';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 const Preview = ({ darkMode, calculatePreviewHeight }) => {
@@ -22,6 +23,7 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
   const [height, setHeight] = useState(storedHeight);
   const [theme, setTheme] = useState(() => getTheme(darkMode));
   const queryPreviewData = useStore((state) => state.queryPanel.queryPreviewData);
+  const queryPreviewCache = useStore((state) => state.queryPanel.queryPreviewCache);
   const previewLoading = useStore((state) => state.queryPanel.previewLoading);
   const previewPanelRef = useRef();
   const queryPanelHeight = useStore((state) => state.queryPanel.queryPanelHeight);
@@ -163,6 +165,7 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
           />
           <span data-cy="preview-section-label">Preview</span>
         </div>
+        {!previewLoading && <QueryCacheStatus cache={queryPreviewCache} />}
         {previewPanelExpanded && (
           <div className="right" data-cy="preview-tabs-container">
             <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">

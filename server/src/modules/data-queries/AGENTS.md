@@ -56,12 +56,12 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   has `features.queryResponseCache` (`LICENSE_FIELD.QUERY_RESPONSE_CACHE`); a missing key or failed check means off.
   The builder disables the toggle with the upgrade crown; Clear stays available to free entries saved earlier.
   Memory: Redis is shared with BullMQ (`noeviction`). `RedisQueryCacheStore` enforces one fixed
-  `QUERY_CACHE_MAX_TOTAL_BYTES` budget (0 = no writes). Workspaces share it without individual caps;
+  `QUERY_CACHE_MAX_TOTAL_BYTES` budget (default 128 MiB; 0 bypasses reads/writes without purging). Workspaces share it without individual caps;
   one workspace can exhaust caching for others. `QUERY_CACHE_MAX_WORKSPACE_BYTES` is retired and ignored. Published entries
   charge `MEMORY USAGE` plus `3 × key length + 512` for query/global tracking. A separate 2048-byte
   `@overhead` record charges container overhead once per query until its last entry/pending/purge record
   is removed; all admission checks include it. Token-only queries reserve this overhead before creation;
-  admission failure bypasses caching. Clear does not create a replacement token; refresh admits one normally. Every pending save has
+  capacity refusal reports miss/refresh with `stored: false`; purge-in-progress and Redis failures bypass. Clear does not create a replacement token; refresh admits one normally. Every pending save has
   its own charged staging record; the entry record is a zero-byte publication owner until confirm.
   Reserve → plain `SET … PXAT` to `<entry>:pending:<reservationId>` → confirm atomically checks ownership,
   publishes with `RENAME`, rechecks limits and transfers the charge. Stale writers delete/release only
@@ -76,6 +76,14 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   Usage/expiry keys are outside query hash tags, so the cache requires single-node Redis.
   Rollout from any earlier ledger (including workspace counters) requires stopping old cache writers and draining
   their `tj:qc:*` cache keys first; mixed ledger implementations are not compatible. Do not flush shared Redis.
+
+- Transformation code (`transformation` and `transformations`) is excluded from cache identity because it runs in the browser.
+- Cache refusal logs include workspace/query identifiers and the token/reserve/confirm stage, without inputs or response data.
+- On `WORKER=true`, BullMQ's `query-cache-cleanup` queue scans the shared expiry index every minute, in cursor batches
+  limited to one job per second. It checks committed query existence before clearing deleted queries, covering cascades
+  without adding work to delete requests. Jobs retry three times; later sweeps recover interrupted work. No worker means
+  no proactive deletion cleanup. Zero budget pauses sweeps; manual Clear remains available. In-flight saves retain their
+  charges until they finish or expire; expired tracking is reclaimed in bounded batches during sweeps.
 
 ## Invariants & gotchas
 

@@ -31,6 +31,7 @@ const initialState = {
   queryToBeRun: null,
   previewLoading: false,
   queryPreviewData: '',
+  queryPreviewCache: undefined,
   showCreateQuery: false,
   nameInputFocused: false,
   previewPanelExpanded: false,
@@ -169,10 +170,11 @@ export const createQueryPanelSlice = (set, get) => ({
         false,
         'setPreviewLoading'
       ),
-    setPreviewData: (data) =>
+    setPreviewData: (data, cache) =>
       set(
         (state) => {
           state.queryPanel.queryPreviewData = data;
+          state.queryPanel.queryPreviewCache = cache;
         },
         false,
         'setPreviewData'
@@ -553,7 +555,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
         if (shouldSetPreviewData) {
           setPreviewLoading(false);
-          setPreviewData(finalData);
+          setPreviewData(finalData, data?.metadata?.cache);
         }
 
         if (dataQuery.options.showSuccessNotification) {
@@ -1056,7 +1058,7 @@ export const createQueryPanelSlice = (set, get) => ({
                   }
                   setPreviewLoading(false);
                   setIsPreviewQueryLoading(false);
-                  if (!calledFromQuery) setPreviewData(finalData);
+                  if (!calledFromQuery) setPreviewData(finalData, data?.data?.metadata?.cache);
                   resolve({ status: 'ok', data: finalData });
                 } else {
                   const errorData = {
@@ -1214,7 +1216,7 @@ export const createQueryPanelSlice = (set, get) => ({
                   }
                 }
 
-                if (!calledFromQuery) setPreviewData(finalData);
+                if (!calledFromQuery) setPreviewData(finalData, data?.metadata?.cache);
                 onEvent('onDataQuerySuccess', queryEvents, 'edit');
 
                 if (callbackFns?.onSuccess) {

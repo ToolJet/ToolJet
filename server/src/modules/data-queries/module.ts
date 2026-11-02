@@ -1,3 +1,4 @@
+import { BullModule } from '@nestjs/bullmq';
 import { DynamicModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -43,6 +44,7 @@ export class DataQueriesModule extends SubModule {
     // migration never opens the cache's Redis connection.
     const cacheProviders = [];
     const cacheExports = [];
+    const cacheImports = [];
     const edition = getTooljetEdition();
     if ((edition === TOOLJET_EDITIONS.EE || edition === TOOLJET_EDITIONS.Cloud) && !configs?.IS_GET_CONTEXT) {
       const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
@@ -51,11 +53,32 @@ export class DataQueriesModule extends SubModule {
       );
       cacheProviders.push(...queryResultCacheProviders);
       cacheExports.push(...queryResultCacheExports);
+      if (isMainImport && process.env.WORKER === 'true') {
+        const { QueryCacheCleanupService } = await import(
+          `${importPath}/data-queries/cache/query-cache-cleanup.service`
+        );
+        const { QueryCacheCleanupProcessor, QUERY_CACHE_CLEANUP_QUEUE } = await import(
+          `${importPath}/data-queries/cache/query-cache-cleanup.processor`
+        );
+        cacheImports.push(
+          BullModule.registerQueue({
+            name: QUERY_CACHE_CLEANUP_QUEUE,
+            defaultJobOptions: {
+              attempts: 3,
+              backoff: { type: 'exponential', delay: 2000 },
+              removeOnComplete: 10,
+              removeOnFail: 50,
+            },
+          })
+        );
+        cacheProviders.push(QueryCacheCleanupService, QueryCacheCleanupProcessor);
+      }
     }
 
     return this.cacheModule(cacheKey, {
       module: DataQueriesModule,
       imports: [
+        ...cacheImports,
         await AppEnvironmentsModule.register(configs),
         await DataSourcesModule.register(configs),
         await AppPermissionsModule.register(configs),
