@@ -6,7 +6,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * SHA ⇒ the whole workflows category is skipped on pull. See
  * 1782600000000-AddGitTreeShaColumns for the mechanism.
  */
-export class AddWorkflowsGitTreeShaColumn1787529600000 implements MigrationInterface {
+export class AddWorkflowsGitTreeShaColumn1793250000200 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `ALTER TABLE organization_git_sync_branches ADD COLUMN IF NOT EXISTS workflows_git_tree_sha VARCHAR(64) DEFAULT NULL`

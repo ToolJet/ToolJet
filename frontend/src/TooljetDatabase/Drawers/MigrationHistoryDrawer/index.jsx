@@ -219,6 +219,8 @@ const MigrationHistoryDrawer = ({
                     run: () => Promise.resolve({}),
                     tableId: selectedTable?.id,
                     showSqlEditor: true,
+                    // The SQL is the whole migration: there is no structured change to fall back on.
+                    sqlRequired: true,
                     changes: [],
                     modalTitle: 'New migration',
                     titlePlaceholder: 'Explain your changes briefly..',
