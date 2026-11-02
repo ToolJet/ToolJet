@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
   BaseEntity,
   OneToMany,
   JoinColumn,
@@ -21,8 +22,15 @@ export class InternalTable extends BaseEntity {
   @Column({ name: 'table_name' })
   tableName: string;
 
-  @Column({ name: 'co_relation_id', nullable: true })
+  @Column({ name: 'co_relation_id' })
   co_relation_id: string;
+
+  // Soft delete: drop_table is a migration in the chain, so hard-deleting the registry row would
+  // CASCADE the chain away — including the drop itself. @DeleteDateColumn makes every find* and
+  // entity-targeted QueryBuilder exclude dropped rows automatically; raw joins against this table
+  // (relation-resolver.service.ts) still need `it.deleted_at IS NULL` added by hand.
+  @DeleteDateColumn({ name: 'deleted_at' })
+  deletedAt: Date | null;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
@@ -33,7 +41,4 @@ export class InternalTable extends BaseEntity {
   @OneToMany(() => Organization, (organization) => organization.id)
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
-
-  @Column({ type: 'jsonb', name: 'configurations' })
-  configurations: any;
 }
