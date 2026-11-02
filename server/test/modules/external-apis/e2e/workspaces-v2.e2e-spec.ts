@@ -5,7 +5,18 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { initTestApp, closeTestApp, NONEXISTENT_UUID, setTestLicenseTerms, restoreLicensePlan } from 'test-helper';
+import {
+  initTestApp,
+  closeTestApp,
+  getDefaultDataSource,
+  NONEXISTENT_UUID,
+  setTestLicenseTerms,
+  restoreLicensePlan,
+} from 'test-helper';
+import { GroupPermissions } from '@entities/group_permissions.entity';
+import { AppEnvironment } from '@entities/app_environments.entity';
+import { OrganizationThemes } from '@entities/organization_themes.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 jest.setTimeout(120_000);
 
@@ -77,6 +88,40 @@ describe('ExternalApisWorkspacesControllerV2 (EE enterprise)', () => {
         .expect(409);
     });
 
+    it('should set up the workspace the same way the dashboard does', async () => {
+      const suffix = Date.now();
+      const res = await request(app.getHttpServer())
+        .post(BASE)
+        .set('Authorization', getExtAuth())
+        .send({ name: `Fully Set Up ${suffix}`, slug: `fully-set-up-${suffix}` })
+        .expect(201);
+
+      const organizationId = res.body.id;
+      const manager = getDefaultDataSource().manager;
+      expect(await manager.count(GroupPermissions, { where: { organizationId } })).toBeGreaterThanOrEqual(3);
+      expect(await manager.count(AppEnvironment, { where: { organizationId } })).toBeGreaterThanOrEqual(1);
+      expect(await manager.count(OrganizationThemes, { where: { organizationId } })).toBe(1);
+      expect(await manager.findOne(WorkspaceBranch, { where: { organizationId, isDefault: true } })).toMatchObject({
+        name: 'main',
+      });
+    });
+
+    it('should apply the dashboard name rules: trimmed, at most 50 characters', async () => {
+      const suffix = Date.now();
+      const res = await request(app.getHttpServer())
+        .post(BASE)
+        .set('Authorization', getExtAuth())
+        .send({ name: `  Trimmed ${suffix}  `, slug: `trimmed-${suffix}` })
+        .expect(201);
+      expect(res.body.name).toBe(`Trimmed ${suffix}`);
+
+      await request(app.getHttpServer())
+        .post(BASE)
+        .set('Authorization', getExtAuth())
+        .send({ name: 'x'.repeat(51), slug: `too-long-${suffix}` })
+        .expect(400);
+    });
+
     it('should reject an invalid slug', async () => {
       await request(app.getHttpServer())
         .post(BASE)
@@ -114,6 +159,30 @@ describe('ExternalApisWorkspacesControllerV2 (EE enterprise)', () => {
       expect(paged.body.pagination).toMatchObject({ page: 1, per_page: 1, total_count: 2 });
     });
 
+    it('should also return the pagination as X-Total-Count and Link headers', async () => {
+      const suffix = Date.now();
+      for (const n of ['one', 'two', 'three']) {
+        await request(app.getHttpServer())
+          .post(BASE)
+          .set('Authorization', getExtAuth())
+          .send({ name: `Linked${suffix} ${n}`, slug: `linked-${suffix}-${n}` })
+          .expect(201);
+      }
+
+      const first = await request(app.getHttpServer())
+        .get(`${BASE}?search=linked${suffix}&per_page=2`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+      expect(first.headers['x-total-count']).toBe('3');
+      expect(first.headers['link']).toBe(`<${BASE}?search=linked${suffix}&per_page=2&page=2>; rel="next"`);
+
+      const last = await request(app.getHttpServer())
+        .get(`${BASE}?search=linked${suffix}&per_page=2&page=2`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+      expect(last.headers['link']).toBe(`<${BASE}?search=linked${suffix}&per_page=2&page=1>; rel="prev"`);
+    });
+
     it('should filter by status', async () => {
       const suffix = Date.now();
       // First workspace in this test becomes the platform default (can't be archived), so the
@@ -131,7 +200,7 @@ describe('ExternalApisWorkspacesControllerV2 (EE enterprise)', () => {
       await request(app.getHttpServer())
         .post(`${BASE}/${created.body.id}/archive`)
         .set('Authorization', getExtAuth())
-        .expect(201);
+        .expect(200);
 
       const archived = await request(app.getHttpServer())
         .get(`${BASE}?search=statusfilter${suffix}&status=archived`)
@@ -335,6 +404,23 @@ describe('ExternalApisWorkspacesControllerV2 (EE enterprise)', () => {
       expect(firstAfter.body.default).toBe(false);
     });
 
+    it('should treat default: true on the current default as a no-op', async () => {
+      const suffix = Date.now();
+      const created = await request(app.getHttpServer())
+        .post(BASE)
+        .set('Authorization', getExtAuth())
+        .send({ name: `StaysDefault${suffix}`, slug: `stays-default-${suffix}` })
+        .expect(201);
+      expect(created.body.default).toBe(true);
+
+      const res = await request(app.getHttpServer())
+        .patch(`${BASE}/${created.body.id}`)
+        .set('Authorization', getExtAuth())
+        .send({ default: true })
+        .expect(200);
+      expect(res.body.default).toBe(true);
+    });
+
     it('should 404 for a nonexistent workspace', async () => {
       await request(app.getHttpServer())
         .patch(`${BASE}/${NONEXISTENT_UUID}`)
@@ -361,7 +447,7 @@ describe('ExternalApisWorkspacesControllerV2 (EE enterprise)', () => {
       await request(app.getHttpServer())
         .post(`${BASE}/${created.body.id}/archive`)
         .set('Authorization', getExtAuth())
-        .expect(201);
+        .expect(200);
       await request(app.getHttpServer())
         .post(`${BASE}/${created.body.id}/archive`)
         .set('Authorization', getExtAuth())
@@ -370,7 +456,7 @@ describe('ExternalApisWorkspacesControllerV2 (EE enterprise)', () => {
       await request(app.getHttpServer())
         .post(`${BASE}/${created.body.id}/unarchive`)
         .set('Authorization', getExtAuth())
-        .expect(201);
+        .expect(200);
       await request(app.getHttpServer())
         .post(`${BASE}/${created.body.id}/unarchive`)
         .set('Authorization', getExtAuth())
@@ -417,8 +503,14 @@ describe('ExternalApisWorkspacesControllerV2 (EE enterprise)', () => {
       const res = await request(app.getHttpServer())
         .post(`${BASE}/${second.body.id}/set-default`)
         .set('Authorization', getExtAuth())
-        .expect(201);
-      expect(res.body.default).toBe(true);
+        .expect(200);
+      expect(res.body).toEqual({});
+
+      const secondAfter = await request(app.getHttpServer())
+        .get(`${BASE}/${second.body.id}`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+      expect(secondAfter.body.default).toBe(true);
 
       const firstAfter = await request(app.getHttpServer())
         .get(`${BASE}/${first.body.id}`)
@@ -457,7 +549,7 @@ describe('ExternalApisWorkspacesControllerV2 (EE enterprise)', () => {
       await request(app.getHttpServer())
         .post(`${BASE}/${created.body.id}/archive`)
         .set('Authorization', getExtAuth())
-        .expect(201);
+        .expect(200);
 
       await request(app.getHttpServer())
         .post(`${BASE}/${created.body.id}/set-default`)
@@ -509,7 +601,7 @@ describe('ExternalApisWorkspacesControllerV2 (EE enterprise)', () => {
       await request(app.getHttpServer())
         .post(`${BASE}/${other.body.id}/archive`)
         .set('Authorization', getExtAuth())
-        .expect(201);
+        .expect(200);
 
       try {
         setTestLicenseTerms(app, { features: { externalApi: true }, workspaces: 1 } as any);

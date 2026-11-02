@@ -9,7 +9,7 @@ Records who did what to which resource. Two systems live here while routes migra
 - **Audit event**: one immutable record: `action` (`<resource>.<verb>`), `outcome` (`success` | `denied`), `actor`, `target`, `workspace_id`, `changes`, `request_id`.
 - **Actor**: who called. `pat` (token owner plus token), `user` (session), or `api_key` (External API shared secret, no user).
 - **Route spec**: `FeatureConfig.audit` on a feature: `{ action, target: { type, id } }` or `{ skip: reason }`.
-- **Subject adapter**: one class per `target.type` that loads a before snapshot and reads the after state from the response.
+- **Subject adapter**: one class per `target.type` that loads a before snapshot and reads the after state from the response, or reloads it by id (`after: 'reload'`) for routes that answer with an empty body.
 
 ## Key files
 
@@ -43,7 +43,7 @@ Records who did what to which resource. Two systems live here while routes migra
 
 ## Related modules
 
-- `organizations`: Workspaces v2 audit specs live in its `constants/feature.ts` (v2 routes declare their domain module).
+- `organizations`, `setup-organization`: own the Workspaces v2 routes; audit specs live in `organizations/constants/feature.ts`.
 - `external-apis`: `ExternalApiAuthGuard` sets `tj_auth` and `tj_workspace`, which the engine reads.
 - `request-context`: sets `tj_request_id` and the `X-Request-Id` response header.
 - `app` (`guards/ability.guard.ts`): calls the engine for denied events.

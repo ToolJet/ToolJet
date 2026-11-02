@@ -6,6 +6,7 @@ import * as request from 'supertest';
 import { randomBytes } from 'crypto';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   initTestApp,
   closeTestApp,
@@ -177,15 +178,15 @@ describe('ExternalApisWorkspacesControllerV2 | PAT auth and audit events (EE ent
     });
 
     it('should write no event for a PATCH that changes nothing', async () => {
-      const current = await request(app.getHttpServer())
-        .get(`${BASE}/${admin.workspace.id}`)
-        .set('Authorization', withPat(admin.pat))
-        .expect(200);
-      const res = await request(app.getHttpServer())
-        .patch(`${BASE}/${admin.workspace.id}`)
-        .set('Authorization', withPat(admin.pat))
-        .send({ name: current.body.name })
-        .expect(200);
+      const name = `Unchanged ${unique()}`;
+      const rename = () =>
+        request(app.getHttpServer())
+          .patch(`${BASE}/${admin.workspace.id}`)
+          .set('Authorization', withPat(admin.pat))
+          .send({ name })
+          .expect(200);
+      await rename();
+      const res = await rename();
 
       expect(await eventsFor(res)).toEqual([]);
     });
@@ -273,13 +274,42 @@ describe('ExternalApisWorkspacesControllerV2 | PAT auth and audit events (EE ent
       expect(res.body.data.map((workspace: { id: string }) => workspace.id)).toContain(builder.workspace.id);
     });
 
+    it('should record status and default changes made through PATCH as workspace.updated', async () => {
+      const workspace = await createWorkspaceWithSecret();
+      const patch = (body: Record<string, unknown>) =>
+        request(app.getHttpServer())
+          .patch(`${BASE}/${workspace.id}`)
+          .set('Authorization', withPat(superAdmin.pat))
+          .send(body)
+          .expect(200);
+
+      const archived = await patch({ status: 'archived' });
+      expect(await eventsFor(archived)).toEqual([
+        expect.objectContaining({
+          action: 'workspace.updated',
+          workspaceId: workspace.id,
+          changes: { status: { from: 'active', to: 'archived' } },
+        }),
+      ]);
+
+      await patch({ status: 'active' });
+      const defaulted = await patch({ default: true });
+      expect(await eventsFor(defaulted)).toEqual([
+        expect.objectContaining({
+          action: 'workspace.updated',
+          workspaceId: workspace.id,
+          changes: { default: { from: false, to: true } },
+        }),
+      ]);
+    });
+
     it('should record archive, unarchive and set-default as separate events', async () => {
       const workspace = await createWorkspaceWithSecret();
       const call = (path: string) =>
         request(app.getHttpServer())
           .post(`${BASE}/${workspace.id}/${path}`)
           .set('Authorization', withPat(superAdmin.pat))
-          .expect(201);
+          .expect(200);
 
       const archived = await call('archive');
       expect(await eventsFor(archived)).toEqual([
@@ -306,6 +336,21 @@ describe('ExternalApisWorkspacesControllerV2 | PAT auth and audit events (EE ent
           changes: { default: { from: false, to: true } },
         }),
       ]);
+    });
+
+    it('should record nothing when PATCH sets default on the current default', async () => {
+      const workspace = await createWorkspaceWithSecret();
+      await request(app.getHttpServer())
+        .post(`${BASE}/${workspace.id}/set-default`)
+        .set('Authorization', withPat(superAdmin.pat))
+        .expect(200);
+
+      const res = await request(app.getHttpServer())
+        .patch(`${BASE}/${workspace.id}`)
+        .set('Authorization', withPat(superAdmin.pat))
+        .send({ default: true })
+        .expect(200);
+      expect(await eventsFor(res)).toEqual([]);
     });
 
     it('should deny a workspace admin archiving a workspace and record one denied event', async () => {
@@ -335,6 +380,45 @@ describe('ExternalApisWorkspacesControllerV2 | PAT auth and audit events (EE ent
       expect(await eventsFor(res)).toEqual([
         expect.objectContaining({ action: 'workspace.created', actorUserId: builder.user.id }),
       ]);
+    });
+
+    it('should make the creator an admin of the new workspace, as the dashboard does', async () => {
+      await setPersonalWorkspaceAllowed(true);
+      const suffix = unique();
+      const res = await request(app.getHttpServer())
+        .post(BASE)
+        .set('Authorization', withPat(builder.pat))
+        .send({ name: `Owned Workspace ${suffix}`, slug: `owned-workspace-${suffix}` })
+        .expect(201);
+
+      const listed = await request(app.getHttpServer())
+        .get(`${BASE}?search=owned-workspace-${suffix}`)
+        .set('Authorization', withPat(builder.pat))
+        .expect(200);
+      expect(listed.body.data.map((workspace: { id: string }) => workspace.id)).toEqual([res.body.id]);
+
+      const adminGroup = await getDefaultDataSource().query(
+        `SELECT gp.name FROM group_users gu JOIN permission_groups gp ON gp.id = gu.group_id
+         WHERE gu.user_id = $1 AND gp.organization_id = $2 AND gp.name = 'admin'`,
+        [builder.user.id, res.body.id]
+      );
+      expect(adminGroup).toHaveLength(1);
+    });
+
+    it('should not also write a legacy audit log entry', async () => {
+      await setPersonalWorkspaceAllowed(true);
+      const emit = jest.spyOn(app.get(EventEmitter2), 'emit');
+      try {
+        const suffix = unique();
+        await request(app.getHttpServer())
+          .post(BASE)
+          .set('Authorization', withPat(builder.pat))
+          .send({ name: `No Legacy ${suffix}`, slug: `no-legacy-${suffix}` })
+          .expect(201);
+        expect(emit).not.toHaveBeenCalledWith('auditLogEntry', expect.anything());
+      } finally {
+        emit.mockRestore();
+      }
     });
 
     it('should deny a builder creating a workspace when personal workspaces are disabled', async () => {
@@ -382,7 +466,7 @@ describe('ExternalApisWorkspacesControllerV2 | PAT auth and audit events (EE ent
           .expect(200);
 
         expect(await eventsFor(res)).toEqual([]);
-        } finally {
+      } finally {
         restoreLicensePlan(app);
       }
     });

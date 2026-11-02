@@ -11,9 +11,6 @@ import {
   UpdateUserV2Dto,
   ListUsersV2QueryDto,
   ListUserWorkspacesV2QueryDto,
-  CreateWorkspaceV2Dto,
-  UpdateWorkspaceV2Dto,
-  ListWorkspacesV2QueryDto,
   CreateWorkspaceUserV2Dto,
   UpdateWorkspaceUserV2Dto,
   BulkUpdateWorkspaceUsersV2Dto,
@@ -21,7 +18,6 @@ import {
   ListWorkspaceUserGroupsV2QueryDto,
 } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
-import { User } from '@entities/user.entity';
 
 export interface IExternalApisController {
   // Gets list of all users in the system
@@ -85,22 +81,6 @@ export interface IExternalApisUsersControllerV2 {
   unarchiveUser(userIdentifier: string): Promise<any>;
 
   listUserWorkspaces(userIdentifier: string, query: ListUserWorkspacesV2QueryDto): Promise<any>;
-}
-
-export interface IExternalApisWorkspacesControllerV2 {
-  createWorkspace(dto: CreateWorkspaceV2Dto): Promise<any>;
-
-  listWorkspaces(query: ListWorkspacesV2QueryDto, user?: User): Promise<any>;
-
-  getWorkspace(workspaceIdentifier: string, user?: User): Promise<any>;
-
-  updateWorkspace(workspaceIdentifier: string, dto: UpdateWorkspaceV2Dto): Promise<any>;
-
-  archiveWorkspace(workspaceIdentifier: string): Promise<any>;
-
-  unarchiveWorkspace(workspaceIdentifier: string): Promise<any>;
-
-  setDefaultWorkspace(workspaceIdentifier: string): Promise<any>;
 }
 
 export interface IExternalApisWorkspaceUsersControllerV2 {

@@ -19,8 +19,17 @@ export class SetupOrganizationsModule extends SubModule {
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;
 
-    const { SetupOrganizationsService, SetupOrganizationsUtilService, SetupOrganizationsController } =
-      await this.getProviders(configs, 'setup-organization', ['service', 'util.service', 'controller']);
+    const {
+      SetupOrganizationsService,
+      SetupOrganizationsUtilService,
+      SetupOrganizationsController,
+      SetupOrganizationsWorkspacesControllerV2,
+    } = await this.getProviders(configs, 'setup-organization', [
+      'service',
+      'util.service',
+      'controller',
+      'workspaces.controller.v2',
+    ]);
 
     const { FeatureAbilityFactory } = await this.getProviders(configs, 'organizations', ['ability']);
 
@@ -36,7 +45,7 @@ export class SetupOrganizationsModule extends SubModule {
         await InstanceSettingsModule.register(configs),
         await TooljetDbModule.register(configs),
       ],
-      controllers: isMainImport ? [SetupOrganizationsController] : [],
+      controllers: isMainImport ? [SetupOrganizationsController, SetupOrganizationsWorkspacesControllerV2] : [],
       providers: [
         SetupOrganizationsService,
         SetupOrganizationsUtilService,

@@ -1,5 +1,6 @@
 import { FeatureConfig } from '@modules/app/types';
 import { AUDIT_CATALOG, AuditAction } from './catalog';
+import { capturesBefore } from './request-utils';
 
 /**
  * Problems that would make an audited route silently write nothing or write the wrong thing.
@@ -29,6 +30,9 @@ export function findAuditSpecProblems(
     }
     if (!adapterTargetTypes.includes(spec.target.type)) {
       problems.push(`${key}: no audit subject adapter for "${spec.target.type}"`);
+    }
+    if (spec.after === 'reload' && !capturesBefore(spec)) {
+      problems.push(`${key}: after "reload" needs a before snapshot to know which target to read again`);
     }
   }
   return problems;

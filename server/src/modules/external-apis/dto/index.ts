@@ -19,7 +19,6 @@ import {
   Max,
   IsNumber,
   IsPositive,
-  IsBoolean,
   ArrayMaxSize,
   ArrayMinSize,
   registerDecorator,
@@ -28,7 +27,7 @@ import {
 } from 'class-validator';
 import { Transform, Type, Exclude, Expose } from 'class-transformer';
 import { USER_ROLE } from '@modules/group-permissions/constants';
-import { USER_STATUS, WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
+import { USER_STATUS } from '@modules/users/constants/lifecycle';
 import { TjdbSchemaToLatestVersion } from '@dto/transformers/resource-transformer';
 import { ValidateTooljetDatabaseImportSchema } from '@dto/validators/tooljet-database.validator';
 export enum Status {
@@ -716,103 +715,6 @@ export class ListUserWorkspacesV2ResponseDto {
   @Expose()
   @Type(() => WorkspaceMembershipV2ResponseDto)
   data: WorkspaceMembershipV2ResponseDto[];
-
-  @Expose()
-  @Type(() => PaginationV2ResponseDto)
-  pagination: PaginationV2ResponseDto;
-}
-
-export class CreateWorkspaceV2Dto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
-  name: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
-  @Matches(/^[a-z0-9-]+$/, { message: 'slug must be lowercase letters, numbers, and hyphens only' })
-  slug: string;
-}
-
-export class UpdateWorkspaceV2Dto {
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
-  name?: string;
-
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
-  @Matches(/^[a-z0-9-]+$/, { message: 'slug must be lowercase letters, numbers, and hyphens only' })
-  slug?: string;
-
-  @IsOptional()
-  @IsEnum(WORKSPACE_STATUS)
-  status?: WORKSPACE_STATUS;
-
-  // Can only be set to true here (atomically making this the platform default); true is
-  // rejected on an archived workspace, and setting it alongside status: 'archived' in the
-  // same request is rejected too. Setting it to false directly is always rejected — a default
-  // can only be removed by making a different workspace the default.
-  @IsOptional()
-  @IsBoolean()
-  default?: boolean;
-}
-
-export class ListWorkspacesV2QueryDto {
-  @IsOptional()
-  @IsString()
-  search?: string;
-
-  @IsOptional()
-  @IsEnum(WORKSPACE_STATUS)
-  status?: WORKSPACE_STATUS;
-
-  @IsOptional()
-  @Transform(({ value }) => (value === 'true' ? true : value === 'false' ? false : value))
-  @IsBoolean()
-  default?: boolean;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number = 1;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  per_page?: number = 20;
-}
-
-@Exclude()
-export class WorkspaceV2ResponseDto {
-  @Expose()
-  id: string;
-
-  @Expose()
-  name: string;
-
-  @Expose()
-  slug: string;
-
-  @Expose()
-  status: string;
-
-  @Expose()
-  default: boolean;
-}
-
-@Exclude()
-export class ListWorkspacesV2ResponseDto {
-  @Expose()
-  @Type(() => WorkspaceV2ResponseDto)
-  data: WorkspaceV2ResponseDto[];
 
   @Expose()
   @Type(() => PaginationV2ResponseDto)

@@ -2,18 +2,21 @@ import {
   ConflictException,
   Injectable,
   NotAcceptableException,
+  NotFoundException,
   NotImplementedException,
   Optional,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { Organization } from 'src/entities/organization.entity';
 import { isSuperAdmin } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { EntityManager, In } from 'typeorm';
+import { plainToInstance } from 'class-transformer';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationStatusUpdateDto, OrganizationUpdateDto } from '@modules/organizations/dto';
 import { IOrganizationsService } from '@modules/organizations/interfaces/IService';
 import { LicenseOrganizationService } from '@modules/licensing/services/organization.service';
-import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
+import { WORKSPACE_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { User } from '@entities/user.entity';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
@@ -24,6 +27,19 @@ import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { getTooljetEdition } from 'src/helpers/utils.helper';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { CustomDomainRepository } from '@modules/custom-domains/repository';
+import { OrganizationUser } from '@entities/organization_user.entity';
+import {
+  ListWorkspacesV2QueryDto,
+  ListWorkspacesV2ResponseDto,
+  UpdateWorkspaceV2Dto,
+  WorkspaceV2ResponseDto,
+  toWorkspaceV2Response,
+} from '@modules/organizations/dto/v2';
+
+export type WorkspaceChanges = Partial<Pick<Organization, 'name' | 'slug' | 'status'>>;
+
+// Only a super admin sees every workspace; anyone else sees the ones they are an active member of.
+const isScopedViewer = (viewer?: User): viewer is User => !!viewer && !isSuperAdmin(viewer);
 
 @Injectable()
 export class OrganizationsService implements IOrganizationsService {
@@ -99,7 +115,7 @@ export class OrganizationsService implements IOrganizationsService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const organizationId = user.organizationId;
       const organization = await manager.findOne(Organization, { where: { id: organizationId } });
-      await this.organizationRepository.updateOne(organizationId, updatableData, manager);
+      await this.updateWorkspace(organizationId, updatableData, manager);
 
       //WORKSPACE_UPDATE audit
       const auditLogsData = {
@@ -137,11 +153,7 @@ export class OrganizationsService implements IOrganizationsService {
         throw new NotAcceptableException('Default workspace cannot be archived');
       }
 
-      await this.organizationRepository.updateOne(organizationId, updatableData, manager);
-      if (updatableData.status === WORKSPACE_STATUS.ACTIVE) {
-        await this.licenseOrganizationService.validateOrganization(manager, organizationId); //Check for only unarchiving
-        await this.licenseUserService.validateUser(manager, organizationId);
-      }
+      await this.updateWorkspace(organizationId, { status: updatableData.status }, manager);
 
       //WORKSPACE_ARCHIVE audit WORKSPACE_UNARCHIVE audit
       const resourceData =
@@ -169,6 +181,24 @@ export class OrganizationsService implements IOrganizationsService {
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
       return;
     });
+  }
+
+  // The one write path for a workspace's name, slug and status, used by the dashboard and the External API.
+  // Reactivating a workspace counts against the plan's workspace and user limits (451 when exceeded).
+  async updateWorkspace(organizationId: string, changes: WorkspaceChanges, manager?: EntityManager): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const updatable: WorkspaceChanges = {};
+      if (changes.name !== undefined) updatable.name = changes.name;
+      if (changes.slug !== undefined) updatable.slug = changes.slug;
+      if (changes.status !== undefined) updatable.status = changes.status;
+      if (Object.keys(updatable).length === 0) return;
+
+      await this.organizationRepository.updateOne(organizationId, updatable, manager);
+      if (updatable.status === WORKSPACE_STATUS.ACTIVE) {
+        await this.licenseOrganizationService.validateOrganization(manager, organizationId);
+        await this.licenseUserService.validateUser(manager, organizationId);
+      }
+    }, manager);
   }
 
   async checkWorkspaceUniqueness(name: string, slug: string) {
@@ -200,5 +230,103 @@ export class OrganizationsService implements IOrganizationsService {
 
   async setDefaultWorkspace(organizationId: string, manager?: EntityManager): Promise<void> {
     throw new NotImplementedException('This feature is only available in Enterprise Edition');
+  }
+
+  // External API v2. These add the v2 contract (identifier lookup, 409/422 rules, response shape)
+  // on top of the shared writes above.
+
+  async listWorkspacesV2(query: ListWorkspacesV2QueryDto, viewer?: User): Promise<ListWorkspacesV2ResponseDto> {
+    const page = query.page ?? 1;
+    const perPage = query.per_page ?? 20;
+    const { organizations, totalCount } = await this.organizationRepository.queryWorkspaces({
+      status: query.status,
+      search: query.search,
+      isDefault: query.default,
+      memberUserId: isScopedViewer(viewer) ? viewer.id : undefined,
+      page,
+      perPage,
+    });
+    return plainToInstance(ListWorkspacesV2ResponseDto, {
+      data: organizations.map(toWorkspaceV2Response),
+      pagination: { page, per_page: perPage, total_count: totalCount },
+    });
+  }
+
+  async getWorkspaceV2(identifier: string, viewer?: User): Promise<WorkspaceV2ResponseDto> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const organization = await this.organizationRepository.findByIdentifier(identifier, manager);
+      if (isScopedViewer(viewer)) {
+        const membership = await manager.findOne(OrganizationUser, {
+          where: { userId: viewer.id, organizationId: organization.id, status: WORKSPACE_USER_STATUS.ACTIVE },
+        });
+        // Not found rather than forbidden, so a token can't probe which workspaces exist.
+        if (!membership) throw new NotFoundException('Workspace not found');
+      }
+      return toWorkspaceV2Response(organization);
+    });
+  }
+
+  async updateWorkspaceV2(identifier: string, dto: UpdateWorkspaceV2Dto): Promise<WorkspaceV2ResponseDto> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const organization = await this.organizationRepository.findByIdentifier(identifier, manager);
+
+      if (dto.default === false) {
+        throw new UnprocessableEntityException(
+          'default cannot be set to false directly — make a different workspace the default instead'
+        );
+      }
+      if (dto.default === true && (dto.status ?? organization.status) === WORKSPACE_STATUS.ARCHIVE) {
+        throw new UnprocessableEntityException('An archived workspace cannot be made the default');
+      }
+      if (dto.status === WORKSPACE_STATUS.ARCHIVE && organization.isDefault) {
+        throw new ConflictException(
+          'The default workspace cannot be archived — mark another workspace as default first'
+        );
+      }
+
+      await this.organizationRepository.assertNameAndSlugAvailable(dto, organization.id, manager);
+      await this.updateWorkspace(organization.id, dto, manager);
+      if (dto.default === true && !organization.isDefault) {
+        await this.setDefaultWorkspace(organization.id, manager);
+      }
+
+      return toWorkspaceV2Response(await manager.findOneOrFail(Organization, { where: { id: organization.id } }));
+    });
+  }
+
+  async archiveWorkspaceV2(identifier: string): Promise<void> {
+    return this.#changeWorkspaceStatusV2(identifier, WORKSPACE_STATUS.ARCHIVE);
+  }
+
+  async unarchiveWorkspaceV2(identifier: string): Promise<void> {
+    return this.#changeWorkspaceStatusV2(identifier, WORKSPACE_STATUS.ACTIVE);
+  }
+
+  async setDefaultWorkspaceV2(identifier: string): Promise<void> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const organization = await this.organizationRepository.findByIdentifier(identifier, manager);
+      if (organization.isDefault) {
+        throw new ConflictException('Workspace is already the default workspace');
+      }
+      if (organization.status === WORKSPACE_STATUS.ARCHIVE) {
+        throw new UnprocessableEntityException('An archived workspace cannot be made the default');
+      }
+      await this.setDefaultWorkspace(organization.id, manager);
+    });
+  }
+
+  async #changeWorkspaceStatusV2(identifier: string, status: WORKSPACE_STATUS): Promise<void> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const organization = await this.organizationRepository.findByIdentifier(identifier, manager);
+      if (organization.status === status) {
+        throw new ConflictException(`Workspace is already ${status}`);
+      }
+      if (status === WORKSPACE_STATUS.ARCHIVE && organization.isDefault) {
+        throw new ConflictException(
+          'The default workspace cannot be archived — mark another workspace as default first'
+        );
+      }
+      await this.updateWorkspace(organization.id, { status }, manager);
+    });
   }
 }

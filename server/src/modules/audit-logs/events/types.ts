@@ -55,8 +55,9 @@ export type AuditRouteSpec =
       target: { type: AuditTargetType; id: IdSource };
       // Defaults to true for every action except `*.created`.
       captureBefore?: boolean;
-      // Where the after state comes from. Defaults to the handler's response.
-      after?: 'response' | 'none';
+      // Where the after state comes from. Defaults to the handler's response. 'reload' reads the target
+      // again once the handler has finished, for routes that answer with an empty body.
+      after?: 'response' | 'reload' | 'none';
     };
 
 // How the caller authenticated. Set by the auth guard of routes that accept more than one credential.

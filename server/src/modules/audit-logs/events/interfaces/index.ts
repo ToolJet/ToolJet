@@ -32,6 +32,8 @@ export interface IAuditSubjectAdapter {
   readonly fields: FieldSpec;
   loadBefore(identifier: string, request: AuditableRequest): Promise<LoadedSubject | null>;
   fromResponse(body: unknown): LoadedSubject | null;
+  /** Current state by resolved id, for specs with `after: 'reload'`. */
+  loadCurrent(id: string): Promise<LoadedSubject | null>;
   displayName(snapshot: Snapshot): string;
   /** Target of a denied request, from what the request names (no DB read). */
   describeRequest(request: AuditableRequest): { id: string | null; displayName: string };

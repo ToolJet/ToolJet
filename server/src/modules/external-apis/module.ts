@@ -23,7 +23,6 @@ import { AppsRepository } from '@modules/apps/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
 import { OrganizationUsersModule } from '@modules/organization-users/module';
-import { InstanceSettingsModule } from '@modules/instance-settings/module';
 
 export class ExternalApiModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -42,7 +41,6 @@ export class ExternalApiModule extends SubModule {
       ExternalApisBanController,
       ExternalApisAppExportController,
       ExternalApisUsersControllerV2,
-      ExternalApisWorkspacesControllerV2,
       ExternalApisWorkspaceUsersControllerV2,
     } = await this.getProviders(configs, 'external-apis', [
       'controller',
@@ -55,17 +53,8 @@ export class ExternalApiModule extends SubModule {
       'controllers/ban.controller',
       'controllers/app-export.controller',
       'controllers/users.controller.v2',
-      'controllers/workspaces.controller.v2',
       'controllers/workspace-users.controller.v2',
     ]);
-
-    // Workspaces v2 declares MODULES.ORGANIZATIONS, so its permission rules live in the organizations
-    // ability. ModuleRef.resolve is strict, so the factory must be provided here, where the controller is.
-    const { FeatureAbilityFactory: OrganizationsFeatureAbilityFactory } = await this.getProviders(
-      configs,
-      'organizations',
-      ['ability']
-    );
 
     return this.cacheModule(cacheKey, {
       module: ExternalApiModule,
@@ -83,13 +72,11 @@ export class ExternalApiModule extends SubModule {
         await AppEnvironmentsModule.register(configs),
         await SessionModule.register(configs),
         await OrganizationUsersModule.register(configs),
-        await InstanceSettingsModule.register(configs),
       ],
       providers: [
         ExternalApiUtilService,
         ExternalApisService,
         FeatureAbilityFactory,
-        OrganizationsFeatureAbilityFactory,
         RolesRepository,
         AppsRepository,
         GroupPermissionsRepository,
@@ -112,7 +99,6 @@ export class ExternalApiModule extends SubModule {
             ExternalApisBanController,
             ExternalApisAppExportController,
             ExternalApisUsersControllerV2,
-            ExternalApisWorkspacesControllerV2,
             ExternalApisWorkspaceUsersControllerV2,
           ]
         : [],
