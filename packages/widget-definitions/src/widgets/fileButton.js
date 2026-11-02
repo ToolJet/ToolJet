@@ -274,14 +274,14 @@ export const fileButtonConfig = {
     },
     padding: {
       type: 'switch',
-      displayName: 'Padding',
+      displayName: 'Margin',
       isFxNotRequired: true,
       options: [
         { displayName: 'Default', value: 'default' },
         { displayName: 'None', value: 'none' },
       ],
       validation: { schema: { type: 'string' }, defaultValue: 'default' },
-      accordian: 'button',
+      accordian: 'container',
     },
   },
   exposedVariables: {

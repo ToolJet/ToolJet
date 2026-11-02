@@ -156,7 +156,7 @@ describe('Checkbox — stylesFx facet', { testIsolation: false }, () => {
 
         // padding fxCapable:false → its style row must not expose an fx button
         // source: checkbox.js:154 (fxCapable:false)
-        cy.get(commonWidgetSelector.parameterLabel('Padding')).should('exist');
-        cy.get(commonWidgetSelector.parameterFxButton('Padding')).should('not.exist'); // source: checkbox.js:154
+        cy.get(commonWidgetSelector.parameterLabel('Margin')).should('exist');
+        cy.get(commonWidgetSelector.parameterFxButton('Margin')).should('not.exist'); // source: checkbox.js:154
     });
 });

@@ -59,7 +59,6 @@ export const BaseDateComponent = ({
     auto: labelAutoWidth,
     iconColor,
     accentColor,
-    padding,
     errTextColor,
     widthType,
     labelFontSize,
@@ -73,8 +72,7 @@ export const BaseDateComponent = ({
   const isLabelOnTop =
     alignment === 'top' &&
     ((labelWidth != 0 && label?.length != 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0));
-  const baseInputHeight = height == 36 ? (padding == 'default' ? 36 : 40) : padding == 'default' ? height : height + 4;
-
+  const baseInputHeight = height;
   const rightPaddingBase = iconVisibility && iconDirection === 'right' ? '30px' : undefined;
   const paddingRight = showClearBtn ? (rightPaddingBase ? '52px' : '32px') : rightPaddingBase;
   const computedStyles = {

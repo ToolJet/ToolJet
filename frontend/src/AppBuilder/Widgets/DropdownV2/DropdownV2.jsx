@@ -137,7 +137,7 @@ export const DropdownV2 = ({
     isDisabled: isDropdownDisabled,
   });
 
-  const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
+  const _height = `${height}px`;
   const labelRef = useRef();
   function findDefaultItem(schema) {
     let _schema = schema;

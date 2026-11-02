@@ -67,8 +67,8 @@ describe('Text Input — stylesFx facet', { testIsolation: false }, () => {
 
         // padding fxCapable:false → its style row must not expose an fx button
         // source: textinput.js:271 (fxCapable:false)
-        cy.get(commonWidgetSelector.parameterLabel('Padding')).should('exist');
-        cy.get(commonWidgetSelector.parameterFxButton('Padding')).should('not.exist'); // source: textinput.js:271
+        cy.get(commonWidgetSelector.parameterLabel('Margin')).should('exist');
+        cy.get(commonWidgetSelector.parameterFxButton('Margin')).should('not.exist'); // source: textinput.js:271
     });
 
     // ── RESOLVE-LIVE: colorSwatches + boxShadow fx pickers ──────────────────────

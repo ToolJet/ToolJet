@@ -9,7 +9,6 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
-import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -54,9 +53,9 @@ export const Text = function Text({
     borderColor,
     borderRadius,
     isScrollRequired,
-    padding,
   } = styles;
-  const boxHeight = padding === 'none' ? height + BOX_PADDING * 2 : height;
+  // RenderWidget already hands the full height when margin is none (resolveContainerBoxPadding).
+  const boxHeight = height;
   const isInitialRender = useRef(true);
   const { loadingState, textFormat, disabledState } = properties;
   const [text, setText] = useState(() => computeText());

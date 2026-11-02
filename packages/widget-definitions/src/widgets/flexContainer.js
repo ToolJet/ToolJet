@@ -183,6 +183,16 @@ export const flexContainerConfig = {
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
       accordian: 'Container',
     },
+    margin: {
+      type: 'switch',
+      displayName: 'Margin',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'Container',
+    },
   },
   exposedVariables: {
     isVisible: true,
@@ -221,6 +231,7 @@ export const flexContainerConfig = {
     },
     events: [],
     styles: {
+      margin: { value: 'default' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '6' },
       borderColor: { value: 'var(--cc-weak-border)' },

@@ -304,7 +304,7 @@ export const Tabs = function Tabs({
       data-disabled={isDisabled}
       className="card tabs-component scrollbar-container"
       style={{
-        height: isDynamicHeightEnabled ? '100%' : padding === 'default' ? height : height + 4,
+        height: isDynamicHeightEnabled ? '100%' : height,
         ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
         display: isVisible ? 'flex' : 'none',
         backgroundColor: darkMode ? '#324156' : '#fff',
