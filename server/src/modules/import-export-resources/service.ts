@@ -133,11 +133,13 @@ export class ImportExportResourcesService {
     isTemplateApp = false,
     manager?: EntityManager
   ) {
-    const importingUser = Object.assign(new User(), user, {
-      organizationId: importResourcesDto.organization_id ?? user.organizationId,
-    });
-    for (const app of importResourcesDto.app ?? []) {
-      await this.appImportExportService.assertImportAccess(importingUser, app.definition);
+    // ToolJet DB tables below commit on their own; refusals an app import would hit must happen before them.
+    if (!isEmpty(importResourcesDto.tooljet_database)) {
+      const importingUser = Object.assign(new User(), user, {
+        organizationId: importResourcesDto.organization_id ?? user.organizationId,
+      });
+      for (const app of importResourcesDto.app ?? [])
+        await this.appImportExportService.assertImportAccess(importingUser, app.definition);
     }
     let tableNameMapping = {};
     const imports = { app: [], tooljet_database: [], tableNameMapping: {} };

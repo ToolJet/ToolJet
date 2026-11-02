@@ -1,6 +1,21 @@
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 
 @Entity({ name: 'library_query_versions' })
+// Names are unique among live versions only; version numbers stay unique even after a soft delete.
+@Index('IDX_library_query_versions_live_name', ['libraryQueryId', 'name'], {
+  unique: true,
+  where: 'deleted_at IS NULL',
+})
+@Unique('UQ_library_query_versions_query_number', ['libraryQueryId', 'versionNumber'])
 export class LibraryQueryVersion extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

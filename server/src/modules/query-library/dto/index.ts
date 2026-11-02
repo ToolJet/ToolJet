@@ -10,10 +10,22 @@ import {
   NotContains,
   IsNotIn,
   Matches,
+  ValidateBy,
 } from 'class-validator';
 import { LibraryQuery } from '@entities/library_query.entity';
 import { LibraryQueryFolder } from '@entities/library_query_folder.entity';
 import { DataSource } from '@entities/data_source.entity';
+
+// One library query's options as JSON text. Every saved version keeps a copy, so a draft cannot grow without bound.
+export const LIBRARY_OPTIONS_MAX_LENGTH = 1_000_000;
+export const MaxJsonLength = (max: number) =>
+  ValidateBy({
+    name: 'maxJsonLength',
+    validator: {
+      validate: (value: unknown) => JSON.stringify(value ?? null).length <= max,
+      defaultMessage: () => `$property must be at most ${max} characters as JSON`,
+    },
+  });
 
 export class LibraryFolderDto {
   @IsString()
@@ -32,6 +44,7 @@ export class CreateLibraryQueryDto extends LibraryFolderDto {
   @IsUUID()
   dataSourceId: string | null;
   @IsObject()
+  @MaxJsonLength(LIBRARY_OPTIONS_MAX_LENGTH)
   options: Record<string, unknown>;
   @IsOptional()
   @IsUUID()
@@ -43,6 +56,7 @@ export class UpdateLibraryQueryDto {
   @IsNotEmpty()
   @MaxLength(255)
   @Matches(/\S/)
+  @NotContains('\n')
   name?: string;
   @IsOptional()
   @IsUUID()

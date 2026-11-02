@@ -12,9 +12,7 @@ import {
   libraryServerReferences,
   withoutLibraryRequestDetails,
   replaceLibraryServerReferences,
-  isSameLibrarySnapshot,
   libraryTransformationOf,
-  libraryVersionName,
   pickPinnedVersion,
   toLibraryPins,
   libraryReleaseBlock,
@@ -23,6 +21,7 @@ import {
   toLibraryRunEntity,
   toRunTarget,
   LibraryRunValues,
+  LIBRARY_QUERY_MISSING,
 } from '../../../../src/modules/data-queries/library/library-query.util';
 
 const q = (over: Record<string, any> = {}) =>
@@ -387,7 +386,7 @@ describe('library-query.util', () => {
 
     it('404s when the library query is gone', () => {
       expect(() => assertLibraryTarget({ consumer, library: null, consumerApp: org })).toThrow(
-        new NotFoundException('Library query not found')
+        new NotFoundException(LIBRARY_QUERY_MISSING)
       );
     });
 
@@ -549,41 +548,6 @@ describe('library-query.util', () => {
         status: 'failed',
         message: 'x',
       });
-    });
-  });
-
-  describe('libraryVersionName', () => {
-    it('returns the persisted custom name', () => {
-      expect(libraryVersionName({ name: 'release beta' })).toBe('release beta');
-    });
-  });
-
-  describe('isSameLibrarySnapshot', () => {
-    const snap = (over: Record<string, any> = {}) => ({
-      kind: 'postgresql',
-      dataSourceId: 'ds1',
-      options: { query: 'select 1', parameters: [{ name: 'a', defaultValue: '1' }] },
-      ...over,
-    });
-    it('matches an identical snapshot, whatever the key order', () => {
-      expect(
-        isSameLibrarySnapshot(
-          snap(),
-          snap({ options: { parameters: [{ defaultValue: '1', name: 'a' }], query: 'select 1' } })
-        )
-      ).toBe(true);
-    });
-    it('differs when the options differ', () => {
-      expect(isSameLibrarySnapshot(snap(), snap({ options: { query: 'select 2' } }))).toBe(false);
-    });
-    it('differs when only the data source differs', () => {
-      expect(isSameLibrarySnapshot(snap(), snap({ dataSourceId: 'ds2' }))).toBe(false);
-    });
-    it('differs when only the kind differs', () => {
-      expect(isSameLibrarySnapshot(snap(), snap({ kind: 'mysql' }))).toBe(false);
-    });
-    it('treats a missing and a null data source as the same', () => {
-      expect(isSameLibrarySnapshot(snap({ dataSourceId: null }), snap({ dataSourceId: undefined }))).toBe(true);
     });
   });
 

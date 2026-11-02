@@ -1814,15 +1814,10 @@ export class AppsUtilService implements IAppsUtilService {
     organizationId: string,
     manager: EntityManager
   ): Promise<void> {
-    try {
-      // Every pin must be its query's Released version. Modules go through the same gate.
-      const block = libraryReleaseBlock(await this.getLibraryPinsForAppVersion(versionId, organizationId, manager));
-      if (block) throw new BadRequestException({ message: block });
-    } catch (error) {
-      if (error instanceof BadRequestException) throw error;
-      console.error('Failed to check library query release state', error?.stack || error);
-      throw new BadRequestException('Failed to validate library queries for release');
-    }
+    // Every pin must be its query's Released version. Modules go through the same gate. A failed read is a server
+    // error, not a block.
+    const block = libraryReleaseBlock(await this.getLibraryPinsForAppVersion(versionId, organizationId, manager));
+    if (block) throw new BadRequestException({ message: block });
   }
 
   // Promote gate for apps and modules (direct pins only): every pinned library version must already be in the target
@@ -1834,18 +1829,12 @@ export class AppsUtilService implements IAppsUtilService {
     organizationId: string,
     manager: EntityManager
   ): Promise<void> {
-    try {
-      const block = libraryPromoteBlock(
-        await this.getLibraryPinsForAppVersion(versionId, organizationId, manager),
-        targetEnvironmentName,
-        targetPriority
-      );
-      if (block) throw new BadRequestException({ message: block });
-    } catch (error) {
-      if (error instanceof BadRequestException) throw error;
-      console.error('Failed to check library query environment availability', error?.stack || error);
-      throw new BadRequestException('Failed to validate library queries for promote');
-    }
+    const block = libraryPromoteBlock(
+      await this.getLibraryPinsForAppVersion(versionId, organizationId, manager),
+      targetEnvironmentName,
+      targetPriority
+    );
+    if (block) throw new BadRequestException({ message: block });
   }
 
   /**

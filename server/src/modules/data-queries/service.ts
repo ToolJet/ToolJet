@@ -1,4 +1,4 @@
-import { lockLibraryPins } from '@modules/query-library/locking';
+import { LibraryPinWrite, lockLibraryPins, setsLibraryReference } from '@modules/query-library/locking';
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager, In, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -144,13 +144,20 @@ export class DataQueriesService implements IDataQueriesService {
     }
   }
 
-  protected async assertLibraryConsumerAccess(
+  // Running a library consumer needs the licence.
+  protected async assertLibraryConsumerAccess(organizationId: string, kind?: string): Promise<void> {
+    if (kind === LIBRARY_KIND) await this.queryLibraryService.assertEnabled(organizationId);
+  }
+
+  // Writing one needs it only when the write sets or changes the library reference: edits that carry the reference
+  // along (rename, other options, moving off the library) keep working without it, like Modules.
+  protected async lockLibraryConsumers(
+    manager: EntityManager,
     organizationId: string,
-    kind?: string,
-    previousKind?: string
+    writes: LibraryPinWrite[]
   ): Promise<void> {
-    if (kind === LIBRARY_KIND || previousKind === LIBRARY_KIND)
-      await this.queryLibraryService.assertEnabled(organizationId);
+    if (setsLibraryReference(writes)) await this.queryLibraryService.assertEnabled(organizationId);
+    await lockLibraryPins(manager, organizationId, writes);
   }
 
   async getAll(user: User, app: App, versionId: string, mode?: string) {
@@ -160,7 +167,6 @@ export class DataQueriesService implements IDataQueriesService {
 
   async create(user: User, dataSource: DataSource, dataQueryDto: CreateDataQueryDto) {
     const { kind, name, options, app_version_id: appVersionId } = dataQueryDto;
-    await this.assertLibraryConsumerAccess(user.organizationId, dataSource.kind);
 
     await this.dataQueryUtilService.validateQueryActionsAgainstEnvironment(
       user.organizationId,
@@ -180,7 +186,7 @@ export class DataQueriesService implements IDataQueriesService {
         { appVersionId, organizationId: user.organizationId, manager }
       );
 
-      await lockLibraryPins(manager, user.organizationId, [{ kind: dataSource.kind, options }]);
+      await this.lockLibraryConsumers(manager, user.organizationId, [{ kind: dataSource.kind, options }]);
       const dataQuery = await this.dataQueryRepository.createOne(
         {
           name,
@@ -239,7 +245,6 @@ export class DataQueriesService implements IDataQueriesService {
       if (!existing) {
         throw new NotFoundException('Data query not found');
       }
-      await this.assertLibraryConsumerAccess(user.organizationId, existing.dataSource?.kind);
       if (options !== undefined) assertLibraryConsumerOptions(existing.dataSource?.kind, existing.options, options);
       if (name !== undefined && existing.name !== name) {
         await this.assertUniqueQueryName(manager, existing.appVersionId, name, dataQueryId);
@@ -260,7 +265,9 @@ export class DataQueriesService implements IDataQueriesService {
       );
 
       if (options !== undefined)
-        await lockLibraryPins(manager, user.organizationId, [{ kind: existing.dataSource?.kind, options }]);
+        await this.lockLibraryConsumers(manager, user.organizationId, [
+          { kind: existing.dataSource?.kind, options, previous: existing },
+        ]);
       await this.dataQueryRepository.updateOne(dataQueryId, { name, options }, manager);
     });
 
@@ -334,14 +341,17 @@ export class DataQueriesService implements IDataQueriesService {
         );
       }
 
-      for (const query of stored) await this.assertLibraryConsumerAccess(user.organizationId, query.dataSource?.kind);
       stored.forEach((query, i) =>
         assertLibraryConsumerOptions(query.dataSource?.kind, query.options, dataQueriesOptions[i].options)
       );
-      await lockLibraryPins(
+      await this.lockLibraryConsumers(
         manager,
         user.organizationId,
-        stored.map((query, i) => ({ kind: query.dataSource?.kind, options: dataQueriesOptions[i].options }))
+        stored.map((query, i) => ({
+          kind: query.dataSource?.kind,
+          options: dataQueriesOptions[i].options,
+          previous: query,
+        }))
       );
 
       if (stored.length) {
@@ -410,9 +420,10 @@ export class DataQueriesService implements IDataQueriesService {
           where: { id: dataQueryId },
           relations: { dataSource: true },
         });
-        await this.assertLibraryConsumerAccess(app?.organizationId ?? user.organizationId, stored.dataSource?.kind);
         assertLibraryConsumerOptions(stored.dataSource?.kind, stored.options, options);
-        await lockLibraryPins(manager, user.organizationId, [{ kind: stored.dataSource?.kind, options }]);
+        await this.lockLibraryConsumers(manager, user.organizationId, [
+          { kind: stored.dataSource?.kind, options, previous: stored },
+        ]);
         await this.dataQueryRepository.updateOne(dataQueryId, { options }, manager);
       });
       dataQuery['options'] = options;
@@ -558,7 +569,6 @@ export class DataQueriesService implements IDataQueriesService {
         select: { id: true, name: true, appVersionId: true, options: true, dataSource: { kind: true } },
         relations: { dataSource: true },
       });
-      await this.assertLibraryConsumerAccess(user.organizationId, newDataSource.kind, stored?.dataSource?.kind);
       if (stored) {
         // Kind mismatch only warns here: workflows legitimately move queries across kinds.
         await this.appValidationService.check(
@@ -576,7 +586,9 @@ export class DataQueriesService implements IDataQueriesService {
       }
 
       if (stored)
-        await lockLibraryPins(manager, user.organizationId, [{ kind: newDataSource.kind, options: stored.options }]);
+        await this.lockLibraryConsumers(manager, user.organizationId, [
+          { kind: newDataSource.kind, options: stored.options, previous: stored },
+        ]);
       return this.dataQueryRepository.updateOne(queryId, { dataSourceId: newDataSource.id }, manager);
 
       // TODO: Audit logs

@@ -17,12 +17,7 @@ import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { DataQueryFolderMappingRepository } from '@modules/data-query-folders/repository';
 import { AppScopedThrottlerGuard } from './throttler/app-scoped-throttler.guard';
 import { QueryLibraryModule } from '@modules/query-library/module';
-
-function parsePositiveInt(raw: unknown, fallback: number): number {
-  if (raw === undefined || raw === null || raw === '') return fallback;
-  const n = Number(raw);
-  return Number.isFinite(n) && n >= 0 ? n : fallback;
-}
+import { queryRunThrottlerConfig } from './throttler/config';
 
 export class DataQueriesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -51,12 +46,7 @@ export class DataQueriesModule extends SubModule {
         ThrottlerModule.forRootAsync({
           imports: [ConfigModule],
           inject: [ConfigService],
-          useFactory: (config: ConfigService) => [
-            {
-              ttl: parsePositiveInt(config.get('DATA_QUERY_RUN_TTL'), 1000),
-              limit: parsePositiveInt(config.get('DATA_QUERY_RUN_LIMIT'), 50),
-            },
-          ],
+          useFactory: queryRunThrottlerConfig,
         }),
       ],
       providers: [

@@ -10,6 +10,8 @@ import {
 
 @Entity({ name: 'library_queries' })
 @Unique('UQ_library_queries_workspace_name', ['organizationId', 'name'])
+// Import matches by co_relation_id first, so one workspace never holds two copies of the same exported query.
+@Unique('UQ_library_queries_workspace_co_relation', ['organizationId', 'coRelationId'])
 export class LibraryQuery extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

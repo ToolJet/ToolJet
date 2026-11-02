@@ -181,14 +181,14 @@ export class DataQueriesController implements IDataQueriesController {
   }
 
   @InitFeature(FEATURE_KEY.RUN_VIEWER)
-  @UseGuards(QueryAuthGuard, AppFeatureAbilityGuard)
+  @UseGuards(QueryAuthGuard, AppFeatureAbilityGuard, AppScopedThrottlerGuard)
   @Post(':id/library-definition')
   getLibraryDefinition(@User() user: UserEntity, @AppDecorator() app: App, @Param('id') dataQueryId: string) {
     return this.dataQueriesService.getLibraryDefinition(dataQueryId, app, user);
   }
 
   @InitFeature(FEATURE_KEY.RUN_VIEWER)
-  @UseGuards(QueryAuthGuard, AppFeatureAbilityGuard)
+  @UseGuards(QueryAuthGuard, AppFeatureAbilityGuard, AppScopedThrottlerGuard)
   @Post(':id/run-library')
   runLibraryQuery(
     @User() user: UserEntity,

@@ -1,4 +1,5 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { queryRunThrottlerConfig } from '@modules/data-queries/throttler/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AppScopedThrottlerGuard } from '@modules/data-queries/throttler/app-scoped-throttler.guard';
 import { DataQueriesUtilService as BaseRuntime } from '@modules/data-queries/util.service';
@@ -43,12 +44,7 @@ export class QueryLibraryModule extends SubModule {
         ThrottlerModule.forRootAsync({
           imports: [ConfigModule],
           inject: [ConfigService],
-          useFactory: (config: ConfigService) => [
-            {
-              ttl: Number(config.get('DATA_QUERY_RUN_TTL') ?? 1000),
-              limit: Number(config.get('DATA_QUERY_RUN_LIMIT') ?? 50),
-            },
-          ],
+          useFactory: queryRunThrottlerConfig,
         }),
       ],
       providers: [

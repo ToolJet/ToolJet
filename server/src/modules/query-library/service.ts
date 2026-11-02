@@ -86,6 +86,10 @@ export class QueryLibraryService {
   async deleteFolder(user: User, folderId: string): Promise<void> {
     throw new NotFoundException('Query Library is unavailable');
   }
+  // Non-throwing check for flows that skip library work instead of failing (app import/export).
+  async isEnabled(organizationId: string): Promise<boolean> {
+    return false;
+  }
   async assertEnabled(organizationId: string): Promise<void> {
     throw new NotFoundException('Query Library is unavailable');
   }

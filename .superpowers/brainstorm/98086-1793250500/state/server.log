@@ -1,4 +1,0 @@
-{"type":"server-started","port":63885,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:63885/?key=df729b07cbf6653542ca1861b79ab78b9a206c690939093c51dd5191d4d82c52","screen_dir":"/Users/nakul/Desktop/Tooljet-Projects/ToolJet/.superpowers/brainstorm/98086-1793250500/content","state_dir":"/Users/nakul/Desktop/Tooljet-Projects/ToolJet/.superpowers/brainstorm/98086-1793250500/state","idle_timeout_ms":14400000}
-{"type":"screen-added","file":"/Users/nakul/Desktop/Tooljet-Projects/ToolJet/.superpowers/brainstorm/98086-1793250500/content/library-layout.html"}
-{"type":"screen-added","file":"/Users/nakul/Desktop/Tooljet-Projects/ToolJet/.superpowers/brainstorm/98086-1793250500/content/waiting.html"}
-{"type":"server-stopped","reason":"owner process exited"}

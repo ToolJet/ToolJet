@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { EntityManager, In } from 'typeorm';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSource } from '@entities/data_source.entity';
@@ -120,11 +120,14 @@ export async function collectLibraryExport(
   organizationId: string,
   consumers: DataQuery[]
 ): Promise<LibraryExportQuery[]> {
-  const pins = consumers.map((consumer) => {
-    if (!isLibraryUuid(consumer.options?.libraryQueryId))
-      throw new BadRequestException('A library query ID is required');
-    return { queryId: consumer.options.libraryQueryId as string, id: parseLibraryReference(consumer.options).id };
-  });
+  // A reference that is malformed or names a deleted query/version is exported as-is with nothing bundled for it,
+  // like import and git pull carry it: running it reports the missing query, release/promote refuse it.
+  const pins = consumers
+    .map((consumer) => ({
+      queryId: consumer.options?.libraryQueryId,
+      id: consumer.options?.libraryQueryVersionId,
+    }))
+    .filter((pin): pin is { queryId: string; id: string } => isLibraryUuid(pin.queryId) && isLibraryUuid(pin.id));
   if (!pins.length) return [];
   const queries = await manager.find(LibraryQuery, {
     where: { organizationId, id: In(pins.map((pin) => pin.queryId)) },
@@ -147,7 +150,7 @@ export async function collectLibraryExport(
       if (releasedVersionId) selected.add(releasedVersionId);
       const include = (id: string) => {
         const row = ownVersions.find((row) => row.id === id) ?? ownDrafts.find((row) => row.id === id);
-        if (!row) throw new NotFoundException('Library query version not found');
+        if (!row) return;
         if (
           row.createdFromVersionId &&
           ownVersions.some((parent) => parent.id === row.createdFromVersionId) &&
@@ -191,6 +194,8 @@ export async function collectLibraryExport(
           }),
       };
     })
+    // Only deleted snapshots were referenced: nothing to bundle for this query.
+    .filter((query) => query.drafts.length + query.versions.length)
     .sort((a, b) => a.name.localeCompare(b.name));
   assertLibraryExport(result);
   return result;
@@ -308,22 +313,19 @@ export function remapLibraryConsumerOptions(
   return { ...options, libraryQueryId: nextQueryId, libraryQueryVersionId: nextVersionId };
 }
 
-// Restrict inspection to the supported transport structure; pins count even without bundled definitions.
-export function hasLibraryContent(bundle: unknown): boolean {
-  if (!bundle || typeof bundle !== 'object') return false;
-  const value = bundle as Record<string, unknown>;
-  if (value.appV2) return hasLibraryContent(value.appV2);
-  if (value.app) return Array.isArray(value.app) ? value.app.some(hasLibraryContent) : hasLibraryContent(value.app);
-  if (Array.isArray(value.libraryQueries) && value.libraryQueries.length) return true;
-  if (
-    Array.isArray(value.dataQueries) &&
-    value.dataQueries.some((row: Record<string, unknown>) => {
-      const options = row?.options as Record<string, unknown> | undefined;
-      return (
-        row?.kind === 'library' || options?.libraryQueryId !== undefined || options?.libraryQueryVersionId !== undefined
-      );
-    })
-  )
-    return true;
-  return Array.isArray(value.modules) && value.modules.some(hasLibraryContent);
+// Library queries bundled anywhere in an app export (the app and its nested modules). Malformed lists are skipped:
+// the import itself rejects them.
+export function bundledLibraryQueries(bundle: unknown): LibraryExportQuery[] {
+  const found: LibraryExportQuery[] = [];
+  const visited = new WeakSet<object>();
+  const visit = (item: unknown) => {
+    const node = item as { appV2?: unknown; libraryQueries?: unknown; modules?: unknown } | null;
+    const app = (node?.appV2 ?? node) as typeof node;
+    if (!app || typeof app !== 'object' || visited.has(app)) return;
+    visited.add(app);
+    if (Array.isArray(app.libraryQueries)) found.push(...app.libraryQueries);
+    if (Array.isArray(app.modules)) app.modules.forEach(visit);
+  };
+  visit(bundle);
+  return found;
 }

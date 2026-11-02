@@ -23,6 +23,13 @@ export class AddLibraryQueryLifecycle1792600000000 implements MigrationInterface
         onDelete: 'SET NULL',
       }),
     ]);
+    // Foreign keys get an index so a parent delete (ON DELETE SET NULL / CASCADE) does not scan the child table.
+    await queryRunner.query(
+      'CREATE INDEX "IDX_library_query_versions_current_environment_id" ON library_query_versions (current_environment_id)'
+    );
+    await queryRunner.query(
+      'CREATE INDEX "IDX_library_query_versions_created_from_version_id" ON library_query_versions (created_from_version_id)'
+    );
 
     await queryRunner.createTable(
       new Table({
@@ -67,6 +74,10 @@ export class AddLibraryQueryLifecycle1792600000000 implements MigrationInterface
             isUnique: true,
             where: 'deleted_at IS NULL',
           },
+          // The partial index above covers live drafts only; a library query delete cascades to every draft.
+          { name: 'IDX_library_query_drafts_library_query_id', columnNames: ['library_query_id'] },
+          { name: 'IDX_library_query_drafts_data_source_id', columnNames: ['data_source_id'] },
+          { name: 'IDX_library_query_drafts_created_from_version_id', columnNames: ['created_from_version_id'] },
         ],
       }),
       true
@@ -97,6 +108,7 @@ export class AddLibraryQueryLifecycle1792600000000 implements MigrationInterface
             onDelete: 'SET NULL',
           },
         ],
+        indices: [{ name: 'IDX_library_query_states_released_version_id', columnNames: ['released_version_id'] }],
       }),
       true
     );

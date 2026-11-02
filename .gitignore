@@ -51,6 +51,7 @@ ti-*
 taskfile.*
 .serena/
 docs/superpowers/
+.superpowers/
 .codegraph/
 contexts/
 server/test/AUDIT_LEDGER.md

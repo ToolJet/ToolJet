@@ -1,6 +1,8 @@
-import { NotFoundException } from '@nestjs/common';
-import { hasLibraryContent } from '@modules/data-queries/library/library-export.util';
-import { lockLibraryPins, withLibraryImportLocks } from '@modules/query-library/locking';
+import {
+  importHasLibraryContent,
+  lockCarriedLibraryPins,
+  withLibraryImportLocks,
+} from '@modules/query-library/locking';
 import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { isEmpty, set } from 'lodash';
 import { isUUID } from 'class-validator';
@@ -1436,7 +1438,6 @@ export class AppImportExportService {
     branchId?: string,
     isTemplateApp = false
   ): Promise<{ newApp: App; resourceMapping: AppResourceMappings }> {
-    await this.assertLibraryImportAccess(user, appParamsObj);
     return await dbTransactionWrap(
       (manager: EntityManager) =>
         withLibraryImportLocks(manager, user.organizationId, appParamsObj, isGitApp, async () => {
@@ -1519,13 +1520,16 @@ export class AppImportExportService {
             );
           }
 
-          // Imported rows are provisional until remapping finishes. Validate/lock the final
-          // pins before this transaction may commit, including Git and clone imports.
-          const importedQueries = await manager.find(DataQuery, {
-            where: { appVersionId: In(Object.values(resourceMapping.appVersionMapping)) },
-            relations: { dataSource: true },
-          });
-          await lockLibraryPins(manager, user.organizationId, importedQueries);
+          // Imported rows are provisional until remapping finishes. Lock the final pins before this transaction may
+          // commit, including Git and clone imports. A pin to a library query that is not in this workspace is kept
+          // as-is: running it reports the missing query, and release/promote refuse it.
+          if (importHasLibraryContent(manager)) {
+            const importedQueries = await manager.find(DataQuery, {
+              where: { appVersionId: In(Object.values(resourceMapping.appVersionMapping)) },
+              relations: { dataSource: true },
+            });
+            await lockCarriedLibraryPins(manager, user.organizationId, importedQueries);
+          }
 
           // Update latest version as editing version
           const { importingAppVersions } = this.extractImportDataFromAppParams(appParams);
@@ -1553,24 +1557,21 @@ export class AppImportExportService {
     return false;
   }
 
-  // Import named snapshots under the recursive parent-lock plan, then remap exact consumer UUIDs.
-  // A conflicting name rejects the entire transaction; saved content and metadata remain immutable.
+  // Resource imports call this before writing ToolJet DB tables, which commit in their own transaction: a refusal the
+  // app import would hit later must come first, or the tables stay behind. CE imports no library content.
+  async assertImportAccess(user: User, bundle: unknown): Promise<void> {
+    return;
+  }
+
+  // CE has no library: apps that reference it still export and import (like Modules); the definitions stay behind and
+  // the references are kept as-is. EE bundles and imports the definitions when licensed.
   protected async collectLibraryQueriesForExport(
     manager: EntityManager,
     organizationId: string,
     consumers: DataQuery[],
     withLibraryQueries: boolean
   ): Promise<LibraryExportQuery[]> {
-    if (consumers.length) throw new NotFoundException('Query Library is unavailable');
     return [];
-  }
-  // Resource imports call this before writing to the separate ToolJet DB transaction.
-  async assertImportAccess(user: User, bundle: unknown): Promise<void> {
-    await this.assertLibraryImportAccess(user, bundle);
-  }
-
-  protected async assertLibraryImportAccess(user: User, bundle: unknown): Promise<void> {
-    if (hasLibraryContent(bundle)) throw new NotFoundException('Query Library is unavailable');
   }
 
   protected async importLibraryQueries(
@@ -1580,7 +1581,6 @@ export class AppImportExportService {
     resourceMapping: AppResourceMappings,
     tooljetDatabaseMapping: Record<string, { id: string }> = {}
   ): Promise<{ queries: Record<string, string>; versions: Record<string, string> }> {
-    if (exported.length) throw new NotFoundException('Query Library is unavailable');
     return { queries: {}, versions: {} };
   }
 
@@ -2421,13 +2421,14 @@ export class AppImportExportService {
       );
     }
 
-    // Direct Git pull callers bypass import(); their pins are already local UUIDs.
+    // Direct Git pull callers bypass import(). The library is not synced to git, so a pulled pin may name a library
+    // query this workspace does not have: it is kept as-is, never a reason to fail the pull.
     if (isGitApp || source === 'git') {
       const queries = await manager.find(DataQuery, {
         where: { appVersionId: In(appVersionIds) },
         relations: { dataSource: true },
       });
-      await lockLibraryPins(manager, user.organizationId, queries);
+      await lockCarriedLibraryPins(manager, user.organizationId, queries);
     }
 
     return appResourceMappings;

@@ -77,7 +77,6 @@ describe('explicit library references', () => {
     const manager = { findOne: jest.fn().mockResolvedValue(snapshot) };
     expect(await util.resolveLibraryReference(queryId, id, manager as never)).toEqual({ kind: 'saved', snapshot });
     expect(manager.findOne).toHaveBeenCalledWith(expect.anything(), { where: { id, libraryQueryId: queryId } });
-    expect(util.libraryVersionName(snapshot)).toBe('draft');
   });
   it('resolves the exact draft UUID without selecting another draft', async () => {
     const snapshot = { id, libraryQueryId: queryId, name: 'B', options: { code: 'B' } };

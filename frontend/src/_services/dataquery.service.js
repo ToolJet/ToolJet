@@ -124,8 +124,12 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode, 
   return fetch(url, requestOptions).then(handleResponse);
 }
 
+// The editor runs in the selected environment (with its access check); public/released apps use the viewer route.
 function runLibrary(queryId, { inputs } = {}, versionId, environmentId, signal) {
-  const url = `${config.apiUrl}/data-queries/${queryId}/run-library`;
+  const url =
+    versionId && environmentId && environmentId !== 'undefined'
+      ? `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/run-library/${environmentId}`
+      : `${config.apiUrl}/data-queries/${queryId}/run-library`;
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),

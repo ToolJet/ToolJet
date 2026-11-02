@@ -39,7 +39,12 @@ export class CreateLibraryQueryVersions1792500000000 implements MigrationInterfa
           { name: 'created_at', type: 'timestamp', default: 'now()' },
           { name: 'updated_at', type: 'timestamp', default: 'now()' },
         ],
-        uniques: [{ name: 'UQ_library_queries_workspace_name', columnNames: ['organization_id', 'name'] }],
+        uniques: [
+          { name: 'UQ_library_queries_workspace_name', columnNames: ['organization_id', 'name'] },
+          // Several NULLs are allowed: only imported queries carry a co_relation_id.
+          { name: 'UQ_library_queries_workspace_co_relation', columnNames: ['organization_id', 'co_relation_id'] },
+        ],
+        indices: [{ name: 'IDX_library_queries_folder_id', columnNames: ['folder_id'] }],
         foreignKeys: [
           {
             columnNames: ['organization_id'],
@@ -75,6 +80,8 @@ export class CreateLibraryQueryVersions1792500000000 implements MigrationInterfa
         uniques: [
           { name: 'UQ_library_query_versions_query_number', columnNames: ['library_query_id', 'version_number'] },
         ],
+        // Foreign keys get an index so a parent delete (ON DELETE SET NULL) does not scan every snapshot.
+        indices: [{ name: 'IDX_library_query_versions_data_source_id', columnNames: ['data_source_id'] }],
         foreignKeys: [
           {
             columnNames: ['library_query_id'],

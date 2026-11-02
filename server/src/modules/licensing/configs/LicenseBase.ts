@@ -124,7 +124,7 @@ export default class LicenseBase {
     this._features = licenseData?.features;
     this._ai = licenseData?.ai;
     this._modules = licenseData?.modules;
-    this._queryLibrary = licenseData.queryLibrary;
+    this._queryLibrary = licenseData?.queryLibrary;
     this._isModulesEnabled = licenseData?.modules?.enabled;
     this._permissions = licenseData?.permissions;
     this._app = licenseData?.app;

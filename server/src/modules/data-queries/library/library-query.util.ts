@@ -1,7 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { readFileSync } from 'fs';
 import * as ivm from 'isolated-vm';
-import { cloneDeep, isEqual } from 'lodash';
+import { cloneDeep } from 'lodash';
 import { getDynamicVariables, resolveCode } from 'lib/utils';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSource } from '@entities/data_source.entity';
@@ -34,12 +34,19 @@ export function parseLibraryReference(options: Record<string, unknown>): { id: s
   return { id: options.libraryQueryVersionId };
 }
 
+// A consumer's reference can outlive its target: imports, git pulls and deletes keep it as-is (only release/promote
+// refuse it). Builders and end users see these when such a query runs.
+export const LIBRARY_QUERY_MISSING =
+  "This query uses a library query that isn't in this workspace. Pick one from the library.";
+export const LIBRARY_VERSION_MISSING =
+  "This query uses a library query version that isn't in this workspace. Pick one from the library.";
+
 export async function resolveLibraryReference(
   queryId: string,
   id: string,
   manager: EntityManager
 ): Promise<{ kind: 'draft'; snapshot: LibraryQueryDraft } | { kind: 'saved'; snapshot: LibraryQueryVersion }> {
-  if (!isLibraryUuid(id)) throw new BadRequestException('Library query version not found');
+  if (!isLibraryUuid(id)) throw new BadRequestException(LIBRARY_VERSION_MISSING);
   const where = { id, libraryQueryId: queryId };
   const saved = await manager.findOne(LibraryQueryVersion, { where });
   if (saved) return { kind: 'saved', snapshot: saved };
@@ -48,16 +55,10 @@ export async function resolveLibraryReference(
   // Saving can commit its same-ID insert/soft-delete between the two reads.
   const savedDuringLookup = await manager.findOne(LibraryQueryVersion, { where });
   if (savedDuringLookup) return { kind: 'saved', snapshot: savedDuringLookup };
-  throw new NotFoundException('Library query version not found');
+  throw new NotFoundException(LIBRARY_VERSION_MISSING);
 }
 
-export const libraryVersionName = (version: { name: string }): string => version.name;
-
 type LibrarySnapshot = { kind: string; dataSourceId: string | null; options: unknown };
-
-// A release identical to the latest version is refused, so a release always changes something.
-export const isSameLibrarySnapshot = (a: LibrarySnapshot, b: LibrarySnapshot): boolean =>
-  a.kind === b.kind && (a.dataSourceId ?? null) === (b.dataSourceId ?? null) && isEqual(a.options, b.options);
 
 type LibraryInput = { name?: string; defaultValue?: unknown };
 
@@ -144,7 +145,7 @@ export function toLibraryCatalog(
       versions: own.map((version) => ({
         status: 'PUBLISHED',
         id: version.id,
-        name: libraryVersionName(version),
+        name: version.name,
         kind: version.kind,
         inputs: inputsOf(version.options),
         createdAt: version.createdAt,
@@ -229,11 +230,35 @@ export function resolveLibraryDefault(
 }
 
 // Read once per process. moment and lodash are UMD bundles: run in an isolate they attach `moment` / `_` to its global.
-let templateBundles: string[] | undefined;
-const loadTemplateBundles = (): string[] =>
-  (templateBundles ??= ['moment/min/moment.min.js', 'lodash/lodash.min.js'].map((path) =>
-    readFileSync(require.resolve(path), 'utf8')
-  ));
+// V8's compiled code is cached with them, so later isolates skip parsing and compiling ~600 KB of JavaScript.
+type TemplateBundle = { code: string; cachedData?: ivm.ExternalCopy<ArrayBuffer> };
+let templateBundles: TemplateBundle[] | undefined;
+const loadTemplateBundles = (): TemplateBundle[] =>
+  (templateBundles ??= ['moment/min/moment.min.js', 'lodash/lodash.min.js'].map((path) => ({
+    code: readFileSync(require.resolve(path), 'utf8'),
+  })));
+
+// A fresh isolate per run (runs never share state) with moment and lodash on its global.
+function createTemplateSandbox(): { isolate: ivm.Isolate; context: ivm.Context } {
+  const isolate = new ivm.Isolate({ memoryLimit: parseInt(process.env?.WORKFLOW_JS_MEMORY_LIMIT_MB) || 20 });
+  try {
+    const context = isolate.createContextSync();
+    for (const bundle of loadTemplateBundles()) {
+      // The typings omit the CachedDataResult that compile returns alongside the Script.
+      const script = (
+        bundle.cachedData
+          ? isolate.compileScriptSync(bundle.code, { cachedData: bundle.cachedData })
+          : isolate.compileScriptSync(bundle.code, { produceCachedData: true })
+      ) as ivm.Script & ivm.CachedDataResult;
+      if (!bundle.cachedData && script.cachedData) bundle.cachedData = script.cachedData;
+      script.runSync(context, { timeout: 5000 });
+    }
+    return { isolate, context };
+  } catch (error) {
+    if (!isolate.isDisposed) isolate.dispose();
+    throw error;
+  }
+}
 
 export function assertLibraryTarget({
   consumer,
@@ -246,7 +271,7 @@ export function assertLibraryTarget({
 }): void {
   if (consumer?.kind !== LIBRARY_KIND) throw new BadRequestException('Not a library query');
   if (!library || library.organizationId !== consumerApp.organizationId)
-    throw new NotFoundException('Library query not found');
+    throw new NotFoundException(LIBRARY_QUERY_MISSING);
 }
 
 function collectStrings(value: unknown, out: string[] = []): string[] {
@@ -276,9 +301,8 @@ export function buildLibraryVariableMap(
   scope: { input: Record<string, unknown> };
   variableMap: Record<string, unknown>;
 } {
-  const memoryLimit = parseInt(process.env?.WORKFLOW_JS_MEMORY_LIMIT_MB) || 20;
-  const isolate = new ivm.Isolate({ memoryLimit });
-  const context = isolate.createContextSync();
+  // Started on the first template only: most runs have none, and the sandbox is synchronous work on the request thread.
+  let sandbox: { isolate: ivm.Isolate; context: ivm.Context } | undefined;
   // resolveCode throws raw V8 errors (TypeError, ReferenceError, timeout, ...). Map them to a
   // client error that names the template, so a bad query template is a 400, not a 500.
   // V8 messages can quote a value (`"TOPSECRET" is not valid JSON`), so a resolved default is shown as its reference.
@@ -291,6 +315,7 @@ export function buildLibraryVariableMap(
       .reduce((masked, { reference, value }) => masked.split(value).join(reference), message);
   };
   const evaluate = (code: string, state: Record<string, unknown>, template: string) => {
+    const { isolate, context } = (sandbox ??= createTemplateSandbox());
     try {
       return resolveCode({ code, state, isolate, context, wrapInIIFE: false });
     } catch (error) {
@@ -318,8 +343,6 @@ export function buildLibraryVariableMap(
   };
 
   try {
-    // ponytail: lodash + moment are re-compiled into each run's isolate (~ms per run); cache compiled code via ivm cachedData if run latency matters
-    for (const bundle of loadTemplateBundles()) isolate.compileScriptSync(bundle).runSync(context, { timeout: 5000 });
     const { resolved: input, raw: rawInput } = resolveDeclared(options?.inputs, values?.inputs);
 
     const globals = { currentUser: currentUser ?? {} };
@@ -336,7 +359,7 @@ export function buildLibraryVariableMap(
     return { input, scope: { input: rawInput }, variableMap };
   } finally {
     // A memory-limit kill already disposes the isolate; disposing again would throw and mask the real error.
-    if (!isolate.isDisposed) isolate.dispose();
+    if (sandbox && !sandbox.isolate.isDisposed) sandbox.isolate.dispose();
   }
 }
 
@@ -421,8 +444,11 @@ export function toLibraryPins(rows: LibraryPinRow[]): LibraryPin[] {
 
 type LibraryGateBlock = { error: string; details: string } | null;
 
+// A missing pin (imported or pulled without its library query, or deleted) blocks like a draft pin.
 const draftPinSentence = (pin: LibraryPin) =>
-  `Library query "${pin.consumerQueryName}" is on the draft of "${pin.libraryQueryName}". Pin a saved version.`;
+  pin.status === 'missing'
+    ? `Library query "${pin.consumerQueryName}" uses a library query that isn't in this workspace. Pick one from the library.`
+    : `Library query "${pin.consumerQueryName}" is on the draft of "${pin.libraryQueryName}". Pin a saved version.`;
 
 // Wording copies checkModulesPromotableToEnvironment: one offender inline, several counted.
 function gateBlock(verb: 'Release' | 'Promote', sentences: Set<string>): LibraryGateBlock {

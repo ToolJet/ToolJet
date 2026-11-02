@@ -4,11 +4,14 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity({ name: 'library_query_drafts' })
+// Names are unique among live drafts only.
+@Index('IDX_library_query_drafts_live_name', ['libraryQueryId', 'name'], { unique: true, where: 'deleted_at IS NULL' })
 export class LibraryQueryDraft extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

@@ -63,12 +63,16 @@ describe('named library export', () => {
     ]);
     expect(result[0]).not.toHaveProperty('draft');
   });
-  it('rejects missing or sentinel pins instead of inventing a draft', async () => {
-    await expect(collectLibraryExport(manager(), id(50), [consumer('draft')])).rejects.toThrow();
-    await expect(collectLibraryExport(manager(), id(50), [consumer(undefined)])).rejects.toThrow();
-    await expect(collectLibraryExport(manager(), id(50), [consumer(id(99))])).rejects.toThrow(
-      'Library query version not found'
-    );
+  // The app still exports; the reference is carried as-is (like import and git pull) with nothing invented for it.
+  it.each([
+    ['a sentinel', 'draft'],
+    ['no', undefined],
+    ['a deleted', id(99)],
+  ])('bundles nothing for %s pin instead of failing or inventing a draft', async (_label, pin) => {
+    const result = await collectLibraryExport(manager(), id(50), [consumer(pin)]);
+    const snapshots = result.flatMap((query) => [...query.drafts, ...query.versions]).map((row) => row.id);
+    expect(snapshots).not.toContain(pin);
+    expect(result.flatMap((query) => query.drafts)).toEqual([]);
   });
   it('includes the live saved parent closure, preserving distinct same-content identities', async () => {
     const saved = [

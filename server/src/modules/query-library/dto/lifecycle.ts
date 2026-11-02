@@ -1,6 +1,7 @@
 import { Exclude, Expose, Type, plainToInstance } from 'class-transformer';
 import { LibraryVersionView, LibraryQueryVersionsView } from '@modules/data-queries/library/library-lifecycle.util';
 import { IsString, IsNotEmpty, MaxLength, Matches, IsUUID, IsObject, ValidateIf } from 'class-validator';
+import { LIBRARY_OPTIONS_MAX_LENGTH, MaxJsonLength } from './index';
 
 export class SaveLibraryDraftDto {
   @IsString()
@@ -36,6 +37,7 @@ export class UpdateLibraryDraftDto {
   description?: string;
   @ValidateIf((_object, value) => value !== undefined)
   @IsObject()
+  @MaxJsonLength(LIBRARY_OPTIONS_MAX_LENGTH)
   options?: Record<string, unknown>;
 }
 
