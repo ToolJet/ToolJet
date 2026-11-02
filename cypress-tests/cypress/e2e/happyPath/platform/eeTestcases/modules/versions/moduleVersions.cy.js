@@ -15,8 +15,12 @@ describe("Modules — Versions", () => {
   const testId = Date.now();
   const wsName = `modules-versions-${testId}`;
   const wsSlug = wsName;
-  const moduleName = `QA Module ${testId}`;
-  const branchModuleName = `QA Branch ${testId}`;
+  // Module names are built inside each `it` (fresh per Cypress retry): a name
+  // fixed at describe scope makes retries 2 and 3 fail with "app name is
+  // already taken" and hides the first attempt's real failure.
+  // Same length as the old fixed name: the editor header truncates long names
+  // and can cover the autosave indicator that waitForAutoSave asserts on.
+  const uniqueName = (prefix) => `${prefix} ${Date.now()}`;
 
   let workspaceId;
 
@@ -40,7 +44,7 @@ describe("Modules — Versions", () => {
   });
 
   it("creates a draft version, publishes it, and switches between versions", () => {
-    createModuleViaAPI(moduleName);
+    createModuleViaAPI(uniqueName("QA Module"));
 
     // Empty version name is rejected on save.
     cy.get(moduleSelectors.versionSwitcherButton).click();
@@ -111,7 +115,7 @@ describe("Modules — Versions", () => {
   });
 
   it("keeps draft branches isolated — a new draft inherits from the version you pick, not whatever's latest", () => {
-    createModuleViaAPI(branchModuleName);
+    createModuleViaAPI(uniqueName("QA Branch"));
 
     // v1: drop one component, then save/lock it.
     dropModuleComponent("Text",500, 100); // -> text1
