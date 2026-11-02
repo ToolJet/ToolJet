@@ -240,6 +240,49 @@ describe('ButtonGroup', () => {
   });
 });
 
+describe('ButtonGroup: Variant and Loading', () => {
+  manifestOrSkip('Variant', () => {
+    test("Variant is the standard dropdown, as Button's is: four labelled segments overflow the inspector panel", () => {
+      // Break this catches: Variant drawn as a four-segment switch, wider than the inspector panel.
+      expect(prop('ButtonGroup', 'variant').inspector).toBeUndefined();
+      expect(prop('ButtonGroup', 'variant').enumValues).toEqual(['outline', 'secondary', 'default', 'ghost']);
+    });
+  });
+
+  test('while loading, the buttons are disabled and a click does nothing', async () => {
+    // Break this catches: a loading group that shows a spinner but still selects and fires onClick / onChange.
+    const g = await mount('ButtonGroup', {}, { loading: true });
+    const buttons = Array.from(g.root().querySelectorAll('.n2-group > button'));
+
+    expect(buttons).toHaveLength(3);
+    expect(buttons.every((b) => b.disabled)).toBe(true);
+    expect(g.root().querySelector('.n2-spinner')).not.toBeNull();
+    fireEvent.click(buttonNamed(g.root(), 'Day'));
+    expect(g.events).toEqual([]);
+    expect(pressed(g.root())).toEqual(['Week']);
+  });
+
+  test('when loading ends, the buttons work again', async () => {
+    // Break this catches: the loading state sticking, leaving the group disabled after it ends.
+    const g = await mount('ButtonGroup', {}, { loading: true });
+    await g.update({}, { loading: false });
+    const buttons = Array.from(g.root().querySelectorAll('.n2-group > button'));
+
+    expect(buttons.some((b) => b.disabled)).toBe(false);
+    fireEvent.click(buttonNamed(g.root(), 'Day'));
+    await waitFor(() => expect(g.events.map((e) => e.event)).toEqual(['onClick', 'onChange']));
+    expect(pressed(g.root())).toEqual(['Day']);
+  });
+
+  test('loading and disabled together keep the buttons disabled when loading ends', async () => {
+    // Break this catches: loading ending re-enabling a group that is also disabled.
+    const g = await mount('ButtonGroup', {}, { loading: true, disabled: true });
+    await g.update({}, { loading: false, disabled: true });
+
+    expect(Array.from(g.root().querySelectorAll('.n2-group > button')).every((b) => b.disabled)).toBe(true);
+  });
+});
+
 describe('ToggleGroup: actions with Allow multiple', () => {
   test('setSelected takes a list or one value, setValue fires onChange, clear empties', async () => {
     const t = await mount('ToggleGroup', { multiple: true });

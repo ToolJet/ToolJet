@@ -109,4 +109,26 @@ describe('LibraryComponent drop-time identity stamping', () => {
     expect(styles.boxShadow).toBeDefined();
     expect(properties.accentColor).toBeUndefined();
   });
+
+  // A pack component is named after its own name. The widget registry has native widgets under some of the same
+  // component names with a different registry name (ButtonGroup is ButtonGroupLegacy), which named it buttongrouplegacy1.
+  it.each([
+    ['ButtonGroup', 'buttongroup1'],
+    ['Modal', 'modal1'],
+    ['TextArea', 'textarea1'],
+    ['Divider', 'divider1'],
+  ])(
+    '[PackComponent-NAME-001] names a dropped pack %s %s, not after the native widget it shares a name with',
+    (componentName, name) => {
+      // Break this catches: the pack component's name being looked up in the native widget registry, so it takes that
+      // widget's name (buttongrouplegacy1, textarea1 for TextArea, horizontaldivider1).
+      const newComponent = addNewWidgetToTheEditor('PackComponent', 'desktop', realCanvas, 'canvas', undefined, {
+        pack: 'shadcn',
+        componentName,
+        props: [],
+      });
+
+      expect(newComponent.name).toBe(name);
+    }
+  );
 });
