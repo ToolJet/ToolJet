@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event';
 import { AppBuilderTestSession, defineAppBuilderScenario } from '@/test/app-builder';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { TreeSelectSchemaField } from '../components/TreeSelectSchemaField';
+import useStore from '@/AppBuilder/_stores/store';
 
 const scenario = defineAppBuilderScenario({
   id: 'treeselect-schema-field',
@@ -26,14 +27,14 @@ const scenario = defineAppBuilderScenario({
 
 const SAVED = "{{[{ label: 'One', value: '1' }, { label: 'Two', value: 2 }]}}";
 
-function Field({ paramUpdated }) {
+function Field({ paramUpdated, saved = SAVED }) {
   const component = {
     id: 'tree1',
     component: {
       name: 'treeselect1',
       component: 'TreeSelect',
       properties: {},
-      definition: { properties: { advanced: { value: '{{true}}' }, data: { value: SAVED } } },
+      definition: { properties: { advanced: { value: '{{true}}' }, data: { value: saved } } },
     },
   };
   return (
@@ -129,5 +130,99 @@ describe('TreeSelect Schema field: data that crashed the widget is refused', () 
     await waitFor(() => expect(valueSaves(paramUpdated)).toHaveLength(1));
     expect(valueSaves(paramUpdated)[0][2]).toBe(good);
     expect(logs()).toEqual([]);
+  });
+});
+
+describe('TreeSelect Schema field: bound data is saved with a warning (D-12)', () => {
+  let session;
+  const logs = () => session.store.read((state) => state.debugger.logs).filter((log) => log.componentId === 'tree1');
+
+  beforeEach(() => {
+    session = new AppBuilderTestSession({ scenario });
+  });
+
+  test('[TreeSelect-INSP-004] a binding to data with values equal as text is warned under the field and saved', async () => {
+    // Break this catches: refusing a binding because of the data loaded now, so the save depends on whether a query ran.
+    useStore.getState().setVariable('treeData', [
+      { label: 'One', value: '1' },
+      { label: 'Uno', value: 1 },
+    ]);
+    const paramUpdated = jest.fn();
+    session.render(<Field paramUpdated={paramUpdated} />);
+    await waitFor(() => expect(surface()).toHaveTextContent(SAVED));
+
+    const bound = '{{variables.treeData}}';
+    await replaceSchema(bound);
+    await waitFor(() =>
+      expect(fieldError()).toHaveTextContent(
+        'Duplicate option value "1" is used by options: "One", "Uno". Option values must be unique.'
+      )
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'elsewhere' }));
+
+    await waitFor(() => expect(valueSaves(paramUpdated)).toHaveLength(1));
+    expect(valueSaves(paramUpdated)[0][2]).toBe(bound);
+    expect(surface()).toHaveTextContent(bound);
+    expect(logs()).toEqual([]);
+  });
+
+  test('[TreeSelect-INSP-004] a binding to data with an object label is saved', async () => {
+    // Break this catches: the label check refusing bound data that the canvas renders as text.
+    useStore.getState().setVariable('treeData', [{ label: { x: 1 }, value: 'a' }]);
+    const paramUpdated = jest.fn();
+    session.render(<Field paramUpdated={paramUpdated} />);
+    await waitFor(() => expect(surface()).toHaveTextContent(SAVED));
+
+    await replaceSchema('{{variables.treeData}}');
+    await waitFor(() =>
+      expect(fieldError()).toHaveTextContent('Option label of "a" must be text, a number, or a boolean.')
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'elsewhere' }));
+
+    await waitFor(() => expect(valueSaves(paramUpdated)).toHaveLength(1));
+    expect(valueSaves(paramUpdated)[0][2]).toBe('{{variables.treeData}}');
+    expect(logs()).toEqual([]);
+  });
+});
+
+describe('TreeSelect Schema field: a saved binding with bad data stays flagged (D-13)', () => {
+  let session;
+  const input = () => document.querySelector('.codehinter-input');
+
+  beforeEach(() => {
+    session = new AppBuilderTestSession({ scenario });
+  });
+
+  test('[TreeSelect-INSP-006] a saved binding whose data has values equal as text shows the error state without typing', async () => {
+    // Break this catches: the builder losing every inspector signal once the field loses focus.
+    useStore.getState().setVariable('treeData', [
+      { label: 'One', value: '1' },
+      { label: 'Uno', value: 1 },
+    ]);
+    session.render(<Field paramUpdated={jest.fn()} saved="{{variables.treeData}}" />);
+
+    await waitFor(() => expect(input()).toHaveClass('border-danger'));
+    expect(fieldError()).toBeNull();
+
+    await userEvent.click(surface());
+    expect(
+      await screen.findByText(
+        'Duplicate option value "1" is used by options: "One", "Uno". Option values must be unique.',
+        { exact: false }
+      )
+    ).toBeInTheDocument();
+  });
+
+  test('[TreeSelect-INSP-006] a saved binding whose data is valid shows no error state', async () => {
+    // Break this catches: flagging every binding regardless of its data.
+    useStore.getState().setVariable('treeData', [
+      { label: 'One', value: '1' },
+      { label: 'Two', value: 2 },
+    ]);
+    session.render(<Field paramUpdated={jest.fn()} saved="{{variables.treeData}}" />);
+
+    await waitFor(() => expect(surface()).toHaveTextContent('{{variables.treeData}}'));
+    expect(input()).not.toHaveClass('border-danger');
   });
 });

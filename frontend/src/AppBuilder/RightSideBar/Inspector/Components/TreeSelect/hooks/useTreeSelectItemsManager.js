@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { objectLabelMessage, logOptionProblem } from '@/AppBuilder/Widgets/TreeSelect/optionProblems';
-import { validateOptionValue, validateOptionLabel, duplicateValueLogMessage } from './treeSelectOptionValidation';
+import {
+  validateOptionValue,
+  validateOptionLabel,
+  duplicateValueLogMessage,
+  isOptionEditRefused,
+} from './treeSelectOptionValidation';
 
 export const useTreeSelectItemsManager = (component, paramUpdated) => {
   const [treeItems, setTreeItems] = useState([]);
@@ -84,8 +89,7 @@ export const useTreeSelectItemsManager = (component, paramUpdated) => {
   // Event handlers
   // Returns false when the edit is refused, so the field can snap back to the stored value.
   const handleItemChange = (propertyPath, value, itemValue, parentValue = null) => {
-    const [isValid] = validateItemField(propertyPath, value, itemValue);
-    if (!isValid) {
+    if (isOptionEditRefused(treeItems, propertyPath, value, itemValue, getResolvedValue)) {
       const isValue = propertyPath === 'value';
       logOptionProblem({
         componentId: component?.id,

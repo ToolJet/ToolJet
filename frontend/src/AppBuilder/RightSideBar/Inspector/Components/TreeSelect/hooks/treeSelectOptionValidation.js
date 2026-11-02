@@ -6,6 +6,11 @@ const isPlainObject = (v) => v !== null && typeof v === 'object' && !Array.isArr
 const flatten = (items = []) =>
   items.flatMap((item) => (item && typeof item === 'object' ? [item, ...flatten(item.children)] : []));
 
+// Text that reads app state resolves to whatever is loaded now; the canvas reports its problems at runtime (D-12).
+const APP_STATE_REFERENCE =
+  /\{\{[\s\S]*?\b(queries|components|variables|page|globals|constants|secrets|parameters|moduleInput|input)\b[\s\S]*?\}\}/;
+export const readsAppState = (text) => typeof text === 'string' && APP_STATE_REFERENCE.test(text);
+
 const labelText = (item, resolve) => String(getSafeRenderableValue(resolve(item.label)));
 
 // Text equality is how the tree library keys its nodes, so '1' and {{1}} collide there.
@@ -26,6 +31,14 @@ export const validateOptionValue = (items, value, itemValue, resolve) => {
 // Only a plain object crashed the tree before; arrays, numbers and empty labels always rendered.
 export const validateOptionLabel = (value, resolve) =>
   isPlainObject(resolve(value)) ? [false, 'Option label must be text, a number, or a boolean.'] : [true, null];
+
+// Refused only when the clash is fixed in the typed text itself, never because of data loaded now.
+export const isOptionEditRefused = (items, propertyPath, value, itemValue, resolve) => {
+  if (readsAppState(value)) return false;
+  if (propertyPath === 'label') return !validateOptionLabel(value, resolve)[0];
+  if (propertyPath !== 'value') return false;
+  return findOptionsWithSameValue(items, value, itemValue, resolve).some((other) => !readsAppState(other.value));
+};
 
 export const duplicateValueLogMessage = (items, value, itemValue, resolve) => {
   const current = flatten(items).find((item) => item.value === itemValue);

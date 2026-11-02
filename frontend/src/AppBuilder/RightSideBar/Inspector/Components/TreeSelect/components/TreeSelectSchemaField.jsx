@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { logOptionProblem } from '@/AppBuilder/Widgets/TreeSelect/optionProblems';
 import { Code } from '../../../Elements/Code';
-import { findSchemaProblems } from '../hooks/treeSelectOptionValidation';
+import { validateComponentProperty } from '@/AppBuilder/CodeEditor/utils';
+import { findSchemaProblems, readsAppState } from '../hooks/treeSelectOptionValidation';
 
 export const TreeSelectSchemaField = ({ component, componentMeta, paramUpdated, dataQueries, darkMode }) => {
   const param = 'data';
@@ -16,6 +17,17 @@ export const TreeSelectSchemaField = ({ component, componentMeta, paramUpdated, 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const draftProblems = useMemo(() => (draft === undefined ? [] : problemsFor(draft)), [draft]);
 
+  // Keeps a saved binding's bad data visible after blur (D-13); stable, since a new function resets the editor text.
+  const validateSchema = useCallback(
+    (resolved) => {
+      const [isType, typeErrors] = validateComponentProperty(resolved, componentMeta.properties?.[param]?.validation);
+      if (!isType) return [false, typeErrors];
+      const problems = findSchemaProblems(resolved, getResolvedValue);
+      return [problems.length === 0, problems.join(' ')];
+    },
+    [componentMeta, getResolvedValue]
+  );
+
   const logRefusal = (message) =>
     logOptionProblem({ componentId: component.id, componentName: component.component.name, field: 'Schema', message });
 
@@ -23,7 +35,7 @@ export const TreeSelectSchemaField = ({ component, componentMeta, paramUpdated, 
   const handleChange = (paramArg, attr, value, paramType) => {
     if (attr === 'value') {
       setDraft(undefined);
-      const problems = problemsFor(value);
+      const problems = readsAppState(value) ? [] : problemsFor(value);
       if (problems.length > 0) {
         problems.forEach(logRefusal);
         setResetKey((key) => key + 1);
@@ -42,6 +54,7 @@ export const TreeSelectSchemaField = ({ component, componentMeta, paramUpdated, 
         dataQueries={dataQueries}
         onChange={handleChange}
         onInputChange={setDraft}
+        validationFn={validateSchema}
         paramType="properties"
         componentMeta={componentMeta}
         darkMode={darkMode}

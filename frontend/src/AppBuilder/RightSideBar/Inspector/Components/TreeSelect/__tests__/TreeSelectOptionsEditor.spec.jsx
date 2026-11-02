@@ -10,6 +10,7 @@ import userEvent from '@testing-library/user-event';
 import { AppBuilderTestSession, defineAppBuilderScenario } from '@/test/app-builder';
 import TreeSelectOptionsList from '../components/TreeSelectOptionsList';
 import { useTreeSelectItemsManager } from '../hooks/useTreeSelectItemsManager';
+import useStore from '@/AppBuilder/_stores/store';
 
 const scenario = defineAppBuilderScenario({
   id: 'treeselect-options-editor',
@@ -136,5 +137,69 @@ describe('TreeSelect options editor: bad values are refused', () => {
 
     expect(await screen.findByText('Two')).toBeInTheDocument();
     expect(screen.getByText('[object Object]')).toBeInTheDocument();
+  });
+});
+
+describe('TreeSelect options editor: bound values are saved with a warning (D-12)', () => {
+  let session;
+  const logs = () => session.store.read((state) => state.debugger.logs).filter((log) => log.componentId === 'tree1');
+
+  beforeEach(() => {
+    session = new AppBuilderTestSession({ scenario });
+  });
+
+  test('[TreeSelect-INSP-005] a bound value equal as text to another option is warned and saved', async () => {
+    // Break this catches: refusing a binding because of the data loaded now.
+    useStore.getState().setVariable('dup', 1);
+    const paramUpdated = jest.fn();
+    session.render(<Editor options={[option('One', '1'), option('Two', '2')]} paramUpdated={paramUpdated} />);
+
+    await userEvent.click(await screen.findByText('Two'));
+    await retype('value', '{{{{variables.dup');
+    expect(editorText('value')).toBe('{{variables.dup}}');
+    expect(within(field('value')).getByText(/Option value must be unique\./)).toBeInTheDocument();
+
+    await userEvent.click(popoverTitle());
+
+    await waitFor(() => expect(paramUpdated).toHaveBeenCalledTimes(1));
+    expect(paramUpdated.mock.calls[0][2].map((o) => o.value)).toEqual(['1', '{{variables.dup}}']);
+    expect(logs()).toEqual([]);
+  });
+
+  test('[TreeSelect-INSP-005] a bound label that resolves to an object is warned and saved', async () => {
+    // Break this catches: the label check refusing a binding the canvas renders as text.
+    useStore.getState().setVariable('obj', { x: 1 });
+    const paramUpdated = jest.fn();
+    session.render(<Editor options={[option('One', '1'), option('Two', '2')]} paramUpdated={paramUpdated} />);
+
+    await userEvent.click(await screen.findByText('Two'));
+    await retype('label', '{{{{variables.obj');
+    expect(editorText('label')).toBe('{{variables.obj}}');
+    expect(within(field('label')).getByText('Option label must be text, a number, or a boolean.')).toBeInTheDocument();
+
+    await userEvent.click(popoverTitle());
+
+    await waitFor(() => expect(paramUpdated).toHaveBeenCalledTimes(1));
+    expect(paramUpdated.mock.calls[0][2].map((o) => o.label)).toEqual(['One', '{{variables.obj}}']);
+    expect(logs()).toEqual([]);
+  });
+
+  test("[TreeSelect-INSP-005] a value equal as text to another option's bound value is warned and saved", async () => {
+    // Break this catches: refusing a literal because another option's binding currently resolves to it.
+    useStore.getState().setVariable('dup', 1);
+    const paramUpdated = jest.fn();
+    session.render(
+      <Editor options={[option('One', '{{variables.dup}}'), option('Two', '2')]} paramUpdated={paramUpdated} />
+    );
+
+    await userEvent.click(await screen.findByText('Two'));
+    await retype('value', '1');
+    expect(within(field('value')).getByText(/Option value must be unique\./)).toBeInTheDocument();
+
+    await userEvent.click(popoverTitle());
+
+    await waitFor(() => expect(paramUpdated).toHaveBeenCalledTimes(1));
+    expect(paramUpdated.mock.calls[0][2].map((o) => o.value)).toEqual(['{{variables.dup}}', '1']);
+    expect(logs()).toEqual([]);
   });
 });
