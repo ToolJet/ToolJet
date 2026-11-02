@@ -1,4 +1,4 @@
-import { ActionTypes, getEventActionId, getEventActionChanges } from '../ActionTypes';
+import { ActionTypes, getEventActionId, getEventActionChanges, normalizeEventAction } from '../ActionTypes';
 
 describe('Refresh Query Cache event selection', () => {
   it('offers refresh alongside Run query', () => {
@@ -26,5 +26,23 @@ describe('Refresh Query Cache event selection', () => {
 
   it('does not relabel other actions carrying a legacy refresh flag', () => {
     expect(getEventActionId({ actionId: 'reset-query', refreshCache: true })).toBe('reset-query');
+  });
+
+  // Break this catches: a Table button labelled "Refresh Query Cache" reaching executeAction with an id it has no case for.
+  it('turns the alias id into a refreshing query run', () => {
+    expect(normalizeEventAction({ actionId: 'refresh-query-cache', queryId: 'q1', parameters: { a: 1 } })).toEqual({
+      actionId: 'run-query',
+      refreshCache: true,
+      queryId: 'q1',
+      parameters: { a: 1 },
+    });
+  });
+
+  it('leaves every other event untouched', () => {
+    const run = { actionId: 'run-query', queryId: 'q1' };
+    const alert = { actionId: 'show-alert', message: 'hi' };
+    expect(normalizeEventAction(run)).toBe(run);
+    expect(normalizeEventAction(alert)).toBe(alert);
+    expect(normalizeEventAction(undefined)).toBeUndefined();
   });
 });

@@ -12,6 +12,7 @@ import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
 import { useCallback } from 'react';
 import moment from 'moment';
+import { normalizeEventAction } from '@/AppBuilder/RightSideBar/Inspector/ActionTypes';
 
 // To unsubscribe from the changes when no longer needed
 // unsubscribe();
@@ -562,7 +563,8 @@ export const createEventsSlice = (set, get) => ({
     },
     executeAction: debounce(
       (eventObj, mode, customVariables = {}, moduleId = 'canvas', sourceSubContainerIndex = null) => {
-        const { event = eventObj } = eventObj;
+        const { event: rawEvent = eventObj } = eventObj;
+        const event = normalizeEventAction(rawEvent);
         const { getExposedValueOfComponent, getResolvedValue } = get();
 
         if (event?.disabled) {

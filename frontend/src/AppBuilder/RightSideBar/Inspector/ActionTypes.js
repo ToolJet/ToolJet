@@ -184,3 +184,7 @@ export const getEventActionChanges = (actionId) =>
   actionId === 'refresh-query-cache'
     ? { actionId: 'run-query', refreshCache: true }
     : { actionId, refreshCache: undefined };
+
+// Events built outside the Event Manager (e.g. Table button labels) can carry the alias id itself.
+export const normalizeEventAction = (event) =>
+  event?.actionId === 'refresh-query-cache' ? { ...event, ...getEventActionChanges(event.actionId) } : event;
