@@ -266,18 +266,30 @@ describe('CodeEditor widget', () => {
       await expectValue('');
     });
 
-    test('[CodeEditor-CSA-003] setValue ignores a non-string argument without wedging the handle', async () => {
-      // Break this catches: dropping the typeof guard renders '[object Object]' or '42' as code; leaving
-      // the handle broken afterwards would strand every later call from the same query.
+    test('[CodeEditor-CSA-003] setValue coerces a non-string argument the way the JSON Editor does', async () => {
+      // Break this catches: the old `typeof value === 'string'` guard, which dropped anything that was
+      // not text on the floor — a query returning a number or an object set nothing and reported
+      // nothing, so the editor silently kept its previous contents. The rule is the sibling widget's,
+      // deliberately: an object becomes pretty JSON, everything else goes through String().
       const container = await mounted(codeEditor.render().container);
 
       await codeEditor.act('setValue', 42);
-      await codeEditor.act('setValue', { code: 'x' });
-      await codeEditor.act('setValue', null);
-      await settleDebounce();
+      expect(documentText(container)).toBe('42');
+      await expectValue('42');
 
-      expect(documentText(container)).toBe('');
-      expect(codeEditor.exposed()?.value).toBe('');
+      // Asserted on the published value, not the DOM: CodeMirror renders each line in its own
+      // element, so reading textContent silently drops the newlines the pretty-printing adds.
+      await codeEditor.act('setValue', { code: 'x' });
+      await expectValue(JSON.stringify({ code: 'x' }, null, 2));
+      expect(documentText(container)).toContain('"code": "x"');
+
+      // Mirroring the sibling means null renders as the text `null`. Clearing is `setValue('')`,
+      // which CodeEditor-CSA-002 covers.
+      await codeEditor.act('setValue', null);
+      expect(documentText(container)).toBe('null');
+
+      await codeEditor.act('setValue', true);
+      expect(documentText(container)).toBe('true');
 
       await codeEditor.act('setValue', 'valid again');
       expect(documentText(container)).toBe('valid again');

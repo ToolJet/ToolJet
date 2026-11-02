@@ -13,11 +13,9 @@ import { debounce } from 'lodash';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import './codeEditor.scss';
 
-// CodeMirror renders tooltips inside the editor unless told otherwise, and this widget's scroll
-// container is `overflow: auto` with a max height — so the autocomplete list was cropped at the
-// editor's edge and put a scrollbar on the editor instead of floating over the canvas. Parenting
-// to the body lets it overflow, the same way the platform's own editors already do
-// (SingleLineCodeEditor, MultiLineCodeEditor).
+// CodeMirror renders tooltips inside the editor unless told otherwise,
+// and this widget's scroll container is `overflow: auto` with a max height
+// so the autocomplete list was cropped at the editor's edge and put a scrollbar on the editor
 const tooltipExtension = tooltips({ parent: document.body });
 
 const langSupport = Object.freeze({
@@ -104,8 +102,27 @@ const CodeEditor = ({
   }, [height, isDynamicHeightEnabled]);
 
   useEffect(() => {
-    const _setValue = (value) => {
-      if (typeof value === 'string') {
+    // Mirrors the JSON Editor's rule so the two widgets coerce identically: an object becomes
+    // pretty-printed JSON, anything else goes through String(). The previous `typeof value ===
+    // 'string'` guard dropped everything else silently, so a query returning a number or an object
+    // set nothing and said nothing. Note this renders `null` as the text `null`; clearing the
+    // editor is `setValue('')`.
+    const asText = (value) => {
+      if (typeof value === 'object' && value !== null) {
+        try {
+          return JSON.stringify(value, null, 2);
+        } catch {
+          // Circular references, BigInt and throwing getters all make JSON.stringify throw. Falling
+          // back keeps a bad argument from taking the widget down mid-render.
+          return String(value);
+        }
+      }
+      return String(value);
+    };
+
+    const _setValue = (rawValue) => {
+      const value = asText(rawValue);
+      {
         // Publish NOW rather than through the typing debounce. A single click can run several
         // handlers back to back — set this editor, then read `components.<id>.value` into a
         // variable — and a debounced write would not have landed by the time the next handler
