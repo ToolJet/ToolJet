@@ -172,8 +172,8 @@ describe('Toggle Switch — stylesFx facet', { testIsolation: false }, () => {
         openAccordion('switch', []);
 
         // the control renders...
-        cy.get(commonWidgetSelector.parameterLabel('Padding')).should('exist');
+        cy.get(commonWidgetSelector.parameterLabel('Margin')).should('exist');
         // ...but exposes no fx button — source: toggleswitchv2.js:161 (isFxNotRequired: true)
-        cy.get(commonWidgetSelector.parameterFxButton('Padding')).should('not.exist');
+        cy.get(commonWidgetSelector.parameterFxButton('Margin')).should('not.exist');
     });
 });
