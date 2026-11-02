@@ -13,6 +13,7 @@ export function TreeSelectSortableTree({
   onReorder,
   onDeleteItem,
   onItemChange,
+  validateItemField,
   onAddNestedItem,
   getResolvedValue,
   collapsible = true,
@@ -31,6 +32,7 @@ export function TreeSelectSortableTree({
         item={item}
         onDeleteItem={onDeleteItem}
         onItemChange={onItemChange}
+        validateItemField={validateItemField}
         onAddNestedItem={onAddNestedItem}
         getResolvedValue={getResolvedValue}
         activePopover={activePopover}

@@ -335,6 +335,8 @@ function walkSpecs(frontendRoot) {
   visit('src/AppBuilder/RightSideBar/Inspector/Components/Navigation/hooks/__tests__', (rel) =>
     /\.(js|jsx)$/.test(rel)
   );
+  // TreeSelect's contract (D-11) covers its options editor and Schema field, which refuse data the tree cannot render.
+  visit('src/AppBuilder/RightSideBar/Inspector/Components/TreeSelect/__tests__', (rel) => /\.spec\.[jt]sx?$/.test(rel));
   return specs;
 }
 
