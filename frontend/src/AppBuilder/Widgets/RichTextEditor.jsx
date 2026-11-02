@@ -109,6 +109,7 @@ export default function RichTextEditor({
         setIsVisible={setIsVisible}
         setIsLoading={setIsLoading}
         isDynamicHeightEnabled={isDynamicHeightEnabled}
+        isCanvasEditMode={currentMode === 'edit'}
       ></DraftEditor>
     </div>
   );
