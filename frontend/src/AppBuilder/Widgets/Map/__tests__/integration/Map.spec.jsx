@@ -11,6 +11,7 @@ import {
   store,
   MODULE_ID,
   setVariableOn,
+  drain,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 // Engineering scenarios for the Map widget.
@@ -60,6 +61,79 @@ const fakeGmap = () => ({
   }),
   center: { toJSON: () => ({ lat: 42, lng: -72 }) },
 });
+
+// An SDK-faithful map instance: bounds follow the live position (+/-1 degree), a
+// user gesture moves it via moveByUser(), and setCenter (what the lib calls for a
+// changed `center` prop) moves it and then settles with `idle` - even when the
+// coordinates did not change (live-verified 2026-10-30). With asyncSettle the
+// settle lands on a later tick, as in the real SDK, so a feedback loop shows up as
+// a growing count instead of a hung act(); dispose() stops a leaked loop.
+const sdkMap = (start, { asyncSettle = false } = {}) => {
+  let position = { ...start };
+  let disposed = false;
+  const settle = () => {
+    if (!disposed) mapProps().onIdle?.();
+  };
+  return {
+    getBounds: () => ({
+      getNorthEast: () => ({ toJSON: () => ({ lat: position.lat + 1, lng: position.lng + 1 }) }),
+      getSouthWest: () => ({ toJSON: () => ({ lat: position.lat - 1, lng: position.lng - 1 }) }),
+    }),
+    center: { toJSON: () => ({ ...position }) },
+    setCenter: (next) => {
+      position = { lat: next.lat, lng: next.lng };
+      if (asyncSettle) setTimeout(settle, 0);
+      else settle();
+    },
+    moveByUser: (next) => {
+      position = { ...next };
+    },
+    dispose: () => {
+      disposed = true;
+    },
+  };
+};
+
+// A second onBoundsChange handler row, running after the counter (index 0).
+const alsoOnBoundsChange = (action) => ({
+  id: 'evt-onBoundsChange-handler',
+  index: 1,
+  sourceId: ID,
+  name: 'evt-onBoundsChange-handler',
+  target: 'component',
+  event: { eventId: 'onBoundsChange', ...action },
+});
+
+const setLocationAction = (lat, lng) => ({
+  actionId: 'control-component',
+  componentId: ID,
+  componentSpecificActionHandle: 'setLocation',
+  componentSpecificActionParams: [
+    { handle: 'lat', value: lat },
+    { handle: 'lng', value: lng },
+  ],
+});
+
+// Load + initial settle, ONE user drag + its settle, then a bounded number of SDK
+// ticks for any feedback loop to show itself (a loop adds about one event a tick).
+const dragOnceAndSettle = async (gmap, to, ticks = 10) => {
+  await widget.session.store.act(async () => {
+    mapProps().onLoad(gmap);
+  });
+  await widget.session.store.act(async () => {
+    mapProps().onIdle(); // initial load settle
+  });
+  gmap.moveByUser(to);
+  await widget.session.store.act(async () => {
+    mapProps().onIdle(); // the drag's settle
+  });
+  for (let tick = 0; tick < ticks; tick += 1) {
+    await widget.session.store.act(async () => {
+      await drain();
+    });
+  }
+  gmap.dispose();
+};
 
 let consoleSpy;
 let originalPublicConfig;
@@ -269,28 +343,18 @@ describe('Map widget', () => {
     expect(widget.variables().onBoundsChangeCount).toBeUndefined();
   });
 
-  test('[Map-BOUNDS-003] one settled drag/zoom/pan fires onBoundsChange once; an app recenter still fires once', async () => {
-    // Break this catches: handleIdle writing the map's OWN center back into the
-    // GoogleMap `center` prop (bug-fix 2026-10-30, QA: On bounds change fired twice
-    // for every drag, zoom or keyboard pan). The lib re-applies the new center via
-    // map.setCenter and the real SDK settles AGAIN (a second idle) even for unchanged
-    // coordinates - live: drag, wheel zoom and arrow pan each fired 2 events. The
-    // setLocation half catches a fix that swallows the idle after an app recenter.
+  test('[Map-BOUNDS-003] each settled user drag/zoom/pan fires onBoundsChange once; an app recenter settles silently', async () => {
+    // Break this catches: (1) handleIdle writing the map's OWN center back into the
+    // GoogleMap `center` prop (bug-fix 2026-10-30: the lib re-applies it via
+    // map.setCenter and the real SDK settles AGAIN even for unchanged coordinates -
+    // live: drag, wheel zoom and arrow pan each fired 2 events); (2) an app recenter
+    // firing the event (bug-fix 2026-11-02, the handler feedback loop - see
+    // BOUNDS-004); (3) the app-recenter mark never clearing, which would swallow
+    // every later user drag.
     widget.render({ events: counter('onBoundsChange') });
     await waitFor(() => expect(typeof mapProps().onLoad).toBe('function'));
 
-    // SDK-faithful instance: it starts at initialLocation (like the real map);
-    // setCenter moves the map, then the SDK settles with `idle` - even when the
-    // coordinates did not change (live-verified 2026-10-30).
-    let sdkCenter = { lat: 40.7128, lng: -73.935242 };
-    const gmap = {
-      ...fakeGmap(),
-      center: { toJSON: () => ({ ...sdkCenter }) },
-      setCenter: (next) => {
-        sdkCenter = { lat: next.lat, lng: next.lng };
-        mapProps().onIdle();
-      },
-    };
+    const gmap = sdkMap({ lat: 40.7128, lng: -73.935242 });
     await widget.session.store.act(async () => {
       mapProps().onLoad(gmap);
     });
@@ -299,20 +363,91 @@ describe('Map widget', () => {
     });
 
     // A user drag/zoom/pan: the SDK moves the map itself, then settles once.
-    sdkCenter = { lat: 43, lng: -71 };
+    gmap.moveByUser({ lat: 43, lng: -71 });
     await widget.session.store.act(async () => {
       mapProps().onIdle();
     });
-
     await waitFor(() => expect(exposed().center).toMatchObject({ lat: 43, lng: -71 }));
     expect(widget.variables().onBoundsChangeCount).toBe(1);
 
-    // An app-driven recenter: setCenter -> exactly one settle -> exactly one event.
+    // An app-driven recenter: the map moves and its settle publishes the new
+    // bounds, but fires nothing.
     await widget.act('setLocation', 12, 34);
-
-    await waitFor(() => expect(widget.variables().onBoundsChangeCount).toBeGreaterThanOrEqual(2));
-    expect(widget.variables().onBoundsChangeCount).toBe(2);
+    await waitFor(() =>
+      expect(exposed().bounds).toEqual({ northEast: { lat: 13, lng: 35 }, southWest: { lat: 11, lng: 33 } })
+    );
     expect(exposed().center).toMatchObject({ lat: 12, lng: 34 });
+    expect(widget.variables().onBoundsChangeCount).toBe(1);
+
+    // The next user gesture still fires.
+    gmap.moveByUser({ lat: 20, lng: 30 });
+    await widget.session.store.act(async () => {
+      mapProps().onIdle();
+    });
+    await waitFor(() => expect(exposed().center).toMatchObject({ lat: 20, lng: 30 }));
+    expect(widget.variables().onBoundsChangeCount).toBe(2);
+  });
+
+  test('[Map-BOUNDS-004] a handler that calls setLocation does not re-trigger onBoundsChange', async () => {
+    // Break this catches: an app recenter firing onBoundsChange (bug-fix 2026-11-02,
+    // QA JAM "bounds-change-loop", left map: the handler's setLocation(London) made
+    // the map settle again, which re-ran the handler - ~60 events/s, forever,
+    // because every setCenter settles even when the map is already there).
+    widget.render({
+      events: [...counter('onBoundsChange'), alsoOnBoundsChange(setLocationAction('{{51.5074}}', '{{-0.1278}}'))],
+    });
+    await waitFor(() => expect(typeof mapProps().onLoad).toBe('function'));
+
+    await dragOnceAndSettle(sdkMap({ lat: 40.7128, lng: -73.935242 }, { asyncSettle: true }), { lat: 43, lng: -71 });
+
+    expect(widget.variables().onBoundsChangeCount).toBe(1);
+    // The handler still moved the map, and that settle published London silently.
+    expect(mapProps().center).toMatchObject({ lat: 51.5074, lng: -0.1278 });
+    expect(exposed().center).toMatchObject({ lat: 51.5074, lng: -0.1278 });
+    expect(exposed().bounds.northEast).toEqual({ lat: 52.5074, lng: 0.8722 });
+  });
+
+  test("[Map-BOUNDS-005] a handler that calls setLocation to the map's own centre does not loop", async () => {
+    // Break this catches: the same feedback loop with no movement at all (QA JAM,
+    // middle map): setLocation({{components.map1.center}}) recenters to where the
+    // map already is, the SDK settles anyway, and the handler re-runs.
+    widget.render({
+      events: [
+        ...counter('onBoundsChange'),
+        alsoOnBoundsChange(setLocationAction('{{components.map1.center.lat}}', '{{components.map1.center.lng}}')),
+      ],
+    });
+    await waitFor(() => expect(typeof mapProps().onLoad).toBe('function'));
+
+    await dragOnceAndSettle(sdkMap({ lat: 40.7128, lng: -73.935242 }, { asyncSettle: true }), { lat: 43, lng: -71 });
+
+    expect(widget.variables().onBoundsChangeCount).toBe(1);
+    expect(mapProps().center).toMatchObject({ lat: 43, lng: -71 });
+    expect(exposed().center).toMatchObject({ lat: 43, lng: -71 });
+  });
+
+  test('[Map-BOUNDS-006] a handler that rebinds Initial location does not re-trigger onBoundsChange', async () => {
+    // Break this catches: guarding only setLocation - an Initial location bound to a
+    // variable the handler sets recenters through the same path and loops the same
+    // way (live 2026-11-02: ~60 events/s).
+    widget.render({
+      properties: { initialLocation: binding('{{ variables.loc ?? {"lat": 40.7128, "lng": -73.935242} }}') },
+      events: [
+        ...counter('onBoundsChange'),
+        alsoOnBoundsChange({
+          actionId: 'set-custom-variable',
+          key: 'loc',
+          value: '{{ {"lat": 51.5074, "lng": -0.1278} }}',
+        }),
+      ],
+    });
+    await waitFor(() => expect(typeof mapProps().onLoad).toBe('function'));
+
+    await dragOnceAndSettle(sdkMap({ lat: 40.7128, lng: -73.935242 }, { asyncSettle: true }), { lat: 43, lng: -71 });
+
+    expect(widget.variables().onBoundsChangeCount).toBe(1);
+    // The rebind did recenter the map (non-vacuous), silently.
+    expect(mapProps().center).toMatchObject({ lat: 51.5074, lng: -0.1278 });
   });
 
   // --- Search -----------------------------------------------------------------

@@ -73,6 +73,11 @@ export default function Map({
   // The first `idle` is the initial load settling, not a user viewport change:
   // it publishes bounds/center but must not fire onBoundsChange.
   const hasSettledOnceRef = useRef(false);
+  // Set when the APP recenters the map (setLocation, an Initial location change).
+  // The SDK settles after every setCenter - even when the map is already there -
+  // so if that settle fired onBoundsChange, a handler that recenters would
+  // re-trigger itself forever.
+  const appRecenterPendingRef = useRef(false);
 
   // One window-level loader shared by EVERY Map instance (keyed by id). The
   // <LoadScript> component this replaces broke with multiple instances: a second
@@ -140,23 +145,26 @@ export default function Map({
     // Publish only — never write the map's own center back into `mapCenter`. The
     // lib pushes every new `center` prop through map.setCenter(), and the SDK
     // answers even an unchanged setCenter with another `idle`, so syncing it made
-    // every drag/zoom/pan fire onBoundsChange twice. `mapCenter` carries only
-    // app-driven recenters (initialLocation, setLocation, place pick).
+    // every drag/zoom/pan fire onBoundsChange twice. `mapCenter` carries only the
+    // recenters the widget commands (initialLocation, setLocation, place pick).
     const newCenter = gmap.center?.toJSON();
     const exposedVariables = {
       bounds,
       center: addMapUrlToJson(newCenter),
     };
     setExposedVariables(exposedVariables);
-    if (hasSettledOnceRef.current) {
-      fireEvent('onBoundsChange');
-    }
+    // Only a USER viewport change fires; the load settle and the settle after an
+    // app recenter publish silently.
+    const isUserChange = hasSettledOnceRef.current && !appRecenterPendingRef.current;
     hasSettledOnceRef.current = true;
+    appRecenterPendingRef.current = false;
+    if (isUserChange) fireEvent('onBoundsChange');
   }
 
   useEffect(() => {
     if (isInitialRender.current) return;
     const resolvedCenter = sanitizeLocation(resolveWidgetFieldValue(center)) ?? FALLBACK_CENTER;
+    appRecenterPendingRef.current = true;
     setMapCenter(resolvedCenter);
     setExposedVariable('center', addMapUrlToJson(resolvedCenter));
     // onComponentOptionsChanged(component, [['center', addMapUrlToJson(resolvedCenter)]]);
@@ -203,6 +211,7 @@ export default function Map({
         // old `if (lat && lng)` guard silently ignored the equator/prime meridian).
         const location = sanitizeLocation({ lat, lng });
         if (!location) return;
+        appRecenterPendingRef.current = true;
         setMapCenter(location);
         // The exposed center must follow the CSA, not wait for a drag.
         setExposedVariable('center', addMapUrlToJson(location));
