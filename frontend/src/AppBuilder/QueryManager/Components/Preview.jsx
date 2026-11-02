@@ -24,6 +24,7 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
   const [theme, setTheme] = useState(() => getTheme(darkMode));
   const queryPreviewData = useStore((state) => state.queryPanel.queryPreviewData);
   const queryPreviewCache = useStore((state) => state.queryPanel.queryPreviewCache);
+  const cacheEnabled = useStore((state) => state.queryPanel.selectedQuery?.options?.responseCache?.enabled === true);
   const previewLoading = useStore((state) => state.queryPanel.previewLoading);
   const previewPanelRef = useRef();
   const queryPanelHeight = useStore((state) => state.queryPanel.queryPanelHeight);
@@ -165,7 +166,7 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
           />
           <span data-cy="preview-section-label">Preview</span>
         </div>
-        {!previewLoading && <QueryCacheStatus cache={queryPreviewCache} />}
+        {cacheEnabled && !previewLoading && <QueryCacheStatus cache={queryPreviewCache} />}
         {previewPanelExpanded && (
           <div className="right" data-cy="preview-tabs-container">
             <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">

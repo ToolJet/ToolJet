@@ -10,7 +10,7 @@ describe('query preview cache metadata', () => {
   afterEach(() => {
     Element.prototype.scrollIntoView = originalScrollIntoView;
   });
-  beforeEach(() => {
+  beforeEach(async () => {
     session = new AppBuilderTestSession({
       scenario: {
         surface: 'app-editor',
@@ -38,6 +38,37 @@ describe('query preview cache metadata', () => {
       },
     });
     Element.prototype.scrollIntoView = jest.fn();
+    await selectQuery({ enabled: true });
+  });
+
+  async function selectQuery(responseCache) {
+    await session.store.act((state) => {
+      state.dataQuery.setQueries(
+        [{ id: 'q-cache', name: 'getRows', kind: 'restapi', options: { responseCache } }],
+        'canvas'
+      );
+      state.queryPanel.setSelectedQuery('q-cache');
+    });
+  }
+
+  // Break this catches: showing cache feedback to builders who did not enable caching.
+  test.each([undefined, { enabled: false }])(
+    '[QueryCache-STATUS-006] hides feedback when query caching is disabled (%j)',
+    async (responseCache) => {
+      await selectQuery(responseCache);
+      await session.store.act((state) => state.queryPanel.setPreviewData([], { status: 'bypass' }));
+      session.render(<Preview calculatePreviewHeight={() => {}} />);
+      expect(screen.queryByRole('status', { name: 'Query cache status' })).not.toBeInTheDocument();
+    }
+  );
+
+  // Break this catches: leaving feedback visible after caching is switched off.
+  test('[QueryCache-STATUS-007] hides a previous cache hit when caching is disabled', async () => {
+    await session.store.act((state) => state.queryPanel.setPreviewData([], { status: 'hit' }));
+    session.render(<Preview calculatePreviewHeight={() => {}} />);
+    expect(screen.getByRole('status', { name: 'Query cache status' })).toHaveTextContent('Cache hit');
+    await selectQuery({ enabled: false });
+    expect(screen.queryByRole('status', { name: 'Query cache status' })).not.toBeInTheDocument();
   });
 
   // Break this catches: losing cache metadata between the preview action and its status display.
@@ -68,13 +99,20 @@ describe('query preview cache metadata', () => {
         id: 'q-cache',
         name: 'getRows',
         kind: action.startsWith('workflow') ? 'workflows' : 'restapi',
-        options: { method: 'get', url: 'https://example.test/rows', workflowId: 'workflow-1', syncExecution: true },
+        options: {
+          method: 'get',
+          url: 'https://example.test/rows',
+          workflowId: 'workflow-1',
+          syncExecution: true,
+          responseCache: { enabled: true },
+        },
       };
       await session.store.act((state) => {
         state.setApp({ appId: 'app-1', currentAppEnvironmentId: 'env-1' });
         state.setCurrentVersionId('v1');
         state.setSelectedEnvironment({ id: 'env-1' });
         state.dataQuery.setQueries([query], 'canvas');
+        state.queryPanel.setSelectedQuery(query.id);
         state.setQueryMapping('canvas');
         state.registerQueryDependencies(query.id, query.name, query.kind, query.options, 'canvas');
       });
