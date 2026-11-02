@@ -16,6 +16,7 @@ Owns personal access tokens (PATs) and their exchange for workspace sessions.
 - Scope access never overrides owner permissions or edition/license gates.
 - OAuth delegated and viewer requests share these scope bundles and ceilings through `../mcp-oauth/scope.interceptor.ts`; changing `constants/scopes.ts` changes PAT and OAuth access together.
 - Unassigned modules and routes without module metadata fail closed.
+- Query Library management remains unassigned for workspace PATs and delegated OAuth; app-pinned sessions retain the shared read-only and app-binding checks.
 - Credential modules are never grantable; a PAT must not mint another PAT.
 - Browser sessions and embed sessions (`patScope='app'`) are exempt from this workspace ceiling.
 
