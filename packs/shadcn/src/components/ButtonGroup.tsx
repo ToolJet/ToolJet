@@ -64,7 +64,6 @@ export const ButtonGroup = () => {
     enumDefinition: ['outline', 'secondary', 'default', 'ghost'],
     enumLabels: { outline: 'Outline', secondary: 'Secondary', default: 'Default', ghost: 'Ghost' },
     initialValue: 'outline',
-    inspector: 'switch',
   });
   const [size] = ToolJet.useStateEnumeration({
     name: 'size',
@@ -165,7 +164,8 @@ export const ButtonGroup = () => {
     value: kind === 'multiple' ? keys : (keys[0] ?? ''),
     present: keys.length > 0,
   });
-  const disabled = control.disabled || legacyDisabled === true;
+  // Loading draws its own spinner (loading: 'own'), so the group is inert while it shows: disabled in look and in action.
+  const disabled = control.disabled || legacyDisabled === true || control.loading;
   const click = (button: GroupButton) => {
     if (disabled || button.disabled) return;
     setLastClicked({ label: button.label, value: button.value });

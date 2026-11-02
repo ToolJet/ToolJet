@@ -49,7 +49,8 @@ export const addNewWidgetToTheEditor = (
   const componentName = computeComponentName(
     libraryComponentInfo?.componentName ?? componentType,
     useStore.getState().getCurrentPageComponents(),
-    moduleInfo?.moduleName
+    moduleInfo?.moduleName,
+    { skipRegistry: !!libraryComponentInfo }
   );
   const parentCanvasType = realCanvasRef?.getAttribute('component-type');
   const componentData = deepClone(componentMeta);
@@ -323,12 +324,15 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
   return childrenWidgets;
 }
 
-export function computeComponentName(componentType, currentComponents, moduleName) {
+// skipRegistry: the seed is a library or pack component's own name, not a native widget type, so it is not looked up
+// in the widget registry (a pack's ButtonGroup would take the native widget's name, ButtonGroupLegacy).
+export function computeComponentName(componentType, currentComponents, moduleName, { skipRegistry = false } = {}) {
   // Fall back to the raw string for non-registry seeds (e.g. Custom-tab drops name
   // instances after the LIBRARY component: 'HelloWorld' → helloworld1)
   // The UI 2.0 pack's types start with "Shad", an internal name users should not see: a new line chart is linechart1.
   const widgetConfigName = (
-    componentTypes.find((component) => component?.component === componentType)?.name ?? componentType
+    (skipRegistry ? undefined : componentTypes.find((component) => component?.component === componentType)?.name) ??
+    componentType
   )?.replace(/^Shad(?=[A-Z])/, '');
   const rawBase = moduleName || widgetConfigName || '';
   let sanitizedBase = rawBase.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
