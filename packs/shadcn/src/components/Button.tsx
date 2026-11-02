@@ -139,7 +139,7 @@ export const Button = () => {
       >
         {/* Loading (the host's Loading or the pack's Show spinner), UI 2.0's spinner before the label, disabled. */}
         {loading ? <span className="n2-spinner" role="status" aria-label="Loading" /> : null}
-        {label}
+        <span className="n2-btn-label">{label}</span>
       </button>
     </div>
   );
