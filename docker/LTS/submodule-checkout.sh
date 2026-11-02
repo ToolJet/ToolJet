@@ -1,17 +1,10 @@
 #!/bin/sh
-# Run inside a submodule, via `git submodule foreach` (which sets $name, $sha1, $toplevel).
-# Checks out $BRANCH_NAME if the submodule has it, otherwise the branch .gitmodules tracks
-# on the root branch. Bump `branch = ...` in .gitmodules when cutting a new LTS branch.
-
+# Run inside a submodule via `git submodule foreach`. Checks out $BRANCH_NAME if the
+# submodule has it, otherwise keeps the commit the root commit pins. Release builds pass
+# the tag as BRANCH_NAME, so they always get the pins the release recorded.
 if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME" ||
    git ls-remote --exit-code --heads origin "$BRANCH_NAME" >/dev/null; then
-  exec git checkout "$BRANCH_NAME"
+  git checkout "$BRANCH_NAME"
+else
+  echo "Branch $BRANCH_NAME not found in submodule $name, keeping pinned commit"
 fi
-
-FALLBACK=$(git config -f "$toplevel/.gitmodules" "submodule.$name.branch") ||
-  { echo "No branch set for $name in .gitmodules"; exit 1; }
-echo "Branch $BRANCH_NAME not found in submodule $name, falling back to $FALLBACK"
-git checkout "$FALLBACK" || exit 1
-
-git merge-base --is-ancestor "$sha1" HEAD 2>/dev/null ||
-  echo "WARNING: $name commit $sha1 pinned by $BRANCH_NAME is not on $FALLBACK. Is the branch in .gitmodules stale?"

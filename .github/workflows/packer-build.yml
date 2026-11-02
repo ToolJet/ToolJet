@@ -58,9 +58,9 @@ jobs:
     name: packer-ee
 
     steps:
-      # Release: the LTS branch .gitmodules tracks at the tag, so cutting a new LTS needs no edit here.
-      # Fails if the tag isn't on that branch (.gitmodules not bumped on the new LTS branch).
-      - name: Resolve branch to build
+      # Release: build the tag itself, so the AMI gets the exact release code (release automation
+      # sets the submodule pins before tagging). Manual run: the branch you pass in.
+      - name: Resolve ref to build
         id: branch
         env:
           GH_TOKEN: ${{ github.token }}
@@ -72,24 +72,18 @@ jobs:
             echo "name=$INPUT_BRANCH" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          branch=$(gh api "repos/$REPO/contents/.gitmodules?ref=$TAG" --jq .content | base64 -d | git config -f /dev/stdin submodule.server/ee.branch)
           # The tag must sit on the release commit: tag name == v + .version at that commit
           version=$(gh api "repos/$REPO/contents/.version?ref=$TAG" --jq .content | base64 -d | tr -d '\n')
           if [[ "v$version" != "$TAG" ]]; then
             echo "::error::Release tag $TAG does not match .version ($version) at that commit."
             exit 1
           fi
-          status=$(gh api "repos/$REPO/compare/${branch}...${TAG}" --jq .status)
-          if [[ "$status" != "identical" && "$status" != "behind" ]]; then
-            echo "::error::Release tag $TAG is not on $branch, the branch .gitmodules tracks. Update branch in .gitmodules on the LTS branch."
-            exit 1
-          fi
-          echo "name=$branch" >> "$GITHUB_OUTPUT"
+          echo "name=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: refs/heads/${{ steps.branch.outputs.name }}
+          ref: ${{ steps.branch.outputs.name }}
 
       - name: Setting tag
         if: "${{ github.event.inputs.version != '' }}"
@@ -169,6 +163,6 @@ jobs:
         if: success()
         run: |
           ami_name="tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy"
-          message="✅ *ToolJet Enterprise AWS AMI Published*\nVersion: \`${{ env.RELEASE_VERSION }}\`\nType: 🔒 LTS Release\nBranch: \`${{ steps.branch.outputs.name }}\`\nRegion: \`${{ github.event.inputs.region || 'us-west-1' }}\`\nAMI Name: \`${ami_name}\`"
+          message="✅ *ToolJet Enterprise AWS AMI Published*\nVersion: \`${{ env.RELEASE_VERSION }}\`\nType: 🔒 LTS Release\nRef: \`${{ steps.branch.outputs.name }}\`\nRegion: \`${{ github.event.inputs.region || 'us-west-1' }}\`\nAMI Name: \`${ami_name}\`"
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
