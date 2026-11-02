@@ -182,10 +182,10 @@ mkdir -p "$BUILD_DIR"
 
 git config --global url."https://x-access-token:CUSTOM_GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
 
-# BUILD_BRANCH_NAME is replaced by packer-build.yml with the ref to build (release tag or branch), like the token above
+# BUILD_BRANCH_NAME is replaced with the branch to build by packer-build.yml, like the token above
 git clone -b BUILD_BRANCH_NAME https://github.com/ToolJet/ToolJet.git "$BUILD_DIR" && cd "$BUILD_DIR"
 git submodule update --init --recursive
-# Same branch in submodules if it exists, otherwise keep the pinned commit
+# Same branch in submodules if it exists, otherwise the branch .gitmodules tracks
 BRANCH_NAME=BUILD_BRANCH_NAME git submodule foreach 'sh "$toplevel/docker/LTS/submodule-checkout.sh"'
 
 # Token only needed for the clone above; drop it now so it never ends up baked into the build artifacts

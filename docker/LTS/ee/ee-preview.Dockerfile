@@ -70,7 +70,7 @@ RUN if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
     fi
 
 # Handle submodules - try normal submodule update first, if it fails clone directly from base repo.
-# Either way, checkout the same branch in submodules if it exists, otherwise keep the pinned commit
+# Either way, checkout the same branch in submodules if it exists, otherwise the branch .gitmodules tracks
 COPY ./docker/LTS/submodule-checkout.sh /tmp/submodule-checkout.sh
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \

@@ -22,7 +22,7 @@ RUN git clone https://github.com/ToolJet/ToolJet.git .
 # The branch name needs to be changed the branch with modularisation in CE repo
 RUN git checkout ${BRANCH_NAME}
 
-# Checkout the same branch in submodules if it exists, otherwise keep the pinned commit
+# Checkout the same branch in submodules if it exists, otherwise the branch .gitmodules tracks
 COPY ./docker/LTS/submodule-checkout.sh /tmp/submodule-checkout.sh
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
