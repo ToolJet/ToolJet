@@ -15,11 +15,6 @@ describe("Modules — Versions", () => {
   const testId = Date.now();
   const wsName = `modules-versions-${testId}`;
   const wsSlug = wsName;
-  // Module names are built inside each `it` (fresh per Cypress retry): a name
-  // fixed at describe scope makes retries 2 and 3 fail with "app name is
-  // already taken" and hides the first attempt's real failure.
-  // Same length as the old fixed name: the editor header truncates long names
-  // and can cover the autosave indicator that waitForAutoSave asserts on.
   const uniqueName = (prefix) => `${prefix} ${Date.now()}`;
 
   let workspaceId;
