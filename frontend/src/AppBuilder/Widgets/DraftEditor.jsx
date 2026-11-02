@@ -31,7 +31,7 @@ class StyleButton extends React.Component {
   constructor() {
     super();
     this.onToggle = (e) => {
-      e.preventDefault();
+      this.props.onPress(e);
       this.props.onToggle(this.props.style);
     };
   }
@@ -43,7 +43,7 @@ class StyleButton extends React.Component {
     }
 
     return (
-      <span className={className} onMouseDown={this.onToggle}>
+      <span className={className} onMouseDownCapture={this.onToggle}>
         {this.props.label}
       </span>
     );
@@ -86,7 +86,7 @@ const BlockStyleControls = (props) => {
   return (
     <>
       <div className="dropmenu">
-        <button className="dropdownbtn px-2" type="button">
+        <button className="dropdownbtn px-2" type="button" onMouseDownCapture={props.onPress}>
           Heading
         </button>
         <div className="dropdown-content" style={{ backgroundColor: 'var(--cc-surface1-surface)' }}>
@@ -97,6 +97,7 @@ const BlockStyleControls = (props) => {
                 active={type.style === blockType}
                 label={type.label}
                 onToggle={props.onToggle}
+                onPress={props.onPress}
                 style={type.style}
               />
             </a>
@@ -109,6 +110,7 @@ const BlockStyleControls = (props) => {
           active={type.style === blockType}
           label={type.label}
           onToggle={props.onToggle}
+          onPress={props.onPress}
           style={type.style}
         />
       ))}
@@ -142,6 +144,7 @@ const InlineStyleControls = (props) => {
           active={currentStyle.has(type.style)}
           label={type.label}
           onToggle={props.onToggle}
+          onPress={props.onPress}
           style={type.style}
         />
       ))}
@@ -170,6 +173,20 @@ class DraftEditor extends React.Component {
     this.mapKeyToEditorCommand = this._mapKeyToEditorCommand.bind(this);
     this.toggleBlockType = this._toggleBlockType.bind(this);
     this.toggleInlineStyle = this._toggleInlineStyle.bind(this);
+
+    // A toolbar press must never take focus from the editor. In the App Builder
+    // canvas it must also stop here while the user is editing: the canvas's drag
+    // engine (gesto) and selection box (Selecto) listen on ancestors and, for every
+    // press that reaches them, blur the focused editor and clear the text
+    // selection - the selection flickered and the caret vanished on each toolbar
+    // click. Toolbar handlers run in the CAPTURE phase because those engines sit
+    // below React's root and would see a bubbling press first. Not editing, the
+    // press propagates as before, so the canvas still selects and drags the widget.
+    this.keepEditorFocus = (e) => {
+      e.preventDefault();
+      const isEditing = this.editorContainerRef.current?.contains(document.activeElement);
+      if (this.props.isCanvasEditMode && isEditing) e.stopPropagation();
+    };
   }
 
   componentDidUpdate(prevProps) {
@@ -293,8 +310,16 @@ class DraftEditor extends React.Component {
     ) : (
       <div className="RichEditor-root" style={{ overflowY: 'scroll', scrollbarWidth: 'none' }}>
         <div className="RichEditor-controls" ref={this.controlsRef}>
-          <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
-          <InlineStyleControls editorState={editorState} onToggle={this.toggleInlineStyle} />
+          <BlockStyleControls
+            editorState={editorState}
+            onToggle={this.toggleBlockType}
+            onPress={this.keepEditorFocus}
+          />
+          <InlineStyleControls
+            editorState={editorState}
+            onToggle={this.toggleInlineStyle}
+            onPress={this.keepEditorFocus}
+          />
         </div>
         <div
           className={className}
