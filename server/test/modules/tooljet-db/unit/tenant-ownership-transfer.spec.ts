@@ -33,6 +33,15 @@ describe('Tenant ownership transfer as a non-superuser ToolJet Database admin', 
     return row.can_create;
   };
 
+  const waitUntilBlockedOnLock = async (pid: number) => {
+    for (let attempt = 0; attempt < 100; attempt++) {
+      const [row] = await dataSource.query(`SELECT wait_event_type FROM pg_stat_activity WHERE pid = $1`, [pid]);
+      if (row?.wait_event_type === 'Lock') return;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    throw new Error(`backend ${pid} never blocked on a lock`);
+  };
+
   beforeAll(async () => {
     dataSource = new DataSource({ ...tooljetDbOrmconfig, name: `ownership-transfer-${suffix}` } as never);
     await dataSource.initialize();
@@ -110,6 +119,33 @@ describe('Tenant ownership transfer as a non-superuser ToolJet Database admin', 
       await transferTableOwnershipToTenant(queryRunner, schema, 'no_role', `user_missing_${suffix}`);
 
       expect(await ownerOf('no_role')).toBe(adminRole);
+    });
+
+    it('should let two transfers on one schema run at the same time', async () => {
+      const otherRunner = dataSource.createQueryRunner();
+      await otherRunner.connect();
+      await otherRunner.query(`SET ROLE "${adminRole}"`);
+      try {
+        await queryRunner.query(`CREATE TABLE "${schema}"."parallel_a" (id int)`);
+        await otherRunner.query(`CREATE TABLE "${schema}"."parallel_b" (id int)`);
+
+        const [{ pid: otherPid }] = await otherRunner.query('SELECT pg_backend_pid() AS pid');
+
+        // Without the lock, the second GRANT fails with "tuple concurrently updated" once the first commits.
+        await queryRunner.startTransaction();
+        await transferTableOwnershipToTenant(queryRunner, schema, 'parallel_a', tenantRole);
+        const secondTransfer = transferTableOwnershipToTenant(otherRunner, schema, 'parallel_b', tenantRole);
+        await waitUntilBlockedOnLock(otherPid);
+        await queryRunner.commitTransaction();
+        await secondTransfer;
+
+        expect(await ownerOf('parallel_a')).toBe(tenantRole);
+        expect(await ownerOf('parallel_b')).toBe(tenantRole);
+        expect(await tenantCanCreateInSchema()).toBe(false);
+      } finally {
+        await otherRunner.query('RESET ROLE');
+        await otherRunner.release();
+      }
     });
   });
 
