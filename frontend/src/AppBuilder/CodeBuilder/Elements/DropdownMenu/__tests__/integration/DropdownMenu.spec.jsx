@@ -4,6 +4,18 @@ import useStore from '@/AppBuilder/_stores/store';
 import { DropdownMenu } from '../../DropdownMenu';
 import { AppBuilderTestSession, defineAppBuilderScenario } from '@/test/app-builder';
 
+// DataSourceSelect virtualises its list with react-virtuoso, which renders no rows in
+// jsdom (no layout, 0px viewport), so render every item instead.
+jest.mock('react-virtuoso', () => ({
+  Virtuoso: ({ data, itemContent }) => (
+    <div>
+      {data.map((item, index) => (
+        <div key={index}>{itemContent(index, item)}</div>
+      ))}
+    </div>
+  ),
+}));
+
 const scenario = defineAppBuilderScenario({
   id: 'dropdown-menu-add-new-query-portal-click',
   name: 'DropdownMenu add-new-query portal click',

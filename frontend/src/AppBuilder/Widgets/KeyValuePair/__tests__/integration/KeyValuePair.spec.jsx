@@ -20,8 +20,8 @@
  */
 import React from 'react';
 import { waitFor, fireEvent } from '@testing-library/react';
-import useStore from '@/AppBuilder/_stores/store';
 import { widgets } from '@/AppBuilder/WidgetManager/configs/widgetConfig';
+import { componentDefinition } from '@/test/app-builder';
 import { createWidgetHarness, binding, store, MODULE_ID, setVariableOn } from '@/AppBuilder/Widgets/widgetHarness';
 
 const ID = 'kv1';
@@ -505,13 +505,12 @@ describe('KeyValuePair: auto-generated fields (store integration)', () => {
     widget.render({
       properties: { fields: binding([]), data: binding({ city: 'Berlin' }) },
       also: [{ id: otherId, componentType: 'KeyValuePair', name: 'keyvaluepair2' }],
-      afterSeed: () => {
-        const otherDef = require('@/test/app-builder').componentDefinition(otherId, 'keyvaluepair2', 'KeyValuePair', {
+      extraComponents: {
+        [otherId]: componentDefinition(otherId, 'keyvaluepair2', 'KeyValuePair', {
           dataSourceSelector: binding('rawJson'),
           data: binding({ country: 'Germany' }),
           fields: binding([]),
-        });
-        useStore.getState().componentsSlice?.mergeComponents?.({ [otherId]: otherDef }, MODULE_ID);
+        }),
       },
     });
 
