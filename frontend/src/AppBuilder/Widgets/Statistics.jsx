@@ -47,9 +47,11 @@ const restoreActionValues = (cardKey, propertyValues, exposedValues) =>
   );
 
 const ONE_LINE = { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 };
+const WRAPPED = { wordBreak: 'break-all' };
 
 // One line ending in "…"; when it is cut off, hovering it shows the full text instead of the card tooltip.
-const CutOffText = ({ as: Tag, text, style, darkMode, onCutOffHover }) => {
+// With `wrap` (the card grows to fit) it wraps instead and is never cut off.
+const CutOffText = ({ as: Tag, text, style, darkMode, onCutOffHover, wrap }) => {
   const ref = useRef(null);
   const [isCutOff, setIsCutOff] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -69,9 +71,9 @@ const CutOffText = ({ as: Tag, text, style, darkMode, onCutOffHover }) => {
     >
       <Tag
         ref={ref}
-        style={{ ...style, ...ONE_LINE }}
+        style={{ ...style, ...(wrap ? WRAPPED : ONE_LINE) }}
         onPointerEnter={() => {
-          const cutOff = ref.current.scrollWidth > ref.current.clientWidth;
+          const cutOff = !wrap && ref.current.scrollWidth > ref.current.clientWidth;
           setIsCutOff(cutOff);
           setIsHovered(true);
           onCutOffHover(cutOff);
@@ -370,6 +372,7 @@ export const Statistics = function Statistics({
                   }}
                   darkMode={darkMode}
                   onCutOffHover={setIsOverCutOffText}
+                  wrap={isDynamicHeightEnabled}
                 />
 
                 <CutOffText
@@ -378,6 +381,7 @@ export const Statistics = function Statistics({
                   style={primaryStyle}
                   darkMode={darkMode}
                   onCutOffHover={setIsOverCutOffText}
+                  wrap={isDynamicHeightEnabled}
                 />
               </div>
 
@@ -385,6 +389,8 @@ export const Statistics = function Statistics({
                 <div
                   className={cn('tw-flex tw-gap-1 tw-min-w-0', {
                     'tw-flex-col': secondaryValueAlignment === 'vertical',
+                    // Wrapped text: the label drops to the next line rather than being squeezed by the value.
+                    'tw-flex-wrap': isDynamicHeightEnabled && secondaryValueAlignment !== 'vertical',
                     'tw-justify-center': dataAlignment === 'center',
                     'tw-justify-end': dataAlignment === 'right',
                   })}
@@ -409,6 +415,7 @@ export const Statistics = function Statistics({
                       style={secondaryContainerStyle}
                       darkMode={darkMode}
                       onCutOffHover={setIsOverCutOffText}
+                      wrap={isDynamicHeightEnabled}
                     />
                   </div>
 
@@ -422,6 +429,7 @@ export const Statistics = function Statistics({
                     }}
                     darkMode={darkMode}
                     onCutOffHover={setIsOverCutOffText}
+                    wrap={isDynamicHeightEnabled}
                   />
                 </div>
               )}

@@ -832,5 +832,56 @@ describe('Statistics: bug fixes', () => {
       await waitFor(() => expect(tooltipsWithText('Card hint').length).toBeGreaterThan(0));
       await waitFor(() => expect(tooltipsWithText(LONG_VALUE)).toHaveLength(0));
     });
+
+    const dynamicHeightOn = { dynamicHeight: binding('{{true}}') };
+
+    test('[Statistics-BUG-008] with dynamic height on, labels and values wrap instead of ending in an ellipsis', async () => {
+      // Break this catches: one-line ellipsis applied even when the card can grow to fit the text.
+      widget.render({ properties: dynamicHeightOn, currentMode: 'view' });
+      await waitFor(() => expect(primaryValueEl()).toBeInTheDocument());
+
+      for (const el of [
+        screen.getByText('This months earnings'),
+        primaryValueEl(),
+        secondaryValueEl(),
+        screen.getByText('Last month'),
+      ]) {
+        expect(el).not.toHaveStyle({ whiteSpace: 'nowrap' });
+        expect(el).not.toHaveStyle({ textOverflow: 'ellipsis' });
+        expect(el).toHaveStyle({ wordBreak: 'break-all' });
+      }
+    });
+
+    test('[Statistics-BUG-008] with dynamic height on, hovering long text shows the component tooltip, not a full-text tooltip', async () => {
+      // Break this catches: wrapped text still treated as cut off, hiding the card tooltip behind a duplicate.
+      widget.render({
+        properties: { ...dynamicHeightOn, primaryValue: binding(LONG_VALUE), tooltip: binding('Card hint') },
+        currentMode: 'view',
+      });
+      await waitFor(() => expect(primaryValueEl()).toBeInTheDocument());
+
+      await widget.session.user.hover(primaryValueEl());
+
+      await waitFor(() => expect(tooltipsWithText('Card hint').length).toBeGreaterThan(0));
+      expect(tooltipsWithText(LONG_VALUE)).toHaveLength(0);
+    });
+
+    test('[Statistics-BUG-008] with dynamic height on, a horizontal secondary label moves to the next line when it does not fit', async () => {
+      // Break this catches: the non-shrinking secondary value squeezes its wrapped label into a one-letter column.
+      widget.render({ properties: dynamicHeightOn, currentMode: 'view' });
+      await waitFor(() => expect(screen.getByText('Last month')).toBeInTheDocument());
+      expect(screen.getByText('Last month').closest('div')).toHaveClass('tw-flex-wrap');
+
+      widget.render({ properties: { dynamicHeight: binding('{{false}}') }, currentMode: 'view' });
+      await waitFor(() => expect(screen.getByText('Last month').closest('div')).not.toHaveClass('tw-flex-wrap'));
+    });
+
+    test('[Statistics-BUG-008] in the editor, where the card cannot grow, dynamic height on keeps the ellipsis', async () => {
+      // Break this catches: wrapping keyed on the toggle alone, clipping extra lines in the fixed-height editor card.
+      widget.render({ properties: dynamicHeightOn, currentMode: 'edit' });
+      await waitFor(() => expect(primaryValueEl()).toBeInTheDocument());
+
+      expect(primaryValueEl()).toHaveStyle({ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' });
+    });
   });
 });
