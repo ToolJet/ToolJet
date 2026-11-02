@@ -195,6 +195,53 @@ describe('CodeEditor widget', () => {
   });
 
   describe('component actions', () => {
+    test('[CodeEditor-INPUT-003] the autocomplete popup escapes the editor box', async () => {
+      // Break this catches: CodeMirror renders its tooltips inside the editor unless given a parent.
+      // This widget's scroll container is `overflow: auto` with a max height, so a popup left inside
+      // is cropped at the editor's edge and adds a scrollbar to the editor itself instead of floating
+      // over the canvas — the suggestion list becomes unusable on a short editor. The platform's own
+      // editors already pass `tooltips({ parent: document.body })`; the widget did not.
+      const { container } = codeEditor.render();
+      await mounted(container);
+
+      await userEvent.click(surface());
+      await userEvent.type(surface(), 'con');
+
+      const popup = await waitFor(() => {
+        const found = document.querySelector('.cm-tooltip-autocomplete');
+        expect(found).toBeTruthy();
+        return found;
+      });
+
+      // CodeMirror nests the popup in a generated host element, so assert the boundary that
+      // matters — it is outside the editor's scroll box and mounted under the body — rather than
+      // an exact parent, which would pin a library implementation detail.
+      expect(container.contains(popup)).toBe(false);
+      expect(document.body.contains(popup)).toBe(true);
+    });
+
+    test('[CodeEditor-CSA-005] setValue publishes immediately, so a later action reads the new value', async () => {
+      // Break this catches: routing the setValue CSA through the 500ms typing debounce. A button
+      // with two handlers — control-component setValue, then set-variable reading
+      // {{components.codeeditor1.value}} — runs them back to back, so the second one reads the
+      // store before a debounced write has landed and captures the PREVIOUS text. The debounce
+      // exists to throttle keystrokes; a programmatic set is a single deliberate write and must be
+      // visible the moment it returns, as it already is for JSON Editor and Text Input.
+      const container = await mounted(codeEditor.render().container);
+      await codeEditor.act('setValue', 'old text');
+      await expectValue('old text');
+
+      await codeEditor.act('setValue', 'new text');
+
+      // No waitFor and no debounce settle: the value has to be readable right now.
+      expect(codeEditor.exposed()?.value).toBe('new text');
+      expect(documentText(container)).toBe('new text');
+
+      // And nothing scheduled earlier may arrive late and put the old text back.
+      await settleDebounce();
+      expect(codeEditor.exposed()?.value).toBe('new text');
+    });
+
     test('[CodeEditor-CSA-001] setValue replaces the document and settles into the exposed value', async () => {
       // Break this catches: losing the setExposedVariable('setValue') registration breaks every RunJS
       // query and event handler that fills this editor programmatically.
@@ -219,18 +266,30 @@ describe('CodeEditor widget', () => {
       await expectValue('');
     });
 
-    test('[CodeEditor-CSA-003] setValue ignores a non-string argument without wedging the handle', async () => {
-      // Break this catches: dropping the typeof guard renders '[object Object]' or '42' as code; leaving
-      // the handle broken afterwards would strand every later call from the same query.
+    test('[CodeEditor-CSA-003] setValue coerces a non-string argument the way the JSON Editor does', async () => {
+      // Break this catches: the old `typeof value === 'string'` guard, which dropped anything that was
+      // not text on the floor — a query returning a number or an object set nothing and reported
+      // nothing, so the editor silently kept its previous contents. The rule is the sibling widget's,
+      // deliberately: an object becomes pretty JSON, everything else goes through String().
       const container = await mounted(codeEditor.render().container);
 
       await codeEditor.act('setValue', 42);
-      await codeEditor.act('setValue', { code: 'x' });
-      await codeEditor.act('setValue', null);
-      await settleDebounce();
+      expect(documentText(container)).toBe('42');
+      await expectValue('42');
 
-      expect(documentText(container)).toBe('');
-      expect(codeEditor.exposed()?.value).toBe('');
+      // Asserted on the published value, not the DOM: CodeMirror renders each line in its own
+      // element, so reading textContent silently drops the newlines the pretty-printing adds.
+      await codeEditor.act('setValue', { code: 'x' });
+      await expectValue(JSON.stringify({ code: 'x' }, null, 2));
+      expect(documentText(container)).toContain('"code": "x"');
+
+      // Mirroring the sibling means null renders as the text `null`. Clearing is `setValue('')`,
+      // which CodeEditor-CSA-002 covers.
+      await codeEditor.act('setValue', null);
+      expect(documentText(container)).toBe('null');
+
+      await codeEditor.act('setValue', true);
+      expect(documentText(container)).toBe('true');
 
       await codeEditor.act('setValue', 'valid again');
       expect(documentText(container)).toBe('valid again');
@@ -387,14 +446,11 @@ describe('CodeEditor widget', () => {
       expect(Object.keys(codeEditor.exposed('form1')?.children ?? {})).toContain(ID);
     });
 
-    test('[CodeEditor-FORM-002] clearForm clears both, while resetForm leaves the exposed value stale', async () => {
-      // KNOWN DEFECT, pinned deliberately (contract D-04). `resetForm` remounts the child, which empties
-      // the editor, but this widget registers no value property and republishes nothing on mount, so the
-      // store keeps the pre-reset text: a Form can submit code the user can no longer see. Measured
-      // CodeEditor-only across eight form-aware widgets; every other one re-seeds from its value property.
-      // WHEN THAT DEFECT IS FIXED THIS TEST WILL FAIL. That is intended — update the expectation to ''
-      // rather than reverting the fix.
-      // Break this catches, meanwhile: a regression in clearForm, whose two-sided clear is correct today.
+    test('[CodeEditor-FORM-002] clearForm and resetForm both clear the editor and its exposed value', async () => {
+      // Break this catches: `resetForm` remounts the child, which empties the editor. This widget
+      // registers no value property, so unless it publishes on mount the store keeps the pre-reset
+      // text and the Form submits code the user can no longer see — the D-04 defect, fixed here.
+      // The clearForm half guards the signal path, which was already correct.
       const { container } = codeEditor.renderInsideForm({});
       await mounted(container);
       await waitFor(() => expect(codeEditor.exposed()?.setValue).toBeInstanceOf(Function));
@@ -406,10 +462,12 @@ describe('CodeEditor widget', () => {
         await codeEditor.exposed('form1').resetForm();
       });
       await waitFor(() => expect(documentText(container)).toBe(''));
-      // The stale value is an absence of change, so it needs the debounce window to elapse before it
-      // can be claimed — otherwise this would pass simply by being checked too early.
+      // Needs the debounce window to elapse before the published value can be claimed, otherwise
+      // this would pass simply by being checked too early.
       await settleDebounce();
-      expect(codeEditor.exposed()?.value).toBe('payload'); // the defect
+      expect(codeEditor.exposed()?.value).toBe('');
+      // What the user actually sees: the Form submits what is on screen, not the pre-reset text.
+      expect(codeEditor.exposed('form1')?.data?.[ID]?.value).toBe('');
 
       await codeEditor.act('setValue', 'payload again');
       await expectValue('payload again');
@@ -419,24 +477,41 @@ describe('CodeEditor widget', () => {
       });
       await waitFor(() => expect(documentText(container)).toBe(''));
       await expectValue(''); // clearForm is correct
+
+      // Resetting WITHOUT waiting out the debounce. Publishing on mount is not enough on its own:
+      // the write scheduled before the reset lands after the remount and re-stales the store, so
+      // the pending write has to be cancelled when the editor goes away.
+      await codeEditor.act('setValue', 'typed then reset at once');
+      await codeEditor.session.store.act(async () => {
+        await codeEditor.exposed('form1').resetForm();
+      });
+      await waitFor(() => expect(documentText(container)).toBe(''));
+      await settleDebounce();
+      expect(codeEditor.exposed()?.value).toBe('');
+      expect(codeEditor.exposed('form1')?.data?.[ID]?.value).toBe('');
     });
   });
 
   describe('lifecycle and isolation', () => {
-    test('[CodeEditor-ASYNC-001] a write scheduled before unmount still lands afterwards', async () => {
-      // KNOWN DEFECT, pinned deliberately (contract D-05). The 500ms debounce is never cancelled, so a
-      // write outlives the component and lands on exposed values for a widget that no longer exists.
-      // WHEN THAT DEFECT IS FIXED THIS TEST WILL FAIL. That is intended — flip the expectation to '' and
-      // keep the scenario, rather than reverting the cleanup.
+    test('[CodeEditor-ASYNC-001] a write scheduled before unmount does not land afterwards', async () => {
+      // Break this catches: the 500ms debounce going uncancelled, so a write outlives the component
+      // and lands on exposed values for a widget that no longer exists. That is not only untidy — it
+      // is what defeats the Form reset in CodeEditor-FORM-002, because a reset remounts the child and
+      // the stale write arrives after the fresh mount has published.
       const { container, unmount } = codeEditor.render();
       await mounted(container);
 
-      await codeEditor.act('setValue', 'scheduled');
+      // Typing is the debounced path. The setValue CSA deliberately publishes straight away
+      // (CodeEditor-CSA-005), so it cannot be used to leave a write pending.
+      await userEvent.click(surface());
+      await userEvent.type(surface(), 'scheduled');
+      expect(documentText(container)).toBe('scheduled');
       expect(codeEditor.exposed()?.value).toBe(''); // still inside the debounce window
 
       unmount();
+      await settleDebounce();
 
-      await waitFor(() => expect(codeEditor.exposed()?.value).toBe('scheduled')); // the defect
+      expect(codeEditor.exposed()?.value).toBe('');
     });
 
     test('[CodeEditor-ISO-001] two editors on one page keep separate documents', async () => {
