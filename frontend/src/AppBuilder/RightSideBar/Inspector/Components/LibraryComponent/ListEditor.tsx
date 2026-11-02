@@ -19,7 +19,7 @@ const DragHandle = (SortableList as unknown as { DragHandle: React.ComponentType
 
 // A click in another popover (a colour or icon picker opened from this one) or a portaled menu is not a click outside.
 const isInsideNestedLayer = (target: EventTarget | null) =>
-  isClickInsidePortaledOverlay(target) || !!(target as Element | null)?.closest?.('.popover, .sketch-picker');
+  isClickInsidePortaledOverlay(target) || !!(target as Element | null)?.closest?.('.popover, .sketch-picker, .react-select__menu');
 
 interface RowProps<T> {
   item: T;
