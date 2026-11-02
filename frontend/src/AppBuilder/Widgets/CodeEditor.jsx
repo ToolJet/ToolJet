@@ -5,12 +5,20 @@ import CodeMirror from '@uiw/react-codemirror';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { javascript } from '@codemirror/lang-javascript';
+import { tooltips } from '@codemirror/view';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
 import { sass } from '@codemirror/lang-sass';
 import { debounce } from 'lodash';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import './codeEditor.scss';
+
+// CodeMirror renders tooltips inside the editor unless told otherwise, and this widget's scroll
+// container is `overflow: auto` with a max height — so the autocomplete list was cropped at the
+// editor's edge and put a scrollbar on the editor instead of floating over the canvas. Parenting
+// to the body lets it overflow, the same way the platform's own editors already do
+// (SingleLineCodeEditor, MultiLineCodeEditor).
+const tooltipExtension = tooltips({ parent: document.body });
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -142,7 +150,7 @@ const CodeEditor = ({
           maxHeight={isDynamicHeightEnabled ? 'none' : editorHeight}
           width="100%"
           theme={theme}
-          extensions={[langExtention ?? javascript()]}
+          extensions={[langExtention ?? javascript(), tooltipExtension]}
           onChange={updateValue}
           basicSetup={setupConfig}
           className={`codehinter-multi-line-input code-editor-component`}

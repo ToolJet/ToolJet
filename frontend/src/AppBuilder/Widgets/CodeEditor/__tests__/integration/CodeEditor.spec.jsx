@@ -195,6 +195,31 @@ describe('CodeEditor widget', () => {
   });
 
   describe('component actions', () => {
+    test('[CodeEditor-INPUT-003] the autocomplete popup escapes the editor box', async () => {
+      // Break this catches: CodeMirror renders its tooltips inside the editor unless given a parent.
+      // This widget's scroll container is `overflow: auto` with a max height, so a popup left inside
+      // is cropped at the editor's edge and adds a scrollbar to the editor itself instead of floating
+      // over the canvas — the suggestion list becomes unusable on a short editor. The platform's own
+      // editors already pass `tooltips({ parent: document.body })`; the widget did not.
+      const { container } = codeEditor.render();
+      await mounted(container);
+
+      await userEvent.click(surface());
+      await userEvent.type(surface(), 'con');
+
+      const popup = await waitFor(() => {
+        const found = document.querySelector('.cm-tooltip-autocomplete');
+        expect(found).toBeTruthy();
+        return found;
+      });
+
+      // CodeMirror nests the popup in a generated host element, so assert the boundary that
+      // matters — it is outside the editor's scroll box and mounted under the body — rather than
+      // an exact parent, which would pin a library implementation detail.
+      expect(container.contains(popup)).toBe(false);
+      expect(document.body.contains(popup)).toBe(true);
+    });
+
     test('[CodeEditor-CSA-005] setValue publishes immediately, so a later action reads the new value', async () => {
       // Break this catches: routing the setValue CSA through the 500ms typing debounce. A button
       // with two handlers — control-component setValue, then set-variable reading
