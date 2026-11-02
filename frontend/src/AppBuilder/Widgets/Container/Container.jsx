@@ -57,7 +57,7 @@ export const Container = ({
   });
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
-  const activeSlot = useActiveSlot(id); // Track the active slot for this widget
+  const activeSlot = useActiveSlot(id, currentMode === 'edit'); // Track the active slot for this widget
   const { borderRadius, borderColor, boxShadow, headerDividerColor } = styles;
   const headerMaxHeight = isDynamicHeightEnabled ? 10000 : parseInt(height, 10) - 100 - 10;
   const contentBgColor = useMemo(() => {
@@ -77,7 +77,7 @@ export const Container = ({
   }, [styles.headerBackgroundColor, darkMode]);
 
   const computedStyles = {
-    backgroundColor: contentBgColor.backgroundColor,
+    backgroundColor: isLoading ? contentBgColor.backgroundColor : 'transparent',
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
     ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
@@ -86,6 +86,7 @@ export const Container = ({
     flexDirection: 'column',
     position: 'relative',
     boxShadow,
+    overflow: 'hidden',
     '--cc-container-header-divider-color': headerDividerColor,
   };
 
@@ -93,11 +94,10 @@ export const Container = ({
     flexShrink: 0,
     padding: `${CONTAINER_FORM_CANVAS_PADDING}px ${CONTAINER_FORM_CANVAS_PADDING}px 3px ${CONTAINER_FORM_CANVAS_PADDING}px`,
     maxHeight: `${headerMaxHeight}px`,
-    borderTopLeftRadius: `${borderRadius}px`,
-    borderTopRightRadius: `${borderRadius}px`,
     overflow: 'hidden',
     ...headerBgColor,
   };
+
   const containerContentStyles = {
     display: 'flex',
     height: '100%',
@@ -106,6 +106,7 @@ export const Container = ({
       opacity: 0.5,
       pointerEvents: 'none',
     }),
+    ...contentBgColor,
   };
 
   const updateHeaderSizeInStore = ({ newHeight }) => {
@@ -131,6 +132,7 @@ export const Container = ({
               slotStyle={containerHeaderStyles}
               id={`${id}-header`}
               height={headerHeight}
+              maxHeight={headerMaxHeight}
               width={width}
               darkMode={darkMode}
               isDisabled={isDisabled}
@@ -142,15 +144,11 @@ export const Container = ({
           )}
           <div
             style={containerContentStyles}
-            className={`${properties.dynamicHeight && `dynamic-${id}`} widget-type-container`}
+            className={`${properties.dynamicHeight ? `dynamic-${id}` : ''} widget-type-container`.trim()}
             data-disabled={isDisabled}
           >
             <ContainerComponent
               id={id}
-              styles={{
-                ...contentBgColor,
-                borderRadius: `${borderRadius}px`,
-              }}
               canvasHeight={isDynamicHeightEnabled ? '100%' : height}
               canvasWidth={width}
               darkMode={darkMode}

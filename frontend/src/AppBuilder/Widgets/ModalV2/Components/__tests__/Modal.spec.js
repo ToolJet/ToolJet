@@ -2,14 +2,14 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import { ModalWidget } from '../Modal';
 
-// Renders with isLoading/showHeader/showFooter/showConfigHandler all false so
+// Renders with isLoading/showHeader/showFooter/isEditing all false so
 // the widget mounts without its SubContainer/Header/Footer subtrees, which
 // need App Builder drag-drop context this test doesn't set up.
 const buildModalProps = (overrides = {}) => ({
   customStyles: { modalBody: {} },
   parentRef: { current: null },
   id: 'modal-test-1',
-  showConfigHandler: false,
+  isEditing: false,
   isDisabled: false,
   isLoading: true,
   modalBodyHeight: '800px',

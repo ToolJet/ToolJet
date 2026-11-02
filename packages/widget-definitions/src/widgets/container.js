@@ -136,7 +136,7 @@ export const containerConfig = {
       displayName: 'Divider',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-default-border)',
+        defaultValue: 'var(--cc-weak-border)',
       },
       accordian: 'header',
     },
@@ -164,7 +164,10 @@ export const containerConfig = {
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box shadow',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
       accordian: 'container',
     },
   },

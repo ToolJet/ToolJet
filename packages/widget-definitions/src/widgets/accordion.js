@@ -176,7 +176,10 @@ export const accordionConfig = {
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box shadow',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
       accordian: 'container',
     },
   },

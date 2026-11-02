@@ -421,7 +421,7 @@ const FormComponent = (props) => {
     }
   };
 
-  const activeSlot = useActiveSlot(id); // Track the active slot for this widget
+  const activeSlot = useActiveSlot(id, currentMode === 'edit'); // Track the active slot for this widget
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
 
   const updateHeaderSizeInStore = ({ newHeight }) => {

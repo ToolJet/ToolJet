@@ -397,7 +397,7 @@ export const ModalV2 = function Modal({
           modalHeight,
           isLoading,
           isDisabled: isDisabledModal,
-          showConfigHandler: mode === 'edit',
+          isEditing: mode === 'edit',
           fullscreen: isFullScreen,
           showHeader,
           showFooter,

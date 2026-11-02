@@ -18,7 +18,6 @@ export const ModalWidget = ({ ...restProps }) => {
     parentRef,
     id,
     moduleId,
-    showConfigHandler,
     isDisabled,
     isLoading,
     modalBodyHeight,
@@ -37,10 +36,11 @@ export const ModalWidget = ({ ...restProps }) => {
     isFullScreen,
     subContainerIndex,
     isDynamicHeightEnabled,
+    isEditing,
   } = restProps['modalProps'];
 
   const setComponentProperty = useStore((state) => state.setComponentProperty);
-  const activeSlot = useActiveSlot(id); // Track the active slot for this widget
+  const activeSlot = useActiveSlot(id, isEditing); // Track the active slot for this widget
   const temporaryLayouts = useStore((state) => {
     return state.temporaryLayouts?.[getDynamicLayoutKey(id, subContainerIndex, '-body', moduleId)];
   }, shallow);
@@ -162,11 +162,11 @@ export const ModalWidget = ({ ...restProps }) => {
       }}
       onClick={handleModalSlotClick}
     >
-      {showConfigHandler && (
+      {isEditing && (
         <ConfigHandle
           id={id}
           customClassName={showHeader ? '' : 'modalWidget-config-handle tw-h-0'}
-          showHandle={showConfigHandler}
+          showHandle={isEditing}
           setSelectedComponentAsModal={onSelectModal}
           componentType="Modal"
           isModalOpen={true}

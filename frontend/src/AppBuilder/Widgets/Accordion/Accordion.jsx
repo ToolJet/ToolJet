@@ -28,6 +28,7 @@ export const Accordion = ({
   subContainerIndex,
   fireEvent,
   componentType,
+  dataCy,
 }) => {
   const { headerHeight = 80, showHeader, dynamicHeight, loadingState, visibility, disabledState } = properties;
   const { borderRadius, borderColor, boxShadow, headerDividerColor, chevronIconColor } = styles;
@@ -38,7 +39,11 @@ export const Accordion = ({
     isLoading: loadingState,
     isExpanded: true, // State for expanding/collapsing accordion component
   });
+
   const accordionRef = useRef(null);
+  const isExpandedRef = useRef(null);
+  isExpandedRef.current = exposedVariablesTemporaryState.isExpanded;
+
   // Disabled accordion blocks the mouse via `data-disabled`; `inert` also removes the child
   // components from the tab order (runtime only — keeps the builder editable).
   useDisableInert(accordionRef, exposedVariablesTemporaryState.isDisabled);
@@ -74,11 +79,13 @@ export const Accordion = ({
     setExposedVariables({
       ...exposedVariablesTemporaryState,
       expand: async function () {
+        if (isExpandedRef.current) return;
         setExposedVariable('isExpanded', true);
         updateExposedVariablesState('isExpanded', true);
         fireEvent('onExpand');
       },
       collapse: async function () {
+        if (!isExpandedRef.current) return;
         setExposedVariable('isExpanded', false);
         updateExposedVariablesState('isExpanded', false);
         fireEvent('onCollapse');
@@ -146,7 +153,7 @@ export const Accordion = ({
   }, [styles.backgroundColor, darkMode]);
 
   const computedStyles = {
-    backgroundColor: contentBgColor.backgroundColor,
+    backgroundColor: exposedVariablesTemporaryState.isLoading ? contentBgColor.backgroundColor : 'transparent',
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
     ...(isDynamicHeightEnabled && exposedVariablesTemporaryState.isExpanded && { minHeight: `${height}px` }),
@@ -162,6 +169,7 @@ export const Accordion = ({
     flexDirection: 'column',
     position: 'relative',
     boxShadow,
+    overflow: 'hidden',
     '--cc-accordion-header-divider-color': headerDividerColor,
   };
 
@@ -174,8 +182,9 @@ export const Accordion = ({
         opacity: 0.5,
         pointerEvents: 'none',
       }),
+      ...contentBgColor,
     };
-  }, [exposedVariablesTemporaryState.isDisabled, exposedVariablesTemporaryState.isExpanded]);
+  }, [exposedVariablesTemporaryState.isDisabled, exposedVariablesTemporaryState.isExpanded, contentBgColor]);
 
   return (
     <div
@@ -198,8 +207,8 @@ export const Accordion = ({
               width={width}
               isDynamicHeightEnabled={isDynamicHeightEnabled}
               headerBackgroundColor={styles.headerBackgroundColor}
+              currentMode={currentMode}
               darkMode={darkMode}
-              borderRadius={borderRadius}
               headerHeight={headerHeight}
               isExpanded={exposedVariablesTemporaryState.isExpanded}
               setExpanded={(expand) => {
@@ -213,19 +222,16 @@ export const Accordion = ({
               fireEvent={fireEvent}
               isDisabled={exposedVariablesTemporaryState.isDisabled}
               chevronIconColor={chevronIconColor}
+              dataCy={dataCy}
             />
           )}
           <div
             style={accordionContentStyles}
-            className={`${dynamicHeight && `dynamic-${id}`} widget-type-container`}
+            className={`${dynamicHeight ? `dynamic-${id}` : ''} widget-type-container`.trim()}
             data-disabled={exposedVariablesTemporaryState.isDisabled}
           >
             <ContainerComponent
               id={id}
-              styles={{
-                ...contentBgColor,
-                borderRadius: `${borderRadius}px`,
-              }}
               canvasHeight={isDynamicHeightEnabled ? '100%' : height}
               canvasWidth={width}
               darkMode={darkMode}
