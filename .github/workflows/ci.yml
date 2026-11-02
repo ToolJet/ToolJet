@@ -425,7 +425,9 @@ jobs:
       PG_USER: postgres
       PG_PASS: postgres
       PG_DB: tooljet_test
-      TOOLJET_DB_USER: postgres
+      # Not a superuser, as on managed Postgres (RDS, Azure, Cloud SQL): a superuser skips the
+      # ownership and privilege checks those providers enforce.
+      TOOLJET_DB_USER: tjdb_admin
       TOOLJET_DB_PASS: postgres
       TOOLJET_DB_HOST: postgres
       TOOLJET_DB_PORT: 5432
@@ -462,6 +464,11 @@ jobs:
           apt-get install -y postgresql-client-16
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
+      - name: Create the non-superuser ToolJet Database admin
+        if: env.TOOLJET_DB_USER != 'postgres'
+        run: >-
+          PGPASSWORD="$PG_PASS" psql -h "$PG_HOST" -U "$PG_USER" -d postgres -v ON_ERROR_STOP=1
+          -c "CREATE ROLE \"$TOOLJET_DB_USER\" LOGIN PASSWORD '$TOOLJET_DB_PASS' NOSUPERUSER CREATEROLE CREATEDB"
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
       - name: Unit tests
@@ -544,6 +551,11 @@ jobs:
           apt-get install -y postgresql-client-16
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
+      - name: Create the non-superuser ToolJet Database admin
+        if: env.TOOLJET_DB_USER != 'postgres'
+        run: >-
+          PGPASSWORD="$PG_PASS" psql -h "$PG_HOST" -U "$PG_USER" -d postgres -v ON_ERROR_STOP=1
+          -c "CREATE ROLE \"$TOOLJET_DB_USER\" LOGIN PASSWORD '$TOOLJET_DB_PASS' NOSUPERUSER CREATEROLE CREATEDB"
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
       - name: E2E tests
@@ -699,6 +711,11 @@ jobs:
           apt-get install -y postgresql-client-16
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
+      - name: Create the non-superuser ToolJet Database admin
+        if: env.TOOLJET_DB_USER != 'postgres'
+        run: >-
+          PGPASSWORD="$PG_PASS" psql -h "$PG_HOST" -U "$PG_USER" -d postgres -v ON_ERROR_STOP=1
+          -c "CREATE ROLE \"$TOOLJET_DB_USER\" LOGIN PASSWORD '$TOOLJET_DB_PASS' NOSUPERUSER CREATEROLE CREATEDB"
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
       - name: Unit tests
@@ -810,6 +827,11 @@ jobs:
           apt-get install -y postgresql-client-16
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
+      - name: Create the non-superuser ToolJet Database admin
+        if: env.TOOLJET_DB_USER != 'postgres'
+        run: >-
+          PGPASSWORD="$PG_PASS" psql -h "$PG_HOST" -U "$PG_USER" -d postgres -v ON_ERROR_STOP=1
+          -c "CREATE ROLE \"$TOOLJET_DB_USER\" LOGIN PASSWORD '$TOOLJET_DB_PASS' NOSUPERUSER CREATEROLE CREATEDB"
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
       - name: git-sync unit tests
@@ -949,6 +971,11 @@ jobs:
           apt-get install -y postgresql-client-16
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
+      - name: Create the non-superuser ToolJet Database admin
+        if: env.TOOLJET_DB_USER != 'postgres'
+        run: >-
+          PGPASSWORD="$PG_PASS" psql -h "$PG_HOST" -U "$PG_USER" -d postgres -v ON_ERROR_STOP=1
+          -c "CREATE ROLE \"$TOOLJET_DB_USER\" LOGIN PASSWORD '$TOOLJET_DB_PASS' NOSUPERUSER CREATEROLE CREATEDB"
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
       - name: Run changed tests (unit + e2e)
