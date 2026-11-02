@@ -142,13 +142,13 @@ const Button = forwardRef(
     },
     ref
   ) => {
-    const defaultIconFillColor =
-      !defaultButtonFillColour.includes(fill) && fill ? fill : getDefaultIconFillColor(variant, iconOnly);
+    const hasCustomFill = !defaultButtonFillColour.includes(fill) && Boolean(fill);
+    const iconFillColor = hasCustomFill ? fill : getDefaultIconFillColor(variant, iconOnly);
 
     // Only apply the on-solid token to solid-background variants to avoid white-on-white icons on outline/secondary buttons
     const isSolidVariant = variant === 'primary' || variant === 'dangerPrimary';
 
-    const iconFillColor = disabled && isSolidVariant ? disabledIconColor : defaultIconFillColor;
+    const buttonIconColor = disabled && isSolidVariant && !hasCustomFill ? disabledIconColor : iconFillColor;
 
     const Comp = asChild ? Slot : component;
     const iconSize = isLucid ? getLucideIconSize(size) : getIconSize(size);
@@ -156,18 +156,18 @@ const Button = forwardRef(
     const leadingIconElement = leadingIcon && (
       <div className="tw-flex tw-justify-center tw-items-center" style={{ width: iconSize, height: iconSize }}>
         {isLucid ? (
-          <DynamicIcon name={leadingIcon} size={iconSize} color={iconFillColor} />
+          <DynamicIcon name={leadingIcon} size={iconSize} color={buttonIconColor} />
         ) : (
-          <SolidIcon name={leadingIcon} fill={iconFillColor} />
+          <SolidIcon name={leadingIcon} fill={buttonIconColor} />
         )}
       </div>
     );
     const trailingIconElement = trailingIcon && (
       <div className="tw-flex tw-justify-center tw-items-center" style={{ width: iconSize, height: iconSize }}>
         {isLucid ? (
-          <DynamicIcon name={trailingIcon} size={iconSize} color={iconFillColor} />
+          <DynamicIcon name={trailingIcon} size={iconSize} color={buttonIconColor} />
         ) : (
-          <SolidIcon name={trailingIcon} fill={iconFillColor} />
+          <SolidIcon name={trailingIcon} fill={buttonIconColor} />
         )}
       </div>
     );
