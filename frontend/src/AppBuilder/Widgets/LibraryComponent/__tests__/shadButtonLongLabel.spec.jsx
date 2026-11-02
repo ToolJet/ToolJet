@@ -102,13 +102,18 @@ describe('Button long label', () => {
     done();
   });
 
-  test('the button can grow taller than its box for a wrapped label, and still fills the box otherwise', async () => {
-    // Break this catches: a fixed height clips or overflows the wrapped lines, or a short label stops filling the box.
+  test('the button keeps its box height and clips a long label instead of growing past the box', async () => {
+    // Break this catches: the button growing with its wrapped label, so it spills past its widget box and overlaps
+    // the widgets around it.
     const { button, cleanup: done } = await mountButton({ text: LONG_LABEL });
     const css = getComputedStyle(button);
+    const label = getComputedStyle(labelElement(button, LONG_LABEL));
 
-    expect(['', 'auto']).toContain(css.height);
-    expect(css.minHeight).toBe('max(100%, 32px)');
+    expect(css.height).toBe('100%');
+    expect(css.minHeight).toBe('32px');
+    expect(css.overflow).toBe('hidden');
+    expect(label.maxHeight).toBe('100%');
+    expect(label.overflow).toBe('hidden');
     done();
   });
 

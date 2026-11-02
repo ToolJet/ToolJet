@@ -110,6 +110,30 @@ describe('additionalActionProps', () => {
     };
     expect(additionalActionProps(componentMeta)).toEqual(['visibility', 'loadingState']);
   });
+
+  it('[LibraryComponent-ADDITIONALACTIONS-005] hides Dynamic height for a component that cannot size to its content', () => {
+    // Break this catches: a Dynamic height toggle on a fit: false component (e.g. Button), which changes nothing.
+    const componentMeta = {
+      properties: {
+        visibility: { section: 'additionalActions' },
+        dynamicHeight: { section: 'additionalActions' },
+      },
+    };
+    expect(additionalActionProps(componentMeta)).toEqual(['visibility']);
+    expect(additionalActionProps(componentMeta, false, false)).toEqual(['visibility']);
+  });
+
+  it('[LibraryComponent-ADDITIONALACTIONS-006] keeps Dynamic height, in declaration order, for a component that fits its content', () => {
+    // Break this catches: hiding Dynamic height on fit: true components (e.g. Button Group, Accordion) that honour it.
+    const componentMeta = {
+      properties: {
+        visibility: { section: 'additionalActions' },
+        dynamicHeight: { section: 'additionalActions' },
+        loadingState: { section: 'additionalActions' },
+      },
+    };
+    expect(additionalActionProps(componentMeta, false, true)).toEqual(['visibility', 'dynamicHeight', 'loadingState']);
+  });
 });
 
 describe('groupPropsBySection', () => {
@@ -335,11 +359,11 @@ describe('additionalActionProps with controlState', () => {
 
   it('[LibraryComponent-CONTROLSTATE-001] hides disabledState from a component that does not declare controlState', () => {
     // Break this catches: a Disable toggle on a component that never reads it, so it silently does nothing.
-    expect(additionalActionProps(hostMeta)).toEqual(['visibility', 'dynamicHeight']);
+    expect(additionalActionProps(hostMeta, false, true)).toEqual(['visibility', 'dynamicHeight']);
   });
 
   it('[LibraryComponent-CONTROLSTATE-002] shows disabledState in its declared place for a controlState component', () => {
-    expect(additionalActionProps(hostMeta, true)).toEqual(['visibility', 'disabledState', 'dynamicHeight']);
+    expect(additionalActionProps(hostMeta, true, true)).toEqual(['visibility', 'disabledState', 'dynamicHeight']);
   });
 
   it('[LibraryComponent-CONTROLSTATE-003] still lists disabledState when the host config lacks it', () => {
