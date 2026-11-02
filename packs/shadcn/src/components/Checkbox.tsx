@@ -16,11 +16,24 @@ import '../styles/ui2-choice.css';
 export const Checkbox = () => {
   const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: 'Checkbox' });
   const [description] = ToolJet.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
-  const [defaultChecked] = ToolJet.useStateBoolean({ name: 'defaultChecked', label: 'Checked by default', initialValue: false });
+  const [defaultChecked] = ToolJet.useStateBoolean({
+    name: 'defaultChecked',
+    label: 'Checked by default',
+    initialValue: false,
+  });
   // Exposed value, and the pack's earlier name for it (also its default).
   const [, setValue] = ToolJet.useStateBoolean({ name: 'value', initialValue: false, inspector: 'hidden' });
-  const [legacyChecked, setLegacyChecked] = ToolJet.useStateBoolean({ name: 'checked', initialValue: false, inspector: 'hidden' });
-  const [disabledProp] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
+  const [legacyChecked, setLegacyChecked] = ToolJet.useStateBoolean({
+    name: 'checked',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const [disabledProp] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable',
+    initialValue: false,
+    inspector: 'hidden',
+  });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onCheck = ToolJet.useEventCallback({ name: 'onCheck' });
   // UI 2.0's spelling only: the pack's earlier onUncheck fired alongside it, a third event for one uncheck.
@@ -30,8 +43,13 @@ export const Checkbox = () => {
   const helpTextColor = useColorStyle('helpTextColor', 'Help text color', TOKEN.mutedText);
   const borderColor = useColorStyle('borderColor', 'Unchecked box border color', TOKEN.brand);
   const errorColor = useColorStyle('errorColor', 'Error color', TOKEN.error);
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Label color (earlier name)', inspector: 'hidden', initialValue: '' });
-  ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 3 });
+  const textColor = ToolJet.useStyleString({
+    name: 'textColor',
+    label: 'Label color (earlier name)',
+    inspector: 'hidden',
+    initialValue: '',
+  });
+  ToolJet.useComponentSettings({ role: 'checkbox', fit: true, loading: 'own', defaultWidth: 8, defaultHeight: 3 });
   const { disabled, loading } = useBusy(disabledProp);
   const hostId = ToolJet.useFieldId();
   const ownId = useId();
@@ -46,7 +64,7 @@ export const Checkbox = () => {
     setLegacyChecked(checked);
   }, [checked]); // eslint-disable-line react-hooks/exhaustive-deps
   // A mandatory checkbox must be checked: unchecked is not a value here.
-  const check = ToolJet.useValidation({ section: 'choice', value: checked, present: checked });
+  const check = ToolJet.useValidation({ kind: 'choice', value: checked, present: checked });
 
   const guard = useOwnEventGuard();
   const set = (next: boolean) => {
@@ -63,12 +81,22 @@ export const Checkbox = () => {
   };
   ToolJet.useAction({ name: 'toggle', displayName: 'Toggle' }, () => set(!checkedRef.current));
   ToolJet.useAction(
-    { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value', type: 'toggle', defaultValue: true }] },
+    {
+      name: 'setValue',
+      displayName: 'Set value',
+      params: [{ handle: 'value', displayName: 'Value', type: 'toggle', defaultValue: true }],
+    },
     (next) => set(String(next) === 'true')
   );
 
   const note = check.error || description;
-  const vars = lookVars({ '--ui-primary': accentColor, '--lk-label': labelColor || textColor, '--lk-help': helpTextColor, '--lk-border': borderColor, '--ui-destructive': errorColor });
+  const vars = lookVars({
+    '--ui-primary': accentColor,
+    '--lk-label': labelColor || textColor,
+    '--lk-help': helpTextColor,
+    '--lk-border': borderColor,
+    '--ui-destructive': errorColor,
+  });
   return (
     <div className="ui uc" style={vars}>
       <InlineLoading loading={loading}>

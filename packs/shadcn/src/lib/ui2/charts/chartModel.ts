@@ -2,7 +2,7 @@
 // _shared/format.ts in the UI 2.0 checkout). Every function takes whatever the author bound and never throws.
 import { chipTone } from './progressModel';
 import { withAffixes } from '../../format';
-import { localeFor, moneyDigits, numberFormat } from '../../locale';
+import { currencyCode, localeFor, moneyDigits, moneyStyle, numberFormat } from '../../locale';
 
 export type Row = Record<string, unknown>;
 
@@ -73,17 +73,16 @@ export const namesMagnitude = (...affixes: unknown[]): boolean =>
  *  (axis ticks) abbreviates large numbers. Percent takes values already in percent (42 shows 42%). */
 export const formatter = ({ format, currency, prefix, suffix, locale }: FormatOptions = {}, short = false): ((v: unknown) => string) => {
   const kind = isFormat(format) ? format : 'number';
-  const code = typeof currency === 'string' && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim().toUpperCase() : 'USD';
+  const code = currencyCode(currency);
   const where = localeFor(currency, locale);
   // Ticks abbreviate large numbers, unless the prefix or suffix already names the magnitude.
   const compact = (short && !namesMagnitude(prefix, suffix)) || kind === 'compact';
   let f: Intl.NumberFormat;
   if (kind === 'currency') {
-    f = numberFormat(where, {
-      style: 'currency',
-      currency: code,
-      ...(compact ? { notation: 'compact', minimumFractionDigits: 0, maximumFractionDigits: 1 } : moneyDigits(1, where)),
-    });
+    f = numberFormat(
+      where,
+      moneyStyle(code, compact ? { notation: 'compact', minimumFractionDigits: 0, maximumFractionDigits: 1 } : moneyDigits(1, where))
+    );
   } else if (compact && kind !== 'percent') {
     f = numberFormat(where, { notation: 'compact', maximumFractionDigits: 1 });
   } else {
@@ -92,7 +91,7 @@ export const formatter = ({ format, currency, prefix, suffix, locale }: FormatOp
   const before = isScalar(prefix) ? String(prefix) : '';
   const after = isScalar(suffix) ? String(suffix) : '';
   // Money with cents shows both digits ("$3,043.50").
-  const cents = kind === 'currency' && !compact ? numberFormat(where, { style: 'currency', currency: code, ...moneyDigits(0.5, where) }) : null;
+  const cents = kind === 'currency' && !compact ? numberFormat(where, moneyStyle(code, moneyDigits(0.5, where))) : null;
   return (v) => {
     const n = num(v);
     if (n === null) return v === null || v === undefined ? '' : String(axisLabel(v));

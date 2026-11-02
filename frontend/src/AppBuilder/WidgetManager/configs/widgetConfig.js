@@ -52,6 +52,7 @@ import {
   verticalDividerConfig,
   customComponentConfig,
   libraryComponentConfig,
+  packComponentConfig,
   buttonGroupConfig,
   pdfConfig,
   stepsConfig,
@@ -169,6 +170,7 @@ export const widgets = [
   //Custom
   customComponentConfig,
   libraryComponentConfig,
+  packComponentConfig,
   htmlConfig,
   iframeConfig,
 

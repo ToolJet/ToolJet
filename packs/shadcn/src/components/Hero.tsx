@@ -3,7 +3,16 @@ import type { CSSProperties } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { iconFor } from '../lib/icons';
 import { cn } from '../lib/cn';
-import { FONT_LABELS, FONT_VALUES, fontStack, formatValue, isRecord, px, styleVars, toText } from '../lib/ui2/display/lists/model';
+import {
+  FONT_LABELS,
+  FONT_VALUES,
+  fontStack,
+  formatValue,
+  isRecord,
+  px,
+  styleVars,
+  toText,
+} from '../lib/ui2/display/lists/model';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
 import { HeroSkel } from '../lib/ui2/loading/shapes';
 import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
@@ -13,11 +22,17 @@ type Fact = { label?: string; value: string };
 
 // UI 2.0's heroMeta: a list of text or { label, value }, or one string split on ' · '.
 const heroMeta = (meta: unknown): Fact[] => {
-  const list: unknown[] = Array.isArray(meta) ? meta : typeof meta === 'string' && meta.trim() ? meta.split(/\s+·\s+/) : [];
+  const list: unknown[] = Array.isArray(meta)
+    ? meta
+    : typeof meta === 'string' && meta.trim()
+      ? meta.split(/\s+·\s+/)
+      : [];
   return list.flatMap((entry): Fact[] => {
     if (isRecord(entry)) {
       const value = toText(entry.value);
-      return value ? [{ ...(typeof entry.label === 'string' && entry.label.trim() ? { label: entry.label } : {}), value }] : [];
+      return value
+        ? [{ ...(typeof entry.label === 'string' && entry.label.trim() ? { label: entry.label } : {}), value }]
+        : [];
     }
     const value = toText(entry).trim();
     return value ? [{ value }] : [];
@@ -59,7 +74,9 @@ const heroPanel = (background: string, imageUrl: unknown): CSSProperties => {
         ['--hero-border' as string]: `color-mix(in srgb, ${ACCENT} 18%, var(--ui-border))`,
       };
     case 'dark':
-      return { background: `linear-gradient(135deg, color-mix(in srgb, ${ACCENT} 78%, #000) 0%, color-mix(in srgb, ${ACCENT} 55%, #000) 100%)` };
+      return {
+        background: `linear-gradient(135deg, color-mix(in srgb, ${ACCENT} 78%, #000) 0%, color-mix(in srgb, ${ACCENT} 55%, #000) 100%)`,
+      };
     case 'solid':
       return { background: ACCENT };
     case 'image': {
@@ -84,13 +101,43 @@ const heroPanel = (background: string, imageUrl: unknown): CSSProperties => {
 export const Hero = () => {
   const [eyebrow] = ToolJet.useStateString({ name: 'eyebrow', label: 'Eyebrow', initialValue: 'Operations' });
   const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Good morning, Ada' });
-  const [subtitle] = ToolJet.useStateString({ name: 'subtitle', label: 'Subtitle', initialValue: 'Here is what needs you today.' });
-  const [meta] = ToolJet.useStateArray({ name: 'meta', label: 'Meta facts', initialValue: ['Sun, 11 Oct', '14 bookings', '3 need a reply'] });
-  const [actionLabel] = ToolJet.useStateString({ name: 'actionLabel', label: 'Primary action label (empty hides it)', initialValue: 'New booking' });
-  const [secondaryActionLabel] = ToolJet.useStateString({ name: 'secondaryActionLabel', label: 'Secondary action label (empty hides it)', initialValue: '' });
-  const [asideValue] = ToolJet.useStateString({ name: 'asideValue', label: 'Aside: a figure, or a list of facts', initialValue: '' });
-  const [asideLabel] = ToolJet.useStateString({ name: 'asideLabel', label: "Aside label (the figure's caption, the facts' heading)", initialValue: '' });
-  const [icon] = ToolJet.useStateString({ name: 'icon', label: 'Icon (lucide name, e.g. sparkles)', initialValue: '', inspector: 'icon' });
+  const [subtitle] = ToolJet.useStateString({
+    name: 'subtitle',
+    label: 'Subtitle',
+    initialValue: 'Here is what needs you today.',
+  });
+  const [meta] = ToolJet.useStateArray({
+    name: 'meta',
+    label: 'Meta facts',
+    initialValue: ['Sun, 11 Oct', '14 bookings', '3 need a reply'],
+  });
+  const [actionLabel] = ToolJet.useStateString({
+    name: 'actionLabel',
+    label: 'Primary action label (empty hides it)',
+    initialValue: 'New booking',
+  });
+  const [secondaryActionLabel] = ToolJet.useStateString({
+    name: 'secondaryActionLabel',
+    label: 'Secondary action label (empty hides it)',
+    initialValue: '',
+  });
+  const [asideValue] = ToolJet.useStateString({
+    name: 'asideValue',
+    label: 'Aside: a figure, or a list of facts',
+    initialValue: '',
+  });
+  const [asideLabel] = ToolJet.useStateString({
+    name: 'asideLabel',
+    label: "Aside label (the figure's caption, the facts' heading)",
+    initialValue: '',
+  });
+  const [icon] = ToolJet.useStateString({
+    name: 'icon',
+    label: 'Icon (lucide name, e.g. sparkles)',
+    initialValue: '',
+    inspector: 'icon',
+    iconSet: 'lucide',
+  });
   const [background] = ToolJet.useStateEnumeration({
     name: 'background',
     label: 'Background',
@@ -123,13 +170,24 @@ export const Hero = () => {
   const onActionClicked = ToolJet.useEventCallback({ name: 'onActionClicked' });
   const onSecondaryActionClicked = ToolJet.useEventCallback({ name: 'onSecondaryActionClicked' });
   const accent = useThemeColor('accentColor', 'Accent color', TOKEN.brand);
-  const backgroundColor = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Panel background color (replaces the Background choice)', inspector: 'color', initialValue: '' });
+  const backgroundColor = ToolJet.useStyleString({
+    name: 'backgroundColor',
+    label: 'Panel background color (replaces the Background choice)',
+    inspector: 'color',
+    initialValue: '',
+  });
   const titleColor = useThemeColor('titleColor', 'Title color', TOKEN.text);
   const textColor = useThemeColor('textColor', 'Subtitle and meta color', TOKEN.mutedText);
   const radius = useThemeRadius('borderRadius', 'Panel radius');
-  const titleFontFamily = ToolJet.useStyleEnumeration({ name: 'titleFontFamily', label: 'Title typeface', enumDefinition: FONT_VALUES, enumLabels: FONT_LABELS, initialValue: 'theme' });
+  const titleFontFamily = ToolJet.useStyleEnumeration({
+    name: 'titleFontFamily',
+    label: 'Title typeface',
+    enumDefinition: FONT_VALUES,
+    enumLabels: FONT_LABELS,
+    initialValue: 'theme',
+  });
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 20 });
+  ToolJet.useComponentSettings({ role: 'hero', fit: true, loading: 'own', defaultWidth: 43, defaultHeight: 20 });
 
   const look = ['plain', 'tint', 'gradient', 'image', 'dark', 'solid'].includes(background) ? background : 'tint';
   const onDark = look === 'dark' || look === 'image' || look === 'solid';
@@ -160,12 +218,20 @@ export const Hero = () => {
     primary || secondary ? (
       <div className={cn('ui2-hero-buttons', center && 'is-centered')}>
         {secondary ? (
-          <button type="button" className="ui-btn ui-btn--outline ui-btn--auto ui2-hero-secondary" onClick={onSecondaryActionClicked}>
+          <button
+            type="button"
+            className="ui-btn ui-btn--outline ui-btn--auto ui2-hero-secondary"
+            onClick={onSecondaryActionClicked}
+          >
             {secondary}
           </button>
         ) : null}
         {primary ? (
-          <button type="button" className={cn('ui-btn ui-btn--default ui-btn--auto ui2-hero-primary', accent && 'has-accent')} onClick={onActionClicked}>
+          <button
+            type="button"
+            className={cn('ui-btn ui-btn--default ui-btn--auto ui2-hero-primary', accent && 'has-accent')}
+            onClick={onActionClicked}
+          >
             {primary}
           </button>
         ) : null}
@@ -176,7 +242,14 @@ export const Hero = () => {
     <LoadingFrame loading={ld.loading} minHeight={120} look={ld.skeleton ? <HeroSkel /> : <LoadingBox />}>
       <div className="ui ui2-hero-box" style={vars}>
         <section
-          className={cn('ui2-hero', `is-${sizeKey}`, look !== 'plain' && 'has-panel', hasBorder && 'has-border', onDark && 'on-dark', grid ? 'is-grid' : center ? 'is-centered' : 'is-row')}
+          className={cn(
+            'ui2-hero',
+            `is-${sizeKey}`,
+            look !== 'plain' && 'has-panel',
+            hasBorder && 'has-border',
+            onDark && 'on-dark',
+            grid ? 'is-grid' : center ? 'is-centered' : 'is-row'
+          )}
           style={panel}
           data-background={look}
         >

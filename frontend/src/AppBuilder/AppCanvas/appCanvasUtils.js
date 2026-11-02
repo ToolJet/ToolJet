@@ -21,6 +21,7 @@ import {
 } from './appCanvasConstants';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { manifestDefaultToDefinitionValue } from '@/AppBuilder/Widgets/libraryComponentDefaults';
+import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 
 export function snapToGrid(canvasWidth, x, y) {
   const gridX = canvasWidth / 43;
@@ -59,13 +60,17 @@ export const addNewWidgetToTheEditor = (
     });
   }
 
-  // Custom tab (LibraryComponent host widget): stamp WHICH library component this
-  // instance renders — mirrors the moduleInfo pattern below. Must run before the
-  // defaultWidth/Height reads so a manifest-declared size wins.
+  // A custom-component card (LibraryComponent) or a pack card (PackComponent): stamp WHICH component this instance
+  // renders — mirrors the moduleInfo pattern below. Must run before the defaultWidth/Height reads so a
+  // manifest-declared size wins. A pack component names only its pack: it always draws the build the release ships.
   if (libraryComponentInfo) {
-    componentData.definition.properties.libraryId = { value: libraryComponentInfo.libraryId };
-    componentData.definition.properties.correlationId = { value: libraryComponentInfo.correlationId };
-    componentData.definition.properties.libraryName = { value: libraryComponentInfo.libraryName };
+    if (libraryComponentInfo.pack) {
+      componentData.definition.properties.pack = { value: libraryComponentInfo.pack };
+    } else {
+      componentData.definition.properties.libraryId = { value: libraryComponentInfo.libraryId };
+      componentData.definition.properties.correlationId = { value: libraryComponentInfo.correlationId };
+      componentData.definition.properties.libraryName = { value: libraryComponentInfo.libraryName };
+    }
     componentData.definition.properties.componentName = { value: libraryComponentInfo.componentName };
     // Manifest prop defaults land as instance values so the Inspector's fields arrive
     // pre-filled (module input_items precedent below).
@@ -383,7 +388,7 @@ const collectChildComponents = (allComponents, parentId, visited) => {
       allComponents[parentId]?.component?.component === 'Accordion' ||
       allComponents[parentId]?.component?.component === 'Form' ||
       isModalType(allComponents[parentId]?.component?.component) ||
-      allComponents[parentId]?.component?.component === 'LibraryComponent'; // ToolJet.Slot canvases
+      isSdkComponentType(allComponents[parentId]?.component?.component); // ToolJet.Slot canvases
 
     if (componentParentId && isParentTabORCalendar) {
       let childComponent = deepClone(allComponents[componentId]);

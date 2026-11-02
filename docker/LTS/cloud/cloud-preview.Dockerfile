@@ -98,17 +98,14 @@ RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
-# Built-in component packs (packs/builtin.json): each pack is built and packaged under server/builtin-packs, which the
-# server installs into every workspace (ee custom-component-libraries/builtin-packs.ts).
-COPY ./packages/pack-tools/ ./packages/pack-tools/
+# Built-in component packs: each pack in packs/builtin.json is built with the custom component CLI (cli/) into
+# server/builtin-packs, which the server serves to every workspace like native widgets.
+COPY ./cli/ ./cli/
 COPY ./packs/ ./packs/
-RUN npm --prefix packages/pack-tools install --no-audit --no-fund \
-    && for dir in $(node -e "console.log(require('./packs/builtin.json').packs.map((p) => p.dir).join(' '))"); do \
-         npm --prefix "$dir" ci --no-audit --no-fund; \
-       done \
-    && node packages/pack-tools/bundle-builtin.mjs
+RUN npm --prefix cli ci --include=dev && npm --prefix cli run build && node packs/build-builtin.mjs --install
 
-FROM node:22.15.1-bullseye
+# Runtime stage on bookworm: Debian 11 is end-of-life and no node:22.23.4-bullseye image exists.
+FROM node:22.23.4-bookworm
 
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \

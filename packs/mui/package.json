@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Material UI components for ToolJet, built as a custom component library (pack contract v2). Experimental.",
   "scripts": {
-    "build": "cd ../.. && node packages/pack-tools/build.mjs packs/mui",
+    "lib:dev": "tooljet library dev",
+    "lib:build": "tooljet library build",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
@@ -22,9 +23,9 @@
     "@mui/x-charts": "^9.16.0",
     "@mui/x-data-grid": "^9.16.0",
     "@mui/x-date-pickers": "^9.16.0",
-    "@tooljet/custom-component-sdk": "^0.1.0-beta.2",
+    "@tooljet/custom-component-sdk": "0.1.0-beta.3",
     "dayjs": "^1.11.23",
-    "dompurify": "^3.3.3",
+    "dompurify": "^3.4.17",
     "use-sync-external-store": "file:./shims/use-sync-external-store"
   },
   "devDependencies": {

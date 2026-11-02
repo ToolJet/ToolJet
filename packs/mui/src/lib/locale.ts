@@ -70,6 +70,25 @@ export const moneyDigits = (n: number, locale: string): Intl.NumberFormatOptions
   return Number.isInteger(n) ? { minimumFractionDigits: 0, maximumFractionDigits: 2 } : { minimumFractionDigits: 2, maximumFractionDigits: 2 };
 };
 
+/** The currency to format money in. None set means USD. A set value that is not a three-letter code (a typo like "US
+ *  Dollar") is null, so the amount shows without a symbol, and warns once, rather than quietly showing dollars (team
+ *  testing, 2026-10-29). */
+const warnedCurrencies = new Set<string>();
+export const currencyCode = (currency: unknown): string | null => {
+  if (currency === undefined || currency === null || (typeof currency === 'string' && !currency.trim())) return 'USD';
+  const code = String(currency).trim();
+  if (/^[A-Za-z]{3}$/.test(code)) return code.toUpperCase();
+  if (!warnedCurrencies.has(code)) {
+    warnedCurrencies.add(code);
+    console.warn(`Currency "${code}" is not a three-letter ISO code such as USD or EUR; showing the amount without a symbol.`);
+  }
+  return null;
+};
+
+/** Number format options for money in `code` (currencyCode); a null code formats a plain amount with up to two decimals. */
+export const moneyStyle = (code: string | null, options: Intl.NumberFormatOptions = {}): Intl.NumberFormatOptions =>
+  code ? { style: 'currency', currency: code, ...options } : { maximumFractionDigits: 2, ...options };
+
 // Intl.NumberFormat is costly to build, so formatters are reused, one per locale and options.
 const FORMATTERS = new Map<string, Intl.NumberFormat>();
 /** A cached Intl.NumberFormat. A bad currency or option falls back to the locale's plain number, then to en-US. */

@@ -17,7 +17,16 @@ import {
   type CardMove,
 } from '../lib/ui2/display/kanban/board';
 import { dropPointAt, NO_TOUCH, useTouchDragRef, type TouchDragOptions } from '../lib/ui2/display/kanban/touchDrag';
-import { BADGE_BY_WORD, badgeLook, columnMinimum, cssLength, fieldName, initials, isSet, kanbanVars } from '../lib/ui2/display/kanban/look';
+import {
+  BADGE_BY_WORD,
+  badgeLook,
+  columnMinimum,
+  cssLength,
+  fieldName,
+  initials,
+  isSet,
+  kanbanVars,
+} from '../lib/ui2/display/kanban/look';
 import { ColumnsSkel, LoadingBox, LoadingFrame, Scrim, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useDrawnNumber, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-display-kanban.css';
@@ -28,14 +37,24 @@ import '../styles/ui2-display-kanban.css';
 // the board at once and publish the change (updatedCardData, the last added, moved, updated or removed card, and an
 // event) for a query to save; the board follows the data again when the data changes.
 
-type CardFields = { title: string; description: string; badge: string; tags: string; progress: string; avatar: string; meta: string; details: string };
+type CardFields = {
+  title: string;
+  description: string;
+  badge: string;
+  tags: string;
+  progress: string;
+  avatar: string;
+  meta: string;
+  details: string;
+};
 
 // A board draws this many cards a column at first, then this many more per "Show more"; columns the same way.
 const CARDS_PER_STEP = 100;
 const MAX_BOARD_COLUMNS = 50;
 // A detail longer than this takes the card's full width; shorter ones (an amount, a date) sit two to a row.
 const SHORT_DETAIL = 22;
-const KEYBOARD_HELP = 'Press Enter to open a card. To move it, press Space, use the arrow keys, then Space or Enter to drop it. Escape cancels.';
+const KEYBOARD_HELP =
+  'Press Enter to open a card. To move it, press Space, use the arrow keys, then Space or Enter to drop it. Escape cancels.';
 
 const strip = (card: BoardCard | null | undefined): Record<string, unknown> => {
   if (!card) return {};
@@ -49,7 +68,17 @@ const asTags = (value: unknown): string[] =>
 // A card's text: a stored ISO date or timestamp as a short date, anything else as written.
 const shown = (value: unknown): string => cardDateLabel(value) ?? String(value);
 
-const CardBody = ({ card, fields, badgeColors, expanded }: { card: BoardCard; fields: CardFields; badgeColors: unknown; expanded: boolean }) => {
+const CardBody = ({
+  card,
+  fields,
+  badgeColors,
+  expanded,
+}: {
+  card: BoardCard;
+  fields: CardFields;
+  badgeColors: unknown;
+  expanded: boolean;
+}) => {
   const badge = fields.badge ? card[fields.badge] : undefined;
   const avatar = fields.avatar ? card[fields.avatar] : undefined;
   const meta = fields.meta ? card[fields.meta] : undefined;
@@ -60,7 +89,9 @@ const CardBody = ({ card, fields, badgeColors, expanded }: { card: BoardCard; fi
   return (
     <>
       <p className="ui2-kb-card-title">{String(card[fields.title] ?? '')}</p>
-      {fields.description && isSet(card[fields.description]) ? <p className="ui2-kb-card-text">{shown(card[fields.description])}</p> : null}
+      {fields.description && isSet(card[fields.description]) ? (
+        <p className="ui2-kb-card-text">{shown(card[fields.description])}</p>
+      ) : null}
       {tags.length ? (
         <div className="ui2-kb-tags">
           {tags.map((tag) => (
@@ -72,7 +103,14 @@ const CardBody = ({ card, fields, badgeColors, expanded }: { card: BoardCard; fi
       ) : null}
       {Number.isFinite(progress) ? (
         <div className="ui2-kb-progress">
-          <span className="ui2-kb-bar" role="progressbar" aria-label="Progress" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100}>
+          <span
+            className="ui2-kb-bar"
+            role="progressbar"
+            aria-label="Progress"
+            aria-valuenow={Math.round(progress)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
             <span style={{ width: `${Math.max(0, Math.min(100, progress))}%` }} />
           </span>
           <span className="ui2-kb-pct">{Math.round(progress)}%</span>
@@ -82,7 +120,12 @@ const CardBody = ({ card, fields, badgeColors, expanded }: { card: BoardCard; fi
         <div className="ui2-kb-foot">
           {isSet(badge) ? (
             <span
-              className={cn('ui2-kb-badge', mapped ? 'ui2-kb-badge--mapped' : `ui2-kb-badge--${BADGE_BY_WORD[String(badge).toLowerCase()] || 'outline'}`)}
+              className={cn(
+                'ui2-kb-badge',
+                mapped
+                  ? 'ui2-kb-badge--mapped'
+                  : `ui2-kb-badge--${BADGE_BY_WORD[String(badge).toLowerCase()] || 'outline'}`
+              )}
               style={mapped ?? undefined}
             >
               {String(badge)}
@@ -165,7 +208,9 @@ const KanbanCard = ({
     observer.observe(el);
     return () => observer.disconnect();
   }, [collapsedHeight]);
-  const clamp = custom ? { collapsible: false, maxHeight: undefined } : cardClamp(collapsedHeight, contentHeight, expanded);
+  const clamp = custom
+    ? { collapsible: false, maxHeight: undefined }
+    : cardClamp(collapsedHeight, contentHeight, expanded);
   return (
     <div
       role="button"
@@ -177,7 +222,14 @@ const KanbanCard = ({
       // In the editor a drag that starts on a card moves the card, not the whole widget.
       data-tj-inner-drag=""
       draggable={draggable}
-      className={cn('ui2-kb-card', custom && 'is-custom', draggable && 'is-draggable', selected && 'is-selected', dragging && 'is-dragging', picked && 'is-picked')}
+      className={cn(
+        'ui2-kb-card',
+        custom && 'is-custom',
+        draggable && 'is-draggable',
+        selected && 'is-selected',
+        dragging && 'is-dragging',
+        picked && 'is-picked'
+      )}
       onClick={() => onSelect(card)}
       onKeyDown={(e) => {
         if (e.target !== e.currentTarget) return;
@@ -206,7 +258,10 @@ const KanbanCard = ({
           <X />
         </button>
       ) : null}
-      <div className={cn('ui2-kb-clamp', !!clamp.maxHeight && 'is-clamped')} style={clamp.collapsible ? { maxHeight: clamp.maxHeight } : undefined}>
+      <div
+        className={cn('ui2-kb-clamp', !!clamp.maxHeight && 'is-clamped')}
+        style={clamp.collapsible ? { maxHeight: clamp.maxHeight } : undefined}
+      >
         <div ref={contentRef}>{body}</div>
       </div>
       {clamp.collapsible ? (
@@ -228,7 +283,15 @@ const KanbanCard = ({
 };
 
 /** A column's card list: scrolls inside the board, fading out at the bottom while more cards are below. */
-const CardList = ({ collapsed, depsKey, children }: { collapsed: boolean; depsKey: string; children: React.ReactNode }) => {
+const CardList = ({
+  collapsed,
+  depsKey,
+  children,
+}: {
+  collapsed: boolean;
+  depsKey: string;
+  children: React.ReactNode;
+}) => {
   const ref = useRef<HTMLDivElement>(null);
   const [moreBelow, setMoreBelow] = useState(false);
   useEffect(() => {
@@ -245,7 +308,11 @@ const CardList = ({ collapsed, depsKey, children }: { collapsed: boolean; depsKe
     };
   }, [depsKey, collapsed]);
   return (
-    <div ref={ref} className={cn('ui2-kb-list', moreBelow && 'has-more-below')} style={collapsed ? { display: 'none' } : undefined}>
+    <div
+      ref={ref}
+      className={cn('ui2-kb-list', moreBelow && 'has-more-below')}
+      style={collapsed ? { display: 'none' } : undefined}
+    >
       {children}
     </div>
   );
@@ -272,7 +339,11 @@ export const Kanban = () => {
       { id: 'done', title: 'Done' },
     ],
   });
-  const [statusFieldRaw] = ToolJet.useStateString({ name: 'statusField', label: 'Status field', initialValue: 'status' });
+  const [statusFieldRaw] = ToolJet.useStateString({
+    name: 'statusField',
+    label: 'Status field',
+    initialValue: 'status',
+  });
   const [idFieldRaw] = ToolJet.useStateString({ name: 'idField', label: 'Id field', initialValue: 'id' });
   const [cardLayout] = ToolJet.useStateEnumeration({
     name: 'cardLayout',
@@ -281,7 +352,8 @@ export const Kanban = () => {
     enumLabels: { fields: 'Fields', custom: 'Custom' },
     initialValue: 'fields',
     inspector: 'switch',
-    description: 'Custom: each card is a row of ToolJet components reading the card as {{cardData}}, e.g. {{cardData.title}} ({{listItem}} works too).',
+    description:
+      'Custom: each card is a row of ToolJet components reading the card as {{cardData}}, e.g. {{cardData.title}} ({{listItem}} works too).',
   });
   const [cardHeight] = ToolJet.useStateNumber({
     name: 'cardHeight',
@@ -292,13 +364,37 @@ export const Kanban = () => {
     visibleWhen: { key: 'cardLayout', value: 'custom' },
   });
   const [titleField] = ToolJet.useStateString({ name: 'titleField', label: 'Title field', initialValue: 'title' });
-  const [descriptionField] = ToolJet.useStateString({ name: 'descriptionField', label: 'Description field', initialValue: '' });
-  const [badgeField] = ToolJet.useStateString({ name: 'badgeField', label: 'Badge field (priority, severity)', initialValue: 'priority' });
+  const [descriptionField] = ToolJet.useStateString({
+    name: 'descriptionField',
+    label: 'Description field',
+    initialValue: '',
+  });
+  const [badgeField] = ToolJet.useStateString({
+    name: 'badgeField',
+    label: 'Badge field (priority, severity)',
+    initialValue: 'priority',
+  });
   const [tagsField] = ToolJet.useStateString({ name: 'tagsField', label: 'Tags field (a list)', initialValue: '' });
-  const [progressField] = ToolJet.useStateString({ name: 'progressField', label: 'Progress field (0 to 100)', initialValue: '' });
-  const [metaField] = ToolJet.useStateString({ name: 'metaField', label: 'Meta field (a date, a count)', initialValue: '' });
-  const [avatarField] = ToolJet.useStateString({ name: 'avatarField', label: 'Avatar field (a name)', initialValue: 'owner' });
-  const [detailsField] = ToolJet.useStateString({ name: 'detailsField', label: 'Details field (shown on the clicked card)', initialValue: '' });
+  const [progressField] = ToolJet.useStateString({
+    name: 'progressField',
+    label: 'Progress field (0 to 100)',
+    initialValue: '',
+  });
+  const [metaField] = ToolJet.useStateString({
+    name: 'metaField',
+    label: 'Meta field (a date, a count)',
+    initialValue: '',
+  });
+  const [avatarField] = ToolJet.useStateString({
+    name: 'avatarField',
+    label: 'Avatar field (a name)',
+    initialValue: 'owner',
+  });
+  const [detailsField] = ToolJet.useStateString({
+    name: 'detailsField',
+    label: 'Details field (shown on the clicked card)',
+    initialValue: '',
+  });
   const [density] = ToolJet.useStateEnumeration({
     name: 'density',
     label: 'Card density',
@@ -307,15 +403,47 @@ export const Kanban = () => {
     initialValue: 'comfortable',
     inspector: 'switch',
   });
-  const [collapsedHeight] = ToolJet.useStateString({ name: 'collapsedHeight', label: 'Collapsed card height (px, empty: show all)', initialValue: '' });
-  const [columnWidthRaw] = ToolJet.useStateString({ name: 'columnWidth', label: 'Column width (px, empty: fill the board)', initialValue: '' });
-  const [showCount] = ToolJet.useStateBoolean({ name: 'showCount', label: 'Card count on columns', initialValue: true });
-  const [collapsibleColumns] = ToolJet.useStateBoolean({ name: 'collapsibleColumns', label: 'Collapsible columns', initialValue: true });
-  const [collapsedColumns, setCollapsedColumns] = ToolJet.useStateArray({ name: 'collapsedColumns', label: 'Columns collapsed at start (ids)', initialValue: [] });
+  const [collapsedHeight] = ToolJet.useStateString({
+    name: 'collapsedHeight',
+    label: 'Collapsed card height (px, empty: show all)',
+    initialValue: '',
+  });
+  const [columnWidthRaw] = ToolJet.useStateString({
+    name: 'columnWidth',
+    label: 'Column width (px, empty: fill the board)',
+    initialValue: '',
+  });
+  const [showCount] = ToolJet.useStateBoolean({
+    name: 'showCount',
+    label: 'Card count on columns',
+    initialValue: true,
+  });
+  const [collapsibleColumns] = ToolJet.useStateBoolean({
+    name: 'collapsibleColumns',
+    label: 'Collapsible columns',
+    initialValue: true,
+  });
+  const [collapsedColumns, setCollapsedColumns] = ToolJet.useStateArray({
+    name: 'collapsedColumns',
+    label: 'Columns collapsed at start (ids)',
+    initialValue: [],
+  });
   const [allowDrag] = ToolJet.useStateBoolean({ name: 'allowDrag', label: 'Drag to move', initialValue: true });
-  const [allowAdd] = ToolJet.useStateBoolean({ name: 'allowAdd', label: 'Add card button on columns', initialValue: false });
-  const [allowDelete] = ToolJet.useStateBoolean({ name: 'allowDelete', label: 'Delete button on cards', initialValue: false });
-  const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty column message', initialValue: 'No cards' });
+  const [allowAdd] = ToolJet.useStateBoolean({
+    name: 'allowAdd',
+    label: 'Add card button on columns',
+    initialValue: false,
+  });
+  const [allowDelete] = ToolJet.useStateBoolean({
+    name: 'allowDelete',
+    label: 'Delete button on cards',
+    initialValue: false,
+  });
+  const [emptyText] = ToolJet.useStateString({
+    name: 'emptyText',
+    label: 'Empty column message',
+    initialValue: 'No cards',
+  });
   const [badgeColors] = ToolJet.useStateObject({
     name: 'badgeColors',
     label: 'Badge colours by value',
@@ -323,13 +451,33 @@ export const Kanban = () => {
     initialValue: {},
   });
   // Exposed values.
-  const [, setUpdatedCardData] = ToolJet.useStateArray({ name: 'updatedCardData', initialValue: [], inspector: 'hidden' });
-  const [, setLastSelectedCard] = ToolJet.useStateObject({ name: 'lastSelectedCard', initialValue: {}, inspector: 'hidden' });
-  const [, setLastCardMovement] = ToolJet.useStateObject({ name: 'lastCardMovement', initialValue: {}, inspector: 'hidden' });
+  const [, setUpdatedCardData] = ToolJet.useStateArray({
+    name: 'updatedCardData',
+    initialValue: [],
+    inspector: 'hidden',
+  });
+  const [, setLastSelectedCard] = ToolJet.useStateObject({
+    name: 'lastSelectedCard',
+    initialValue: {},
+    inspector: 'hidden',
+  });
+  const [, setLastCardMovement] = ToolJet.useStateObject({
+    name: 'lastCardMovement',
+    initialValue: {},
+    inspector: 'hidden',
+  });
   const [, setAddCardColumn] = ToolJet.useStateString({ name: 'addCardColumn', initialValue: '', inspector: 'hidden' });
   const [, setLastAddedCard] = ToolJet.useStateObject({ name: 'lastAddedCard', initialValue: {}, inspector: 'hidden' });
-  const [, setLastUpdatedCard] = ToolJet.useStateObject({ name: 'lastUpdatedCard', initialValue: {}, inspector: 'hidden' });
-  const [, setLastRemovedCard] = ToolJet.useStateObject({ name: 'lastRemovedCard', initialValue: {}, inspector: 'hidden' });
+  const [, setLastUpdatedCard] = ToolJet.useStateObject({
+    name: 'lastUpdatedCard',
+    initialValue: {},
+    inspector: 'hidden',
+  });
+  const [, setLastRemovedCard] = ToolJet.useStateObject({
+    name: 'lastRemovedCard',
+    initialValue: {},
+    inspector: 'hidden',
+  });
   const onCardMoved = ToolJet.useEventCallback({ name: 'onCardMoved' });
   const onAddCardClick = ToolJet.useEventCallback({ name: 'onAddCardClick' });
   const onCardAdded = ToolJet.useEventCallback({ name: 'onCardAdded' });
@@ -361,7 +509,7 @@ export const Kanban = () => {
     }),
   };
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 46 });
+  ToolJet.useComponentSettings({ role: 'kanban', fit: false, loading: 'own', defaultWidth: 43, defaultHeight: 46 });
 
   const statusField = fieldName(statusFieldRaw, 'status');
   const idField = fieldName(idFieldRaw, 'id');
@@ -389,6 +537,14 @@ export const Kanban = () => {
   // Selection, open details and expanded cards are kept by card key and read from the current board.
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [openKey, setOpenKey] = useState<string | null>(null);
+  // A selected card that leaves the data is no longer selected, as in the lists.
+  useEffect(() => {
+    if (selectedKey === null || board.some((column) => column.cards.some((card) => card.__key === selectedKey))) return;
+    setSelectedKey(null);
+    setOpenKey(null);
+    setLastSelectedCard({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [board]);
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(() => new Set());
   const toggleExpanded = (key: string) =>
     setExpandedKeys((current) => {
@@ -397,7 +553,10 @@ export const Kanban = () => {
       else next.add(key);
       return next;
     });
-  const collapsed = useMemo(() => new Set((Array.isArray(collapsedColumns) ? collapsedColumns : []).map(String)), [collapsedColumns]);
+  const collapsed = useMemo(
+    () => new Set((Array.isArray(collapsedColumns) ? collapsedColumns : []).map(String)),
+    [collapsedColumns]
+  );
   const toggleColumn = (columnId: string) => {
     const next = new Set(collapsed);
     if (next.has(columnId)) next.delete(columnId);
@@ -422,7 +581,13 @@ export const Kanban = () => {
   };
   const doAdd = (card: unknown, columnId: unknown) => {
     const { board: cols, statusField: sf, idField: idf } = live.current;
-    const result = addCard(cols, card && typeof card === 'object' ? card : {}, isSet(columnId) ? String(columnId) : undefined, sf, idf);
+    const result = addCard(
+      cols,
+      card && typeof card === 'object' ? card : {},
+      isSet(columnId) ? String(columnId) : undefined,
+      sf,
+      idf
+    );
     commit(result.columns, () => setLastAddedCard(result.card), onCardAdded);
   };
   const doUpdate = (id: unknown, values: unknown) => {
@@ -464,7 +629,9 @@ export const Kanban = () => {
     const key = refocusKey.current;
     if (!key) return;
     refocusKey.current = null;
-    const el = Array.from(boardRef.current?.querySelectorAll<HTMLElement>('[data-kb-card]') ?? []).find((c) => c.dataset.kbCard === key);
+    const el = Array.from(boardRef.current?.querySelectorAll<HTMLElement>('[data-kb-card]') ?? []).find(
+      (c) => c.dataset.kbCard === key
+    );
     el?.focus();
   });
 
@@ -490,7 +657,14 @@ export const Kanban = () => {
     },
     (id, columnId) => doMove(id, columnId)
   );
-  ToolJet.useAction({ name: 'deleteCard', displayName: 'Delete card', params: [{ handle: 'id', displayName: 'Card id', defaultValue: '' }] }, (id) => doDelete(id));
+  ToolJet.useAction(
+    {
+      name: 'deleteCard',
+      displayName: 'Delete card',
+      params: [{ handle: 'id', displayName: 'Card id', defaultValue: '' }],
+    },
+    (id) => doDelete(id)
+  );
   ToolJet.useAction(
     {
       name: 'updateCardData',
@@ -502,6 +676,7 @@ export const Kanban = () => {
     },
     (id, value) => doUpdate(id, value)
   );
+  ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => clearSelection());
 
   // Custom cards: rows of ToolJet components, one per card in board order, each placed in its column by RowSlot. A
   // card grows to fit its components (text that wraps in a narrow column pushes the ones below it down), never below
@@ -568,7 +743,7 @@ export const Kanban = () => {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const cards = board.find((c) => c.id === columnId)?.cards ?? [];
     const at = cards.findIndex((c) => c.__key === key);
-    const before = e.clientY < rect.top + rect.height / 2 ? key : cards[at + 1]?.__key ?? null;
+    const before = e.clientY < rect.top + rect.height / 2 ? key : (cards[at + 1]?.__key ?? null);
     if (target?.columnId !== columnId || target.before !== before) setTarget({ columnId, before });
   };
   const onDragOverColumn = (e: React.DragEvent, columnId: string) => {
@@ -610,8 +785,16 @@ export const Kanban = () => {
       endDrag();
     },
   };
+  const clearSelection = () => {
+    setSelectedKey(null);
+    setOpenKey(null);
+    setLastSelectedCard({});
+  };
+  // Clicking the selected card again unselects it (and closes its details), with no event (team testing, 2026-10-29:
+  // a selection could not be undone).
   const select = (card: BoardCard) => {
-    if (fields.details) setOpenKey((current) => (current === card.__key ? null : card.__key));
+    if (card.__key === selectedKey) return clearSelection();
+    if (fields.details) setOpenKey(card.__key);
     setSelectedKey(card.__key);
     setLastSelectedCard(strip(card));
     onCardSelected();
@@ -628,8 +811,10 @@ export const Kanban = () => {
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         const to = board[colIndex + (e.key === 'ArrowRight' ? 1 : -1)];
         if (to) next = { columnId: to.id, before: null };
-      } else if (e.key === 'ArrowUp') next = { columnId: t.columnId, before: others[Math.max(0, at - 1)]?.__key ?? null };
-      else if (e.key === 'ArrowDown') next = { columnId: t.columnId, before: at + 1 >= others.length ? null : others[at + 1].__key };
+      } else if (e.key === 'ArrowUp')
+        next = { columnId: t.columnId, before: others[Math.max(0, at - 1)]?.__key ?? null };
+      else if (e.key === 'ArrowDown')
+        next = { columnId: t.columnId, before: at + 1 >= others.length ? null : others[at + 1].__key };
       else if (e.key === ' ' || e.key === 'Enter' || e.key === 'Tab') {
         if (e.key !== 'Tab') e.preventDefault();
         doMove(key, t.columnId, t.before);
@@ -675,7 +860,11 @@ export const Kanban = () => {
   const reloading = ld.loading && allCards.length > 0;
 
   return (
-    <LoadingFrame loading={ld.loading} visible={reloading} look={reloading ? <Scrim /> : ld.skeleton ? <ColumnsSkel /> : <LoadingBox />}>
+    <LoadingFrame
+      loading={ld.loading}
+      visible={reloading}
+      look={reloading ? <Scrim /> : ld.skeleton ? <ColumnsSkel /> : <LoadingBox />}
+    >
       <div
         ref={boardRef}
         className={cn('ui ui2-kb', compact && 'is-compact', moreRight && 'has-more-right')}
@@ -712,13 +901,22 @@ export const Kanban = () => {
             <section
               key={column.id}
               data-kb-col={column.id}
-              className={cn('ui2-kb-col', isCollapsed && 'is-collapsed', !isCollapsed && !columnWidth && 'is-fill', over && 'is-over')}
+              className={cn(
+                'ui2-kb-col',
+                isCollapsed && 'is-collapsed',
+                !isCollapsed && !columnWidth && 'is-fill',
+                over && 'is-over'
+              )}
               style={
                 isCollapsed
                   ? undefined
                   : columnWidth
-                  ? { width: columnWidth, flex: `1 1 ${columnWidth}`, minWidth: `min(${columnWidth}, ${minColumn}px)` }
-                  : { minWidth: `${minColumn}px` }
+                    ? {
+                        width: columnWidth,
+                        flex: `1 1 ${columnWidth}`,
+                        minWidth: `min(${columnWidth}, ${minColumn}px)`,
+                      }
+                    : { minWidth: `${minColumn}px` }
               }
               {...(isCollapsed
                 ? {
@@ -749,7 +947,13 @@ export const Kanban = () => {
                   <div className="ui2-kb-head-end">
                     {count}
                     {collapsibleColumns !== false ? (
-                      <button type="button" className="ui2-kb-fold" title={`Collapse ${column.title}`} aria-label={`Collapse ${column.title}`} onClick={toggle}>
+                      <button
+                        type="button"
+                        className="ui2-kb-fold"
+                        title={`Collapse ${column.title}`}
+                        aria-label={`Collapse ${column.title}`}
+                        onClick={toggle}
+                      >
                         <ChevronLeft />
                       </button>
                     ) : null}
@@ -767,9 +971,19 @@ export const Kanban = () => {
                         custom={custom}
                         body={
                           custom ? (
-                            <ToolJet.RowSlot name="card" index={order.get(card.__key) ?? 0} item={strip(card)} />
+                            <ToolJet.RowSlot
+                              name="card"
+                              variable="cardData"
+                              index={order.get(card.__key) ?? 0}
+                              item={strip(card)}
+                            />
                           ) : (
-                            <CardBody card={card} fields={fields} badgeColors={badgeColors} expanded={card.__key === openKey} />
+                            <CardBody
+                              card={card}
+                              fields={fields}
+                              badgeColors={badgeColors}
+                              expanded={card.__key === openKey}
+                            />
                           )
                         }
                         collapsedHeight={isSet(collapsedHeight) ? collapsedHeight : ''}
@@ -799,7 +1013,9 @@ export const Kanban = () => {
                   <button
                     type="button"
                     className="ui2-kb-btn"
-                    onClick={() => setShownCards((n) => ({ ...n, [column.id]: (n[column.id] ?? CARDS_PER_STEP) + CARDS_PER_STEP }))}
+                    onClick={() =>
+                      setShownCards((n) => ({ ...n, [column.id]: (n[column.id] ?? CARDS_PER_STEP) + CARDS_PER_STEP }))
+                    }
                   >
                     Show {Math.min(hidden, CARDS_PER_STEP)} more
                   </button>

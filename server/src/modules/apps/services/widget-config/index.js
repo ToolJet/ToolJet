@@ -41,6 +41,7 @@ import { paginationConfig } from './pagination';
 import { circularProgressbarConfig } from './circularProgressbar';
 import { spinnerConfig } from './spinner';
 import { libraryComponentConfig } from './libraryComponent';
+import { packComponentConfig } from './packComponent';
 import { statisticsConfig } from './statistics';
 import { rangeSliderConfig } from './rangeslider';
 import { timelineConfig } from './timeline';
@@ -134,6 +135,7 @@ const widgets = {
   circularProgressbarConfig,
   spinnerConfig,
   libraryComponentConfig,
+  packComponentConfig,
   statisticsConfig,
   rangeSliderConfig,
   rangeSliderV2Config,
@@ -229,9 +231,9 @@ export const componentTypes = Object.values(widgets).map((widget) => {
       true,
     ),
   };
-  // Mirror of frontend componentTypes.js: LibraryComponent renders an iframe — a CSS
-  // class on its wrapper can never reach the content inside; no false affordance.
-  if (widget.component === 'LibraryComponent') {
+  // Mirror of frontend componentTypes.js: LibraryComponent and PackComponent draw in an iframe or a shadow root — a
+  // CSS class on their wrapper can never reach the content inside; no false affordance.
+  if (widget.component === 'LibraryComponent' || widget.component === 'PackComponent') {
     delete combined.styles.cssClass;
     delete combined.definition.styles.cssClass;
   }

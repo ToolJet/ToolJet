@@ -1,12 +1,29 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Autocomplete as MuiAutocomplete, Chip, CircularProgress, IconButton, InputAdornment, MenuItem, TextField } from '@mui/material';
+import {
+  Autocomplete as MuiAutocomplete,
+  Chip,
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+  MenuItem,
+  TextField,
+} from '@mui/material';
 import Close from '@mui/icons-material/Close';
 import type { AutocompleteRenderInputParams } from '@mui/material';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
 import { MuiProvider, useThemeStyles } from '../lib/MuiProvider';
 import { checkProps, fieldClass, useFieldProps, useTextFieldLook } from '../lib/field';
-import { exposedOption, keyForValue, str, toArray, toChoiceValue, toOptions, valueForKey, type Option } from '../lib/data';
+import {
+  exposedOption,
+  keyForValue,
+  str,
+  toArray,
+  toChoiceValue,
+  toOptions,
+  valueForKey,
+  type Option,
+} from '../lib/data';
 import { SAMPLE } from '../lib/samples';
 import { FieldSkeleton, Loading } from '../lib/loading';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
@@ -54,7 +71,8 @@ const focusWasLost = (active: Element | null, trigger: Element, menu: Element | 
   if (menu?.contains(active)) return true;
   const hosts = (el: Element | null) => {
     const found: Element[] = [];
-    for (let root = el?.getRootNode(); root instanceof ShadowRoot; root = root.host.getRootNode()) found.push(root.host);
+    for (let root = el?.getRootNode(); root instanceof ShadowRoot; root = root.host.getRootNode())
+      found.push(root.host);
     return found;
   };
   return hosts(trigger).includes(active) || hosts(menu).includes(active);
@@ -77,14 +95,44 @@ const clearRoom = (variant: string) => {
 // clearable hides it, by the Autocomplete's name.
 export const Select = () => {
   const field = useFieldProps({ label: 'Status' });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: '[{ label, value }]', initialValue: SAMPLE.status });
+  const [rawOptions] = ToolJet.useStateArray({
+    name: 'options',
+    label: 'Options',
+    inspector: 'options',
+    description: '[{ label, value }]',
+    initialValue: SAMPLE.status,
+  });
   // The value keeps its type (1 stays a number, so 1 and '1' name two options): not useStateText, which made it text.
-  const [rawValue, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'The picked option value.', initialValue: '' });
+  const [rawValue, setValue] = ToolJet.useStateString({
+    name: 'value',
+    label: 'Value',
+    description: 'The picked option value.',
+    initialValue: '',
+  });
   const value = toChoiceValue(rawValue);
-  const [displayEmpty] = ToolJet.useStateBoolean({ name: 'displayEmpty', label: 'Display empty', description: 'Show the placeholder while nothing is picked.', initialValue: true });
-  const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: 'Select', visibleWhen: { key: 'displayEmpty', value: true } });
-  const [disableClearable] = ToolJet.useStateBoolean({ name: 'disableClearable', label: 'Disable clearable', description: 'Hide the clear button.', initialValue: false });
-  const [, setSelectedOption] = ToolJet.useStateObject({ name: 'selectedOption', initialValue: {}, inspector: 'hidden' });
+  const [displayEmpty] = ToolJet.useStateBoolean({
+    name: 'displayEmpty',
+    label: 'Display empty',
+    description: 'Show the placeholder while nothing is picked.',
+    initialValue: true,
+  });
+  const [placeholder] = useStateText({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Select',
+    visibleWhen: { key: 'displayEmpty', value: true },
+  });
+  const [disableClearable] = ToolJet.useStateBoolean({
+    name: 'disableClearable',
+    label: 'Disable clearable',
+    description: 'Hide the clear button.',
+    initialValue: false,
+  });
+  const [, setSelectedOption] = ToolJet.useStateObject({
+    name: 'selectedOption',
+    initialValue: {},
+    inspector: 'hidden',
+  });
   const [, setOpen] = ToolJet.useStateBoolean({ name: 'open', initialValue: false, inspector: 'hidden' });
   const look = useTextFieldLook();
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
@@ -97,9 +145,21 @@ export const Select = () => {
   // MUI's Select holds option keys (lib/data Option); the one clicked is the one exposed.
   const key = value === '' ? '' : keyForValue(options, value);
   const known = key !== '' && options.some((o) => o.value === key);
-  const check = ToolJet.useValidation({ section: 'choice', value: str(value), present: known });
+  const check = ToolJet.useValidation({ kind: 'choice', value: str(value), present: known });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
+  ToolJet.useComponentSettings({
+    role: 'select',
+    fit: true,
+    loading: 'own',
+    usage:
+      "MUI's Select (TextField select): label, options [{label, value}], value (the picked value), helperText, displayEmpty with placeholder, variant, size, disableClearable (a clear button shows while a value is picked unless set); selectedOption is exposed; onChange, onOpen, onClose. The menu opens in the popup layer.",
+    roleProps: { description: 'helperText', showClearBtn: 'disableClearable' },
+    roleValues: { disableClearable: { true: false, false: true } },
+    roleEvents: { onSelect: 'onChange' },
+    roleActions: { selectOption: 'setValue', setFocus: 'focus' },
+    defaultWidth: 10,
+    defaultHeight: 7,
+  });
 
   // selectedOption follows the value however it changes (a pick, a binding, a Form's clearForm, options that load
   // later or drop it): set only on a pick, it kept the old option after a clear or an emptied binding.
@@ -147,7 +207,10 @@ export const Select = () => {
     if (trigger && focusWasLost(deepActiveElement(), trigger, menuRef.current)) trigger.focus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [menuOpen]);
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(toChoiceValue(next)));
+  ToolJet.useAction(
+    { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (next) => change(toChoiceValue(next))
+  );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change(''));
   ToolJet.useAction({ name: 'focus', displayName: 'Focus' }, () => ref.current?.focus());
 
@@ -160,7 +223,11 @@ export const Select = () => {
   // so the label ends in an ellipsis before them in every variant and size.
   const room = clearRoom(look.variant);
   const clearButton = clearable ? (
-    <InputAdornment position="end" className="tj-mui-select-clear-slot" style={{ position: 'absolute', top: '50%', right: room.clear, margin: 0 }}>
+    <InputAdornment
+      position="end"
+      className="tj-mui-select-clear-slot"
+      style={{ position: 'absolute', top: '50%', right: room.clear, margin: 0 }}
+    >
       <IconButton
         aria-label="Clear"
         title="Clear"
@@ -208,7 +275,11 @@ export const Select = () => {
               MenuProps: { disableRestoreFocus: true, ref: menuRef } as Record<string, unknown>,
               displayEmpty: showEmpty,
               renderValue: (v: unknown) =>
-                v === '' ? <span className="tj-mui-placeholder">{placeholder}</span> : (options.find((o) => o.value === v)?.label ?? str(v)),
+                v === '' ? (
+                  <span className="tj-mui-placeholder">{placeholder}</span>
+                ) : (
+                  (options.find((o) => o.value === v)?.label ?? str(v))
+                ),
               onOpen: () => {
                 if (!available()) return;
                 setMenuOpen(true);
@@ -234,7 +305,13 @@ export const Select = () => {
           {options.length > MAX_SELECT_OPTIONS ? (
             // A disabled item: MUI's Select makes every child an option, and a disabled one is skipped by the arrow
             // keys and takes no click.
-            <MenuItem key={CAP_NOTE} value={CAP_NOTE} disabled className="tj-mui-cap-note" sx={{ whiteSpace: 'normal', fontSize: 12, color: 'text.secondary', '&.Mui-disabled': { opacity: 1 } }}>
+            <MenuItem
+              key={CAP_NOTE}
+              value={CAP_NOTE}
+              disabled
+              className="tj-mui-cap-note"
+              sx={{ whiteSpace: 'normal', fontSize: 12, color: 'text.secondary', '&.Mui-disabled': { opacity: 1 } }}
+            >
               {`Showing ${MAX_SELECT_OPTIONS} of ${options.length} options. An Autocomplete searches them all.`}
             </MenuItem>
           ) : null}
@@ -264,10 +341,20 @@ const loadingSlotProps = ({ slotProps }: AutocompleteRenderInputParams, loading:
 /** The Autocomplete props both variants share. */
 const useAutocompleteProps = (defaults: { label: string; placeholder: string; options: unknown[] }) => {
   const field = useFieldProps({ label: defaults.label });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: '[{ label, value }]', initialValue: defaults.options });
+  const [rawOptions] = ToolJet.useStateArray({
+    name: 'options',
+    label: 'Options',
+    inspector: 'options',
+    description: '[{ label, value }]',
+    initialValue: defaults.options,
+  });
   const [placeholder] = useStateText({ name: 'placeholder', label: 'Placeholder', initialValue: defaults.placeholder });
   const [noOptionsText] = useStateText({ name: 'noOptionsText', label: 'No options text', initialValue: 'No options' });
-  const [disableClearable] = ToolJet.useStateBoolean({ name: 'disableClearable', label: 'Disable clearable', initialValue: false });
+  const [disableClearable] = ToolJet.useStateBoolean({
+    name: 'disableClearable',
+    label: 'Disable clearable',
+    initialValue: false,
+  });
   const [inputValue, setInputValue] = useStateText({ name: 'inputValue', initialValue: '', inspector: 'hidden' });
   const look = useTextFieldLook();
   // The typed text is the field's own draft: a Form's clearForm empties it with the value (MUI resets it only when the
@@ -276,11 +363,29 @@ const useAutocompleteProps = (defaults: { label: string; placeholder: string; op
   // MUI's open state, held here so the guard can close the listbox (it portals out of the widget): see Select.
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState(false);
-  return { field, options: toOptions(rawOptions, 'Autocomplete'), placeholder, noOptionsText, disableClearable, inputValue, setInputValue, look, rootRef, open, setOpen };
+  return {
+    field,
+    options: toOptions(rawOptions, 'Autocomplete'),
+    placeholder,
+    noOptionsText,
+    disableClearable,
+    inputValue,
+    setInputValue,
+    look,
+    rootRef,
+    open,
+    setOpen,
+  };
 };
 
 /** The open, close and guard wiring both Autocomplete variants share. */
-const usePopupState = (p: ReturnType<typeof useAutocompleteProps>, disabled: boolean, touch: () => void, onOpen: () => void, onClose: () => void) => {
+const usePopupState = (
+  p: ReturnType<typeof useAutocompleteProps>,
+  disabled: boolean,
+  touch: () => void,
+  onOpen: () => void,
+  onClose: () => void
+) => {
   const close = () => {
     p.setOpen(false);
     touch();
@@ -308,8 +413,18 @@ const usePopupState = (p: ReturnType<typeof useAutocompleteProps>, disabled: boo
 // inputValue (the typed text) is exposed. Events onChange, onInputChange, onOpen, onClose.
 export const Autocomplete = () => {
   const p = useAutocompleteProps({ label: 'City', placeholder: 'Search a city...', options: SAMPLE.cities });
-  const [value, setValue] = ToolJet.useStateObject({ name: 'value', label: 'Value', description: 'The picked option { label, value }, or null.', initialValue: null });
-  const [freeSolo] = ToolJet.useStateBoolean({ name: 'freeSolo', label: 'Free solo', description: 'Any typed text is a value.', initialValue: false });
+  const [value, setValue] = ToolJet.useStateObject({
+    name: 'value',
+    label: 'Value',
+    description: 'The picked option { label, value }, or null.',
+    initialValue: null,
+  });
+  const [freeSolo] = ToolJet.useStateBoolean({
+    name: 'freeSolo',
+    label: 'Free solo',
+    description: 'Any typed text is a value.',
+    initialValue: false,
+  });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onInputChange = ToolJet.useEventCallback({ name: 'onInputChange' });
   const onOpen = ToolJet.useEventCallback({ name: 'onOpen' });
@@ -317,15 +432,34 @@ export const Autocomplete = () => {
   const ref = useRef<HTMLInputElement>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const found = findOption(p.options, value) ?? (freeSolo && typeof value === 'string' && value ? { label: value, value, data: value, key: value } : null);
+  const found =
+    findOption(p.options, value) ??
+    (freeSolo && typeof value === 'string' && value ? { label: value, value, data: value, key: value } : null);
   // The same object while the pick is the same (options are rebuilt every render): MUI takes a new value object for a
   // change and resets the typed text to its label, so editing the text of a picked city was undone by the next render.
   const pickedKey = JSON.stringify(found);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const picked = useMemo(() => found, [pickedKey]);
-  const check = ToolJet.useValidation({ section: 'choice', value: picked ? str(picked.data) : '', present: !!picked });
+  const check = ToolJet.useValidation({ kind: 'choice', value: picked ? str(picked.data) : '', present: !!picked });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
+  ToolJet.useComponentSettings({
+    role: 'combobox',
+    fit: true,
+    loading: 'own',
+    usage:
+      "MUI's Autocomplete: label, options [{label, value}], value in MUI's shape (the picked option {label, value} or null; a bare value or label also picks), freeSolo, disableClearable, noOptionsText; inputValue (typed text) exposed; onChange, onInputChange, onOpen, onClose.",
+    roleProps: {
+      description: 'helperText',
+      emptyText: 'noOptionsText',
+      searchText: 'inputValue',
+      showClearBtn: 'disableClearable',
+    },
+    roleValues: { disableClearable: { true: false, false: true } },
+    roleEvents: { onSelect: 'onChange', onSearchTextChanged: 'onInputChange' },
+    roleActions: { selectOption: 'setValue', setFocus: 'focus' },
+    defaultWidth: 10,
+    defaultHeight: 7,
+  });
 
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
@@ -334,10 +468,13 @@ export const Autocomplete = () => {
     onChange();
   };
   const popup = usePopupState(p, disabled, check.touch, onOpen, onClose);
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => {
-    const o = findOption(p.options, next);
-    change(o ? pickedValue(o) : null);
-  });
+  ToolJet.useAction(
+    { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (next) => {
+      const o = findOption(p.options, next);
+      change(o ? pickedValue(o) : null);
+    }
+  );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change(null));
   ToolJet.useAction({ name: 'focus', displayName: 'Focus' }, () => ref.current?.focus());
 
@@ -391,10 +528,29 @@ export const Autocomplete = () => {
 // onInputChange, onOpen, onClose.
 export const AutocompleteMultiple = () => {
   const p = useAutocompleteProps({ label: 'Cities', placeholder: 'Select cities...', options: SAMPLE.cities });
-  const [value, setValue] = ToolJet.useStateArray({ name: 'value', label: 'Value', description: 'The picked options [{ label, value }].', initialValue: [] });
-  const [limitTags] = ToolJet.useStateNumber({ name: 'limitTags', label: 'Limit tags', description: 'Chips shown while not focused; -1 for all.', initialValue: -1, min: -1 });
-  const [disableCloseOnSelect] = ToolJet.useStateBoolean({ name: 'disableCloseOnSelect', label: 'Disable close on select', initialValue: true });
-  const [filterSelectedOptions] = ToolJet.useStateBoolean({ name: 'filterSelectedOptions', label: 'Filter selected options', initialValue: false });
+  const [value, setValue] = ToolJet.useStateArray({
+    name: 'value',
+    label: 'Value',
+    description: 'The picked options [{ label, value }].',
+    initialValue: [],
+  });
+  const [limitTags] = ToolJet.useStateNumber({
+    name: 'limitTags',
+    label: 'Limit tags',
+    description: 'Chips shown while not focused; -1 for all.',
+    initialValue: -1,
+    min: -1,
+  });
+  const [disableCloseOnSelect] = ToolJet.useStateBoolean({
+    name: 'disableCloseOnSelect',
+    label: 'Disable close on select',
+    initialValue: true,
+  });
+  const [filterSelectedOptions] = ToolJet.useStateBoolean({
+    name: 'filterSelectedOptions',
+    label: 'Filter selected options',
+    initialValue: false,
+  });
   const [chipColor] = ToolJet.useStateEnumeration({
     name: 'chipColor',
     label: 'Chip color',
@@ -416,9 +572,28 @@ export const AutocompleteMultiple = () => {
   const pickedKey = JSON.stringify(found);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const picked = useMemo(() => found, [pickedKey]);
-  const check = ToolJet.useValidation({ section: 'choice', value: picked.map((o) => o.data), present: picked.length > 0 });
+  const check = ToolJet.useValidation({ kind: 'choice', value: picked.map((o) => o.data), present: picked.length > 0 });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 7 });
+  ToolJet.useComponentSettings({
+    role: 'multiselect',
+    fit: true,
+    loading: 'own',
+    usage:
+      "MUI's Autocomplete multiple: picked options as Chips; value in MUI's shape, an array of options [{label, value}] (bare values also pick); limitTags, disableCloseOnSelect, filterSelectedOptions, chipColor; onChange, onInputChange.",
+    roleProps: {
+      description: 'helperText',
+      values: 'value',
+      emptyText: 'noOptionsText',
+      searchText: 'inputValue',
+      maxVisibleChips: 'limitTags',
+      showClearBtn: 'disableClearable',
+    },
+    roleValues: { disableClearable: { true: false, false: true } },
+    roleEvents: { onSelect: 'onChange', onSearchTextChanged: 'onInputChange' },
+    roleActions: { selectOptions: 'setValue', setValues: 'setValue', setFocus: 'focus' },
+    defaultWidth: 12,
+    defaultHeight: 7,
+  });
 
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
@@ -427,8 +602,14 @@ export const AutocompleteMultiple = () => {
     onChange();
   };
   const popup = usePopupState(p, disabled, check.touch, onOpen, onClose);
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Values' }] }, (next) =>
-    change(toArray(next).map((v) => findOption(p.options, v)).filter((o): o is Option => !!o))
+  ToolJet.useAction(
+    { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Values' }] },
+    (next) =>
+      change(
+        toArray(next)
+          .map((v) => findOption(p.options, v))
+          .filter((o): o is Option => !!o)
+      )
   );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change([]));
   ToolJet.useAction({ name: 'focus', displayName: 'Focus' }, () => ref.current?.focus());

@@ -1,4 +1,9 @@
-import { fitsContentInView, heightHeldInView, stretchesInRow } from '../dynamicHeightPolicy';
+import {
+  fitsContentInView,
+  heightHeldInView,
+  keepsFittedHeightWhenMoved,
+  stretchesInRow,
+} from '../dynamicHeightPolicy';
 
 describe('which widgets fit their content in the viewer', () => {
   it('follows the Dynamic height property for native widgets', () => {
@@ -49,7 +54,18 @@ describe('which children an Equal heights row stretches to the line', () => {
     expect(stretchesInRow(equal, 'ShadStat', { dynamicHeight: false }, 'view')).toBe(false);
   });
 
-  it('stretches a component pack Stat card the same way, by its manifest role', () => {
+  it.each(['LibraryComponent', 'PackComponent'])(
+    'stretches a %s Stat card the same way, by its manifest role',
+    (type) => {
+      // Break this catches: a shipped pack's Stat (PackComponent) left short in an Equal heights row.
+      const fits = { dynamicHeight: true };
+      expect(stretchesInRow(equal, type, fits, 'view', 'stat')).toBe(true);
+      expect(stretchesInRow(equal, type, { ...fits, card: false }, 'view', 'stat')).toBe(false);
+      expect(stretchesInRow(equal, type, fits, 'view', 'button')).toBe(false);
+    }
+  );
+
+  it('keeps the original custom-component cases', () => {
     const fits = { dynamicHeight: true };
     expect(stretchesInRow(equal, 'LibraryComponent', fits, 'view', 'stat')).toBe(true);
     expect(stretchesInRow(equal, 'LibraryComponent', { ...fits, card: false }, 'view', 'stat')).toBe(false);
@@ -60,5 +76,19 @@ describe('which children an Equal heights row stretches to the line', () => {
   it('leaves other widgets at their own height, so the row keeps its Align (a heading beside a button)', () => {
     expect(stretchesInRow(equal, 'ShadHeading', {}, 'view')).toBe(false);
     expect(stretchesInRow(equal, 'Button', { dynamicHeight: true }, 'view')).toBe(false);
+  });
+});
+
+describe('keepsFittedHeightWhenMoved', () => {
+  it.each(['LibraryComponent', 'PackComponent'])(
+    'keeps a %s at the height it fitted when a sibling moves it',
+    (type) => {
+      // Break this catches: a pack component floored at its saved height when moved, leaving a band under it.
+      expect(keepsFittedHeightWhenMoved(type)).toBe(true);
+    }
+  );
+
+  it('floors a native widget at its drawn height', () => {
+    expect(keepsFittedHeightWhenMoved('TextInput')).toBe(false);
   });
 });

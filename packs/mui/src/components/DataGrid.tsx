@@ -2,7 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import DOMPurify from 'dompurify';
 import { Chip } from '@mui/material';
 import { DataGrid as MuiDataGrid } from '@mui/x-data-grid';
-import type { GridColDef, GridLocaleText, GridPaginationModel, GridRowSelectionModel, GridSortModel } from '@mui/x-data-grid';
+import type {
+  GridColDef,
+  GridLocaleText,
+  GridPaginationModel,
+  GridRowSelectionModel,
+  GridSortModel,
+} from '@mui/x-data-grid';
 import { deDE, esES, frFR, itIT, nlNL, ptBR, ptPT } from '@mui/x-data-grid/locales';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useStateText } from '../lib/text';
@@ -44,7 +50,11 @@ const textOf = (v: unknown) => {
   el.innerHTML = sanitize(v);
   return (el.textContent ?? '').replace(/\s+/g, ' ').trim();
 };
-const humanize = (k: string) => k.replace(/[_-]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
+const humanize = (k: string) =>
+  k
+    .replace(/[_-]+/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/^./, (c) => c.toUpperCase());
 
 type Column = GridColDef & { format?: string; currency?: string; colors?: Record<string, string>; dateFormat?: string };
 
@@ -53,9 +63,17 @@ type Column = GridColDef & { format?: string; currency?: string; colors?: Record
 // for chips, colors { value: palette colour }; type or columnType 'html' (UI 2.0's Table) is the html format. None:
 // every field of the first row.
 const isFalse = (v: unknown) => v === false || v === 'false' || v === '{{false}}';
-const isHidden = (r: Row) => r.hidden === true || r.hidden === 'true' || isFalse(r.visible) || isFalse(r.columnVisibility);
+const isHidden = (r: Row) =>
+  r.hidden === true || r.hidden === 'true' || isFalse(r.visible) || isFalse(r.columnVisibility);
 const CHIP_COLORS = new Set(['default', 'primary', 'secondary', 'error', 'info', 'success', 'warning']);
-const UI2_FORMATS: Record<string, string> = { currency: 'currency', percent: 'percent', badge: 'chip', status: 'chip', tag: 'chip', tags: 'chip' };
+const UI2_FORMATS: Record<string, string> = {
+  currency: 'currency',
+  percent: 'percent',
+  badge: 'chip',
+  status: 'chip',
+  tag: 'chip',
+  tags: 'chip',
+};
 
 /**
  * A chip column's cell. A palette name goes to color; a CSS colour (UI 2.0's badgeColors) tints the chip instead, its
@@ -72,7 +90,13 @@ export const StatusChip = ({ label, color }: { label: string; color: string }) =
   const css = /^(#|rgb|hsl)/i.test(color) ? color : '';
   if (!family && !css) return <Chip size="small" label={label} />;
   const tint = (t: Theme) => (family ? t.palette[family].main : css);
-  return <Chip size="small" label={label} sx={(t) => ({ color: themeInk(tint(t), t), bgcolor: `color-mix(in srgb, ${tint(t)} 14%, transparent)` })} />;
+  return (
+    <Chip
+      size="small"
+      label={label}
+      sx={(t) => ({ color: themeInk(tint(t), t), bgcolor: `color-mix(in srgb, ${tint(t)} 14%, transparent)` })}
+    />
+  );
 };
 
 const toColumns = (raw: unknown, rows: Row[]): Column[] => {
@@ -104,13 +128,18 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
       const kind = type.toLowerCase();
       // A format may carry its currency (Ant's 'currency:USD'); a date pattern ('D MMM YYYY') is not a number format.
       const [head, code] = str(r.format).split(':');
-      const fmt = ['number', 'currency', 'percent', 'compact', 'chip', 'html'].includes(head.trim().toLowerCase()) ? head.trim().toLowerCase() : '';
+      const fmt = ['number', 'currency', 'percent', 'compact', 'chip', 'html'].includes(head.trim().toLowerCase())
+        ? head.trim().toLowerCase()
+        : '';
       col.format = kind === 'html' ? 'html' : fmt || UI2_FORMATS[kind] || undefined;
-      col.currency = str(r.currency) || (code && /^[a-z]{3}$/i.test(code.trim()) ? code.trim().toUpperCase() : '') || undefined;
+      col.currency =
+        str(r.currency) || (code && /^[a-z]{3}$/i.test(code.trim()) ? code.trim().toUpperCase() : '') || undefined;
       // A date column's pattern: UI 2.0's dateFormat, or a date pattern given as the format ('D MMM YYYY').
       const pattern = str(r.dateFormat).trim() || (!fmt && /[DMY]/.test(str(r.format)) ? str(r.format).trim() : '');
       if (pattern) col.dateFormat = pattern;
-      const colors = [r.colors, r.badgeColors, r.tagColors].find((m) => m && typeof m === 'object' && !Array.isArray(m));
+      const colors = [r.colors, r.badgeColors, r.tagColors].find(
+        (m) => m && typeof m === 'object' && !Array.isArray(m)
+      );
       if (colors) col.colors = colors as Record<string, string>;
       return col;
     })
@@ -129,7 +158,11 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
     });
   }
   const first = rows[0];
-  return first ? Object.keys(first).slice(0, MAX_COLUMNS).map((k) => ({ field: k, headerName: humanize(k), flex: 1 })) : [];
+  return first
+    ? Object.keys(first)
+        .slice(0, MAX_COLUMNS)
+        .map((k) => ({ field: k, headerName: humanize(k), flex: 1 }))
+    : [];
 };
 
 // What the grid gets for a column: numbers typed as numbers (right-aligned, numeric sort), dates read from ISO strings,
@@ -139,7 +172,9 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
 type GridLocalization = { components: { MuiDataGrid: { defaultProps: { localeText: Partial<GridLocaleText> } } } };
 const textOfLocalization = (l: GridLocalization) => l.components.MuiDataGrid.defaultProps.localeText;
 const GRID_TEXT: Record<string, Partial<GridLocaleText>> = Object.fromEntries(
-  Object.entries({ 'pt-BR': ptBR, 'pt-PT': ptPT, pt: ptBR, es: esES, fr: frFR, de: deDE, it: itIT, nl: nlNL }).map(([k, v]) => [k, textOfLocalization(v as GridLocalization)]),
+  Object.entries({ 'pt-BR': ptBR, 'pt-PT': ptPT, pt: ptBR, es: esES, fr: frFR, de: deDE, it: itIT, nl: nlNL }).map(
+    ([k, v]) => [k, textOfLocalization(v as GridLocalization)]
+  )
 );
 const gridTextFor = (locale: string): Partial<GridLocaleText> => {
   const tag = locale.trim();
@@ -157,10 +192,15 @@ const toGridColumn = (c: Column, rows: Row[], locale = ''): GridColDef => {
   const filled = rows.map((r) => r[c.field]).filter((v) => v !== undefined && v !== null && v !== '');
   if (col.type === 'number' && filled.some((v) => toNumber(v) === null)) {
     delete col.type;
-    if (['number', 'currency', 'percent', 'compact'].includes(format ?? '')) return { ...col, valueFormatter: (v: unknown) => str(v) };
+    if (['number', 'currency', 'percent', 'compact'].includes(format ?? ''))
+      return { ...col, valueFormatter: (v: unknown) => str(v) };
   }
   const isoOrTime = (v: unknown) => typeof v === 'number' || v instanceof Date || /^\d{4}-\d{2}-\d{2}/.test(String(v));
-  if ((col.type === 'date' || col.type === 'dateTime') && filled.some((v) => !isoOrTime(v) || Number.isNaN(new Date(String(v)).getTime()))) delete col.type;
+  if (
+    (col.type === 'date' || col.type === 'dateTime') &&
+    filled.some((v) => !isoOrTime(v) || Number.isNaN(new Date(String(v)).getTime()))
+  )
+    delete col.type;
   if (col.type === 'date' || col.type === 'dateTime') {
     col.valueGetter = (v: unknown) => (v ? new Date(String(v)) : null);
     // The column's own pattern (UI 2.0's dateFormat, dayjs tokens), else the locale's date (MUI wrote the viewer's).
@@ -171,15 +211,25 @@ const toGridColumn = (c: Column, rows: Row[], locale = ''): GridColDef => {
       if (!(v instanceof Date) || Number.isNaN(v.getTime())) return '';
       if (pattern) return dayjs(v).format(pattern);
       return withTime
-        ? v.toLocaleString(where, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+        ? v.toLocaleString(where, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+          })
         : v.toLocaleDateString(where, { year: 'numeric', month: 'short', day: 'numeric' });
     };
   }
   if (col.type === 'number') {
     col.valueGetter = (v: unknown) => toNumber(v);
-    if (format) col.valueFormatter = (v: unknown) => (v === null || v === undefined ? '' : formatCell(v, format, currency, locale));
+    if (format)
+      col.valueFormatter = (v: unknown) =>
+        v === null || v === undefined ? '' : formatCell(v, format, currency, locale);
     // A plain number column follows an author's locale too (MUI's own formatter writes the viewer's browser locale).
-    else if (locale.trim()) col.valueFormatter = (v: unknown) => (v === null || v === undefined ? '' : formatCell(v, 'number', currency, locale));
+    else if (locale.trim())
+      col.valueFormatter = (v: unknown) =>
+        v === null || v === undefined ? '' : formatCell(v, 'number', currency, locale);
   } else if (format === 'html') {
     col.renderCell = (p) => (
       <div className="tj-mui-html-cell">
@@ -208,29 +258,91 @@ const toGridColumn = (c: Column, rows: Row[], locale = ''): GridColDef => {
 // onSortModelChange.
 export const DataGrid = () => {
   const [rawRows] = ToolJet.useStateArray({ name: 'rows', label: 'Rows', initialValue: SAMPLE.rows });
-  const [rawColumns] = ToolJet.useStateArray({ name: 'columns', label: 'Columns', description: '[{ field, headerName, type, width, flex }]; empty: every field.', initialValue: SAMPLE.columns });
+  const [rawColumns] = ToolJet.useStateArray({
+    name: 'columns',
+    label: 'Columns',
+    description: '[{ field, headerName, type, width, flex }]; empty: every field.',
+    initialValue: SAMPLE.columns,
+  });
   const [locale] = useStateText({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
-  const [rowIdField] = useStateText({ name: 'rowIdField', label: 'Row id field', description: "The rows' id field (getRowId).", initialValue: 'id' });
-  const [rawDensity] = ToolJet.useStateEnumeration({ name: 'density', label: 'Density', enumDefinition: ['compact', 'standard', 'comfortable'], initialValue: 'standard' });
+  const [rowIdField] = useStateText({
+    name: 'rowIdField',
+    label: 'Row id field',
+    description: "The rows' id field (getRowId).",
+    initialValue: 'id',
+  });
+  const [rawDensity] = ToolJet.useStateEnumeration({
+    name: 'density',
+    label: 'Density',
+    enumDefinition: ['compact', 'standard', 'comfortable'],
+    initialValue: 'standard',
+  });
   // MUI capitalizes the density as text; a binding that gives anything else (a number, null) is standard.
-  const density = (['compact', 'standard', 'comfortable'].includes(rawDensity as string) ? rawDensity : 'standard') as 'compact' | 'standard' | 'comfortable';
-  const [checkboxSelection] = ToolJet.useStateBoolean({ name: 'checkboxSelection', label: 'Checkbox selection', initialValue: false });
-  const [autoPageSize] = ToolJet.useStateBoolean({ name: 'autoPageSize', label: 'Auto page size', description: 'As many rows per page as fit.', initialValue: false });
-  const [pageSize] = ToolJet.useStateNumber({ name: 'pageSize', label: 'Page size', initialValue: 10, min: 1, max: MAX_PAGE_SIZE, visibleWhen: { key: 'autoPageSize', value: false } });
+  const density = (['compact', 'standard', 'comfortable'].includes(rawDensity as string) ? rawDensity : 'standard') as
+    'compact' | 'standard' | 'comfortable';
+  const [checkboxSelection] = ToolJet.useStateBoolean({
+    name: 'checkboxSelection',
+    label: 'Checkbox selection',
+    initialValue: false,
+  });
+  const [autoPageSize] = ToolJet.useStateBoolean({
+    name: 'autoPageSize',
+    label: 'Auto page size',
+    description: 'As many rows per page as fit.',
+    initialValue: false,
+  });
+  const [pageSize] = ToolJet.useStateNumber({
+    name: 'pageSize',
+    label: 'Page size',
+    initialValue: 10,
+    min: 1,
+    max: MAX_PAGE_SIZE,
+    visibleWhen: { key: 'autoPageSize', value: false },
+  });
   const [showToolbar] = ToolJet.useStateBoolean({ name: 'showToolbar', label: 'Show toolbar', initialValue: false });
-  const [disableColumnMenu] = ToolJet.useStateBoolean({ name: 'disableColumnMenu', label: 'Disable column menu', initialValue: false });
+  const [disableColumnMenu] = ToolJet.useStateBoolean({
+    name: 'disableColumnMenu',
+    label: 'Disable column menu',
+    initialValue: false,
+  });
   const [hideFooter] = ToolJet.useStateBoolean({ name: 'hideFooter', label: 'Hide footer', initialValue: false });
   const [noRowsLabel] = useStateText({ name: 'noRowsLabel', label: 'No rows label', initialValue: 'No rows' });
   // An author's own empty label wins; the default 'No rows' gives way to the locale's.
   const gridText = useMemo(() => {
     const words = gridTextFor(str(locale));
-    return { ...words, noRowsLabel: noRowsLabel && (noRowsLabel !== 'No rows' || !words.noRowsLabel) ? noRowsLabel : words.noRowsLabel ?? 'No rows' };
+    return {
+      ...words,
+      noRowsLabel:
+        noRowsLabel && (noRowsLabel !== 'No rows' || !words.noRowsLabel)
+          ? noRowsLabel
+          : (words.noRowsLabel ?? 'No rows'),
+    };
   }, [locale, noRowsLabel]);
-  const [selectedRow, setSelectedRow] = ToolJet.useStateObject({ name: 'selectedRow', initialValue: {}, inspector: 'hidden' });
-  const [selectedRowId, setSelectedRowId] = ToolJet.useStateString({ name: 'selectedRowId', initialValue: '', inspector: 'hidden' });
-  const [selectionIds, setSelectionIds] = ToolJet.useStateArray({ name: 'rowSelectionModel', initialValue: [], inspector: 'hidden' });
-  const [selectedRows, setSelectedRows] = ToolJet.useStateArray({ name: 'selectedRows', initialValue: [], inspector: 'hidden' });
-  const [, setPaginationModel] = ToolJet.useStateObject({ name: 'paginationModel', initialValue: { page: 0, pageSize: 10 }, inspector: 'hidden' });
+  const [selectedRow, setSelectedRow] = ToolJet.useStateObject({
+    name: 'selectedRow',
+    initialValue: {},
+    inspector: 'hidden',
+  });
+  const [selectedRowId, setSelectedRowId] = ToolJet.useStateString({
+    name: 'selectedRowId',
+    initialValue: '',
+    inspector: 'hidden',
+  });
+  const [selectionIds, setSelectionIds] = ToolJet.useStateArray({
+    name: 'rowSelectionModel',
+    initialValue: [],
+    inspector: 'hidden',
+  });
+  const [selectedRows, setSelectedRows] = ToolJet.useStateArray({
+    name: 'selectedRows',
+    initialValue: [],
+    inspector: 'hidden',
+  });
+  const [, setPaginationModel] = ToolJet.useStateObject({
+    name: 'paginationModel',
+    initialValue: { page: 0, pageSize: 10 },
+    inspector: 'hidden',
+  });
   const [sortModel, setSortModel] = ToolJet.useStateArray({ name: 'sortModel', initialValue: [], inspector: 'hidden' });
   const onRowClick = ToolJet.useEventCallback({ name: 'onRowClick' });
   const onRowSelectionModelChange = ToolJet.useEventCallback({ name: 'onRowSelectionModelChange' });
@@ -238,7 +350,28 @@ export const DataGrid = () => {
   const onSortModelChange = ToolJet.useEventCallback({ name: 'onSortModelChange' });
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 30, defaultHeight: 40 });
+  ToolJet.useComponentSettings({
+    role: 'table',
+    fit: false,
+    loading: 'own',
+    usage:
+      'MUI X DataGrid (free MIT grid): rows, columns [{field, headerName, type (number, date, boolean), width or flex, align, format (currency, percent, compact, chip), colors}], rowIdField, density (compact, standard, comfortable), checkboxSelection, pageSize (max 100) or autoPageSize, showToolbar (filter, export, quick search), noRowsLabel. Exposes selectedRow, rowSelectionModel (ids), selectedRows, paginationModel, sortModel. onRowClick, onRowSelectionModelChange, onPaginationModelChange, onSortModelChange.',
+    roleProps: {
+      data: 'rows',
+      idField: 'rowIdField',
+      rowsPerPage: 'pageSize',
+      allowSelection: 'checkboxSelection',
+      emptyText: 'noRowsLabel',
+    },
+    roleEvents: {
+      onRowClicked: 'onRowClick',
+      onSelectionChanged: 'onRowSelectionModelChange',
+      onPageChanged: 'onPaginationModelChange',
+      onSort: 'onSortModelChange',
+    },
+    defaultWidth: 30,
+    defaultHeight: 40,
+  });
   const size = Math.max(1, Math.min(MAX_PAGE_SIZE, Number(pageSize) || 10));
   const [page, setPage] = useState({ page: 0, pageSize: size });
   useEffect(() => setPage((m) => (m.pageSize === size ? m : { page: 0, pageSize: size })), [size]);
@@ -294,7 +427,10 @@ export const DataGrid = () => {
       const floor = headerFloor(col.sortable !== false, disableColumnMenu !== true && col.disableColumnMenu !== true);
       return { ...col, minWidth: Math.max(col.minWidth ?? 0, floor) };
     });
-    const need = cols.reduce((sum, c) => sum + Math.max(c.width ?? 0, c.minWidth ?? 0), checkboxSelection ? CHECKBOX_WIDTH : 0);
+    const need = cols.reduce(
+      (sum, c) => sum + Math.max(c.width ?? 0, c.minWidth ?? 0),
+      checkboxSelection ? CHECKBOX_WIDTH : 0
+    );
     // Seven sized columns in a two-thirds card cut off the last one and squeezed the unsized text column: share instead.
     if (!gridWidth || need <= gridWidth) return cols;
     return cols.map(({ width, flex, minWidth: _floor, ...col }) => ({
@@ -316,12 +452,15 @@ export const DataGrid = () => {
     setSelectionIds(idsOf(ids));
     setSelectedRows(ids.map((id) => byId.get(id)).filter(Boolean));
   };
-  ToolJet.useAction({ name: 'selectRow', displayName: 'Select row', params: [{ handle: 'id', displayName: 'Row id' }] }, (id) => {
-    const row = byId.get(str(id));
-    setSelectedRow(row ?? {});
-    setSelectedRowId((row ? rawId.get(str(id)) : '') as string);
-    select(row ? [str(id)] : []);
-  });
+  ToolJet.useAction(
+    { name: 'selectRow', displayName: 'Select row', params: [{ handle: 'id', displayName: 'Row id' }] },
+    (id) => {
+      const row = byId.get(str(id));
+      setSelectedRow(row ?? {});
+      setSelectedRowId((row ? rawId.get(str(id)) : '') as string);
+      select(row ? [str(id)] : []);
+    }
+  );
 
   // The selection follows its rows by id when the rows change: a refresh republishes the fresh records, a reorder keeps
   // them, and a row that is gone leaves the selection (selectedRow kept exposing a removed or stale record). No event:
@@ -357,18 +496,21 @@ export const DataGrid = () => {
   // page. Published at once, and from the last call's page, so calls in one event handler build on each other.
   const pageRef = useRef(page);
   pageRef.current = page;
-  ToolJet.useAction({ name: 'setPage', displayName: 'Set page', params: [{ handle: 'page', displayName: 'Page (from 0)' }] }, (p) => {
-    const want = Math.max(0, Math.floor(toNumber(p) ?? 0));
-    if (!Number.isFinite(want)) return;
-    const cur = pageRef.current;
-    const last = autoPageSize === true ? want : Math.max(0, Math.ceil(rows.length / cur.pageSize) - 1);
-    const to = Math.min(want, last);
-    if (to === cur.page) return;
-    const next = { ...cur, page: to };
-    pageRef.current = next;
-    setPage(next);
-    setPaginationModel({ ...next });
-  });
+  ToolJet.useAction(
+    { name: 'setPage', displayName: 'Set page', params: [{ handle: 'page', displayName: 'Page (from 0)' }] },
+    (p) => {
+      const want = Math.max(0, Math.floor(toNumber(p) ?? 0));
+      if (!Number.isFinite(want)) return;
+      const cur = pageRef.current;
+      const last = autoPageSize === true ? want : Math.max(0, Math.ceil(rows.length / cur.pageSize) - 1);
+      const to = Math.min(want, last);
+      if (to === cur.page) return;
+      const next = { ...cur, page: to };
+      pageRef.current = next;
+      setPage(next);
+      setPaginationModel({ ...next });
+    }
+  );
 
   return (
     <MuiProvider overrides={overrides} fill>
@@ -406,7 +548,10 @@ export const DataGrid = () => {
           onRowClick();
         }}
         onRowSelectionModelChange={(model) => {
-          const ids = model.type === 'include' ? [...model.ids].map(String) : rows.map((r) => r[ID]).filter((id) => !model.ids.has(id));
+          const ids =
+            model.type === 'include'
+              ? [...model.ids].map(String)
+              : rows.map((r) => r[ID]).filter((id) => !model.ids.has(id));
           select(ids);
           onRowSelectionModelChange();
         }}

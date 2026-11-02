@@ -4,11 +4,11 @@ import { X } from 'lucide-react';
 import { Field, fieldAria } from '../lib/Field';
 import { cn } from '../lib/cn';
 import { usePortalContainer } from '../lib/usePortalContainer';
-import { TJ } from '../lib/ui2/inputs/sdk';
+import { ToolJet } from '@tooljet/custom-component-sdk';
 import { field, useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
 import { TOKEN } from '../lib/styleDefaults';
-import { ClearX, isEnter, useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
+import { ClearX, isEnter, useReseed } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import { FieldLoading } from '../lib/ui2/loading/look';
 import '../styles/ui2-inputs.css';
@@ -23,35 +23,78 @@ const LOOKS: Look[] = [
 ];
 
 export const TagsInput = () => {
-  const [label] = TJ.useStateString({ name: 'label', label: 'Label', initialValue: 'Tags' });
-  const [description] = TJ.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
-  const [placeholder] = TJ.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Add a tag...' });
-  const [defaultValue] = TJ.useStateArray({ name: 'defaultValue', label: 'Default tags', initialValue: [] });
-  const [suggestions] = TJ.useStateArray({
+  const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: 'Tags' });
+  const [description] = ToolJet.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Add a tag...',
+  });
+  const [defaultValue] = ToolJet.useStateArray({ name: 'defaultValue', label: 'Default tags', initialValue: [] });
+  const [suggestions] = ToolJet.useStateArray({
     name: 'suggestions',
     label: 'Suggestions',
     placeholder: "['urgent', 'billing'] or [{ label, value }]",
     initialValue: ['react', 'typescript', 'node', 'python', 'design', 'devops'],
   });
-  const [allowCustomTags] = TJ.useStateBoolean({ name: 'allowCustomTags', label: 'Allow tags not in suggestions', initialValue: true });
-  const [maxTags] = TJ.useStateNumber({ name: 'maxTags', label: 'Max tags (0 for no limit)', initialValue: 0 });
-  const [caseSensitive] = TJ.useStateBoolean({ name: 'caseSensitive', label: 'Case-sensitive duplicate check', initialValue: false });
-  const [tagPattern] = TJ.useStateString({ name: 'tagPattern', label: 'Tag pattern (regex)', placeholder: '^[a-z0-9-]+$', initialValue: '' });
-  const [patternError] = TJ.useStateString({ name: 'patternError', label: 'Pattern error message', initialValue: '' });
-  const [addOnBlur] = TJ.useStateBoolean({ name: 'addOnBlur', label: 'Add typed text on blur', initialValue: false });
-  const [showClearBtn] = TJ.useStateBoolean({ name: 'showClearBtn', label: 'Show clear button', initialValue: false });
+  const [allowCustomTags] = ToolJet.useStateBoolean({
+    name: 'allowCustomTags',
+    label: 'Allow tags not in suggestions',
+    initialValue: true,
+  });
+  const [maxTags] = ToolJet.useStateNumber({ name: 'maxTags', label: 'Max tags (0 for no limit)', initialValue: 0 });
+  const [caseSensitive] = ToolJet.useStateBoolean({
+    name: 'caseSensitive',
+    label: 'Case-sensitive duplicate check',
+    initialValue: false,
+  });
+  const [tagPattern] = ToolJet.useStateString({
+    name: 'tagPattern',
+    label: 'Tag pattern (regex)',
+    placeholder: '^[a-z0-9-]+$',
+    initialValue: '',
+  });
+  const [patternError] = ToolJet.useStateString({
+    name: 'patternError',
+    label: 'Pattern error message',
+    initialValue: '',
+  });
+  const [addOnBlur] = ToolJet.useStateBoolean({
+    name: 'addOnBlur',
+    label: 'Add typed text on blur',
+    initialValue: false,
+  });
+  const [showClearBtn] = ToolJet.useStateBoolean({
+    name: 'showClearBtn',
+    label: 'Show clear button',
+    initialValue: false,
+  });
   // Exposed: the tags (values), those not among the suggestions, and the last added and removed.
-  const [rawValues, setValues] = TJ.useStateArray({ name: 'values', initialValue: [], inspector: 'hidden' });
-  const [, setNewTagsAdded] = TJ.useStateArray({ name: 'newTagsAdded', initialValue: [], inspector: 'hidden' });
-  const [, setLastAddedTag] = TJ.useStateString({ name: 'lastAddedTag', initialValue: '', inspector: 'hidden' });
-  const [, setLastRemovedTag] = TJ.useStateString({ name: 'lastRemovedTag', initialValue: '', inspector: 'hidden' });
-  const [legacyRequired] = TJ.useStateBoolean({ name: 'required', label: 'Required', initialValue: false, inspector: 'hidden' });
-  const [legacyDisabled] = TJ.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
-  const onChange = TJ.useEventCallback({ name: 'onChange' });
-  const onTagAdded = TJ.useEventCallback({ name: 'onTagAdded' });
-  const onTagDeleted = TJ.useEventCallback({ name: 'onTagDeleted' });
-  const onFocus = TJ.useEventCallback({ name: 'onFocus' });
-  const onBlur = TJ.useEventCallback({ name: 'onBlur' });
+  const [rawValues, setValues] = ToolJet.useStateArray({ name: 'values', initialValue: [], inspector: 'hidden' });
+  const [, setNewTagsAdded] = ToolJet.useStateArray({ name: 'newTagsAdded', initialValue: [], inspector: 'hidden' });
+  const [, setLastAddedTag] = ToolJet.useStateString({ name: 'lastAddedTag', initialValue: '', inspector: 'hidden' });
+  const [, setLastRemovedTag] = ToolJet.useStateString({
+    name: 'lastRemovedTag',
+    initialValue: '',
+    inspector: 'hidden',
+  });
+  const [legacyRequired] = ToolJet.useStateBoolean({
+    name: 'required',
+    label: 'Required',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const [legacyDisabled] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const onTagAdded = ToolJet.useEventCallback({ name: 'onTagAdded' });
+  const onTagDeleted = ToolJet.useEventCallback({ name: 'onTagDeleted' });
+  const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
+  const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [anchorRef, container] = usePortalContainer();
@@ -87,7 +130,7 @@ export const TagsInput = () => {
   }, []);
   // A Form's clear empties `values` itself, without publish(): newTagsAdded would keep the old tags, and the unfinished
   // text would come back as a tag on blur (addOnBlur) into the cleared Form.
-  TJ.useFormClear(() => {
+  ToolJet.useFormClear(() => {
     publish([]);
     setText('');
     setTagError('');
@@ -130,7 +173,11 @@ export const TagsInput = () => {
     const tag = tags[index];
     if (tag === undefined) return;
     setTagError('');
-    commit(tags.filter((_, i) => i !== index), 'deleted', tag);
+    commit(
+      tags.filter((_, i) => i !== index),
+      'deleted',
+      tag
+    );
   };
   const takeTyped = (typed: string) => {
     setTagError('');
@@ -141,31 +188,40 @@ export const TagsInput = () => {
     setActive(-1);
   };
 
-  TJ.useAction({ name: 'setTags', displayName: 'Set tags', params: [{ handle: 'tags', displayName: 'Tags' }] }, (t) =>
-    publish(M.addTags([], M.toTags(t), rules).tags)
+  ToolJet.useAction(
+    { name: 'setTags', displayName: 'Set tags', params: [{ handle: 'tags', displayName: 'Tags' }] },
+    (t) => publish(M.addTags([], M.toTags(t), rules).tags)
   );
-  TJ.useAction({ name: 'selectTags', displayName: 'Select tags', params: [{ handle: 'tags', displayName: 'Tags' }] }, (t) =>
-    publish(M.addTags(tagsRef.current, M.toTags(t), rules).tags)
+  ToolJet.useAction(
+    { name: 'selectTags', displayName: 'Select tags', params: [{ handle: 'tags', displayName: 'Tags' }] },
+    (t) => publish(M.addTags(tagsRef.current, M.toTags(t), rules).tags)
   );
-  TJ.useAction({ name: 'deselectTags', displayName: 'Deselect tags', params: [{ handle: 'tags', displayName: 'Tags' }] }, (t) => {
-    const gone = M.toTags(t);
-    publish(tagsRef.current.filter((tag) => !gone.some((g) => M.sameTag(g, tag, rules.caseSensitive))));
-  });
+  ToolJet.useAction(
+    { name: 'deselectTags', displayName: 'Deselect tags', params: [{ handle: 'tags', displayName: 'Tags' }] },
+    (t) => {
+      const gone = M.toTags(t);
+      publish(tagsRef.current.filter((tag) => !gone.some((g) => M.sameTag(g, tag, rules.caseSensitive))));
+    }
+  );
   // Clearing drops the unfinished text too, or leaving the box would add it as a tag.
-  TJ.useAction({ name: 'clear', displayName: 'Clear' }, () => {
+  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => {
     publish([]);
     setText('');
     setTagError('');
   });
-  TJ.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => inputRef.current?.focus());
-  TJ.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => inputRef.current?.blur());
+  ToolJet.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => inputRef.current?.focus());
+  ToolJet.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => inputRef.current?.blur());
 
-  const fieldId = TJ.useFieldId();
-  const control = TJ.useControlState();
-  const check = TJ.useValidation({ section: 'choice', value: tags, present: tags.length > 0 });
-  const rule = useRuleCheck(check, legacyRequired && !tags.length ? 'This field is mandatory' : '');
+  const fieldId = ToolJet.useFieldId();
+  const control = ToolJet.useControlState();
+  const rule = ToolJet.useValidation({
+    kind: 'choice',
+    value: tags,
+    present: tags.length > 0,
+    rule: legacyRequired && !tags.length ? 'This field is mandatory' : '',
+  });
   const looks = useLooks(LOOKS);
-  TJ.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
+  ToolJet.useComponentSettings({ role: 'tagsinput', fit: true, loading: 'own', defaultWidth: 10, defaultHeight: 7 });
 
   const disabled = legacyDisabled || control.disabled;
   const limit = M.clampLimit(maxTags);
@@ -181,7 +237,9 @@ export const TagsInput = () => {
     .slice(0, 50);
   const menuOpen = focused && !dismissed && !disabled && !full && visible.length > 0;
   const chipLabel = (tag: string) =>
-    options.find((s) => s.tag === tag)?.label ?? options.find((s) => M.sameTag(s.tag, tag, rules.caseSensitive))?.label ?? tag;
+    options.find((s) => s.tag === tag)?.label ??
+    options.find((s) => M.sameTag(s.tag, tag, rules.caseSensitive))?.label ??
+    tag;
   const error = tagError || rule.error;
 
   return (

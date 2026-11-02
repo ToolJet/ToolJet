@@ -3,6 +3,52 @@
 // draw on a canvas, the Map draws routes in SVG, and lists, kanbans and dialogs call the host's row and popup slots
 // (usePackHost.jsx).
 
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { toolJetSdk } from '@/AppBuilder/Widgets/LibraryComponent/inlineRuntime';
+
+// Stand-ins for the SDK's hooks while a component renders alone (no ToolJet host around it), as the CLI's build
+// renders it: each returns what the hook would hand over with nothing set.
+const standIn = (name) => {
+  if (/^useState/.test(name)) return (options) => [options?.initialValue, () => {}];
+  if (/^useStyle/.test(name)) return (options) => options?.initialValue;
+  if (name === 'useEventCallback') return () => () => {};
+  if (name === 'useControlState') return () => ({ disabled: false, loading: false });
+  if (name === 'useValidation') return () => ({ isValid: true, error: '', required: false, touch: () => {} });
+  if (name === 'useRowResolver') return () => (template) => template;
+  if (/Slot$/.test(name)) return () => null;
+  return () => undefined;
+};
+
+/**
+ * What a pack component declares with ToolJet.useComponentSettings (its role, usage and role mappings), read the way
+ * the CLI's build reads it: by rendering it once.
+ */
+export const componentSettings = (Component) => {
+  let settings;
+  const spies = Object.keys(toolJetSdk)
+    .filter((name) => typeof toolJetSdk[name] === 'function')
+    .map((name) =>
+      jest.spyOn(toolJetSdk, name).mockImplementation(
+        name === 'useComponentSettings'
+          ? (options) => {
+              settings ??= options;
+            }
+          : standIn(name)
+      )
+    );
+  const quiet = jest.spyOn(console, 'error').mockImplementation(() => {});
+  try {
+    renderToStaticMarkup(React.createElement(Component));
+  } catch {
+    // What it declared before a part that needs the browser is enough.
+  } finally {
+    spies.forEach((spy) => spy.mockRestore());
+    quiet.mockRestore();
+  }
+  return settings ?? {};
+};
+
 export const installBrowserStubs = () => {
   if (!window.matchMedia) {
     window.matchMedia = (query) => ({

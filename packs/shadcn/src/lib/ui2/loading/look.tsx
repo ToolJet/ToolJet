@@ -4,7 +4,7 @@ import { cn } from '../../cn';
 import '../../../styles/ui2-loading.css';
 
 // UI 2.0's loading looks (Ui2/_shared/loadingLook.tsx and Shell.tsx), drawn by the component itself ("loading": "own"
-// in pack.json, so the host draws no overlay). Loading comes from the host (ToolJet.useControlState().loading: the
+// in useComponentSettings, so the host draws no overlay). Loading comes from the host (ToolJet.useControlState().loading: the
 // Loading property and the setLoading action). Controls keep their place, non-interactive: a text-box control under a
 // skeleton block of its own shape (FieldLoading), a check, switch or slider with a spinner beside it (InlineLoading).
 // Text and media become skeletons in their own shape; the rest a spinner in the widget's box, or a skeleton block, as

@@ -47,27 +47,72 @@ export const MultiSelect = () => {
       { label: 'Support', value: 'support' },
     ],
   });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Select teams...' });
-  const [searchPlaceholder] = ToolJet.useStateString({ name: 'searchPlaceholder', label: 'Search placeholder', initialValue: 'Search teams...' });
-  const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'No results text', initialValue: 'No team found.' });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Select teams...',
+  });
+  const [searchPlaceholder] = ToolJet.useStateString({
+    name: 'searchPlaceholder',
+    label: 'Search placeholder',
+    initialValue: 'Search teams...',
+  });
+  const [emptyText] = ToolJet.useStateString({
+    name: 'emptyText',
+    label: 'No results text',
+    initialValue: 'No team found.',
+  });
   const [showSearch] = ToolJet.useStateBoolean({ name: 'showSearch', label: 'Show search', initialValue: true });
   const [serverSideSearch] = ToolJet.useStateBoolean({
     name: 'serverSideSearch',
     label: 'Server-side search (options already filtered by searchText)',
     initialValue: false,
   });
-  const [showClearBtn] = ToolJet.useStateBoolean({ name: 'showClearBtn', label: 'Show clear button', initialValue: true });
-  const [optionsLoadingState] = ToolJet.useStateBoolean({ name: 'optionsLoadingState', label: 'Options loading state', initialValue: false });
-  const [defaultValue] = ToolJet.useStateArray({ name: 'defaultValue', label: 'Default values', initialValue: ['design', 'engineering'] });
-  const [showSelectAll] = ToolJet.useStateBoolean({ name: 'showSelectAll', label: 'Show select all', initialValue: true });
-  const [maxVisibleChips] = ToolJet.useStateNumber({ name: 'maxVisibleChips', label: 'Max visible chips (0 shows all)', initialValue: 3 });
-  const [maxSelections] = ToolJet.useStateNumber({ name: 'maxSelections', label: 'Max selections (0 for no limit)', initialValue: 0 });
+  const [showClearBtn] = ToolJet.useStateBoolean({
+    name: 'showClearBtn',
+    label: 'Show clear button',
+    initialValue: true,
+  });
+  const [optionsLoadingState] = ToolJet.useStateBoolean({
+    name: 'optionsLoadingState',
+    label: 'Options loading state',
+    initialValue: false,
+  });
+  const [defaultValue] = ToolJet.useStateArray({
+    name: 'defaultValue',
+    label: 'Default values',
+    initialValue: ['design', 'engineering'],
+  });
+  const [showSelectAll] = ToolJet.useStateBoolean({
+    name: 'showSelectAll',
+    label: 'Show select all',
+    initialValue: true,
+  });
+  const [maxVisibleChips] = ToolJet.useStateNumber({
+    name: 'maxVisibleChips',
+    label: 'Max visible chips (0 shows all)',
+    initialValue: 3,
+  });
+  const [maxSelections] = ToolJet.useStateNumber({
+    name: 'maxSelections',
+    label: 'Max selections (0 for no limit)',
+    initialValue: 0,
+  });
   // Exposed values, and the pack's earlier names (values was its default, maxSelected its limit).
   const [legacyValues, setValues] = ToolJet.useStateArray({ name: 'values', initialValue: [], inspector: 'hidden' });
-  const [, setSelectedOptions] = ToolJet.useStateArray({ name: 'selectedOptions', initialValue: [], inspector: 'hidden' });
+  const [, setSelectedOptions] = ToolJet.useStateArray({
+    name: 'selectedOptions',
+    initialValue: [],
+    inspector: 'hidden',
+  });
   const [, setSearchText] = ToolJet.useStateString({ name: 'searchText', initialValue: '', inspector: 'hidden' });
   const [maxSelected] = ToolJet.useStateNumber({ name: 'maxSelected', initialValue: 0, inspector: 'hidden' });
-  const [disabledProp] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
+  const [disabledProp] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable',
+    initialValue: false,
+    inspector: 'hidden',
+  });
   const onSelect = ToolJet.useEventCallback({ name: 'onSelect' });
   const onSearchTextChanged = ToolJet.useEventCallback({ name: 'onSearchTextChanged' });
   const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
@@ -79,8 +124,13 @@ export const MultiSelect = () => {
   const menuBackgroundColor = useColorStyle('menuBackgroundColor', 'Menu background', TOKEN.surface);
   const menuTextColor = useColorStyle('menuTextColor', 'Menu text color', TOKEN.text);
   const optionHoverColor = useColorStyle('optionHoverColor', 'Highlighted option background', TOKEN.muted);
-  const chipColor = ToolJet.useStyleString({ name: 'chipColor', label: 'Chip background (earlier name)', inspector: 'hidden', initialValue: '' });
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
+  const chipColor = ToolJet.useStyleString({
+    name: 'chipColor',
+    label: 'Chip background (earlier name)',
+    inspector: 'hidden',
+    initialValue: '',
+  });
+  ToolJet.useComponentSettings({ role: 'multiselect', fit: true, loading: 'own', defaultWidth: 10, defaultHeight: 7 });
   const { disabled, loading } = useBusy(disabledProp);
   const fieldId = ToolJet.useFieldId();
 
@@ -89,20 +139,32 @@ export const MultiSelect = () => {
   const options = toChoiceOptions(rawOptions, 'MultiSelect');
   const limit = clampLimit(maxSelections) || clampLimit(maxSelected);
   const serverSide = serverSideSearch === true;
-  const keysOf = (given: unknown) => [...new Set(toValueList(given).map((v) => keyForValue(options, v)))].slice(0, limit || undefined);
+  const keysOf = (given: unknown) =>
+    [...new Set(toValueList(given).map((v) => keyForValue(options, v)))].slice(0, limit || undefined);
   // An app saved before defaultValue existed starts on its `values` when no default is given.
-  const [keys, setKeys] = useState<string[]>(() => keysOf(toValueList(defaultValue).length ? defaultValue : legacyValues));
+  const [keys, setKeys] = useState<string[]>(() =>
+    keysOf(toValueList(defaultValue).length ? defaultValue : legacyValues)
+  );
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   // A new default starts the selection again, an empty one with nothing: falling back to `values` there, as on mount,
   // read back the exposed selection and kept it (SP-27). A lower limit cuts it to fit.
   useResetOn(defaultValue, () => setKeys(keysOf(defaultValue)));
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
-  ToolJet.useFormClear(() => { setOpen(false); setKeys([]); publish([]); });
+  ToolJet.useFormClear(() => {
+    setOpen(false);
+    setKeys([]);
+    publish([]);
+  });
   useEffect(() => {
     if (limit > 0) setKeys((k) => (k.length > limit ? k.slice(0, limit) : k));
   }, [limit]);
-  useDropRemovedChoices(options.map((o) => optionKey(o)), keys, (gone) => setKeys((k) => k.filter((x) => !gone.has(x))), serverSide);
+  useDropRemovedChoices(
+    options.map((o) => optionKey(o)),
+    keys,
+    (gone) => setKeys((k) => k.filter((x) => !gone.has(x))),
+    serverSide
+  );
   // With server-side search, a selected option off the current results keeps the record it had when last seen.
   const kept = useRef(new Map<string, ChoiceOption>());
   const selectedOptions = keptOptions(options, keys, serverSide ? kept.current : null);
@@ -113,7 +175,7 @@ export const MultiSelect = () => {
     setSelectedOptions(selectedOptions);
   }, [JSON.stringify(selectedOptions)]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const check = ToolJet.useValidation({ section: 'choice', value: values, present: values.length > 0 });
+  const check = ToolJet.useValidation({ kind: 'choice', value: values, present: values.length > 0 });
   const focus = useFocusEvents(onFocus, onBlur, check.touch);
   const publish = (next: string[]) => {
     const picked = keptOptions(options, next, serverSide ? kept.current : null);
@@ -199,11 +261,13 @@ export const MultiSelect = () => {
     setKeys(next);
     publish(next);
   };
-  ToolJet.useAction({ name: 'selectOptions', displayName: 'Select options', params: [{ handle: 'values', displayName: 'Values' }] }, (v) =>
-    set(addKeys(actionKeys.current, v, options, limit))
+  ToolJet.useAction(
+    { name: 'selectOptions', displayName: 'Select options', params: [{ handle: 'values', displayName: 'Values' }] },
+    (v) => set(addKeys(actionKeys.current, v, options, limit))
   );
-  ToolJet.useAction({ name: 'deselectOptions', displayName: 'Deselect options', params: [{ handle: 'values', displayName: 'Values' }] }, (v) =>
-    set(removeKeys(actionKeys.current, v, options))
+  ToolJet.useAction(
+    { name: 'deselectOptions', displayName: 'Deselect options', params: [{ handle: 'values', displayName: 'Values' }] },
+    (v) => set(removeKeys(actionKeys.current, v, options))
   );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => set([]));
   ToolJet.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => fieldRef.current?.focus());
@@ -212,8 +276,9 @@ export const MultiSelect = () => {
     fieldRef.current?.blur();
   });
   // The pack's earlier name: replaces the selection.
-  ToolJet.useAction({ name: 'setValues', displayName: 'Set values', params: [{ handle: 'values', displayName: 'Values (array)' }] }, (v) =>
-    set(addKeys([], v, options, limit))
+  ToolJet.useAction(
+    { name: 'setValues', displayName: 'Set values', params: [{ handle: 'values', displayName: 'Values (array)' }] },
+    (v) => set(addKeys([], v, options, limit))
   );
 
   const maxChips = clampLimit(maxVisibleChips);
@@ -233,8 +298,12 @@ export const MultiSelect = () => {
   // A popup in a Dialog's body stacks above the dialog (popupLayer.ts), read off the owner as it opens.
   const popVars = open ? { ...vars, ...popupLayerStyle(anchorRef.current) } : vars;
   const menuId = fieldId ? `${fieldId}-menu` : undefined;
-  const top: MenuCommand[] = selectAll ? [{ key: 'select-all', label: 'Select all', checked: allOn, onSelect: toggleAll }] : [];
-  const bottom: MenuCommand[] = selectedOptions.length ? [{ key: 'clear-selection', label: 'Clear selection', center: true, onSelect: () => commit([]) }] : [];
+  const top: MenuCommand[] = selectAll
+    ? [{ key: 'select-all', label: 'Select all', checked: allOn, onSelect: toggleAll }]
+    : [];
+  const bottom: MenuCommand[] = selectedOptions.length
+    ? [{ key: 'clear-selection', label: 'Clear selection', center: true, onSelect: () => commit([]) }]
+    : [];
 
   return (
     <div className="ui uc" ref={anchorRef} style={vars}>
@@ -270,7 +339,12 @@ export const MultiSelect = () => {
                     <span className="ui-placeholder uc-truncate">{placeholder}</span>
                   ) : (
                     chips.map((o, i) => (
-                      <Chip key={optionKey(o)} label={o.label} removeLabel={`Remove ${o.label}`} onRemove={disabled ? undefined : () => removeChip(o, i)} />
+                      <Chip
+                        key={optionKey(o)}
+                        label={o.label}
+                        removeLabel={`Remove ${o.label}`}
+                        onRemove={disabled ? undefined : () => removeChip(o, i)}
+                      />
                     ))
                   )}
                   {extra > 0 ? <Chip label={`+${extra} more`} /> : null}

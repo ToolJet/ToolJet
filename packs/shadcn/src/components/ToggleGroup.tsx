@@ -63,7 +63,12 @@ export const ToggleGroup = () => {
   });
   // Exposed value; `value` was also the pack's default value.
   const [legacyValue, setValue] = ToolJet.useStateString({ name: 'value', initialValue: '', inspector: 'hidden' });
-  const [disabledProp] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
+  const [disabledProp] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable',
+    initialValue: false,
+    inspector: 'hidden',
+  });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const backgroundColor = useColorStyle('backgroundColor', 'Group background', TOKEN.muted);
   const textColor = useColorStyle('textColor', 'Option text color', TOKEN.mutedText);
@@ -71,8 +76,13 @@ export const ToggleGroup = () => {
   const selectedTextColor = useColorStyle('selectedTextColor', 'Selected option text color', TOKEN.text);
   const borderRadius = useThemeRadius('borderRadius', 'Group radius');
   const borderColor = useColorStyle('borderColor', 'Border color (outline look)', TOKEN.border);
-  const selectedColor = ToolJet.useStyleString({ name: 'selectedColor', label: 'Selected (earlier name)', inspector: 'hidden', initialValue: '' });
-  ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 4 });
+  const selectedColor = ToolJet.useStyleString({
+    name: 'selectedColor',
+    label: 'Selected (earlier name)',
+    inspector: 'hidden',
+    initialValue: '',
+  });
+  ToolJet.useComponentSettings({ role: 'togglegroup', fit: true, loading: 'own', defaultWidth: 14, defaultHeight: 4 });
   const { disabled, loading } = useBusy(disabledProp);
 
   const options = toChoiceOptions(rawOptions, 'ToggleGroup');
@@ -122,16 +132,29 @@ export const ToggleGroup = () => {
   // In single mode a list picks its first value.
   const pickOne = (v: unknown, fire: boolean) => {
     const raw = wantedValue(Array.isArray(v) ? v[0] : v);
-    const k = raw === undefined || raw === null || typeof raw === 'object' ? null : keyForValue(options, raw, choiceKey);
+    const k =
+      raw === undefined || raw === null || typeof raw === 'object' ? null : keyForValue(options, raw, choiceKey);
     if (k !== null && byKey.has(k)) change(k, fire);
   };
   // The native Button group's actions: setSelected picks an option (a value no option has changes nothing).
-  ToolJet.useAction({ name: 'setSelected', displayName: 'Set selected', params: [{ handle: 'selected', displayName: 'Value (or a list)' }] }, (v) =>
-    multiple ? pickMany(v, false) : pickOne(v, false)
+  ToolJet.useAction(
+    {
+      name: 'setSelected',
+      displayName: 'Set selected',
+      params: [{ handle: 'selected', displayName: 'Value (or a list)' }],
+    },
+    (v) => (multiple ? pickMany(v, false) : pickOne(v, false))
   );
-  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => (multiple ? changeMany([], false) : change('', false)));
-  ToolJet.useAction({ name: 'setValue', displayName: 'Select option (value)', params: [{ handle: 'value', displayName: 'Value (or a list)' }] }, (v) =>
-    multiple ? pickMany(v, true) : pickOne(v, true)
+  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () =>
+    multiple ? changeMany([], false) : change('', false)
+  );
+  ToolJet.useAction(
+    {
+      name: 'setValue',
+      displayName: 'Select option (value)',
+      params: [{ handle: 'value', displayName: 'Value (or a list)' }],
+    },
+    (v) => (multiple ? pickMany(v, true) : pickOne(v, true))
   );
 
   const look = variant === 'outline' || variant === 'default' ? variant : 'segmented';
@@ -148,7 +171,12 @@ export const ToggleGroup = () => {
   const shownKeys = shown.map(keyFor);
   const reactKeys = uniqueKeys(shownKeys);
   const items = shown.map((o, i) => (
-    <ToggleGroupPrimitive.Item key={reactKeys[i]} value={shownKeys[i]} disabled={isDisabledOption(o)} className="ui-toggle ui-focus">
+    <ToggleGroupPrimitive.Item
+      key={reactKeys[i]}
+      value={shownKeys[i]}
+      disabled={isDisabledOption(o)}
+      className="ui-toggle ui-focus"
+    >
       {o.label}
     </ToggleGroupPrimitive.Item>
   ));
@@ -169,7 +197,9 @@ export const ToggleGroup = () => {
     },
   };
   const className = cn(
-    look === 'segmented' ? 'uc-segmented' : cn('ui-toggle-group uc-toggles', look === 'outline' && 'ui-toggle-group--outline'),
+    look === 'segmented'
+      ? 'uc-segmented'
+      : cn('ui-toggle-group uc-toggles', look === 'outline' && 'ui-toggle-group--outline'),
     look === 'segmented' && fullWidth === true && 'is-full'
   );
 
@@ -184,7 +214,12 @@ export const ToggleGroup = () => {
               {...keyboard}
               value={keys}
               disabled={disabled}
-              onValueChange={(next) => changeMany([...new Set(next)].filter((k) => !isDisabledOption(byKey.get(k))), true)}
+              onValueChange={(next) =>
+                changeMany(
+                  [...new Set(next)].filter((k) => !isDisabledOption(byKey.get(k))),
+                  true
+                )
+              }
             >
               {items}
             </ToggleGroupPrimitive.Root>

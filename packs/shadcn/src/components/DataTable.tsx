@@ -41,7 +41,9 @@ const SEARCH_DEBOUNCE_MS = 300;
 // The page numbers around the current one (1 … 4 5 6 … 20) when the page count is known, else previous / next only.
 const pageWindow = (page: number, count: number | null): (number | string)[] => {
   if (!count) return [page];
-  const pages = [...new Set([1, count, page - 1, page, page + 1].filter((p) => p >= 1 && p <= count))].sort((a, b) => a - b);
+  const pages = [...new Set([1, count, page - 1, page, page + 1].filter((p) => p >= 1 && p <= count))].sort(
+    (a, b) => a - b
+  );
   const out: (number | string)[] = [];
   pages.forEach((p, i) => {
     if (i && p - pages[i - 1] > 1) out.push(`gap-${p}`);
@@ -129,7 +131,12 @@ export const DataTable = () => {
   });
   const [rawIdField] = ToolJet.useStateString({ name: 'idField', label: 'Row id field', initialValue: 'id' });
 
-  const [enablePagination] = ToolJet.useStateBoolean({ name: 'enablePagination', label: 'Pagination', initialValue: true, section: 'Pagination' });
+  const [enablePagination] = ToolJet.useStateBoolean({
+    name: 'enablePagination',
+    label: 'Pagination',
+    initialValue: true,
+    section: 'Pagination',
+  });
   const [rowsPerPage] = ToolJet.useStateNumber({
     name: 'rowsPerPage',
     label: 'Rows per page',
@@ -168,7 +175,12 @@ export const DataTable = () => {
     visibleWhen: { key: 'serverSidePagination', value: true },
   });
 
-  const [displaySearchBox] = ToolJet.useStateBoolean({ name: 'displaySearchBox', label: 'Search box', initialValue: true, section: 'Search, sort and filters' });
+  const [displaySearchBox] = ToolJet.useStateBoolean({
+    name: 'displaySearchBox',
+    label: 'Search box',
+    initialValue: true,
+    section: 'Search, sort and filters',
+  });
   const [searchPlaceholder] = ToolJet.useStateString({
     name: 'searchPlaceholder',
     label: 'Search placeholder',
@@ -177,8 +189,18 @@ export const DataTable = () => {
     visibleWhen: { key: 'displaySearchBox', value: true },
   });
   // The toolbar and footer text, so an app in another language reads its own words ("Filtrer", "23 lignes").
-  const [filterLabel] = ToolJet.useStateString({ name: 'filterLabel', label: 'Filter button text', initialValue: 'Filter', section: 'Toolbar and footer' });
-  const [columnsLabel] = ToolJet.useStateString({ name: 'columnsLabel', label: 'Columns button text', initialValue: 'Columns', section: 'Toolbar and footer' });
+  const [filterLabel] = ToolJet.useStateString({
+    name: 'filterLabel',
+    label: 'Filter button text',
+    initialValue: 'Filter',
+    section: 'Toolbar and footer',
+  });
+  const [columnsLabel] = ToolJet.useStateString({
+    name: 'columnsLabel',
+    label: 'Columns button text',
+    initialValue: 'Columns',
+    section: 'Toolbar and footer',
+  });
   const [rowCountLabel] = ToolJet.useStateString({
     name: 'rowCountLabel',
     label: 'Row count text',
@@ -186,14 +208,49 @@ export const DataTable = () => {
     initialValue: '{count} rows',
     section: 'Toolbar and footer',
   });
-  const [noMatchText] = ToolJet.useStateString({ name: 'noMatchText', label: 'No matching rows message', initialValue: 'No matching rows.', section: 'Empty and loading' });
-  const [serverSideSearch] = ToolJet.useStateBoolean({ name: 'serverSideSearch', label: 'Server-side search', initialValue: false, section: 'Search, sort and filters' });
-  const [enabledSort] = ToolJet.useStateBoolean({ name: 'enabledSort', label: 'Column sorting', initialValue: true, section: 'Search, sort and filters' });
-  const [serverSideSort] = ToolJet.useStateBoolean({ name: 'serverSideSort', label: 'Server-side sort', initialValue: false, section: 'Search, sort and filters' });
-  const [showFilterButton] = ToolJet.useStateBoolean({ name: 'showFilterButton', label: 'Filter button', initialValue: true, section: 'Search, sort and filters' });
-  const [serverSideFilter] = ToolJet.useStateBoolean({ name: 'serverSideFilter', label: 'Server-side filters', initialValue: false, section: 'Search, sort and filters' });
+  const [noMatchText] = ToolJet.useStateString({
+    name: 'noMatchText',
+    label: 'No matching rows message',
+    initialValue: 'No matching rows.',
+    section: 'Empty and loading',
+  });
+  const [serverSideSearch] = ToolJet.useStateBoolean({
+    name: 'serverSideSearch',
+    label: 'Server-side search',
+    initialValue: false,
+    section: 'Search, sort and filters',
+  });
+  const [enabledSort] = ToolJet.useStateBoolean({
+    name: 'enabledSort',
+    label: 'Column sorting',
+    initialValue: true,
+    section: 'Search, sort and filters',
+  });
+  const [serverSideSort] = ToolJet.useStateBoolean({
+    name: 'serverSideSort',
+    label: 'Server-side sort',
+    initialValue: false,
+    section: 'Search, sort and filters',
+  });
+  const [showFilterButton] = ToolJet.useStateBoolean({
+    name: 'showFilterButton',
+    label: 'Filter button',
+    initialValue: true,
+    section: 'Search, sort and filters',
+  });
+  const [serverSideFilter] = ToolJet.useStateBoolean({
+    name: 'serverSideFilter',
+    label: 'Server-side filters',
+    initialValue: false,
+    section: 'Search, sort and filters',
+  });
 
-  const [allowSelectionProp] = ToolJet.useStateBoolean({ name: 'allowSelection', label: 'Row selection', initialValue: true, section: 'Row selection' });
+  const [allowSelectionProp] = ToolJet.useStateBoolean({
+    name: 'allowSelection',
+    label: 'Row selection',
+    initialValue: true,
+    section: 'Row selection',
+  });
   const [showBulkSelector] = ToolJet.useStateBoolean({
     name: 'showBulkSelector',
     label: 'Bulk selection (checkboxes)',
@@ -223,10 +280,30 @@ export const DataTable = () => {
     visibleWhen: { key: 'allowSelection', value: true },
   });
 
-  const [hideColumnSelectorButton] = ToolJet.useStateBoolean({ name: 'hideColumnSelectorButton', label: 'Hide column chooser', initialValue: false, section: 'Toolbar and footer' });
-  const [showDownloadButton] = ToolJet.useStateBoolean({ name: 'showDownloadButton', label: 'Download button', initialValue: false, section: 'Toolbar and footer' });
-  const [showRefreshButton] = ToolJet.useStateBoolean({ name: 'showRefreshButton', label: 'Refresh button', initialValue: false, section: 'Toolbar and footer' });
-  const [showRowCount] = ToolJet.useStateBoolean({ name: 'showRowCount', label: 'Row count in the footer', initialValue: true, section: 'Toolbar and footer' });
+  const [hideColumnSelectorButton] = ToolJet.useStateBoolean({
+    name: 'hideColumnSelectorButton',
+    label: 'Hide column chooser',
+    initialValue: false,
+    section: 'Toolbar and footer',
+  });
+  const [showDownloadButton] = ToolJet.useStateBoolean({
+    name: 'showDownloadButton',
+    label: 'Download button',
+    initialValue: false,
+    section: 'Toolbar and footer',
+  });
+  const [showRefreshButton] = ToolJet.useStateBoolean({
+    name: 'showRefreshButton',
+    label: 'Refresh button',
+    initialValue: false,
+    section: 'Toolbar and footer',
+  });
+  const [showRowCount] = ToolJet.useStateBoolean({
+    name: 'showRowCount',
+    label: 'Row count in the footer',
+    initialValue: true,
+    section: 'Toolbar and footer',
+  });
 
   const [cellSize] = ToolJet.useStateEnumeration({
     name: 'cellSize',
@@ -246,7 +323,12 @@ export const DataTable = () => {
     inspector: 'switch',
     section: 'Appearance',
   });
-  const [stickyHeader] = ToolJet.useStateBoolean({ name: 'stickyHeader', label: 'Sticky header (scrolls inside)', initialValue: true, section: 'Appearance' });
+  const [stickyHeader] = ToolJet.useStateBoolean({
+    name: 'stickyHeader',
+    label: 'Sticky header (scrolls inside)',
+    initialValue: true,
+    section: 'Appearance',
+  });
 
   // Table-wide defaults: a column's own currency, locale, date format or badge colours win over them.
   const [currency] = ToolJet.useStateString({
@@ -279,8 +361,18 @@ export const DataTable = () => {
     section: 'Default formats',
   });
 
-  const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No results.', section: 'Empty and loading' });
-  const [emptyDescription] = ToolJet.useStateString({ name: 'emptyDescription', label: 'Empty description', initialValue: '', section: 'Empty and loading' });
+  const [emptyText] = ToolJet.useStateString({
+    name: 'emptyText',
+    label: 'Empty message',
+    initialValue: 'No results.',
+    section: 'Empty and loading',
+  });
+  const [emptyDescription] = ToolJet.useStateString({
+    name: 'emptyDescription',
+    label: 'Empty description',
+    initialValue: '',
+    section: 'Empty and loading',
+  });
   const [loadingIndicator] = ToolJet.useStateEnumeration({
     name: 'loadingIndicator',
     label: 'Loading look',
@@ -294,7 +386,11 @@ export const DataTable = () => {
   // ---- exposed values ---------------------------------------------------------------------------------------------
   const hidden = { inspector: 'hidden' as const };
   const [, setSelectedRow] = ToolJet.useStateObject({ name: 'selectedRow', initialValue: {}, ...hidden });
-  const [, setSelectedRowId] = ToolJet.useStateNumber({ name: 'selectedRowId', initialValue: null as unknown as number, ...hidden });
+  const [, setSelectedRowId] = ToolJet.useStateNumber({
+    name: 'selectedRowId',
+    initialValue: null as unknown as number,
+    ...hidden,
+  });
   const [, setSelectedRows] = ToolJet.useStateArray({ name: 'selectedRows', initialValue: [], ...hidden });
   const [, setSelectedRowsId] = ToolJet.useStateArray({ name: 'selectedRowsId', initialValue: [], ...hidden });
   const [, setPageIndex] = ToolJet.useStateNumber({ name: 'pageIndex', initialValue: 1, ...hidden });
@@ -306,13 +402,24 @@ export const DataTable = () => {
   const [, setFilteredData] = ToolJet.useStateArray({ name: 'filteredData', initialValue: [], ...hidden });
   const [, setLastActionClicked] = ToolJet.useStateObject({ name: 'lastActionClicked', initialValue: {}, ...hidden });
   const [, setHoveredRow] = ToolJet.useStateObject({ name: 'hoveredRow', initialValue: {}, ...hidden });
-  const [, setHoveredRowId] = ToolJet.useStateNumber({ name: 'hoveredRowId', initialValue: null as unknown as number, ...hidden });
-  const [, setSelectedColumnHeader] = ToolJet.useStateObject({ name: 'selectedColumnHeader', initialValue: {}, ...hidden });
+  const [, setHoveredRowId] = ToolJet.useStateNumber({
+    name: 'hoveredRowId',
+    initialValue: null as unknown as number,
+    ...hidden,
+  });
+  const [, setSelectedColumnHeader] = ToolJet.useStateObject({
+    name: 'selectedColumnHeader',
+    initialValue: {},
+    ...hidden,
+  });
 
   // ---- events -----------------------------------------------------------------------------------------------------
   const onRowClicked = ToolJet.useEventCallback({ name: 'onRowClicked', displayName: 'Row clicked' });
   const onSelectionChanged = ToolJet.useEventCallback({ name: 'onSelectionChanged', displayName: 'Selection changed' });
-  const onActionButtonClicked = ToolJet.useEventCallback({ name: 'onActionButtonClicked', displayName: 'Action button clicked' });
+  const onActionButtonClicked = ToolJet.useEventCallback({
+    name: 'onActionButtonClicked',
+    displayName: 'Action button clicked',
+  });
   const onSearch = ToolJet.useEventCallback({ name: 'onSearch', displayName: 'Search' });
   const onSort = ToolJet.useEventCallback({ name: 'onSort', displayName: 'Sort applied' });
   const onFilterChanged = ToolJet.useEventCallback({ name: 'onFilterChanged', displayName: 'Filter changed' });
@@ -320,11 +427,19 @@ export const DataTable = () => {
   const onRefresh = ToolJet.useEventCallback({ name: 'onRefresh', displayName: 'Refresh' });
   const onRowHovered = ToolJet.useEventCallback({ name: 'onRowHovered', displayName: 'Row hovered' });
   const onHeaderClick = ToolJet.useEventCallback({ name: 'onHeaderClick', displayName: 'Header clicked' });
-  const onTableDataDownload = ToolJet.useEventCallback({ name: 'onTableDataDownload', displayName: 'Table data downloaded' });
+  const onTableDataDownload = ToolJet.useEventCallback({
+    name: 'onTableDataDownload',
+    displayName: 'Table data downloaded',
+  });
 
   // ---- styles (UI 2.0 names; unset reads the app theme) -----------------------------------------------------------
   // The table's own (rounded) box: the host's boxShadow, in the Container section, would draw a second, square one.
-  const boxShadow = ToolJet.useStyleString({ name: 'cardShadow', label: 'Table shadow', inspector: 'boxShadow', initialValue: '0px 0px 0px 0px #00000040' });
+  const boxShadow = ToolJet.useStyleString({
+    name: 'cardShadow',
+    label: 'Table shadow',
+    inspector: 'boxShadow',
+    initialValue: '0px 0px 0px 0px #00000040',
+  });
   const accentColor = useThemeColor('accentColor', 'Accent (checkboxes, focus, active page)', TOKEN.brand);
   const backgroundColor = useThemeColor('backgroundColor', 'Table background', TOKEN.surface);
   const headerBackgroundColor = useThemeColor('headerBackgroundColor', 'Header row background', TOKEN.surface);
@@ -344,10 +459,14 @@ export const DataTable = () => {
     enumLabels: { none: 'As typed', uppercase: 'UPPERCASE' },
     initialValue: 'none',
   });
-  const showBorder = ToolJet.useStyleBoolean({ name: 'showBorder', label: 'Border around the table', initialValue: true });
+  const showBorder = ToolJet.useStyleBoolean({
+    name: 'showBorder',
+    label: 'Border around the table',
+    initialValue: true,
+  });
 
   const { disabled, loading } = ToolJet.useControlState();
-  ToolJet.useComponentSettings({ defaultWidth: 30, defaultHeight: 44 });
+  ToolJet.useComponentSettings({ role: 'table', fit: true, loading: 'own', defaultWidth: 30, defaultHeight: 44 });
   // Column options may be per-row bindings, as on UI 2.0's Table: textColor, cellBackgroundColor, transformation, link
   // text and a button's label, visibility and disable, written with rowData, cellValue and rowIndex. The host keeps them
   // unresolved in `columns` and resolves each for its row.
@@ -355,7 +474,10 @@ export const DataTable = () => {
 
   // ---- data and columns -------------------------------------------------------------------------------------------
   const data = useMemo<Row[]>(
-    () => (Array.isArray(rawData) ? rawData : []).filter((r): r is Row => !!r && typeof r === 'object' && !Array.isArray(r)),
+    () =>
+      (Array.isArray(rawData) ? rawData : []).filter(
+        (r): r is Row => !!r && typeof r === 'object' && !Array.isArray(r)
+      ),
     [rawData]
   );
   const idField = isSet(rawIdField) ? String(rawIdField) : 'id';
@@ -389,7 +511,12 @@ export const DataTable = () => {
     let out = entries;
     if (text && serverSideSearch !== true) out = out.filter((e) => matchesSearch(e.row, shownColumns, text));
     if (list.length && serverSideFilter !== true) out = applyFilters(out, list, columns);
-    if (order && serverSideSort !== true) out = sortEntries(out, columns.find((c) => c.key === order.key), order.direction);
+    if (order && serverSideSort !== true)
+      out = sortEntries(
+        out,
+        columns.find((c) => c.key === order.key),
+        order.direction
+      );
     return out;
   };
   const pageFor = (rows: Entry[], target: number): Paged => {
@@ -407,9 +534,15 @@ export const DataTable = () => {
     return result;
   };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const processed = useMemo(() => process(searchText, filters, sort), [entries, searchText, filters, sort, columns, shownColumns, serverSideSearch, serverSideFilter, serverSideSort]);
+  const processed = useMemo(
+    () => process(searchText, filters, sort),
+    [entries, searchText, filters, sort, columns, shownColumns, serverSideSearch, serverSideFilter, serverSideSort]
+  );
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const paged = useMemo(() => pageFor(processed, page), [processed, page, enablePagination, serverPaging, rowsPerPage, totalRecords, enableNextButton, enablePrevButton]);
+  const paged = useMemo(
+    () => pageFor(processed, page),
+    [processed, page, enablePagination, serverPaging, rowsPerPage, totalRecords, enableNextButton, enablePrevButton]
+  );
   // A page past the end (fewer rows after a filter) moves back to the last page.
   useEffect(() => {
     if (!serverPaging && paged.page !== page) {
@@ -461,7 +594,12 @@ export const DataTable = () => {
   // The rows the selection was made on, to follow a selected record across a reload.
   const shownBefore = useRef<Entry[]>(entries);
   useEffect(() => {
-    const { defaultSelectedRow: wanted, allowSelection: selectable, exposeSelection: expose, idField: field } = latest.current;
+    const {
+      defaultSelectedRow: wanted,
+      allowSelection: selectable,
+      exposeSelection: expose,
+      idField: field,
+    } = latest.current;
     if (!entries.length) {
       // Nothing to show yet: the selection is kept for the rows that come back.
       expose(new Set(), null);
@@ -474,7 +612,8 @@ export const DataTable = () => {
     // reordered data puts another record under it. A selected row with a shared id stays on the row with the same
     // content, or is dropped; it never moves to another record with that id.
     const baseOf = (e: Entry) => rowKey(e.row, field, e.index);
-    const count = (list: Entry[]) => list.reduce((m, e) => m.set(baseOf(e), (m.get(baseOf(e)) ?? 0) + 1), new Map<string, number>());
+    const count = (list: Entry[]) =>
+      list.reduce((m, e) => m.set(baseOf(e), (m.get(baseOf(e)) ?? 0) + 1), new Map<string, number>());
     const countBefore = count([...before.values()]);
     const countNow = count(entries);
     const follow = (key: string): string | null => {
@@ -541,9 +680,21 @@ export const DataTable = () => {
 
   // ---- user actions that publish state, then fire their event -----------------------------------------------------
   const sortAppliedOf = (next: Sort | null) =>
-    next ? [{ column: columns.find((c) => c.key === next.key)?.name ?? next.key, columnKey: next.key, direction: next.direction }] : [];
+    next
+      ? [
+          {
+            column: columns.find((c) => c.key === next.key)?.name ?? next.key,
+            columnKey: next.key,
+            direction: next.direction,
+          },
+        ]
+      : [];
   const exposedFilters = (list: TableFilter[]) =>
-    list.map((f) => ({ column: columns.find((c) => c.key === f.column)?.name ?? f.column, condition: f.condition, value: f.value ?? '' }));
+    list.map((f) => ({
+      column: columns.find((c) => c.key === f.column)?.name ?? f.column,
+      condition: f.condition,
+      value: f.value ?? '',
+    }));
 
   const applySort = (next: Sort | null, fire = true) => {
     setSort(next);
@@ -605,7 +756,13 @@ export const DataTable = () => {
   const clickHeader = (column: TableColumn) => {
     if (enabledSort === false || !column.sortable || disabled) return;
     const current = sort?.key === column.key ? sort.direction : null;
-    applySort(current === 'asc' ? { key: column.key, direction: 'desc' } : current === 'desc' ? null : { key: column.key, direction: 'asc' });
+    applySort(
+      current === 'asc'
+        ? { key: column.key, direction: 'desc' }
+        : current === 'desc'
+          ? null
+          : { key: column.key, direction: 'asc' }
+    );
   };
   // Once per row entered.
   const hoveredRef = useRef<string | null>(null);
@@ -645,7 +802,8 @@ export const DataTable = () => {
   };
 
   // ---- component actions ------------------------------------------------------------------------------------------
-  const isKey = (key: unknown): key is string | number => (typeof key === 'string' && key !== '') || typeof key === 'number';
+  const isKey = (key: unknown): key is string | number =>
+    (typeof key === 'string' && key !== '') || typeof key === 'number';
   const byKeyValues = (key: unknown, values: unknown[]): Entry[] => {
     if (!isKey(key)) return [];
     const matches = looseMatcher(values);
@@ -655,7 +813,11 @@ export const DataTable = () => {
 
   // As on the native Table, setPage does not fire onPageChanged.
   ToolJet.useAction(
-    { name: 'setPage', displayName: 'Set page', params: [{ handle: 'page', displayName: 'Page (1-based)', defaultValue: '{{1}}' }] },
+    {
+      name: 'setPage',
+      displayName: 'Set page',
+      params: [{ handle: 'page', displayName: 'Page (1-based)', defaultValue: '{{1}}' }],
+    },
     (target: unknown) => goTo(target, false)
   );
   ToolJet.useAction(
@@ -711,7 +873,13 @@ export const DataTable = () => {
     {
       name: 'setFilters',
       displayName: 'Set filters',
-      params: [{ handle: 'parameters', displayName: 'Filters', defaultValue: "{{[{ column: 'status', condition: 'equals', value: 'Paid' }]}}" }],
+      params: [
+        {
+          handle: 'parameters',
+          displayName: 'Filters',
+          defaultValue: "{{[{ column: 'status', condition: 'equals', value: 'Paid' }]}}",
+        },
+      ],
     },
     (list: unknown) => setFilterList(list)
   );
@@ -726,13 +894,20 @@ export const DataTable = () => {
       ],
     },
     (columnKey: unknown, direction: unknown) => {
-      const next: Sort | null = isSet(columnKey) && (direction === 'asc' || direction === 'desc') ? { key: String(columnKey), direction } : null;
+      const next: Sort | null =
+        isSet(columnKey) && (direction === 'asc' || direction === 'desc')
+          ? { key: String(columnKey), direction }
+          : null;
       // The sort it already has: nothing changes and nothing fires (lib/sameValue).
       if (!sameValue(sortRef.current, next)) applySort(next);
     }
   );
   ToolJet.useAction(
-    { name: 'setSearchText', displayName: 'Set search text', params: [{ handle: 'text', displayName: 'Text', defaultValue: '' }] },
+    {
+      name: 'setSearchText',
+      displayName: 'Set search text',
+      params: [{ handle: 'text', displayName: 'Text', defaultValue: '' }],
+    },
     (text: unknown) => {
       const next = String(text ?? '');
       setSearchInput(next);
@@ -740,8 +915,19 @@ export const DataTable = () => {
     }
   );
   ToolJet.useAction(
-    { name: 'downloadTableData', displayName: 'Download table data', params: [{ handle: 'type', displayName: 'Type (csv or json)', defaultValue: 'csv' }] },
-    (type: unknown) => runDownload(String(type ?? 'csv').toLowerCase().includes('json') ? 'json' : 'csv')
+    {
+      name: 'downloadTableData',
+      displayName: 'Download table data',
+      params: [{ handle: 'type', displayName: 'Type (csv or json)', defaultValue: 'csv' }],
+    },
+    (type: unknown) =>
+      runDownload(
+        String(type ?? 'csv')
+          .toLowerCase()
+          .includes('json')
+          ? 'json'
+          : 'csv'
+      )
   );
 
   // ---- layout -----------------------------------------------------------------------------------------------------
@@ -802,10 +988,18 @@ export const DataTable = () => {
   const requestedWidth = shownColumns.reduce((sum, c) => sum + (Number(c.width) || 0), 0);
   const fitWidths = !boxWidth || requestedWidth <= boxWidth;
   const showColumnSelector = hideColumnSelectorButton !== true;
-  const toolbar = displaySearchBox !== false || showFilterButton !== false || showColumnSelector || showDownloadButton === true || showRefreshButton === true;
+  const toolbar =
+    displaySearchBox !== false ||
+    showFilterButton !== false ||
+    showColumnSelector ||
+    showDownloadButton === true ||
+    showRefreshButton === true;
   const colCount = shownColumns.length + (bulk ? 1 : 0) || 1;
   // Each column's share of the width, less its padding; never below 96px.
-  const cellCap = tight && boxWidth ? Math.max(96, Math.floor((boxWidth - (bulk ? 40 : 0)) / Math.max(1, shownColumns.length)) - 24) : null;
+  const cellCap =
+    tight && boxWidth
+      ? Math.max(96, Math.floor((boxWidth - (bulk ? 40 : 0)) / Math.max(1, shownColumns.length)) - 24)
+      : null;
   const skeletonRows = Math.min(5, Math.max(1, Number(rowsPerPage) || 5));
   const empty = !loading && !paged.items.length;
   // Rows a short page is missing from a full page, on a table with more than one page (see the filler row).
@@ -813,7 +1007,8 @@ export const DataTable = () => {
   // An empty table in a short box drops its footer (it reads "0 rows"; a later page past the end keeps its pager) and closes up, so the message has the room
   // under the header. Decided by the whole table's height, which the footer does not change.
   const compactEmpty = empty && rootHeight > 0 && rootHeight < COMPACT_EMPTY_BELOW && !multiPage;
-  const fillerRows = multiPage && paged.items.length ? Math.max(0, Math.min(Number(rowsPerPage) || 0, 200) - paged.items.length) : 0;
+  const fillerRows =
+    multiPage && paged.items.length ? Math.max(0, Math.min(Number(rowsPerPage) || 0, 200) - paged.items.length) : 0;
   const defaults = { currency, locale, dateFormat, badgeColors };
 
   const accent = isSet(accentColor) ? String(accentColor) : undefined;
@@ -840,7 +1035,12 @@ export const DataTable = () => {
   return (
     <div
       ref={rootRef}
-      className={cn('ui t2-table', headerCasing === 'uppercase' && 't2-upper', disabled && 'is-disabled', compactEmpty && 'is-compact-empty')}
+      className={cn(
+        'ui t2-table',
+        headerCasing === 'uppercase' && 't2-upper',
+        disabled && 'is-disabled',
+        compactEmpty && 'is-compact-empty'
+      )}
       style={rootStyle}
       aria-disabled={disabled || undefined}
     >
@@ -902,7 +1102,11 @@ export const DataTable = () => {
                     style={{ width: fitWidths ? column.width : undefined, minWidth: column.minWidth }}
                   >
                     {sortable ? (
-                      <button type="button" className={cn('t2-sort', active && 'is-active')} onClick={() => clickHeader(column)}>
+                      <button
+                        type="button"
+                        className={cn('t2-sort', active && 'is-active')}
+                        onClick={() => clickHeader(column)}
+                      >
                         <span>{column.name}</span>
                         <SortIcon size={12} />
                       </button>
@@ -932,86 +1136,122 @@ export const DataTable = () => {
                 </tr>
               ))
             ) : paged.items.length ? (
-              paged.items.map((entry, i) => {
-                const row = entry.row;
-                const isSelected = selected.has(entry.key);
-                // As natively, only a selectable table marks rows.
-                const showSelected = allowSelection && isSelected && (bulk || highlightSelectedRow !== false);
-                return (
-                  <tr
-                    key={entry.key}
-                    data-state={showSelected ? 'selected' : undefined}
-                    className={cn(allowSelection && 'is-selectable', striped && i % 2 === 1 && 'is-striped')}
-                    onClick={() => clickRow(entry)}
-                    onMouseEnter={() => hoverRow(entry)}
-                    onMouseLeave={() => {
-                      hoveredRef.current = null;
-                    }}
-                  >
-                    {bulk ? (
-                      <td className="t2-check-cell" onClick={(e) => e.stopPropagation()}>
-                        <TableCheckbox label="Select row" checked={isSelected} disabled={disabled} onChange={() => toggleBulk(entry)} />
-                      </td>
-                    ) : null}
-                    {shownColumns.map((column) => {
-                      const value = readCell(row, column.key);
-                      const at = { rowData: row, cellValue: value, rowIndex: entry.index };
-                      const color = isSet(column.textColor) ? resolve(column.textColor, at) : undefined;
-                      const background = isSet(column.cellBackgroundColor) ? resolve(column.cellBackgroundColor, at) : undefined;
-                      const style: CSSProperties = {
-                        height: rowHeight,
-                        ...(isSet(color) && typeof color === 'string' ? { color } : {}),
-                        ...(isSet(background) && typeof background === 'string' ? { background } : {}),
-                        ...(column.fontWeight ? { fontWeight: column.fontWeight } : {}),
-                        ...cellStyleFor(column, row),
-                      };
-                      return (
-                        <td
-                          key={column.id}
-                          className={cn(
-                            column.wrap ? 'is-wrap' : 'is-nowrap',
-                            column.align === 'right' && 'is-right',
-                            column.align === 'center' && 'is-center',
-                            column.type === 'button' && 'is-actions'
-                          )}
-                          style={style}
-                        >
-                          <CellBoundary resetKey={value}>
-                            {column.wrap || column.type === 'button' ? (
-                              renderCell({ value, row, column, defaults, onAction, rowIndex: entry.index, disabled, resolve })
-                            ) : (
-                              // A table cell takes no max-width: the content's own box caps and ellipses it.
-                              <div className="t2-clip">
-                                {renderCell({ value, row, column, defaults, onAction, rowIndex: entry.index, disabled, resolve })}
-                              </div>
-                            )}
-                          </CellBoundary>
+              paged.items
+                .map((entry, i) => {
+                  const row = entry.row;
+                  const isSelected = selected.has(entry.key);
+                  // As natively, only a selectable table marks rows.
+                  const showSelected = allowSelection && isSelected && (bulk || highlightSelectedRow !== false);
+                  return (
+                    <tr
+                      key={entry.key}
+                      data-state={showSelected ? 'selected' : undefined}
+                      className={cn(allowSelection && 'is-selectable', striped && i % 2 === 1 && 'is-striped')}
+                      onClick={() => clickRow(entry)}
+                      onMouseEnter={() => hoverRow(entry)}
+                      onMouseLeave={() => {
+                        hoveredRef.current = null;
+                      }}
+                    >
+                      {bulk ? (
+                        <td className="t2-check-cell" onClick={(e) => e.stopPropagation()}>
+                          <TableCheckbox
+                            label="Select row"
+                            checked={isSelected}
+                            disabled={disabled}
+                            onChange={() => toggleBulk(entry)}
+                          />
                         </td>
-                      );
-                    })}
-                  </tr>
-                );
-              }).concat(
-                // A short last page keeps the table a full page tall: the blank sits inside the table, under its rows,
-                // instead of the table (and a card fitted to it) shrinking and leaving a gap below on the page.
-                fillerRows > 0
-                  ? [
-                      <tr key="t2-page-filler" aria-hidden="true" className="t2-plain t2-page-filler">
-                        <td colSpan={colCount} style={{ height: rowHeight * fillerRows, padding: 0, border: 0 }} />
-                      </tr>,
-                    ]
-                  : []
-              )
+                      ) : null}
+                      {shownColumns.map((column) => {
+                        const value = readCell(row, column.key);
+                        const at = { rowData: row, cellValue: value, rowIndex: entry.index };
+                        const color = isSet(column.textColor) ? resolve(column.textColor, at) : undefined;
+                        const background = isSet(column.cellBackgroundColor)
+                          ? resolve(column.cellBackgroundColor, at)
+                          : undefined;
+                        const style: CSSProperties = {
+                          height: rowHeight,
+                          ...(isSet(color) && typeof color === 'string' ? { color } : {}),
+                          ...(isSet(background) && typeof background === 'string' ? { background } : {}),
+                          ...(column.fontWeight ? { fontWeight: column.fontWeight } : {}),
+                          ...cellStyleFor(column, row),
+                        };
+                        return (
+                          <td
+                            key={column.id}
+                            className={cn(
+                              column.wrap ? 'is-wrap' : 'is-nowrap',
+                              column.align === 'right' && 'is-right',
+                              column.align === 'center' && 'is-center',
+                              column.type === 'button' && 'is-actions'
+                            )}
+                            style={style}
+                          >
+                            <CellBoundary resetKey={value}>
+                              {column.wrap || column.type === 'button' ? (
+                                renderCell({
+                                  value,
+                                  row,
+                                  column,
+                                  defaults,
+                                  onAction,
+                                  rowIndex: entry.index,
+                                  disabled,
+                                  resolve,
+                                })
+                              ) : (
+                                // A table cell takes no max-width: the content's own box caps and ellipses it.
+                                <div className="t2-clip">
+                                  {renderCell({
+                                    value,
+                                    row,
+                                    column,
+                                    defaults,
+                                    onAction,
+                                    rowIndex: entry.index,
+                                    disabled,
+                                    resolve,
+                                  })}
+                                </div>
+                              )}
+                            </CellBoundary>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })
+                .concat(
+                  // A short last page keeps the table a full page tall: the blank sits inside the table, under its rows,
+                  // instead of the table (and a card fitted to it) shrinking and leaving a gap below on the page.
+                  fillerRows > 0
+                    ? [
+                        <tr key="t2-page-filler" aria-hidden="true" className="t2-plain t2-page-filler">
+                          <td colSpan={colCount} style={{ height: rowHeight * fillerRows, padding: 0, border: 0 }} />
+                        </tr>,
+                      ]
+                    : []
+                )
             ) : (
               <tr className="t2-plain">
                 {/* The empty state fills the body: in a short table the icon goes, then the description. */}
                 <td colSpan={colCount} className="t2-empty-cell" style={{ height: Math.max(28, box.height - 1) }}>
                   {/* Sized as the cell once the body is measured: its 130px intrinsic height (the unmeasured fallback)
                       made a short body's cell that tall, the message scrolled out under the header. */}
-                  <div className="t2-empty" style={box.height > 0 ? { containIntrinsicHeight: `${Math.max(28, box.height - 1)}px` } : undefined}>
+                  <div
+                    className="t2-empty"
+                    style={box.height > 0 ? { containIntrinsicHeight: `${Math.max(28, box.height - 1)}px` } : undefined}
+                  >
                     <Inbox size={24} className="t2-empty-icon" />
-                    <p className="t2-empty-title">{searchText || filters.length ? String(noMatchText || 'No matching rows.') : String(emptyText || 'No results.')}</p>
-                    {emptyDescription && !searchText && !filters.length ? <p className="t2-empty-note">{String(emptyDescription)}</p> : null}
+                    <p className="t2-empty-title">
+                      {searchText || filters.length
+                        ? String(noMatchText || 'No matching rows.')
+                        : String(emptyText || 'No results.')}
+                    </p>
+                    {emptyDescription && !searchText && !filters.length ? (
+                      <p className="t2-empty-note">{String(emptyDescription)}</p>
+                    ) : null}
                   </div>
                 </td>
               </tr>

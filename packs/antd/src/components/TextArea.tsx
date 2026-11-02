@@ -12,11 +12,35 @@ import { useValueSetter } from '../lib/sameValue';
 export const TextArea = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Description' });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Enter a description' });
-  const [minRows] = ToolJet.useStateNumber({ name: 'minRows', label: 'Min rows', description: 'autoSize.minRows', initialValue: 3, min: 1, max: 40 });
-  const [maxRows] = ToolJet.useStateNumber({ name: 'maxRows', label: 'Max rows', description: 'autoSize.maxRows; 0 grows without limit.', initialValue: 8, min: 0, max: 80 });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Enter a description',
+  });
+  const [minRows] = ToolJet.useStateNumber({
+    name: 'minRows',
+    label: 'Min rows',
+    description: 'autoSize.minRows',
+    initialValue: 3,
+    min: 1,
+    max: 40,
+  });
+  const [maxRows] = ToolJet.useStateNumber({
+    name: 'maxRows',
+    label: 'Max rows',
+    description: 'autoSize.maxRows; 0 grows without limit.',
+    initialValue: 8,
+    min: 0,
+    max: 80,
+  });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: false });
-  const [maxLength] = ToolJet.useStateNumber({ name: 'maxLength', label: 'Max length', description: '0 for no limit.', initialValue: 0, min: 0 });
+  const [maxLength] = ToolJet.useStateNumber({
+    name: 'maxLength',
+    label: 'Max length',
+    description: '0 for no limit.',
+    initialValue: 0,
+    min: 0,
+  });
   const [showCount] = ToolJet.useStateBoolean({ name: 'showCount', label: 'Show count', initialValue: false });
   const look = useControlLook();
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
@@ -26,9 +50,20 @@ export const TextArea = (props: Record<string, unknown>) => {
   const ref = useRef<InputRef>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ section: 'text', value });
+  const check = ToolJet.useValidation({ kind: 'text', value });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 11 });
+  ToolJet.useComponentSettings({
+    role: 'textarea',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's Input.TextArea: label, value, placeholder, extra, minRows/maxRows (autoSize), showCount with maxLength.",
+    roleProps: { description: 'extra', rows: 'minRows' },
+    roleEvents: { onEnterPressed: 'onPressEnter' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 14,
+    defaultHeight: 11,
+  });
 
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));

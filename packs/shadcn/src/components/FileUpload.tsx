@@ -1,13 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { File as FileIcon, FileArchive, FileAudio, FileImage, FileSpreadsheet, FileText, FileVideo, Loader2, Upload, X } from 'lucide-react';
+import {
+  File as FileIcon,
+  FileArchive,
+  FileAudio,
+  FileImage,
+  FileSpreadsheet,
+  FileText,
+  FileVideo,
+  Loader2,
+  Upload,
+  X,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Field } from '../lib/Field';
 import { cn } from '../lib/cn';
-import { TJ } from '../lib/ui2/inputs/sdk';
+import { ToolJet } from '@tooljet/custom-component-sdk';
 import { useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
 import { TOKEN } from '../lib/styleDefaults';
-import { useRuleCheck } from '../lib/ui2/inputs/parts';
 import * as M from '../lib/ui2/inputs/model';
 import type { FileKind } from '../lib/ui2/inputs/model';
 import '../styles/ui2-inputs.css';
@@ -76,7 +86,12 @@ const readAs = (file: Blob, how: 'readAsDataURL' | 'readAsText', track: Set<File
  * CSV, TSV or JSON content as data. Excel needs a sheet reader the pack does not bundle, so Excel is not offered as a
  * parse type; a file that is still parsed as one (auto-detect, or an older app's saved setting) says so in parseError.
  */
-const parseContent = (file: File, text: string, parseFileType: string, delimiter: string): { data: unknown; error: string } => {
+const parseContent = (
+  file: File,
+  text: string,
+  parseFileType: string,
+  delimiter: string
+): { data: unknown; error: string } => {
   const ext = (file.name.match(/\.([a-z0-9]+)$/i)?.[1] || '').toLowerCase();
   const type = (file.type || '').toLowerCase();
   const kind =
@@ -100,7 +115,8 @@ const parseContent = (file: File, text: string, parseFileType: string, delimiter
       const data = M.parseDelimited(text, kind === 'tsv' ? '\t' : delimiter || ',', warnings);
       return { data, error: warnings.length ? `"${file.name}": ${warnings.join('; ')}` : '' };
     }
-    if (kind.includes('excel') || kind.includes('spreadsheet')) return { data: null, error: `"${file.name}": Excel files cannot be parsed here` };
+    if (kind.includes('excel') || kind.includes('spreadsheet'))
+      return { data: null, error: `"${file.name}": Excel files cannot be parsed here` };
     return { data: null, error: `"${file.name}" is not a CSV, TSV or JSON file` };
   } catch {
     return { data: null, error: `"${file.name}" could not be parsed` };
@@ -108,18 +124,43 @@ const parseContent = (file: File, text: string, parseFileType: string, delimiter
 };
 
 export const FileUpload = () => {
-  const [label] = TJ.useStateString({ name: 'label', label: 'Label', initialValue: 'Attachments' });
-  const [description] = TJ.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
-  const [title] = TJ.useStateString({ name: 'title', label: 'Title', initialValue: 'Drag & drop files here' });
-  const [hint] = TJ.useStateString({ name: 'hint', label: 'Hint (empty: accepted types and size)', initialValue: '' });
-  const [accept] = TJ.useStateString({ name: 'accept', label: 'Accept file types', placeholder: 'image/*,application/pdf,.csv', initialValue: 'image/*,application/pdf' });
-  const [multipleProp] = TJ.useStateBoolean({ name: 'multiple', label: 'Allow multiple files', initialValue: true });
-  const [maxFilesProp] = TJ.useStateNumber({ name: 'maxFiles', label: 'Max files', initialValue: 5 });
-  const [maxSizeProp] = TJ.useStateNumber({ name: 'maxSize', label: 'Max size (bytes, 0 for no limit)', initialValue: 5242880 });
-  const [minSizeProp] = TJ.useStateNumber({ name: 'minSize', label: 'Min size (bytes)', initialValue: 0 });
-  const [showPreview] = TJ.useStateBoolean({ name: 'showPreview', label: 'Show image thumbnails', initialValue: true });
-  const [parse] = TJ.useStateBoolean({ name: 'parseContent', label: 'Parse content (CSV, TSV, JSON)', initialValue: false });
-  const [parseFileType] = TJ.useStateEnumeration({
+  const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: 'Attachments' });
+  const [description] = ToolJet.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
+  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Drag & drop files here' });
+  const [hint] = ToolJet.useStateString({
+    name: 'hint',
+    label: 'Hint (empty: accepted types and size)',
+    initialValue: '',
+  });
+  const [accept] = ToolJet.useStateString({
+    name: 'accept',
+    label: 'Accept file types',
+    placeholder: 'image/*,application/pdf,.csv',
+    initialValue: 'image/*,application/pdf',
+  });
+  const [multipleProp] = ToolJet.useStateBoolean({
+    name: 'multiple',
+    label: 'Allow multiple files',
+    initialValue: true,
+  });
+  const [maxFilesProp] = ToolJet.useStateNumber({ name: 'maxFiles', label: 'Max files', initialValue: 5 });
+  const [maxSizeProp] = ToolJet.useStateNumber({
+    name: 'maxSize',
+    label: 'Max size (bytes, 0 for no limit)',
+    initialValue: 5242880,
+  });
+  const [minSizeProp] = ToolJet.useStateNumber({ name: 'minSize', label: 'Min size (bytes)', initialValue: 0 });
+  const [showPreview] = ToolJet.useStateBoolean({
+    name: 'showPreview',
+    label: 'Show image thumbnails',
+    initialValue: true,
+  });
+  const [parse] = ToolJet.useStateBoolean({
+    name: 'parseContent',
+    label: 'Parse content (CSV, TSV, JSON)',
+    initialValue: false,
+  });
+  const [parseFileType] = ToolJet.useStateEnumeration({
     name: 'parseFileType',
     label: 'Parse as',
     // No Excel entries: the pack has no sheet reader, so offering them promised parsing it cannot do.
@@ -132,16 +173,26 @@ export const FileUpload = () => {
     },
     initialValue: 'auto-detect',
   });
-  const [delimiter] = TJ.useStateString({ name: 'delimiter', label: 'CSV delimiter', initialValue: ',' });
+  const [delimiter] = ToolJet.useStateString({ name: 'delimiter', label: 'CSV delimiter', initialValue: ',' });
   // Exposed: the files (the native File picker's `file`), their total size and whether parsing is under way.
-  const [, setFile] = TJ.useStateArray({ name: 'file', initialValue: [], inspector: 'hidden' });
-  const [, setFileSize] = TJ.useStateNumber({ name: 'fileSize', initialValue: 0, inspector: 'hidden' });
-  const [, setIsParsing] = TJ.useStateBoolean({ name: 'isParsing', initialValue: false, inspector: 'hidden' });
-  const [legacyRequired] = TJ.useStateBoolean({ name: 'required', label: 'Required', initialValue: false, inspector: 'hidden' });
-  const [legacyDisabled] = TJ.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
-  const onFileSelected = TJ.useEventCallback({ name: 'onFileSelected' });
-  const onFileDeselected = TJ.useEventCallback({ name: 'onFileDeselected' });
-  const onFileLoaded = TJ.useEventCallback({ name: 'onFileLoaded' });
+  const [, setFile] = ToolJet.useStateArray({ name: 'file', initialValue: [], inspector: 'hidden' });
+  const [, setFileSize] = ToolJet.useStateNumber({ name: 'fileSize', initialValue: 0, inspector: 'hidden' });
+  const [, setIsParsing] = ToolJet.useStateBoolean({ name: 'isParsing', initialValue: false, inspector: 'hidden' });
+  const [legacyRequired] = ToolJet.useStateBoolean({
+    name: 'required',
+    label: 'Required',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const [legacyDisabled] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const onFileSelected = ToolJet.useEventCallback({ name: 'onFileSelected' });
+  const onFileDeselected = ToolJet.useEventCallback({ name: 'onFileDeselected' });
+  const onFileLoaded = ToolJet.useEventCallback({ name: 'onFileLoaded' });
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<ReadFile[]>([]);
@@ -164,7 +215,7 @@ export const FileUpload = () => {
   limits.current = { multiple, maxFiles };
 
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
-  TJ.useFormClear(() => clearFiles(false));
+  ToolJet.useFormClear(() => clearFiles(false));
   const publish = (next: ReadFile[]) => {
     filesRef.current = next;
     setFiles(next);
@@ -211,8 +262,8 @@ export const FileUpload = () => {
       })
     );
   };
-  TJ.useAction({ name: 'clearFiles', displayName: 'Clear files' }, () => clearFiles());
-  TJ.useAction(
+  ToolJet.useAction({ name: 'clearFiles', displayName: 'Clear files' }, () => clearFiles());
+  ToolJet.useAction(
     {
       name: 'setFileName',
       displayName: 'Set file name',
@@ -224,11 +275,15 @@ export const FileUpload = () => {
     (indexOrUpdates, name) => rename(indexOrUpdates, name)
   );
 
-  const control = TJ.useControlState();
-  const check = TJ.useValidation({ section: 'choice', value: files.length || '', present: files.length > 0 });
-  const rule = useRuleCheck(check, legacyRequired && !files.length ? 'This field is mandatory' : '');
+  const control = ToolJet.useControlState();
+  const rule = ToolJet.useValidation({
+    kind: 'choice',
+    value: files.length || '',
+    present: files.length > 0,
+    rule: legacyRequired && !files.length ? 'This field is mandatory' : '',
+  });
   const looks = useLooks(LOOKS);
-  TJ.useComponentSettings({ defaultWidth: 12, defaultHeight: 18 });
+  ToolJet.useComponentSettings({ role: 'fileupload', fit: true, loading: 'own', defaultWidth: 12, defaultHeight: 18 });
 
   const disabled = legacyDisabled || control.disabled;
   const full = multiple && files.length >= maxFiles;
@@ -247,12 +302,16 @@ export const FileUpload = () => {
       else return true;
       return false;
     });
-    const fresh = fits.filter((f) => !current.some((c) => c.name === f.name && c.size === f.size && c.lastModified === f.lastModified));
+    const fresh = fits.filter(
+      (f) => !current.some((c) => c.name === f.name && c.size === f.size && c.lastModified === f.lastModified)
+    );
     // Files still being read hold their place, so a second pick while the first is pending cannot overfill maxFiles.
     const room = multiple ? Math.max(0, maxFiles - current.length - pending.current.files) : 1;
     const taking = fresh.slice(0, room);
     const limitMessage = (max: number) => `You can upload up to ${max} file${max === 1 ? '' : 's'}`;
-    let message = problems.length ? `${problems[0]}${problems.length > 1 ? ` (${problems.length} files not added)` : ''}` : '';
+    let message = problems.length
+      ? `${problems[0]}${problems.length > 1 ? ` (${problems.length} files not added)` : ''}`
+      : '';
     if (!message && fresh.length > taking.length) message = limitMessage(maxFiles);
     setRejectError(message);
     if (!taking.length) return;
@@ -293,7 +352,9 @@ export const FileUpload = () => {
         setIsParsing(false);
       }
     }
-    const read = results.filter((r): r is PromiseFulfilledResult<ReadFile> => r.status === 'fulfilled').map((r) => r.value);
+    const read = results
+      .filter((r): r is PromiseFulfilledResult<ReadFile> => r.status === 'fulfilled')
+      .map((r) => r.value);
     const notes: string[] = [];
     if (read.length < taking.length) notes.push(`${taking.length - read.length} file(s) could not be read`);
     notes.push(...read.filter((f) => f.parseError).map((f) => f.parseError));
@@ -318,10 +379,18 @@ export const FileUpload = () => {
 
   const hintText =
     String(hint ?? '').trim() ||
-    [M.acceptHint(accept) || 'Any file', maxSize ? `up to ${M.formatBytes(maxSize)}` : '', multiple ? `max ${maxFiles} files` : '']
+    [
+      M.acceptHint(accept) || 'Any file',
+      maxSize ? `up to ${M.formatBytes(maxSize)}` : '',
+      multiple ? `max ${maxFiles} files` : '',
+    ]
       .filter(Boolean)
       .join(' · ');
-  const titleText = full ? `Limit of ${maxFiles} file${maxFiles === 1 ? '' : 's'} reached` : dragOver ? 'Drop to upload' : title;
+  const titleText = full
+    ? `Limit of ${maxFiles} file${maxFiles === 1 ? '' : 's'} reached`
+    : dragOver
+      ? 'Drop to upload'
+      : title;
   const error = rejectError || rule.error;
 
   return (
@@ -407,7 +476,13 @@ export const FileUpload = () => {
                       {ext ? ` · ${ext}` : ''}
                     </p>
                   </div>
-                  <button type="button" className="ui2-file-x" aria-label={`Remove ${f.name}`} disabled={disabled} onClick={() => remove(i)}>
+                  <button
+                    type="button"
+                    className="ui2-file-x"
+                    aria-label={`Remove ${f.name}`}
+                    disabled={disabled}
+                    onClick={() => remove(i)}
+                  >
                     <X size={16} />
                   </button>
                 </li>

@@ -1,4 +1,3 @@
-import '@/test/consoleGuard';
 /**
  * A Table with no rows draws its header row, then the empty state as the body under it. The empty state was placed
  * absolutely and took no room, so the shadcn look (a table as tall as its rows) drew a table as tall as its header,

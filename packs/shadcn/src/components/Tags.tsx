@@ -33,7 +33,13 @@ const toTags = (raw: unknown, colors: unknown): TagItem[] => {
 };
 
 // How many tags fit on one line, leaving room for the +N chip when some do not (UI 2.0's useFit).
-const useFit = (enabled: boolean, count: number, row: HTMLDivElement | null, probe: HTMLDivElement | null, key: unknown): number => {
+const useFit = (
+  enabled: boolean,
+  count: number,
+  row: HTMLDivElement | null,
+  probe: HTMLDivElement | null,
+  key: unknown
+): number => {
   const [fit, setFit] = useState(count);
   useLayoutEffect(() => {
     if (!enabled || !row || !probe) return undefined;
@@ -72,7 +78,12 @@ export const Tags = () => {
     description: 'Strings or { label, color } objects.',
     initialValue: ['Design', 'Frontend', 'Urgent'],
   });
-  const [tagColors] = ToolJet.useStateObject({ name: 'tagColors', label: 'Colours by tag', description: 'Map of tag to color.', initialValue: { Urgent: '#dc2626' } });
+  const [tagColors] = ToolJet.useStateObject({
+    name: 'tagColors',
+    label: 'Colours by tag',
+    description: 'Map of tag to color.',
+    initialValue: { Urgent: '#dc2626' },
+  });
   const [variant] = ToolJet.useStateEnumeration({
     name: 'variant',
     label: 'Variant',
@@ -99,14 +110,18 @@ export const Tags = () => {
     inspector: 'switch',
   });
   const [pill] = ToolJet.useStateBoolean({ name: 'pill', label: 'Pill shape', initialValue: false });
-  const [, setLastClickedTag] = ToolJet.useStateString({ name: 'lastClickedTag', initialValue: '', inspector: 'hidden' });
+  const [, setLastClickedTag] = ToolJet.useStateString({
+    name: 'lastClickedTag',
+    initialValue: '',
+    inspector: 'hidden',
+  });
   const onTagClicked = ToolJet.useEventCallback({ name: 'onTagClicked' });
   const background = useThemeColor('backgroundColor', 'Tag background (unmapped tags)', TOKEN.muted);
   const textColor = useThemeColor('textColor', 'Tag text color (unmapped tags)', TOKEN.text);
   const borderColor = useThemeColor('borderColor', 'Tag border color', 'transparent');
   const borderRadius = useThemeRadius('borderRadius', 'Tag radius');
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 3 });
+  ToolJet.useComponentSettings({ role: 'tags', fit: true, loading: 'own', defaultWidth: 12, defaultHeight: 3 });
 
   const items = useMemo(() => toTags(tags, tagColors), [tags, tagColors]);
   const [shownCount, setShownCount] = useState(MAX_ITEMS);
@@ -160,10 +175,22 @@ export const Tags = () => {
   return (
     <LoadingFrame loading={ld.loading} minHeight={32} look={ld.skeleton ? <ChipsSkel /> : <LoadingBox />}>
       <div className="ui ui2-tags" style={vars}>
-        <div ref={setRow} role="list" aria-label="Tags" className={cn('ui2-tags-row', single && 'is-single', overflow === 'scroll' && 'is-scroll')} style={{ gap: TAG_GAP }}>
+        <div
+          ref={setRow}
+          role="list"
+          aria-label="Tags"
+          className={cn('ui2-tags-row', single && 'is-single', overflow === 'scroll' && 'is-scroll')}
+          style={{ gap: TAG_GAP }}
+        >
           {drawn.slice(0, single ? shown : drawn.length).map((t, i) => chip(t, i, true))}
           {single && hidden > 0 ? (
-            <span className={cn('ui2-tag', sizeClass, 'is-outline', 'is-more', pill && 'is-pill')} title={drawn.slice(shown).map((t) => t.label).join(', ')}>
+            <span
+              className={cn('ui2-tag', sizeClass, 'is-outline', 'is-more', pill && 'is-pill')}
+              title={drawn
+                .slice(shown)
+                .map((t) => t.label)
+                .join(', ')}
+            >
               +{hidden}
             </span>
           ) : null}

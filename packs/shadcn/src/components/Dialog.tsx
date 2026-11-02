@@ -17,7 +17,11 @@ import { useKeptPopupSlot } from '../lib/keptPopupSlot';
 const OVERLAY_Z = 1000;
 
 export const Dialog = () => {
-  const [triggerText] = ToolJet.useStateString({ name: 'triggerText', label: 'Button label', initialValue: 'Delete account' });
+  const [triggerText] = ToolJet.useStateString({
+    name: 'triggerText',
+    label: 'Button label',
+    initialValue: 'Delete account',
+  });
   const [triggerVariant] = ToolJet.useStateEnumeration({
     name: 'triggerVariant',
     label: 'Button variant',
@@ -31,7 +35,11 @@ export const Dialog = () => {
     label: 'Description',
     initialValue: 'This action cannot be undone. This will permanently delete your account and remove your data.',
   });
-  const [confirmText] = ToolJet.useStateString({ name: 'confirmText', label: 'Confirm label', initialValue: 'Continue' });
+  const [confirmText] = ToolJet.useStateString({
+    name: 'confirmText',
+    label: 'Confirm label',
+    initialValue: 'Continue',
+  });
   const [cancelText] = ToolJet.useStateString({ name: 'cancelText', label: 'Cancel label', initialValue: 'Cancel' });
   const [destructive] = ToolJet.useStateBoolean({
     name: 'destructive',
@@ -43,7 +51,11 @@ export const Dialog = () => {
   const [open, setOpen] = ToolJet.useStateBoolean({ name: 'show', initialValue: false, inspector: 'hidden' });
   // Built in: the body is a canvas of ToolJet components (a form, details), under the description.
   const [showBody] = ToolJet.useStateBoolean({ name: 'showBody', label: 'Components in the body', initialValue: true });
-  const [showFooter] = ToolJet.useStateBoolean({ name: 'showFooter', label: 'Confirm and cancel buttons', initialValue: true });
+  const [showFooter] = ToolJet.useStateBoolean({
+    name: 'showFooter',
+    label: 'Confirm and cancel buttons',
+    initialValue: true,
+  });
   const [bodyHeight] = ToolJet.useStateNumber({
     name: 'bodyHeight',
     label: 'Body height (px)',
@@ -120,7 +132,13 @@ export const Dialog = () => {
   // Empty = the trigger variant's own colors (see Button).
   const buttonColor = useThemeColor('buttonColor', 'Button background', TOKEN.surface);
   const buttonText = useThemeColor('buttonTextColor', 'Button text', TOKEN.text);
-  const background = ToolJet.useStyleString({ name: 'dialogBackground', label: 'Dialog background', inspector: 'color', initialValue: 'var(--cc-surface1-surface)', section: 'Dialog' });
+  const background = ToolJet.useStyleString({
+    name: 'dialogBackground',
+    label: 'Dialog background',
+    inspector: 'color',
+    initialValue: 'var(--cc-surface1-surface)',
+    section: 'Dialog',
+  });
   const radius = useThemeRadius('dialogRadius', 'Dialog radius', { section: 'Dialog' });
   const loadingNow = useLoading();
   // The body's components stay mounted while the dialog is closed, so a draft typed in them survives Cancel, the X
@@ -129,11 +147,24 @@ export const Dialog = () => {
     enabled: !!showBody,
     style: { height: Math.min(2000, Math.max(40, Number(bodyHeight) || 240)) },
   });
-  ToolJet.useComponentSettings({ defaultWidth: 7, defaultHeight: 4 });
+  ToolJet.useComponentSettings({
+    role: 'dialog',
+    fit: false,
+    loading: 'own',
+    usage:
+      'A dialog with its own trigger button or open/close actions: title, description, a body canvas of components (bodyHeight), confirm/cancel (showFooter).',
+    slots: [{ name: 'body', kind: 'popup' }],
+    defaultWidth: 7,
+    defaultHeight: 4,
+  });
 
   return (
     <LoadingFrame loading={loadingNow} look={<LoadingBox />}>
-      <div className="ui" ref={anchorRef} style={{ display: 'flex', alignItems: 'center', ...themeVars({ buttonColor, buttonText }) }}>
+      <div
+        className="ui"
+        ref={anchorRef}
+        style={{ display: 'flex', alignItems: 'center', ...themeVars({ buttonColor, buttonText }) }}
+      >
         <DialogPrimitive.Root
           open={open}
           onOpenChange={(next) => {
@@ -171,19 +202,21 @@ export const Dialog = () => {
                   <DialogPrimitive.Description className="ui-dialog-desc">{description}</DialogPrimitive.Description>
                 </div>
                 {bodyPlace}
-                {showFooter ? <div className="ui-dialog-footer">
-                  <button type="button" className="ui-btn ui-btn--outline" onClick={() => close(false)}>
-                    {cancelText}
-                  </button>
-                  <button
-                    type="button"
-                    className={cn('ui-btn', destructive ? 'ui-btn--destructive' : 'ui-btn--default')}
-                    disabled={blocked}
-                    onClick={() => close(true)}
-                  >
-                    {confirmText}
-                  </button>
-                </div> : null}
+                {showFooter ? (
+                  <div className="ui-dialog-footer">
+                    <button type="button" className="ui-btn ui-btn--outline" onClick={() => close(false)}>
+                      {cancelText}
+                    </button>
+                    <button
+                      type="button"
+                      className={cn('ui-btn', destructive ? 'ui-btn--destructive' : 'ui-btn--default')}
+                      disabled={blocked}
+                      onClick={() => close(true)}
+                    >
+                      {confirmText}
+                    </button>
+                  </div>
+                ) : null}
                 <DialogPrimitive.Close asChild>
                   <button type="button" className="ui-icon-btn ui-dialog-close" aria-label="Close">
                     <X />

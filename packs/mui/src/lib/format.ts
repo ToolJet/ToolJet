@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { localeFor } from './locale';
+import { currencyCode, localeFor, moneyStyle } from './locale';
 
 export type NumberFormat = 'auto' | 'number' | 'currency' | 'percent' | 'compact';
 
@@ -41,7 +41,7 @@ export const formatNumber = (n: number, format: NumberFormat = 'auto', currency 
   const where = localeFor(currency, locale);
   switch (format) {
     case 'currency':
-      return fmt({ style: 'currency', currency: currency || 'USD', ...digits }, where).format(n);
+      return fmt(moneyStyle(currencyCode(currency), digits), where).format(n);
     case 'percent':
       return fmt({ style: 'percent', maximumFractionDigits: precision ?? 1, ...digits }, where).format(Math.abs(n) <= 1 ? n : n / 100);
     case 'compact':

@@ -1,8 +1,26 @@
 import React, { useMemo } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { LOCALE_HINT } from '../lib/locale';
-import { ChartBoundary, ChartNotes, EmptyChart, lookVars, useBoxSize, useChartClick } from '../lib/ui2/charts/chartParts';
-import { DIMMED, axisLabel, clamp, formatter, hiddenNote, isRecord, isScalar, isSet, list, num } from '../lib/ui2/charts/chartModel';
+import {
+  ChartBoundary,
+  ChartNotes,
+  EmptyChart,
+  lookVars,
+  useBoxSize,
+  useChartClick,
+} from '../lib/ui2/charts/chartParts';
+import {
+  DIMMED,
+  axisLabel,
+  clamp,
+  formatter,
+  hiddenNote,
+  isRecord,
+  isScalar,
+  isSet,
+  list,
+  num,
+} from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 
@@ -11,16 +29,28 @@ const MAX_HEAT_COLUMNS = 60;
 const MAX_HEAT_ROWS = 40;
 
 const SAMPLE = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].flatMap((day, d) =>
-  ['08', '10', '12', '14', '16', '18'].map((hour, h) => ({ day, hour: `${hour}:00`, tickets: Math.round((d < 5 ? 10 : 4) * (1 + Math.sin((h + 1) / 2)) + d) }))
+  ['08', '10', '12', '14', '16', '18'].map((hour, h) => ({
+    day,
+    hour: `${hour}:00`,
+    tickets: Math.round((d < 5 ? 10 : 4) * (1 + Math.sin((h + 1) / 2)) + d),
+  }))
 );
 
 /** The grid: column and row labels in order of first appearance (or xOrder / yOrder first), each cell the sum of the
  *  rows landing in it, the smallest and largest cell, and the labels past the drawn grid. Every row is summed. */
-const heatmapGrid = (data: unknown, xField: unknown, yField: unknown, valueField: unknown, xOrder: unknown, yOrder: unknown) => {
+const heatmapGrid = (
+  data: unknown,
+  xField: unknown,
+  yField: unknown,
+  valueField: unknown,
+  xOrder: unknown,
+  yOrder: unknown
+) => {
   const field = (f: unknown) => (isScalar(f) ? String(f) : '');
   const [xf, yf, vf] = [field(xField), field(yField), field(valueField)];
   const label = (v: unknown) => (v === null || v === undefined ? '' : String(axisLabel(v)));
-  const ordered = (preset: unknown, cap: number) => new Set((Array.isArray(preset) ? preset.slice(0, cap) : []).filter(isScalar).map((v) => String(v)));
+  const ordered = (preset: unknown, cap: number) =>
+    new Set((Array.isArray(preset) ? preset.slice(0, cap) : []).filter(isScalar).map((v) => String(v)));
   const xs = ordered(xOrder, MAX_HEAT_COLUMNS);
   const ys = ordered(yOrder, MAX_HEAT_ROWS);
   const cells = new Map<string, number>();
@@ -68,25 +98,54 @@ export const HeatmapChart = () => {
   const [yOrder] = ToolJet.useStateArray({ name: 'yOrder', label: 'Row order', initialValue: [] });
   const [showValues] = ToolJet.useStateBoolean({ name: 'showValues', label: 'Show values', initialValue: false });
   const [cellGap] = ToolJet.useStateNumber({ name: 'cellGap', label: 'Cell gap (px)', initialValue: 3 });
-  const [yAxisFormat] = ToolJet.useStateEnumeration({ name: 'yAxisFormat', label: 'Value format', enumDefinition: FORMAT_ENUM, initialValue: 'number', inspector: 'switch' });
+  const [yAxisFormat] = ToolJet.useStateEnumeration({
+    name: 'yAxisFormat',
+    label: 'Value format',
+    enumDefinition: FORMAT_ENUM,
+    initialValue: 'number',
+    inspector: 'switch',
+  });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency code', initialValue: 'USD' });
-  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
+  const [locale] = ToolJet.useStateString({
+    name: 'locale',
+    label: 'Locale',
+    description: LOCALE_HINT,
+    initialValue: '',
+  });
   const [valuePrefix] = ToolJet.useStateString({ name: 'valuePrefix', label: 'Value prefix', initialValue: '' });
   const [valueSuffix] = ToolJet.useStateString({ name: 'valueSuffix', label: 'Value suffix', initialValue: '' });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No data' });
   const [showLegend] = ToolJet.useStateBoolean({ name: 'showLegend', label: 'Legend', initialValue: true });
-  const [highlightClicked] = ToolJet.useStateBoolean({ name: 'highlightClicked', label: 'Highlight clicked point', description: 'Outlines the clicked cell until Clear clicked point runs or another is clicked.', initialValue: false });
+  const [highlightClicked] = ToolJet.useStateBoolean({
+    name: 'highlightClicked',
+    label: 'Highlight clicked point',
+    description: 'Outlines the clicked cell until Clear clicked point runs or another is clicked.',
+    initialValue: false,
+  });
   const click = useChartClick(highlightClicked);
   const chartColor = useThemeColor('chartColor', 'Chart color (the strongest cell)', TOKEN.brand);
   const axisTextColor = useThemeColor('axisTextColor', 'Label color', TOKEN.mutedText);
   const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 24, defaultHeight: 28 });
+  ToolJet.useComponentSettings({
+    role: 'heatmapchart',
+    fit: false,
+    loading: 'own',
+    defaultWidth: 24,
+    defaultHeight: 28,
+  });
   const box = useBoxSize();
 
-  const grid = useMemo(() => heatmapGrid(data, xField, yField, valueField, xOrder, yOrder), [data, xField, yField, valueField, xOrder, yOrder]);
+  const grid = useMemo(
+    () => heatmapGrid(data, xField, yField, valueField, xOrder, yOrder),
+    [data, xField, yField, valueField, xOrder, yOrder]
+  );
   const format = useMemo(
-    () => formatter({ format: yAxisFormat, currency, locale, prefix: valuePrefix, suffix: valueSuffix }, yAxisFormat === 'compact'),
+    () =>
+      formatter(
+        { format: yAxisFormat, currency, locale, prefix: valuePrefix, suffix: valueSuffix },
+        yAxisFormat === 'compact'
+      ),
     [yAxisFormat, currency, locale, valuePrefix, valueSuffix]
   );
   const gap = clamp(cellGap, 0, 12, 3);
@@ -95,7 +154,10 @@ export const HeatmapChart = () => {
   const labelEvery = Math.max(1, Math.ceil(grid.xs.length / Math.max(1, Math.floor((box.width || 600) / 36))));
   const rowLabelWidth = Math.min(160, Math.max(32, Math.max(0, ...grid.ys.map((y) => y.length)) * 7 + 12));
   const strong = isSet(chartColor) ? chartColor : 'var(--sc-chart-1, var(--ui-primary))';
-  const shade = (strength: number | null) => (strength === null ? 'var(--ui-muted)' : `color-mix(in srgb, ${strong} ${Math.round(12 + strength * 88)}%, var(--ui-muted))`);
+  const shade = (strength: number | null) =>
+    strength === null
+      ? 'var(--ui-muted)'
+      : `color-mix(in srgb, ${strong} ${Math.round(12 + strength * 88)}%, var(--ui-muted))`;
   const xKey = isSet(xField) ? String(xField) : 'x';
   const yKey = isSet(yField) ? String(yField) : 'y';
   const vKey = isSet(valueField) ? String(valueField) : 'value';
@@ -105,7 +167,12 @@ export const HeatmapChart = () => {
 
   return (
     <LoadingFrame loading={ld.loading} look={blockLook(ld.skeleton)}>
-      <div ref={box.ref} className="ui ui2-heatmap" style={lookVars({ '--lk-axis': axisTextColor, '--lk-legend': legendTextColor })} onDoubleClick={click.doubleClick}>
+      <div
+        ref={box.ref}
+        className="ui ui2-heatmap"
+        style={lookVars({ '--lk-axis': axisTextColor, '--lk-legend': legendTextColor })}
+        onDoubleClick={click.doubleClick}
+      >
         {empty ? (
           <EmptyChart text={String(isSet(emptyText) ? emptyText : 'No data')} />
         ) : (
@@ -157,7 +224,10 @@ export const HeatmapChart = () => {
             {showLegend !== false ? (
               <div className="ui2-heatmap-legend">
                 <span>{format(grid.min)}</span>
-                <span className="ui2-heatmap-scale" style={{ background: `linear-gradient(to right, ${shade(0)}, ${shade(1)})` }} />
+                <span
+                  className="ui2-heatmap-scale"
+                  style={{ background: `linear-gradient(to right, ${shade(0)}, ${shade(1)})` }}
+                />
                 <span>{format(grid.max)}</span>
               </div>
             ) : null}

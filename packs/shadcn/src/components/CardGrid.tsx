@@ -1,7 +1,15 @@
 import React, { useMemo } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
-import { FONT_LABELS, FONT_VALUES, cardItems, fontStack, gridColumns, px, styleVars } from '../lib/ui2/display/lists/model';
+import {
+  FONT_LABELS,
+  FONT_VALUES,
+  cardItems,
+  fontStack,
+  gridColumns,
+  px,
+  styleVars,
+} from '../lib/ui2/display/lists/model';
 import { CardImage, Chip, InlineProgress, RecordAvatar, onKeyActivate, useWidth } from '../lib/ui2/display/lists/parts';
 import { useRecordSelection } from '../lib/ui2/display/lists/useRecordSelection';
 import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/look';
@@ -17,33 +25,120 @@ export const CardGrid = () => {
     name: 'data',
     label: 'Data',
     initialValue: [
-      { id: 1, name: 'Lemon herb roast chicken', cuisine: 'Dinner', prep: 20, serves: 4, note: 'Crisp skin, bright pan sauce' },
-      { id: 2, name: 'Miso glazed salmon', cuisine: 'Dinner', prep: 15, serves: 2, note: 'Sweet, salty, ten minutes under the grill' },
-      { id: 3, name: 'Blueberry oat pancakes', cuisine: 'Breakfast', prep: 10, serves: 3, note: 'Fluffy, no buttermilk needed' },
+      {
+        id: 1,
+        name: 'Lemon herb roast chicken',
+        cuisine: 'Dinner',
+        prep: 20,
+        serves: 4,
+        note: 'Crisp skin, bright pan sauce',
+      },
+      {
+        id: 2,
+        name: 'Miso glazed salmon',
+        cuisine: 'Dinner',
+        prep: 15,
+        serves: 2,
+        note: 'Sweet, salty, ten minutes under the grill',
+      },
+      {
+        id: 3,
+        name: 'Blueberry oat pancakes',
+        cuisine: 'Breakfast',
+        prep: 10,
+        serves: 3,
+        note: 'Fluffy, no buttermilk needed',
+      },
     ],
   });
   const [titleField] = ToolJet.useStateString({ name: 'titleField', label: 'Title field', initialValue: 'name' });
   const [subtitleField] = ToolJet.useStateString({ name: 'subtitleField', label: 'Subtitle field', initialValue: '' });
   const [imageField] = ToolJet.useStateString({ name: 'imageField', label: 'Image field (URL)', initialValue: '' });
   const [badgeField] = ToolJet.useStateString({ name: 'badgeField', label: 'Badge field', initialValue: 'cuisine' });
-  const [badgeFields] = ToolJet.useStateString({ name: 'badgeFields', label: "More badge fields (comma list, e.g. 'diet, spice')", initialValue: '' });
-  const [eyebrowField] = ToolJet.useStateString({ name: 'eyebrowField', label: 'Eyebrow field (a small line above the title)', initialValue: '' });
-  const [avatarField] = ToolJet.useStateString({ name: 'avatarField', label: 'Avatar field (image URL or a name)', initialValue: '' });
-  const [descriptionField] = ToolJet.useStateString({ name: 'descriptionField', label: 'Description field', initialValue: 'note' });
-  const [progressField] = ToolJet.useStateString({ name: 'progressField', label: 'Progress field (a percentage, 0 to 100)', initialValue: '' });
-  const [metaFields] = ToolJet.useStateString({ name: 'metaFields', label: "Meta fields (comma list; 'prep:{} min')", initialValue: 'prep:{} min, serves:Serves' });
+  const [badgeFields] = ToolJet.useStateString({
+    name: 'badgeFields',
+    label: "More badge fields (comma list, e.g. 'diet, spice')",
+    initialValue: '',
+  });
+  const [eyebrowField] = ToolJet.useStateString({
+    name: 'eyebrowField',
+    label: 'Eyebrow field (a small line above the title)',
+    initialValue: '',
+  });
+  const [avatarField] = ToolJet.useStateString({
+    name: 'avatarField',
+    label: 'Avatar field (image URL or a name)',
+    initialValue: '',
+  });
+  const [descriptionField] = ToolJet.useStateString({
+    name: 'descriptionField',
+    label: 'Description field',
+    initialValue: 'note',
+  });
+  const [progressField] = ToolJet.useStateString({
+    name: 'progressField',
+    label: 'Progress field (a percentage, 0 to 100)',
+    initialValue: '',
+  });
+  const [metaFields] = ToolJet.useStateString({
+    name: 'metaFields',
+    label: "Meta fields (comma list; 'prep:{} min')",
+    initialValue: 'prep:{} min, serves:Serves',
+  });
   const [idField] = ToolJet.useStateString({ name: 'idField', label: 'Id field', initialValue: 'id' });
-  const [layout] = ToolJet.useStateEnumeration({ name: 'layout', label: 'Layout', enumDefinition: ['stacked', 'row'], initialValue: 'stacked', inspector: 'switch' });
-  const [columns] = ToolJet.useStateNumber({ name: 'columns', label: 'Columns (0 fits as many as the width allows)', initialValue: 3 });
-  const [minCardWidth] = ToolJet.useStateNumber({ name: 'minCardWidth', label: 'Minimum card width (px)', initialValue: 240 });
-  const [imageAspect] = ToolJet.useStateEnumeration({ name: 'imageAspect', label: 'Image shape', enumDefinition: ['16/9', '4/3', '1/1'], initialValue: '4/3', inspector: 'switch' });
+  const [layout] = ToolJet.useStateEnumeration({
+    name: 'layout',
+    label: 'Layout',
+    enumDefinition: ['stacked', 'row'],
+    initialValue: 'stacked',
+    inspector: 'switch',
+  });
+  const [columns] = ToolJet.useStateNumber({
+    name: 'columns',
+    label: 'Columns (0 fits as many as the width allows)',
+    initialValue: 3,
+  });
+  const [minCardWidth] = ToolJet.useStateNumber({
+    name: 'minCardWidth',
+    label: 'Minimum card width (px)',
+    initialValue: 240,
+  });
+  const [imageAspect] = ToolJet.useStateEnumeration({
+    name: 'imageAspect',
+    label: 'Image shape',
+    enumDefinition: ['16/9', '4/3', '1/1'],
+    initialValue: '4/3',
+    inspector: 'switch',
+  });
   const [showImage] = ToolJet.useStateBoolean({ name: 'showImage', label: 'Show image', initialValue: true });
-  const [cardStyle] = ToolJet.useStateEnumeration({ name: 'cardStyle', label: 'Card style', enumDefinition: ['elevated', 'outline', 'flat'], initialValue: 'elevated', inspector: 'switch' });
-  const [highlightSelected] = ToolJet.useStateBoolean({ name: 'highlightSelected', label: 'Highlight the selected card', initialValue: true });
-  const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty text', initialValue: 'Nothing here yet' });
-  const [, setSelectedItemId] = ToolJet.useStateString({ name: 'selectedItemId', initialValue: '', inspector: 'hidden' });
+  const [cardStyle] = ToolJet.useStateEnumeration({
+    name: 'cardStyle',
+    label: 'Card style',
+    enumDefinition: ['elevated', 'outline', 'flat'],
+    initialValue: 'elevated',
+    inspector: 'switch',
+  });
+  const [highlightSelected] = ToolJet.useStateBoolean({
+    name: 'highlightSelected',
+    label: 'Highlight the selected card',
+    initialValue: true,
+  });
+  const [emptyText] = ToolJet.useStateString({
+    name: 'emptyText',
+    label: 'Empty text',
+    initialValue: 'Nothing here yet',
+  });
+  const [, setSelectedItemId] = ToolJet.useStateString({
+    name: 'selectedItemId',
+    initialValue: '',
+    inspector: 'hidden',
+  });
   const [, setSelectedItem] = ToolJet.useStateObject({ name: 'selectedItem', initialValue: {}, inspector: 'hidden' });
-  const [, setSelectedItemIndex] = ToolJet.useStateNumber({ name: 'selectedItemIndex', initialValue: -1, inspector: 'hidden' });
+  const [, setSelectedItemIndex] = ToolJet.useStateNumber({
+    name: 'selectedItemIndex',
+    initialValue: -1,
+    inspector: 'hidden',
+  });
   const onCardClicked = ToolJet.useEventCallback({ name: 'onCardClicked' });
   const cardBackground = useThemeColor('cardBackground', 'Card background', TOKEN.surface);
   const borderColor = useThemeColor('borderColor', 'Card border color', TOKEN.border);
@@ -60,20 +155,48 @@ export const CardGrid = () => {
   });
   const ld = useLoadingLook();
   // One row of the three sample cards (about 121px, 141px with a wrapped note), not a 616px box left mostly blank.
-  ToolJet.useComponentSettings({ defaultWidth: 43, defaultHeight: 15 });
+  ToolJet.useComponentSettings({ role: 'cardgrid', fit: true, loading: 'own', defaultWidth: 43, defaultHeight: 15 });
 
   const [rootRef, width] = useWidth<HTMLDivElement>();
   const cards = useMemo(
     () =>
-      cardItems(data, { titleField, subtitleField, imageField, badgeField, badgeFields, eyebrowField, avatarField, descriptionField, progressField, metaFields, idField }),
-    [data, titleField, subtitleField, imageField, badgeField, badgeFields, eyebrowField, avatarField, descriptionField, progressField, metaFields, idField]
+      cardItems(data, {
+        titleField,
+        subtitleField,
+        imageField,
+        badgeField,
+        badgeFields,
+        eyebrowField,
+        avatarField,
+        descriptionField,
+        progressField,
+        metaFields,
+        idField,
+      }),
+    [
+      data,
+      titleField,
+      subtitleField,
+      imageField,
+      badgeField,
+      badgeFields,
+      eyebrowField,
+      avatarField,
+      descriptionField,
+      progressField,
+      metaFields,
+      idField,
+    ]
   );
-  const { selectedKey, pick: click } = useRecordSelection(
+  const { selectedKey, pick, clear } = useRecordSelection(
     cards,
     (row) => row[idField || 'id'],
     { setItem: setSelectedItem, setId: (id) => setSelectedItemId(id as string), setIndex: setSelectedItemIndex },
     onCardClicked
   );
+  // Clicking the selected card again unselects it, with no click event, as in the Record list (team testing, 2026-10-29).
+  const click = (card: (typeof cards)[number]) => (highlightSelected && selectedKey === card.key ? clear() : pick(card));
+  ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => clear());
   const count = gridColumns(columns, width || 960, minCardWidth);
   const aspect = ['16/9', '4/3', '1/1'].includes(imageAspect) ? imageAspect.replace('/', ' / ') : '4 / 3';
   // The picture area only when an image field is mapped: without one every card got a large initials panel.
@@ -91,7 +214,23 @@ export const CardGrid = () => {
   ]);
 
   return (
-    <LoadingFrame loading={ld.loading} minHeight={160} look={ld.skeleton ? <CardsSkel count={Math.min(cards.length || count, 6)} columns={count} image={pictured} row={layout === 'row'} aspect={aspect} /> : <LoadingBox />}>
+    <LoadingFrame
+      loading={ld.loading}
+      minHeight={160}
+      look={
+        ld.skeleton ? (
+          <CardsSkel
+            count={Math.min(cards.length || count, 6)}
+            columns={count}
+            image={pictured}
+            row={layout === 'row'}
+            aspect={aspect}
+          />
+        ) : (
+          <LoadingBox />
+        )
+      }
+    >
       <div ref={rootRef} className="ui u2l-root ui-scroll" style={vars}>
         {cards.length === 0 ? (
           <p className="u2l-empty-text">{emptyText || 'Nothing here yet'}</p>
@@ -114,7 +253,15 @@ export const CardGrid = () => {
                   onClick={() => click(card)}
                   onKeyDown={onKeyActivate(() => click(card))}
                 >
-                  {pictured ? <CardImage src={card.image} title={card.title} aspect={aspect} badges={badgesOnImage ? card.badges : []} fill={row} /> : null}
+                  {pictured ? (
+                    <CardImage
+                      src={card.image}
+                      title={card.title}
+                      aspect={aspect}
+                      badges={badgesOnImage ? card.badges : []}
+                      fill={row}
+                    />
+                  ) : null}
                   <div className="u2l-card-body">
                     {card.eyebrow ? <span className="u2l-card-eyebrow">{card.eyebrow}</span> : null}
                     <div className="u2l-card-head">
@@ -139,8 +286,12 @@ export const CardGrid = () => {
                       </span>
                     ) : null}
                     {card.description ? <p className="u2l-card-description">{card.description}</p> : null}
-                    {card.progress !== null ? <InlineProgress pct={card.progress} className="u2l-card-progress" /> : null}
-                    {card.meta ? <span className={cn('u2l-card-meta', card.progress === null && 'is-last')}>{card.meta}</span> : null}
+                    {card.progress !== null ? (
+                      <InlineProgress pct={card.progress} className="u2l-card-progress" />
+                    ) : null}
+                    {card.meta ? (
+                      <span className={cn('u2l-card-meta', card.progress === null && 'is-last')}>{card.meta}</span>
+                    ) : null}
                   </div>
                 </div>
               );

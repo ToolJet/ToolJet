@@ -1,8 +1,8 @@
 import { buildReflowPatch } from '../dynamicHeightReflow';
 
 // A widget 'above' (drawn 40 tall) grows to 64 and moves 'list' (drawn 260 tall at top 60), whose own reflow already
-// fitted it to 236. A UI 2.0 widget keeps that fitted height when it moves; a native widget is floored at its drawn
-// height, as before. Flooring the UI 2.0 List view made its height depend on which reflow came last (236 or 260).
+// fitted it to 236. A pack widget (LibraryComponent) keeps that fitted height when it moves; a native widget is floored at its drawn
+// height, as before. Flooring a pack's List view made its height depend on which reflow came last (236 or 260).
 const move = (listType) => {
   const components = {
     above: {
@@ -31,8 +31,8 @@ const move = (listType) => {
 };
 
 describe('a widget moved by a sibling above it', () => {
-  it('keeps the height a UI 2.0 widget fitted to its content', () => {
-    expect(move('ShadListView')).toEqual(expect.objectContaining({ top: 84, height: 236 }));
+  it('keeps the height a pack widget fitted to its content', () => {
+    expect(move('LibraryComponent')).toEqual(expect.objectContaining({ top: 84, height: 236 }));
   });
 
   it('floors a native widget at its drawn height', () => {

@@ -1,8 +1,29 @@
 import React, { useMemo } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { LOCALE_HINT } from '../lib/locale';
-import { ChartBoundary, ChartNotes, EmptyChart, lookVars, seriesColor, useChartClick } from '../lib/ui2/charts/chartParts';
-import { animated, axisLabel, emphasis, fieldList, fieldNote, formatter, hiddenNote, isRecord, isSet, list, num, resolveChartFields, type Row } from '../lib/ui2/charts/chartModel';
+import {
+  ChartBoundary,
+  ChartNotes,
+  EmptyChart,
+  lookVars,
+  seriesColor,
+  useChartClick,
+} from '../lib/ui2/charts/chartParts';
+import {
+  animated,
+  axisLabel,
+  emphasis,
+  fieldList,
+  fieldNote,
+  formatter,
+  hiddenNote,
+  isRecord,
+  isSet,
+  list,
+  num,
+  resolveChartFields,
+  type Row,
+} from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor } from '../lib/styleDefaults';
 
@@ -66,34 +87,82 @@ export const FunnelChart = () => {
   });
   const [stageField] = ToolJet.useStateString({ name: 'stageField', label: 'Stage field', initialValue: 'stage' });
   const [valueField] = ToolJet.useStateString({ name: 'valueField', label: 'Value field', initialValue: 'count' });
-  const [showConversion] = ToolJet.useStateBoolean({ name: 'showConversion', label: 'Conversion %', initialValue: true });
-  const [conversionBase] = ToolJet.useStateEnumeration({ name: 'conversionBase', label: 'Conversion from', enumDefinition: ['previous', 'first'], enumLabels: { previous: 'Previous stage', first: 'First stage' }, initialValue: 'previous', inspector: 'switch' });
-  const [align] = ToolJet.useStateEnumeration({ name: 'align', label: 'Bar alignment', enumDefinition: ['center', 'left'], initialValue: 'center', inspector: 'switch' });
-  const [colorByStage] = ToolJet.useStateBoolean({ name: 'colorByStage', label: 'Colour per stage', initialValue: false });
-  const [yAxisFormat] = ToolJet.useStateEnumeration({ name: 'yAxisFormat', label: 'Value format', enumDefinition: FORMAT_ENUM, initialValue: 'number', inspector: 'switch' });
+  const [showConversion] = ToolJet.useStateBoolean({
+    name: 'showConversion',
+    label: 'Conversion %',
+    initialValue: true,
+  });
+  const [conversionBase] = ToolJet.useStateEnumeration({
+    name: 'conversionBase',
+    label: 'Conversion from',
+    enumDefinition: ['previous', 'first'],
+    enumLabels: { previous: 'Previous stage', first: 'First stage' },
+    initialValue: 'previous',
+    inspector: 'switch',
+  });
+  const [align] = ToolJet.useStateEnumeration({
+    name: 'align',
+    label: 'Bar alignment',
+    enumDefinition: ['center', 'left'],
+    initialValue: 'center',
+    inspector: 'switch',
+  });
+  const [colorByStage] = ToolJet.useStateBoolean({
+    name: 'colorByStage',
+    label: 'Colour per stage',
+    initialValue: false,
+  });
+  const [yAxisFormat] = ToolJet.useStateEnumeration({
+    name: 'yAxisFormat',
+    label: 'Value format',
+    enumDefinition: FORMAT_ENUM,
+    initialValue: 'number',
+    inspector: 'switch',
+  });
   const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency code', initialValue: 'USD' });
-  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
+  const [locale] = ToolJet.useStateString({
+    name: 'locale',
+    label: 'Locale',
+    description: LOCALE_HINT,
+    initialValue: '',
+  });
   const [valuePrefix] = ToolJet.useStateString({ name: 'valuePrefix', label: 'Value prefix', initialValue: '' });
   const [valueSuffix] = ToolJet.useStateString({ name: 'valueSuffix', label: 'Value suffix', initialValue: '' });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No data' });
   const [animate] = ToolJet.useStateBoolean({ name: 'animate', label: 'Animate', initialValue: true });
   const [colors] = ToolJet.useStateArray({ name: 'colors', label: 'Series colors (in order)', initialValue: [] });
-  const [highlightClicked] = ToolJet.useStateBoolean({ name: 'highlightClicked', label: 'Highlight clicked point', description: 'Draws the clicked stage emphasised until Clear clicked point runs or another is clicked.', initialValue: false });
+  const [highlightClicked] = ToolJet.useStateBoolean({
+    name: 'highlightClicked',
+    label: 'Highlight clicked point',
+    description: 'Draws the clicked stage emphasised until Clear clicked point runs or another is clicked.',
+    initialValue: false,
+  });
   const click = useChartClick(highlightClicked);
   const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
   const axisTextColor = useThemeColor('axisTextColor', 'Stage label color', TOKEN.mutedText);
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 24 });
+  ToolJet.useComponentSettings({
+    role: 'funnelchart',
+    fit: false,
+    loading: 'own',
+    defaultWidth: 16,
+    defaultHeight: 24,
+  });
 
   const drawn = useMemo(() => funnel(data, stageField, valueField), [data, stageField, valueField]);
   const { stages } = drawn;
   const format = useMemo(
-    () => formatter({ format: yAxisFormat, currency, locale, prefix: valuePrefix, suffix: valueSuffix }, yAxisFormat === 'compact'),
+    () =>
+      formatter(
+        { format: yAxisFormat, currency, locale, prefix: valuePrefix, suffix: valueSuffix },
+        yAxisFormat === 'compact'
+      ),
     [yAxisFormat, currency, locale, valuePrefix, valueSuffix]
   );
   const conversion = showConversion !== false;
   const labelWidth = Math.min(180, Math.max(56, Math.max(0, ...stages.map((s) => String(s.label).length)) * 7 + 12));
-  const valueWidth = Math.max(40, Math.max(0, ...stages.map((s) => String(format(s.value)).length)) * 7.5 + 4) + (conversion ? 52 : 0);
+  const valueWidth =
+    Math.max(40, Math.max(0, ...stages.map((s) => String(format(s.value)).length)) * 7.5 + 4) + (conversion ? 52 : 0);
   const base = conversionBase === 'first' ? 'ofFirst' : 'ofPrevious';
   const centred = align !== 'left';
   const byStage = colorByStage === true;
@@ -113,7 +182,12 @@ export const FunnelChart = () => {
                 {stages.map((stage, i) => {
                   const conv = i > 0 ? stage[base] : null;
                   return (
-                    <button type="button" key={`${stage.label}-${i}`} className="ui2-funnel-stage" onClick={() => click.pick(stage.row)}>
+                    <button
+                      type="button"
+                      key={`${stage.label}-${i}`}
+                      className="ui2-funnel-stage"
+                      onClick={() => click.pick(stage.row)}
+                    >
                       <span className="ui2-funnel-label" style={{ width: labelWidth }} title={String(stage.label)}>
                         {String(stage.label)}
                       </span>
@@ -125,7 +199,12 @@ export const FunnelChart = () => {
                             width: `${stage.value ? Math.max(6, stage.width * 100) : 0}%`,
                             background: seriesColor(colors, chartColor, byStage ? i : 0),
                             opacity: (byStage ? 1 : fade(i)) * emphasis(stage.row, click.highlighted),
-                            ...(grow ? { animation: `ui2-funnel-grow 600ms ease-out ${i * 60}ms both`, transformOrigin: centred ? 'center' : 'left' } : {}),
+                            ...(grow
+                              ? {
+                                  animation: `ui2-funnel-grow 600ms ease-out ${i * 60}ms both`,
+                                  transformOrigin: centred ? 'center' : 'left',
+                                }
+                              : {}),
                           }}
                         />
                       </span>

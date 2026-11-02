@@ -1,7 +1,7 @@
 import { createTheme, darken, decomposeColor, getLuminance, lighten } from '@mui/material/styles';
 import type { Theme, ThemeOptions } from '@mui/material/styles';
 
-// The pack is drawn in Material UI's own look (pack.json themeMode "own"): the host defines ToolJet's --tj-* theme
+// The pack is drawn in Material UI's own look (themeMode "own" in .tooljet/config.json): the host defines ToolJet's --tj-* theme
 // tokens on the component only once the app applies a theme. Each token, when present, replaces MUI's stock value;
 // when absent, MUI's default theme stands (palette, Roboto, 4px shape). MUI computes hover, focus and contrast colours
 // from the palette in JavaScript, so the tokens are read as computed colours, not passed as var(--tj-*).

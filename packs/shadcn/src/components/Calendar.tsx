@@ -27,12 +27,19 @@ const monthDiff = (a: Date, b: Date) => (b.getFullYear() - a.getFullYear()) * 12
 /** The selection from a default value: a day (single), a list of days (multiple) or { from, to } (range). */
 const selectionOf = (raw: unknown, mode: string): Selection => {
   if (mode === 'multiple') {
-    const days = (Array.isArray(raw) ? raw : [raw]).slice(0, 1000).map((v) => toDay(v)).filter((d): d is Date => !!d);
+    const days = (Array.isArray(raw) ? raw : [raw])
+      .slice(0, 1000)
+      .map((v) => toDay(v))
+      .filter((d): d is Date => !!d);
     const seen = new Set<string>();
     return days.filter((d) => !seen.has(ymd(d)) && !!seen.add(ymd(d)));
   }
   if (mode === 'range') {
-    const pair = Array.isArray(raw) ? raw : isRecord(raw) ? [raw.from ?? raw.start ?? raw.startDate, raw.to ?? raw.end ?? raw.endDate] : [raw];
+    const pair = Array.isArray(raw)
+      ? raw
+      : isRecord(raw)
+        ? [raw.from ?? raw.start ?? raw.startDate, raw.to ?? raw.end ?? raw.endDate]
+        : [raw];
     const from = toDay(pair[0]);
     const to = toDay(pair[1]);
     if (!from) return undefined;
@@ -51,7 +58,13 @@ const exposedOf = (sel: Selection, mode: string) => {
     const r = (sel as Range) || {};
     const start = ymd(r.from);
     const end = ymd(r.to);
-    return { value: [start, end], selectedDate: start, selectedDates: [start, end].filter(Boolean), startDate: start, endDate: end };
+    return {
+      value: [start, end],
+      selectedDate: start,
+      selectedDates: [start, end].filter(Boolean),
+      startDate: start,
+      endDate: end,
+    };
   }
   const date = ymd(sel as Date);
   return { value: date, selectedDate: date, selectedDates: date ? [date] : [], startDate: '', endDate: '' };
@@ -68,7 +81,8 @@ const shownMonth = (month: Date, count: number, min?: Date, max?: Date): Date =>
   return start;
 };
 
-const shownCount = (start: Date, count: number, max?: Date) => (max ? Math.max(1, Math.min(count, monthDiff(start, max) + 1)) : count);
+const shownCount = (start: Date, count: number, max?: Date) =>
+  max ? Math.max(1, Math.min(count, monthDiff(start, max) + 1)) : count;
 
 const visiblePeriod = (start: Date, count: number) => ({
   visibleMonth: formatDate(start, 'YYYY-MM'),
@@ -79,7 +93,7 @@ const visiblePeriod = (start: Date, count: number) => ({
 const markersByDay = (raw: unknown): Map<string, DayMarker[]> => {
   const map = new Map<string, DayMarker[]>();
   for (const m of (Array.isArray(raw) ? raw : []).slice(0, 2000)) {
-    const day = toDay(isRecord(m) ? m.date ?? m.day ?? m.start : m);
+    const day = toDay(isRecord(m) ? (m.date ?? m.day ?? m.start) : m);
     if (!day) continue;
     const key = ymd(day);
     const label = isRecord(m) && (m.label ?? m.title) != null ? String(m.label ?? m.title) : '';
@@ -98,8 +112,16 @@ export const Calendar = () => {
     initialValue: 'single',
     inspector: 'switch',
   });
-  const [defaultValue] = ToolJet.useStateString({ name: 'defaultValue', label: 'Default value (YYYY-MM-DD, a list, or [start, end])', initialValue: '' });
-  const [defaultMonth] = ToolJet.useStateString({ name: 'defaultMonth', label: 'Month to show (date; default: the selection or today)', initialValue: '' });
+  const [defaultValue] = ToolJet.useStateString({
+    name: 'defaultValue',
+    label: 'Default value (YYYY-MM-DD, a list, or [start, end])',
+    initialValue: '',
+  });
+  const [defaultMonth] = ToolJet.useStateString({
+    name: 'defaultMonth',
+    label: 'Month to show (date; default: the selection or today)',
+    initialValue: '',
+  });
   const [markers] = ToolJet.useStateArray({
     name: 'markers',
     label: 'Markers',
@@ -109,7 +131,11 @@ export const Calendar = () => {
   const [minDate] = ToolJet.useStateString({ name: 'minDate', label: 'Min date', initialValue: '' });
   const [maxDate] = ToolJet.useStateString({ name: 'maxDate', label: 'Max date', initialValue: '' });
   const [disabledDates] = ToolJet.useStateArray({ name: 'disabledDates', label: 'Disabled dates', initialValue: [] });
-  const [disabledDays] = ToolJet.useStateArray({ name: 'disabledDays', label: 'Disabled weekdays (0 = Sunday)', initialValue: [] });
+  const [disabledDays] = ToolJet.useStateArray({
+    name: 'disabledDays',
+    label: 'Disabled weekdays (0 = Sunday)',
+    initialValue: [],
+  });
   const [weekStartsOn] = ToolJet.useStateEnumeration({
     name: 'weekStartsOn',
     label: 'Week starts on',
@@ -118,16 +144,38 @@ export const Calendar = () => {
     initialValue: 'sunday',
     inspector: 'switch',
   });
-  const [numberOfMonths] = ToolJet.useStateNumber({ name: 'numberOfMonths', label: 'Number of months', initialValue: 1, min: 1, max: 3 });
-  const [showOutsideDays] = ToolJet.useStateBoolean({ name: 'showOutsideDays', label: 'Show outside days', initialValue: true });
+  const [numberOfMonths] = ToolJet.useStateNumber({
+    name: 'numberOfMonths',
+    label: 'Number of months',
+    initialValue: 1,
+    min: 1,
+    max: 3,
+  });
+  const [showOutsideDays] = ToolJet.useStateBoolean({
+    name: 'showOutsideDays',
+    label: 'Show outside days',
+    initialValue: true,
+  });
   const [fixedWeeks] = ToolJet.useStateBoolean({ name: 'fixedWeeks', label: 'Always six weeks', initialValue: false });
   const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', initialValue: false });
   const [showBorder] = ToolJet.useStateBoolean({ name: 'showBorder', label: 'Show border', initialValue: true });
   // Exposed values; selectedDate(s), startDate and endDate were also the pack's defaults.
   const [, setValue] = ToolJet.useStateString({ name: 'value', initialValue: '', inspector: 'hidden' });
-  const [legacyDate, setSelectedDate] = ToolJet.useStateString({ name: 'selectedDate', initialValue: '', inspector: 'hidden' });
-  const [legacyDates, setSelectedDates] = ToolJet.useStateArray({ name: 'selectedDates', initialValue: [], inspector: 'hidden' });
-  const [legacyStart, setStartDate] = ToolJet.useStateString({ name: 'startDate', initialValue: '', inspector: 'hidden' });
+  const [legacyDate, setSelectedDate] = ToolJet.useStateString({
+    name: 'selectedDate',
+    initialValue: '',
+    inspector: 'hidden',
+  });
+  const [legacyDates, setSelectedDates] = ToolJet.useStateArray({
+    name: 'selectedDates',
+    initialValue: [],
+    inspector: 'hidden',
+  });
+  const [legacyStart, setStartDate] = ToolJet.useStateString({
+    name: 'startDate',
+    initialValue: '',
+    inspector: 'hidden',
+  });
   const [legacyEnd, setEndDate] = ToolJet.useStateString({ name: 'endDate', initialValue: '', inspector: 'hidden' });
   const [, setVisibleMonth] = ToolJet.useStateString({ name: 'visibleMonth', initialValue: '', inspector: 'hidden' });
   const [, setVisibleStart] = ToolJet.useStateString({ name: 'visibleStart', initialValue: '', inspector: 'hidden' });
@@ -148,7 +196,7 @@ export const Calendar = () => {
   const borderRadius = useThemeRadius('borderRadius', 'Calendar radius');
   const cellSize = useBlankNumber('cellSize', 'Day size (px)', '32 (36 at full width)');
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 32 });
+  ToolJet.useComponentSettings({ role: 'calendar', fit: false, loading: 'own', defaultWidth: 10, defaultHeight: 32 });
   const { disabled } = useBusy(false);
 
   const m = MODES.includes(mode) ? mode : 'single';
@@ -178,7 +226,12 @@ export const Calendar = () => {
     setSelectionFrom(initial);
     setSelected(initial);
   }
-  const first = m === 'multiple' ? (initial as Date[] | undefined)?.[0] : m === 'range' ? (initial as Range | undefined)?.from : (initial as Date | undefined);
+  const first =
+    m === 'multiple'
+      ? (initial as Date[] | undefined)?.[0]
+      : m === 'range'
+        ? (initial as Range | undefined)?.from
+        : (initial as Date | undefined);
   const initialMonth = toDay(defaultMonth) || first || new Date();
   const [month, setMonth] = useState(initialMonth);
   useResetOn(ymd(initialMonth).slice(0, 7), () => setMonth(initialMonth));
@@ -219,20 +272,34 @@ export const Calendar = () => {
     if (fire) onMonthChanged();
   };
   ToolJet.useAction(
-    { name: 'selectDate', displayName: 'Select date', params: [{ handle: 'date', displayName: 'Date' }, { handle: 'endDate', displayName: 'End date' }] },
+    {
+      name: 'selectDate',
+      displayName: 'Select date',
+      params: [
+        { handle: 'date', displayName: 'Date' },
+        { handle: 'endDate', displayName: 'End date' },
+      ],
+    },
     (date, endDate) => {
       const { m: mode2, selected: current } = live.current;
       let next: Selection;
-      if (mode2 === 'multiple') next = selectionOf([...((current as Date[] | undefined) || []), ...((selectionOf(date, 'multiple') as Date[]) || [])], 'multiple');
+      if (mode2 === 'multiple')
+        next = selectionOf(
+          [...((current as Date[] | undefined) || []), ...((selectionOf(date, 'multiple') as Date[]) || [])],
+          'multiple'
+        );
       else if (mode2 === 'range') next = selectionOf([date, endDate], 'range');
       else next = selectionOf(date, 'single');
       publish(next);
       showMonth(toDay(Array.isArray(date) ? date[0] : date), false);
     }
   );
-  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => publish(live.current.m === 'multiple' ? [] : undefined));
-  ToolJet.useAction({ name: 'setMonth', displayName: 'Set month', params: [{ handle: 'date', displayName: 'Date' }] }, (d) =>
-    showMonth(toDay(/^\d{4}-\d{2}$/.test(String(d ?? '')) ? `${d}-01` : d), false)
+  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () =>
+    publish(live.current.m === 'multiple' ? [] : undefined)
+  );
+  ToolJet.useAction(
+    { name: 'setMonth', displayName: 'Set month', params: [{ handle: 'date', displayName: 'Date' }] },
+    (d) => showMonth(toDay(/^\d{4}-\d{2}$/.test(String(d ?? '')) ? `${d}-01` : d), false)
   );
 
   const pick = (day: Date) => {
@@ -252,17 +319,30 @@ export const Calendar = () => {
     onSelect();
   };
 
-  const disabledSet = useMemo(() => new Set((Array.isArray(disabledDates) ? disabledDates : []).map((d) => ymd(toDay(d))).filter(Boolean)), [JSON.stringify(disabledDates)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const disabledSet = useMemo(
+    () => new Set((Array.isArray(disabledDates) ? disabledDates : []).map((d) => ymd(toDay(d))).filter(Boolean)),
+    [JSON.stringify(disabledDates)]
+  ); // eslint-disable-line react-hooks/exhaustive-deps
   const offDays = new Set(
     (Array.isArray(disabledDays) ? disabledDays : [])
-      .map((d) => (typeof d === 'string' && WEEKDAY_NAMES.includes(d.toLowerCase()) ? WEEKDAY_NAMES.indexOf(d.toLowerCase()) : Number(d)))
+      .map((d) =>
+        typeof d === 'string' && WEEKDAY_NAMES.includes(d.toLowerCase())
+          ? WEEKDAY_NAMES.indexOf(d.toLowerCase())
+          : Number(d)
+      )
       .filter((d) => Number.isInteger(d) && d >= 0 && d <= 6)
   );
-  const isOff = (day: Date) => disabled || (!!min && day < min) || (!!max && day > max) || disabledSet.has(ymd(day)) || offDays.has(day.getDay());
+  const isOff = (day: Date) =>
+    disabled || (!!min && day < min) || (!!max && day > max) || disabledSet.has(ymd(day)) || offDays.has(day.getDay());
   const dayMarkers = useMemo(() => markersByDay(markers), [JSON.stringify(markers)]); // eslint-disable-line react-hooks/exhaustive-deps
   const dates = m === 'multiple' ? new Set(((selected as Date[] | undefined) || []).map(ymd)) : null;
-  const r = m === 'range' ? ((selected as Range) || {}) : null;
-  const isSelected = (iso: string) => (dates ? dates.has(iso) : r ? iso === ymd(r.from) || iso === ymd(r.to) : isValidDate(selected) && iso === ymd(selected as Date));
+  const r = m === 'range' ? (selected as Range) || {} : null;
+  const isSelected = (iso: string) =>
+    dates
+      ? dates.has(iso)
+      : r
+        ? iso === ymd(r.from) || iso === ymd(r.to)
+        : isValidDate(selected) && iso === ymd(selected as Date);
   const vars = lookVars({
     '--lk-bg': backgroundColor,
     '--lk-border': borderColor,
@@ -308,4 +388,3 @@ export const Calendar = () => {
     </LoadingFrame>
   );
 };
-

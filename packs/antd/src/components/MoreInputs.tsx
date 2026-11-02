@@ -70,7 +70,15 @@ const readFile = (file: File, track: Set<FileReader>): Promise<(FileInfo & { fil
       const content = /^text\/|json|csv|xml/.test(file.type) && file.size < 2_000_000 ? textOf(base64) : '';
       // The same file picked twice is two entries: a uid of its name, size and date alone removed both at once.
       fileSeq += 1;
-      settle({ uid: `${file.name}-${file.size}-${file.lastModified}-${fileSeq}`, name: file.name, size: file.size, type: file.type, base64, content, file });
+      settle({
+        uid: `${file.name}-${file.size}-${file.lastModified}-${fileSeq}`,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        base64,
+        content,
+        file,
+      });
     };
     reader.onload = () => done(String(reader.result ?? ''));
     // An unreadable file still settles, empty, so the rest of its batch is not held up.
@@ -101,21 +109,68 @@ const readAll = async (files: File[], track: Set<FileReader>, owned: () => boole
 // does, not swapped for the oldest; a maxCount of 1 keeps Ant's rule that a new pick replaces the file.
 export const Upload = () => {
   const field = useFieldProps({ label: 'Attachment' });
-  const [type] = ToolJet.useStateEnumeration({ name: 'type', label: 'Type', enumDefinition: ['drag', 'select'], enumLabels: { drag: 'Drag area', select: 'Button' }, initialValue: 'drag' });
-  const [text] = ToolJet.useStateString({ name: 'text', label: 'Text', initialValue: 'Click or drag a file to this area' });
+  const [type] = ToolJet.useStateEnumeration({
+    name: 'type',
+    label: 'Type',
+    enumDefinition: ['drag', 'select'],
+    enumLabels: { drag: 'Drag area', select: 'Button' },
+    initialValue: 'drag',
+  });
+  const [text] = ToolJet.useStateString({
+    name: 'text',
+    label: 'Text',
+    initialValue: 'Click or drag a file to this area',
+  });
   const [hint] = ToolJet.useStateString({ name: 'hint', label: 'Hint', initialValue: '' });
-  const [accept] = ToolJet.useStateString({ name: 'accept', label: 'Accept', description: 'e.g. .csv,.xlsx or image/*', initialValue: '' });
+  const [accept] = ToolJet.useStateString({
+    name: 'accept',
+    label: 'Accept',
+    description: 'e.g. .csv,.xlsx or image/*',
+    initialValue: '',
+  });
   const [multiple] = ToolJet.useStateBoolean({ name: 'multiple', label: 'Multiple', initialValue: false });
-  const [maxCount] = ToolJet.useStateNumber({ name: 'maxCount', label: 'Max count', description: '0 for no limit.', initialValue: 0, min: 0 });
-  const [listType] = ToolJet.useStateEnumeration({ name: 'listType', label: 'List type', enumDefinition: ['text', 'picture'], initialValue: 'text' });
+  const [maxCount] = ToolJet.useStateNumber({
+    name: 'maxCount',
+    label: 'Max count',
+    description: '0 for no limit.',
+    initialValue: 0,
+    min: 0,
+  });
+  const [listType] = ToolJet.useStateEnumeration({
+    name: 'listType',
+    label: 'List type',
+    enumDefinition: ['text', 'picture'],
+    initialValue: 'text',
+  });
   const [fileList, setFileList] = ToolJet.useStateArray({ name: 'fileList', initialValue: [], inspector: 'hidden' });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onRemove = ToolJet.useEventCallback({ name: 'onRemove' });
   const { disabled, loading } = ToolJet.useControlState();
   const files = toArray(fileList) as FileInfo[];
-  const check = ToolJet.useValidation({ section: 'choice', value: files.length ? 'files' : '', present: files.length > 0 });
+  const check = ToolJet.useValidation({
+    kind: 'choice',
+    value: files.length ? 'files' : '',
+    present: files.length > 0,
+  });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 16 });
+  ToolJet.useComponentSettings({
+    role: 'filepicker',
+    fit: false,
+    loading: 'own',
+    usage:
+      "Ant's Upload: type drag (Upload.Dragger area, fills the box) or select (a button); text, hint, accept, multiple, maxCount, listType. Files stay in the browser: fileList exposes [{uid, name, size, type, base64, content}] for a query; onChange, onRemove; resetFields clears.",
+    roleProps: {
+      files: 'fileList',
+      instructionText: 'text',
+      fileType: 'accept',
+      enableMultiple: 'multiple',
+      maxFileCount: 'maxCount',
+    },
+    roleEvents: { onFileSelected: 'onChange', onFileDeselected: 'onRemove' },
+    roleActions: { clearFiles: 'resetFields', clear: 'resetFields' },
+    defaultWidth: 14,
+    defaultHeight: 16,
+  });
   const [uiFiles, setUiFiles] = useState<UploadFile[]>([]);
   // Why the last pick was not taken whole (past maxCount), shown as the field's message until the files change again.
   const [rejected, setRejected] = useState('');
@@ -151,7 +206,17 @@ export const Upload = () => {
     const exposed = next.map(({ file: _f, ...rest }) => rest);
     setFileList(exposed);
     publishValue(exposed);
-    setUiFiles(next.map((f) => ({ uid: f.uid, name: f.name, status: 'done', size: f.size, type: f.type, originFileObj: f.file as never, thumbUrl: f.type.startsWith('image/') ? `data:${f.type};base64,${f.base64}` : undefined })));
+    setUiFiles(
+      next.map((f) => ({
+        uid: f.uid,
+        name: f.name,
+        status: 'done',
+        size: f.size,
+        type: f.type,
+        originFileObj: f.file as never,
+        thumbUrl: f.type.startsWith('image/') ? `data:${f.type};base64,${f.base64}` : undefined,
+      }))
+    );
     check.touch();
     onChange();
   };
@@ -191,7 +256,9 @@ export const Upload = () => {
       const single = now === 1;
       const room = single ? 1 : now ? Math.max(0, now - latest.current.length - pending.current) : batch.length;
       const taking = single ? batch.slice(-1) : batch.slice(0, room);
-      setRejected(!single && taking.length < batch.length ? `You can upload up to ${now} file${now === 1 ? '' : 's'}` : '');
+      setRejected(
+        !single && taking.length < batch.length ? `You can upload up to ${now} file${now === 1 ? '' : 's'}` : ''
+      );
       if (!taking.length) return false;
       if (single) stopReads();
       const mine = generation.current;
@@ -205,7 +272,8 @@ export const Upload = () => {
         // Merged into the files as they are now, under the limit as it is now (it may have been lowered meanwhile).
         const cap = Number(live.current.maxCount) > 0 ? Number(live.current.maxCount) : Infinity;
         const merged = [...latest.current, ...read].slice(0, Math.max(latest.current.length, cap));
-        if (merged.length < latest.current.length + read.length) setRejected(`You can upload up to ${cap} file${cap === 1 ? '' : 's'}`);
+        if (merged.length < latest.current.length + read.length)
+          setRejected(`You can upload up to ${cap} file${cap === 1 ? '' : 's'}`);
         if (merged.length > latest.current.length) set(merged);
       }
       return false;
@@ -254,20 +322,51 @@ export const Upload = () => {
 // minuteStep, placeholder, allowClear; event onChange.
 export const TimePicker = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Time' });
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'e.g. 09:30', initialValue: '' });
-  const [format] = ToolJet.useStateString({ name: 'format', label: 'Format', description: 'HH:mm, HH:mm:ss or h:mm a', initialValue: 'HH:mm' });
+  const [value, setValue] = ToolJet.useStateString({
+    name: 'value',
+    label: 'Value',
+    description: 'e.g. 09:30',
+    initialValue: '',
+  });
+  const [format] = ToolJet.useStateString({
+    name: 'format',
+    label: 'Format',
+    description: 'HH:mm, HH:mm:ss or h:mm a',
+    initialValue: 'HH:mm',
+  });
   const [use12Hours] = ToolJet.useStateBoolean({ name: 'use12Hours', label: 'Use 12 hours', initialValue: false });
   const [hourStep] = ToolJet.useStateNumber({ name: 'hourStep', label: 'Hour step', initialValue: 1, min: 1, max: 12 });
-  const [minuteStep] = ToolJet.useStateNumber({ name: 'minuteStep', label: 'Minute step', initialValue: 1, min: 1, max: 30 });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Pick a time' });
+  const [minuteStep] = ToolJet.useStateNumber({
+    name: 'minuteStep',
+    label: 'Minute step',
+    initialValue: 1,
+    min: 1,
+    max: 30,
+  });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Pick a time',
+  });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: true });
   const look = useControlLook();
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ section: 'date', value });
+  const check = ToolJet.useValidation({ kind: 'date', value });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'timepicker',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's TimePicker: label, value as 24-hour text (HH:mm, or HH:mm:ss when format has seconds), format (display), use12Hours, minuteStep; onChange.",
+    roleProps: { description: 'extra' },
+    roleEvents: { onSelect: 'onChange' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
   const fmt = str(format).trim() || (use12Hours ? 'h:mm a' : 'HH:mm');
   // The value keeps 24-hour text whatever the display, so queries read one shape.
   const valueFormat = /s/.test(fmt) ? 'HH:mm:ss' : 'HH:mm';
@@ -318,9 +417,19 @@ export const TimePicker = (props: Record<string, unknown>) => {
 // picker, minDate, maxDate, placeholder [start, end], allowClear; event onChange.
 export const RangePicker = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Date range' });
-  const [value, setValue] = ToolJet.useStateArray({ name: 'value', label: 'Value', description: "['2026-01-01', '2026-01-31']", initialValue: [] });
+  const [value, setValue] = ToolJet.useStateArray({
+    name: 'value',
+    label: 'Value',
+    description: "['2026-01-01', '2026-01-31']",
+    initialValue: [],
+  });
   const [format] = ToolJet.useStateString({ name: 'format', label: 'Format', initialValue: 'YYYY-MM-DD' });
-  const [picker] = ToolJet.useStateEnumeration({ name: 'picker', label: 'Picker', enumDefinition: ['date', 'week', 'month', 'quarter', 'year'], initialValue: 'date' });
+  const [picker] = ToolJet.useStateEnumeration({
+    name: 'picker',
+    label: 'Picker',
+    enumDefinition: ['date', 'week', 'month', 'quarter', 'year'],
+    initialValue: 'date',
+  });
   const [minDate] = ToolJet.useStateString({ name: 'minDate', label: 'Min date', initialValue: '' });
   const [maxDate] = ToolJet.useStateString({ name: 'maxDate', label: 'Max date', initialValue: '' });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: true });
@@ -331,9 +440,20 @@ export const RangePicker = (props: Record<string, unknown>) => {
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const pair = toArray(value).map((v) => parseDate(v));
-  const check = ToolJet.useValidation({ section: 'date', value: pair[0] ? str(toArray(value)[0]) : '' });
+  const check = ToolJet.useValidation({ kind: 'date', value: pair[0] ? str(toArray(value)[0]) : '' });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 14, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'daterangepicker',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's DatePicker.RangePicker: label, value [start, end] as YYYY-MM-DD (startDate and endDate also exposed), format, picker, minDate, maxDate; onChange.",
+    roleProps: { description: 'extra' },
+    roleEvents: { onSelect: 'onChange' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 14,
+    defaultHeight: 6,
+  });
   React.useEffect(() => {
     setStartDate(pair[0] ? pair[0].format('YYYY-MM-DD') : '');
     setEndDate(pair[1] ? pair[1].format('YYYY-MM-DD') : '');
@@ -343,7 +463,8 @@ export const RangePicker = (props: Record<string, unknown>) => {
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: unknown) => {
     const arr = toArray(next).map((v) => (dayjs.isDayjs(v) ? v : parseDate(v)));
-    if (valueSetter.set(arr.length === 2 && arr[0] && arr[1] ? arr.map((d) => (d as Dayjs).format('YYYY-MM-DD')) : [])) onChange();
+    if (valueSetter.set(arr.length === 2 && arr[0] && arr[1] ? arr.map((d) => (d as Dayjs).format('YYYY-MM-DD')) : []))
+      onChange();
   };
   useFieldActions(change, props.value);
   const panel = useOwnedPopup(disabled, (open) => !open && check.touch());
@@ -384,16 +505,31 @@ export const RangePicker = (props: Record<string, unknown>) => {
 // filterOption (match typed text), allowClear; events onChange, onSelect, onSearch.
 export const AutoComplete = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Product' });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: 'Plain values or [{ label, value, disabled? }].', initialValue: [
-    { label: 'Laptop stand', value: 'Laptop stand' },
-    { label: 'Mechanical keyboard', value: 'Mechanical keyboard' },
-    { label: 'Monitor arm', value: 'Monitor arm' },
-    { label: 'USB-C hub', value: 'USB-C hub' },
-    { label: 'Wireless mouse', value: 'Wireless mouse' },
-  ] });
+  const [rawOptions] = ToolJet.useStateArray({
+    name: 'options',
+    label: 'Options',
+    inspector: 'options',
+    description: 'Plain values or [{ label, value, disabled? }].',
+    initialValue: [
+      { label: 'Laptop stand', value: 'Laptop stand' },
+      { label: 'Mechanical keyboard', value: 'Mechanical keyboard' },
+      { label: 'Monitor arm', value: 'Monitor arm' },
+      { label: 'USB-C hub', value: 'USB-C hub' },
+      { label: 'Wireless mouse', value: 'Wireless mouse' },
+    ],
+  });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Start typing' });
-  const [filterOption] = ToolJet.useStateBoolean({ name: 'filterOption', label: 'Filter option', description: 'Show only the options matching the text.', initialValue: true });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Start typing',
+  });
+  const [filterOption] = ToolJet.useStateBoolean({
+    name: 'filterOption',
+    label: 'Filter option',
+    description: 'Show only the options matching the text.',
+    initialValue: true,
+  });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: false });
   const look = useControlLook();
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
@@ -401,9 +537,19 @@ export const AutoComplete = (props: Record<string, unknown>) => {
   const onSearch = ToolJet.useEventCallback({ name: 'onSearch' });
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ section: 'text', value });
+  const check = ToolJet.useValidation({ kind: 'text', value });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'autocomplete',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's AutoComplete: free text with suggestions; label, options [{label, value}] or strings, value, placeholder, filterOption; onChange, onSelect, onSearch.",
+    roleProps: { description: 'extra' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
@@ -423,10 +569,22 @@ export const AutoComplete = (props: Record<string, unknown>) => {
                 style={{ width: '100%' }}
                 // Free text: an option fills in its value as text. Each keeps a React key of its own (lib/data Option), so
                 // options with one text (1 and '1', or a repeat) draw apart.
-                options={toOptions(rawOptions, 'AutoComplete').map((o) => ({ key: o.key, label: o.label, value: str(o.data), disabled: o.disabled }))}
+                options={toOptions(rawOptions, 'AutoComplete').map((o) => ({
+                  key: o.key,
+                  label: o.label,
+                  value: str(o.data),
+                  disabled: o.disabled,
+                }))}
                 value={value}
                 placeholder={placeholder || undefined}
-                filterOption={filterOption ? (input, option) => str(option?.label ?? option?.value).toLowerCase().includes(input.toLowerCase()) : false}
+                filterOption={
+                  filterOption
+                    ? (input, option) =>
+                        str(option?.label ?? option?.value)
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                    : false
+                }
                 allowClear={allowClear}
                 disabled={disabled}
                 notFoundContent={loading ? <Spin size="small" /> : undefined}
@@ -468,24 +626,53 @@ export const toTree = (raw: unknown): TreeNode[] =>
 // treeDefaultExpandAll, allowClear; event onChange.
 export const TreeSelect = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Team' });
-  const [treeData] = ToolJet.useStateArray({ name: 'treeData', label: 'Tree data', description: '[{ title, value, children: [...] }]', initialValue: [
-    {
-      title: 'Engineering',
-      value: 'engineering',
-      children: [
-        { title: 'Frontend', value: 'frontend' },
-        { title: 'Backend', value: 'backend' },
-        { title: 'Platform', value: 'platform' },
-      ],
-    },
-    { title: 'Operations', value: 'operations', children: [{ title: 'Finance', value: 'finance' }, { title: 'People', value: 'people' }] },
-  ] });
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'A value, or an array of values when multiple.', initialValue: '' });
+  const [treeData] = ToolJet.useStateArray({
+    name: 'treeData',
+    label: 'Tree data',
+    description: '[{ title, value, children: [...] }]',
+    initialValue: [
+      {
+        title: 'Engineering',
+        value: 'engineering',
+        children: [
+          { title: 'Frontend', value: 'frontend' },
+          { title: 'Backend', value: 'backend' },
+          { title: 'Platform', value: 'platform' },
+        ],
+      },
+      {
+        title: 'Operations',
+        value: 'operations',
+        children: [
+          { title: 'Finance', value: 'finance' },
+          { title: 'People', value: 'people' },
+        ],
+      },
+    ],
+  });
+  const [value, setValue] = ToolJet.useStateString({
+    name: 'value',
+    label: 'Value',
+    description: 'A value, or an array of values when multiple.',
+    initialValue: '',
+  });
   const [multiple] = ToolJet.useStateBoolean({ name: 'multiple', label: 'Multiple', initialValue: false });
-  const [treeCheckable] = ToolJet.useStateBoolean({ name: 'treeCheckable', label: 'Tree checkable', initialValue: false });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Pick a team' });
+  const [treeCheckable] = ToolJet.useStateBoolean({
+    name: 'treeCheckable',
+    label: 'Tree checkable',
+    initialValue: false,
+  });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Pick a team',
+  });
   const [showSearch] = ToolJet.useStateBoolean({ name: 'showSearch', label: 'Show search', initialValue: true });
-  const [treeDefaultExpandAll] = ToolJet.useStateBoolean({ name: 'treeDefaultExpandAll', label: 'Expand all', initialValue: false });
+  const [treeDefaultExpandAll] = ToolJet.useStateBoolean({
+    name: 'treeDefaultExpandAll',
+    label: 'Expand all',
+    initialValue: false,
+  });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: true });
   const look = useControlLook();
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
@@ -493,18 +680,35 @@ export const TreeSelect = (props: Record<string, unknown>) => {
   const fieldId = ToolJet.useFieldId();
   const many = multiple || treeCheckable;
   const current: unknown = value as unknown;
-  const values = Array.isArray(current) ? current.map(str) : current === '' || current === undefined || current === null ? [] : [str(current)];
-  const check = ToolJet.useValidation({ section: 'choice', value: values.join(','), present: values.length > 0 });
+  const values = Array.isArray(current)
+    ? current.map(str)
+    : current === '' || current === undefined || current === null
+      ? []
+      : [str(current)];
+  const check = ToolJet.useValidation({ kind: 'choice', value: values.join(','), present: values.length > 0 });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'treeselect',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's TreeSelect: label, treeData [{title, value, children}], value (an array when multiple or treeCheckable), placeholder, showSearch, treeDefaultExpandAll; onChange.",
+    roleProps: { description: 'extra', options: 'treeData', data: 'treeData' },
+    roleEvents: { onSelect: 'onChange' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
     const arr = Array.isArray(v) ? v.map(str) : v === undefined || v === null || v === '' ? [] : [str(v)];
-    if (valueSetter.set(many ? arr : arr[0] ?? '')) onChange();
+    if (valueSetter.set(many ? arr : (arr[0] ?? ''))) onChange();
   };
   // A cleared Form empties a multiple TreeSelect to no values ([]), not to the '' the host clears text values to.
-  (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => many && setValue([] as unknown as string));
+  (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(
+    () => many && setValue([] as unknown as string)
+  );
   useFieldActions(change, props.value);
   const list = useOwnedPopup(disabled, (open) => !open && check.touch());
   return (
@@ -547,37 +751,93 @@ export const TreeSelect = (props: Record<string, unknown>) => {
 // changeOnSelect, showSearch; event onChange.
 export const Cascader = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Location' });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', description: '[{ label, value, children: [...] }]', initialValue: [
-    {
-      label: 'Europe',
-      value: 'europe',
-      children: [
-        { label: 'Germany', value: 'germany', children: [{ label: 'Berlin', value: 'berlin' }, { label: 'Munich', value: 'munich' }] },
-        { label: 'Portugal', value: 'portugal', children: [{ label: 'Lisbon', value: 'lisbon' }, { label: 'Porto', value: 'porto' }] },
-      ],
-    },
-    {
-      label: 'Asia',
-      value: 'asia',
-      children: [
-        { label: 'Japan', value: 'japan', children: [{ label: 'Osaka', value: 'osaka' }, { label: 'Tokyo', value: 'tokyo' }] },
-        { label: 'Singapore', value: 'singapore' },
-      ],
-    },
-  ] });
-  const [value, setValue] = ToolJet.useStateArray({ name: 'value', label: 'Value', description: "The path: ['asia', 'japan']", initialValue: [] });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Pick a city' });
-  const [expandTrigger] = ToolJet.useStateEnumeration({ name: 'expandTrigger', label: 'Expand trigger', enumDefinition: ['click', 'hover'], initialValue: 'click' });
-  const [changeOnSelect] = ToolJet.useStateBoolean({ name: 'changeOnSelect', label: 'Change on select', description: 'Any level can be picked, not only leaves.', initialValue: false });
+  const [rawOptions] = ToolJet.useStateArray({
+    name: 'options',
+    label: 'Options',
+    description: '[{ label, value, children: [...] }]',
+    initialValue: [
+      {
+        label: 'Europe',
+        value: 'europe',
+        children: [
+          {
+            label: 'Germany',
+            value: 'germany',
+            children: [
+              { label: 'Berlin', value: 'berlin' },
+              { label: 'Munich', value: 'munich' },
+            ],
+          },
+          {
+            label: 'Portugal',
+            value: 'portugal',
+            children: [
+              { label: 'Lisbon', value: 'lisbon' },
+              { label: 'Porto', value: 'porto' },
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Asia',
+        value: 'asia',
+        children: [
+          {
+            label: 'Japan',
+            value: 'japan',
+            children: [
+              { label: 'Osaka', value: 'osaka' },
+              { label: 'Tokyo', value: 'tokyo' },
+            ],
+          },
+          { label: 'Singapore', value: 'singapore' },
+        ],
+      },
+    ],
+  });
+  const [value, setValue] = ToolJet.useStateArray({
+    name: 'value',
+    label: 'Value',
+    description: "The path: ['asia', 'japan']",
+    initialValue: [],
+  });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Pick a city',
+  });
+  const [expandTrigger] = ToolJet.useStateEnumeration({
+    name: 'expandTrigger',
+    label: 'Expand trigger',
+    enumDefinition: ['click', 'hover'],
+    initialValue: 'click',
+  });
+  const [changeOnSelect] = ToolJet.useStateBoolean({
+    name: 'changeOnSelect',
+    label: 'Change on select',
+    description: 'Any level can be picked, not only leaves.',
+    initialValue: false,
+  });
   const [showSearch] = ToolJet.useStateBoolean({ name: 'showSearch', label: 'Show search', initialValue: false });
   const look = useControlLook();
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const path = toArray(value).map(str);
-  const check = ToolJet.useValidation({ section: 'choice', value: path.join('/'), present: path.length > 0 });
+  const check = ToolJet.useValidation({ kind: 'choice', value: path.join('/'), present: path.length > 0 });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'cascader',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's Cascader: label, options [{label, value, children}], value (the path array), changeOnSelect, expandTrigger; onChange.",
+    roleProps: { description: 'extra' },
+    roleEvents: { onSelect: 'onChange' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
   const toCascade = (raw: unknown): { label: string; value: string; children?: unknown[] }[] =>
     toTree(raw).map(function map(n): { label: string; value: string; children?: unknown[] } {
       return { label: n.title, value: n.value, ...(n.children ? { children: n.children.map(map) } : {}) };
@@ -628,25 +888,56 @@ export const Cascader = (props: Record<string, unknown>) => {
 export const ColorPicker = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Color' });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
-  const [format] = ToolJet.useStateEnumeration({ name: 'format', label: 'Format', enumDefinition: ['hex', 'rgb'], initialValue: 'hex' });
+  const [format] = ToolJet.useStateEnumeration({
+    name: 'format',
+    label: 'Format',
+    enumDefinition: ['hex', 'rgb'],
+    initialValue: 'hex',
+  });
   const [showText] = ToolJet.useStateBoolean({ name: 'showText', label: 'Show text', initialValue: true });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: false });
-  const [disabledAlpha] = ToolJet.useStateBoolean({ name: 'disabledAlpha', label: 'Disable alpha', initialValue: true });
-  const [presets] = ToolJet.useStateArray({ name: 'presets', label: 'Presets', description: "[{ label: 'Brand', colors: ['#1677ff'] }]", initialValue: [] });
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'middle', 'large'], initialValue: 'middle' });
+  const [disabledAlpha] = ToolJet.useStateBoolean({
+    name: 'disabledAlpha',
+    label: 'Disable alpha',
+    initialValue: true,
+  });
+  const [presets] = ToolJet.useStateArray({
+    name: 'presets',
+    label: 'Presets',
+    description: "[{ label: 'Brand', colors: ['#1677ff'] }]",
+    initialValue: [],
+  });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['small', 'middle', 'large'],
+    initialValue: 'middle',
+  });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onChangeComplete = ToolJet.useEventCallback({ name: 'onChangeComplete' });
   const { disabled, loading } = ToolJet.useControlState();
-  const check = ToolJet.useValidation({ section: 'text', value });
+  const check = ToolJet.useValidation({ kind: 'text', value });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'colorpicker',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's ColorPicker: label, value (hex, or rgb() with format rgb), showText, presets [{label, colors}], allowClear; onChange while picking, onChangeComplete when done.",
+    roleProps: { description: 'extra' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields' },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   useFieldActions((v) => {
     if (valueSetter.set(str(v))) onChange();
   }, props.value);
   const presetList = toArray(presets)
-    .map((p) => (p && typeof p === 'object' ? { label: str((p as Row).label), colors: toArray((p as Row).colors).map(str) } : null))
+    .map((p) =>
+      p && typeof p === 'object' ? { label: str((p as Row).label), colors: toArray((p as Row).colors).map(str) } : null
+    )
     .filter((p): p is { label: string; colors: string[] } => !!p && p.colors.length > 0);
   const panel = useOwnedPopup(disabled, (open) => !open && check.touch());
   return (
@@ -693,15 +984,24 @@ export const ColorPicker = (props: Record<string, unknown>) => {
 // Ant's Transfer: dataSource [{ key, title }], targetKeys (the chosen keys), titles [left, right], showSearch,
 // oneWay; event onChange.
 export const Transfer = (props: Record<string, unknown>) => {
-  const [dataSource] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', description: '[{ key, title }]', initialValue: [
-    { key: 'orders', title: 'Orders' },
-    { key: 'invoices', title: 'Invoices' },
-    { key: 'customers', title: 'Customers' },
-    { key: 'products', title: 'Products' },
-    { key: 'shipments', title: 'Shipments' },
-    { key: 'returns', title: 'Returns' },
-  ] });
-  const [targetKeys, setTargetKeys] = ToolJet.useStateArray({ name: 'targetKeys', label: 'Target keys', initialValue: [] });
+  const [dataSource] = ToolJet.useStateArray({
+    name: 'dataSource',
+    label: 'Data source',
+    description: '[{ key, title }]',
+    initialValue: [
+      { key: 'orders', title: 'Orders' },
+      { key: 'invoices', title: 'Invoices' },
+      { key: 'customers', title: 'Customers' },
+      { key: 'products', title: 'Products' },
+      { key: 'shipments', title: 'Shipments' },
+      { key: 'returns', title: 'Returns' },
+    ],
+  });
+  const [targetKeys, setTargetKeys] = ToolJet.useStateArray({
+    name: 'targetKeys',
+    label: 'Target keys',
+    initialValue: [],
+  });
   const publishValue = useFormValue(targetKeys, 'array');
   const [titles] = ToolJet.useStateArray({ name: 'titles', label: 'Titles', initialValue: ['Available', 'Selected'] });
   const [showSearch] = ToolJet.useStateBoolean({ name: 'showSearch', label: 'Show search', initialValue: true });
@@ -709,9 +1009,19 @@ export const Transfer = (props: Record<string, unknown>) => {
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const keys = toArray(targetKeys).map(str);
-  const check = ToolJet.useValidation({ section: 'choice', value: keys.join(','), present: keys.length > 0 });
+  const check = ToolJet.useValidation({ kind: 'choice', value: keys.join(','), present: keys.length > 0 });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 24, defaultHeight: 30 });
+  ToolJet.useComponentSettings({
+    role: 'transfer',
+    fit: false,
+    loading: 'own',
+    usage:
+      "Ant's Transfer: two lists; dataSource [{key, title}], targetKeys (the chosen keys, exposed), titles, showSearch, oneWay; onChange.",
+    roleProps: { data: 'dataSource', value: 'targetKeys' },
+    roleActions: { setValue: 'setFieldValue' },
+    defaultWidth: 24,
+    defaultHeight: 30,
+  });
   const items = toArray(dataSource)
     .map((o) => {
       if (typeof o === 'string') return { key: o, title: o };

@@ -28,7 +28,11 @@ import '../../../styles/ui2-charts.css';
 // The SDK as the host provides it (LibraryComponent/inlineRuntime.ts); the installed typings predate the style hooks.
 type Setter<T> = (v: T | ((prev: T) => T)) => void;
 interface ChartSdk {
-  useStateObject(o: { name: string; initialValue?: Record<string, unknown>; inspector?: string }): [Record<string, unknown>, Setter<Record<string, unknown>>];
+  useStateObject(o: {
+    name: string;
+    initialValue?: Record<string, unknown>;
+    inspector?: string;
+  }): [Record<string, unknown>, Setter<Record<string, unknown>>];
   useEventCallback(o: { name: string; displayName?: string }): () => void;
   useAction(o: { name: string; displayName?: string }, handler: (...args: unknown[]) => unknown): void;
   useControlState?(): { disabled: boolean; loading: boolean };
@@ -49,11 +53,16 @@ export const CURSOR_LINE = { stroke: 'var(--ui-border)' };
 
 /** The colour of the series at `index`: the author's list where it names one, else the theme's chart scale led by
  *  the Chart color style (the pack palette). */
-export const seriesColor = (colors: unknown, chartColor: string, index: number): string => seriesColors(colors, chartColor, index + 1)[index];
+export const seriesColor = (colors: unknown, chartColor: string, index: number): string =>
+  seriesColors(colors, chartColor, index + 1)[index];
 
 /** The widget's colour styles as the --lk-* variables the chart's parts read; unset styles leave the theme's. */
 export const lookVars = (looks: Record<string, unknown>): React.CSSProperties =>
-  Object.fromEntries(Object.entries(looks).filter(([, v]) => isSet(v) && typeof v !== 'object').map(([k, v]) => [k, String(v)])) as React.CSSProperties;
+  Object.fromEntries(
+    Object.entries(looks)
+      .filter(([, v]) => isSet(v) && typeof v !== 'object')
+      .map(([k, v]) => [k, String(v)])
+  ) as React.CSSProperties;
 
 // ---- Tooltip and legend ----------------------------------------------------------------------------------------------
 
@@ -78,14 +87,23 @@ export const ChartTooltip = ({
   format,
   rowFill = true,
   labelFormat,
-}: TooltipContentProps & { format: (v: unknown, key: unknown) => string; rowFill?: boolean; labelFormat?: (v: unknown) => string }) => {
+}: TooltipContentProps & {
+  format: (v: unknown, key: unknown) => string;
+  rowFill?: boolean;
+  labelFormat?: (v: unknown) => string;
+}) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="ui2-chart-tip">
-      {label !== undefined && label !== '' ? <div className="ui2-chart-tip-title">{labelFormat ? labelFormat(label) : String(label)}</div> : null}
+      {label !== undefined && label !== '' ? (
+        <div className="ui2-chart-tip-title">{labelFormat ? labelFormat(label) : String(label)}</div>
+      ) : null}
       {payload.map((item, i) => (
         <div key={String(item.dataKey ?? item.name ?? i)} className="ui2-chart-tip-row">
-          <span className="ui2-chart-tip-swatch" style={{ background: rowFill ? item.color || item.payload?.fill : item.color }} />
+          <span
+            className="ui2-chart-tip-swatch"
+            style={{ background: rowFill ? item.color || item.payload?.fill : item.color }}
+          />
           <span className="ui2-chart-tip-name">{String(item.name ?? '')}</span>
           <span className="ui2-chart-tip-value">{format(item.value, item.dataKey)}</span>
         </div>
@@ -175,7 +193,12 @@ export const useBoxSize = () => {
   useEffect(() => {
     const el = ref.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
-    const read = () => setSize((s) => (s.width === el.clientWidth && s.height === el.clientHeight ? s : { width: el.clientWidth, height: el.clientHeight }));
+    const read = () =>
+      setSize((s) =>
+        s.width === el.clientWidth && s.height === el.clientHeight
+          ? s
+          : { width: el.clientWidth, height: el.clientHeight }
+      );
     read();
     const ro = new ResizeObserver(read);
     ro.observe(el);
@@ -211,15 +234,35 @@ interface FrameProps {
 }
 
 /** The chart's box: the empty look, the drawn chart (one image for assistive tech) and the notes under it. */
-export const ChartFrame = ({ empty, emptyText, label, looks = {}, notes = [], small, onDoubleClick, onClick, resetKey, plain, boxRef, className, children }: FrameProps) => (
-  <div ref={boxRef} className={`ui ui2-chart${className ? ` ${className}` : ''}`} style={lookVars(looks)} onClick={onClick} onDoubleClick={onDoubleClick}>
+export const ChartFrame = ({
+  empty,
+  emptyText,
+  label,
+  looks = {},
+  notes = [],
+  small,
+  onDoubleClick,
+  onClick,
+  resetKey,
+  plain,
+  boxRef,
+  className,
+  children,
+}: FrameProps) => (
+  <div
+    ref={boxRef}
+    className={`ui ui2-chart${className ? ` ${className}` : ''}`}
+    style={lookVars(looks)}
+    onClick={onClick}
+    onDoubleClick={onDoubleClick}
+  >
     <div className="ui2-chart-plot">
       {empty ? (
         <EmptyChart text={String(isSet(emptyText) ? emptyText : 'No data')} small={small} />
       ) : (
         <ChartBoundary resetKey={resetKey}>
           {plain ? (
-            (typeof children === 'function' ? children() : children) as React.ReactNode
+            ((typeof children === 'function' ? children() : children) as React.ReactNode)
           ) : (
             <ChartArea label={label}>
               <ResponsiveContainer width="100%" height="100%">
@@ -240,12 +283,16 @@ export const ChartFrame = ({ empty, emptyText, label, looks = {}, notes = [], sm
  *  onClick; a double click fires onDoubleClick; clearClickedPoint() empties it. Disabled or loading, the chart takes
  *  no clicks. With Highlight clicked point, `highlighted` is the clicked datum until it is cleared. */
 export const useChartClick = (highlightClicked: unknown) => {
-  const [clicked, setClicked] = TJ.useStateObject({ name: 'clickedDataPoint', initialValue: {}, inspector: 'hidden' });
-  const onClick = TJ.useEventCallback({ name: 'onClick' });
-  const onDoubleClick = TJ.useEventCallback({ name: 'onDoubleClick' });
-  const control = TJ.useControlState?.() ?? { disabled: false, loading: false };
+  const [clicked, setClicked] = ToolJet.useStateObject({
+    name: 'clickedDataPoint',
+    initialValue: {},
+    inspector: 'hidden',
+  });
+  const onClick = ToolJet.useEventCallback({ name: 'onClick' });
+  const onDoubleClick = ToolJet.useEventCallback({ name: 'onDoubleClick' });
+  const control = ToolJet.useControlState?.() ?? { disabled: false, loading: false };
   const inactive = control.disabled || control.loading;
-  TJ.useAction({ name: 'clearClickedPoint', displayName: 'Clear clicked point' }, () => setClicked({}));
+  ToolJet.useAction({ name: 'clearClickedPoint', displayName: 'Clear clicked point' }, () => setClicked({}));
   return {
     pick: (datum: unknown) => {
       if (inactive || !datum || typeof datum !== 'object') return;
@@ -277,7 +324,16 @@ export interface SeriesSetup {
  *  unless the author set colours), compact ticks and full tooltip values with the prefix and suffix. */
 export const seriesSetup = (
   rows: Row[],
-  p: { xField: unknown; yFields: unknown; seriesLabels: unknown; colors: unknown; chartColor: string; valuePrefix: unknown; valueSuffix: unknown; stacked: boolean }
+  p: {
+    xField: unknown;
+    yFields: unknown;
+    seriesLabels: unknown;
+    colors: unknown;
+    chartColor: string;
+    valuePrefix: unknown;
+    valueSuffix: unknown;
+    stacked: boolean;
+  }
 ): SeriesSetup => {
   const configured = fieldList(p.yFields);
   const fields = resolveChartFields(rows, isSet(p.xField) ? String(p.xField) : undefined, configured);
@@ -302,18 +358,42 @@ export const seriesSetup = (
 
 /** The value (y) axis: hidden on a compact chart, ticks in the value format, whole numbers when the data is whole.
  *  An element, not a component: Recharts finds its axes among the chart's children by type. */
-export const valueAxis = ({ yWidth, tick, allowDecimals, ticks }: Pick<SeriesSetup, 'yWidth' | 'tick' | 'allowDecimals' | 'ticks'>, hide: boolean, extra: Record<string, unknown> = {}) => (
-  <YAxis {...AXIS} hide={hide} width={yWidth} tickFormatter={tick} allowDecimals={allowDecimals} {...ticks} {...extra} />
+export const valueAxis = (
+  { yWidth, tick, allowDecimals, ticks }: Pick<SeriesSetup, 'yWidth' | 'tick' | 'allowDecimals' | 'ticks'>,
+  hide: boolean,
+  extra: Record<string, unknown> = {}
+) => (
+  <YAxis
+    {...AXIS}
+    hide={hide}
+    width={yWidth}
+    tickFormatter={tick}
+    allowDecimals={allowDecimals}
+    {...ticks}
+    {...extra}
+  />
 );
 
-export const tooltipAndLegend = (full: (v: unknown, key?: unknown) => string, cursor: unknown, legend: boolean, labelFormat?: (v: unknown) => string) => [
+export const tooltipAndLegend = (
+  full: (v: unknown, key?: unknown) => string,
+  cursor: unknown,
+  legend: boolean,
+  labelFormat?: (v: unknown) => string
+) => [
   <Tooltip key="tip" cursor={cursor as never} content={<ChartTooltip format={full} labelFormat={labelFormat} />} />,
   legend ? <Legend key="legend" content={<LegendContent />} /> : null,
 ];
 
 /** Highlight clicked point on a line or area chart: a line through the clicked category and a ringed dot on each series
  *  there (at its stacked height when the series stack). */
-export const clickedMarks = (highlighted: unknown, xField: string | undefined, series: string[], fills: string[], stacked = false, yAxisId?: string): React.ReactElement[] => {
+export const clickedMarks = (
+  highlighted: unknown,
+  xField: string | undefined,
+  series: string[],
+  fills: string[],
+  stacked = false,
+  yAxisId?: string
+): React.ReactElement[] => {
   const row = highlighted as Row | null;
   if (!row || !xField || row[xField] === undefined) return [];
   let base = 0;
@@ -321,9 +401,30 @@ export const clickedMarks = (highlighted: unknown, xField: string | undefined, s
     const value = Number(row[s]);
     if (!Number.isFinite(value)) return [];
     const y = stacked ? (base += value) : value;
-    return [<ReferenceDot key={`clicked-${s}`} {...(yAxisId ? { yAxisId } : {})} x={row[xField] as string} y={y} r={6} fill={fills[i]} stroke="var(--ui-bg)" strokeWidth={2} ifOverflow="extendDomain" />];
+    return [
+      <ReferenceDot
+        key={`clicked-${s}`}
+        {...(yAxisId ? { yAxisId } : {})}
+        x={row[xField] as string}
+        y={y}
+        r={6}
+        fill={fills[i]}
+        stroke="var(--ui-bg)"
+        strokeWidth={2}
+        ifOverflow="extendDomain"
+      />,
+    ];
   });
-  return [<ReferenceLine key="clicked-x" {...(yAxisId ? { yAxisId } : {})} x={row[xField] as string} stroke="var(--ui-muted-fg)" strokeDasharray="3 3" />, ...dots];
+  return [
+    <ReferenceLine
+      key="clicked-x"
+      {...(yAxisId ? { yAxisId } : {})}
+      x={row[xField] as string}
+      stroke="var(--ui-muted-fg)"
+      strokeDasharray="3 3"
+    />,
+    ...dots,
+  ];
 };
 
 /** A unique SVG id per rendered chart (gradients), so charts in list rows do not share one. */

@@ -1,7 +1,7 @@
 // The Stat's pure logic, ported from UI 2.0 (Ui2/Stat/statModel.ts and the format helpers it calls): its figure, its
 // change chip, its trend line and its progress bar. Every function takes whatever the author bound and never throws.
 
-import { localeFor, moneyDigits, numberFormat } from './locale';
+import { currencyCode, localeFor, moneyDigits, moneyStyle, numberFormat } from './locale';
 
 const isScalar = (v: unknown): v is string | number | boolean =>
   typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
@@ -26,12 +26,10 @@ type NumberFormat = 'number' | 'currency' | 'percent' | 'compact';
 const FORMATS: readonly string[] = ['number', 'currency', 'percent', 'compact'];
 const isFormat = (format: unknown): format is NumberFormat => typeof format === 'string' && FORMATS.includes(format);
 
-const currencyCode = (currency: unknown): string =>
-  typeof currency === 'string' && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim().toUpperCase() : 'USD';
 
 /** A number in the format; percent takes values already in percent (42 shows 42%). Money with cents shows both digits. */
 const formatNumber = (n: number, format: NumberFormat, currency: unknown, locale: string): string => {
-  if (format === 'currency') return numberFormat(locale, { style: 'currency', currency: currencyCode(currency), ...moneyDigits(n, locale) }).format(n);
+  if (format === 'currency') return numberFormat(locale, moneyStyle(currencyCode(currency), moneyDigits(n, locale))).format(n);
   if (format === 'compact') return numberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
   if (format === 'percent') return `${numberFormat(locale, { maximumFractionDigits: 1 }).format(n)}%`;
   return numberFormat(locale, { maximumFractionDigits: 2 }).format(n);
@@ -68,7 +66,7 @@ const formatChange = (n: number, format: unknown, currency?: unknown, locale?: u
   const where = localeFor(currency, locale);
   const f =
     kind === 'currency'
-      ? numberFormat(where, { style: 'currency', currency: currencyCode(currency) })
+      ? numberFormat(where, moneyStyle(currencyCode(currency)))
       : numberFormat(where, { minimumFractionDigits: kind === 'percent' ? 1 : 0, maximumFractionDigits: 1 });
   const digits = f.resolvedOptions().maximumFractionDigits ?? 1;
   const shown = Math.round(Math.abs(n) * 10 ** digits) / 10 ** digits;

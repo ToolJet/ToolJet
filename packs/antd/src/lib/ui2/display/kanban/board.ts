@@ -1,6 +1,7 @@
 // Ported from UI 2.0's Kanban (Ui2/Kanban/kanbanBoard.ts): the board's data logic, kept apart from the drag-and-drop
 // UI. Cards are rows of data; a column is a value of the status field.
 
+import { contentKey } from '../../../contentKey';
 import { sameValue } from '../../../sameValue';
 
 const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -124,10 +125,13 @@ export const boardColumns = (cards: unknown, columns: unknown, statusField: stri
     for (const card of column.cards) if (isRecord(card) && hasId(card[idField])) ids.add(keyOf(card[idField]));
   const uniqueKey = keyMaker(ids);
   for (const column of byId.values()) {
-    column.cards = column.cards.map((card, i) => {
+    column.cards = column.cards.map((card) => {
       const row = isRecord(card) ? card : {};
       const id = row[idField];
-      return { ...row, __key: hasId(id) ? uniqueKey(keyOf(id), true) : uniqueKey(`${column.id}-${i}`) };
+      // A card with no id is keyed by its content: a position key moved the selected or open card to whichever card
+      // took its place when one above it was removed (team testing, 2026-10-29).
+      const { __key: _old, ...content } = row;
+      return { ...row, __key: hasId(id) ? uniqueKey(keyOf(id), true) : uniqueKey(contentKey(content)) };
     });
   }
   // Every card now has its key.

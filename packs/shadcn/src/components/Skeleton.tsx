@@ -28,7 +28,7 @@ export const Skeleton = () => {
   const baseColor = useThemeColor('baseColor', 'Shade', TOKEN.brand);
   const background = useThemeColor('backgroundColor', 'Background', 'transparent');
   const radius = useThemeRadius('borderRadius', 'Border radius');
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
+  ToolJet.useComponentSettings({ role: 'skeleton', fit: false, loading: 'own', defaultWidth: 10, defaultHeight: 6 });
 
   // As many lines as fit the box (a 16px line and an 8px gap each), as UI 2.0 draws them.
   const ref = useRef<HTMLDivElement>(null);
@@ -45,7 +45,9 @@ export const Skeleton = () => {
   const asked = Math.max(1, Math.min(50, Math.floor(Number(lines)) || 3));
   const fit = Math.max(1, Math.floor((height + LINE_GAP) / (LINE + LINE_GAP)));
   const count = height > 0 ? Math.min(asked, fit) : asked;
-  const textLines = Array.from({ length: count }, (_, i) => <Bar key={i} width={i === count - 1 && count > 1 ? '60%' : '100%'} />);
+  const textLines = Array.from({ length: count }, (_, i) => (
+    <Bar key={i} width={i === count - 1 && count > 1 ? '60%' : '100%'} />
+  ));
 
   const fill = isSet(placeholderColor)
     ? String(placeholderColor)
@@ -58,7 +60,11 @@ export const Skeleton = () => {
       className="ui ui-skeleton-wrap ui2-skeleton-wrap"
       aria-busy="true"
       aria-label="Loading"
-      style={{ ...themeVars({ bg: background || undefined, radius }), ...(fill ? { ['--lk-bg' as string]: fill } : {}), ...(isSet(background) ? { background } : {}) }}
+      style={{
+        ...themeVars({ bg: background || undefined, radius }),
+        ...(fill ? { ['--lk-bg' as string]: fill } : {}),
+        ...(isSet(background) ? { background } : {}),
+      }}
     >
       {shape === 'profile' ? (
         <div className="ui-skeleton-row">

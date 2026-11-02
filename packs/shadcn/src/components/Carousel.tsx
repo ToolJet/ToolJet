@@ -2,7 +2,15 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
 import { cn } from '../lib/cn';
-import { aspectRatio, carouselPositions, carouselSlides, clampInt, moveIndex, safeImageUrl, safeUrl } from '../lib/ui2/nav/model';
+import {
+  aspectRatio,
+  carouselPositions,
+  carouselSlides,
+  clampInt,
+  moveIndex,
+  safeImageUrl,
+  safeUrl,
+} from '../lib/ui2/nav/model';
 import { lookVars, px } from '../lib/ui2/nav/look';
 import { useLatest, useStable } from '../lib/ui2/nav/hooks';
 import { ownerAvailable } from '../lib/useOwnerGuard';
@@ -18,13 +26,33 @@ export const Carousel = () => {
     label: 'Slides',
     description: 'Array of { image, title, description, link } objects, or image URLs.',
     initialValue: [
-      { image: 'https://picsum.photos/seed/tj-coast/1200/675', title: 'Coastal routes', description: 'Plan deliveries along the shoreline' },
-      { image: 'https://picsum.photos/seed/tj-mountain/1200/675', title: 'Mountain depots', description: 'New warehouses opening in Q1' },
-      { image: 'https://picsum.photos/seed/tj-lake/1200/675', title: 'Lakeside hubs', description: 'Cold-chain capacity doubled' },
+      {
+        image: 'https://picsum.photos/seed/tj-coast/1200/675',
+        title: 'Coastal routes',
+        description: 'Plan deliveries along the shoreline',
+      },
+      {
+        image: 'https://picsum.photos/seed/tj-mountain/1200/675',
+        title: 'Mountain depots',
+        description: 'New warehouses opening in Q1',
+      },
+      {
+        image: 'https://picsum.photos/seed/tj-lake/1200/675',
+        title: 'Lakeside hubs',
+        description: 'Cold-chain capacity doubled',
+      },
     ],
   });
-  const [defaultIndex] = ToolJet.useStateNumber({ name: 'defaultIndex', label: 'Start at slide (0-based)', initialValue: 0 });
-  const [currentIndex, setCurrentIndex] = ToolJet.useStateNumber({ name: 'currentIndex', label: 'Current slide (0-based)', initialValue: 0 });
+  const [defaultIndex] = ToolJet.useStateNumber({
+    name: 'defaultIndex',
+    label: 'Start at slide (0-based)',
+    initialValue: 0,
+  });
+  const [currentIndex, setCurrentIndex] = ToolJet.useStateNumber({
+    name: 'currentIndex',
+    label: 'Current slide (0-based)',
+    initialValue: 0,
+  });
   const [ratioSetting] = ToolJet.useStateEnumeration({
     name: 'aspectRatio',
     label: 'Aspect ratio',
@@ -48,13 +76,30 @@ export const Carousel = () => {
     initialValue: 'overlay',
     inspector: 'switch',
   });
-  const [slidesPerView] = ToolJet.useStateNumber({ name: 'slidesPerView', label: 'Slides per view (1 to 4)', initialValue: 1, min: 1, max: 4 });
+  const [slidesPerView] = ToolJet.useStateNumber({
+    name: 'slidesPerView',
+    label: 'Slides per view (1 to 4)',
+    initialValue: 1,
+    min: 1,
+    max: 4,
+  });
   const [showArrows] = ToolJet.useStateBoolean({ name: 'showArrows', label: 'Show arrows', initialValue: true });
   const [showDots] = ToolJet.useStateBoolean({ name: 'showDots', label: 'Show dots', initialValue: true });
   const [loop] = ToolJet.useStateBoolean({ name: 'loop', label: 'Loop', initialValue: true });
   const [autoplay] = ToolJet.useStateBoolean({ name: 'autoplay', label: 'Autoplay', initialValue: false });
-  const [interval] = ToolJet.useStateNumber({ name: 'interval', label: 'Autoplay interval (ms)', initialValue: 5000, min: 1000, visibleWhen: { key: 'autoplay', value: true } });
-  const [pauseOnHover] = ToolJet.useStateBoolean({ name: 'pauseOnHover', label: 'Pause on hover', initialValue: true, visibleWhen: { key: 'autoplay', value: true } });
+  const [interval] = ToolJet.useStateNumber({
+    name: 'interval',
+    label: 'Autoplay interval (ms)',
+    initialValue: 5000,
+    min: 1000,
+    visibleWhen: { key: 'autoplay', value: true },
+  });
+  const [pauseOnHover] = ToolJet.useStateBoolean({
+    name: 'pauseOnHover',
+    label: 'Pause on hover',
+    initialValue: true,
+    visibleWhen: { key: 'autoplay', value: true },
+  });
   const [, setCurrentSlide] = ToolJet.useStateObject({ name: 'currentSlide', initialValue: {}, inspector: 'hidden' });
   const [, setClickedSlide] = ToolJet.useStateObject({ name: 'clickedSlide', initialValue: {}, inspector: 'hidden' });
   const onSlideChanged = ToolJet.useEventCallback({ name: 'onSlideChanged' });
@@ -65,14 +110,19 @@ export const Carousel = () => {
   const arrowColor = useThemeColor('arrowColor', 'Arrow icon color', TOKEN.text);
   const dotColor = useThemeColor('dotColor', 'Dot color', TOKEN.text);
   const activeDotColor = useThemeColor('activeDotColor', 'Active dot color', TOKEN.brand);
-  const captionBackgroundColor = ToolJet.useStyleString({ name: 'captionBackgroundColor', label: 'Caption overlay background', inspector: 'color', initialValue: '' });
+  const captionBackgroundColor = ToolJet.useStyleString({
+    name: 'captionBackgroundColor',
+    label: 'Caption overlay background',
+    inspector: 'color',
+    initialValue: '',
+  });
   const captionTextColor = useThemeColor('captionTextColor', 'Caption overlay text color', '#fff');
   const titleColor = useThemeColor('titleColor', 'Caption title color (below)', TOKEN.text);
   const descriptionColor = useThemeColor('descriptionColor', 'Caption description color (below)', TOKEN.mutedText);
   const radius = useThemeRadius('borderRadius', 'Slide radius');
   const gapStyle = useBlankNumber('gap', 'Gap between slides (px)', '16 with several slides, else 0');
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 41 });
+  ToolJet.useComponentSettings({ role: 'carousel', fit: false, loading: 'own', defaultWidth: 20, defaultHeight: 41 });
 
   const source = useStable(rawSlides);
   const slides = useMemo(() => carouselSlides(source), [source]);
@@ -107,8 +157,9 @@ export const Carousel = () => {
 
   ToolJet.useAction({ name: 'next', displayName: 'Next slide' }, () => go(indexRef.current + 1));
   ToolJet.useAction({ name: 'previous', displayName: 'Previous slide' }, () => go(indexRef.current - 1));
-  ToolJet.useAction({ name: 'goTo', displayName: 'Go to slide', params: [{ handle: 'index', displayName: 'Index (0-based)' }] }, (i) =>
-    go(clampInt(i, -100000, 100000, 0))
+  ToolJet.useAction(
+    { name: 'goTo', displayName: 'Go to slide', params: [{ handle: 'index', displayName: 'Index (0-based)' }] },
+    (i) => go(clampInt(i, -100000, 100000, 0))
   );
 
   const [hovered, setHovered] = useState(false);
@@ -134,7 +185,11 @@ export const Carousel = () => {
   }, [playing, every, live, latestGo]);
 
   // Swipes: a horizontal drag of 40px or more moves a slide, and is not a click.
-  const drag = useRef<{ x: number | null; pointer: number | null; swiped: boolean }>({ x: null, pointer: null, swiped: false });
+  const drag = useRef<{ x: number | null; pointer: number | null; swiped: boolean }>({
+    x: null,
+    pointer: null,
+    swiped: false,
+  });
   const [failed, setFailed] = useState<Record<number, string>>({});
   const ratio = aspectRatio(ratioSetting);
   const fill = ratio === null;
@@ -231,7 +286,10 @@ export const Carousel = () => {
           }}
         >
           <div className="n2-carousel-viewport">
-            <div className="n2-carousel-track" style={{ columnGap: gap, transform: `translateX(calc(-1 * ${index} * ${step}))` }}>
+            <div
+              className="n2-carousel-track"
+              style={{ columnGap: gap, transform: `translateX(calc(-1 * ${index} * ${step}))` }}
+            >
               {slides.map((slide, i) => {
                 const src = safeImageUrl(slide.image);
                 const showImage = !!src && failed[i] !== src;
@@ -299,10 +357,22 @@ export const Carousel = () => {
             </div>
             {showArrows !== false && positions > 1 ? (
               <>
-                <button type="button" className="n2-carousel-arrow is-prev" aria-label="Previous slide" disabled={disabled || !canPrev} onClick={() => go(indexRef.current - 1)}>
+                <button
+                  type="button"
+                  className="n2-carousel-arrow is-prev"
+                  aria-label="Previous slide"
+                  disabled={disabled || !canPrev}
+                  onClick={() => go(indexRef.current - 1)}
+                >
                   <ChevronLeft size={16} />
                 </button>
-                <button type="button" className="n2-carousel-arrow is-next" aria-label="Next slide" disabled={disabled || !canNext} onClick={() => go(indexRef.current + 1)}>
+                <button
+                  type="button"
+                  className="n2-carousel-arrow is-next"
+                  aria-label="Next slide"
+                  disabled={disabled || !canNext}
+                  onClick={() => go(indexRef.current + 1)}
+                >
                   <ChevronRight size={16} />
                 </button>
               </>

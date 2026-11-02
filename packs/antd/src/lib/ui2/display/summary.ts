@@ -1,7 +1,7 @@
 // UI 2.0's summary strip figures (Ui2/_sections/summaryModel.ts and formatChange in _shared/format.ts). Every function
 // takes whatever the author bound and never throws.
 import { formatValue, isNonBlankString, isRecord, toText } from './lists/model';
-import { localeFor, numberFormat } from '../../locale';
+import { currencyCode, localeFor, moneyStyle, numberFormat } from '../../locale';
 
 export const MAX_FIGURES = 6;
 export const STRIP_VALUE_FORMATS = ['auto', 'number', 'currency', 'percent', 'compact', 'date'];
@@ -30,11 +30,11 @@ const num = (v: unknown): number | null => {
 };
 
 const formatChange = (n: number, format: string, currency: unknown, locale: unknown): Delta => {
-  const code = typeof currency === 'string' && /^[A-Za-z]{3}$/.test(currency.trim()) ? currency.trim().toUpperCase() : 'USD';
+  const code = currencyCode(currency);
   const where = localeFor(currency, locale);
   const f =
     format === 'currency'
-      ? numberFormat(where, { style: 'currency', currency: code })
+      ? numberFormat(where, moneyStyle(code))
       : numberFormat(where, { minimumFractionDigits: format === 'percent' ? 1 : 0, maximumFractionDigits: 1 });
   const digits = f.resolvedOptions().maximumFractionDigits ?? 1;
   const shown = Math.round(Math.abs(n) * 10 ** digits) / 10 ** digits;

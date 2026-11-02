@@ -40,6 +40,7 @@ import { paginationConfig } from './pagination';
 import { circularProgressbarConfig } from './circularProgressbar';
 import { spinnerConfig } from './spinner';
 import { libraryComponentConfig } from './libraryComponent';
+import { packComponentConfig } from './packComponent';
 import { statisticsConfig } from './statistics';
 import { rangeSliderConfig } from './rangeslider';
 import { rangeSliderV2Config } from './rangesliderV2';
@@ -132,6 +133,7 @@ export {
   circularProgressbarConfig,
   spinnerConfig,
   libraryComponentConfig,
+  packComponentConfig,
   statisticsConfig,
   rangeSliderConfig,
   timelineConfig,

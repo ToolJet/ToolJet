@@ -18,7 +18,9 @@ const safeImageUrl = (url: unknown) => {
 // UI 2.0's ratioOf: '4/3', '4:3', '4x3' or one number; 'auto' fills the widget's height.
 const ratioOf = (value: unknown): string | null => {
   if (!isSet(value) || value === 'auto') return null;
-  const [w, h] = String(value).split(/[/:x]/).map((n) => Number(n));
+  const [w, h] = String(value)
+    .split(/[/:x]/)
+    .map((n) => Number(n));
   if (Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) return `${w} / ${h}`;
   const single = Number(value);
   return Number.isFinite(single) && single > 0 ? String(single) : null;
@@ -32,7 +34,8 @@ const Fallback = ({ kind, text }: { kind: unknown; text: unknown }) => {
         {initials(name)}
       </span>
     );
-  if (kind === 'icon' || kind === 'initials') return <ImageOff size={32} className="ui2-image-fg" aria-label="No image" />;
+  if (kind === 'icon' || kind === 'initials')
+    return <ImageOff size={32} className="ui2-image-fg" aria-label="No image" />;
   return (
     <span className="ui2-image-placeholder ui2-image-fg">
       <ImageIcon size={28} aria-hidden="true" />
@@ -42,8 +45,16 @@ const Fallback = ({ kind, text }: { kind: unknown; text: unknown }) => {
 };
 
 export const Image = () => {
-  const [source, setSource] = ToolJet.useStateString({ name: 'source', label: 'Image URL', initialValue: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800' });
-  const [alternativeText] = ToolJet.useStateString({ name: 'alternativeText', label: 'Alt text', initialValue: 'Mountain lake at sunrise' });
+  const [source, setSource] = ToolJet.useStateString({
+    name: 'source',
+    label: 'Image URL',
+    initialValue: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800',
+  });
+  const [alternativeText] = ToolJet.useStateString({
+    name: 'alternativeText',
+    label: 'Alt text',
+    initialValue: 'Mountain lake at sunrise',
+  });
   const [imageFit] = ToolJet.useStateEnumeration({
     name: 'imageFit',
     label: 'Fit',
@@ -76,19 +87,32 @@ export const Image = () => {
     initialValue: 'placeholder',
     inspector: 'switch',
   });
-  const [fallbackText] = ToolJet.useStateString({ name: 'fallbackText', label: 'Fallback name (initials) or text', initialValue: '' });
+  const [fallbackText] = ToolJet.useStateString({
+    name: 'fallbackText',
+    label: 'Fallback name (initials) or text',
+    initialValue: '',
+  });
   const [showBorder] = ToolJet.useStateBoolean({ name: 'showBorder', label: 'Border', initialValue: false });
-  const [zoomOnClick] = ToolJet.useStateBoolean({ name: 'zoomOnClick', label: 'Zoom on click (lightbox)', initialValue: false });
+  const [zoomOnClick] = ToolJet.useStateBoolean({
+    name: 'zoomOnClick',
+    label: 'Zoom on click (lightbox)',
+    initialValue: false,
+  });
   const [, setHasError] = ToolJet.useStateBoolean({ name: 'hasError', initialValue: false, inspector: 'hidden' });
   const [, setImageURL] = ToolJet.useStateString({ name: 'imageURL', initialValue: '', inspector: 'hidden' });
   const onClick = ToolJet.useEventCallback({ name: 'onClick' });
   const borderRadius = useThemeRadius('borderRadius', 'Image radius');
   const borderColor = useThemeColor('borderColor', 'Border color', TOKEN.border);
-  const background = ToolJet.useStyleString({ name: 'backgroundColor', label: 'Background (letterbox and fallback)', inspector: 'color', initialValue: '' });
+  const background = ToolJet.useStyleString({
+    name: 'backgroundColor',
+    label: 'Background (letterbox and fallback)',
+    inspector: 'color',
+    initialValue: '',
+  });
   const fallbackTextColor = useThemeColor('fallbackTextColor', 'Fallback text and icon color', TOKEN.mutedText);
   const captionColor = useThemeColor('captionColor', 'Caption color', TOKEN.mutedText);
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 20 });
+  ToolJet.useComponentSettings({ role: 'image', fit: false, loading: 'own', defaultWidth: 10, defaultHeight: 20 });
 
   const [anchorRef, container] = usePortalContainer<HTMLElement>();
   const imgRef = useRef<HTMLImageElement>(null);
@@ -96,7 +120,11 @@ export const Image = () => {
   const alt = String(alternativeText ?? '');
   // The load outcome belongs to the source it was for, so a new source starts loading (an empty one is an error).
   const [loadResult, setLoadResult] = useState<{ src: string; status: 'loaded' | 'error' } | null>(null);
-  const status: 'loading' | 'loaded' | 'error' = !src ? 'error' : loadResult?.src === src ? loadResult.status : 'loading';
+  const status: 'loading' | 'loaded' | 'error' = !src
+    ? 'error'
+    : loadResult?.src === src
+      ? loadResult.status
+      : 'loading';
   useEffect(() => {
     const img = imgRef.current;
     if (img && img.complete && img.naturalWidth > 0) setLoadResult({ src, status: 'loaded' });
@@ -108,8 +136,13 @@ export const Image = () => {
     setImageURL(src);
   }, [src]);
 
-  ToolJet.useAction({ name: 'setImageURL', displayName: 'Set image URL', params: [{ handle: 'url', displayName: 'URL', defaultValue: '' }] }, (u) =>
-    setSource(u === null || u === undefined || typeof u === 'object' ? '' : String(u))
+  ToolJet.useAction(
+    {
+      name: 'setImageURL',
+      displayName: 'Set image URL',
+      params: [{ handle: 'url', displayName: 'URL', defaultValue: '' }],
+    },
+    (u) => setSource(u === null || u === undefined || typeof u === 'object' ? '' : String(u))
   );
   ToolJet.useAction({ name: 'clearImage', displayName: 'Clear image' }, () => setSource(''));
 
@@ -144,7 +177,12 @@ export const Image = () => {
           role="button"
           tabIndex={0}
           aria-label={alt || 'Image'}
-          className={cn('ui2-image-frame', showBorder && 'has-border', status === 'error' && 'is-error', zoom && 'can-zoom')}
+          className={cn(
+            'ui2-image-frame',
+            showBorder && 'has-border',
+            status === 'error' && 'is-error',
+            zoom && 'can-zoom'
+          )}
           style={ratio ? { aspectRatio: ratio } : undefined}
           onClick={click}
           onKeyDown={(e) => {

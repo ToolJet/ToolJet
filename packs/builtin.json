@@ -1,7 +1,13 @@
 {
   "packs": [
-    { "dir": "packs/shadcn", "version": "2.1.33" },
-    { "dir": "packs/antd", "version": "1.4.28" },
-    { "dir": "packs/mui", "version": "1.4.29" }
-  ]
+    "packs/shadcn",
+    "packs/antd",
+    "packs/mui"
+  ],
+  "displayNames": {
+    "shadcn": {
+      "TabsContainer": "Tabs",
+      "Tabs": "Text Tabs"
+    }
+  }
 }

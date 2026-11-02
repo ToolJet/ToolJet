@@ -1478,6 +1478,7 @@ export function utilityFuncForNameSeed(componentDef) {
   const component = componentDef.component.component;
   switch (component) {
     case 'LibraryComponent':
+    case 'PackComponent':
       return componentDef.component.definition?.properties?.componentName?.value ?? componentDef.component.component;
     default:
       return componentDef.component.component;

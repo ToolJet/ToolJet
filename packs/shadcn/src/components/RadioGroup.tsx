@@ -3,7 +3,20 @@ import * as RadioGroupPrimitive from '@radix-ui/react-radio-group';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { Field } from '../lib/Field';
 import { cn } from '../lib/cn';
-import { MAX_CHOICES, choiceKey, defaultKey, isDisabledOption, isScalar, keyForValue, optionKey, optionsByKey, shownOptions, toChoiceOptions, uniqueKeys, type ChoiceOption } from '../lib/ui2/choice/options';
+import {
+  MAX_CHOICES,
+  choiceKey,
+  defaultKey,
+  isDisabledOption,
+  isScalar,
+  keyForValue,
+  optionKey,
+  optionsByKey,
+  shownOptions,
+  toChoiceOptions,
+  uniqueKeys,
+  type ChoiceOption,
+} from '../lib/ui2/choice/options';
 import { choiceValidationValue } from '../lib/ui2/choice/validationValue';
 import { moveRovingFocus, rovingEntry } from '../lib/activeElement';
 import { lookVars, useDropRemovedChoices, useResetOn } from '../lib/ui2/choice/looks';
@@ -24,12 +37,24 @@ export const RadioGroup = () => {
     description: 'Plain values or [{ label, value, disabled? }].',
     initialValue: ['Standard', 'Premium', 'Charter'],
   });
-  const [defaultValue] = ToolJet.useStateString({ name: 'defaultValue', label: 'Default value', initialValue: 'Standard' });
-  const [allowDeselect] = ToolJet.useStateBoolean({ name: 'allowDeselect', label: 'Allow deselect', initialValue: false });
+  const [defaultValue] = ToolJet.useStateString({
+    name: 'defaultValue',
+    label: 'Default value',
+    initialValue: 'Standard',
+  });
+  const [allowDeselect] = ToolJet.useStateBoolean({
+    name: 'allowDeselect',
+    label: 'Allow deselect',
+    initialValue: false,
+  });
   const [horizontal] = ToolJet.useStateBoolean({ name: 'horizontal', label: 'Side by side', initialValue: false });
   // Exposed values, and the pack's earlier names (value was its default, orientation its layout).
   const [legacyValue, setValue] = ToolJet.useStateString({ name: 'value', initialValue: '', inspector: 'hidden' });
-  const [, setSelectedOption] = ToolJet.useStateObject({ name: 'selectedOption', initialValue: {}, inspector: 'hidden' });
+  const [, setSelectedOption] = ToolJet.useStateObject({
+    name: 'selectedOption',
+    initialValue: {},
+    inspector: 'hidden',
+  });
   const [orientation] = ToolJet.useStateEnumeration({
     name: 'orientation',
     label: 'Layout',
@@ -38,7 +63,12 @@ export const RadioGroup = () => {
     initialValue: 'vertical',
     inspector: 'hidden',
   });
-  const [disabledProp] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
+  const [disabledProp] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable',
+    initialValue: false,
+    inspector: 'hidden',
+  });
   // One event per change, UI 2.0's name: the pack's earlier onChange fired alongside it.
   const onSelectionChange = ToolJet.useEventCallback({ name: 'onSelectionChange' });
   const accentColor = useColorStyle('accentColor', 'Selected color', TOKEN.brand);
@@ -46,8 +76,13 @@ export const RadioGroup = () => {
   const helpTextColor = useColorStyle('helpTextColor', 'Help text color', TOKEN.mutedText);
   const optionTextColor = useColorStyle('optionTextColor', 'Option text color', TOKEN.text);
   const errorColor = useColorStyle('errorColor', 'Error color', TOKEN.error);
-  const textColor = ToolJet.useStyleString({ name: 'textColor', label: 'Option text color (earlier name)', inspector: 'hidden', initialValue: '' });
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 11 });
+  const textColor = ToolJet.useStyleString({
+    name: 'textColor',
+    label: 'Option text color (earlier name)',
+    inspector: 'hidden',
+    initialValue: '',
+  });
+  ToolJet.useComponentSettings({ role: 'radiogroup', fit: true, loading: 'own', defaultWidth: 10, defaultHeight: 11 });
   const { disabled, loading } = useBusy(disabledProp);
   const fieldId = ToolJet.useFieldId();
 
@@ -68,7 +103,7 @@ export const RadioGroup = () => {
     setValue((selected?.value ?? '') as string);
     setSelectedOption(selected ?? {});
   }, [key, JSON.stringify(selected)]); // eslint-disable-line react-hooks/exhaustive-deps
-  const check = ToolJet.useValidation({ section: 'choice', value: choiceValidationValue(selected), present: !!selected });
+  const check = ToolJet.useValidation({ kind: 'choice', value: choiceValidationValue(selected), present: !!selected });
 
   // The key as last chosen, ahead of the next render: an arrow key selects the radio it moves to, and Radix may click
   // that same radio as it takes focus (its arrow-key flag), which must not count as a second change.
@@ -86,8 +121,10 @@ export const RadioGroup = () => {
     if (fromAction && before === option) return;
     onSelectionChange();
   };
-  ToolJet.useAction({ name: 'selectOption', displayName: 'Select option', params: [{ handle: 'value', displayName: 'Value' }] }, (v) =>
-    change(v === undefined || v === null || typeof v === 'object' ? '' : keyForValue(options, v, choiceKey), true)
+  ToolJet.useAction(
+    { name: 'selectOption', displayName: 'Select option', params: [{ handle: 'value', displayName: 'Value' }] },
+    (v) =>
+      change(v === undefined || v === null || typeof v === 'object' ? '' : keyForValue(options, v, choiceKey), true)
   );
   ToolJet.useAction({ name: 'deselectOption', displayName: 'Deselect option' }, () => change('', true));
 
@@ -113,10 +150,15 @@ export const RadioGroup = () => {
   // roving focus compares document.activeElement, which inside the inline runtime's shadow root stays the host, so it
   // walked on past the next radio (SP-22). The move is consumed here, before the item's Radix handler sees it.
   const radios = (root: HTMLElement) =>
-    Array.from(root.querySelectorAll<HTMLElement>('[role="radio"]')).filter((el) => !(el as HTMLButtonElement).disabled);
+    Array.from(root.querySelectorAll<HTMLElement>('[role="radio"]')).filter(
+      (el) => !(el as HTMLButtonElement).disabled
+    );
   const onKeyDownCapture = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (disabled) return;
-    const moved = moveRovingFocus(e, radios(e.currentTarget), { orientation: sideBySide ? 'horizontal' : 'vertical', loop: true });
+    const moved = moveRovingFocus(e, radios(e.currentTarget), {
+      orientation: sideBySide ? 'horizontal' : 'vertical',
+      loop: true,
+    });
     const next = moved?.getAttribute('data-choice-key');
     if (next) pickKey(next);
   };

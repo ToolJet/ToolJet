@@ -44,7 +44,14 @@ const toSeries = (raw: unknown, rows: Row[], axisKey: string): Series[] => {
       if (!s || typeof s !== 'object') return null;
       const r = s as Row;
       const dataKey = str(r.dataKey ?? r.field ?? r.key);
-      return dataKey ? { dataKey, label: str(r.label) || undefined, color: str(r.color) || undefined, stack: str(r.stack) || undefined } : null;
+      return dataKey
+        ? {
+            dataKey,
+            label: str(r.label) || undefined,
+            color: str(r.color) || undefined,
+            stack: str(r.stack) || undefined,
+          }
+        : null;
     })
     .filter((s): s is Series => !!s);
   if (given.length) return given;
@@ -68,7 +75,12 @@ const FORMATS = ['auto', 'number', 'currency', 'percent', 'compact'];
 
 /** The props every cartesian chart shares, by MUI's names. */
 const useCartesian = () => {
-  const [dataset] = ToolJet.useStateArray({ name: 'dataset', label: 'Dataset', description: 'The rows: [{ month, sales, ... }].', initialValue: SAMPLE.monthly });
+  const [dataset] = ToolJet.useStateArray({
+    name: 'dataset',
+    label: 'Dataset',
+    description: 'The rows: [{ month, sales, ... }].',
+    initialValue: SAMPLE.monthly,
+  });
   const [xAxis] = ToolJet.useStateArray({
     name: 'xAxis',
     label: 'X axis',
@@ -87,7 +99,12 @@ const useCartesian = () => {
     description: "A stack id for every series ('total' stacks them); empty for none.",
     initialValue: '',
   });
-  const [valueFormat] = ToolJet.useStateEnumeration({ name: 'valueFormat', label: 'Value format', enumDefinition: FORMATS, initialValue: 'auto' });
+  const [valueFormat] = ToolJet.useStateEnumeration({
+    name: 'valueFormat',
+    label: 'Value format',
+    enumDefinition: FORMATS,
+    initialValue: 'auto',
+  });
   const [currency] = useStateText({
     name: 'currency',
     label: 'Currency',
@@ -98,10 +115,16 @@ const useCartesian = () => {
   const [colors] = ToolJet.useStateArray({
     name: 'colors',
     label: 'Colors',
-    description: "The series palette; empty: led by the brand (the Primary style or the app theme), else MUI X Charts' default palette.",
+    description:
+      "The series palette; empty: led by the brand (the Primary style or the app theme), else MUI X Charts' default palette.",
     initialValue: [],
   });
-  const [grid] = ToolJet.useStateBoolean({ name: 'grid', label: 'Grid', description: 'Horizontal grid lines.', initialValue: true });
+  const [grid] = ToolJet.useStateBoolean({
+    name: 'grid',
+    label: 'Grid',
+    description: 'Horizontal grid lines.',
+    initialValue: true,
+  });
   const [hideLegend] = ToolJet.useStateBoolean({ name: 'hideLegend', label: 'Hide legend', initialValue: false });
   const [, setClickedItem] = ToolJet.useStateObject({ name: 'clickedItem', initialValue: {}, inspector: 'hidden' });
   const { loading } = ToolJet.useControlState();
@@ -109,24 +132,47 @@ const useCartesian = () => {
   const axis = toAxis(xAxis, rows);
   const list = toSeries(series, rows, axis.dataKey);
   const data = useMemo(() => numericRows(rows, list), [rows, JSON.stringify(list)]); // eslint-disable-line react-hooks/exhaustive-deps
-  const format = (v: number | null) => (v === null || v === undefined ? '' : formatNumber(v, valueFormat as NumberFormat, currency, null, locale));
+  const format = (v: number | null) =>
+    v === null || v === undefined ? '' : formatNumber(v, valueFormat as NumberFormat, currency, null, locale);
   // Axis ticks have a narrow, fixed width: from 10,000 up they are compact (2M, $1.2K), where the full figure was cut
   // to "2,000,..."; tooltips keep the full format.
   const tick = (v: number | null) => {
     if (v === null || v === undefined || valueFormat === 'percent' || Math.abs(v) < 10000) return format(v);
     try {
       const money = valueFormat === 'currency' && /^[a-z]{3}$/i.test(str(currency));
-      return numberFormat(localeFor(str(currency), locale), { notation: 'compact', maximumFractionDigits: 1, ...(money ? { style: 'currency', currency: str(currency) } : {}) }).format(v);
+      return numberFormat(localeFor(str(currency), locale), {
+        notation: 'compact',
+        maximumFractionDigits: 1,
+        ...(money ? { style: 'currency', currency: str(currency) } : {}),
+      }).format(v);
     } catch {
       return format(v);
     }
   };
-  return { rows, data, axis, list, stack, format, tick, colors: toArray(colors).map(str).filter(Boolean), grid, hideLegend, loading, setClickedItem };
+  return {
+    rows,
+    data,
+    axis,
+    list,
+    stack,
+    format,
+    tick,
+    colors: toArray(colors).map(str).filter(Boolean),
+    grid,
+    hideLegend,
+    loading,
+    setClickedItem,
+  };
 };
 
 /** Its children with the chart's series colours, read inside MuiProvider (the brand-led palette when none are set). */
-const SeriesColors = ({ given, children }: { given: string[]; children: (colors: string[] | undefined) => React.ReactElement }) =>
-  children(useSeriesColors(given));
+const SeriesColors = ({
+  given,
+  children,
+}: {
+  given: string[];
+  children: (colors: string[] | undefined) => React.ReactElement;
+}) => children(useSeriesColors(given));
 
 const muiSeries = (c: ReturnType<typeof useCartesian>, extra: Record<string, unknown> = {}) =>
   c.list.map((s) => ({
@@ -157,7 +203,30 @@ export const BarChart = () => {
     setClickedSeries('');
   });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 30 });
+  ToolJet.useComponentSettings({
+    role: 'barchart',
+    fit: false,
+    loading: 'own',
+    usage:
+      "MUI X BarChart: dataset (rows), xAxis (the category: [{dataKey}] or a field name), series ([{dataKey, label, color}] or field names; empty: every numeric field), layout (vertical, horizontal), stack ('total' stacks), valueFormat, colors, grid, hideLegend; the borderRadius style rounds the bars. onItemClick with clickedItem (the row) and clickedSeries.",
+    roleProps: {
+      data: 'dataset',
+      xField: 'xAxis',
+      yFields: 'series',
+      showLegend: 'hideLegend',
+      showGrid: 'grid',
+      horizontal: 'layout',
+      stack: 'stack',
+    },
+    roleValues: {
+      hideLegend: { true: false, false: true },
+      stack: { true: 'total', false: '' },
+      layout: { true: 'horizontal', false: 'vertical' },
+    },
+    roleEvents: { onClick: 'onItemClick' },
+    defaultWidth: 20,
+    defaultHeight: 30,
+  });
   const horizontal = layout === 'horizontal';
   const band = [{ dataKey: c.axis.dataKey, label: c.axis.label, scaleType: 'band' as const }];
   const values = [{ valueFormatter: (v: number | null) => c.tick(v) }];
@@ -202,8 +271,17 @@ const useLineProps = (c: ReturnType<typeof useCartesian>) => {
     enumDefinition: ['linear', 'monotoneX', 'natural', 'step', 'catmullRom'],
     initialValue: 'monotoneX',
   });
-  const [showMark] = ToolJet.useStateBoolean({ name: 'showMark', label: 'Show mark', description: 'A dot at every point.', initialValue: false });
-  const [clickedIndex, setClickedIndex] = ToolJet.useStateNumber({ name: 'clickedIndex', initialValue: -1, inspector: 'hidden' });
+  const [showMark] = ToolJet.useStateBoolean({
+    name: 'showMark',
+    label: 'Show mark',
+    description: 'A dot at every point.',
+    initialValue: false,
+  });
+  const [clickedIndex, setClickedIndex] = ToolJet.useStateNumber({
+    name: 'clickedIndex',
+    initialValue: -1,
+    inspector: 'hidden',
+  });
   const onAxisClick = ToolJet.useEventCallback({ name: 'onAxisClick' });
   const highlight = useHighlightPin(() => {
     c.setClickedItem({});
@@ -218,14 +296,27 @@ const markAt = (showMark: boolean, on: boolean, index: unknown) => {
   return on && at >= 0 && !showMark ? ({ index: i }: { index: number }) => i === at : showMark;
 };
 
-const LineView = ({ c, l, area }: { c: ReturnType<typeof useCartesian>; l: ReturnType<typeof useLineProps>; area: boolean }) => {
+const LineView = ({
+  c,
+  l,
+  area,
+}: {
+  c: ReturnType<typeof useCartesian>;
+  l: ReturnType<typeof useLineProps>;
+  area: boolean;
+}) => {
   const colors = useSeriesColors(c.colors);
   return (
     <MuiLineChart
       dataset={c.data}
       xAxis={[{ dataKey: c.axis.dataKey, label: c.axis.label, scaleType: (c.axis.scaleType as 'point') || 'point' }]}
       yAxis={[{ valueFormatter: (v: number | null) => c.tick(v), width: 56 }]}
-      series={muiSeries(c, { curve: l.curve, showMark: markAt(l.showMark, l.highlight.on, l.clickedIndex), area, connectNulls: true })}
+      series={muiSeries(c, {
+        curve: l.curve,
+        showMark: markAt(l.showMark, l.highlight.on, l.clickedIndex),
+        area,
+        connectNulls: true,
+      })}
       colors={colors}
       grid={{ horizontal: c.grid }}
       hideLegend={c.hideLegend || c.list.length < 2}
@@ -247,7 +338,29 @@ export const LineChart = () => {
   const c = useCartesian();
   const l = useLineProps(c);
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 30 });
+  ToolJet.useComponentSettings({
+    role: 'linechart',
+    fit: false,
+    loading: 'own',
+    usage:
+      'MUI X LineChart: dataset, xAxis ([{dataKey, scaleType}] or a field name), series ([{dataKey, label, color}] or field names), curve (linear, monotoneX, natural, step), showMark, valueFormat, colors, grid, hideLegend. onAxisClick (nearest x) with clickedItem and clickedIndex.',
+    roleProps: {
+      data: 'dataset',
+      xField: 'xAxis',
+      yFields: 'series',
+      showLegend: 'hideLegend',
+      showGrid: 'grid',
+      showDots: 'showMark',
+    },
+    roleValues: {
+      hideLegend: { true: false, false: true },
+      stack: { true: 'total', false: '' },
+      curve: { monotone: 'monotoneX', linear: 'linear', step: 'step', natural: 'natural' },
+    },
+    roleEvents: { onClick: 'onAxisClick' },
+    defaultWidth: 20,
+    defaultHeight: 30,
+  });
   return (
     <MuiProvider overrides={overrides} fill>
       <Loading loading={c.loading} fill look={<BlockSkeleton />}>
@@ -263,7 +376,30 @@ export const AreaChart = () => {
   const c = useCartesian();
   const l = useLineProps(c);
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 30 });
+  ToolJet.useComponentSettings({
+    role: 'areachart',
+    fit: false,
+    loading: 'own',
+    usage:
+      "MUI X LineChart with area series (MUI has no separate area chart): the LineChart props; stack 'total' stacks the areas. onAxisClick.",
+    roleProps: {
+      data: 'dataset',
+      xField: 'xAxis',
+      yFields: 'series',
+      showLegend: 'hideLegend',
+      showGrid: 'grid',
+      stack: 'stack',
+      showDots: 'showMark',
+    },
+    roleValues: {
+      hideLegend: { true: false, false: true },
+      stack: { true: 'total', false: '' },
+      curve: { monotone: 'monotoneX', linear: 'linear', step: 'step', natural: 'natural' },
+    },
+    roleEvents: { onClick: 'onAxisClick' },
+    defaultWidth: 20,
+    defaultHeight: 30,
+  });
   return (
     <MuiProvider overrides={overrides} fill>
       <Loading loading={c.loading} fill look={<BlockSkeleton />}>
@@ -300,15 +436,32 @@ export const PieChart = () => {
     initialValue: 0,
     min: 0,
   });
-  const [paddingAngle] = ToolJet.useStateNumber({ name: 'paddingAngle', label: 'Padding angle', initialValue: 0, min: 0, max: 20 });
-  const [cornerRadius] = ToolJet.useStateNumber({ name: 'cornerRadius', label: 'Corner radius', initialValue: 0, min: 0, max: 30 });
+  const [paddingAngle] = ToolJet.useStateNumber({
+    name: 'paddingAngle',
+    label: 'Padding angle',
+    initialValue: 0,
+    min: 0,
+    max: 20,
+  });
+  const [cornerRadius] = ToolJet.useStateNumber({
+    name: 'cornerRadius',
+    label: 'Corner radius',
+    initialValue: 0,
+    min: 0,
+    max: 30,
+  });
   const [arcLabel] = ToolJet.useStateEnumeration({
     name: 'arcLabel',
     label: 'Arc label',
     enumDefinition: ['none', 'value', 'label', 'percent'],
     initialValue: 'none',
   });
-  const [valueFormat] = ToolJet.useStateEnumeration({ name: 'valueFormat', label: 'Value format', enumDefinition: FORMATS, initialValue: 'auto' });
+  const [valueFormat] = ToolJet.useStateEnumeration({
+    name: 'valueFormat',
+    label: 'Value format',
+    enumDefinition: FORMATS,
+    initialValue: 'auto',
+  });
   const [currency] = useStateText({
     name: 'currency',
     label: 'Currency',
@@ -316,7 +469,12 @@ export const PieChart = () => {
     visibleWhen: { key: 'valueFormat', value: 'currency' },
   });
   const [locale] = useStateText({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
-  const [rawColors] = ToolJet.useStateArray({ name: 'colors', label: 'Colors', description: 'The slice palette; empty: led by the brand (the Primary style or the app theme).', initialValue: [] });
+  const [rawColors] = ToolJet.useStateArray({
+    name: 'colors',
+    label: 'Colors',
+    description: 'The slice palette; empty: led by the brand (the Primary style or the app theme).',
+    initialValue: [],
+  });
   const pieColors = toArray(rawColors).map(str).filter(Boolean);
   const [hideLegend] = ToolJet.useStateBoolean({ name: 'hideLegend', label: 'Hide legend', initialValue: false });
   const [, setClickedItem] = ToolJet.useStateObject({ name: 'clickedItem', initialValue: {}, inspector: 'hidden' });
@@ -324,7 +482,18 @@ export const PieChart = () => {
   const highlight = useHighlightPin(() => setClickedItem({}));
   const { loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 30 });
+  ToolJet.useComponentSettings({
+    role: 'piechart',
+    fit: false,
+    loading: 'own',
+    usage:
+      "MUI X PieChart: data (MUI's [{id, value, label}], or rows read with labelKey/valueKey), innerRadius (0 pie, e.g. 60 donut), outerRadius, paddingAngle, cornerRadius, arcLabel (none, value, label, percent), valueFormat, colors, hideLegend. onItemClick with clickedItem.",
+    roleProps: { categoryField: 'labelKey', valueField: 'valueKey', donut: 'innerRadius', showLegend: 'hideLegend' },
+    roleValues: { innerRadius: { true: 60, false: 0 }, hideLegend: { true: false, false: true } },
+    roleEvents: { onClick: 'onItemClick' },
+    defaultWidth: 16,
+    defaultHeight: 30,
+  });
   const rows = toRows(rawData);
   const lk = str(labelKey) || 'label';
   const vk = str(valueKey) || 'value';
@@ -341,7 +510,11 @@ export const PieChart = () => {
   // In a narrow box the legend goes under the pie, or away, so the pie keeps a usable size (MUI's side legend kept its
   // width in a 108px box and left a 16px pie).
   const [box, room] = useBoxSize<HTMLDivElement>();
-  const place = pieLegendPlace(room.w, room.h, slices.map((s) => s.label));
+  const place = pieLegendPlace(
+    room.w,
+    room.h,
+    slices.map((s) => s.label)
+  );
   const arc =
     arcLabel === 'none'
       ? undefined
@@ -362,7 +535,11 @@ export const PieChart = () => {
                 {...highlight.props}
                 colors={colors}
                 hideLegend={hideLegend || place === 'none'}
-                slotProps={place === 'bottom' ? { legend: { direction: 'horizontal', position: { vertical: 'bottom', horizontal: 'center' } } } : undefined}
+                slotProps={
+                  place === 'bottom'
+                    ? { legend: { direction: 'horizontal', position: { vertical: 'bottom', horizontal: 'center' } } }
+                    : undefined
+                }
                 series={[
                   {
                     data: slices.map(({ id, label, value }) => ({ id, label, value })),

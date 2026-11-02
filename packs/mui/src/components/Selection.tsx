@@ -38,7 +38,10 @@ const useChecked = () => {
   const change = (next: boolean) => {
     if (checkedSetter.set(next)) guard(onChange);
   };
-  ToolJet.useAction({ name: 'setChecked', displayName: 'Set checked', params: [{ handle: 'checked', displayName: 'Checked' }] }, (next) => change(bool(next)));
+  ToolJet.useAction(
+    { name: 'setChecked', displayName: 'Set checked', params: [{ handle: 'checked', displayName: 'Checked' }] },
+    (next) => change(bool(next))
+  );
   // From the latest value, not this render's: two toggles in one batch cancel out.
   ToolJet.useAction({ name: 'toggle', displayName: 'Toggle' }, () => change(!checkedSetter.latest.current));
   // checked is the field's value under another name, which the SDK's clearForm does not reach: a native Form's clear
@@ -48,7 +51,12 @@ const useChecked = () => {
 };
 
 const useLabelPlacement = () => {
-  const [labelPlacement] = ToolJet.useStateEnumeration({ name: 'labelPlacement', label: 'Label placement', enumDefinition: ['end', 'start', 'top', 'bottom'], initialValue: 'end' });
+  const [labelPlacement] = ToolJet.useStateEnumeration({
+    name: 'labelPlacement',
+    label: 'Label placement',
+    enumDefinition: ['end', 'start', 'top', 'bottom'],
+    initialValue: 'end',
+  });
   return labelPlacement as 'end';
 };
 
@@ -57,15 +65,39 @@ const useLabelPlacement = () => {
 export const Checkbox = () => {
   const field = useFieldProps({ label: 'Checkbox' });
   const { checked, change } = useChecked();
-  const [indeterminate] = ToolJet.useStateBoolean({ name: 'indeterminate', label: 'Indeterminate', initialValue: false });
-  const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: PALETTE_COLORS, initialValue: 'primary' });
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium', 'large'], initialValue: 'medium' });
+  const [indeterminate] = ToolJet.useStateBoolean({
+    name: 'indeterminate',
+    label: 'Indeterminate',
+    initialValue: false,
+  });
+  const [color] = ToolJet.useStateEnumeration({
+    name: 'color',
+    label: 'Color',
+    enumDefinition: PALETTE_COLORS,
+    initialValue: 'primary',
+  });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['small', 'medium', 'large'],
+    initialValue: 'medium',
+  });
   const labelPlacement = useLabelPlacement();
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ section: 'choice', value: checked, present: checked });
+  const check = ToolJet.useValidation({ kind: 'choice', value: checked, present: checked });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 5 });
+  ToolJet.useComponentSettings({
+    role: 'checkbox',
+    fit: true,
+    loading: 'own',
+    usage:
+      "MUI's Checkbox in a FormControlLabel: label, checked, indeterminate, color, size, labelPlacement, helperText; onChange; setChecked, toggle.",
+    roleProps: { description: 'helperText', value: 'checked' },
+    roleActions: { setValue: 'setChecked' },
+    defaultWidth: 8,
+    defaultHeight: 5,
+  });
   return (
     <MuiProvider overrides={overrides}>
       <Loading loading={loading} look={<Spinner />}>
@@ -100,14 +132,34 @@ export const Checkbox = () => {
 export const Switch = () => {
   const field = useFieldProps({ label: 'Switch' });
   const { checked, change } = useChecked();
-  const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: PALETTE_COLORS, initialValue: 'primary' });
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium'], initialValue: 'medium' });
+  const [color] = ToolJet.useStateEnumeration({
+    name: 'color',
+    label: 'Color',
+    enumDefinition: PALETTE_COLORS,
+    initialValue: 'primary',
+  });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['small', 'medium'],
+    initialValue: 'medium',
+  });
   const labelPlacement = useLabelPlacement();
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ section: 'choice', value: checked, present: checked });
+  const check = ToolJet.useValidation({ kind: 'choice', value: checked, present: checked });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 5 });
+  ToolJet.useComponentSettings({
+    role: 'switch',
+    fit: true,
+    loading: 'own',
+    usage:
+      "MUI's Switch in a FormControlLabel: label, checked, color, size, labelPlacement (end, start, top, bottom), helperText; onChange; setChecked, toggle.",
+    roleProps: { description: 'helperText', value: 'checked' },
+    roleActions: { setValue: 'setChecked' },
+    defaultWidth: 8,
+    defaultHeight: 5,
+  });
   return (
     <MuiProvider overrides={overrides}>
       <Loading loading={loading} look={<Spinner />}>
@@ -117,7 +169,15 @@ export const Switch = () => {
             labelPlacement={labelPlacement}
             disabled={disabled}
             required={check.required}
-            control={<MuiSwitch id={fieldId} checked={checked} color={color as 'primary'} size={size as 'medium'} onChange={(e) => change(e.target.checked)} />}
+            control={
+              <MuiSwitch
+                id={fieldId}
+                checked={checked}
+                color={color as 'primary'}
+                size={size as 'medium'}
+                onChange={(e) => change(e.target.checked)}
+              />
+            }
           />
         </FormControlField>
       </Loading>
@@ -134,36 +194,86 @@ const storedChoice = (options: Option[], v: unknown): unknown =>
 // size, helperText, allowDeselect (a second click clears the pick); event onChange; actions setValue, clear.
 export const RadioGroup = () => {
   const field = useFieldProps({ label: 'Plan' });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: '[{ label, value }]', initialValue: SAMPLE.plans });
+  const [rawOptions] = ToolJet.useStateArray({
+    name: 'options',
+    label: 'Options',
+    inspector: 'options',
+    description: '[{ label, value }]',
+    initialValue: SAMPLE.plans,
+  });
   // The value keeps its type (1 stays a number, so 1 and '1' name two options): not useStateText, which made it text.
   const [rawValue, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
   const value = toChoiceValue(rawValue);
-  const [row] = ToolJet.useStateBoolean({ name: 'row', label: 'Row', description: 'Options side by side.', initialValue: false });
-  const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: PALETTE_COLORS, initialValue: 'primary' });
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium'], initialValue: 'medium' });
-  const [allowDeselect] = ToolJet.useStateBoolean({ name: 'allowDeselect', label: 'Allow deselect', description: 'A click on the picked option clears it.', initialValue: false });
+  const [row] = ToolJet.useStateBoolean({
+    name: 'row',
+    label: 'Row',
+    description: 'Options side by side.',
+    initialValue: false,
+  });
+  const [color] = ToolJet.useStateEnumeration({
+    name: 'color',
+    label: 'Color',
+    enumDefinition: PALETTE_COLORS,
+    initialValue: 'primary',
+  });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['small', 'medium'],
+    initialValue: 'medium',
+  });
+  const [allowDeselect] = ToolJet.useStateBoolean({
+    name: 'allowDeselect',
+    label: 'Allow deselect',
+    description: 'A click on the picked option clears it.',
+    initialValue: false,
+  });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const options = toOptions(rawOptions, 'RadioGroup');
   // The radios hold option keys (lib/data Option); the one clicked is the one exposed.
   const key = value === '' ? '' : keyForValue(options, value);
-  const check = ToolJet.useValidation({ section: 'choice', value: str(value), present: options.some((o) => o.value === key) });
+  const check = ToolJet.useValidation({
+    kind: 'choice',
+    value: str(value),
+    present: options.some((o) => o.value === key),
+  });
   const overrides = useThemeStyles();
   // The label over the three sample options (148px): a 96px box cut the last two.
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 16 });
+  ToolJet.useComponentSettings({
+    role: 'radio',
+    fit: true,
+    loading: 'own',
+    usage:
+      "MUI's RadioGroup with a FormLabel: label, options [{label, value}], value, row (side by side), color, size, helperText; onChange.",
+    roleProps: { description: 'helperText', horizontal: 'row' },
+    roleEvents: { onSelectionChange: 'onChange' },
+    roleActions: { selectOption: 'setValue' },
+    defaultWidth: 10,
+    defaultHeight: 16,
+  });
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (wanted: unknown) => {
     if (!valueSetter.set(storedChoice(options, wanted))) return;
     onChange();
   };
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(toChoiceValue(next)));
+  ToolJet.useAction(
+    { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (next) => change(toChoiceValue(next))
+  );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change(''));
   return (
     <MuiProvider overrides={overrides}>
       <Loading loading={loading} look={<Spinner />}>
-        <FormControlField label={field.label} helperText={field.helperText} check={check} htmlFor={fieldId} disabled={disabled}>
+        <FormControlField
+          label={field.label}
+          helperText={field.helperText}
+          check={check}
+          htmlFor={fieldId}
+          disabled={disabled}
+        >
           <MuiRadioGroup
             id={fieldId}
             row={row}
@@ -205,24 +315,84 @@ export const RadioGroup = () => {
 // MUI's ToggleButtonGroup: options [{ label, value }], exclusive (one value) or not (value is an array, MUI's shape),
 // value, color, size, orientation, fullWidth; event onChange.
 export const ToggleButtonGroup = () => {
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: '[{ label, value }]', initialValue: SAMPLE.periods });
-  const [exclusive] = ToolJet.useStateBoolean({ name: 'exclusive', label: 'Exclusive', description: 'One value at a time; off, value is an array.', initialValue: true });
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'The value; an array when not exclusive.', initialValue: '' });
-  const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: ['standard', ...PALETTE_COLORS], initialValue: 'primary' });
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium', 'large'], initialValue: 'medium' });
-  const [orientation] = ToolJet.useStateEnumeration({ name: 'orientation', label: 'Orientation', enumDefinition: ['horizontal', 'vertical'], initialValue: 'horizontal' });
-  const [fullWidth] = ToolJet.useStateBoolean({ name: 'fullWidth', label: 'Full width', description: 'Share the width of the box between the buttons; off, each is as wide as its label.', initialValue: false });
+  const [rawOptions] = ToolJet.useStateArray({
+    name: 'options',
+    label: 'Options',
+    inspector: 'options',
+    description: '[{ label, value }]',
+    initialValue: SAMPLE.periods,
+  });
+  const [exclusive] = ToolJet.useStateBoolean({
+    name: 'exclusive',
+    label: 'Exclusive',
+    description: 'One value at a time; off, value is an array.',
+    initialValue: true,
+  });
+  const [value, setValue] = ToolJet.useStateString({
+    name: 'value',
+    label: 'Value',
+    description: 'The value; an array when not exclusive.',
+    initialValue: '',
+  });
+  const [color] = ToolJet.useStateEnumeration({
+    name: 'color',
+    label: 'Color',
+    enumDefinition: ['standard', ...PALETTE_COLORS],
+    initialValue: 'primary',
+  });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['small', 'medium', 'large'],
+    initialValue: 'medium',
+  });
+  const [orientation] = ToolJet.useStateEnumeration({
+    name: 'orientation',
+    label: 'Orientation',
+    enumDefinition: ['horizontal', 'vertical'],
+    initialValue: 'horizontal',
+  });
+  const [fullWidth] = ToolJet.useStateBoolean({
+    name: 'fullWidth',
+    label: 'Full width',
+    description: 'Share the width of the box between the buttons; off, each is as wide as its label.',
+    initialValue: false,
+  });
   // Where the group sits when its box is wider than the buttons: a filter toggle that ends a row reads at the row's end.
-  const [alignment] = ToolJet.useStateEnumeration({ name: 'alignment', label: 'Alignment', enumDefinition: ['left', 'center', 'right'], enumLabels: { left: 'Left', center: 'Center', right: 'Right' }, initialValue: 'left', visibleWhen: { key: 'fullWidth', value: false } });
+  const [alignment] = ToolJet.useStateEnumeration({
+    name: 'alignment',
+    label: 'Alignment',
+    enumDefinition: ['left', 'center', 'right'],
+    enumLabels: { left: 'Left', center: 'Center', right: 'Right' },
+    initialValue: 'left',
+    visibleWhen: { key: 'fullWidth', value: false },
+  });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'togglegroup',
+    fit: true,
+    loading: 'own',
+    usage:
+      "MUI's ToggleButtonGroup: options [{label, value}], exclusive (one value; off, value is an array, MUI's shape), value, color, size, orientation, fullWidth; onChange.",
+    roleProps: { multiple: 'exclusive', values: 'value' },
+    roleValues: { exclusive: { true: false, false: true } },
+    roleActions: { setSelected: 'setValue' },
+    defaultWidth: 12,
+    defaultHeight: 6,
+  });
   const options = toOptions(rawOptions, 'ToggleButtonGroup');
   // The buttons hold option keys (lib/data Option); values keep their type, so 1 and '1' are two buttons.
   const keyOf = (v: unknown) => keyForValue(options, toChoiceValue(v));
   const current: string | string[] | null = exclusive
-    ? (Array.isArray(value) ? (value.length ? keyOf(value[0]) : '') : value === '' || value === null || value === undefined ? '' : keyOf(value)) || null
+    ? (Array.isArray(value)
+        ? value.length
+          ? keyOf(value[0])
+          : ''
+        : value === '' || value === null || value === undefined
+          ? ''
+          : keyOf(value)) || null
     : toArray(value).map(keyOf);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
@@ -230,12 +400,27 @@ export const ToggleButtonGroup = () => {
     if (!valueSetter.set(next as string)) return;
     onChange();
   };
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) =>
-    // Nothing picked is '', the declared text value, as a clear leaves it; null (MUI's own none) flipped its type.
-    change(exclusive ? storedChoice(options, toChoiceValue(next)) : toArray(next).map((v) => storedChoice(options, toChoiceValue(v))))
+  ToolJet.useAction(
+    { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (next) =>
+      // Nothing picked is '', the declared text value, as a clear leaves it; null (MUI's own none) flipped its type.
+      change(
+        exclusive
+          ? storedChoice(options, toChoiceValue(next))
+          : toArray(next).map((v) => storedChoice(options, toChoiceValue(v)))
+      )
   );
   return (
-    <MuiProvider overrides={overrides} fill className="tj-mui-center tj-mui-start" style={fullWidth ? undefined : { justifyContent: alignment === 'right' ? 'flex-end' : alignment === 'center' ? 'center' : 'flex-start' }}>
+    <MuiProvider
+      overrides={overrides}
+      fill
+      className="tj-mui-center tj-mui-start"
+      style={
+        fullWidth
+          ? undefined
+          : { justifyContent: alignment === 'right' ? 'flex-end' : alignment === 'center' ? 'center' : 'flex-start' }
+      }
+    >
       <Loading loading={loading} look={<Spinner />}>
         <MuiToggleButtonGroup
           exclusive={exclusive}
@@ -269,10 +454,24 @@ export const Rating = () => {
   const field = useFieldProps({ label: 'Rating' });
   const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', initialValue: null });
   const [max] = ToolJet.useStateNumber({ name: 'max', label: 'Max', initialValue: 5, min: 1, max: 10 });
-  const [precision] = ToolJet.useStateEnumeration({ name: 'precision', label: 'Precision', enumDefinition: ['1', '0.5'], initialValue: '1' });
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium', 'large'], initialValue: 'medium' });
+  const [precision] = ToolJet.useStateEnumeration({
+    name: 'precision',
+    label: 'Precision',
+    enumDefinition: ['1', '0.5'],
+    initialValue: '1',
+  });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['small', 'medium', 'large'],
+    initialValue: 'medium',
+  });
   const [readOnly] = ToolJet.useStateBoolean({ name: 'readOnly', label: 'Read only', initialValue: false });
-  const [highlightSelectedOnly] = ToolJet.useStateBoolean({ name: 'highlightSelectedOnly', label: 'Highlight selected only', initialValue: false });
+  const [highlightSelectedOnly] = ToolJet.useStateBoolean({
+    name: 'highlightSelectedOnly',
+    label: 'Highlight selected only',
+    initialValue: false,
+  });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onChangeActive = ToolJet.useEventCallback({ name: 'onChangeActive' });
   const [, setHover] = ToolJet.useStateNumber({ name: 'hover', initialValue: -1, inspector: 'hidden' });
@@ -287,16 +486,30 @@ export const Rating = () => {
   useEffect(() => {
     if (raw !== null && num !== raw) setValue(num as number);
   }, [raw, num, setValue]);
-  const check = ToolJet.useValidation({ section: 'choice', value: num ?? '', present: num !== null && num > 0 });
+  const check = ToolJet.useValidation({ kind: 'choice', value: num ?? '', present: num !== null && num > 0 });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 8, defaultHeight: 5 });
+  ToolJet.useComponentSettings({
+    role: 'rating',
+    fit: true,
+    loading: 'own',
+    usage:
+      "MUI's Rating: label, value (a number, null for none), max, precision ('1', or '0.5' for halves), size, readOnly, highlightSelectedOnly; onChange, onChangeActive (hover, exposed as hover).",
+    roleProps: { description: 'helperText', allowHalf: 'precision' },
+    roleValues: { precision: { true: '0.5', false: '1' } },
+    roleActions: { resetValue: 'clear' },
+    defaultWidth: 8,
+    defaultHeight: 5,
+  });
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: number | null) => {
     if (!valueSetter.set(next as number)) return;
     onChange();
   };
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => change(toNumber(next)));
+  ToolJet.useAction(
+    { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (next) => change(toNumber(next))
+  );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => change(null));
   return (
     <MuiProvider overrides={overrides}>
@@ -340,29 +553,76 @@ const toRange = (v: unknown, lo: number, hi: number): [number, number] => {
 // [from, to].
 export const Slider = () => {
   const field = useFieldProps({ label: 'Volume' });
-  const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', description: 'A number, or [from, to] with Range on.', initialValue: 50 });
-  const [range] = ToolJet.useStateBoolean({ name: 'range', label: 'Range', description: 'Two thumbs; the value is [from, to].', initialValue: false });
+  const [value, setValue] = ToolJet.useStateNumber({
+    name: 'value',
+    label: 'Value',
+    description: 'A number, or [from, to] with Range on.',
+    initialValue: 50,
+  });
+  const [range] = ToolJet.useStateBoolean({
+    name: 'range',
+    label: 'Range',
+    description: 'Two thumbs; the value is [from, to].',
+    initialValue: false,
+  });
   const [min] = ToolJet.useStateNumber({ name: 'min', label: 'Min', initialValue: 0 });
   const [max] = ToolJet.useStateNumber({ name: 'max', label: 'Max', initialValue: 100 });
   const [step] = ToolJet.useStateNumber({ name: 'step', label: 'Step', initialValue: 1, min: 0 });
-  const [marks] = ToolJet.useStateBoolean({ name: 'marks', label: 'Marks', description: 'A mark at every step.', initialValue: false });
-  const [valueLabelDisplay] = ToolJet.useStateEnumeration({ name: 'valueLabelDisplay', label: 'Value label display', enumDefinition: ['auto', 'on', 'off'], initialValue: 'auto' });
-  const [color] = ToolJet.useStateEnumeration({ name: 'color', label: 'Color', enumDefinition: PALETTE_COLORS, initialValue: 'primary' });
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['small', 'medium'], initialValue: 'medium' });
+  const [marks] = ToolJet.useStateBoolean({
+    name: 'marks',
+    label: 'Marks',
+    description: 'A mark at every step.',
+    initialValue: false,
+  });
+  const [valueLabelDisplay] = ToolJet.useStateEnumeration({
+    name: 'valueLabelDisplay',
+    label: 'Value label display',
+    enumDefinition: ['auto', 'on', 'off'],
+    initialValue: 'auto',
+  });
+  const [color] = ToolJet.useStateEnumeration({
+    name: 'color',
+    label: 'Color',
+    enumDefinition: PALETTE_COLORS,
+    initialValue: 'primary',
+  });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['small', 'medium'],
+    initialValue: 'medium',
+  });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onChangeCommitted = ToolJet.useEventCallback({ name: 'onChangeCommitted' });
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const isRange = range === true;
-  const check = ToolJet.useValidation({ section: 'choice', value: Array.isArray(value) ? (value as unknown as unknown[]).join(',') : value, present: true });
+  const check = ToolJet.useValidation({
+    kind: 'choice',
+    value: Array.isArray(value) ? (value as unknown as unknown[]).join(',') : value,
+    present: true,
+  });
   const overrides = useThemeStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'slider',
+    fit: true,
+    loading: 'own',
+    usage:
+      "MUI's Slider: label, value, min, max, step, marks, valueLabelDisplay (auto, on, off), color, size; onChange while dragging, onChangeCommitted on release.",
+    roleProps: { description: 'helperText', showValue: 'valueLabelDisplay' },
+    roleValues: { valueLabelDisplay: { true: 'auto', false: 'off' } },
+    defaultWidth: 12,
+    defaultHeight: 6,
+  });
   const lo = toNumber(min) ?? 0;
   const hi = Math.max(lo, toNumber(max) ?? 100);
   // The thumb draws the value within min and max: a literal 150 under max 100 drew 100 and exposed 150, and an empty
   // value (a Form's clearForm) drew min. The exposed value follows the thumb, with no onChange. With Range, anything but
   // two numbers (a single number, a cleared Form) is the whole range, and a single value takes a range's first number.
-  const single = Math.min(hi, Math.max(lo, toNumber(Array.isArray(value) ? (value as unknown as unknown[])[0] : value) ?? lo));
+  const single = Math.min(
+    hi,
+    Math.max(lo, toNumber(Array.isArray(value) ? (value as unknown as unknown[])[0] : value) ?? lo)
+  );
   const pair = toRange(value, lo, hi);
   const drawn: number | number[] = isRange ? pair : single;
   const drawnKey = isRange ? `${pair[0]},${pair[1]}` : String(single);
@@ -373,9 +633,13 @@ export const Slider = () => {
   }, [valueKey, drawnKey, isRange]);
   // The value the thumbs already show changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(drawn, (v) => setValue(v as number));
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (next) => {
-    if (valueSetter.set(isRange ? toRange(next, lo, hi) : Math.min(hi, Math.max(lo, toNumber(next) ?? lo)))) onChange();
-  });
+  ToolJet.useAction(
+    { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (next) => {
+      if (valueSetter.set(isRange ? toRange(next, lo, hi) : Math.min(hi, Math.max(lo, toNumber(next) ?? lo))))
+        onChange();
+    }
+  );
   return (
     <MuiProvider overrides={overrides}>
       <Loading loading={loading} look={<Spinner />}>

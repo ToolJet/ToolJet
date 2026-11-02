@@ -72,7 +72,11 @@ export const Form = () => {
     description: 'Object of field name → initial value.',
     initialValue: {},
   });
-  const [rawSubmitLabel] = ToolJet.useStateString({ name: 'submitLabel', label: 'Submit button', initialValue: 'Submit' });
+  const [rawSubmitLabel] = ToolJet.useStateString({
+    name: 'submitLabel',
+    label: 'Submit button',
+    initialValue: 'Submit',
+  });
   const [showReset] = ToolJet.useStateBoolean({ name: 'showReset', label: 'Show reset button', initialValue: true });
   const [disabled] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false });
 
@@ -103,7 +107,7 @@ export const Form = () => {
     initialValue: 'top',
     inspector: 'switch',
   });
-  ToolJet.useComponentSettings({ defaultWidth: 16, defaultHeight: 66 });
+  ToolJet.useComponentSettings({ role: 'form', fit: false, defaultWidth: 16, defaultHeight: 66 });
 
   // Errors show for a field once it was touched, or for every field after a submit attempt.
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -221,10 +225,23 @@ export const Form = () => {
           <input
             {...common}
             className="ui-input"
-            type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : field.type === 'email' ? 'email' : 'text'}
+            type={
+              field.type === 'number'
+                ? 'number'
+                : field.type === 'date'
+                  ? 'date'
+                  : field.type === 'email'
+                    ? 'email'
+                    : 'text'
+            }
             placeholder={field.placeholder}
             value={String(value ?? '')}
-            onChange={(e) => change(field.name, field.type === 'number' && e.target.value !== '' ? Number(e.target.value) : e.target.value)}
+            onChange={(e) =>
+              change(
+                field.name,
+                field.type === 'number' && e.target.value !== '' ? Number(e.target.value) : e.target.value
+              )
+            }
           />
         );
     }

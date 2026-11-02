@@ -79,7 +79,7 @@ export const FormControlField = ({
   );
 };
 
-// A role value can set variant and color together (pack.json roleValues: { variant: 'outlined', color: 'inherit' }).
+// A role value can set variant and color together (useComponentSettings roleValues: { variant: 'outlined', color: 'inherit' }).
 export const lookOf = (variant: unknown, color: unknown) => {
   if (variant && typeof variant === 'object') {
     const v = variant as Record<string, unknown>;

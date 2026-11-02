@@ -5,11 +5,11 @@ import { Field, fieldAria } from '../lib/Field';
 import { cn } from '../lib/cn';
 import { usePortalContainer } from '../lib/usePortalContainer';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
-import { TJ } from '../lib/ui2/inputs/sdk';
+import { ToolJet } from '@tooljet/custom-component-sdk';
 import { POPOVER, field, useLooks } from '../lib/ui2/inputs/looks';
 import type { Look } from '../lib/ui2/inputs/looks';
 import { TOKEN } from '../lib/styleDefaults';
-import { ClearX, isEnter, useReseed, useRuleCheck } from '../lib/ui2/inputs/parts';
+import { ClearX, isEnter, useReseed } from '../lib/ui2/inputs/parts';
 import * as P from '../lib/ui2/inputs/phone';
 import type { Country } from '../lib/ui2/inputs/phone';
 import { FieldLoading } from '../lib/ui2/loading/look';
@@ -24,32 +24,74 @@ const LOOKS: Look[] = [
 ];
 
 export const PhoneInput = () => {
-  const [label] = TJ.useStateString({ name: 'label', label: 'Label', initialValue: 'Phone number' });
-  const [description] = TJ.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
-  const [placeholder] = TJ.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Enter phone number' });
-  const [defaultValue] = TJ.useStateString({ name: 'defaultValue', label: 'Default value (E.164 or a national number)', initialValue: '' });
-  const [defaultCountry] = TJ.useStateString({ name: 'defaultCountry', label: 'Default country (ISO code)', initialValue: 'US' });
-  const [onlyCountries] = TJ.useStateArray({
+  const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: 'Phone number' });
+  const [description] = ToolJet.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Enter phone number',
+  });
+  const [defaultValue] = ToolJet.useStateString({
+    name: 'defaultValue',
+    label: 'Default value (E.164 or a national number)',
+    initialValue: '',
+  });
+  const [defaultCountry] = ToolJet.useStateString({
+    name: 'defaultCountry',
+    label: 'Default country (ISO code)',
+    initialValue: 'US',
+  });
+  const [onlyCountries] = ToolJet.useStateArray({
     name: 'onlyCountries',
     label: 'Countries offered (ISO codes; empty: all)',
     placeholder: "['US', 'CA', 'GB']",
     initialValue: [],
   });
-  const [isCountryChangeEnabled] = TJ.useStateBoolean({ name: 'isCountryChangeEnabled', label: 'Enable country change', initialValue: true });
-  const [showFlag] = TJ.useStateBoolean({ name: 'showFlag', label: 'Show country flag', initialValue: true });
-  const [showClearBtn] = TJ.useStateBoolean({ name: 'showClearBtn', label: 'Show clear button', initialValue: false });
+  const [isCountryChangeEnabled] = ToolJet.useStateBoolean({
+    name: 'isCountryChangeEnabled',
+    label: 'Enable country change',
+    initialValue: true,
+  });
+  const [showFlag] = ToolJet.useStateBoolean({ name: 'showFlag', label: 'Show country flag', initialValue: true });
+  const [showClearBtn] = ToolJet.useStateBoolean({
+    name: 'showClearBtn',
+    label: 'Show clear button',
+    initialValue: false,
+  });
   // Exposed: the number (E.164) and its country, calling code, formatted text and validity.
-  const [rawValue, setValue] = TJ.useStateString({ name: 'value', initialValue: '', inspector: 'hidden' });
-  const [countryState, setCountryState] = TJ.useStateString({ name: 'country', initialValue: defaultCountry, inspector: 'hidden' });
-  const [, setCountryCode] = TJ.useStateString({ name: 'countryCode', initialValue: '+1', inspector: 'hidden' });
-  const [, setFormattedValue] = TJ.useStateString({ name: 'formattedValue', initialValue: '', inspector: 'hidden' });
-  const [, setIsValidNumber] = TJ.useStateBoolean({ name: 'isValidNumber', initialValue: false, inspector: 'hidden' });
-  const [legacyRequired] = TJ.useStateBoolean({ name: 'required', label: 'Required', initialValue: false, inspector: 'hidden' });
-  const [legacyDisabled] = TJ.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
-  const onChange = TJ.useEventCallback({ name: 'onChange' });
-  const onEnterPressed = TJ.useEventCallback({ name: 'onEnterPressed' });
-  const onFocus = TJ.useEventCallback({ name: 'onFocus' });
-  const onBlur = TJ.useEventCallback({ name: 'onBlur' });
+  const [rawValue, setValue] = ToolJet.useStateString({ name: 'value', initialValue: '', inspector: 'hidden' });
+  const [countryState, setCountryState] = ToolJet.useStateString({
+    name: 'country',
+    initialValue: defaultCountry,
+    inspector: 'hidden',
+  });
+  const [, setCountryCode] = ToolJet.useStateString({ name: 'countryCode', initialValue: '+1', inspector: 'hidden' });
+  const [, setFormattedValue] = ToolJet.useStateString({
+    name: 'formattedValue',
+    initialValue: '',
+    inspector: 'hidden',
+  });
+  const [, setIsValidNumber] = ToolJet.useStateBoolean({
+    name: 'isValidNumber',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const [legacyRequired] = ToolJet.useStateBoolean({
+    name: 'required',
+    label: 'Required',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const [legacyDisabled] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable',
+    initialValue: false,
+    inspector: 'hidden',
+  });
+  const onChange = ToolJet.useEventCallback({ name: 'onChange' });
+  const onEnterPressed = ToolJet.useEventCallback({ name: 'onEnterPressed' });
+  const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
+  const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
 
   const inputRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -95,7 +137,7 @@ export const PhoneInput = () => {
     start(defaultValue || rawValue, c);
   });
 
-  TJ.useAction(
+  ToolJet.useAction(
     {
       name: 'setValue',
       displayName: 'Set value',
@@ -109,32 +151,41 @@ export const PhoneInput = () => {
       if (start(v, offered(P.countryOf(c)) ?? country)) onChange();
     }
   );
-  TJ.useAction({ name: 'setCountryCode', displayName: 'Set country code', params: [{ handle: 'countryCode', displayName: 'Country code' }] }, (c) => {
-    const text = String(c ?? '').trim();
-    const next = offered(P.countryOf(text)) ?? countries.find((x) => `+${x.dial}` === text || x.dial === text) ?? null;
-    if (next) publish(national, next);
-  });
-  TJ.useAction({ name: 'clear', displayName: 'Clear' }, () => {
+  ToolJet.useAction(
+    {
+      name: 'setCountryCode',
+      displayName: 'Set country code',
+      params: [{ handle: 'countryCode', displayName: 'Country code' }],
+    },
+    (c) => {
+      const text = String(c ?? '').trim();
+      const next =
+        offered(P.countryOf(text)) ?? countries.find((x) => `+${x.dial}` === text || x.dial === text) ?? null;
+      if (next) publish(national, next);
+    }
+  );
+  ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => {
     rule.touch();
     if (publish('', country)) onChange();
   });
-  TJ.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => inputRef.current?.focus());
-  TJ.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => inputRef.current?.blur());
+  ToolJet.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => inputRef.current?.focus());
+  ToolJet.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => inputRef.current?.blur());
 
   const value = P.toE164(national, country);
-  const fieldId = TJ.useFieldId();
-  const control = TJ.useControlState();
-  const check = TJ.useValidation({ section: 'text', value });
-  const rule = useRuleCheck(
-    check,
-    national && !P.isValidNational(national, country)
-      ? 'Enter a valid phone number'
-      : legacyRequired && !national
-        ? 'This field is mandatory'
-        : ''
-  );
+  const fieldId = ToolJet.useFieldId();
+  const control = ToolJet.useControlState();
+  const rule = ToolJet.useValidation({
+    kind: 'text',
+    value,
+    rule:
+      national && !P.isValidNational(national, country)
+        ? 'Enter a valid phone number'
+        : legacyRequired && !national
+          ? 'This field is mandatory'
+          : '',
+  });
   const looks = useLooks(LOOKS);
-  TJ.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
+  ToolJet.useComponentSettings({ role: 'phoneinput', fit: true, loading: 'own', defaultWidth: 10, defaultHeight: 7 });
 
   const disabled = legacyDisabled || control.disabled;
   const canChange = isCountryChangeEnabled !== false && countries.length > 1;
@@ -154,7 +205,11 @@ export const PhoneInput = () => {
   };
   const current = (
     <>
-      {flag ? <span className="ui2-flag" aria-hidden="true">{P.flagOf(country)}</span> : null}
+      {flag ? (
+        <span className="ui2-flag" aria-hidden="true">
+          {P.flagOf(country)}
+        </span>
+      ) : null}
       <span className="ui2-tabular">+{country.dial}</span>
     </>
   );
@@ -175,7 +230,12 @@ export const PhoneInput = () => {
                 }}
               >
                 <Popover.Trigger asChild>
-                  <button type="button" className="ui2-addon" disabled={disabled} aria-label={`Country: ${P.countryName(country)}`}>
+                  <button
+                    type="button"
+                    className="ui2-addon"
+                    disabled={disabled}
+                    aria-label={`Country: ${P.countryName(country)}`}
+                  >
                     {current}
                     <ChevronsUpDown size={14} className="ui2-addon-chevron" />
                   </button>
@@ -232,7 +292,11 @@ export const PhoneInput = () => {
                               onMouseEnter={() => setActive(i)}
                               onClick={() => pick(c)}
                             >
-                              {flag ? <span className="ui2-flag" aria-hidden="true">{P.flagOf(c)}</span> : null}
+                              {flag ? (
+                                <span className="ui2-flag" aria-hidden="true">
+                                  {P.flagOf(c)}
+                                </span>
+                              ) : null}
                               <span className="ui2-pop-item-name">{P.countryName(c)}</span>
                               <span className="ui2-pop-item-note">+{c.dial}</span>
                               <Check size={16} className="ui2-pop-check" />

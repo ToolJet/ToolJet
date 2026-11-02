@@ -1,8 +1,30 @@
 import React, { useMemo } from 'react';
 import { Bar, BarChart as RBarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts';
 import { ToolJet } from '@tooljet/custom-component-sdk';
-import { AXIS, ChartFrame, CURSOR_FILL, GRID, seriesSetup, tooltipAndLegend, useBoxSize, useChartClick, valueAxis } from '../lib/ui2/charts/chartParts';
-import { MAX_BARS, animated, dateTicks, emphasis, hiddenNote, highlightIndexes, isCompactChart, isRecord, isSet, list, type Row } from '../lib/ui2/charts/chartModel';
+import {
+  AXIS,
+  ChartFrame,
+  CURSOR_FILL,
+  GRID,
+  seriesSetup,
+  tooltipAndLegend,
+  useBoxSize,
+  useChartClick,
+  valueAxis,
+} from '../lib/ui2/charts/chartParts';
+import {
+  MAX_BARS,
+  animated,
+  dateTicks,
+  emphasis,
+  hiddenNote,
+  highlightIndexes,
+  isCompactChart,
+  isRecord,
+  isSet,
+  list,
+  type Row,
+} from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useDrawnNumber, useThemeColor } from '../lib/styleDefaults';
 
@@ -18,7 +40,9 @@ const SAMPLE = [
 const wrapLabel = (value: unknown, max: number, lines = 2): string[] => {
   const cut = (t: string) => (t.length > max ? `${t.slice(0, Math.max(1, max - 1))}…` : t);
   const out: string[] = [];
-  for (const word of String(value ?? '').split(/\s+/).filter(Boolean)) {
+  for (const word of String(value ?? '')
+    .split(/\s+/)
+    .filter(Boolean)) {
     const last = out[out.length - 1];
     if (last !== undefined && `${last} ${word}`.length <= max) out[out.length - 1] = `${last} ${word}`;
     else out.push(word);
@@ -29,11 +53,32 @@ const wrapLabel = (value: unknown, max: number, lines = 2): string[] => {
 };
 
 /** An x-axis tick that wraps its name to its band, or draws it at an angle when a word would not fit. */
-const CategoryTick = ({ x, y, payload, width, visibleTicksCount, angled }: { x?: number; y?: number; payload?: { value?: unknown }; width?: number; visibleTicksCount?: number; angled: boolean }) => {
+const CategoryTick = ({
+  x,
+  y,
+  payload,
+  width,
+  visibleTicksCount,
+  angled,
+}: {
+  x?: number;
+  y?: number;
+  payload?: { value?: unknown };
+  width?: number;
+  visibleTicksCount?: number;
+  angled: boolean;
+}) => {
   const full = String(payload?.value ?? '');
   if (angled)
     return (
-      <text x={x} y={Number(y) + 8} textAnchor="end" fill={AXIS.tick.fill} fontSize={12} transform={`rotate(-35, ${x}, ${Number(y) + 8})`}>
+      <text
+        x={x}
+        y={Number(y) + 8}
+        textAnchor="end"
+        fill={AXIS.tick.fill}
+        fontSize={12}
+        transform={`rotate(-35, ${x}, ${Number(y) + 8})`}
+      >
         {full.length > 22 ? `${full.slice(0, 21)}…` : full}
         <title>{full}</title>
       </text>
@@ -55,7 +100,14 @@ const CategoryTick = ({ x, y, payload, width, visibleTicksCount, angled }: { x?:
 const angledCategories = (rows: Row[], key: string | undefined, width: number): boolean => {
   if (!rows.length) return false;
   const band = ((width || 640) - 80) / rows.length;
-  const longestWord = Math.max(0, ...rows.flatMap((row) => String(row?.[String(key)] ?? '').split(/\s+/).map((w) => w.length)));
+  const longestWord = Math.max(
+    0,
+    ...rows.flatMap((row) =>
+      String(row?.[String(key)] ?? '')
+        .split(/\s+/)
+        .map((w) => w.length)
+    )
+  );
   return longestWord * 6.6 > band - 6;
 };
 
@@ -71,34 +123,74 @@ const categoryAxisWidth = (rows: Row[], key: string | undefined): number =>
 export const BarChart = () => {
   const [data] = ToolJet.useStateArray({ name: 'data', label: 'Data', initialValue: SAMPLE });
   const [xField] = ToolJet.useStateString({ name: 'xField', label: 'X field', initialValue: 'month' });
-  const [yFields] = ToolJet.useStateString({ name: 'yFields', label: 'Series fields (one or many)', description: 'A field, a list, or comma-separated.', initialValue: 'revenue' });
+  const [yFields] = ToolJet.useStateString({
+    name: 'yFields',
+    label: 'Series fields (one or many)',
+    description: 'A field, a list, or comma-separated.',
+    initialValue: 'revenue',
+  });
   const [valuePrefix] = ToolJet.useStateString({ name: 'valuePrefix', label: 'Value prefix', initialValue: '' });
   const [valueSuffix] = ToolJet.useStateString({ name: 'valueSuffix', label: 'Value suffix', initialValue: '' });
   const [showLegend] = ToolJet.useStateBoolean({ name: 'showLegend', label: 'Legend', initialValue: false });
-  const [seriesLabels] = ToolJet.useStateObject({ name: 'seriesLabels', label: 'Series labels ({ field: label })', initialValue: {} });
+  const [seriesLabels] = ToolJet.useStateObject({
+    name: 'seriesLabels',
+    label: 'Series labels ({ field: label })',
+    initialValue: {},
+  });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty message', initialValue: 'No data' });
   const [colors] = ToolJet.useStateArray({ name: 'colors', label: 'Series colors (in order)', initialValue: [] });
   const [horizontal] = ToolJet.useStateBoolean({ name: 'horizontal', label: 'Horizontal bars', initialValue: false });
   const [stack] = ToolJet.useStateBoolean({ name: 'stack', label: 'Stack series', initialValue: false });
-  const [highlight] = ToolJet.useStateString({ name: 'highlight', label: 'Highlight (category values, or first, last, max, min)', description: 'Other bars are muted.', initialValue: '' });
-  const [categoryColors] = ToolJet.useStateObject({ name: 'categoryColors', label: 'Category colors ({ category: color })', initialValue: {} });
-  const [highlightClicked] = ToolJet.useStateBoolean({ name: 'highlightClicked', label: 'Highlight clicked point', description: 'Draws the clicked bar emphasised until Clear clicked point runs or another is clicked.', initialValue: false });
+  const [highlight] = ToolJet.useStateString({
+    name: 'highlight',
+    label: 'Highlight (category values, or first, last, max, min)',
+    description: 'Other bars are muted.',
+    initialValue: '',
+  });
+  const [categoryColors] = ToolJet.useStateObject({
+    name: 'categoryColors',
+    label: 'Category colors ({ category: color })',
+    initialValue: {},
+  });
+  const [highlightClicked] = ToolJet.useStateBoolean({
+    name: 'highlightClicked',
+    label: 'Highlight clicked point',
+    description: 'Draws the clicked bar emphasised until Clear clicked point runs or another is clicked.',
+    initialValue: false,
+  });
   const click = useChartClick(highlightClicked);
   const chartColor = useThemeColor('chartColor', 'Chart color (series palette from it)', TOKEN.brand);
   const gridColor = useThemeColor('gridColor', 'Grid line color', TOKEN.border);
   const axisTextColor = useThemeColor('axisTextColor', 'Axis label color', TOKEN.mutedText);
   const legendTextColor = useThemeColor('legendTextColor', 'Legend text color', TOKEN.mutedText);
-  const highlightColor = useThemeColor('highlightColor', 'Highlighted bar color (default: the series color)', TOKEN.brand);
-  const mutedColor = useThemeColor('mutedColor', 'Other bars color when highlighting (default: the series color, faded)', TOKEN.brand);
+  const highlightColor = useThemeColor(
+    'highlightColor',
+    'Highlighted bar color (default: the series color)',
+    TOKEN.brand
+  );
+  const mutedColor = useThemeColor(
+    'mutedColor',
+    'Other bars color when highlighting (default: the series color, faded)',
+    TOKEN.brand
+  );
   const barRadius = useDrawnNumber('barRadius', 'Bar radius', 4);
   const ld = useLoadingLook();
-  ToolJet.useComponentSettings({ defaultWidth: 20, defaultHeight: 28 });
+  ToolJet.useComponentSettings({ role: 'barchart', fit: false, loading: 'own', defaultWidth: 20, defaultHeight: 28 });
   const box = useBoxSize();
 
   const stacked = stack === true;
   const { rows, setup, picked, rowFills } = useMemo(() => {
     const drawn = list(data).slice(0, MAX_BARS);
-    const fields = seriesSetup(drawn, { xField, yFields, seriesLabels, colors, chartColor, valuePrefix, valueSuffix, stacked });
+    const fields = seriesSetup(drawn, {
+      xField,
+      yFields,
+      seriesLabels,
+      colors,
+      chartColor,
+      valuePrefix,
+      valueSuffix,
+      stacked,
+    });
     const own: Row = isRecord(categoryColors) ? categoryColors : {};
     return {
       rows: drawn,
@@ -110,7 +202,19 @@ export const BarChart = () => {
         return typeof v === 'string' && v.trim() ? v : null;
       }),
     };
-  }, [data, xField, yFields, seriesLabels, colors, chartColor, valuePrefix, valueSuffix, stacked, highlight, categoryColors]);
+  }, [
+    data,
+    xField,
+    yFields,
+    seriesLabels,
+    colors,
+    chartColor,
+    valuePrefix,
+    valueSuffix,
+    stacked,
+    highlight,
+    categoryColors,
+  ]);
   const { xField: x, series, names, fills, tick, allowDecimals, ticks } = setup;
   const angled = angledCategories(rows, x, box.width);
   const everyName = !dateTicks(rows, x) && rows.length <= 24;
@@ -125,10 +229,16 @@ export const BarChart = () => {
     highlighted
       ? rows.map((row, d) => <Cell key={d} fill={rowFills[d] || fills[i]} fillOpacity={emphasis(row, highlighted)} />)
       : !picked && colored
-      ? rowFills.map((fill, d) => <Cell key={d} fill={fill || fills[i]} />)
-      : picked
-      ? rows.map((_, d) => (picked.has(d) ? <Cell key={d} fill={highlightColor || fills[i]} /> : <Cell key={d} fill={mutedColor || fills[i]} fillOpacity={mutedColor ? 1 : 0.32} />))
-      : null;
+        ? rowFills.map((fill, d) => <Cell key={d} fill={fill || fills[i]} />)
+        : picked
+          ? rows.map((_, d) =>
+              picked.has(d) ? (
+                <Cell key={d} fill={highlightColor || fills[i]} />
+              ) : (
+                <Cell key={d} fill={mutedColor || fills[i]} fillOpacity={mutedColor ? 1 : 0.32} />
+              )
+            )
+          : null;
 
   return (
     <LoadingFrame loading={ld.loading} look={blockLook(ld.skeleton)}>
@@ -146,12 +256,21 @@ export const BarChart = () => {
           data={rows}
           layout={horizontal ? 'vertical' : 'horizontal'}
           margin={{ left: !horizontal && angled ? 28 : 4, right: 12, top: 12 }}
-          onClick={(e: { activePayload?: { payload?: unknown }[] } | null) => click.pick(e?.activePayload?.[0]?.payload)}
+          onClick={(e: { activePayload?: { payload?: unknown }[] } | null) =>
+            click.pick(e?.activePayload?.[0]?.payload)
+          }
         >
           {compact ? null : <CartesianGrid vertical={horizontal} horizontal={!horizontal} stroke={GRID} />}
           {horizontal ? (
             <>
-              <XAxis type="number" {...AXIS} hide={compact} tickFormatter={tick} allowDecimals={allowDecimals} {...ticks} />
+              <XAxis
+                type="number"
+                {...AXIS}
+                hide={compact}
+                tickFormatter={tick}
+                allowDecimals={allowDecimals}
+                {...ticks}
+              />
               <YAxis
                 type="category"
                 dataKey={x}
@@ -165,7 +284,14 @@ export const BarChart = () => {
           ) : (
             <>
               {everyName ? (
-                <XAxis dataKey={x} {...AXIS} hide={compact} interval={0} height={categoryAxisHeight(rows, x, angled)} tick={<CategoryTick angled={angled} />} />
+                <XAxis
+                  dataKey={x}
+                  {...AXIS}
+                  hide={compact}
+                  interval={0}
+                  height={categoryAxisHeight(rows, x, angled)}
+                  tick={<CategoryTick angled={angled} />}
+                />
               ) : (
                 <XAxis dataKey={x} {...AXIS} hide={compact} minTickGap={16} tickFormatter={dateTicks(rows, x)} />
               )}

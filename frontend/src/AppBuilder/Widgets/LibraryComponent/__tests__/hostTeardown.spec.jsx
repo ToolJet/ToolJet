@@ -98,7 +98,7 @@ describe('pack host teardown', () => {
 
     // PERF-02 (Codex): each mount handed the same library CSS to the shared sheet, which re-parsed it every time (Ant's
     // is close to 1 MB: about 35 million characters per page switch on a 37-widget page).
-    it('parses a revision\'s library CSS once across mounts, and again only when it changes', async () => {
+    it("parses a revision's library CSS once across mounts, and again only when it changes", async () => {
       const { loadLibraryCss } = jest.requireMock('@/AppBuilder/Widgets/LibraryComponent/inlineRuntime');
       const real = CSSStyleSheet.prototype.replaceSync;
       const parsed = [];

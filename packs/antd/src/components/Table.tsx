@@ -25,7 +25,13 @@ type Column = {
 };
 
 // A status word's tone (Paid green, Overdue red) as Ant's Tag status colour, when the column names no colours.
-const TONE_TAG: Record<string, string | undefined> = { success: 'success', warning: 'warning', danger: 'error', info: 'processing', neutral: undefined };
+const TONE_TAG: Record<string, string | undefined> = {
+  success: 'success',
+  warning: 'warning',
+  danger: 'error',
+  info: 'processing',
+  neutral: undefined,
+};
 
 // An html cell (columnType 'html', as UI 2.0's Table): sanitised as the Table does (DOMPurify's defaults drop
 // <script>, event-handler attributes and javascript: URLs). Its text sorts.
@@ -38,10 +44,15 @@ const textOf = (v: unknown) => {
   return (el.textContent ?? '').replace(/\s+/g, ' ').trim();
 };
 
-const humanize = (k: string) => k.replace(/[_-]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
+const humanize = (k: string) =>
+  k
+    .replace(/[_-]+/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/^./, (c) => c.toUpperCase());
 
 const isFalse = (v: unknown) => v === false || v === 'false' || v === '{{false}}';
-const isHidden = (r: Row) => r.hidden === true || r.hidden === 'true' || isFalse(r.visible) || isFalse(r.columnVisibility);
+const isHidden = (r: Row) =>
+  r.hidden === true || r.hidden === 'true' || isFalse(r.visible) || isFalse(r.columnVisibility);
 
 // Ant's columns ({ title, dataIndex, format }); also UI 2.0's ({ name or label, key, type }, type 'currency:USD') and
 // plain field names, column by column, so a bound columns value of either shape works. None: every field of the first
@@ -58,13 +69,20 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
       if (isHidden(r)) return { hidden: true } as unknown as Column;
       // A tag column's colours: { value: colour } (colors, tagColors, badgeColors) or options [{ value, color }].
       const map: Record<string, string> = {};
-      for (const m of [r.colors, r.tagColors, r.badgeColors]) if (m && typeof m === 'object' && !Array.isArray(m)) Object.assign(map, m as Record<string, string>);
-      for (const o of toArray(r.options)) if (o && typeof o === 'object') {
-        const v = str((o as Row).value ?? (o as Row).label);
-        if (v && (o as Row).color) map[v] = str((o as Row).color);
-      }
+      for (const m of [r.colors, r.tagColors, r.badgeColors])
+        if (m && typeof m === 'object' && !Array.isArray(m)) Object.assign(map, m as Record<string, string>);
+      for (const o of toArray(r.options))
+        if (o && typeof o === 'object') {
+          const v = str((o as Row).value ?? (o as Row).label);
+          if (v && (o as Row).color) map[v] = str((o as Row).color);
+        }
       return {
-        title: str(r.title ?? r.label ?? (r.dataIndex !== undefined || r.key !== undefined || r.field !== undefined ? r.name : undefined) ?? humanize(dataIndex)),
+        title: str(
+          r.title ??
+            r.label ??
+            (r.dataIndex !== undefined || r.key !== undefined || r.field !== undefined ? r.name : undefined) ??
+            humanize(dataIndex)
+        ),
         dataIndex,
         align: (r.align as Column['align']) || undefined,
         width: toNumber(r.width ?? r.columnSize) ?? undefined,
@@ -72,10 +90,16 @@ const toColumns = (raw: unknown, rows: Row[]): Column[] => {
         sorter: r.sorter === undefined ? undefined : Boolean(r.sorter),
         ...(() => {
           // UI 2.0's Table names an html column with columnType (or type) 'html'.
-          const kind = str(r.columnType ?? r.type ?? r.format).trim().toLowerCase();
+          const kind = str(r.columnType ?? r.type ?? r.format)
+            .trim()
+            .toLowerCase();
           if (kind === 'html' || str(r.format).trim().toLowerCase() === 'html') return { format: 'html' };
           const f = parseFormat(r.format ?? r.columnType ?? r.type);
-          return { format: f.format, currency: str(r.currency) || f.currency, dateFormat: str(r.dateFormat) || undefined };
+          return {
+            format: f.format,
+            currency: str(r.currency) || f.currency,
+            dateFormat: str(r.dateFormat) || undefined,
+          };
         })(),
         colors: Object.keys(map).length ? map : undefined,
       };
@@ -100,12 +124,16 @@ const compare = (a: unknown, b: unknown) => {
 // and, for tags, colors { value: color }. Numbers are grouped and right-aligned. Events: onRowClick (Ant's
 // onRow onClick), onChange (page or sort), onSelectionChange (rowSelection onChange).
 export const Table = () => {
-  const [rawData] = ToolJet.useStateArray({ name: 'dataSource', label: 'Data source', initialValue: [
-    { id: 1, name: 'Maya Chen', status: 'Paid', amount: 1250, date: '2026-09-14' },
-    { id: 2, name: 'Owen Hart', status: 'Pending', amount: 980.5, date: '2026-09-21' },
-    { id: 3, name: 'Priya Nair', status: 'Overdue', amount: 3120, date: '2026-08-30' },
-    { id: 4, name: 'Leo Martins', status: 'Paid', amount: 640, date: '2026-09-28' },
-  ] });
+  const [rawData] = ToolJet.useStateArray({
+    name: 'dataSource',
+    label: 'Data source',
+    initialValue: [
+      { id: 1, name: 'Maya Chen', status: 'Paid', amount: 1250, date: '2026-09-14' },
+      { id: 2, name: 'Owen Hart', status: 'Pending', amount: 980.5, date: '2026-09-21' },
+      { id: 3, name: 'Priya Nair', status: 'Overdue', amount: 3120, date: '2026-08-30' },
+      { id: 4, name: 'Leo Martins', status: 'Paid', amount: 640, date: '2026-09-28' },
+    ],
+  });
   const [rawColumns] = ToolJet.useStateArray({
     name: 'columns',
     label: 'Columns',
@@ -117,12 +145,29 @@ export const Table = () => {
       { title: 'Amount', dataIndex: 'amount', format: 'currency', align: 'right' },
     ],
   });
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', description: 'A header above the rows; {count} is the number of rows.', initialValue: '' });
+  const [title] = ToolJet.useStateString({
+    name: 'title',
+    label: 'Title',
+    description: 'A header above the rows; {count} is the number of rows.',
+    initialValue: '',
+  });
   const [rowKey] = ToolJet.useStateString({ name: 'rowKey', label: 'Row key', initialValue: 'id' });
   const [pagination] = ToolJet.useStateBoolean({ name: 'pagination', label: 'Pagination', initialValue: true });
-  const [pageSize] = ToolJet.useStateNumber({ name: 'pageSize', label: 'Page size', initialValue: 10, min: 1, max: 500, visibleWhen: { key: 'pagination', value: true } });
+  const [pageSize] = ToolJet.useStateNumber({
+    name: 'pageSize',
+    label: 'Page size',
+    initialValue: 10,
+    min: 1,
+    max: 500,
+    visibleWhen: { key: 'pagination', value: true },
+  });
   const [bordered] = ToolJet.useStateBoolean({ name: 'bordered', label: 'Bordered', initialValue: false });
-  const [size] = ToolJet.useStateEnumeration({ name: 'size', label: 'Size', enumDefinition: ['large', 'middle', 'small'], initialValue: 'middle' });
+  const [size] = ToolJet.useStateEnumeration({
+    name: 'size',
+    label: 'Size',
+    enumDefinition: ['large', 'middle', 'small'],
+    initialValue: 'middle',
+  });
   const [showHeader] = ToolJet.useStateBoolean({ name: 'showHeader', label: 'Show header', initialValue: true });
   const [selectionType] = ToolJet.useStateEnumeration({
     name: 'rowSelection',
@@ -131,11 +176,34 @@ export const Table = () => {
     initialValue: 'none',
   });
   const [emptyText] = ToolJet.useStateString({ name: 'emptyText', label: 'Empty text', initialValue: 'No data' });
-  const [currency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', description: 'For currency columns that name none.', initialValue: 'USD' });
-  const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
-  const [tagColors] = ToolJet.useStateObject({ name: 'tagColors', label: 'Tag colors', description: "{ 'Paid': 'green' }; else a status word's colour.", initialValue: {} });
-  const [selectedRow, setSelectedRow] = ToolJet.useStateObject({ name: 'selectedRow', initialValue: {}, inspector: 'hidden' });
-  const [selectedRowKeys, setSelectedRowKeys] = ToolJet.useStateArray({ name: 'selectedRowKeys', initialValue: [], inspector: 'hidden' });
+  const [currency] = ToolJet.useStateString({
+    name: 'currency',
+    label: 'Currency',
+    description: 'For currency columns that name none.',
+    initialValue: 'USD',
+  });
+  const [locale] = ToolJet.useStateString({
+    name: 'locale',
+    label: 'Locale',
+    description: LOCALE_HINT,
+    initialValue: '',
+  });
+  const [tagColors] = ToolJet.useStateObject({
+    name: 'tagColors',
+    label: 'Tag colors',
+    description: "{ 'Paid': 'green' }; else a status word's colour.",
+    initialValue: {},
+  });
+  const [selectedRow, setSelectedRow] = ToolJet.useStateObject({
+    name: 'selectedRow',
+    initialValue: {},
+    inspector: 'hidden',
+  });
+  const [selectedRowKeys, setSelectedRowKeys] = ToolJet.useStateArray({
+    name: 'selectedRowKeys',
+    initialValue: [],
+    inspector: 'hidden',
+  });
   const [, setSelectedRows] = ToolJet.useStateArray({ name: 'selectedRows', initialValue: [], inspector: 'hidden' });
   const [current, setCurrent] = ToolJet.useStateNumber({ name: 'current', initialValue: 1, inspector: 'hidden' });
   const onRowClick = ToolJet.useEventCallback({ name: 'onRowClick' });
@@ -143,12 +211,30 @@ export const Table = () => {
   const onSelectionChange = ToolJet.useEventCallback({ name: 'onSelectionChange' });
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 28, defaultHeight: 40 });
+  ToolJet.useComponentSettings({
+    role: 'table',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's Table: dataSource, columns (Ant's [{title, dataIndex, format?, align?, width?, sorter?}] or UI 2.0's [{name, key, type}]; format/type number, currency or currency:EUR, percent, date, datetime, tag/badge/status, boolean, html (sanitised markup; columnType 'html' too); empty shows every field), rowKey, pagination with pageSize, rowSelection (none, checkbox, radio), size, bordered, currency, locale, tagColors. selectedRow (clicked), selectedRowKeys and selectedRows are exposed; onRowClick.",
+    roleProps: {
+      data: 'dataSource',
+      rowsPerPage: 'pageSize',
+      enablePagination: 'pagination',
+      idField: 'rowKey',
+      badgeColors: 'tagColors',
+    },
+    defaultWidth: 28,
+    defaultHeight: 40,
+  });
 
   const rows = useMemo(() => toRows(rawData), [rawData]);
   const columns = useMemo(() => toColumns(rawColumns, rows), [rawColumns, rows]);
   const field = str(rowKey) || 'id';
-  const keyed = useMemo(() => rows.map((r, i) => ({ row: r, key: rowKeyOf(r, field, i), id: rowIdOf(r, field, i) })), [rows, field]);
+  const keyed = useMemo(
+    () => rows.map((r, i) => ({ row: r, key: rowKeyOf(r, field, i), id: rowIdOf(r, field, i) })),
+    [rows, field]
+  );
   const keyOf = new Map(keyed.map((k) => [k.row, k.key]));
   // The highlighted row is found by its key first: on a data update the rows are new objects (an edited one also new
   // content) until the effect below re-exposes selectedRow, and the content match alone left that render with no row
@@ -156,7 +242,8 @@ export const Table = () => {
   const selectedKey = (() => {
     if (!selectedRow || typeof selectedRow !== 'object' || !Object.keys(selectedRow).length) return undefined;
     const own = (selectedRow as Row)[field] ?? (selectedRow as Row).id ?? (selectedRow as Row).key;
-    const byKey = own === undefined || own === null || own === '' ? undefined : keyed.find((k) => k.key === String(own));
+    const byKey =
+      own === undefined || own === null || own === '' ? undefined : keyed.find((k) => k.key === String(own));
     if (byKey) return byKey.key;
     const same = JSON.stringify(selectedRow);
     return keyed.find((k) => k.row === selectedRow || JSON.stringify(k.row) === same)?.key;
@@ -170,7 +257,9 @@ export const Table = () => {
     const numeric =
       format !== 'text' &&
       (['number', 'currency', 'percent', 'compact'].includes(format ?? '') ||
-        (!format && values.some((v) => typeof v === 'number') && values.every((v) => v === null || v === undefined || v === '' || typeof v === 'number')));
+        (!format &&
+          values.some((v) => typeof v === 'number') &&
+          values.every((v) => v === null || v === undefined || v === '' || typeof v === 'number')));
     return {
       key: c.dataIndex,
       title: c.title,
@@ -184,10 +273,14 @@ export const Table = () => {
           : (a: Row, b: Row) => compare(readField(a, c.dataIndex), readField(b, c.dataIndex))
         : undefined,
       render: (v: unknown) => {
-        if (format === 'html') return <div className="tj-ant-html-cell" dangerouslySetInnerHTML={{ __html: sanitize(v) }} />;
+        if (format === 'html')
+          return <div className="tj-ant-html-cell" dangerouslySetInnerHTML={{ __html: sanitize(v) }} />;
         if (c.format === 'tag') {
           if (v === undefined || v === null || v === '') return null;
-          const colors = { ...(tagColors && typeof tagColors === 'object' ? (tagColors as Record<string, string>) : {}), ...(c.colors ?? {}) };
+          const colors = {
+            ...(tagColors && typeof tagColors === 'object' ? (tagColors as Record<string, string>) : {}),
+            ...(c.colors ?? {}),
+          };
           const lower = Object.fromEntries(Object.entries(colors).map(([k, x]) => [k.toLowerCase(), x]));
           // One Tag per value: a list (tags) or a comma-free single value.
           const values = (Array.isArray(v) ? v : [v]).map(str).filter(Boolean);
@@ -206,7 +299,13 @@ export const Table = () => {
             </span>
           );
         }
-        return formatCell(v, format, c.currency || str(currency) || 'USD', locale, (c as { dateFormat?: string }).dateFormat);
+        return formatCell(
+          v,
+          format,
+          c.currency || str(currency) || 'USD',
+          locale,
+          (c as { dateFormat?: string }).dateFormat
+        );
       },
     };
   });
@@ -240,19 +339,25 @@ export const Table = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rowsKey, field]);
-  ToolJet.useAction({ name: 'selectRow', displayName: 'Select row', params: [{ handle: 'key', displayName: 'Row key' }] }, (key) => {
-    const hit = keyed.find((k) => k.key === str(key));
-    setSelectedRow(hit?.row ?? {});
-    if (selectionType !== 'none') select(hit ? [hit.key] : []);
-  });
+  ToolJet.useAction(
+    { name: 'selectRow', displayName: 'Select row', params: [{ handle: 'key', displayName: 'Row key' }] },
+    (key) => {
+      const hit = keyed.find((k) => k.key === str(key));
+      setSelectedRow(hit?.row ?? {});
+      if (selectionType !== 'none') select(hit ? [hit.key] : []);
+    }
+  );
   ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => {
     setSelectedRow({});
     if (selectionType !== 'none') select([]);
   });
-  ToolJet.useAction({ name: 'setCurrent', displayName: 'Go to page', params: [{ handle: 'page', displayName: 'Page (from 1)' }] }, (p) => {
-    setCurrent(Math.max(1, Number(p) || 1));
-    force((n) => n + 1);
-  });
+  ToolJet.useAction(
+    { name: 'setCurrent', displayName: 'Go to page', params: [{ handle: 'page', displayName: 'Page (from 1)' }] },
+    (p) => {
+      setCurrent(Math.max(1, Number(p) || 1));
+      force((n) => n + 1);
+    }
+  );
 
   const size_ = Math.max(1, Math.min(500, Number(pageSize) || 10));
   // Fewer rows than the page needs: Ant draws the last page, and current says so too.
@@ -275,7 +380,12 @@ export const Table = () => {
         locale={{ emptyText: emptyText || 'No data' }}
         pagination={
           pagination && rows.length > size_
-            ? { pageSize: size_, current: Math.max(1, Number(current) || 1), showSizeChanger: false, size: size === 'large' ? 'default' : 'small' }
+            ? {
+                pageSize: size_,
+                current: Math.max(1, Number(current) || 1),
+                showSizeChanger: false,
+                size: size === 'large' ? 'default' : 'small',
+              }
             : false
         }
         rowSelection={

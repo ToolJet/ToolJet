@@ -5,7 +5,7 @@ import { resolveWidgetMeasuredHeight } from '../dynamicHeightReflow';
 // measures it at its own content height and puts the stretch back.
 const stretchedStat = ({ ownHeight, rowHeight }) => {
   document.body.innerHTML =
-    '<div class="ele-stat flex-child-wrapper flex-stretch-child" data-layout-context="root"></div>';
+    '<div class="ele-stat flex-child-wrapper flex-stretch-child" data-layout-context="root" data-module-id="canvas"></div>';
   const element = document.querySelector('.ele-stat');
   element.style.alignSelf = 'stretch';
   element.style.minHeight = `${rowHeight}px`;

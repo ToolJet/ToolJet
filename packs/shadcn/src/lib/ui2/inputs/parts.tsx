@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '../../cn';
-import { TJ } from './sdk';
-import type { Validation } from './sdk';
+import { ToolJet } from '@tooljet/custom-component-sdk';
+
+type Validation = ReturnType<typeof ToolJet.useValidation>;
 
 // What the inputs share beyond Field.tsx: a new Default value starting the value again, a widget's own rule (a number
 // outside its bounds, a malformed phone number) checked with the host's Validation section, and UI 2.0's clear x.
@@ -31,28 +32,6 @@ export const useReseed = (seed: unknown, apply: () => void, { onMount = true } =
   }, [key]);
 };
 
-/** The host's validation (the Validation section) with the widget's own rule checked first, as UI 2.0's withRule does:
- *  isValid is false while either fails, and the rule's message shows once the field was touched. */
-export const useRuleCheck = (check: Validation, rule: string) => {
-  const [touched, setTouched] = useState(false);
-  const [, setIsValid] = TJ.useStateBoolean({ name: 'isValid', initialValue: true, inspector: 'hidden' });
-  const isValid = check.isValid !== false && !rule;
-  // Declared after the host's useValidation, so it runs after the host publishes its own isValid and has the last word.
-  useEffect(() => {
-    setIsValid(isValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid, check.isValid]);
-  return {
-    isValid,
-    required: !!check.required,
-    error: (touched && rule) || check.error || '',
-    touch: () => {
-      setTouched(true);
-      check.touch?.();
-    },
-  };
-};
-
 /** UI 2.0's Minimum and Maximum value check (Ui2/_inputs/inputParts numberBounds): 0 is a bound. */
 export const boundsRule = (value: number | null, lo: number | null, hi: number | null): string => {
   if (value === null || !Number.isFinite(value)) return '';
@@ -62,7 +41,15 @@ export const boundsRule = (value: number | null, lo: number | null, hi: number |
 };
 
 /** UI 2.0's clear x: a 20px round button named Clear, in the placeholder's colour and darker on hover. */
-export const ClearX = ({ onClear, className, label = 'Clear' }: { onClear: () => void; className?: string; label?: string }) => (
+export const ClearX = ({
+  onClear,
+  className,
+  label = 'Clear',
+}: {
+  onClear: () => void;
+  className?: string;
+  label?: string;
+}) => (
   <button
     type="button"
     aria-label={label}

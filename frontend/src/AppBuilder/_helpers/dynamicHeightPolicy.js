@@ -1,6 +1,7 @@
 // Which widgets size to their content in the viewer. One rule, read by the canvas wrapper (which slot height to use),
 // the FlexContainer (whether it grows) and the component packs (whether they measure themselves), so the three agree.
 import { usesFlexLayoutV2 } from './flexLayoutVersion';
+import { isSdkComponentType } from './sdkComponentTypes';
 
 const CARD_SURFACES = ['shadcnCard'];
 const isPackWidget = (componentType) => /^Shad[A-Z]/.test(componentType ?? '');
@@ -101,7 +102,7 @@ export const stretchesInRow = (rowProperties = {}, childType, childProperties = 
   return (
     !!rowProperties.equalHeights &&
     mode === 'view' &&
-    (childType === 'ShadStat' || (childType === 'LibraryComponent' && packRole === 'stat')) &&
+    (childType === 'ShadStat' || (isSdkComponentType(childType) && packRole === 'stat')) &&
     childProperties.card !== false &&
     fitsContentInView(childType, childProperties)
   );
@@ -114,10 +115,11 @@ export const stretchesInRow = (rowProperties = {}, childType, childProperties = 
  * @param {string | undefined} componentType
  * @returns {boolean}
  */
-// A component pack's widget (LibraryComponent) fits its content too: floored at its saved height, an Ant Title or
-// Statistic drawn shorter than the UI 2.0 size it was saved at left a band under it (Ant apps, room bookings).
+// A component pack's widget (PackComponent, or a LibraryComponent) fits its content too: floored at its saved height,
+// an Ant Title or Statistic drawn shorter than the UI 2.0 size it was saved at left a band under it (Ant apps, room
+// bookings).
 export const keepsFittedHeightWhenMoved = (componentType) =>
-  isPackWidget(componentType) || componentType === 'LibraryComponent';
+  isPackWidget(componentType) || isSdkComponentType(componentType);
 
 // UI 2.0 widgets whose rows (or cards) each take their own height in the reflow, the way the native Listview's rows
 // do: a child growing in row r writes the row's height under the widget's id at that row's context. The native

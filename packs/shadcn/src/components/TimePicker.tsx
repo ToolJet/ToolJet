@@ -6,7 +6,17 @@ import { Field } from '../lib/Field';
 import { usePortalContainer } from '../lib/usePortalContainer';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { popupLayerStyle } from '../lib/popupLayer';
-import { formatTime, inTimeRange, is24h, minuteStep, parseTime, parseTimeArg, timeBounds, timeSlots, toHHmm } from '../lib/ui2/choice/dates';
+import {
+  formatTime,
+  inTimeRange,
+  is24h,
+  minuteStep,
+  parseTime,
+  parseTimeArg,
+  timeBounds,
+  timeSlots,
+  toHHmm,
+} from '../lib/ui2/choice/dates';
 import { lookVars, pickerVars, useFocusEvents, useResetOn } from '../lib/ui2/choice/looks';
 import { useBusy, useFieldStyles, usePopoverStyles } from '../lib/ui2/choice/fieldStyles';
 import { PickerTrigger } from '../lib/ui2/choice/PickerField';
@@ -20,8 +30,16 @@ import '../styles/ui2-choice.css';
 export const TimePicker = () => {
   const [label] = ToolJet.useStateString({ name: 'label', label: 'Label', initialValue: 'Time' });
   const [description] = ToolJet.useStateString({ name: 'description', label: 'Help text', initialValue: '' });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Pick a time' });
-  const [defaultValue] = ToolJet.useStateString({ name: 'defaultValue', label: 'Default value (HH:mm)', initialValue: '' });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Pick a time',
+  });
+  const [defaultValue] = ToolJet.useStateString({
+    name: 'defaultValue',
+    label: 'Default value (HH:mm)',
+    initialValue: '',
+  });
   const [timeFormat] = ToolJet.useStateEnumeration({
     name: 'timeFormat',
     label: 'Time format',
@@ -39,19 +57,40 @@ export const TimePicker = () => {
     inspector: 'switch',
   });
   const [minuteStepProp] = ToolJet.useStateNumber({ name: 'minuteStep', label: 'Minute step', initialValue: 15 });
-  const [minTime, setMinTime] = ToolJet.useStateString({ name: 'minTime', label: 'Earliest time (HH:mm)', initialValue: '' });
-  const [maxTime, setMaxTime] = ToolJet.useStateString({ name: 'maxTime', label: 'Latest time (HH:mm)', initialValue: '' });
-  const [showClearBtn] = ToolJet.useStateBoolean({ name: 'showClearBtn', label: 'Show clear button', initialValue: false });
+  const [minTime, setMinTime] = ToolJet.useStateString({
+    name: 'minTime',
+    label: 'Earliest time (HH:mm)',
+    initialValue: '',
+  });
+  const [maxTime, setMaxTime] = ToolJet.useStateString({
+    name: 'maxTime',
+    label: 'Latest time (HH:mm)',
+    initialValue: '',
+  });
+  const [showClearBtn] = ToolJet.useStateBoolean({
+    name: 'showClearBtn',
+    label: 'Show clear button',
+    initialValue: false,
+  });
   // Exposed values. `value` was the pack's default time: an app that set it still starts on it.
   const [legacyValue, setValue] = ToolJet.useStateString({ name: 'value', initialValue: '', inspector: 'hidden' });
-  const [, setFormattedValue] = ToolJet.useStateString({ name: 'formattedValue', initialValue: '', inspector: 'hidden' });
-  const [disabledProp] = ToolJet.useStateBoolean({ name: 'disabled', label: 'Disable', initialValue: false, inspector: 'hidden' });
+  const [, setFormattedValue] = ToolJet.useStateString({
+    name: 'formattedValue',
+    initialValue: '',
+    inspector: 'hidden',
+  });
+  const [disabledProp] = ToolJet.useStateBoolean({
+    name: 'disabled',
+    label: 'Disable',
+    initialValue: false,
+    inspector: 'hidden',
+  });
   const onSelect = ToolJet.useEventCallback({ name: 'onSelect' });
   const onFocus = ToolJet.useEventCallback({ name: 'onFocus' });
   const onBlur = ToolJet.useEventCallback({ name: 'onBlur' });
   const styles = useFieldStyles();
   const popoverStyles = usePopoverStyles('Clock icon color');
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 7 });
+  ToolJet.useComponentSettings({ role: 'timepicker', fit: true, loading: 'own', defaultWidth: 10, defaultHeight: 7 });
   const { disabled, loading } = useBusy(disabledProp);
   const fieldId = ToolJet.useFieldId();
 
@@ -66,7 +105,10 @@ export const TimePicker = () => {
   useOwnerGuard(anchorRef, open, () => setOpen(false), disabled);
   useResetOn(defaultValue, () => setMinutes(parseTime(defaultValue)));
   // A Form's clearForm empties what the field shows as well as what it exposes (the SDK clears only `value`).
-  ToolJet.useFormClear(() => { setOpen(false); setMinutes(null); });
+  ToolJet.useFormClear(() => {
+    setOpen(false);
+    setMinutes(null);
+  });
   const expose = (m: number | null) => {
     setValue(toHHmm(m));
     setFormattedValue(formatTime(m, use24));
@@ -74,8 +116,14 @@ export const TimePicker = () => {
   useEffect(() => expose(minutes), [minutes, use24]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const outOfRange = minutes !== null && !inTimeRange(minutes, bounds);
-  const problem = outOfRange ? `Pick a time between ${formatTime(bounds.lo, use24)} and ${formatTime(bounds.hi, use24)}` : '';
-  const check = ToolJet.useValidation({ section: 'date', value: toHHmm(minutes), present: minutes !== null && !outOfRange });
+  const problem = outOfRange
+    ? `Pick a time between ${formatTime(bounds.lo, use24)} and ${formatTime(bounds.hi, use24)}`
+    : '';
+  const check = ToolJet.useValidation({
+    kind: 'date',
+    value: toHHmm(minutes),
+    present: minutes !== null && !outOfRange,
+  });
   const focus = useFocusEvents(onFocus, onBlur, check.touch);
   const openChange = (next: boolean) => {
     if (next && disabled) return;
@@ -94,10 +142,26 @@ export const TimePicker = () => {
     const m = parseTimeArg(t, format);
     if (m !== null || t === '' || t === null || t === undefined) setMinutes(m);
   };
-  ToolJet.useAction({ name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }, { handle: 'format', displayName: 'Format' }] }, setTime);
+  ToolJet.useAction(
+    {
+      name: 'setValue',
+      displayName: 'Set value',
+      params: [
+        { handle: 'value', displayName: 'Value' },
+        { handle: 'format', displayName: 'Format' },
+      ],
+    },
+    setTime
+  );
   ToolJet.useAction({ name: 'clearValue', displayName: 'Clear value' }, () => setMinutes(null));
-  ToolJet.useAction({ name: 'setMinTime', displayName: 'Set min time', params: [{ handle: 'value', displayName: 'Value' }] }, (t) => setMinTime(t ? String(t) : ''));
-  ToolJet.useAction({ name: 'setMaxTime', displayName: 'Set max time', params: [{ handle: 'value', displayName: 'Value' }] }, (t) => setMaxTime(t ? String(t) : ''));
+  ToolJet.useAction(
+    { name: 'setMinTime', displayName: 'Set min time', params: [{ handle: 'value', displayName: 'Value' }] },
+    (t) => setMinTime(t ? String(t) : '')
+  );
+  ToolJet.useAction(
+    { name: 'setMaxTime', displayName: 'Set max time', params: [{ handle: 'value', displayName: 'Value' }] },
+    (t) => setMaxTime(t ? String(t) : '')
+  );
   ToolJet.useAction({ name: 'setFocus', displayName: 'Set focus' }, () => triggerRef.current?.focus());
   ToolJet.useAction({ name: 'setBlur', displayName: 'Set blur' }, () => {
     setOpen(false);
@@ -113,7 +177,13 @@ export const TimePicker = () => {
 
   return (
     <div className="ui uc" ref={anchorRef} style={vars}>
-      <Field label={label} description={description} htmlFor={fieldId} error={check.error || problem} required={check.required}>
+      <Field
+        label={label}
+        description={description}
+        htmlFor={fieldId}
+        error={check.error || problem}
+        required={check.required}
+      >
         <FieldLoading loading={loading}>
           <Popover.Root open={open} onOpenChange={openChange}>
             <PickerTrigger

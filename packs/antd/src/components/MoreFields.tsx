@@ -8,7 +8,15 @@ import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { controlOptions, exposedOption, keyForValue, str, toOptions, valueForKey, type Row } from '../lib/data';
 import { toNumber } from '../lib/format';
 import { useOwnedPopup } from '../lib/useOwnerGuard';
-import { countryOf, flagOf, nationalOf, phoneCountries, phoneCountry, phoneInfo, type Country } from '../lib/ui2/inputs/phone';
+import {
+  countryOf,
+  flagOf,
+  nationalOf,
+  phoneCountries,
+  phoneCountry,
+  phoneInfo,
+  type Country,
+} from '../lib/ui2/inputs/phone';
 import { useValueSetter } from '../lib/sameValue';
 
 const useFocusActions = (ref: React.RefObject<{ focus: () => void; blur: () => void }>) => {
@@ -23,19 +31,38 @@ const useFocusActions = (ref: React.RefObject<{ focus: () => void; blur: () => v
 // searchValue exposed; events onChange, onSelect, onSearch, onFocus, onBlur; actions setFieldValue, resetFields.
 export const Combobox = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'City' });
-  const [rawOptions] = ToolJet.useStateArray({ name: 'options', label: 'Options', inspector: 'options', description: 'Plain values or [{ label, value, disabled? }].', initialValue: [
-    { label: 'Austin', value: 'austin' },
-    { label: 'Berlin', value: 'berlin' },
-    { label: 'Lisbon', value: 'lisbon' },
-    { label: 'Singapore', value: 'singapore' },
-    { label: 'Toronto', value: 'toronto' },
-  ] });
+  const [rawOptions] = ToolJet.useStateArray({
+    name: 'options',
+    label: 'Options',
+    inspector: 'options',
+    description: 'Plain values or [{ label, value, disabled? }].',
+    initialValue: [
+      { label: 'Austin', value: 'austin' },
+      { label: 'Berlin', value: 'berlin' },
+      { label: 'Lisbon', value: 'lisbon' },
+      { label: 'Singapore', value: 'singapore' },
+      { label: 'Toronto', value: 'toronto' },
+    ],
+  });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
   const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Search' });
-  const [notFoundContent] = ToolJet.useStateString({ name: 'notFoundContent', label: 'Not found content', initialValue: 'No matches' });
+  const [notFoundContent] = ToolJet.useStateString({
+    name: 'notFoundContent',
+    label: 'Not found content',
+    initialValue: 'No matches',
+  });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: true });
-  const [filterOption] = ToolJet.useStateBoolean({ name: 'filterOption', label: 'Filter option', description: 'Off when a query fetches the options on onSearch.', initialValue: true });
-  const [, setSelectedOption] = ToolJet.useStateObject({ name: 'selectedOption', initialValue: {}, inspector: 'hidden' });
+  const [filterOption] = ToolJet.useStateBoolean({
+    name: 'filterOption',
+    label: 'Filter option',
+    description: 'Off when a query fetches the options on onSearch.',
+    initialValue: true,
+  });
+  const [, setSelectedOption] = ToolJet.useStateObject({
+    name: 'selectedOption',
+    initialValue: {},
+    inspector: 'hidden',
+  });
   const [, setSelectedLabel] = ToolJet.useStateString({ name: 'selectedLabel', initialValue: '', inspector: 'hidden' });
   const [, setSearchValue] = ToolJet.useStateString({ name: 'searchValue', initialValue: '', inspector: 'hidden' });
   const look = useControlLook();
@@ -47,9 +74,34 @@ export const Combobox = (props: Record<string, unknown>) => {
   const ref = useRef<{ focus: () => void; blur: () => void }>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ section: 'choice', value: str(value), present: value !== '' });
+  const check = ToolJet.useValidation({ kind: 'choice', value: str(value), present: value !== '' });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'combobox',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's searchable Select: label, options [{label, value}], value, placeholder, notFoundContent, allowClear, filterOption (off when a query fetches options on onSearch, reading searchValue); selectedOption, selectedLabel exposed; onChange, onSelect, onSearch.",
+    roleProps: {
+      description: 'extra',
+      emptyText: 'notFoundContent',
+      showClearBtn: 'allowClear',
+      defaultValue: 'value',
+      searchText: 'searchValue',
+      serverSideSearch: 'filterOption',
+    },
+    roleValues: { filterOption: { true: '{{false}}', false: '{{true}}' } },
+    roleEvents: { onSearchTextChanged: 'onSearch' },
+    roleActions: {
+      selectOption: 'setFieldValue',
+      setValue: 'setFieldValue',
+      clear: 'resetFields',
+      setFocus: 'focus',
+      setBlur: 'blur',
+    },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
   const options = toOptions(rawOptions, 'Combobox');
   // Ant's control holds option keys; the value keeps its type (lib/data Option), so 1 and '1' are two choices.
   const key = value === '' ? '' : keyForValue(options, value);
@@ -76,7 +128,10 @@ export const Combobox = (props: Record<string, unknown>) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(value), JSON.stringify(options)]);
   (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(() => setSearchValue(''));
-  ToolJet.useAction({ name: 'setFieldValue', displayName: 'Set field value', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => change(v));
+  ToolJet.useAction(
+    { name: 'setFieldValue', displayName: 'Set field value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (v) => change(v)
+  );
   ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(props.value));
   useFocusActions(ref);
   const list = useOwnedPopup(disabled, (open) => !open && setSearchValue(''));
@@ -95,7 +150,9 @@ export const Combobox = (props: Record<string, unknown>) => {
               placeholder={placeholder || undefined}
               notFoundContent={loading ? <Spin size="small" /> : notFoundContent || undefined}
               allowClear={allowClear}
-              filterOption={filterOption ? (input, o) => str(o?.label).toLowerCase().includes(input.toLowerCase()) : false}
+              filterOption={
+                filterOption ? (input, o) => str(o?.label).toLowerCase().includes(input.toLowerCase()) : false
+              }
               loading={loading}
               disabled={disabled}
               variant={look.variant}
@@ -131,7 +188,12 @@ export const Combobox = (props: Record<string, unknown>) => {
 export const OTP = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Verification code' });
   const [length] = ToolJet.useStateNumber({ name: 'length', label: 'Length', initialValue: 6, min: 2, max: 12 });
-  const [characters] = ToolJet.useStateEnumeration({ name: 'characters', label: 'Characters', enumDefinition: ['numeric', 'alphanumeric'], initialValue: 'numeric' });
+  const [characters] = ToolJet.useStateEnumeration({
+    name: 'characters',
+    label: 'Characters',
+    enumDefinition: ['numeric', 'alphanumeric'],
+    initialValue: 'numeric',
+  });
   const [mask] = ToolJet.useStateBoolean({ name: 'mask', label: 'Mask', initialValue: false });
   const [rawValue, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
   // A binding can give a number (a code from a query) or null; Ant's OTP splits the value as text.
@@ -141,9 +203,19 @@ export const OTP = (props: Record<string, unknown>) => {
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onComplete = ToolJet.useEventCallback({ name: 'onComplete' });
   const { disabled, loading } = ToolJet.useControlState();
-  const check = ToolJet.useValidation({ section: 'text', value });
+  const check = ToolJet.useValidation({ kind: 'text', value });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'otpinput',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's Input.OTP: label, length, characters (numeric, alphanumeric), mask, value; isComplete exposed; onChange, onComplete.",
+    roleProps: { description: 'extra', masked: 'mask', defaultValue: 'value' },
+    roleActions: { setValue: 'setFieldValue', setText: 'setFieldValue', clear: 'resetFields', setFocus: 'focus' },
+    defaultWidth: 12,
+    defaultHeight: 6,
+  });
   const n = Math.max(2, Math.min(12, Number(length) || 6));
   const ref = useRef<InputRef>(null);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
@@ -161,7 +233,10 @@ export const OTP = (props: Record<string, unknown>) => {
     setIsComplete(value.length === n);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, n]);
-  ToolJet.useAction({ name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => change(str(v)));
+  ToolJet.useAction(
+    { name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (v) => change(str(v))
+  );
   ToolJet.useAction({ name: 'resetFields', displayName: 'Clear' }, () => change(str(props.value)));
   ToolJet.useAction({ name: 'focus', displayName: 'Focus' }, () => ref.current?.focus());
   return (
@@ -184,7 +259,9 @@ export const OTP = (props: Record<string, unknown>) => {
               variant={look.variant}
               size={look.size}
               status={check.error ? 'error' : undefined}
-              formatter={(s) => (characters === 'numeric' ? s.replace(/\D/g, '') : s.replace(/[^\da-z]/gi, '').toUpperCase())}
+              formatter={(s) =>
+                characters === 'numeric' ? s.replace(/\D/g, '') : s.replace(/[^\da-z]/gi, '').toUpperCase()
+              }
               onInput={(cells) => change(cells.join(''))}
               onChange={(v) => v !== value && change(v)}
             />
@@ -215,16 +292,41 @@ const symbolOf = (currency: string, locale?: string, display = 'symbol') => {
 // setFieldValue, setCurrency, resetFields, focus, blur.
 export const CurrencyInput = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Amount' });
-  const [value, setValue] = ToolJet.useStateNumber({ name: 'value', label: 'Value', initialValue: undefined as unknown as number });
+  const [value, setValue] = ToolJet.useStateNumber({
+    name: 'value',
+    label: 'Value',
+    initialValue: undefined as unknown as number,
+  });
   const [currency, setCurrency] = ToolJet.useStateString({ name: 'currency', label: 'Currency', initialValue: 'USD' });
-  const [currencyOptions] = ToolJet.useStateArray({ name: 'currencyOptions', label: 'Currency options', inspector: 'options', description: "['USD', 'EUR', 'INR']; empty: one currency.", initialValue: [] });
+  const [currencyOptions] = ToolJet.useStateArray({
+    name: 'currencyOptions',
+    label: 'Currency options',
+    inspector: 'options',
+    description: "['USD', 'EUR', 'INR']; empty: one currency.",
+    initialValue: [],
+  });
   const [locale] = ToolJet.useStateString({ name: 'locale', label: 'Locale', initialValue: '' });
-  const [precision] = ToolJet.useStateNumber({ name: 'precision', label: 'Precision', initialValue: 2, min: 0, max: 6 });
-  const [currencyDisplay] = ToolJet.useStateEnumeration({ name: 'currencyDisplay', label: 'Currency display', enumDefinition: ['symbol', 'narrowSymbol', 'code'], initialValue: 'symbol' });
+  const [precision] = ToolJet.useStateNumber({
+    name: 'precision',
+    label: 'Precision',
+    initialValue: 2,
+    min: 0,
+    max: 6,
+  });
+  const [currencyDisplay] = ToolJet.useStateEnumeration({
+    name: 'currencyDisplay',
+    label: 'Currency display',
+    enumDefinition: ['symbol', 'narrowSymbol', 'code'],
+    initialValue: 'symbol',
+  });
   const [min] = ToolJet.useStateNumber({ name: 'min', label: 'Min', initialValue: undefined as unknown as number });
   const [max] = ToolJet.useStateNumber({ name: 'max', label: 'Max', initialValue: undefined as unknown as number });
   const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: '0.00' });
-  const [, setFormattedValue] = ToolJet.useStateString({ name: 'formattedValue', initialValue: '', inspector: 'hidden' });
+  const [, setFormattedValue] = ToolJet.useStateString({
+    name: 'formattedValue',
+    initialValue: '',
+    inspector: 'hidden',
+  });
   const look = useControlLook();
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onPressEnter = ToolJet.useEventCallback({ name: 'onPressEnter' });
@@ -234,14 +336,37 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const n = toNumber(value);
-  const check = ToolJet.useValidation({ section: 'text', value: n === null ? '' : String(n), present: n !== null });
+  const check = ToolJet.useValidation({ kind: 'text', value: n === null ? '' : String(n), present: n !== null });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'currencyinput',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's InputNumber with a currency formatter: label, value (a number), currency, currencyOptions (a currency Select before it), locale, precision, currencyDisplay, min, max; formattedValue exposed; onChange, onPressEnter.",
+    roleProps: {
+      description: 'extra',
+      defaultValue: 'value',
+      decimalPlaces: 'precision',
+      minValue: 'min',
+      maxValue: 'max',
+    },
+    roleEvents: { onEnterPressed: 'onPressEnter' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields', setFocus: 'focus', setBlur: 'blur' },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
   const cur = str(currency).trim().toUpperCase() || 'USD';
   const digits = Math.max(0, Math.min(6, toNumber(precision) ?? 2));
   const fmt = useMemo(() => {
     try {
-      return new Intl.NumberFormat(locale || undefined, { style: 'currency', currency: cur, currencyDisplay: currencyDisplay as 'symbol', minimumFractionDigits: digits, maximumFractionDigits: digits });
+      return new Intl.NumberFormat(locale || undefined, {
+        style: 'currency',
+        currency: cur,
+        currencyDisplay: currencyDisplay as 'symbol',
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits,
+      });
     } catch {
       return null;
     }
@@ -256,8 +381,18 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
     if (!valueSetter.set(v as number)) return;
     onChange();
   };
-  ToolJet.useAction({ name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => change(toNumber(v)));
-  ToolJet.useAction({ name: 'setCurrency', displayName: 'Set currency', params: [{ handle: 'currency', displayName: 'Currency code' }] }, (c) => setCurrency(str(c).toUpperCase()));
+  ToolJet.useAction(
+    { name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (v) => change(toNumber(v))
+  );
+  ToolJet.useAction(
+    {
+      name: 'setCurrency',
+      displayName: 'Set currency',
+      params: [{ handle: 'currency', displayName: 'Currency code' }],
+    },
+    (c) => setCurrency(str(c).toUpperCase())
+  );
   ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(toNumber(props.value)));
   useFocusActions(ref);
   // The options editor writes { label, value } once an entry is not a plain value.
@@ -296,7 +431,13 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
                 </WithPopupTheme>
               ) : undefined
             }
-            formatter={(v, info) => (info.userTyping ? info.input : v === undefined || v === null || v === ('' as never) ? '' : group(String(v)))}
+            formatter={(v, info) =>
+              info.userTyping
+                ? info.input
+                : v === undefined || v === null || v === ('' as never)
+                  ? ''
+                  : group(String(v))
+            }
             parser={(v) => Number(String(v ?? '').replace(/[^\d.-]/g, '')) as number}
             disabled={disabled}
             variant={look.variant}
@@ -324,17 +465,47 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
 // setCountryCode, resetFields, focus, blur.
 export const PhoneInput = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Phone' });
-  const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', description: 'E.164: +14155550123', initialValue: '' });
-  const [defaultCountry] = ToolJet.useStateString({ name: 'defaultCountry', label: 'Default country', initialValue: 'US' });
-  const [onlyCountries] = ToolJet.useStateArray({ name: 'onlyCountries', label: 'Only countries', description: "['US', 'GB', 'IN']; empty: all.", initialValue: [] });
-  const [allowCountryChange] = ToolJet.useStateBoolean({ name: 'allowCountryChange', label: 'Allow country change', initialValue: true });
+  const [value, setValue] = ToolJet.useStateString({
+    name: 'value',
+    label: 'Value',
+    description: 'E.164: +14155550123',
+    initialValue: '',
+  });
+  const [defaultCountry] = ToolJet.useStateString({
+    name: 'defaultCountry',
+    label: 'Default country',
+    initialValue: 'US',
+  });
+  const [onlyCountries] = ToolJet.useStateArray({
+    name: 'onlyCountries',
+    label: 'Only countries',
+    description: "['US', 'GB', 'IN']; empty: all.",
+    initialValue: [],
+  });
+  const [allowCountryChange] = ToolJet.useStateBoolean({
+    name: 'allowCountryChange',
+    label: 'Allow country change',
+    initialValue: true,
+  });
   const [showFlag] = ToolJet.useStateBoolean({ name: 'showFlag', label: 'Show flag', initialValue: true });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Enter a phone number' });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Enter a phone number',
+  });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: false });
   const [, setCountry] = ToolJet.useStateString({ name: 'country', initialValue: '', inspector: 'hidden' });
   const [, setCountryCode] = ToolJet.useStateString({ name: 'countryCode', initialValue: '', inspector: 'hidden' });
-  const [, setFormattedValue] = ToolJet.useStateString({ name: 'formattedValue', initialValue: '', inspector: 'hidden' });
-  const [, setIsValidNumber] = ToolJet.useStateBoolean({ name: 'isValidNumber', initialValue: false, inspector: 'hidden' });
+  const [, setFormattedValue] = ToolJet.useStateString({
+    name: 'formattedValue',
+    initialValue: '',
+    inspector: 'hidden',
+  });
+  const [, setIsValidNumber] = ToolJet.useStateBoolean({
+    name: 'isValidNumber',
+    initialValue: false,
+    inspector: 'hidden',
+  });
   const look = useControlLook();
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onPressEnter = ToolJet.useEventCallback({ name: 'onPressEnter' });
@@ -344,7 +515,23 @@ export const PhoneInput = (props: Record<string, unknown>) => {
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 12, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'phoneinput',
+    fit: true,
+    loading: 'own',
+    usage:
+      'An Ant Input with a country Select (flag, calling code): label, value (E.164), defaultCountry, onlyCountries, allowCountryChange, showFlag, allowClear; country, countryCode, formattedValue, isValidNumber exposed; onChange, onPressEnter.',
+    roleProps: {
+      description: 'extra',
+      defaultValue: 'value',
+      isCountryChangeEnabled: 'allowCountryChange',
+      showClearBtn: 'allowClear',
+    },
+    roleEvents: { onEnterPressed: 'onPressEnter' },
+    roleActions: { setValue: 'setFieldValue', clear: 'resetFields', setFocus: 'focus', setBlur: 'blur' },
+    defaultWidth: 12,
+    defaultHeight: 6,
+  });
   const countries = useMemo(() => phoneCountries(onlyCountries), [onlyCountries]);
   const fallback: Country = countryOf(defaultCountry) ?? countries[0]!;
   const [picked, setPicked] = useState<Country>(() => phoneCountry(value, countries, fallback) ?? fallback);
@@ -355,7 +542,7 @@ export const PhoneInput = (props: Record<string, unknown>) => {
   }, [value]);
   const national = nationalOf(value, picked);
   const info = phoneInfo(national, picked);
-  const check = ToolJet.useValidation({ section: 'text', value: info.value, present: !!info.value });
+  const check = ToolJet.useValidation({ kind: 'text', value: info.value, present: !!info.value });
   useEffect(() => {
     setCountry(info.country);
     setCountryCode(info.countryCode);
@@ -372,18 +559,28 @@ export const PhoneInput = (props: Record<string, unknown>) => {
     setValue(next);
     onChange();
   };
-  ToolJet.useAction({ name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Number' }] }, (v) => {
-    const c = phoneCountry(v, countries, picked) ?? picked;
-    setPicked(c);
-    commit(nationalOf(v, c), c);
-  });
-  ToolJet.useAction({ name: 'setCountryCode', displayName: 'Set country', params: [{ handle: 'country', displayName: 'Country (ISO code)' }] }, (code) => {
-    const c = countryOf(code);
-    if (c) {
+  ToolJet.useAction(
+    { name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Number' }] },
+    (v) => {
+      const c = phoneCountry(v, countries, picked) ?? picked;
       setPicked(c);
-      commit(national, c);
+      commit(nationalOf(v, c), c);
     }
-  });
+  );
+  ToolJet.useAction(
+    {
+      name: 'setCountryCode',
+      displayName: 'Set country',
+      params: [{ handle: 'country', displayName: 'Country (ISO code)' }],
+    },
+    (code) => {
+      const c = countryOf(code);
+      if (c) {
+        setPicked(c);
+        commit(national, c);
+      }
+    }
+  );
   ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => setValue(str(props.value)));
   useFocusActions(ref);
   return (
@@ -404,7 +601,11 @@ export const PhoneInput = (props: Record<string, unknown>) => {
                   variant={look.variant}
                   classNames={{ popup: { root: popup.className } }}
                   styles={{ popup: { root: popup.style } }}
-                  options={countries.map((c) => ({ value: c.code, search: `${c.code} +${c.dial}`, label: `${showFlag ? `${flagOf(c)} ` : ''}+${c.dial}` }))}
+                  options={countries.map((c) => ({
+                    value: c.code,
+                    search: `${c.code} +${c.dial}`,
+                    label: `${showFlag ? `${flagOf(c)} ` : ''}+${c.dial}`,
+                  }))}
                   onChange={(code) => {
                     const c = countryOf(code) ?? picked;
                     setPicked(c);
@@ -459,8 +660,16 @@ const strengthOf = (v: string): { score: number; label: string } => {
 export const Password = (props: Record<string, unknown>) => {
   const field = useFieldProps({ label: 'Password' });
   const [value, setValue] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: '' });
-  const [placeholder] = ToolJet.useStateString({ name: 'placeholder', label: 'Placeholder', initialValue: 'Enter your password' });
-  const [visibilityToggle] = ToolJet.useStateBoolean({ name: 'visibilityToggle', label: 'Visibility toggle', initialValue: true });
+  const [placeholder] = ToolJet.useStateString({
+    name: 'placeholder',
+    label: 'Placeholder',
+    initialValue: 'Enter your password',
+  });
+  const [visibilityToggle] = ToolJet.useStateBoolean({
+    name: 'visibilityToggle',
+    label: 'Visibility toggle',
+    initialValue: true,
+  });
   const [showStrength] = ToolJet.useStateBoolean({ name: 'showStrength', label: 'Show strength', initialValue: false });
   const [minLength] = ToolJet.useStateNumber({ name: 'minLength', label: 'Min length', initialValue: 0, min: 0 });
   const [allowClear] = ToolJet.useStateBoolean({ name: 'allowClear', label: 'Allow clear', initialValue: false });
@@ -473,9 +682,26 @@ export const Password = (props: Record<string, unknown>) => {
   const ref = useRef<InputRef>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ section: 'text', value });
+  const check = ToolJet.useValidation({ kind: 'text', value });
   const tokens = useTokenStyles();
-  ToolJet.useComponentSettings({ defaultWidth: 10, defaultHeight: 6 });
+  ToolJet.useComponentSettings({
+    role: 'passwordinput',
+    fit: true,
+    loading: 'own',
+    usage:
+      "Ant's Input.Password: label, value, placeholder, visibilityToggle, showStrength, minLength, allowClear; strength exposed; onChange, onPressEnter.",
+    roleProps: { description: 'extra', defaultValue: 'value', showToggle: 'visibilityToggle' },
+    roleEvents: { onEnterPressed: 'onPressEnter' },
+    roleActions: {
+      setText: 'setFieldValue',
+      setValue: 'setFieldValue',
+      clear: 'resetFields',
+      setFocus: 'focus',
+      setBlur: 'blur',
+    },
+    defaultWidth: 10,
+    defaultHeight: 6,
+  });
   const st = strengthOf(value);
   const short = Number(minLength) > 0 && value.length > 0 && value.length < Number(minLength);
   useEffect(() => {
@@ -488,10 +714,19 @@ export const Password = (props: Record<string, unknown>) => {
     if (!valueSetter.set(v)) return;
     onChange();
   };
-  ToolJet.useAction({ name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] }, (v) => change(str(v)));
+  ToolJet.useAction(
+    { name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
+    (v) => change(str(v))
+  );
   ToolJet.useAction({ name: 'resetFields', displayName: 'Clear' }, () => change(str(props.value)));
   useFocusActions(ref);
-  const colors = ['', 'var(--ant-color-error)', 'var(--ant-color-warning)', 'var(--ant-color-primary)', 'var(--ant-color-success)'];
+  const colors = [
+    '',
+    'var(--ant-color-error)',
+    'var(--ant-color-warning)',
+    'var(--ant-color-primary)',
+    'var(--ant-color-success)',
+  ];
   return (
     <AntProvider tokens={tokens}>
       <FormField
@@ -523,7 +758,13 @@ export const Password = (props: Record<string, unknown>) => {
         </ControlSkeleton>
         {showStrength && value ? (
           <div className="tj-ant-strength">
-            <Progress percent={st.score * 25} steps={4} showInfo={false} strokeColor={colors[st.score]} size={[40, 4]} />
+            <Progress
+              percent={st.score * 25}
+              steps={4}
+              showInfo={false}
+              strokeColor={colors[st.score]}
+              size={[40, 4]}
+            />
             <span style={{ color: colors[st.score] }}>{st.label}</span>
           </div>
         ) : null}
