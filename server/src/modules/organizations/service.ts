@@ -38,6 +38,18 @@ import {
 
 export type WorkspaceChanges = Partial<Pick<Organization, 'name' | 'slug' | 'status'>>;
 
+const DEFAULT_CANNOT_BE_ARCHIVED = 'The default workspace cannot be archived — mark another workspace as default first';
+
+// The dashboard answers 406 when the default workspace would be archived; the v2 contract answers 409.
+const asV2Conflict = async <T>(work: () => Promise<T>): Promise<T> => {
+  try {
+    return await work();
+  } catch (error) {
+    if (error instanceof NotAcceptableException) throw new ConflictException(DEFAULT_CANNOT_BE_ARCHIVED);
+    throw error;
+  }
+};
+
 // Only a super admin sees every workspace; anyone else sees the ones they are an active member of.
 const isScopedViewer = (viewer?: User): viewer is User => !!viewer && !isSuperAdmin(viewer);
 
@@ -145,10 +157,11 @@ export class OrganizationsService implements IOrganizationsService {
   async updateOrganizationStatus(
     organizationId: string,
     updatableData: OrganizationStatusUpdateDto,
-    user: User
+    user?: User,
+    manager?: EntityManager
   ): Promise<Organization> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const organization = await this.organizationRepository.findOne({ where: { id: organizationId } });
+      const organization = await manager.findOne(Organization, { where: { id: organizationId } });
       if (organization.isDefault) {
         throw new NotAcceptableException('Default workspace cannot be archived');
       }
@@ -171,6 +184,7 @@ export class OrganizationsService implements IOrganizationsService {
               },
             };
 
+      if (!user) return;
       const auditLogsData = {
         userId: user.id,
         organizationId: organizationId,
@@ -180,7 +194,7 @@ export class OrganizationsService implements IOrganizationsService {
       };
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
       return;
-    });
+    }, manager);
   }
 
   // The one write path for a workspace's name, slug and status, used by the dashboard and the External API.
@@ -278,14 +292,14 @@ export class OrganizationsService implements IOrganizationsService {
       if (dto.default === true && (dto.status ?? organization.status) === WORKSPACE_STATUS.ARCHIVE) {
         throw new UnprocessableEntityException('An archived workspace cannot be made the default');
       }
-      if (dto.status === WORKSPACE_STATUS.ARCHIVE && organization.isDefault) {
-        throw new ConflictException(
-          'The default workspace cannot be archived — mark another workspace as default first'
+
+      await this.checkWorkspaceFieldsAvailableV2(dto, organization);
+      await this.updateWorkspace(organization.id, { name: dto.name, slug: dto.slug }, manager);
+      if (dto.status !== undefined && dto.status !== organization.status) {
+        await asV2Conflict(() =>
+          this.updateOrganizationStatus(organization.id, { status: dto.status }, undefined, manager)
         );
       }
-
-      await this.organizationRepository.assertNameAndSlugAvailable(dto, organization.id, manager);
-      await this.updateWorkspace(organization.id, dto, manager);
       if (dto.default === true && !organization.isDefault) {
         await this.setDefaultWorkspace(organization.id, manager);
       }
@@ -321,12 +335,17 @@ export class OrganizationsService implements IOrganizationsService {
       if (organization.status === status) {
         throw new ConflictException(`Workspace is already ${status}`);
       }
-      if (status === WORKSPACE_STATUS.ARCHIVE && organization.isDefault) {
-        throw new ConflictException(
-          'The default workspace cannot be archived — mark another workspace as default first'
-        );
-      }
-      await this.updateWorkspace(organization.id, { status }, manager);
+      await asV2Conflict(() => this.updateOrganizationStatus(organization.id, { status }, undefined, manager));
     });
+  }
+
+  // Reuses the dashboard's uniqueness check one field at a time, so a clash on either field is caught,
+  // and skips fields that keep their current value.
+  async checkWorkspaceFieldsAvailableV2(
+    { name, slug }: { name?: string; slug?: string },
+    current?: Pick<Organization, 'name' | 'slug'>
+  ): Promise<void> {
+    if (name !== undefined && name !== current?.name) await this.checkWorkspaceUniqueness(name, undefined);
+    if (slug !== undefined && slug !== current?.slug) await this.checkWorkspaceUniqueness(undefined, slug);
   }
 }

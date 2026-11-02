@@ -38,7 +38,7 @@ export class OrganizationsModule extends SubModule {
         FeatureAbilityFactory,
         OrganizationsUtilService,
       ],
-      exports: [OrganizationsUtilService, WorkspaceBanListRepository],
+      exports: [OrganizationsService, OrganizationsUtilService, WorkspaceBanListRepository],
     });
   }
 }

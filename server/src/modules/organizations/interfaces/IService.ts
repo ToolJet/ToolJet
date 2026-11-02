@@ -23,7 +23,8 @@ export interface IOrganizationsService {
   updateOrganizationStatus(
     organizationId: string,
     updatableData: OrganizationStatusUpdateDto,
-    user: User
+    user?: User,
+    manager?: EntityManager
   ): Promise<Organization>;
 
   checkWorkspaceUniqueness(name: string, slug: string): Promise<void>;
@@ -49,6 +50,11 @@ export interface IOrganizationsService {
   unarchiveWorkspaceV2(identifier: string): Promise<void>;
 
   setDefaultWorkspaceV2(identifier: string): Promise<void>;
+
+  checkWorkspaceFieldsAvailableV2(
+    fields: { name?: string; slug?: string },
+    current?: Pick<Organization, 'name' | 'slug'>
+  ): Promise<void>;
 }
 
 export class OrganizationWithPlan extends Organization {

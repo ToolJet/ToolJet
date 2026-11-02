@@ -53,10 +53,13 @@ A v2 route lives in the **module that owns its dashboard counterpart**, as a sib
 reference: create in `setup-organization`, the rest in `organizations`.
 - **Keys, config and CASL rules** sit beside the dashboard's in the domain module. One
   `can([DASHBOARD_KEY, V2_KEY])` per shared predicate; v2-only conditions sit next to it.
-- **Service layering:** a shared primitive does the write (e.g. `OrganizationsService.updateWorkspace`);
-  the dashboard method wraps it with its session/legacy-audit concerns; an additive `*V2` method wraps
-  it with the v2 contract (identifier lookup, 409/422 rules, response shape). v2 methods go in the CE
-  base service so the EE subclass inherits them under the module's injection token.
+- **Writes reuse the dashboard's service functions.** Create, update, archive, delete and the like
+  must call the same function the dashboard calls, refactored if needed (optional `manager`, optional
+  actor, target id instead of session) so both controllers share it. The `*V2` method adds only the
+  v2 contract: identifier lookup, v2-only rules, status-code mapping (e.g. dashboard 406 → v2 409),
+  response shape. Never write entities directly in a `*V2` method when a dashboard service does that
+  write. Reads (list/get) may use new query functions when the dashboard's is hard to reuse.
+  v2 methods go in the CE base service so the EE subclass inherits them under the module's token.
 - **v2 features set `skipAuditLogs: true`.** They are audited through `audit_events`; the shared
   services also set legacy audit locals for the dashboard.
 - **One controller class has one URL prefix and one module id.** A resource whose dashboard routes

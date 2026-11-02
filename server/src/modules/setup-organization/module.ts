@@ -12,6 +12,7 @@ import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { SubModule } from '@modules/app/sub-module';
+import { OrganizationsModule } from '@modules/organizations/module';
 
 export class SetupOrganizationsModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -41,6 +42,7 @@ export class SetupOrganizationsModule extends SubModule {
         await AppEnvironmentsModule.register(configs),
         await RolesModule.register(configs),
         await ThemesModule.register(configs),
+        await OrganizationsModule.register(configs),
         await SessionModule.register(configs),
         await InstanceSettingsModule.register(configs),
         await TooljetDbModule.register(configs),

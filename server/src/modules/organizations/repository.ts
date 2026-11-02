@@ -1,12 +1,5 @@
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import {
-  Brackets,
   DataSource,
   EntityManager,
   FindManyOptions,
@@ -24,7 +17,6 @@ import { catchDbException, isSuperAdmin } from '@helpers/utils.helper';
 import { ConfigScope, SSOType } from '@entities/sso_config.entity';
 import { WORKSPACE_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { CONSTRAINTS } from './constants';
-import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { OrganizationInputs } from '@modules/setup-organization/types/organization-inputs';
 
 const LAST_ACCESSED_AT_UPDATE_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
@@ -143,31 +135,6 @@ export class OrganizationRepository extends Repository<Organization> {
     }
     if (!organization) throw new NotFoundException('Workspace not found');
     return organization;
-  }
-
-  // Checked before writing so a clash answers 409 without aborting the caller's transaction.
-  // The unique constraints still back this up under concurrency.
-  async assertNameAndSlugAvailable(
-    { name, slug }: { name?: string; slug?: string },
-    excludeId?: string,
-    manager?: EntityManager
-  ): Promise<void> {
-    if (!name && !slug) return;
-    const qb = (manager ?? this.manager).createQueryBuilder(Organization, 'organization').where(
-      new Brackets((inner) => {
-        if (name) inner.orWhere('organization.name = :name', { name });
-        if (slug) inner.orWhere('organization.slug = :slug', { slug });
-      })
-    );
-    if (excludeId) qb.andWhere('organization.id != :excludeId', { excludeId });
-
-    const existing = await qb.getOne();
-    if (!existing) return;
-    const constraint =
-      name && existing.name === name
-        ? DataBaseConstraints.WORKSPACE_NAME_UNIQUE
-        : DataBaseConstraints.WORKSPACE_SLUG_UNIQUE;
-    throw new ConflictException(CONSTRAINTS.find((c) => c.dbConstraint === constraint).message);
   }
 
   async queryWorkspaces(
