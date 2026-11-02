@@ -36,6 +36,8 @@ import OAuthWrapper from './OAuthWrapper';
 import DynamicSelector from '@/_ui/DynamicSelector';
 import GraphqlKeyValueTabs from '@/AppBuilder/QueryManager/QueryEditors/Graphql/GraphqlKeyValueTabs';
 import OracleWalletPicker from '@/_components/OracleWalletPicker';
+import QueryCodeLabel from '@/AppBuilder/QueryManager/Components/QueryCodeLabel';
+import { isQueryCodeField } from '@/AppBuilder/QueryManager/CodeEditorTab/queryCodeFields';
 
 const DynamicForm = ({
   schema,
@@ -53,6 +55,7 @@ const DynamicForm = ({
   setDefaultOptions,
   disableMenuPortal = false,
   onBlur,
+  animateSelectMenus = false,
   layout = 'vertical',
   renderCopilot,
   elementsProps = null,
@@ -597,6 +600,8 @@ const DynamicForm = ({
           delayOnChange: false,
           renderCopilot,
           ...(helpText && { helpText }),
+          // The query's code box opens in a new tab from its "Code" label instead of the popup editor.
+          ...(isQueryCodeField(selectedDataSource?.kind, key) && { usePortalEditor: false }),
         };
       }
       case 'react-component-openapi-validator':
@@ -846,7 +851,10 @@ const DynamicForm = ({
                     })}
                     style={{ minWidth: '100px', marginBottom: '0' }}
                   >
-                    {label && renderLabel(label, obj[key].tooltip, type)}
+                    {/* A query's code box is labelled "Code" by QueryCodeLabel below instead. */}
+                    {label &&
+                      !(type === 'codehinter' && isQueryCodeField(selectedDataSource?.kind, propertyKey)) &&
+                      renderLabel(label, obj[key].tooltip, type)}
 
                     {(type === 'password' || encrypted) && selectedDataSource?.id && (
                       <div className="mx-1 col">
@@ -896,6 +904,9 @@ const DynamicForm = ({
                       : `${generateCypressDataCy(label ?? key)}-${generateCypressDataCy(type ?? key)}-element`
                   }
                 >
+                  {type === 'codehinter' && isQueryCodeField(selectedDataSource?.kind, propertyKey) && (
+                    <QueryCodeLabel />
+                  )}
                   <Element
                     key={`${selectedDataSource?.id}-${propertyKey}`}
                     {...getElementProps(obj[key])}
@@ -948,6 +959,7 @@ const DynamicForm = ({
                 className={cx({ 'flex-grow-1': isHorizontalLayout })}
               >
                 <Select
+                  animateMenu={animateSelectMenus}
                   {...getElementProps(flipComponentDropdown)}
                   styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
                   useCustomStyles={computeSelectStyles ? true : false}

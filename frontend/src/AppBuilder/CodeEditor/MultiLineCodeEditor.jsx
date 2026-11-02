@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useMemo, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { defaultKeymap, indentWithTab } from '@codemirror/commands';
-import { keymap, tooltips, EditorView } from '@codemirror/view';
+import { keymap, EditorView } from '@codemirror/view';
 import { completionKeymap, acceptCompletion, autocompletion, completionStatus } from '@codemirror/autocomplete';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
@@ -31,6 +31,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
 import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
 import { completionLabelTooltip } from './completionLabelTooltip';
+import { CodeEditorDocumentContext, getTooltipExtension } from './codeEditorDocument';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -53,9 +54,6 @@ const staticCustomKeyMaps = [
 ];
 const searchExtension = search({
   createPanel: handleSearchPanel,
-});
-const tooltipExtension = tooltips({
-  parent: document.body,
 });
 
 const MultiLineCodeEditor = (props) => {
@@ -81,6 +79,7 @@ const MultiLineCodeEditor = (props) => {
     onInputChange, // Added this prop to immediately handle value changes
     foldGutter = true, // controls the left gray bar
     componentId,
+    usePortalEditor = true, // the "pop out code editor" button, as in SingleLineCodeEditor
   } = props;
   const { moduleId: contextModuleId } = useModuleContext();
   const moduleId = props.moduleId || contextModuleId || 'canvas';
@@ -98,13 +97,15 @@ const MultiLineCodeEditor = (props) => {
     shallow
   );
 
-  const isInsideQueryPane = !!document.querySelector('.code-hinter-wrapper')?.closest('.query-details');
+  const ownerDocument = useContext(CodeEditorDocumentContext) ?? document;
+  const isInsideQueryPane = !!ownerDocument.querySelector('.code-hinter-wrapper')?.closest('.query-details');
   const isInsideQueryManager = useMemo(
     () => isInsideParent(wrapperRef?.current, 'query-manager'),
     [wrapperRef.current]
   );
 
   const context = useContext(CodeHinterContext);
+  const tooltipExtension = getTooltipExtension(ownerDocument);
 
   const { workflowSuggestions } = useWorkflowStore((state) => ({ workflowSuggestions: state.suggestions }), shallow);
 
@@ -268,7 +269,7 @@ const MultiLineCodeEditor = (props) => {
       customTabKeymap,
       keymap.of([...staticCustomKeyMaps]),
     ],
-    [langExtention, overRideFunction, customTabKeymap]
+    [langExtention, overRideFunction, customTabKeymap, tooltipExtension]
   );
 
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
@@ -330,14 +331,16 @@ const MultiLineCodeEditor = (props) => {
       <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
         <CodeHinterBtns view={editorView} isPanelOpen={isSearchPanelOpen} copilotBtnSlot={copilotBtnSlot} />
 
-        <CodeHinter.PopupIcon
-          callback={handleTogglePopupExapand}
-          icon="portal-open"
-          tip="Pop out code editor into a new window"
-          isMultiEditor={true}
-          isQueryManager={isInsideQueryPane}
-          position={{ height: height }}
-        />
+        {usePortalEditor && (
+          <CodeHinter.PopupIcon
+            callback={handleTogglePopupExapand}
+            icon="portal-open"
+            tip="Pop out code editor into a new window"
+            isMultiEditor={true}
+            isQueryManager={isInsideQueryPane}
+            position={{ height: height }}
+          />
+        )}
 
         <CodeHinter.Portal
           isCopilotEnabled={false}

@@ -4,8 +4,6 @@
 $border-radius: 4px;
 
 .query-manager {
-  user-select: none;
-
   .row.header {
     border-top: 3px solid var(--slate5);
   }
@@ -92,12 +90,790 @@ $border-radius: 4px;
   z-index: 3;
 }
 
+.query-pane.runtime-panel-bar {
+  box-sizing: border-box;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 12px;
+  color: var(--runtime-panel-muted);
+  background: var(--runtime-panel-background);
+  border-top: 1px solid var(--runtime-panel-border);
+  font: 400 13px/1.35 Inter, ui-sans-serif, system-ui, sans-serif;
+  z-index: 12;
+  transition: width 180ms ease;
+}
+
+.runtime-panel-toggle,
+.runtime-panel-tab {
+  border: 0;
+  background: transparent;
+  color: var(--runtime-panel-muted);
+  border-radius: 0;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  font: inherit;
+
+  &:hover {
+    color: var(--runtime-panel-text);
+    background: transparent;
+  }
+}
+
+.runtime-panel-tab {
+  transition: color 0.18s ease;
+}
+
+.runtime-panel-tab.active {
+  color: var(--runtime-panel-text);
+  background: transparent;
+}
+
+// Shared underline that slides between tabs (positioned by QueryPanel from the active tab's box).
+.query-pane.runtime-panel-bar .runtime-panel-tab-indicator {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--runtime-panel-accent);
+  pointer-events: none;
+  transition:
+    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+// Tab content cross-fades and slides slightly toward the tab that was picked.
+.runtime-panel-view {
+  height: 100%;
+  animation: runtime-panel-view-enter 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes runtime-panel-view-enter {
+  from {
+    opacity: 0;
+    transform: translateX(var(--runtime-panel-view-offset, 0px));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .runtime-panel-view {
+    animation: none;
+  }
+
+  .query-pane.runtime-panel-bar .runtime-panel-tab-indicator {
+    transition: none;
+  }
+}
+
+.runtime-panel-toggle {
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  border-radius: 6px;
+  justify-content: center;
+}
+
+.runtime-panel-badge {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  color: white;
+  background: var(--background-danger-strong);
+  font-size: 10px;
+  line-height: 16px;
+}
+
+.runtime-panel-content {
+  border-top-width: 2px;
+  overflow: hidden;
+  z-index: 11;
+  will-change: height;
+  transition: height 180ms cubic-bezier(0.2, 0, 0, 1), border-width 180ms cubic-bezier(0.2, 0, 0, 1), width 180ms ease;
+
+  &[data-state='open'] .runtime-panel-body {
+    animation: runtime-panel-content-enter 180ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  &[data-state='closed'] .runtime-panel-body {
+    animation: runtime-panel-content-exit 180ms cubic-bezier(0.2, 0, 0, 1) forwards;
+  }
+}
+
+.runtime-panel-body {
+  height: 100%;
+  overflow: auto;
+  // The tab-switch slide offsets content sideways; never let that show a horizontal scrollbar.
+  overflow-x: hidden;
+
+  > div,
+  .inspector-component,
+  .debugger-container {
+    min-height: 100%;
+  }
+}
+
+.right-sidebar-query-configuration {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  background: var(--background-surface-layer-01);
+
+  .query-manager {
+    height: 100%;
+    overflow: hidden;
+    background: var(--background-surface-layer-01);
+  }
+}
+
+.right-sidebar-query-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 5;
+}
+
+.query-header-control {
+  height: 28px !important;
+  min-height: 28px;
+}
+
+.query-header-control--close > div,
+.query-header-control--close svg {
+  width: var(--query-header-close-icon-size) !important;
+  height: var(--query-header-close-icon-size) !important;
+}
+
+.query-documentation-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  margin-left: 2px;
+  border-radius: 5px;
+  color: var(--icon-default);
+  text-decoration: none;
+  transition: color 120ms ease, background-color 120ms ease;
+
+  &:hover {
+    color: var(--icon-strong);
+    background: var(--interactive-overlays-fill-hover);
+  }
+}
+
+.query-documentation-tooltip {
+  z-index: 10050 !important;
+}
+
+.query-manager--right {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--background-surface-layer-01);
+
+  .query-manager-header--right {
+    position: relative;
+    display: grid;
+    grid-template-rows: 32px 32px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 6px;
+    flex: 0 0 80px;
+    min-height: 80px;
+    padding: 10px 52px 0 16px !important;
+    border-top: 0;
+    border-bottom: 1px solid var(--border-weak);
+    background: var(--background-surface-layer-01);
+    z-index: 2;
+
+    > .col {
+      display: contents;
+    }
+
+    .query-name-breadcrum {
+      grid-row: 1;
+      grid-column: 1;
+      align-self: center;
+      min-width: 0;
+      margin-left: 0 !important;
+
+      .query-inline-name-shell {
+        display: flex;
+        align-items: center;
+        width: fit-content;
+        max-width: 100%;
+        min-width: 0;
+      }
+
+      .query-inline-name-trigger {
+        width: fit-content;
+        min-width: 0;
+        padding: 0 !important;
+        color: var(--text-default);
+        font-size: 13px;
+        line-height: 20px;
+      }
+
+      .query-inline-name-editor {
+        position: relative;
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        gap: 6px;
+      }
+
+      .query-inline-name-input {
+        overflow-x: auto;
+        color: var(--text-default);
+        font-size: 13px;
+        line-height: 20px;
+      }
+
+      .query-inline-name-action {
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+
+      .query-inline-name-error {
+        position: absolute;
+        z-index: 20;
+        top: 32px;
+        left: 0;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: var(--background-surface-layer-01);
+        box-shadow: var(--elevation-100-box-shadow);
+        color: var(--text-danger);
+        font-size: 10px;
+        line-height: 14px;
+        white-space: nowrap;
+      }
+
+      .query-manager-header-query-name {
+        width: min(210px, calc(100% - 28px)) !important;
+
+        > .btn {
+          height: 28px;
+          padding: 4px 6px !important;
+          border: 0;
+          background: transparent !important;
+          box-shadow: none;
+          color: var(--text-default);
+          font-size: 13px;
+          line-height: 20px;
+
+          &:hover {
+            background: var(--interactive-overlays-fill-hover) !important;
+          }
+        }
+      }
+    }
+
+    .query-manager-tabs {
+      grid-row: 2;
+      grid-column: 1 / -1;
+      align-self: end;
+      min-width: 0;
+      height: 32px;
+      gap: 4px !important;
+    }
+
+    .query-header-buttons {
+      display: flex;
+      grid-row: 1;
+      grid-column: 2;
+      align-items: center;
+      align-self: center;
+      gap: 4px;
+      width: auto;
+      height: 32px;
+      margin: 0;
+    }
+
+    .query-manager-tab--right {
+      position: relative;
+      height: 32px !important;
+      padding: 0 10px;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      color: var(--text-placeholder);
+      font-size: var(--query-tab-font-size, 13px);
+      font-weight: var(--query-tab-font-weight, 400);
+      line-height: var(--query-tab-line-height, 20px);
+      cursor: pointer;
+      transition: color 120ms ease, border-color 120ms ease, background-color 120ms ease;
+
+      &:hover {
+        border-radius: 6px 6px 0 0;
+        background: var(--interactive-overlays-fill-hover);
+        color: var(--text-default);
+      }
+
+      &.is-active {
+        border-bottom-color: var(--border-accent-strong);
+        background: transparent;
+        color: var(--text-default);
+      }
+    }
+  }
+
+  .query-details--right {
+    flex: 1 1 auto;
+    min-height: 0;
+    margin-bottom: 0;
+    padding: 16px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: var(--slate7) transparent;
+    background: var(--query-panel-background);
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      background: var(--slate7);
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background: var(--slate8);
+    }
+  }
+
+  .query-fields-stacked {
+    .tooljetdb-operation-form {
+      --tjdb-compound-control-height: var(--query-dropdown-height);
+
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      &.tab-content-wrapper,
+      .tab-content-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .wf-block,
+      .tooljetdb-worflow-operations,
+      .tdb-join-filtersection {
+        gap: 6px;
+        margin-bottom: 0 !important;
+      }
+
+      .h-32,
+      .tjdb-limit-offset-codehinter .cm-editor {
+        height: var(--tjdb-compound-control-height) !important;
+        min-height: var(--tjdb-compound-control-height) !important;
+      }
+
+      .tjdb-limit-offset-codehinter .cm-editor {
+        border-color: var(--slate7) !important;
+        border-radius: 6px !important;
+      }
+
+      .tooljetdb-condition-row {
+        flex-wrap: nowrap;
+        align-items: stretch;
+        margin-bottom: 0 !important;
+
+        > [class*='col-'] {
+          min-width: 0;
+        }
+
+        .query-dropdown-control {
+          border-color: var(--slate7) !important;
+          border-radius: 0 !important;
+        }
+
+        > [class*='col-'] > .tj-small-btn {
+          display: flex;
+          align-items: center;
+          height: var(--tjdb-compound-control-height) !important;
+          min-height: var(--tjdb-compound-control-height) !important;
+          border-color: var(--slate7) !important;
+          border-radius: 0 !important;
+        }
+
+        > :first-child > .tj-small-btn {
+          border-radius: 6px 0 0 6px !important;
+        }
+
+        > :first-child .query-dropdown-control {
+          border-radius: 6px 0 0 6px !important;
+        }
+
+        &.tooljetdb-join-row > :first-child > .tj-small-btn {
+          border-radius: 6px 0 0 6px !important;
+        }
+
+        &.tooljetdb-join-row > :last-child .query-dropdown-control {
+          border-radius: 0 6px 6px 0 !important;
+        }
+
+        .tdb-dropdown-btn {
+          padding: 0 8px !important;
+        }
+
+        .tjdb-codhinter-wrapper > div,
+        .tjdb-codhinter-wrapper .cm-editor {
+          height: var(--tjdb-compound-control-height) !important;
+          min-height: var(--tjdb-compound-control-height) !important;
+        }
+
+        .tjdb-codhinter-wrapper {
+          flex: 1 1 0;
+          width: auto !important;
+          min-width: 0 !important;
+        }
+
+        .tjdb-codhinter-wrapper .cm-editor {
+          border-color: var(--slate7) !important;
+          border-radius: 0 !important;
+        }
+
+        .qm-delete-btn {
+          flex: 0 0 30px !important;
+          width: 30px !important;
+          max-width: 30px !important;
+          min-width: 30px !important;
+          align-items: center !important;
+          justify-content: center !important;
+          height: var(--tjdb-compound-control-height) !important;
+          min-height: var(--tjdb-compound-control-height) !important;
+          padding: 0 4px !important;
+          border-color: var(--slate7) !important;
+          border-radius: 0 6px 6px 0 !important;
+        }
+
+        .tdb-dropdown-btn .text-truncate > span {
+          color: var(--text-placeholder) !important;
+          font-size: var(--query-field-value-font-size) !important;
+          font-weight: var(--query-field-value-font-weight) !important;
+          line-height: var(--query-field-value-line-height) !important;
+        }
+      }
+    }
+
+    .query-option-field,
+    .dynamic-form-row,
+    .tooljetdb-worflow-operations,
+    .wf-block,
+    .tdb-join-filtersection,
+    .stripe-operation-container,
+    .rest-api-methods-select-element-container,
+    .grpcv2-request-section {
+      flex-direction: column !important;
+      align-items: stretch !important;
+    }
+
+    .form-label,
+    .query-field-label,
+    label:not(.form-check-label):not(.form-switch),
+    [data-cy='restapi-method-label'],
+    [data-cy='restapi-url-label'] {
+      color: var(--query-field-label-color) !important;
+      font-size: var(--query-field-label-font-size) !important;
+      font-weight: var(--query-field-label-font-weight) !important;
+      line-height: var(--query-field-label-line-height) !important;
+      letter-spacing: 0;
+    }
+
+    .query-parameter-list {
+      flex-wrap: wrap;
+
+      > .query-field-label {
+        flex: 0 0 100%;
+        width: 100% !important;
+        margin: 0 0 6px !important;
+      }
+    }
+
+    input:not([type='checkbox']):not([type='radio']):not([role='combobox']),
+    textarea,
+    select,
+    .form-control,
+    [role='combobox'],
+    [class*='__single-value'],
+    [class*='__input-container'],
+    .CodeMirror,
+    .CodeMirror-line,
+    .cm-editor,
+    .cm-content,
+    .cm-line,
+    .tdb-dropdown-btn,
+    .tdb-dropdown-btn .text-truncate {
+      color: var(--query-field-value-color) !important;
+      font-size: var(--query-field-value-font-size) !important;
+      font-weight: var(--query-field-value-font-weight) !important;
+      line-height: var(--query-field-value-line-height) !important;
+    }
+
+    input::placeholder,
+    textarea::placeholder,
+    [class*='__placeholder'] {
+      font-size: var(--query-field-value-font-size) !important;
+      font-weight: var(--query-field-value-font-weight) !important;
+      line-height: var(--query-field-value-line-height) !important;
+    }
+
+    [class*='react-select__control'],
+    [class*='query-select-motion__control'] {
+      height: var(--query-dropdown-height) !important;
+      min-height: var(--query-dropdown-height) !important;
+      border: 1px solid var(--slate7) !important;
+      border-radius: 6px !important;
+      background: var(--query-control-background) !important;
+      box-shadow: none !important;
+      transition: none;
+
+      &:hover {
+        border-color: var(--slate8) !important;
+        background: var(--query-dropdown-hover-background) !important;
+      }
+    }
+
+    // ToolJet DB's mode picker uses React Select while the other GUI controls use
+    // DropDownSelect. Keep the visible control geometry aligned with that shared
+    // dropdown treatment instead of React Select's wider default inset/indicator.
+    [class*='tooljetdb-mode-select__control'] {
+      border-color: var(--query-control-border) !important;
+      border-radius: 6px !important;
+      background: var(--query-control-background) !important;
+    }
+
+    [class*='tooljetdb-mode-select__value-container'] {
+      padding: 0 8px !important;
+      margin: 0 !important;
+    }
+
+    [class*='tooljetdb-mode-select__single-value'],
+    [class*='tooljetdb-mode-select__placeholder'] {
+      margin: 0 !important;
+      font-size: var(--query-field-value-font-size) !important;
+      font-weight: var(--query-field-value-font-weight) !important;
+      line-height: var(--query-field-value-line-height) !important;
+    }
+
+    [class*='tooljetdb-mode-select__indicators'] {
+      height: var(--query-dropdown-height) !important;
+      padding-right: 4px;
+    }
+
+    [class*='tooljetdb-mode-select__dropdown-indicator'] {
+      padding: 6px !important;
+
+      > svg {
+        width: 14px;
+        height: 14px;
+      }
+    }
+
+    [class*='react-select__control--is-focused'],
+    [class*='query-select-motion__control--is-focused'] {
+      border-color: var(--query-dropdown-focus-border) !important;
+      background: var(--query-control-background) !important;
+      box-shadow: var(--query-dropdown-focus-shadow) !important;
+    }
+
+    input:not([type='checkbox']):not([type='radio']):not([role='combobox']),
+    textarea,
+    select,
+    .form-control,
+    .CodeMirror,
+    .cm-editor,
+    .codehinter-input {
+      border-color: var(--query-control-border) !important;
+      outline: none !important;
+      background: var(--query-control-background) !important;
+      box-shadow: none !important;
+      transition: none !important;
+
+      &:hover,
+      &:focus,
+      &:focus-visible,
+      &:focus-within,
+      &.cm-focused {
+        border-color: var(--query-control-border) !important;
+        outline: none !important;
+        background: var(--query-control-background) !important;
+        box-shadow: none !important;
+      }
+    }
+
+    [class*='react-select__value-container'],
+    [class*='react-select__indicators'],
+    [class*='query-select-motion__value-container'],
+    [class*='query-select-motion__indicators'] {
+      height: var(--query-dropdown-height) !important;
+      min-height: var(--query-dropdown-height) !important;
+    }
+
+    .query-dropdown-control,
+    .query-dropdown-control > button,
+    *:has(> .query-dropdown-control) {
+      height: var(--query-dropdown-height) !important;
+      min-height: var(--query-dropdown-height) !important;
+    }
+
+    .query-dropdown-control {
+      width: 100%;
+      border-radius: 6px;
+      transition: none;
+
+      &:hover {
+        background: var(--query-dropdown-hover-background);
+      }
+
+      &:focus-within,
+      &.is-open {
+        background: var(--background-surface-layer-01);
+        box-shadow: var(--query-dropdown-focus-shadow);
+      }
+
+      > button {
+        align-items: center !important;
+        background: transparent !important;
+      }
+    }
+
+    .text-muted,
+    .query-field-helper,
+    .flip-dropdown-help-text,
+    .tj-toggle-subtext,
+    .tj-toggle-v2-helptext,
+    .openapi-operations-desc {
+      color: var(--query-field-helper-color) !important;
+      font-size: var(--query-field-helper-font-size) !important;
+      font-weight: var(--query-field-helper-font-weight) !important;
+      line-height: var(--query-field-helper-line-height) !important;
+    }
+
+    .form-label {
+      display: block;
+      width: 100% !important;
+      min-width: 0 !important;
+      margin: 0 0 6px !important;
+    }
+
+    .query-option-field > :not(.form-label),
+    .tooljetdb-worflow-operations > :not(.form-label),
+    .wf-block > :not(.form-label),
+    .dynamic-form-row > :not(.form-label) {
+      width: 100% !important;
+      max-width: none !important;
+      min-width: 0 !important;
+    }
+
+    .query-success-options > .form-label:empty {
+      display: none;
+    }
+
+    .query-success-options .d-flex,
+    .confirmation-message-row {
+      flex-direction: column !important;
+      align-items: stretch !important;
+    }
+
+    .rest-api-methods-select-element-container > .d-flex:first-child p {
+      width: 100% !important;
+      margin: 0 0 6px !important;
+    }
+
+    .rest-api-methods-select-element-container > .flex-column,
+    .grpcv2-request-section__content {
+      width: 100% !important;
+    }
+
+    .rest-api-request-fields--stacked {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      > * {
+        width: 100% !important;
+        margin-right: 0 !important;
+      }
+    }
+  }
+
+  .dynamic-form-row,
+  .tooljetdb-worflow-operations,
+  .tdb-join-filtersection,
+  .stripe-operation-container {
+    flex-direction: column !important;
+  }
+
+  .rest-api-url-codehinter,
+  [data-cy='query-manager-change-data-source'] {
+    width: 100% !important;
+  }
+
+  .transformation-editor .transformation-container {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .preview-section {
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+  }
+}
+
+[class*='query-select-motion__option--is-focused']:not([class*='query-select-motion__option--is-selected']) {
+  background: var(--background-surface-layer-01) !important;
+}
+
+[class*='query-select-motion__option--is-selected'] {
+  background: var(--background-surface-layer-01) !important;
+  color: var(--text-default) !important;
+}
+
+[class*='query-select-motion__option']:hover {
+  background: var(--background-surface-layer-01) !important;
+}
+
+@keyframes runtime-panel-content-enter {
+  from { opacity: 0.75; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes runtime-panel-content-exit {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0.75; transform: translateY(4px); }
+}
+
 .query-pane {
 
   height: 400px;
   position: fixed;
-  left: 48px;
-  right: 48px;
+  left: 54px;
+  right: 0;
   bottom: 0;
   overflow-x: hidden;
   flex: 1 1 auto;
@@ -249,6 +1025,12 @@ $border-radius: 4px;
     display: flex;
     align-items: center;
     flex: 1 0 0;
+    min-width: 0;
+  }
+
+  // The name column shrinks below its text width so a long name truncates instead of widening the row.
+  .query-row-query-name {
+    flex: 1 1 0;
     min-width: 0;
   }
 
@@ -1132,7 +1914,11 @@ $border-radius: 4px;
       }
     }
 
+    // Same height as the closed Inspector/Debugger bar beside it, open or closed.
     .preview-toggle {
+      flex: 0 0 38px;
+      height: 38px;
+      box-sizing: border-box;
       padding: 4px 6px;
       background-color: var(--base);
       border-top: 1px solid var(--slate5);
@@ -1943,8 +2729,9 @@ $border-radius: 4px;
 
 // ─── Query Folder Feature ──────────────────────────────────────────────────────
 
-// Cursor hint on query/folder name spans (enables text selection on double-click)
-.query-name .text-truncate {
+// Text cursor on the selected query's name, which double-click renames. Other rows keep the row's
+// pointer so the whole row reads as one click target.
+.query-name-editable {
   cursor: text;
 }
 
@@ -2066,6 +2853,94 @@ $border-radius: 4px;
   padding: 0 !important;
 }
 
+.query-panel-popover-motion.fade {
+  opacity: 0;
+  transition: opacity 140ms cubic-bezier(0.2, 0, 0, 1);
+
+  > * {
+    transform: translateX(-4px) scale(0.985);
+    transform-origin: left center;
+    transition: transform 140ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  &.show {
+    opacity: 1;
+
+    > * {
+      transform: translateX(0) scale(1);
+    }
+  }
+}
+
+#parameter-form-popover.query-panel-popover-motion.fade,
+#parameter-more-popover.query-panel-popover-motion.fade,
+.tjdb-workflow-query-editor-popover-index.query-panel-popover-motion.fade {
+  > * {
+    transform: translateY(-4px) scale(0.985);
+    transform-origin: top center;
+  }
+
+  &.show > * {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes query-select-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes query-select-menu-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.99);
+  }
+}
+
+.query-select-motion__menu {
+  transform-origin: top center;
+  animation: query-select-menu-in 140ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+.query-select-motion__menu-list,
+.query-panel-popover-motion .popover-body {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--slate7) transparent;
+}
+
+.query-panel-popover-motion .popover-body {
+  max-height: min(360px, calc(100vh - 96px));
+}
+
+.query-select-motion--closing__menu {
+  pointer-events: none;
+  animation: query-select-menu-out 120ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .query-panel-popover-motion.fade,
+  .query-panel-popover-motion.fade > *,
+  .query-select-motion__menu,
+  .query-select-motion--closing__menu {
+    transition-duration: 0ms;
+    animation-duration: 0ms;
+  }
+}
+
 // Filter/sort trigger button – active (open) state
 .btn-query-panel-header {
   &.active {
@@ -2122,6 +2997,412 @@ $border-radius: 4px;
       flex: 1 0 0;
       min-width: 0;
     }
+    .query-row-query-name {
+      flex: 1 1 0;
+      min-width: 0;
+    }
   }
 
+}
+
+// The query list used to render only inside `.query-pane`. Its compact header and
+// row rules must travel with the list when the same UI is reused in the left panel.
+.query-data-pane--left {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  user-select: none;
+
+  .queries-container {
+    width: 100%;
+    min-height: 0;
+    padding-bottom: 0;
+    background-color: var(--background-surface-layer-01);
+  }
+
+  .queries-panel-header {
+    display: flex;
+    flex: 0 0 48px;
+    align-items: center;
+    justify-content: space-between;
+    height: 48px;
+    padding: 8px 10px 8px 16px;
+    border-bottom: 1px solid var(--border-weak);
+  }
+
+  .queries-panel-title {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+  }
+
+  .queries-panel-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .queries-header {
+    display: flex;
+    flex: 0 0 44px;
+    align-items: center;
+    justify-content: space-between;
+    height: 44px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border-weak);
+    --tblr-gutter-x: 0rem;
+  }
+
+  .queries-toolbar {
+    flex-basis: 44px;
+    height: 44px;
+    background: var(--background-surface-layer-01);
+
+    .query-search--left {
+      flex: 1 1 auto;
+      min-width: 0;
+      margin-right: 6px;
+    }
+  }
+
+  .queries-header-actions {
+    display: flex;
+    gap: 2px;
+  }
+
+  .query-search--left {
+    width: 100%;
+    height: 28px !important;
+
+    .query-manager-search-box-wrapper {
+      min-width: 0;
+
+      .input-icon {
+        height: 28px;
+        margin-bottom: 0 !important;
+
+        .input-icon-addon {
+          align-items: center;
+          justify-content: normal;
+          width: 16px;
+          min-width: 16px;
+          height: 16px;
+          margin: 6px 0 6px 8px;
+          padding: 1.33px 0 1.33px 1.33px;
+
+          .icon {
+            width: 13.33px;
+            height: 13.33px;
+            stroke: var(--slate8);
+          }
+        }
+
+        .form-control {
+          height: 28px;
+          padding-top: 4px !important;
+          padding-right: 8px;
+          padding-bottom: 4px !important;
+          padding-left: 12px !important;
+          border: 1px solid var(--slate7) !important;
+          color: var(--slate12);
+          font-size: 12px;
+          font-weight: 400;
+          line-height: 20px;
+
+          &::placeholder {
+            color: var(--slate9);
+          }
+
+          &:focus {
+            border-color: var(--query-search-focus-border) !important;
+            outline: none;
+            background-color: var(--query-search-focus-background);
+            box-shadow: var(--query-search-focus-shadow) !important;
+          }
+        }
+
+        .form-control:not(:first-child) {
+          padding-left: 2rem !important;
+        }
+      }
+
+      .input-icon-addon.end {
+        display: flex;
+        width: 20px;
+        height: 20px;
+        margin: 4px 10px 4px 8px !important;
+        padding: 2px;
+
+        div {
+          display: flex;
+          width: 16px;
+          height: 16px;
+          padding: 3.33px;
+          border-radius: 2px;
+          background-color: var(--indigo3);
+        }
+
+        svg {
+          width: auto !important;
+          height: auto !important;
+          stroke: var(--indigo9) !important;
+        }
+      }
+    }
+
+    &.theme-dark .query-manager-search-box-wrapper {
+      .input-icon-addon:first-child .icon {
+        stroke: var(--slate12) !important;
+      }
+
+      input {
+        color: inherit;
+
+        &::placeholder {
+          color: inherit;
+        }
+
+        &:focus {
+          background-color: inherit;
+        }
+      }
+    }
+  }
+
+  .query-list {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    width: 100%;
+    min-height: 0;
+    padding: 8px;
+    gap: 4px;
+  }
+
+  .query-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    height: 40px;
+    padding: 8px 10px !important;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    color: var(--slate12);
+    font-weight: 500;
+    cursor: pointer;
+    --tblr-gutter-x: 0rem;
+
+    &:hover {
+      background: var(--background-surface-layer-02) !important;
+    }
+
+    .query-name {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      font-weight: 400;
+      font-size: 13px;
+      line-height: 20px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .query-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+    }
+
+    .query-rename-delete-btn {
+      align-items: center;
+      justify-content: flex-end;
+      width: 22px;
+      height: 20px;
+      margin-left: 2px;
+    }
+  }
+
+  .query-card-leading {
+    display: flex;
+    flex: 1 0 0;
+    align-items: center;
+    min-width: 0;
+  }
+
+  // Shrinks below the name's width so a long query name truncates instead of widening the row.
+  .query-row-query-name {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .query-row-selected {
+    border-color: var(--border-accent-weak);
+    background: var(--background-accent-weak) !important;
+  }
+}
+
+// Right-side query configuration reuses the query editors but not the legacy
+// bottom-pane geometry. Keep these final overrides after the legacy rules.
+.right-sidebar-query-configuration .query-manager--right {
+  // RunJS / RunPython: the code box fills the panel down to the preview and is the only thing that
+  // scrolls. Every wrapper between the panel and the editor passes the remaining height down.
+  .query-details--code {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+
+    .query-code-layout,
+    .runjs-editor,
+    .runps-editor,
+    .code-hinter-wrapper {
+      display: flex;
+      flex: 1 1 0;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .query-hinter,
+    .codehinter-container,
+    .codehinter-multi-line-input {
+      flex: 1 1 0;
+      min-height: 0;
+      height: 100%;
+      overflow: hidden !important;
+    }
+
+    .cm-editor {
+      min-height: 0 !important;
+      height: 100% !important;
+      max-height: 100% !important;
+    }
+
+    .cm-scroller {
+      overflow: auto;
+    }
+  }
+
+  .query-details--right {
+    input:not([type='checkbox']):not([type='radio']):not([role='combobox']),
+    textarea,
+    select,
+    .form-control,
+    .CodeMirror,
+    .cm-editor,
+    [class*='react-select__control'],
+    [class*='query-select-motion__control'] {
+      border: var(--query-control-border-width) solid var(--query-control-border) !important;
+      outline: none !important;
+      background: var(--query-control-background) !important;
+      box-shadow: none !important;
+      transition: none !important;
+
+      &:hover,
+      &:active,
+      &:focus,
+      &:focus-visible,
+      &:focus-within,
+      &.cm-focused,
+      &.is-open {
+        border: var(--query-control-border-width) solid var(--query-control-border) !important;
+        outline: none !important;
+        background: var(--query-control-background) !important;
+        box-shadow: none !important;
+      }
+    }
+
+    // React Select keeps a tiny searchable input beside the selected value. It must
+    // remain interactive without inheriting the visible field chrome around it.
+    input[role='combobox'] {
+      border: 0 !important;
+      outline: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+
+    .query-dropdown-control {
+      border-color: var(--query-control-border) !important;
+      outline: none !important;
+      background: var(--query-control-background) !important;
+      box-shadow: none !important;
+      transition: none !important;
+
+      &:hover,
+      &:active,
+      &:focus,
+      &:focus-visible,
+      &:focus-within,
+      &.is-open {
+        border-color: var(--query-control-border) !important;
+        outline: none !important;
+        background: var(--query-control-background) !important;
+        box-shadow: none !important;
+      }
+    }
+
+    .query-dropdown-control > .tdb-dropdown-btn {
+      border: var(--query-dropdown-button-border-width) solid transparent !important;
+      outline: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      transition: none !important;
+
+      &:hover,
+      &:active,
+      &:focus,
+      &:focus-visible {
+        border: var(--query-dropdown-button-border-width) solid transparent !important;
+        outline: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--query-field-value-color) !important;
+      }
+    }
+  }
+
+  .preview-section {
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+  }
+
+  .dynamic-form-row,
+  .tooljetdb-worflow-operations,
+  .tdb-join-filtersection,
+  .stripe-operation-container {
+    flex-direction: column !important;
+  }
+
+  .rest-api-url-codehinter,
+  [data-cy='query-manager-change-data-source'] {
+    width: 100% !important;
+  }
+
+  .transformation-editor .transformation-container {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+// Every surface of the right-side query panel is the white surface layer (the dark surface in dark
+// mode), the same token as the left panel. The legacy `.query-manager .header` / `.preview-section`
+// rules paint these with --base and --slate3; this block comes last and is scoped deeper, so it wins.
+.right-sidebar-query-configuration .query-manager--right {
+  .query-manager-header--right,
+  .preview-section .preview-toggle,
+  .preview-section .preview-content,
+  .preview-data-container {
+    background: var(--background-surface-layer-01);
+  }
+}
+
+// The Inspector/Debugger drawer around its content; the legacy `.query-pane` rule paints it --base.
+.query-pane.runtime-panel-content {
+  background: var(--background-surface-layer-01);
 }

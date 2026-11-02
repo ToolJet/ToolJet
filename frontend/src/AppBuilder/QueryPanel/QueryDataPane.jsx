@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { isEmpty } from 'lodash';
 import { SearchBox } from '@/_components/SearchBox';
-import Search from '@/_ui/Icon/solidIcons/Search';
 import Skeleton from 'react-loading-skeleton';
 import { QueryCard } from './QueryCard';
 import { QueryFolderTree as QueryFolderTreeBase } from './QueryFolderTree';
@@ -11,11 +10,9 @@ import cx from 'classnames';
 import FilterandSortPopup from './FilterandSortPopup';
 import { ToolTip } from '@/_components';
 import { Button } from '@/components/ui/Button/Button';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import Plus from '@/_ui/Icon/solidIcons/Plus';
 import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceSelect from '../QueryManager/Components/DataSourceSelect';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { Fade, OverlayTrigger, Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
@@ -26,12 +23,25 @@ import { INLINE_AI_FEATURES_ENABLED } from '@/_helpers/constants';
 import QueryCardMenuBase from './QueryCardMenu';
 import QueryDeleteConfirmation from './QueryDeleteConfirmation';
 import { withEditionSpecificComponent } from '@/modules/common/helpers';
+import {
+  getQueryListClassName,
+  getQueryHeaderPlacement,
+  getQueryAddButtonPresentation,
+  getQueryPanelHeaderClassName,
+  getQueryPopoverMotion,
+  getQuerySearchClassName,
+  getQuerySearchFocusStyle,
+  getQueryToolbarClassName,
+  isQuerySearchPersistent,
+} from '@/AppBuilder/panelLayout';
 
 const QueryFolderTree = withEditionSpecificComponent(QueryFolderTreeBase, 'Appbuilder');
 const QueryCardMenu = withEditionSpecificComponent(QueryCardMenuBase, 'Appbuilder');
 
-export const QueryDataPane = ({ darkMode }) => {
+export const QueryDataPane = ({ darkMode, surface = 'bottom', onClose }) => {
   const { t } = useTranslation();
+  const persistentSearch = isQuerySearchPersistent(surface);
+  const headerPlacement = getQueryHeaderPlacement(surface);
 
   const loadingDataQueries = useStore((state) => state.queryPanel.loadingDataQueries);
   const setQueryPanelSearchTerm = useStore((state) => state.queryPanel.setQueryPanelSearchTerm);
@@ -113,11 +123,49 @@ export const QueryDataPane = ({ darkMode }) => {
     showSearchBox && !storedSearchTerm && searchBoxRef.current.focus();
   }, [showSearchBox]);
 
+  const renderSearchBox = () => (
+    <SearchBox
+      ref={searchBoxRef}
+      dataCy={`query-manager`}
+      width="100%"
+      initialValue={searchTermForFilters}
+      callBack={(val) => {
+        setSearchTermForFilters(val.target.value);
+      }}
+      onClearCallback={() => setSearchTermForFilters('')}
+      placeholder={t('globals.search', 'Search')}
+      customClass="query-manager-search-box-wrapper flex-grow-1"
+      showClearButton
+      clearTextOnBlur={false}
+    />
+  );
+
   return (
-    <div className="data-pane">
+    <div className={getQueryListClassName(surface)} style={getQuerySearchFocusStyle(surface)}>
       <div className={`queries-container ${darkMode && 'theme-dark'} d-flex flex-column h-100`}>
-        <div className="queries-header">
-          <AddDataSourceButton darkMode={darkMode} />
+        <div className={getQueryPanelHeaderClassName(surface)}>
+          <span className="queries-panel-title">Queries</span>
+          <div className="queries-panel-header-actions">
+            {headerPlacement.add === 'title' && <AddDataSourceButton darkMode={darkMode} surface={surface} />}
+            <ToolTip message="Close queries" placement="bottom">
+              <Button
+                isLucid
+                iconOnly
+                size="medium"
+                variant="ghost"
+                leadingIcon="x"
+                aria-label="Close queries"
+                onClick={onClose}
+                data-cy="close-query-panel"
+              />
+            </ToolTip>
+          </div>
+        </div>
+        <div className={getQueryToolbarClassName(surface, showSearchBox)}>
+          {headerPlacement.add === 'toolbar' && <AddDataSourceButton darkMode={darkMode} surface={surface} />}
+          {headerPlacement.search === 'toolbar' && (
+            <div className={getQuerySearchClassName(surface, darkMode)}>{renderSearchBox()}</div>
+          )}
           <div className="queries-header-actions">
             {INLINE_AI_FEATURES_ENABLED && <AutoSortButton darkMode={darkMode} />}
             <FilterandSortPopup
@@ -126,61 +174,49 @@ export const QueryDataPane = ({ darkMode }) => {
               clearSelectedDataSources={() => setDataSourcesForFilters([])}
               darkMode={darkMode}
             />
-            <ToolTip message="Open quick search" placement="bottom">
-              <Button
-                isLucid
-                iconOnly
-                size="medium"
-                variant="ghost"
-                leadingIcon="search"
-                onClick={() => {
-                  showSearchBox && setSearchTermForFilters('');
-                  setShowSearchBox((showSearchBox) => !showSearchBox);
-                }}
-                className={cx({ 'tw-bg-button-outline-pressed': showSearchBox })}
-                data-tooltip-id="tooltip-for-query-panel-header-btn"
-                data-tooltip-content="Open quick search"
-                data-cy="query-search-button"
-              />
-            </ToolTip>
+            {!persistentSearch && (
+              <ToolTip message="Open quick search" placement="bottom">
+                <Button
+                  isLucid
+                  iconOnly
+                  size="medium"
+                  variant="ghost"
+                  leadingIcon="search"
+                  onClick={() => {
+                    showSearchBox && setSearchTermForFilters('');
+                    setShowSearchBox((showSearchBox) => !showSearchBox);
+                  }}
+                  className={cx({ 'tw-bg-button-outline-pressed': showSearchBox })}
+                  data-tooltip-id="tooltip-for-query-panel-header-btn"
+                  data-tooltip-content="Open quick search"
+                  data-cy="query-search-button"
+                />
+              </ToolTip>
+            )}
           </div>
         </div>
-        <div
-          className={cx('queries-header', {
-            'd-none': !showSearchBox,
-          })}
-        >
-          <div className="col-auto w-100">
-            <div className={`queries-search d-flex ${darkMode && 'theme-dark'}`}>
-              <SearchBox
-                ref={searchBoxRef}
-                dataCy={`query-manager`}
-                width="100%"
-                initialValue={searchTermForFilters}
-                callBack={(val) => {
-                  setSearchTermForFilters(val.target.value);
-                }}
-                onClearCallback={() => setSearchTermForFilters('')}
-                placeholder={t('globals.search', 'Search')}
-                customClass="query-manager-search-box-wrapper flex-grow-1"
-                showClearButton
-                clearTextOnBlur={false}
-              />
-              <ButtonSolid
-                size="sm"
-                variant="ghostBlue"
-                className="ms-1"
-                onClick={() => {
-                  setSearchTermForFilters('');
-                  setShowSearchBox(false);
-                }}
-                data-cy={`query-search-close-button`}
-              >
-                Close
-              </ButtonSolid>
+        {!persistentSearch && (
+          <div className={cx('queries-header', { 'd-none': !showSearchBox })}>
+            <div className="col-auto w-100">
+              <div className={getQuerySearchClassName(surface, darkMode)}>
+                {renderSearchBox()}
+                <Button
+                  isLucid
+                  iconOnly
+                  size="medium"
+                  variant="ghost"
+                  leadingIcon="x"
+                  aria-label="Close search"
+                  onClick={() => {
+                    setSearchTermForFilters('');
+                    setShowSearchBox(false);
+                  }}
+                  data-cy={`query-search-close-button`}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {loadingDataQueries ? (
           <div className="p-2">
@@ -308,7 +344,7 @@ const AutoSortButton = ({ darkMode: _darkMode }) => {
   );
 };
 
-const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
+const AddDataSourceButton = ({ darkMode, disabled: _disabled, surface = 'bottom' }) => {
   const { isModuleEditor } = useModuleContext();
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
   const selectRef = useRef();
@@ -330,10 +366,13 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
   }, [showMenu]);
 
   const disabled = _disabled || shouldFreeze;
+  const buttonPresentation = getQueryAddButtonPresentation(surface);
+  const popoverMotion = getQueryPopoverMotion('new-query');
 
   return (
     <OverlayTrigger
       show={showMenu && !disabled}
+      transition={popoverMotion.transition ? Fade : false}
       placement="right-end"
       arrowOffsetTop={90}
       arrowOffsetLeft={90}
@@ -341,7 +380,7 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
         <Popover
           key={'page.i'}
           id="query-add-ds-popover"
-          className={`ds-select-popover transparent-popover ${
+          className={`ds-select-popover transparent-popover ${popoverMotion.className} ${
             darkMode && 'popover-dark-themed dark-theme tj-dark-mode'
           }`}
         >
@@ -357,9 +396,10 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
       <span className="col-auto" id="query-add-ds-popover-btn">
         <Button
           isLucid
-          iconOnly
-          size="medium"
-          variant="outline"
+          iconOnly={surface !== 'left'}
+          size={buttonPresentation.size}
+          variant={buttonPresentation.variant}
+          style={buttonPresentation.style}
           leadingIcon="plus"
           disabled={disabled}
           onClick={(e) => {
@@ -370,7 +410,9 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
             setShowMenu((show) => !show);
           }}
           data-cy={`show-ds-popover-button`}
-        />
+        >
+          {surface === 'left' ? 'New query' : null}
+        </Button>
       </span>
     </OverlayTrigger>
   );

@@ -107,6 +107,7 @@ const GRPCComponent = ({ darkMode, selectedDataSource, ...restProps }) => {
           <div className="col-6 d-flex">
             <div className={`${darkMode && 'dark'}`} style={{ width: '200px', height: '32px' }}>
               <Select
+                animateMenu
                 options={serviceNames}
                 onChange={(value) => {
                   const selectedService = serviceNames.find((service) => service.value === value);
@@ -125,6 +126,7 @@ const GRPCComponent = ({ darkMode, selectedDataSource, ...restProps }) => {
             </div>
             <div className={`${darkMode && 'dark'}`} style={{ width: '180px', height: '32px' }}>
               <Select
+                animateMenu
                 options={selectedServiceName?.rpcs || []}
                 onChange={(value) => {
                   setRpc(value);

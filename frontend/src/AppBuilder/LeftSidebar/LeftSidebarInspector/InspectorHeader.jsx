@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import InputComponent from '@/components/ui/Input/Index';
+import '../panelHeader.scss';
 
 const InspectorHeader = ({ darkMode, onClose, searchValue, onSearchChange, onSearchClear, hideSearch = false }) => {
   return (

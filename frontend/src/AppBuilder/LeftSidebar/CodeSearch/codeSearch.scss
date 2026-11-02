@@ -11,6 +11,14 @@
     padding-bottom: 8px;
   }
 
+  // The shared panel header only pads its title row, so the rows below it get the same side inset
+  // as `.inspector-header-search`.
+  .code-search-input-row,
+  .code-search-filters,
+  .code-search-summary {
+    padding: 0 10px;
+  }
+
   .code-search-input-row {
     display: flex;
     align-items: center;
@@ -182,7 +190,10 @@
     color: var(--icon-default);
   }
 
+  // The name is what the builder scans for, so it keeps its width; type and page give way first.
   .code-search-entity-name {
+    flex-shrink: 0;
+    max-width: 55%;
     font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -196,7 +207,10 @@
 
   // The page a component is on; the current page in accent so it's easy to spot.
   .code-search-entity-page {
-    flex-shrink: 0;
+    flex-shrink: 2;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 11px;
     color: var(--text-placeholder);
 
@@ -253,11 +267,12 @@
   }
 
   .code-search-row-label {
-    // Sized to the label (event and list-item labels run long); the preview keeps at least 40%.
+    // Sized to the label (event and list-item labels run long); the preview, which holds the match,
+    // keeps at least half the row.
     display: flex;
     flex: 0 1 auto;
     gap: 4px;
-    max-width: 60%;
+    max-width: 50%;
     min-width: 0;
     font-size: 12px;
     color: var(--text-placeholder);

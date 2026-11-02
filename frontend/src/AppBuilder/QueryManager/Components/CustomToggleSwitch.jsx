@@ -47,12 +47,15 @@ export const CustomToggleSwitch = ({
       {switchToggle}
       <div className="d-flex flex-column">
         {label && (
-          <span className={`${darkMode ? 'color-white' : 'color-light-slate-12'}`} data-cy={`${dataCy}-toggle-label`}>
+          <span
+            className={`${darkMode ? 'color-white' : 'color-light-slate-12'} ${classes?.toggleLabel ?? ''}`}
+            data-cy={`${dataCy}-toggle-label`}
+          >
             {label}
           </span>
         )}
         {subLabel && (
-          <span style={{ color: '#687076' }} data-cy={`${dataCy}-toggle-sublabel`}>
+          <span className={classes?.toggleSubLabel} style={{ color: '#687076' }} data-cy={`${dataCy}-toggle-sublabel`}>
             {subLabel}
           </span>
         )}

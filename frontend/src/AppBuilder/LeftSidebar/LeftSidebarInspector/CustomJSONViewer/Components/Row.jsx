@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Copy, Link2 } from 'lucide-react';
 import StringNode from './StringNode';
 import FunctionNode from './FunctionNode';
 import NumberNode from './NumberNode';
@@ -9,7 +10,6 @@ import ObjectNode from './ObjectNode';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { ToolTip } from '@/_components/ToolTip';
-import { DefaultCopyIcon } from '../../DefaultCopyIcon';
 import { copyToClipboard, extractComponentName, formatPathForCopy } from '../../utils';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
@@ -30,7 +30,7 @@ const renderNodeIcons = (node, iconsList, darkMode) => {
   return null;
 };
 
-const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => {
+const Row = ({ label, value, level = 1, absolutePath, iconsList = [], darkMode, showPathCopy = true }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const Node = () => {
     if (typeof value === 'string') {
@@ -93,26 +93,33 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => 
             <Node />
           </div>
           <div className="json-viewer-actions-container">
-            <ToolTip message={'Copy path'}>
-              <span
-                onClick={() => {
-                  const formattedPath = formatPathForCopy(absolutePath);
-                  copyToClipboard(formattedPath, false);
-                }}
-                className="copy-to-clipboard json-viewer-action-icon"
-              >
-                <DefaultCopyIcon height={12} width={12} />
-              </span>
-            </ToolTip>
+            {showPathCopy && (
+              <ToolTip message={'Copy path'}>
+                <button
+                  type="button"
+                  aria-label={`Copy path of ${label}`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    copyToClipboard(formatPathForCopy(absolutePath), false);
+                  }}
+                  className="copy-to-clipboard json-viewer-action-icon"
+                >
+                  <Link2 size={12} />
+                </button>
+              </ToolTip>
+            )}
             <ToolTip message={'Copy value'}>
-              <span
-                onClick={() => {
+              <button
+                type="button"
+                aria-label={`Copy value of ${label}`}
+                onClick={(event) => {
+                  event.stopPropagation();
                   copyToClipboard(value);
                 }}
                 className="json-viewer-action-icon"
               >
-                <SolidIcon width="12" height="12" name="copy" fill="#6A727C" />
-              </span>
+                <Copy size={12} />
+              </button>
             </ToolTip>
           </div>
         </div>
@@ -128,6 +135,7 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => 
               absolutePath={`${absolutePath}.${key}`}
               iconsList={iconsList}
               darkMode={darkMode}
+              showPathCopy={showPathCopy}
             />
           ))}
         </div>
@@ -144,6 +152,7 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => 
                 absolutePath={`${absolutePath}.${index}`}
                 iconsList={iconsList}
                 darkMode={darkMode}
+                showPathCopy={showPathCopy}
               />
             );
           })}

@@ -1,4 +1,3 @@
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import React, { forwardRef } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -14,15 +13,17 @@ export const SidebarItem = forwardRef(
       selectedSidebarItem,
       className,
       icon,
-      IconComponent,
-      iconFill = 'var(--icon-strong)',
+      IconComponent: _IconComponent,
+      iconFill: _iconFill = 'var(--icon-strong)',
       commentBadge,
       text,
+      railLabel,
+      accessibleLabel,
       onClick,
       badge = false,
       count,
       children,
-      keepTooltipOpen,
+      keepTooltipOpen: _keepTooltipOpen,
       classes,
       trigger = ['click', 'hover', 'focus'],
       show = undefined,
@@ -31,8 +32,6 @@ export const SidebarItem = forwardRef(
     ref
   ) => {
     const { t } = useTranslation();
-    let displayIcon = icon;
-    if (icon == 'page') displayIcon = 'file01';
     const content = (
       <Button
         {...rest}
@@ -42,11 +41,13 @@ export const SidebarItem = forwardRef(
         onClick={onClick && onClick}
         ref={ref}
         type="button"
-        aria-label={tip}
+        aria-label={accessibleLabel || tip}
         variant="ghost"
         size="default"
         iconOnly
-        data-cy={`left-sidebar-${generateCypressDataCy(typeof tip === 'object' ? icon : tip) || 'unknown'}-button`}
+        data-cy={`left-sidebar-${
+          generateCypressDataCy(typeof tip === 'object' ? icon : tip || accessibleLabel) || 'unknown'
+        }-button`}
       >
         {children && (
           <div className={'sidebar-svg-icon  position-relative'}>
@@ -55,11 +56,12 @@ export const SidebarItem = forwardRef(
           </div>
         )}
         {badge && <SidebarItem.Badge count={count} />}
-        <p>{text && t(`leftSidebar.${text}.text`, text)}</p>
+        {text && <p>{t(`leftSidebar.${text}.text`, text)}</p>}
+        {railLabel && <span className="left-sidebar-item-label">{t(railLabel)}</span>}
       </Button>
     );
 
-    if (!tip) return content;
+    if (!tip || railLabel) return content;
     return (
       <OverlayTrigger
         trigger={trigger}

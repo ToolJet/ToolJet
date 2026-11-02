@@ -19,6 +19,7 @@ import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
 import Beta from '@/_ui/Beta';
 import './styles.scss';
+import { getComponentPickerClassName } from '@/AppBuilder/panelLayout';
 
 // Simple error boundary component for module errors
 class ModuleErrorBoundary extends React.Component {
@@ -49,7 +50,7 @@ class ModuleErrorBoundary extends React.Component {
 // TODO: scrolling
 // TODO: searching
 
-export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
+export const ComponentsManagerTab = ({ darkMode, isModuleEditor, onClose, surface = 'right' }) => {
   const _shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
@@ -116,6 +117,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   );
 
   const handleToggle = () => {
+    if (onClose) return onClose();
     setActiveRightSideBarTab(null);
     setRightSidebarOpen(false);
   };
@@ -251,7 +253,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   };
 
   return (
-    <div className={`components-container ${shouldFreeze ? 'disabled' : ''}`}>
+    <div className={`${getComponentPickerClassName(surface)} ${shouldFreeze ? 'disabled' : ''}`}>
       {isModuleEditor || edition === 'ce' ? (
         <>
           <div className="panel-header">

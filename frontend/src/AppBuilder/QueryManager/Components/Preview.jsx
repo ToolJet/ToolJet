@@ -7,16 +7,15 @@ import { useEventListener } from '@/_hooks/use-event-listener';
 import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 import useStore from '@/AppBuilder/_stores/store';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { PREVIEW_PANEL } from '@/AppBuilder/panelLayout';
 
 const Preview = ({ darkMode, calculatePreviewHeight }) => {
   const [key, setKey] = useState('raw');
   const [isJson, setIsJson] = useState(false);
   const [isDragging, setDragging] = useState(false);
   const [isTopOfPreviewPanel, setIsTopOfPreviewPanel] = useState(false);
-
   const storedHeight = useStore((state) => state.queryPanel.previewPanelHeight);
-  // initialize height with stored height if present in state
-  const heightSetOnce = useRef(!!storedHeight);
+  const setPreviewPanelHeight = useStore((state) => state.queryPanel.setPreviewPanelHeight);
   const previewPanelExpanded = useStore((state) => state.queryPanel.previewPanelExpanded);
   const setPreviewPanelExpanded = useStore((state) => state.queryPanel.setPreviewPanelExpanded);
   const [height, setHeight] = useState(storedHeight);
@@ -24,26 +23,40 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
   const queryPreviewData = useStore((state) => state.queryPanel.queryPreviewData);
   const previewLoading = useStore((state) => state.queryPanel.previewLoading);
   const previewPanelRef = useRef();
-  const queryPanelHeight = useStore((state) => state.queryPanel.queryPanelHeight);
+  const dragStartRef = useRef(null);
 
-  useEffect(() => {
-    calculatePreviewHeight(height, previewPanelExpanded);
+  // The preview docks at the bottom of the query panel and is sized against it.
+  const getContainerHeight = () =>
+    previewPanelRef.current?.closest(`.${PREVIEW_PANEL.containerClassName}`)?.clientHeight ?? 0;
+  const getDefaultHeight = () => Math.round(getContainerHeight() * PREVIEW_PANEL.defaultRatio);
+  const clampHeight = (value) => {
+    const containerHeight = getContainerHeight();
+    if (!containerHeight) return value;
+    return Math.min(value, Math.max(PREVIEW_PANEL.minPx, containerHeight - PREVIEW_PANEL.reservedAbovePx));
+  };
+
+  useLayoutEffect(() => {
+    const initialHeight = clampHeight(storedHeight || getDefaultHeight());
+    setHeight(initialHeight);
+    calculatePreviewHeight(initialHeight, previewPanelExpanded);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // The panel also opens from outside (running a preview from the query header), so the fields above
+  // learn its size whenever it opens or closes, not only from its own toggle.
+  const hasMountedRef = useRef(false);
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+    calculatePreviewHeight(height, previewPanelExpanded);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [previewPanelExpanded]);
 
   useEffect(() => {
     setTheme(() => getTheme(darkMode));
   }, [darkMode]);
-
-  useLayoutEffect(() => {
-    if (queryPreviewData || previewLoading) {
-      previewPanelRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-        inline: 'nearest',
-      });
-    }
-  }, [queryPreviewData, previewLoading]);
 
   useEffect(() => {
     if (queryPreviewData !== null && typeof queryPreviewData === 'object') {
@@ -64,61 +77,57 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
     }
   };
 
-  useEffect(() => {
-    // query panel collapse scenario
-    if (queryPanelHeight === 95 || queryPanelHeight === 0) {
-      return;
-    }
-    if (queryPanelHeight - 85 < 40) {
-      setHeight(40);
-      return;
-    }
-    if (queryPanelHeight - 85 < height) {
-      setHeight((queryPanelHeight - 85) * 0.7);
-    } else if (!heightSetOnce.current) {
-      setHeight((queryPanelHeight - 85) * 0.7);
-      heightSetOnce.current = true;
-    }
-  }, [queryPanelHeight]);
+  // Drag state lives in refs: a quick drag can deliver mousedown, mousemove and mouseup before React
+  // re-renders, and the window listeners only pick up a new handler after a render.
+  const isOnTopEdgeRef = useRef(false);
+  const heightRef = useRef(height);
+  heightRef.current = height;
+
+  const resize = (nextHeight) => {
+    heightRef.current = nextHeight;
+    setHeight(nextHeight);
+  };
 
   const onMouseMove = (e) => {
-    if (previewPanelRef.current) {
-      const componentTop = Math.round(previewPanelRef.current.getBoundingClientRect().top);
-      const clientY = e.clientY;
-      if ((clientY >= componentTop - 12) & (clientY <= componentTop + 1)) {
-        setIsTopOfPreviewPanel(true);
-      } else if (isTopOfPreviewPanel) {
-        setIsTopOfPreviewPanel(false);
-      }
+    if (!previewPanelRef.current) return;
+    const componentTop = Math.round(previewPanelRef.current.getBoundingClientRect().top);
+    isOnTopEdgeRef.current = e.clientY >= componentTop - 12 && e.clientY <= componentTop + 1;
+    setIsTopOfPreviewPanel(isOnTopEdgeRef.current);
 
-      if (isDragging) {
-        const parentHeight = queryPanelHeight;
-        const shift = componentTop - clientY;
-        const currentHeight = previewPanelRef.current.offsetHeight;
-        const newHeight = currentHeight + shift;
-        if (newHeight < 50) {
-          setPreviewPanelExpanded(false);
-
-          setHeight((queryPanelHeight - 85) * 0.7);
-          return;
-        }
-        if (newHeight > parentHeight - 95) {
-          return;
-        }
-        setHeight(newHeight);
-      }
+    const dragStart = dragStartRef.current;
+    if (!dragStart) return;
+    const newHeight = dragStart.height + (dragStart.y - e.clientY);
+    if (newHeight < PREVIEW_PANEL.minPx) {
+      // Dragged shut: collapse, and reopen at the default size next time.
+      dragStartRef.current = null;
+      setDragging(false);
+      const reopenHeight = clampHeight(getDefaultHeight());
+      resize(reopenHeight);
+      setPreviewPanelHeight(reopenHeight);
+      setPreviewPanelExpanded(false);
+      return;
     }
+    resize(clampHeight(newHeight));
   };
 
   const onMouseUp = () => {
+    if (!dragStartRef.current) return;
+    dragStartRef.current = null;
     setDragging(false);
-    calculatePreviewHeight(height, previewPanelExpanded);
+    setPreviewPanelHeight(heightRef.current);
+    calculatePreviewHeight(heightRef.current, previewPanelExpanded);
   };
 
-  const onMouseDown = () => {
-    isTopOfPreviewPanel && setDragging(true);
+  // Listened for on the window: the grab zone reaches above the panel, over the fields, so the press
+  // often lands on an element outside it.
+  const onMouseDown = (e) => {
+    if (!previewPanelExpanded || !isOnTopEdgeRef.current) return;
+    e.preventDefault(); // no text selection while dragging
+    dragStartRef.current = { y: e.clientY, height: heightRef.current };
+    setDragging(true);
   };
 
+  useEventListener('mousedown', onMouseDown);
   useEventListener('mousemove', onMouseMove);
   useEventListener('mouseup', onMouseUp);
   const queryPreviewDataWithCircularDependenciesRemoved = useMemo(() => {
@@ -134,11 +143,10 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
           previewPanelExpanded ? 'expanded' : ''
         }`}
       ref={previewPanelRef}
-      onMouseDown={onMouseDown}
       style={{
         cursor: previewPanelExpanded && (isDragging || isTopOfPreviewPanel) ? 'row-resize' : 'default',
         height: `${height}px`,
-        ...(!previewPanelExpanded && { height: '29px' }),
+        ...(!previewPanelExpanded && { height: `${PREVIEW_PANEL.collapsedPx}px` }),
         ...(isDragging && {
           transition: 'none',
         }),
@@ -148,7 +156,6 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
         <div
           onClick={() => {
             setPreviewPanelExpanded(!previewPanelExpanded);
-            calculatePreviewHeight(height, !previewPanelExpanded);
           }}
           className="left"
           data-cy="preview-toggle-button"

@@ -74,7 +74,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
   }
 
   return (
-    <div className="tab-content-wrapper tj-db-field-wrapper mt-2">
+    <div className="tab-content-wrapper tj-db-field-wrapper mt-2 tooljetdb-operation-form">
       <div className="d-flex tooljetdb-worflow-operations mb-2">
         <label className="form-label flex-shrink-0" data-cy="tooljetdb-update-rows-filter-label">
           Filter

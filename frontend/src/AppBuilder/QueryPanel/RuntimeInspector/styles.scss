@@ -1,0 +1,516 @@
+// Split-view Inspector for the bottom runtime panel. Type and selection colors follow the
+// editor header (13px / 400, indigo soft fill for the active item).
+.runtime-inspector {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--surfaces-surface-01);
+  color: var(--text-default);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+
+  button {
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    height: 40px;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--border-weak);
+  }
+
+  &__search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    width: 220px;
+    height: 28px;
+    margin: 0;
+    padding: 0 8px;
+    border: 1px solid var(--border-default);
+    border-radius: 6px;
+    color: var(--icon-default);
+    transition: border-color 0.12s ease;
+
+    &:focus-within {
+      border-color: var(--indigo7);
+    }
+
+    input {
+      flex: 1;
+      min-width: 0;
+      height: 26px;
+      padding: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      box-shadow: none;
+      color: var(--text-default);
+      font-size: 13px;
+
+      &::placeholder {
+        color: var(--text-placeholder);
+      }
+    }
+
+    button {
+      display: inline-flex;
+      color: var(--icon-default);
+    }
+  }
+
+  &__filters {
+    display: flex;
+    gap: 4px;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  &__filter {
+    flex-shrink: 0;
+    height: 24px;
+    padding: 0 10px !important;
+    border: 1px solid var(--border-weak) !important;
+    border-radius: 12px;
+    color: var(--text-placeholder) !important;
+    font-size: 12px !important;
+    transition:
+      background-color 0.12s ease,
+      border-color 0.12s ease,
+      color 0.12s ease;
+
+    &:hover {
+      color: var(--text-default) !important;
+      background: var(--surfaces-surface-02) !important;
+    }
+
+    &.is-active {
+      color: var(--indigo9) !important;
+      background: var(--indigo3) !important;
+      border-color: var(--indigo5) !important;
+    }
+  }
+
+  // Shown instead of the chips when the panel is too narrow for them (see container query below).
+  &__filter-select {
+    position: relative;
+    display: none;
+    align-items: center;
+    flex-shrink: 0;
+    margin: 0;
+    color: var(--icon-default);
+
+    select {
+      height: 28px;
+      padding: 0 26px 0 10px;
+      border: 1px solid var(--border-default);
+      border-radius: 6px;
+      outline: none;
+      background: var(--surfaces-surface-01);
+      color: var(--text-default);
+      font-size: 13px;
+      font-weight: 400;
+      appearance: none;
+      cursor: pointer;
+
+      &:hover {
+        border-color: var(--border-strong);
+      }
+
+      &:focus-visible {
+        border-color: var(--indigo7);
+      }
+    }
+
+    svg {
+      position: absolute;
+      right: 9px;
+      pointer-events: none;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+
+  &__list {
+    width: 260px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 4px 6px 12px;
+    border-right: 1px solid var(--border-weak);
+  }
+
+  &__group + &__group {
+    margin-top: 2px;
+  }
+
+  &__group-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    height: 28px;
+    padding: 0 6px !important;
+    border-radius: 4px;
+    color: var(--text-placeholder) !important;
+    font-size: 12px !important;
+
+    &:hover {
+      color: var(--text-default) !important;
+      background: var(--interactive-hover) !important;
+    }
+  }
+
+  &__chevron {
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+
+    &.is-open {
+      transform: rotate(90deg);
+    }
+  }
+
+  &__count {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-placeholder);
+  }
+
+  &__entry {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 26px;
+    padding-right: 6px;
+    border-radius: 4px;
+
+    &:hover {
+      background: var(--interactive-hover);
+    }
+
+    &.is-selected {
+      background: var(--indigo3);
+      color: var(--indigo9);
+
+      .runtime-inspector__twisty {
+        color: var(--indigo9);
+      }
+    }
+  }
+
+  &__twisty {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    color: var(--icon-default) !important;
+
+    svg {
+      transition: transform 0.15s ease;
+    }
+
+    &.is-open svg {
+      transform: rotate(90deg);
+    }
+
+    &.is-hidden {
+      visibility: hidden;
+    }
+  }
+
+  &__entry-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    text-align: left;
+  }
+
+  &__entry-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  &__entry-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__match {
+    padding: 0;
+    background: var(--background-warning-weak, var(--amber3));
+    color: inherit;
+  }
+
+  &__muted {
+    padding: 12px;
+    color: var(--text-placeholder);
+
+    &--inline {
+      padding: 2px 6px 6px 30px;
+      font-size: 12px;
+    }
+  }
+
+  &__detail {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__detail-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    height: 40px;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--border-weak);
+  }
+
+  &__crumbs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-placeholder);
+    white-space: nowrap;
+
+    .is-current {
+      color: var(--text-default);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  &__crumb-sep {
+    flex-shrink: 0;
+    color: var(--icon-weak);
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  &__icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    color: var(--icon-default) !important;
+    transition:
+      background-color 0.12s ease,
+      color 0.12s ease;
+
+    &:hover {
+      color: var(--icon-strong) !important;
+      background: var(--interactive-hover) !important;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--indigo7);
+      outline-offset: -2px;
+    }
+
+    &.is-done {
+      color: var(--icon-success, var(--grass9)) !important;
+    }
+  }
+
+  &__close {
+    flex-shrink: 0;
+
+    // Inspector has no right-aligned controls, so its close button pushes itself to the edge.
+    &--end {
+      margin-left: auto;
+    }
+  }
+
+  &__divider {
+    width: 1px;
+    height: 16px;
+    margin: 0 4px;
+    background: var(--border-weak);
+  }
+
+  &__values {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 8px 12px 16px;
+    animation: runtime-inspector-values-in 0.16s ease-out;
+
+    // Rows hug their content: the copy actions appear right after the value on hover, so the
+    // pointer never has to travel to the far edge of a wide panel. No row fill — just the actions.
+    .custom-json-viewer {
+      margin: 0;
+    }
+
+    .json-viewer-row-container {
+      width: fit-content;
+      max-width: 100%;
+      border-radius: 0;
+
+      &:hover {
+        width: fit-content;
+        background-color: transparent;
+
+        .json-viewer-value-container {
+          padding-right: 0;
+        }
+
+        .json-viewer-label-container {
+          color: var(--text-default);
+        }
+      }
+    }
+
+    .json-viewer-row {
+      width: auto;
+      max-width: 100%;
+      height: 24px;
+      gap: 2px;
+
+      .json-viewer-label-container {
+        color: var(--text-placeholder);
+        transition: color 0.12s ease;
+      }
+
+      .json-viewer-value-container {
+        flex: 0 1 auto;
+      }
+
+      .json-viewer-actions-container {
+        position: static;
+        display: flex;
+        visibility: hidden;
+        gap: 2px;
+        width: auto;
+        height: 20px;
+        margin-left: 6px;
+        background: transparent;
+        opacity: 0;
+        transition: opacity 0.12s ease;
+
+        .json-viewer-action-icon {
+          width: 20px;
+          height: 20px;
+          padding: 0;
+          border: 0;
+          border-radius: 4px;
+          background: transparent;
+          color: var(--icon-default);
+
+          &:hover {
+            color: var(--icon-strong);
+            background-color: var(--interactive-hover);
+          }
+        }
+      }
+    }
+
+    .json-viewer-row-container:hover .json-viewer-actions-container,
+    .json-viewer-row-container:focus-within .json-viewer-actions-container {
+      visibility: visible;
+      opacity: 1;
+    }
+  }
+
+  &__empty {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-placeholder);
+  }
+}
+
+// Chips need ~785px (Inspector) to ~850px (Debugger, with counts); below that, use the dropdown.
+@container (max-width: 880px) {
+  .runtime-inspector__filters {
+    display: none;
+  }
+
+  .runtime-inspector__filter-select {
+    display: flex;
+  }
+}
+
+// When the right sidebar leaves little room, stack the list above the details instead of squeezing both.
+@container (max-width: 560px) {
+  .runtime-inspector__toolbar {
+    gap: 8px;
+  }
+
+  .runtime-inspector__search {
+    width: auto;
+    min-width: 120px;
+    flex: 1;
+  }
+
+  .runtime-inspector__body {
+    flex-direction: column;
+  }
+
+  .runtime-inspector__list {
+    width: auto;
+    max-height: 45%;
+    border-right: 0;
+    border-bottom: 1px solid var(--border-weak);
+  }
+}
+
+@keyframes runtime-inspector-values-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .runtime-inspector__values {
+    animation: none;
+  }
+}

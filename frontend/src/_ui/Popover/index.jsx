@@ -18,6 +18,7 @@ const PopoverComponent = ({
   popoverContentWidth = '', // 'auto' or number in px
   onInteractOutside,
   contentProps = {},
+  forceMount = false,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const computeStyle = () => {
@@ -27,18 +28,22 @@ const PopoverComponent = ({
     }
 
     if (popoverContentHeight) {
-      styles.height = popoverContentHeight === 'auto' ? 'auto' : `${popoverContentHeight}vh`;
+      styles.height =
+        popoverContentHeight === 'auto' || typeof popoverContentHeight === 'string'
+          ? popoverContentHeight
+          : `${popoverContentHeight}vh`;
       styles.overflow = 'auto';
     }
     return styles;
   };
   return (
-    <Popover.Root {...(open && { open })} onOpenChange={handleToggle && handleToggle}>
+    <Popover.Root open={open} onOpenChange={handleToggle && handleToggle}>
       <Popover.Trigger asChild>
         <a className={cx({ 'w-100': fullWidth })}>{children}</a>
       </Popover.Trigger>
-      <Popover.Portal>
+      <Popover.Portal forceMount={forceMount}>
         <Popover.Content
+          forceMount={forceMount}
           style={computeStyle()}
           {...(onInteractOutside && { onInteractOutside })}
           side={side}

@@ -13,6 +13,7 @@ export const SelectComponent = ({
   closeMenuOnSelect,
   darkMode,
   creatable = false,
+  animateMenu = false,
   ...restProps
 }) => {
   const selectRef = React.useRef(null);
@@ -39,6 +40,7 @@ export const SelectComponent = ({
     customClassPrefix = '',
     dataCy = '',
   } = restProps;
+
   const customStyles = useCustomStyles ? styles : defaultStyles(isDarkMode, width, height, styles, borderRadius);
   const selectOptions =
     Array.isArray(options) && options.length === 0
@@ -82,7 +84,9 @@ export const SelectComponent = ({
       maxMenuHeight={maxMenuHeight}
       menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
       closeMenuOnSelect={closeMenuOnSelect ?? true}
-      classNamePrefix={`${customClassPrefix} ${isDarkMode && 'dark-theme'} ${'react-select'}`}
+      classNamePrefix={`${customClassPrefix} ${isDarkMode && 'dark-theme'} react-select${
+        animateMenu ? ' query-select-motion' : ''
+      }`}
       components={{
         Input: CustomInput,
         ...restProps.components,

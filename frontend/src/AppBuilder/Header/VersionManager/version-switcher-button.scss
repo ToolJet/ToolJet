@@ -59,8 +59,7 @@
 
   .version-name {
     color: var(--text-default);
-    font-weight: 500;
-    font-size: 12px;
+    font-size: 13px;
     line-height: 18px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -76,10 +75,11 @@
 
   .environment-name {
     color: var(--text-placeholder);
-    font-size: 12px;
+    font-size: 13px;
     line-height: 18px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
 }

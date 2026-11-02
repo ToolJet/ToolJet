@@ -241,7 +241,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
           </Col>
         )}
       </Row>
-      <Row className="mb-2 mx-0">
+      <Row className="mb-2 mx-0 tooljetdb-condition-row tooljetdb-join-row">
         <Col sm="2" className="p-0">
           <div
             style={{
@@ -445,7 +445,7 @@ const JoinOn = ({
   ];
 
   return (
-    <Row className="mb-2 mx-0">
+    <Row className="mb-2 mx-0 tooljetdb-condition-row tooljetdb-join-row">
       <Col
         sm="2"
         className="p-0"
@@ -647,7 +647,7 @@ const JoinOn = ({
           <ButtonSolid
             size="sm"
             variant="ghostBlack"
-            className="px-1 rounded-0 border border-start-0 rounded-en qm-delete-btn"
+            className="px-1 rounded-0 border border-start-0 rounded-end qm-delete-btn"
             onClick={onRemove}
           >
             <Trash fill="var(--slate9)" style={{ height: '16px' }} />

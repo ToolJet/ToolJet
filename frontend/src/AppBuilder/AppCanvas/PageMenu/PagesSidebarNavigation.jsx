@@ -10,7 +10,6 @@ import { DarkModeToggle } from '@/_components';
 import { RenderPageAndPageGroup } from '@/AppBuilder/AppCanvas/PageMenu/PageGroup';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
-import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { buildTree } from '@/_ui/SortableTree';
 
 const PAGE_PROPERTY_NAMES = { isGroup: 'isPageGroup', parentId: 'pageGroupId' };
@@ -40,10 +39,7 @@ export const PagesSidebarNavigation = ({
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
-  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
-  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
-  const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
-  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
+  const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
   const pages = useStore((state) => state.modules.canvas.pages, shallow);
   const pagesVisibilityState = useStore((state) => state.resolvedStore.modules[moduleId]?.others?.pages || {}, shallow);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
@@ -366,14 +362,12 @@ export const PagesSidebarNavigation = ({
     );
 
     if (!isNavigationItem) {
-      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
-      if (!isRightSidebarOpen) {
-        setRightSidebarOpen(true);
-      }
+      useStore.getState().setSelectedSidebarItem('pages');
+      useStore.getState().toggleLeftSidebar(true);
     }
   };
 
-  const shouldShowBlueBorder = currentMode === 'edit' && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES;
+  const shouldShowBlueBorder = currentMode === 'edit' && selectedSidebarItem === 'pages';
 
   const labelHidden = labelStyle?.label?.hidden;
   const headerHidden = hasAppPagesHeaderAndLogoEnabled ? hideHeader : false;

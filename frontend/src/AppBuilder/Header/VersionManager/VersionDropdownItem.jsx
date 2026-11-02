@@ -281,10 +281,11 @@ const VersionDropdownItem = ({
           <div className="d-flex align-items-center justify-content-between" style={{ gap: '8px' }}>
             <div className="d-flex align-items-center" style={{ gap: '8px', minWidth: 0 }}>
               <div
-                className="tj-text-sm"
                 style={{
                   color: isDisabled ? 'var(--text-disabled)' : 'var(--text-default)',
-                  fontWeight: 500,
+                  fontSize: '13px',
+                  lineHeight: '18px',
+                  fontWeight: 400,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
@@ -304,7 +305,7 @@ const VersionDropdownItem = ({
                       color: 'var(--slate11)',
                       padding: '0 8px',
                       borderRadius: '4px',
-                      fontWeight: 500,
+                      fontWeight: 400,
                       lineHeight: '18px',
                       flexShrink: 0,
                       display: 'inline-block',
@@ -330,7 +331,7 @@ const VersionDropdownItem = ({
                     color: 'var(--text-warning)',
                     padding: '0 8px',
                     borderRadius: '4px',
-                    fontWeight: 500,
+                    fontWeight: 400,
                     lineHeight: '18px',
                     flexShrink: 0,
                   }}
@@ -349,7 +350,7 @@ const VersionDropdownItem = ({
                     color: 'var(--text-success)',
                     padding: '0 8px',
                     borderRadius: '4px',
-                    fontWeight: 500,
+                    fontWeight: 400,
                     lineHeight: '18px',
                     flexShrink: 0,
                   }}
@@ -405,7 +406,7 @@ const VersionDropdownItem = ({
                       fontSize: '11px',
                       height: 'auto',
                       color: 'var(--text-default)',
-                      fontWeight: 500,
+                      fontWeight: 400,
                       borderRadius: '4px',
                       visibility: isHoveringItem || isPulling ? 'visible' : 'hidden',
                     }}
@@ -497,7 +498,7 @@ const VersionDropdownItem = ({
               style={{
                 color: isDisabled ? 'var(--text-disabled)' : 'var(--text-placeholder)',
                 marginTop: '2px',
-                fontSize: '11px',
+                fontSize: '12px',
                 lineHeight: '16px',
                 maxWidth: '95%',
                 minWidth: '95%',

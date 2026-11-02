@@ -44,7 +44,7 @@ export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
   }
 
   return (
-    <div className="row tj-db-field-wrapper">
+    <div className="row tj-db-field-wrapper tooljetdb-operation-form">
       <div className="tab-content-wrapper d-flex tooljetdb-worflow-operations" style={{ marginTop: '16px' }}>
         <label className="form-label flex-shrink-0" data-cy="tooljetdb-create-row-columns-label">
           Columns

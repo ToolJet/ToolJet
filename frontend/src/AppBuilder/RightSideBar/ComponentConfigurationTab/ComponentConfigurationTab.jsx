@@ -10,10 +10,18 @@ import AppHeaderStylesPanel from './AppHeaderStylesPanel';
 import AppFooterStylesPanel from './AppFooterStylesPanel';
 
 export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
-  const selectedComponentId = useStore((state) => state.selectedComponents?.[0], shallow);
+  // Render from the panel's own subject, not the live canvas selection, so an empty-canvas click
+  // (which clears the selection) leaves these properties on screen.
+  const subject = useStore((state) => state.rightPanelSubject, shallow);
+  const subjectComponentId = subject?.type === 'component' ? subject.id : null;
+  // The remembered component may have been deleted or belong to another page.
+  const selectedComponentId = useStore(
+    (state) => (subjectComponentId && state.getComponentDefinition(subjectComponentId) ? subjectComponentId : null),
+    shallow
+  );
   const activeTab = useStore((state) => state.activeRightSideBarTab, shallow);
-  const isCanvasHeaderSelected = useStore((state) => state.isCanvasHeaderSelected, shallow);
-  const isCanvasFooterSelected = useStore((state) => state.isCanvasFooterSelected, shallow);
+  const isCanvasHeaderSelected = subject?.type === 'header';
+  const isCanvasFooterSelected = subject?.type === 'footer';
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
 

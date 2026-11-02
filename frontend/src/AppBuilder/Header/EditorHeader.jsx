@@ -138,7 +138,6 @@ export const EditorHeader = ({ darkMode, appType }) => {
                   className={cx('d-flex version-manager-container p-0  align-items-center gap-0', headerLockClass)}
                   aria-disabled={isGitSyncLicenseLocked || undefined}
                 >
-                  {!isModuleEditor && <PreviewAndShareIcons />}
                   {!showSyncButton && <BranchDropdown appId={appId} organizationId={organizationId} />}
                   {/* Hide version dropdown when on a feature branch (per-app or platform git sync) */}
                   {selectedVersion?.versionType !== 'branch' && !isOnWorkspaceFeatureBranch && (
@@ -147,6 +146,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
                     </VersionManagerErrorBoundary>
                   )}
                   <RightTopHeaderButtons isModuleEditor={isModuleEditor} isAppUnsyncedToGit={showSyncButton} />
+                  {!isModuleEditor && <PreviewAndShareIcons />}
                 </div>
               </div>
             </div>

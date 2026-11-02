@@ -1,0 +1,235 @@
+// Debugger-specific parts of the bottom-panel split view. Shared toolbar, filter, detail-header and
+// value styles come from RuntimeInspector/styles.scss via the `runtime-inspector` root class.
+.runtime-debugger {
+  &__count {
+    margin-left: 4px;
+    font-size: 11px;
+    color: var(--text-placeholder);
+  }
+
+  .runtime-inspector__filter {
+    display: inline-flex;
+    align-items: center;
+
+    &.is-active .runtime-debugger__count {
+      color: var(--indigo9);
+    }
+
+    &.is-empty:not(.is-active) {
+      opacity: 0.55;
+    }
+  }
+
+  &__scope {
+    display: flex;
+    flex-shrink: 0;
+    gap: 2px;
+    margin-left: auto;
+    padding: 2px;
+    border: 1px solid var(--border-default);
+    border-radius: 6px;
+
+    button {
+      height: 22px;
+      padding: 0 8px !important;
+      border: 1px solid transparent !important;
+      border-radius: 4px;
+      color: var(--text-placeholder) !important;
+      font-size: 12px !important;
+      white-space: nowrap;
+
+      &:hover:not(.is-active) {
+        color: var(--text-default) !important;
+      }
+
+      &.is-active {
+        color: var(--indigo9) !important;
+        background: var(--indigo3) !important;
+        border-color: var(--indigo5) !important;
+      }
+    }
+  }
+
+  &__list {
+    width: 340px;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-right: 1px solid var(--border-weak);
+  }
+
+  &__row {
+    display: grid !important;
+    grid-template-columns: 16px minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: start;
+    width: 100%;
+    padding: 7px 12px !important;
+    border-bottom: 1px solid var(--border-weak) !important;
+    text-align: left;
+
+    &:hover {
+      background: var(--interactive-hover) !important;
+    }
+
+    &.is-selected {
+      background: var(--indigo3) !important;
+    }
+  }
+
+  &__level {
+    margin-top: 2px;
+
+    &.is-error {
+      color: var(--icon-danger);
+    }
+
+    &.is-warning {
+      color: var(--icon-warning);
+    }
+
+    &.is-success {
+      color: var(--icon-success);
+    }
+
+    &.is-info {
+      color: var(--icon-default);
+    }
+  }
+
+  &__row-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__row-message,
+  &__row-source {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__row-source {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--text-placeholder);
+
+    span {
+      color: var(--text-default);
+      opacity: 0.8;
+    }
+  }
+
+  &__row-time {
+    font-size: 11px;
+    color: var(--text-placeholder);
+    white-space: nowrap;
+  }
+
+  &__badge {
+    flex-shrink: 0;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    line-height: 16px;
+
+    &.is-error {
+      color: var(--text-danger);
+      background: var(--background-error-weak);
+    }
+
+    &.is-warning {
+      color: var(--text-warning);
+      background: var(--background-warning-weak);
+    }
+
+    &.is-success {
+      color: var(--text-success);
+      background: var(--background-success-weak);
+    }
+
+    &.is-info {
+      color: var(--text-placeholder);
+      background: var(--surfaces-surface-02);
+    }
+  }
+
+  &__detail-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__link {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 4px;
+    height: 28px;
+    padding: 0 8px !important;
+    border-radius: 6px;
+    color: var(--indigo9) !important;
+    font-size: 12px !important;
+    white-space: nowrap;
+
+    &:hover {
+      background: var(--indigo3) !important;
+    }
+  }
+
+  &__detail-body {
+    padding-top: 12px;
+  }
+
+  &__message {
+    margin: 0 0 12px;
+    color: var(--text-default);
+    line-height: 20px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  &__meta {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 4px 12px;
+    max-width: 420px;
+    margin: 0 0 12px;
+    font-size: 12px;
+
+    dt {
+      font-weight: 400;
+      color: var(--text-placeholder);
+    }
+
+    dd {
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &__section-label {
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: var(--text-placeholder);
+  }
+}
+
+@container (max-width: 560px) {
+  .runtime-debugger__list {
+    width: auto;
+    max-height: 45%;
+    border-right: 0;
+    border-bottom: 1px solid var(--border-weak);
+  }
+
+  .runtime-debugger__scope {
+    display: none;
+  }
+}
