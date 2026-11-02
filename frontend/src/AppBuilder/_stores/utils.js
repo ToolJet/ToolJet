@@ -16,7 +16,9 @@ export function debounce(func) {
   return (...args) => {
     const event = args[0] || {};
     const moduleId = args[3] || 'canvas';
-    const eventId = moduleId + '-' + (event?.id || uuidv4());
+    // Row included: inside a List View every row shares one event id, so one row would cancel another.
+    const rowIndex = args[4] ?? '';
+    const eventId = moduleId + '-' + (event?.id || uuidv4()) + '-' + rowIndex;
 
     const debounceTime = event?.event?.debounce || event?.debounce;
     if (debounceTime === undefined) {
@@ -363,14 +365,8 @@ export const checkSubstringRegex = (mainString, subString) => {
   // Escape special characters in the subString
   const escapedSubString = subString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-  // Matches `subString` used as a standalone reference.
-  // - The trailing set is deliberately narrow —
-  // - a property access (`.`), an index (`[`), optional chaining (`?.`), whitespace, or end of string.
-  //
-  // Whitespace is what a bare identifier is followed by in practice.
-  // Optional chaining is matched as the two-character `?.`.
-  // The cost is the unspaced ternary `listItem?a:b`; the spaced form is covered by whitespace.
-  const regex = new RegExp(`(^|[^a-zA-Z0-9\\].])(${escapedSubString})($|[.\\[\\s]|\\?\\.)`);
+  // Any follower counts (`}`, `)`, `+`, `.`), except a name char, a closing quote or `?` (prose, ternary).
+  const regex = new RegExp(`(^|[^a-zA-Z0-9_$\\].])(${escapedSubString})(?![a-zA-Z0-9_$'"\`?])`);
 
   // Test the mainString against the regex
   return regex.test(normalizedMainString);

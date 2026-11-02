@@ -1,8 +1,8 @@
 import { useGridStore } from '@/_stores/gridStore';
 import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
-import { getTabId, getSubContainerIdWithSlots } from '../appCanvasUtils';
-import { NO_OF_GRIDS } from '../appCanvasConstants';
+import { getTabId, getSubContainerIdWithSlots, getParentWidgetFromId } from '../appCanvasUtils';
+import { NO_OF_GRIDS, HOVER_CLICK_OUTLINE_BORDER } from '../appCanvasConstants';
 
 export const MOBILE_GRID_COLUMNS = NO_OF_GRIDS;
 // Vertical breathing room between stacked mobile items (top/height are in px).
@@ -847,7 +847,9 @@ export const updateDashedBordersOnDragResize = (targetId, moveableControlBoxClas
 };
 
 export const isDroppingRestrictedWidget = (target, dragged) => {
-  const restrictedWidgetsOnTarget = RESTRICTED_WIDGETS_CONFIG?.[target.widgetType] || [];
+  // The config keys a drop area by the name it goes by there — a Kanban's is `Kanban_card`.
+  const restrictedWidgetsOnTarget =
+    RESTRICTED_WIDGETS_CONFIG?.[getParentWidgetFromId(target.widgetType, target.slotId)] || [];
   const restrictedWidgetsOnTargetSlot = ['header', 'footer'].includes(target.slotType)
     ? RESTRICTED_WIDGET_SLOTS_CONFIG
     : [];
@@ -865,3 +867,11 @@ export function getCanvasBottomBound() {
   const realCanvasRect = realCanvas.getBoundingClientRect();
   return footerRect.top - realCanvasRect.top;
 }
+
+// Folds a drop position into the row it landed on. The canvas is drawn a pixel taller than the row
+// to leave space for a hover outline, so the row's own height is what the position wraps against.
+export const wrapDropIntoListviewRow = (y, parentHeight) => {
+  const rowHeight = parentHeight - HOVER_CLICK_OUTLINE_BORDER;
+  if (!(rowHeight > 0)) return y;
+  return y >= rowHeight ? y % rowHeight : y;
+};

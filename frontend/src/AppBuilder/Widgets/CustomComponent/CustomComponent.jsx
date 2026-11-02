@@ -15,6 +15,9 @@ export const CustomComponent = (props) => {
   const messageEventListenerRef = useRef(null);
 
   const customPropRef = useRef(data);
+  // The startup reply is sent from a listener bound at mount, when a row in the viewer has no code yet.
+  const codeRef = useRef(code);
+  codeRef.current = code;
 
   useEffect(() => {
     setCustomProps(data);
@@ -38,7 +41,12 @@ export const CustomComponent = (props) => {
   useEffect(() => {
     messageEventListenerRef.current = (e) => {
       try {
-        if (e.data.from === 'customComponent' && e.data.componentId === id) {
+        // Every row of a List View shares this id, so only the sending iframe identifies the sender.
+        if (
+          e.data.from === 'customComponent' &&
+          e.data.componentId === id &&
+          e.source === iFrameRef.current?.contentWindow
+        ) {
           if (e.data.message === 'UPDATE_DATA') {
             setCustomProps({ ...customPropRef.current, ...e.data.updatedObj });
           } else if (e.data.message === 'RUN_QUERY') {
@@ -125,7 +133,7 @@ export const CustomComponent = (props) => {
             message: 'INIT_RESPONSE',
             componentId: id,
             data: customPropRef.current,
-            code: code,
+            code: codeRef.current,
           },
           '*'
         );

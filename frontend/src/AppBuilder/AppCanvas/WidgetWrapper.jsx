@@ -210,7 +210,10 @@ const WidgetWrapper = memo(
       display: !visibility && mode === 'view' ? 'none' : 'block',
     };
 
-    const outerStyle = isFlexLayout ? flexLayout.outerStyle : gridOuterStyle;
+    // The grid wrapper's transform anchors List View's fixed pager to the list; a flex wrapper needs its own.
+    const outerStyle = isFlexLayout
+      ? { ...flexLayout.outerStyle, ...(componentType === 'Listview' && { transform: 'translateZ(0)' }) }
+      : gridOuterStyle;
     const renderWidgetWidth = isFlexLayout
       ? isFlexSubcontainer && flexLayout.measuredWidth != null
         ? flexLayout.measuredWidth

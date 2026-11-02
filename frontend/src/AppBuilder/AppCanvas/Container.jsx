@@ -20,6 +20,7 @@ import {
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
 import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveableGhost';
 import { findNewParentIdFromMousePosition, isPointerOverCanvasArea } from './Grid/gridUtils';
@@ -85,7 +86,9 @@ const Container = React.memo(
 
     function getContainerCanvasWidth() {
       if (canvasWidth !== undefined) {
-        if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
+        // A grid column divides the SAME width a list row gets, or it runs past the list's edge.
+        if (componentType === 'Listview' && listViewMode == 'grid')
+          return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef) / columns;
         if (id === 'canvas') return canvasWidth;
         return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
       }
@@ -156,9 +159,14 @@ const Container = React.memo(
       setCurrentDragCanvasId,
     ]);
 
+    const { contextPath } = useSubcontainerContext();
+    // A canvas inside a later row of any enclosing list is a copy too, not only a later row of this one.
+    const isInsideLaterRow = contextPath.some((segment) => segment.index != null && segment.index !== 0);
     const isContainerReadOnly = useMemo(() => {
-      return (index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || currentMode === 'view';
-    }, [index, componentType, currentMode]);
+      return (
+        (index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || isInsideLaterRow || currentMode === 'view'
+      );
+    }, [index, componentType, isInsideLaterRow, currentMode]);
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
@@ -294,7 +302,12 @@ const Container = React.memo(
         }}
         className={cx('real-canvas', {
           'sub-canvas': id !== 'canvas' && appType !== 'module',
-          'show-grid': isDragging && (index === 0 || index === null) && currentMode === 'edit' && appType !== 'module',
+          'show-grid':
+            isDragging &&
+            (index === 0 || index === null) &&
+            !isInsideLaterRow &&
+            currentMode === 'edit' &&
+            appType !== 'module',
           'module-container': appType === 'module',
           'is-module-editor': isModuleEditor,
           'has-no-scroll': hasNoScroll,
@@ -302,7 +315,8 @@ const Container = React.memo(
           'flex-container-canvas': isFlexContainer,
         })}
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}
-        data-cy="real-canvas"
+        // Sub-canvases get their own data-cy so the app canvas selector matches one element.
+        data-cy={id === 'canvas' ? 'real-canvas' : 'sub-canvas'}
         data-parentId={id}
         canvas-height={canvasHeight}
         onClick={handleCanvasClick}

@@ -75,7 +75,7 @@ export default function OverflowTooltip({
       tooltipClassName={`overflow-tooltip ${tooltipClassName}`}
       placement={placement}
       message={tooltipMessage}
-      show={!!isOverflowed}
+      show={!!isOverflowed && !!tooltipMessage}
       width={width}
     >
       <div

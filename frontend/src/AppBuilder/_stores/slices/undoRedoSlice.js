@@ -180,14 +180,23 @@ export const createUndoRedoSlice = (set, get) => {
       updateCanUndoRedo();
     },
 
-    withUndoRedo: (fn, skipUndoRedo = false) => {
+    withUndoRedo: (fn, skipUndoRedo = false, { mergeWithPrevious = false } = {}) => {
       if (skipUndoRedo) {
         return fn;
       }
       return (state) => {
         const [newState, patches, inversePatches] = produceWithPatches(fn)(state);
         redoStack.length = 0;
-        undoStack.push([inversePatches, patches]);
+        const previous = undoStack[undoStack.length - 1];
+        if (mergeWithPrevious && previous) {
+          // One user action spread over several writes undoes as one step; the newest change is undone first.
+          undoStack[undoStack.length - 1] = [
+            [...inversePatches, ...previous[0]],
+            [...previous[1], ...patches],
+          ];
+        } else {
+          undoStack.push([inversePatches, patches]);
+        }
 
         if (undoStack.length > MAX_HISTORY_LENGTH) {
           undoStack.shift();

@@ -6,6 +6,7 @@ import { IconX } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { BOX_PADDING } from '../../AppCanvas/appCanvasConstants';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import {
   getLabelFontSize,
   getLabelHeight,
@@ -80,6 +81,9 @@ export const BaseInput = ({
   } = styles;
 
   const { label, placeholder } = properties;
+  const { contextPath } = useSubcontainerContext();
+  // A DOM id is unique per document, so a repeated row needs its own or every label points at row 1.
+  const domId = `component-${id}${contextPath.map((segment) => `-${segment.index}`).join('')}`;
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
@@ -197,7 +201,7 @@ export const BaseInput = ({
           labelWidth={labelWidth}
           top={inputType === 'textarea' && defaultAlignment === 'side' && '9px'}
           widthType={widthType}
-          inputId={`component-${id}`}
+          inputId={domId}
           fontSize={labelFontSizeValue}
           classes={{
             labelContainer: cn({
@@ -286,7 +290,7 @@ export const BaseInput = ({
             placeholder={placeholder}
             style={finalStyles}
             {...additionalInputProps}
-            id={`component-${id}`}
+            id={domId}
             disabled={disable || loading}
             aria-disabled={disable || loading}
             aria-busy={loading}
