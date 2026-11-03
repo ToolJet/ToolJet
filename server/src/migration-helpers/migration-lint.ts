@@ -87,6 +87,17 @@ const BEFORE_COMMIT_ONLY: Rule[] = [
   ['foreign key NOT VALID', /\bFOREIGN\s+KEY\b[^;]*\bNOT\s+VALID\b/i],
   ['VALIDATE CONSTRAINT', /\bVALIDATE\s+CONSTRAINT\b/i],
 ];
+/**
+ * Removing a key from stored JSON (component properties, styles, ...) breaks the previous release, which may still
+ * read it. A data migration copies the value; a cleanup removes the old key one upgrade later.
+ */
+const JSON_KEY_REMOVAL: Rule[] = [
+  ["- 'key'", /[\w)']\s*-\s*'[A-Za-z_]\w*'/],
+  ['- ARRAY[…]', /[\w)']\s*-\s*(?:ARRAY\s*\[|'\{)/i],
+  ['jsonb - $n', /::jsonb\s*-\s*\$\d/i],
+  ['#- path', /#-/],
+];
+const JSON_KEY_REMOVAL_CALLS = new Set(['unset', 'omit']);
 const SCHEMA_API = new Set([
   ...DESTRUCTIVE_API,
   'createTable',
@@ -138,6 +149,64 @@ function codeIn(node: ts.Node): { sql: string; literals: string[]; identifiers: 
 
 const matching = (rules: Rule[], sql: string) =>
   rules.filter(([, pattern]) => pattern.test(sql)).map(([label]) => label);
+
+/** Members up() and beforeCommit() reach through `this.name()` or `ClassName.name()` calls, themselves included. */
+function membersReachedFromUp(cls: ts.ClassDeclaration): ts.Node[] {
+  const members = new Map<string, ts.Node>();
+  for (const member of cls.members) {
+    if ((ts.isMethodDeclaration(member) || ts.isPropertyDeclaration(member)) && member.name) {
+      members.set(member.name.getText(), member);
+    }
+  }
+  const className = cls.name?.text;
+  const reached = new Set<string>();
+  const queue = ['up', 'beforeCommit'].filter((name) => members.has(name));
+  while (queue.length) {
+    const name = queue.pop() as string;
+    if (reached.has(name)) continue;
+    reached.add(name);
+    const visit = (node: ts.Node) => {
+      if (ts.isPropertyAccessExpression(node)) {
+        const owner = node.expression;
+        const ownMember =
+          owner.kind === ts.SyntaxKind.ThisKeyword || (ts.isIdentifier(owner) && owner.text === className);
+        if (ownMember && members.has(node.name.text)) queue.push(node.name.text);
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(members.get(name) as ts.Node);
+  }
+  return [...reached].map((name) => members.get(name) as ts.Node);
+}
+
+/**
+ * Keys a migration removes from stored JSON in up(), beforeCommit(), the helpers they call and module-level code:
+ * SQL removal operators in its literals, `delete x.key`, and lodash `unset()` / `omit()`. down() and helpers only
+ * it calls are left out.
+ */
+function jsonKeysRemoved(source: ts.SourceFile, cls: ts.ClassDeclaration): string[] {
+  const literals: string[] = [];
+  const inCode = new Set<string>();
+  const visit = (node: ts.Node) => {
+    if (ts.isStringLiteralLike(node) || ts.isTemplateLiteralToken(node)) literals.push(node.text);
+    if (ts.isDeleteExpression(node)) inCode.add('delete');
+    if (ts.isCallExpression(node)) {
+      const callee = node.expression;
+      const name = ts.isIdentifier(callee)
+        ? callee.text
+        : ts.isPropertyAccessExpression(callee)
+          ? callee.name.text
+          : '';
+      if (JSON_KEY_REMOVAL_CALLS.has(name)) inCode.add(`${name}()`);
+    }
+    ts.forEachChild(node, visit);
+  };
+  for (const statement of source.statements) {
+    if (statement !== cls && !ts.isImportDeclaration(statement)) visit(statement);
+  }
+  for (const member of membersReachedFromUp(cls)) visit(member);
+  return [...matching(JSON_KEY_REMOVAL, literals.join(' ')), ...inCode];
+}
 
 const stringOption = (args: ts.NodeArray<ts.Expression>, option: string): string | undefined => {
   for (const arg of args) {
@@ -225,6 +294,13 @@ export function phaseViolations(phase: 'schema' | 'data', { file, text }: Migrat
   const beforeCommitOnly = matching(BEFORE_COMMIT_ONLY, sql);
   if (beforeCommitOnly.length)
     violations.push(`${file}: ${beforeCommitOnly.join(', ')} in up(); move it to beforeCommit(). ${RULES_DOC}`);
+  const removedKeys = jsonKeysRemoved(source, cls);
+  if (removedKeys.length) {
+    violations.push(
+      `${file}: data removes JSON keys (${removedKeys.join(', ')}) that the previous release may still read; ` +
+        `copy them now and remove the old keys in a cleanup migration. ${RULES_DOC}`
+    );
+  }
   return violations;
 }
 

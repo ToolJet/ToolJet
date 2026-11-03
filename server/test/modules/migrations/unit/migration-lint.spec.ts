@@ -178,6 +178,106 @@ describe('migration-helpers/migration-lint', () => {
     ])('should reject a data migration with %s', (_what, up, message) => {
       expect(phaseViolations('data', migration(up))).toEqual([expect.stringContaining(message)]);
     });
+
+    it.each([
+      [
+        'jsonb minus a key',
+        "await queryRunner.query(`UPDATE components SET styles = (styles::jsonb - 'visibility')::json`);",
+        "- 'key'",
+      ],
+      [
+        'a chain of keys',
+        "await queryRunner.query(`UPDATE components SET properties = (properties::jsonb - 'orientation' - 'displayStyle')::json`);",
+        "- 'key'",
+      ],
+      [
+        'an array of keys',
+        "await queryRunner.query(`UPDATE components SET styles = (styles::jsonb - ARRAY['visibility', 'disabledState'])::json`);",
+        '- ARRAY[…]',
+      ],
+      [
+        'a path',
+        "await queryRunner.query(`UPDATE components SET properties = (properties::jsonb #- '{tooltip,value}')::json`);",
+        '#- path',
+      ],
+      [
+        'a key passed as a parameter',
+        "await queryRunner.query(`UPDATE components SET styles = (styles::jsonb - $1)::json`, ['visibility']);",
+        'jsonb - $n',
+      ],
+      [
+        'delete before writing the row back',
+        'delete styles.visibility; await queryRunner.query(`UPDATE components SET styles = $1 WHERE id = $2`, [styles, id]);',
+        'delete',
+      ],
+      [
+        'lodash unset()',
+        "_.unset(component.styles, 'visibility'); await queryRunner.query(`UPDATE components SET styles = $1`, [component.styles]);",
+        'unset()',
+      ],
+    ])(
+      'should reject a data migration that removes JSON keys with %s, which the previous release may still read',
+      (_how, up, label) => {
+        expect(phaseViolations('data', migration(up))).toEqual([
+          expect.stringContaining(`data removes JSON keys (${label})`),
+        ]);
+      }
+    );
+
+    it('should accept a data migration that copies a JSON key to its new place and keeps the old one', () => {
+      const up =
+        "await queryRunner.query(`UPDATE components SET properties = (properties::jsonb || jsonb_build_object('visibility', styles::jsonb -> 'visibility'))::json WHERE NOT properties::jsonb ? 'visibility'`);";
+      expect(phaseViolations('data', migration(up))).toEqual([]);
+    });
+
+    it('should accept date arithmetic, and a key removal in a file marked allow-destructive', () => {
+      const dateArithmetic =
+        "await queryRunner.query(`DELETE FROM sessions WHERE expiry < now() - '30 days'::interval`);";
+      expect(phaseViolations('data', migration(dateArithmetic))).toEqual([]);
+
+      const removal = migration(
+        "await queryRunner.query(`UPDATE components SET styles = (styles::jsonb - 'visibility')::json`);"
+      );
+      const optedOut = {
+        ...removal,
+        text: `// migration-lint: allow-destructive key unread since 3.20\n${removal.text}`,
+      };
+      expect(phaseViolations('data', optedOut)).toEqual([]);
+    });
+
+    it('should reject a key removal in a helper that up() calls, and ignore one in down() or a helper only down() calls', () => {
+      const withHelpers = (removeIn: 'forward' | 'revert' | 'static') => ({
+        file: 'migrations/data/1799999999999-Sample.ts',
+        text: `
+import { MigrationInterface, QueryRunner } from 'typeorm';
+export class Sample1799999999999 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await this.forward(queryRunner);
+    Sample1799999999999.shape({});
+  }
+  private async forward(queryRunner: QueryRunner) {
+    const styles = { visibility: true };
+    ${removeIn === 'forward' ? 'delete styles.visibility;' : ''}
+    await queryRunner.query('UPDATE components SET styles = $1', [styles]);
+  }
+  private static shape(styles: Record<string, unknown>) { ${removeIn === 'static' ? 'delete styles.visibility;' : ''} return styles; }
+  private async revert(queryRunner: QueryRunner) { const properties = { stripPercent: true }; ${removeIn === 'revert' ? 'delete properties.stripPercent;' : ''} }
+  public async down(queryRunner: QueryRunner): Promise<void> { await this.revert(queryRunner); }
+}`,
+      });
+      expect(phaseViolations('data', withHelpers('forward'))).toEqual([
+        expect.stringContaining('data removes JSON keys (delete)'),
+      ]);
+      expect(phaseViolations('data', withHelpers('static'))).toEqual([
+        expect.stringContaining('data removes JSON keys (delete)'),
+      ]);
+      expect(phaseViolations('data', withHelpers('revert'))).toEqual([]);
+
+      const inDown = migration('await queryRunner.query(`UPDATE components SET properties = properties`);');
+      const revert =
+        "await queryRunner.query(`UPDATE components SET properties = (properties::jsonb - 'visibility')::json`);";
+      expect(phaseViolations('data', { ...inDown, text: inDown.text.replace('/* rows only */', revert) })).toEqual([]);
+    });
   });
 
   describe('cleanupViolations(): cleanup migrations hold locks briefly and are safe to run again', () => {
@@ -186,6 +286,12 @@ describe('migration-helpers/migration-lint', () => {
 
     it('should accept a step that runs through withShortLock()', () => {
       expect(cleanupViolations(cleanupMigration(shortDrop), known)).toEqual([]);
+    });
+
+    it('should accept a step that removes JSON keys, which is where those removals belong', () => {
+      const removal =
+        "await withShortLock(queryRunner, [`UPDATE components SET styles = (styles::jsonb - 'visibility')::json`]);";
+      expect(cleanupViolations(cleanupMigration(removal), known)).toEqual([]);
     });
 
     it.each([
