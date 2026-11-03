@@ -331,6 +331,7 @@ const sidebars = {
             "app-builder/anti-patterns"
           ]
         },
+        "app-builder/app-history",
         {
           "type": "category",
           "label": "Modules",
@@ -589,7 +590,8 @@ const sidebars = {
                       "label": "Range Slider",
                       "href": "https://docs.tooljet.com/docs/2.50.0-LTS/widgets/range-slider"
                     },
-                    "widgets/button-group"
+                    "widgets/button-group",
+                    "widgets/toggle-switch-legacy"
                   ]
                 }
               ]

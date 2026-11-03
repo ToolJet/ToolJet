@@ -90,6 +90,8 @@ To connect your agent, follow the [Setup](/docs/build-with-ai/mcp/setup) guide.
 
 ToolJet MCP authenticates using a Personal Access Token (PAT). The PAT is created by a ToolJet user, scoped to a specific workspace, and operates within the permissions assigned to its owner. As a result, the MCP agent cannot access workspaces or resources beyond the token’s authorized scope.
 
+On ToolJet Cloud, you can also connect with [OAuth](/docs/build-with-ai/mcp/setup#choose-an-authentication-method). The connection is approved by a signed-in ToolJet user for a single workspace and is linked to that user in the same way. The agent operates within the user's current permissions and the permissions approved on the consent screen.
+
 Because MCP requests are authenticated through a user-linked PAT, changes made by the MCP agent are executed within the PAT owner’s ToolJet permission context. ToolJet’s audit-log system records platform activities, including the acting user, action performed, timestamp, location, and relevant application, query, user, group, or permission event.
 
 Accordingly, MCP-driven changes that generate standard ToolJet platform events can be associated with the authenticated PAT owner in the audit trail. This provides accountability and traceability for changes made through ToolJet MCP.
@@ -143,12 +145,12 @@ ToolJet MCP works with any MCP-compatible client. The following are supported di
 
 </div>
 
-Clients outside this list connect by registering the bundled stdio server manually. See [Other MCP Clients](/docs/build-with-ai/mcp/setup/other-clients) for the configuration entry.
+Clients outside this list connect by registering the bundled stdio server manually or, on ToolJet Cloud, by adding ToolJet's hosted server with OAuth if they support remote MCP servers. See [Other MCP Clients](/docs/build-with-ai/mcp/setup/other-clients) for both methods.
 
 ## Requirements
 
-- A ToolJet personal access token for the workspace you want to build in
-- Node.js 20 or newer, available to your AI client
+- A ToolJet personal access token for the workspace you want to build in, or, on ToolJet Cloud, an [OAuth connection](/docs/build-with-ai/mcp/setup#choose-an-authentication-method) approved through your workspace login
+- Node.js 20 or newer, available to your AI client, when you run the server locally with a token
 - An MCP-compatible AI client
 
 ## Related

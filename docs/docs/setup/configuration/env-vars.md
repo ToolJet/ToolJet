@@ -134,9 +134,9 @@ For detailed workflow configuration and deployment examples, refer to the [Workf
 
 ### Optional Configurations
 
-#### Comments Feature
+#### Multiplayer Editing
 
-- `COMMENT_FEATURE_ENABLE=true/false`: Use this environment variable to enable/disable the feature that allows you to add comments on the canvas. To configure this environment variable, ensure that multiplayer editing is enabled in the Settings.
+- `ENABLE_MULTIPLAYER_EDITING`: Sets the initial value of the **Multiplayer editing** instance setting, which lets several builders edit an app at the same time. Set to `true` or `false`. Default: `true`. ToolJet reads this variable when it first sets up the instance. After that, change the setting from **Settings > Manage instance settings**. Multiplayer editing also needs a paid license.
 
 #### User Session Expiry
 

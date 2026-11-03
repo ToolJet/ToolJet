@@ -13,12 +13,15 @@ This documentation explains the process of exporting and importing applications 
 - Click on the settings icon located in the top right corner of the application.
 - Click on the **Export app** button.
 
+You can also export an app from the app builder. Open **Global settings** from the left sidebar and click **Export app**.
+
 <div style={{textAlign: 'center', marginBottom:'15px'}}>
     <img className="screenshot-full" src="/img/v2-beta/app-builder/import-export-apps/export-app-button-v2.png" alt="Export App Button" />
 </div>
 
-- If you select `Export All`, all the versions of the application will be exported in JSON format. If you select `Export selected version`, only the selected version will be exported in JSON format. 
-- Ticking the `Export ToolJet table schema` checkbox will also export the related ToolJet Database table schemas with your application. In this case, when you import the application in a workspace, the related ToolJet Database tables will also be created.
+- In the **Select a version to export** dialog, select a version under **Current Version** or **Other Versions**.
+- Click **Export All** to export all versions of the application, or **Export selected version** to export only the selected version. The app downloads as a JSON file.
+- **Export ToolJet table schema** is selected by default. It also exports the schemas of the ToolJet Database tables used by the application: the tables used by the selected version's queries for **Export selected version**, and all tables for **Export All**. When you import the application into a workspace, these ToolJet Database tables are also created.
 
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}>

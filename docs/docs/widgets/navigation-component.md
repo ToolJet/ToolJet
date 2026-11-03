@@ -20,20 +20,15 @@ Click any item or group to open its settings:
 | Property | Description | Expected Value |
 | :------- | :---------- | :------------- |
 | Label | Text displayed for the menu item. | String (e.g., `Dashboard`). Supports `{{` expressions. |
+| Id | Unique ID of the item. Used by `selectItem()`, `setItemVisibility()` and `setItemDisable()`. | String (e.g., `item1`). Must be unique. |
+| Caption | Optional description for a menu item. Shown as a tooltip on top-level items in horizontal orientation, and as text below the label otherwise. | String. |
 | Icon | Icon shown alongside the label. | Icon name (e.g., `IconArchive`). Toggle icon visibility with the eye icon. |
 | Hide this item | Hides the item from the rendered navigation. | Enable/disable the toggle or click **fx** to enter a logical expression. |
 | Disable item | Prevents interaction with the item. | Enable/disable the toggle or click **fx** to enter a logical expression. |
 
-Groups share the same properties and additionally hold child items that can be added from inside the group's settings.
+Each menu item also has its own **On click** event section, which runs before the component's **On click** event. Groups have **Label**, **Id**, **Icon**, **Hide this item** and **Disable item**, but no **Caption** or events. Child items can be added from inside the group's settings.
 
-## Properties
-
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
-| :--------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
-| Orientation | Sets the layout direction of the menu. | `Horizontal` or `Vertical`. |
-| Style | Controls what each nav item displays. | `Text and icon`, `Text only`, or `Icon only`. |
-| Nav item size | Determines how items fill the available width. | `Auto` sizes items to their content; `Equal width` distributes space evenly. |
-| Alignment | Horizontal alignment of items within the navigation. | `Left`, `Center`, or `Right`. |
+A group is shown only when at least one of its child items is visible, so hiding every child item also hides the group. In horizontal orientation, clicking a group opens its child items in a dropdown. In vertical orientation, groups start collapsed and expand or collapse when you click the group header. Selecting an item, by clicking it or with `selectItem()`, expands that item's group and collapses the other groups; selecting a top-level item collapses all groups. A disabled group can't be opened, and `selectItem()` ignores group IDs.
 
 ## Events
 
@@ -55,13 +50,15 @@ The following actions of the Navigation component can be controlled using compon
 | setDisable() | Enables or disables the component. | `components.navigation1.setDisable(true)` |
 | setLoading() | Sets the loading state of the component. | `components.navigation1.setLoading(true)` |
 | selectItem() | Programmatically selects a menu item by its ID. | `components.navigation1.selectItem('item1')` |
+| setItemVisibility() | Shows or hides a specific menu item or group by its ID. Pass `true` to show and `false` to hide. | `components.navigation1.setItemVisibility('item1', false)` |
+| setItemDisable() | Enables or disables a specific menu item or group by its ID. Pass `true` to disable. | `components.navigation1.setItemDisable('item1', true)` |
 
 ## Exposed Variables
 
 | <div style={{ width:"130px"}}> Variable </div> | <div style={{ width:"250px"}}> Description </div> | How To Access |
 | :--------------------------------------------- | :------------------------------------------------ | :------------ |
-| selectedItem | The currently selected navigation item object. | `{{components.navigation1.selectedItem}}` |
-| previousSelectedItem | The previously selected navigation item object. | `{{components.navigation1.previousSelectedItem}}` |
+| selectedItem | The currently selected item as an object with `id`, `label`, `groupId` and `groupLabel`. `groupId` and `groupLabel` are `null` for a top-level item. `null` until an item is selected. | `{{components.navigation1.selectedItem}}` |
+| previousSelectedItem | The previously selected item, in the same shape as `selectedItem`. | `{{components.navigation1.previousSelectedItem}}` |
 | isVisible | Indicates if the component is visible. | `{{components.navigation1.isVisible}}` |
 | isDisabled | Indicates if the component is disabled. | `{{components.navigation1.isDisabled}}` |
 | isLoading | Indicates if the component is in a loading state. | `{{components.navigation1.isLoading}}` |
@@ -72,6 +69,8 @@ The following actions of the Navigation component can be controlled using compon
 | :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
 | Loading state | Enables a loading spinner on the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Dynamic height | Automatically adjusts the component's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable | Enables or disables the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 ## Devices
@@ -95,6 +94,11 @@ The following actions of the Navigation component can be controlled using compon
 | Selected icon | Color of the icon for the active/selected item. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Selected pill background | Background color of the pill for the active/selected item. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Pill border radius | Corner radius of the selection pill. | Enter a number (default: `6`) or click on **fx** and enter a code that programmatically returns a numeric value. |
+| Orientation | Sets the layout direction of the menu. | `Horizontal` (default) or `Vertical`. |
+| Style | Controls what each nav item displays. | `Text and icon` (default), `Text only`, or `Icon only`. |
+| Nav item size | Determines how items fill the available width. | `Auto` sizes items to their content; `Equal width` (default) distributes space evenly. |
+| Alignment | Horizontal and vertical alignment of items within the navigation. | `Left` (default), `Center`, or `Right`, plus the vertical alignment icons `Top`, `Center` (default) or `Bottom`. |
+| Sub menu alignment | Horizontal alignment of child items inside a group: the dropdown in horizontal orientation, the expanded group in vertical orientation. | Choose the `Left`, `Center` or `Right` icon. Not set by default, so child items follow the group's alignment. |
 
 ### Container
 
@@ -103,7 +107,7 @@ The following actions of the Navigation component can be controlled using compon
 | Background | Background color of the navigation container. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Border | Border color of the navigation container. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Border radius | Corner radius of the navigation container. | Enter a number (default: `8`) or click on **fx** and enter a code that programmatically returns a numeric value. |
-| Padding | Inner padding of the navigation container. | Enter a number (default: `8`) or click on **fx** and enter a code that programmatically returns a numeric value. |
+| Padding | Inner padding of the navigation container. | Enter a number (default: `2`) or click on **fx** and enter a code that programmatically returns a numeric value. |
 
 ### Advanced
 

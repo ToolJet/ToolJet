@@ -46,12 +46,12 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"130px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div> |
 | :------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------- |
-| setValue( )                                  | Sets the value of the component.                  | `components.rangeslider1.setValue()`                |
-| setRangeValue( )                             | Sets the range of the component.                  | `components.rangeslider1.setRangeValue()`           |
+| setValue( )                                  | Sets the value of the slider. Fires **On change**. | `components.rangeslider1.setValue(50)`                |
+| setRangeValue( )                             | Sets the start and end values of the range slider. Fires **On change**. | `components.rangeslider1.setRangeValue(20, 80)`       |
 | setVisibility( )                             | Sets the visibility of the component.             | `components.rangeslider1.setVisibility(false)`      |
 | setLoading( )                                | Sets the loading state of the component.          | `components.rangeslider1.setLoading(true)`          |
 | setDisable( )                                | Disables the component.                           | `components.rangeslider1.setDisable(true)`          |
-| reset( )                                     | Resets the component to default state.            | `components.rangeslider1.reset()`                   |
+| reset( )                                     | Resets the slider to its default value, or the range slider to its default start and end values. Doesn't fire **On change**. | `components.rangeslider1.reset()`                   |
 
 ## Exposed Variables
 
@@ -59,6 +59,9 @@ The following actions of the component can be controlled using the component-spe
 | :-------- | :------------------------------------------------------------------ | :---------------------------------- |
 | value     | Holds the value of the slider, or an array when using range slider. | `{{components.rangeslider1.value}}` |
 | label     | Holds the value of the component's label.                           | `{{components.rangeslider1.label}}` |
+| isVisible | Indicates whether the component is visible.                         | `{{components.rangeslider1.isVisible}}` |
+| isDisabled | Indicates whether the component is disabled.                       | `{{components.rangeslider1.isDisabled}}` |
+| isLoading | Indicates whether the component is in a loading state.              | `{{components.rangeslider1.isLoading}}` |
 
 ## Additional Actions
 
@@ -83,7 +86,9 @@ The following actions of the component can be controlled using the component-spe
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>                                                                                                       |
 | :--------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Text                                           | Sets the color of the component's label.          | Select the color or click on **fx** and input code that programmatically returns a Hex color code.                                                                |
+| Size | Sets the font size of the label, in pixels. Defaults to `12`. | Enter a number or click on **fx** and enter code that returns a number. |
 | Alignment | Sets the position of the label and input field.   | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value - **side** or **top**. |
+| Direction | When alignment is set to `side`, places the label to the left or right of the field. | Select **Left** or **Right** using the icon toggles. |
 | Width | Sets the width of the input field. | Enable **Auto width** to use the standard width automatically. Disable it to manually adjust the width using the slider or by entering a numeric value via **fx**. You can also choose whether the width is calculated relative to the **Container** or relative to the **Field**. |
 
 ### Slider
@@ -94,7 +99,13 @@ The following actions of the component can be controlled using the component-spe
 | Accent        | Sets the accent color.           | Select a theme or choose from color picker. |
 | Handle        | Sets the handle color.           | Select a theme or choose from color picker. |
 | Handle border | Sets the handle border color.    | Select a theme or choose from color picker. |
-| Market label  | Sets the marker label color.     | Select a theme or choose from color picker. |
+| Marker label  | Sets the marker label color.     | Select a theme or choose from color picker. |
+
+### Container
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Padding | Sets the padding around the component. | Choose **Default** to keep the standard padding or **None** to remove it. |
 
 ### Advanced
 

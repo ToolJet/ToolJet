@@ -57,10 +57,14 @@ There are currently no exposed variables for the Timeline component.
 
 <div style={{paddingTop:'24px'}}>
 
-## General
-### Tooltip
+## Additional Actions
 
-A Tooltip provides additional information when users hover over the component. Set the tooltip content under the **General** accordion in the component's properties, choosing **Plain text**, **Markdown**, or **HTML** from the toggle above the field.
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Dynamic height | Automatically adjusts the component's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Shipment milestones`). |
 
 </div>
 
@@ -81,7 +85,6 @@ A Tooltip provides additional information when users hover over the component. S
 
 | Property | Description | Configuration Options |
 | :------- | :---------- | :-------------------- |
-| Visibility | Controls the component's visibility | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Box Shadow | Adds a shadow effect around the component | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
 
 ### Advanced

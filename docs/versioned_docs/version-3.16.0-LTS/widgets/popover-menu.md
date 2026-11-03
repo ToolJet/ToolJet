@@ -57,7 +57,7 @@ Allows you to add options to the **Popover Menu** component field. You can click
     }}
 ```
 
-**Options Loading State** allows you to add a loading state to the dynamically generated options. You can enable or disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
+**Options loading state** allows you to add a loading state to the dynamically generated options. You can enable or disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
 
 
 ## Events
@@ -76,17 +76,17 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"100px"}}> **Action** </div> | **Description** | **RunJS Query** |
 |:-----------|:----------------|:----------------|
-| setVisibility( ) | Sets the visibility of the component. | `components.popovermenu1.setVisibility()` |
-| setLoading( ) | Sets the loading state of the component. | `components.popovermenu1.setLoading()` |
-| setDisable( ) | Disables the component. | `components.popovermenu1.setDisable()` |
+| setVisibility( ) | Sets the visibility of the component. | `components.popovermenu1.setVisibility(true)` |
+| setLoading( ) | Sets the loading state of the component. | `components.popovermenu1.setLoading(true)` |
+| setDisable( ) | Disables the component. | `components.popovermenu1.setDisable(true)` |
 
 ## Exposed Variables
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div> |
 | :--------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------- |
 | label | Holds the label name of the component. | `{{components.popovermenu1.label}}` |
-| options | Holds all the option values of the component in array form. | `{{components.popovermenu1.options}}` |
-| lastClickedOption | Holds the value of the last clicked option. | `{{components.popovermenu1.lastClickedOption}}` |
+| options | Holds all the options of the component in array form. Each entry has `label`, `description` and `value`. | `{{components.popovermenu1.options}}` |
+| lastClickedOption | Holds the `label`, `description` and `value` of the last clicked option. `null` until an option is clicked. | `{{components.popovermenu1.lastClickedOption}}` |
 | isLoading | Indicates if the component is loading. | `{{components.popovermenu1.isLoading}}` |
 | isVisible | Indicates if the component is visible. | `{{components.popovermenu1.isVisible}}` |
 | isDisabled | Indicates if the component is disabled. | `{{components.popovermenu1.isDisabled}}` |
@@ -111,23 +111,28 @@ The following actions of the component can be controlled using the component-spe
 
 ### Menu
 
-| **Property**      | **Description**                                           | **Configuration Options**                   |
-| ----------------- | --------------------------------------------------------- | ------------------------------------------- |
-| **Background**    | Sets the background color of the popover menu.            | Color picker / HEX / RGBA / Custom Themes   |
-| **Text**          | Defines the text color of labels inside the menu.         | Color picker / HEX / RGBA / Custom Themes   |
-| **Border**        | Customizes the border color of the menu container.        | Color picker / HEX / RGBA / Custom Themes   |
-| **Loader**        | Sets the color of the loader.                             | Color picker / HEX / RGBA / Custom Themes   |
-| **Icon**          | Allows you to select an icon for the trigger button.      | Select icon, enable/disable icon visibility |
-| **Icon color**    | Adjusts the icon color and its alignment (left or right). | Color picker / Alignment options            |
-| **Border Radius** | Rounds the corners of the menu container.                 | Pixel values / Predefined radius options    |
-| **Box shadow**    | Adds shadow effects to the menu for depth.                | Color picker / HEX / RGBA / Custom Themes   |
+| **Property** | **Description** | **Configuration Options** |
+| ------------ | --------------- | ------------------------- |
+| **Background** | Sets the background color of the trigger button. Available only when **Button type** is **Primary**. | Color picker / HEX / RGBA / Custom Themes |
+| **Hover background** | Sets the background color of the trigger button on hover. Available only when **Button type** is **Primary**. | **Auto** (default, derived from Background) or **Manual** (shows a color picker). |
+| **Text** | Sets the color of the button label. | Color picker / HEX / RGBA / Custom Themes |
+| **Font size** | Sets the font size of the button label. | Number in px (default `14`). |
+| **Font weight** | Sets the font weight of the button label. | Select `normal` (default), `medium`, `bold`, `lighter` or `bolder`. |
+| **Border** | Sets the border color of the trigger button. | Color picker / HEX / RGBA / Custom Themes |
+| **Loader** | Sets the color of the loading spinner on the button. | Color picker / HEX / RGBA / Custom Themes |
+| **Content alignment** | Sets the horizontal alignment of the button's label and icon. | Select `Left`, `Center` (default) or `Right`. |
+| **Icon** | Selects an icon for the trigger button. | Select icon, enable/disable icon visibility. Default `IconMenu2`. |
+| **Icon color** | Sets the color of the button icon. Use the alignment icons next to it to place the icon to the left (default) or right of the label. | Color picker / HEX / RGBA / Custom Themes; Left / Right position |
+| **Border radius** | Rounds the corners of the trigger button. | Number in px (default `6`). |
+| **Box shadow** | Adds a shadow to the trigger button. Available only when **Button type** is **Primary**. | X/Y offset, blur, spread and color. |
+| **Menu width** | Controls the width of the popover menu. | Choose **Match the field** (default), **Match the content** or **Custom**. With **Custom**, enter a width in **Custom menu width**; numbers are treated as px. |
 
 ### Options
 
 | **Property**    | **Description**                                  | **Configuration Options**                 |
 | --------------- | ------------------------------------------------ | ----------------------------------------- |
 | **Label**       | Sets the color for the display text for the menu option.            | Color picker / HEX / RGBA / Custom Themes |
-| **Icon color**  | Sets the color of the option’s icon.             | Color picker / HEX / RGBA / Custom Themes |
+| **Icon color**  | Sets the color of the menu option's icon.        | Color picker / HEX / RGBA / Custom Themes |
 | **Description** | Sets the color for the optional helper text shown under the main label. | Color picker / HEX / RGBA / Custom Themes |
 
 ### Advanced
