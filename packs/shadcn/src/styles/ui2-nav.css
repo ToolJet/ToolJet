@@ -1329,11 +1329,20 @@
   align-items: center;
   gap: 12px;
 }
+/* The group never grows past its box: the row shrinks to the space left under the label and the buttons follow it. */
+.n2-group-field > .n2-group-row {
+  min-height: 0;
+  align-items: stretch;
+}
+.n2-group-row > .n2-spinner {
+  align-self: center;
+}
 .n2-group-row.is-full {
   width: 100%;
 }
 .n2-group {
   display: inline-flex;
+  min-height: 24px;
   width: fit-content;
   min-width: 0;
   max-width: 100%;
@@ -1354,6 +1363,8 @@
 }
 .n2-group > .ui-btn {
   width: auto;
+  max-height: 100%;
+  min-height: 0;
   flex-shrink: 0;
   border-radius: var(--lk-radius, var(--ui-radius));
   box-shadow: none;

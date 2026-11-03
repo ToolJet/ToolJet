@@ -232,10 +232,15 @@ export const DISABLED_STATE_META: FieldMeta = textinputConfig.properties.disable
 export const groupStylesBySection = (styles: ManifestProp[]): PropSection[] =>
   groupPropsBySection(styles, DEFAULT_STYLES_SECTION);
 
-// Same mapping as props, except a color style gets the theme-aware swatch picker native widgets use.
+// A label longer than this wraps beside its control and pushes the control out of the panel.
+const INLINE_LABEL_LIMIT = 18;
+
+// Same mapping as props, except a color style gets the theme-aware swatch picker native widgets use, and a long
+// label puts its control on the line below.
 export const styleFieldMeta = (style: ManifestProp): FieldMeta => {
   const meta = fieldMeta(style);
-  return meta.type === 'color' ? { ...meta, type: 'colorSwatches' } : meta;
+  const field = meta.type === 'color' ? { ...meta, type: 'colorSwatches' } : meta;
+  return (field.displayName ?? '').length > INLINE_LABEL_LIMIT ? { ...field, newLine: true } : field;
 };
 
 // Static widget-config styles (e.g. boxShadow) — rendered after the manifest's own styles.

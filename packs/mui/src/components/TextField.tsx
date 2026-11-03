@@ -295,7 +295,7 @@ export const NumberField = () => {
     roleEvents: { onEnterPressed: 'onEnterKeyDown' },
     roleActions: { setText: 'setValue', setFocus: 'focus', setBlur: 'blur' },
     defaultWidth: 8,
-    defaultHeight: 7,
+    defaultHeight: 9,
   });
   const lo = toNumber(min);
   const hi = toNumber(max);
