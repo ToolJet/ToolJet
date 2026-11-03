@@ -9,7 +9,7 @@
   "subsystems": [
     { "id": "loading-versions-compatibility", "name": "Loading, versions, and compatibility", "owner": "", "roots": ["Header/AppVersionsManager", "Header/EnvironmentManager", "Header/VersionManager"] },
     { "id": "bindings-evaluation-state", "name": "Bindings, evaluation, and state", "owner": "", "roots": ["CodeBuilder", "CodeEditor", "_contexts", "_helpers", "_hooks", "_stores", "_utils"] },
-    { "id": "queries-events-actions-exposed-values", "name": "Queries, events, actions, and exposed values", "owner": "", "roots": ["QueryManager", "QueryPanel"] },
+    { "id": "queries-events-actions-exposed-values", "name": "Queries, events, actions, and exposed values", "owner": "", "roots": ["QueryManager", "QueryPanel", "QueryLibrary"] },
     { "id": "canvas-layout-interaction-reflow", "name": "Canvas layout, interaction, and reflow", "owner": "", "roots": ["AppCanvas"] },
     { "id": "widget-definitions-runtime", "name": "Widget definitions and runtime", "owner": "", "roots": ["WidgetManager", "Widgets"] },
     { "id": "inspector-configuration", "name": "Inspector and configuration", "owner": "", "roots": ["RightSideBar"] },
