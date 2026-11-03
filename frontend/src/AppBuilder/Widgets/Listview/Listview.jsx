@@ -239,27 +239,26 @@ export const Listview = function Listview({
   }, [columns]);
 
   const [currentPage, setCurrentPage] = useState(1);
-  // Only a user or action page change fires On page change; a clamp after data shrinks does not.
-  const pageEventPending = useRef(false);
-  const pageChanged = (page) => {
-    if (page !== currentPageRef.current) pageEventPending.current = true;
+  // Like Table: only the pager fires On page change, not setPage and not a clamp the list makes itself.
+  const pagerClicked = useRef(false);
+  const pagerPageChanged = (page) => {
+    if (page !== currentPageRef.current) pagerClicked.current = true;
     setCurrentPage(page);
   };
   const currentPageRef = useRef(currentPage);
   currentPageRef.current = currentPage;
   const lastPageRef = useRef(1);
-  lastPageRef.current = enablePagination
-    ? Math.max(1, Math.ceil((_.isArray(data) ? data.length : 0) / rowPerPageValue))
-    : 1;
+  const lastPage = enablePagination ? Math.max(1, Math.ceil((_.isArray(data) ? data.length : 0) / rowPerPageValue)) : 1;
+  lastPageRef.current = lastPage;
+  // The list owns the clamp (data, rowsPerPage or pagination changed) so the pager never reports one.
+  if (currentPage > lastPage) setCurrentPage(lastPage);
   const fireEventRef = useRef(fireEvent);
   fireEventRef.current = fireEvent;
 
   useEffect(() => {
     setExposedVariable('pageIndex', currentPage);
-    if (pageEventPending.current) {
-      pageEventPending.current = false;
-      fireEventRef.current('onPageChanged');
-    }
+    if (pagerClicked.current) fireEventRef.current('onPageChanged');
+    pagerClicked.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
@@ -283,18 +282,15 @@ export const Listview = function Listview({
       setPage: async (pageNo) => {
         const requested = Math.floor(Number(pageNo));
         if (Number.isNaN(requested)) return;
-        pageChanged(Math.min(Math.max(requested, 1), lastPageRef.current));
+        setCurrentPage(Math.min(Math.max(requested, 1), lastPageRef.current));
       },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  // A delete or add must not lose the reader's place; only a page past the new end moves, to the last one.
   const prevRecordCount = useRef(_.isArray(data) ? data.length : 0);
   const recordCount = _.isArray(data) ? data.length : 0;
   if (prevRecordCount.current !== recordCount) {
     prevRecordCount.current = recordCount;
-    const lastPage = Math.max(1, Math.ceil(recordCount / rowPerPageValue));
-    if (currentPage > lastPage) setCurrentPage(lastPage);
     // A selection outlives its record otherwise, and a handler acts on a row the data no longer has.
     if (selectedRowIndex !== undefined && selectedRowIndex >= recordCount) {
       setSelectedRowIndex(undefined);
@@ -307,12 +303,11 @@ export const Listview = function Listview({
       });
     }
   }
-  // The index points at a position, so any change to the records invalidates it (D-17).
+  // The index points at a position, so any new data value invalidates it, equal content included (D-17).
   const prevDataRef = useRef(data);
   if (prevDataRef.current !== data) {
-    const contentChanged = !_.isEqual(prevDataRef.current, data);
     prevDataRef.current = data;
-    if (contentChanged) setExposedVariables({ selectedRecordIndex: undefined });
+    setExposedVariables({ selectedRecordIndex: undefined });
   }
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
@@ -357,6 +352,10 @@ export const Listview = function Listview({
     initExposedValueArrayForChildren(id, filteredData.length, moduleId, parentIndices);
   }
 
+  // Callbacks read the current page through a ref so their identity does not change every render.
+  const filteredDataRef = useRef(filteredData);
+  filteredDataRef.current = filteredData;
+
   const onRecordOrRowClicked = useCallback(
     (index) => {
       // Position in the whole data, so the shrink check below works on every page.
@@ -384,13 +383,13 @@ export const Listview = function Listview({
       // Every row event carries its record, so a handler on the list itself can read {{listItem}}.
       const fireRowEvent = (name) =>
         fireEvent(name, {
-          customVariables: { listItem: filteredData[index] },
+          customVariables: { listItem: filteredDataRef.current[index] },
           sourceSubContainerIndex: [...parentIndices, index],
         });
       fireRowEvent('onRecordClicked');
       fireRowEvent('onRowClicked');
     },
-    [id, moduleId, parentIndices, setExposedVariables, fireEvent, filteredData, startIndexOfRowInThePage]
+    [id, moduleId, parentIndices, setExposedVariables, fireEvent, startIndexOfRowInThePage]
   );
 
   const hoverRecord = useMemo(
@@ -407,7 +406,7 @@ export const Listview = function Listview({
     [parentIndices]
   );
   useEffect(() => () => hoverRecord.cancel(), [hoverRecord]);
-  const onRecordHovered = useCallback((index) => hoverRecord(index, filteredData[index]), [hoverRecord, filteredData]);
+  const onRecordHovered = useCallback((index) => hoverRecord(index, filteredDataRef.current[index]), [hoverRecord]);
 
   const renderedRowCount = filteredData.length;
 
@@ -547,7 +546,7 @@ export const Listview = function Listview({
                   <Pagination
                     darkMode={darkMode}
                     currentPage={currentPage}
-                    pageChanged={pageChanged}
+                    pageChanged={pagerPageChanged}
                     count={data?.length}
                     itemsPerPage={rowPerPageValue}
                   />
