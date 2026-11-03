@@ -35,6 +35,8 @@ sign-in, permissions, environments, data sources and queries; the code calls que
    palette; then set those tokens in `theme.css` to the colours (`--primary: #0f766e;`). Page-wide rules and library
    overrides go in `frontend/styles/global.css`, which loads last. The page has its own document, so popups and
    dialogs need no portal container.
+   The template already stops animations and transitions under `prefers-reduced-motion: reduce`
+   (`frontend/src/styles/globals.css`); keep that rule.
    Another React UI library (Ant Design, MUI) only when the user asks for one; wire it to the theme with
    `useToolJetTheme()` from `@tooljet/custom-component-sdk` (resolved colours, radius, font, `mode`, plus ready
    `antd` and `mui` objects; it re-renders when the theme changes):

@@ -21,8 +21,8 @@ to: <%= name %>/src/styles/globals.css
     --card-foreground: var(--tj-text, #030712);
     --popover: var(--tj-surface, #ffffff);
     --popover-foreground: var(--tj-text, #030712);
-    --primary: var(--tj-brand, #111827);
-    --primary-foreground: var(--tj-on-brand, #f9fafb);
+    --primary: var(--tj-brand, #4368e3);
+    --primary-foreground: var(--tj-on-brand, #ffffff);
     --secondary: var(--tj-surface-alt, #f3f4f6);
     --secondary-foreground: var(--tj-text, #111827);
     --muted: var(--tj-surface-alt, #f3f4f6);
@@ -37,7 +37,7 @@ to: <%= name %>/src/styles/globals.css
     --warning-foreground: #ffffff;
     --border: var(--tj-border-weak, #e5e7eb);
     --input: var(--tj-border, #e5e7eb);
-    --ring: var(--tj-brand, #030712);
+    --ring: var(--tj-brand, #4368e3);
     --chart-1: var(--tj-brand, #2563eb);
     --chart-2: var(--tj-warning, #d97706);
     --chart-3: var(--tj-success, #15803d);
@@ -53,8 +53,8 @@ to: <%= name %>/src/styles/globals.css
     --card-foreground: var(--tj-text, #f9fafb);
     --popover: var(--tj-surface, #030712);
     --popover-foreground: var(--tj-text, #f9fafb);
-    --primary: var(--tj-brand, #f9fafb);
-    --primary-foreground: var(--tj-on-brand, #111827);
+    --primary: var(--tj-brand, #4368e3);
+    --primary-foreground: var(--tj-on-brand, #ffffff);
     --secondary: var(--tj-surface-alt, #1f2937);
     --secondary-foreground: var(--tj-text, #f9fafb);
     --muted: var(--tj-surface-alt, #1f2937);
@@ -64,7 +64,7 @@ to: <%= name %>/src/styles/globals.css
     --destructive: var(--tj-danger, #7f1d1d);
     --border: var(--tj-border-weak, #1f2937);
     --input: var(--tj-border, #1f2937);
-    --ring: var(--tj-brand, #d1d5db);
+    --ring: var(--tj-brand, #4368e3);
   }
   .app-root {
     @apply bg-background text-foreground font-sans text-sm antialiased;
@@ -78,4 +78,18 @@ to: <%= name %>/src/styles/globals.css
 /* Radix portals land in the host's popup layer, which shares this stylesheet; the layer needs the same variables. */
 .app-popups {
   @apply font-sans text-sm text-foreground;
+}
+
+/* Reduced motion, on by default: tailwindcss-animate and every transition stop for people who ask their system for less. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
 }

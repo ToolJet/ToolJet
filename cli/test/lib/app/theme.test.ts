@@ -31,6 +31,27 @@ describe('tooljet app init: the theme', () => {
     expect(theme).not.to.match(/\d+(\.\d+)? \d+(\.\d+)?% \d+(\.\d+)?%/);
   });
 
+  it('leaves no stock near-black primary to survive a build: without a theme the fallback is ToolJet\'s default brand', () => {
+    const read = scaffold();
+    const theme = read('styles/theme.css');
+    const globals = read('src/styles/globals.css');
+    expect([...theme.matchAll(/^\s*--primary: ([^;]+);/gm)].map((m) => m[1])).to.deep.equal([
+      'var(--tj-brand, #4368e3)',
+      'var(--tj-brand, #4368e3)',
+    ]);
+    expect(theme).to.match(/--primary-foreground: var\(--tj-on-brand, #ffffff\);/);
+    expect(globals).not.to.contain('--primary: var(--tj-brand, #111827)');
+    expect(theme).not.to.contain('220.9 39.3%');
+  });
+
+  it('stops animations and transitions under prefers-reduced-motion, in the CSS the app is built from', () => {
+    const rule = /@media \(prefers-reduced-motion: reduce\)[\s\S]*animation-duration: 0\.01ms !important;[\s\S]*transition-duration: 0\.01ms !important;/;
+    expect(scaffold()('src/styles/globals.css')).to.match(rule);
+    // The component template carries it too, for a project that does not take the app overlay.
+    const template = fs.readFileSync(path.join(__dirname, '../../../src/_templates/library/code-app/globals.ejs.t'), 'utf8');
+    expect(template).to.match(rule);
+  });
+
   it('reads the tokens in Tailwind directly, opacity modifiers through color-mix', () => {
     const read = scaffold();
     const config = read('tailwind.config.cjs');
