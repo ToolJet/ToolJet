@@ -37,6 +37,7 @@ describe('ImportExportResourcesService.export library tables', () => {
       {
         export: jest.fn(async () => ({ appV2: { id: 'app1', ...(libraryQueries.length && { libraryQueries }) } })),
         replaceTooljetDbTableIds: AppImportExportService.prototype.replaceTooljetDbTableIds,
+        pointTooljetDbQueriesAtCoRelationIds: AppImportExportService.prototype.pointTooljetDbQueriesAtCoRelationIds,
       } as unknown as AppImportExportService,
       { export: exportTable } as unknown as TooljetDbImportExportService,
       { manager: { find: findTables } } as unknown as InternalTableRepository,
@@ -54,7 +55,9 @@ describe('ImportExportResourcesService.export library tables', () => {
     const result = await service.export(user, dto(requested));
 
     expect(requested).toEqual([{ table_id: TABLE('1') }, { table_id: TABLE('2') }]);
-    expect(exportTable.mock.calls.map(([, table]) => table.table_id)).toEqual([TABLE('1'), TABLE('2')]);
+    // First pass builds the co_relation id map from the caller's list; second pass exports after
+    // library tables are merged into that same array.
+    expect(exportTable.mock.calls.map(([, table]) => table.table_id)).toEqual([TABLE('1'), TABLE('1'), TABLE('2')]);
     // same order as the caller's array, which is what the push mapping relies on
     expect(result.tooljet_database).toEqual([{ id: TABLE('1') }, { id: TABLE('2') }]);
   });
@@ -90,7 +93,7 @@ describe('ImportExportResourcesService.export library tables', () => {
     const result = await service.export(user, dto(requested));
 
     expect(requested).toEqual([{ table_id: TABLE('1') }, { table_id: TABLE('2') }]);
-    expect(exportTable.mock.calls.map(([, table]) => table.table_id)).toEqual([TABLE('1'), TABLE('2')]);
+    expect(exportTable.mock.calls.map(([, table]) => table.table_id)).toEqual([TABLE('1'), TABLE('1'), TABLE('2')]);
     expect(result.tooljet_database).toHaveLength(2);
     expect(findTables.mock.calls[0][1]).toMatchObject({ where: { organizationId: 'org1' } });
   });

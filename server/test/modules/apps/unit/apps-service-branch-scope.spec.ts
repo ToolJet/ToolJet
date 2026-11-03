@@ -55,17 +55,17 @@ describe('AppsService.create — default branch', () => {
   });
 });
 
-// Module dashboards retain the requested branch.
+// Dashboard listing keeps the requested branch when one is supplied.
 describe('AppsService dashboard branch', () => {
-  const resolve = (svc: AppsService, type: string, branchId?: string) =>
+  const resolve = (svc: AppsService, branchId?: string) =>
     (
-      svc as unknown as { resolveDashboardBranchId: (u: unknown, t: string, b?: string) => Promise<string> }
-    ).resolveDashboardBranchId(user, type, branchId);
+      svc as unknown as { resolveDashboardBranchId: (u: unknown, b?: string) => Promise<string | undefined> }
+    ).resolveDashboardBranchId(user, branchId);
 
   beforeEach(() => jest.resetAllMocks());
 
-  it('keeps modules on the requested branch', async () => {
+  it('keeps the requested branch', async () => {
     const { svc } = makeSvc();
-    await expect(resolve(svc, APP_TYPES.MODULE, 'feature-branch')).resolves.toBe('feature-branch');
+    await expect(resolve(svc, 'feature-branch')).resolves.toBe('feature-branch');
   });
 });
