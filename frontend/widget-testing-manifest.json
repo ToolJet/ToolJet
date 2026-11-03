@@ -62,7 +62,7 @@
     },
     {
       "componentType": "Listview",
-      "status": "verified",
+      "status": "approved",
       "contract": "ee/test/app-builder/widgets/Listview/TESTING.md"
     },
     {
