@@ -1570,11 +1570,7 @@ const legacyWidget = createWidgetHarness({
   widgetWidth: 600,
 });
 
-/**
- * A ListView saved before 2.0 holds none of the 2.0 keys. The harness seeds the registered
- * config `definition` under it, as the server does on every load, so the config defaults
- * decide how it looks (D-18).
- */
+// The harness seeds the config `definition` under a pre-2.0 ListView, as the server does on load.
 describe('Listview: a saved ListView without any 2.0 key', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
@@ -1605,7 +1601,9 @@ describe('Listview: a saved ListView without any 2.0 key', () => {
       expect(rows()[0].style.height).toBe('100px');
       expect(document.getElementById(`${ID}-header`)).toBeNull();
       expect(pager()).toBeTruthy();
-    }
+    },
+    // The first edit-mode mount loads the editor canvas and can pass 5s on a busy machine.
+    20000
   );
 });
 

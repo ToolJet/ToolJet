@@ -4,7 +4,7 @@ export const listviewConfig = {
   description: 'List multiple items',
   defaultSize: {
     width: 15,
-    // Header 60 + six 80px records with 12px gaps; the rest scroll.
+    // 12 padding + 60 header + 6 x 80 records + 5 x 12 gaps + 12 padding: six records show, the rest scroll.
     height: 624,
   },
   defaultChildren: [
@@ -276,8 +276,7 @@ export const listviewConfig = {
       showBorder: { value: '{{true}}' },
       rowsPerPage: { value: '{{10}}' },
       enablePagination: { value: '{{false}}' },
-      // 2.0 keys hold the OLD look: the server merges these under every saved ListView on load.
-      // gridRecordHeight has no default so saved grid ListViews keep using rowHeight.
+      // Old look: the server merges these under every saved ListView; no gridRecordHeight, so saved grids keep rowHeight.
       showHeader: { value: '{{false}}' },
       headerHeight: { value: '{{60}}' },
       paginationType: { value: 'clientSide' },
@@ -299,7 +298,7 @@ export const listviewConfig = {
       headerDividerColor: { value: 'var(--cc-weak-border)' },
     },
   },
-  // The NEW look, written over `definition` only when a ListView is dropped (D-18).
+  // New look, merged over `definition` only on drop so saved ListViews keep the old one.
   creationDefinition: {
     properties: {
       data: {
@@ -325,7 +324,6 @@ export const listviewConfig = {
       recordDividerColor: { value: 'var(--cc-weak-border)' },
       recordBorderColor: { value: 'var(--cc-weak-border)' },
       recordBorderRadius: { value: '{{6}}' },
-      recordBoxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

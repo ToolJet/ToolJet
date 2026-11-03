@@ -1,11 +1,4 @@
-/**
- * Which look a ListView gets depends on how it was created (D-18). The widget config's
- * `definition` holds the OLD look, because the server merges it under every saved
- * component on every load. Only a new drop writes the new look into the component.
- *
- * Real store, real drop functions, real paste. Nothing is rendered: these scenarios are
- * about what the component definition holds, which is what gets saved.
- */
+// Saved ListViews load with the config's old-look `definition`; only a new drop writes the new look.
 import useStore from '@/AppBuilder/_stores/store';
 import { seedApp, componentDefinition, binding } from '@/test/app-builder';
 import { addNewWidgetToTheEditor, addChildrenWidgetsToParent } from '@/AppBuilder/AppCanvas/appCanvasUtils';
@@ -43,7 +36,7 @@ describe('Listview: a new drop gets the new look', () => {
     useStore.getState().addComponentToCurrentPage([parent, ...children], MODULE_ID, { saveAfterAction: false });
     const saved = components()[parent.id];
     const savedChildren = children.map((child) => components()[child.id]);
-    return { saved, savedChildren };
+    return { dropped: parent, saved, savedChildren };
   }
 
   test('[Listview-CREATE-001] a dropped ListView is saved with every new-look value', async () => {
@@ -68,7 +61,8 @@ describe('Listview: a new drop gets the new look', () => {
     expect(styles.recordDividerColor).toEqual({ value: 'var(--cc-weak-border)' });
     expect(styles.recordBorderColor).toEqual({ value: 'var(--cc-weak-border)' });
     expect(styles.recordBorderRadius).toEqual({ value: '{{6}}' });
-    expect(styles.recordBoxShadow).toEqual({ value: '0px 0px 0px 0px #00000040' });
+    // No shadow is expressed by leaving the key out; the shadow field cannot parse a 'none' value.
+    expect(styles.recordBoxShadow).toBeUndefined();
     expect(styles.headerBackgroundColor).toEqual({ value: 'transparent' });
     expect(styles.headerDividerColor).toEqual({ value: 'var(--cc-weak-border)' });
   });
@@ -95,6 +89,15 @@ describe('Listview: a new drop gets the new look', () => {
       expect(top).toBeGreaterThanOrEqual(0);
       expect(top + height).toBeLessThanOrEqual(80);
     }
+  });
+
+  test('[Listview-CREATE-001] the dropped ListView does not carry the creation block itself', async () => {
+    // Break this catches: leaving `creationDefinition` on the component the drop builds, where any
+    // consumer that keeps the whole component (not just its definition) would store it.
+    const { dropped, saved } = await dropListview();
+
+    expect(dropped.component).not.toHaveProperty('creationDefinition');
+    expect(saved.component).not.toHaveProperty('creationDefinition');
   });
 
   test('[Listview-CREATE-001] the creation values stay out of the config defaults', async () => {
