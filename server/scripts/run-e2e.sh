@@ -174,15 +174,17 @@ fi
 if [ "$mode" = "ci" ]; then
   printf "\033[1m━━━ Creating %d shard databases ━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n" "$SHARDS"
 
+  # A copy keeps the template's owner, so a non-superuser ToolJet Database admin still owns its shard.
   clone_template() {
     local template="$1"
+    local owner="$2"
     psql_cmd -d postgres -c "ALTER DATABASE \"$template\" WITH ALLOW_CONNECTIONS = false" > /dev/null 2>&1
     psql_cmd -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$template' AND pid <> pg_backend_pid();" > /dev/null 2>&1
     sleep 0.3
     for s in $(seq 1 $SHARDS); do
       local target="${template}_shard_${s}"
       psql_cmd -d postgres -c "DROP DATABASE IF EXISTS \"$target\"" > /dev/null 2>&1
-      if ! psql_cmd -d postgres -c "CREATE DATABASE \"$target\" TEMPLATE \"$template\"" > /dev/null; then
+      if ! psql_cmd -d postgres -c "CREATE DATABASE \"$target\" TEMPLATE \"$template\" OWNER \"$owner\"" > /dev/null; then
         psql_cmd -d postgres -c "ALTER DATABASE \"$template\" WITH ALLOW_CONNECTIONS = true" > /dev/null 2>&1
         printf "\033[31m  FAILED to clone %s → %s\033[0m\n" "$template" "$target"; exit 1
       fi
@@ -191,8 +193,8 @@ if [ "$mode" = "ci" ]; then
   }
 
   shard_dbs=(); shard_tjdbs=()
-  clone_template "$PG_DB"
-  clone_template "$TOOLJET_DB_NAME"
+  clone_template "$PG_DB" "$PG_USER"
+  clone_template "$TOOLJET_DB_NAME" "${TOOLJET_DB_USER:-$PG_USER}"
   for s in $(seq 1 $SHARDS); do
     shard_dbs+=("${PG_DB}_shard_${s}")
     shard_tjdbs+=("${TOOLJET_DB_NAME}_shard_${s}")

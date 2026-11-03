@@ -48,6 +48,9 @@ describe('Tenant ownership transfer as a non-superuser ToolJet Database admin', 
     // Mirrors workspace onboarding: the admin creates the schema and is a member of the tenant role.
     await dataSource.query(`CREATE ROLE "${adminRole}" NOSUPERUSER`);
     await dataSource.query(`CREATE ROLE "${tenantRole}" NOSUPERUSER`);
+    // A CREATEROLE connection user gets only ADMIN OPTION on a role it creates, so it must grant
+    // itself the admin role before it can SET ROLE to it.
+    await dataSource.query(`GRANT "${adminRole}" TO CURRENT_USER`);
     await dataSource.query(`GRANT "${tenantRole}" TO "${adminRole}"`);
     await dataSource.query(`CREATE SCHEMA "${schema}" AUTHORIZATION "${adminRole}"`);
     await dataSource.query(`GRANT USAGE ON SCHEMA "${schema}" TO "${tenantRole}"`);
