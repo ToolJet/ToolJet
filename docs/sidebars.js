@@ -874,7 +874,20 @@ const sidebars = {
         },
         "tooljet-db/data-types",
         "tooljet-db/table-operations",
-        "tooljet-db/environments",
+        {
+          "type": "category",
+          "label": "Environments",
+          "link": {
+            "type": "doc",
+            "id": "tooljet-db/environments/overview"
+          },
+          "items": [
+            "tooljet-db/environments/overview",
+            "tooljet-db/environments/schema-changes",
+            "tooljet-db/environments/run-migrations",
+            "tooljet-db/environments/manage-data"
+          ]
+        },
         "tooljet-db/querying-tooljet-db"
       ]
     },
