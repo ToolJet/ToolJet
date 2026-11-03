@@ -1,7 +1,7 @@
 // migration-lint: allow-destructive the unique indexes are on new tables, or replace a constraint with a looser partial one
 import { MigrationInterface, QueryRunner, Table, TableColumn, TableForeignKey, TableUnique } from 'typeorm';
 
-// Pure-DDL half of "Migration A" (`data-migrations/1793250000800-TjdbRolloutMigrationASubstrate.ts`),
+// Pure-DDL half of "Migration A" (`migrations/data/1793250000800-TjdbRolloutMigrationASubstrate.ts`),
 // split out so the 3 new tables + internal_tables shape changes exist even on a deploy that skips
 // `db:migrate:data`. The data migration backfills relations/baselines into what this creates.
 //
