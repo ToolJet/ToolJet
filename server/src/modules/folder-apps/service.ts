@@ -30,7 +30,7 @@ export class FolderAppsService implements IFolderAppsService {
       branchId,
       organizationId
     );
-    return this.folderAppsUtilService.create(folderId, appId, resolvedBranchId, isDefaultFallback);
+    return this.folderAppsUtilService.create(folderId, appId, resolvedBranchId, isDefaultFallback, organizationId);
   }
 
   async bulkCreate(
@@ -44,7 +44,7 @@ export class FolderAppsService implements IFolderAppsService {
       branchId,
       organizationId
     );
-    return this.folderAppsUtilService.bulkCreate(folderId, appIds, resolvedBranchId, isDefaultFallback);
+    return this.folderAppsUtilService.bulkCreate(folderId, appIds, resolvedBranchId, isDefaultFallback, organizationId);
   }
 
   async remove(folderId: string, appId: string, branchId?: string, organizationId?: string): Promise<void> {

@@ -63,3 +63,15 @@ export const scopeVersionsForPicker = (versions, { activeBranchId, isGitSyncEnab
   if (!isGitSyncEnabled || !getIsWorkflowSynced(own)) return own;
   return own.filter((v) => !isDefaultBranchDraft(v));
 };
+
+// The query editor always offers the default-branch draft entry with git on, synced or not, so
+// a draft row would duplicate it — and pin by name, which no other instance can resolve.
+export const scopeVersionsForQueryPicker = (versions, { activeBranchId, isGitSyncEnabled }) => {
+  const rows = scopeVersionsForPicker(versions, { activeBranchId, isGitSyncEnabled });
+  return isGitSyncEnabled ? rows.filter((v) => !isDefaultBranchDraft(v)) : rows;
+};
+
+// A feature-branch workflow never merged to the default branch has no draft there, so pinning it
+// could only fail. An existing pin keeps the entry so it isn't relabelled as another option.
+export const shouldOfferDefaultBranchDraft = (versions, { isOnFeatureBranch, pinnedValue }) =>
+  !isOnFeatureBranch || pinnedValue === DEFAULT_BRANCH_DRAFT_SENTINEL || hasDefaultBranchDraft(versions);

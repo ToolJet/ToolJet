@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { useTjdbStore } from './_stores/tjdbStore';

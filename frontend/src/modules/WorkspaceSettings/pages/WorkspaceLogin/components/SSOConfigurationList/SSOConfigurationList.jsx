@@ -1,6 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+
+import { pickEditionSpecificComponent } from '@/modules/common/helpers/pickEditionSpecificComponent';
 import BaseSSOConfigurationList from '@/modules/WorkspaceSettings/components/BaseSSOConfigurationList';
+import EESSOConfigurationList from '@ee/modules/WorkspaceSettings/components/SSOConfigurationList';
 import GoogleSSOModal from '../GoogleSSOModal';
 import GithubSSOModal from '../GithubSSOModal';
 
@@ -20,4 +22,8 @@ const SSOConfigurationList = (props) => {
   return <BaseSSOConfigurationList {...mergedProps} />;
 };
 
-export default withEditionSpecificComponent(SSOConfigurationList, 'WorkspaceSettings');
+export default pickEditionSpecificComponent({
+  ce: SSOConfigurationList,
+  ee: EESSOConfigurationList,
+  cloudSameAsEE: true,
+});

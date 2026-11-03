@@ -98,8 +98,8 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS)
   @UseGuards(AppAuthGuard, ValidatePublicAppGuard, FeatureAbilityGuard)
   @Get('validate-released-app-access/:slug')
-  validateReleasedAppAccess(@Ability() ability: AppAbility, @App() app: AppEntity) {
-    return this.appsService.validateReleasedApp(ability, app);
+  validateReleasedAppAccess(@Ability() ability: AppAbility, @App() app: AppEntity, @User() user: UserEntity) {
+    return this.appsService.validateReleasedApp(ability, app, user);
   }
 
   @InitFeature(FEATURE_KEY.UPDATE)

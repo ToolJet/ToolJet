@@ -2,6 +2,7 @@ import { EntityManager } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
 import { App } from '@entities/app.entity';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { readWorkflowQueryRefs } from '@helpers/workflow_query_options.helper';
 import { DRAFT_SENTINEL, WORKFLOW_CURRENT_BRANCH_SENTINEL } from './ref-sentinels';
@@ -16,6 +17,35 @@ import { DRAFT_SENTINEL, WORKFLOW_CURRENT_BRANCH_SENTINEL } from './ref-sentinel
 // Pins that follow a moving draft rather than naming a fixed version.
 export function pinIsDraftSentinel(pin?: string | null): boolean {
   return pin === DRAFT_SENTINEL || pin === WORKFLOW_CURRENT_BRANCH_SENTINEL;
+}
+
+// A stub means the draft exists but was never loaded on this instance — a different fix from
+// "no draft at all", so the two get different messages.
+async function missingDefaultDraftError(
+  manager: EntityManager,
+  appId: string,
+  defaultBranchId: string | null
+): Promise<BadRequestException> {
+  const branch = defaultBranchId
+    ? await manager.findOne(WorkspaceBranch, { where: { id: defaultBranchId }, select: ['name'] })
+    : null;
+  const name = branch?.name || 'main';
+  const stub = defaultBranchId
+    ? await manager.findOne(AppVersion, {
+        where: {
+          appId,
+          branchId: defaultBranchId,
+          status: AppVersionStatus.DRAFT,
+          versionType: AppVersionType.VERSION,
+          isStub: true,
+        },
+      })
+    : null;
+  return new BadRequestException(
+    stub
+      ? `This workflow's draft on ${name} hasn't been loaded yet. Open the workflow on ${name}, then run the query again.`
+      : `This workflow has no draft on ${name}. Push it to ${name}, or pick a saved version.`
+  );
 }
 
 // Twin of resolveModuleRef minus Tier 1; a set-but-unresolvable pin throws instead of substituting.
@@ -54,6 +84,19 @@ export async function resolveWorkflowRef(
         },
       });
       if (onBranch) return { appId: workflowApp.id, appVersionId: onBranch.id };
+      const stubOnBranch = await manager.findOne(AppVersion, {
+        where: {
+          appId: workflowApp.id,
+          branchId: consumerBranchId,
+          versionType: AppVersionType.BRANCH,
+          isStub: true,
+        },
+      });
+      if (stubOnBranch) {
+        throw new BadRequestException(
+          "This workflow hasn't been loaded on this branch yet. Open the workflow on this branch, then run the query again."
+        );
+      }
       throw new BadRequestException(
         'This workflow has no version on the current branch. Open or pull the workflow on this branch before running it.'
       );
@@ -72,7 +115,7 @@ export async function resolveWorkflowRef(
         })
       : null;
     if (draftOnDefault) return { appId: workflowApp.id, appVersionId: draftOnDefault.id };
-    throw new BadRequestException(`Workflow version "${workflowVersionId}" not available`);
+    throw await missingDefaultDraftError(manager, workflowApp.id, defaultBranchId);
   }
 
   // Tier D — default-branch draft sentinel.
@@ -90,7 +133,7 @@ export async function resolveWorkflowRef(
         })
       : null;
     if (draftOnDefault) return { appId: workflowApp.id, appVersionId: draftOnDefault.id };
-    throw new BadRequestException(`Workflow version "${workflowVersionId}" not available`);
+    throw await missingDefaultDraftError(manager, workflowApp.id, defaultBranchId);
   }
 
   // Tier 0 — versionName, default-branch PUBLISHED lookup (backed by git tag <coRel>/<versionName>).

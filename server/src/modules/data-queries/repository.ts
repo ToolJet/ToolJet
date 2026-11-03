@@ -34,6 +34,13 @@ export class DataQueryRepository extends Repository<DataQuery> {
     });
   }
 
+  // True only when the query belongs to the given app version (used by QueryAuthGuard's
+  // released-version check to keep anonymous public-app runs off draft queries).
+  async isQueryInVersion(dataQueryId: string, appVersionId: string): Promise<boolean> {
+    const count = await this.count({ where: { id: dataQueryId, appVersionId } });
+    return count > 0;
+  }
+
   async findPublicParentAppForModuleQuery(moduleAppId: string, dataQueryId: string): Promise<App | null> {
     return (
       this.manager
@@ -89,13 +96,25 @@ export class DataQueryRepository extends Repository<DataQuery> {
     );
   }
 
-  getAll(appVersionId: string): Promise<DataQuery[]> {
-    return this.manager
+  getAll(appVersionId: string, mode?: string): Promise<DataQuery[]> {
+    const query = this.manager
       .createQueryBuilder(DataQuery, 'data_query')
-      .innerJoinAndSelect('data_query.dataSource', 'data_source')
-      .leftJoinAndSelect('data_query.plugins', 'plugins')
-      .leftJoinAndSelect('plugins.iconFile', 'iconFile')
-      .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
+      .innerJoinAndSelect('data_query.dataSource', 'data_source');
+
+    // Plugin icon/manifest file blobs are only consumed by editor UI (query editor form
+    // schema, DS icons) — viewers never read them, so skip the join+decode entirely for mode=view.
+    if (mode === 'edit') {
+      query
+        .leftJoinAndSelect('data_query.plugins', 'plugins')
+        .leftJoinAndSelect('plugins.iconFile', 'iconFile')
+        .leftJoinAndSelect('plugins.manifestFile', 'manifestFile');
+    }
+
+    // NOTE: two separate `.where()` calls, not `.where()` + `.andWhere()` — TypeORM's second
+    // `.where()` replaces the first rather than AND-ing it. That's load-bearing here: GLOBAL-scoped
+    // datasources (the common case) always have a null appVersionId, so AND-ing both conditions
+    // would exclude them all. Only `data_query.app_version_id` ends up actually filtering.
+    return query
       .where('data_source.appVersionId = :appVersionId', { appVersionId })
       .where('data_query.app_version_id = :appVersionId', { appVersionId })
       .orderBy('data_query.updatedAt', 'DESC')

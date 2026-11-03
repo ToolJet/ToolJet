@@ -84,7 +84,9 @@ describe('InternalTableRepository.findDependents', () => {
       const { count, dependents } = await repository.findDependents(tableId, orgId);
 
       expect(count).toBe(1);
-      expect(dependents).toMatchObject([{ id: dependent.id, type, queries: [{ name: 'tjdbQuery' }] }]);
+      expect(dependents).toMatchObject([
+        { id: dependent.id, name: `draft-${type}`, type, queries: [{ name: 'tjdbQuery' }] },
+      ]);
     }
   );
 

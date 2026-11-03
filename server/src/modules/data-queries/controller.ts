@@ -92,8 +92,16 @@ export class DataQueriesController implements IDataQueriesController {
   //* On Updating references, need update the options of multiple queries
   @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
   @Patch('versions/:versionId')
-  async bulkUpdate(@User() user: UserEntity, @Body() updatingReferencesOptions: UpdatingReferencesOptionsDto) {
-    return await this.dataQueriesService.bulkUpdateQueryOptions(user, updatingReferencesOptions.data_queries_options);
+  async bulkUpdate(
+    @User() user: UserEntity,
+    @Param('versionId') versionId: string,
+    @Body() updatingReferencesOptions: UpdatingReferencesOptionsDto
+  ) {
+    return await this.dataQueriesService.bulkUpdateQueryOptions(
+      user,
+      versionId,
+      updatingReferencesOptions.data_queries_options
+    );
   }
 
   @InitFeature(FEATURE_KEY.DELETE)
@@ -106,8 +114,8 @@ export class DataQueriesController implements IDataQueriesController {
     GitSyncQueryEditGuard
   )
   @Delete(':id/versions/:versionId')
-  async delete(@Param('id') dataQueryId) {
-    await this.dataQueriesService.delete(dataQueryId);
+  async delete(@Param('id') dataQueryId, @Param('versionId') versionId) {
+    await this.dataQueriesService.delete(dataQueryId, versionId);
     return;
   }
 

@@ -51,7 +51,12 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const isUserLoggedin = !isEmpty(requestContext.user) && !isEmpty(organizationId);
     const orgMismatch = !isEmpty(dataQuery) && dataQuery?.app?.organizationId !== organizationId;
 
-    if (superAdmin || isAdmin || userPermission.tjdbCRUD) {
+    // Instance-wide switch: only admins may modify ToolJet Database, regardless of group permissions.
+    const isEditRestrictedToAdmins = process.env.TOOLJET_DB_DISABLE_BUILDER_EDIT === 'true' && !(superAdmin || isAdmin);
+    // App queries reach PostgREST in-process and never pass this guard, so any proxy write here is a direct API call.
+    const isBlockedProxyWrite = isEditRestrictedToAdmins && requestContext.method !== 'GET';
+
+    if (superAdmin || isAdmin || (userPermission.tjdbCRUD && !isEditRestrictedToAdmins)) {
       can(
         [
           FEATURE_KEY.CREATE_TABLE,
@@ -73,29 +78,34 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         InternalTable
       );
     }
-    if (superAdmin || isAdmin || isBuilder) {
+    if (superAdmin || isAdmin || (isBuilder && !isEditRestrictedToAdmins)) {
       can([FEATURE_KEY.BULK_UPLOAD, FEATURE_KEY.SQL_EXECUTION], InternalTable);
     }
+
+    // Non-builder access to the proxy requires a resolved in-workspace data query.
+    // `!orgMismatch` alone failed open (false when no data query is resolved).
+    const isValidDataQueryForOrg = !isEmpty(dataQuery) && !orgMismatch;
 
     if (isPublicAppRequest) {
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 
-    if (isUserLoggedin && (isAdmin || isBuilder || (!isEmpty(dataQuery) && !orgMismatch))) {
-      // Admins/builders (dashboard, App Builder editor); anyone else only through a data query of
-      // their own workspace - without one, an end user would get raw access to every table.
+    // Admins/builders (dashboard, App Builder editor); anyone else only through a data query of
+    // their own workspace - without one, an end user would get raw access to every table.
+    if (
+      isUserLoggedin &&
+      (isAdmin || isBuilder || userPermission.tjdbCRUD || isValidDataQueryForOrg) &&
+      !isBlockedProxyWrite
+    ) {
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 
-    can(
-      [
-        FEATURE_KEY.VIEW_TABLE,
-        FEATURE_KEY.VIEW_TABLES,
-        FEATURE_KEY.JOIN_TABLES,
-        FEATURE_KEY.TABLE_MIGRATIONS,
-        FEATURE_KEY.TABLE_DEPENDENTS,
-      ],
-      InternalTable
-    );
+    // Viewing table metadata is a builder/admin action, not for end-users.
+    if (superAdmin || isAdmin || isBuilder || userPermission.tjdbCRUD) {
+      can(
+        [FEATURE_KEY.VIEW_TABLE, FEATURE_KEY.VIEW_TABLES, FEATURE_KEY.TABLE_MIGRATIONS, FEATURE_KEY.TABLE_DEPENDENTS],
+        InternalTable
+      );
+    }
   }
 }

@@ -45,6 +45,9 @@ export interface UserPermissions {
   [MODULES.MODULES]?: UserAppsPermissions;
   [MODULES.WORKFLOW_FOLDER]?: UserFolderPermissions;
   [MODULES.MODULE_FOLDER]?: UserFolderPermissions;
+  // Data-source folders reuse the folder permission shape; `canEditFolder` resolves to
+  // editableFoldersId/isAllEditable, which is what authorizes renaming one.
+  [MODULES.DATA_SOURCE_FOLDER]?: UserFolderPermissions;
 }
 export interface UserWorkflowPermissions {
   editableWorkflowsId: string[];

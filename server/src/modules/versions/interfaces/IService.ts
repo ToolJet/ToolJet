@@ -33,6 +33,7 @@ export interface IVersionService {
 
   deleteVersion(app: App, user: User): Promise<void>;
 
+  getViewerLicenseTerms(organizationId: string): Promise<unknown>;
   getVersion(app: App, user: User, mode?: string): Promise<any>;
 
   getVersionByStableIds(

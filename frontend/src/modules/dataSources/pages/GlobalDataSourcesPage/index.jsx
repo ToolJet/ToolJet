@@ -10,7 +10,7 @@ import {
 } from '@/_services';
 import { GlobalDataSources } from '../../components/GlobalDataSources';
 import { toast } from 'react-hot-toast';
-import { BreadCrumbContext } from '@/App/App';
+import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import { returnDevelopmentEnv, getWorkspaceId } from '@/_helpers/utils';
 import _ from 'lodash';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
@@ -18,6 +18,11 @@ import { appendBranchName } from '@/_helpers/active-branch';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import {
+  canCreateDataSourceFolder as canCreateDataSourceFolderFor,
+  canDeleteDataSourceFolder as canDeleteDataSourceFolderFor,
+  canRenameDataSourceFolder as canRenameDataSourceFolderFor,
+} from '../../helpers/dataSourceFolderPermissions';
 import { subscribeLiveNotifications } from '@/_stores/notificationsStore';
 
 export const GlobalDataSourcesContext = createContext({
@@ -59,6 +64,12 @@ export const GlobalDataSourcesPage = (props) => {
   const activeBranchId = useWorkspaceBranchesStore((state) => state.activeBranchId);
   const setHasUnsyncedDatasources = useWorkspaceBranchesStore((state) => state.actions.setHasUnsyncedDatasources);
   const prevBranchIdRef = useRef(activeBranchId);
+
+  // Multi-branch git sync: the server refuses to rename a folder that spans branches.
+  const isBranchingEnabled = useWorkspaceBranchesStore((state) => {
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    return !!(state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled);
+  });
 
   // Refetch datasources when the active branch changes (without hard reload)
   useEffect(() => {
@@ -207,36 +218,23 @@ export const GlobalDataSourcesPage = (props) => {
     });
   };
 
-  // Coarse folder permissions surface on the session's user_permissions (decamelized from the
-  // ability service's dataSourceFolderCreate/Delete). Admins/super-admins always pass.
-  const canManageDataSourceFolder = (action) => {
-    const { super_admin, admin, user_permissions } = authenticationService.currentSessionValue;
-    return !!(super_admin || admin || user_permissions?.[`data_source_folder_${action}`]);
+  // Folder permission gates. Creating a NEW folder has no folder to scope to, so it stays on the
+  // coarse group flag; rename and delete are decided PER FOLDER, because a granular "Edit folder"
+  // grant can be scoped to specific folders and a folder's creator may always manage their own.
+  // See modules/dataSources/helpers/dataSourceFolderPermissions.js for how each mirrors the server.
+  const canCreateDataSourceFolder = () => canCreateDataSourceFolderFor(authenticationService.currentSessionValue);
+  const canUpdateDataSourceFolder = (folder) =>
+    canRenameDataSourceFolderFor(authenticationService.currentSessionValue, folder, { isBranchingEnabled });
+  // The listing now also shows folders the user holds no grant on, revealed only because they hold
+  // a data source the user can see — the coarse flag alone would offer Delete on those. Ownership
+  // is added here because FoldersService.checkFolderManagePermission returns early for the
+  // folder's creator on 'delete' too, so hiding it would conceal a delete the API allows.
+  const canDeleteDataSourceFolder = (folder) => {
+    const session = authenticationService.currentSessionValue;
+    const currentUserId = session?.current_user?.id;
+    const isOwner = currentUserId != null && folder?.created_by === currentUserId;
+    return canDeleteDataSourceFolderFor(session) || isOwner;
   };
-  // Creating a NEW folder has no folder to scope to, so it stays on the coarse flag.
-  const canCreateDataSourceFolder = () => canManageDataSourceFolder('create');
-
-  // Rename and delete are per-folder, mirroring app folders (frontend/src/HomePage/Folders.jsx).
-  // This matters because the listing now also shows folders the user has no grant on, revealed
-  // only because they hold a data source the user can see — the coarse flag alone would offer
-  // Rename/Delete on those.
-  const isOwnerOfDataSourceFolder = (folder) => {
-    const { current_user } = authenticationService.currentSessionValue;
-    return !!folder?.created_by && folder.created_by === current_user?.id;
-  };
-  const hasGranularFolderEditGrant = (folderId) => {
-    const { data_source_folder_group_permissions: folderPermissions } = authenticationService.currentSessionValue;
-    if (!folderPermissions) return false;
-    return !!(folderPermissions.is_all_editable || folderPermissions.editable_folders_id?.includes(folderId));
-  };
-  // Rename: granular "Edit folder" grant OR ownership. Delete: the coarse master Delete right OR
-  // ownership — the same split app folders use.
-  const canUpdateDataSourceFolder = (folder) => {
-    const { super_admin, admin } = authenticationService.currentSessionValue;
-    return !!(super_admin || admin || hasGranularFolderEditGrant(folder?.id) || isOwnerOfDataSourceFolder(folder));
-  };
-  const canDeleteDataSourceFolder = (folder) =>
-    canManageDataSourceFolder('delete') || isOwnerOfDataSourceFolder(folder);
 
   const fetchFolders = async (searchKey = '') => {
     setFoldersLoading(true);
@@ -502,6 +500,8 @@ export const GlobalDataSourcesPage = (props) => {
       foldersLoading,
       expandedFolderIds,
       selectedDataSourceIds,
+      // canUpdateDataSourceFolder closes over this — a stale value would misgate Rename.
+      isBranchingEnabled,
     ]
   );
 

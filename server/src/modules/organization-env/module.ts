@@ -25,6 +25,10 @@ export class OrganizationEnvModule extends SubModule {
       'services/ldap.util.service',
       'util.service',
     ]);
+    // Provided directly: importing GitSyncConfigsModule would be circular (it depends on this global module).
+    const { RemoteBranchCacheService } = await this.getProviders(configs, 'git-sync-configs', [
+      'services/remote-branch-cache.service',
+    ]);
 
     return this.cacheModule(cacheKey, {
       module: OrganizationEnvModule,
@@ -40,6 +44,7 @@ export class OrganizationEnvModule extends SubModule {
         OrganizationRepository,
         OrganizationGitSyncRepository,
         SSOConfigsRepository,
+        RemoteBranchCacheService,
       ],
       exports: [
         GitSyncEnvUtilService,

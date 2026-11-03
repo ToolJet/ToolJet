@@ -22,6 +22,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { search, searchKeymap, searchPanelOpen } from '@codemirror/search';
 import { handleSearchPanel } from './SearchBox';
+import { codeSearchHighlight } from './codeSearchHighlight';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import { isInsideParent } from './utils';
 import { CodeHinterBtns } from './CodehinterOverlayTriggers';
@@ -243,6 +244,7 @@ const MultiLineCodeEditor = (props) => {
       langExtention,
       lineWrappingExtension,
       searchExtension,
+      codeSearchHighlight,
       tooltipExtension,
       javascriptLanguage.data.of({
         autocomplete: overRideFunction,

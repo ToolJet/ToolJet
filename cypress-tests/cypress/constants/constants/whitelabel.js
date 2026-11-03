@@ -13,7 +13,8 @@ export const emailVerificationConfig = {
 
 export const smtpConfig = {
   smtpEnabled: true,
-  host: "130.131.160.149",
+  // CI machines running their own MailHog set CYPRESS_mailhog_smtp_host; others use the shared one
+  host: Cypress.env("mailhog_smtp_host") || "130.131.160.149",
   port: "1025",
   user: "user",
   password: "user",

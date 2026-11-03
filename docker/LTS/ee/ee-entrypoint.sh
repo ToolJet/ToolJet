@@ -25,8 +25,14 @@ fi
 
 # Start Redis server only if REDIS_HOST is localhost or not set
 if [ -z "$REDIS_HOST" ] || [ "$REDIS_HOST" = "localhost" ]; then
+  # Bundled Redis is loopback-only; a random per-boot password stops data sources pointed at localhost from reaching it
+  export REDIS_PASSWORD="${REDIS_PASSWORD:-$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')}"
+  REDIS_AUTH_CONF=$(mktemp)
+  chmod 600 "$REDIS_AUTH_CONF"
+  printf 'include %s\nrequirepass %s\n' "/etc/redis/redis.conf" "$REDIS_PASSWORD" > "$REDIS_AUTH_CONF"
   echo "Starting Redis server locally..."
-  redis-server /etc/redis/redis.conf &
+  # Own session: tini -g signals the server's process group, these stop only with the container.
+  setsid redis-server "$REDIS_AUTH_CONF" &
 elif [ -n "$REDIS_URL" ]; then
   echo "REDIS_URL connection is set: $REDIS_URL"
 else
@@ -52,7 +58,7 @@ if [[ "$PGRST_HOST" == localhost:* ]]; then
 
   # Starting PostgREST
   echo "Starting PostgREST..."
-  postgrest "$POSTGREST_CONFIG_PATH" &
+  setsid postgrest "$POSTGREST_CONFIG_PATH" &
 else
   echo "Using external PostgREST at $PGRST_HOST."
 fi
@@ -62,6 +68,12 @@ if [ -d "./server/dist" ]; then
   SETUP_CMD='npm run db:setup:prod'
 else
   SETUP_CMD='npm run db:setup'
+fi
+
+# MIGRATION_MODE=async: the server runs migrations itself, in the background.
+export MIGRATION_SETUP_COMMAND="$SETUP_CMD"
+if [ "$MIGRATION_MODE" = "async" ]; then
+  SETUP_CMD=true
 fi
 
 # Wait for PostgreSQL connection

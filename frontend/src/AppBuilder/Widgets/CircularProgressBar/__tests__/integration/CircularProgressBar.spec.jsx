@@ -1,5 +1,5 @@
 import { waitFor, within } from '@testing-library/react';
-import { circularProgressbarConfig as frontendConfig } from '@/AppBuilder/WidgetManager/widgets/circularProgressbar';
+import { circularProgressbarConfig as frontendConfig } from '@tooljet/widget-definitions';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager/componentTypes';
 import { componentDefinition } from '@/test/app-builder';
 import {
@@ -8,7 +8,10 @@ import {
   store,
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
-import { circularProgressbarConfig as serverConfig } from '../../../../../../../server/src/modules/apps/services/widget-config/circularProgressbar';
+// eslint-disable-next-line import/no-relative-packages
+import serverWidgets from '../../../../../../../server/src/modules/apps/services/widget-config';
+
+const serverConfig = serverWidgets.circularProgressbarConfig;
 
 const ID = 'circle1';
 const HANDLE = 'circularprogressbar1';

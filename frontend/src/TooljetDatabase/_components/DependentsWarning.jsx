@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 
+// Backend app type enum ('front-end' | 'module' | 'workflow') -> user-facing label.
+const APP_TYPE_LABEL = { 'front-end': 'app', module: 'module', workflow: 'workflow' };
+
 // "N resources reference this table" - a floor, never phrased as "will break" (the backend can
 // only see query references, not e.g. a table id hardcoded in a RunJS query).
 //
@@ -38,9 +41,11 @@ export default function DependentsWarning({ loading, dependents, foreignKeyTable
             <ul className="migration-deps-list">
               {dependents.dependents.map((dependent) => (
                 <li key={dependent.id}>
-                  <span className="migration-deps-app-name">{dependent.name}</span>
-                  <span className="migration-deps-app-type">{dependent.type}</span>
-                  <span className="migration-deps-queries">
+                  <span className="migration-deps-cell">
+                    <span className="migration-deps-app-name">{dependent.name || 'Untitled'}</span>
+                    <span className="migration-deps-app-type">{APP_TYPE_LABEL[dependent.type] ?? dependent.type}</span>
+                  </span>
+                  <span className="migration-deps-cell migration-deps-queries">
                     {dependent.queries.map((query) => query.name).join(', ')}
                   </span>
                 </li>

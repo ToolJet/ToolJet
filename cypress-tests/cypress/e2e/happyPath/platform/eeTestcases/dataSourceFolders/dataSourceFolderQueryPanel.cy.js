@@ -42,30 +42,33 @@ describe('Data Source Folders — Query Panel Grouping', () => {
     cy.then(() => cy.apiArchiveWorkspace(workspaceId));
   });
 
-  const verifyFolderGrouping = (item, search) => {
-    cy.get(dsFolder.pickerFolderHeader(names.folderA)).should('be.visible');
-    cy.get(dsFolder.pickerFolderHeader(names.folderB)).should('be.visible');
-    cy.get(dsFolder.pickerFolderHeader(names.emptyFolder)).should('not.exist');
+  const landingHeader = (folderName) => `${dsFolder.pickerFolderHeader(folderName)}.query-datasource-quick-action`;
+  const popoverHeader = (folderName) => `${dsFolder.pickerFolderHeader(folderName)}.ds-select-item`;
+
+  const verifyFolderGrouping = (item, search, header) => {
+    cy.get(header(names.folderA)).should('be.visible');
+    cy.get(header(names.folderB)).should('be.visible');
+    cy.get(header(names.emptyFolder)).should('not.exist');
     cy.get(item(names.a1)).should('not.exist');
     cy.get(item(names.b1)).should('not.exist');
 
-    cy.get(item(names.stray)).should('be.visible');
+    cy.get(item(names.stray)).scrollIntoView().should('be.visible');
 
-    cy.get(dsFolder.pickerFolderHeader(names.folderB)).click();
+    cy.get(header(names.folderB)).click();
     cy.get(item(names.b1)).should('have.length', 1);
     cy.get(item(names.b2)).should('have.length', 1);
     cy.get(item(names.a1)).should('not.exist');
-    cy.get(dsFolder.pickerFolderHeader(names.folderB)).click();
+    cy.get(header(names.folderB)).click();
 
     cy.get(search).type(names.folderA);
     cy.get(item(names.a1)).should('be.visible');
-    cy.get(dsFolder.pickerFolderHeader(names.folderB)).should('not.exist');
+    cy.get(header(names.folderB)).should('not.exist');
 
     cy.get(search).clear().type(names.b2);
-    cy.get(dsFolder.pickerFolderHeader(names.folderB)).should('be.visible');
+    cy.get(header(names.folderB)).should('be.visible');
     cy.get(item(names.b2)).should('be.visible');
     cy.get(item(names.b1)).should('not.exist');
-    cy.get(dsFolder.pickerFolderHeader(names.folderA)).should('not.exist');
+    cy.get(header(names.folderA)).should('not.exist');
     cy.get(item(names.stray)).should('not.exist');
     cy.get(search).clear();
   };
@@ -73,10 +76,10 @@ describe('Data Source Folders — Query Panel Grouping', () => {
   it('both data source pickers group by folder, search across folders, and reflect a folder change after reload', () => {
     cy.openApp('', workspaceId, Cypress.env('appId'));
 
-    verifyFolderGrouping(dsFolder.pickerDataSourceCard, dsFolder.emptyPickerSearch);
+    verifyFolderGrouping(dsFolder.pickerDataSourceCard, dsFolder.emptyPickerSearch, landingHeader);
 
     cy.get(dsFolder.addQueryPopoverButton).click();
-    verifyFolderGrouping(dsFolder.selectDataSourceOption, dsFolder.addQueryPopoverSearch);
+    verifyFolderGrouping(dsFolder.selectDataSourceOption, dsFolder.addQueryPopoverSearch, popoverHeader);
     cy.get('body').type('{esc}');
 
     // A folder change made outside the builder shows up after a reload, and the data source moves rather than duplicates.

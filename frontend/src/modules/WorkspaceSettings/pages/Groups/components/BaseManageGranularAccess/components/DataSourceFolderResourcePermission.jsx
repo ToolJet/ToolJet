@@ -1,8 +1,9 @@
-import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import { pickEditionSpecificComponent } from '@/modules/common/helpers/pickEditionSpecificComponent';
+import EEDataSourceFolderResourcePermissions from '@ee/modules/WorkspaceSettings/components/DataSourceFolderResourcePermissions';
 
-function DataSourceFolderResourcePermissions() {
-  return <></>;
-}
+const DataSourceFolderResourcePermissions = pickEditionSpecificComponent({
+  ee: EEDataSourceFolderResourcePermissions,
+  cloudSameAsEE: true,
+});
 
-export default withEditionSpecificComponent(DataSourceFolderResourcePermissions, 'WorkspaceSettings');
+export default DataSourceFolderResourcePermissions;

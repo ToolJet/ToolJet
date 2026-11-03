@@ -7,6 +7,7 @@ import {
   DataSource,
   EntityManager,
   Equal,
+  FindOptionsSelect,
   FindOptionsWhere,
   ILike,
   In,
@@ -27,6 +28,52 @@ import { GroupUsers } from '@entities/group_users.entity';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { User } from '@entities/user.entity';
 import { DATA_BASE_CONSTRAINTS } from './constants/error';
+
+const GROUP_USERS_SAFE_SELECT: FindOptionsSelect<GroupUsers> = {
+  id: true,
+  userId: true,
+  groupId: true,
+  user: {
+    id: true,
+    email: true,
+    firstName: true,
+    lastName: true,
+    avatarId: true,
+  },
+};
+
+// The user's groups that can view or edit the app. Page, component and query permissions are
+// checked against these, so the released-app cache key reads them too (getAppDataRevision).
+export function findUserGroupsWithAppAccess(
+  manager: EntityManager,
+  userId: string,
+  appId: string,
+  organizationId: string
+): Promise<GroupPermissions[]> {
+  return manager
+    .createQueryBuilder(GroupPermissions, 'group')
+    .innerJoin('granular_permissions', 'gp', 'gp.group_id = group.id')
+    .innerJoin('apps_group_permissions', 'agp', "agp.granular_permission_id = gp.id AND agp.app_type = 'front-end'")
+    .leftJoin('group_apps', 'ga', 'ga.apps_group_permissions_id = agp.id')
+    .leftJoin('group_users', 'gu', 'gu.group_id = group.id')
+    .where('group.organization_id = :organizationId', { organizationId })
+    .andWhere('gu.user_id = :userId', { userId })
+    .andWhere(
+      new Brackets((qb) => {
+        qb.where('agp.can_view = true').orWhere('agp.can_edit = true');
+      })
+    )
+    .andWhere(
+      new Brackets((qb) => {
+        qb.where('gp.is_all = true').orWhere('gp.is_all = false AND ga.app_id = :appId', { appId });
+      })
+    )
+    .select(['group.id AS id'])
+    .groupBy('group.id')
+    .distinct(true)
+    .getRawMany();
+}
+
 @Injectable()
 export class GroupPermissionsRepository extends Repository<GroupPermissions> {
   constructor(private dataSource: DataSource) {
@@ -58,29 +105,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
     organizationId: string,
     manager?: EntityManager
   ): Promise<GroupPermissions[]> {
-    const m = manager ?? this.manager;
-    return m
-      .createQueryBuilder(GroupPermissions, 'group')
-      .innerJoin('granular_permissions', 'gp', 'gp.group_id = group.id')
-      .innerJoin('apps_group_permissions', 'agp', "agp.granular_permission_id = gp.id AND agp.app_type = 'front-end'")
-      .leftJoin('group_apps', 'ga', 'ga.apps_group_permissions_id = agp.id')
-      .leftJoin('group_users', 'gu', 'gu.group_id = group.id')
-      .where('group.organization_id = :organizationId', { organizationId })
-      .andWhere('gu.user_id = :userId', { userId })
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where('agp.can_view = true').orWhere('agp.can_edit = true');
-        })
-      )
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where('gp.is_all = true').orWhere('gp.is_all = false AND ga.app_id = :appId', { appId });
-        })
-      )
-      .select(['group.id AS id'])
-      .groupBy('group.id')
-      .distinct(true)
-      .getRawMany();
+    return findUserGroupsWithAppAccess(manager ?? this.manager, userId, appId, organizationId);
   }
 
   async createGroup(
@@ -276,6 +301,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
             organizationUsers: true,
           },
         },
+        select: GROUP_USERS_SAFE_SELECT,
       });
     }
 
@@ -283,6 +309,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
     return m.find(GroupUsers, {
       where: baseWhere,
       relations: { group: true, user: { organizationUsers: true } },
+      select: GROUP_USERS_SAFE_SELECT,
     });
   }
 

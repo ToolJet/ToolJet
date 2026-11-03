@@ -1,11 +1,11 @@
-import React, { useState, useContext, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import cx from 'classnames';
 import Select, { components } from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import defaultStyles from '@/_ui/Select/styles';
 import { toast } from 'react-hot-toast';
-import { tooljetDatabaseService } from '@/_services';
-import { TooljetDatabaseContext } from '../index';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import { shallow } from 'zustand/shallow';
 import { useTjdbStore, useTjdbActions } from '../_stores/tjdbStore';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel, renderDatatypeIcon } from '../constants';
@@ -85,7 +85,7 @@ const ColumnForm = ({
     foreignKeys,
     configurations,
     setConfigurations,
-  } = useContext(TooljetDatabaseContext);
+  } = useTooljetDatabaseContext();
   const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore(
     (state) => ({
       queryFilters: state.queryFilters,
@@ -753,8 +753,11 @@ const ColumnForm = ({
   // whichever of those last ran used to clobber what the others had decided, e.g. clearing the
   // column name and then toggling NOT NULL would re-enable Save with an empty name.
   const [inputError, setInputError] = useState(false);
+  // A default is only demanded when NOT NULL is being switched on: a column that is already NOT NULL
+  // holds a value in every row, so renaming it (or changing anything else) needs no default.
+  const isSwitchingOnNotNull = isNotNull === true && !nullValue;
   const disabledSaveButton =
-    columnName === '' || inputError || (dataType?.value !== 'serial' && isNotNull === true && isEmpty(defaultValue));
+    columnName === '' || inputError || (dataType?.value !== 'serial' && isSwitchingOnNotNull && isEmpty(defaultValue));
 
   useEffect(() => {
     const currentType = selectedColumn?.dataType;

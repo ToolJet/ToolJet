@@ -1,0 +1,8 @@
+{
+  "$sources": {
+    "namePattern": "frontend/src/_helpers/utils.js validateQueryName (queries are referenced from code as queries.<name>)",
+    "events": "frontend/src/AppBuilder/QueryManager/dataQueryEvents.js (runtime dispatch: _stores/slices/eventsSlice.js)"
+  },
+  "namePattern": "^[A-Za-z0-9_-]+$",
+  "events": ["onDataQuerySuccess", "onDataQueryFailure"]
+}

@@ -225,7 +225,12 @@ export const returnWorkspaceIdIfNeed = (path) => {
   }
   return `/${getWorkspaceId()}`;
 };
+// This route belongs to the installation, not to a workspace. Only a server-issued
+// interaction identifier is accepted; arbitrary URLs and extra query fields are not.
+export const isMcpOAuthConsentPath = (path) => /^\/mcp\/consent\?request=[A-Za-z0-9_-]{43}$/.test(path || '');
+
 export const getRedirectURL = (path, isUserLoggingIn = false) => {
+  if (isMcpOAuthConsentPath(path)) return path;
   let redirectLoc = '/';
   const instanceLevelRoutes = [
     '/all-users',
@@ -237,6 +242,7 @@ export const getRedirectURL = (path, isUserLoggingIn = false) => {
     '/llm-key',
     '/license',
     '/security',
+    '/migrations',
   ];
   if (isUserLoggingIn && !path) {
     const role = authenticationService?.currentSessionValue?.role?.name;
@@ -257,6 +263,7 @@ export const getRedirectURL = (path, isUserLoggingIn = false) => {
   } else {
     const redirectTo = getRedirectTo();
     const { from } = redirectTo ? { from: { pathname: redirectTo } } : { from: { pathname: '/' } };
+    if (isMcpOAuthConsentPath(from.pathname)) return from.pathname;
     if (from.pathname !== '/confirm')
       from.pathname = `${returnWorkspaceIdIfNeed(from.pathname)}${from.pathname !== '/' ? from.pathname : ''}`;
     redirectLoc = from.pathname;
@@ -267,6 +274,10 @@ export const getRedirectURL = (path, isUserLoggingIn = false) => {
 
 export const getRedirectTo = (paramObj) => {
   const params = paramObj || new URL(window.location.href).searchParams;
+  // Login controls such as oauth_reauthenticate must not enter the SSO return
+  // cookie or be appended to the consent request after password/SSO login.
+  const oauthReturn = params.get('redirectTo');
+  if (isMcpOAuthConsentPath(oauthReturn)) return oauthReturn;
   let combined = Array.from(params.entries())
     .map((param) => param.join('='))
     .join('&');

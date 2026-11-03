@@ -77,7 +77,7 @@ export default function MigrationConfirmModal({
     <Modal
       show={show}
       onHide={onCancel}
-      size="lg"
+      dialogClassName="tjdb-confirm-dialog"
       animation={false}
       centered
       contentClassName={cx('migration-confirm-modal', { 'dark-theme': darkMode })}

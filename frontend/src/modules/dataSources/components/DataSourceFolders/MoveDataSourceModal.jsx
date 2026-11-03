@@ -9,11 +9,13 @@ import './dataSourceFolders.scss';
 // Hide react-select's indicator separator for a cleaner single-caret look (matches the design).
 const selectComponentOverrides = { IndicatorSeparator: () => null };
 
+const getSelectClassNames = (darkMode) => ({ menuPortal: () => (darkMode ? 'dark-theme' : '') });
+
 // "Update folder" modal (design Img 24): move one or more data sources into a target folder.
 // Opened from a data source's "Move folder" menu, pre-filled with that data source; more can be
 // added via the multi-select. Submitting bulk-adds/moves them (the backend auto-moves any that
 // already belong to another folder).
-export const MoveDataSourceModal = ({ show, initialDataSource, dataSources, folders, onClose, onSubmit }) => {
+export const MoveDataSourceModal = ({ show, initialDataSource, dataSources, folders, darkMode, onClose, onSubmit }) => {
   const [selectedDataSources, setSelectedDataSources] = useState([]);
   const [targetFolder, setTargetFolder] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,6 +85,7 @@ export const MoveDataSourceModal = ({ show, initialDataSource, dataSources, fold
             classNamePrefix="move-ds-select"
             className="move-ds-select"
             components={selectComponentOverrides}
+            classNames={getSelectClassNames(darkMode)}
             options={dataSourceOptions}
             value={selectedDataSources}
             onChange={(value) => setSelectedDataSources(value ?? [])}
@@ -100,6 +103,7 @@ export const MoveDataSourceModal = ({ show, initialDataSource, dataSources, fold
             classNamePrefix="move-ds-select"
             className="move-ds-select"
             components={selectComponentOverrides}
+            classNames={getSelectClassNames(darkMode)}
             options={folderOptions}
             value={targetFolder}
             onChange={setTargetFolder}

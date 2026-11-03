@@ -35,7 +35,9 @@ function EnvironmentSelectBox(props) {
     return null;
   }
 
-  const darkMode = darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
+  // Was `darkMode ?? (...)` — a TDZ self-reference that ES5 output evaluated as
+  // undefined, so the localStorage read always won. Written out directly.
+  const darkMode = localStorage.getItem('darkMode') === 'true' || false;
 
   return (
     <div

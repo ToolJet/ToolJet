@@ -1,21 +1,22 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState } from 'react';
 import { shallow } from 'zustand/shallow';
-import { tooljetDatabaseService } from '@/_services';
+import { isEmpty } from 'lodash';
+import { toast } from 'react-hot-toast';
+import { Tooltip } from 'react-tooltip';
+import cx from 'classnames';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import Information from '../Icons/information.svg';
 import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Drawer from '@/_ui/Drawer';
-import { toast } from 'react-hot-toast';
 import ForeignKeyTableForm from './ForeignKeyTableForm';
 import EditIcon from '../Icons/EditColumn.svg';
-import _, { isEmpty } from 'lodash';
-import { ConfirmDialog } from '@/_components';
-import { Tooltip } from 'react-tooltip';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import { getColumnDataType, dataTypes } from '../constants';
-import { TooljetDatabaseContext } from '../index';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
+import ChangesComponent from '../ChangesComponent';
 import { useTjdbActions, useTjdbStore } from '../_stores/tjdbStore';
-import cx from 'classnames';
 import useMigrationModal from '../MigrationConfirmModal/useMigrationModal';
 import { CHANGE_TYPE } from '../MigrationConfirmModal';
 
@@ -48,7 +49,7 @@ function ForeignKeyRelation({
   const [onDelete, setOnDelete] = useState([]);
   const [onUpdate, setOnUpdate] = useState([]);
   const { fetchTableMetadata } = useTjdbActions();
-  const { handleRefetchQuery } = useContext(TooljetDatabaseContext);
+  const { handleRefetchQuery } = useTooljetDatabaseContext();
   const { queryFilters, sortFilters, pageCount, pageSize } = useTjdbStore(
     (state) => ({
       queryFilters: state.queryFilters,
@@ -322,7 +323,7 @@ function ForeignKeyRelation({
 
   // const isMatchingForeignKeyColumns = checkMatchingColumnNamesInForeignKey(foreignKeyDetails, columns);
 
-  const { tables } = useContext(TooljetDatabaseContext);
+  const { tables } = useTooljetDatabaseContext();
 
   const checkTablelength = (tableLength, editMode) => {
     if (editMode) {
@@ -530,15 +531,15 @@ function ForeignKeyRelation({
         confirmButtonText={'Continue'}
         cancelButtonText={'Cancel'}
         footerStyle={footerStyle}
-        // currentPrimaryKeyIcons={currentPrimaryKeyIcons}
-        // newPrimaryKeyIcons={newPrimaryKeyIcons}
-        isEditToolJetDbTable={true}
-        foreignKeyChanges={newChangesInForeignKey}
-        existingReferencedTableName={existingReferencedTableName}
-        existingReferencedColumnName={existingReferencedColumnName}
-        currentReferencedTableName={currentReferencedTableName}
-        currentReferencedColumnName={currentReferencedColumnName}
-      />
+      >
+        <ChangesComponent
+          foreignKeyChanges={newChangesInForeignKey}
+          existingReferencedTableName={existingReferencedTableName}
+          existingReferencedColumnName={existingReferencedColumnName}
+          currentReferencedTableName={currentReferencedTableName}
+          currentReferencedColumnName={currentReferencedColumnName}
+        />
+      </ConfirmDialog>
       {migrationModal}
     </>
   );

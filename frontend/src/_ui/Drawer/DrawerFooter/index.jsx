@@ -42,8 +42,16 @@ function DrawerFooter({
     const baseKeyCallback = { key: 'Escape', callbackFn: onClose };
     const keyCallbackFnArray = [baseKeyCallback];
 
+    // Enter is the keyboard twin of the primary button, so it is inert whenever that button is disabled.
+    const unlessDisabled =
+      (callbackFn) =>
+      (...args) => {
+        if (shouldDisableCreateBtn || fetching) return;
+        callbackFn(...args);
+      };
+
     const addEnterCallback = (callbackFn) => {
-      keyCallbackFnArray.push({ key: 'Enter', callbackFn });
+      keyCallbackFnArray.push({ key: 'Enter', callbackFn: unlessDisabled(callbackFn) });
     };
 
     const formType = initiator;
@@ -67,7 +75,7 @@ function DrawerFooter({
     }
 
     if (formType === 'CreateRowForm') {
-      keyCallbackFnArray.push({ key: 'Shift, Enter', callbackFn: onCreate, args: [true] });
+      keyCallbackFnArray.push({ key: 'Shift, Enter', callbackFn: unlessDisabled(onCreate), args: [true] });
     }
 
     const cleanup = triggerKeyboardShortcut(keyCallbackFnArray, initiator);
@@ -83,14 +91,16 @@ function DrawerFooter({
     isForeignKeyDraweOpen,
     isEditMode,
     editForeignKeyInCreateTable,
+    shouldDisableCreateBtn,
+    fetching,
   ]);
 
   const drawerDocumentationsLinks = {
     CreateTableForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#create-new-table',
-    EditTableForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#rename-table',
-    CreateColumnForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#add-new-column',
-    EditColumnForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#edit-column',
-    ForeignKeyTableForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#foreign-key',
+    EditTableForm: 'https://docs.tooljet.com/docs/tooljet-db/table-operations#rename-table',
+    CreateColumnForm: 'https://docs.tooljet.com/docs/tooljet-db/table-operations#add-new-column',
+    EditColumnForm: 'https://docs.tooljet.com/docs/tooljet-db/table-operations#edit-column',
+    ForeignKeyTableForm: 'https://docs.tooljet.com/docs/tooljet-db/constraints/foreign-key',
   };
   const drawerNames = Object.keys(drawerDocumentationsLinks);
   const isDrawerWithDocumentation = drawerNames.some((drawerName) => drawerName === initiator);

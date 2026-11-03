@@ -1,9 +1,9 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import CreateRowForm from '../../Forms/RowForm';
-import { TooljetDatabaseContext } from '../../index';
-import { tooljetDatabaseService } from '@/_services';
+import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { listAllPrimaryKeyColumns } from '@/TooljetDatabase/constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import { useTjdbStore, useTjdbActions } from '../../_stores/tjdbStore';
@@ -14,8 +14,7 @@ const CreateRowDrawer = ({
   referencedColumnDetails,
   setReferencedColumnDetails,
 }) => {
-  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords, columns } =
-    useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords, columns } = useTooljetDatabaseContext();
   const pageSize = useTjdbStore((state) => state.pageSize);
   const { setSortFilters, setQueryFilters } = useTjdbActions();
   const [shouldResetRowForm, setShouldResetRowForm] = useState(0);

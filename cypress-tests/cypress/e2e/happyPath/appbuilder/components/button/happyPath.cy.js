@@ -153,7 +153,7 @@ describe(
 
     // Label property modification. The Button "Label" code field lives directly
     // in the Properties panel. Its label is "Label"
-    // (frontend/.../WidgetManager/widgets/button.js:17 properties.text
+    // (packages/widget-definitions/src/widgets/button.js:17 properties.text
     // displayName "Label") — the `buttonText.buttonTextLabel` constant ("Button
     // text") is STALE (see SHARED FIXES report), so use the real label literal.
     openEditorSidebar(data.widgetName);

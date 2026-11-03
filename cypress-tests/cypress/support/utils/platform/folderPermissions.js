@@ -1,10 +1,10 @@
-import { commonSelectors } from 'Selectors/common';
+import { commonSelectors, cyParamName } from 'Selectors/common';
 import { dashboardSelector } from 'Selectors/platform/dashboard';
 import { groupsSelector } from 'Selectors/platform/manageGroups';
 import { versionModalSelector } from 'Selectors/platform/eeCommon';
 import { versionSwitcherSelectors } from 'Selectors/platform/version';
 import { workflowSelector } from 'Selectors/platform/workflows';
-import { viewAppCardOptions, viewFolderCardOptions } from 'Support/utils/common';
+import { viewFolderCardOptions } from 'Support/utils/common';
 import { commonText } from 'Texts/common';
 import { dashboardText } from 'Texts/platform/dashboard';
 
@@ -204,8 +204,41 @@ export const uiDeleteFolder = (folderName) => {
   expectFolderListed(folderName, false);
 };
 
+export const stubCardIntersection = () => {
+  cy.on('window:before:load', (win) => {
+    win.IntersectionObserver = class {
+      constructor(callback) {
+        this.callback = callback;
+      }
+      observe(target) {
+        this.callback([{ isIntersecting: true, intersectionRatio: 1, target }], this);
+      }
+      unobserve() {}
+      disconnect() {}
+    };
+  });
+};
+
+const openItemCardMenu = (itemName) => {
+  const open = (attempts) => {
+    cy.contains('.homepage-app-card', itemName, { timeout: 20000 }).within(() => {
+      cy.get(`[data-cy="${cyParamName(itemName)}-card"]`).trigger('mouseover');
+      cy.get('[data-cy="app-card-menu-icon"]').click({ force: true });
+    });
+    cy.get('body').then(($body) => {
+      if (!$body.find('[data-cy$="-card-option"]').length && attempts > 0) {
+        cy.wait(300);
+        open(attempts - 1);
+      }
+    });
+  };
+
+  cy.waitForElement('[data-cy="icon-home"]', 10000);
+  open(5);
+};
+
 export const uiOpenAddToFolder = (itemName) => {
-  viewAppCardOptions(itemName);
+  openItemCardMenu(itemName);
   cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).click();
   cy.get(commonSelectors.modalComponent).should('be.visible');
 };
@@ -231,7 +264,7 @@ export const uiAddItemToFolder = (itemName, folderName) => {
 // Must be called from inside the folder the item sits in.
 export const uiRemoveItemFromFolder = (itemName) => {
   cy.intercept('PUT', '/api/folder-apps/*').as('removeFromFolder');
-  viewAppCardOptions(itemName);
+  openItemCardMenu(itemName);
   cy.get(commonSelectors.appCardOptions('Remove from folder')).click();
   cy.get(commonSelectors.yesButton).click();
   cy.wait('@removeFromFolder');
@@ -272,6 +305,11 @@ export const uiCreateDraftVersion = (versionName) => {
   cy.get(versionModalSelector.versionNameInput).type(versionName);
   cy.get(versionModalSelector.createDraftVersionModal.createButton).click();
   cy.get(versionSwitcherSelectors.versionSwitcherButton).should('contain.text', versionName);
+};
+
+export const openModuleEditorExpectingReadOnly = (workspaceSlug, moduleId) => {
+  openAppEditor(workspaceSlug, moduleId);
+  cy.contains('Module is locked. You do not have permissions to edit this module.', { timeout: 30000 }).should('be.visible');
 };
 
 export const openEditorExpectingRestricted = (workspaceSlug, resourceId) => {
