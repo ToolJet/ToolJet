@@ -16,6 +16,7 @@ export const ListviewSubcontainer = ({
   showBorder,
   recordWidth,
   recordBoxStyle,
+  recordBorderInset = 0,
   onRecordOrRowClicked,
   computeCanvasBackgroundColor,
   darkMode,
@@ -106,7 +107,7 @@ export const ListviewSubcontainer = ({
           index={index}
           id={id}
           key={`${id}-${index}`}
-          canvasHeight={transformedRowHeight}
+          canvasHeight={transformedRowHeight - recordBorderInset}
           canvasWidth={width}
           styles={computeCanvasBackgroundColor}
           columns={positiveColumns}
