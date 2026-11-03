@@ -340,6 +340,64 @@ describe('OnboardingController', () => {
     });
   });
 
+  describe('POST /api/onboarding/signup | Invited user, instance-level signup', () => {
+    it('does not set credentials on an invited account, and the invitee can still activate with their own password', async () => {
+      // Oldest workspace = the instance default workspace
+      await createUser(app, { email: 'default-ws-owner@tooljet.com', status: 'active' });
+
+      // The invitee is invited into a different workspace
+      const { user: admin } = await createUser(app, { email: 'invite-admin@tooljet.com', status: 'active' });
+      const loggedAdmin = await login(app, admin.email);
+      await request(app.getHttpServer())
+        .post('/api/organization-users')
+        .send({ email: 'invitee@tooljet.com', firstName: 'Invitee', lastName: 'User', role: 'end-user' })
+        .set('tj-workspace-id', admin.defaultOrganizationId)
+        .set('Cookie', loggedAdmin.tokenCookie)
+        .expect(201);
+
+      // Unauthenticated signup with the invitee's email must not touch the invited account
+      const response = await request(app.getHttpServer()).post('/api/onboarding/signup').send({
+        email: 'invitee@tooljet.com',
+        name: 'Attacker Chosen Name',
+        password: 'attacker-chosen-password',
+      });
+      expect(response.headers['set-cookie']).toBeUndefined();
+
+      const invitee = await userRepository.findOneOrFail({ where: { email: 'invitee@tooljet.com' } });
+      expect(invitee).toMatchObject({
+        password: null,
+        source: 'invite',
+        status: 'invited',
+        firstName: 'Invitee',
+        defaultOrganizationId: admin.defaultOrganizationId,
+      });
+      expect(invitee.invitationToken).not.toBeNull();
+
+      // The invite page still asks the invitee for a password, and their own password is the one that sticks
+      const { invitationToken: organizationToken } = await orgUserRepository.findOneOrFail({
+        where: { userId: invitee.id, organizationId: admin.defaultOrganizationId },
+      });
+      const verify = await request(app.getHttpServer())
+        .get('/api/onboarding/verify-invite-token')
+        .query({ token: invitee.invitationToken, organizationToken });
+      expect(verify.body.onboarding_details.password).toBe(true);
+
+      await request(app.getHttpServer())
+        .post('/api/onboarding/setup-account-from-token')
+        .send({ token: invitee.invitationToken, organizationToken, password: 'invitee-own-password' })
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post('/api/authenticate')
+        .send({ email: 'invitee@tooljet.com', password: 'invitee-own-password' })
+        .expect(201);
+      const attackerLogin = await request(app.getHttpServer())
+        .post('/api/authenticate')
+        .send({ email: 'invitee@tooljet.com', password: 'attacker-chosen-password' });
+      expect(attackerLogin.status).toBe(401);
+    });
+  });
+
   describe('POST /api/onboarding/activate-account-with-token | Invite token handling', () => {
     it('should preserve org-user invitationToken when invited org equals default org', async () => {
       const { user: admin, organization: orgA } = await createUser(app, {
