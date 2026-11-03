@@ -7,8 +7,22 @@ import { parseApiErrorMessage } from '../api-error';
 export class ApiClient {
   private readonly baseUrl: string;
 
-  constructor(baseUrl: string, private readonly apiToken: string) {
+  /**
+   * `apiToken` is a personal access token, or with `session` the ToolJet session token of the user an in-product build
+   * runs as (its MCP server has no personal token): then requests carry the session cookie and workspace instead.
+   */
+  constructor(
+    baseUrl: string,
+    private readonly apiToken: string,
+    private readonly session?: { workspaceId: string }
+  ) {
     this.baseUrl = baseUrl.replace(/\/+$/, '');
+  }
+
+  private authHeaders(): Record<string, string> {
+    return this.session
+      ? { Cookie: `tj_auth_token=${this.apiToken}`, 'tj-workspace-id': this.session.workspaceId }
+      : { Authorization: `Bearer ${this.apiToken}` };
   }
 
   private async handleResponse<T>(res: import('node-fetch').Response): Promise<T> {
@@ -24,7 +38,7 @@ export class ApiClient {
     const res = await fetch(`${this.baseUrl}/api${path}`, {
       method,
       headers: {
-        Authorization: `Bearer ${this.apiToken}`,
+        ...this.authHeaders(),
         'Content-Type': 'application/json',
       },
       body: body ? JSON.stringify(body) : undefined,
@@ -42,7 +56,7 @@ export class ApiClient {
 
       fetch(`${this.baseUrl}/api${path}`, {
         method,
-        headers: { Authorization: `Bearer ${this.apiToken}`, ...form.getHeaders() },
+        headers: { ...this.authHeaders(), ...form.getHeaders() },
         body: form,
       })
         .then((res) => this.handleResponse<T>(res))
@@ -60,7 +74,7 @@ export class ApiClient {
   async verifyLibrary(correlationId: string): Promise<{ exists: boolean }> {
     const res = await fetch(`${this.baseUrl}/api/custom-component-libraries/${correlationId}`, {
       method: 'GET',
-      headers: { Authorization: `Bearer ${this.apiToken}` },
+      headers: this.authHeaders(),
     });
 
     if (res.status === 404) return { exists: false };

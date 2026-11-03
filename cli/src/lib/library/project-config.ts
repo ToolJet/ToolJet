@@ -17,6 +17,9 @@ export interface ProjectConfigFile {
   // Run each component once during the build to record fields it declares through its own helper functions. Off by
   // default: the build then only reads the code, and runs none of it.
   recordRender?: boolean;
+  // Ship the source tree (src/, package.json, tsconfig.json) inside the manifest, so the app builder can show the
+  // library's files beside the component (a code app). Off by default; text files only, capped in size.
+  includeSource?: boolean;
 }
 
 export class ProjectConfig {
@@ -75,6 +78,16 @@ export class ProjectConfig {
       throw new Error('.tooljet/config.json: "recordRender" must be true or false.');
     }
     return recordRender === true;
+  }
+
+  /** Whether the build embeds the source tree in the manifest (`includeSource` in .tooljet/config.json); off by default. */
+  static readIncludeSource(projectRoot: string = process.cwd()): boolean {
+    if (!fs.existsSync(path.join(projectRoot, '.tooljet', 'config.json'))) return false;
+    const { includeSource } = ProjectConfig.readFile(projectRoot);
+    if (includeSource !== undefined && typeof includeSource !== 'boolean') {
+      throw new Error('.tooljet/config.json: "includeSource" must be true or false.');
+    }
+    return includeSource === true;
   }
 
   private static isValid(data: unknown): data is ProjectConfigFile {

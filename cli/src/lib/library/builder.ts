@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import { generateManifest } from './manifest-generator';
 import { recordManifest } from './manifest-recorder';
 import { ProjectConfig } from './project-config';
+import { collectSource } from './source-tree';
 
 export interface BuildResult {
   distDir: string;
@@ -28,11 +29,157 @@ const tooljetSdkPlugin: esbuild.Plugin = {
       namespace: 'tooljet-sdk-proxy',
     }));
     build.onLoad({ filter: /.*/, namespace: 'tooljet-sdk-proxy' }, () => ({
-      contents: `export const ToolJet = window.__tj_ToolJet;`,
+      // useToolJetTheme is the SDK's one named hook beside ToolJet (ToolJet.useTheme under another name).
+      contents: `export const ToolJet = window.__tj_ToolJet;\nexport function useToolJetTheme() { return window.__tj_ToolJet.useTheme(); }`,
       loader: 'js',
     }));
   },
 };
+
+// esbuild plugin: when the project has a postcss.config.{js,cjs,mjs}, every imported .css file goes through the
+// project's own PostCSS (and so Tailwind, autoprefixer, whatever it lists) before esbuild bundles it. The CLI
+// loads postcss and the plugins from the project's node_modules, so the project pins their versions.
+const POSTCSS_CONFIGS = ['postcss.config.js', 'postcss.config.cjs', 'postcss.config.mjs'];
+const TAILWIND_CONFIGS = ['tailwind.config.js', 'tailwind.config.cjs', 'tailwind.config.mjs', 'tailwind.config.ts'];
+
+const findPostcssConfig = (projectRoot: string): string | undefined =>
+  POSTCSS_CONFIGS.map((name) => path.join(projectRoot, name)).find((file) => fs.existsSync(file));
+
+const postcssPlugin = (projectRoot: string, configPath: string): esbuild.Plugin => ({
+  name: 'tooljet-postcss',
+  setup(build) {
+    let processorPromise: Promise<{ process: (css: string, opts: unknown) => Promise<{ css: string }> }> | null = null;
+    const processor = () => {
+      processorPromise ??= (async () => {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const postcss = require(require.resolve('postcss', { paths: [projectRoot] }));
+        const loaded = await import(configPath);
+        const config = loaded.default ?? loaded;
+        const plugins = Array.isArray(config.plugins)
+          ? config.plugins
+          : Object.entries(config.plugins ?? {}).map(([name, options]) => {
+              // eslint-disable-next-line @typescript-eslint/no-var-requires
+              const plugin = require(require.resolve(name, { paths: [projectRoot] }));
+              let pluginOptions = options === true ? undefined : options;
+              // Tailwind finds its config from the working directory, which is not the project when the build runs
+              // from an app project's root (tooljet app dev): point it at the project's own config.
+              if (name === 'tailwindcss' && (!pluginOptions || !(pluginOptions as { config?: unknown }).config)) {
+                const tailwindConfig = TAILWIND_CONFIGS.map((file) => path.join(projectRoot, file)).find((file) =>
+                  fs.existsSync(file)
+                );
+                if (tailwindConfig) pluginOptions = { ...(pluginOptions as object), config: tailwindConfig };
+              }
+              return (plugin.default ?? plugin)(pluginOptions);
+            });
+        return postcss(plugins);
+      })();
+      return processorPromise;
+    };
+    build.onLoad({ filter: /\.css$/ }, async (args) => {
+      const source = fs.readFileSync(args.path, 'utf8');
+      const result = await (await processor()).process(source, { from: args.path, to: args.path, map: false });
+      return { contents: result.css, loader: 'css' };
+    });
+  },
+});
+
+export const APP_STYLE_FILES = { theme: path.join('styles', 'theme.css'), global: path.join('styles', 'global.css') };
+
+const buildStylesheet = async (
+  file: string,
+  projectRoot: string,
+  postcssConfig: string | undefined,
+  minify: boolean
+) => {
+  const result = await esbuild.build({
+    entryPoints: [file],
+    bundle: true,
+    write: false,
+    outfile: path.join(projectRoot, '.tooljet-style.css'),
+    plugins: postcssConfig ? [postcssPlugin(projectRoot, postcssConfig)] : [],
+    loader: ASSET_LOADERS,
+    logLevel: 'silent',
+    minify,
+    ...(minify ? {} : { sourcemap: 'inline' as const, absWorkingDir: projectRoot }),
+  });
+  return result.outputFiles.find((f) => f.path.endsWith('.css'))?.text ?? '';
+};
+
+/**
+ * Fonts and images imported from code or CSS (an @fontsource package, a logo) are inlined as data URLs: the bundle
+ * stays one file, and a code page's Content Security Policy allows data: for fonts and images but not other hosts.
+ */
+export const ASSET_LOADERS = {
+  '.woff': 'dataurl',
+  '.woff2': 'dataurl',
+  '.ttf': 'dataurl',
+  '.otf': 'dataurl',
+  '.eot': 'dataurl',
+  '.png': 'dataurl',
+  '.jpg': 'dataurl',
+  '.jpeg': 'dataurl',
+  '.gif': 'dataurl',
+  '.webp': 'dataurl',
+  '.svg': 'dataurl',
+} as const;
+
+const INLINE_MAP = /\/\*# sourceMappingURL=data:application\/json;base64,([A-Za-z0-9+/=]+) \*\/\s*$/;
+
+/** Splits a stylesheet into its CSS and its inline source map (if any). */
+export const splitInlineMap = (css: string): { css: string; map: Record<string, unknown> | null } => {
+  const match = INLINE_MAP.exec(css);
+  if (!match) return { css, map: null };
+  return { css: css.slice(0, match.index), map: JSON.parse(Buffer.from(match[1], 'base64').toString('utf8')) };
+};
+
+/**
+ * Joins stylesheets and their source maps into one stylesheet with a sectioned source map (version 3 index map), so a
+ * rule in the joined file still maps back to its own file and line.
+ */
+export const joinStylesheets = (parts: { label: string; css: string }[]): string => {
+  let line = 0;
+  const sections: { offset: { line: number; column: number }; map: Record<string, unknown> }[] = [];
+  const chunks: string[] = [];
+  for (const part of parts) {
+    const { css, map } = splitInlineMap(part.css);
+    const header = `/* ${part.label} */\n`;
+    line += 1;
+    if (map) sections.push({ offset: { line, column: 0 }, map });
+    const body = css.endsWith('\n') ? css : `${css}\n`;
+    chunks.push(header + body);
+    line += body.split('\n').length - 1;
+  }
+  const joined = chunks.join('');
+  if (!sections.length) return joined;
+  const index = Buffer.from(JSON.stringify({ version: 3, sections })).toString('base64');
+  return `${joined}/*# sourceMappingURL=data:application/json;base64,${index} */\n`;
+};
+
+/** dist/index.css as theme.css + the bundle's CSS + global.css, when the project has those files. */
+export async function orderAppStyles(
+  projectRoot: string,
+  distDir: string,
+  postcssConfig: string | undefined,
+  minify: boolean
+) {
+  const themeFile = path.join(projectRoot, APP_STYLE_FILES.theme);
+  const globalFile = path.join(projectRoot, APP_STYLE_FILES.global);
+  if (!fs.existsSync(themeFile) && !fs.existsSync(globalFile)) return;
+  const bundleCss = path.join(distDir, 'index.css');
+  const parts: { label: string; css: string }[] = [];
+  if (fs.existsSync(themeFile))
+    parts.push({
+      label: 'styles/theme.css',
+      css: await buildStylesheet(themeFile, projectRoot, postcssConfig, minify),
+    });
+  if (fs.existsSync(bundleCss)) parts.push({ label: "the code's own CSS", css: fs.readFileSync(bundleCss, 'utf8') });
+  if (fs.existsSync(globalFile))
+    parts.push({
+      label: 'styles/global.css (last)',
+      css: await buildStylesheet(globalFile, projectRoot, postcssConfig, minify),
+    });
+  fs.writeFileSync(bundleCss, joinStylesheets(parts));
+}
 
 const warnHelperDeclared = (helperDeclared: Record<string, string[]>, warnings: string[]) => {
   for (const [component, helpers] of Object.entries(helperDeclared)) {
@@ -61,6 +208,7 @@ export async function build(projectRoot: string, options: { env?: BuildEnv } = {
   const distDir = path.join(projectRoot, 'dist');
 
   fs.rmSync(distDir, { recursive: true, force: true });
+  const postcssConfig = findPostcssConfig(projectRoot);
 
   await esbuild.build({
     entryPoints: [path.join(projectRoot, 'src/index.ts')],
@@ -68,13 +216,23 @@ export async function build(projectRoot: string, options: { env?: BuildEnv } = {
     format: 'esm',
     outfile: path.join(distDir, 'index.js'),
     metafile: true,
-    external: ['react', 'react-dom', 'react/jsx-runtime'],
-    plugins: [tooljetSdkPlugin],
+    external: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
+    plugins: [tooljetSdkPlugin, ...(postcssConfig ? [postcssPlugin(projectRoot, postcssConfig)] : [])],
+    loader: ASSET_LOADERS,
     jsx: 'automatic',
+    // Dev builds (the dev track, not publish): every JSX call site in the project's own code passes its file:line:col to
+    // the host's jsx-dev-runtime (source tags for mapping a clicked node to its JSX), paths relative to the project, and
+    // the JS and CSS carry inline source maps. Published builds have neither.
+    ...(isProduction ? {} : { jsxDev: true, sourcemap: 'inline' as const, absWorkingDir: projectRoot }),
     tsconfig: path.join(projectRoot, 'tsconfig.json'),
     logLevel: 'silent',
     ...(isProduction ? prodBuildOptions : {}),
   });
+
+  // App-wide styles (an app project's convention, tooljet app init): styles/theme.css first (tokens as CSS variables),
+  // then the CSS the bundle imports (Tailwind, components), then styles/global.css last, so app-wide overrides of a
+  // library's defaults win over the rules they override, whatever order the code imports things in.
+  await orderAppStyles(projectRoot, distDir, postcssConfig, isProduction);
 
   // Manifest generation via TS Compiler API
   const generated = await generateManifest(projectRoot);
@@ -84,7 +242,9 @@ export async function build(projectRoot: string, options: { env?: BuildEnv } = {
   const recorded = ProjectConfig.readRecordRender(projectRoot)
     ? await recordManifest(projectRoot, generated.manifest, warnings)
     : (warnHelperDeclared(generated.helperDeclared, warnings), generated.manifest);
-  const manifest = { ...ProjectConfig.readLibrarySettings(projectRoot), ...recorded };
+  // A code app ships its source tree in the manifest, so the builder can show the files beside the component.
+  const source = ProjectConfig.readIncludeSource(projectRoot) ? collectSource(projectRoot, warnings) : undefined;
+  const manifest = { ...ProjectConfig.readLibrarySettings(projectRoot), ...recorded, ...(source ? { source } : {}) };
   fs.writeFileSync(
     path.join(distDir, 'manifest.json'),
     isProduction ? JSON.stringify(manifest) : JSON.stringify(manifest, null, 2)

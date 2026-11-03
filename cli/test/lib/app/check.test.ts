@@ -1,0 +1,149 @@
+import { expect } from 'chai';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+
+import { checkSources } from '../../../src/lib/app/check';
+import { validateAppJson, AppJson, Snapshot } from '../../../src/lib/app/project';
+import { generateTypes, tsType } from '../../../src/lib/app/typegen';
+
+const app: AppJson = {
+  name: 'Orders',
+  appId: 'app-1',
+  codePage: { handle: 'home', name: 'Home' },
+  routes: [
+    { id: 'orders', path: '/', title: 'Orders' },
+    { id: 'order', path: '/orders/:id' },
+    { id: 'dashboard', path: '/dashboard' },
+  ],
+};
+
+const snapshot: Snapshot = {
+  appId: 'app-1',
+  appName: 'Orders',
+  versionId: 'v-1',
+  pulledAt: '2026-11-02T00:00:00.000Z',
+  pages: [
+    { id: 'p1', handle: 'home', name: 'Home', hidden: false },
+    { id: 'p2', handle: 'reports', name: 'Reports', hidden: false },
+    { id: 'p3', handle: 'home-orders', name: 'Home: Orders', hidden: true },
+  ],
+  queries: [
+    { name: 'orders', kind: 'tooljetdb', operation: 'list_rows', table: 'orders', params: [] },
+    { name: 'updateStatus', kind: 'tooljetdb', operation: 'update_rows', table: 'orders', params: ['id', 'status'] },
+    { name: 'revenue', kind: 'postgresql', params: ['from'] },
+  ],
+  tables: {
+    orders: [
+      { name: 'id', type: 'integer', nullable: false },
+      { name: 'status', type: 'character varying', nullable: false },
+      { name: 'total', type: 'double precision', nullable: true },
+      { name: 'created_at', type: 'timestamp with time zone', nullable: true },
+    ],
+  },
+};
+
+const withSources = (files: Record<string, string>) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tj-app-check-'));
+  const src = path.join(root, 'src');
+  for (const [name, text] of Object.entries(files)) {
+    fs.mkdirSync(path.dirname(path.join(src, name)), { recursive: true });
+    fs.writeFileSync(path.join(src, name), text);
+  }
+  return src;
+};
+
+describe('tooljet app check', () => {
+  it('passes code that names only queries, routes and pages the app has', () => {
+    const src = withSources({
+      'App/index.tsx': [
+        "const orders = useAppQuery('orders');",
+        "const update = ToolJet.useQuery<unknown>('updateStatus');",
+        "navigate('/orders/36'); navigate('/dashboard');",
+        "<Route path=\"/orders/:id\" element={<X/>} /> <NavLink to=\"/dashboard\" />",
+        "routePath('order', { id: 1 }); nav.goToPage('reports');",
+      ].join('\n'),
+    });
+    expect(checkSources(src, app, snapshot)).to.deep.equal([]);
+  });
+
+  it('reports a missing query with its file and line', () => {
+    const src = withSources({ 'App/Orders.tsx': "\n\nconst x = useAppQuery('ordrs');\n" });
+    const findings = checkSources(src, app, snapshot);
+    expect(findings).to.have.length(1);
+    expect(findings[0]).to.include({ file: 'src/App/Orders.tsx', line: 3 });
+    expect(findings[0].message).to.contain('query "ordrs" does not exist');
+  });
+
+  it('reports routes, links and pages the app does not declare', () => {
+    const src = withSources({
+      'App/index.tsx': [
+        "navigate('/settings');",
+        '<Route path="/settings" element={<S/>} />',
+        '<Link to="/nowhere">x</Link>',
+        "routePath('missing');",
+        "goToPage('billing');",
+      ].join('\n'),
+    });
+    const messages = checkSources(src, app, snapshot).map((f) => f.message);
+    expect(messages).to.have.length(5);
+    expect(messages.join('\n')).to.contain('path "/settings" matches no route')
+      .and.to.contain('<Route path="/settings"> is not declared')
+      .and.to.contain('link to "/nowhere"')
+      .and.to.contain('route id "missing"')
+      .and.to.contain('page "billing" does not exist');
+  });
+
+  it('skips the generated file and node_modules', () => {
+    const src = withSources({ 'tooljet.gen.ts': "useAppQuery('nope')", 'node_modules/x/index.ts': "useAppQuery('nope')" });
+    expect(checkSources(src, app, snapshot)).to.deep.equal([]);
+  });
+});
+
+describe('app.json validation', () => {
+  it('accepts a well-formed app', () => {
+    expect(validateAppJson(app)).to.deep.equal([]);
+  });
+
+  it('rejects duplicate ids and paths, bad ids and paths, and no routes', () => {
+    const errors = validateAppJson({
+      name: 'X',
+      codePage: { handle: 'Home Page', name: 'Home' },
+      routes: [
+        { id: 'a', path: '/' },
+        { id: 'a', path: '/b' },
+        { id: 'Bad Id', path: '/c' },
+        { id: 'c', path: 'nope' },
+        { id: 'd', path: '/' },
+      ],
+    });
+    expect(errors.join('\n')).to.contain('codePage.handle')
+      .and.to.contain('"a" is listed twice')
+      .and.to.contain('"Bad Id"')
+      .and.to.contain('route "c" needs a path')
+      .and.to.contain('path "/" is used by two routes');
+    expect(validateAppJson({ name: 'X', codePage: { handle: 'home', name: 'Home' }, routes: [] })).to.include(
+      'app.json: "routes" must list at least one route'
+    );
+  });
+});
+
+describe('typed hooks', () => {
+  it('maps ToolJet DB column types to TypeScript', () => {
+    expect(tsType({ name: 'a', type: 'integer', nullable: false })).to.equal('number');
+    expect(tsType({ name: 'a', type: 'double precision', nullable: true })).to.equal('number | null');
+    expect(tsType({ name: 'a', type: 'character varying', nullable: false })).to.equal('string');
+    expect(tsType({ name: 'a', type: 'boolean', nullable: false })).to.equal('boolean');
+    expect(tsType({ name: 'a', type: 'jsonb', nullable: false })).to.equal('unknown');
+  });
+
+  it('writes row types, query data and params, routes and pages', () => {
+    const out = generateTypes(app, snapshot);
+    expect(out).to.contain('export interface OrdersRow {\n  id: number;\n  status: string;\n  total: number | null;\n  created_at: string | null;\n}');
+    expect(out).to.contain('  orders: { data: OrdersRow[]; params: Record<string, never> };');
+    expect(out).to.contain('  updateStatus: { data: OrdersRow[] | unknown; params: { id?: unknown; status?: unknown } };');
+    expect(out).to.contain('  revenue: { data: unknown; params: { from?: unknown } };');
+    expect(out).to.contain('  order: "/orders/:id",');
+    expect(out).to.contain('export const PAGES = ["reports"] as const;');
+  });
+});

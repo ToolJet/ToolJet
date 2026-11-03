@@ -1,0 +1,9 @@
+/*
+  App-wide styles, loaded last (the build puts this file after the code's own CSS), so a rule here wins over a UI
+  library's defaults without !important. Put library overrides and app-wide rules here rather than in components:
+
+    .ant-btn-primary { border-radius: var(--radius); }
+    .MuiDialog-paper { border-radius: var(--radius); }
+
+  Tailwind's @apply works here too.
+*/
