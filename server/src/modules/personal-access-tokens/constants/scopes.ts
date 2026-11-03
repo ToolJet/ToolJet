@@ -50,6 +50,10 @@ export const PAT_BUNDLE_MODULES: Record<PAT_BUNDLE, MODULES[]> = {
     MODULES.THREAD,
     MODULES.FILE,
     MODULES.ORGANIZATION_THEMES,
+    // Scan an app version and upload SARIF from CI; per-app edit permission still applies.
+    MODULES.APP_SECURITY,
+    // An app's stored source: read and written with the app's own permissions.
+    MODULES.CODE_MODE_SOURCE,
   ],
   [PAT_BUNDLE.DATA]: [
     MODULES.DATA_QUERY,
@@ -118,6 +122,10 @@ export const PAT_UNASSIGNED_MODULES: MODULES[] = [
   MODULES.FRONTEND_METRICS, // browser telemetry ingestion, not required by automation clients
   MODULES.CUSTOM_COMPONENT_LIBRARIES, // uploads code that runs inside apps; not granted pending a decision
   MODULES.ROOT, // health and version
+  // Widens what pages may reach (their Content Security Policy); an admin's decision in the browser only.
+  MODULES.CODE_PAGE_SECURITY,
+  // Scan policy and exceptions decide what may ship; an admin's decision in the browser only.
+  MODULES.APP_SECURITY_POLICY,
   // Uploads and publishes JS bundles that execute inside every app that uses them.
   MODULES.CUSTOM_COMPONENT_LIBRARIES,
 ];

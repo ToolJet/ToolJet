@@ -144,6 +144,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.organizationIds = payload.organizationIds;
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
+        user.aiAppId = payload.aiAppId;
         user.organizationId = user.organizationId ?? organizationId;
         user.branchId = await this.resolveBranchId(req, user.organizationId);
 
@@ -194,6 +195,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.isSSOLogin = payload.isSSOLogin;
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
+        user.aiAppId = payload.aiAppId;
         // Resolve the active Git branch once per request: explicit `branch_id` query
         // param, else the org's default branch. Consumers read user.branchId instead
         // of the old x-branch-id header.

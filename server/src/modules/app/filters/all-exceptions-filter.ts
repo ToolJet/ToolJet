@@ -50,6 +50,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       // AppValidationException: clients (e.g. the MCP) need the full problem list.
       const validationIssues = Array.isArray(exception?.response?.issues) ? exception.response.issues : undefined;
       const validationWarnings = Array.isArray(exception?.response?.warnings) ? exception.response.warnings : [];
+      // A machine-readable reason a client can act on, when the exception carries one.
+      const reason = typeof exception?.response?.reason === 'string' ? exception.response.reason : undefined;
 
       if (exception instanceof HttpException) {
         errorResponse = { status: exception.getStatus(), message };
@@ -70,6 +72,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ...(statement && { statement }),
         ...(organizationSlug && { organizationSlug }),
         ...(validationIssues && { issues: validationIssues, warnings: validationWarnings }),
+        ...(reason && { reason }),
       });
     } catch (error) {
       this.logger.error('Error while processing uncaught exception', (error as any).stack);

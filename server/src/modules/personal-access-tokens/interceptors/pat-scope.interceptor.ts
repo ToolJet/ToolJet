@@ -1,9 +1,21 @@
-import { CallHandler, ExecutionContext, ForbiddenException, Injectable, Logger, NestInterceptor } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NestInterceptor,
+  Optional,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
+import { from, Observable } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { DataSource } from 'typeorm';
 import { MODULES } from '@modules/app/constants/modules';
 import { User } from '@entities/user.entity';
 import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
+import { AI_BUILDER_API_SOURCE, FEATURE_KEY as PAT_FEATURE } from '@modules/personal-access-tokens/constants';
+import { aiBuilderLibraryDenial } from '@modules/personal-access-tokens/ai-builder-library-scope';
 import {
   PAT_ALLOWED_BUNDLES,
   PAT_APP_VIEWER_MODULES,
@@ -26,7 +38,10 @@ import {
  */
 @Injectable()
 export class PatScopeInterceptor implements NestInterceptor {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    @Optional() private readonly dataSource?: DataSource
+  ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     /* Global interceptors also fire on the websocket gateways (yjs drives multiplayer editing),
@@ -68,6 +83,22 @@ export class PatScopeInterceptor implements NestInterceptor {
       return next.handle();
     }
 
+    // The in-product AI builder's session (only the server mints this source) may ask for a render session for its
+    // own app (the route checks the app), and publish the library of the app its request is for, in its own
+    // workspace (ai-builder-library-scope.ts). Other PAT sessions still can't reach libraries; CASL still applies.
+    if (
+      module === MODULES.PERSONAL_ACCESS_TOKENS &&
+      feature === PAT_FEATURE.CREATE_AI_RENDER_SESSION &&
+      user.tjApiSource === AI_BUILDER_API_SOURCE &&
+      !user.patAppId
+    ) {
+      return next.handle();
+    }
+
+    if (module === MODULES.CUSTOM_COMPONENT_LIBRARIES && user.tjApiSource === AI_BUILDER_API_SOURCE) {
+      return from(this.aiBuilderLibraryCheck(user, request, feature)).pipe(switchMap(() => next.handle()));
+    }
+
     if (!patCanAccess(module, feature)) {
       throw new ForbiddenException(
         `This personal access token cannot access ${feature ?? module ?? 'this resource'}. ` +
@@ -76,6 +107,25 @@ export class PatScopeInterceptor implements NestInterceptor {
     }
 
     return next.handle();
+  }
+
+  private async aiBuilderLibraryCheck(
+    user: User,
+    request: { headers?: Record<string, any>; params?: Record<string, any>; body?: Record<string, any> },
+    feature: string | undefined
+  ): Promise<void> {
+    if (!this.dataSource) throw new ForbiddenException('The AI builder session cannot use libraries here.');
+    const denial = await aiBuilderLibraryDenial(
+      feature,
+      {
+        organizationId: user.organizationId,
+        aiAppId: user.aiAppId,
+        workspaceHeader: request?.headers?.['tj-workspace-id'],
+        correlationId: request?.params?.correlationId ?? request?.body?.correlationId,
+      },
+      (sql, params) => this.dataSource.query(sql, params)
+    );
+    if (denial) throw new ForbiddenException(denial);
   }
 }
 

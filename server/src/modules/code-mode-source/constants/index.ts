@@ -1,0 +1,16 @@
+import { getTooljetEdition } from '@helpers/utils.helper';
+
+export enum FEATURE_KEY {
+  GET_SOURCE = 'GET_SOURCE',
+  WRITE_SOURCE = 'WRITE_SOURCE',
+  IMPORT_SOURCE = 'IMPORT_SOURCE',
+  UPLOAD_DEV_BUNDLE = 'UPLOAD_DEV_BUNDLE',
+  LIST_REVISIONS = 'LIST_REVISIONS',
+  PUBLISH_CODE = 'PUBLISH_CODE',
+}
+
+/** Injection token: the running edition's library service, as the dev track uploader. */
+export const DEV_TRACK_UPLOADER = 'CODE_MODE_DEV_TRACK_UPLOADER';
+
+/** Whether this server can build apps with buildMode 'code' (the enterprise editions; the one switch for it). */
+export const isCodeModeAllowed = (_organizationId?: string): boolean => getTooljetEdition() !== 'ce';

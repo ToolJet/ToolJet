@@ -1,3 +1,4 @@
+import { isCodeModeAllowed } from '@modules/code-mode-source/constants';
 import { LICENSE_LIMIT, LICENSE_TYPE, PLANS_BELOW_PRO } from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
 import {
@@ -646,6 +647,9 @@ export default class LicenseBase {
       queryFolders: this.queryFolders,
       workspaceEnv: this.workspaceEnv,
       customComponentLibraries: this.customComponentLibraries,
+      // Not licence terms: what this server's edition supports (code-mode-source/constants).
+      codeAppsDevTrack: isCodeModeAllowed(),
+      codeModeApps: isCodeModeAllowed(),
       versionReview: this.versionReview,
       aiPlan: this.aiPlan,
       publicApp: this.publicApp,

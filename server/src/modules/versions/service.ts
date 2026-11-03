@@ -36,9 +36,14 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { Inject, Optional } from '@nestjs/common';
+import { CodeModeSourceService } from '@modules/code-mode-source/service';
 
 @Injectable()
 export class VersionService implements IVersionService {
+  // Property injection, so the enterprise subclass's constructor stays as it is. Hooks around a version update.
+  @Optional() @Inject(CodeModeSourceService) protected readonly codeModeSourceService?: CodeModeSourceService;
+
   constructor(
     protected readonly versionRepository: VersionRepository,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
@@ -399,6 +404,7 @@ export class VersionService implements IVersionService {
 
   async update(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
     const context = await this.beforeVersionUpdate(app, user, appVersionUpdateDto);
+    const hookState = await this.codeModeSourceService?.beforeVersionUpdate(app, user, appVersionUpdateDto);
 
     const appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
       const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id, undefined, manager);
@@ -462,6 +468,8 @@ export class VersionService implements IVersionService {
       };
       await this.eventEmitter.emit('version-rename-commit', versionRenameDto);
     }
+
+    if (hookState) this.codeModeSourceService.afterVersionUpdate(app, user, appVersion.id, hookState);
 
     const operationTimestamp = Date.now();
     this.afterVersionUpdate(context, app, user, appVersionUpdateDto, user.id, operationTimestamp).catch((err) =>

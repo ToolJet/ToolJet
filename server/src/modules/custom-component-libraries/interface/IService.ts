@@ -15,7 +15,8 @@ export interface LibraryListItem {
   createdAt: Date;
   manifest: Record<string, any> | null; // latest revision's; null = nothing published yet
   revisions: { id: string; version: string; message: string | null; createdAt: Date }[]; // newest first
-  devBundles: { userId: string; userEmail: string | null; uploadedAt: Date }[]; // "Dev preview @email"
+  // "Dev preview @email"; sourceContentHash: the source the build was made from, null when unknown.
+  devBundles: { userId: string; userEmail: string | null; uploadedAt: Date; sourceContentHash: string | null }[];
 }
 
 export interface ICustomComponentLibrariesService {
