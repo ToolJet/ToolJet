@@ -364,8 +364,8 @@ jobs:
             npm --prefix server test -- --group=working --group=workflows --group=security --coverage --coverageReporters=json --coverageReporters=json-summary --json --outputFile=coverage-unit/results.json
             node scripts/check-ai-test-results.cjs server server/coverage-unit/results.json unit
           else
-            npm --prefix server run test:e2e -- --coverage --group=working --testTimeout=60000 --json-output-dir coverage-e2e/results
-            node scripts/check-ai-test-results.cjs server server/coverage-e2e/results e2e
+            npm --prefix server run test:e2e -- --coverage --group=working --testTimeout=60000 --json-output-dir test-results/e2e
+            node scripts/check-ai-test-results.cjs server server/test-results/e2e e2e
           fi
       - name: Upload numeric coverage
         if: always()
