@@ -41,7 +41,7 @@ const describeTableFailure = (error: unknown): string => {
  *
  * Revert order (not enforced mechanically — both datasources share one `migrations` table,
  * reverted by insertion id, not timestamp): this migration (down) -> Migration A
- * (data-migrations/1793250000800-TjdbRolloutMigrationASubstrate.ts, down) ->
+ * (migrations/data/1793250000800-TjdbRolloutMigrationASubstrate.ts, down) ->
  * TjdbRolloutSubstrateSchema1793250000300 (down). A duplicate-baseline bug would surface here
  * first, since B is the first thing to read Migration A's baseline rows.
  *

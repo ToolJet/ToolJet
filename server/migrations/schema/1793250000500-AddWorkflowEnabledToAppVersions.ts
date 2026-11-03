@@ -14,6 +14,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * propagation, every version published in the gap would be created false and the trigger would
  * later fan that across the workflow.
  */
+// migration-lint: allow-destructive UPDATEs live in trigger bodies, not run at migration time; column and triggers must ship together
 export class AddWorkflowEnabledToAppVersions1793250000500 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Nullable with no default: until the data migration backfills it, NULL makes readers fall back to

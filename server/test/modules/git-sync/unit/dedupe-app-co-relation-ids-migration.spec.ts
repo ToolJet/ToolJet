@@ -6,7 +6,7 @@
  *
  * Mechanism, read from the migration and the trigger it fires:
  *   - the rename used to concatenate onto the row's CURRENT app_name;
- *   - renaming one draft fires `propagate_app_version_metadata` (data-migrations/1781741000000),
+ *   - renaming one draft fires `propagate_app_version_metadata` (migrations/data/1781741000000),
  *     which copies that draft's app_name and slug onto the app's other non-stub version rows —
  *     on every branch, the second draft included;
  *   - the loop then reached that second draft, read back its already-suffixed name, and
@@ -42,7 +42,7 @@ import {
   initTestApp,
 } from 'test-helper';
 import { App } from 'src/entities/app.entity';
-import { DedupeAppCoRelationIds1793400000000 } from '../../../../data-migrations/1793400000000-DedupeAppCoRelationIds';
+import { DedupeAppCoRelationIds1793400000000 } from '@migrations/data/1793400000000-DedupeAppCoRelationIds';
 
 jest.setTimeout(60_000);
 
