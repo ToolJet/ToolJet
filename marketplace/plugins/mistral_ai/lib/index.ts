@@ -79,19 +79,11 @@ export default class MistralService implements QueryService {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     try {
       const client = await this.getConnection(sourceOptions);
-      const chatResponse = await client.chat.complete({
-        model: 'mistral-large-latest',
-        messages: [{ role: 'user', content: 'What is the best French cheese?' }],
-      });
-      if (chatResponse.choices[0].message.content) {
-        return {
-          status: 'ok',
-          message: 'Connection established successfully',
-        };
-      }
+      // Listing models validates the key without depending on any specific model
+      await client.models.list();
       return {
-        status: 'failed',
-        message: 'Could not get a valid response from Mistral API',
+        status: 'ok',
+        message: 'Connection established successfully',
       };
     } catch (error) {
       return {
