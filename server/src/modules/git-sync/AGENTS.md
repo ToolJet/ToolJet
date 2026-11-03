@@ -85,6 +85,27 @@ logic is in `server/ee/git-sync/`.
   one slug), `id` exempts the row being updated. Dropping either one breaks a real flow. The
   workflow branch shipped without `av.id` (1782500000000) and broke hydration for every
   git-pulled workflow; fixed by 1793250001000.
+- **The slug triggers are branch-BLIND; the name trigger is branch-scoped and asymmetric.**
+  `enforce_app_versions_{default_branch_,}slug_unique` return early when the row being written has
+  a NULL `branch_id`, but their `EXISTS` carries **no branch filter at all** — a slug on any
+  branch, or on a branch-less row, collides with a write on the default branch.
+  `resolveNonCollidingSlug` (`ee/platform-git-sync/pull.service.ts`) does NOT mirror that despite
+  its docstring: it joins `is_default = true`, so its pre-flight misses cross-branch collisions.
+  `applyVersionMetadataWithSlug` then retries with a UUID slug, `propagate_app_version_metadata`
+  carries that into the app's feature-branch row, and the NAME trigger raises there — a
+  non-slug error that `isSlugUniqueViolation` rethrows, failing the pull. So anything that takes
+  an app off a slug must clear it on **every** branch.
+  `enforce_app_versions_app_name_branch_unique` is the opposite: scoped to `NEW.branch_id`, and it
+  exempts the app's own rows only on the DEFAULT branch (`av.app_id <> NEW.app_id`). On a feature
+  branch two rows of one app — a stub and a non-stub, which `fetchLatestVersionsForBranch` relies
+  on coexisting — cannot share a name. data-migrations/1793400000000 handles both: the default
+  branch takes one name for every row, then each remaining row is written individually, one per
+  branch keeping the plain name and the rest taking it plus their own version id.
+- **A NULL `app_versions.status` counts as a DRAFT to every version trigger.** The column is
+  nullable with no default (legacy rows), and the guards are written
+  `IF status <> 'DRAFT' THEN RETURN NEW` — PL/pgSQL does not take a branch on a NULL condition, so
+  the trigger body runs. SQL predicates that mirror those guards must use `IS NOT TRUE`, never
+  `NOT (status = 'DRAFT' AND ...)`, or the row falls out of both sides of the split.
 - **Redact secrets AFTER `ctx.isEnabled()`, never before.** For `useEnvConfig` orgs that call reaches
   `GitSyncConfigsUtilService.getDetails`, which replaces `orgGit.gitHttps` wholesale — reinstating
   `githubPrivateKey` if it was stripped earlier. `getDetails` now shallow-clones its argument, but
