@@ -112,7 +112,12 @@ export function useAppVersionLifecycle({
         normalizeVersion({
           ...previous,
           ...state.selectedVersion,
-          status: state.selectedVersion.status || previous?.status,
+          // Trust fetched rows over the selectedVersion snapshot for status.
+          // Preferring selectedStatus left the dropdown stuck on DRAFT after an
+          // out-of-band publish (cy.apiPublishDraftVersion / another tab), so
+          // Promote stayed hidden while the lock banner (fed by developmentVersions)
+          // already reflected PUBLISHED.
+          status: previous?.status ?? state.selectedVersion.status,
           // Promotion refreshes rows without rewriting the selected snapshot.
           // Keep selected metadata for immediate edits, but trust the fetched environment.
           currentEnvironmentId:

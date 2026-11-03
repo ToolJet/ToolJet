@@ -233,4 +233,18 @@ describe.each(['module', 'library'])('%s lifecycle parity', (kind) => {
     fireEvent.change(input, { target: { value: 'missing' } });
     expect(screen.getByText('No versions found')).toBeInTheDocument();
   });
+  it('shows Promote after out-of-band publish while selectedVersion status stays DRAFT', async () => {
+    if (kind !== 'module') return;
+    const row = { ...draft, id: 'v1-id', name: 'v1' };
+    await setup([row], false, [
+      { url: `${config.apiUrl}/license/access`, json: { multiEnvironment: true, queryLibraryEnabled: true } },
+    ]);
+    await session.store.act('updateFeatureAccess');
+    // Server advanced to PUBLISHED (e.g. cy.apiPublishDraftVersion); client snapshot stays DRAFT
+    versions = [{ ...row, status: 'PUBLISHED' }];
+    render(dropdown(false));
+    await session.user.click(cy('version-switcher-button'));
+    await waitFor(() => expect(cy('promote-version-button')).toBeInTheDocument());
+    expect(document.querySelector('[data-cy="v1-draft-tag"]')).toBeNull();
+  });
 });
