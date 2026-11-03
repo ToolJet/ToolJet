@@ -1,6 +1,6 @@
 import { createJavaScriptSuggestions } from '@/AppBuilder/CodeEditor/utils';
 import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
-import { ROW_SCOPED_WIDGET_TYPES, ROW_SCOPED_RESOLVABLE_KEY_MAP } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { isRowScopedCanvas, ROW_SCOPED_RESOLVABLE_KEY_MAP } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 /**
  * Arrays at or above this length get one hint describing the array, templated off element 0;
@@ -464,7 +464,7 @@ export const createCodeHinterSlice = (set, get) => ({
       visited.add(baseParentId);
       const parentType = getParentComponentType(currentParentId, moduleId);
 
-      if (ROW_SCOPED_WIDGET_TYPES.includes(parentType)) {
+      if (isRowScopedCanvas(currentParentId, parentType)) {
         const resolvableKey = ROW_SCOPED_RESOLVABLE_KEY_MAP[parentType];
         nearestListViewOrKanbanId = nearestListViewOrKanbanId || baseParentId;
         // A nested list files its row scopes per outer row; the nearest list's variable shadows outer ones.
