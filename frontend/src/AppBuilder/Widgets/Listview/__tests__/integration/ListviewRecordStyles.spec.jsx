@@ -132,6 +132,8 @@ describe('Listview: list styles', () => {
     rows().forEach((row) => {
       expect(row.style.backgroundColor).toBe('rgb(7, 8, 9)');
       expect(row.style.border).toBe('');
+      // No border, so the canvas keeps the full record height.
+      expect(row.querySelector('.sub-canvas').getAttribute('canvas-height')).toBe('100');
     });
     expect(dividers()).toHaveLength(2);
     dividers().forEach((divider) => {
@@ -180,6 +182,9 @@ describe('Listview: list styles', () => {
       expect(row.style.border).toBe('1px solid rgb(4, 5, 6)');
       expect(row.style.borderRadius).toBe('8px');
       expect(row.classList.contains('listview-legacy-divider')).toBe(false);
+      // The 1px border sits inside the 100px record, so the row canvas gets the 98px left inside it.
+      expect(row.style.height).toBe('100px');
+      expect(row.querySelector('.sub-canvas').getAttribute('canvas-height')).toBe('98');
     });
     expect(list().style.rowGap).toBe('12px');
     expect(dividers()).toHaveLength(0);
