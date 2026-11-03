@@ -33,6 +33,7 @@ import AppLibraries from './AppLibraries';
 import Beta from '@/_ui/Beta';
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 import { SecurityPanel, CodeHistoryPanel, useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
+import { railClick } from './railClick';
 
 // Human names for the error-boundary label/location of each sidebar panel.
 const LEFT_SIDEBAR_PANEL_LABELS = {
@@ -98,10 +99,30 @@ export const BaseLeftSidebar = ({
   const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled;
 
+  // Whether the open panel was opened over the chat, so its icon closes it back to the chat.
+  const overChat = useRef(false);
+  useEffect(() => {
+    if (!isSidebarOpen) overChat.current = false;
+  }, [isSidebarOpen]);
+
   const handleSelectedSidebarItem = (item) => {
     if (item === 'debugger') resetUnreadErrorCount();
     // Only a search result opens Settings with a way back to the search panel.
     setCodeSearchReturnToSearch(false);
+    const click = railClick({
+      item,
+      selected: selectedSidebarItem,
+      open: isSidebarOpen,
+      pinned,
+      codeMode,
+      overChat: overChat.current,
+    });
+    overChat.current = click.overChat;
+    if (click.show === 'tooljetai' && item !== 'tooljetai') {
+      setSelectedSidebarItem('tooljetai');
+      localStorage.setItem('selectedSidebarItem', 'tooljetai');
+      return;
+    }
     setSelectedSidebarItem(item);
     localStorage.setItem('selectedSidebarItem', item);
     // Only treat a repeat click as "close" when the panel is actually OPEN. Panels that close
