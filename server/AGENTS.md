@@ -87,9 +87,9 @@ A removal spans releases, so the image you would roll back to still runs:
 Other rules:
 
 - **`down()`** is never empty. A comment that says why it cannot be reversed is enough. It is for development and support-led recovery and never runs automatically. Rollback is: deploy the previous image; last resort, restore the pre-upgrade backup.
-- **App definition shape.** A data migration that changes the shape of app definitions keeps the old shape readable for one release. No check enforces this.
+- **App definition shape.** Component JSON and other app definitions gain keys in data and lose them only in cleanup, one upgrade later; a key's format never changes in place. Recipe and templates: `docs/APP_DEFINITION_MIGRATIONS.md`. The lint rejects a data migration that removes JSON keys (`- 'key'`, `#-`, `delete`, `unset()`, `omit()`).
 - **Old migrations.** Migrations at or before `MIGRATION_AUTHORING_RULES_CUTOFF` (`migration-mode.ts`) skip the lint and are frozen in `test/modules/migrations/unit/pre-cutoff-migrations.json`: the spec fails when one is added, removed or renamed, because a back-dated migration skips the checks. Never edit an old migration in a way that changes what a 3.21.58 database sees after the schema phase.
-- **Log progress in data migrations:** `{MIGRATION_NAME}: [START] {action}: {total}`, `[PROGRESS] {i}/{total} ({%}%)`, `[SUCCESS] {action} finished.` The migrations page reads the `[PROGRESS] i/total` lines. No silent bulk updates. Example: `migrations/data/1783372800000-MoveNavigationLayoutStylesToStyles.ts`.
+- **Log progress in data migrations:** `{MIGRATION_NAME}: [START] {action}: {total}`, `[PROGRESS] {i}/{total} ({%}%)`, `[SUCCESS] {action} finished.` The migrations page reads the `[PROGRESS] i/total` lines. No silent bulk updates. Example: the data migration template in `docs/APP_DEFINITION_MIGRATIONS.md`.
 - **Enum `ADD VALUE`.** Write each as literal `ALTER TYPE ... ADD VALUE IF NOT EXISTS '<value>'` SQL, so the runner's scanner finds it and commits it before the value is used (`55P04`; MIGRATION_FLOW.md, Phases and transactions).
 - **`SET LOCAL` lasts for the whole transaction**, and many migrations share one. So `SET LOCAL lock_timeout` (or `statement_timeout`) applies to every later migration. Read the old value with `SHOW lock_timeout` and restore it at the end with `SELECT set_config('lock_timeout', $1, true)`. Do not copy `1781868342325-AddModuleToAppTypeEnum.ts`, `1781869753341-AddModuleToResourceTypeEnum.ts` or `1782196835449-AddModuleCreateDeleteToGroupPermissions.ts`: they do not restore it.
 - **Single-transaction runs** (blocking mode, local `db:migrate`) hold schema locks until the whole run commits. Keep data migrations short.
@@ -98,7 +98,7 @@ Other rules:
 
 ### Widget config (CRITICAL)
 
-Widget configs live in the shared `packages/widget-definitions` package and are imported by both server (`src/modules/apps/services/widget-config/index.js`) and frontend. If a config change moves, renames, or removes a key, write a migration.
+Widget configs live in the shared `packages/widget-definitions` package and are imported by both server (`src/modules/apps/services/widget-config/index.js`) and frontend. If a config change moves, renames, or removes a key, write the data and cleanup migrations in `docs/APP_DEFINITION_MIGRATIONS.md`.
 
 ### Security
 
