@@ -11,6 +11,7 @@ import {
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
+import useStore from '@/AppBuilder/_stores/store';
 
 const ID = 'lv1';
 const NAME = 'listview1';
@@ -64,6 +65,8 @@ const rowTexts = () => rows().map((node) => node.textContent);
 const exposed = (key) => widget.exposed()?.[key];
 const nextPage = () => user().click(document.querySelector('[data-cy="next-page-link"]'));
 const previousPage = () => user().click(document.querySelector('[data-cy="previous-page-link"]'));
+const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 80)));
+const recordsEqualTo10 = () => `{{${records(10).slice(2, -2)}.map((record) => ({ ...record }))}}`;
 const fired = (key) => store().getVariable(key, MODULE_ID) ?? 0;
 const setData = (value) =>
   widget.session.store.act(() => {
@@ -141,6 +144,29 @@ describe('Listview: selectedRecordIndex', () => {
     expect(exposed('selectedRecordId')).toBe(0);
   });
 
+  test('[Listview-SEL-005] new data with equal content also clears selectedRecordIndex', async () => {
+    // Break this catches: a deep-equality guard that keeps the index when a query re-runs with the same rows.
+    await onPageTwo();
+    await user().click(rows()[0]);
+    await waitFor(() => expect(exposed('selectedRecordIndex')).toBe(5));
+
+    await setData(recordsEqualTo10());
+
+    await waitFor(() => expect(exposed('selectedRecordIndex')).toBeUndefined());
+  });
+
+  test('[Listview-SEL-005] a re-render that does not change data keeps selectedRecordIndex', async () => {
+    // Break this catches: clearing the index on every render instead of on a new data value.
+    await onPageTwo();
+    await user().click(rows()[0]);
+    await waitFor(() => expect(exposed('selectedRecordIndex')).toBe(5));
+
+    await setProperty('rowHeight', '90');
+    await settle();
+
+    expect(exposed('selectedRecordIndex')).toBe(5);
+  });
+
   test('[Listview-SEL-006] the older variables keep their values after a click', async () => {
     // Break this catches: changing a released variable while adding the new ones.
     await onPageTwo();
@@ -165,35 +191,42 @@ describe('Listview: page index, Set page and On page change', () => {
     await waitFor(() => expect(exposed('pageIndex')).toBe(1));
   });
 
-  test('[Listview-PAGE-006] setPage(2) shows page two, sets pageIndex 2 and fires On page change once after it', async () => {
-    // Break this catches: firing before pageIndex updates (handler reads the old page) or twice.
+  test('[Listview-PAGE-006] setPage(2) shows page two, sets pageIndex 2 and fires no On page change', async () => {
+    // Break this catches: firing On page change for the action, which Table does not do.
     await mount({ events: PAGE_EVENTS });
 
     await widget.act('setPage', 2);
 
     await waitFor(() => expect(rowTexts()[0]).toContain('r5'));
-    expect(exposed('pageIndex')).toBe(2);
-    await waitFor(() => expect(fired('pageCalls')).toBe(1));
-    expect(fired('pageAtEvent')).toBe(2);
+    await waitFor(() => expect(exposed('pageIndex')).toBe(2));
+    await settle();
+    expect(fired('pageCalls')).toBe(0);
   });
 
-  test('[Listview-PAGE-006] a pager click also fires On page change once with the new pageIndex', async () => {
-    // Break this catches: wiring the event to the CSA only.
+  test('[Listview-PAGE-006] a pager click fires On page change exactly once with the new pageIndex', async () => {
+    // Break this catches: not firing for the pager, or firing twice.
     await mount({ events: PAGE_EVENTS });
 
     await nextPage();
 
     await waitFor(() => expect(fired('pageCalls')).toBe(1));
+    await settle();
+    expect(fired('pageCalls')).toBe(1);
     expect(fired('pageAtEvent')).toBe(2);
     expect(exposed('pageIndex')).toBe(2);
   });
 
   test('[Listview-PAGE-007] setPage clamps out-of-range numbers to the first and last page', async () => {
-    // Break this catches: letting the page run past the data or below one.
+    // Break this catches: letting the page run past the data (even for one render) or below one.
     await mount();
+    const seen = [];
+    const unsubscribe = useStore.subscribe(() => seen.push(exposed('pageIndex')));
 
     await widget.act('setPage', 9);
     await waitFor(() => expect(exposed('pageIndex')).toBe(2));
+    await settle();
+    unsubscribe();
+    expect(seen).not.toContain(3);
     expect(rowTexts()[0]).toContain('r5');
 
     await widget.act('setPage', 0);
@@ -205,14 +238,44 @@ describe('Listview: page index, Set page and On page change', () => {
     // Break this catches: reporting a silent clamp as a user page change.
     await mount({ events: PAGE_EVENTS });
     await widget.act('setPage', 2);
-    await waitFor(() => expect(fired('pageCalls')).toBe(1));
+    await waitFor(() => expect(exposed('pageIndex')).toBe(2));
 
     await setData(records(3));
 
     await waitFor(() => expect(rows()).toHaveLength(3));
     await waitFor(() => expect(exposed('pageIndex')).toBe(1));
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(fired('pageCalls')).toBe(1);
+    await settle();
+    expect(fired('pageCalls')).toBe(0);
+  });
+
+  test('[Listview-PAGE-008] a rowsPerPage change that removes the current page moves to page 1 and fires no event', async () => {
+    // Break this catches: leaving the clamp to the pager, which reports it as a user page change.
+    await mount({ events: PAGE_EVENTS });
+    await widget.act('setPage', 2);
+    await waitFor(() => expect(exposed('pageIndex')).toBe(2));
+
+    await setProperty('rowsPerPage', '{{10}}');
+
+    await waitFor(() => expect(rows()).toHaveLength(10));
+    await waitFor(() => expect(exposed('pageIndex')).toBe(1));
+    await settle();
+    expect(fired('pageCalls')).toBe(0);
+  });
+
+  test('[Listview-PAGE-008] turning pagination off moves to page 1, so the first record is selectedRecordIndex 0', async () => {
+    // Break this catches: keeping page two after the pager is gone, which offsets every record index by a page.
+    await mount({ events: PAGE_EVENTS });
+    await widget.act('setPage', 2);
+    await waitFor(() => expect(exposed('pageIndex')).toBe(2));
+
+    await setProperty('enablePagination', '{{false}}');
+
+    await waitFor(() => expect(rows()).toHaveLength(10));
+    await waitFor(() => expect(exposed('pageIndex')).toBe(1));
+    await user().click(rows()[0]);
+    await waitFor(() => expect(exposed('selectedRecordIndex')).toBe(0));
+    await settle();
+    expect(fired('pageCalls')).toBe(0);
   });
 });
 

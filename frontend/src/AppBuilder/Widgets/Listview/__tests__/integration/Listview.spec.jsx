@@ -2437,7 +2437,6 @@ describe('Listview: the clicked item on a paginated list', () => {
   const pagedUser = () => paginatedWidget.session.user;
   const pagedExposed = (key) => paginatedWidget.exposed()?.[key];
   const nextPage = () => pagedUser().click(document.querySelector('[data-cy="next-page-link"]'));
-  const previousPage = () => pagedUser().click(document.querySelector('[data-cy="previous-page-link"]'));
   const rebind = (records) =>
     paginatedWidget.session.store.act(() => {
       paginatedWidget.setComponentProperty(ID, 'data', binding(records).value, 'properties');
