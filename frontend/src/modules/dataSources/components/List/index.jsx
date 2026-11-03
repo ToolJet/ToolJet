@@ -11,7 +11,7 @@ import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg'
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { SearchBox } from '@/_components/SearchBox';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
-import { extractErrorMessage } from '@/_helpers/messages';
+import { extractErrorMessage, extractErrorPayload } from '@/_helpers/messages';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import Modal from '@/HomePage/Modal';
 import { Button } from '@/components/ui/Button/Button';
@@ -20,6 +20,7 @@ import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/Switch
 import { DataSourceFolders } from '../DataSourceFolders';
 import { FolderFormModal } from '../DataSourceFolders/FolderFormModal';
 import { MoveDataSourceModal } from '../DataSourceFolders/MoveDataSourceModal';
+import { FolderDeleteBlockedModal } from '../DataSourceFolders/FolderDeleteBlockedModal';
 import { buildVisibleFolders } from '../DataSourceFolders/folderSearch';
 
 export const List = ({ updateSelectedDatasource }) => {
@@ -58,6 +59,9 @@ export const List = ({ updateSelectedDatasource }) => {
   const [folderModal, setFolderModal] = useState({ show: false, mode: 'create', folder: null });
   const [deletingFolder, setDeletingFolder] = useState(null);
   const [isDeletingFolder, setIsDeletingFolder] = useState(false);
+  // Set when a delete is refused because the folder still holds data sources on some branch:
+  // { folderName, branches }. Drives FolderDeleteBlockedModal.
+  const [folderDeleteBlocked, setFolderDeleteBlocked] = useState(null);
   const [movingDataSource, setMovingDataSource] = useState(null);
   const [activeDragDataSource, setActiveDragDataSource] = useState(null);
   const pendingDeleteAfterSwitchRef = useRef(null);
@@ -239,6 +243,7 @@ export const List = ({ updateSelectedDatasource }) => {
       : 1;
 
   const executeFolderDeletion = () => {
+    const folderName = deletingFolder.name;
     setIsDeletingFolder(true);
     deleteDataSourceFolder(deletingFolder.id)
       .then(() => {
@@ -249,6 +254,14 @@ export const List = ({ updateSelectedDatasource }) => {
       .catch(({ error }) => {
         setIsDeletingFolder(false);
         setDeletingFolder(null);
+        // A refusal over branch contents carries the owning branch names with it. That needs more
+        // room than a toast — and more importantly the folder can be empty on the branch the user
+        // is looking at, so the bare message reads as wrong — hand it to the modal instead.
+        const branches = extractErrorPayload(error)?.branches;
+        if (branches?.length) {
+          setFolderDeleteBlocked({ folderName, branches });
+          return;
+        }
         toast.error(extractErrorMessage(error) || 'Could not delete folder');
       });
   };
@@ -462,6 +475,12 @@ export const List = ({ updateSelectedDatasource }) => {
         onConfirm={executeFolderDeletion}
         onCancel={() => setDeletingFolder(null)}
         darkMode={darkMode}
+      />
+      <FolderDeleteBlockedModal
+        show={!!folderDeleteBlocked}
+        folderName={folderDeleteBlocked?.folderName}
+        branches={folderDeleteBlocked?.branches}
+        onClose={() => setFolderDeleteBlocked(null)}
       />
     </>
   );
