@@ -1,3 +1,4 @@
+import ConnectedAIClientsCard from './ConnectedAIClientsCard';
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -338,6 +339,7 @@ function SettingsPage(props) {
                 </div>
               </div>
               <TwoFactorAuthCard darkMode={props.darkMode} />
+              <ConnectedAIClientsCard />
               <ProfileNotificationsCard />
             </div>
           </div>

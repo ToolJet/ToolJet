@@ -32,6 +32,8 @@ export const DEFAULT_USER_PERMISSIONS: UserPermissions = {
   workflowFolderDelete: false,
   moduleFolderCreate: false,
   moduleFolderDelete: false,
+  dataSourceFolderCreate: false,
+  dataSourceFolderDelete: false,
   orgConstantCRUD: false,
   tjdbCRUD: false,
   orgVariableCRUD: false,

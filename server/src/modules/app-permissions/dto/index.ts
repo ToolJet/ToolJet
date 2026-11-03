@@ -1,5 +1,5 @@
 import { IsUUID, IsEnum, IsArray, IsString, IsOptional, ValidateIf } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import { PAGE_PERMISSION_TYPE } from '../constants';
 
 export class CreatePermissionDto {
@@ -23,4 +23,19 @@ export class CreatePermissionDto {
   @IsOptional()
   @Type(() => String)
   groups?: string[];
+}
+
+@Exclude()
+export class AppPermissionUserResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  firstName: string;
+
+  @Expose()
+  lastName: string;
+
+  @Expose()
+  email: string;
 }
