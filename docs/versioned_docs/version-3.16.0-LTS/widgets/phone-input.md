@@ -133,3 +133,9 @@ Allows you to maintain a standard padding by enabling the `Default` option.
 :::info
 The **Advanced** section is available only if your plan has the **[Custom Styles](/docs/app-builder/customstyles)** feature enabled.
 :::
+
+### Deprecated styles
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Legacy input size | Keeps the canvas sizing that input components used before this setting was added. When on, a top-aligned label always adds height to the component, even when the label is empty, and the component's height doesn't change when the label alignment is set with **fx**. When off, a top-aligned label adds height only when the label has text. | Enable/disable the toggle button. Off for new components. Turned on for components that existed before this setting was added, including components in imported apps. |

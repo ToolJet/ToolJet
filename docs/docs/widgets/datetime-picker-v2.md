@@ -10,7 +10,7 @@ The **Date Time Picker** component can be used for selecting dates with time inp
 | Property | Description | Expected Value |
 | :------- | :---------- | :------------- |
 | Label | Text to display as the label for the field. | String (e.g., `Date and Time of Arrival`). |
-| Date Format | Select the date format from the dropdown. Default date format is **DD/MM/YYYY**. | Select from dropdown (e.g. `MM/DD/YYYY`). |
+| Date Format | Select the date format from the dropdown. Default date format is **DD/MM/YYYY**. | Select from dropdown: `DD/MM/YYYY`, `MM/DD/YYYY`, `YYYY/DD/MM`, `YYYY/MM/DD`, `DD-MM-YYYY`, `MM-DD-YYYY`, `YYYY-DD-MM` or `YYYY-MM-DD`. |
 | Time Format | Select the time format from the dropdown. Default time format is **HH:mm**. | Select from dropdown (e.g. `hh:mm A`). |
 | Manage time zones | Use the toggle to manage the time zone. When enabled, two dropdowns appear: **Display in** sets the time zone the value is shown in, and **Store in** sets the time zone the value is stored in. Both default to `UTC`. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Placeholder | Text shown in the field when no date and time is selected. Default value is **Select date and time**. | String (e.g., `Select arrival date and time`). |

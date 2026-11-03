@@ -10,7 +10,7 @@ The **Date Picker** component can be used for selecting dates without time input
 | Property      | Description                                                                      | Expected Value                            |
 | :------------ | :------------------------------------------------------------------------------- | :---------------------------------------- |
 | Label         | Text to display as the label for the field.                                      | String (e.g., `Date of Birth`).           |
-| Date Format   | Select the date format from the dropdown. Default date format is **DD/MM/YYYY**. | Select from dropdown (e.g. `MM/DD/YYYY`). |
+| Date Format   | Select the date format from the dropdown. Default date format is **DD/MM/YYYY**. | Select from dropdown: `DD/MM/YYYY`, `MM/DD/YYYY`, `YYYY/DD/MM`, `YYYY/MM/DD`, `DD-MM-YYYY`, `MM-DD-YYYY`, `YYYY-DD-MM` or `YYYY-MM-DD`. |
 | Placeholder   | A hint displayed in the input field when no date is selected. Default is **Select date**. | String (e.g., `Select date`). |
 | Default value | The default value that the component will hold when the app is loaded.           | String (e.g., `01/01/2022`).              |
 
