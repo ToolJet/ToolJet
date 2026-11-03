@@ -79,6 +79,10 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
 
 - Transformation code (`transformation` and `transformations`) is excluded from cache identity because it runs in the browser.
 - Cache refusal logs include workspace/query identifiers and the token/reserve/confirm stage, without inputs or response data.
+- Telemetry (`ENABLE_OTEL=true`, `src/otel/query-cache-metrics.ts`): `tooljet.query_cache.writes{write_result}` counts each
+  logged write outcome; `tooljet.query_cache.bytes_stored{organization.id}` adds the charge CONFIRM returns. The
+  `memory.used`/`memory.limit` gauges read a snapshot each pod refreshes from the global usage hash every 30 s, since
+  gauge callbacks cannot wait on Redis. Every pod reports the same global value: aggregate with max, not sum.
 - On `WORKER=true`, BullMQ's `query-cache-cleanup` queue scans the shared expiry index every minute, in cursor batches
   limited to one job per second. It checks committed query existence before clearing deleted queries, covering cascades
   without adding work to delete requests. Jobs retry three times; later sweeps recover interrupted work. No worker means
