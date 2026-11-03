@@ -963,7 +963,12 @@ export class VersionUtilService implements IVersionUtilService {
             ? `Promote blocked - table "${names[0]}" not available in ${targetEnvironmentName}. Promote the table first.`
             : `Promote blocked - ${names.length} tables not available in ${targetEnvironmentName}: ${tableList}. Promote the tables first.`;
         throw new BadRequestException({
-          message: { error: message, details: tableList },
+          message: {
+            error: message,
+            details: tableList,
+            code: 'TABLES_NOT_IN_TARGET_ENVIRONMENT',
+            tables: offenders.map((t) => ({ id: t.id, name: t.tableName })),
+          },
         });
       }
 
