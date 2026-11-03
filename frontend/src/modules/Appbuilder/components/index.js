@@ -9,6 +9,7 @@ import AppPermissionsModal from './AppPermissionsModal';
 import ComponentModuleTab from './ComponentModuleTab';
 import CreateDraftVersionModal from './CreateDraftVersionModal';
 import VersionActionButtons from './VersionActionButtons';
+import QueryCacheClear from './QueryCacheClear';
 
 export {
   CreateVersionModal,
@@ -22,4 +23,5 @@ export {
   ComponentModuleTab,
   CreateDraftVersionModal,
   VersionActionButtons,
+  QueryCacheClear,
 };

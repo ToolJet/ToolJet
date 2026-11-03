@@ -15,6 +15,7 @@ export const appService = {
   cloneResource,
   changeIcon,
   deleteApp,
+  clearQueryCache,
   getApp,
   fetchApp,
   fetchAppBySlug,
@@ -146,6 +147,15 @@ function getApp(id, accessType) {
 function fetchApp(id) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(appendBranchParam(`${config.apiUrl}/apps/${id}`), requestOptions).then(handleResponse);
+}
+
+// EE only: starts clearing the cached query responses of every version of the app. Resolves once the
+// server has accepted the request; the clear itself finishes in the background.
+function clearQueryCache(appId) {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include' };
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}/query-cache/clear`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function deleteApp(id) {
