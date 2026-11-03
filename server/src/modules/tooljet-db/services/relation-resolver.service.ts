@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
+import { isUUID } from 'class-validator';
 import { InternalTable } from '@entities/internal_table.entity';
 import { InternalTableRelation } from '@entities/internal_table_relation.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
@@ -115,7 +116,31 @@ export class TooljetDbRelationResolverService {
       }
     }
 
+    const unresolved = logicalTableIds.filter((tableId) => !resolved.has(tableId));
+    for (const tableId of await this.tablesWithoutRelations(organizationId, unresolved, entityManager)) {
+      resolved.set(tableId, tableId);
+    }
+
     return resolved;
+  }
+
+  /**
+   * Live tables among `tableIds` with no relation on any branch or environment. Their data sits in the
+   * physical table named by their own id, the relation migration A writes: during an async upgrade's
+   * data phase, until A commits, and for a table the previous release created during a rollback.
+   * After A, every table has a relation, so a table missing only from this environment stays omitted.
+   */
+  async tablesWithoutRelations(organizationId: string, tableIds: string[], manager: EntityManager): Promise<string[]> {
+    // Callers pass physical names and request input too; only a uuid can be a table id.
+    tableIds = tableIds.filter((tableId) => isUUID(tableId));
+    if (!tableIds.length) return [];
+    const rows: { id: string }[] = await manager.query(
+      `SELECT it.id FROM internal_tables it
+       WHERE it.id = ANY($1::uuid[]) AND it.organization_id = $2 AND it.deleted_at IS NULL
+         AND NOT EXISTS (SELECT 1 FROM internal_table_relations r WHERE r.internal_table_id = it.id)`,
+      [tableIds, organizationId]
+    );
+    return rows.map((row) => row.id);
   }
 
   /**
@@ -140,7 +165,12 @@ export class TooljetDbRelationResolverService {
       .andWhere('it.deleted_at IS NULL')
       .getMany();
 
-    return new Map(relations.map((relation) => [relation.id, relation.internalTableId]));
+    const logicalIds = new Map(relations.map((relation) => [relation.id, relation.internalTableId]));
+    const unresolved = relationIds.filter((relationId) => !logicalIds.has(relationId));
+    for (const tableId of await this.tablesWithoutRelations(organizationId, unresolved, entityManager)) {
+      logicalIds.set(tableId, tableId);
+    }
+    return logicalIds;
   }
 
   async getRelation(
@@ -155,7 +185,20 @@ export class TooljetDbRelationResolverService {
     const relationId = (
       await this.resolve(organizationId, [internalTableId], requestedEnvironmentId, entityManager)
     ).get(internalTableId);
-    const relation = relationId && (await entityManager.findOne(InternalTableRelation, { where: { id: relationId } }));
+    let relation = relationId && (await entityManager.findOne(InternalTableRelation, { where: { id: relationId } }));
+    if (!relation && relationId === internalTableId) {
+      // resolve() mapped a table with no relations to itself - build the row migration A will write.
+      const [table] = await entityManager.query(
+        `SELECT configurations FROM internal_tables WHERE id = $1 AND organization_id = $2`,
+        [internalTableId, organizationId]
+      );
+      if (table)
+        relation = entityManager.create(InternalTableRelation, {
+          id: internalTableId,
+          internalTableId,
+          configurations: table.configurations,
+        });
+    }
 
     if (!relation) {
       const internalTable = await entityManager.findOne(InternalTable, {
@@ -279,11 +322,9 @@ export class TooljetDbRelationResolverService {
     manager?: EntityManager
   ): Promise<InternalTableRelation> {
     // A falsy coRelationId (undefined/null/'') must fail closed here, not reach the query: TypeORM
-    // drops an undefined property from the WHERE clause entirely rather than filtering on it, and
-    // co_relation_id is NOT NULL at the DB level, so `null` never matches a real row either way -
-    // but `findOne` with the predicate silently dropped returns whatever row comes back first for
-    // this organizationId, wiring a foreign key or {{table.x}} raw SQL reference to an arbitrary,
-    // unrelated table instead of failing loudly.
+    // drops an undefined or null property from the WHERE clause instead of filtering on it, so
+    // `findOne` would return whatever row comes first for this organizationId, wiring a foreign key
+    // or {{table.x}} raw SQL reference to an arbitrary, unrelated table instead of failing loudly.
     if (!coRelationId) throw new NotFoundException(`Referenced table not found for reference ${coRelationId}`);
 
     const entityManager = manager || this.manager;

@@ -69,7 +69,7 @@ logic is in `server/ee/git-sync/`.
   different problems: `app_id` exempts sibling rows of the same workflow (which intentionally share
   one slug), `id` exempts the row being updated. Dropping either one breaks a real flow. The
   workflow branch shipped without `av.id` (1782500000000) and broke hydration for every
-  git-pulled workflow; fixed by 1787900000000.
+  git-pulled workflow; fixed by 1793250001000.
 - **Redact secrets AFTER `ctx.isEnabled()`, never before.** For `useEnvConfig` orgs that call reaches
   `GitSyncConfigsUtilService.getDetails`, which replaces `orgGit.gitHttps` wholesale — reinstating
   `githubPrivateKey` if it was stripped earlier. `getDetails` now shallow-clones its argument, but

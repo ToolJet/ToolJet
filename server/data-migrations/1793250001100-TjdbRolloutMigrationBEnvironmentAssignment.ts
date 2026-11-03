@@ -1,26 +1,33 @@
-import { tooljetDbOrmconfig } from 'ormconfig';
+import { tooljetDbOrmconfig } from 'ormconfig'; // migration-import-allowed: opens the ToolJet Database connection
 import { DataSource, EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from '@modules/app/module';
-import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
-import { LicenseTermsService, LicenseInitService } from '@modules/licensing/interfaces/IService';
-import { LICENSE_FIELD } from '@modules/licensing/constants';
-import { getTooljetEdition } from '@helpers/utils.helper';
-import { MigrationProgress } from '@helpers/migration.helper';
-import { findTenantSchema } from '@helpers/tooljet_db.helper';
-import { InternalTableRelation } from '@entities/internal_table_relation.entity';
+import { NestFactory } from '@nestjs/core'; // migration-import-allowed: boots the app context to reuse the assignment services
+import { AppModule } from '@modules/app/module'; // migration-import-allowed: boots the app context to reuse the assignment services
+import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants'; // migration-import-allowed: resolves the edition-specific service classes
+import { LicenseTermsService, LicenseInitService } from '@modules/licensing/interfaces/IService'; // migration-import-allowed: multi-environment licence check
+import { LICENSE_FIELD } from '@modules/licensing/constants'; // migration-import-allowed: multi-environment licence check
+import { getTooljetEdition } from '@helpers/utils.helper'; // migration-import-allowed: multi-environment licence check
+import { MigrationProgress } from '@helpers/migration.helper'; // migration-import-allowed: required progress logging
+import { findTenantSchema } from '@helpers/tooljet_db.helper'; // migration-import-allowed: resolves the workspace's TJDB schema
+import { InternalTableRelation } from '@entities/internal_table_relation.entity'; // migration-import-allowed: relation entity the assignment services read
 // Types only - the runtime classes resolve via dynamic import so the class reference matches the
 // edition-specific DI token (mirrors SeedPushModulesBranch1776600000000).
-import type { TooljetDbEnvironmentAssignmentService } from '@modules/tooljet-db/services/tooljet-db-environment-assignment.service';
-import type { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
-import type LicenseBase from '@modules/licensing/configs/LicenseBase';
+import type { TooljetDbEnvironmentAssignmentService } from '@modules/tooljet-db/services/tooljet-db-environment-assignment.service'; // migration-import-allowed: type only
+import type { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service'; // migration-import-allowed: type only
+import type LicenseBase from '@modules/licensing/configs/LicenseBase'; // migration-import-allowed: type only
 
-const MIGRATION_NAME = 'TjdbRolloutMigrationBEnvironmentAssignment1788252587903';
+const MIGRATION_NAME = 'TjdbRolloutMigrationBEnvironmentAssignment1793250001100';
 
 // Wall-clock bound, not a real cancellation - see the boot-time deadlock note in the class
 // docblock. A real hang here can't be un-stuck from outside (no handle on the blocked query), so
 // this only converts "hangs the deploy forever" into "fails fast with a clear cause".
 const NEST_BOOT_TIMEOUT_MS = 120_000;
+
+// One line per skipped table, not a stack trace: a table whose workspace schema is missing or
+// unreachable is a data problem the run carries past, and hundreds of traces read as a failed deploy.
+const describeTableFailure = (error: unknown): string => {
+  const { message, code } = (error ?? {}) as { message?: string; code?: string };
+  return code ? `${message} (${code})` : String(message ?? error);
+};
 
 /**
  * "Migration B": corrects migration A's unconditional development placement for licensed
@@ -34,8 +41,8 @@ const NEST_BOOT_TIMEOUT_MS = 120_000;
  *
  * Revert order (not enforced mechanically — both datasources share one `migrations` table,
  * reverted by insertion id, not timestamp): this migration (down) -> Migration A
- * (data-migrations/1787564882760-TjdbRolloutMigrationASubstrate.ts, down) ->
- * TjdbRolloutSubstrateSchema1787564882000 (down). A duplicate-baseline bug would surface here
+ * (data-migrations/1793250000800-TjdbRolloutMigrationASubstrate.ts, down) ->
+ * TjdbRolloutSubstrateSchema1793250000300 (down). A duplicate-baseline bug would surface here
  * first, since B is the first thing to read Migration A's baseline rows.
  *
  * B is a data migration under `migrationsTransactionMode: 'all'` - it shares migration A's single
@@ -74,9 +81,9 @@ const NEST_BOOT_TIMEOUT_MS = 120_000;
  * `organization_license`, fetched over HTTP, not `instance_settings`, and `initForMigration`
  * explicitly doesn't support Cloud).
  */
-export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements MigrationInterface {
+export class TjdbRolloutMigrationBEnvironmentAssignment1793250001100 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const nestApp = await TjdbRolloutMigrationBEnvironmentAssignment1788252587903.withTimeout(
+    const nestApp = await TjdbRolloutMigrationBEnvironmentAssignment1793250001100.withTimeout(
       NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true })),
       NEST_BOOT_TIMEOUT_MS,
       `${MIGRATION_NAME}: Nest boot exceeded ${NEST_BOOT_TIMEOUT_MS}ms. This almost always means an ` +
@@ -99,7 +106,7 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements 
       );
       const { default: License } = await import(`${importPath}/licensing/configs/License`);
 
-      await TjdbRolloutMigrationBEnvironmentAssignment1788252587903.runMigrationB({
+      await TjdbRolloutMigrationBEnvironmentAssignment1793250001100.runMigrationB({
         licenseTermsService: nestApp.get(LicenseTermsService, { strict: false }),
         licenseInitService: nestApp.get(LicenseInitService, { strict: false }),
         License,
@@ -151,20 +158,19 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements 
       `);
 
       for (const twin of twins) {
-        const schema = findTenantSchema(twin.organization_id);
-        // Physical DROP runs on a separate connection outside this migration's transaction, so it
-        // can't be rolled back. Do the transactional app-DB writes first, drop only once both
-        // succeeded — this iteration alone can't leave a real inconsistency. Across the whole run
-        // (migrationsTransactionMode: 'all') a LATER twin's failure still rolls back every
-        // app-DB write this loop already made, including this iteration's, while this iteration's
-        // physical DROP stays applied. Not a live bug: the app-DB rows are back exactly as they
-        // were pre-run, so a retry re-selects the same twins and re-runs the whole loop from
-        // scratch, and DROP TABLE IF EXISTS makes redoing an already-dropped twin's drop a no-op.
         await queryRunner.query(`DELETE FROM internal_table_relations WHERE id = $1`, [twin.twin_id]);
         await queryRunner.query(`UPDATE internal_table_relations SET environment_id = $1 WHERE id = $2`, [
           twin.dev_env_id,
           twin.a_relation_id,
         ]);
+      }
+
+      // The physical DROPs run on a separate connection and commit at once, outside this migration's
+      // transaction. They go last, so a failed app-DB write rolls back with nothing dropped yet. If
+      // the run fails after some drops, a retry re-selects the same twins and DROP IF EXISTS skips
+      // the ones already gone.
+      for (const twin of twins) {
+        const schema = findTenantSchema(twin.organization_id);
         await tjdbQueryRunner.query(`DROP TABLE IF EXISTS "${schema}"."${twin.twin_id}" CASCADE`);
       }
     } finally {
@@ -243,10 +249,11 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements 
       `${MIGRATION_NAME}: [START] Assigning TJDB data to environments: ${organizations.length} workspace(s).`
     );
     const progress = new MigrationProgress(MIGRATION_NAME, organizations.length || 1);
+    let skippedTables = 0;
 
     for (const { id: organizationId } of organizations) {
       try {
-        const licensed = await TjdbRolloutMigrationBEnvironmentAssignment1788252587903.isMultiEnvironmentLicensed(
+        const licensed = await TjdbRolloutMigrationBEnvironmentAssignment1793250001100.isMultiEnvironmentLicensed(
           organizationId,
           { licenseTermsService, licenseInitService, License, appManager }
         );
@@ -275,9 +282,11 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements 
             // one subtransaction for the rest of the workspace's run.
             await appManager.query(`ROLLBACK TO SAVEPOINT tjdb_env_assignment`);
             await appManager.query(`RELEASE SAVEPOINT tjdb_env_assignment`);
-            console.error(
-              `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} assignment failed; continuing.`,
-              error
+            skippedTables++;
+            console.warn(
+              `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} assignment skipped: ${describeTableFailure(
+                error
+              )}`
             );
           }
         }
@@ -295,9 +304,10 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements 
           } catch (error) {
             await appManager.query(`ROLLBACK TO SAVEPOINT tjdb_env_fk_replay`);
             await appManager.query(`RELEASE SAVEPOINT tjdb_env_fk_replay`);
-            console.error(
-              `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} foreign-key replay failed; continuing.`,
-              error
+            console.warn(
+              `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} foreign-key replay skipped: ${describeTableFailure(
+                error
+              )}`
             );
           }
         }
@@ -308,7 +318,10 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1788252587903 implements 
       }
     }
 
-    console.log(`${MIGRATION_NAME}: [SUCCESS] Environment assignment finished.`);
+    console.log(
+      `${MIGRATION_NAME}: [SUCCESS] Environment assignment finished.` +
+        (skippedTables ? ` ${skippedTables} table(s) skipped, listed above.` : '')
+    );
   }
 }
 

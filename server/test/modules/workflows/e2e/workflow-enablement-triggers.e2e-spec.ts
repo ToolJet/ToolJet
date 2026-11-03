@@ -3,7 +3,7 @@
  *
  * GATE 8, Step 8.4 (phase-8-implementation.md "## Verification — GATE 8", Step 8.4 Tests
  * section) — server-side coverage for the two DB triggers `migrations/
- * 1787700000000-AddWorkflowEnabledToAppVersions.ts` added when webhook enablement moved from
+ * 1793250000500-AddWorkflowEnabledToAppVersions.ts` added when webhook enablement moved from
  * `apps.workflow_enabled` to `app_versions.workflow_enabled`. This is unit/service-level coverage;
  * `tooljet-qa-suite`'s `gate-8/04` Playwright spec proves the same mechanism end-to-end over a
  * real push/merge/pull, which this suite cannot substitute for. See `docs/server-specs.md`

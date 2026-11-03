@@ -15,8 +15,7 @@ describe("Modules — Versions", () => {
   const testId = Date.now();
   const wsName = `modules-versions-${testId}`;
   const wsSlug = wsName;
-  const moduleName = `QA Module ${testId}`;
-  const branchModuleName = `QA Branch ${testId}`;
+  const uniqueName = (prefix) => `${prefix} ${Date.now()}`;
 
   let workspaceId;
 
@@ -40,7 +39,7 @@ describe("Modules — Versions", () => {
   });
 
   it("creates a draft version, publishes it, and switches between versions", () => {
-    createModuleViaAPI(moduleName);
+    createModuleViaAPI(uniqueName("QA Module"));
 
     // Empty version name is rejected on save.
     cy.get(moduleSelectors.versionSwitcherButton).click();
@@ -111,7 +110,7 @@ describe("Modules — Versions", () => {
   });
 
   it("keeps draft branches isolated — a new draft inherits from the version you pick, not whatever's latest", () => {
-    createModuleViaAPI(branchModuleName);
+    createModuleViaAPI(uniqueName("QA Branch"));
 
     // v1: drop one component, then save/lock it.
     dropModuleComponent("Text",500, 100); // -> text1
