@@ -111,5 +111,6 @@ Builders can select **Refresh Query Cache** alongside **Run query** in the event
 For queries with response caching explicitly enabled, Query Preview displays cache hit/miss/refresh/bypass and
 saved/not-saved outcomes using response metadata. Queries without caching show no cache feedback. It does not
 infer why storage failed. Evidence: `frontend/src/AppBuilder/QueryManager/Components/Preview.jsx` and `QueryCacheStatus.jsx`.
-The shared cache budget defaults to 128 MiB; setting `QUERY_CACHE_MAX_TOTAL_BYTES=0` bypasses cache reads and writes
+The shared cache budget defaults to 128 MiB, and each workspace can use at most `QUERY_CACHE_MAX_WORKSPACE_BYTES`
+(default 16 MiB) of it; setting `QUERY_CACHE_MAX_TOTAL_BYTES=0` bypasses cache reads and writes
 without purging retained entries. Environment configuration: `.env.example`.

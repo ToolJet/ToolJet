@@ -56,8 +56,10 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   has `features.queryResponseCache` (`LICENSE_FIELD.QUERY_RESPONSE_CACHE`); a missing key or failed check means off.
   The builder disables the toggle with the upgrade crown; Clear stays available to free entries saved earlier.
   Memory: Redis is shared with BullMQ (`noeviction`). `RedisQueryCacheStore` enforces one fixed
-  `QUERY_CACHE_MAX_TOTAL_BYTES` budget (default 128 MiB; 0 bypasses reads/writes without purging). Workspaces share it without individual caps;
-  one workspace can exhaust caching for others. `QUERY_CACHE_MAX_WORKSPACE_BYTES` is retired and ignored. Published entries
+  `QUERY_CACHE_MAX_TOTAL_BYTES` budget (default 128 MiB; 0 bypasses reads/writes without purging). `QUERY_CACHE_MAX_WORKSPACE_BYTES`
+  (default 16 MiB, 1/8 of the default budget; 0 stops that workspace's writes) caps each workspace on the same ledger,
+  checked in the same Lua script as each charge, so parallel writers cannot overshoot either limit. Charges always go to
+  the workspace that owns the query (`appFromParam.organizationId`), never a signed-in visitor's. Published entries
   charge `MEMORY USAGE` plus `3 × key length + 512` for query/global tracking. A separate 2048-byte
   `@overhead` record charges container overhead once per query until its last entry/pending/purge record
   is removed; all admission checks include it. Token-only queries reserve this overhead before creation;
