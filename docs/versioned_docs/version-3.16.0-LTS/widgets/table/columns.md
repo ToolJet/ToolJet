@@ -7,6 +7,17 @@ Whenever data is loaded into a Table, the columns are automatically generated. Y
 
 <img className="screenshot-full img-full" src="/img/widgets/table/columns-v3.png" alt="ToolJet - Component Reference - Columns" />
 
+## Lock Column Schema
+
+By default, the Table updates its columns whenever the shape of the data changes: a column is added for each new key, and auto-generated columns whose keys no longer exist in the data are removed. Turn on **Lock column schema** to keep the columns you have configured as they are, so that changes to the data's keys neither add nor remove columns. This is useful when a query can return different fields, or when you have customized the columns and don't want them regenerated.
+
+The **Lock column schema** toggle is in the **Columns** section of the Table properties, below the column list. It is off by default.
+
+:::note
+- The toggle is hidden when **Use dynamic column** is enabled, as dynamic columns define the column schema themselves.
+- If the Table has no columns yet, columns are still generated once from the data, even when the schema is locked.
+:::
+
 ## Use Dynamic Column
 
 The **Use dynamic column** toggle allows users to dynamically set the columns of the Table using a JSON value. 
