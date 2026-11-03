@@ -9,6 +9,7 @@ import { findHighestLevelofSelection } from './Grid/gridUtils';
 import { NO_OF_GRIDS } from './appCanvasConstants';
 import { computeComponentName, getAllChildComponents } from './appCanvasUtils';
 import { utilityFuncForNameSeed } from '@/_helpers/utils';
+import { getRecordHeight } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
 
 const getSelectedText = () => {
   let selectedText = '';
@@ -206,7 +207,8 @@ function getRowHeightOfParent(targetParentId) {
   const baseParentId = state.getBaseParentId?.(targetParentId) ?? targetParentId;
   const parentType = state.getComponentTypeFromId?.(baseParentId);
   if (parentType !== 'Listview') return null;
-  const rowHeight = Number(state.getResolvedComponent?.(baseParentId, null)?.properties?.rowHeight);
+  const properties = state.getResolvedComponent?.(baseParentId, null)?.properties;
+  const rowHeight = Number(getRecordHeight(properties?.mode, properties?.rowHeight, properties?.gridRecordHeight));
   return rowHeight > 0 ? rowHeight : null;
 }
 

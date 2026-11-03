@@ -21,7 +21,6 @@ import {
   getListStyle,
   getRecordGap,
   getRecordHeight,
-  getRecordSpacing,
 } from './listStyleLayout';
 
 export const Listview = function Listview({
@@ -150,7 +149,7 @@ export const Listview = function Listview({
           display: 'grid',
           columnGap: gapAroundRecord,
           gridTemplateColumns: isBordered
-            ? Array(positiveColumns).fill('minmax(0, 1fr)').join(` ${DIVIDER_WIDTH}px `)
+            ? Array(positiveColumns).fill('minmax(0, 1fr)').join(' 0px ')
             : `repeat(${positiveColumns}, minmax(0, 1fr))`,
         }),
       };
@@ -159,7 +158,7 @@ export const Listview = function Listview({
     ? width
     : width -
       2 * (NEW_STYLE_PADDING - LEGACY_PADDING) -
-      (recordsPerLine - 1) * getRecordSpacing(recordStyle, gap) -
+      (recordsPerLine - 1) * recordGap -
       recordsPerLine * (recordStyle === 'container' ? 2 : 0);
   const dividerColor = recordDividerColor ?? 'var(--cc-weak-border)';
   const parentRef = useRef(null);
@@ -352,7 +351,7 @@ export const Listview = function Listview({
                   dataCy={dataCy}
                   componentType={componentType}
                 />
-                {/* Hidden from assistive tech: a list may only own list items. */}
+                {/* aria-hidden: a list may only own list items. The negative margin keeps each line inside its gap. */}
                 {isGridLayout &&
                   isBordered &&
                   (index + 1) % recordsPerLine !== 0 &&
@@ -360,7 +359,12 @@ export const Listview = function Listview({
                     <div
                       aria-hidden="true"
                       className="listview-record-divider-vertical"
-                      style={{ width: 0, padding: 0, borderLeft: `${DIVIDER_WIDTH}px solid ${dividerColor}` }}
+                      style={{
+                        width: DIVIDER_WIDTH,
+                        marginRight: -DIVIDER_WIDTH,
+                        padding: 0,
+                        backgroundColor: dividerColor,
+                      }}
                     />
                   )}
                 {isBordered && (index + 1) % recordsPerLine === 0 && index < filteredData.length - 1 && (
@@ -370,9 +374,10 @@ export const Listview = function Listview({
                     style={{
                       gridColumn: '1 / -1',
                       flex: '0 0 100%',
-                      height: 0,
+                      height: DIVIDER_WIDTH,
+                      marginBottom: -DIVIDER_WIDTH,
                       padding: 0,
-                      borderTop: `${DIVIDER_WIDTH}px solid ${dividerColor}`,
+                      backgroundColor: dividerColor,
                     }}
                   />
                 )}

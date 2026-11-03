@@ -13,8 +13,8 @@ import {
   LEGACY_PADDING,
   NEW_STYLE_PADDING,
   getListStyle,
+  getRecordGap,
   getRecordHeight,
-  getRecordSpacing,
 } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
 
 // Tabs tab-strip rendered height (49.5 ul + 0.5 border in Tabs.jsx).
@@ -513,15 +513,15 @@ export const resolveListviewHeightFromRows = ({
         }, 0)
       : rowHeights.reduce((totalHeight, rowHeight) => totalHeight + rowHeight, 0);
 
-  // Fixed allowances: per-row bottom border (list mode only), pagination bar,
-  // outer chrome (7px padding × 2 = 14 + 1px outer border × 2 = 2 + 2 safety
-  // for `.real-canvas` `calc(100% + 1px)` extension and rounding drift).
+  // Fixed allowances: Legacy per-row bottom border (list mode only), pagination bar,
+  // outer chrome (padding × 2: 7px Legacy, 12px other styles; + 1px outer border × 2
+  // + 2 safety for `.real-canvas` `calc(100% + 1px)` extension and rounding drift).
   const borderAllowance = isLegacy && componentProperties.showBorder && mode === 'list' ? rowCount : 0;
   const paginationAllowance = componentProperties.enablePagination ? 61 : 0;
   const outerPaddingAllowance = 18 + (isLegacy ? 0 : 2 * (NEW_STYLE_PADDING - LEGACY_PADDING));
-  // New styles space record lines by the gap (and Bordered's line in it); Legacy has no gap.
+  // New styles space record lines by the gap (Bordered's line sits inside it); Legacy has no gap.
   const recordLines = mode === 'grid' ? Math.ceil(rowCount / positiveColumns) : rowCount;
-  const gapAllowance = Math.max(0, recordLines - 1) * getRecordSpacing(listStyle, component?.styles?.gap);
+  const gapAllowance = Math.max(0, recordLines - 1) * getRecordGap(listStyle, component?.styles?.gap);
 
   return stackedRowsHeight + borderAllowance + paginationAllowance + outerPaddingAllowance + gapAllowance;
 };

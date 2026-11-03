@@ -9,10 +9,6 @@ export const getListStyle = (listStyle) => (NEW_LIST_STYLES.includes(listStyle) 
 
 export const getRecordGap = (listStyle, gap) => (listStyle === 'legacy' ? 0 : Math.max(0, Number(gap) || 0));
 
-// Bordered draws a line in the middle of each gap, so the line adds to the space between records.
-export const getRecordSpacing = (listStyle, gap) =>
-  getRecordGap(listStyle, gap) + (listStyle === 'bordered' ? DIVIDER_WIDTH : 0);
-
 // Saved grids have no gridRecordHeight and keep their rowHeight.
 export const getRecordHeight = (mode, rowHeight, gridRecordHeight) =>
-  mode === 'grid' ? (gridRecordHeight ?? rowHeight) : rowHeight;
+  String(mode ?? 'list').toLowerCase() === 'grid' ? (gridRecordHeight ?? rowHeight) : rowHeight;
