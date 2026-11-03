@@ -36,7 +36,12 @@ const seed = () => {
       text2: INNER_TEXT,
       headerText: HEADER_TEXT,
     };
-    state.containerChildrenMapping = { canvas: [OUTER], [OUTER]: [ROW_TEXT, INNER], [INNER]: [INNER_TEXT], [`${OUTER}-header`]: [HEADER_TEXT] };
+    state.containerChildrenMapping = {
+      canvas: [OUTER],
+      [OUTER]: [ROW_TEXT, INNER],
+      [INNER]: [INNER_TEXT],
+      [`${OUTER}-header`]: [HEADER_TEXT],
+    };
     state.resolvedStore.modules.canvas.exposedValues.components = { [ROW_TEXT]: [{ text: 'r0' }, { text: 'r1' }] };
     state.resolvedStore.modules.canvas.customResolvables = {
       [OUTER]: [{ listItem: { 'First Name': 'Ann', tags: ['x'] } }],
