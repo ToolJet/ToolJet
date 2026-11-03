@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css'; // Required to fix duplicate text appearing at the bottom from the previous page
@@ -41,31 +41,60 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
     setPageLoading(true);
   }, [url]);
 
-  const options = {
-    root: document.querySelector('#pdf-wrapper'),
-    rootMargin: '0px',
-    threshold: 0.7,
-  };
+  // pdfjs getUrlProp runs `new URL(url, window.location)` and THROWS synchronously
+  // out of react-pdf's un-guarded loadDocument effect on a string it cannot parse
+  // ("https:" mid-typing kills the widget subtree). Mirror its check before
+  // mounting <Document> and fall back to the load-error message instead.
+  const isLoadableUrl = useMemo(() => {
+    if (typeof url !== 'string' || url === '') return false;
+    try {
+      new URL(url, window.location.href);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [url]);
 
-  const trackIntersection = (entries) => {
-    let isCaptured = false;
-    entries.forEach((entry) => {
-      if (entry.isIntersecting && !isCaptured && hasScrollRef.current) {
-        isCaptured = true;
-        const currentPage = parseInt(entry.target.getAttribute('data-page-number'));
-        if (pageNumber !== currentPage) setPageNumber(currentPage);
-      }
-    });
-  };
+  // Tracks how many pixels of each page are visible inside THIS instance's
+  // wrapper; the most-visible page wins the "N of M" counter. A ratio ladder
+  // (not a single 0.7 threshold) keeps updates flowing even when a page is
+  // taller than the viewport and can never reach 70% visibility.
+  const visiblePageHeightsRef = useRef(new Map());
 
   useEffect(() => {
-    if (numPages === 0 || numPages === null) return;
-    const observer = new IntersectionObserver(trackIntersection, options);
-    document.querySelectorAll('.react-pdf__Page').forEach((elem) => {
-      if (elem) observer.observe(elem);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [numPages, options]);
+    if (!numPages || !documentRef.current) return undefined;
+    const wrapper = documentRef.current;
+    const visibleHeights = visiblePageHeightsRef.current;
+    visibleHeights.clear();
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!hasScrollRef.current) return;
+        entries.forEach((entry) => {
+          const page = parseInt(entry.target.getAttribute('data-page-number'), 10);
+          if (Number.isNaN(page)) return;
+          visibleHeights.set(page, entry.isIntersecting ? entry.intersectionRect.height : 0);
+        });
+        let bestPage = null;
+        let bestHeight = 0;
+        visibleHeights.forEach((visibleHeight, page) => {
+          if (visibleHeight <= 0) return;
+          if (visibleHeight > bestHeight || (visibleHeight === bestHeight && page < bestPage)) {
+            bestPage = page;
+            bestHeight = visibleHeight;
+          }
+        });
+        if (bestPage !== null) setPageNumber((prev) => (prev === bestPage ? prev : bestPage));
+      },
+      // Rooted at THIS instance's wrapper — never a document-wide #pdf-wrapper
+      // lookup, which resolves to the FIRST PDF on the page and lets one
+      // widget's scrolling drive another widget's counter.
+      { root: wrapper, rootMargin: '0px', threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] }
+    );
+    // Observe only THIS instance's pages for the same cross-talk reason.
+    wrapper.querySelectorAll('.react-pdf__Page').forEach((elem) => observer.observe(elem));
+    return () => observer.disconnect();
+  }, [numPages, url]);
 
   useEffect(() => {
     setIsPasswordPromptClosed(false);
@@ -183,7 +212,7 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
   };
 
   return (
-    <div style={{ display: visibility ? 'flex' : 'none', width: width - 3, height, boxShadow }} data-cy={dataCy}>
+    <div style={{ display: visibility ? 'flex' : 'none', width: width - 3, height }} data-cy={dataCy}>
       <div
         className="d-flex position-relative h-100 flex-column"
         style={{
@@ -191,6 +220,9 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
           overflow: 'hidden',
           borderRadius: `${borderRadius}px`,
           border: `1px solid ${borderColor}`,
+          // The shadow lives on the SAME node as the radius so it follows the
+          // rounded corner instead of drawing a square halo around it.
+          boxShadow,
         }}
       >
         <div
@@ -198,8 +230,11 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
           id="pdf-wrapper"
           ref={documentRef}
           onScroll={handleScroll}
+          // .scrollable hard-codes overflow-x:hidden, which makes a fit-to-height
+          // page (scale=false) wider than the widget unreachable.
+          style={{ overflowX: 'auto' }}
         >
-          {url === '' ? 'No PDF file specified' : renderPDF()}
+          {url === '' ? 'No PDF file specified' : !isLoadableUrl ? 'Failed to load PDF file.' : renderPDF()}
         </div>
         {!error && !pageLoading && (showDownloadOption || pageControls) && (
           <div
