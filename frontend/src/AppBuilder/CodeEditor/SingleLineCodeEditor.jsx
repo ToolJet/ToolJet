@@ -37,6 +37,7 @@ import useWorkflowStore from '@/_stores/workflowStore';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
 import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
 import { completionLabelTooltip } from './completionLabelTooltip';
+import { CHOICE_FIELDS, holdsExpression } from './heldExpression';
 import { codeSearchHighlight } from './codeSearchHighlight';
 
 // Hoisted to module scope so their identity never changes: anything fed into the
@@ -669,7 +670,16 @@ const DynamicEditorBridge = (props) => {
   } = props;
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
-  const codeShow = paramType === 'code' || forceCodeBox;
+  // A choice field whose stored value is an expression (not a literal such as {{true}} or {{'text'}}) shows it in code,
+  // even when fx is off or the field is a fixed choice: its control could only show what it resolves to, as if that
+  // were the choice made (a Button Variant bound to a slider said "Default" while the button was red). It stays in code
+  // while it is drawn, so editing it into a literal does not swap the editor away mid-edit; on a field with fx, turning
+  // fx off shows the control.
+  const heldExpression = CHOICE_FIELDS.includes(paramType) && holdsExpression(initialValue);
+  const [heldCode, setHeldCode] = React.useState(heldExpression);
+  const [controlChosen, setControlChosen] = React.useState(false);
+  if (heldExpression && !heldCode && !controlChosen) setHeldCode(true);
+  const codeShow = paramType === 'code' || forceCodeBox || heldCode;
   const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'Slider type'];
   const { isFxNotRequired, newLine = false, section = '' } = fieldMeta;
   const isDeprecated = section === 'deprecated';
@@ -721,12 +731,15 @@ const DynamicEditorBridge = (props) => {
           onPress={() => {
             if (codeShow) {
               setForceCodeBox(false);
+              setHeldCode(false);
+              setControlChosen(true);
               onFxPress(false);
               if (paramType === 'colorSwatches') {
                 onChange(modifiedValue);
               }
             } else {
               setForceCodeBox(true);
+              setControlChosen(false);
               onFxPress(true);
             }
           }}

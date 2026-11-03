@@ -37,6 +37,7 @@ import { createCodeSearchSlice } from './slices/codeSearchSlice';
 import { createModuleSlice } from './slices/moduleSlice';
 import { createLibrarySlice } from './slices/librarySlice';
 import { createDataQueryFolderSlice } from './slices/dataQueryFolderSlice';
+import { createEditorOverlaySlice } from './slices/editorOverlaySlice';
 import { listViewComponentSlice } from './slices/componentSlices/listViewComponentSlice';
 import { tableComponentSlice } from './slices/componentSlices/tableComponentSlice';
 import { createBranchSlice } from './slices/branchSlice';
@@ -79,6 +80,7 @@ export default create(
       ...createModuleSlice(...state),
       ...createLibrarySlice(...state),
       ...createDataQueryFolderSlice(...state),
+      ...createEditorOverlaySlice(...state),
       // component slices
       ...createFormComponentSlice(...state),
       ...listViewComponentSlice(...state),

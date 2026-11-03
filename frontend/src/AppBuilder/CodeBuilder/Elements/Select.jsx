@@ -3,20 +3,20 @@ import SelectComponent from '@/_ui/Select';
 import { components } from 'react-select';
 import Check from '@/_ui/Icon/solidIcons/Check';
 import Icon from '@/_ui/Icon/solidIcons/index';
-import {
-  DeprecatedColumnTooltip,
-  checkIfTableColumnDeprecated,
-} from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/DeprecatedColumnTypeMsg';
+import { DeprecatedColumnTooltip } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/DeprecatedColumnTypeMsg';
 import { checkIfInputWidgetTypeIsDeprecated } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { checkIfStarRatingLabelTypeIsDeprecated } from '@/AppBuilder/Widgets/Rating/Rating';
 
+// An option of a generic inspector select is marked only for the deprecated styles below. A Table column type's
+// deprecation is marked by the Table's own column-type field (ColumnTypeOption): read from any option's raw value here,
+// it marked a UI 2.0 Button's Variant "Default" (value 'default') as a "Deprecating column type".
 export const Option = (props) => {
   const isDeprecatedStyle =
     checkIfInputWidgetTypeIsDeprecated(props.value) || checkIfStarRatingLabelTypeIsDeprecated(props.value);
 
   return (
     <components.Option {...props}>
-      <DeprecatedColumnTooltip columnType={props.value} isDeprecatedStyle={isDeprecatedStyle}>
+      <DeprecatedColumnTooltip isDeprecatedStyle={isDeprecatedStyle}>
         <div className="d-flex justify-content-between">
           <span>{props.label}</span>
           {props.isSelected && (
@@ -24,7 +24,7 @@ export const Option = (props) => {
               <Check width={'20'} fill={'#3E63DD'} />
             </span>
           )}
-          {(checkIfTableColumnDeprecated(props.value) || isDeprecatedStyle) && (
+          {isDeprecatedStyle && (
             <span>
               <Icon name={'warning'} height={16} width={16} fill="#DB4324" />
             </span>

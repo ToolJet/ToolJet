@@ -9,6 +9,7 @@ import { LoadingFooter } from './_components/LoadingFooter';
 import { ControlButtons } from './_components/ControlButtons';
 import { ChangeSetUI } from './_components/ChangeSetUI';
 import { RowCount } from './_components/RowCount';
+import { footerPlan } from './footerPlan';
 
 export const Footer = memo(
   ({
@@ -39,6 +40,12 @@ export const Footer = memo(
     );
 
     const enablePagination = useTableStore((state) => state.getTableProperties(id)?.enablePagination, shallow);
+    const tableLook = useTableStore((state) => state.getTableStyles(id)?.tableLook, shallow);
+    const serverSide = useTableStore((state) => state.getTableProperties(id)?.serverSidePagination, shallow);
+    const hasButtons = useTableStore((state) => {
+      const p = state.getTableProperties(id) || {};
+      return !!(p.showAddNewRowButton || p.showDownloadButton || p.showRefreshButton || !p.hideColumnSelectorButton);
+    }, shallow);
     const showBulkUpdateActions = useTableStore(
       (state) => state.getTableProperties(id)?.showBulkUpdateActions,
       shallow
@@ -48,6 +55,8 @@ export const Footer = memo(
 
     // Hide footer if the properties are not enabled
     if (!isFooterVisible) return null;
+    const plan = footerPlan({ look: tableLook, pageCount, serverSide, editedCount: editedRows.size, hasButtons });
+    if (plan === 'none' && !loadingState && !isRefreshing) return null;
 
     // Loading state for footer
     if (loadingState || isRefreshing) {
@@ -85,7 +94,7 @@ export const Footer = memo(
         >
           <div className={`table-footer d-flex align-items-center h-100`}>
             <div className="tw-flex-1 d-flex align-items-center h-100">
-              {enablePagination && (
+              {enablePagination && plan !== 'noPager' && (
                 <Pagination
                   id={id}
                   tableWidth={width}
@@ -99,7 +108,11 @@ export const Footer = memo(
               )}
             </div>
             <div className="tw-flex-1 d-flex justify-content-center custom-gap-4">
-              {editedRows.size > 0 && showBulkUpdateActions ? renderChangeSetUI() : renderRowCount()}
+              {editedRows.size > 0 && showBulkUpdateActions
+                ? renderChangeSetUI()
+                : plan === 'noPager'
+                ? null
+                : renderRowCount()}
             </div>
             <div className="tw-flex-1 d-flex justify-content-end align-items-center h-100">
               <ControlButtons

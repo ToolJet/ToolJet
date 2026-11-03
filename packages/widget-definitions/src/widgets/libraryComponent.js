@@ -24,6 +24,19 @@ export const libraryComponentConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
+    // Pack contract v2: the standard control state and fitted height a v2 component reads from the host.
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   events: {},
   styles: {
@@ -39,12 +52,18 @@ export const libraryComponentConfig = {
   exposedVariables: {
     isVisible: true,
     isLoading: false,
+    isDisabled: false,
   },
   actions: [
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',
       params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
       handle: 'setLoading',
@@ -64,6 +83,8 @@ export const libraryComponentConfig = {
       componentName: { value: '' },
       visibility: { value: '{{true}}' },
       loadingState: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
     },
     events: [],
     styles: {

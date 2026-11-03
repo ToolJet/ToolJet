@@ -131,3 +131,93 @@
 .modal-content[class*="dynamic-"]:not(.tj-modal-allow-body-scroll) .modal-body .real-canvas {
   overflow-y: hidden !important;
 }
+
+// Sheet: the modal against one edge of the window, sliding in from it (UI 2.0's Dialog of kind "sheet"). Right and
+// left sheets take the full height at the width's size; top and bottom ones take the full width at the modal's height.
+// Modal.jsx sizes the dialog to the visible part of the modal layer. ToolJet pads the dialog's bottom for centred
+// modals (an id rule); a sheet runs to the edge.
+#modal-container.tj-modal-sheet {
+  padding: 0;
+}
+
+.modal .modal-dialog.tj-modal-sheet {
+  margin: 0;
+  height: 100%;
+  max-height: 100%;
+  width: 100%;
+
+  .modal-content.modal-component.tj-modal-widget-content {
+    border-radius: 0;
+    border: 0 solid var(--cc-default-border);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
+}
+
+.modal .modal-dialog.tj-modal-sheet--right,
+.modal .modal-dialog.tj-modal-sheet--left {
+  &.modal-sm {
+    max-width: 360px;
+  }
+  &.modal-lg,
+  &:not(.modal-sm):not(.modal-xl) {
+    max-width: 480px;
+  }
+  &.modal-xl {
+    max-width: 640px;
+  }
+  .modal-content.modal-component.tj-modal-widget-content {
+    height: 100%;
+  }
+}
+
+.modal .modal-dialog.tj-modal-sheet--right {
+  margin-left: auto;
+  .modal-content.modal-component.tj-modal-widget-content {
+    border-left-width: 1px;
+  }
+}
+
+.modal .modal-dialog.tj-modal-sheet--left {
+  margin-right: auto;
+  .modal-content.modal-component.tj-modal-widget-content {
+    border-right-width: 1px;
+  }
+}
+
+.modal .modal-dialog.tj-modal-sheet--top,
+.modal .modal-dialog.tj-modal-sheet--bottom {
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.modal .modal-dialog.tj-modal-sheet--top .modal-content.modal-component.tj-modal-widget-content {
+  border-bottom-width: 1px;
+}
+
+.modal .modal-dialog.tj-modal-sheet--bottom {
+  justify-content: flex-end;
+  .modal-content.modal-component.tj-modal-widget-content {
+    border-top-width: 1px;
+  }
+}
+
+.modal.fade .modal-dialog.tj-modal-sheet {
+  transition: transform 0.3s ease-out;
+}
+.modal.fade .modal-dialog.tj-modal-sheet--right {
+  transform: translateX(100%);
+}
+.modal.fade .modal-dialog.tj-modal-sheet--left {
+  transform: translateX(-100%);
+}
+.modal.fade .modal-dialog.tj-modal-sheet--top {
+  transform: translateY(-100%);
+}
+.modal.fade .modal-dialog.tj-modal-sheet--bottom {
+  transform: translateY(100%);
+}
+.modal.show .modal-dialog.tj-modal-sheet {
+  transform: none;
+}

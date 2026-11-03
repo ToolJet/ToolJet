@@ -46,3 +46,14 @@ export function computeFlexResizeEndPatch({ lastEvent, gridHeight }) {
 
   return patch;
 }
+
+/**
+ * The height a grid widget keeps when a resize ends. Only a resize that moves a top or bottom edge changes it (snapped
+ * to whole rows); a width-only resize keeps the saved height. It used to snap the box to the nearest row even then:
+ * a 36px Button resized sideways showed a 40px box while its saved height stayed 36, so it drew at 36 inside a 40px
+ * box and went back to 36 on reload.
+ */
+export function gridResizeEndHeight({ direction, lastHeight, currentHeight, topAlignmentAddedHeight = 0, gridHeight }) {
+  if (!direction?.[1]) return currentHeight;
+  return Math.max(gridHeight, Math.round((lastHeight - topAlignmentAddedHeight) / gridHeight) * gridHeight);
+}

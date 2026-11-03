@@ -110,6 +110,7 @@ export const TableRow = ({
                 cell.column.id === 'leftActions' ||
                 cell.column.columnDef?.meta?.columnType === 'button',
               'has-left-actions': cell.column.id === 'leftActions',
+              'compact-actions': !!cell.column.columnDef?.meta?.compactActions,
               'has-right-actions': cell.column.id === 'rightActions',
               'table-text-align-center': cell.column.columnDef?.meta?.horizontalAlignment === 'center',
               'table-text-align-right': cell.column.columnDef?.meta?.horizontalAlignment === 'right',

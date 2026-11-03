@@ -36,3 +36,80 @@
         border-bottom: 1px solid var(--cc-weak-border);
     }
 }
+
+// A table with no rows: the header row, then the empty state as the body's one row (EmptyState.jsx). The body takes
+// the height the table has below its header and centres the icon and message across the full width. The empty state
+// is a size container: in a short table the icon goes and the message stays. Its own height (contain-intrinsic-height)
+// is the whole empty state's, so a table whose height follows its content (a List view row) still shows all of it.
+.jet-table.table-component .jet-data-table.tj-ntable-empty {
+    display: flex;
+    flex-direction: column;
+    // The header row and one line of the message, however short the table: in a short table the body shrank to
+    // nothing and the message was cut in half or gone. Below that the footer is what the card cuts off.
+    min-height: 72px;
+
+    > table {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+        width: 100%;
+        margin: 0;
+    }
+    > table > thead {
+        flex: 0 0 auto;
+    }
+    > table > tbody {
+        display: flex;
+        flex: 1 1 auto;
+        min-height: 28px;
+    }
+    > table > tbody > tr {
+        display: flex;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+    > table > tbody > tr > td {
+        display: flex;
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        // The table's own classes (table-striped, table-hover) tint a row with an inset shadow: the one empty row is not
+        // a data row.
+        box-shadow: none !important;
+    }
+}
+
+.tj-ntable-empty-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    container: tj-ntable-empty / size;
+    contain-intrinsic-height: 104px;
+
+    > div {
+        padding: 16px;
+    }
+    // The table's box cuts part of it (EmptyState.jsx): hidden rather than sliced.
+    &.tj-ntable-empty-cut > div {
+        visibility: hidden;
+    }
+}
+
+// Shorter than the icon (44px), the gap and the message (20px) with their 16px padding: less padding. Shorter than
+// those three alone: the icon goes, the message stays.
+@container tj-ntable-empty (max-height: 103px) {
+    .tj-ntable-empty-body > div {
+        padding: 4px 12px;
+    }
+}
+@container tj-ntable-empty (max-height: 79px) {
+    .tj-ntable-empty-body .warning-no-data {
+        display: none;
+    }
+}

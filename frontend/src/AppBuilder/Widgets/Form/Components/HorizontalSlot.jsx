@@ -53,6 +53,9 @@ export const HorizontalSlot = React.memo(
       backgroundColor: darkMode ? '#1F2837' : '#fff',
     };
 
+    // A disabled modal's header and footer components take no input at all, as its body: the overlay below only
+    // stops the pointer, and Tab still reached them. (Form, Container and Accordion keep their own handling.)
+    const inertSlot = isDisabled && componentType === 'ModalV2';
     return (
       <div
         className={`jet-${componentType?.toLowerCase()}-${slotName} wj-${componentType?.toLowerCase()}-${slotName} ${
@@ -65,6 +68,8 @@ export const HorizontalSlot = React.memo(
           className={`resizable-slot only-${slotName} ${isActive ? 'active' : ''}  ${isEditing && 'is-editing'} ${
             isDragging ? 'dragging' : ''
           }`}
+          inert={inertSlot ? '' : undefined}
+          aria-disabled={inertSlot ? 'true' : undefined}
           {...getRootProps()}
         >
           <SubContainer
