@@ -99,7 +99,21 @@ jobs:
       # changed files — doing that let PRs pass green without running a test.
       - name: Run full test suite with coverage
         if: steps.scope.outputs.frontend == 'true'
-        run: npm run test:ci
+        run: |
+          node ../scripts/check-ai-tests.cjs frontend
+          npm run test:ci -- --json --outputFile=coverage/app-builder/ee/jest/results.json
+          node ../scripts/check-ai-test-results.cjs frontend coverage/app-builder/ee/jest/results.json
+          node ../scripts/report-ai-coverage.cjs frontend coverage/app-builder/ee/jest/coverage-final.json coverage-ai/ee/report
+
+      - name: Upload frontend coverage
+        if: always() && steps.scope.outputs.frontend == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage-report
+          path: |
+            frontend/coverage/app-builder/ee/jest/coverage-summary.json
+            frontend/coverage-ai/ee/report/coverage-summary.json
+          retention-days: 7
 
       # Fails if an App Builder source file is not assigned to a subsystem in
       # app-builder-coverage-manifest.json. The harness contract spec is NOT run

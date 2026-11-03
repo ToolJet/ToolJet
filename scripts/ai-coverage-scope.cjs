@@ -1,6 +1,7 @@
 // Shared by focused Jest runs, normal coverage, and report validation.
 const backend = (edition) => [
   'src/modules/ai/**/*.ts',
+  'src/modules/mcp-oauth/**/*.ts',
   ...(edition === 'ce' ? [] : ['ee/ai/**/*.ts']),
   '!**/module.ts',
   '!**/*.module.ts',
@@ -11,6 +12,7 @@ const backend = (edition) => [
   '!**/*.(spec|test).ts',
 ];
 const frontend = (edition) => [
+  'src/McpOAuth/**/*.{js,jsx,ts,tsx}',
   'src/_services/ai.service.js',
   'src/_services/ai-onboarding.service.js',
   'src/_services/copilot.service.js',

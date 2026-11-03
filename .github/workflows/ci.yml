@@ -4,7 +4,7 @@ on:
   push:
     branches: [develop, main, lts-3.16]
   pull_request:
-    types: [labeled, unlabeled, closed]
+    types: [opened, synchronize, reopened, labeled, unlabeled, ready_for_review]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -28,16 +28,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use Node.js 22.23.4
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 22.23.4
 
       # Cache server node modules to speed up subsequent builds
       - name: Cache server node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: server/node_modules
           key: ${{ runner.os }}-node-server-${{ hashFiles('server/package-lock.json') }}
@@ -46,7 +46,7 @@ jobs:
 
       # Cache frontend node modules to speed up subsequent builds
       - name: Cache frontend node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: frontend/node_modules
           key: ${{ runner.os }}-node-frontend-${{ hashFiles('frontend/package-lock.json') }}
@@ -55,7 +55,7 @@ jobs:
 
       # Cache plugins node modules to speed up subsequent builds
       - name: Cache plugins node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: plugins/node_modules
           key: ${{ runner.os }}-node-plugins-${{ hashFiles('plugins/package-lock.json') }}
@@ -63,7 +63,7 @@ jobs:
             ${{ runner.os }}-node-plugins-
 
       - name: Setup Python 3
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.x
 
@@ -122,16 +122,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use Node.js 22.23.4
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 22.23.4
 
       # Cache server node modules to speed up subsequent builds
       - name: Cache server node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: server/node_modules
           key: ${{ runner.os }}-node-server-${{ hashFiles('server/package-lock.json') }}
@@ -140,7 +140,7 @@ jobs:
 
       # Cache frontend node modules to speed up subsequent builds
       - name: Cache frontend node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: frontend/node_modules
           key: ${{ runner.os }}-node-frontend-${{ hashFiles('frontend/package-lock.json') }}
@@ -149,7 +149,7 @@ jobs:
 
       # Cache plugins node modules to speed up subsequent builds
       - name: Cache plugins node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: plugins/node_modules
           key: ${{ runner.os }}-node-plugins-${{ hashFiles('plugins/package-lock.json') }}
@@ -157,7 +157,7 @@ jobs:
             ${{ runner.os }}-node-plugins-
 
       - name: Setup Python 3
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.x
 
@@ -183,16 +183,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use Node.js 22.23.4
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 22.23.4
 
       # Cache server node modules to speed up subsequent builds
       - name: Cache server node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: server/node_modules
           key: ${{ runner.os }}-node-server-${{ hashFiles('server/package-lock.json') }}
@@ -201,7 +201,7 @@ jobs:
 
       # Cache frontend node modules to speed up subsequent builds
       - name: Cache frontend node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: frontend/node_modules
           key: ${{ runner.os }}-node-frontend-${{ hashFiles('frontend/package-lock.json') }}
@@ -210,7 +210,7 @@ jobs:
 
       # Cache plugins node modules to speed up subsequent builds
       - name: Cache plugins node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: plugins/node_modules
           key: ${{ runner.os }}-node-plugins-${{ hashFiles('plugins/package-lock.json') }}
@@ -218,7 +218,7 @@ jobs:
             ${{ runner.os }}-node-plugins-
 
       - name: Setup Python 3
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.x
 
@@ -243,16 +243,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use Node.js 22.23.4
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 22.23.4
 
       # Cache server node modules to speed up subsequent builds
       - name: Cache server node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: server/node_modules
           key: ${{ runner.os }}-node-server-${{ hashFiles('server/package-lock.json') }}
@@ -261,7 +261,7 @@ jobs:
 
       # Cache frontend node modules to speed up subsequent builds
       - name: Cache frontend node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: frontend/node_modules
           key: ${{ runner.os }}-node-frontend-${{ hashFiles('frontend/package-lock.json') }}
@@ -270,7 +270,7 @@ jobs:
 
       # Cache plugins node modules to speed up subsequent builds
       - name: Cache plugins node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: plugins/node_modules
           key: ${{ runner.os }}-node-plugins-${{ hashFiles('plugins/package-lock.json') }}
@@ -278,7 +278,7 @@ jobs:
             ${{ runner.os }}-node-plugins-
 
       - name: Setup Python 3
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.x
 
@@ -297,80 +297,126 @@ jobs:
         run: |
           npm --prefix server run lint
 
+  # The regular server suites also accompany LTS's existing release-test labels.
+  # They install their own dependencies, so they do not depend on a build artifact.
   unit-test:
+    name: Server unit tests
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'pull_request'
+          && github.event.pull_request.head.repo.full_name == github.repository
+          && (contains(github.event.pull_request.labels.*.name, 'run-ci')
+              || contains(github.event.pull_request.labels.*.name, 'run-cypress')
+              || contains(github.event.pull_request.labels.*.name, 'run-frontend-tests')))
     runs-on: ubuntu-latest
-    timeout-minutes: 30 # Set a timeout of 30 minutes
-    needs: build
+    timeout-minutes: 45
     container: node:22.23.4-bookworm
-    services:
+    services: &test-services
       postgres:
-        image: postgres
+        image: postgres:16
         env:
           POSTGRES_PASSWORD: postgres
-        # Set health checks to wait until postgres has started
         options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v3
-      - name: Cache node modules
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-node-modules
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 5s --health-retries 10
+    env: &test-env
+      TOOLJET_DB_HOST: postgres
+      TOOLJET_DB_PORT: 5432
+      TOOLJET_DB_USER: postgres
+      TOOLJET_DB_PASS: postgres
+      TOOLJET_DB: tooljet_db_test
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      ATTACHMENT_TEST_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/tooljet_ai_test_ci
+      MCP_OAUTH_TEST_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/tooljet_oauth_test_ci
+      WORKFLOW_TIMEOUT_SECONDS: '60'
+      PGRST_JWT_SECRET: 'r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj'
+      ENABLE_TOOLJET_DB: 'true'
+      ENABLE_EXTERNAL_API: 'true'
+      EXTERNAL_API_ACCESS_TOKEN: test-external-api-token
+    steps: &server-test-steps
+      - uses: actions/checkout@v4
         with:
-          # npm cache files are stored in `~/.npm` on Linux/macOS
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-      - run: apt update && apt install -y postgresql-client
+          submodules: recursive
+          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          persist-credentials: false
+      - run: apt-get update && apt-get install -y postgresql-client libxml2 libaio1
       - run: npm --prefix plugins ci
       - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
       - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
       - run: npm --prefix server ci
-      - run: npm --prefix server run db:create
-      - run: npm --prefix server run db:migrate
-      - run: npm --prefix server run test -- --group=working --group=workflows --group=security
+      - name: Validate AI and OAuth test discovery
+        run: node scripts/check-ai-tests.cjs server
+      - run: PGPASSWORD="$PG_PASS" createdb -h "$PG_HOST" -U "$PG_USER" tooljet_ai_test_ci
+      - run: NODE_ENV= npm --prefix server run db:create
+      - run: NODE_ENV= npm --prefix server run db:migrate
+      - name: Run normal server suites
+        run: |
+          if [ "${{ github.job }}" = "unit-test" ]; then
+            npm --prefix server test -- --group=working --group=workflows --group=security --coverage --coverageReporters=json --coverageReporters=json-summary --json --outputFile=coverage-unit/results.json
+            node scripts/check-ai-test-results.cjs server server/coverage-unit/results.json unit
+          else
+            npm --prefix server run test:e2e -- --coverage --group=working --testTimeout=60000 --json-output-dir coverage-e2e/results
+            node scripts/check-ai-test-results.cjs server server/coverage-e2e/results e2e
+          fi
+      - name: Upload numeric coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-${{ github.job }}-coverage
+          path: server/coverage-${{ github.job == 'unit-test' && 'unit' || 'e2e' }}/coverage-final.json
+          if-no-files-found: warn
+          retention-days: 7
 
   e2e-test:
+    name: Server E2E tests
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'pull_request'
+          && github.event.pull_request.head.repo.full_name == github.repository
+          && (contains(github.event.pull_request.labels.*.name, 'run-ci')
+              || contains(github.event.pull_request.labels.*.name, 'run-cypress')
+              || contains(github.event.pull_request.labels.*.name, 'run-frontend-tests')))
     runs-on: ubuntu-latest
-    timeout-minutes: 30 # Set a timeout of 30 minutes
-    needs: build
+    timeout-minutes: 45
     container: node:22.23.4-bookworm
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_PASSWORD: postgres
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    services: *test-services
+    env: *test-env
+    steps: *server-test-steps
+
+  server-coverage:
+    name: Server coverage
+    needs: [unit-test, e2e-test]
+    runs-on: ubuntu-latest
+    container: node:22.23.4-bookworm
     steps:
-      - uses: actions/checkout@v3
-      - name: Cache node modules
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-node-modules
+      - uses: actions/checkout@v4
         with:
-          # npm cache files are stored in `~/.npm` on Linux/macOS
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-      - run: apt update && apt install -y postgresql-client
-      - run: npm --prefix plugins ci
-      - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
-      - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
+          submodules: recursive
+          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          persist-credentials: false
+      - run: apt-get update && apt-get install -y libxml2 libaio1
       - run: npm --prefix server ci
-      - run: npm --prefix server run db:create
-      - run: npm --prefix server run db:migrate
-      - run: NODE_OPTIONS=--max_old_space_size=8096 npm --prefix server run test:e2e -- --silent --testTimeout=20000 --group=working
+      - uses: actions/download-artifact@v4
+        with:
+          name: server-unit-test-coverage
+          path: server/coverage-unit
+      - uses: actions/download-artifact@v4
+        with:
+          name: server-e2e-test-coverage
+          path: server/coverage-e2e
+      - name: Merge normal unit and E2E coverage
+        run: npm --prefix server run test:cov:merge
+      - name: Report AI and OAuth coverage from the normal suite
+        run: node scripts/report-ai-coverage.cjs server server/coverage-combined/coverage-final.json server/coverage-ai/ee/report
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: server-coverage-report
+          path: |
+            server/coverage-combined/coverage-summary.json
+            server/coverage-ai/ee/report/coverage-summary.json
+          retention-days: 7

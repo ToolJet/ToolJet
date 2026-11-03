@@ -32,7 +32,7 @@ const session = (status = 200) =>
   server.use(
     http.get(`${interactionUrl()}/session`, ({ request }) => {
       requests.session.push(request);
-      return HttpResponse.json({ email: 'builder@synthetic.example' }, { status });
+      return HttpResponse.json({ email: 'builder@synthetic.example', accountId: 'synthetic-user' }, { status });
     })
   );
 const decision = (data = {}, status = 200) =>
@@ -55,6 +55,104 @@ beforeEach(() => {
   preview();
   session();
 });
+describe('shared URL workspace chooser', () => {
+  const workspaces = (items = [], status = 200) =>
+    server.use(
+      http.get(`${interactionUrl()}/workspaces`, () =>
+        HttpResponse.json(
+          { email: 'operator@synthetic.example', accountId: 'synthetic-operator', workspaces: items },
+          { status }
+        )
+      )
+    );
+  beforeEach(() =>
+    preview({
+      ...flow,
+      organizationId: null,
+      organizationName: null,
+      loginUrl: '#account-login',
+    })
+  );
+  test('takes a signed-out shared connection directly to normal login', async () => {
+    workspaces([], 401);
+    render(<ConsentPage />);
+    await waitFor(() => expect(window.location.hash).toBe('#account-login'));
+    expect(requests.session).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: 'Allow access' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Sign in with your workspace' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Connect to ToolJet' })).not.toBeInTheDocument();
+  });
+  test('offers manual account login after a failed return without redirect loops', async () => {
+    sessionStorage.setItem(`tj_mcp_login_${requestId}`, '1');
+    workspaces([], 401);
+    render(<ConsentPage />);
+    expect(await screen.findByRole('link', { name: 'Sign in to ToolJet' })).toHaveAttribute('href', '#account-login');
+  });
+  test('preselects a sole workspace but requires explicit continuation', async () => {
+    workspaces([{ id: 'orchard', name: 'Orchard operations' }]);
+    render(<ConsentPage />);
+    expect(await screen.findByRole('combobox', { name: 'Workspace' })).toHaveValue('orchard');
+    expect(screen.getByText('operator@synthetic.example')).toBeVisible();
+    expect(screen.getByRole('heading', { name: consentTitle })).toBeVisible();
+    expect(screen.getAllByRole('listitem')).toHaveLength(flow.scopes.length);
+    expect(screen.queryByRole('button', { name: 'Allow access' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled();
+    expect(requests.session).toHaveLength(0);
+  });
+  test('does not silently choose among multiple workspaces and submits the explicit selection', async () => {
+    workspaces([
+      { id: 'orchard', name: 'Orchard operations' },
+      { id: 'meadow', name: 'Meadow operations' },
+    ]);
+    let submitted;
+    server.use(
+      http.post(interactionUrl(), async ({ request }) => {
+        submitted = {
+          csrf: request.headers.get('x-tooljet-oauth-csrf'),
+          body: await request.json(),
+        };
+        return HttpResponse.json({ redirectUrl: '#selected-workspace' });
+      })
+    );
+    render(<ConsentPage />);
+    const choices = await screen.findByRole('combobox', { name: 'Workspace' });
+    expect(choices).toHaveValue('');
+    fireEvent.change(choices, { target: { value: 'meadow' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await waitFor(() => expect(window.location.hash).toBe('#selected-workspace'));
+    expect(submitted).toEqual({
+      csrf: 'synthetic-csrf',
+      body: { allow: true, accountId: 'synthetic-operator', workspaceId: 'meadow' },
+    });
+  });
+  test('handles an account with no eligible workspaces without enabling continuation', async () => {
+    workspaces();
+    render(<ConsentPage />);
+    expect(await screen.findByText(/No active workspaces/)).toBeVisible();
+    expect(screen.queryByRole('link', { name: 'Use another account' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
+  });
+  test('allows cancellation before choosing a workspace', async () => {
+    workspaces();
+    server.use(
+      http.post(`${interactionUrl()}/cancel`, ({ request }) => {
+        expect(request.headers.get('x-tooljet-oauth-csrf')).toBe('synthetic-csrf');
+        return HttpResponse.json({ redirectUrl: '#cancelled' });
+      })
+    );
+    render(<ConsentPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(window.location.hash).toBe('#cancelled'));
+  });
+  test('shows a safe retry message after selection fails', async () => {
+    workspaces([{ id: 'orchard', name: 'Orchard operations' }]);
+    server.use(http.post(interactionUrl(), () => HttpResponse.json({}, { status: 400 })));
+    render(<ConsentPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Continue' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('workspace or connection link is unavailable');
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled();
+  });
+});
 afterEach(() => {
   config.apiUrl = originalApiUrl;
   localStorage.removeItem('darkMode');
@@ -70,7 +168,10 @@ test('keeps consent hidden until the workspace session has been verified', async
     http.get(`${interactionUrl()}/session`, async ({ request }) => {
       requests.session.push(request);
       await pending;
-      return HttpResponse.json({ email: 'builder@synthetic.example' });
+      return HttpResponse.json({
+        email: 'builder@synthetic.example',
+        accountId: 'synthetic-user',
+      });
     })
   );
   render(<ConsentPage />);
@@ -99,7 +200,8 @@ test('offers manual sign-in when browser storage is unavailable', async () => {
   session(401);
   render(<ConsentPage />);
   expect(await screen.findByRole('link', { name: 'Sign in to this workspace' })).toHaveAttribute('href', flow.loginUrl);
-  expectHiddenConsent();
+  expect(screen.queryByRole('button', { name: 'Allow access' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('list')).not.toBeInTheDocument();
 });
 test('scrubs and exchanges custom-domain bootstrap before loading consent', async () => {
   window.history.replaceState({}, '', `/mcp/consent?request=${requestId}#bootstrap=${'B'.repeat(43)}`);
@@ -136,7 +238,11 @@ test('shows requested permissions and the verified workspace', async () => {
   expect(screen.getByText('Garden operations')).toBeInTheDocument();
   expect(screen.getByText(flow.redirectUri)).toBeInTheDocument();
   expect(screen.queryByText('Callback address')).not.toBeInTheDocument();
-  expect(screen.getByRole('region', { name: 'Access requested in Garden operations' })).toBeInTheDocument();
+  expect(
+    screen.getByRole('region', {
+      name: 'Access requested in Garden operations',
+    })
+  ).toBeInTheDocument();
   expect(screen.getAllByRole('listitem')).toHaveLength(flow.scopes.length);
   expect(screen.getByText('Create, manage, and run workflows.')).toBeInTheDocument();
   expect(screen.getByText('Manage workspace users and custom groups.')).toBeInTheDocument();
@@ -157,6 +263,8 @@ test('shows only the permissions requested by the client', async () => {
 test.each([
   ['  orchard assistant  ', 'O'],
   ['Aster ChatGPT integration', 'A'],
+  ['Claude Code helper', 'C'],
+  ['Claude Code (orchard) helper', 'C'],
   ['🪴 garden helper', '🪴'],
 ])('uses the first character for unknown client %s', async (clientName, initial) => {
   preview({ ...flow, clientName });
@@ -165,6 +273,45 @@ test.each([
   const badge = container.querySelector('.mcp-oauth-client-logo');
   expect(badge).toHaveTextContent(initial);
   expect(badge.querySelector('svg')).toBeNull();
+});
+
+test.each(['Claude', 'Claude Desktop', '  cLaUdE   Code (orchard-tools)  ', 'claude.com'])(
+  'recognizes the registered Claude client name %s',
+  async (clientName) => {
+    preview({ ...flow, clientName });
+    const { container } = render(<ConsentPage />);
+    await screen.findByRole('button', { name: 'Allow access' });
+    expect(container.querySelector('.mcp-oauth-client-logo svg')).toBeInTheDocument();
+    expect(container.querySelector('.mcp-oauth-client-monogram')).toBeNull();
+  }
+);
+
+test.each(['https://claude.ai/api/mcp/auth_callback', 'https://claude.com/api/mcp/auth_callback'])(
+  'recognizes hosted Claude by its exact callback %s with a custom registration name',
+  async (redirectUri) => {
+    preview({ ...flow, clientName: 'Cedar connector', redirectUri });
+    const { container } = render(<ConsentPage />);
+    await screen.findByRole('button', { name: 'Allow access' });
+    expect(container.querySelector('.mcp-oauth-client-logo svg')).toBeInTheDocument();
+    expect(container.querySelector('.mcp-oauth-client-monogram')).toBeNull();
+    expect(screen.getByText(redirectUri)).toBeInTheDocument();
+    expect(screen.getByText(/ToolJet has not verified the client name/)).toBeInTheDocument();
+  }
+);
+
+test.each([
+  'https://claude.ai.synthetic.example/api/mcp/auth_callback',
+  'https://claude.ai@synthetic.example/api/mcp/auth_callback',
+  'https://claude.ai/other_callback',
+  'http://claude.ai/api/mcp/auth_callback',
+  'https://claude.ai/api/mcp/auth_callback?redirect=synthetic',
+  'https://claude.com:8443/api/mcp/auth_callback',
+])('keeps the initial for an unknown client with a non-Claude callback %s', async (redirectUri) => {
+  preview({ ...flow, clientName: 'Cedar connector', redirectUri });
+  const { container } = render(<ConsentPage />);
+  await screen.findByRole('button', { name: 'Allow access' });
+  expect(container.querySelector('.mcp-oauth-client-monogram')).toHaveTextContent('C');
+  expect(container.querySelector('.mcp-oauth-client-logo svg')).toBeNull();
 });
 test.each(['Cancel', 'Allow access'])('disables both actions while %s is being submitted', async (buttonName) => {
   let resolveDecision;
@@ -195,7 +342,10 @@ test('sends browser-bound cancellation and displays a safe failure', async () =>
   fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('Unable to complete');
   expect(screen.queryByText('synthetic-private-diagnostic')).not.toBeInTheDocument();
-  expect(requests.decision[0].body).toEqual({ allow: false });
+  expect(requests.decision[0].body).toEqual({
+    allow: false,
+    accountId: 'synthetic-user',
+  });
   expect(requests.decision[0].request.headers.get('x-tooljet-oauth-csrf')).toBe('synthetic-csrf');
 });
 test('offers the correct workspace login after an unsuccessful login attempt', async () => {
@@ -203,7 +353,7 @@ test('offers the correct workspace login after an unsuccessful login attempt', a
   session(401);
   render(<ConsentPage />);
   expect(await screen.findByRole('link', { name: 'Sign in to this workspace' })).toHaveAttribute('href', flow.loginUrl);
-  expectHiddenConsent();
+  expect(screen.queryByRole('button', { name: 'Allow access' })).not.toBeInTheDocument();
 });
 test.each([
   [400, 'expired'],
@@ -235,11 +385,11 @@ test('approval preserves workspace and CSRF binding, and requires login after se
   fireEvent.click(await screen.findByRole('button', { name: 'Allow access' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('sign-in has expired');
   const { request, body } = requests.decision[0];
-  expect(body).toEqual({ allow: true });
+  expect(body).toEqual({ allow: true, accountId: 'synthetic-user' });
   expect(request.credentials).toBe('include');
   expect(request.headers.get('tj-workspace-id')).toBe('garden-id');
   expect(request.headers.get('x-tooljet-oauth-csrf')).toBe('synthetic-csrf');
-  expectHiddenConsent();
+  expect(screen.queryByRole('button', { name: 'Allow access' })).not.toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Sign in to this workspace' })).toHaveAttribute('href', flow.loginUrl);
 });
 test.each([
@@ -250,7 +400,10 @@ test.each([
   render(<ConsentPage />);
   fireEvent.click(await screen.findByRole('button', { name: buttonName }));
   await waitFor(() => expect(window.location.hash).toBe('#synthetic-callback'));
-  expect(requests.decision[0].body).toEqual({ allow });
+  expect(requests.decision[0].body).toEqual({
+    allow,
+    accountId: 'synthetic-user',
+  });
 });
 test.each(['true', 'false'])('applies saved darkMode=%s before and after session verification', async (preference) => {
   localStorage.setItem('darkMode', preference);
@@ -282,4 +435,70 @@ test.each([
   const callback = screen.getByText(redirectUri);
   expect(callback.tagName).toBe('CODE');
   expect(screen.getByText(/ToolJet has not verified the client name/)).toBeInTheDocument();
+});
+
+test('can cancel a selected workspace before its required sign-in', async () => {
+  sessionStorage.setItem(`tj_mcp_login_${requestId}`, '1');
+  session(401);
+  server.use(
+    http.post(`${interactionUrl()}/cancel`, async ({ request }) => {
+      expect(request.headers.get('x-tooljet-oauth-csrf')).toBe(flow.csrfToken);
+      expect(await request.json()).toEqual({});
+      return HttpResponse.json({ redirectUrl: '#cancelled-before-sso' });
+    })
+  );
+  render(<ConsentPage />);
+  await screen.findByRole('link', { name: 'Sign in to this workspace' });
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+  await waitFor(() => expect(window.location.hash).toBe('#cancelled-before-sso'));
+});
+
+test('allows cancellation of a signed-out shared flow when automatic login is unavailable', async () => {
+  preview({ ...flow, organizationId: null, organizationName: null });
+  sessionStorage.setItem(`tj_mcp_login_${requestId}`, '1');
+  server.use(
+    http.get(`${interactionUrl()}/workspaces`, () => HttpResponse.json({}, { status: 401 })),
+    http.post(`${interactionUrl()}/cancel`, async ({ request }) => {
+      expect(request.headers.get('x-tooljet-oauth-csrf')).toBe(flow.csrfToken);
+      expect(await request.json()).toEqual({});
+      return HttpResponse.json({ redirectUrl: '#cancelled-shared-root' });
+    })
+  );
+  render(<ConsentPage />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
+  await waitFor(() => expect(window.location.hash).toBe('#cancelled-shared-root'));
+});
+
+test.each([false, true])(
+  'finishes an approved selection without repeating consent (returned from login: %s)',
+  async (returned) => {
+    preview({ ...flow, approvalPending: true });
+    if (returned) sessionStorage.setItem(`tj_mcp_login_${requestId}`, '1');
+    decision({ redirectUrl: '#connected' });
+    render(<ConsentPage />);
+    await waitFor(() => expect(window.location.hash).toBe('#connected'));
+    expect(requests.decision).toHaveLength(1);
+    expect(requests.decision[0].body).toEqual({ allow: true, accountId: 'synthetic-user', resume: true });
+    expect(requests.decision[0].request.headers.get('x-tooljet-oauth-csrf')).toBe(flow.csrfToken);
+    expectHiddenConsent();
+  }
+);
+
+test('sends an approved selection directly to required workspace login', async () => {
+  preview({ ...flow, approvalPending: true, loginUrl: '#required-workspace-sso' });
+  session(401);
+  render(<ConsentPage />);
+  await waitFor(() => expect(window.location.hash).toBe('#required-workspace-sso'));
+  expectHiddenConsent();
+  expect(requests.decision).toHaveLength(0);
+});
+
+test('does not resume approval after account or membership changes', async () => {
+  preview({ ...flow, approvalPending: true });
+  session(403);
+  render(<ConsentPage />);
+  expect(await screen.findByRole('alert')).toHaveTextContent('different account or your workspace access changed');
+  expect(requests.decision).toHaveLength(0);
+  expectHiddenConsent();
 });
