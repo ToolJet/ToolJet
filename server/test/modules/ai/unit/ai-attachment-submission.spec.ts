@@ -87,6 +87,13 @@ describe('AI eligibility precedes attachment storage', () => {
   let response: any;
   const user = { id: 'synthetic-builder', organizationId: 'synthetic-workspace' };
   const files = () => [{ buffer: Buffer.from('bin,4'), size: 5, originalname: 'bins.csv', mimetype: 'text/csv' }];
+  const conversation = (archived = false) => ({
+    archived,
+    app: {
+      id: 'synthetic-app',
+      editingVersion: { id: 'synthetic-version', currentEnvironmentId: 'synthetic-environment' },
+    },
+  });
   beforeEach(() => {
     service = Object.create(AiService.prototype);
     Object.assign(service, {
@@ -103,7 +110,7 @@ describe('AI eligibility precedes attachment storage', () => {
       getCreditsBalance: jest.fn().mockResolvedValue({ balance: 10 }),
       generateErrorMessageForUser: jest.fn().mockResolvedValue({ content: 'Synthetic error' }),
       sendSSE: jest.fn(),
-      aiConversationRepository: { findOne: jest.fn().mockResolvedValue({ archived: true, app: {} }) },
+      aiConversationRepository: { findOne: jest.fn().mockResolvedValue(conversation(true)) },
     });
     response = { on: jest.fn(), end: jest.fn(), write: jest.fn() };
   });
@@ -116,11 +123,16 @@ describe('AI eligibility precedes attachment storage', () => {
   });
   it('does not store files for an archived conversation', async () => {
     await service.sendUserMessage(user, { conversationId: 'owned-chat', content: 'Read the bins.' }, response, files());
+    expect(service.generateErrorMessageForUser).toHaveBeenCalledWith(
+      'owned-chat',
+      'Conversation Archived',
+      expect.any(String)
+    );
     expect(service.attachmentService.upload).not.toHaveBeenCalled();
     expect(service.aiUtilService.callAgent).not.toHaveBeenCalled();
   });
   it('cleans up a partial batch when a later upload fails', async () => {
-    service.aiConversationRepository.findOne.mockResolvedValue({ app: {} });
+    service.aiConversationRepository.findOne.mockResolvedValue(conversation());
     service.attachmentService.upload
       .mockResolvedValueOnce({ id: 'first-original' })
       .mockRejectedValueOnce(new Error('Synthetic storage failure'));
@@ -173,7 +185,7 @@ describe('AI eligibility precedes attachment storage', () => {
 
   it('keeps the preparation run alive and cancels an in-flight upload before saving', async () => {
     jest.useFakeTimers();
-    service.aiConversationRepository.findOne.mockResolvedValue({ app: {} });
+    service.aiConversationRepository.findOne.mockResolvedValue(conversation());
     service.aiUtilService.touchActiveRun = jest.fn();
     service.aiUtilService.isCancellationRequested = jest.fn().mockResolvedValue(false);
     let uploadStarted;

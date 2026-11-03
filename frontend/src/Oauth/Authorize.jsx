@@ -28,8 +28,8 @@ export function Authorize({ navigate }) {
   const mcpReturn = isMcpOAuthConsentPath(stateRedirect)
     ? stateRedirect
     : !stateRedirect && isMcpOAuthConsentPath(cookieRedirect)
-    ? cookieRedirect
-    : null;
+      ? cookieRedirect
+      : null;
   const redirectUrl = mcpReturn || cookieRedirect || stateRedirect;
   const signupOrganizationSlug = mcpReturn ? null : authenticationService.getSignupOrganizationSlug();
   const inviteFlowIdentifier = mcpReturn ? null : authenticationService.getInviteFlowIndetifier();

@@ -143,7 +143,7 @@ test.each([
   }
 );
 
-test.each(['', '/tools'])('preserves a workspace named mcp with subpath %s', subpath => {
+test.each(['', '/tools'])('preserves a workspace named mcp with subpath %s', (subpath) => {
   window.public_config = { SUB_PATH: subpath };
   window.history.replaceState({}, '', `${subpath}/mcp/apps/synthetic-app`);
   expect(getWorkspaceIdOrSlugFromURL()).toBe('mcp');

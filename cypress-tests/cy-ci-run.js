@@ -11,9 +11,12 @@
 //   CYPRESS_CONFIG comma-separated --config string, e.g.
 //                  "baseUrl=http://localhost:4001,server_host=http://localhost:3000"
 //   BROWSER        --browser value, e.g. chrome (omit for the Cypress default)
+//   SHARD_INDEX    0-based shard of this machine; with SHARD_TOTAL > 1 only
+//   SHARD_TOTAL    this shard's specs run (see ci-shard.js for the other vars)
 // CYPRESS_* env vars (e.g. CYPRESS_proxy) are picked up by Cypress automatically.
 const fs = require("fs");
 const cypress = require("cypress");
+const { pickShardSpecs } = require("./ci-shard");
 
 const cell = process.env.CELL || "cypress";
 const write = (s) => fs.writeFileSync("summary.json", JSON.stringify(s));
@@ -34,6 +37,22 @@ function parseConfig(str) {
 const runOptions = { config: parseConfig(process.env.CYPRESS_CONFIG) };
 if (process.env.CONFIG_FILE) runOptions.configFile = process.env.CONFIG_FILE;
 if (process.env.BROWSER) runOptions.browser = process.env.BROWSER;
+
+const shardTotal = Number(process.env.SHARD_TOTAL || 1);
+if (shardTotal > 1) {
+  const specs = pickShardSpecs({
+    configFile: process.env.CONFIG_FILE,
+    index: Number(process.env.SHARD_INDEX || 0),
+    total: shardTotal,
+    groups: (process.env.SHARD_GROUPS || "")
+      .split(";")
+      .map((group) => group.split(",").filter(Boolean))
+      .filter((group) => group.length),
+  });
+  console.log(`Shard ${Number(process.env.SHARD_INDEX || 0) + 1}/${shardTotal} runs ${specs.length} specs:`);
+  specs.forEach((spec) => console.log(`  ${spec}`));
+  runOptions.spec = specs;
+}
 
 cypress
   .run(runOptions)
