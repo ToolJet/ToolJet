@@ -38,6 +38,7 @@ import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Inject, Optional } from '@nestjs/common';
 import { CodeModeSourceService } from '@modules/code-mode-source/service';
+import { draftVersionName } from './helpers/draft-version-name.helper';
 
 @Injectable()
 export class VersionService implements IVersionService {
@@ -588,9 +589,12 @@ export class VersionService implements IVersionService {
     const parentVersion = await this.versionRepository.findVersion(versionFromId);
     const childVersionApps = await this.versionRepository.findParentVersionApps(versionFromId);
     const childVersionAppsCount = childVersionApps.length;
+    const appVersionNames = parentVersion?.appId
+      ? (await this.versionRepository.getAllVersions(parentVersion.appId, manager)).map((v) => v.name)
+      : [];
     const createVersionDto: VersionCreateDto = {
       ...draftVersionDto,
-      versionName: `${parentVersion?.name}_${childVersionAppsCount + 1}`,
+      versionName: draftVersionName(parentVersion?.name, childVersionAppsCount, appVersionNames),
       versionDescription: '',
       versionType: versionType,
     };
