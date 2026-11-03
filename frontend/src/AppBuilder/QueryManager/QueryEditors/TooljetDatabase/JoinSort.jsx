@@ -9,6 +9,7 @@ import { isEmpty } from 'lodash';
 import { NoCondition } from './NoConditionUI';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { ToolTip } from '@/_components';
+import { resolveColumnDisplayName, columnIdOf } from './util';
 
 export default function JoinSort({ darkMode }) {
   const { tableInfo, joinOrderByOptions, setJoinOrderByOptions, joinOptions, findTableDetails } =
@@ -44,6 +45,7 @@ export default function JoinSort({ darkMode }) {
             value: columns.Header + '_' + tableId,
             table: tableId,
             icon: columns.dataType,
+            columnId: columns.column_id,
           })) || [],
       };
       tableList.push(tableDetailsForDropDown);
@@ -62,8 +64,14 @@ export default function JoinSort({ darkMode }) {
       ) : (
         joinOrderByOptions.map((options, i) => {
           const tableDetails = options?.table ? findTableDetails(options?.table) : '';
+          const resolvedColumnName = resolveColumnDisplayName(
+            tableInfo[tableDetails?.table_name],
+            options?.columnName,
+            options?.columnId,
+            'Header'
+          );
           const isColumnJsonbType =
-            tableInfo[tableDetails?.table_name]?.find((col) => col.accessor === options?.columnName)?.dataType ===
+            tableInfo[tableDetails?.table_name]?.find((col) => col.accessor === resolvedColumnName)?.dataType ===
             'jsonb';
           return (
             <Row className="mb-2 mx-0 " key={i}>
@@ -76,10 +84,10 @@ export default function JoinSort({ darkMode }) {
                   options={tableList}
                   darkMode={darkMode}
                   value={{
-                    value: options?.columnName && options.table ? options.columnName + '_' + options.table : '',
+                    value: resolvedColumnName && options.table ? resolvedColumnName + '_' + options.table : '',
                     label: tableDetails?.table_name
-                      ? tableDetails?.table_name + '.' + options.columnName
-                      : options.columnName,
+                      ? tableDetails?.table_name + '.' + resolvedColumnName
+                      : resolvedColumnName,
                     table: options.table,
                   }}
                   onChange={(option) => {
@@ -89,6 +97,7 @@ export default function JoinSort({ darkMode }) {
                           return {
                             ...sortBy,
                             columnName: option?.label,
+                            columnId: columnIdOf(option),
                             table: option.table,
                           };
                         }
@@ -131,7 +140,7 @@ export default function JoinSort({ darkMode }) {
                           enablePreview={false}
                           height="30"
                           placeholder="->>'key'"
-                          componentName={options?.columnName ? `{}${options.columnName}` : ''}
+                          componentName={resolvedColumnName ? `{}${resolvedColumnName}` : ''}
                         />
                       </span>
                     </ToolTip>
