@@ -1,73 +1,82 @@
-import { MigrationProgress, deleteAppHistoryForStructuralMigration } from '@helpers/migration.helper';
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import { deleteAppHistoryForStructuralMigration } from '@helpers/migration.helper';
 
 const MIGRATION_NAME = 'MigrateVisibilityDisabledStatesForKanban1787654690000';
 const BATCH_SIZE = 2000;
-const TYPE = 'Kanban';
+
+/** Kanban rows that still miss a key they can get. Shared with the cleanup. */
+export const KANBAN_NEEDS_COPY = `type = 'Kanban' AND (
+    (COALESCE(styles::jsonb, '{}'::jsonb) ? 'visibility' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'visibility')
+    OR (COALESCE(styles::jsonb, '{}'::jsonb) ? 'disabledState' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'disabledState')
+    OR (COALESCE(general_properties::jsonb, '{}'::jsonb) ? 'tooltip' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'tooltip')
+    OR (COALESCE(general_styles::jsonb, '{}'::jsonb) ? 'boxShadow' AND NOT COALESCE(styles::jsonb, '{}'::jsonb) ? 'boxShadow')
+    OR (NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'tooltipFormat'))`;
+
+/**
+ * Copies visibility/disabledState/tooltip into properties, boxShadow into styles, the tooltipFormat default.
+ * Existing values win and the old keys stay. Shared with the cleanup.
+ */
+export const KANBAN_COPY_SET = `
+  properties = (COALESCE(properties::jsonb, '{}'::jsonb)
+    || CASE WHEN COALESCE(styles::jsonb, '{}'::jsonb) ? 'visibility' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'visibility'
+         THEN jsonb_build_object('visibility', styles::jsonb -> 'visibility') ELSE '{}'::jsonb END
+    || CASE WHEN COALESCE(styles::jsonb, '{}'::jsonb) ? 'disabledState' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'disabledState'
+         THEN jsonb_build_object('disabledState', styles::jsonb -> 'disabledState') ELSE '{}'::jsonb END
+    || CASE WHEN COALESCE(general_properties::jsonb, '{}'::jsonb) ? 'tooltip' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'tooltip'
+         THEN jsonb_build_object('tooltip', general_properties::jsonb -> 'tooltip') ELSE '{}'::jsonb END
+    || CASE WHEN NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'tooltipFormat'
+         THEN '{"tooltipFormat":{"value":"plainText"}}'::jsonb ELSE '{}'::jsonb END)::json,
+  styles = (COALESCE(styles::jsonb, '{}'::jsonb)
+    || CASE WHEN COALESCE(general_styles::jsonb, '{}'::jsonb) ? 'boxShadow' AND NOT COALESCE(styles::jsonb, '{}'::jsonb) ? 'boxShadow'
+         THEN jsonb_build_object('boxShadow', general_styles::jsonb -> 'boxShadow') ELSE '{}'::jsonb END)::json`;
 
 export class MigrateVisibilityDisabledStatesForKanban1787654690000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const [{ count }] = await queryRunner.query(`SELECT COUNT(*) FROM components WHERE type = $1`, [TYPE]);
+    const [{ count }] = await queryRunner.query(`SELECT COUNT(*) FROM components WHERE ${KANBAN_NEEDS_COPY}`);
     const total = parseInt(count, 10);
     if (total === 0) {
-      console.log(`${MIGRATION_NAME}: no Kanban components found.`);
+      console.log(`${MIGRATION_NAME}: [SUCCESS] No Kanban components need the copy. | Total: 0`);
       return;
     }
-    const progress = new MigrationProgress(MIGRATION_NAME, total);
+    console.log(
+      `${MIGRATION_NAME}: [START] Copy Kanban visibility/disabledState/tooltip/boxShadow/tooltipFormat | Total: ${total}`
+    );
 
+    const touchedVersions = new Set<string>();
     let lastId = '00000000-0000-0000-0000-000000000000';
+    let done = 0;
     while (true) {
       const rows: { id: string }[] = await queryRunner.query(
-        `SELECT id FROM components WHERE type = $1 AND id > $2 ORDER BY id ASC LIMIT $3`,
-        [TYPE, lastId, BATCH_SIZE]
+        `SELECT id FROM components WHERE ${KANBAN_NEEDS_COPY} AND id > $1 ORDER BY id LIMIT $2`,
+        [lastId, BATCH_SIZE]
       );
-      if (rows.length === 0) break;
+      if (!rows.length) break;
       lastId = rows[rows.length - 1].id;
-      const ids = rows.map((r) => r.id);
+      const ids = rows.map((row) => row.id);
 
-      // Move visibility/disabledState (styles→properties) and tooltip (general→properties, if
-      // not already backfilled by an earlier migration); backfill tooltipFormat. Move boxShadow
-      // (generalStyles→styles) now that Kanban defines its own boxShadow style instead of
-      // relying on the universal one. Only fill a target when unset so the user's saved value is
-      // preserved. Delete the stale keys.
-      await queryRunner.query(
-        `UPDATE components SET
-             properties = (
-               COALESCE(properties::jsonb,'{}'::jsonb)
-               || CASE WHEN (styles::jsonb ? 'visibility') AND NOT (COALESCE(properties::jsonb,'{}'::jsonb) ? 'visibility')
-                    THEN jsonb_build_object('visibility', styles::jsonb->'visibility') ELSE '{}'::jsonb END
-               || CASE WHEN (styles::jsonb ? 'disabledState') AND NOT (COALESCE(properties::jsonb,'{}'::jsonb) ? 'disabledState')
-                    THEN jsonb_build_object('disabledState', styles::jsonb->'disabledState') ELSE '{}'::jsonb END
-               || CASE WHEN (general_properties::jsonb ? 'tooltip') AND NOT (COALESCE(properties::jsonb,'{}'::jsonb) ? 'tooltip')
-                    THEN jsonb_build_object('tooltip', general_properties::jsonb->'tooltip') ELSE '{}'::jsonb END
-               || CASE WHEN NOT (COALESCE(properties::jsonb,'{}'::jsonb) ? 'tooltipFormat')
-                    THEN '{"tooltipFormat":{"value":"plainText"}}'::jsonb ELSE '{}'::jsonb END
-             )::json,
-             styles = (
-               ( COALESCE(styles::jsonb,'{}'::jsonb)
-                 || CASE WHEN (general_styles::jsonb ? 'boxShadow') AND NOT (COALESCE(styles::jsonb,'{}'::jsonb) ? 'boxShadow')
-                      THEN jsonb_build_object('boxShadow', general_styles::jsonb->'boxShadow') ELSE '{}'::jsonb END
-               ) - 'visibility' - 'disabledState'
-             )::json,
-             general_properties = (COALESCE(general_properties::jsonb,'{}'::jsonb) - 'tooltip')::json,
-             general_styles = (COALESCE(general_styles::jsonb,'{}'::jsonb) - 'boxShadow')::json
-           WHERE id = ANY($1::uuid[])`,
+      await queryRunner.query(`UPDATE components SET ${KANBAN_COPY_SET} WHERE id = ANY($1::uuid[])`, [ids]);
+
+      const versions: { app_version_id: string }[] = await queryRunner.query(
+        `SELECT DISTINCT p.app_version_id FROM components c JOIN pages p ON p.id = c.page_id WHERE c.id = ANY($1::uuid[])`,
         [ids]
       );
-      rows.forEach(() => progress.show());
+      versions.forEach(({ app_version_id }) => app_version_id && touchedVersions.add(app_version_id));
+
+      done += rows.length;
+      console.log(`${MIGRATION_NAME}: [PROGRESS] ${done}/${total} (${((done / total) * 100).toFixed(1)}%)`);
     }
 
-    const versions: { app_version_id: string }[] = await queryRunner.query(
-      `SELECT DISTINCT p.app_version_id FROM components c
-         INNER JOIN pages p ON c.page_id = p.id WHERE c.type = $1`,
-      [TYPE]
-    );
-    await deleteAppHistoryForStructuralMigration(
-      queryRunner.manager,
-      { appVersionIds: versions.map((v) => v.app_version_id) },
-      MIGRATION_NAME
-    );
+    if (touchedVersions.size) {
+      await deleteAppHistoryForStructuralMigration(
+        queryRunner.manager,
+        { appVersionIds: [...touchedVersions] },
+        MIGRATION_NAME
+      );
+    }
+    console.log(`${MIGRATION_NAME}: [SUCCESS] Copy finished. Updated: ${done}`);
   }
 
-  public async down(): Promise<void> {}
+  public async down(): Promise<void> {
+    // Nothing to undo: up() only adds keys, and the previous release still reads the old ones.
+  }
 }
