@@ -92,13 +92,9 @@ When users open the app, ToolJet uses the mobile layout on screens narrower than
 
 ### Auto Layout for Mobile
 
-By default, ToolJet generates each page's mobile layout from its desktop layout. Auto layout stacks the components in a single column, in the order they appear on desktop, with 10 px between them. Components inside a container are stacked within the container, and components hidden on mobile take no space. The layout is rebuilt each time the app is opened, so it always follows the desktop layout. While auto layout is on, you can't move or resize components in mobile layout.
+By default, ToolJet generates each page's mobile layout from its desktop layout by stacking the components to fit the mobile canvas. While auto layout is on, you can't move, resize, or add components in mobile layout.
 
-To check the mobile layout of a running app on a wider screen, add `?layout=mobile` to the app URL.
-
-When you switch to mobile layout, a toolbar appears at the bottom of the canvas:
-- The **Auto layout** switch turns auto layout on or off for the current page. To arrange the mobile layout manually, turn it off and click **Turn off auto layout** to confirm. The mobile layout then stops following changes to the desktop layout. Turning auto layout back on resets any manual positions.
-- The right side shows how many components aren't on mobile. Click **manage** to choose which components appear on mobile.
+To arrange the mobile layout manually, switch to mobile layout and click **Disable auto alignment**, then click **Turn off** to confirm. This applies to the current page only. You can't turn auto layout back on, and the mobile layout no longer follows changes to the desktop layout.
 
 ## Previewing the App
 
