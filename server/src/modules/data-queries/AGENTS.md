@@ -49,6 +49,11 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
 - EE response cache (`ee/data-queries/cache/`, loaded by `module.ts` only for EE/Cloud): opt-in per query via
   saved `options.responseCache` (`enabled`, `ttlSeconds` ≤ 1 day, `keyByUser`). Entries live in Redis under a
   per-query token; Clear (`POST :id/versions/:versionId/cache/clear`, builder-only) invalidates the token.
+  Query ids are per app version, so that Clear never reaches the released version end users run. The app-wide
+  Clear (`POST /apps/:id/query-cache/clear`, app edit ability, Global settings → Clear cache) collects every query
+  of every version and clears them with `QueryResultCacheService.clearInBackground`; it answers 202 at once.
+  `AppsModule` imports `DataQueriesModule` for the service. The e2e harness boots in get-context mode, which
+  leaves the cache out of DI, so specs inject a cache service themselves.
   Run body `cacheControl: 'refresh'` (`RunDataQueryDto` → `runExecutionOptions`) = replace the token, run, cache
   the result; Preview replaces only its own entry. CE accepts and ignores `cacheControl`. RunJS/RunPy are never
   cached; workflow queries are cached at the workflow trigger instead (see `workflows/AGENTS.md`).
