@@ -117,8 +117,7 @@ export const Listview = function Listview({
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
     boxShadow,
-    // One shorthand that always changes with showHeader: a conditional paddingTop key makes React clear
-    // padding-top for good when it goes away. The header takes the top edge itself, full width (Figma).
+    // One shorthand: a conditional paddingTop key leaves padding-top cleared after showHeader turns off.
     padding: showHeader ? `0 ${containerPadding}px ${containerPadding}px` : `${containerPadding}px`,
     overflowX: 'hidden',
     // Dynamic mode (view-only) hides the listview's own scroll to suppress
@@ -335,8 +334,7 @@ export const Listview = function Listview({
       ) : (
         <>
           {showHeader && (
-            // Sticky so it stays above the records while they scroll; the widget background stops
-            // records showing through a transparent header.
+            // Sticky over scrolling records; widget background so records do not show through.
             <div
               className="listview-header-wrapper"
               style={{
@@ -360,7 +358,6 @@ export const Listview = function Listview({
                 isResizable={false}
                 slotStyle={{
                   backgroundColor: headerBackgroundColor,
-                  // Figma: the divider is inside the 60px, so the first record starts at 72.
                   boxSizing: 'border-box',
                   height: HEADER_HEIGHT,
                   borderBottom: `1px solid ${headerDividerColor ?? 'var(--cc-weak-border)'}`,

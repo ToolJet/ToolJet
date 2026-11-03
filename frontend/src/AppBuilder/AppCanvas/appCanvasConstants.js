@@ -42,8 +42,7 @@ export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 
 // Subcontainer widget types that use per-row resolution (customResolvables)
 export const ROW_SCOPED_WIDGET_TYPES = ['Listview', 'Kanban', 'Table'];
 
-// A ListView's own header sits above its records and is shared by them, so it is not a row (D-25).
-// Every other slot inside a record, such as a Container's header, stays row-scoped (Listview-BUG-047).
+// A ListView's own header is shared by its records, so it is not a row; other slots inside a record stay row-scoped.
 export const isListviewHeaderSlot = (canvasId, widgetType) =>
   widgetType === 'Listview' && typeof canvasId === 'string' && canvasId.endsWith('-header');
 
