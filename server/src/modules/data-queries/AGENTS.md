@@ -65,6 +65,9 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   priority-1 (development) Environment version is editable.
 - Data source credentials are per-Environment **and per-branch**: always pass `branchId` through to
   `getOptions`; `null` branchId falls back to the default data source option row.
+- `runQueryOnBuilder` saves the sent `options` back (editor convenience) but skips the write when the
+  git-sync edit rule forbids it (e.g. synced draft on the default branch under branching) — the run itself
+  still executes. Update/create/delete enforce the same rule as a 403 via `GitSyncQueryEditGuard`.
 - Delete removes query events first (`deleteDataQueryEvents`) inside the same transaction.
 - `after*` history hooks are fire-and-forget — never await them in request flow.
 - **Stale-save guard**: `update`, `bulkUpdateQueryOptions` and the builder-run write-back (`runQueryOnBuilder`) call `assertLibraryConsumerOptions`, refusing (400) options that drop the `libraryQueryId` the stored row already has (a fresh library query saves freely), so a stale editor (or another builder's) can't overwrite a converted query with its old options. Standalone library editor runs belong to `query-library`: supplied options preview an existing draft without write-back; saved-version runs use the immutable snapshot and reject options overrides.

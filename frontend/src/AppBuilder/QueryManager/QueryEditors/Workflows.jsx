@@ -11,6 +11,21 @@ import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import useWorkflowStore from '@/_stores/workflowStore';
 import { useTranslation } from 'react-i18next';
 import { CustomToggleSwitch } from '../Components/CustomToggleSwitch';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
+import { WorkflowVersionDropdown } from './WorkflowVersionDropdown';
+import {
+  DEFAULT_BRANCH_DRAFT_SENTINEL,
+  WORKFLOW_CURRENT_BRANCH_SENTINEL,
+  VERSION_BADGES,
+  isCurrentBranchRow,
+  scopeVersionsForQueryPicker,
+  shouldOfferDefaultBranchDraft,
+  versionBadge,
+  versionLabel,
+} from '@/_helpers/versionLabels';
+
+const CURRENT_BRANCH_DESCRIPTION = 'State of this branch will appear here';
 
 export function Workflows({ options, optionsChanged, currentState }) {
   const { moduleId } = useModuleContext();
@@ -20,22 +35,56 @@ export function Workflows({ options, optionsChanged, currentState }) {
   const [_selectedWorkflowId, setSelectedWorkflowId] = useState(undefined);
   const [params, setParams] = useState([...(options.params ?? [{ key: '', value: '' }])]);
   const [syncExecution, setSyncExecution] = useState(options.syncExecution ?? true);
-  const [versionOptions, setVersionOptions] = useState([]);
+  const [allVersionOptions, setVersionOptions] = useState([]);
+  const [versionRows, setVersionRows] = useState([]);
 
-  /*
-   * The stored ids belong to the workspace that authored the app -- after a git pull or an
-   * import they resolve to nothing here. Fall back to the names stamped in at export time.
-   * Display-only: never written back, since resolving on read would dirty the app version
-   * and autosave a revision the user never asked for.
-   */
-  const resolvedWorkflowId =
-    workflowOptions.find((o) => o.value === options.workflowId)?.value ??
-    workflowOptions.find((o) => o.name === options.workflowName)?.value ??
-    null;
+  // Portable ids post-migration — plain value match, no name-fallback needed.
+  const resolvedWorkflowId = workflowOptions.find((o) => o.value === options.workflowId)?.value ?? null;
+
+  const { activeBranchId, currentBranch } = useWorkspaceBranchesStore((state) => ({
+    activeBranchId: state.activeBranchId,
+    currentBranch: state.currentBranch,
+  }));
+  const { isGitSyncEnabled, defaultBranch: defaultBranchName } = useGitSyncConfig();
+  const isOnMain = !!(currentBranch?.is_default ?? currentBranch?.isDefault);
+  const isOnFeatureBranch = !!currentBranch && !isOnMain;
+
+  // Must resolve to null, never `{}` — _ui/Select treats any truthy value as selected
+  // (`currentValue = find(...) || value`), so `{}` renders a blank chip and hides the placeholder.
+  //
+  // On main, `__current_branch__` has no entry of its own (no BRANCH row there), but the server
+  // still resolves it to main's draft — the row `__default_branch_draft__` names. Display only:
+  // the stored `options.workflowVersionId` is untouched until the user picks.
+  const displayVersionValue =
+    isOnMain && options.workflowVersionId === WORKFLOW_CURRENT_BRANCH_SENTINEL
+      ? DEFAULT_BRANCH_DRAFT_SENTINEL
+      : options.workflowVersionId;
+
+  const versionOptions = shouldOfferDefaultBranchDraft(versionRows, {
+    isOnFeatureBranch,
+    pinnedValue: options.workflowVersionId,
+  })
+    ? allVersionOptions
+    : allVersionOptions.filter((o) => o.value !== DEFAULT_BRANCH_DRAFT_SENTINEL);
+
+  const isOrphanedVersionPin = !!displayVersionValue && !versionOptions.some((o) => o.value === displayVersionValue);
+  // Orphaned pin still resolves fine server-side by name; redirect to the existing
+  // sentinel option if one exists, else synthesize one — never duplicate.
+  const sentinelForThisBranch = isOnMain ? DEFAULT_BRANCH_DRAFT_SENTINEL : WORKFLOW_CURRENT_BRANCH_SENTINEL;
+  const sentinelOptionExists = versionOptions.some((o) => o.value === sentinelForThisBranch);
+  const versionSelectOptions =
+    isOrphanedVersionPin && isGitSyncEnabled && !sentinelOptionExists
+      ? [
+          ...versionOptions,
+          isOnMain
+            ? { value: displayVersionValue, label: defaultBranchName, badge: VERSION_BADGES.DRAFT }
+            : { value: displayVersionValue, label: 'Current branch', description: CURRENT_BRANCH_DESCRIPTION },
+        ]
+      : versionOptions;
+  const effectiveDisplayVersionValue =
+    isOrphanedVersionPin && isGitSyncEnabled && sentinelOptionExists ? sentinelForThisBranch : displayVersionValue;
   const resolvedWorkflowVersionId =
-    versionOptions.find((o) => o.value === options.workflowVersionId)?.value ??
-    versionOptions.find((o) => o.name === options.workflowVersionName)?.value ??
-    null;
+    versionSelectOptions.find((o) => o.value === effectiveDisplayVersionValue)?.value ?? null;
 
   const workflowIdFromStore = useWorkflowStore((state) => state.workflowId);
   const appIdFromStore = useStore((state) => state.appStore.modules[moduleId].app.appId);
@@ -56,8 +105,11 @@ export function Workflows({ options, optionsChanged, currentState }) {
       .then(({ workflows }) => {
         setWorkflowOptions(
           workflows.map((workflow) => ({
-            value: workflow.id,
-            name: workflow.name,
+            value: workflow.co_relation_id,
+            // Explicit `label`: _ui/Select renames any non-`value` key to `label`, last one wins,
+            // so `id` below would clobber the name and the dropdown would show the app UUID.
+            label: workflow.name,
+            id: workflow.id, // real app PK — appVersionService.getAll needs this, not the co_relation_id
           }))
         );
       })
@@ -67,18 +119,53 @@ export function Workflows({ options, optionsChanged, currentState }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const resolvedWorkflowAppId = workflowOptions.find((o) => o.value === resolvedWorkflowId)?.id ?? null;
+
   useEffect(() => {
-    if (resolvedWorkflowId) {
+    if (resolvedWorkflowAppId) {
       appVersionService
-        .getAll(resolvedWorkflowId)
+        // includeDefaultBranchVersions: without it a feature branch only gets that branch's
+        // row, so the main-draft entry and the saved versions would be missing.
+        .getAll(resolvedWorkflowAppId, undefined, true)
         .then((data) => {
-          // `name` is matched against options.workflowVersionName above. Any display
-          // formatting added here must carry the raw name in a separate field instead.
-          const versions = (data?.versions || []).map((v) => ({
-            value: v.id,
-            name: v.name,
+          const all = data?.versions || [];
+          setVersionRows(all);
+          // Published versions keep storing `v.name` — the value is persisted on the query, so
+          // changing it would orphan every saved workflow query. Only the branch row stores a
+          // sentinel, and that row is new.
+          const rowEntries = scopeVersionsForQueryPicker(all, { activeBranchId, isGitSyncEnabled }).map((v) => ({
+            value: isCurrentBranchRow(v, activeBranchId) ? WORKFLOW_CURRENT_BRANCH_SENTINEL : v.name,
+            label: versionLabel(v, { activeBranchId, isOnMain, defaultBranchName, isGitSyncEnabled }),
+            badge: versionBadge(v),
           }));
-          setVersionOptions(versions);
+
+          // Offered with git on even before the rows load; a pin to a missing draft fails at run time
+          // with the server's own error. The default-branch draft is filtered out above on a feature
+          // branch when the workflow has none there.
+          const sentinelEntries = isGitSyncEnabled
+            ? [
+                ...(isOnFeatureBranch
+                  ? [
+                      {
+                        value: WORKFLOW_CURRENT_BRANCH_SENTINEL,
+                        label: 'Current branch',
+                        description: CURRENT_BRANCH_DESCRIPTION,
+                      },
+                    ]
+                  : []),
+                {
+                  value: DEFAULT_BRANCH_DRAFT_SENTINEL,
+                  label: defaultBranchName,
+                  badge: VERSION_BADGES.DRAFT,
+                  description: `Latest commit to ${defaultBranchName} will appear here`,
+                },
+              ]
+            : [];
+
+          setVersionOptions([
+            ...sentinelEntries,
+            ...rowEntries.filter((r) => !sentinelEntries.some((s) => s.value === r.value)),
+          ]);
         })
         .catch(() => {
           setVersionOptions([]);
@@ -87,7 +174,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
       setVersionOptions([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedWorkflowId]);
+  }, [resolvedWorkflowAppId, activeBranchId, isGitSyncEnabled, isOnMain, isOnFeatureBranch, defaultBranchName]);
 
   useEffect(() => {
     optionsChanged({
@@ -118,7 +205,8 @@ export function Workflows({ options, optionsChanged, currentState }) {
         value={resolvedWorkflowId ?? {}}
         onChange={(workflowId) => {
           setSelectedWorkflowId(workflowId);
-          optionsChanged({ workflowId });
+          const defaultVersion = isOnFeatureBranch ? WORKFLOW_CURRENT_BRANCH_SENTINEL : DEFAULT_BRANCH_DRAFT_SENTINEL;
+          optionsChanged({ workflowId, workflowVersionId: isGitSyncEnabled && workflowId ? defaultVersion : null });
         }}
         placeholder="Select workflow"
         height="32px"
@@ -135,19 +223,13 @@ export function Workflows({ options, optionsChanged, currentState }) {
         <>
           <label className="mb-1 mt-2">Version</label>
           <div data-cy="workflow-version-dropdown"></div>
-          <Select
-            options={versionOptions}
-            value={resolvedWorkflowVersionId ?? {}}
+          <WorkflowVersionDropdown
+            options={versionSelectOptions}
+            value={resolvedWorkflowVersionId}
             onChange={(workflowVersionId) => {
               optionsChanged({ ...options, workflowVersionId: workflowVersionId || null });
             }}
-            height="32px"
-            useMenuPortal={true}
-            closeMenuOnSelect={true}
-            customWrap={true}
-            width="300px"
-            menuPlacement="bottom"
-            customClassPrefix="workflow-version-select"
+            isWarned={(option) => option.value === WORKFLOW_CURRENT_BRANCH_SENTINEL && isOnFeatureBranch}
           />
         </>
       )}

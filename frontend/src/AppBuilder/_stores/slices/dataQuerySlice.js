@@ -66,6 +66,8 @@ export const createDataQuerySlice = (set, get) => {
   const writes = new Map();
   const writeKey = (target, id) => `${target.library ? 'library' : target.versionId}:${target.workspaceId}:${id}`;
   const save = throttle((newValues, moduleId, target) => {
+    // Frozen versions (e.g. synced default-branch draft) reject saves — skip editor-filled defaults.
+    if (get().getShouldFreeze()) return;
     if (get().dataQuery.creatingQueryInProcessId === newValues.id) {
       creationEdits.set(newValues.id, { values: newValues, moduleId, target });
       set((state) => {

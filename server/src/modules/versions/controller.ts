@@ -1,6 +1,6 @@
 import { InitModule } from '@modules/app/decorators/init-module';
 import { VersionService } from './service';
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { MODULES } from '@modules/app/constants/modules';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { ValidAppGuard } from '@modules/apps/guards/valid-app.guard';
@@ -21,8 +21,12 @@ export class VersionController implements IVersionController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id/versions')
-  fetchVersions(@User() user: UserEntity, @App() app: AppEntity) {
-    return this.versionService.getAllVersions(app, user.branchId);
+  fetchVersions(
+    @User() user: UserEntity,
+    @App() app: AppEntity,
+    @Query('includeDefaultBranchVersions') includeDefaultBranchVersions?: string
+  ) {
+    return this.versionService.getAllVersions(app, user.branchId, includeDefaultBranchVersions === 'true');
   }
 
   // Read-only, same access as opening the version. The release dialog warns from this; the release gate blocks.

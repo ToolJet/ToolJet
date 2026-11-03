@@ -19,6 +19,7 @@ import VersionItemSkeleton from './VersionItemSkeleton';
 import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import './style.scss';
 
 export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) => {
@@ -35,6 +36,7 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
     notices,
     actions,
   } = useVersionLifecycle();
+  const currentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
   const developmentVersions = capabilities.developmentVersionIds
     ? versions.filter((v) => capabilities.developmentVersionIds.includes(v.id))
     : versions;
@@ -454,6 +456,14 @@ export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) =>
       </Popover.Body>
     </Popover>
   );
+
+  // Feature branches have no version lifecycle. Guarded here rather than in EditorHeader so
+  // the workflow header is covered too.
+  const isOnFeatureBranch =
+    currentVersion?.versionType === 'branch' ||
+    currentVersion?.version_type === 'branch' ||
+    !!(currentBranch && !currentBranch.is_default && !currentBranch.isDefault);
+  if (isOnFeatureBranch) return null;
 
   return (
     <>

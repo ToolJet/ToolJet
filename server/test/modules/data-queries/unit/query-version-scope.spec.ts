@@ -46,6 +46,7 @@ describe('DataQueriesService version scoping', () => {
     appValidationService as any,
     null as any,
     null as any,
+    null as any,
     null as any
   );
 
