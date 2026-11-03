@@ -37,6 +37,7 @@ import useWorkflowStore from '@/_stores/workflowStore';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
 import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
 import { completionLabelTooltip } from './completionLabelTooltip';
+import { codeSearchHighlight } from './codeSearchHighlight';
 
 // Hoisted to module scope so their identity never changes: anything fed into the
 // CodeMirror `extensions` prop must stay referentially stable, otherwise
@@ -502,8 +503,9 @@ const EditorInput = ({
             // rows. Enable wrapping so per-row selection rects
             // are generated.
             EditorView.lineWrapping,
+            codeSearchHighlight,
           ]
-        : [langExtension, tooltipExtension, EditorView.lineWrapping],
+        : [langExtension, tooltipExtension, EditorView.lineWrapping, codeSearchHighlight],
     [showSuggestions, langExtension, autoCompleteConfig, customTabKeymap]
   );
 
@@ -788,7 +790,7 @@ const DynamicEditorBridge = (props) => {
   };
 
   return (
-    <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
+    <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')} data-param={paramName}>
       <div className={cx('d-flex align-items-center justify-content-between code-flex-wrapper')}>
         {renderedLabel()}
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>

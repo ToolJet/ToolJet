@@ -14,6 +14,43 @@ function resolveLiveValue(propertyDefinition) {
   return { value: useStore.getState().getResolvedValue(propertyDefinition.value) };
 }
 
+// DaterangePicker legacy components are migrated with
+// `properties.legacyInvalidDates = {{true}}` so their historical "Invalid
+// date" exposures keep working. The opt-in moment is the user explicitly
+// editing the widget's date data in the inspector — the properties whose
+// downstream exposure the flag freezes: Default start date, Default end date,
+// or Format. The flag is then cleared (set to {{false}}) and the component
+// keeps the corrected exposure from then on. The flag is only ever cleared
+// here, never set back — an already-cleared flag is not rewritten, fx-mode
+// toggles are not value edits, and style changes (e.g. label alignment) are
+// unrelated to the exposed values. New components never carry the flag and
+// are left untouched.
+const DATERANGE_DATE_DATA_PROPERTIES = ['defaultStartDate', 'defaultEndDate', 'format'];
+
+export function shouldClearLegacyInvalidDates({ componentType, paramName, paramType, attr, definition }) {
+  return (
+    componentType === 'DaterangePicker' &&
+    paramType === 'properties' &&
+    attr === 'value' &&
+    DATERANGE_DATE_DATA_PROPERTIES.includes(paramName) &&
+    Boolean(definition?.properties?.legacyInvalidDates) &&
+    definition.properties.legacyInvalidDates.value !== '{{false}}'
+  );
+}
+
+// A Format with no alphabetic characters (e.g. a {{42}} binding resolving to
+// "42") can never contain a moment token: every display is a literal and no
+// input can parse. Surface it on the Format field itself — CodeHinter's
+// preview popover + error state, via validationFn — while the widget keeps
+// using the configured format verbatim (NO fallback: released apps keep
+// whatever behavior their format produced). Letterful formats are never
+// flagged — exotic tokens ('X', 'Q', 'kk') worked before and still do.
+export function getInvalidFormatError(format, kind = 'date') {
+  if (format == null || format === '') return null;
+  if (typeof format === 'string' && /[a-z]/i.test(format)) return null;
+  return `Invalid ${kind} format`;
+}
+
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
   let definition = component.component.definition.events[eventName];
   definition = definition || {};
@@ -306,7 +343,8 @@ export const validateStaticId = (value, existingIds = [], currentId = null, mess
     return [false, bindingMessage];
   }
 
-  if (existingIds.some((id) => id === trimmedValue && id !== currentId)) {
+  // Compare by string value: Steps stores numeric ids while the editor always types strings.
+  if (existingIds.some((id) => String(id) === trimmedValue && String(id) !== String(currentId))) {
     return [false, duplicateMessage];
   }
 
@@ -315,8 +353,19 @@ export const validateStaticId = (value, existingIds = [], currentId = null, mess
 
 export const getDocsLink = (componentType = '') => {
   switch (componentType) {
+    case 'ToggleSwitch':
     case 'ToggleSwitchV2':
-      return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
+      return 'https://docs.tooljet.com/docs/widgets/toggle-switch-v2';
+    case 'RadioButton':
+      return 'https://docs.tooljet.com/docs/widgets/radio-button-v2';
+    case 'KanbanBoard':
+      return 'https://docs.tooljet.com/docs/widgets/kanban';
+    case 'JSONEditor':
+      return 'https://docs.tooljet.com/docs/widgets/json-editor';
+    case 'JSONExplorer':
+      return 'https://docs.tooljet.com/docs/widgets/json-explorer';
+    case 'LibraryComponent':
+      return 'https://docs.tooljet.com/docs/app-builder/custom-component-library/overview';
     case 'DropdownV2':
       return 'https://docs.tooljet.com/docs/widgets/dropdown';
     case 'DropDown':
@@ -331,7 +380,7 @@ export const getDocsLink = (componentType = '') => {
     case 'ModuleContainer':
       return 'https://docs.tooljet.com/docs/app-builder/modules/overview';
     default:
-      return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentType)}`;
+      return `https://docs.tooljet.com/docs/widgets/${convertToKebabCase(componentType)}`;
   }
 };
 

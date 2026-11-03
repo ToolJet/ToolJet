@@ -17,6 +17,11 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
  * @param {string}   [uncheckedColor]  - Background color when unchecked
  * @param {string}   [borderColor]     - Border color when unchecked
  * @param {string}   [handleColor]     - Icon fill color
+ * @param {function} [onChange]        - Toggle handler; when supplied the input becomes a real
+ *                                       keyboard control (Space toggles). Decorative instances
+ *                                       omit it and stay read-only.
+ * @param {boolean}  [disabled]        - Native disabled: drops the input from the tab order
+ * @param {string}   [ariaLabel]       - Accessible name for the checkbox
  * @param {string}   [className]
  */
 const TreeSelectCheckbox = ({
@@ -26,6 +31,9 @@ const TreeSelectCheckbox = ({
   uncheckedColor,
   borderColor,
   handleColor,
+  onChange,
+  disabled = false,
+  ariaLabel,
   className = '',
 }) => {
   const isActive = checked || indeterminate;
@@ -37,8 +45,16 @@ const TreeSelectCheckbox = ({
         <input
           type="checkbox"
           checked={checked}
-          readOnly
+          // Interactive only when a toggle handler is supplied (the per-node checkbox);
+          // the decorative icon instances have no onChange, so keep them read-only to
+          // avoid React's controlled-without-onChange warning.
+          readOnly={!onChange}
+          onChange={onChange}
+          disabled={disabled}
+          aria-label={ariaLabel}
           data-cy="checkbox-input"
+          // Rocket focus ring for keyboard users; native disabled drops it from the tab order.
+          className="focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-1"
           style={{
             // display:block overrides react-checkbox-tree's rule:
             // .react-checkbox-tree:not(.rct-native-display) input { display: none }
@@ -55,6 +71,8 @@ const TreeSelectCheckbox = ({
             backgroundColor: isActive
               ? checkboxColor || 'var(--cc-primary-brand)'
               : uncheckedColor || 'var(--cc-surface2-surface)',
+            // pointer-events:none routes mouse clicks to the row handler; keyboard
+            // focus/Space still reach the input (pointer-events is mouse-only).
             pointerEvents: 'none',
             cursor: 'pointer',
             transition: 'background-color 0.15s ease, border-color 0.15s ease',

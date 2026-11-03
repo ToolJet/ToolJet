@@ -130,9 +130,12 @@ const RatingIcon = ({
   const getAnimatedStar = () => {
     return (
       <animated.span
-        className={classNames('rating-icon-widget', {
-          'pointer-events-none': !allowEditing || isDisabled,
-        })}
+        className={classNames(
+          'rating-icon-widget focus-visible:tw-outline-none focus-visible:tw-rounded-sm focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-1',
+          {
+            'pointer-events-none': !allowEditing || isDisabled,
+          }
+        )}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
         ref={ref}
