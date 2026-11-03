@@ -375,7 +375,6 @@ export const listviewConfig = {
       enablePagination: { value: '{{false}}' },
       // Old look: the server merges these under every saved ListView; no gridRecordHeight, so saved grids keep rowHeight.
       showHeader: { value: '{{false}}' },
-      headerHeight: { value: '{{60}}' },
       paginationType: { value: 'clientSide' },
       totalRecords: { value: '{{10}}' },
       recordVisibility: { value: '{{true}}' },

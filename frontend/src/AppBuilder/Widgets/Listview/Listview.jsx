@@ -18,6 +18,7 @@ import cx from 'classnames';
 import Spinner from '@/_ui/Spinner';
 import {
   DIVIDER_WIDTH,
+  HEADER_HEIGHT,
   LEGACY_PADDING,
   NEW_STYLE_PADDING,
   getListStyle,
@@ -68,7 +69,6 @@ export const Listview = function Listview({
     loadingState = false,
     gridRecordHeight,
     showHeader = false,
-    headerHeight = 60,
   } = combinedProperties;
 
   const data = dataSourceSelector === 'rawJson' ? combinedProperties?.data : dataSourceSelector;
@@ -106,7 +106,6 @@ export const Listview = function Listview({
   const recordHeight = getRecordHeight(mode, rowHeight, gridRecordHeight);
   const containerPadding = isLegacy ? LEGACY_PADDING : NEW_STYLE_PADDING;
   const activeSlot = useActiveSlot(id);
-  const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
 
   const computedStyles = {
     backgroundColor,
@@ -353,13 +352,11 @@ export const Listview = function Listview({
               <HorizontalSlot
                 slotName="header"
                 id={`${id}-header`}
-                height={headerHeight}
+                height={HEADER_HEIGHT}
                 width={width}
                 darkMode={darkMode}
                 isActive={activeSlot === `${id}-header`}
-                onResize={({ newHeight }) =>
-                  setComponentProperty(id, 'headerHeight', parseInt(newHeight, 10), 'properties', 'value', false)
-                }
+                isResizable={false}
                 slotStyle={{
                   backgroundColor: headerBackgroundColor,
                   borderBottom: `1px solid ${headerDividerColor ?? 'var(--cc-weak-border)'}`,

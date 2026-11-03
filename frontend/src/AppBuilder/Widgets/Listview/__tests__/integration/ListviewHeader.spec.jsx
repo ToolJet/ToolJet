@@ -156,8 +156,8 @@ describe('Listview: the header height is fixed', () => {
       fireEvent.mouseUp(document);
     }
 
-    expect(handle).toBeNull();
     expect(slot().style.height).toBe(`${FIGMA_HEADER_HEIGHT}px`);
+    expect(handle).toBeNull();
     expect(store().getComponentDefinition(LV, MODULE_ID).component.definition.properties.headerHeight).toEqual({
       value: '{{70}}',
     });

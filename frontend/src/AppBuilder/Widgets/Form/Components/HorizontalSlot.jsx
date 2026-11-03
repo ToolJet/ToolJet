@@ -20,6 +20,7 @@ export const HorizontalSlot = React.memo(
     maxHeight,
     componentType,
     dataCy,
+    isResizable = true,
   }) => {
     const { moduleId } = useModuleContext();
     const isEditing = useStore((state) => state.modeStore.modules[moduleId].currentMode === 'edit', shallow);
@@ -81,7 +82,7 @@ export const HorizontalSlot = React.memo(
             componentType={componentType}
             hasNoScroll={true}
           />
-          {isEditing && <div className="resize-handle" {...getHandleProps()} style={resizeStyle} />}
+          {isEditing && isResizable && <div className="resize-handle" {...getHandleProps()} style={resizeStyle} />}
         </div>
 
         {isDisabled && (

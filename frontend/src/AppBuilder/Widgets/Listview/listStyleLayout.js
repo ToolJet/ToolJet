@@ -3,6 +3,8 @@ export const NEW_LIST_STYLES = ['bordered', 'container', 'plain'];
 export const LEGACY_PADDING = 7;
 export const NEW_STYLE_PADDING = 12;
 export const DIVIDER_WIDTH = 1;
+// Fixed by design (Figma 238:1379, 294:45127): no setting and no drag-resize.
+export const HEADER_HEIGHT = 60;
 
 // Anything but a known new style is Legacy, so a saved ListView keeps today's look.
 export const getListStyle = (listStyle) => (NEW_LIST_STYLES.includes(listStyle) ? listStyle : 'legacy');

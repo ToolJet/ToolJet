@@ -10,6 +10,7 @@ import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { isProperNumber } from '../utils';
 import { resolveFlexContainerHeight } from './dynamicHeightReflowFlexContainer';
 import {
+  HEADER_HEIGHT,
   LEGACY_PADDING,
   NEW_STYLE_PADDING,
   getListStyle,
@@ -524,9 +525,7 @@ export const resolveListviewHeightFromRows = ({
   const gapAllowance = Math.max(0, recordLines - 1) * getRecordGap(listStyle, component?.styles?.gap);
 
   // A shown header replaces the top padding with itself and a padding-sized gap, so only its height adds.
-  const headerAllowance = componentProperties.showHeader
-    ? Math.max(0, Number(componentProperties.headerHeight) || 0)
-    : 0;
+  const headerAllowance = componentProperties.showHeader ? HEADER_HEIGHT : 0;
 
   return (
     stackedRowsHeight + borderAllowance + paginationAllowance + outerPaddingAllowance + gapAllowance + headerAllowance
