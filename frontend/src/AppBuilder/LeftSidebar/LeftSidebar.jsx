@@ -15,7 +15,7 @@ import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
-import { SquareDashedMousePointer, Bug, Bolt, History, Waypoints, Search } from 'lucide-react';
+import { SquareDashedMousePointer, Bug, Bolt, History, Waypoints, Search, ScanSearch } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { EditorView } from '@codemirror/view';
 import CodeSearch from './CodeSearch/CodeSearch';
@@ -31,6 +31,7 @@ import AppLibrariesIcon from './AppLibraries/AppLibrariesIcon';
 import AppLibraries from './AppLibraries';
 import Beta from '@/_ui/Beta';
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
+import { SecurityPanel, CodeHistoryPanel, useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 
 // Human names for the error-boundary label/location of each sidebar panel.
 const LEFT_SIDEBAR_PANEL_LABELS = {
@@ -41,6 +42,7 @@ const LEFT_SIDEBAR_PANEL_LABELS = {
   apphistory: 'App history',
   libraries: 'Libraries',
   debugger: 'Debugger',
+  security: 'Security',
   settings: 'Global settings',
 };
 
@@ -56,6 +58,8 @@ export const BaseLeftSidebar = ({
   renderAIChat = () => null,
 }) => {
   const { moduleId, isModuleEditor, appType } = useModuleContext();
+  const codeMode = useCodeMode(moduleId);
+  const buildMode = useStore((state) => state.appStore?.modules?.[moduleId]?.app?.buildMode);
   const [
     pinned,
     selectedSidebarItem,
@@ -184,11 +188,17 @@ export const BaseLeftSidebar = ({
       case 'tooljetai':
         return renderAIChat({ darkMode });
       case 'apphistory':
-        return <AppHistory darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
+        return codeMode ? (
+          <CodeHistoryPanel darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />
+        ) : (
+          <AppHistory darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />
+        );
       case 'libraries':
         return <AppLibraries darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
       case 'debugger':
         return <Debugger onClose={() => toggleLeftSidebar(false)} darkMode={darkMode} />;
+      case 'security':
+        return <SecurityPanel />;
       case 'dependencies':
         return <DependencyViewer darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'settings':
@@ -209,6 +219,7 @@ export const BaseLeftSidebar = ({
   }
 
   // TODO: Move icons as slots
+
   const renderCommonItems = () => {
     return (
       <>
@@ -218,24 +229,26 @@ export const BaseLeftSidebar = ({
           darkMode={darkMode}
           icon="inspect"
           className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
-          tip="Inspector"
+          tip={codeMode ? 'App state' : 'Inspector'}
           ref={setSideBarBtnRefs('inspect')}
         >
           <SquareDashedMousePointer width="16" height="16" className="tw-text-icon-strong" />
         </SidebarItem>
 
-        <SidebarItem
-          selectedSidebarItem={selectedSidebarItem}
-          onClick={() => handleSelectedSidebarItem('search')}
-          darkMode={darkMode}
-          icon="search"
-          className={`left-sidebar-item left-sidebar-layout tw-overflow-visible`}
-          tip="Code search"
-          ref={setSideBarBtnRefs('search')}
-        >
-          <Search width="16" height="16" className="tw-text-icon-strong" />
-          <Beta className="code-search-beta-tag tw-py-0.5 tw-px-1.5 tw-border-none" />
-        </SidebarItem>
+        {!codeMode && (
+          <SidebarItem
+            selectedSidebarItem={selectedSidebarItem}
+            onClick={() => handleSelectedSidebarItem('search')}
+            darkMode={darkMode}
+            icon="search"
+            className={`left-sidebar-item left-sidebar-layout tw-overflow-visible`}
+            tip="Code search"
+            ref={setSideBarBtnRefs('search')}
+          >
+            <Search width="16" height="16" className="tw-text-icon-strong" />
+            <Beta className="code-search-beta-tag tw-py-0.5 tw-px-1.5 tw-border-none" />
+          </SidebarItem>
+        )}
 
         <SidebarItem
           icon="debugger"
@@ -252,17 +265,33 @@ export const BaseLeftSidebar = ({
           <Bug width="16" height="16" className="tw-text-icon-strong" />
         </SidebarItem>
 
-        <SidebarItem
-          icon="dependencies"
-          selectedSidebarItem={selectedSidebarItem}
-          darkMode={darkMode}
-          onClick={() => handleSelectedSidebarItem('dependencies')}
-          className={`left-sidebar-item left-sidebar-layout`}
-          tip="Dependencies"
-          ref={setSideBarBtnRefs('dependencies')}
-        >
-          <Waypoints width="16" height="16" className="tw-text-icon-strong" />
-        </SidebarItem>
+        {(codeMode || buildMode === 'code') && !isModuleEditor && (
+          <SidebarItem
+            icon="security"
+            selectedSidebarItem={selectedSidebarItem}
+            darkMode={darkMode}
+            onClick={() => handleSelectedSidebarItem('security')}
+            className={`left-sidebar-item  left-sidebar-layout`}
+            tip="Security"
+            ref={setSideBarBtnRefs('security')}
+          >
+            <ScanSearch width="16" height="16" className="tw-text-icon-strong" />
+          </SidebarItem>
+        )}
+
+        {!codeMode && (
+          <SidebarItem
+            icon="dependencies"
+            selectedSidebarItem={selectedSidebarItem}
+            darkMode={darkMode}
+            onClick={() => handleSelectedSidebarItem('dependencies')}
+            className={`left-sidebar-item left-sidebar-layout`}
+            tip="Dependencies"
+            ref={setSideBarBtnRefs('dependencies')}
+          >
+            <Waypoints width="16" height="16" className="tw-text-icon-strong" />
+          </SidebarItem>
+        )}
       </>
     );
   };
@@ -311,13 +340,28 @@ export const BaseLeftSidebar = ({
 
         {renderCommonItems()}
         {/* Shown on every plan: below Pro it opens the upgrade prompt (the edition's component decides). */}
-        <AppHistoryIcon
-          darkMode={darkMode}
-          selectedSidebarItem={selectedSidebarItem}
-          handleSelectedSidebarItem={handleSelectedSidebarItem}
-          setSideBarBtnRefs={setSideBarBtnRefs}
-        />
-        {featureAccess?.appJsLibraries && (
+        {codeMode && !isModuleEditor && (
+          <SidebarItem
+            selectedSidebarItem={selectedSidebarItem}
+            onClick={() => handleSelectedSidebarItem('apphistory')}
+            darkMode={darkMode}
+            className="left-sidebar-item left-sidebar-layout"
+            tip="App history"
+            ref={setSideBarBtnRefs('apphistory')}
+            icon="apphistory"
+          >
+            <History width="16" height="16" className="tw-text-icon-strong" />
+          </SidebarItem>
+        )}
+        {!codeMode && (
+          <AppHistoryIcon
+            darkMode={darkMode}
+            selectedSidebarItem={selectedSidebarItem}
+            handleSelectedSidebarItem={handleSelectedSidebarItem}
+            setSideBarBtnRefs={setSideBarBtnRefs}
+          />
+        )}
+        {!codeMode && featureAccess?.appJsLibraries && (
           <AppLibrariesIcon
             darkMode={darkMode}
             selectedSidebarItem={selectedSidebarItem}
@@ -341,9 +385,16 @@ export const BaseLeftSidebar = ({
         onInteractOutside={(e) => {
           // if tooljetai is open don't close
           if (
-            ['tooljetai', 'inspect', 'search', 'debugger', 'settings', 'libraries', 'dependencies'].includes(
-              selectedSidebarItem
-            )
+            [
+              'tooljetai',
+              'inspect',
+              'search',
+              'debugger',
+              'security',
+              'settings',
+              'libraries',
+              'dependencies',
+            ].includes(selectedSidebarItem)
           )
             return;
           const isWithinSidebar = e.target.closest('.left-sidebar');

@@ -15,6 +15,7 @@ import { getDynamicLayoutKey, serializeLayoutContext } from '@/AppBuilder/_store
 import { useFlexWidgetLayout } from '@/AppBuilder/Widgets/FlexContainer/useFlexWidgetLayout';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { syncSelectionCorner } from './selectionCorner';
+import { isCodePageRoot } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const DYNAMIC_HEIGHT_AUTO_LIST = [
   'CodeEditor',
@@ -101,7 +102,13 @@ const WidgetWrapper = memo(
     const resolvedLabel = useStore(
       (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties?.label
     );
-    const layoutData = useStore((state) => state.getComponentDefinition(id, moduleId)?.layouts?.[currentLayout]);
+    const layoutData = useStore((state) => {
+      const layouts = state.getComponentDefinition(id, moduleId)?.layouts;
+      return (
+        layouts?.[currentLayout] ??
+        (isCodePageRoot(state.getComponentDefinition(id, moduleId)) ? layouts?.desktop : undefined)
+      );
+    });
     const temporaryLayouts = useStore((state) => {
       const layoutContext = indices ?? subContainerIndex;
       return state.temporaryLayouts?.[getDynamicLayoutKey(id, layoutContext, '', moduleId)];
@@ -138,11 +145,13 @@ const WidgetWrapper = memo(
 
     const setHoveredComponentForGrid = useTransientStore((state) => state.setHoveredComponentForGrid);
     const canShowInCurrentLayout = useStore((state) => {
+      if (isCodePageRoot(state.getComponentDefinition(id, moduleId))) return true;
       const others = state.getResolvedComponent(id, resolveIndex, moduleId)?.others;
       return others?.[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'];
     });
 
     const visibility = useStore((state) => {
+      if (isCodePageRoot(state.getComponentDefinition(id, moduleId))) return true;
       const component = state.getResolvedComponent(id, resolveIndex, moduleId);
       const componentExposedVisibility = getExposedPropertyForAdditionalActions(
         id,

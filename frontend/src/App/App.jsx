@@ -16,6 +16,9 @@ import { Authorize as Oauth } from '@/Oauth';
 const TooljetDatabase = React.lazy(() => import('@/TooljetDatabase'));
 
 const ProfileSettingsPage = React.lazy(() => import('@/SettingsPage'));
+const CliActivate = React.lazy(() =>
+  import('@ee/modules/CodeMode/CliActivate').then((m) => (typeof m.default === 'function' ? m : { default: () => null }))
+);
 
 const MarketplacePage = React.lazy(() => import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage'));
 const InstalledPlugins = React.lazy(
@@ -393,6 +396,15 @@ class AppComponent extends React.Component {
                 {/* These routes are now in ViewerApp.jsx for bundle isolation: */}
                 {/* - /applications/:slug/:pageHandle? */}
                 {/* - /applications/:slug/versions/:versionId/environments/:environmentId/:pageHandle? */}
+                <Route
+                  exact
+                  path="/cli/activate"
+                  element={
+                    <PrivateRoute darkMode={darkMode}>
+                      <CliActivate />
+                    </PrivateRoute>
+                  }
+                />
                 <Route
                   exact
                   path="/oauth2/authorize"

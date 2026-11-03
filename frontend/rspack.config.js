@@ -477,7 +477,25 @@ module.exports = {
         resourceQuery: { not: [/url/] },
       },
       {
+        resourceQuery: /raw/,
+        type: 'asset/source',
+      },
+      {
+        test: /[\\/]node_modules[\\/]tailwindcss[\\/]/,
+        resolve: {
+          alias: {
+            fs: path.resolve(__dirname, 'src/AppBuilder/CodePanel/build/shims/tailwindFs.js'),
+            url: false,
+            crypto: false,
+            os: false,
+            'fast-glob': false,
+            '@tailwindcss/line-clamp': false,
+          },
+        },
+      },
+      {
         test: /\.css$/,
+        resourceQuery: { not: [/raw/] },
         use: [
           isProductionMode ? rspack.CssExtractRspackPlugin.loader : { loader: 'style-loader' },
           {

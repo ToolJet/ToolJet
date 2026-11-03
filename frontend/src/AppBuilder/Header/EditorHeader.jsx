@@ -15,9 +15,11 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import './styles/style.scss';
 
 import SaveIndicator from './SaveIndicator';
+import { useCodeMode, LocalChangesNote, LocalBehindNote, SecurityStatusChip } from '@/AppBuilder/_helpers/codeModeHooks';
 
 export const EditorHeader = ({ darkMode, appType }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
+  const codeMode = useCodeMode();
   const {
     isSaving,
     saveError,
@@ -108,7 +110,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
                       {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
                       <EditAppName />
                     </div>
-                    {!isEditorReadOnly && (
+                    {!isEditorReadOnly && !codeMode && (
                       <div>
                         <span
                           className={cx('autosave-indicator tj-text-xsm', {
@@ -143,6 +145,9 @@ export const EditorHeader = ({ darkMode, appType }) => {
                   <VersionManagerErrorBoundary>
                     <VersionManagerDropdown darkMode={darkMode} />
                   </VersionManagerErrorBoundary>
+                  {!isModuleEditor && <LocalChangesNote />}
+                  {!isModuleEditor && <LocalBehindNote />}
+                  {!isModuleEditor && <SecurityStatusChip appId={appId} versionId={selectedVersion?.id} />}
                   <RightTopHeaderButtons isModuleEditor={isModuleEditor} isAppUnsyncedToGit={showSyncButton} />
                 </div>
               </div>

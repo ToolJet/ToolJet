@@ -7,6 +7,7 @@ import { isQueryRunnable } from '@/_helpers/utils';
 import { replaceQueryOptionsEntityReferencesWithIds } from '@/AppBuilder/_stores/utils';
 import { normalizeQueryTransformationOptions } from '@/AppBuilder/_stores/utils/appDataCaseConversion';
 import { clearQueryRerunTimer } from '@/AppBuilder/_stores/slices/componentsSlice';
+import { queriesBelongToVersion, waitForVersionQueries } from '@/AppBuilder/_helpers/queriesForVersion';
 
 const initialState = {
   sortBy: 'custom',
@@ -559,7 +560,18 @@ export const createDataQuerySlice = (set, get) => ({
         });
     }, 500),
     runOnLoadQueries: async (moduleId = 'canvas', queryList = null) => {
-      const queries = Array.isArray(queryList) ? queryList : get().dataQuery.queries.modules[moduleId];
+      let queries = Array.isArray(queryList) ? queryList : get().dataQuery.queries.modules[moduleId];
+      if (
+        !Array.isArray(queryList) &&
+        moduleId === 'canvas' &&
+        !queriesBelongToVersion(queries, get().currentVersionId)
+      ) {
+        queries = await waitForVersionQueries(() => ({
+          queries: get().dataQuery.queries.modules[moduleId],
+          versionId: get().currentVersionId,
+        }));
+        if (!queries) return Promise.resolve();
+      }
 
       try {
         for (const query of queries) {

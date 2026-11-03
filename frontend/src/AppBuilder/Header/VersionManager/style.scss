@@ -38,12 +38,10 @@
 }
 
 .app-version-description {
-  min-height: 24px;
-  max-height: 96px; // 4 lines * 24px
+  height: calc(3 * 24px + 16px) !important;
   overflow-y: auto;
   resize: none;
   line-height: 24px;
-  transition: height 0.2s;
   background-color: var(--surfaces-surface-01) !important;
 }
 

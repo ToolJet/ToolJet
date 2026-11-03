@@ -12,6 +12,10 @@ import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAb
 import { ABORT_UNSUPPORTED_KINDS, defaultSources, TJ_QUERY_ERROR_TYPE } from '@/AppBuilder/QueryManager/constants';
 import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import * as compareGuard from '@ee/modules/CodeMode/AppBuilder/CodeDiff/compareGuard';
+
+const BLOCKED_WRITE_MESSAGE = compareGuard.BLOCKED_WRITE_MESSAGE ?? '';
+const writeBlockedInCompare = compareGuard.writeBlockedInCompare ?? (() => false);
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
@@ -455,6 +459,11 @@ export const createQueryPanelSlice = (set, get) => ({
         dataQuery = JSON.parse(JSON.stringify(query));
       } else {
         throw new Error('No query selected');
+      }
+
+      if (writeBlockedInCompare(dataQuery)) {
+        setResolvedQuery(queryId, { isLoading: false }, moduleId);
+        return Promise.resolve({ status: 'failed', message: BLOCKED_WRITE_MESSAGE });
       }
 
       if (_.isEmpty(parameters)) {

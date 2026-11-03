@@ -39,6 +39,9 @@ import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
+import * as pageRoots from '@ee/modules/CodeMode/AppBuilder/_hooks/codePageRoot';
+
+const withoutCodePageRoots = pageRoots.withoutCodePageRoots ?? ((ids) => ids || []);
 
 // calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
 const INPUT_COMPONENTS_FOR_FORM_SET = new Set(INPUT_COMPONENTS_FOR_FORM);
@@ -2731,6 +2734,13 @@ export const createComponentsSlice = (set, get) => ({
     });
   },
   setWidgetDeleteConfirmation: (value, second = null) => {
+    if (value) {
+      const components = get().getCurrentPageComponents?.() ?? {};
+      const requested = Array.isArray(second) ? second : (get().selectedComponents ?? []);
+      const allowed = withoutCodePageRoots(requested, components);
+      if (requested.length && !allowed.length) return;
+      if (Array.isArray(second)) second = allowed;
+    }
     set((state) => {
       state.showWidgetDeleteConfirmation = value;
       if (!value) {

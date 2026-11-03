@@ -23,6 +23,7 @@ interface CustomComponentLibrariesState {
   fetchLibraries: (options?: { force?: boolean }) => Promise<CustomComponentLibrary[]>;
   invalidate: () => void;
   syncDevPinStreams: (devPinKeys: Record<string, string>) => void;
+  markDevBundleUpdated: (libraryId: string, userId: string, options?: { force?: boolean }) => void;
   fetchManifest: (libraryId: string, revision: string) => Promise<void>;
   invalidateManifest: (libraryId: string, revision: string) => void;
   resetAll: () => void;
@@ -143,21 +144,24 @@ export const useCustomComponentLibrariesStore = create(
 
         toClose.forEach(closeStream);
         toOpen.forEach(([libraryId, userId]) =>
-          openStream(libraryId, userId, () => {
-            // A live push means this library's cached dev manifest is stale — drop it.
-            const devKey = buildManifestCacheKey(libraryId, `dev:${userId}`);
-            set(
-              (state: CustomComponentLibrariesState) => {
-                const { [devKey]: _removed, ...manifests } = state.manifests;
-                return {
-                  devBundleUpdatedAt: { ...state.devBundleUpdatedAt, [libraryId]: Date.now() },
-                  manifests,
-                };
-              },
-              false,
-              'devBundleUpdated'
-            );
-          })
+          openStream(libraryId, userId, () => get().markDevBundleUpdated(libraryId, userId))
+        );
+      },
+
+      markDevBundleUpdated: (libraryId, userId, { force = false } = {}) => {
+        const last = get().devBundleUpdatedAt?.[libraryId];
+        if (!force && last && Date.now() - last < 2000) return;
+        const devKey = buildManifestCacheKey(libraryId, `dev:${userId}`);
+        set(
+          (state: CustomComponentLibrariesState) => {
+            const { [devKey]: _removed, ...manifests } = state.manifests;
+            return {
+              devBundleUpdatedAt: { ...state.devBundleUpdatedAt, [libraryId]: Date.now() },
+              manifests,
+            };
+          },
+          false,
+          'devBundleUpdated'
         );
       },
 

@@ -563,6 +563,7 @@ const useAppData = (
             appGeneratedFromPrompt: appData.app_generated_from_prompt,
             aiGenerationMetadata: appData.ai_generation_metadata || {},
             appBuilderMode: appData.app_builder_mode || 'visual',
+            buildMode: appData.build_mode ?? appData.buildMode ?? 'visual',
             isReleasedApp: isReleasedApp,
             appType: appData.type,
             currentVersionId: appData.editing_version?.id || appData.current_version_id,
@@ -635,7 +636,7 @@ const useAppData = (
           getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
         }
 
-        if (appData.app_builder_mode === 'ai') {
+        if (appData.app_builder_mode === 'ai' || (appData.build_mode ?? appData.buildMode) === 'code') {
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
           setIsQueryPaneExpanded(false);
@@ -1122,6 +1123,7 @@ const useAppData = (
           appGeneratedFromPrompt: appData.appGeneratedFromPrompt,
           aiGenerationMetadata: appData.ai_generation_metadata || {},
           appBuilderMode: appData.appBuilderMode || 'visual',
+          buildMode: appData.build_mode ?? appData.buildMode ?? 'visual',
           co_relation_id: appData.co_relation_id,
         });
 

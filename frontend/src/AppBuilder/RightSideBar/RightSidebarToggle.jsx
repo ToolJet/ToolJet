@@ -8,6 +8,7 @@ import { Plus, PencilRuler, BookOpen } from 'lucide-react';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { SidebarItem } from './SidebarItem';
+import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const RightSidebarToggle = ({ darkMode = false }) => {
   const [isRightSidebarOpen, setRightSidebarOpen] = useStore(
@@ -21,6 +22,7 @@ const RightSidebarToggle = ({ darkMode = false }) => {
   const isAnyComponentSelected = useStore((state) => state.selectedComponents.length > 0);
   const isCanvasHeaderSelected = useStore((state) => state.isCanvasHeaderSelected, shallow);
   const isCanvasFooterSelected = useStore((state) => state.isCanvasFooterSelected, shallow);
+  const codeMode = useCodeMode();
 
   const handleToggle = (item) => {
     setActiveRightSideBarTab(item);
@@ -38,25 +40,27 @@ const RightSidebarToggle = ({ darkMode = false }) => {
       }`}
       data-cy="right-sidebar-inspector"
     >
-      <SidebarItem
-        selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.COMPONENTS}
-        onClick={() => {
-          handleToggle(RIGHT_SIDE_BAR_TAB.COMPONENTS);
-        }}
-        darkMode={darkMode}
-        icon="plus"
-        iconOnly
-        className={`left-sidebar-inspector`}
-        tip="Components"
-      >
-        <Plus
-          width="16"
-          height="16"
-          className={`${
-            activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.COMPONENTS ? 'tw-text-icon-accent' : 'tw-text-icon-strong'
-          }`}
-        />
-      </SidebarItem>
+      {!codeMode && (
+        <SidebarItem
+          selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.COMPONENTS}
+          onClick={() => {
+            handleToggle(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+          }}
+          darkMode={darkMode}
+          icon="plus"
+          iconOnly
+          className={`left-sidebar-inspector`}
+          tip="Components"
+        >
+          <Plus
+            width="16"
+            height="16"
+            className={`${
+              activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.COMPONENTS ? 'tw-text-icon-accent' : 'tw-text-icon-strong'
+            }`}
+          />
+        </SidebarItem>
+      )}
 
       <SidebarItem
         selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION}
@@ -68,11 +72,13 @@ const RightSidebarToggle = ({ darkMode = false }) => {
         iconOnly
         iconWidth="14"
         tip={
-          isAnyComponentSelected || isCanvasHeaderSelected || isCanvasFooterSelected
-            ? 'Component properties'
-            : 'No component selected'
+          codeMode
+            ? 'Style inspector'
+            : isAnyComponentSelected || isCanvasHeaderSelected || isCanvasFooterSelected
+              ? 'Component properties'
+              : 'No component selected'
         }
-        disabled={!isAnyComponentSelected && !isCanvasHeaderSelected}
+        disabled={!codeMode && !isAnyComponentSelected && !isCanvasHeaderSelected}
       >
         <PencilRuler
           width="16"
@@ -81,11 +87,14 @@ const RightSidebarToggle = ({ darkMode = false }) => {
             activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION ? 'tw-text-icon-accent' : 'tw-text-icon-strong'
           }`}
           style={{
-            opacity: !isAnyComponentSelected && !isCanvasHeaderSelected && !isCanvasFooterSelected ? '0.5' : undefined,
+            opacity:
+              !codeMode && !isAnyComponentSelected && !isCanvasHeaderSelected && !isCanvasFooterSelected
+                ? '0.5'
+                : undefined,
           }}
         />
       </SidebarItem>
-      {appType !== 'module' && (
+      {appType !== 'module' && !codeMode && (
         <SidebarItem
           selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES}
           onClick={() => {

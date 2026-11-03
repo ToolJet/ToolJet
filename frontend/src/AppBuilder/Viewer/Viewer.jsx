@@ -18,6 +18,7 @@ import TooljetBanner from './TooljetBanner';
 import PreviewHeader from './PreviewHeader';
 import { useAutoMobileLayout } from '@/AppBuilder/_hooks/useAutoMobileLayout';
 import { useCompareOverlayBridge } from './useCompareOverlayBridge';
+import { useCodePage, viewerLayoutFor } from '@/AppBuilder/_helpers/codeModeHooks';
 
 export const Viewer = ({
   id: appId,
@@ -138,12 +139,15 @@ export const Viewer = ({
   const changeToDarkMode = (newMode) => {
     switchDarkMode(newMode);
   };
+  const { isCodePage } = useCodePage(moduleId);
   useEffect(() => {
     if (moduleMode) return;
     // Force mobile when preview was launched from mobile (?layout=mobile), else detect by width.
     const forcedMobile = new URLSearchParams(window.location.search).get('layout') === 'mobile';
-    const isMobileDevice = deviceWindowWidth < 600;
-    toggleCurrentLayout(forcedMobile || isMobileDevice ? 'mobile' : 'desktop');
+    toggleCurrentLayout(viewerLayoutFor({ width: deviceWindowWidth, forcedMobile, isCodePage }));
+  }, [isCodePage]);
+  useEffect(() => {
+    if (moduleMode) return;
     setIsViewer(true, moduleId);
     return () => {
       setIsViewer(false, moduleId);
