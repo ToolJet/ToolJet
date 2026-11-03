@@ -273,9 +273,14 @@ COPY --from=mcp-builder /mcp/data ./app/data
 # under TOOLJET_CODE_APP_ROOT; the server scans Code mode apps with the app scanner. The render check stays off
 # (no browser in this image).
 COPY --from=builder /app/server/ee/packages/app-scanner ./app/server/ee/packages/app-scanner
-COPY --from=sdk-builder /out/custom-component-sdk.tgz ./app/code-mode/custom-component-sdk.tgz
-RUN npm install -g ./app/server/code-mode-cli/tooljet-cli.tgz && tooljet --version && mkdir -p /app/code-mode/apps
-ENV TOOLJET_SDK_SPEC=file:/app/code-mode/custom-component-sdk.tgz \
+# The SDK as a folder, not the tarball: npm links a folder, and the app scanner skips links, while a tarball entry
+# resolves outside the registry and fails its lockfile host check (the SDK has no dependencies of its own).
+COPY --from=sdk-builder /out/custom-component-sdk.tgz /tmp/custom-component-sdk.tgz
+RUN mkdir -p /app/code-mode/custom-component-sdk /app/code-mode/apps && \
+    tar -xzf /tmp/custom-component-sdk.tgz -C /app/code-mode/custom-component-sdk --strip-components=1 && \
+    rm /tmp/custom-component-sdk.tgz && \
+    npm install -g ./app/server/code-mode-cli/tooljet-cli.tgz && tooljet --version
+ENV TOOLJET_SDK_SPEC=file:/app/code-mode/custom-component-sdk \
     TOOLJET_CODE_APP_ROOT=/app/code-mode/apps \
     TOOLJET_APP_SCANNER_BIN=/app/server/ee/packages/app-scanner/bin/tj-app-scan.js \
     MCP_RENDER_AUDIT_ENABLED=false
