@@ -113,6 +113,7 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div>                                                       | <div style={{ width:"250px"}}> Configuration Options </div>                                                                  |
 | :------------------------------------------- | :------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------- |
+| Dynamic height | Automatically adjusts the component's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Loading state        | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility           | Controls component visibility.                                               | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Collapse when hidden | Collapses the component's space when hidden, so surrounding components fill the space. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
@@ -133,6 +134,7 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 | <div style={{ width:"130px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
 | :---------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
 | Color | Sets the color of the component's label. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Size | Sets the font size of the label, in pixels. Defaults to `12`. | Enter a number or click on **fx** and enter code that returns a number. |
 | Alignment | Sets the position of the label relative to the options. | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value — `side` or `top`. |
 | Direction | When alignment is set to `side`, controls whether the label appears to the left or right of the options. | Select **Left** or **Right** using the icon toggles. |
 | Width | Sets the width of the label. Available when alignment is `side`. | Enable **Auto** to use the standard width automatically, or disable it to manually set the width using the slider or **fx**. You can also choose whether the width is calculated relative to the **Container** or the **Field**. |
@@ -149,8 +151,9 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 
 ### Container
 
-**Padding** <br/>
-Allows you to maintain a standard padding by enabling the `Default` option.
+| <div style={{ width:"130px"}}> Container Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :---------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Padding | Sets the padding around the component. | Choose **Default** to keep the standard padding or **None** to remove it. |
 
 ### Advanced
 

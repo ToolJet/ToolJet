@@ -131,14 +131,14 @@ To set up server side search:
 
    Replace `dropdown1` with the name of your component.
 
-3. Bind **Option values** and **Option labels**, or the **Schema** if you are using dynamic options, to the query's data. For example, `{{queries.searchOrders.data.map(o => o.value)}}`.
+3. In the **Options** section, turn on **Dynamic options** and set **Schema** to the query's data, for example `{{queries.searchOrders.data}}` (the query already returns `label` and `value` columns). Options added manually with **Add new option** can't be bound to a query.
 
 4. Add an event handler to the component:<br/>
    Event: **On search text changed**<br/>
    Action: **Run Query**<br/>
    Query: the query you created in step 2
 
-5. Optionally, click on **fx** next to **Loading state** and enter `{{queries.searchOrders.isLoading}}` so that the menu shows a spinner while the query runs.
+5. Optionally, click on **fx** next to **Options loading state** and enter `{{queries.searchOrders.isLoading}}` so that the menu shows a spinner in place of the options while the query runs. Don't use **Loading state** for this: it shows a spinner in the field and stops the menu from opening.
 
 :::info
 **On search text changed** fires on every keystroke, so each keystroke runs the query. Keep a `LIMIT` in the query to bound the number of rows returned.
@@ -171,7 +171,7 @@ The following actions of the component can be controlled using the component-spe
 | setDisable( )                                 | Disables the component.                           | `components.dropdown1.setDisable(true)`             |
 | selectOption( )                               | Selects an option.                                | `components.dropdown1.selectOption(2)`              |
 
-**Note:** The data type passed to CSAs like `selectOption()` depends on how you configure the component. When adding options manually using the **Add new option** button, values must be strings (for example, `components.dropdown1.selectOption(['2'])`). When using dynamic options, supply values with the correct data types as they appear in your code logic.
+**Note:** The data type passed to CSAs like `selectOption()` depends on how you configure the component. When adding options manually using the **Add new option** button, values must be strings (for example, `components.dropdown1.selectOption('2')`). When using dynamic options, supply values with the correct data types as they appear in your code logic.
 
 For example, if the code is:
 
@@ -230,6 +230,7 @@ components.dropdown1.selectOption(2);
 | Search type | Sets whether the options menu is filtered in the browser (**Client side**) or by a query (**Server side**). Only visible when **Show search in options** is enabled. | Select **Client side** or **Server side**, or click on **fx** and enter an expression that resolves to a boolean (`{{true}}` for **Server side**). |
 | Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable | Enables or disables the component. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String (e.g., `Enter your name here.` ). |
 
@@ -247,7 +248,9 @@ components.dropdown1.selectOption(2);
 | <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
 | :--------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
 | Color | Sets the color of the component's label. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Size | Sets the font size of the label, in pixels. Defaults to `12`. | Enter a number or click on **fx** and enter code that returns a number. |
 | Alignment | Sets the position of the label and input field.   | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value - **side** or **top**. |
+| Direction | When alignment is set to `side`, places the label to the left or right of the field. | Select **Left** or **Right** using the icon toggles. |
 | Width | Sets the width of the input field. | Enable **Auto width** to use the standard width automatically. Disable it to manually adjust the width using the slider or by entering a numeric value via **fx**. You can also choose whether the width is calculated relative to the **Container** or relative to the **Field**. |
 
 ### Field
@@ -263,6 +266,8 @@ components.dropdown1.selectOption(2);
 | Icon | Allows you to select an icon for the component. | Enable the icon visibility, select icon and icon color |
 | Border radius | Modifies the border radius of the component. | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value.  |
 | Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties. |
+| Menu width | Sets the width of the options menu. | Select **Match the field** (default) to make the menu as wide as the field, **Match the content** to fit the longest option label (up to 520px, never narrower than the field), or **Custom** to set your own width. |
+| Custom menu width | Sets the width of the options menu. Only visible when **Menu width** is set to **Custom**. | Enter a number in pixels (default `256`) or a CSS width such as `50%`, or click on **fx** and enter code that returns one. |
 
 ### Container
 

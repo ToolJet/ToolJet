@@ -3,7 +3,7 @@ title: Configuring Inputs and Outputs
 id: input-output
 ---
 
-Modules have their own inputs and outputs which enable them to interact with the parent application. You can configure inputs and outputs of a module from the properties panel. 
+Modules have their own inputs and outputs which enable them to interact with the parent application. To configure them, click the module container in the module builder to open its properties panel. The panel has **Input**, **Output**, and **Additional actions** sections, and a **Test inputs** section once the module has at least one input.
 
 ## Inputs
 Inputs allow the parent application to send data or trigger actions inside the module. You can access inputs in the module using the **input** object.
@@ -15,7 +15,7 @@ Inputs allow the parent application to send data or trigger actions inside the m
 <img className="screenshot-full img-m" src="/img/app-builder/modules/input-type.png" alt="Input Types" />
 
 ### How to Define Inputs
-In the properties panel, go to the **Inputs** section and click **Add new**. Then, provide the following:
+In the properties panel, go to the **Input** section and click **New input**. ToolJet adds an input with a generated name, such as `input1`, and the type **Data**. Click the input to open the **Edit input** popover, then provide the following:
 
 #### Data Input
 
@@ -23,7 +23,11 @@ For **Data** inputs, define the following parameters:
 
 - **Name**: A unique name for the input
 - **Type**: Select **Data**
-- **Default Value** (optional)
+- **Default value** (optional): The value the input uses when the parent application doesn't pass one. It's also pre-filled in the input field when you add the module to an application.
+
+:::info
+The **Default value** field supports only constant values, such as strings, numbers, or objects. Exposed values such as `components`, `queries`, or `globals` aren't supported in this field.
+:::
 
 For example, to pass a form title from the parent application, create an input with the name **formTitle** and type **Data**. You can also set a default value.
 
@@ -40,7 +44,7 @@ For our case, we’ll use `{{input.formTitle}}` to access the form title in the 
 {{input.formTitle}}
 ```
 
-When you import this module into an application, you’ll see the input field in the module settings. If you set the **formTitle** value to **User Details**, the form will display that as the title.
+When you add this module to an application, the input appears in the **Input** section of the module's properties panel. If you set the **formTitle** value to **User Details**, the form displays that as the title.
 
 <img className="screenshot-full img-full" src="/img/app-builder/modules/module-input-in-app.png" alt="Input Settings" /> 
 
@@ -48,7 +52,7 @@ When you import this module into an application, you’ll see the input field in
 
 For **Query** inputs, define the following parameters:
 - **Name**: A unique name for the input
-- **Type**: Select Query
+- **Type**: Select **Query**
 
 For example, if you want to trigger a query named **submitForm** from the parent application, create an input named **submit** and select **Query** as the type.
 
@@ -62,9 +66,18 @@ When you import the module into an applications, you’ll see the query input in
 
 <img className="screenshot-full img-full" style={{ marginBottom:'15px' }} src="/img/app-builder/modules/query-from-app.png" alt="Query Input Settings" /> 
 
+### Naming Rules
+
+Input and output names must follow these rules:
+- Each input name must be unique among the module's inputs, and each output name unique among its outputs. If you enter a name that's already in use, ToolJet shows a warning such as *Input name 'formTitle' already exists. Please use a unique name.* and keeps the previous name.
+- Use only letters, numbers, and underscores.
+- The following names are reserved and can't be used for inputs: `id`, `inputItems`, `outputItems`, `moduleAppId`, `moduleVersionId`, and `moduleEnvironmentId`.
+
+To delete an input or output, click the trash icon in its **Edit input** or **Edit output** popover, or select **Delete** from the item's menu.
+
 ## Testing Inputs 
 
-You can test how a module behaves before importing it into an application in the **Test Input** section in the properties panel of the module builder. To do this, open the module's properties panel and scroll to the **Test Input** section. Enter sample values for each input.
+You can test how a module behaves before adding it to an application in the **Test inputs** section of the module container's properties panel. This section appears once the module has at least one input. Enter a sample value for each input. If you leave a **Data** input's test value empty, the module uses the input's **Default value**.
 
 For example, if the module has an input named **formTitle**, you can enter a sample value like **User Details** to see how it's rendered in the module.
 
@@ -76,7 +89,9 @@ You can also test query inputs by creating a query inside the module builder and
 
 Outputs allow the module to send data back to the parent app. You can access outputs from the module in the parent application using the components object.
 
-For example, if you want to send submitted form data back to the parent application, create an output named **formData** and pass the form data **From** the component.
+To add an output, go to the **Output** section and click **New output**. ToolJet adds an output with a generated name, such as `output1`. Click the output to open the **Edit output** popover and set its **Name** and **Value**.
+
+For example, if you want to send submitted form data back to the parent application, create an output named **formData** and set its **Value** to the form component's data.
 
 <img className="screenshot-full img-m" style={{ marginBottom:'15px' }}  src="/img/app-builder/modules/module-output.png" alt="Module Output" /> 
 

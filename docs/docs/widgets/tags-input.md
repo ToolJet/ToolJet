@@ -19,11 +19,11 @@ The **Tags Input** component allows users to create, select, and delete tags fro
 | <div style={{ width:"130px"}}> Property </div> | Description | Expected Value |
 |:---------|:------------|:---------------|
 | Dynamic tags | Toggle to switch between static and dynamic options mode. When enabled, options are defined via a schema. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Default value | Pre-selected tag values when component loads. Only visible when Dynamic tags is OFF. | Comma-separated values or array |
+| Options | List of tags shown when **Dynamic tags** is OFF. Click a tag to edit its **Option label**, **Option value**, **Make this default option**, **Visibility** and **Disable** settings. Click **Add new option** to add a tag, and drag tags to reorder them. Reordering resets **Sort tags** to **None**. | Configure each tag from the list. |
 | Schema | JSON array defining tag options. Only visible when Dynamic tags is ON. | Array of objects with `label`, `value`, `visible`, `default`, and `disable` properties |
-| Sort tags | Sort order for tags in the dropdown. | `none`, `asc` (A-Z), or `desc` (Z-A) |
-| Allow new tags | When enabled, users can create new tags by typing values not in the predefined list. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tags loading state | When enabled, shows a loading indicator while options are being loaded. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Sort tags | Sort order for the predefined tags in the dropdown. | **None**, **a-z** or **z-a** |
+| Allow new tags | When enabled, users can create new tags by typing values not in the predefined list. Enabled by default. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tags loading state | When enabled, shows a loading indicator in the menu while options are being loaded. Only visible when Dynamic tags is ON. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Turn on search | When enabled, users can search/filter tags in the dropdown. When disabled, the dropdown menu does not appear and the component acts as a simple input field. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Search type | Sets whether the tag list is filtered in the browser (**Client side**) or by a query (**Server side**). Only visible when **Turn on search** is enabled. | `Client side` or `Server side`, or click on **fx** and enter an expression that resolves to a boolean (`{{true}}` for **Server side**). |
 
@@ -57,38 +57,10 @@ This is the default search option. The component filters the tags it already hol
 
 #### Server Side Search
 
-Use Server side search when the tag list is too large to load into the browser. The component stops filtering locally, and you bind its options to a query that returns only the matching rows.
+When **Search type** is **Server side**, the component stops filtering the tags it holds in the browser, so the menu shows every tag it receives while the user types.
 
 :::warning
-Server side mode does not fetch anything on its own, it only stops the component from filtering. If you enable it without binding the tag options to a query, the menu shows the full unfiltered list while the user types.
-:::
-
-To set up server side search:
-
-1. Turn on **Turn on search**, then set **Search type** to **Server side**.
-
-2. Create a query that filters on the component's `searchText`:
-
-   ```sql
-   SELECT name AS label, id AS value
-   FROM public.sample_data_orders
-   WHERE name ILIKE '%{{components.tagsinput1.searchText || ""}}%'
-   LIMIT 50
-   ```
-
-   Replace `tagsinput1` with the name of your component.
-
-3. Turn on **Dynamic tags** and bind the **Schema** to the query's data. For example, `{{queries.searchTags.data.map(t => ({ label: t.label, value: t.value }))}}`.
-
-4. Add an event handler to the component:<br/>
-   Event: **On search text changed**<br/>
-   Action: **Run Query**<br/>
-   Query: the query you created in step 2
-
-5. Optionally, click on **fx** next to **Tags loading state** and enter `{{queries.searchTags.isLoading}}` so that the menu shows a loading indicator while the query runs.
-
-:::info
-**On search text changed** fires on every keystroke, so each keystroke runs the query. Keep a `LIMIT` in the query to bound the number of rows returned.
+Tags Input doesn't expose the text the user types or fire an event while they type, so a query can't react to the search text. Server side mode only turns off the in-browser filtering.
 :::
 
 **Sort tags** still applies in Server side mode and re-sorts whatever the query returned, in the browser. Set it to `none` if your query already sorts the results.
@@ -99,9 +71,8 @@ To set up server side search:
 |:------|:------------|
 | On tag added | Triggered when a tag is selected or a new tag is created. |
 | On tag deleted | Triggered when a tag is removed from the selection. |
-| On search text changed | Triggered whenever the search text is changed. |
-| On focus | Triggered when the input field receives focus. |
-| On blur | Triggered when the input field loses focus. |
+| On focus | Triggered when the user clicks inside the field. |
+| On blur | Triggered when the user clicks outside the component while its dropdown is open. |
 
 :::info
 Check [Action Reference](/docs/actions/run-query) docs to get detailed information about all the **Actions**.
@@ -133,45 +104,44 @@ Both `selectTags` and `deselectTags` support multiple input formats:
 | Mixed formats | `['newport', {label: 'New York'}]` | Combine different formats |
 
 :::info Matching Priority
-When a string is passed, the component first tries to match by `value`. If no match is found, it tries to match by `label`.
+Each string is matched against both the `value` and the `label` of every tag. The first tag in the list that matches either is selected. These actions don't trigger the **On tag added** or **On tag deleted** events.
 :::
 
 ### Example Usage
 
 ```js
 // Select by values
-components.tagsInput1.selectTags(['newport', 'new_york'])
+components.tagsinput1.selectTags(['newport', 'new_york'])
 
 // Select by labels
-components.tagsInput1.selectTags(['Newport', 'New York'])
+components.tagsinput1.selectTags(['Newport', 'New York'])
 
 // Select using objects
-components.tagsInput1.selectTags([
+components.tagsinput1.selectTags([
   { value: 'newport' },
   { label: 'New York' }
 ])
 
 // Deselect by label
-components.tagsInput1.deselectTags(['Newport'])
+components.tagsinput1.deselectTags(['Newport'])
 
 // Deselect using mixed format
-components.tagsInput1.deselectTags(['newport', { label: 'New York' }])
+components.tagsinput1.deselectTags(['newport', { label: 'New York' }])
 
 // Clear all selections
-components.tagsInput1.clear()
+components.tagsinput1.clear()
 
 // Hide the component
-components.tagsInput1.setVisibility(false)
+components.tagsinput1.setVisibility(false)
 ```
 
 ## Exposed Variables
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 |:---------|:-----|:------------|
-| searchText | This variable is initially empty and holds the value whenever the user searches in the tag list. | `components.tagsinput1.searchText` |
 | values | Returns the array of values of selected tags. | `components.tagsinput1.values` |
-| tags | Returns the array of all the available tags. | `components.tagsinput1.tags` |
-| newTagsAdded | Returns the array of all the newly added tags. | `components.tagsinput1.newTagsAdded` |
+| tags | Returns an array of `{label, value}` objects for all visible predefined tags. Excludes tags created by the user. | `components.tagsinput1.tags` |
+| newTagsAdded | Returns an array of `{label, value}` objects for the tags created by the user. | `components.tagsinput1.newTagsAdded` |
 | selectedTags | Returns the array of label and values of all the selected tags. | `components.tagsinput1.selectedTags` |
 | label | The label text displayed for the field. | `components.tagsinput1.label` |
 | isVisible | Returns the visibility state of the component. | `components.tagsinput1.isVisible` |
@@ -184,19 +154,19 @@ components.tagsInput1.setVisibility(false)
 
 ```js
 // Get all selected values
-{{components.tagsInput1.values}}
+{{components.tagsinput1.values}}
 // Returns: ['newport', 'new_york']
 
 // Get selected tags with labels
-{{components.tagsInput1.selectedTags}}
+{{components.tagsinput1.selectedTags}}
 // Returns: [{ label: 'Newport', value: 'newport' }, { label: 'New York', value: 'new_york' }]
 
 // Get only user-created tags
-{{components.tagsInput1.newTagsAdded}}
-// Returns: ['custom_tag_1', 'custom_tag_2']
+{{components.tagsinput1.newTagsAdded}}
+// Returns: [{ label: 'custom_tag_1', value: 'custom_tag_1' }, { label: 'custom_tag_2', value: 'custom_tag_2' }]
 
 // Check if component is valid
-{{components.tagsInput1.isValid}}
+{{components.tagsinput1.isValid}}
 // Returns: true or false
 ```
 
@@ -210,7 +180,7 @@ components.tagsInput1.setVisibility(false)
 ### Custom Validation Example
 
 ```js
-{{components.tagsInput1.values.length >= 2 ? '' : 'Select at least 2 tags'}}
+{{components.tagsinput1.values.length >= 2 ? '' : 'Select at least 2 tags'}}
 ```
 This validates that at least 2 tags are selected and shows an error message if not.
 
@@ -221,6 +191,7 @@ This validates that at least 2 tags are selected and shows an error message if n
 | Dynamic height | When enabled, the component height adjusts based on the number of selected tags. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Loading state | Shows a loading overlay on the entire component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility | Controls whether the component is visible. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable | When enabled, the component becomes non-interactive. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String |
 
@@ -238,6 +209,7 @@ This validates that at least 2 tags are selected and shows an error message if n
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:---------|:------------|:--------|
 | Color | Label text color. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Size | Sets the font size of the label, in pixels. Defaults to `12`. | Enter a number or click on **fx** and enter code that returns a number. |
 | Alignment | Label position relative to the field. | `Side` (left of field) or `Top` (above field). |
 | Direction | Label alignment when using Side layout. | `Left` or `Right`. |
 | Width | When Alignment is Side and Auto width is disabled, sets the label width. | Enter the value or use the slider. |

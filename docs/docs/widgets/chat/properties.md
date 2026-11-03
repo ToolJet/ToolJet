@@ -11,6 +11,7 @@ The **Chat Component** can be customized by configuring various properties or ad
 |----------|-------------|--------------- |
 | Chat Title | Title of the chat component. | String (e.g. `ToolJet Support Chatbot`) |
 | Initial Chat | Initial messages to be loaded when the chat starts. | Array of Objects ( e.g. `{{[ { message: 'Hey! Welcome to ToolJet. How may I help you?' } ]}}` ) |
+| Placeholder for input field | Placeholder text shown in the message input field. | String (default: `Ask me anything!`) |
 | User Name | Defines the user's name. | String (e.g. `John Doe`) |
 | User Avatar | Defines the user's avatar. | Image URL |
 | Respondent Name | Defines the respondent's name. | String (e.g. `ToolJet Bot`) |
@@ -42,10 +43,10 @@ All the following actions can be enabled or disabled either by using the toggle 
 |--------|-------------|
 | Visibility | Controls the component's visibility. |
 | Disable input state | Enables or disables the input state. |
-| Histroy loading state | Enables the history loading state, often used with `isLoading` to indicate progress. |
-| Response loading state | Enables the response loading state, often used with `isLoading` to indicate progress. |
-| Enable clear history button | Enables or disables the clear history button. |
-| Enable download history button | Enables or disables the delete history button. | 
+| History loading state | Enables the history loading state, often used with `isHistoryLoading` to indicate progress. |
+| Response loading state | Enables the response loading state, often used with `isResponseLoading` to indicate progress. |
+| Enable clear history icon | Enables or disables the clear chat history icon in the header. Clearing resets the history to **Initial chat** and triggers **On history cleared**. |
+| Enable download history icon | Enables or disables the download chat history icon in the header. It downloads the history as a JSON file. |
 
 ## Devices
 
