@@ -1659,12 +1659,12 @@ export class AppImportExportService {
     return;
   }
 
-  /** Adds a Code mode app's code to its export definition (ee). `limited`: the result has to fit an import request. */
+  /** Adds an app's stored code to its export definition (ee). `limited`: the result has to fit an import request. */
   async addCodeToExport(_user: User, _definition: { appV2: App }, _limited: boolean): Promise<void> {
     return;
   }
 
-  /** Rebuilds a Code mode app from its import definition (ee). codeMissing: the file should have had code and did not. */
+  /** Restores an app's stored code from its import definition (ee). codeMissing: the file should have had code and did not. */
   protected async restoreCodeModeApp(
     _manager: EntityManager,
     _user: User,

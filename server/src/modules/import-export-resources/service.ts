@@ -124,7 +124,7 @@ export class ImportExportResourcesService {
     user: User,
     exportResourcesDto: ExportResourcesDto,
     branchId?: string,
-    // A Code mode app's code and builds: for a file a person takes elsewhere and for a clone. Git sync has its own
+    // An app's stored code and builds: for a file a person takes elsewhere and for a clone. Git sync has its own
     // folder for code, and the AI callers want the definition only.
     code?: 'file' | 'clone'
   ): Promise<{
