@@ -124,7 +124,7 @@ jobs:
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
             --secret id=github_token,env=CUSTOM_GITHUB_TOKEN \
-            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            --build-arg BRANCH_NAME="$BRANCH_NAME" \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
             --load \
