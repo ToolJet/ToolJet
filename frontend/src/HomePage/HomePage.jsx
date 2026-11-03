@@ -719,6 +719,12 @@ class HomePageComponent extends React.Component {
 
       const data = await appsService.importResource(requestBody, this.props.appType);
       toast.success(`${this.getAppType()} imported successfully.`);
+      if (data.imports.app?.[0]?.codeMissing) {
+        toast.error(
+          "This file doesn't include the app's code: it was exported before exports carried it. Export the app again from the original and import the new file.",
+          { duration: 10000, style: { maxWidth: '425px' } }
+        );
+      }
       this.setState({ isImportingApp: false });
 
       if (!isEmpty(data.imports.app)) {
