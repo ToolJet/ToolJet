@@ -39,16 +39,6 @@ type StyleOptions = Record<string, unknown>;
 export const useThemeColor = (name: string, label: string, token: Token, options: StyleOptions = {}): string =>
   unlessDefault(ToolJet.useStyleString({ name, label, inspector: 'color', initialValue: token, ...options }), token) as string;
 
-/**
- * A hover background that does what it shows: with `applyDefault`, the declared default (Brand) is a colour like any
- * other and is returned, instead of '' (unset, which derives the hover from the background). Without it, it behaves
- * as useThemeColor, for variants whose hover is not the default's fill.
- */
-export const useThemeHover = (name: string, label: string, token: Token, applyDefault: boolean): string => {
-  const value = ToolJet.useStyleString({ name, label, inspector: 'color', initialValue: token }) as string;
-  return applyDefault ? value : (unlessDefault(value, token) as string);
-};
-
 /** A number style (px) with the value it draws as its default. */
 export const useDrawnNumber = (name: string, label: string, drawn: number, options: StyleOptions = {}) =>
   unlessDefault(ToolJet.useStyleNumber({ name, label, initialValue: drawn, ...options }), drawn) as number | '';
@@ -73,3 +63,19 @@ export const useBlankNumber = (name: string, label: string, placeholder: string,
  */
 export const useThemeRadius = (name: string, label: string, options: StyleOptions = {}) =>
   useBlankNumber(name, label, 'Theme radius', { inspector: 'numberInput', description: 'Blank follows the theme radius.', ...options });
+
+/**
+ * A radius whose default is the word "auto", which follows the theme radius: the field says so instead of looking
+ * empty. Reads '' while it is "auto" (or blank), else the number typed.
+ */
+export const useAutoRadius = (name: string, label: string, options: StyleOptions = {}): number | '' => {
+  const raw = ToolJet.useStyleString({
+    name,
+    label,
+    initialValue: 'auto',
+    description: 'auto follows the theme radius. Enter a number to set it in px.',
+    ...options,
+  }) as unknown;
+  const text = typeof raw === 'string' || typeof raw === 'number' ? String(raw).trim() : '';
+  return text !== '' && Number.isFinite(Number(text)) ? Number(text) : '';
+};

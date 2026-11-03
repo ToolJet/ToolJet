@@ -71,9 +71,11 @@ export interface OptionsEditorProps {
   onChange: (next: unknown[]) => void;
   darkMode: boolean;
   cyLabel: string;
+  /** Each option gets a Default switch: the options marked start selected. */
+  defaultToggle?: boolean;
 }
 
-export const OptionsEditor = ({ value, onChange, darkMode, cyLabel }: OptionsEditorProps) => {
+export const OptionsEditor = ({ value, onChange, darkMode, cyLabel, defaultToggle = false }: OptionsEditorProps) => {
   const rows = useRowIds(value.length);
   const update = (index: number, key: string, v: unknown) =>
     onChange(value.map((entry, i) => (i === index ? withField(entry, key, v) : entry)));
@@ -84,6 +86,7 @@ export const OptionsEditor = ({ value, onChange, darkMode, cyLabel }: OptionsEdi
     const notes = [
       isFilled(v) && String(v) !== label && String(v),
       isObject(entry) && entry.disabled === true && 'disabled',
+      defaultToggle && isObject(entry) && entry.default === true && 'default',
     ].filter(Boolean);
     return (
       <span data-cy={`${cyLabel}-option-${index}`}>
@@ -158,6 +161,14 @@ export const OptionsEditor = ({ value, onChange, darkMode, cyLabel }: OptionsEdi
           cy={`${cyLabel}-option-disabled`}
           onChange={(on) => update(index, 'disabled', on)}
         />
+        {defaultToggle && (
+          <SwitchField
+            label="Default"
+            checked={obj.default === true}
+            cy={`${cyLabel}-option-default`}
+            onChange={(on) => update(index, 'default', on)}
+          />
+        )}
       </div>
     );
   };

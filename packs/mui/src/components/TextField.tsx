@@ -71,13 +71,6 @@ export const TextField = () => {
     description: 'Text, or an icon name such as Mail.',
     initialValue: '',
   });
-  const [maxLength] = ToolJet.useStateNumber({
-    name: 'maxLength',
-    label: 'Max length',
-    description: '0 for no limit.',
-    initialValue: 0,
-    min: 0,
-  });
   const look = useTextFieldLook();
   const events = useTextEvents();
   const ref = useRef<HTMLInputElement>(null);
@@ -95,7 +88,7 @@ export const TextField = () => {
     roleEvents: { onEnterPressed: 'onEnterKeyDown' },
     roleActions: { setText: 'setValue', setFocus: 'focus', setBlur: 'blur' },
     defaultWidth: 10,
-    defaultHeight: 7,
+    defaultHeight: 9,
   });
   const [revealed, setRevealed] = useState(false);
   const isPassword = type === 'password';
@@ -143,7 +136,6 @@ export const TextField = () => {
                   )
                 : adornment('end', end),
             },
-            htmlInput: Number(maxLength) > 0 ? { maxLength: Number(maxLength) } : undefined,
           }}
           onChange={(e) => change(e.target.value)}
           onKeyDown={(e) => {

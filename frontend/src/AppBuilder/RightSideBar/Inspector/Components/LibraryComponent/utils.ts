@@ -139,6 +139,11 @@ const NATIVE_FIELD_TYPES: Record<string, string[]> = {
   number: ['code', 'number', 'numberInput', 'slider'],
 };
 
+// The pack components whose options can be marked default, one by one, and that read the mark.
+const OPTION_DEFAULT_COMPONENTS: Record<string, string[]> = { shadcn: ['ButtonGroup'] };
+export const hasOptionDefault = (pack: unknown, componentName: unknown): boolean =>
+  OPTION_DEFAULT_COMPONENTS[String(pack)]?.includes(String(componentName)) === true;
+
 const inspectorFieldType = (prop: ManifestProp): string => {
   const { inspector } = prop;
   if (!inspector || editorHint(prop) || !NATIVE_FIELD_TYPES[prop.type]?.includes(inspector)) return 'code';
