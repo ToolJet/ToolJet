@@ -230,10 +230,13 @@ export const openGroupGranularAccess = (groupName) => {
   // then timed out waiting for the group title.
   cy.wait("@groupPermissionsList", { timeout: 30000 });
   cy.get(groupTitle("Admin"), { timeout: 30000 }).should("be.visible");
+  // Hover first (main): the row's overflow menu can steal a bare click.
+  // Wait/timeouts (ours): Admin auto-select races a click that lands too early.
   cy.get(groupsSelector.groupLink(groupName), { timeout: 30000 })
     .should("be.visible")
     .scrollIntoView()
-    .click("left");
+    .realHover({ position: "left" });
+  cy.get(groupsSelector.groupLink(groupName)).click("left");
   cy.get(groupTitle(groupName), { timeout: 30000 }).should("be.visible");
   uiOpenGranularAccessTab({ waitForUsers: !ROLE_GROUPS.includes(groupName) });
 };
