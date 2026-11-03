@@ -22,8 +22,6 @@ You can use [@mention in AI Chat](/docs/build-with-ai/referencing-app-resources)
 The AI buttons in the query panel (**Write query**, **Write custom code**, **Write transformation**, the AI code generator, and **Auto-sort unsorted queries into folders**) are currently hidden. To generate or change a query, including the code in a **Run JavaScript code** query, @mention the query in the AI chat and describe what you need.
 :::
 
-<!-- TODO verify: whether the AI agent writes RunJS code through the chat. The server's list of AI-supported data sources (AI_SUPPORTED_DATASOURCE_KINDS) doesn't include runjs, while the hidden query-panel button (AI_QUERY_SUPPORTED_KINDS) does. -->
-
 ## Supported Data Sources
 
 ToolJet AI can work with queries for these data sources. They are also the data sources you can @mention in the AI chat.
