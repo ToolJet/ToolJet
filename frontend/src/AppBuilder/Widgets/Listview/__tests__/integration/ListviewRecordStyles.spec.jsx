@@ -221,7 +221,12 @@ describe('Listview: list styles', () => {
     verticalDividers().forEach((divider) => {
       expect(divider.style.backgroundColor).toBe('rgb(1, 2, 3)');
       expect(divider.style.width).toBe('1px');
+      // The line sits in a 0px track; without these a `max-width: 100%` rule clamps it to nothing.
+      expect(divider.style.minWidth).toBe('1px');
+      expect(divider.style.maxWidth).toBe('none');
     });
+    // A 0px track per column line keeps the gap at exactly 12px.
+    expect(list().style.gridTemplateColumns).toBe('minmax(0, 1fr) 0px minmax(0, 1fr) 0px minmax(0, 1fr)');
     rows().forEach((row) => expect(row.style.border).toBe(''));
     // The lines sit inside the gaps, so records are exactly 12px apart both ways.
     expect(2 * px(list().style.columnGap) + dividerWidth(verticalDividers()[0])).toBe(12);
