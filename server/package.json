@@ -223,10 +223,6 @@
     "@xmldom/xmldom": "^0.8.15",
     "proxy-addr": "^2.0.8"
   },
-  "optionalDependencies": {
-    "html-minifier": "^5.0.0",
-    "mjml": "^4.15.3"
-  },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.30.0",
