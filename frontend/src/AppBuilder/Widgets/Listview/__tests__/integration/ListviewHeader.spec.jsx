@@ -305,7 +305,7 @@ describe('Listview: a new ListView s header', () => {
     const styles = seeded.find((entry) => entry.component.parent === HEADER).component.definition.styles;
 
     expect(styles.fontWeight.value).toBe('500');
-    expect(styles.textSize.value).toBe('{{16}}');
+    expect(styles.textSize.value).toBe(16);
   });
 });
 

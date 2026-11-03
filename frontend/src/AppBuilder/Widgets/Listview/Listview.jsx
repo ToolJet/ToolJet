@@ -19,6 +19,7 @@ import Spinner from '@/_ui/Spinner';
 import {
   DIVIDER_WIDTH,
   HEADER_HEIGHT,
+  HEADER_DIVIDER_HEIGHT,
   LEGACY_PADDING,
   NEW_STYLE_PADDING,
   getListStyle,
@@ -352,13 +353,16 @@ export const Listview = function Listview({
               <HorizontalSlot
                 slotName="header"
                 id={`${id}-header`}
-                height={HEADER_HEIGHT}
+                height={HEADER_HEIGHT - HEADER_DIVIDER_HEIGHT}
                 width={width}
                 darkMode={darkMode}
                 isActive={activeSlot === `${id}-header`}
                 isResizable={false}
                 slotStyle={{
                   backgroundColor: headerBackgroundColor,
+                  // Figma: the divider is inside the 60px, so the first record starts at 72.
+                  boxSizing: 'border-box',
+                  height: HEADER_HEIGHT,
                   borderBottom: `1px solid ${headerDividerColor ?? 'var(--cc-weak-border)'}`,
                   overflow: 'hidden',
                 }}

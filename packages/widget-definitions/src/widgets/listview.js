@@ -56,7 +56,7 @@ export const listviewConfig = {
       styles: ['fontWeight', 'textSize', 'textColor', 'verticalAlignment'],
       defaultValue: {
         text: 'List view',
-        fontWeight: 'bold',
+        fontWeight: '500',
         textSize: 16,
         textColor: 'var(--cc-primary-text)',
         verticalAlignment: 'center',
