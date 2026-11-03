@@ -64,6 +64,8 @@ const widget = createWidgetHarness({
   },
   defaultExtraComponents: { txt1: recordText() },
   capabilities: { dnd: true },
+  // The drop template's Image (Listview-HDR-006).
+  preload: ['Image'],
   widgetHeight: 624,
   widgetWidth: 600,
 });
@@ -149,6 +151,29 @@ describe('Listview: a header component is shared by every record', () => {
     await widget.session.user.type(document.querySelector('.ele-srch1 input'), 'abc');
 
     await waitFor(() => expect(texts('mir1')).toEqual(['S=abc', 'S=abc', 'S=abc']));
+  });
+
+  test('[Listview-HDR-003] a header Text reads the header input as one value', async () => {
+    // Break this catches: the record set-up (sizing every row child to one copy per record) reaching the
+    // header, so a header Text bound to a header input resolves per record and stops following it.
+    const headerMirror = child('hm1', 'hmirror', 'Text', { text: binding('H={{components.search.value}}') }, HEADER);
+    await mount({ extraComponents: { srch1: headerSearch(), mir1: recordMirror(), hm1: headerMirror } });
+    await widget.session.user.type(document.querySelector('.ele-srch1 input'), 'abc');
+    await waitFor(() => expect(texts('mir1')).toEqual(['S=abc', 'S=abc', 'S=abc']));
+    store().setVariable('poke', 1, MODULE_ID);
+
+    await waitFor(() => expect(texts('hm1')).toEqual(['H=abc']));
+  });
+
+  test('[Listview-HDR-003] a header component has no record, so listItem never resolves to one', async () => {
+    // Break this catches: the row-ancestor lookup taking the header slot for a record, so a header
+    // binding to `listItem` silently shows the first record's values.
+    const headerItem = child('hm2', 'hitem', 'Text', { text: binding('L={{listItem.text}}') }, HEADER);
+    await mount({ extraComponents: { hm2: headerItem } });
+    await waitFor(() => expect(texts('txt1')).toEqual(['Alpha', 'Beta', 'Gamma']));
+
+    expect(texts('hm2')).toHaveLength(1);
+    ['Alpha', 'Beta', 'Gamma'].forEach((record) => expect(texts('hm2')[0]).not.toContain(record));
   });
 
   test('[Listview-HDR-004] a header component is not in the list s data or children', async () => {

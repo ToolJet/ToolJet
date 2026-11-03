@@ -523,7 +523,14 @@ export const resolveListviewHeightFromRows = ({
   const recordLines = mode === 'grid' ? Math.ceil(rowCount / positiveColumns) : rowCount;
   const gapAllowance = Math.max(0, recordLines - 1) * getRecordGap(listStyle, component?.styles?.gap);
 
-  return stackedRowsHeight + borderAllowance + paginationAllowance + outerPaddingAllowance + gapAllowance;
+  // A shown header replaces the top padding with itself and a padding-sized gap, so only its height adds.
+  const headerAllowance = componentProperties.showHeader
+    ? Math.max(0, Number(componentProperties.headerHeight) || 0)
+    : 0;
+
+  return (
+    stackedRowsHeight + borderAllowance + paginationAllowance + outerPaddingAllowance + gapAllowance + headerAllowance
+  );
 };
 
 // Compute a container widget's target height from its children. Called on the

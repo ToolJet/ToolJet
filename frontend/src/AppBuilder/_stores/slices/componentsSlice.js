@@ -29,7 +29,12 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection, computeAutoMobileLayout } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
-import { ROW_SCOPED_WIDGET_TYPES, NESTING_LEVEL_LIMITS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import {
+  ROW_SCOPED_WIDGET_TYPES,
+  NESTING_LEVEL_LIMITS,
+  isListviewHeaderSlot,
+  isRowScopedCanvas,
+} from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
   calculateInputCanvasHeight,
   resolveInputCanvasAlignment,
@@ -487,7 +492,7 @@ export const createComponentsSlice = (set, get) => ({
         ancestorVisited.add(baseAncestorId);
         const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
         const ancestorType = ancestorDef?.component?.component;
-        if (ROW_SCOPED_WIDGET_TYPES.includes(ancestorType)) {
+        if (isRowScopedCanvas(ancestorId, ancestorType)) {
           // Add 0 at the beginning for each row-scoped ancestor (outer-most first)
           parentIndices.unshift(0);
         }
@@ -718,7 +723,7 @@ export const createComponentsSlice = (set, get) => ({
       listviewAncestorVisited.add(baseId);
       const parentDef = getComponentDefinition(baseId, moduleId);
       const parentType = parentDef?.component?.component;
-      if (ROW_SCOPED_WIDGET_TYPES.includes(parentType)) {
+      if (isRowScopedCanvas(currentParentId, parentType)) {
         listviewAncestors.unshift(baseId); // Add to front to maintain order from outer to inner
       }
       currentParentId = parentDef?.component?.parent;
@@ -1540,7 +1545,7 @@ export const createComponentsSlice = (set, get) => ({
                 if (ancestorVisited.has(baseAncestorId)) break;
                 ancestorVisited.add(baseAncestorId);
                 const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
-                if (ROW_SCOPED_WIDGET_TYPES.includes(ancestorDef?.component?.component)) {
+                if (isRowScopedCanvas(ancestorId, ancestorDef?.component?.component)) {
                   parentIndices.unshift(0);
                 }
                 ancestorId = ancestorDef?.component?.parent;
@@ -2886,7 +2891,12 @@ export const createComponentsSlice = (set, get) => ({
     const collected = [];
     const seen = new Set();
     // Slot children (a Container's header or footer, a Tab) are filed under `<id>-<slot>`, not `<id>`.
-    const slotIdsOf = (id) => Object.keys(containerChildrenMapping).filter((key) => key.startsWith(`${id}-`));
+    const slotIdsOf = (id) => {
+      const type = getComponentDefinition(id, moduleId)?.component?.component;
+      return Object.keys(containerChildrenMapping).filter(
+        (key) => key.startsWith(`${id}-`) && !isListviewHeaderSlot(key, type)
+      );
+    };
     const walk = (id) => {
       [id, ...slotIdsOf(id)]
         .flatMap((key) => getContainerChildrenMapping(key, moduleId))
@@ -3374,7 +3384,7 @@ export const createComponentsSlice = (set, get) => ({
       visited.add(baseId);
       const def = getComponentDefinition(baseId, moduleId);
       if (!def) return null;
-      if (ROW_SCOPED_WIDGET_TYPES.includes(def.component?.component)) return baseId;
+      if (isRowScopedCanvas(currentId, def.component?.component)) return baseId;
       currentId = def.component?.parent;
     }
     return null;

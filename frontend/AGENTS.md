@@ -95,6 +95,7 @@ No change may break existing saved applications. Always ask: would an app saved 
 - Child-to-parent: `setExposedValuesPerRow` → `_deriveListviewChain`, not callback chains
 - ListView nesting is limited to **2 levels**. Only a canvas whose every `contextPath` index is 0 is editable; the rest are read-only mirrors
 - `findNearestSubcontainerAncestor` is load-bearing for dependency resolution — verify it is used when walking the component tree
+- A ListView's own header slot (`<listviewId>-header`) is not a row: shared by every record, never in `data`/`children`, editable on every page. Row walks use `isRowScopedCanvas` / `isListviewHeaderSlot` (`AppCanvas/appCanvasConstants.js`). Every other slot inside a record (a Container's header, a Tab) stays row-scoped
 - `listItem` is ListView, `cardData` is Kanban. Don't mix them up
 
 ### Events and queries

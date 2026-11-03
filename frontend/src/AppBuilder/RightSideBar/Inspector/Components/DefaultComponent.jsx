@@ -118,9 +118,12 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   const validations = Object.keys(componentMeta.validation || {});
   let properties = [];
   let additionalActions = [];
+  const headerProperties = [];
   for (const [key] of Object.entries(componentMeta?.properties)) {
     if (componentMeta?.properties[key]?.section === 'additionalActions') {
       additionalActions.push(key);
+    } else if (componentMeta?.properties[key]?.section === 'header') {
+      headerProperties.push(key);
     } else if (componentMeta?.properties[key]?.section !== 'deprecatedStyles') {
       properties.push(key);
     }
@@ -144,6 +147,27 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     additionalActions,
     selectedComponentId
   );
+
+  if (headerProperties.length > 0) {
+    accordionItems.unshift({
+      title: 'Header',
+      isOpen: true,
+      children: headerProperties.map((property) =>
+        renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          property,
+          'properties',
+          currentState,
+          components,
+          darkMode,
+          ''
+        )
+      ),
+    });
+  }
 
   return <Accordion items={accordionItems} />;
 };

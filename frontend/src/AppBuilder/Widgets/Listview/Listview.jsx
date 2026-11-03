@@ -12,6 +12,8 @@ import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { ListviewSubcontainer } from './ListviewSubcontainer';
+import { HorizontalSlot } from '@/AppBuilder/Widgets/Form/Components/HorizontalSlot';
+import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 import cx from 'classnames';
 import Spinner from '@/_ui/Spinner';
 import {
@@ -65,6 +67,8 @@ export const Listview = function Listview({
     dynamicHeight,
     loadingState = false,
     gridRecordHeight,
+    showHeader = false,
+    headerHeight = 60,
   } = combinedProperties;
 
   const data = dataSourceSelector === 'rawJson' ? combinedProperties?.data : dataSourceSelector;
@@ -79,6 +83,8 @@ export const Listview = function Listview({
     recordDividerColor,
     recordBorderRadius,
     recordBoxShadow,
+    headerBackgroundColor,
+    headerDividerColor,
   } = styles;
   const recordStyle = getListStyle(listStyle);
   const isLegacy = recordStyle === 'legacy';
@@ -98,6 +104,9 @@ export const Listview = function Listview({
   const mode = String(rawMode ?? 'list').toLowerCase();
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
   const recordHeight = getRecordHeight(mode, rowHeight, gridRecordHeight);
+  const containerPadding = isLegacy ? LEGACY_PADDING : NEW_STYLE_PADDING;
+  const activeSlot = useActiveSlot(id);
+  const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
 
   const computedStyles = {
     backgroundColor,
@@ -108,7 +117,9 @@ export const Listview = function Listview({
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
     boxShadow,
-    padding: `${isLegacy ? LEGACY_PADDING : NEW_STYLE_PADDING}px`,
+    padding: `${containerPadding}px`,
+    // The header takes the top edge itself, full width, as in Figma.
+    ...(showHeader && { paddingTop: 0 }),
     overflowX: 'hidden',
     // Dynamic mode (view-only) hides the listview's own scroll to suppress
     // the one-frame flash while rows grow ahead of the parent reflow. Static
@@ -323,6 +334,42 @@ export const Listview = function Listview({
         <Spinner />
       ) : (
         <>
+          {showHeader && (
+            // Sticky so it stays above the records while they scroll; the widget background stops
+            // records showing through a transparent header.
+            <div
+              className="listview-header-wrapper"
+              style={{
+                position: 'sticky',
+                top: 0,
+                zIndex: 2,
+                flexShrink: 0,
+                marginLeft: -containerPadding,
+                marginRight: -containerPadding,
+                marginBottom: containerPadding,
+                backgroundColor,
+              }}
+            >
+              <HorizontalSlot
+                slotName="header"
+                id={`${id}-header`}
+                height={headerHeight}
+                width={width}
+                darkMode={darkMode}
+                isActive={activeSlot === `${id}-header`}
+                onResize={({ newHeight }) =>
+                  setComponentProperty(id, 'headerHeight', parseInt(newHeight, 10), 'properties', 'value', false)
+                }
+                slotStyle={{
+                  backgroundColor: headerBackgroundColor,
+                  borderBottom: `1px solid ${headerDividerColor ?? 'var(--cc-weak-border)'}`,
+                  overflow: 'hidden',
+                }}
+                componentType="Listview"
+                dataCy={dataCy}
+              />
+            </div>
+          )}
           <div
             role="list"
             className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}

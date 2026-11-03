@@ -42,6 +42,26 @@ export const listviewConfig = {
       properties: ['text'],
       accessorKey: 'buttonText',
     },
+    // Seeded on drop only, and every drop is a new ListView, so saved ListViews never gain it.
+    {
+      componentName: 'Text',
+      slotName: 'header',
+      layout: {
+        top: 10,
+        left: 1,
+        height: 40,
+        width: 20,
+      },
+      properties: ['text'],
+      styles: ['fontWeight', 'textSize', 'textColor', 'verticalAlignment'],
+      defaultValue: {
+        text: 'List view',
+        fontWeight: 'bold',
+        textSize: 16,
+        textColor: 'var(--cc-primary-text)',
+        verticalAlignment: 'center',
+      },
+    },
   ],
   component: 'Listview',
   others: {
@@ -49,6 +69,12 @@ export const listviewConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    showHeader: {
+      type: 'toggle',
+      displayName: 'Show header',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'header',
+    },
     dataSourceSelector: {
       type: 'dropdownMenu',
       displayName: 'Data source',
@@ -212,6 +238,18 @@ export const listviewConfig = {
     onRecordClicked: { displayName: 'Record clicked' },
   },
   styles: {
+    headerBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: { schema: { type: 'string' }, defaultValue: 'transparent' },
+      accordian: 'Header',
+    },
+    headerDividerColor: {
+      type: 'colorSwatches',
+      displayName: 'Divider',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-weak-border)' },
+      accordian: 'Header',
+    },
     listStyle: {
       type: 'select',
       displayName: 'List style',

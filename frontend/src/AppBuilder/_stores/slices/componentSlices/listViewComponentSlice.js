@@ -1,6 +1,7 @@
 import { isEqual } from 'lodash';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { isListviewHeaderSlot } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 export const listViewComponentSlice = (set, get) => {
   // Microtask dedup for _deriveListviewChain calls outside an explicit batch window.
@@ -346,6 +347,22 @@ export const listViewComponentSlice = (set, get) => {
     prepareRowScope: (components, listviewId, moduleId = 'canvas') => {
       const { getContainerChildrenMapping, containerChildrenMapping } = get();
 
+      // An inner row also reads its outer rows' components, so start from the outermost list (D-15).
+      const { getComponentDefinition, findNearestSubcontainerAncestor } = get();
+      let outermostId = listviewId;
+      let ancestorParent = getComponentDefinition(listviewId, moduleId)?.component?.parent;
+      while (ancestorParent) {
+        const enclosing = findNearestSubcontainerAncestor(ancestorParent, moduleId);
+        if (!enclosing || enclosing === outermostId) break;
+        outermostId = enclosing;
+        ancestorParent = getComponentDefinition(enclosing, moduleId)?.component?.parent;
+      }
+      // The outermost list's own header is outside every row; an inner list's header sits in an outer row.
+      const outermostType = getComponentDefinition(outermostId, moduleId)?.component?.component;
+      const outermostHeaderSlot = isListviewHeaderSlot(`${outermostId}-header`, outermostType)
+        ? `${outermostId}-header`
+        : null;
+
       // Pre-build a map from base UUID → children that are stored under slot IDs.
       // Some containers (e.g. Tabs) render their SubContainer with a slot suffix:
       //   <SubContainer id={`${id}-${tab.id}`} />
@@ -354,6 +371,7 @@ export const listViewComponentSlice = (set, get) => {
       // This map lets collectDescendants find those children when traversing down.
       const slotChildrenByBase = {};
       for (const key of Object.keys(containerChildrenMapping)) {
+        if (key === outermostHeaderSlot) continue;
         const match = key.match(/([a-fA-F0-9-]{36})-.+/);
         if (match) {
           const baseId = match[1];
@@ -377,16 +395,6 @@ export const listViewComponentSlice = (set, get) => {
           collectDescendants(childId);
         }
       };
-      // An inner row also reads its outer rows' components, so start from the outermost list (D-15).
-      const { getComponentDefinition, findNearestSubcontainerAncestor } = get();
-      let outermostId = listviewId;
-      let ancestorParent = getComponentDefinition(listviewId, moduleId)?.component?.parent;
-      while (ancestorParent) {
-        const enclosing = findNearestSubcontainerAncestor(ancestorParent, moduleId);
-        if (!enclosing || enclosing === outermostId) break;
-        outermostId = enclosing;
-        ancestorParent = getComponentDefinition(enclosing, moduleId)?.component?.parent;
-      }
       collectDescendants(outermostId);
 
       if (allDescendants.length === 0) return null;

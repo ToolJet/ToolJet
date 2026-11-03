@@ -15,7 +15,7 @@ import {
   GRID_HEIGHT,
   HOVER_CLICK_OUTLINE_BORDER,
   PAGE_CANVAS_HEADER_FOOTER_PADDING,
-  ROW_SCOPED_WIDGET_TYPES,
+  isRowScopedCanvas,
 } from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
@@ -163,10 +163,8 @@ const Container = React.memo(
     // A canvas inside a later row of any enclosing list is a copy too, not only a later row of this one.
     const isInsideLaterRow = contextPath.some((segment) => segment.index != null && segment.index !== 0);
     const isContainerReadOnly = useMemo(() => {
-      return (
-        (index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || isInsideLaterRow || currentMode === 'view'
-      );
-    }, [index, componentType, isInsideLaterRow, currentMode]);
+      return (index !== 0 && isRowScopedCanvas(id, componentType)) || isInsideLaterRow || currentMode === 'view';
+    }, [index, id, componentType, isInsideLaterRow, currentMode]);
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',

@@ -230,13 +230,15 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
     const widgetResolvables = Object.freeze({
       Listview: 'listItem',
     });
-    const customResolverVariable = widgetResolvables[parentMeta?.component];
+    const recordResolverVariable = widgetResolvables[parentMeta?.component];
     const defaultChildren = deepClone(parentMeta)['defaultChildren'];
 
     defaultChildren.forEach((child) => {
       const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles, slotName } =
         child;
 
+      // A ListView header child is shared by every record, so it takes its own value, not a record's.
+      const customResolverVariable = slotName ? undefined : recordResolverVariable;
       const componentMeta = deepClone(componentTypes.find((component) => component.component === componentName));
       const componentData = JSON.parse(JSON.stringify(componentMeta));
       const allComponents = {
@@ -466,7 +468,8 @@ export const getParentComponentIdByType = ({ child, parentComponent, parentId, s
     (parentComponent === 'Form' ||
       parentComponent === 'Container' ||
       parentComponent === 'Accordion' ||
-      parentComponent === 'ModalV2')
+      parentComponent === 'ModalV2' ||
+      parentComponent === 'Listview')
   ) {
     return `${parentId}-${slotName}`;
   }
