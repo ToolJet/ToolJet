@@ -32,9 +32,7 @@ export const AppMenu = function AppMenu({
 
   const { orgGitConfig, currentBranch, isInitialized } = useWorkspaceBranchesStore();
   const isBranchingEnabled =
-    isInitialized && orgGitConfig && (appType === 'front-end' || appType === 'module')
-      ? orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled
-      : false;
+    isInitialized && orgGitConfig && (orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled);
   const isDefaultBranch = currentBranch?.is_default || currentBranch?.isDefault;
   // Unsynced apps are always mutable, even on master
   const isWorkspaceBranchLocked = !!(isBranchingEnabled && isDefaultBranch) && !isUnsynced;
