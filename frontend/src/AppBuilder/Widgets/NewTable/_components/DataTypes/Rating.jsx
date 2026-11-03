@@ -2,7 +2,7 @@ import React from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
-import { useTrail } from 'react-spring';
+import { useTrail } from '@react-spring/web';
 import RatingIcon from '@/AppBuilder/Widgets/Rating/RatingIcon';
 import useTextColor from '../DataTypes/_hooks/useTextColor';
 import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';

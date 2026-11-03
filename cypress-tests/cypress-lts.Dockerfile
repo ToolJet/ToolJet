@@ -162,6 +162,6 @@ COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
 WORKDIR /app
 
-RUN npm install --prefix server --no-save dotenv@10.0.0 joi@17.4.1 && npm cache clean --force
+RUN npm install --prefix server --no-save dotenv@10.0.0 joi@17.13.8 && npm cache clean --force
 
 ENTRYPOINT ["./server/ee-entrypoint.sh"]
