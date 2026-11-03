@@ -48,7 +48,6 @@ describe('ListView header export and import', () => {
       properties: {
         data: { value: "{{[{ text: 'a' }]}}" },
         showHeader: { value: '{{true}}' },
-        headerHeight: { value: '{{90}}' },
       },
       styles: {
         listStyle: { value: 'bordered' },
@@ -102,7 +101,6 @@ describe('ListView header export and import', () => {
     expect(byName('title1').parent).toBe(`${importedListview.id}-header`);
     expect(byName('text1').parent).toBe(importedListview.id);
     expect(importedListview.properties.showHeader).toEqual({ value: '{{true}}' });
-    expect(importedListview.properties.headerHeight).toEqual({ value: '{{90}}' });
     expect(importedListview.styles.headerBackgroundColor).toEqual({ value: 'var(--cc-surface2-surface)' });
     expect(importedListview.styles.headerDividerColor).toEqual({ value: 'var(--cc-default-border)' });
   });

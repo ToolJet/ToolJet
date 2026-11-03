@@ -7,7 +7,7 @@
  * id would hide every row-scope mistake these tests exist to catch.
  */
 import React from 'react';
-import { render, waitFor } from '@testing-library/react';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import {
   createWidgetHarness,
@@ -27,6 +27,8 @@ const LV = 'b1b1b1b1-0000-4000-8000-0000000000aa';
 const HEADER = `${LV}-header`;
 const NAME = 'listview1';
 const THREE_RECORDS = `{{[{ text: 'Alpha' }, { text: 'Beta' }, { text: 'Gamma' }]}}`;
+// Figma 238:1379 (list) and 294:45127 (grid): the header frame is 60px tall in both. Hand-copied, not imported.
+const FIGMA_HEADER_HEIGHT = 60;
 
 // WidgetWrapper hides a child without device flags, so a child seeded without them renders nothing.
 function child(id, name, type, properties, parent = LV) {
@@ -55,7 +57,6 @@ const widget = createWidgetHarness({
     mode: binding('list'),
     rowHeight: binding('80'),
     showHeader: binding('{{true}}'),
-    headerHeight: binding('{{60}}'),
     enablePagination: binding('{{false}}'),
   },
   defaultStyles: {
@@ -107,9 +108,8 @@ describe('Listview: header on', () => {
 
   test('[Listview-HDR-002] the header renders once, above every record, with its height and colours', async () => {
     // Break this catches: the header rendered inside each record (repeated), below the records, or
-    // ignoring headerHeight / headerBackgroundColor / headerDividerColor.
+    // not the Figma height, or ignoring headerBackgroundColor / headerDividerColor.
     await mount({
-      properties: { headerHeight: binding('{{70}}') },
       styles: { headerBackgroundColor: binding('rgb(1, 2, 3)'), headerDividerColor: binding('rgb(4, 5, 6)') },
       extraComponents: { hdr1: headerTitle() },
     });
@@ -121,7 +121,7 @@ describe('Listview: header on', () => {
     expect(header.compareDocumentPosition(list()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(header.style.backgroundColor).toBe('rgb(1, 2, 3)');
     expect(header.style.borderBottom).toBe('1px solid rgb(4, 5, 6)');
-    expect(header.querySelector('.resizable-slot').style.height).toBe('70px');
+    expect(header.querySelector('.resizable-slot').style.height).toBe(`${FIGMA_HEADER_HEIGHT}px`);
   });
 
   test('[Listview-HDR-002] the header spans the full width above the padded records', async () => {
@@ -134,6 +134,33 @@ describe('Listview: header on', () => {
     expect(header.style.marginLeft).toBe('-12px');
     expect(header.style.marginRight).toBe('-12px');
     expect(header.style.marginBottom).toBe('12px');
+  });
+});
+
+describe('Listview: the header height is fixed', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-HDR-008] dragging the header edge in the builder does not change its height', async () => {
+    // Break this catches: the header slot keeping a resize handle (or honouring a stray saved
+    // headerHeight), so a builder drag or an old value moves the header off the Figma height.
+    widget.render({ currentMode: 'edit', properties: { headerHeight: binding('{{70}}') } });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    const slot = () => headerSection().querySelector('.resizable-slot');
+    expect(slot().style.height).toBe(`${FIGMA_HEADER_HEIGHT}px`);
+
+    const handle = headerSection().querySelector('.resize-handle');
+    if (handle) {
+      fireEvent.mouseDown(handle, { clientX: 0, clientY: 0, button: 0 });
+      fireEvent.mouseMove(document, { clientX: 0, clientY: 40 });
+      fireEvent.mouseUp(document);
+    }
+
+    expect(handle).toBeNull();
+    expect(slot().style.height).toBe(`${FIGMA_HEADER_HEIGHT}px`);
+    expect(store().getComponentDefinition(LV, MODULE_ID).component.definition.properties.headerHeight).toEqual({
+      value: '{{70}}',
+    });
   });
 });
 
@@ -262,7 +289,6 @@ const importedWidget = createWidgetHarness({
     data: binding(THREE_RECORDS),
     rowHeight: binding('80'),
     showHeader: binding('{{true}}'),
-    headerHeight: binding('{{90}}'),
   },
   defaultStyles: {
     listStyle: binding('bordered'),
@@ -290,7 +316,7 @@ describe('Listview: an imported header ListView', () => {
     expect(header.querySelector(`.ele-${imported.id}`).textContent.trim()).toBe('Orders');
     expect(header.style.backgroundColor).toBe('rgb(9, 8, 7)');
     expect(header.style.borderBottom).toBe('1px solid rgb(6, 5, 4)');
-    expect(header.querySelector('.resizable-slot').style.height).toBe('90px');
+    expect(header.querySelector('.resizable-slot').style.height).toBe(`${FIGMA_HEADER_HEIGHT}px`);
   });
 });
 
@@ -335,11 +361,11 @@ describe('Listview: dynamic height counts the header', () => {
     const without = await dynamicHeightFor({ showHeader: binding('{{false}}') });
     bareWidget.teardown();
     bareWidget.setup();
-    const withHeader = await dynamicHeightFor({ showHeader: binding('{{true}}'), headerHeight: binding('{{70}}') });
+    const withHeader = await dynamicHeightFor({ showHeader: binding('{{true}}') });
 
     // 3 x 80 + 2 x 12 gaps + 28 chrome without; the header replaces the top padding with itself + its 12px gap.
     expect(without).toBe(292);
-    expect(withHeader).toBe(362);
+    expect(withHeader).toBe(292 + FIGMA_HEADER_HEIGHT);
   });
 });
 
