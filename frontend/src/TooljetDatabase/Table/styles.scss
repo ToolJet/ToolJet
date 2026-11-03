@@ -1,3 +1,21 @@
+// The rules below assume the header's "+" cell is the last th: it draws the separator after the final
+// column (and the column before it drops its own right border). Without "+" the last data column is the
+// final th, so every data column keeps its right border and only the final one drops it.
+@mixin no-add-column-header-border {
+  &:nth-last-child(2) {
+    border-right: 1px solid;
+    border-color: inherit;
+  }
+
+  &:last-child {
+    border-right: 0px;
+
+    &::before {
+      display: none;
+    }
+  }
+}
+
 .tjdb-column-header-name {
   margin-right: 10px;
 }
@@ -74,6 +92,10 @@
     }
   }
 
+  &.tj-table-no-add-column th {
+    @include no-add-column-header-border;
+  }
+
   td {
     border: none !important
   }
@@ -128,6 +150,10 @@
         background-color: rgba(101, 109, 119, 0.16) !important;
       }
     }
+  }
+
+  &.tj-table-no-add-column th {
+    @include no-add-column-header-border;
   }
 
   td {

@@ -2,15 +2,13 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import policy from './ai-test-policy.cjs';
 
-test('AI HTTP regressions belong to normal e2e execution, not the focused unit runner', () => {
+test('AI HTTP regressions belong to normal e2e execution', () => {
   const file = 'server/ee/test/modules/ai/e2e/conversation-access.spec.ts';
   assert.equal(policy.testKind('server', file), 'e2e');
-  assert.equal(policy.isFocusedTest('server', file), false);
 });
 test('cross-module regressions may exercise AI without moving to another module', () => {
   const file = 'server/test/modules/workspaces/unit/ai-plan.spec.ts';
   assert.equal(policy.testKind('server', file), 'unit');
-  assert.equal(policy.isFocusedTest('server', file), false);
 });
 test('in-source files and node:test naming still fail normal Jest placement', () => {
   assert.equal(policy.testKind('server', 'server/ee/ai/cache.spec.ts'), null);

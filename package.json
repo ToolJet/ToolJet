@@ -68,8 +68,13 @@
     "rotate:keys:prod": "npm --prefix server run rotate:keys:prod --",
     "heroku-postbuild": "./heroku-postbuild.sh",
     "prepare": "husky install",
-    "update-version": "node update-version.js",
-    "test:ai:layout": "node scripts/check-ai-tests.cjs",
-    "test:ai:local": "bash scripts/test-ai-local.sh"
+    "update-version": "node update-version.js"
+  },
+  "dependencies": {},
+  "overrides": {
+    "js-yaml": "^3.15.2",
+    "@eslint/eslintrc": {
+      "js-yaml": "^4.3.2"
+    }
   }
 }

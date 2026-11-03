@@ -62,7 +62,7 @@ function findAiTests(pkg) {
       if (!/\.(spec|test)\.[jt]sx?$/.test(file)) return false;
       const relative = path.relative(cwd, file).split(path.sep).join('/');
       return (
-        /\/(ai|AiBuilder|ManageLLMKeyPage|ApiKeyContainer)\//.test('/' + relative) ||
+        /\/(ai|mcp-oauth|McpOAuth|AiBuilder|ManageLLMKeyPage|ApiKeyContainer)\//.test('/' + relative) ||
         /^ai(?=[A-Z_.-])/.test(path.basename(file)) ||
         imports(fs.readFileSync(file, 'utf8'), false).some(
           (specifier) =>

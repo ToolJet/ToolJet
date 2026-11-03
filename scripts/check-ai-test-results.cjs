@@ -1,25 +1,16 @@
 #!/usr/bin/env node
-// Validate execution against actual focused discovery, including every assertion's status.
+// Validate execution against normal Jest discovery, including every assertion's status.
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 try {
   const [pkg, resultsFile, mode = 'unit'] = process.argv.slice(2);
-  if (!['server', 'frontend'].includes(pkg) || !resultsFile || !['unit', 'e2e', 'focused'].includes(mode))
-    throw new Error('Usage: check-ai-test-results.cjs server|frontend results-file-or-directory [unit|e2e|focused]');
+  if (!['server', 'frontend'].includes(pkg) || !resultsFile || !['unit', 'e2e'].includes(mode))
+    throw new Error('Usage: check-ai-test-results.cjs server|frontend results-file-or-directory [unit|e2e]');
   const cwd = path.resolve(__dirname, '..', pkg);
   const { findAiTests, editionFor } = require('./ai-test-scope.cjs');
   const { testKind } = require('./ai-test-policy.cjs');
-  const config =
-    mode === 'focused'
-      ? pkg === 'server'
-        ? 'test/jest-ai.config.ts'
-        : 'jest-ai.config.js'
-      : pkg === 'server'
-        ? mode === 'e2e'
-          ? 'test/jest-e2e.config.ts'
-          : 'jest.config.ts'
-        : 'jest.config.js';
+  const config = pkg === 'frontend' ? 'jest.config.js' : mode === 'e2e' ? 'test/jest-e2e.config.ts' : 'jest.config.ts';
   const scoped = findAiTests(pkg).filter((file) => {
     const relative = path.relative(path.dirname(cwd), file).split(path.sep).join('/');
     return (editionFor(pkg) !== 'ce' || !relative.startsWith(`${pkg}/ee/`)) && testKind(pkg, relative) === mode;
@@ -36,7 +27,7 @@ try {
   if (discovery.status !== 0)
     throw new Error(discovery.error?.message || discovery.stderr || 'AI test discovery failed');
   const discovered = JSON.parse(discovery.stdout);
-  const expected = mode === 'focused' ? discovered : scoped;
+  const expected = scoped;
   if (!expected.length) throw new Error('No expected AI tests');
   for (const file of expected) if (!discovered.includes(file)) throw new Error(`Normal ${mode} runner misses ${file}`);
   const readResults = (file) =>

@@ -1,3 +1,4 @@
+import { assertOAuthTestDatabase } from './helpers/oauth-test-database';
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { join } from 'path';
@@ -7,13 +8,7 @@ import { randomBytes } from 'crypto';
 
 async function prepare() {
   const connection = process.env.MCP_OAUTH_TEST_DATABASE_URL;
-  if (!connection) {
-    if (process.env.CI) throw new Error('CI requires MCP_OAUTH_TEST_DATABASE_URL; database tests must not skip');
-    return;
-  }
-  const url = new URL(connection);
-  if (!['127.0.0.1', 'localhost'].includes(url.hostname) || !/^\/tooljet_oauth_test_[a-z0-9_]+$/.test(url.pathname))
-    throw new Error('Use a dedicated local database named tooljet_oauth_test_*');
+  const url = assertOAuthTestDatabase(connection);
   // Some historical migrations open a second ToolJet Database connection. Pin every
   // connection to this same disposable database and reject dotenv overrides.
   if (existsSync(join(process.cwd(), '../.env')) || existsSync(join(process.cwd(), '../.env.test')))
@@ -43,27 +38,18 @@ async function prepare() {
   } finally {
     await bootstrap.destroy();
   }
-  // Reuse the production runner, including enum-safe fresh installs and data migrations.
-  execFileSync(
-    process.execPath,
-    [
-      require.resolve('ts-node/dist/bin.js'),
-      '-r',
-      'tsconfig-paths/register',
-      '--transpile-only',
-      join(__dirname, '../src/migration-helpers/run-all-migrations.ts'),
-    ],
-    {
-      env: {
-        ...process.env,
-        NODE_ENV: 'development',
-        TOOLJET_EDITION: 'ce',
-        SECRET_KEY_BASE: randomBytes(32).toString('hex'),
-        LOCKBOX_MASTER_KEY: randomBytes(32).toString('hex'),
-      },
-      stdio: 'inherit',
-    }
-  );
+  // Use the branch's normal schema and data migration entry point.
+  execFileSync('npm', ['run', 'db:migrate'], {
+    cwd: join(__dirname, '..'),
+    env: {
+      ...process.env,
+      NODE_ENV: 'development',
+      TOOLJET_EDITION: 'ce',
+      SECRET_KEY_BASE: randomBytes(32).toString('hex'),
+      LOCKBOX_MASTER_KEY: randomBytes(32).toString('hex'),
+    },
+    stdio: 'inherit',
+  });
 }
 prepare().catch((error) => {
   console.error(error);

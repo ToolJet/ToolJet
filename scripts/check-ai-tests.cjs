@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const root = path.resolve(__dirname, '..');
-const { testKind, isFocusedTest, hasDisabledTest } = require('./ai-test-policy.cjs');
+const { testKind, hasDisabledTest } = require('./ai-test-policy.cjs');
 const edition = require('./ai-test-scope.cjs').editionFor(process.argv[2] || 'server');
 if (!['ce', 'ee', 'cloud'].includes(edition)) throw new Error('Unknown TOOLJET_EDITION');
 const useEE = edition !== 'ce';
@@ -88,21 +88,16 @@ for (const pkg of selected ? [selected] : ['server', 'frontend']) {
   const minimum = pkg === 'server' ? (useEE ? 19 : 3) : useEE ? 13 : 1;
   if (expected.size < minimum)
     errors.push(`${pkg}: expected at least ${minimum} AI test files, found ${expected.size}`);
-  const focused = listTests(pkg, pkg === 'server' ? 'test/jest-ai.config.ts' : 'jest-ai.config.js');
   const normal = listTests(pkg, pkg === 'server' ? 'jest.config.ts' : 'jest.config.js');
   const normalE2e =
     pkg === 'server' && [...expected].some((file) => testKind(pkg, file) === 'e2e')
       ? listTests(pkg, 'test/jest-e2e.config.ts')
       : new Set();
   for (const file of expected) {
-    if (isFocusedTest(pkg, file) && !focused.has(file)) errors.push(`Focused runner misses ${file}`);
     const runner = testKind(pkg, file) === 'e2e' ? normalE2e : normal;
     if (!runner.has(file)) errors.push(`Normal runner misses ${file}`);
   }
-  for (const file of focused) if (!expected.has(file)) errors.push(`Unexpected focused test: ${file}`);
-  if (!useEE)
-    for (const file of focused) if (file.startsWith(`${pkg}/ee/`)) errors.push(`CE runner includes EE test: ${file}`);
-  console.log(`${pkg} ${edition}: ${expected.size} AI files checked against focused and normal discovery`);
+  console.log(`${pkg} ${edition}: ${expected.size} AI/OAuth files checked against normal discovery`);
 }
 if (errors.length) {
   console.error(errors.join('\n'));

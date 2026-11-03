@@ -355,7 +355,7 @@ export class EventsService implements IEventsService {
       const found = await Promise.all(
         events.map(async (event) => ({
           event,
-          stored: await manager.findOne(EventHandler, { where: { id: event.event_id } }),
+          stored: await manager.findOne(EventHandler, { where: { id: event.event_id, appVersionId } }),
         }))
       );
 
@@ -426,7 +426,7 @@ export class EventsService implements IEventsService {
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const event = await manager.findOne(EventHandler, {
-        where: { id: eventId },
+        where: { id: eventId, appVersionId },
       });
 
       if (!event) {

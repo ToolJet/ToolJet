@@ -37,79 +37,76 @@ test.each([
   { deploymentEdition: 'ce', enabled: 'true' },
   { deploymentEdition: 'ee', enabled: 'true' },
   { deploymentEdition: 'cloud', enabled: 'false' },
-])(
-  'edition $deploymentEdition enabled=$enabled exposes no OAuth routes or background work',
-  async ({ deploymentEdition, enabled }) => {
-    const values = { ...settings, TOOLJET_EDITION: deploymentEdition, MCP_OAUTH_ENABLED: enabled };
-    const db = { query: jest.fn(), transaction: jest.fn(), manager: { query: jest.fn() } };
-    const login = { fetchOrganizationDetails: jest.fn() };
-    const oauth = new McpOAuthService(db as any, config(values), new JwtService(), login as any);
-    Object.assign(oauth, {
-      identity: new McpOAuthIdentityService(db as any, config(values), new JwtService(), {} as any, login as any),
-    });
-    const module = await Test.createTestingModule({
-      controllers: [McpOAuthController, McpOAuthMetadataController],
-      providers: [{ provide: McpOAuthService, useValue: oauth }],
+])('OAuth stays disabled for $deploymentEdition enabled=$enabled', async ({ deploymentEdition, enabled }) => {
+  const values = { ...settings, TOOLJET_EDITION: deploymentEdition, MCP_OAUTH_ENABLED: enabled };
+  const db = { query: jest.fn(), transaction: jest.fn(), manager: { query: jest.fn() } };
+  const login = { fetchOrganizationDetails: jest.fn() };
+  const oauth = new McpOAuthService(db as any, config(values), new JwtService(), login as any);
+  Object.assign(oauth, {
+    identity: new McpOAuthIdentityService(db as any, config(values), new JwtService(), {} as any, login as any),
+  });
+  const module = await Test.createTestingModule({
+    controllers: [McpOAuthController, McpOAuthMetadataController],
+    providers: [{ provide: McpOAuthService, useValue: oauth }],
+  })
+    .overrideGuard(McpOAuthThrottleGuard)
+    .useValue({ canActivate: () => true })
+    .overrideGuard(JwtAuthGuard)
+    .useValue({
+      canActivate: (context) => {
+        context.switchToHttp().getRequest().user = { id: 'synthetic-user', organizationId: 'synthetic-workspace' };
+        return true;
+      },
     })
-      .overrideGuard(McpOAuthThrottleGuard)
-      .useValue({ canActivate: () => true })
-      .overrideGuard(JwtAuthGuard)
-      .useValue({
-        canActivate: (context) => {
-          context.switchToHttp().getRequest().user = { id: 'synthetic-user', organizationId: 'synthetic-workspace' };
-          return true;
-        },
-      })
-      .compile();
-    const app = module.createNestApplication();
-    app.setGlobalPrefix('api', { exclude: ['.well-known/{*path}'] });
-    await app.init();
-    try {
-      const http = supertest(app.getHttpServer());
-      for (const path of [
-        '/.well-known/oauth-authorization-server/api/mcp-oauth',
-        '/api/mcp-oauth/authorize',
-        '/api/mcp-oauth/interactions/synthetic',
-        '/api/mcp-oauth/interactions/synthetic/session',
-        '/api/mcp-oauth/connections',
-      ]) {
-        await http.get(path).expect(404);
-      }
-      for (const path of [
-        'register',
-        'exchange',
-        'viewer',
-        'interactions/synthetic/bootstrap',
-        'interactions/synthetic',
-        'connections/synthetic/revoke',
-      ]) {
-        await http
-          .post('/api/mcp-oauth/' + path)
-          .set('Origin', settings.TOOLJET_HOST)
-          .set('x-tooljet-oauth', '1')
-          .send({ allow: true, ticket: 'synthetic-ticket', nonce: 'synthetic-nonce' })
-          .expect(404);
-      }
-      for (const path of ['token', 'revoke']) {
-        await http
-          .post('/api/mcp-oauth/' + path)
-          .type('form')
-          .send({ token: 'synthetic-token' })
-          .expect(404);
-        await http.options('/api/mcp-oauth/' + path).expect(404);
-      }
-      await expect(oauth.captureAuthentication('synthetic-workspace', 'form')).resolves.toBeUndefined();
-      await oauth.cleanExpiredCredentials();
-      expect(db.query).not.toHaveBeenCalled();
-      expect(db.transaction).not.toHaveBeenCalled();
-      expect(db.manager.query).not.toHaveBeenCalled();
-      expect(login.fetchOrganizationDetails).not.toHaveBeenCalled();
-      // The same registered controllers remain functional when configured for Cloud.
-      values.TOOLJET_EDITION = 'cloud';
-      values.MCP_OAUTH_ENABLED = 'true';
-      await http.get('/.well-known/oauth-authorization-server/api/mcp-oauth').expect(200);
-    } finally {
-      await app.close();
+    .compile();
+  const app = module.createNestApplication();
+  app.setGlobalPrefix('api', { exclude: ['.well-known/{*path}'] });
+  await app.init();
+  try {
+    const http = supertest(app.getHttpServer());
+    for (const path of [
+      '/.well-known/oauth-authorization-server/api/mcp-oauth',
+      '/api/mcp-oauth/authorize',
+      '/api/mcp-oauth/interactions/synthetic',
+      '/api/mcp-oauth/interactions/synthetic/session',
+      '/api/mcp-oauth/connections',
+    ]) {
+      await http.get(path).expect(404);
     }
+    for (const path of [
+      'register',
+      'exchange',
+      'viewer',
+      'interactions/synthetic/bootstrap',
+      'interactions/synthetic',
+      'connections/synthetic/revoke',
+    ]) {
+      await http
+        .post('/api/mcp-oauth/' + path)
+        .set('Origin', settings.TOOLJET_HOST)
+        .set('x-tooljet-oauth', '1')
+        .send({ allow: true, ticket: 'synthetic-ticket', nonce: 'synthetic-nonce' })
+        .expect(404);
+    }
+    for (const path of ['token', 'revoke']) {
+      await http
+        .post('/api/mcp-oauth/' + path)
+        .type('form')
+        .send({ token: 'synthetic-token' })
+        .expect(404);
+      await http.options('/api/mcp-oauth/' + path).expect(404);
+    }
+    await expect(oauth.captureAuthentication('synthetic-workspace', 'form')).resolves.toBeUndefined();
+    await oauth.cleanExpiredCredentials();
+    expect(db.query).not.toHaveBeenCalled();
+    expect(db.transaction).not.toHaveBeenCalled();
+    expect(db.manager.query).not.toHaveBeenCalled();
+    expect(login.fetchOrganizationDetails).not.toHaveBeenCalled();
+    // The same registered controllers remain functional when configured for Cloud.
+    values.TOOLJET_EDITION = 'cloud';
+    values.MCP_OAUTH_ENABLED = 'true';
+    await http.get('/.well-known/oauth-authorization-server/api/mcp-oauth').expect(200);
+  } finally {
+    await app.close();
   }
-);
+});
