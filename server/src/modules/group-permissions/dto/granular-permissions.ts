@@ -42,7 +42,8 @@ export class UpdateGranularPermissionDto<
     | ResourceType.DATA_SOURCE
     | ResourceType.FOLDER
     | ResourceType.WORKFLOW_FOLDER
-    | ResourceType.MODULE_FOLDER,
+    | ResourceType.MODULE_FOLDER
+    | ResourceType.DATA_SOURCE_FOLDER,
 > {
   @IsString()
   @IsOptional()

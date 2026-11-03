@@ -64,11 +64,15 @@ export class WorkflowVersionEnvironmentError extends BadRequestException {
   public readonly versionEnvName: string;
   public readonly executionEnvName: string;
 
-  constructor(versionName: string, versionEnvName: string, executionEnvName: string) {
+  constructor(versionName: string, versionEnvName: string, executionEnvName: string, isBranch = false) {
     super(
-      `Workflow version "${versionName}" is in the "${versionEnvName}" environment ` +
-        `and cannot run in "${executionEnvName}". ` +
-        `Please promote this version to "${executionEnvName}" or higher first.`
+      isBranch
+        ? // A BRANCH row is development-only by design, so promoting it is not the remedy.
+          `Branch "${versionName}" can only run in the development environment, not ` +
+            `"${executionEnvName}". Merge the branch and run the resulting version instead.`
+        : `Workflow version "${versionName}" is in the "${versionEnvName}" environment ` +
+            `and cannot run in "${executionEnvName}". ` +
+            `Please promote this version to "${executionEnvName}" or higher first.`
     );
     this.name = 'WorkflowVersionEnvironmentError';
     this.versionName = versionName;
