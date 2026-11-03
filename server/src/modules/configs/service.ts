@@ -2,6 +2,7 @@ import { INSTANCE_SYSTEM_SETTINGS, INSTANCE_USER_SETTINGS } from '@modules/insta
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { Injectable } from '@nestjs/common';
 import { IConfigService } from './interfaces/IService';
+import { getMcpOAuthPublicConfig } from './mcp-oauth-public-config';
 import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
 
 // Instance-wide (not per-user/per-org) settings + env vars. Concurrent calls (the bootstrap burst on
@@ -40,7 +41,10 @@ export class ConfigService implements IConfigService {
     );
 
     const instanceConfigs = await this.instanceSettingsUtilService.getSettings(this.fetchDefaultInstanceConfig());
-    const publicConfigVars = { ...instanceConfigs, ...Object.fromEntries(mapEntries) };
+    const publicConfigVars = {
+      ...instanceConfigs,
+      ...Object.fromEntries(mapEntries),
+    };
 
     if (publicConfigVars?.ENABLE_WORKFLOWS_FEATURE === undefined) {
       publicConfigVars.ENABLE_WORKFLOWS_FEATURE = 'true';
@@ -52,7 +56,7 @@ export class ConfigService implements IConfigService {
       publicConfigVars.ENABLE_MARKETPLACE_DEV_MODE = process.env.ENABLE_MARKETPLACE_DEV_MODE || 'false';
     }
 
-    return publicConfigVars;
+    return { ...publicConfigVars, ...getMcpOAuthPublicConfig(process.env) };
   }
 
   private fetchDefaultConfig() {
@@ -74,6 +78,7 @@ export class ConfigService implements IConfigService {
       'SSO_HUBSPOT_FORM_ID',
       'ENABLE_OTEL_FRONTEND',
       'OTEL_FRONTEND_FLUSH_INTERVAL_SECONDS',
+      'TOOLJET_DB_DISABLE_BUILDER_EDIT',
     ];
   }
 

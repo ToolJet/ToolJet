@@ -1,3 +1,4 @@
+import { updateSecurityEntity } from '@modules/mcp-oauth/revocation';
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { fullName, generateNextNameAndSlug, getTooljetEdition } from '@helpers/utils.helper';
@@ -347,7 +348,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
   async activateOrganization(organizationUser: OrganizationUser, manager?: EntityManager) {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.update(OrganizationUser, organizationUser.id, {
+      await updateSecurityEntity(manager, OrganizationUser, organizationUser.id, {
         status: WORKSPACE_USER_STATUS.ACTIVE,
         invitationToken: null,
         invitationTokenExpiry: null,

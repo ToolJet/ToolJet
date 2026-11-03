@@ -1,4 +1,4 @@
-import { useSpring, config, animated } from 'react-spring';
+import { useSpring, config, animated } from '@react-spring/web';
 import { resolveReferences, verifyConstant } from '../../_helpers/utils';
 import { Alert } from '../../_ui/Alert';
 import useHeight from '@/_hooks/use-height-transition';

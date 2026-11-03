@@ -122,9 +122,13 @@ describe('DataQueriesUtilService', () => {
 
       const result = await service.parseQueryOptions(object, options, 'org-id', 'env-id', { id: 'user-id' } as any);
 
-      expect(dataSourceUtilService.resolveConstants).toHaveBeenCalledWith('{{constants.API_KEY}}', 'org-id', 'env-id', {
-        id: 'user-id',
-      });
+      expect(dataSourceUtilService.resolveConstants).toHaveBeenCalledWith(
+        '{{constants.API_KEY}}',
+        'org-id',
+        'env-id',
+        { id: 'user-id' },
+        undefined
+      );
       expect(result).toEqual({
         key: 'resolved-api-key',
       });
@@ -142,6 +146,7 @@ describe('DataQueriesUtilService', () => {
       expect(dataSourceUtilService.resolveConstants).toHaveBeenCalledWith(
         '{{secrets.DB_PASSWORD}}',
         'org-id',
+        undefined,
         undefined,
         undefined
       );
@@ -162,6 +167,7 @@ describe('DataQueriesUtilService', () => {
       expect(dataSourceUtilService.resolveConstants).toHaveBeenCalledWith(
         '{{globals.server.BASE_URL}}',
         'org-id',
+        undefined,
         undefined,
         undefined
       );

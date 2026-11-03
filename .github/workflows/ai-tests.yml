@@ -1,0 +1,58 @@
+name: AI tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, ready_for_review]
+    paths:
+      - 'server/**'
+      - 'frontend/**'
+      - 'plugins/**'
+      - '.github/workflows/ai-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  authentication-security:
+    name: Authentication security
+    # Run only on explicit request; private code is restricted to same-repository PRs.
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'pull_request'
+          && github.event.pull_request.head.repo.full_name == github.repository
+          && contains(github.event.pull_request.labels.*.name, 'run-ai-tests')
+          && (github.event.action != 'labeled' || github.event.label.name == 'run-ai-tests'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: oauth_test
+          POSTGRES_PASSWORD: oauth_test
+          POSTGRES_DB: tooljet_oauth_test_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U oauth_test -d tooljet_oauth_test_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      MCP_OAUTH_TEST_DATABASE_URL: postgresql://oauth_test:oauth_test@127.0.0.1:5432/tooljet_oauth_test_ci
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.4
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm --prefix plugins ci
+      - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
+      - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
+      - run: npm --prefix server ci
+      - name: Apply real schema migrations and run all OAuth security tests
+        working-directory: server
+        run: npm run test:mcp-oauth

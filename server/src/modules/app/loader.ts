@@ -1,3 +1,4 @@
+import { sanitizeOAuthRequest, sanitizeOAuthUrl } from '@otel/sanitize';
 import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from './constants';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -18,6 +19,13 @@ import { buildBaseLogger } from '@modules/logging/base-logger';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { RedisModule } from '@modules/redis/module';
+import { getMigrationMode } from '../../migration-helpers/migration-mode';
+
+/**
+ * Async mode serves while a data run can hold an ACCESS EXCLUSIVE table lock until it commits. A read on that
+ * table fails after this instead of holding a pool connection, so the pool and the health check stay free.
+ */
+const ASYNC_MODE_LOCK_TIMEOUT_MS = 5000;
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -25,18 +33,24 @@ export class AppModuleLoader {
   }): Promise<(DynamicModule | typeof GuardValidatorModule)[]> {
     const isTest = process.env.NODE_ENV === 'test';
     const mainDbTestOverrides = isTest ? { retryAttempts: 0 } : {};
+    const mainDbOptions = {
+      ...ormconfig,
+      ...mainDbTestOverrides,
+      ...(getMigrationMode() === 'async' && {
+        extra: { ...(ormconfig as { extra?: object }).extra, lock_timeout: ASYNC_MODE_LOCK_TIMEOUT_MS },
+      }),
+    };
 
     const getMainDBConnectionModule = (): DynamicModule => {
       return process.env.DISABLE_CUSTOM_QUERY_LOGGING !== 'true'
         ? TypeOrmModule.forRootAsync({
             inject: [TypeormLoggerService],
             useFactory: (profilerLogger: TypeormLoggerService) => ({
-              ...ormconfig,
-              ...mainDbTestOverrides,
+              ...mainDbOptions,
               logger: profilerLogger,
             }),
           })
-        : TypeOrmModule.forRoot({ ...ormconfig, ...mainDbTestOverrides });
+        : TypeOrmModule.forRoot(mainDbOptions);
     };
 
     // Static imports that are always loaded
@@ -56,6 +70,11 @@ export class AppModuleLoader {
       // transaction long enough to be killed. See AppModule.register conditional providers.
       ...(isTest || configs.IS_GET_CONTEXT ? [] : [ScheduleModule.forRoot()]),
       BullModule.forRoot({
+        // Fallback for queues and jobs that set no retention; finished jobs otherwise stay in Redis forever
+        defaultJobOptions: {
+          removeOnComplete: { age: 3600, count: 100 },
+          removeOnFail: { age: 86400, count: 500 },
+        },
         connection: {
           host: process.env.REDIS_HOST || 'localhost',
           port: parseInt(process.env.REDIS_PORT) || 6379,
@@ -93,6 +112,15 @@ export class AppModuleLoader {
             // so both resolve to the same pino instance and both reach the OTLP stream.
             logger: buildBaseLogger(),
             autoLogging,
+            serializers: {
+              req: sanitizeOAuthRequest,
+              res: (response) => ({
+                ...response,
+                ...(response.headers
+                  ? { headers: { ...response.headers, location: sanitizeOAuthUrl(response.headers.location) } }
+                  : {}),
+              }),
+            },
             redact: {
               paths: [
                 'req.headers.authorization',
@@ -110,6 +138,14 @@ export class AppModuleLoader {
                 'req.body.invitation_token',
                 'req.body.access_token',
                 'req.body.refresh_token',
+                'req.body.subject_token',
+                'req.body.code',
+                'req.body.code_verifier',
+                'req.body.ticket',
+                'req.body.bootstrap',
+                'req.body.nonce',
+                'req.headers["x-tooljet-delegation"]',
+                'req.headers["x-tooljet-oauth-csrf"]',
                 'req.body.secret',
                 'req.body.api_key',
                 'req.headers["x-api-key"]',
@@ -138,7 +174,7 @@ export class AppModuleLoader {
       RequestContextModule,
       GuardValidatorModule,
       LoggingModule.forRoot(),
-      RedisModule.forRoot(),
+      RedisModule.forRoot(configs),
     ];
 
     // Add OpenTelemetry Module if enabled

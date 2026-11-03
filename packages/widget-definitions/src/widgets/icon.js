@@ -83,7 +83,7 @@ export const iconConfig = {
       displayName: 'Color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000',
+        defaultValue: 'var(--cc-default-icon)',
       },
       accordian: 'Icon',
     },
@@ -157,7 +157,7 @@ export const iconConfig = {
     },
     events: [],
     styles: {
-      iconColor: { value: '#000' },
+      iconColor: { value: 'var(--cc-default-icon)' },
       iconAlign: { value: 'center' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },

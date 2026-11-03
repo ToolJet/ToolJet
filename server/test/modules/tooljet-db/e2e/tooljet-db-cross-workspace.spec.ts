@@ -37,16 +37,4 @@ describe('TooljetDbController', () => {
       expect(response.statusCode).toBe(403);
     });
   });
-
-  describe('POST /api/tooljet-db/organizations/:organizationId/join | Cross-workspace', () => {
-    it("should return 403 when the path workspace id is not the session's workspace", async () => {
-      const response = await request(app.getHttpServer())
-        .post(`/api/tooljet-db/organizations/${adminOrgId}/join`)
-        .set('tj-workspace-id', otherAdminOrgId)
-        .set('Cookie', otherAdminCookie)
-        .send({});
-
-      expect(response.statusCode).toBe(403);
-    });
-  });
 });

@@ -2,8 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const Icon = ({
+  id,
   properties,
   styles,
   fireEvent,
@@ -18,7 +21,18 @@ const Icon = ({
   const { icon, loadingState, disabledState } = properties;
   const { iconAlign, iconColor, boxShadow } = styles;
 
+  // Saved apps from before the theme-token default (D-08) still carry the literal '#000'; keep its dark-mode remap.
   const color = iconColor === '#000' ? (darkMode ? '#fff' : '#000') : iconColor;
+  // A theme token cannot go through Tabler's `color` prop (it becomes the SVG `stroke` attribute, where
+  // `var()` is discarded); leave it undefined so the SVG uses `currentColor` from the inline `color` style.
+  const isThemeToken = typeof iconColor === 'string' && iconColor.startsWith('var(');
+  const { moduleId } = useModuleContext();
+  // Pointer affordance only when the builder wired an onClick event (restores the pre-Sprint-19 rule).
+  const hasClickEvent = useStore((state) =>
+    (state.eventsSlice.getEventsByComponentsId(id, moduleId) ?? []).some(
+      (event) => event?.event?.eventId === 'onClick' && !event?.event?.disabled
+    )
+  );
 
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setLoading] = useState(loadingState);
@@ -81,26 +95,34 @@ const Icon = ({
     </div>
   ) : (
     <div
-      className={cx('icon-widget h-100', { 'd-none': !visibility }, { 'cursor-pointer': false })}
+      className={cx('icon-widget h-100', { 'd-none': !visibility }, { 'cursor-pointer': hasClickEvent })}
       data-cy={dataCy}
       data-disabled={isDisabled}
-      style={{ textAlign: iconAlign, boxShadow }}
+      style={{
+        textAlign: iconAlign,
+        // Flex so the SVG is centred vertically in tall slots too; text-align alone only placed it horizontally.
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: iconAlign === 'left' ? 'flex-start' : iconAlign === 'right' ? 'flex-end' : 'center',
+        boxShadow,
+      }}
       onMouseEnter={(event) => {
         event.stopPropagation();
         fireEvent('onHover');
       }}
+      // Click target is the whole box (same node as the pointer cursor and onHover), not just the SVG.
+      onClick={(event) => {
+        event.stopPropagation();
+        fireEvent('onClick');
+      }}
     >
       <TablerIcon
         iconName={icon}
-        color={color}
+        color={isThemeToken ? undefined : color}
         style={{
           width: height < width ? 'auto' : width,
           height: height < width ? '100%' : 'auto',
           color: iconColor,
-        }}
-        onClick={(event) => {
-          event.stopPropagation();
-          fireEvent('onClick');
         }}
         stroke={1.5}
       />
