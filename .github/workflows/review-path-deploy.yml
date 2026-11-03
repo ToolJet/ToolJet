@@ -30,6 +30,7 @@ jobs:
           RENDER_REDIS_HOST: ${{ secrets.RENDER_REDIS_HOST }}
           RENDER_REDIS_PORT: ${{ secrets.RENDER_REDIS_PORT }}
           RENDER_LICENSE_KEY: ${{ secrets.RENDER_LICENSE_KEY }}
+          RENDER_PGRST_JWT_SECRET: ${{ secrets.RENDER_PGRST_JWT_SECRET }}
         run: |
           # Build the JSON with jq so the branch name and other values are passed as data,
           # never as shell code (protects against injection via the PR branch name).
@@ -40,6 +41,7 @@ jobs:
             --arg pgHost "$RENDER_PG_HOST" \
             --arg pgUser "$RENDER_PG_USER" \
             --arg pgPass "$RENDER_PG_PASS" \
+            --arg pgrstJwtSecret "$RENDER_PGRST_JWT_SECRET" \
             --arg smtpUser "$RENDER_SMTP_USERNAME" \
             --arg smtpPass "$RENDER_SMTP_PASSWORD" \
             --arg redisHost "$RENDER_REDIS_HOST" \
@@ -71,7 +73,7 @@ jobs:
                 {key: "PGRST_DB_PRE_CONFIG", value: "postgrest.pre_config"},
                 {key: "PGRST_DB_URI", value: "postgres://\($pgUser):\($pgPass)@\($pgHost)/\($pr)-tjdb"},
                 {key: "PGRST_HOST", value: "127.0.0.1:3000"},
-                {key: "PGRST_JWT_SECRET", value: "r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj"},
+                {key: "PGRST_JWT_SECRET", value: $pgrstJwtSecret},
                 {key: "PGRST_LOG_LEVEL", value: "info"},
                 {key: "PORT", value: "80"},
                 {key: "TOOLJET_HOST", value: "https://tooljet-pr-\($pr).onrender.com"},

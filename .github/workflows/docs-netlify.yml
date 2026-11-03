@@ -11,6 +11,9 @@ on:
     - cron: '30 3 * * *'   # 9:00 AM IST
     - cron: '30 16 * * *'  # 10:00 PM IST
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest

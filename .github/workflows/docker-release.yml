@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 jobs:
   # LTS branch = what .gitmodules tracks at the release tag, so cutting a new LTS branch needs no edit here.
   # Fails if the tag isn't on that branch, i.e. .gitmodules wasn't bumped on the new LTS branch.

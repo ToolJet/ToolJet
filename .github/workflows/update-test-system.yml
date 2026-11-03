@@ -36,6 +36,9 @@ on:
           - ai-3.16-lts
           - ai-pre-release
 
+permissions:
+  contents: read
+
 jobs:
   manage-environment:
     if: ${{ github.event.inputs.env_changes != '' }}

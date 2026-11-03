@@ -17,6 +17,9 @@ on:
         description: "Docker tag suffix (e.g., cloud-staging-v14)"
         required: true
 
+permissions:
+  contents: read
+
 jobs:
   full-deploy:
     name: Build Image, Deploy to AKS & cloudflare

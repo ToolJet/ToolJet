@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: '0 9 * * 1,3,5'  # 9am UTC — Monday, Wednesday, Friday
 
+permissions:
+  contents: read
+
 jobs:
   update-lts:
     name: Regenerate LTS Version Table

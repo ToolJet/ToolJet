@@ -10,6 +10,9 @@ env:
   PR_NUMBER: ${{ github.event.pull_request.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
+permissions:
+  contents: read
+
 jobs:
   Cypress-Code-Coverage:
     name: Code coverage

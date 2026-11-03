@@ -10,6 +10,10 @@ on:
         description: "Branch to deploy"
         required: true
 
+permissions:
+  contents: read
+  deployments: write # actions-netlify records a GitHub deployment
+
 jobs:
   deploy-storybook:
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
