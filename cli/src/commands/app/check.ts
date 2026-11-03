@@ -9,6 +9,7 @@ import { pullSnapshot } from '../../lib/app/remote';
 import { targetFlags } from '../../lib/app/flags';
 import { formatError, formatSuccess, formatWarning } from '../../lib/log';
 import { countsLine, findingsFromSarif, formatFinding, LocalScan, scanProject } from '../../lib/app/scan';
+import { workingApp } from '../../lib/app/branch';
 
 export default class AppCheck extends Command {
   static description =
@@ -41,7 +42,9 @@ export default class AppCheck extends Command {
       let snapshot = project.readSnapshot();
       if (!flags.offline) {
         if (!app.appId) throw new Error('app.json has no appId: create the app or clone one, or pass --offline.');
-        snapshot = await pullSnapshot(await openSession(resolveTarget(flags)), app.appId, app.version?.id);
+        const session = await openSession(resolveTarget(flags));
+        const { app: working } = await workingApp(session, project.root, app);
+        snapshot = await pullSnapshot(session, app.appId, working.version?.id);
         project.writeSnapshot(snapshot);
       }
       if (!snapshot) throw new Error('Nothing pulled yet: run `tooljet app pull` first, or drop --offline.');

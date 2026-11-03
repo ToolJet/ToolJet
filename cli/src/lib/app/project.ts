@@ -21,6 +21,8 @@ export interface AppJson {
   appId?: string;
   /** The ToolJet version the project works on (`tooljet app checkout`); absent means the app's editing version. */
   version?: { id: string; name: string };
+  /** The workspace git branch to work on, instead of the branch this folder's git checkout is on. */
+  branch?: string;
   codePage: { handle: string; name: string };
   routes: RouteDecl[];
 }
@@ -43,6 +45,9 @@ export const validateAppJson = (data: unknown): string[] => {
   if (!Array.isArray(app.routes) || app.routes.length === 0) errors.push('app.json: "routes" must list at least one route');
   if (app.version !== undefined && (!app.version || typeof app.version.id !== 'string' || typeof app.version.name !== 'string')) {
     errors.push('app.json: "version" must be { "id", "name" } (set it with `tooljet app checkout`)');
+  }
+  if (app.branch !== undefined && (typeof app.branch !== 'string' || !app.branch.trim())) {
+    errors.push('app.json: "branch" must be a git branch name');
   }
   const ids = new Set<string>();
   const paths = new Set<string>();

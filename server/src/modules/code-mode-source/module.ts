@@ -3,8 +3,9 @@ import { SubModule } from '@modules/app/sub-module';
 import { AppsRepository } from '@modules/apps/repository';
 import { StorageService } from '@modules/custom-component-libraries/storage.service';
 import { AppSecurityModule } from '@modules/app-security/module';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { FeatureAbilityFactory } from './ability';
-import { DEV_TRACK_UPLOADER } from './constants';
+import { DEV_TRACK_UPLOADER, GIT_SYNC_DETAILS } from './constants';
 import { CodeModeSourceService as CodeModeSourceServiceBase } from './service';
 
 export class CodeModeSourceModule extends SubModule {
@@ -22,9 +23,10 @@ export class CodeModeSourceModule extends SubModule {
       'custom-component-libraries',
       ['service', 'dev-bundle-events.service']
     );
+    const { GitSyncConfigsUtilService } = await this.getProviders(configs, 'git-sync-configs', ['util.service']);
     return this.cacheModule(cacheKey, {
       module: CodeModeSourceModule,
-      imports: [await AppSecurityModule.register(configs)],
+      imports: [await AppSecurityModule.register(configs), await GitSyncConfigsModule.register(configs)],
       providers: [
         // The edition's service, under the public class as its token.
         { provide: CodeModeSourceServiceBase, useClass: CodeModeSourceService },
@@ -34,6 +36,7 @@ export class CodeModeSourceModule extends SubModule {
         DevBundleEventsService,
         CustomComponentLibrariesService,
         { provide: DEV_TRACK_UPLOADER, useExisting: CustomComponentLibrariesService },
+        { provide: GIT_SYNC_DETAILS, useExisting: GitSyncConfigsUtilService },
       ],
       controllers: isMainImport ? [CodeModeSourceController, CodeModeCliController] : [],
       exports: [CodeModeSourceServiceBase],

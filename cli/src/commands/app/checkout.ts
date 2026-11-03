@@ -9,7 +9,7 @@ import { formatError, formatSuccess } from '../../lib/log';
 
 export default class AppCheckout extends Command {
   static description =
-    'Work on one ToolJet version of the app (by name or id): pull, check, dev and publish then use it. ToolJet versions are the history; there are no branches.';
+    'Work on one ToolJet version of the app (by name or id): pull, check, dev and publish then use it. With git sync, the git branch the folder is on already picks that branch\'s draft; checkout overrides it.';
 
   static examples = ['$ tooljet app checkout v3', '$ tooljet app checkout --list', '$ tooljet app checkout --editing'];
 

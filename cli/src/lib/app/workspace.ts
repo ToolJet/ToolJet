@@ -8,6 +8,7 @@ import { scaffoldApp } from './scaffold';
 import { findCodeRoot, parseRegistry } from './existing';
 import { generateTypes } from './typegen';
 import { applyStoredSource, fetchStoredSource, type SourceOwner } from './source-upload';
+import { workingApp } from './branch';
 
 /*
   What `tooljet app clone`, `pull` and `checkout` do to a project folder, apart from the command line, so tests can
@@ -18,7 +19,8 @@ import { applyStoredSource, fetchStoredSource, type SourceOwner } from './source
 export async function pullProject(session: Session, project: Project): Promise<Snapshot> {
   const app = project.readApp();
   if (!app.appId) throw new Error('app.json has no appId: create the app (tooljet app init --create) or clone one.');
-  const snapshot = await pullSnapshot(session, app.appId, app.version?.id);
+  const { version } = (await workingApp(session, project.root, app)).app;
+  const snapshot = await pullSnapshot(session, app.appId, version?.id);
   project.writeSnapshot(snapshot);
   fs.writeFileSync(path.join(project.frontend, GEN_FILE), generateTypes(app, snapshot));
   return snapshot;
@@ -90,7 +92,7 @@ export interface CheckoutResult {
 
 /**
  * Points the project at one ToolJet version (by name or id), or back at the editing version (`wanted` null), and
- * pulls it. ToolJet versions are the only history: there are no branches to switch between.
+ * pulls it. A checked-out version wins over the git branch the folder is on (see branch.ts).
  */
 export async function checkoutVersion(session: Session, project: Project, wanted: string | null): Promise<CheckoutResult> {
   const app = project.readApp();

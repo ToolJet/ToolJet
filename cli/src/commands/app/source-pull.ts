@@ -6,6 +6,7 @@ import { pullSnapshot } from '../../lib/app/remote';
 import { targetFlags } from '../../lib/app/flags';
 import { applyStoredSource, fetchStoredSource, inStepWith, readSourceState } from '../../lib/app/source-upload';
 import { formatError, formatSuccess } from '../../lib/log';
+import { workingApp } from '../../lib/app/branch';
 
 export default class AppSourcePull extends Command {
   static description =
@@ -22,7 +23,8 @@ export default class AppSourcePull extends Command {
       const app = project.readApp();
       if (!app.appId) throw new Error('app.json has no appId: create the app (tooljet app init --create) or clone one.');
       const session = await openSession(resolveTarget(flags));
-      const snapshot = await pullSnapshot(session, app.appId, app.version?.id);
+      const { version } = (await workingApp(session, project.root, app)).app;
+      const snapshot = await pullSnapshot(session, app.appId, version?.id);
       const where = { appId: app.appId, versionId: snapshot.versionId };
       const summary = await fetchStoredSource(session, where);
       const local = readSourceState(project.root);

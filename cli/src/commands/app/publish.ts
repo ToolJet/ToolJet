@@ -22,6 +22,7 @@ import {
   requestPublishScan,
   scanProject,
 } from '../../lib/app/scan';
+import { branchLine, workingApp } from '../../lib/app/branch';
 
 export default class AppPublish extends Command {
   static description =
@@ -60,7 +61,10 @@ export default class AppPublish extends Command {
       if (needsInstall(project.frontend)) installDependencies(project.frontend, { frozen: true });
       const target = resolveTarget(flags);
       const session = await openSession(target);
-      const snapshot = await pullSnapshot(session, app.appId, app.version?.id);
+      const working = await workingApp(session, project.root, app);
+      const version = working.app.version;
+      if (working.branch) this.log(formatSuccess(branchLine(working.branch)));
+      const snapshot = await pullSnapshot(session, app.appId, version?.id);
       const findings = checkSources(path.join(project.frontend, 'src'), app, snapshot);
       if (findings.length) {
         for (const f of findings) this.log(formatError(`${f.file}:${f.line}  ${f.message}`));
@@ -79,7 +83,7 @@ export default class AppPublish extends Command {
       ).uploadDev(correlationId, result.distDir);
       await syncApp(
         session,
-        app,
+        { ...app, version },
         { id: library.id, correlationId, name: libraryName, componentName: project.rootComponentName() },
         `dev:${await devBundleOwnerId(session, library.id)}`
       );

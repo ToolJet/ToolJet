@@ -31,6 +31,7 @@ import {
 import { behindMessage, checkAgainstStored, hashProjectSource } from '../../lib/app/source-sync';
 import type { ApiError } from '../../lib/app/session';
 import { countsLine, failedScanSarif, scanProject, uploadScan } from '../../lib/app/scan';
+import { branchLine, workingApp } from '../../lib/app/branch';
 
 /** How often a watching dev asks ToolJet for the stored code's revision. */
 const STORED_CODE_POLL_MS = 5000;
@@ -70,9 +71,12 @@ export default class AppDev extends Command {
       }
       const target = resolveTarget(flags);
       const session = await openSession(target);
+      const working = await workingApp(session, project.root, app);
+      const version = working.app.version;
+      if (working.branch) this.log(formatSuccess(branchLine(working.branch)));
       const { correlationId, libraryName } = project.readLibraryConfig();
       const library = await findOrCreateLibrary(session, correlationId, libraryName);
-      const snapshot = await pullSnapshot(session, app.appId, app.version?.id);
+      const snapshot = await pullSnapshot(session, app.appId, version?.id);
       project.writeSnapshot(snapshot);
       fs.writeFileSync(path.join(project.frontend, GEN_FILE), generateTypes(app, snapshot));
       const client = new ApiClient(
@@ -191,7 +195,7 @@ export default class AppDev extends Command {
         if (!synced) {
           const sync = await syncApp(
             session,
-            project.readApp(),
+            { ...project.readApp(), version },
             { id: library.id, correlationId, name: libraryName, componentName: project.rootComponentName() },
             `dev:${await devBundleOwnerId(session, library.id)}`
           );

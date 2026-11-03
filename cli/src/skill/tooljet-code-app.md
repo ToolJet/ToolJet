@@ -15,6 +15,9 @@ sign-in, permissions, environments, data sources and queries; the code calls que
 - `tooljet app dev`: builds on every save and shows the result live in the ToolJet builder (your own preview only).
 - `tooljet app publish`: saves the app's draft as a version, as Save version does in the editor. The code is stored on ToolJet and frozen with that version; release and promote it in ToolJet.
 - `tooljet app checkout <version>`: work on another ToolJet version; `--list` shows them, `--editing` goes back.
+- Git sync: when this folder is the app's `code/` folder in the workspace's git repository, the git branch you are on
+  picks that branch's draft (`git checkout feature-x`, then `tooljet app dev`). Commit and pull in ToolJet as usual;
+  ToolJet writes `code/` on each commit unless the code is owned by the repository.
 
 ## Rules
 
