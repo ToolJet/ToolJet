@@ -127,6 +127,19 @@ describe('tooljet app clone, pull and checkout', () => {
     expect(session.calls.every((c) => c.startsWith('GET '))).to.equal(true);
   });
 
+  it('clone keeps an app name with quotes, a backslash and a $ as it is', async () => {
+    const name = 'ToolJet app called "Talent \\ Pipeline" $&';
+    const session = fakeSession();
+    const api = session.api;
+    session.api = async (p: string, init?: { method?: string }) => {
+      const res = await api(p, init);
+      return p.startsWith('/apps/') && res?.slug ? { ...res, name } : res;
+    };
+    const result = await cloneApp(session, 'app-1', 'talent-pipeline');
+    expect(result.project.readApp()).to.include({ name, appId: 'app-1' });
+    expect(result.project.readLibraryConfig().libraryName).to.equal(name);
+  });
+
   it('clone writes the code ToolJet stores for the editing version and records it', async () => {
     const session = fakeSession('stored');
     const result = await cloneApp(session, 'app-1');

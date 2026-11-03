@@ -11,11 +11,20 @@ import { randomUUID } from 'crypto';
 const templatesRoot = () => path.join(__dirname, '..', '..', '_templates', 'library', 'code-app');
 const overlayRoot = () => path.join(__dirname, '..', '..', 'app-template');
 
-const fill = (text: string, vars: Record<string, string>) =>
-  text
-    .replace(/<%=\s*name\s*%>/g, vars.name)
-    .replace(/<%=\s*display_name\s*%>/g, vars.displayName)
-    .replace(/__DISPLAY_NAME__/g, vars.displayName);
+/*
+  The app's display name is the user's own text, so it is escaped for the file it lands in: a JSON string in .json, JSX
+  text in .tsx and .jsx, as it is everywhere else (the README's heading). One pass with a replacer function: a `$` in the
+  name stays a `$`, and a name that looks like a placeholder stays text.
+*/
+const inJsonString = (value: string) => JSON.stringify(value).slice(1, -1);
+const inJsxText = (value: string) => (/[{}<>&\r\n]|^\s|\s$/.test(value) ? `{${JSON.stringify(value)}}` : value);
+
+const fill = (text: string, vars: Record<string, string>, file: string) => {
+  const escaped = /\.json$/.test(file) ? inJsonString : /\.[jt]sx$/.test(file) ? inJsxText : (value: string) => value;
+  return text.replace(/<%=\s*(name|display_name)\s*%>|__DISPLAY_NAME__/g, (_, key) =>
+    escaped(key === 'name' ? vars.name : vars.displayName)
+  );
+};
 
 const copyTree = (from: string, to: string, vars: Record<string, string>) => {
   for (const entry of fs.readdirSync(from, { withFileTypes: true })) {
@@ -27,14 +36,17 @@ const copyTree = (from: string, to: string, vars: Record<string, string>) => {
       fs.mkdirSync(target, { recursive: true });
       copyTree(source, target, vars);
     } else {
-      fs.writeFileSync(target, fill(fs.readFileSync(source, 'utf8'), vars));
+      fs.writeFileSync(target, fill(fs.readFileSync(source, 'utf8'), vars, target));
     }
   }
 };
 
 export function scaffoldApp(dir: string, displayName: string): { correlationId: string } {
   if (fs.existsSync(dir) && fs.readdirSync(dir).length) throw new Error(`${dir} already exists and is not empty`);
-  const name = path.basename(path.resolve(dir)).toLowerCase().replace(/[^a-z0-9-]+/g, '-');
+  const name = path
+    .basename(path.resolve(dir))
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-');
   const vars = { name, displayName };
   const frontend = path.join(dir, 'frontend');
   fs.mkdirSync(frontend, { recursive: true });
@@ -46,7 +58,7 @@ export function scaffoldApp(dir: string, displayName: string): { correlationId: 
     if (!match) continue;
     const target = path.join(frontend, match[1]);
     fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.writeFileSync(target, fill(match[2], vars));
+    fs.writeFileSync(target, fill(match[2], vars, target));
   }
   // The app's own starter, router, typed-hooks placeholder, app.json and README on top.
   copyTree(overlayRoot(), dir, vars);
