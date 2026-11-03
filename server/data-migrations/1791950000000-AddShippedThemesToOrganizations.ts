@@ -56,5 +56,8 @@ export class AddShippedThemesToOrganizations1791950000000 implements MigrationIn
     );
   }
 
-  public async down(): Promise<void> {}
+  public async down(): Promise<void> {
+    // Not reversed: a workspace may have applied or edited these themes since they were added, and deleting them by
+    // name could remove a theme an app uses.
+  }
 }

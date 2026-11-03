@@ -99,5 +99,8 @@ export class RetuneShippedThemeNeutrals1792170000000 implements MigrationInterfa
     );
   }
 
-  public async down(): Promise<void> {}
+  public async down(): Promise<void> {
+    // Not reversed: putting the first shipped definitions back would only bring back the neutrals this retune fixed,
+    // and a theme someone has edited since was never touched.
+  }
 }

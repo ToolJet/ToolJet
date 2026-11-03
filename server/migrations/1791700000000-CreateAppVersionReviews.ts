@@ -1,3 +1,4 @@
+// migration-lint: allow-destructive the unique index is on app_version_reviews, a table this migration creates
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 // Review requests on app versions: a version is proposed for release,
