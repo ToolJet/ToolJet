@@ -438,7 +438,8 @@ export const createComponentsSlice = (set, get) => ({
     component,
     componentResolvedValues = {},
     updatePassedValue = true,
-    moduleId
+    moduleId,
+    skipResolve = false
   ) => {
     const {
       getCustomResolvableReference,
@@ -479,7 +480,7 @@ export const createComponentsSlice = (set, get) => ({
 
       customResolvables = getCustomResolvables(nearestRowScopedAncestorId, null, moduleId, parentIndices);
     }
-    if (typeof value === 'string' && value?.includes('{{') && value?.includes('}}')) {
+    if (!skipResolve && typeof value === 'string' && value?.includes('{{') && value?.includes('}}')) {
       let valueWithId, allRefs, valueWithBrackets;
       if (value === '{{true}}' || value === '{{false}}') {
         valueWithId = value;
@@ -1161,7 +1162,7 @@ export const createComponentsSlice = (set, get) => ({
     resolvedComponentValues = {},
     paramType
   ) => {
-    const { checkValueAndResolve, setAllValueToComponent } = get();
+    const { checkValueAndResolve, updateResolvedValues } = get();
     if (component.definition[paramType] === undefined) return;
     Object.entries(component.definition[paramType]).forEach(([property, value]) => {
       if (!value?.skipResolve) {
@@ -1176,8 +1177,18 @@ export const createComponentsSlice = (set, get) => ({
           moduleId
         );
       } else {
-        const componentDetails = { componentId, paramType, property };
-        setAllValueToComponent(componentDetails, value?.value, false, null, {}, resolvedComponentValues, moduleId);
+        // Stored as-is, but per row like any plain value, so a component inside a ListView still gets it
+        updateResolvedValues(
+          componentId,
+          paramType,
+          property,
+          value?.value,
+          component,
+          resolvedComponentValues,
+          true,
+          moduleId,
+          true
+        );
       }
     });
   },
