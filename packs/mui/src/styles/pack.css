@@ -24,6 +24,25 @@
 .tj-mui-block {
   display: block;
 }
+/* A button never grows past its box: the Large size (42px) in a 40px box ends at the box's edge. */
+.tj-mui-center > .MuiButton-root {
+  max-height: 100%;
+}
+/* The Tooltip's wrapper around a button takes the box's width at most, so the button shrinks to it and its label ends
+   in an ellipsis, and the box's height, so the cap above holds. */
+.tj-mui-fit {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.tj-mui-fit--full {
+  width: 100%;
+}
+.tj-mui-fit > .MuiButton-root {
+  max-height: 100%;
+}
 .tj-mui-field--outlined-label {
   padding-top: 9px;
 }
