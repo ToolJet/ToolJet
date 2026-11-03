@@ -222,14 +222,19 @@ export const visitReleasedAppAndCaptureQueryRun = (slug) => {
 export const openGroupGranularAccess = (groupName) => {
   const groupTitle = (name) => `[data-cy="${cyParamName(name)}-title"]`;
   uiWatchGranularPermissions();
+  cy.intercept("GET", "**/v2/group-permissions").as("groupPermissionsList");
   cy.visit(`/${Cypress.env("workspaceSlug")}/workspace-settings/groups`);
-  // The page auto-selects Admin once it loads; a click that lands before that is overridden, so wait for Admin's header, click, then wait for the clicked group's header.
+  // Wait for the list load + Admin auto-select to settle before clicking a
+  // custom group. A click that races Admin was overridden, and the old
+  // synchronous body.find() re-click often ran too early — appFolderEndUser
+  // then timed out waiting for the group title.
+  cy.wait("@groupPermissionsList", { timeout: 30000 });
   cy.get(groupTitle("Admin"), { timeout: 30000 }).should("be.visible");
-  cy.get(groupsSelector.groupLink(groupName)).click("left");
-  cy.get("body").then(($body) => {
-    if (!$body.find(groupTitle(groupName)).length) cy.get(groupsSelector.groupLink(groupName)).click("left");
-  });
-  cy.get(groupTitle(groupName)).should("be.visible");
+  cy.get(groupsSelector.groupLink(groupName), { timeout: 30000 })
+    .should("be.visible")
+    .scrollIntoView()
+    .click("left");
+  cy.get(groupTitle(groupName), { timeout: 30000 }).should("be.visible");
   uiOpenGranularAccessTab({ waitForUsers: !ROLE_GROUPS.includes(groupName) });
 };
 
