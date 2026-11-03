@@ -1067,9 +1067,11 @@ describe('Listview: only the first row of every list is editable', () => {
     nestedWidget.render({ currentMode: 'edit' });
     await waitFor(() => expect(document.querySelectorAll('.ele-txt2')).toHaveLength(4));
 
-    const editable = [...document.querySelectorAll('.ele-txt2')].map((node) => node.classList.contains('moveable-box'));
+    const editable = () =>
+      [...document.querySelectorAll('.ele-txt2')].map((node) => node.classList.contains('moveable-box'));
 
-    expect(editable).toEqual([true, false, false, false]);
+    // Wait for the settled lock: the elements exist a render before the row context marks the copies read-only.
+    await waitFor(() => expect(editable()).toEqual([true, false, false, false]));
   });
 });
 
@@ -1088,9 +1090,11 @@ describe('Listview: a Container in a later row is not editable', () => {
     });
     await waitFor(() => expect(document.querySelectorAll('.ele-txt8')).toHaveLength(3));
 
-    const editable = [...document.querySelectorAll('.ele-txt8')].map((node) => node.classList.contains('moveable-box'));
+    const editable = () =>
+      [...document.querySelectorAll('.ele-txt8')].map((node) => node.classList.contains('moveable-box'));
 
-    expect(editable).toEqual([true, false, false]);
+    // Wait for the settled lock: the elements exist a render before the row context marks the copies read-only.
+    await waitFor(() => expect(editable()).toEqual([true, false, false]));
   });
 });
 
