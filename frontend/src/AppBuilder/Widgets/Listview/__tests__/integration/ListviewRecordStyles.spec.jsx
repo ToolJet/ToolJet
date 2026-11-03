@@ -65,7 +65,7 @@ const widget = createWidgetHarness({
 const container = () => document.getElementById(ID);
 const list = () => container().querySelector('[role="list"]');
 const rows = () => [...document.querySelectorAll('.list-item')];
-const dividers = () => [...container().querySelectorAll('[role="separator"]')];
+const dividers = () => [...container().querySelectorAll('.listview-record-divider')];
 
 async function mount(options = {}) {
   widget.render({ currentMode: 'view', ...options });
@@ -175,18 +175,20 @@ describe('Listview: list styles', () => {
     expect(list().style.rowGap).toBe('6px');
   });
 
-  test('[Listview-STYLE-008] grid records show their border, and hiding it removes it', async () => {
+  const GRID_BORDERED = { listStyle: binding('bordered'), recordBorderColor: binding('rgb(4, 5, 6)') };
+
+  test('[Listview-STYLE-008] grid records show their border', async () => {
     // Break this catches: the record border applied in list mode only, so grid cells run together.
-    const styles = { listStyle: binding('bordered'), recordBorderColor: binding('rgb(4, 5, 6)') };
-    await mount({ properties: { mode: binding('grid'), columns: binding('{{3}}') }, styles });
+    await mount({ properties: { mode: binding('grid'), columns: binding('{{3}}') }, styles: GRID_BORDERED });
 
     rows().forEach((row) => expect(row.style.border).toBe('1px solid rgb(4, 5, 6)'));
+  });
 
-    widget.teardown();
-    widget.setup();
+  test('[Listview-STYLE-008] hiding the border removes it from grid records', async () => {
+    // Break this catches: a grid border that cannot be turned off.
     await mount({
       properties: { mode: binding('grid'), columns: binding('{{3}}'), showBorder: binding('{{false}}') },
-      styles,
+      styles: GRID_BORDERED,
     });
 
     rows().forEach((row) => expect(row.style.border).toBe(''));
@@ -206,17 +208,19 @@ describe('Listview: grid record height', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
 
-  test('[Listview-ROW-004] grid records use gridRecordHeight, and rowHeight when it is missing', async () => {
-    // Break this catches: grid reading rowHeight only (new grids lose 150), or no fallback, so a saved
-    // grid without the key collapses.
+  test('[Listview-ROW-004] grid records use gridRecordHeight', async () => {
+    // Break this catches: grid reading rowHeight only, so new grids lose their 150px records.
     await mount({
       properties: { mode: binding('grid'), rowHeight: binding('100'), gridRecordHeight: binding('150') },
     });
-    rows().forEach((row) => expect(row.style.height).toBe('150px'));
 
-    widget.teardown();
-    widget.setup();
+    rows().forEach((row) => expect(row.style.height).toBe('150px'));
+  });
+
+  test('[Listview-ROW-004] grid records without gridRecordHeight use rowHeight', async () => {
+    // Break this catches: no fallback, so a saved grid without the key loses its height.
     await mount({ properties: { mode: binding('grid'), rowHeight: binding('100') } });
+
     rows().forEach((row) => expect(row.style.height).toBe('100px'));
   });
 

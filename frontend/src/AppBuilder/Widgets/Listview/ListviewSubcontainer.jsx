@@ -5,6 +5,7 @@ import { shallow } from 'zustand/shallow';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import SubcontainerContext, { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { getDynamicLayoutKey } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
+import cx from 'classnames';
 
 export const ListviewSubcontainer = ({
   index,
@@ -13,6 +14,8 @@ export const ListviewSubcontainer = ({
   rowHeight,
   positiveColumns,
   showBorder,
+  recordGap = 0,
+  recordBoxStyle,
   onRecordOrRowClicked,
   computeCanvasBackgroundColor,
   darkMode,
@@ -60,14 +63,20 @@ export const ListviewSubcontainer = ({
   return (
     <SubcontainerContext.Provider value={contextValue}>
       <div
-        className={`list-item ${mode == 'list' && 'w-100'}`}
+        className={cx('list-item', {
+          'w-100': mode == 'list',
+          'listview-legacy-divider': showBorder && mode == 'list',
+        })}
         style={{
           position: 'relative',
           height: `${transformedRowHeight}px`,
-          width: `${100 / positiveColumns}%`,
+          width:
+            recordGap > 0
+              ? `calc((100% - ${(positiveColumns - 1) * recordGap}px) / ${positiveColumns})`
+              : `${100 / positiveColumns}%`,
           padding: '0px',
           overflow: 'hidden',
-          ...(showBorder && mode == 'list' && { borderBottom: `1px solid var(--cc-default-border)` }),
+          ...recordBoxStyle,
         }}
         key={index}
         role="listitem"

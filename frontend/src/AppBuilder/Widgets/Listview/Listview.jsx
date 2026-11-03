@@ -15,6 +15,10 @@ import { ListviewSubcontainer } from './ListviewSubcontainer';
 import cx from 'classnames';
 import Spinner from '@/_ui/Spinner';
 
+const NEW_LIST_STYLES = ['bordered', 'container', 'plain'];
+const NEW_STYLE_PADDING = 12;
+const LEGACY_PADDING = 7;
+
 export const Listview = function Listview({
   id,
   width,
@@ -56,11 +60,26 @@ export const Listview = function Listview({
     dataSourceSelector,
     dynamicHeight,
     loadingState = false,
+    gridRecordHeight,
   } = combinedProperties;
 
   const data = dataSourceSelector === 'rawJson' ? combinedProperties?.data : dataSourceSelector;
 
-  const { borderRadius, boxShadow } = styles;
+  const {
+    borderRadius,
+    boxShadow,
+    listStyle,
+    gap,
+    recordBackgroundColor,
+    recordBorderColor,
+    recordDividerColor,
+    recordBorderRadius,
+    recordBoxShadow,
+  } = styles;
+  // Anything but a known new style is Legacy, so a saved ListView keeps today's look.
+  const recordStyle = NEW_LIST_STYLES.includes(listStyle) ? listStyle : 'legacy';
+  const isLegacy = recordStyle === 'legacy';
+  const recordGap = isLegacy ? 0 : Math.max(0, Number(gap) || 0);
   const visibility = combinedProperties.visibility ?? true;
   const disabledState = combinedProperties.disabledState ?? false;
   const backgroundColor =
@@ -74,6 +93,8 @@ export const Listview = function Listview({
   // match neither and the row and its canvas would pick different modes.
   const mode = String(rawMode ?? 'list').toLowerCase();
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
+  // Saved grids have no gridRecordHeight and keep their rowHeight.
+  const recordHeight = mode === 'grid' ? (gridRecordHeight ?? rowHeight) : rowHeight;
 
   const computedStyles = {
     backgroundColor,
@@ -84,7 +105,7 @@ export const Listview = function Listview({
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
     boxShadow,
-    padding: '7px',
+    padding: `${isLegacy ? LEGACY_PADDING : NEW_STYLE_PADDING}px`,
     overflowX: 'hidden',
     // Dynamic mode (view-only) hides the listview's own scroll to suppress
     // the one-frame flash while rows grow ahead of the parent reflow. Static
@@ -101,6 +122,26 @@ export const Listview = function Listview({
 
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
   const [positiveColumns, setPositiveColumns] = useState(columns);
+
+  const showRecordBorder = recordStyle === 'bordered' && !!showBorder;
+  const showRecordDivider = recordStyle === 'plain' && !!showBorder;
+  const recordBoxStyle = useMemo(() => {
+    if (recordStyle !== 'bordered' && recordStyle !== 'container') return null;
+    return {
+      backgroundColor: recordBackgroundColor,
+      ...(showRecordBorder && { border: `1px solid ${recordBorderColor ?? 'var(--cc-weak-border)'}` }),
+      borderRadius: Math.max(0, Number(recordBorderRadius) || 0),
+      ...(recordBoxShadow && { boxShadow: recordBoxShadow }),
+    };
+  }, [recordStyle, recordBackgroundColor, showRecordBorder, recordBorderColor, recordBorderRadius, recordBoxShadow]);
+  const recordsPerLine = mode === 'grid' ? positiveColumns : 1;
+  // The row canvas is sized from the widget width, so the wider padding, gaps and borders come off it.
+  const recordCanvasWidth = isLegacy
+    ? width
+    : width -
+      2 * (NEW_STYLE_PADDING - LEGACY_PADDING) -
+      (recordsPerLine - 1) * recordGap -
+      recordsPerLine * (showRecordBorder ? 2 : 0);
   const parentRef = useRef(null);
   // Disabled list blocks the mouse via `data-disabled`; `inert` also removes the row components from
   // the tab order (runtime only — keeps the builder editable).
@@ -261,30 +302,55 @@ export const Listview = function Listview({
         <Spinner />
       ) : (
         <>
-          <div role="list" className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}>
+          <div
+            role="list"
+            className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}
+            style={
+              isLegacy
+                ? undefined
+                : // Half the gap on each side of a divider puts the line in the middle of the gap.
+                  { rowGap: showRecordDivider ? recordGap / 2 : recordGap, columnGap: recordGap }
+            }
+          >
             {filteredData.map((_listItem, index) => (
-              <ListviewSubcontainer
-                // Keyed by record: a page-local key makes React reuse row 0's children on every page.
-                key={startIndexOfRowInThePage + index}
-                id={id}
-                index={index}
-                moduleId={moduleId}
-                mode={mode}
-                rowHeight={rowHeight}
-                positiveColumns={positiveColumns}
-                showBorder={showBorder}
-                onRecordOrRowClicked={onRecordOrRowClicked}
-                computeCanvasBackgroundColor={computeCanvasBackgroundColor}
-                darkMode={darkMode}
-                width={width}
-                isDynamicHeightEnabled={isDynamicHeightEnabled}
-                data={data}
-                currentLayout={currentLayout}
-                visibility={visibility}
-                parentHeight={height}
-                dataCy={dataCy}
-                componentType={componentType}
-              />
+              // Keyed by record: a page-local key makes React reuse row 0's children on every page.
+              <React.Fragment key={startIndexOfRowInThePage + index}>
+                <ListviewSubcontainer
+                  id={id}
+                  index={index}
+                  moduleId={moduleId}
+                  mode={mode}
+                  rowHeight={recordHeight}
+                  positiveColumns={positiveColumns}
+                  showBorder={isLegacy && showBorder}
+                  recordGap={recordGap}
+                  recordBoxStyle={recordBoxStyle}
+                  onRecordOrRowClicked={onRecordOrRowClicked}
+                  computeCanvasBackgroundColor={computeCanvasBackgroundColor}
+                  darkMode={darkMode}
+                  width={recordCanvasWidth}
+                  isDynamicHeightEnabled={isDynamicHeightEnabled}
+                  data={data}
+                  currentLayout={currentLayout}
+                  visibility={visibility}
+                  parentHeight={height}
+                  dataCy={dataCy}
+                  componentType={componentType}
+                />
+                {showRecordDivider && (index + 1) % recordsPerLine === 0 && index < filteredData.length - 1 && (
+                  // Hidden from assistive tech: a list may only own list items.
+                  <div
+                    aria-hidden="true"
+                    className="listview-record-divider"
+                    style={{
+                      flex: '0 0 100%',
+                      height: 0,
+                      padding: 0,
+                      borderTop: `1px solid ${recordDividerColor ?? 'var(--cc-weak-border)'}`,
+                    }}
+                  />
+                )}
+              </React.Fragment>
             ))}
           </div>
           {enablePagination && _.isArray(data) && (

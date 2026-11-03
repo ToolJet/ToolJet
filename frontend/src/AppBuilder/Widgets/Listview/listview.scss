@@ -29,3 +29,8 @@
 .real-canvas.flex-container-canvas .listview-scroll-container {
     scrollbar-color: inherit;
 }
+
+// Legacy separator between list records, toggled by Show bottom border.
+.listview-scroll-container .list-item.listview-legacy-divider {
+    border-bottom: 1px solid var(--cc-default-border);
+}

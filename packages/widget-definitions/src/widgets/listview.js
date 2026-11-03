@@ -212,6 +212,54 @@ export const listviewConfig = {
     onRecordClicked: { displayName: 'Record clicked' },
   },
   styles: {
+    listStyle: {
+      type: 'select',
+      displayName: 'List style',
+      options: [
+        { name: 'Bordered', value: 'bordered' },
+        { name: 'Container', value: 'container' },
+        { name: 'Plain', value: 'plain' },
+        { name: 'Legacy', value: 'legacy' },
+      ],
+      validation: { schema: { type: 'string' }, defaultValue: 'legacy' },
+    },
+    gap: {
+      type: 'number',
+      displayName: 'Gap',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      conditionallyRender: { key: 'listStyle', value: ['bordered', 'container', 'plain'] },
+    },
+    recordBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Record background',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
+      conditionallyRender: { key: 'listStyle', value: ['bordered', 'container'] },
+    },
+    recordBorderColor: {
+      type: 'colorSwatches',
+      displayName: 'Record border',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-weak-border)' },
+      conditionallyRender: { key: 'listStyle', value: 'bordered' },
+    },
+    recordDividerColor: {
+      type: 'colorSwatches',
+      displayName: 'Record divider',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-weak-border)' },
+      conditionallyRender: { key: 'listStyle', value: 'plain' },
+    },
+    recordBorderRadius: {
+      type: 'number',
+      displayName: 'Record border radius',
+      validation: { schema: { type: 'number' }, defaultValue: 6 },
+      conditionallyRender: { key: 'listStyle', value: ['bordered', 'container'] },
+    },
+    // No default: a missing value means no shadow, since the shadow field cannot parse 'none'.
+    recordBoxShadow: {
+      type: 'boxShadow',
+      displayName: 'Record box shadow',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      conditionallyRender: { key: 'listStyle', value: ['bordered', 'container'] },
+    },
     backgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background color',
