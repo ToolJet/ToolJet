@@ -89,11 +89,15 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
   if (variant === 'inline') {
     return (
       <>
-        <ReleaseConfirmation
-          show={showConfirmation}
-          onClose={() => setShowConfirmation(false)}
-          onConfirm={onReleaseConfirm}
-        />
+        {/* Rendered inside the version row: keep the dialog's clicks from reselecting the row and
+            closing the menu (and with it this dialog). */}
+        <span onClick={(event) => event.stopPropagation()}>
+          <ReleaseConfirmation
+            show={showConfirmation}
+            onClose={() => setShowConfirmation(false)}
+            onConfirm={onReleaseConfirm}
+          />
+        </span>
         <ToolTip
           message={
             !isReleaseVersionEnabled

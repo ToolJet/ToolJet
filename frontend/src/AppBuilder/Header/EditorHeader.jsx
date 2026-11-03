@@ -7,6 +7,7 @@ import HeaderActions from './HeaderActions';
 import { VersionManagerDropdown, VersionManagerErrorBoundary } from './VersionManager';
 import useStore from '@/AppBuilder/_stores/store';
 import RightTopHeaderButtons, { PreviewAndShareIcons } from './RightTopHeaderButtons/RightTopHeaderButtons';
+import CompareVersionsButton from './CompareVersionsButton';
 import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { BranchDropdown } from './BranchDropdown';
@@ -138,6 +139,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
                 >
                   {!isModuleEditor && <PreviewAndShareIcons />}
                   {!showSyncButton && <BranchDropdown appId={appId} organizationId={organizationId} />}
+                  {!isModuleEditor && <CompareVersionsButton darkMode={darkMode} />}
                   <VersionManagerErrorBoundary>
                     <VersionManagerDropdown darkMode={darkMode} />
                   </VersionManagerErrorBoundary>

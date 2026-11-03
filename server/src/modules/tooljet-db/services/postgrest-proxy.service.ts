@@ -82,13 +82,7 @@ export class PostgrestProxyService {
 
     if (['PATCH', 'POST'].includes(req.method)) {
       const { path: resolvedTableId } = extractTableRefs(rewrittenUrl);
-      const updatedRequestBody = await this.validateJSONBInputs(
-        organizationId,
-        tableInfo[resolvedTableId],
-        req.body,
-        environmentId
-      );
-      req.body = { ...req.body, ...updatedRequestBody };
+      req.body = await this.validateJSONBInputs(organizationId, tableInfo[resolvedTableId], req.body, environmentId);
     }
 
     return this.httpProxy(req, res, next);
@@ -141,13 +135,12 @@ export class PostgrestProxyService {
 
       if (['PATCH', 'POST'].includes(method)) {
         const { path: resolvedTableId } = extractTableRefs(rewrittenPath);
-        const updatedRequestBody = await this.validateJSONBInputs(
+        body = await this.validateJSONBInputs(
           headers['tj-workspace-id'],
           tableInfo[resolvedTableId],
           body,
           environmentId
         );
-        body = { ...body, ...updatedRequestBody };
       }
 
       const reqHeaders = {
@@ -357,6 +350,10 @@ export class PostgrestProxyService {
     throw new NotFoundException('Internal table not found: ' + tableNamesNotInOrg);
   }
 
+  /**
+   * The request body with its JSONB values parsed. A list of rows (a bulk insert) stays a list and each row is checked:
+   * spread into an object, it reached PostgREST as columns "0", "1", ... and every bulk insert through the proxy failed.
+   */
   protected async validateJSONBInputs(organizationId, tableName, body, environmentId: string | undefined) {
     const tableDetails = await this.tableOperationsService.perform(
       organizationId,
@@ -371,10 +368,11 @@ export class PostgrestProxyService {
       .filter((column) => column.data_type === 'jsonb')
       .map((column) => column.column_name);
 
-    if (jsonbColumns.length) {
+    if (!jsonbColumns.length) return body;
+    const validateRow = (row) => {
       const { inValidValueColumnsList: inValidJsonbColumns, updatedRequestBody } = validateTjdbJSONBColumnInputs(
         jsonbColumns,
-        body
+        row
       );
       if (inValidJsonbColumns.length) {
         throw new HttpException(
@@ -383,8 +381,8 @@ export class PostgrestProxyService {
         );
       }
       return updatedRequestBody;
-    }
-    return body;
+    };
+    return Array.isArray(body) ? body.map(validateRow) : validateRow(body);
   }
 }
 

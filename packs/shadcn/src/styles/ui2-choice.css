@@ -1,0 +1,1035 @@
+/* UI 2.0 looks for the choice components (Select, Multiselect, Combobox, Radio group, Checkbox, Switch, Toggle group,
+   the date and time pickers, Calendar, Schedule). Each UI 2.0 style is a --lk-* variable set on the component's root and
+   on its popup (lib/ui2/choice/looks.ts); the pack theme (--ui-*) is the fallback. */
+
+/* ---- Field text ---- */
+.uc .ui-placeholder,
+.uc .ui-select-trigger[data-placeholder] {
+  color: var(--lk-placeholder, var(--ui-muted-fg));
+}
+.uc .ui-field {
+  height: auto;
+}
+
+/* ---- The field's box: Field background, text and border styles ---- */
+.uc .ui-select-trigger,
+.uc .uc-multi {
+  border-color: var(--lk-border, var(--ui-border));
+  background: var(--lk-bg, var(--ui-bg));
+  color: var(--lk-fg, var(--ui-fg));
+}
+.uc .ui-field--invalid .ui-select-trigger,
+.uc .ui-field--invalid .uc-multi {
+  border-color: var(--ui-destructive);
+}
+.uc .ui-select-trigger:focus-visible,
+.uc .uc-multi:focus-visible {
+  border-color: var(--ui-primary);
+}
+.uc .ui-select-trigger.ui-placeholder,
+.uc .ui-select-trigger .ui-placeholder,
+.uc .ui-select-trigger[data-placeholder] {
+  color: var(--lk-placeholder, var(--ui-muted-fg));
+}
+
+/* ---- Triggers ---- */
+.uc-wrap {
+  position: relative;
+  width: 100%;
+}
+.uc-trigger {
+  min-width: 0;
+}
+.uc-trigger.has-clear > :first-child {
+  padding-right: 32px;
+}
+.uc-picker-trigger {
+  justify-content: flex-start;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.uc-picker-trigger.has-clear {
+  padding-right: 36px;
+}
+.uc-picker-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--lk-icon, currentColor);
+  opacity: 0.7;
+}
+.uc-trigger-value {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+}
+.uc-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.uc-trigger-end {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+}
+.uc-select-trigger:disabled,
+.uc-multi.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.uc-is-loading {
+  cursor: progress;
+}
+
+.uc-clear {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--lk-placeholder, var(--ui-muted-fg));
+  cursor: pointer;
+}
+.uc-clear:hover {
+  color: var(--ui-fg);
+}
+.uc-clear:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ui-ring);
+}
+/* The x over a field's right end; a select's sits before its chevron. */
+.uc-clear-at {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+}
+.uc-clear-at.before-chevron {
+  right: 32px;
+}
+
+/* ---- Multiselect field ---- */
+.uc-multi {
+  display: flex;
+  min-height: 36px;
+  height: auto;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+.uc-multi:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ui-ring);
+  border-color: var(--ui-primary);
+}
+.uc-chips {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.uc-chips > .ui-placeholder {
+  padding: 2px 0;
+}
+.uc-chip {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: calc(var(--ui-radius) - 2px);
+  background: var(--lk-chip-bg, var(--ui-muted));
+  color: var(--lk-chip-fg, var(--ui-fg));
+  font-size: 12px;
+  line-height: 16px;
+}
+.uc-chip.has-remove {
+  padding-right: 4px;
+}
+.uc-chip-text {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.uc-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+}
+.uc-chip-remove:hover,
+.uc-chip-remove:focus-visible {
+  opacity: 1;
+  outline: none;
+}
+
+/* ---- Popups ---- */
+.uc-pop {
+  z-index: 50;
+  overflow: hidden;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--lk-menu-bg, var(--ui-bg));
+  color: var(--lk-menu-fg, var(--ui-fg));
+  box-shadow: var(--ui-shadow-lg);
+  outline: none;
+  animation: ui-pop-in 0.12s ease-out;
+}
+.uc-pop-menu {
+  width: var(--radix-popover-trigger-width);
+  min-width: 12rem;
+}
+.uc-select-menu {
+  background: var(--lk-menu-bg, var(--ui-bg));
+  color: var(--lk-menu-fg, var(--ui-fg));
+}
+.uc-select-menu .ui-menu-item[data-highlighted] {
+  background: var(--lk-hl, var(--ui-muted));
+}
+.uc-cap-note {
+  padding: 6px 8px;
+  font-size: 12px;
+  color: var(--lk-help, var(--ui-muted-fg));
+}
+
+/* ---- Options list (Combobox, Multiselect) ---- */
+.uc-command {
+  display: flex;
+  flex-direction: column;
+  outline: none;
+}
+.uc-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--ui-border);
+}
+.uc-search-icon {
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+.uc-search-input {
+  width: 100%;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.uc-search-input::placeholder {
+  color: var(--ui-muted-fg);
+}
+.uc-list {
+  max-height: 300px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  outline: none;
+}
+.uc-group {
+  padding: 4px;
+}
+.uc-group + .uc-group {
+  padding-top: 0;
+}
+.uc-group-heading {
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--ui-muted-fg);
+}
+.uc-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: calc(var(--ui-radius) - 2px);
+  cursor: default;
+  user-select: none;
+}
+.uc-item.is-center {
+  justify-content: center;
+}
+.uc-item[data-active] {
+  background: var(--lk-hl, var(--ui-muted));
+}
+.uc-item[data-disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.uc-item-text {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+.uc-item-description {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ui-muted-fg);
+}
+.uc-item[data-active] .uc-item-description {
+  color: inherit;
+}
+.uc-item-check {
+  flex-shrink: 0;
+  margin-left: auto;
+  opacity: 0;
+}
+.uc-item-check.is-on {
+  opacity: 1;
+}
+.uc-strong {
+  font-weight: 500;
+}
+.uc-box {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--ui-primary);
+  border-radius: 4px;
+  opacity: 0.5;
+}
+.uc-box.is-on {
+  background: var(--ui-primary);
+  color: var(--ui-primary-fg);
+  opacity: 1;
+}
+.uc-empty {
+  display: flex;
+  justify-content: center;
+  padding: 24px 8px;
+  color: var(--ui-muted-fg);
+  text-align: center;
+}
+.uc-more,
+.uc-note {
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--ui-muted-fg);
+}
+.uc-more {
+  text-align: center;
+}
+.uc-rule {
+  height: 1px;
+  background: var(--ui-border);
+}
+.uc-option-icon,
+.uc-option-img {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.uc-option-icon {
+  opacity: 0.7;
+}
+.uc-option-img {
+  border-radius: 3px;
+  object-fit: cover;
+}
+.uc-option-emoji {
+  width: 16px;
+  flex-shrink: 0;
+  line-height: 1;
+  text-align: center;
+}
+.uc-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--ui-border);
+  border-top-color: var(--ui-primary);
+  border-radius: 999px;
+  animation: uc-spin 0.7s linear infinite;
+}
+@keyframes uc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---- Radio group ---- */
+.uc-radios {
+  display: flex;
+  flex-direction: column;
+}
+.uc-radios.is-horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  column-gap: 16px;
+}
+.uc-radios .ui-radio-item {
+  min-height: 24px;
+}
+.uc-radios .ui-radio {
+  flex-shrink: 0;
+  border-color: var(--ui-primary);
+}
+.ui-field--invalid .uc-radios .ui-radio {
+  border-color: var(--ui-destructive);
+}
+.uc-radios .ui-radio-item label {
+  color: var(--lk-fg, var(--ui-fg));
+}
+
+/* ---- Checkbox and Switch ---- */
+.uc-check-row {
+  height: auto;
+}
+.uc-check-row .ui-checkbox[data-state='unchecked'] {
+  border-color: var(--lk-border, var(--ui-primary));
+}
+.uc-check-row.is-invalid .ui-checkbox[data-state='unchecked'] {
+  border-color: var(--ui-destructive);
+}
+.uc-check-row .ui-switch[data-state='unchecked'] {
+  background: var(--lk-off, var(--ui-border));
+}
+
+/* ---- Toggle group: a segmented control, like a tabs list ---- */
+.uc-toggle-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+/* Alignment when the group is narrower than its box (full width off). */
+.uc-toggle-scroll[data-align='center'] {
+  text-align: center;
+}
+.uc-toggle-scroll[data-align='right'] {
+  text-align: right;
+}
+/* The outline and plain looks span the box (ui.css .ui-toggle-group): their buttons move instead. */
+.uc-toggle-scroll[data-align='center'] > .ui-toggle-group {
+  justify-content: center;
+}
+.uc-toggle-scroll[data-align='right'] > .ui-toggle-group {
+  justify-content: flex-end;
+}
+.uc-segmented {
+  display: inline-flex;
+  width: auto;
+  height: 36px;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--ui-radius);
+  background: var(--lk-bg, var(--ui-muted));
+  color: var(--lk-fg, var(--ui-muted-fg));
+}
+.uc-segmented.is-full {
+  display: flex;
+  width: 100%;
+  min-width: max-content;
+}
+.uc-segmented .ui-toggle {
+  height: 100%;
+  padding: 0 12px;
+  border-radius: calc(var(--ui-radius) * 0.8);
+  color: inherit;
+}
+.uc-segmented:not(.is-full) .ui-toggle {
+  flex: 0 0 auto;
+}
+.uc-segmented .ui-toggle:hover:not(:disabled) {
+  background: transparent;
+  color: var(--lk-on-fg, var(--ui-fg));
+}
+.uc-segmented .ui-toggle[data-state='on'] {
+  background: var(--lk-on-bg, var(--ui-bg));
+  color: var(--lk-on-fg, var(--ui-fg));
+  box-shadow: var(--ui-shadow);
+}
+.uc-toggles .ui-toggle[data-state='on'] {
+  background: var(--lk-on-bg, var(--ui-muted));
+  color: var(--lk-on-fg, var(--ui-fg));
+}
+
+/* ---- Calendar ---- */
+.uc-cal {
+  position: relative;
+  width: fit-content;
+  padding: 12px;
+}
+.uc-cal.is-full {
+  width: 100%;
+}
+.uc-cal-nav {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  left: 12px;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.uc-cal-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--lk-border, var(--ui-border));
+  border-radius: calc(var(--ui-radius) - 2px);
+  background: transparent;
+  color: var(--lk-title, var(--ui-fg));
+  opacity: 0.6;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.uc-cal-arrow:hover:not(:disabled) {
+  opacity: 1;
+}
+.uc-cal-arrow:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.uc-cal-months {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.uc-cal.is-full .uc-cal-months,
+.uc-cal.is-full .uc-cal-month {
+  flex: 1;
+}
+.uc-cal-month {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.uc-cal-caption {
+  display: flex;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--lk-title, var(--ui-fg));
+}
+.uc-cal-row {
+  display: flex;
+}
+.uc-cal-weekday {
+  width: var(--lk-cell, 32px);
+  font-size: 12.8px;
+  line-height: 20px;
+  text-align: center;
+  color: var(--lk-muted, var(--ui-muted-fg));
+}
+.uc-cal-cell {
+  position: relative;
+  width: var(--lk-cell, 32px);
+  height: var(--lk-cell, 32px);
+  padding: 0;
+}
+.uc-cal.is-full .uc-cal-weekday,
+.uc-cal.is-full .uc-cal-cell {
+  flex: 1;
+  width: auto;
+}
+.uc-cal.is-full .uc-cal-cell {
+  height: var(--lk-cell, 36px);
+}
+.uc-cal-cell.is-range-middle {
+  background: var(--lk-range, var(--ui-muted));
+}
+.uc-cal-cell.is-range-start {
+  background: var(--lk-range, var(--ui-muted));
+  border-radius: calc(var(--ui-radius) - 2px) 0 0 calc(var(--ui-radius) - 2px);
+}
+.uc-cal-cell.is-range-end {
+  background: var(--lk-range, var(--ui-muted));
+  border-radius: 0 calc(var(--ui-radius) - 2px) calc(var(--ui-radius) - 2px) 0;
+}
+.uc-cal-day {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--ui-radius) - 2px);
+  background: transparent;
+  color: var(--lk-fg, var(--ui-fg));
+  font: inherit;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.uc-cal-day:hover:not(:disabled) {
+  background: var(--lk-hover, var(--lk-hl, var(--ui-muted)));
+}
+.uc-cal-day:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ui-ring);
+}
+.uc-cal-day.is-outside,
+.uc-cal-day:disabled {
+  color: var(--lk-muted, var(--ui-muted-fg));
+}
+.uc-cal-day:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.uc-cal-day.is-today {
+  background: var(--lk-today, var(--ui-muted));
+}
+.uc-cal-day.is-in-range,
+.uc-cal-day.is-in-range:hover:not(:disabled) {
+  background: transparent;
+  border-radius: 0;
+}
+.uc-cal-day.is-selected,
+.uc-cal-day.is-selected:hover:not(:disabled) {
+  background: var(--ui-primary);
+  color: var(--ui-primary-fg);
+}
+.uc-cal-dots {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  display: flex;
+  gap: 2px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.uc-cal-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--lk-dot, var(--lk-marker, var(--ui-primary)));
+}
+.uc-cal-day.is-selected .uc-cal-dot.is-plain {
+  background: var(--ui-primary-fg);
+}
+/* The inline Calendar's own box. */
+.uc-calendar-box {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.uc-cal-frame {
+  width: fit-content;
+  background: var(--lk-bg, transparent);
+  color: var(--lk-fg, var(--ui-fg));
+}
+.uc-cal-frame.is-full {
+  width: 100%;
+}
+.uc-cal-frame.has-border {
+  border: 1px solid var(--lk-border, var(--ui-border));
+  border-radius: var(--ui-radius);
+}
+.uc-calendar-box.is-disabled {
+  opacity: 0.6;
+}
+
+/* ---- Time: columns, a list, the date and time picker's row ---- */
+.uc-time-cols {
+  display: flex;
+}
+.uc-time-cols > .uc-col + .uc-col {
+  border-left: 1px solid var(--ui-border);
+}
+.uc-col {
+  display: flex;
+  width: 64px;
+  height: 224px;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.uc-col.is-list {
+  width: 100%;
+  height: auto;
+  max-height: 256px;
+}
+.uc-col-opt {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: calc(var(--ui-radius) - 2px);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.uc-col-opt:hover:not(:disabled) {
+  background: var(--lk-hl, var(--ui-muted));
+}
+.uc-col-opt:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--ui-ring);
+}
+.uc-col-opt.is-on,
+.uc-col-opt.is-on:hover:not(:disabled) {
+  background: var(--ui-primary);
+  color: var(--ui-primary-fg);
+}
+.uc-col-opt:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.uc-time-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--ui-border);
+}
+.uc-time-row-label {
+  margin-right: auto;
+  color: var(--ui-muted-fg);
+}
+.uc-time-row > svg {
+  flex-shrink: 0;
+  color: var(--ui-muted-fg);
+}
+.uc-small-select {
+  width: 68px;
+  height: 32px;
+  padding: 0 8px;
+  gap: 4px;
+  box-shadow: none;
+  font-variant-numeric: tabular-nums;
+}
+.uc-small-menu {
+  max-height: 240px;
+}
+.uc-ampm {
+  display: flex;
+  margin-left: 4px;
+  padding: 2px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+}
+.uc-ampm button {
+  height: 24px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: calc(var(--ui-radius) - 2px);
+  background: transparent;
+  color: var(--ui-muted-fg);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.uc-ampm button:hover {
+  background: var(--lk-hl, var(--ui-muted));
+}
+.uc-ampm button.is-on {
+  background: var(--ui-primary);
+  color: var(--ui-primary-fg);
+}
+
+/* ---- Schedule ---- */
+.ucs {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.ucs-frame {
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--lk-border, var(--ui-border));
+  border-radius: var(--ui-radius-lg, calc(var(--ui-radius) + 4px));
+  background: var(--lk-bg, var(--ui-bg));
+}
+.ucs-scroll {
+  height: 100%;
+  overflow: auto;
+}
+.ucs-inner {
+  position: relative;
+}
+.ucs-head,
+.ucs-row {
+  display: flex;
+}
+.ucs-head {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  border-bottom: 1px solid var(--lk-border, var(--ui-border));
+  background: var(--lk-bg, var(--ui-bg));
+}
+.ucs-res-title,
+.ucs-res {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  flex-shrink: 0;
+  background: var(--lk-bg, var(--ui-bg));
+}
+.ucs-res-title {
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+  padding: 12px 12px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--lk-fg, var(--ui-muted-fg));
+}
+.ucs-cols {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+}
+.ucs-col {
+  min-width: 0;
+  flex: 1;
+  padding: 12px 8px 8px;
+  overflow: hidden;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--lk-fg, var(--ui-muted-fg));
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ucs-col + .ucs-col {
+  border-left: 1px solid var(--lk-border, var(--ui-border));
+}
+.ucs-col-label {
+  font-weight: 500;
+}
+.ucs-col.is-today .ucs-col-label {
+  color: var(--lk-accent, var(--ui-primary));
+}
+.ucs-col-sub {
+  margin-left: 4px;
+}
+.ucs-col.is-today .ucs-col-sub {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--lk-accent, var(--ui-primary));
+  color: var(--ui-primary-fg);
+}
+.ucs-row + .ucs-row {
+  border-top: 1px solid var(--lk-border, var(--ui-border));
+}
+.ucs-res {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border-right: 1px solid var(--lk-border, var(--ui-border));
+}
+.ucs-res-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+.ucs-res-name {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--ui-fg);
+}
+.ucs-res-caption {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--lk-fg, var(--ui-muted-fg));
+}
+.ucs-avatar {
+  display: flex;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  object-fit: cover;
+  font-size: 11px;
+  font-weight: 600;
+}
+.ucs-lane {
+  position: relative;
+  min-width: 0;
+  flex: 1;
+}
+.ucs-slots {
+  position: absolute;
+  inset: 0;
+  display: grid;
+}
+.ucs-slot {
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-color: var(--lk-border, var(--ui-border));
+  background: transparent;
+  outline: none;
+  transition: background-color 0.1s;
+}
+.ucs-slot.is-edge {
+  border-left: 1px solid var(--lk-border, var(--ui-border));
+}
+.ucs-slot:disabled {
+  cursor: default;
+}
+.ucs-slot.is-live {
+  cursor: pointer;
+}
+.ucs-slot.is-live:hover {
+  background: color-mix(in srgb, var(--lk-accent, var(--ui-primary)) 7%, transparent);
+}
+.ucs-slot:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--lk-accent, var(--ui-ring));
+}
+.ucs-slot[data-today] {
+  background: color-mix(in srgb, var(--lk-accent, var(--ui-primary)) 4%, transparent);
+}
+.ucs-slot[data-selected] {
+  background: color-mix(in srgb, var(--lk-accent, var(--ui-primary)) 14%, transparent);
+}
+.ucs-booking {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 8px;
+  overflow: hidden;
+  border: 0;
+  border-left: 3px solid var(--bk-tone);
+  border-radius: calc(var(--ui-radius) - 2px);
+  background: color-mix(in srgb, var(--bk-tone) 14%, var(--ui-bg));
+  color: color-mix(in srgb, var(--bk-tone) 70%, var(--ui-fg));
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.25;
+  text-align: left;
+  outline: none;
+  transition: box-shadow 0.15s;
+}
+.ucs-booking.is-tight {
+  padding: 0 4px;
+}
+.ucs-booking:not(:disabled) {
+  cursor: pointer;
+}
+.ucs-booking:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--bk-tone) 20%, var(--ui-bg));
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+.ucs-booking[data-selected] {
+  box-shadow: 0 0 0 2px var(--lk-accent, var(--ui-primary));
+}
+.ucs-booking:focus-visible {
+  box-shadow: 0 0 0 2px var(--lk-accent, var(--ui-ring));
+}
+.ucs-booking.is-cancelled {
+  opacity: 0.7;
+}
+.ucs-booking-title {
+  font-weight: 600;
+}
+.ucs-booking.is-cancelled .ucs-booking-title {
+  text-decoration: line-through;
+}
+.ucs-clamp2 {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.ucs-booking-second {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+.ucs-more {
+  position: absolute;
+  right: 4px;
+  bottom: 2px;
+  z-index: 2;
+  padding: 0 6px;
+  border-radius: calc(var(--ui-radius) - 2px);
+  background: var(--lk-bg, var(--ui-bg));
+  color: var(--lk-fg, var(--ui-muted-fg));
+  font-size: 11px;
+  font-weight: 500;
+}
+.ucs-now {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 5;
+  width: 0;
+  pointer-events: none;
+}
+.ucs-now::before,
+.ucs-now::after {
+  content: '';
+  position: absolute;
+  transform: translateX(-50%);
+  background: var(--lk-now, var(--ui-destructive));
+}
+.ucs-now::before {
+  top: 0;
+  bottom: 0;
+  width: 2px;
+}
+.ucs-now::after {
+  top: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+.ucs-empty {
+  display: flex;
+  min-height: 120px;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: var(--ui-muted-fg);
+}
+.ucs-notice {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ui-destructive);
+}
+.ucs-show-more {
+  display: flex;
+  justify-content: center;
+  padding: 6px;
+  border-top: 1px solid var(--lk-border, var(--ui-border));
+}

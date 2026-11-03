@@ -108,7 +108,114 @@ export const resolveFlexChildSizing = (layoutData = {}, fallbacks = {}) => {
   const widthPx = layoutData.widthPx ?? fallbackWidthPx ?? null;
   const height = layoutData.height ?? fallbackHeight ?? null;
 
-  return { fillWidth, widthPx, height };
+  // Row fill children share the free space by `grow` (2 next to 1 takes two thirds) and wrap to a new line once
+  // narrower than `minWidthPx` (when the container wraps).
+  const grow = Number(layoutData.grow);
+  const minWidthPx = Number(layoutData.minWidthPx);
+
+  return {
+    fillWidth,
+    widthPx,
+    height,
+    grow: Number.isFinite(grow) && grow > 0 ? grow : 1,
+    minWidthPx: Number.isFinite(minWidthPx) && minWidthPx > 0 ? minWidthPx : 0,
+  };
+};
+
+/**
+ * Flex sizing of a FlexContainer child's wrapper.
+ *
+ * A fill child in a row starts from a zero basis and may shrink, so siblings share the line by `grow` and the
+ * child's own content can never claim the row. (A content-sized basis let a fill child rendered at the row's width
+ * push its siblings off the line, and a nested container measuring its own width grew without end.)
+ */
+export const computeFlexChildFlexStyle = ({
+  isFlexRow,
+  flexShouldStack,
+  fillWidth,
+  grow = 1,
+  minWidthPx = 0,
+  // A row that does not wrap: a minimum width there can only push the row past its edge (minWidthPx is the width
+  // below which a child moves to the next line, so it means nothing on one line).
+  wraps = true,
+  effectiveWidthPx,
+  effectiveHeightPx,
+  availableWidth,
+}) => {
+  if (flexShouldStack && !isFlexRow) {
+    return {
+      flex: `0 0 ${effectiveHeightPx}px`,
+      height: `${effectiveHeightPx}px`,
+      minHeight: 0,
+      ...(fillWidth
+        ? { width: '100%', minWidth: 0 }
+        : { width: `${Math.min(effectiveWidthPx, availableWidth)}px`, maxWidth: '100%', minWidth: 0 }),
+    };
+  }
+  if (isFlexRow) {
+    return fillWidth
+      ? { flex: `${grow} 1 0px`, minWidth: `${wraps ? minWidthPx : 0}px`, height: `${effectiveHeightPx}px` }
+      : { flex: `0 0 ${effectiveWidthPx}px`, minWidth: 0, maxWidth: '100%', height: `${effectiveHeightPx}px` };
+  }
+  return { flex: `0 0 ${effectiveHeightPx}px`, width: fillWidth ? '100%' : `${effectiveWidthPx}px`, minHeight: 0 };
+};
+
+/**
+ * Flex sizing of a FlexContainer child's wrapper in a container saved before the UI 2.0 layout (lts-3.16, kept as it
+ * was; see _helpers/flexLayoutVersion.js). A fill child in a row grows from its content-sized basis and never shrinks,
+ * so it takes the whole line and fill children stack one per line.
+ */
+export const computeFlexChildFlexStyleV1 = ({
+  isFlexRow,
+  flexShouldStack,
+  fillWidth,
+  effectiveWidthPx,
+  effectiveHeightPx,
+  availableWidth,
+}) => {
+  const flexMainFill = isFlexRow ? fillWidth : false;
+  const flexMainPx = isFlexRow ? effectiveWidthPx : effectiveHeightPx;
+  if (flexShouldStack && !isFlexRow) {
+    return {
+      flex: flexMainFill ? '1 0 auto' : `0 0 ${flexMainPx}px`,
+      height: `${effectiveHeightPx}px`,
+      minHeight: 0,
+      ...(fillWidth
+        ? { width: '100%', minWidth: 0 }
+        : { width: `${Math.min(effectiveWidthPx, availableWidth)}px`, maxWidth: '100%', minWidth: 0 }),
+    };
+  }
+  return {
+    flex: flexMainFill ? '1 0 auto' : `0 0 ${flexMainPx}px`,
+    ...(isFlexRow
+      ? { height: `${effectiveHeightPx}px`, minWidth: 0 }
+      : { width: fillWidth ? '100%' : `${effectiveWidthPx}px`, minHeight: 0 }),
+  };
+};
+
+/**
+ * Whether a dialog without its trigger button leaves its FlexContainer's flow in the viewer (no slot, no gap): it
+ * draws nothing in place, and the open dialog renders outside the box. A container saved before the UI 2.0 layout keeps
+ * its slot, as on lts-3.16.
+ */
+export const leavesFlexFlow = ({ modalWithoutTrigger, mode, layoutV2 }) =>
+  !!modalWithoutTrigger && mode === 'view' && !!layoutV2;
+
+/** Width a child takes on a wrapping line, as the browser packs it: a fill child its minimum, a fixed child its width. */
+export const flexChildLineWidth = ({ fillWidth, minWidthPx = 0, width }) => (fillWidth ? minWidthPx || 0 : width);
+
+/** Height of the card header a FlexContainer draws above its body (ToolJet UI 2.0): the card's title with an
+ *  optional description beneath it. */
+export const SHADCN_CARD_HEADER_PX = { title: 48, withDescription: 70 };
+export const flexCardHeaderPx = (properties = {}) => {
+  const { cardStyle, cardTitle, cardExtra, cardHeaderDivider } = properties;
+  if (cardStyle === 'shadcnCard') {
+    if (!cardTitle && !cardExtra) return 0;
+    // A divided header (Ant's Card) is one 56px strip, the description beside the title.
+    if (cardHeaderDivider === true) return 56;
+    return cardExtra ? SHADCN_CARD_HEADER_PX.withDescription : SHADCN_CARD_HEADER_PX.title;
+  }
+  return 0;
 };
 
 /** Default flex-child layout when a widget is first dropped into a FlexContainer. */

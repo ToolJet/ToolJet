@@ -96,7 +96,8 @@ export class AppHistoryModule extends SubModule {
       // service does — i.e. not in migration/get-context mode. No HTTP routes are served there anyway.
       controllers: includeStreamService ? [AppHistoryController] : [],
       providers,
-      exports: [AppHistoryUtilService, EntityChangeService],
+      // AppHistoryService: version compare's Undo restores through it.
+      exports: [AppHistoryService, AppHistoryUtilService, EntityChangeService],
     });
   }
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ToolTip } from '@/_components/ToolTip';
-import { NotificationCenter } from '@/_components/NotificationCenter';
+import ReviewInbox from '../../ReviewInbox';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
@@ -161,7 +161,7 @@ const BaseLeftNavSideBar = ({
         )}
 
         <li className="tj-leftsidebar-icon-items-bottom text-center">
-          <NotificationCenter darkMode={darkMode} />
+          <ReviewInbox darkMode={darkMode} />
           <ToolTip delay={{ show: 0, hide: 0 }} message="Mode" placement="right">
             <Link
               className="cursor-pointer tj-leftsidebar-icon-items"

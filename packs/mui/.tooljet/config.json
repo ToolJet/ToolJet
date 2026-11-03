@@ -1,0 +1,17 @@
+{
+  "libraryName": "Material UI",
+  "correlationId": "ed160c18-d523-4fa7-b3ea-2f32a5596781",
+  "recordRender": true,
+  "themeMode": "own",
+  "surface": {
+    "page": "#fafafa",
+    "card": {
+      "background": "#ffffff",
+      "border": "transparent",
+      "radius": 4,
+      "shadow": "0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12)",
+      "titleSize": 20,
+      "titleWeight": 500
+    }
+  }
+}

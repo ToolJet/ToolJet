@@ -105,3 +105,26 @@ export const combineProperties = (widget, universal, isArray = false) => {
     exposedVariables: { ...universal.exposedVariables, ...widget.exposedVariables },
   };
 };
+
+// Defaults only a new FlexContainer gets (UI 2.0's layoutVersion '2' and Equal heights). ToolJet merges a widget's
+// default definition into saved components (the frontend's buildComponentMetaDefinition on a cloned page, the server's
+// on every load), which would stamp them onto every container saved before UI 2.0 and switch its layout. Both merges
+// take them back out with dropNewContainerDefaults.
+const NEW_CONTAINER_ONLY_DEFAULTS = ['layoutVersion', 'equalHeights'];
+
+/**
+ * Takes the new-container-only defaults back out of a saved FlexContainer's merged properties when the saved
+ * properties did not have them.
+ * @param {string} componentType
+ * @param {Record<string, unknown>} mergedProperties  the widget's defaults merged with the saved properties
+ * @param {Record<string, unknown> | undefined} savedProperties
+ * @returns {Record<string, unknown>} a copy of mergedProperties without the keys the saved container did not have
+ */
+export const dropNewContainerDefaults = (componentType, mergedProperties, savedProperties) => {
+  if (componentType !== 'FlexContainer' || !mergedProperties) return mergedProperties;
+  const properties = { ...mergedProperties };
+  NEW_CONTAINER_ONLY_DEFAULTS.forEach((key) => {
+    if (savedProperties?.[key] === undefined) delete properties[key];
+  });
+  return properties;
+};

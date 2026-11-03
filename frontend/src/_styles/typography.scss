@@ -2,6 +2,9 @@
     /* Font families */
     --font-family-inter: 'Inter', sans-serif;
     --font-family-geist-mono: 'Geist Mono', monospace;
+    /* The editor's own families (theme.scss names them directly); the AI chat and build views use these. */
+    --font-family-ibm-plex-sans: 'IBM Plex Sans', sans-serif;
+    --font-family-ibm-plex-mono: 'IBM Plex Mono', monospace;
 
     /* Font weights */
     --font-weight-regular: 400;
@@ -33,7 +36,22 @@
     --letter-spacing-small: -0.22px;
 } 
 
+/* geist-mono - latin. Timers, counts and credits in the AI chat. */
+@font-face {
+  font-display: swap;
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/assets/fonts/geist-mono-v1-latin/geist-mono-latin-400-normal.woff2') format('woff2');
+}
 
+@font-face {
+  font-display: swap;
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 500;
+  src: url('/assets/fonts/geist-mono-v1-latin/geist-mono-latin-500-normal.woff2') format('woff2');
+}
 
 /* inter-100 - latin */
 @font-face {

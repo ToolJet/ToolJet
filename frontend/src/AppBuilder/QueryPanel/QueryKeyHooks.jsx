@@ -14,6 +14,7 @@ const QueryKeyHooks = ({ children, isExpanded }) => {
     (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
   );
   const moduleId = useModuleId();
+  const overlayOpen = useStore((state) => state.isEditorOverlayOpen);
 
   const isAbortSupported = !ABORT_UNSUPPORTED_KINDS.has(selectedQuery?.kind);
   const isQueryActive = isQueryLoading || isPreviewQueryLoading;
@@ -27,11 +28,11 @@ const QueryKeyHooks = ({ children, isExpanded }) => {
         } else runQueryOnShortcut();
       }
     },
-    { enabled: isExpanded && !isQueryActive, enableOnFormTags: ['input'] }
+    { enabled: isExpanded && !isQueryActive && !overlayOpen, enableOnFormTags: ['input'] }
   );
 
   useHotkeys('mod+period', () => abortQueryOnShortcut(moduleId), {
-    enabled: isExpanded && isAbortSupported && isQueryActive,
+    enabled: isExpanded && isAbortSupported && isQueryActive && !overlayOpen,
     enableOnFormTags: ['input'],
   });
 

@@ -53,6 +53,15 @@ describe('getLibrarySearchMatch', () => {
     expect(result.components).toHaveLength(0);
   });
 
+  it('[ComponentManagerTab-UTILS-008b] finds a component by the name its tile shows, spaces and all', () => {
+    const charts = { ScatterChart: { displayName: 'Scatter Chart' }, ButtonGroup: { displayName: 'Button Group' } };
+    const pack = { name: 'shadcn UI', revisions: [{ id: 'r1' }], devBundles: [] };
+    expect(getLibrarySearchMatch(pack, charts, 'Scatter Chart').components.map(([n]) => n)).toEqual(['ScatterChart']);
+    expect(getLibrarySearchMatch(pack, charts, 'scatterchart').components.map(([n]) => n)).toEqual(['ScatterChart']);
+    expect(getLibrarySearchMatch(pack, charts, 'button group').components.map(([n]) => n)).toEqual(['ButtonGroup']);
+    expect(getLibrarySearchMatch(pack, charts, 'pie chart').isVisible).toBe(false);
+  });
+
   it('[ComponentManagerTab-UTILS-008] is never visible for a library with no content, even with no query', () => {
     const empty = { name: 'Alpha', revisions: [], devBundles: [] };
     expect(getLibrarySearchMatch(empty, components, '').isVisible).toBe(false);

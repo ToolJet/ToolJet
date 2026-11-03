@@ -16,8 +16,12 @@ import {
   MODAL_CANVAS_PADDING,
   LISTVIEW_CANVAS_PADDING,
   HOVER_CLICK_OUTLINE_BORDER,
+  isTabsType,
+  isModalType,
 } from './appCanvasConstants';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { manifestDefaultToDefinitionValue } from '@/AppBuilder/Widgets/libraryComponentDefaults';
+import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 
 export function snapToGrid(canvasWidth, x, y) {
   const gridX = canvasWidth / 43;
@@ -27,26 +31,6 @@ export function snapToGrid(canvasWidth, x, y) {
   return [snappedX, snappedY];
 }
 
-// Mirrors LibraryComponent Inspector's fieldMeta() type→field mapping so the stamped
-// value matches what that field type expects (dropdown.js/checkbox.js precedent):
-// toggle → '{{bool}}', select → raw string, code → raw string (string) or '{{json}}' (else).
-function manifestDefaultToDefinitionValue(prop) {
-  // TODO: prop.default is undefined both when
-  // the author never set a useStateX initialValue AND when they set one the CLI's manifest
-  // generator can't statically resolve (template literal, computed expr, imported constant
-  // — evalLiteralNode in manifest-generator.ts). The '' /'{{false}}' fallback below is
-  // correct for the former and silently wrong for the latter (it permanently overrides the
-  // shell's real runtime initialValue for that prop). Decided to keep current behavior for
-  // now rather than risk downstream undefined-handling issues; future fix is to have the
-  // generator distinguish "not set" from "unresolved" (e.g. a `defaultUnresolved` flag) and
-  // surface a warning icon/tooltip on the Inspector field for the latter case, rather than
-  // silently guessing a fallback value.
-  if (prop.default === undefined) return prop.type === 'boolean' ? '{{false}}' : '';
-  if (prop.type === 'boolean') return `{{${prop.default}}}`;
-  if (prop.type === 'enumeration' || prop.type === 'string') return prop.default;
-  return `{{${JSON.stringify(prop.default)}}}`; // number | object | array
-}
-
 //TODO: componentTypes should be a key value pair and get the definition directly by passing the componentType
 export const addNewWidgetToTheEditor = (
   componentType,
@@ -54,7 +38,9 @@ export const addNewWidgetToTheEditor = (
   realCanvasRef,
   parentId,
   moduleInfo = undefined,
-  libraryComponentInfo = undefined
+  libraryComponentInfo = undefined,
+  // A palette preset's styles (ComponentsManagerTab PRESETS), e.g. the shadcn/ui Table's { tableLook: 'shadcn' }.
+  stylePreset = undefined
 ) => {
   const canvasBoundingRect = realCanvasRef?.getBoundingClientRect();
   const componentMeta = componentTypes.find((component) => component.component === componentType);
@@ -67,19 +53,32 @@ export const addNewWidgetToTheEditor = (
   );
   const parentCanvasType = realCanvasRef?.getAttribute('component-type');
   const componentData = deepClone(componentMeta);
+  if (stylePreset && componentData?.definition) {
+    componentData.definition.styles = { ...(componentData.definition.styles ?? {}) };
+    Object.entries(stylePreset).forEach(([key, value]) => {
+      componentData.definition.styles[key] = { value };
+    });
+  }
 
-  // Custom tab (LibraryComponent host widget): stamp WHICH library component this
-  // instance renders — mirrors the moduleInfo pattern below. Must run before the
-  // defaultWidth/Height reads so a manifest-declared size wins.
+  // A custom-component card (LibraryComponent) or a pack card (PackComponent): stamp WHICH component this instance
+  // renders — mirrors the moduleInfo pattern below. Must run before the defaultWidth/Height reads so a
+  // manifest-declared size wins. A pack component names only its pack: it always draws the build the release ships.
   if (libraryComponentInfo) {
-    componentData.definition.properties.libraryId = { value: libraryComponentInfo.libraryId };
-    componentData.definition.properties.correlationId = { value: libraryComponentInfo.correlationId };
-    componentData.definition.properties.libraryName = { value: libraryComponentInfo.libraryName };
+    if (libraryComponentInfo.pack) {
+      componentData.definition.properties.pack = { value: libraryComponentInfo.pack };
+    } else {
+      componentData.definition.properties.libraryId = { value: libraryComponentInfo.libraryId };
+      componentData.definition.properties.correlationId = { value: libraryComponentInfo.correlationId };
+      componentData.definition.properties.libraryName = { value: libraryComponentInfo.libraryName };
+    }
     componentData.definition.properties.componentName = { value: libraryComponentInfo.componentName };
     // Manifest prop defaults land as instance values so the Inspector's fields arrive
     // pre-filled (module input_items precedent below).
     for (const prop of libraryComponentInfo.props ?? []) {
       componentData.definition.properties[prop.name] = { value: manifestDefaultToDefinitionValue(prop) };
+    }
+    for (const style of libraryComponentInfo.styles ?? []) {
+      componentData.definition.styles[style.name] = { value: manifestDefaultToDefinitionValue(style) };
     }
     if (libraryComponentInfo.defaultSize?.width)
       componentData.defaultSize.width = libraryComponentInfo.defaultSize.width;
@@ -224,6 +223,7 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
     const parentMeta = componentMeta;
     const widgetResolvables = Object.freeze({
       Listview: 'listItem',
+      ShadListView: 'listItem',
     });
     const customResolverVariable = widgetResolvables[parentMeta?.component];
     const defaultChildren = deepClone(parentMeta)['defaultChildren'];
@@ -253,9 +253,13 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
 
       if (_.isArray(properties) && properties.length > 0) {
         properties.forEach((prop) => {
-          const accessor = customResolverVariable
-            ? `{{${customResolverVariable}.${accessorKey}}}`
-            : defaultValue[prop] || '';
+          // In a list, a property bound to the row reads {{listItem.<accessorKey>}}; one with a set default value (a
+          // muted tone, a button label) keeps that value, so a child can mix a bound field with fixed settings.
+          const fixed = defaultValue && defaultValue[prop] !== undefined;
+          const accessor =
+            customResolverVariable && accessorKey && !fixed
+              ? `{{${customResolverVariable}.${accessorKey}}}`
+              : (defaultValue && defaultValue[prop]) || '';
 
           _.set(newComponentProperties, prop, {
             value: accessor,
@@ -322,8 +326,10 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
 export function computeComponentName(componentType, currentComponents, moduleName) {
   // Fall back to the raw string for non-registry seeds (e.g. Custom-tab drops name
   // instances after the LIBRARY component: 'HelloWorld' → helloworld1)
-  const widgetConfigName =
-    componentTypes.find((component) => component?.component === componentType)?.name ?? componentType;
+  // The UI 2.0 pack's types start with "Shad", an internal name users should not see: a new line chart is linechart1.
+  const widgetConfigName = (
+    componentTypes.find((component) => component?.component === componentType)?.name ?? componentType
+  )?.replace(/^Shad(?=[A-Z])/, '');
   const rawBase = moduleName || widgetConfigName || '';
   let sanitizedBase = rawBase.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
 
@@ -385,13 +391,14 @@ const collectChildComponents = (allComponents, parentId, visited) => {
     const componentParentId = allComponents[componentId].component?.parent;
 
     const isParentTabORCalendar =
-      allComponents[parentId]?.component?.component === 'Tabs' ||
+      isTabsType(allComponents[parentId]?.component?.component) ||
       allComponents[parentId]?.component?.component === 'Calendar' ||
       allComponents[parentId]?.component?.component === 'Kanban' ||
       allComponents[parentId]?.component?.component === 'Container' ||
       allComponents[parentId]?.component?.component === 'Accordion' ||
       allComponents[parentId]?.component?.component === 'Form' ||
-      allComponents[parentId]?.component?.component === 'ModalV2';
+      isModalType(allComponents[parentId]?.component?.component) ||
+      isSdkComponentType(allComponents[parentId]?.component?.component); // ToolJet.Slot canvases
 
     if (componentParentId && isParentTabORCalendar) {
       let childComponent = deepClone(allComponents[componentId]);
@@ -455,13 +462,13 @@ export const computeViewerBackgroundColor = (isAppDarkMode, canvasBgColor) => {
 export const getParentComponentIdByType = ({ child, parentComponent, parentId, slotName }) => {
   const { tab } = child;
 
-  if (parentComponent === 'Tabs') return `${parentId}-${tab}`;
+  if (isTabsType(parentComponent)) return `${parentId}-${tab}`;
   else if (
     slotName &&
     (parentComponent === 'Form' ||
       parentComponent === 'Container' ||
       parentComponent === 'Accordion' ||
-      parentComponent === 'ModalV2')
+      isModalType(parentComponent))
   ) {
     return `${parentId}-${slotName}`;
   }
@@ -471,9 +478,9 @@ export const getParentComponentIdByType = ({ child, parentComponent, parentId, s
 export const getParentWidgetFromId = (parentType, parentId) => {
   const isAddingToSlot = parentId?.includes('-header') || parentId?.includes('-footer');
 
-  if (parentType === 'ModalV2' && isAddingToSlot) {
+  if (isModalType(parentType) && isAddingToSlot) {
     return 'ModalSlot';
-  } else if (parentType === 'Kanban') {
+  } else if (parentType === 'Kanban' || parentType === 'ShadKanban') {
     return 'Kanban_card';
   }
   return parentType;
@@ -512,7 +519,7 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
       2 * BOX_PADDING +
       2 * HOVER_CLICK_OUTLINE_BORDER;
   }
-  if (componentType === 'ModalV2') {
+  if (isModalType(componentType)) {
     const isModalHeader = componentId?.includes('header');
     if (isModalHeader) {
       const isModalHeaderCloseBtnHidden = useStore.getState().getResolvedComponent(componentId.slice(0, 36))
@@ -525,7 +532,7 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
   if (componentType === 'Listview') {
     padding = 2 * LISTVIEW_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 5 + 2 * HOVER_CLICK_OUTLINE_BORDER; // 5 is accounting for scrollbar
   }
-  if (componentType === 'Tabs') {
+  if (isTabsType(componentType)) {
     padding =
       2 * TAB_CANVAS_PADDING + 2 * BOX_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * HOVER_CLICK_OUTLINE_BORDER;
   }
@@ -535,7 +542,7 @@ export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, com
 
 export const getSubContainerHeightAfterPadding = (componentType) => {
   let height = '100%';
-  if (componentType === 'Tabs') {
+  if (isTabsType(componentType)) {
     height = `calc(100% + ${HOVER_CLICK_OUTLINE_BORDER}px + 2.5px)`;
   } else {
     height = `calc(100% + ${HOVER_CLICK_OUTLINE_BORDER}px)`;

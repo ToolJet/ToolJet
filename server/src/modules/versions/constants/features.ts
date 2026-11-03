@@ -7,6 +7,27 @@ export const FEATURES: FeaturesConfig = {
   [MODULES.VERSION]: {
     [FEATURE_KEY.GET]: {},
     [FEATURE_KEY.GET_ONE]: {},
+    // Compare, reviews and AI-turn snapshots are on trial and Pro and above.
+    [FEATURE_KEY.COMPARE]: {
+      license: LICENSE_FIELD.VERSION_REVIEW,
+      shouldNotSkipPublicApp: true,
+    },
+    [FEATURE_KEY.REVIEW_APPROVE]: {
+      license: LICENSE_FIELD.VERSION_REVIEW,
+      shouldNotSkipPublicApp: true,
+      auditLogsKey: 'APP_UPDATE',
+    },
+    [FEATURE_KEY.REVIEW_OVERRIDE]: {
+      license: LICENSE_FIELD.VERSION_REVIEW,
+      shouldNotSkipPublicApp: true,
+      auditLogsKey: 'APP_UPDATE',
+    },
+    // Undo an AI turn. A public app must not widen who can rewrite its draft.
+    [FEATURE_KEY.SNAPSHOT_RESTORE]: {
+      license: LICENSE_FIELD.VERSION_REVIEW,
+      shouldNotSkipPublicApp: true,
+      auditLogsKey: 'APP_UPDATE',
+    },
     [FEATURE_KEY.CREATE]: {
       auditLogsKey: 'APP_UPDATE',
     },

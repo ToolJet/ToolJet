@@ -1,4 +1,5 @@
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 
 export const processComponentMeta = (componentMeta, component, allComponents, resolvedCustomSchema) => {
   const tempComponentMeta = deepClone(componentMeta);
@@ -35,7 +36,11 @@ export const processComponentMeta = (componentMeta, component, allComponents, re
       _component.component.parent === id ||
       _component.component.parent === `${id}-footer` ||
       _component.component.parent === `${id}-header`;
-    if (validParent && _component?.component?.component === 'Button') {
+    // A pack's or library's Button (a PackComponent or LibraryComponent drawing a Button) submits a Form too.
+    const isPackButton =
+      isSdkComponentType(_component?.component?.component) &&
+      _component?.component?.definition?.properties?.componentName?.value === 'Button';
+    if (validParent && (_component?.component?.component === 'Button' || isPackButton)) {
       newOptions.push({ name: _component.component.name, value: componentId });
     }
   });

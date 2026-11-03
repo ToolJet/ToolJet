@@ -10,6 +10,7 @@ import '@/_styles/versions.scss';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import PromoteConfirmationExtras from './PromoteConfirmationExtras';
 
 const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) => {
   const { moduleId } = useModuleContext();
@@ -20,8 +21,10 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
   const { t } = useTranslation();
   const { current_organization_id } = authenticationService.currentSessionValue;
 
-  const { promoteAppVersionAction, selectedVersion, creationMode, versions } = useStore(
+  const { promoteAppVersionAction, selectedVersion, creationMode, versions, appId, releasedVersionId } = useStore(
     (state) => ({
+      appId: state.appStore.modules[moduleId].app.appId,
+      releasedVersionId: state.releasedVersionId,
       promoteAppVersionAction: state.promoteAppVersionAction,
       selectedVersion: state.selectedVersion,
       creationMode: state.appStore.modules[moduleId].app.creationMode,
@@ -39,6 +42,9 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
   useEffect(() => {
     setShow(data);
   }, [data]);
+
+  // A full-screen view opened from this dialog needs the focus and the Escape key.
+  const overlayOpen = useStore((state) => state.isEditorOverlayOpen);
 
   const handleClose = useCallback(() => {
     if (promotingEnvironment) return;
@@ -130,6 +136,8 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
     <Modal
       show={showModal}
       onHide={handleClose}
+      enforceFocus={!overlayOpen}
+      keyboard={!overlayOpen}
       size="sm"
       animation={false}
       centered={true}
@@ -193,6 +201,13 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
             This version will be pushed to Staging. Are you sure you are done editing the current version?
           </div>
         )}
+        <PromoteConfirmationExtras
+          show={!!showModal}
+          appId={appId}
+          versionId={versionIdToPromote}
+          targetEnvironment={data?.target}
+          releasedVersionId={releasedVersionId}
+        />
       </Modal.Body>
       <Modal.Footer className="mt-3 env-modal-footer">
         <ButtonSolid variant="tertiary" onClick={handleClose} data-cy="cancel-button">

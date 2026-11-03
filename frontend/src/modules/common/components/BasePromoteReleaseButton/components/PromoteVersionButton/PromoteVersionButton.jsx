@@ -73,12 +73,17 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
             </button>
           </span>
         </ToolTip>
-        <PromoteConfirmationModal
-          data={promoteModalData}
-          editingVersion={editingVersion}
-          onClose={() => setPromoteModalData(null)}
-          fetchEnvironments={() => {}}
-        />
+        {/* The dialog renders in a portal but is a child of the version row in React, so its clicks
+            would bubble to the row, reselect the version and close the menu, taking the dialog with
+            it. Stop them here. */}
+        <span onClick={(event) => event.stopPropagation()}>
+          <PromoteConfirmationModal
+            data={promoteModalData}
+            editingVersion={editingVersion}
+            onClose={() => setPromoteModalData(null)}
+            fetchEnvironments={() => {}}
+          />
+        </span>
       </>
     );
   }

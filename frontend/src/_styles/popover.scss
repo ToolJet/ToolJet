@@ -11,8 +11,9 @@
   border-right: 2px solid var(--slate6, #313538);
 
 
+  // The AI chat panel; AI_CHAT_WIDTH in AppCanvas/appCanvasConstants.js is the same number.
   &.tooljetai {
-    width: 440px;
+    width: 400px;
     overflow: auto !important;
   }
 
