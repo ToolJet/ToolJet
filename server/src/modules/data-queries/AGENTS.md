@@ -62,6 +62,8 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   cached; workflow queries are cached at the workflow trigger instead (see `workflows/AGENTS.md`).
   License: `QueryResultCacheService.begin` bypasses (no read, write or token change) unless the workspace license
   has `features.queryResponseCache` (`LICENSE_FIELD.QUERY_RESPONSE_CACHE`); a missing key or failed check means off.
+  Caching off on the query, or unlicensed, returns `QUERY_CACHE_OFF`: the run and workflow trigger results then carry
+  no `metadata.cache` at all. Other skips on a cache-enabled query (cookie forwarding, zero budget, Redis down) report `bypass`.
   The builder disables the toggle with the upgrade crown; Clear stays available to free entries saved earlier.
   Memory: Redis is shared with BullMQ (`noeviction`). `RedisQueryCacheStore` enforces one fixed
   `QUERY_CACHE_MAX_TOTAL_BYTES` budget (default 128 MiB; 0 bypasses reads/writes without purging). `QUERY_CACHE_MAX_WORKSPACE_BYTES`
