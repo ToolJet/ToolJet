@@ -9,15 +9,12 @@ import {
   initTestApp,
 } from 'test-helper';
 
-const EDITIONS: Array<{ label: string; edition: 'ee' | 'ce'; plan?: 'enterprise' }> = [
-  { label: 'EE (plan: enterprise)', edition: 'ee', plan: 'enterprise' },
-  { label: 'CE', edition: 'ce' },
-];
+const EDITIONS: Array<{ label: string; edition: 'ce' }> = [{ label: 'CE', edition: 'ce' }];
 
 /** @group platform */
 describe('AppEnvironmentsController', () => {
-  // EE overrides init, post-action and the list without calling super, so each edition runs its own implementation.
-  describe.each(EDITIONS)('$label', ({ edition, plan }) => {
+  // EE overrides init, post-action and the list without calling super; the EE run lives in ee/test/modules/app-environments/e2e.
+  describe.each(EDITIONS)('$label', ({ edition }) => {
     describe('workspace scoping of client-supplied ids', () => {
       let app: INestApplication;
       let orgA: { id: string; cookie: string[]; appId: string; versionId: string; environmentId: string };
@@ -26,7 +23,7 @@ describe('AppEnvironmentsController', () => {
       const asWorkspaceA = (req: request.Test) => req.set('tj-workspace-id', orgA.id).set('Cookie', orgA.cookie);
 
       beforeAll(async () => {
-        ({ app } = await initTestApp({ edition, plan }));
+        ({ app } = await initTestApp({ edition }));
 
         const a = await createUser(app, { email: `env-scope-a-${edition}@tooljet.io` });
         const appA = await createApplication(app, { name: 'App A', user: a.user });
