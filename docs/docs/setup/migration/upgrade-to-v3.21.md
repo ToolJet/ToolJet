@@ -35,7 +35,7 @@ Refer to [GitHub configuration](../../development-lifecycle/gitsync/connect-to-g
 
 ### Mobile Auto Layout (High Severity)
 
-Mobile auto layout has been reworked and is in beta.
+Mobile auto layout has been reworked.
 
 | Previous LTS | ToolJet 3.21 |
 | :----------- | :----------- |
