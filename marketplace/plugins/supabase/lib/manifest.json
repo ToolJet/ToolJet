@@ -12,33 +12,105 @@
       "rawData": {}
     },
     "options": {
+      "connection_type": {
+        "type": "string"
+      },
       "project_url": {
         "type": "string"
       },
       "service_role_secret": {
         "type": "string",
         "encrypted": true
+      },
+      "publishable_key": {
+        "type": "string"
+      },
+      "connection_string": {
+        "type": "string",
+        "encrypted": true
+      },
+      "ca_cert": {
+        "type": "string",
+        "encrypted": true
       }
     }
   },
-  "defaults": {},
-  "properties": {
-    "project_url": {
-      "label": "Project URL",
-      "key": "project_url",
-      "type": "text",
-      "description": "Supabase project url"
-    },
-    "service_role_secret": {
-      "label": "Service role secret",
-      "key": "service_role_secret",
-      "type": "textarea",
-      "encrypted": true,
-      "description": "Enter service role key of supabase account"
+  "defaults": {
+    "connection_type": {
+      "value": "secret_key"
     }
   },
-  "required": [
-    "project_url",
-    "service_role_secret"
-  ]
+  "properties": {
+    "connection_type": {
+      "label": "Connection type",
+      "key": "connection_type",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for connection type",
+      "list": [
+        {
+          "value": "secret_key",
+          "name": "Secret key"
+        },
+        {
+          "value": "publishable_key",
+          "name": "Publishable key"
+        },
+        {
+          "value": "connection_string",
+          "name": "Connection string (PostgreSQL)"
+        }
+      ]
+    },
+    "secret_key": {
+      "project_url": {
+        "label": "Project URL",
+        "key": "project_url",
+        "type": "text",
+        "description": "Supabase project url",
+        "placeholder": "https://<project-ref>.supabase.co"
+      },
+      "service_role_secret": {
+        "label": "Secret key",
+        "key": "service_role_secret",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter the secret key (sb_secret_...) or the legacy service_role key. It bypasses Row Level Security."
+      }
+    },
+    "publishable_key": {
+      "project_url": {
+        "label": "Project URL",
+        "key": "project_url",
+        "type": "text",
+        "description": "Supabase project url",
+        "placeholder": "https://<project-ref>.supabase.co"
+      },
+      "publishable_key": {
+        "label": "Publishable key",
+        "key": "publishable_key",
+        "type": "textarea",
+        "description": "Enter the publishable key (sb_publishable_...) or the legacy anon key. Row Level Security applies."
+      }
+    },
+    "connection_string": {
+      "connection_string": {
+        "label": "Connection string",
+        "key": "connection_string",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter the PostgreSQL connection string",
+        "placeholder": "postgresql://postgres.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres",
+        "helpText": "Copy it from the project's Connect dialog. Use the Session pooler (5432) or Transaction pooler (6543): the direct connection is IPv6-only on free projects. Required to run SQL."
+      },
+      "ca_cert": {
+        "label": "CA certificate (optional)",
+        "key": "ca_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Supabase CA certificate. When set, the server certificate is verified.",
+        "placeholder": "-----BEGIN CERTIFICATE-----"
+      }
+    }
+  },
+  "required": []
 }
