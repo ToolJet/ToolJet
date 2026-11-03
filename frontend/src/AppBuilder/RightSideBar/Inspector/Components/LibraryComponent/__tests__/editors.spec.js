@@ -1,5 +1,5 @@
 import { readLiteralCode, writeLiteralCode } from '../literal';
-import { editorHint, fieldMeta, hasOptionDefault } from '../utils';
+import { editorHint, fieldMeta, hasOptionDefault, styleFieldMeta } from '../utils';
 import { withField, newEntry } from '../OptionsEditor';
 import { columnsFromData, newColumn, withColumnField } from '../ColumnsEditor';
 
@@ -75,5 +75,23 @@ describe('LibraryComponent inspector editors', () => {
     const marked = withField({ label: 'Week', value: 'week' }, 'default', true);
     expect(marked).toEqual({ label: 'Week', value: 'week', default: true });
     expect(withField(marked, 'default', false)).toEqual({ label: 'Week', value: 'week' });
+  });
+
+  it('puts a style with a long label on its own line, and keeps a short one beside its control', () => {
+    const long = styleFieldMeta({
+      name: 'primary',
+      label: 'Primary (palette.primary.main)',
+      type: 'string',
+      inspector: 'color',
+    });
+    expect(long).toEqual(expect.objectContaining({ type: 'colorSwatches', newLine: true }));
+    const radius = styleFieldMeta({
+      name: 'borderRadius',
+      label: 'Border radius (shape.borderRadius)',
+      type: 'number',
+    });
+    expect(radius.newLine).toBe(true);
+    const short = styleFieldMeta({ name: 'textColor', label: 'Text color', type: 'string', inspector: 'color' });
+    expect(short.newLine).toBeUndefined();
   });
 });
