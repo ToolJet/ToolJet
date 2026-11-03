@@ -54,7 +54,6 @@ export const customComponentConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      visible: { value: '{{true}}' },
       data: {
         value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}`,
       },
