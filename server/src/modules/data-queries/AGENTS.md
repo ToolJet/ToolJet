@@ -64,8 +64,10 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   has `features.queryResponseCache` (`LICENSE_FIELD.QUERY_RESPONSE_CACHE`); a missing key or failed check means off.
   The builder disables the toggle with the upgrade crown; Clear stays available to free entries saved earlier.
   Memory: Redis is shared with BullMQ (`noeviction`). `RedisQueryCacheStore` enforces one fixed
-  `QUERY_CACHE_MAX_TOTAL_BYTES` budget (default 128 MiB; 0 bypasses reads/writes without purging). Workspaces share it without individual caps;
-  one workspace can exhaust caching for others. `QUERY_CACHE_MAX_WORKSPACE_BYTES` is retired and ignored. Published entries
+  `QUERY_CACHE_MAX_TOTAL_BYTES` budget (default 128 MiB; 0 bypasses reads/writes without purging). `QUERY_CACHE_MAX_WORKSPACE_BYTES`
+  (default 16 MiB, 1/8 of the default budget; 0 stops that workspace's writes) caps each workspace on the same ledger,
+  checked in the same Lua script as each charge, so parallel writers cannot overshoot either limit. Charges always go to
+  the workspace that owns the query (`appFromParam.organizationId`), never a signed-in visitor's. Published entries
   charge `MEMORY USAGE` plus `3 × key length + 512` for query/global tracking. A separate 2048-byte
   `@overhead` record charges container overhead once per query until its last entry/pending/purge record
   is removed; all admission checks include it. Token-only queries reserve this overhead before creation;
@@ -86,7 +88,14 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   their `tj:qc:*` cache keys first; mixed ledger implementations are not compatible. Do not flush shared Redis.
 
 - Transformation code (`transformation` and `transformations`) is excluded from cache identity because it runs in the browser.
+- Create and update reject a `ttlSeconds` above 1 day. Import (`normalizeImportedQueryOptions`, also used by git pull) and the
+  editor Run (which saves the options it is sent) cap it at 1 day instead, so a value from another instance never leaves a
+  query that fails validation on every later save.
 - Cache refusal logs include workspace/query identifiers and the token/reserve/confirm stage, without inputs or response data.
+- Telemetry (`ENABLE_OTEL=true`, `src/otel/query-cache-metrics.ts`): `tooljet.query_cache.writes{write_result}` counts each
+  logged write outcome; `tooljet.query_cache.bytes_stored{organization.id}` adds the charge CONFIRM returns. The
+  `memory.used`/`memory.limit` gauges read a snapshot each pod refreshes from the global usage hash every 30 s, since
+  gauge callbacks cannot wait on Redis. Every pod reports the same global value: aggregate with max, not sum.
 - On `WORKER=true`, BullMQ's `query-cache-cleanup` queue scans the shared expiry index every minute, in cursor batches
   limited to one job per second. It checks committed query existence before clearing deleted queries, covering cascades
   without adding work to delete requests. Jobs retry three times; later sweeps recover interrupted work. No worker means
