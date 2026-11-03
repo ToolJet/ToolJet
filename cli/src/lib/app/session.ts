@@ -82,7 +82,7 @@ const sessionApi = (url: string, token: string, workspaceId: string) => async (p
     } catch {
       /* not JSON */
     }
-    throw new ApiError(`${init.method ?? 'GET'} ${path} failed (HTTP ${response.status}): ${String(message).slice(0, 300)}`, response.status, text);
+    throw new ApiError(`${init.method ?? 'GET'} ${path} failed (HTTP ${response.status}) on ${url}: ${String(message).slice(0, 300)}`, response.status, text);
   }
   return text ? JSON.parse(text) : null;
 };
@@ -100,8 +100,8 @@ export async function openSession(target: Target): Promise<Session> {
     const text = await res.text();
     throw new ApiError(
       res.status === 401
-        ? 'The ToolJet token was rejected: check it is a current personal access token for this instance.'
-        : `Could not open a ToolJet session (HTTP ${res.status}).`,
+        ? `The ToolJet token was rejected by ${target.url}: check it is a current personal access token for this instance.`
+        : `Could not open a ToolJet session on ${target.url} (HTTP ${res.status}).`,
       res.status,
       text
     );
@@ -126,7 +126,7 @@ export async function openSession(target: Target): Promise<Session> {
       } catch {
         /* not JSON */
       }
-      throw new ApiError(`${init.method ?? 'GET'} ${path} failed (HTTP ${response.status}): ${String(message).slice(0, 300)}`, response.status, text);
+      throw new ApiError(`${init.method ?? 'GET'} ${path} failed (HTTP ${response.status}) on ${target.url}: ${String(message).slice(0, 300)}`, response.status, text);
     }
     return text ? JSON.parse(text) : null;
   };

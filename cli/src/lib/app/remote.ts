@@ -248,7 +248,7 @@ async function fetchWithToken(session: Session, path: string, body: unknown) {
     } catch {
       /* not JSON */
     }
-    throw new Error(`POST ${path} failed (HTTP ${res.status}): ${message}`);
+    throw new Error(`POST ${path} failed (HTTP ${res.status}) on ${session.url}: ${message}`);
   }
   return JSON.parse(text);
 }

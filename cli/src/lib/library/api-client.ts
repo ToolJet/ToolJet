@@ -28,7 +28,7 @@ export class ApiClient {
   private async handleResponse<T>(res: import('node-fetch').Response): Promise<T> {
     if (!res.ok) {
       const text = await res.text();
-      throw new Error(parseApiErrorMessage(res.status, text));
+      throw new Error(`${parseApiErrorMessage(res.status, text)} (on ${this.baseUrl})`);
     }
 
     return res.json() as Promise<T>;
@@ -80,7 +80,7 @@ export class ApiClient {
     if (res.status === 404) return { exists: false };
     if (!res.ok) {
       const text = await res.text();
-      throw new Error(parseApiErrorMessage(res.status, text));
+      throw new Error(`${parseApiErrorMessage(res.status, text)} (on ${this.baseUrl})`);
     }
 
     return { exists: true };
