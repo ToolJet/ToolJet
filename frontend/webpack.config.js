@@ -362,7 +362,7 @@ module.exports = {
         test: /[\\/]node_modules[\\/]tailwindcss[\\/]/,
         resolve: {
           alias: {
-            fs: path.resolve(__dirname, 'src/AppBuilder/CodePanel/build/shims/tailwindFs.js'),
+            fs: path.resolve(__dirname, 'src/_helpers/shims/tailwindFs.js'),
             url: false,
             crypto: false,
             os: false,
