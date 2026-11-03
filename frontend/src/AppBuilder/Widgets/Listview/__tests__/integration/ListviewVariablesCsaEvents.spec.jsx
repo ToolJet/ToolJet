@@ -257,6 +257,14 @@ describe('Listview: Record hovered', () => {
 });
 
 describe('Listview: visibility, disable and loading actions', () => {
+  // What the rendered list shows for each variable, so a variable cannot agree with a widget that disagrees.
+  const widgetState = (variable) =>
+    ({
+      isVisible: () => container().style.display !== 'none',
+      isDisabled: () => container().getAttribute('data-disabled') === 'true',
+      isLoading: () => rows().length === 0,
+    })[variable]();
+
   beforeEach(widget.setup);
   afterEach(widget.teardown);
 
@@ -295,10 +303,12 @@ describe('Listview: visibility, disable and loading actions', () => {
 
       await setProperty('rowHeight', '90');
       expect(exposed(variable)).toBe(actionValue);
+      expect(widgetState(variable)).toBe(actionValue);
 
       await setProperty(property, `{{${actionValue}}}`);
       await setProperty(property, `{{${!actionValue}}}`);
       await waitFor(() => expect(exposed(variable)).toBe(!actionValue));
+      expect(widgetState(variable)).toBe(!actionValue);
     }
   );
 });
