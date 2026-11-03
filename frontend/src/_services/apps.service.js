@@ -1,5 +1,7 @@
 import config from 'config';
+import { buildSearchParams } from '@/_helpers/searchParams';
 import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_helpers';
+import { getAuthRequestOptions } from '@/_helpers/authRequestOptions';
 import { getActiveBranchId, appendBranchParam } from '@/_helpers/active-branch';
 import queryString from 'query-string';
 
@@ -24,6 +26,8 @@ export const appsService = {
   getApp,
   getAppByVersion,
   saveApp,
+  fetchAppsV2,
+  renameApp,
   getAppUsers,
   getVersions,
   getTables,
@@ -31,6 +35,8 @@ export const appsService = {
   getAppsLimit,
   getWorkflowLimit,
   releaseVersion,
+  pinResources,
+  unpinResource,
 };
 
 function getAppAuthenticationConfig(slug) {
@@ -87,6 +93,42 @@ function getAll(page, folder, searchKey, type = 'front-end', context = undefined
       }&searchKey=${searchKey}&type=${type}${branchParam}${contextParam}`,
       requestOptions
     ).then(handleResponse);
+}
+
+function fetchAppsV2({ appType, folderId, searchQuery, branchId, pageNo, pageSize }, { signal } = {}) {
+  return fetch(
+    `${config.apiUrl}/v2/apps?${buildSearchParams({
+      page: pageNo,
+      type: appType,
+      branch_id: branchId,
+      search: searchQuery,
+      folder_id: folderId,
+      page_size: pageSize,
+    })}`,
+    { ...getAuthRequestOptions(), signal }
+  ).then(handleResponse);
+}
+
+// Pins folders or apps for this user on the active branch; one kind per call. Responds 204 with no body.
+function pinResources({ resourceType, resourceIds }) {
+  const body = { resource_type: resourceType, resource_ids: resourceIds, branch_id: getActiveBranchId() };
+  return fetch(`${config.apiUrl}/v2/pins`, getAuthRequestOptions('POST', body)).then(handleResponse);
+}
+
+// Unpins one item, and also succeeds (204) when it wasn't pinned.
+function unpinResource({ resourceType, resourceId }) {
+  const query = buildSearchParams({ branch_id: getActiveBranchId() });
+  return fetch(
+    `${config.apiUrl}/v2/pins/${encodeURIComponent(resourceType)}/${encodeURIComponent(resourceId)}${query ? `?${query}` : ''}`,
+    getAuthRequestOptions('DELETE')
+  ).then(handleResponse);
+}
+
+// TODO: the backend should resolve the editing version itself so the client needn't look it up before saving.
+async function renameApp(id, name, appType) {
+  const { versions } = await getVersions(id);
+  const editingVersionId = versions?.find((version) => version?.isCurrentEditingVersion)?.id;
+  return saveApp(id, { name, ...(editingVersionId && { editingVersionId }) }, appType);
 }
 
 // get all addable apps

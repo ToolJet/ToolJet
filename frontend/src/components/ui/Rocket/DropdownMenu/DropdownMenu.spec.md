@@ -17,7 +17,7 @@
 |---|---|---|
 | content bg | default | `tw-bg-background-surface-layer-01` |
 | content border | default | `tw-border-solid tw-border-border-default` |
-| content shadow | default | `tw-shadow-[var(--elevation-300-box-shadow)]` |
+| content shadow | default | `tw-shadow-[shadow:var(--elevation-300-box-shadow)]` |
 | item text | default | `tw-text-text-default` |
 | item bg | hover/focus | `focus:tw-bg-interactive-hover` |
 | item text | destructive | `tw-text-text-danger` |

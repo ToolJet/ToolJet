@@ -5,6 +5,8 @@ const twMerge = extendTailwindMerge({
   prefix: 'tw-',
   extend: {
     classGroups: {
+      // tailwind-merge only treats t-shirt keys (sm, md, lg…) as radius; without this, tw-rounded-md and tw-rounded-default would both be kept
+      rounded: [{ rounded: ['default', 'medium', 'large'] }],
       shadow: [
         {
           shadow: [
@@ -19,6 +21,8 @@ const twMerge = extendTailwindMerge({
             'elevation-700',
             'interactive-focus-outline',
             'interactive-focus-outline-inset',
+            // tailwind-merge v2 ignores the `shadow:` label, so `shadow-[shadow:var(--x)]` wouldn't override other shadows
+            (value) => /^\[shadow:.+\]$/.test(value),
           ],
         },
       ],

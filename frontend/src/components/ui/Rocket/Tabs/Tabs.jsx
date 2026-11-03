@@ -1,6 +1,7 @@
 import React, { forwardRef, createContext, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { cva } from 'class-variance-authority';
+import { Slot } from '@radix-ui/react-slot';
 import { cn } from '@/lib/utils';
 import {
   Tabs as ShadcnTabs,
@@ -29,7 +30,6 @@ const tabsListVariants = cva(
           'tw-border-0 tw-border-t tw-border-solid tw-border-border-weak',
           'tw-bg-transparent tw-rounded-none',
         ],
-        pill: ['tw-bg-background-surface-layer-02', 'tw-rounded-lg tw-p-1', 'tw-border-0'],
       },
     },
     defaultVariants: { variant: 'underline' },
@@ -51,66 +51,27 @@ const TabsList = forwardRef(function TabsList({ className, variant = 'underline'
 TabsList.displayName = 'TabsList';
 
 TabsList.propTypes = {
-  variant: PropTypes.oneOf(['underline', 'underline-inverted', 'pill']),
+  variant: PropTypes.oneOf(['underline', 'underline-inverted']),
   className: PropTypes.string,
 };
 
 // ── TabsTrigger ─────────────────────────────────────────────────────────
-
-// Variant-specific trigger classes — only one set applied per trigger
-const triggerVariantClasses = {
-  underline: [
-    "after:tw-content-[''] after:tw-absolute after:tw-inset-x-0 after:tw-h-0.5",
-    'after:tw-bg-transparent after:tw-transition-colors',
-    'data-[state=active]:after:tw-bg-border-accent-strong',
-    'data-[state=active]:tw-text-text-brand',
-  ],
-  'underline-inverted': [
-    "after:tw-content-[''] after:tw-absolute after:tw-inset-x-0 after:tw-h-0.5",
-    'after:tw-bg-transparent after:tw-transition-colors',
-    'data-[state=active]:after:tw-bg-border-accent-strong',
-    'data-[state=active]:tw-text-text-brand',
-  ],
-  pill: [
-    'tw-rounded-md',
-    'data-[state=active]:tw-bg-switch-tab',
-    'data-[state=active]:tw-text-text-default',
-    'data-[state=active]:tw-shadow-elevation-100',
-  ],
-};
-
-// Indicator position per size × variant (underline = bottom, underline-inverted = top)
-const indicatorPositionClasses = {
-  underline: {
-    large: 'after:-tw-bottom-1',
-    default: 'after:-tw-bottom-1',
-    small: 'after:-tw-bottom-1',
-  },
-  'underline-inverted': {
-    large: 'after:-tw-top-1',
-    default: 'after:-tw-top-1',
-    small: 'after:-tw-top-1',
-  },
-};
-
-// Trigger height per size × variant (pill is 4px shorter to show container padding)
-const triggerHeightClasses = {
-  underline: { large: 'tw-h-10', default: 'tw-h-8', small: 'tw-h-7' },
-  'underline-inverted': { large: 'tw-h-10', default: 'tw-h-8', small: 'tw-h-7' },
-  pill: { large: 'tw-h-9', default: 'tw-h-7', small: 'tw-h-6' },
-};
-
 const tabsTriggerVariants = cva(
   [
-    'tw-relative tw-inline-flex tw-items-center tw-justify-center tw-gap-1.5',
+    'tw-group/tab-trigger tw-relative tw-isolate tw-inline-flex tw-items-center tw-justify-center tw-gap-1',
     'tw-bg-transparent tw-border-0 tw-border-solid tw-appearance-none tw-outline-none',
     'tw-cursor-pointer tw-whitespace-nowrap',
     'tw-px-2',
     'tw-transition-colors',
-    // Default text
-    'tw-text-text-placeholder',
-    // Hover
-    'hover:tw-text-text-default',
+    // Text
+    'tw-text-text-placeholder data-[state=active]:tw-text-text-default',
+    // Hover fills an inset rounded box behind the label, not the full trigger height.
+    // `isolate` keeps the -z-10 pseudo-element above ancestor backgrounds but below the label.
+    "before:tw-content-[''] before:tw-absolute before:tw-inset-x-0 before:-tw-z-10 before:tw-rounded-md",
+    'before:tw-transition-colors hover:before:tw-bg-interactive-hover',
+    // Active indicator
+    "after:tw-content-[''] after:tw-absolute after:tw-inset-x-0 after:tw-h-0.5",
+    'after:tw-bg-transparent after:tw-transition-colors data-[state=active]:after:tw-bg-border-accent-strong',
     // Disabled
     'disabled:tw-pointer-events-none disabled:tw-cursor-not-allowed disabled:tw-text-text-disabled',
     // Focus ring
@@ -120,31 +81,45 @@ const tabsTriggerVariants = cva(
   ],
   {
     variants: {
+      // Hover box is line-height + 4px tall, centred in the trigger
       size: {
-        large: 'tw-font-body-large',
-        default: 'tw-font-body-default',
-        small: 'tw-font-body-small',
+        large: 'tw-h-10 tw-font-title-large before:tw-inset-y-2',
+        default: 'tw-h-8 tw-font-title-default before:tw-inset-y-[5px]',
+        small: 'tw-h-7 tw-font-title-small before:tw-inset-y-1',
+      },
+      // Indicator edge
+      variant: {
+        underline: 'after:-tw-bottom-1',
+        'underline-inverted': 'after:-tw-top-1',
       },
     },
-    defaultVariants: { size: 'default' },
+    defaultVariants: { size: 'default', variant: 'underline' },
   }
 );
 
-const TabsTrigger = forwardRef(function TabsTrigger({ className, size = 'default', ...props }, ref) {
+// Icon colour follows the trigger state, independent of the label colour
+const tabsLeadingVisualClasses =
+  'tw-text-icon-weak group-data-[state=active]/tab-trigger:tw-text-icon-accent group-disabled/tab-trigger:tw-text-icon-disabled';
+
+const TabsTrigger = forwardRef(function TabsTrigger(
+  { className, size = 'default', leadingVisual, children, ...props },
+  ref
+) {
   const variant = useContext(TabsVariantContext);
-  const resolvedSize = size || 'default';
   return (
     <ShadcnTabsTrigger
       ref={ref}
-      className={cn(
-        tabsTriggerVariants({ size: resolvedSize }),
-        triggerHeightClasses[variant]?.[resolvedSize],
-        triggerVariantClasses[variant],
-        indicatorPositionClasses[variant]?.[resolvedSize],
-        className
-      )}
+      className={cn(tabsTriggerVariants({ size: size || 'default', variant }), className)}
       {...props}
-    />
+    >
+      {/* Slot merges the classes onto the icon itself, avoiding a wrapper node */}
+      {leadingVisual && (
+        <Slot aria-hidden="true" className={tabsLeadingVisualClasses}>
+          {leadingVisual}
+        </Slot>
+      )}
+      {children}
+    </ShadcnTabsTrigger>
   );
 });
 TabsTrigger.displayName = 'TabsTrigger';
@@ -152,7 +127,10 @@ TabsTrigger.displayName = 'TabsTrigger';
 TabsTrigger.propTypes = {
   size: PropTypes.oneOf(['large', 'default', 'small']),
   disabled: PropTypes.bool,
+  /** Decorative icon element before the label; coloured by tab state. */
+  leadingVisual: PropTypes.element,
   className: PropTypes.string,
+  children: PropTypes.node,
 };
 
 // ── TabsContent ─────────────────────────────────────────────────────────
