@@ -260,12 +260,12 @@ async function maybeCreateDefaultGroupPermissions(nestApp: INestApplication, org
   const groupPermissionsRepository = ds.getRepository(GroupPermissions);
 
   const defaultGroups = [
-    { name: 'admin', isAdmin: true },
-    { name: 'builder', isAdmin: true },
-    { name: 'end-user', isAdmin: false },
+    { name: 'admin', isAdmin: true, patRevoke: true },
+    { name: 'builder', isAdmin: true, patRevoke: true },
+    { name: 'end-user', isAdmin: false, patRevoke: false },
   ];
 
-  for (const { name, isAdmin } of defaultGroups) {
+  for (const { name, isAdmin, patRevoke } of defaultGroups) {
     const existing = await groupPermissionsRepository.find({
       where: {
         organizationId: organizationId,
@@ -287,6 +287,8 @@ async function maybeCreateDefaultGroupPermissions(nestApp: INestApplication, org
         dataSourceDelete: isAdmin,
         workflowCreate: isAdmin,
         workflowDelete: isAdmin,
+        patCreate: isAdmin,
+        patRevoke,
       });
       const savedGroup = await groupPermissionsRepository.save(groupPermission);
 

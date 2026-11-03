@@ -63,6 +63,8 @@ export class AbilityService extends IAbilityService {
           appDelete: acc.appDelete || group.appDelete,
           appPromote: acc.appPromote || group.appPromote,
           appRelease: acc.appRelease || group.appRelease,
+          patCreate: acc.patCreate || group.patCreate,
+          patRevoke: acc.patRevoke || group.patRevoke,
           dataSourceCreate: acc.dataSourceCreate || group.dataSourceCreate,
           dataSourceDelete: acc.dataSourceDelete || group.dataSourceDelete,
 
