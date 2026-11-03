@@ -15,7 +15,12 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import './styles/style.scss';
 
 import SaveIndicator from './SaveIndicator';
-import { useCodeMode, LocalChangesNote, LocalBehindNote, SecurityStatusChip } from '@/AppBuilder/_helpers/codeModeHooks';
+import {
+  useCodeMode,
+  LocalChangesNote,
+  LocalBehindNote,
+  SecurityStatusChip,
+} from '@/AppBuilder/_helpers/codeModeHooks';
 
 export const EditorHeader = ({ darkMode, appType }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
@@ -145,9 +150,13 @@ export const EditorHeader = ({ darkMode, appType }) => {
                   <VersionManagerErrorBoundary>
                     <VersionManagerDropdown darkMode={darkMode} />
                   </VersionManagerErrorBoundary>
-                  {!isModuleEditor && <LocalChangesNote />}
-                  {!isModuleEditor && <LocalBehindNote />}
-                  {!isModuleEditor && <SecurityStatusChip appId={appId} versionId={selectedVersion?.id} />}
+                  {!isModuleEditor && codeMode && (
+                    <div className="tj-code-status-slot" data-cy="code-status-slot">
+                      <LocalChangesNote />
+                      <LocalBehindNote />
+                      <SecurityStatusChip appId={appId} versionId={selectedVersion?.id} />
+                    </div>
+                  )}
                   <RightTopHeaderButtons isModuleEditor={isModuleEditor} isAppUnsyncedToGit={showSyncButton} />
                 </div>
               </div>
