@@ -300,15 +300,14 @@ describe('confirmed latent bugs', () => {
   });
 
   /**
-   * BUG — control-component cannot reach a ListView descendant,
-   * eventsSlice.js:915-935. Only `parentType === 'Form'` gets the
-   * children-lookup special case. For a ListView descendant
-   * `getExposedValueOfComponent` returns the PER-ROW ARRAY, so
-   * `component[handle]` is undefined, `actionPromise ?? Promise.resolve()`
-   * swallows it, and the action is a silent no-op: no handle called, and
-   * nothing logged to the debugger either.
+   * FIXED — control-component reaching a ListView descendant. Only
+   * `parentType === 'Form'` had a children-lookup special case; for a
+   * ListView descendant `getExposedValueOfComponent` returned the PER-ROW
+   * ARRAY, so `component[handle]` was undefined and the action silently
+   * no-op'd. `getExposedValueOfComponent` now navigates into the per-row
+   * array (falling back to row 0 when no row index is given, as here).
    */
-  test.failing('control-component reaches a component inside a ListView', async () => {
+  test('control-component reaches a component inside a ListView', async () => {
     const child = componentDefinition('c1', 'textinput1', 'TextInput');
     child.component.parent = 'lv1';
     seedApp({ lv1: componentDefinition('lv1', 'listview1', 'Listview'), c1: child });
@@ -334,5 +333,53 @@ describe('confirmed latent bugs', () => {
     await drain();
 
     expect(setText).toHaveBeenCalledWith('hi');
+  });
+
+  /**
+   * BUG — same root cause as the ListView case above, but proven at a
+   * specific row. `getExposedValueOfComponent` (resolvedSlice.js) has no way
+   * to know WHICH row a row-scoped control-component target lives in, so
+   * even a naive "always take row 0" fallback would resolve the wrong
+   * instance whenever more than one row-scoped instance exists at once — e.g.
+   * a Table with two rows expanded simultaneously, each with its own Modal.
+   * The Button firing the event lives in the SAME row as the Modal it
+   * targets (the Button is inside the Modal, which is inside the Table's
+   * expanded row), so the firing component's own row index must reach
+   * control-component resolution for the close to hit the right instance.
+   */
+  test('control-component closes the modal in the row the button fired from, not row 0', async () => {
+    const modal = componentDefinition('m1', 'modal1', 'ModalV2');
+    modal.component.parent = 't1';
+    const button = componentDefinition('b1', 'button1', 'Button');
+    button.component.parent = 'm1';
+    seedApp({ t1: componentDefinition('t1', 'table1', 'Table'), m1: modal, b1: button });
+    bootEditor();
+
+    const closeRow0 = jest.fn();
+    const closeRow1 = jest.fn();
+    s().setExposedValuePerRow('m1', 'close', closeRow0, [0], 'canvas');
+    s().setExposedValuePerRow('m1', 'close', closeRow1, [1], 'canvas');
+    await drain();
+
+    s().eventsSlice.setEvents(
+      [
+        handler({
+          sourceId: 'b1',
+          actionId: 'control-component',
+          componentId: 'm1',
+          componentSpecificActionHandle: 'close',
+          componentSpecificActionParams: [],
+        }),
+      ],
+      'canvas'
+    );
+
+    // The row-1 Modal's own Button fires — RenderWidget threads the firing
+    // component's row index through as fireEvent's 6th argument.
+    s().eventsSlice.fireEvent('onClick', 'b1', 'canvas', {}, {}, [1]);
+    await drain();
+
+    expect(closeRow1).toHaveBeenCalled();
+    expect(closeRow0).not.toHaveBeenCalled();
   });
 });

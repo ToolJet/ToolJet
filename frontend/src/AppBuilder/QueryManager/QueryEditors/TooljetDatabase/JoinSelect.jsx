@@ -1,6 +1,8 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { isEmpty } from 'lodash';
+import { v4 as uuidv4 } from 'uuid';
 import { Col, Container, Row } from 'react-bootstrap';
-import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
+import { useToolJetDbOperationsContext } from './ToolJetDbOperationsContext';
 import DropDownSelect from './DropDownSelect';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
@@ -11,18 +13,28 @@ import RightArrow from '@/_ui/Icon/solidIcons/RightArrow';
 import DownArrow from '@/_ui/Icon/solidIcons/DownArrow';
 import InfomrationCirlce from '@/_ui/Icon/solidIcons/InformationCircle';
 import { ToolTip } from '@/_components/ToolTip';
-import { v4 as uuidv4 } from 'uuid';
-import _ from 'lodash';
 import { NoCondition } from './NoConditionUI';
+import { resolveColumnDisplayName, columnIdOf } from './util';
 
 export default function JoinSelect({ darkMode }) {
   const { joinOptions, tableInfo, joinTableOptions, joinTableOptionsChange, findTableDetails } =
-    useContext(TooljetDatabaseContext);
+    useToolJetDbOperationsContext();
 
   const joinSelectOptions = deepClone(joinTableOptions['fields']) || [];
   const setJoinSelectOptions = (fields) => {
     joinTableOptionsChange('fields', fields);
   };
+  // Resolve each stored field's displayed name via columnId first (id-first, name-fallback) so a
+  // renamed column still matches/checks correctly against the live column list.
+  const resolvedJoinSelectOptions = joinSelectOptions.map((field) => ({
+    ...field,
+    name: resolveColumnDisplayName(
+      tableInfo[findTableDetails(field.table)?.table_name],
+      field.name,
+      field.columnId,
+      'Header'
+    ),
+  }));
 
   const tableSet = new Set();
   (joinOptions || []).forEach((join) => {
@@ -49,6 +61,7 @@ export default function JoinSelect({ darkMode }) {
       tableOptions[tableId] = (tableInfo[tableDetails.table_name] || []).map((column) => ({
         label: column.Header,
         value: column.Header,
+        columnId: column.column_id,
       }));
     }
   }
@@ -72,10 +85,14 @@ export default function JoinSelect({ darkMode }) {
       (!isSelectAllExists && prevSelectedFields.length !== columnsWithoutSelectAllOption.length) ||
       (isSelectAllExists && prevSelectedFields.length === allColumnsOfTable.length)
     )
-      columnsWithoutSelectAllOption.forEach((column) => newSelectFields.push({ name: column?.value, table }));
+      columnsWithoutSelectAllOption.forEach((column) =>
+        newSelectFields.push({ name: column?.value, table, columnId: columnIdOf(column) })
+      );
     // Push all the Columns When Select All options is clicked
     if (isSelectAllExists && allColumnsOfTable.length && prevSelectedFields.length !== allColumnsOfTable.length)
-      allColumnsOfTable.forEach((column) => newSelectFields.push({ name: column?.value, table }));
+      allColumnsOfTable.forEach((column) =>
+        newSelectFields.push({ name: column?.value, table, columnId: column?.columnId })
+      );
 
     newSelectFields = newSelectFields.map((field) => {
       if (newSelectFields.filter(({ name }) => name === field.name).length > 1 && !('alias' in field)) {
@@ -93,9 +110,13 @@ export default function JoinSelect({ darkMode }) {
     setJoinSelectOptions(newSelectFields);
   };
 
-  const handleJSonChange = (value, colName, table) => {
+  const handleJSonChange = (value, colName, table, colId) => {
     const selectedJsonColumns = [...joinSelectOptions];
-    const indexToBeChanged = selectedJsonColumns.findIndex((col) => col.name === colName && col.table === table);
+    // colName/colId come from the already-resolved display list, so match by columnId first
+    // (matches resolveColumnDisplayName's order) before falling back to name+table.
+    const indexToBeChanged = selectedJsonColumns.findIndex((col) =>
+      colId ? col.columnId === colId : col.name === colName && col.table === table
+    );
     if (indexToBeChanged !== -1) {
       selectedJsonColumns[indexToBeChanged] = { ...selectedJsonColumns[indexToBeChanged], jsonpath: value };
     }
@@ -106,10 +127,9 @@ export default function JoinSelect({ darkMode }) {
     <Container fluid className="p-0 d-flex flex-column custom-gap-8">
       {tables.length ? (
         tables.map((table) => {
-          const respectiveTableSelectedOptions = joinSelectOptions.filter((val) => val?.table === table);
-          const respectiveTableOptions = tableOptions[table] ?? [];
-
           const tableDetails = findTableDetails(table);
+          const respectiveTableSelectedOptions = resolvedJoinSelectOptions.filter((val) => val?.table === table);
+          const respectiveTableOptions = tableOptions[table] ?? [];
 
           const allOptionOfTableWithDataType = [];
 
@@ -149,10 +169,10 @@ export default function JoinSelect({ darkMode }) {
                     options={[
                       { label: 'Select All', value: 'SELECT ALL' },
                       ...(allOptionOfTableWithDataType?.sort((a, b) => {
-                        const aChecked = joinSelectOptions.some(
+                        const aChecked = resolvedJoinSelectOptions.some(
                           (item) => item.name === a.value && item.table === table
                         );
-                        const bChecked = joinSelectOptions.some(
+                        const bChecked = resolvedJoinSelectOptions.some(
                           (item) => item.name === b.value && item.table === table
                         );
                         if (aChecked && !bChecked) {
@@ -223,6 +243,7 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
         const uuid = uuidv4();
         acc[uuid] = {
           name: col.name,
+          columnId: col.columnId,
           jsonpath: col?.jsonpath || '',
           id: uuid,
           table: col.table,
@@ -236,16 +257,26 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
 
   const handleRemove = (id, colName, colTable) => {
     const jsonpathsToUpdate = { ...jsonPaths };
+    const colId = jsonpathsToUpdate[id]?.columnId;
     delete jsonpathsToUpdate[id];
-    handleJSonChange('', colName, colTable);
+    handleJSonChange('', colName, colTable, colId);
     setJsonPaths(jsonpathsToUpdate);
   };
 
   const handleColumnChange = (id, selectedOption) => {
     const jsonpathsToUpdate = { ...jsonPaths };
-    jsonpathsToUpdate[id] = { ...jsonpathsToUpdate[id], name: selectedOption.value };
+    jsonpathsToUpdate[id] = {
+      ...jsonpathsToUpdate[id],
+      name: selectedOption.value,
+      columnId: columnIdOf(selectedOption),
+    };
     setJsonPaths(jsonpathsToUpdate);
-    handleJSonChange(jsonpathsToUpdate[id].jsonpath, jsonpathsToUpdate[id].name, jsonpathsToUpdate[id].table);
+    handleJSonChange(
+      jsonpathsToUpdate[id].jsonpath,
+      jsonpathsToUpdate[id].name,
+      jsonpathsToUpdate[id].table,
+      jsonpathsToUpdate[id].columnId
+    );
   };
 
   const addNewColumnOptionsPair = () => {
@@ -263,15 +294,15 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
   const handleJSonPathChange = (value, colName, tableId, id) => {
     const jsonpathsToUpdate = { ...jsonPaths };
     jsonpathsToUpdate[id] = { ...jsonpathsToUpdate[id], jsonpath: value };
-    handleJSonChange(value, colName, tableId);
+    handleJSonChange(value, colName, tableId, jsonpathsToUpdate[id]?.columnId);
   };
   const preSelectedOptions = Object.values(jsonPaths).map((col) => col.name);
 
   const options = selectedJsonbColumns
     .filter((col) => !preSelectedOptions.includes(col.name)) // Filter out columns
-    .map((col) => ({ label: col.name, value: col.name, table: col.table, icon: 'jsonb' })); // Transform each filtered column
+    .map((col) => ({ label: col.name, value: col.name, table: col.table, columnId: col.columnId, icon: 'jsonb' })); // Transform each filtered column
 
-  const isJsonbColumnSelected = _.isEmpty(selectedJsonbColumns);
+  const isJsonbColumnSelected = isEmpty(selectedJsonbColumns);
 
   return (
     <div className="d-flex flex-column custom-gap-4 w-100">
@@ -350,7 +381,7 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
               </div>
             );
           })}
-          {_.isEmpty(jsonPaths) && <NoCondition text="There are no columns added" />}
+          {isEmpty(jsonPaths) && <NoCondition text="There are no columns added" />}
 
           <ToolTip
             message={'There are no more JSON type columns'}
@@ -358,14 +389,14 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
             placement="top"
             trigger={['hover', 'focus']}
             width="160px"
-            show={_.isEmpty(options)}
+            show={isEmpty(options)}
           >
             <ButtonSolid
               variant="ghostBlue"
               size="sm"
               onClick={addNewColumnOptionsPair}
               className={`cursor-pointer fit-content mt-2}`}
-              disabled={_.isEmpty(options)}
+              disabled={isEmpty(options)}
               data-cy="tooljetdb-join-select-add-column-button"
             >
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">

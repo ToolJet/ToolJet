@@ -8,7 +8,7 @@ import { FolderHasAppsModal } from './FolderHasAppsModal';
 import { ConfirmDialog, ToolTip } from '@/_components';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { BreadCrumbContext } from '@/App/App';
+import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox } from '@/_components/SearchBox';
 import _ from 'lodash';
@@ -165,12 +165,12 @@ export const Folders = function Folders({
   }
 
   function updateFolderQuery(name) {
-    // Preserve the active Git branch (?branch=<name>) — apps/modules folders are branch-scoped, so
-    // rebuilding the query from scratch would drop it. Workflows are branch-agnostic (no branch).
+    // Preserve the active Git branch (?branch=<name>) — folders are branch-scoped, so rebuilding
+    // the query from scratch would drop it.
     const params = new URLSearchParams();
     if (name) params.set('folder', name);
     const branchName = getBranchNameFromUrl() || getResolvedBranchName();
-    if (branchName && appType !== 'workflow') params.set('branch', branchName);
+    if (branchName) params.set('branch', branchName);
     const query = params.toString();
     navigate(
       {

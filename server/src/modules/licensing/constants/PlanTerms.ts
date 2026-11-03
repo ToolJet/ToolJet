@@ -12,6 +12,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
   },
   database: {
     table: LICENSE_LIMIT.UNLIMITED,
+    row: LICENSE_LIMIT.UNLIMITED,
   },
   features: {
     auditLogs: false,
@@ -70,6 +71,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
       history: false,
       jsLibraries: false,
       publicApp: false,
+      customComponentLibraries: false,
     },
   },
   modules: {

@@ -11,3 +11,5 @@ export enum FEATURE_KEY {
 }
 
 export const MAX_ROW_COUNT = 500;
+
+export const MAX_CLOUD_WORKSPACES_PER_USER = 5;

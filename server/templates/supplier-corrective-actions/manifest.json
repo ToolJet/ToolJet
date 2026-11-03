@@ -1,0 +1,19 @@
+{
+  "name": "Supplier corrective actions",
+  "description": "Manage supplier quality issues from containment to root cause, corrective action and verified effectiveness.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "supplier-corrective-actions",
+  "category": "procurement-and-suppliers"
+}

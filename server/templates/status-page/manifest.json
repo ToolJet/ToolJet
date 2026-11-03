@@ -1,0 +1,15 @@
+{
+  "name": "Status page",
+  "description": "A public status page for your services. Show live service health and incident history, subscribe customers to updates, and manage services and incidents from admin pages.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "status-page",
+  "category": "status-pages"
+}

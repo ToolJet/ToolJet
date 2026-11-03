@@ -26,7 +26,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * before `trg_app_versions_workflow_slug_unique`) now wins the race and raises its own
  * exception name first. Functionally harmless (both reject the same collision), but it's
  * a needless duplicate check and breaks callers matching on the specific exception name
- * (see workflow-slug-trigger.e2e-spec.ts). Fix: make the generic trigger defer to Task
+ * (see workflow-slug-trigger.spec.ts). Fix: make the generic trigger defer to Task
  * 1's dedicated one for workflow rows, restoring the pre-Task-3.5 division of labor now
  * that workflows share the branch_id column with everything else.
  */

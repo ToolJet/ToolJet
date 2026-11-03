@@ -9,4 +9,5 @@ export enum FEATURE_KEY {
   GET_REDIRECT_URL = 'get_redirect_url',
   ADD_TOP_UP_CREDITS = 'add_top_up_credits',
   GET_AI_CREDITS_BALANCE = 'get_ai_credits_balance',
+  GET_PLAN_PRICES = 'get_plan_prices',
 }

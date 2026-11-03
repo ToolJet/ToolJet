@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "{{PLUGIN_TITLE}} datasource",
+  "description": "A schema defining {{PLUGIN_TITLE}} datasource",
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "{{PLUGIN_NAME}}",
+    "kind": "{{PLUGIN_KIND}}",
+    "type": "api"
+  },
+  "tj:encrypted": ["api_key", "bearer_token", "password"],
+  "properties": {
+    "auth_type": {
+      "type": "string",
+      "title": "Authentication",
+      "description": "Select authentication method",
+      "enum": ["api_key", "bearer_token", "basic"],
+      "default": "api_key"
+    },
+    "api_key": {
+      "type": "string",
+      "title": "API Key"
+    },
+    "bearer_token": {
+      "type": "string",
+      "title": "Bearer Token"
+    },
+    "username": {
+      "type": "string",
+      "title": "Username"
+    },
+    "password": {
+      "type": "string",
+      "title": "Password"
+    }
+  },
+  "required": ["auth_type"],
+  "allOf": [
+    {
+      "if": { "properties": { "auth_type": { "const": "api_key" } } },
+      "then": { "required": ["api_key"] }
+    },
+    {
+      "if": { "properties": { "auth_type": { "const": "bearer_token" } } },
+      "then": { "required": ["bearer_token"] }
+    },
+    {
+      "if": { "properties": { "auth_type": { "const": "basic" } } },
+      "then": { "required": ["username", "password"] }
+    }
+  ],
+  "tj:ui:properties": {
+    "auth_type": {
+      "order": 1,
+      "$ref": "#/properties/auth_type",
+      "key": "auth_type",
+      "label": "Authentication",
+      "widget": "dropdown-component-flip",
+      "list": [
+        { "value": "api_key", "name": "API Key" },
+        { "value": "bearer_token", "name": "Bearer Token" },
+        { "value": "basic", "name": "Basic Auth" }
+      ]
+    },
+    "api_key": {
+      "api_key": {
+        "order": 2,
+        "$ref": "#/properties/api_key",
+        "key": "api_key",
+        "label": "API Key",
+        "widget": "password-v3",
+        "required": true
+      }
+    },
+    "bearer_token": {
+      "bearer_token": {
+        "order": 2,
+        "$ref": "#/properties/bearer_token",
+        "key": "bearer_token",
+        "label": "Bearer Token",
+        "widget": "password-v3",
+        "required": true
+      }
+    },
+    "basic": {
+      "username": {
+        "order": 2,
+        "$ref": "#/properties/username",
+        "key": "username",
+        "label": "Username",
+        "widget": "text-v3",
+        "required": true
+      },
+      "password": {
+        "order": 3,
+        "$ref": "#/properties/password",
+        "key": "password",
+        "label": "Password",
+        "widget": "password-v3",
+        "required": true
+      }
+    }
+  }
+}

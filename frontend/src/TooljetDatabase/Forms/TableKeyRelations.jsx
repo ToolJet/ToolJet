@@ -1,14 +1,15 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { isEmpty } from 'lodash';
+import { toast } from 'react-hot-toast';
 import TableDetailsDropdown from './TableDetailsDropdown';
-import { tooljetDatabaseService } from '@/_services';
-import { TooljetDatabaseContext } from '../index';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
+import { useTjdbActions } from '../_stores/tjdbStore';
 import Source from '../Icons/Source.svg';
 import Setting from '../Icons/setting.svg';
 import Target from '../Icons/Target.svg';
 import Actions from '../Icons/Actions.svg';
 import Serial from '../Icons/Serial.svg';
-import _, { isEmpty } from 'lodash';
-import { toast } from 'react-hot-toast';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { dataTypes, getColumnDataType } from '../constants';
 
@@ -33,7 +34,8 @@ function SourceKeyRelation({
   setOnUpdate,
   onUpdate,
 }) {
-  const { tables, organizationId, selectedTable, setTables } = useContext(TooljetDatabaseContext);
+  const { tables, organizationId, selectedTable, setTables } = useTooljetDatabaseContext();
+  const { fetchTableMetadata } = useTjdbActions();
   const [targetColumnList, setTargetColumnList] = useState([]);
 
   async function fetchTables() {
@@ -150,40 +152,33 @@ function SourceKeyRelation({
 
   useEffect(() => {
     // When this component is mounted by default we are setting onDelete and onUpdate action with first value of onUpdateOptions, so that by default no action is selected for the actions dropdown
-    if (_.isEmpty(onDelete)) {
+    if (isEmpty(onDelete)) {
       setOnDelete(onDeleteOptions[0]);
     }
-    if (_.isEmpty(onUpdate)) {
+    if (isEmpty(onUpdate)) {
       setOnUpdate(onUpdateOptions[0]);
     }
   }, []);
 
   const handleSelectColumn = (table_name = '') => {
-    if (table_name?.length > 0) {
-      tooljetDatabaseService.viewTable(organizationId, table_name).then(({ data = [], error }) => {
-        if (error) {
-          toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
-          return;
-        }
-
-        const { foreign_keys = [] } = data?.result || {};
-        if (data?.result?.columns?.length > 0) {
-          setTargetColumnList(
-            data?.result?.columns.map((item) => ({
-              name: item.column_name,
-              label: item.column_name,
-              icon: dataTypes.filter(
-                (obj) =>
-                  obj.value === getColumnDataType({ column_default: item.column_default, data_type: item.data_type })
-              )[0]?.icon,
-              value: item.column_name,
-              dataType: getColumnDataType({ column_default: item.column_default, data_type: item.data_type }),
-            }))
-          );
-        }
-      });
-      // setTargetColumn({ value: '', label: '', dataType: '' });
-    }
+    if (!table_name?.length) return;
+    fetchTableMetadata(organizationId, table_name).then((metadata) => {
+      if (!metadata) return;
+      if (metadata.rawColumns.length > 0) {
+        setTargetColumnList(
+          metadata.rawColumns.map((item) => ({
+            name: item.column_name,
+            label: item.column_name,
+            icon: dataTypes.filter(
+              (obj) =>
+                obj.value === getColumnDataType({ column_default: item.column_default, data_type: item.data_type })
+            )[0]?.icon,
+            value: item.column_name,
+            dataType: getColumnDataType({ column_default: item.column_default, data_type: item.data_type }),
+          }))
+        );
+      }
+    });
   };
 
   const targetTableColumns =

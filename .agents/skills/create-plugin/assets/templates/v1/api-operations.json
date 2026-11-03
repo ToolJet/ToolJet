@@ -1,0 +1,33 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "{{PLUGIN_TITLE}} datasource",
+  "description": "A schema defining {{PLUGIN_TITLE}} datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "{{OPERATION_1_VALUE}}",
+          "name": "{{OPERATION_1_NAME}}"
+        }
+      ]
+    },
+    "{{OPERATION_1_VALUE}}": {
+      "{{PARAM_1_KEY}}": {
+        "label": "{{PARAM_1_LABEL}}",
+        "key": "{{PARAM_1_KEY}}",
+        "type": "codehinter",
+        "description": "{{PARAM_1_DESCRIPTION}}",
+        "className": "codehinter-plugins",
+        "lineNumbers": false,
+        "height": "36px",
+        "placeholder": "{{PARAM_1_PLACEHOLDER}}"
+      }
+    }
+  }
+}

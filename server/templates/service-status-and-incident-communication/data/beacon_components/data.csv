@@ -1,0 +1,9 @@
+id,name,group_name,description,status,uptime_30d,response_ms,owner,updated_at,public_visible
+,API Gateway,Core platform,Public REST and GraphQL traffic,Under Maintenance,99.99,182,Platform,2026-09-17T18:16:29.640Z,true
+,Authentication,Core platform,"Login, SSO and session services",Operational,99.98,236,Identity,2026-09-16T16:39:00Z,true
+,Web application,Customer experience,Main customer-facing web product,Degraded Performance,99.94,684,Web,2026-09-16T16:47:00Z,true
+,Admin workspace,Customer experience,Administrative console,Operational,99.97,312,Admin Platform,2026-09-16T16:35:00Z,true
+,Background jobs,Processing,"Queues, exports and scheduled work",Operational,99.96,420,Core Systems,2026-09-16T16:32:00Z,true
+,Notifications,Processing,"Email, SMS and webhook delivery",Partial Outage,99.71,1280,Messaging,2026-09-16T16:48:00Z,true
+,EU region,Regions,Frankfurt production region,Operational,99.995,128,SRE,2026-09-16T16:40:00Z,true
+,US region,Regions,Virginia production region,Operational,99.992,141,SRE,2026-09-16T16:40:00Z,true

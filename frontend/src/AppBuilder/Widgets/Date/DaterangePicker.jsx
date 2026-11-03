@@ -3,7 +3,7 @@ import { useDateInput, useDatetimeInput } from './hooks';
 import { BaseDateComponent } from './BaseDateComponent';
 import moment from 'moment-timezone';
 import cx from 'classnames';
-import { isDateRangeValid, isDateValid } from './utils';
+import { isDateRangeValid, isDateValid, formatExposedDate, formatExposedDateRange } from './utils';
 import './styles.scss';
 import { useShowValidationOnFormSubmit, useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
@@ -26,6 +26,12 @@ export const DaterangePicker = ({
   const [datepickerMode, setDatePickerMode] = useState('date');
   const { defaultStartDate, defaultEndDate, format, label, placeholder: placeholderProp, showClearBtn } = properties;
   const placeholder = placeholderProp ?? 'Select Date Range';
+  // Opt-in legacy marker written only by the backfill migration (never part of
+  // the default widget config): migrated components keep exposing the
+  // historical "Invalid date" strings until the flag is cleared by explicitly
+  // editing the widget's date data (Default start date, Default end date, or
+  // Format) in the inspector.
+  const legacyInvalidDates = !!properties.legacyInvalidDates;
   const inputProps = {
     properties,
     setExposedVariable,
@@ -35,6 +41,8 @@ export const DaterangePicker = ({
     dateInputRef,
     datePickerRef,
     dateFormat: format,
+    componentName,
+    id,
   };
   const dateTimeLogic = useDatetimeInput(inputProps);
   const dateLogic = useDateInput(inputProps);
@@ -74,10 +82,14 @@ export const DaterangePicker = ({
 
   const [showValidationError, setShowValidationError] = useState(false);
   useShowValidationOnFormSubmit(setShowValidationError);
+  // Typed text that cannot be parsed at all — kept on screen with an "Invalid
+  // date" message instead of being silently reverted on blur.
+  const [textParseError, setTextParseError] = useState(false);
 
   const clearDateRangeValue = () => {
     setStartDate(null);
     setEndDate(null);
+    setTextParseError(false);
     setExposedVariables({
       startDate: null,
       startDateInUnix: null,
@@ -94,12 +106,15 @@ export const DaterangePicker = ({
     const [start, end] = dates;
     setStartDate(start);
     setEndDate(end);
+    // Any committed change (calendar pick, default rebind, CSA) supersedes
+    // whatever unparseable text was being held on screen.
+    setTextParseError(false);
     setExposedVariables({
-      startDate: moment(start).format(format),
+      startDate: formatExposedDate(start, format, legacyInvalidDates),
       startDateInUnix: start ? moment(start).valueOf() : null,
-      endDate: moment(end).format(format),
+      endDate: formatExposedDate(end, format, legacyInvalidDates),
       endDateInUnix: end ? moment(end).valueOf() : null,
-      selectedDateRange: `${moment(start).format(format)} - ${moment(end).format(format)}`,
+      selectedDateRange: formatExposedDateRange(start, end, format, legacyInvalidDates),
     });
     if (typeof skipFireEvent === 'boolean' && skipFireEvent) return;
     fireEvent('onSelect');
@@ -123,33 +138,29 @@ export const DaterangePicker = ({
     let endDate = moment(defaultEndDate, format);
     endDate = endDate.isValid() ? endDate.toDate() : null;
 
-    if (startDate && endDate) {
-      if (moment(startDate).isSameOrBefore(endDate)) {
-        onChange([startDate, endDate], true);
-      } else {
-        onChange([startDate, null], true);
-      }
-    } else {
-      onChange([startDate, endDate], true); // If any date (start or end) would be invalid then it would pe passed as null
-    }
+    // Both dates are kept even when the range is inverted (end before start),
+    // matching the first-mount state initializers — isDateRangeValid flags the
+    // order instead of the end date being silently dropped. An unparseable
+    // default passes through as null.
+    onChange([startDate, endDate], true);
   }, [defaultStartDate, defaultEndDate, format]);
+
+  // A cleared legacy flag (alignment switched to 'side' in the inspector) must
+  // take effect immediately: re-expose the formatted values for the dates the
+  // user already has, without resetting them to the defaults.
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariables({
+      startDate: formatExposedDate(startDate, format, legacyInvalidDates),
+      endDate: formatExposedDate(endDate, format, legacyInvalidDates),
+      selectedDateRange: formatExposedDateRange(startDate, endDate, format, legacyInvalidDates),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [legacyInvalidDates]);
 
   useEffect(() => {
     const exposedVariables = {
       clearDateRange: clearDateRangeValue,
-      setDateRange: (startDate, endDate, customFormat) => {
-        const startDateObj = moment(startDate, customFormat || format);
-        const endDateObj = moment(endDate, customFormat || format);
-        setStartDate(startDateObj.isValid() ? startDateObj.toDate() : null);
-        setEndDate(endDateObj.isValid() ? endDateObj.toDate() : null);
-        setExposedVariables({
-          startDate: startDateObj.isValid() ? startDateObj.format(format) : null,
-          startDateInUnix: startDateObj.isValid() ? startDateObj.valueOf() : null,
-          endDate: endDateObj.isValid() ? endDateObj.format(format) : null,
-          endDateInUnix: endDateObj.isValid() ? endDateObj.valueOf() : null,
-          selectedDateRange: `${startDateObj.format(format)} - ${endDateObj.format(format)}`,
-        });
-      },
       clearStartDate: () => {
         setStartDate(null);
         setExposedVariables({
@@ -166,9 +177,9 @@ export const DaterangePicker = ({
           selectedDateRange: null,
         });
       },
-      startDate: moment(startDate).format(format),
-      endDate: moment(endDate).format(format),
-      selectedDateRange: `${moment(startDate).format(format)} - ${moment(endDate).format(format)}`,
+      startDate: formatExposedDate(startDate, format, legacyInvalidDates),
+      endDate: formatExposedDate(endDate, format, legacyInvalidDates),
+      selectedDateRange: formatExposedDateRange(startDate, endDate, format, legacyInvalidDates),
       startDateInUnix: startDate ? moment(startDate).valueOf() : null,
       endDateInUnix: endDate ? moment(endDate).valueOf() : null,
       dateFormat: format,
@@ -178,9 +189,29 @@ export const DaterangePicker = ({
     isInitialRender.current = false;
   }, []);
 
+  // Registered in its own effect (not the mount effect) so the closure follows
+  // `format` and a cleared legacy flag instead of staying stale until remount.
+  useEffect(() => {
+    setExposedVariable('setDateRange', (startDate, endDate, customFormat) => {
+      const startDateObj = moment(startDate, customFormat || format);
+      const endDateObj = moment(endDate, customFormat || format);
+      setStartDate(startDateObj.isValid() ? startDateObj.toDate() : null);
+      setEndDate(endDateObj.isValid() ? endDateObj.toDate() : null);
+      setExposedVariables({
+        startDate: startDateObj.isValid() ? startDateObj.format(format) : null,
+        startDateInUnix: startDateObj.isValid() ? startDateObj.valueOf() : null,
+        endDate: endDateObj.isValid() ? endDateObj.format(format) : null,
+        endDateInUnix: endDateObj.isValid() ? endDateObj.valueOf() : null,
+        selectedDateRange: formatExposedDateRange(startDateObj, endDateObj, format, legacyInvalidDates),
+      });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [format, legacyInvalidDates]);
+
   const handleClear = () => {
     setStartDate(null);
     setEndDate(null);
+    setTextParseError(false);
     setDisplayRange('');
     setExposedVariables({
       startDate: null,
@@ -197,31 +228,39 @@ export const DaterangePicker = ({
       const date = moment(end, customFormat || format);
       const endDate = date.isValid() ? date.toDate() : null;
       setEndDate(endDate);
+      setTextParseError(false);
       setExposedVariables({
-        endDate: moment(endDate).format(format),
-        selectedDateRange: `${moment(startDate).format(format)} - ${moment(endDate).format(format)}`,
+        endDate: formatExposedDate(endDate, format, legacyInvalidDates),
+        endDateInUnix: endDate ? moment(endDate).valueOf() : null,
+        selectedDateRange: formatExposedDateRange(startDate, endDate, format, legacyInvalidDates),
       });
     });
-  }, [startDate, format]);
+  }, [startDate, format, legacyInvalidDates]);
 
   useEffect(() => {
-    if (isInitialRender.current || textInputFocus) return;
+    if (isInitialRender.current || textInputFocus || textParseError) return;
     setDisplayRange(getDisplayRange(startDate, endDate));
-  }, [startDate, endDate, format, textInputFocus]);
+  }, [startDate, endDate, format, textInputFocus, textParseError]);
 
   useEffect(() => {
     setExposedVariable('setStartDate', (start, customFormat) => {
       const date = moment(start, customFormat || format);
       const startDate = date.isValid() ? date.toDate() : null;
       setStartDate(startDate);
+      setTextParseError(false);
       setExposedVariables({
-        startDate: moment(startDate).format(format),
-        selectedDateRange: `${moment(startDate).format(format)} - ${moment(endDate).format(format)}`,
+        startDate: formatExposedDate(startDate, format, legacyInvalidDates),
+        startDateInUnix: startDate ? moment(startDate).valueOf() : null,
+        selectedDateRange: formatExposedDateRange(startDate, endDate, format, legacyInvalidDates),
       });
     });
-  }, [endDate, format]);
+  }, [endDate, format, legacyInvalidDates]);
 
   useEffect(() => {
+    if (textParseError) {
+      setValidationStatus({ isValid: false, validationError: 'Invalid date' });
+      return;
+    }
     let validationStatus = isDateValid(startDate, {
       minDate,
       maxDate,
@@ -246,7 +285,7 @@ export const DaterangePicker = ({
     }
     validationStatus = isDateRangeValid(startDate, endDate, excludedDates, format);
     setValidationStatus(validationStatus);
-  }, [minDate, maxDate, customRule, isMandatory, startDate, endDate, excludedDates, format]);
+  }, [minDate, maxDate, customRule, isMandatory, startDate, endDate, excludedDates, format, textParseError]);
 
   useEffect(() => {
     const transformedFormat = format.toLowerCase();
@@ -268,13 +307,22 @@ export const DaterangePicker = ({
       'react-datepicker-month-component': datepickerMode === 'month',
       'react-datepicker-year-component': datepickerMode === 'year',
     }),
-    onChange,
+    // Calendar picks route through this wrapper (NOT the typed-commit path):
+    // a pick supersedes whatever text is mid-typing or held as a parse error,
+    // so the display must sync immediately — the blur-gated effect is too late
+    // for the field the user is looking at.
+    onChange: (dates) => {
+      onChange(dates);
+      setDisplayRange(getDisplayRange(dates[0], dates[1]));
+    },
     onSelect: (start) => {
       if (!startDate && endDate) {
         if (moment(start).isSameOrBefore(endDate)) {
           onChange([start, endDate]);
+          setDisplayRange(getDisplayRange(start, endDate));
         } else {
           onChange([start, null]);
+          setDisplayRange(getDisplayRange(start, null));
         }
       }
     },
@@ -284,7 +332,8 @@ export const DaterangePicker = ({
     endDate: endDate,
     selectsRange: true,
     monthsShown: 2,
-    excludeDates: excludedDates,
+    // Day-level exclusions must not disable whole year/month cells in year/month picker modes
+    excludeDates: datepickerMode === 'date' ? excludedDates : undefined,
     showMonthDropdown: datepickerMode === 'date',
     showYearDropdown: datepickerMode === 'date',
     showMonthYearPicker: datepickerMode === 'month',
@@ -309,6 +358,7 @@ export const DaterangePicker = ({
     displayFormat: format,
     setTextInputFocus,
     setShowValidationError,
+    onTextParse: (parsed) => setTextParseError(parsed.hasError),
     showValidationError,
     isValid,
     validationError,

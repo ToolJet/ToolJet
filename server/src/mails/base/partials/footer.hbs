@@ -6,21 +6,40 @@
   <p class="notif-purpose">
     {{footerText}}
   </p>
-  <div class="social-links">
-    <a target="_blank" href="https://github.com/ToolJet/ToolJet/stargazers">
-      <img height="20" width="auto" class="social-icons" alt="Company" src="cid:github" />
-    </a>
-    <a target="_blank" href="https://www.linkedin.com/company/tooljet">
-      <img height="20" width="auto" class="social-icons" alt="Company" src="cid:linkedin" />
-    </a>
-    <a target="_blank" href="https://www.youtube.com/channel/UCf1p2G5Z7fPpvlBPf4l2I1w">
-      <img height="22" width="auto" class="social-icons social-icon-fit social-icon-large" alt="Company"
-        src="cid:youtube" />
-    </a>
-    <a target="_blank" href="https://twitter.com/ToolJet">
-      <img height="20" width="auto" class="social-icons social-icon-fit" alt="Company" src="cid:twitter" />
-    </a>
-  </div>
+  {{!--
+    A table rather than a flex row: Gmail and Outlook drop `display:flex` and `gap` entirely,
+    which left these icons flowing as inline images on a text baseline — each at whatever size
+    and margin its own class happened to set, so the row came out staggered. A table row is the
+    one layout primitive every mail client honours.
+
+    All four source assets are identical 512x512 squares, so they render at one size with no
+    per-icon overrides. `display:block` kills the descender gap inline images inherit from the
+    line box, and `border:0` stops Outlook drawing a frame around a linked image.
+  --}}
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" class="social-links">
+    <tr>
+      <td style="padding-right: 16px;">
+        <a target="_blank" href="https://github.com/ToolJet/ToolJet">
+          <img height="20" width="20" class="social-icons" alt="GitHub" src="cid:github" />
+        </a>
+      </td>
+      <td style="padding-right: 16px;">
+        <a target="_blank" href="https://www.linkedin.com/company/tooljet">
+          <img height="20" width="20" class="social-icons" alt="LinkedIn" src="cid:linkedin" />
+        </a>
+      </td>
+      <td style="padding-right: 16px;">
+        <a target="_blank" href="https://www.youtube.com/channel/UCf1p2G5Z7fPpvlBPf4l2I1w">
+          <img height="20" width="20" class="social-icons" alt="YouTube" src="cid:youtube" />
+        </a>
+      </td>
+      <td>
+        <a target="_blank" href="https://twitter.com/ToolJet">
+          <img height="20" width="20" class="social-icons" alt="X" src="cid:twitter" />
+        </a>
+      </td>
+    </tr>
+  </table>
   <br />
   <br />
 </div>

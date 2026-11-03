@@ -25,7 +25,7 @@ import { v4 as uuidv4 } from 'uuid';
 jest.setTimeout(120_000);
 
 describe('AppsRepository', () => {
-  describe('EE (plan: enterprise)', () => {
+  describe('with a seeded app whose version has a slug', () => {
     let nestApp: INestApplication;
     let appsRepository: AppsRepository;
     let app: App;

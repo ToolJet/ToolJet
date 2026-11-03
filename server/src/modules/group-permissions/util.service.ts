@@ -81,6 +81,13 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         const fp = granularPerm.foldersGroupPermissions;
         if (fp?.canEditFolder || fp?.canEditApps) return true;
       }
+      // Data-source folders cascade configure/build-with onto the folder's data sources, so unlike
+      // plain/workflow folders (where view-only stays end-user-safe) even a "Build with" (canViewApps)
+      // grant is builder-level. A restrict-query-run-only row (all three levels false) stays end-user-safe.
+      if (granularPerm.type === ResourceType.DATA_SOURCE_FOLDER) {
+        const fp = granularPerm.foldersGroupPermissions;
+        if (fp?.canEditFolder || fp?.canEditApps || fp?.canViewApps) return true;
+      }
     }
     return false;
   }
@@ -272,7 +279,12 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
     }, manager);
   }
 
-  async addUsersToGroup(addGroupUserDto: AddGroupUserDto, organizationId: string, manager?: EntityManager) {
+  async addUsersToGroup(
+    addGroupUserDto: AddGroupUserDto,
+    organizationId: string,
+    manager?: EntityManager,
+    canChangeRole = true
+  ) {
     const { userIds, groupId, allowRoleChange, endUsers } = addGroupUserDto;
 
     // endUsers - can be passed if this function is called in a loop. Scenario -> adding a user to multiple groups
@@ -308,14 +320,14 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       );
       if ((isBuilderLevel || hasBuilderEnvironments || hasBuilderGranularPermissions) && endUserRoleUsers.length) {
         // Group has builder-level permissions or environment access and end users are to be added
-        if (!allowRoleChange) {
-          // Role change not allowed - Throw error
+        if (!allowRoleChange || !canChangeRole) {
+          // Role change not allowed (not requested, or the actor can't change roles) - Throw error
           throw new ConflictException({
             message: {
               error: ERROR_HANDLER.UPDATE_EDITABLE_PERMISSION_END_USER_GROUP,
               data: endUserRoleUsers?.map((user) => user.email),
               title: 'Cannot add this permission to the group',
-              type: 'USER_ROLE_CHANGE_ADD_USERS',
+              type: canChangeRole ? 'USER_ROLE_CHANGE_ADD_USERS' : 'USER_ROLE_CHANGE_ADMIN_REQUIRED',
             },
           });
         }

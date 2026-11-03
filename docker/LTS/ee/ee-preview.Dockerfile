@@ -1,4 +1,4 @@
-FROM node:22.15.1 AS builder
+FROM node:22.23.4 AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
@@ -117,8 +117,10 @@ COPY ./package.json ./package.json
 
 # Build plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
-# Pin ibm_db's clidriver to a build linked against glibc <=2.14, since the runtime
-# stage is bullseye (glibc 2.31) and the latest clidriver requires glibc 2.32+
+# Pin ibm_db's clidriver to a build linked against glibc <=2.14. The runtime stage
+# is now bookworm (glibc 2.36) so this pin is no longer strictly required, but the
+# older clidriver is forward-compatible and keeping it avoids re-testing ibm_db.
+# Safe to drop later if you want the current driver.
 ENV IBM_DB_INSTALLER_URL=https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/v11.5.9
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
@@ -126,6 +128,10 @@ RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
 ENV TOOLJET_EDITION=ee
+
+# Copy shared widget-definitions package (required by frontend + server file: dependency)
+COPY ./packages/widget-definitions/package.json ./packages/widget-definitions/package.json
+COPY ./packages/widget-definitions/src/ ./packages/widget-definitions/src/
 
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
@@ -141,11 +147,19 @@ ENV TOOLJET_EDITION=ee
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
 COPY ./server/ ./server/
+RUN node server/scripts/compress-templates.js
 RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
-FROM node:22.15.1-bullseye
+# ---------------------------------------------------------------------------
+# Runtime stage
+# Moved from node:22.15.1-bullseye to bookworm. Debian 11 reached end-of-life on
+# 31 Aug 2026, so bullseye-security no longer publishes a valid Release file and
+# apt-get update fails with exit 100. Bookworm also matches the builder stage,
+# which fixes the libprotobuf ABI mismatch for the copied nsjail binary.
+# ---------------------------------------------------------------------------
+FROM node:22.23.4-bookworm
 
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
@@ -155,13 +169,21 @@ RUN apt-get update -yq \
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
+# Node 22.15.1 ships tz 2025a, missing the Canada DST change of 1 Nov 2026; ICU 2026e files from unicode-org/icu-data. Remove when Node tz >= 2026e.
+COPY ./docker/icu-tz /usr/local/share/icu-tz
+ENV ICU_TIMEZONE_FILES_DIR=/usr/local/share/icu-tz
+RUN node -e "if (process.versions.tz < '2026e') throw new Error('stale tz data: ' + process.versions.tz)"
+
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 # Install Redis 7.x from official Redis repository for BullMQ compatibility
+# NOTE: repo suite changed bullseye -> bookworm
+# NOTE: libprotobuf23 (bullseye) -> libprotobuf32 (bookworm). This is the version
+# nsjail was actually linked against in the builder stage.
 RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bullseye main" | tee /etc/apt/sources.list.d/redis.list \
-    && apt-get update && apt-get install -y freetds-dev libaio1 libxml2 wget supervisor redis-server libprotobuf23 libnl-route-3-200 python3 python3-pip
+    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bookworm main" | tee /etc/apt/sources.list.d/redis.list \
+    && apt-get update && apt-get install -y freetds-dev libaio1 libxml2 wget supervisor redis-server libprotobuf32 libnl-route-3-200 python3 python3-pip
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -173,7 +195,8 @@ RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketpla
     cd /opt/oracle/instantclient_11_2 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
 # Set the Instant Client library paths
-ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
+# NOTE: LD_LIBRARY_PATH given an explicit default to silence the UndefinedVar warning
+ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10"
 
 # Copy nsjail and Python runtime from builder
 COPY --from=builder /build-nsjail/nsjail/nsjail /usr/local/bin/nsjail
@@ -196,6 +219,8 @@ COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
 COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
 # copy frontend build
 COPY --from=builder /app/frontend/build ./app/frontend/build
+# copy widget-definitions (server node_modules symlinks to this)
+COPY --from=builder /app/packages/widget-definitions ./app/packages/widget-definitions
 # copy server build
 COPY --from=builder /app/server/package.json ./app/server/package.json
 COPY --from=builder /app/server/.version ./app/server/.version
@@ -210,10 +235,16 @@ COPY --from=builder /app/server/ee/workflows/nsjail/python-execution.cfg /etc/ns
 WORKDIR /app
 
 # Install PostgreSQL
+# NOTE: apt-key is deprecated on bookworm and removed in trixie. Switched to the
+# signed-by keyring pattern already used above for Redis.
+# NOTE: repo suite changed bullseye-pgdg -> bookworm-pgdg. postgresql-13 is
+# published for bookworm-pgdg, so the major version and all paths stay at 13.
 USER root
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor --fix-missing
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+      | gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
+RUN echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" \
+      | tee /etc/apt/sources.list.d/pgdg.list
+RUN apt-get update && apt-get -y install postgresql-13 postgresql-client-13 supervisor --fix-missing
 
 
 # Explicitly create PG main directory with correct ownership

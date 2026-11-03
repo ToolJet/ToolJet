@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# tj: ToolJet dev toolkit. Runs the TypeScript source on the .nvmrc Node, no build step.
+set -e
+here=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+want=$(sed 's/[[:space:]#].*//' "$here/../../.nvmrc")
+if [ "$(node -v 2>/dev/null)" != "$want" ] && [ -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]; then
+  # shellcheck source=/dev/null
+  . "${NVM_DIR:-$HOME/.nvm}/nvm.sh" >/dev/null 2>&1
+  nvm use --silent "$want" >/dev/null 2>&1 || true
+fi
+exec node --experimental-strip-types --no-warnings "$here/src/main.ts" "$@"

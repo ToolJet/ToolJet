@@ -1,0 +1,15 @@
+{
+  "name": "Claims management",
+  "description": "Handle warranty claims with coverage checks, a recorded decision and a tracked remedy.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "claims-management",
+  "category": "customer-service"
+}

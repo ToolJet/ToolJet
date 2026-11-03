@@ -1,0 +1,21 @@
+{
+  "name": "Customer support",
+  "description": "A shared support inbox. Triage tickets, log responses and resolve customer issues against response targets.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "customer-support",
+  "category": "customer-service"
+}

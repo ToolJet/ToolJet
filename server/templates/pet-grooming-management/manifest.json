@@ -1,0 +1,16 @@
+{
+  "name": "Pet grooming management",
+  "description": "Book grooming appointments, keep care notes for each pet and record checkout.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "pet-grooming-management",
+  "category": "local-services"
+}

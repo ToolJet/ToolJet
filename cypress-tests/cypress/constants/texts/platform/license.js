@@ -2,14 +2,14 @@ export const licenseText = {
   comparePlansText: "Compare plans",
   license: "License",
   licenseOverviewTitle: "License overview",
-  licenseKeyLabel: "License Key",
+  licenseKeyLabel: "License key",
   limitsTabTitle: "Limits",
   accessTabTitle: "Access",
   domainTabTitle: "Domain",
   updateButton: "Update",
 
   licenseKeyTab: {
-    licenseKeyTabTitle: "License Key",
+    licenseKeyTabTitle: "License key",
     licenseLabel: "License",
     enterLicenseKeyPlaceholder: "Enter license key",
   },
@@ -29,40 +29,40 @@ export const licenseText = {
   },
 
   appsSubTab: {
-    noOfAppsLabel: "Number of Apps",
+    noOfAppsLabel: "Number of apps",
   },
 
   workspacesSubTab: {
-    noOfWorkspacesLabel: "Number of Workspaces",
+    noOfWorkspacesLabel: "Number of workspaces",
   },
 
   usersSubTab: {
-    noOfTotalUsersLabel: "Number of Total Users",
-    noOfBuildersLabel: "Number of Builders",
-    noOfEndUsersLabel: "Number of End Users",
-    noOfSuperAdminsLabel: "Number of Super Admins",
+    noOfTotalUsersLabel: "Number of total users",
+    noOfBuildersLabel: "Number of builders",
+    noOfEndUsersLabel: "Number of end users",
+    noOfSuperAdminsLabel: "Number of super admins",
   },
 
   workflowsSubTab: {
-    noOfWorkflowsLabel: "Number of Workflows",
+    noOfWorkflowsLabel: "Number of workflows",
   },
 
   tablesSubTab: {
-    noOfTablesLabel: "Number of Tables",
+    noOfTablesLabel: "Number of tables",
   },
 
   accessTab: {
-    customUserGroupsLabel: "Custom user Groups",
-    openIDConnectLabel: "Open ID Connect",
-    googleLabel: "Google",
-    githubLabel: "GitHub",
+    customUserGroupsLabel: "Custom user groups",
+    openIDConnectLabel: "OpenID Connect (OIDC)",
+    googleLabel: "Google SSO",
+    githubLabel: "GitHub SSO",
     ldapLabel: "LDAP",
     samlLabel: "SAML",
     scimLabel: "SCIM",
     apiKeyLabel: "Audit logs",
     observabilityLabel: "Observability",
     externalAPILabel: "External APIs",
-    multiEnvironmentLabel: "Multi-Environment",
+    multiEnvironmentLabel: "Multi-environment",
     gitSyncLabel: "GitSync",
     multiplayerEditingLabel: "Multiplayer editing",
     workflowsLabel: "Workflows",

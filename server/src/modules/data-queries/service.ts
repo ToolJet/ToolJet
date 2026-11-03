@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager, In, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -17,13 +17,21 @@ import { IDataQueriesService, QueryCreateContext, QueryUpdateContext, QueryDelet
 import { App } from '@entities/app.entity';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
+import { AppValidationService } from '@modules/app-validation/service';
+import { lockForValidation } from '@modules/app-validation/lock';
+import { QueryWrite } from '@modules/app-validation/types';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { assertGitSyncEditAllowedForOrg } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
+import { AppVersion } from '@entities/app_version.entity';
 
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
   constructor(
     protected readonly dataQueryRepository: DataQueryRepository,
     protected readonly dataQueryUtilService: DataQueriesUtilService,
-    protected readonly dataSourceRepository: DataSourcesRepository
+    protected readonly dataSourceRepository: DataSourcesRepository,
+    protected readonly appValidationService: AppValidationService,
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
 
   /**
@@ -97,18 +105,6 @@ export class DataQueriesService implements IDataQueriesService {
     // No-op in CE, EE overrides to capture history
   }
 
-  /**
-   * Query name format — mirror of validateQueryName in frontend/src/_helpers/utils.js. The
-   * editor blocks invalid names on rename, but direct API/MCP callers bypass that, and a name
-   * with spaces or special characters breaks {{queries.<name>}} reference resolution.
-   */
-  protected assertValidQueryName(name: string): void {
-    if (name === undefined || name === null) return;
-    if (!/^[A-Za-z0-9_-]*$/.test(name)) {
-      throw new BadRequestException('Query name can only contain letters, numbers, hyphens and underscores');
-    }
-  }
-
   // Serialises name checks per app version so two concurrent creates/renames cannot
   // both pass the existence check. Lock auto-releases at txn end.
   protected async assertUniqueQueryName(
@@ -119,7 +115,7 @@ export class DataQueriesService implements IDataQueriesService {
   ): Promise<void> {
     if (!appVersionId || !name) return;
 
-    await manager.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [`data_query_name:${appVersionId}`]);
+    await lockForValidation(manager, 'data_query_name', appVersionId);
 
     const where: any = { appVersionId, name };
     if (excludeQueryId) where.id = Not(excludeQueryId);
@@ -154,7 +150,7 @@ export class DataQueriesService implements IDataQueriesService {
   }
 
   async getAll(user: User, app: App, versionId: string, mode?: string) {
-    const queries = await this.dataQueryRepository.getAll(versionId);
+    const queries = await this.dataQueryRepository.getAll(versionId, mode);
     return { data_queries: serializeDataQueries(queries) };
   }
 
@@ -170,8 +166,14 @@ export class DataQueriesService implements IDataQueriesService {
     const context = await this.beforeQueryCreate(user, dataSource, dataQueryDto);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
-      this.assertValidQueryName(name);
       await this.assertUniqueQueryName(manager, appVersionId, name);
+
+      // After the advisory lock, so a parallel create of the same name cannot also pass.
+      await this.appValidationService.check(
+        'queries',
+        [{ op: 'create', id: 'new', data: { name, kind, dataSourceId: dataSource.id, options } } as QueryWrite],
+        { appVersionId, organizationId: user.organizationId, manager }
+      );
 
       const dataQuery = await this.dataQueryRepository.createOne(
         {
@@ -210,16 +212,33 @@ export class DataQueriesService implements IDataQueriesService {
     const context = await this.beforeQueryUpdate(user, versionId, dataQueryId, updateDataQueryDto);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      if (name !== undefined) {
-        this.assertValidQueryName(name);
-        const existing = await manager.findOne(DataQuery, {
-          where: { id: dataQueryId },
-          select: ['id', 'appVersionId', 'name'],
-        });
-        if (existing && existing.name !== name) {
-          await this.assertUniqueQueryName(manager, existing.appVersionId, name, dataQueryId);
-        }
+      // Scoped to the URL's version: the guards and the promoted-version check above ran
+      // against it, so a query of any other version (or app) must be unreachable here.
+      const existing = await manager.findOne(DataQuery, {
+        where: { id: dataQueryId, appVersionId: versionId },
+        select: ['id', 'appVersionId', 'name', 'dataSourceId'],
+      });
+      if (!existing) {
+        throw new NotFoundException('Data query not found');
       }
+      if (name !== undefined && existing.name !== name) {
+        await this.assertUniqueQueryName(manager, existing.appVersionId, name, dataQueryId);
+      }
+
+      const touched = Object.keys({ ...(name !== undefined && { name }), ...(options !== undefined && { options }) });
+      await this.appValidationService.check(
+        'queries',
+        [
+          {
+            op: 'update',
+            id: existing.id,
+            data: { name: name ?? existing.name, options, dataSourceId: existing.dataSourceId },
+            touched,
+          } as QueryWrite,
+        ],
+        { appVersionId: existing.appVersionId, organizationId: user.organizationId, manager }
+      );
+
       await this.dataQueryRepository.updateOne(
         dataQueryId,
         { name, options: this.normalizeQueryTransformationOptions(options) },
@@ -233,11 +252,27 @@ export class DataQueriesService implements IDataQueriesService {
     );
   }
 
-  async delete(dataQueryId: string) {
+  async delete(dataQueryId: string, versionId: string) {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeQueryDelete(dataQueryId);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
+      // Scoped to the URL's version, like update: the route's guards authorised that
+      // version, so a query of any other version (or app) is a 404, not a deletion.
+      const stored = await manager.findOne(DataQuery, {
+        where: { id: dataQueryId, appVersionId: versionId },
+        select: ['id', 'name', 'appVersionId'],
+      });
+      if (!stored) {
+        throw new NotFoundException('Data query not found');
+      }
+      // Reports handlers that still run this query; deleting is still allowed.
+      await this.appValidationService.check(
+        'queries',
+        [{ op: 'delete', id: stored.id, data: { name: stored.name } } as QueryWrite],
+        { appVersionId: stored.appVersionId, manager }
+      );
+
       await this.dataQueryRepository.deleteDataQueryEvents(dataQueryId, manager);
       await this.dataQueryRepository.deleteOne(dataQueryId);
     });
@@ -251,11 +286,35 @@ export class DataQueriesService implements IDataQueriesService {
 
   async bulkUpdateQueryOptions(user: User, dataQueriesOptions: IUpdatingReferencesOptions[]) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      for (const { id, options } of dataQueriesOptions) {
-        await this.dataQueryRepository.findOneOrFail({
-          where: { id, dataSource: { organizationId: user.organizationId } },
-          relations: ['dataSource'],
+      const stored: DataQuery[] = [];
+      for (const { id } of dataQueriesOptions) {
+        stored.push(
+          await this.dataQueryRepository.findOneOrFail({
+            where: { id, dataSource: { organizationId: user.organizationId } },
+            relations: ['dataSource'],
+          })
+        );
+      }
+
+      if (stored.length) {
+        const writes: QueryWrite[] = dataQueriesOptions.map(({ id, options }, position) => ({
+          op: 'update',
+          id,
+          data: {
+            name: stored[position].name,
+            dataSourceId: stored[position].dataSourceId,
+            options: options as Record<string, any>,
+          },
+          touched: ['options'],
+        }));
+        await this.appValidationService.check('queries', writes, {
+          appVersionId: stored[0].appVersionId,
+          organizationId: user.organizationId,
+          manager,
         });
+      }
+
+      for (const { id, options } of dataQueriesOptions) {
         await this.dataQueryRepository.updateOne(id, { options }, manager);
       }
       if (!dataQueriesOptions.length) {
@@ -293,18 +352,36 @@ export class DataQueriesService implements IDataQueriesService {
     // The released version (App.currentVersionId) is frozen too: a non-UI client (MCP/PAT) can hit
     // this endpoint directly, so skip the write-back when the query's version is the released one.
     // Only the authoring persist is gated — the query still executes below.
-    const isReleasedVersion = !!app?.currentVersionId && dataQuery.appVersion?.id === app.currentVersionId;
+    const isReleasedVersion = !!app?.currentVersionId && dataQuery.appVersionId === app.currentVersionId;
     if (
       mode !== 'view' &&
       !isReleasedVersion &&
       ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) &&
-      !isEmpty(options)
+      !isEmpty(options) &&
+      (await this.isGitSyncEditAllowed(user.organizationId, dataQuery.appVersion))
     ) {
       await this.dataQueryRepository.updateOne(dataQueryId, { options });
       dataQuery['options'] = options;
     }
 
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app);
+  }
+
+  // GitSyncQueryEditGuard's rule as a check: read-only versions still run, but don't persist options.
+  private async isGitSyncEditAllowed(organizationId: string, appVersion: AppVersion): Promise<boolean> {
+    if (!appVersion) return true;
+    try {
+      await assertGitSyncEditAllowedForOrg(
+        this.gitSyncConfigsUtilService,
+        organizationId,
+        { branchId: appVersion.branchId, status: appVersion.status, isSynced: appVersion.isSynced },
+        'query'
+      );
+      return true;
+    } catch (error) {
+      if (error instanceof ForbiddenException) return false;
+      throw error;
+    }
   }
 
   async runQueryForApp(
@@ -413,6 +490,27 @@ export class DataQueriesService implements IDataQueriesService {
       // if (dataSource.kind !== newDataSource.kind && dataSource) {
       //   throw new BadRequestException();
       // }
+
+      const stored = await manager.findOne(DataQuery, {
+        where: { id: queryId },
+        select: ['id', 'name', 'appVersionId'],
+      });
+      if (stored) {
+        // Kind mismatch only warns here: workflows legitimately move queries across kinds.
+        await this.appValidationService.check(
+          'queries',
+          [
+            {
+              op: 'update',
+              id: stored.id,
+              data: { name: stored.name, kind: dataSource?.kind, dataSourceId: newDataSourceId },
+              touched: ['dataSourceId'],
+            } as QueryWrite,
+          ],
+          { appVersionId: stored.appVersionId, organizationId: user.organizationId, manager }
+        );
+      }
+
       return this.dataQueryRepository.updateOne(queryId, { dataSourceId: newDataSource.id }, manager);
 
       // TODO: Audit logs

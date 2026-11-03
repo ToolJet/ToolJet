@@ -1,16 +1,16 @@
-// src/modules/instanceSettings/index.js
-import React from 'react';
-import withEditionSpecificModule from '@/modules/common/helpers/withEditionSpecificModule';
-import { MODULE_CONSTANTS } from '../common/constants';
+import React, { lazy } from 'react';
+import { Navigate } from 'react-router-dom';
+
+import { pickEditionSpecificComponent } from '@/modules/common/helpers/pickEditionSpecificComponent';
 import { TJLoader } from '@/_ui/TJLoader';
 
-const InstanceSettings = withEditionSpecificModule('InstanceSettings', {
-  moduleRequiredIn: [MODULE_CONSTANTS.MODULE_EDITIONS.EE, MODULE_CONSTANTS.MODULE_EDITIONS.CLOUD],
-  LoadingComponent: () => (
-    <>
-      <TJLoader />
-    </>
-  ),
+const eeInstanceSettings = lazy(() => import('@ee/modules/InstanceSettings'));
+
+const InstanceSettings = pickEditionSpecificComponent({
+  ce: () => <Navigate to="/" replace />,
+  ee: eeInstanceSettings,
+  cloudSameAsEE: true,
+  fallback: <TJLoader />,
 });
 
 export default InstanceSettings;

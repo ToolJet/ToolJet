@@ -1,6 +1,7 @@
 // ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
 // events.js
 //   selectEvent                      events               → events
+//   selectSearchableOption           -                    → events
 //   selectCSA                        csa                  → csa
 //   addSupportCSAData                -                    → csa
 //   selectSupportCSAData             -                    → csa
@@ -8,6 +9,7 @@
 //   addMultiEventsWithAlert          events               → events
 //   setCSAParam                      -                    → csa
 //   configureCSA                     csa                  → csa
+//   selectQueryForEvent              -                    → events
 // └──────────────────────────────────────────────────────────────────┘
 /**
  * MODULE — appBuilder/events: right-Inspector **Events tab** + Component-Specific
@@ -117,7 +119,12 @@ const selectListboxOption = (triggerSelector, label) => {
 // EXACT match (an inexact click can select a longer superset option).
 // The ComboboxInput nests more than one <input>, so typing is scoped to the first
 // visible one — `.find("input").type()` would throw "single element" here.
-const selectSearchableOption = (fieldSelector, label) => {
+/**
+ * @tjBlock  events
+ * @tjUsage  selectSearchableOption('[data-cy="query-selection-field"]', 'myquery')
+ * @tjDom    a searchable OptionCombobox: type to filter, click the exact match
+ */
+export const selectSearchableOption = (fieldSelector, label) => {
   cy.get(fieldSelector).scrollIntoView().click();
   cy.get(`${fieldSelector} input`)
     .filter(":visible")
@@ -225,6 +232,11 @@ export const changeEventType = (event, eventIndex = 0) => {
 };
 
 
+// Wire ONE trigger to Show Alert. Same isWait caveat as below.
+export const addEventWithAlert = (event, message, isWait = true) => {
+  addMultiEventsWithAlert([{ event, message }], isWait);
+};
+
 // Wire several triggers to Show Alert in one call: [{ event, message }, ...].
 // Leave isWait TRUE — see selectEvent; false drops the alert message and the handler
 // falls back to its default "Hello world!".
@@ -238,6 +250,7 @@ export const addMultiEventsWithAlert = (events, isWait = true) => {
   events.forEach((eventObj, index) => {
     selectEvent(eventObj.event, 'Show Alert', 0, '[data-cy="add-event-handler"]', index, isWait);
     addSupportCSAData("alert-message", eventObj.message);
+    cy.wait("@events");
   });
 };
 // ---------------------------------------------------------------------------
@@ -311,5 +324,31 @@ export const configureCSA = (component, action, params = []) => {
   selectCSA(component, action);
   params.forEach(setCSAParam);
   cy.forceClickOnCanvas();
+  cy.waitForAutoSave();
+};
+
+// Picks the query for a "Run query" event action ("Run query" is the exact label,
+// ActionTypes.js — lowercase q; a different list, useCallbackActions.js, spells it
+// "Run Query").
+//
+// Delegates to selectSearchableOption rather than hand-rolling: this control is an
+// @base-ui/react Combobox with a real text input, NOT the Radix Select that
+// `action-selection` uses, and its ComboboxInput nests more than one <input>, so a plain
+// .find("input").click() throws "can only be called on a single element".
+//
+// The trailing assertion is the control: selectSearchableOption clicks an option but
+// asserts nothing, so without it a mis-click leaves the event pointing at no query and
+// the test fails later, somewhere less obvious.
+/**
+ * @tjBlock  events
+ * @tjUsage  selectEvent('On click', 'Run query'); selectQueryForEvent('mysquery')
+ * @tjDom    query-selection-field input → portalled [data-slot="combobox-item"]
+ */
+export const selectQueryForEvent = (queryName) => {
+  selectSearchableOption('[data-cy="query-selection-field"]', queryName);
+  cy.get('[data-cy="query-selection-field"] input')
+    .filter(":visible")
+    .first()
+    .should("have.value", queryName);
   cy.waitForAutoSave();
 };

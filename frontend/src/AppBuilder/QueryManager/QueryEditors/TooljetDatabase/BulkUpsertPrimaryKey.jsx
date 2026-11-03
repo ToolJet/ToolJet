@@ -1,6 +1,5 @@
-import React, { useContext, useEffect } from 'react';
-import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
-import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
+import React, { useEffect } from 'react';
+import { useToolJetDbOperationsContext } from './ToolJetDbOperationsContext';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export const BulkUpsertPrimaryKey = () => {
@@ -9,18 +8,17 @@ export const BulkUpsertPrimaryKey = () => {
     bulkUpsertPrimaryKey,
     handleBulkUpsertRowsOptionChanged,
     handlePrimaryKeyOptionChangedForBulkUpsert,
-  } = useContext(TooljetDatabaseContext);
+  } = useToolJetDbOperationsContext();
 
   useEffect(() => {
-    const primaryKeys = columns.reduce((acc, column) => {
-      if (column?.keytype === 'PRIMARY KEY' || column?.isPrimaryKey) {
-        acc.push(column?.accessor);
-      }
-      return acc;
-    }, []);
+    const primaryKeyColumns = columns.filter((column) => column?.keytype === 'PRIMARY KEY' || column?.isPrimaryKey);
+    const primaryKeys = primaryKeyColumns.map((column) => column?.accessor);
 
     if (primaryKeys.length > 0) {
-      handlePrimaryKeyOptionChangedForBulkUpsert(primaryKeys);
+      handlePrimaryKeyOptionChangedForBulkUpsert(
+        primaryKeys,
+        primaryKeyColumns.map((column) => column?.column_id)
+      );
     }
   }, [columns]);
 

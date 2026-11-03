@@ -1,8 +1,9 @@
-import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import { pickEditionSpecificComponent } from '@/modules/common/helpers/pickEditionSpecificComponent';
+import EEAppPromoteReleasePermissionsUI from '@ee/modules/WorkspaceSettings/components/AppPromoteReleasePermissionsUI';
 
-const AppPromoteReleasePermissionsUI = () => {
-  return <></>;
-};
+const AppPromoteReleasePermissionsUI = pickEditionSpecificComponent({
+  ee: EEAppPromoteReleasePermissionsUI,
+  cloudSameAsEE: true,
+});
 
-export default withEditionSpecificComponent(AppPromoteReleasePermissionsUI, 'WorkspaceSettings');
+export default AppPromoteReleasePermissionsUI;

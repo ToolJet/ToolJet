@@ -1,0 +1,16 @@
+{
+  "name": "Photography studio management",
+  "description": "Manage photography projects from booking to shoot, approvals and gallery delivery.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "photography-studio-management",
+  "category": "local-services"
+}

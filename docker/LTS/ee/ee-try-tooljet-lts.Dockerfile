@@ -5,9 +5,9 @@ COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
 # Install Postgres
 USER root
-RUN apt-get update && apt-get install -y wget gnupg libicu72 libldap-2.5-0 libssl3
+RUN apt-get update && apt-get install -y wget gnupg libicu76 libldap2 libssl3
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql.gpg
-RUN echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
+RUN echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ trixie-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
 RUN apt update && apt -y install postgresql-16 postgresql-client-16 supervisor
 USER postgres
 RUN service postgresql start && \

@@ -23,7 +23,7 @@ export function useModalEventSideEffects({
       if (!showModal) return;
       for (let entry of entries) {
         // Update the height state when the element's height changes
-        onShowSideEffects();
+        onShowSideEffects(id);
 
         // When modal is in fullscreen and width of browser changes, update the modal width
         if (size === 'fullscreen') {
@@ -40,6 +40,7 @@ export function useModalEventSideEffects({
       // Cleanup observer on component unmount
       resizeObserver.disconnect();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal, size, onShowSideEffects]);
 
   useEffect(() => {

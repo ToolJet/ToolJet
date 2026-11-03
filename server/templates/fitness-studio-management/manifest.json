@@ -1,0 +1,17 @@
+{
+  "name": "Fitness studio management",
+  "description": "Schedule training sessions, track attendance and keep a record of every session for studio members.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "fitness-studio-management",
+  "category": "local-services"
+}

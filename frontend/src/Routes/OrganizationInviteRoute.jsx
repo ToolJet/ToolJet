@@ -216,6 +216,8 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
             setExpiredOrgSlug(orgSlug);
             setLinkExpired(true);
             setLoading(false);
+          } else if (errorObj?.error && errorObj.error.includes('reached the number of workspaces')) {
+            // Handled globally by the WorkspaceLimitModal in handle-response.js
           } else {
             toast.error('Error while setting up your account.', {
               position: 'top-center',

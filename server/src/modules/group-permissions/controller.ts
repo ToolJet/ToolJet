@@ -6,7 +6,7 @@ import { GroupExistenceGuard } from '@modules/group-permissions/guards/group-exi
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
-import { FEATURE_KEY, USER_ROLE } from './constants';
+import { FEATURE_KEY, roleGroupFor } from './constants';
 import { FeatureAbilityGuard } from './ability/guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { IGroupPermissionsControllerV2 } from './interfaces/IController';
@@ -55,11 +55,7 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
     @UserPermissionsDecorator() userPermissions: UserPermissions
   ): Promise<GetUsersResponse> {
     const { organizationId } = user;
-    user.roleGroup = userPermissions.isAdmin
-      ? USER_ROLE.ADMIN
-      : userPermissions.isEndUser
-        ? USER_ROLE.END_USER
-        : USER_ROLE.BUILDER;
+    user.roleGroup = roleGroupFor(userPermissions);
     return await this.groupPermissionsService.getAllGroup(organizationId, user);
   }
 
@@ -100,9 +96,11 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
   @Post(':id/users')
   async createGroupUsers(
     @User() user: UserEntity,
+    @UserPermissionsDecorator() userPermissions: UserPermissions,
     @Param('id') groupId: string,
     @Body() addGroupUserDto: AddGroupUserDto
   ) {
+    user.roleGroup = roleGroupFor(userPermissions);
     addGroupUserDto.groupId = groupId;
     await this.groupPermissionsService.addGroupUsers(addGroupUserDto, user);
     return;
@@ -123,7 +121,12 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
   @InitFeature(FEATURE_KEY.DELETE_GROUP_USER)
   @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
   @Delete('users/:id')
-  async deleteGroupUser(@User() user: UserEntity, @Param('id') id: string) {
+  async deleteGroupUser(
+    @User() user: UserEntity,
+    @UserPermissionsDecorator() userPermissions: UserPermissions,
+    @Param('id') id: string
+  ) {
+    user.roleGroup = roleGroupFor(userPermissions);
     await this.groupPermissionsService.deleteGroupUser(id, user);
   }
 

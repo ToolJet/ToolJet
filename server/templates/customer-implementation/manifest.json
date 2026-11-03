@@ -1,0 +1,21 @@
+{
+  "name": "Customer implementation",
+  "description": "Deliver customer implementation projects on time. Track milestones, scope, risks and launch readiness.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "customer-implementation",
+  "category": "projects-and-resourcing"
+}

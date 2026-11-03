@@ -8,7 +8,7 @@ describe('AppEnvironmentsController', () => {
     let app: INestApplication;
 
     beforeAll(async () => {
-      ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+      ({ app } = await initTestApp());
     });
 
     afterAll(async () => {

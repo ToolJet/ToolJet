@@ -31,11 +31,12 @@
   transform-origin: center center;
   display: inline-block;
   
-  &:hover {
+  &:hover,
+  &:focus-visible {
     transform: scale(1.2) !important; // 20px * 1.2 = 24px
     z-index: 10;
     position: relative;
-    
+
     .show-opacity-on-hover {
       opacity: 0.5 !important;
     }
@@ -44,8 +45,9 @@
   &[aria-disabled="true"] {
     cursor: not-allowed;
     opacity: 0.6;
-    
-    &:hover {
+
+    &:hover,
+    &:focus-visible {
       transform: none !important; // Prevent scaling when disabled
     }
   }

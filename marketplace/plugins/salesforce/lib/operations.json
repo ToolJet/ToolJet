@@ -42,6 +42,16 @@
         "type": "codehinter",
         "description": "Write SOQL Query",
         "height": "150px"
+      },
+      "next_records_url":{
+        "label": "Next records URL",
+        "key": "next_records_url",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Leave empty to run the query above. To fetch the next page, enter the nextRecordsUrl returned by the previous query",
+        "placeholder": "{{queries.query1.data.nextRecordsUrl}}",
+        "height": "36px",
+        "className": "codehinter-plugins"
       }
     },
     "crud":{
@@ -77,8 +87,7 @@
           "lineNumbers": false,
           "height": "36px",
           "className": "codehinter-plugins",
-          "placeholder": "Account",
-          "disabled": true
+          "placeholder": "Account"
         },
         "resource_body": {
           "label": "Resource Body",
@@ -98,8 +107,7 @@
           "lineNumbers": false,
           "height": "36px",
           "className": "codehinter-plugins",
-          "placeholder": "Account",
-          "disabled": true
+          "placeholder": "Account"
         },
         "resource_body": {
           "label": "Resource Body",
@@ -118,8 +126,7 @@
           "lineNumbers": false,
           "height": "36px",
           "className": "codehinter-plugins",
-          "placeholder": "Account",
-          "disabled": true
+          "placeholder": "Account"
         },
         "resource_id": {
           "label": "Resource ID",
@@ -140,8 +147,7 @@
           "lineNumbers": false,
           "height": "36px",
           "className": "codehinter-plugins",
-          "placeholder": "Account",
-          "disabled": true
+          "placeholder": "Account"
         },
         "resource_id": {
           "label": "Resource ID",

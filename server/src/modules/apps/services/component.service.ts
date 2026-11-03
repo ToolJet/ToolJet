@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { EntityManager, In, Not } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { Page } from 'src/entities/page.entity';
@@ -10,6 +10,9 @@ import { EventsService } from './event.service';
 import { LayoutData } from '../dto/component';
 import { CreateEventHandlerDto } from '../dto/event';
 import { APP_TYPES, LayoutDimensionUnits } from '../constants';
+import { AppValidationService } from '@modules/app-validation/service';
+import { lockForValidation } from '@modules/app-validation/lock';
+import { ComponentWrite, LayoutWrite } from '@modules/app-validation/types';
 import {
   IComponentsService,
   ComponentCreateContext,
@@ -28,7 +31,8 @@ export class ComponentsService implements IComponentsService {
   constructor(
     protected eventHandlerService: EventsService,
     private readonly abilityService: AbilityService,
-    private readonly appsRepository: AppsRepository
+    private readonly appsRepository: AppsRepository,
+    protected readonly appValidationService: AppValidationService
   ) {}
 
   findOne(id: string): Promise<Component> {
@@ -152,6 +156,11 @@ export class ComponentsService implements IComponentsService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      await this.appValidationService.check('layouts', this.layoutWritesFromDiff(componenstLayoutDiff), {
+        appVersionId,
+        manager,
+      });
+
       const parentWrites = this.collectParentWritesFromDiff(componenstLayoutDiff);
       if (Object.keys(parentWrites).length > 0) {
         await this.assertNoParentCycle(parentWrites, appVersionId, manager);
@@ -162,7 +171,7 @@ export class ComponentsService implements IComponentsService {
 
       for (const componentId in componenstLayoutDiff) {
         const doesComponentExist = await manager.findAndCount(Component, {
-          where: { id: componentId },
+          where: { id: componentId, page: { appVersionId } },
         });
 
         if (doesComponentExist[1] === 0) {
@@ -448,7 +457,12 @@ export class ComponentsService implements IComponentsService {
       // Handle layout operation if present
       if (batchOperations.layout) {
         const { diff } = batchOperations.layout;
-        await this.updateComponentLayouts(diff, manager);
+        // With `manager`, the lookup also sees components created earlier in this transaction.
+        await this.appValidationService.check('layouts', this.layoutWritesFromDiff(diff), {
+          appVersionId,
+          manager,
+        });
+        await this.updateComponentLayouts(diff, appVersionId, manager);
         results.layout = Object.keys(diff).length;
       }
 
@@ -561,58 +575,100 @@ export class ComponentsService implements IComponentsService {
     return writes;
   }
 
-  /**
-   * Component names must be a valid identifier and unique within a page. The editor enforces
-   * this on rename (validateComponentName + validateQueryName in the frontend), but direct
-   * API/MCP callers bypass those checks, and a duplicate or malformed name silently breaks
-   * {{components.<name>}} reference resolution. Only non-empty names are validated so nothing
-   * the editor itself allows is rejected. Existing components being re-saved (same id) are
-   * excluded from the uniqueness check.
-   */
-  protected async assertValidComponentNames(
-    newComponents: Component[],
-    pageId: string,
-    manager: EntityManager
-  ): Promise<void> {
-    const nameRegex = /^[A-Za-z0-9_-]*$/;
-    const seen = new Set<string>();
-
-    for (const component of newComponents) {
-      const name = component.name;
-      if (!name) continue;
-      if (!nameRegex.test(name)) {
-        throw new BadRequestException({
-          message: `Invalid component name "${name}". Component names can only contain letters, numbers, hyphens and underscores.`,
-          code: 'INVALID_COMPONENT_NAME',
-          componentId: component.id,
+  // One validation write per (component, layout type) in a layout diff. `touched` lists the
+  // fields the request sends, so the rules only judge what this save changes.
+  private layoutWritesFromDiff(
+    diff: Record<string, { layouts: LayoutData; component?: { parent?: string | null } }>
+  ): LayoutWrite[] {
+    const writes: LayoutWrite[] = [];
+    for (const componentId in diff) {
+      const layouts = diff[componentId]?.layouts ?? {};
+      for (const key in layouts) {
+        const layout = layouts[key] ?? {};
+        writes.push({
+          op: 'update',
+          id: componentId,
+          data: { componentId, type: layout.type ?? key, ...layout },
+          touched: Object.keys(layout),
         });
       }
-      if (seen.has(name)) {
-        throw new BadRequestException({
-          message: `Component name "${name}" is used more than once. Component names must be unique within a page.`,
-          code: 'DUPLICATE_COMPONENT_NAME',
-          componentId: component.id,
-        });
-      }
-      seen.add(name);
     }
+    return writes;
+  }
 
-    const names = [...seen];
-    if (names.length === 0) return;
+  // Validation writes for components this request creates, after module-parent resolution.
+  private createWritesFromComponents(components: Component[], pageId: string): ComponentWrite[] {
+    return components.map((c) => ({
+      op: 'create',
+      id: c.id,
+      data: {
+        name: c.name,
+        type: c.type,
+        pageId,
+        parent: c.parent ?? null,
+        properties: c.properties,
+        styles: c.styles,
+        general: c.general,
+        generalStyles: c.generalStyles,
+        validation: c.validation,
+        displayPreferences: c.displayPreferences,
+      },
+    }));
+  }
 
-    const newIds = new Set(newComponents.map((c) => c.id));
-    const existingWithSameName = await manager.find(Component, {
-      where: { pageId, name: In(names) },
-      select: ['id', 'name'],
+  // Validation writes for an update diff. `data` carries the request's values plus the stored
+  // type and page (partial MCP updates don't send them); `touched` lists what the request
+  // changes - `name` only when it differs from the stored row, since the editor's property
+  // saves send the whole component and must not re-trip the name rules (or the name lock).
+  // Definition sections arrive under the editor's names ('others'), stored under their
+  // column names.
+  private async updateWritesFromDiff(diff: Record<string, any>, manager: EntityManager): Promise<ComponentWrite[]> {
+    const ids = Object.keys(diff);
+    if (!ids.length) return [];
+    const storedRows = await manager.find(Component, {
+      where: { id: In(ids) },
+      select: ['id', 'name', 'type', 'pageId', 'properties'],
     });
-    const conflict = existingWithSameName.find((c) => !newIds.has(c.id));
-    if (conflict) {
-      throw new BadRequestException({
-        message: `Component name "${conflict.name}" already exists on this page.`,
-        code: 'DUPLICATE_COMPONENT_NAME',
-        componentId: conflict.id,
-      });
-    }
+    const storedById = new Map(storedRows.map((row) => [row.id, row]));
+
+    return ids.map((componentId) => {
+      const request = diff[componentId]?.component ?? {};
+      const stored = storedById.get(componentId);
+      const touched: string[] = [];
+      const data: Record<string, any> = {
+        name: stored?.name,
+        type: stored?.type,
+        pageId: stored?.pageId,
+      };
+
+      for (const field of ['name', 'type', 'parent'] as const) {
+        if (!(field in request)) continue;
+        data[field] = request[field];
+        if (field !== 'name' || request.name !== stored?.name) touched.push(field);
+      }
+
+      const definition = request.definition ?? {};
+      for (const section of Object.keys(definition)) {
+        const column = section === 'others' ? 'displayPreferences' : section;
+        data[column] = definition[section];
+        for (const key of Object.keys(definition[section] ?? {})) {
+          touched.push(`${section}.${key}`);
+        }
+      }
+
+      // The save's mergeWith keeps a stored `skipResolve` (render as-is, don't compile
+      // {{ }}) unless the request overwrites it - mirror that for the checked entries, or
+      // an update to a Custom Component's code would be judged as {{ }} code it is not.
+      const storedProperties = (stored?.properties ?? {}) as Record<string, any>;
+      for (const [key, entry] of Object.entries((data.properties ?? {}) as Record<string, any>)) {
+        const storedFlag = storedProperties[key]?.skipResolve;
+        if (_.isPlainObject(entry) && entry.skipResolve === undefined && storedFlag !== undefined) {
+          data.properties = { ...data.properties, [key]: { ...entry, skipResolve: storedFlag } };
+        }
+      }
+
+      return { op: 'update', id: componentId, data, touched } as ComponentWrite;
+    });
   }
 
   // Common methods used by both the original methods and batch operations
@@ -627,9 +683,6 @@ export class ComponentsService implements IComponentsService {
     });
 
     const newComponents = this.transformComponentData(diff);
-
-    // Component names must be a valid identifier and unique within the page.
-    await this.assertValidComponentNames(newComponents, pageId, manager);
 
     // For module apps, enforce that components are parented to the ModuleContainer
     // instead of being placed on the root canvas (parent: null).
@@ -657,6 +710,23 @@ export class ComponentsService implements IComponentsService {
         }
       }
     }
+
+    // Name lock before cycle lock - every component write path takes them in this order.
+    // The overlay adds the components this request creates, so siblings can reference each
+    // other as parents and in-batch duplicate names are caught.
+    await lockForValidation(manager, 'component_name', appVersionId);
+    await this.appValidationService.check('components', this.createWritesFromComponents(newComponents, pageId), {
+      appVersionId,
+      appType: moduleContainerId ? APP_TYPES.MODULE : undefined,
+      manager,
+      overlayComponents: newComponents.map((c) => ({
+        id: c.id,
+        name: c.name,
+        type: c.type,
+        parent: c.parent ?? null,
+        pageId,
+      })),
+    });
 
     // Validate the proposed graph BEFORE inserting. New components overlay the
     // existing tree so a cycle introduced by a buggy paste/import gets caught
@@ -733,90 +803,33 @@ export class ComponentsService implements IComponentsService {
     }
   }
 
-  /**
-   * Validate component renames coming through the update path. A rename sets a top-level
-   * `name` on the component (setComponentName in the editor sends { component: { name } }).
-   * The editor blocks invalid or duplicate names (validateComponentName + validateQueryName),
-   * but API/MCP callers reach updateComponents directly. components.name has no DB uniqueness
-   * or format constraint (only a non-unique lookup index), so a bad rename would persist and
-   * break {{components.<name>}} resolution. Validated as a pre-pass so no partial write happens.
-   * Only non-empty names are checked, so nothing the editor itself allows is rejected.
-   */
-  protected async assertValidComponentRenames(diff: object, manager: EntityManager): Promise<void> {
-    const nameRegex = /^[A-Za-z0-9_-]*$/;
-    const renames: { id: string; name: string }[] = [];
-    for (const componentId in diff) {
-      const component = diff[componentId]?.component;
-      // A rename carries a top-level `name`; property/definition edits and parent moves don't.
-      if (component && typeof component.name === 'string') {
-        renames.push({ id: componentId, name: component.name });
-      }
-    }
-    if (renames.length === 0) return;
-
-    // Format + within-batch duplicate check.
-    const seen = new Set<string>();
-    for (const { id, name } of renames) {
-      if (!name) continue;
-      if (!nameRegex.test(name)) {
-        throw new BadRequestException({
-          message: `Invalid component name "${name}". Component names can only contain letters, numbers, hyphens and underscores.`,
-          code: 'INVALID_COMPONENT_NAME',
-          componentId: id,
-        });
-      }
-      if (seen.has(name)) {
-        throw new BadRequestException({
-          message: `Component name "${name}" is used more than once. Component names must be unique within a page.`,
-          code: 'DUPLICATE_COMPONENT_NAME',
-          componentId: id,
-        });
-      }
-      seen.add(name);
-    }
-
-    // Per-page uniqueness vs components that are NOT part of this rename batch (so a rename
-    // that frees a name, or a swap of two names, still passes).
-    const renamedIds = renames.map((r) => r.id);
-    const renamedComponents = await manager.find(Component, {
-      where: { id: In(renamedIds) },
-      select: ['id', 'pageId'],
-    });
-    const pageIdById = new Map(renamedComponents.map((c) => [c.id, c.pageId]));
-
-    for (const { id, name } of renames) {
-      if (!name) continue;
-      const pageId = pageIdById.get(id);
-      if (!pageId) continue; // non-existent component; updateComponents reports that separately
-      const conflict = await manager.findOne(Component, {
-        where: { pageId, name, id: Not(In(renamedIds)) },
-        select: ['id'],
-      });
-      if (conflict) {
-        throw new BadRequestException({
-          message: `Component name "${name}" already exists on this page.`,
-          code: 'DUPLICATE_COMPONENT_NAME',
-          componentId: id,
-        });
-      }
-    }
-  }
-
   protected async updateComponents(diff: object, appVersionId: string, manager: EntityManager) {
-    await this.assertValidComponentRenames(diff, manager);
+    // For module apps, resolve ModuleContainer id once for the entire batch
+    const moduleContainerId = await this.resolveModuleContainerId(appVersionId, manager);
+
+    const writes = await this.updateWritesFromDiff(diff as Record<string, any>, manager);
+    // Name lock before cycle lock - same order as the create path. Only a real rename
+    // needs it: the editor's property saves send the whole component, and serialising
+    // every one of them would make two builders in one version wait on each other.
+    if (writes.some((write) => write.touched?.includes('name'))) {
+      await lockForValidation(manager, 'component_name', appVersionId);
+    }
+    await this.appValidationService.check('components', writes, {
+      appVersionId,
+      appType: moduleContainerId ? APP_TYPES.MODULE : undefined,
+      manager,
+    });
+
     const parentWrites = this.collectParentWritesFromDiff(diff as any);
     if (Object.keys(parentWrites).length > 0) {
       await this.assertNoParentCycle(parentWrites, appVersionId, manager);
     }
 
-    // For module apps, resolve ModuleContainer id once for the entire batch
-    const moduleContainerId = await this.resolveModuleContainerId(appVersionId, manager);
-
     for (const componentId in diff) {
       let { component } = diff[componentId];
 
       const doesComponentExist = await manager.findAndCount(Component, {
-        where: { id: componentId },
+        where: { id: componentId, page: { appVersionId } },
       });
 
       if (doesComponentExist[1] === 0) {
@@ -828,7 +841,7 @@ export class ComponentsService implements IComponentsService {
       }
 
       const componentData: Component = await manager.findOne(Component, {
-        where: { id: componentId },
+        where: { id: componentId, page: { appVersionId } },
       });
 
       const incomingProperties = component.definition?.properties;
@@ -955,8 +968,15 @@ export class ComponentsService implements IComponentsService {
     isComponentCut: boolean,
     manager: EntityManager
   ) {
+    await this.appValidationService.check(
+      'components',
+      componentIds.map((id): ComponentWrite => ({ op: 'delete', id })),
+      { appVersionId, manager }
+    );
+
     const components = await manager.findBy(Component, {
       id: In(componentIds),
+      page: { appVersionId },
     });
 
     if (!components.length) {
@@ -967,30 +987,19 @@ export class ComponentsService implements IComponentsService {
       };
     }
 
-    // The ModuleContainer is a module's root canvas — deleting it orphans every child
-    // component and leaves the module unrenderable (resolveModuleContainerId then returns
-    // null, so any ModuleViewer embedding it breaks). The editor never offers this action;
-    // reject it for direct API/MCP callers.
-    const moduleContainer = components.find((component) => component.type === 'ModuleContainer');
-    if (moduleContainer) {
-      throw new BadRequestException({
-        message: 'The module container cannot be deleted.',
-        code: 'MODULE_CONTAINER_DELETE_NOT_ALLOWED',
-        componentId: moduleContainer.id,
-      });
-    }
-
     if (!isComponentCut) {
       components.forEach((component) => {
         this.eventHandlerService.cascadeDeleteEvents(component.id);
       });
     }
 
-    await manager.delete(Component, { id: In(componentIds) });
+    // Delete only ids confirmed in scope above, not the raw caller-supplied list.
+    await manager.delete(Component, { id: In(components.map((c) => c.id)) });
   }
 
   protected async updateComponentLayouts(
     layoutDiff: Record<string, { layouts: LayoutData; component?: { parent: string } }>,
+    appVersionId: string,
     manager: EntityManager
   ) {
     const parentWrites = this.collectParentWritesFromDiff(layoutDiff);
@@ -1011,7 +1020,7 @@ export class ComponentsService implements IComponentsService {
 
     for (const componentId in layoutDiff) {
       const doesComponentExist = await manager.findAndCount(Component, {
-        where: { id: componentId },
+        where: { id: componentId, page: { appVersionId } },
       });
 
       if (doesComponentExist[1] === 0) {

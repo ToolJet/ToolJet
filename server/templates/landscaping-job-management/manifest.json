@@ -1,0 +1,17 @@
+{
+  "name": "Landscaping job management",
+  "description": "Plan landscaping jobs, coordinate crews and record site work and handovers for every property.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "landscaping-job-management",
+  "category": "field-services"
+}

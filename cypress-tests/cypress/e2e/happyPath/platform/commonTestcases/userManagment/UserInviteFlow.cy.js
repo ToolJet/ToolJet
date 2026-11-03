@@ -128,7 +128,6 @@ describe("user invite flow cases", () => {
     navigateToManageUsers();
     verifyManageUsersPageElements();
 
-    cy.get(commonSelectors.cancelButton).click();
     cy.get(usersSelector.usersPageTitle).should("be.visible");
 
     cy.get(usersSelector.buttonAddUsers, { timeout: 15000 }).click();

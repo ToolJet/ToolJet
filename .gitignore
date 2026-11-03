@@ -41,6 +41,9 @@ ti-*
 .claude/*
 !.claude/skills/
 .worktrees/
+.tj/
+.env.tj-hidden
+.agents/plans/
 
 
 .tj_env.*
@@ -52,3 +55,5 @@ docs/superpowers/
 contexts/
 server/test/AUDIT_LEDGER.md
 memory/
+server/scripts/tjdb-*
+frontend/assets/custom-components/vendor/

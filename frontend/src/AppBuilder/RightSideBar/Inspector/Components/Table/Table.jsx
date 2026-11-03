@@ -561,7 +561,7 @@ export const Table = (props) => {
                                       ],
                                     }}
                                   >
-                                    <div className="table-column-lists">
+                                    <div className="table-column-lists" data-list-item-id={item.id}>
                                       <List.Item
                                         isDraggable
                                         primaryText={resolvedItemName}

@@ -1,0 +1,16 @@
+{
+  "name": "RFP review desk",
+  "description": "Compare supplier proposals for each RFP, score them and record the sourcing decision.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "rfp-review-desk",
+  "category": "procurement-and-suppliers"
+}

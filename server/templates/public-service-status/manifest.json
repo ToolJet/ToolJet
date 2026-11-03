@@ -1,0 +1,16 @@
+{
+  "name": "Public service status",
+  "description": "A public-facing status page showing current service health, active incidents and upcoming maintenance, with an option to subscribe to updates.",
+  "widgets": [
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "public-service-status",
+  "category": "status-pages"
+}

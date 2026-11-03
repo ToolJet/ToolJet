@@ -154,7 +154,7 @@ Shared pieces:
 - `@/test/setupMsw` — opt-in MSW lifecycle for HTTP-layer suites.
 - `@/test/msw/server` — the MSW server; register durable handlers in `@/test/msw/handlers/`.
 - `@/test/app-builder` — App Builder Scenario contract, builders, deterministic controls, store/RTL session, and domain assertions.
-- `src/test/__tests__/infra.test.js` — self-test for all of the above; if it fails, fix the infrastructure before trusting any other suite.
+- `src/test/__tests__/infra.spec.js` — self-test for all of the above; if it fails, fix the infrastructure before trusting any other suite.
 
 ## What NOT to unit test
 
@@ -167,7 +167,8 @@ surfaces instead (see `AppCanvas/Grid/helpers/__tests__`).
 ## Coverage reporting
 
 `app-builder-coverage-manifest.json` assigns every eligible App Builder source
-file to one of the ten approved subsystems. Validate it with
+file to one of the ten approved subsystems. `src/AppBuilder/types/` is excluded: it
+may hold only type-only `.ts` files, which the validator enforces. Validate it with
 `npm run validate:app-builder-coverage-manifest`. `npm run
 test:app-builder:coverage` writes edition-separated output under
 `coverage/app-builder/<ce|ee>/jest`. During adoption CI publishes these numbers

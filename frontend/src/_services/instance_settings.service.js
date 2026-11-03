@@ -12,6 +12,7 @@ export const instanceSettingsService = {
   updateGeneralConfigs,
   updateSmtpEnvSetting,
   updateSmtpStatus,
+  updateOidcEnvConfig,
 };
 
 function fetchSettings(type = 'user') {
@@ -84,6 +85,17 @@ function updateSSOConfigs(settings) {
   };
   return fetch(`${config.apiUrl}/login-configs/instance-sso`, requestOptions).then(handleResponse);
 }
+
+function updateOidcEnvConfig(useEnvConfig) {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ useEnvConfig }),
+  };
+  return fetch(`${config.apiUrl}/login-configs/oidc/instance-env-configs`, requestOptions).then(handleResponse);
+}
+
 async function update(settings) {
   const body = { settings: [...settings] };
 

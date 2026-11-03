@@ -19,7 +19,7 @@ export interface IAppsController {
     user: UserEntity
   ): Promise<any>;
 
-  validateReleasedAppAccess(ability: AppAbility, app: AppEntity): any;
+  validateReleasedAppAccess(ability: AppAbility, app: AppEntity, user?: UserEntity): any;
 
   update(user: UserEntity, app: AppEntity, appUpdateDto: AppUpdateDto): Promise<any>;
 
@@ -41,9 +41,11 @@ export interface IAppsController {
 
   show(user: UserEntity, app: AppEntity, branchId?: string): Promise<any>;
 
-  appFromSlug(user: UserEntity, app: AppEntity): Promise<any>;
+  appFromSlug(user: UserEntity, app: AppEntity, res: Response): Promise<any>;
 
   releaseVersion(user: UserEntity, app: AppEntity, versionReleaseDto: VersionReleaseDto): Promise<any>;
 
   getAppAuthenticationConfig(slug: string): Promise<any>;
+
+  getRestrictedAccessInfo(slug: string, user: UserEntity): Promise<any>;
 }

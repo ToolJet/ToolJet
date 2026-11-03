@@ -1,0 +1,21 @@
+{
+  "name": "Event operations",
+  "description": "Coordinate events with a run-of-show, vendors and readiness checks, so every handoff happens in order.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "event-operations",
+  "category": "hospitality-and-events"
+}

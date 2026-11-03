@@ -5,6 +5,7 @@ import { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
+import { resolveQueryEditor } from '../utils';
 import DataSourcePicker from './DataSourcePicker';
 import { Transformation } from './Transformation';
 import Preview from './Preview';
@@ -22,6 +23,7 @@ import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { getSubpath } from '@/_helpers/routes';
+import { appendBranchName } from '@/_helpers/active-branch';
 import { SquarePen } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
@@ -53,17 +55,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     */
   const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
   const queryName = selectedQuery?.name ?? '';
-  const sourcecomponentName = selectedQuery?.kind?.charAt(0).toUpperCase() + selectedQuery?.kind?.slice(1);
 
-  // Dummy DS = stub options + maybe no plugin relation. Mounting editor crashes:
-  // built-ins read undefined options.X.value, unbundled kinds → allSources[Kind] = undefined.
-  // is_dummy warning below already tells user to pull.
-  const isDummyDataSource = selectedDataSource?.is_dummy === true;
-  const ElementToRender = isDummyDataSource
-    ? null
-    : selectedQuery?.plugin_id
-      ? source
-      : allSources[sourcecomponentName];
+  const editor = resolveQueryEditor({ selectedDataSource, selectedQuery });
+  const ElementToRender =
+    editor.type === 'none' ? null : editor.type === 'plugin' ? source : allSources[editor.componentName];
+
   const defaultOptions = useRef({});
 
   const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
@@ -249,9 +245,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
           <ElementToRender
             renderCopilot={(props) => renderCopilot?.({ ...props, selectedDataSource })}
             key={selectedQuery?.id}
-            pluginSchema={
-              selectedDataSource?.plugin?.operations_file?.data ?? selectedQuery?.plugin?.operations_file?.data
-            }
+            pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
             selectedDataSource={selectedDataSource}
             options={selectedQuery?.options}
             optionsChanged={optionsChanged}
@@ -298,6 +292,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     return (
       <div
         className={cx('d-flex', { 'disabled ': isFreezed })}
+        data-param="query_timeout"
         data-cy="query-timeout-section"
         style={{ marginBottom: '16px' }}
       >
@@ -318,7 +313,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
 
   const renderDisableQuery = () => {
     return (
-      <div className={cx('d-flex tw-mb-4', { 'disabled ': isFreezed })} data-cy="query-disable-section">
+      <div
+        className={cx('d-flex tw-mb-4', { 'disabled ': isFreezed })}
+        data-param="disableQuery"
+        data-cy="query-disable-section"
+      >
         <div className="form-label mt-2" data-cy="query-manager-disable-label">
           {t('editor.queryManager.disableQuery', 'Disable query')}
         </div>
@@ -338,7 +337,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   const renderDisabledMessage = () => {
     const hasDisableExpression = !!selectedQuery?.options?.disableQuery?.trim();
     return (
-      <div className={cx('d-flex tw-mb-4', { 'disabled ': isFreezed })} data-cy="query-disabled-message-section">
+      <div
+        className={cx('d-flex tw-mb-4', { 'disabled ': isFreezed })}
+        data-param="disabledMessage"
+        data-cy="query-disabled-message-section"
+      >
         <div className="form-label mt-2" data-cy="query-manager-disabled-message-label">
           {t('editor.queryManager.disabledMessageLabel', 'Disable message')}
         </div>
@@ -457,7 +460,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   };
 
   const handleEditDatasource = () => {
-    const url = `${getSubpath() ?? ''}/${getWorkspaceId()}/data-sources/${selectedDataSource.id}`;
+    const url = appendBranchName(`${getSubpath() ?? ''}/${getWorkspaceId()}/data-sources/${selectedDataSource.id}`);
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
@@ -652,7 +655,7 @@ const CustomToggleFlag = ({
   if (isHidden) return null;
 
   return (
-    <div className="query-manager-settings-toggles">
+    <div data-param={action} className="query-manager-settings-toggles">
       <div className={cx({ 'toggle-fx-row': fx && onFxToggle, 'fx-active': fxMode })}>
         <CustomToggleSwitch
           dataCy={dataCy}

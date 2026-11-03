@@ -1,0 +1,5 @@
+id,name,department,manager,location,brief,status,revision
+,Product designer,Product,Nina Brooks,London / hybrid,Own discovery and interaction design for the customer workspace.,Open,1
+,Customer success manager,Customer,Ethan Cole,New York / hybrid,Help customers launch and expand their internal applications.,Open,1
+,Platform engineer,Engineering,Priya Shah,Remote,Build reliable application infrastructure and developer workflows.,Open,1
+,Office coordinator,Operations,Sam Lee,London,Coordinate the workplace and suppliers.,Paused,1

@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { EntityManager, Not } from 'typeorm';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { EntityManager } from 'typeorm';
 import { Page } from '@entities/page.entity';
 import { ComponentsService } from './component.service';
 import { CreatePageDto, UpdatePageDto } from '../dto/page';
@@ -26,6 +26,9 @@ import {
 } from '../interfaces/services/IPageService';
 import { RequestContext } from '@modules/request-context/service';
 import { TransactionLogger } from '@modules/logging/service';
+import { AppValidationService } from '@modules/app-validation/service';
+import { lockForValidation } from '@modules/app-validation/lock';
+import { PageWrite } from '@modules/app-validation/types';
 
 @Injectable()
 export class PageService implements IPageService {
@@ -33,8 +36,26 @@ export class PageService implements IPageService {
     protected componentsService: ComponentsService,
     protected pageHelperService: PageHelperService,
     protected eventHandlerService: EventsService,
-    protected readonly transactionLogger: TransactionLogger
+    protected readonly transactionLogger: TransactionLogger,
+    protected readonly appValidationService: AppValidationService
   ) {}
+
+  protected toPageWrite(op: 'create' | 'update', page: Page): PageWrite {
+    return {
+      op,
+      id: page.id,
+      data: {
+        name: page.name,
+        handle: page.handle,
+        index: page.index,
+        hidden: page.hidden,
+        disabled: page.disabled,
+        isPageGroup: page.isPageGroup,
+        pageGroupId: page.pageGroupId,
+        type: page.type,
+      },
+    };
+  }
 
   /**
    * Hook called before page creation - override in EE to capture state for history
@@ -164,86 +185,18 @@ export class PageService implements IPageService {
     });
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Page invariants
-  //
-  // These mirror the rules the App Builder enforces client-side (see
-  // frontend/src/_helpers/utils.js validateKebabCase and
-  // frontend/src/AppBuilder/_stores/slices/pageMenuSlice.js). Enforcing them here
-  // means they also hold when pages are mutated outside the editor — via a
-  // Personal Access Token / MCP / the public API — which reach these same
-  // service methods directly. The bulk import path saves pages via the
-  // EntityManager and does not pass through these methods, so it is unaffected.
-  // ───────────────────────────────────────────────────────────────────────────
-
-  /** Handle format — mirror of validateKebabCase in frontend/src/_helpers/utils.js. */
-  protected assertValidPageHandle(handle: string): void {
-    if (handle === undefined || handle === null || handle === '') {
-      throw new BadRequestException('Page handle cannot be empty');
-    }
-    if (!/^[a-zA-Z0-9]/.test(handle)) {
-      throw new BadRequestException('Handle must start with a letter or number.');
-    }
-    if (/[^a-zA-Z0-9-]/.test(handle)) {
-      throw new BadRequestException('Handle can only contain letters, numbers, and hyphens.');
-    }
-    if (/--/.test(handle)) {
-      throw new BadRequestException('Handle cannot contain consecutive hyphens.');
-    }
-    if (handle.endsWith('-')) {
-      throw new BadRequestException('Handle cannot end with a hyphen.');
-    }
-    if (!/^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/.test(handle)) {
-      throw new BadRequestException('Handle does not match the kebab-case pattern.');
-    }
-  }
-
-  /** A page handle must be unique within the app version. */
-  protected async assertUniquePageHandle(
-    manager: EntityManager,
-    appVersionId: string,
-    handle: string,
-    excludePageId?: string
-  ): Promise<void> {
-    const existing = await manager.findOne(Page, {
-      where: { appVersionId, handle, ...(excludePageId ? { id: Not(excludePageId) } : {}) },
-      select: ['id'],
-    });
-    if (existing) {
-      throw new BadRequestException('Page with same handle already exists');
-    }
-  }
-
-  /** A page/group name must be unique within the app version (pages and groups scoped separately). */
-  protected async assertUniquePageName(
-    manager: EntityManager,
-    appVersionId: string,
-    name: string,
-    isPageGroup: boolean,
-    excludePageId?: string
-  ): Promise<void> {
-    const existing = await manager.findOne(Page, {
-      where: { appVersionId, name, isPageGroup, ...(excludePageId ? { id: Not(excludePageId) } : {}) },
-      select: ['id'],
-    });
-    if (existing) {
-      throw new BadRequestException(
-        isPageGroup ? 'Page group with same name already exists' : 'Page with same name already exists'
-      );
-    }
-  }
-
   async createPage(page: CreatePageDto, appVersionId: string, organizationId: string): Promise<Page> {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageCreate(page, appVersionId, organizationId);
 
     const result = await dbTransactionWrap(async (manager) => {
-      if (!page.isPageGroup) {
-        this.assertValidPageHandle(page.handle);
-        await this.assertUniquePageHandle(manager, appVersionId, page.handle);
-      }
-      await this.assertUniquePageName(manager, appVersionId, page.name, !!page.isPageGroup);
       const newPage = await this.pageHelperService.preparePageObject(page, appVersionId, organizationId);
+      await lockForValidation(manager, 'page_handle', appVersionId);
+      await this.appValidationService.check('pages', [this.toPageWrite('create', newPage)], {
+        appVersionId,
+        organizationId,
+        manager,
+      });
       return await manager.save(Page, newPage);
     });
 
@@ -267,7 +220,7 @@ export class PageService implements IPageService {
       });
 
       if (!pageToClone) {
-        throw new Error('Page not found');
+        throw new NotFoundException('Page not found');
       }
 
       let pageName = `${pageToClone.name} (copy)`;
@@ -300,6 +253,13 @@ export class PageService implements IPageService {
       newPage.hidden = pageToClone.hidden;
       newPage.pageHeader = pageToClone.pageHeader;
       newPage.pageFooter = pageToClone.pageFooter;
+
+      await lockForValidation(manager, 'page_handle', appVersionId);
+      await this.appValidationService.check('pages', [this.toPageWrite('create', newPage)], {
+        appVersionId,
+        organizationId,
+        manager,
+      });
 
       clonedPage = await manager.save(newPage);
 
@@ -392,11 +352,15 @@ export class PageService implements IPageService {
         pageComponents.map(async (component) => {
           const newComponentId = componentsIdMap[component.id];
 
+          // Git stores one file per co_relation_id — an inherited one makes the clone overwrite its source on push.
           const newComponent = manager.create(Component, {
             ...component,
             id: newComponentId,
             pageId: clonePageId,
             parent: null,
+            co_relation_id: undefined,
+            createdAt: undefined,
+            updatedAt: undefined,
           });
           Object.assign(newComponent, {
             name: component.name,
@@ -430,6 +394,8 @@ export class PageService implements IPageService {
               ...layout,
               id: undefined, // Let TypeORM generate a new ID
               componentId: newComponent.id,
+              co_relation_id: undefined,
+              updatedAt: undefined,
             })
           );
           newComponentLayouts.push(...clonedLayouts);
@@ -551,6 +517,14 @@ export class PageService implements IPageService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageReorder(diff, appVersionId, organizationId);
 
+    const reorderWrites: PageWrite[] = Object.entries(diff?.diff ?? {}).map(([pageId, change]: [string, any]) => ({
+      op: 'update',
+      id: pageId,
+      data: { index: change?.index, pageGroupId: change?.pageGroupId },
+      touched: Object.keys(change ?? {}),
+    }));
+    await this.appValidationService.check('pages', reorderWrites, { appVersionId, organizationId });
+
     const result = await this.pageHelperService.reorderPages(diff, appVersionId, organizationId);
 
     const operationTimestamp = Date.now();
@@ -570,45 +544,21 @@ export class PageService implements IPageService {
     const context = await this.beforePageUpdate(pageUpdates.pageId, pageUpdates.diff, appVersionId);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      // Scoped to the version being edited: another version's page id is a 404, not a hit.
       const currentPage = await manager.findOne(Page, {
-        where: { id: pageUpdates.pageId },
+        where: { id: pageUpdates.pageId, appVersionId },
       });
 
       if (!currentPage) {
-        throw new Error('Page not found');
+        throw new NotFoundException('Page not found');
       }
-
-      const diff = pageUpdates.diff || {};
-
-      if (Object.prototype.hasOwnProperty.call(diff, 'handle') && !currentPage.isPageGroup) {
-        this.assertValidPageHandle(diff.handle);
-        await this.assertUniquePageHandle(manager, appVersionId, diff.handle, currentPage.id);
-      }
-
-      if (Object.prototype.hasOwnProperty.call(diff, 'name')) {
-        await this.assertUniquePageName(manager, appVersionId, diff.name, currentPage.isPageGroup, currentPage.id);
-      }
-
-      // The home page cannot be hidden or disabled.
-      if (
-        Object.prototype.hasOwnProperty.call(diff, 'disabled') ||
-        Object.prototype.hasOwnProperty.call(diff, 'hidden')
-      ) {
-        const version = await manager.findOne(AppVersion, {
-          where: { id: appVersionId },
-          select: ['id', 'homePageId'],
-        });
-        if (version?.homePageId && version.homePageId === currentPage.id) {
-          if (diff.disabled === true) {
-            throw new BadRequestException('You cannot disable the home page');
-          }
-          const hiddenValue = diff.hidden && typeof diff.hidden === 'object' ? diff.hidden.value : diff.hidden;
-          if (hiddenValue === true) {
-            throw new BadRequestException('You cannot hide the home page');
-          }
-        }
-      }
-
+      const touched = Object.keys(pageUpdates.diff);
+      if (touched.includes('handle')) await lockForValidation(manager, 'page_handle', appVersionId);
+      await this.appValidationService.check(
+        'pages',
+        [{ ...this.toPageWrite('update', { ...currentPage, ...pageUpdates.diff } as Page), touched }],
+        { appVersionId, manager }
+      );
       return manager.update(Page, pageUpdates.pageId, pageUpdates.diff);
     });
 
@@ -631,40 +581,25 @@ export class PageService implements IPageService {
     const context = await this.beforePageDelete(pageId, appVersionId);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      // Scoped to the version being edited; a missing (or foreign) page id is a controlled
+      // 404 — a replayed delete must not surface as HTTP 500 (MCP report 2026-10-15, N1).
       const pageExists = await manager.findOne(Page, {
-        where: { id: pageId },
+        where: { id: pageId, appVersionId },
       });
 
       if (!pageExists) {
-        throw new Error('Page not found');
+        throw new NotFoundException('Page not found');
       }
 
-      // Block deleting the only remaining page in the app (checked before the home-page
-      // rule so a single-page app reports "only page", matching the editor).
-      if (!pageExists.isPageGroup) {
-        const remainingPages = await manager.count(Page, {
-          where: { appVersionId, isPageGroup: false, id: Not(pageId) },
-        });
-        if (remainingPages === 0) {
-          throw new BadRequestException('You cannot delete the only page in your app.');
-        }
-      }
+      await this.appValidationService.check('pages', [{ op: 'delete', id: pageId, data: { deleteAssociatedPages } }], {
+        appVersionId,
+        organizationId,
+        manager,
+      });
 
       if (editingVersion?.homePageId === pageId) {
         throw new BadRequestException('Cannot delete home page');
       }
-
-      // Block deleting a page group that still contains the home page.
-      if (pageExists.isPageGroup && deleteAssociatedPages && editingVersion?.homePageId) {
-        const homePageInGroup = await manager.findOne(Page, {
-          where: { id: editingVersion.homePageId, appVersionId, pageGroupId: pageId },
-          select: ['id'],
-        });
-        if (homePageInGroup) {
-          throw new BadRequestException('You cannot delete the page group as it contains the home page');
-        }
-      }
-
       if (pageExists.isPageGroup) {
         // Capture child page IDs before group deletion for history tracking
         if (deleteAssociatedPages && context) {
@@ -721,8 +656,14 @@ export class PageService implements IPageService {
     });
 
     if (!pageExists) {
-      throw new Error('Page not found');
+      throw new NotFoundException('Page not found');
     }
+
+    await this.appValidationService.check('pages', [{ op: 'delete', id: pageId, data: { deleteAssociatedPages } }], {
+      appVersionId: pageExists.appVersionId,
+      organizationId,
+      manager,
+    });
 
     // Handle page group deletion (EE feature - will be overridden in EE service)
     if (pageExists.isPageGroup) {

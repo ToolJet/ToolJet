@@ -1,0 +1,89 @@
+name: 🐜 Bug report
+description: Something in ToolJet isn't working as expected
+type: Bug
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search [existing issues](../issues?q=is%3Aissue) first. Remove tokens, passwords and customer data from anything you paste.
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What should happen?
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Current behaviour
+      description: What happens instead? Include the exact error message.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Create an app with a Table component
+        2. Bind it to a PostgreSQL query
+        3. Click Run
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: ToolJet version
+      placeholder: v3.20.10-lts
+    validations:
+      required: true
+  - type: dropdown
+    id: edition
+    attributes:
+      label: Edition
+      options:
+        - Community (CE)
+        - Enterprise (EE)
+        - ToolJet Cloud
+        - Not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment
+      options:
+        - ToolJet Cloud
+        - Docker
+        - Kubernetes / Helm
+        - AWS, Azure or GCP image
+        - Local development setup
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: role
+    attributes:
+      label: Your role in the workspace
+      options:
+        - Admin
+        - Builder
+        - End user
+        - Not sure
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots, logs or traces
+      description: Browser console errors, server logs, network responses, or a screen recording.
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: Browser, data source involved, when it started, a possible cause.
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I'd like to submit a pull request for this
