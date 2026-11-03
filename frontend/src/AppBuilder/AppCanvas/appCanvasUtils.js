@@ -398,7 +398,8 @@ const collectChildComponents = (allComponents, parentId, visited) => {
       allComponents[parentId]?.component?.component === 'Container' ||
       allComponents[parentId]?.component?.component === 'Accordion' ||
       allComponents[parentId]?.component?.component === 'Form' ||
-      allComponents[parentId]?.component?.component === 'ModalV2';
+      allComponents[parentId]?.component?.component === 'ModalV2' ||
+      allComponents[parentId]?.component?.component === 'Listview';
 
     if (componentParentId && isParentTabORCalendar) {
       let childComponent = deepClone(allComponents[componentId]);
