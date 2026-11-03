@@ -351,6 +351,24 @@ export class AppsService implements IAppsService {
     };
   }
 
+  /**
+   * App slug format — mirror of the editor's slug validation
+   * (validateName in frontend/src/AppBuilder/LeftSidebar/GlobalSettings/SlugInput.jsx):
+   * lowercase letters, numbers and hyphens only, non-empty, max 50 chars. A malformed slug
+   * breaks the app's URL. Uniqueness is enforced by the DB (app.slug unique constraint).
+   */
+  private assertValidAppSlug(slug: string): void {
+    if (!slug || slug.trim().length === 0) {
+      throw new BadRequestException("App slug can't be empty");
+    }
+    if (slug.length > 50) {
+      throw new BadRequestException('Maximum length has been reached.');
+    }
+    if (!/^[a-z0-9-]+$/.test(slug)) {
+      throw new BadRequestException('App slug can only contain lowercase letters, numbers and hyphens');
+    }
+  }
+
   async getRestrictedAccessInfo(slug: string, user: User): Promise<RestrictedAccessInfoDto> {
     // Scoped to the requesting user's organization so this never leaks app names across workspaces.
     // null lets the repository resolve the workspace's default branch itself.
@@ -447,6 +465,13 @@ export class AppsService implements IAppsService {
           throw new BadRequestException('Cannot rename app. Please create a draft version first to rename the app.');
         }
       }
+    }
+
+    // Slug format — validated only on an actual change so apps carrying a legacy
+    // (pre-URL-revamp) slug aren't blocked when editing other metadata. The editor
+    // enforces this client-side; PAT/MCP/API callers reach this update directly.
+    if (appUpdateDto.slug !== undefined && appUpdateDto.slug !== app.slug) {
+      this.assertValidAppSlug(appUpdateDto.slug);
     }
 
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);

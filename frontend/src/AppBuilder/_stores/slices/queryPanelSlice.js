@@ -542,7 +542,7 @@ export const createQueryPanelSlice = (set, get) => ({
             moduleId
           );
 
-          if (finalData.status === 'failed') {
+          if (finalData?.status === 'failed') {
             handleFailure(finalData);
             return finalData;
           }
@@ -1041,7 +1041,7 @@ export const createQueryPanelSlice = (set, get) => ({
                       'edit',
                       moduleId
                     );
-                    if (finalData.status === 'failed') {
+                    if (finalData?.status === 'failed') {
                       setPreviewLoading(false);
                       setIsPreviewQueryLoading(false);
                       if (!calledFromQuery) setPreviewData(finalData);
@@ -1078,7 +1078,7 @@ export const createQueryPanelSlice = (set, get) => ({
                     'edit',
                     moduleId
                   );
-                  if (finalData.status === 'failed') {
+                  if (finalData?.status === 'failed') {
                     setPreviewLoading(false);
                     setIsPreviewQueryLoading(false);
                     if (!calledFromQuery) setPreviewData(finalData);
@@ -1389,6 +1389,13 @@ export const createQueryPanelSlice = (set, get) => ({
       moduleId = 'canvas'
     ) => {
       const data = rawData;
+      // A transformation with no code is a no-op — pass the data through untouched. Without this,
+      // a malformed query (e.g. one created via the API/MCP with enableTransformation set but a
+      // null/empty transformation) builds `Function([...], null)`, whose body is the no-op string
+      // "null" that returns `undefined`; callers then read `result.status` and crash the app.
+      if (typeof transformation !== 'string' || transformation.trim() === '') {
+        return data;
+      }
       const {
         queryPanel: { runPythonTransformation },
         getResolvedState,

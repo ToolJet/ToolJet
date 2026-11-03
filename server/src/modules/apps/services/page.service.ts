@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { Page } from '@entities/page.entity';
 import { ComponentsService } from './component.service';
@@ -598,7 +598,7 @@ export class PageService implements IPageService {
       });
 
       if (editingVersion?.homePageId === pageId) {
-        throw new Error('Cannot delete home page');
+        throw new BadRequestException('Cannot delete home page');
       }
       if (pageExists.isPageGroup) {
         // Capture child page IDs before group deletion for history tracking
