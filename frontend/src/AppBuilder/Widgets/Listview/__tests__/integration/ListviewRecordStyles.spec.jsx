@@ -394,21 +394,24 @@ describe('Listview: dynamic height counts the record style', () => {
     expect(height).toBe(354);
   });
 
-  test('[Listview-ROW-006] grid uses gridRecordHeight, and rowHeight when it is missing', async () => {
-    // Break this catches: grid dynamic height sized from rowHeight, so a 150px grid record is cut off.
-    const withKey = await dynamicHeightFor({
-      properties: { mode: binding('grid'), gridRecordHeight: binding('150') },
-      styles: { listStyle: binding('container'), gap: binding('{{12}}') },
-    });
-    expect(withKey).toBe(150 + 28);
+  const GRID_CONTAINER = { listStyle: binding('container'), gap: binding('{{12}}') };
 
-    bareWidget.teardown();
-    bareWidget.setup();
-    const withoutKey = await dynamicHeightFor({
-      properties: { mode: binding('grid') },
-      styles: { listStyle: binding('container'), gap: binding('{{12}}') },
+  test('[Listview-ROW-006] grid uses gridRecordHeight', async () => {
+    // Break this catches: grid dynamic height sized from rowHeight, so a 150px grid record is cut off.
+    const height = await dynamicHeightFor({
+      properties: { mode: binding('grid'), gridRecordHeight: binding('150') },
+      styles: GRID_CONTAINER,
     });
-    expect(withoutKey).toBe(100 + 28);
+
+    // One line of three records: 150 + 28 chrome, no gap.
+    expect(height).toBe(178);
+  });
+
+  test('[Listview-ROW-006] grid without gridRecordHeight uses rowHeight', async () => {
+    // Break this catches: no fallback, so a saved grid without the key sizes to nothing.
+    const height = await dynamicHeightFor({ properties: { mode: binding('grid') }, styles: GRID_CONTAINER });
+
+    expect(height).toBe(128);
   });
 });
 

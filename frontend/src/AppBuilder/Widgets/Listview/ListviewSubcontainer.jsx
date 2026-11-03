@@ -14,7 +14,7 @@ export const ListviewSubcontainer = ({
   rowHeight,
   positiveColumns,
   showBorder,
-  recordGap = 0,
+  recordWidth,
   recordBoxStyle,
   onRecordOrRowClicked,
   computeCanvasBackgroundColor,
@@ -70,10 +70,7 @@ export const ListviewSubcontainer = ({
         style={{
           position: 'relative',
           height: `${transformedRowHeight}px`,
-          width:
-            recordGap > 0
-              ? `calc((100% - ${(positiveColumns - 1) * recordGap}px) / ${positiveColumns})`
-              : `${100 / positiveColumns}%`,
+          width: recordWidth ?? `${100 / positiveColumns}%`,
           padding: '0px',
           overflow: 'hidden',
           ...recordBoxStyle,

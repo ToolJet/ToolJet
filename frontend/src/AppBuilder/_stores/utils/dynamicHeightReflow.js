@@ -9,6 +9,13 @@ import {
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { isProperNumber } from '../utils';
 import { resolveFlexContainerHeight } from './dynamicHeightReflowFlexContainer';
+import {
+  LEGACY_PADDING,
+  NEW_STYLE_PADDING,
+  getListStyle,
+  getRecordHeight,
+  getRecordSpacing,
+} from '@/AppBuilder/Widgets/Listview/listStyleLayout';
 
 // Tabs tab-strip rendered height (49.5 ul + 0.5 border in Tabs.jsx).
 const TABS_TAB_BAR_HEIGHT = 50;
@@ -477,13 +484,15 @@ export const resolveListviewHeightFromRows = ({
     temporaryLayouts,
     context,
   });
+  const mode = componentProperties.mode ?? 'list';
   const baseRowHeight =
     templateRowHeight ||
-    componentProperties.rowHeight ||
+    getRecordHeight(mode, componentProperties.rowHeight, componentProperties.gridRecordHeight) ||
     getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ||
     0;
-  const mode = componentProperties.mode ?? 'list';
   const positiveColumns = Math.max(Number(componentProperties.columns) || 1, 1);
+  const listStyle = getListStyle(component?.styles?.listStyle);
+  const isLegacy = listStyle === 'legacy';
   const rowHeights = Array.from({ length: rowCount }, (_, rowIndex) => {
     const rowContext = [...(context || []), rowIndex];
     const rowLayout = temporaryLayouts?.[getDynamicLayoutKey(componentId, rowContext, '', moduleId)];
@@ -507,11 +516,14 @@ export const resolveListviewHeightFromRows = ({
   // Fixed allowances: per-row bottom border (list mode only), pagination bar,
   // outer chrome (7px padding × 2 = 14 + 1px outer border × 2 = 2 + 2 safety
   // for `.real-canvas` `calc(100% + 1px)` extension and rounding drift).
-  const borderAllowance = componentProperties.showBorder && mode === 'list' ? rowCount : 0;
+  const borderAllowance = isLegacy && componentProperties.showBorder && mode === 'list' ? rowCount : 0;
   const paginationAllowance = componentProperties.enablePagination ? 61 : 0;
-  const outerPaddingAllowance = 18;
+  const outerPaddingAllowance = 18 + (isLegacy ? 0 : 2 * (NEW_STYLE_PADDING - LEGACY_PADDING));
+  // New styles space record lines by the gap (and Bordered's line in it); Legacy has no gap.
+  const recordLines = mode === 'grid' ? Math.ceil(rowCount / positiveColumns) : rowCount;
+  const gapAllowance = Math.max(0, recordLines - 1) * getRecordSpacing(listStyle, component?.styles?.gap);
 
-  return stackedRowsHeight + borderAllowance + paginationAllowance + outerPaddingAllowance;
+  return stackedRowsHeight + borderAllowance + paginationAllowance + outerPaddingAllowance + gapAllowance;
 };
 
 // Compute a container widget's target height from its children. Called on the
@@ -551,7 +563,12 @@ export const resolveContainerHeight = ({
   // Listview row with no queryable DOM (e.g. mobile): size it from its children instead of guessing rowHeight; fall back to rowHeight only when there are no children.
   if (componentType === 'Listview' && context && !isScopedContextRenderable) {
     const component = getResolvedComponent(componentId, context);
-    const rowHeightFallback = component?.properties?.rowHeight ?? containerHeight;
+    const rowHeightFallback =
+      getRecordHeight(
+        component?.properties?.mode,
+        component?.properties?.rowHeight,
+        component?.properties?.gridRecordHeight
+      ) ?? containerHeight;
     const childrenBottom = getListviewTemplateHeight({
       componentId,
       currentLayout,

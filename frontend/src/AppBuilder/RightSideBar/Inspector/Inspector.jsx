@@ -152,6 +152,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'FlexContainer',
   'Pagination',
   'Timeline',
+  'Listview',
 ];
 
 export const Inspector = ({

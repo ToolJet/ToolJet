@@ -159,7 +159,8 @@ export function renderCustomStyles(
         const { key, value } = conditionallyRender;
         if (paramTypeDefinition?.[key] ?? value) {
           const resolvedValue = getResolvedValue(key);
-          if (resolvedValue?.value !== value) {
+          // A list of values shows the field for any of them.
+          if (Array.isArray(value) ? !value.includes(resolvedValue?.value) : resolvedValue?.value !== value) {
             return;
           }
         }
