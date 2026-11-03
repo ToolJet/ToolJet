@@ -8,44 +8,42 @@ on:
 
 env:
   PR_NUMBER: ${{ github.event.number }}
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+permissions:
+  contents: read
 
 jobs:
-  deploy-marketplace-plugin:
+  # 1. Build the PR's plugins. Runs PR code, so it gets NO secrets. Fork PRs are blocked.
+  build:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'deploy-marketplace-plugin' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
-      - name: Sync repo
-        uses: actions/checkout@v3
-
-      - name: Check if PR is from the same repo
-        id: check_repo
-        run: echo "::set-output name=is_fork::$(if [[ '${{ github.event.pull_request.head.repo.full_name }}' != '${{ github.event.pull_request.base.repo.full_name }}' ]]; then echo true; else echo false; fi)"
-
-      - name: Fetch the remote branch if it's a forked PR
-        if: steps.check_repo.outputs.is_fork == 'true'
+      # Runs before any PR code is checked out.
+      - name: Block pull requests from forks
+        env:
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
         run: |
-          git fetch origin pull/${{ github.event.number }}/head:${{ env.BRANCH_NAME }}
-          git checkout ${{ env.BRANCH_NAME }}
+          if [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "❌ Pull requests from forks cannot be deployed to stage ($HEAD_REPO)."
+            echo "A maintainer can open a PR from a branch in $GITHUB_REPOSITORY with the contributor's changes and label that one."
+            exit 1
+          fi
 
-      - name: Checkout
-        if: steps.check_repo.outputs.is_fork == 'false'
+      # The exact commit that was labelled
+      - name: Checkout PR code
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
           node-version: 22.23.4
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_MAR_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_MAR_ACCESS_KEY }}
-          aws-region: us-east-2
 
       - name: Install and build dependencies in order
         run: |
@@ -60,22 +58,106 @@ jobs:
           PLUGINS=$(ls plugins | grep -v '^common$')
           for plugin in $PLUGINS; do
             echo "🔨 Building plugin: $plugin"
-            npm run build --workspace=plugins/$plugin || exit 1
+            npm run build --workspace="plugins/$plugin" || exit 1
           done
 
-      - name: Build marketplace plugins and capture summary
+      - name: Package built plugins
+        working-directory: marketplace
+        run: tar -czf "$RUNNER_TEMP/plugins.tar.gz" --exclude=node_modules plugins
+
+      - name: Hand the built plugins to the deploy job
+        uses: actions/upload-artifact@v4
+        with:
+          name: marketplace-plugins-stage
+          path: ${{ runner.temp }}/plugins.tar.gz
+          retention-days: 1
+
+  # 2. Upload to the stage bucket with ToolJet's own upload script
+  deploy:
+    needs: build
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'deploy-marketplace-plugin' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout upload script (base branch)
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 22.23.4
+
+      - name: Download built plugins
+        uses: actions/download-artifact@v4
+        with:
+          name: marketplace-plugins-stage
+          path: ${{ runner.temp }}/artifact
+
+      - name: Check the built plugin files
         run: |
-          cd marketplace
+          python3 - "$RUNNER_TEMP/artifact/plugins.tar.gz" <<'PY'
+          import re, sys, tarfile
+          bad_chars = re.compile(r'[\x00-\x1f\x7f]')  # line breaks and other control characters
+          safe_plugin = re.compile(r'^[A-Za-z0-9_-]+$')
+          problems = []
+          with tarfile.open(sys.argv[1]) as archive:
+              for item in archive:
+                  name = item.name
+                  parts = name.split('/')
+                  if not (item.isfile() or item.isdir()):
+                      problems.append(f'{name!r}: not a normal file or folder (link or special file)')
+                  elif name.startswith('/') or '..' in parts or bad_chars.search(name):
+                      problems.append(f'{name!r}: unsafe name or path')
+                  elif parts[0] != 'plugins':
+                      problems.append(f'{name!r}: outside plugins/')
+                  elif len(parts) > 1 and not safe_plugin.match(parts[1]):
+                      problems.append(f'{name!r}: plugin folder name may only use letters, numbers, - and _')
+          if problems:
+              print('❌ The built plugin files failed the safety check:')
+              for p in problems[:50]:
+                  print('  -', p)
+              sys.exit(1)
+          print('✅ Built plugin files look safe.')
+          PY
+
+      - name: Unpack built plugins into a separate folder
+        run: |
+          STAGING="$RUNNER_TEMP/upload/marketplace"
+          rm -rf "$RUNNER_TEMP/upload"
+          mkdir -p "$STAGING"
+          tar -xzf "$RUNNER_TEMP/artifact/plugins.tar.gz" -C "$STAGING" --no-same-owner --no-same-permissions
+          echo "STAGING=$STAGING" >> "$GITHUB_ENV"
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_MAR_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_MAR_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Upload marketplace plugins and capture summary
+        run: |
           echo "🚀 Uploading to S3"
-          AWS_BUCKET=tooljet-plugins-stage bash scripts/upload-to-s3.sh | tee upload_summary.log
+          cd "$STAGING"
+          AWS_BUCKET=tooljet-plugins-stage bash "$GITHUB_WORKSPACE/marketplace/scripts/upload-to-s3.sh" | tee "$RUNNER_TEMP/upload_summary.log"
 
       - name: Extract upload summary
         id: upload_summary
         run: |
-          SUMMARY=$(awk '/UPLOAD SUMMARY/,0' marketplace/upload_summary.log)
-          echo "UPLOAD_SUMMARY<<EOF" >> $GITHUB_ENV
-          echo "$SUMMARY" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          SUMMARY=$(awk '/UPLOAD SUMMARY/,0' "$RUNNER_TEMP/upload_summary.log")
+          DELIM="EOF_$(openssl rand -hex 16)"
+          {
+            echo "UPLOAD_SUMMARY<<$DELIM"
+            echo "$SUMMARY"
+            echo "$DELIM"
+          } >> "$GITHUB_ENV"
 
       - name: Comment on success
         if: success()
@@ -118,8 +200,17 @@ jobs:
               labels: ['marketplace-plugin-deployed']
             })
 
+  # Build or upload failed: comment on the PR, as before
+  comment-on-failure:
+    needs: [build, deploy]
+    if: ${{ always() && contains(needs.*.result, 'failure') }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
       - name: Comment on failure
-        if: failure()
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

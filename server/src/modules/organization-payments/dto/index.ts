@@ -7,10 +7,6 @@ import { Stripe } from 'stripe';
 export class PortalDto {
   @IsString()
   @IsNotEmpty()
-  customerId: string;
-
-  @IsString()
-  @IsNotEmpty()
   returnUrl: string;
 }
 

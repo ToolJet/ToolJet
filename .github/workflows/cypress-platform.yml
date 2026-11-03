@@ -33,6 +33,21 @@ jobs:
       # image name contains the Docker Hub username. Shards pull by digest, not by tag.
       digest: ${{ steps.build.outputs.digest }}
     steps:
+      # Security: stop before anything else runs if this is a fork PR, or if the
+      # branch name has characters that could be used to inject shell commands.
+      - name: Check PR source and branch name
+        env:
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [ -n "$HEAD_REPO" ] && [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::Cypress runs are not allowed for pull requests from forks ($HEAD_REPO)."
+            exit 1
+          fi
+          if ! printf '%s' "$BRANCH_NAME" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+            echo "::error::Branch name may only contain letters, numbers, '.', '_', '/' and '-'."
+            exit 1
+          fi
+
       - name: Free up disk space
         run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
       - uses: actions/checkout@v7
@@ -94,6 +109,21 @@ jobs:
           - edition: ""
 
     steps:
+      # Security: stop before anything else runs if this is a fork PR, or if the
+      # branch name has characters that could be used to inject shell commands.
+      - name: Check PR source and branch name
+        env:
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [ -n "$HEAD_REPO" ] && [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::Cypress runs are not allowed for pull requests from forks ($HEAD_REPO)."
+            exit 1
+          fi
+          if ! printf '%s' "$BRANCH_NAME" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+            echo "::error::Branch name may only contain letters, numbers, '.', '_', '/' and '-'."
+            exit 1
+          fi
+
       - name: Debug labels and matrix edition
         run: |
           echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
@@ -138,7 +168,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set SAFE_BRANCH_NAME
-        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+        run: echo "SAFE_BRANCH_NAME=$(printf '%s' "$BRANCH_NAME" | tr '/' '-')" >> "$GITHUB_ENV"
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
@@ -172,7 +202,7 @@ jobs:
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
             --secret id=github_token,env=CUSTOM_GITHUB_TOKEN \
-            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            --build-arg BRANCH_NAME="$BRANCH_NAME" \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
             --load \
@@ -583,6 +613,21 @@ jobs:
           - edition: ""
 
     steps:
+      # Security: stop before anything else runs if this is a fork PR, or if the
+      # branch name has characters that could be used to inject shell commands.
+      - name: Check PR source and branch name
+        env:
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [ -n "$HEAD_REPO" ] && [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::Cypress runs are not allowed for pull requests from forks ($HEAD_REPO)."
+            exit 1
+          fi
+          if ! printf '%s' "$BRANCH_NAME" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+            echo "::error::Branch name may only contain letters, numbers, '.', '_', '/' and '-'."
+            exit 1
+          fi
+
       - name: Debug labels and matrix edition
         run: |
           echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
@@ -626,7 +671,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set SAFE_BRANCH_NAME
-        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+        run: echo "SAFE_BRANCH_NAME=$(printf '%s' "$BRANCH_NAME" | tr '/' '-')" >> "$GITHUB_ENV"
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
@@ -659,7 +704,7 @@ jobs:
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
             --secret id=github_token,env=CUSTOM_GITHUB_TOKEN \
-            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            --build-arg BRANCH_NAME="$BRANCH_NAME" \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
             --load \
@@ -1013,6 +1058,21 @@ jobs:
           - edition: ""
 
     steps:
+      # Security: stop before anything else runs if this is a fork PR, or if the
+      # branch name has characters that could be used to inject shell commands.
+      - name: Check PR source and branch name
+        env:
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [ -n "$HEAD_REPO" ] && [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::Cypress runs are not allowed for pull requests from forks ($HEAD_REPO)."
+            exit 1
+          fi
+          if ! printf '%s' "$BRANCH_NAME" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+            echo "::error::Branch name may only contain letters, numbers, '.', '_', '/' and '-'."
+            exit 1
+          fi
+
       - name: Debug labels and matrix edition
         run: |
           echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
@@ -1056,7 +1116,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set SAFE_BRANCH_NAME
-        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+        run: echo "SAFE_BRANCH_NAME=$(printf '%s' "$BRANCH_NAME" | tr '/' '-')" >> "$GITHUB_ENV"
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
@@ -1089,7 +1149,7 @@ jobs:
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
             --secret id=github_token,env=CUSTOM_GITHUB_TOKEN \
-            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            --build-arg BRANCH_NAME="$BRANCH_NAME" \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
             --load \
@@ -1456,6 +1516,21 @@ jobs:
           - edition: ""
 
     steps:
+      # Security: stop before anything else runs if this is a fork PR, or if the
+      # branch name has characters that could be used to inject shell commands.
+      - name: Check PR source and branch name
+        env:
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [ -n "$HEAD_REPO" ] && [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::Cypress runs are not allowed for pull requests from forks ($HEAD_REPO)."
+            exit 1
+          fi
+          if ! printf '%s' "$BRANCH_NAME" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+            echo "::error::Branch name may only contain letters, numbers, '.', '_', '/' and '-'."
+            exit 1
+          fi
+
       - name: Debug labels and matrix edition
         run: |
           echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
@@ -1499,7 +1574,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set SAFE_BRANCH_NAME
-        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+        run: echo "SAFE_BRANCH_NAME=$(printf '%s' "$BRANCH_NAME" | tr '/' '-')" >> "$GITHUB_ENV"
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
@@ -1532,7 +1607,7 @@ jobs:
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
             --secret id=github_token,env=CUSTOM_GITHUB_TOKEN \
-            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            --build-arg BRANCH_NAME="$BRANCH_NAME" \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
             --load \
