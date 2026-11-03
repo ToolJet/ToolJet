@@ -90,7 +90,8 @@ export function defineDataQueryAppAbility(
     return;
   }
 
-  if (isEndUser) {
+  // End Users run regular apps only via isAllViewable/viewableAppsId above; modules stay transitive.
+  if (isEndUser && isModule) {
     can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
     return;
   }

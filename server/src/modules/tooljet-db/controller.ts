@@ -47,8 +47,6 @@ import { TooljetDbDataOperationsService } from './services/tooljet-db-data-opera
 import { User } from '@modules/app/decorators/user.decorator';
 import { User as UserEntity } from '@entities/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { TooljetDbJoinDto } from '@modules/tooljet-db/dto/join.dto';
-import { TooljetDbJoinExceptionFilter } from '@modules/tooljet-db/filters/tooljetdb-join-exceptions-filter';
 import { Logger } from 'nestjs-pino';
 import { TooljetDbExceptionFilter } from '@modules/tooljet-db/filters/tooljetdb-exception-filter';
 import { PostgrestProxyService } from './services/postgrest-proxy.service';
@@ -221,21 +219,6 @@ export class TooljetDbController {
     }
     const result = await this.bulkUploadService.perform(organizationId, tableName, file?.buffer, environmentId);
 
-    return decamelizeKeys({ result });
-  }
-
-  @InitFeature(FEATURE_KEY.JOIN_TABLES)
-  @Post('/organizations/:organizationId/join')
-  @UseFilters(new TooljetDbJoinExceptionFilter())
-  @UseGuards(OrganizationAuthGuard, FeatureAbilityGuard)
-  async joinTables(@Req() req, @Body() tooljetDbJoinDto: TooljetDbJoinDto, @Param('organizationId') organizationId) {
-    const params = {
-      joinQueryJson: { ...tooljetDbJoinDto },
-      dataQuery: req.dataQuery,
-      user: req.user,
-    };
-
-    const result = await this.tableOperationsService.perform(organizationId, 'join_tables', params, undefined);
     return decamelizeKeys({ result });
   }
 

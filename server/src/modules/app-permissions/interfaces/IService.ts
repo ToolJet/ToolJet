@@ -1,9 +1,9 @@
 import { User } from '@entities/user.entity';
-import { CreatePermissionDto } from '../dto';
+import { AppPermissionUserResponseDto, CreatePermissionDto } from '../dto';
 import { PERMISSION_ENTITY_TYPE } from '../constants';
 
 export interface IAppPermissionsService {
-  fetchUsers(appId: string, user: User): Promise<any>;
+  fetchUsers(appId: string, user: User): Promise<AppPermissionUserResponseDto[]>;
 
   fetchUserGroups(appId: string, user: User): Promise<any>;
 

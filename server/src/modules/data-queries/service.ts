@@ -257,16 +257,19 @@ export class DataQueriesService implements IDataQueriesService {
     );
   }
 
-  async bulkUpdateQueryOptions(user: User, dataQueriesOptions: IUpdatingReferencesOptions[]) {
+  async bulkUpdateQueryOptions(user: User, versionId: string, dataQueriesOptions: IUpdatingReferencesOptions[]) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const stored: DataQuery[] = [];
       for (const { id } of dataQueriesOptions) {
-        stored.push(
-          await this.dataQueryRepository.findOneOrFail({
-            where: { id, dataSource: { organizationId: user.organizationId } },
-            relations: ['dataSource'],
-          })
-        );
+        // Scope to the authorized version; a query from any other app must be rejected (IDOR).
+        const query = await this.dataQueryRepository.findOne({
+          where: { id, appVersionId: versionId, dataSource: { organizationId: user.organizationId } },
+          relations: ['dataSource'],
+        });
+        if (!query) {
+          throw new ForbiddenException('You do not have permission to access this resource');
+        }
+        stored.push(query);
       }
 
       if (stored.length) {
