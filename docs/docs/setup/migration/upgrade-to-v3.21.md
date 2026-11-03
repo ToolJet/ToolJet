@@ -35,7 +35,7 @@ Refer to [GitHub configuration](../../development-lifecycle/gitsync/connect-to-g
 
 ### Mobile Auto Layout (High Severity)
 
-Introduced mobile auto layout in beta ([#17665](https://github.com/ToolJet/ToolJet/pull/17665), [v3.21.73-beta](https://github.com/ToolJet/ToolJet/releases/tag/v3.21.73-beta)).
+Mobile auto layout has been reworked and is in beta.
 
 | Previous LTS | ToolJet 3.21 |
 | :----------- | :----------- |
@@ -49,7 +49,7 @@ Your previous mobile arrangement isn't restored.
 
 ### RunJS `queries` Are Live and Read-Only (High Severity)
 
-Enabled direct access to query exposed values within RunJS for a better developer experience ([#16357](https://github.com/ToolJet/ToolJet/pull/16357), [v3.21.31-beta](https://github.com/ToolJet/ToolJet/releases/tag/v3.21.31-beta)).
+RunJS now gives you direct access to the values that queries expose.
 
 | Previous LTS | ToolJet 3.21 |
 | :----------- | :----------- |
@@ -68,7 +68,7 @@ Enabled direct access to query exposed values within RunJS for a better develope
 
 ### Modal `open()` Waits for the Modal (Low Severity)
 
-The modal's `open()` now resolves after its children have mounted ([#18083](https://github.com/ToolJet/ToolJet/pull/18083), [v3.21.76-beta](https://github.com/ToolJet/ToolJet/releases/tag/v3.21.76-beta)).
+The modal's `open()` now resolves after its children have mounted.
 
 | Previous LTS | ToolJet 3.21 |
 | :----------- | :----------- |
