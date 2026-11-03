@@ -343,6 +343,11 @@ jobs:
           submodules: recursive
           token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
           persist-credentials: false
+      - name: Trust the checked-out repository in the test container
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE/server/ee"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE/frontend/ee"
       - run: apt-get update && apt-get install -y postgresql-client libxml2 libaio1
       - run: npm --prefix plugins ci
       - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
