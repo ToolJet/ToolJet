@@ -80,6 +80,9 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   their `tj:qc:*` cache keys first; mixed ledger implementations are not compatible. Do not flush shared Redis.
 
 - Transformation code (`transformation` and `transformations`) is excluded from cache identity because it runs in the browser.
+- Create and update reject a `ttlSeconds` above 1 day. Import (`normalizeImportedQueryOptions`, also used by git pull) and the
+  editor Run (which saves the options it is sent) cap it at 1 day instead, so a value from another instance never leaves a
+  query that fails validation on every later save.
 - Cache refusal logs include workspace/query identifiers and the token/reserve/confirm stage, without inputs or response data.
 - Telemetry (`ENABLE_OTEL=true`, `src/otel/query-cache-metrics.ts`): `tooljet.query_cache.writes{write_result}` counts each
   logged write outcome; `tooljet.query_cache.bytes_stored{organization.id}` adds the charge CONFIRM returns. The
