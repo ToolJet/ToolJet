@@ -4,7 +4,8 @@ import { useNewEventAutoPopoverOpen } from './hooks/useNewEventAutoPopoverOpen';
 import { AlertTriangle, ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
 import { ToolTip } from '@/_components';
 import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
-import { ActionTypes, getEventActionId, getEventActionChanges } from './ActionTypes';
+import { ActionTypes, getAvailableActionTypes, getDisplayedActionId, getEventActionChanges } from './ActionTypes';
+import { canRefreshQueryCache } from '@/AppBuilder/_utils/queryResponseCache';
 import {
   mergeStaticAndDynamicActions,
   resolveLibraryComponentActions,
@@ -144,7 +145,13 @@ export const EventManager = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentEvents), moduleId]);
 
-  let groupedOptions = ActionTypes.reduce((acc, action) => {
+  // Refresh Query Cache is offered only while a query of this module has caching on, with the license.
+  const refreshAvailable = useStore((state) =>
+    (state.dataQuery.queries.modules?.[moduleId] ?? []).some((query) => canRefreshQueryCache(state, query))
+  );
+  const actionIdOf = (event) => getDisplayedActionId(event, refreshAvailable);
+
+  let groupedOptions = getAvailableActionTypes(refreshAvailable).reduce((acc, action) => {
     const groupName = action.group;
 
     if (!acc[groupName]) {
@@ -622,7 +629,7 @@ export const EventManager = ({
               <FieldRow label={t('editor.inspector.eventManager.action', 'Action')} dataCy="action-label">
                 <div data-cy="action-selection">
                   <RocketSelect
-                    value={getEventActionId(event)}
+                    value={actionIdOf(event)}
                     onValueChange={(value) => {
                       dismissEventPopoverAutoOpen();
                       handlerChanged(index, getEventActionChanges(value));
@@ -1199,7 +1206,7 @@ export const EventManager = ({
             {({ innerRef, droppableProps, placeholder }) => (
               <div {...droppableProps} ref={innerRef}>
                 {events.map((event, index) => {
-                  const actionMeta = ActionTypes.find((action) => action.id === getEventActionId(event.event));
+                  const actionMeta = ActionTypes.find((action) => action.id === actionIdOf(event.event));
                   const goToAppValidation =
                     event.event.actionId === 'go-to-app'
                       ? isLinkedAppValid(event.event.correlationId, linkedAppsMap)

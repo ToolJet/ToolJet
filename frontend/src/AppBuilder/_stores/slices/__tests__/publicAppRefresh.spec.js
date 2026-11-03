@@ -21,10 +21,13 @@ describe('query cache refresh in a public app', () => {
                 return { status: 'ok', data: { cacheControl: body.cacheControl ?? null } };
               },
             },
+            // Refresh needs the response cache license; it reaches the store only through this endpoint.
+            { url: '*/license/access', json: () => ({ queryResponseCache: true }) },
           ],
         },
       },
     });
+    await session.store.act('updateFeatureAccess');
     seedApp({});
     const query = {
       id: 'q-cache',

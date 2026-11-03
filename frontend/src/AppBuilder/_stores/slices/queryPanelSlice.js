@@ -12,6 +12,7 @@ import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAb
 import { ABORT_UNSUPPORTED_KINDS, defaultSources, TJ_QUERY_ERROR_TYPE } from '@/AppBuilder/QueryManager/constants';
 import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { canRefreshQueryCache } from '@/AppBuilder/_utils/queryResponseCache';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
@@ -692,8 +693,10 @@ export const createQueryPanelSlice = (set, get) => ({
 
         // Refresh clears every user's cached responses, so a public app's viewers get a normal run.
         // The server enforces the same rule.
+        // Without caching on the query or the license, refresh is a plain run: no cache instruction is sent.
         const refreshCache =
           runOptions?.refreshCache === true &&
+          canRefreshQueryCache(get(), query) &&
           !(appStore.modules.canvas.app?.isPublic && modeStore.modules.canvas.currentMode === 'view');
 
         let queryExecutionPromise = null;
@@ -1331,10 +1334,6 @@ export const createQueryPanelSlice = (set, get) => ({
                 const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
                 return actions.runQuery(query.name, undefined, moduleId);
               },
-              refresh: () => {
-                const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
-                return actions.runQuery(query.name, undefined, moduleId, undefined, { refreshCache: true });
-              },
               reset: () => {
                 const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
                 return actions.resetQuery(query.name);
@@ -1358,6 +1357,11 @@ export const createQueryPanelSlice = (set, get) => ({
                 return resolvedState.queries[key].isLoading;
               },
             };
+            const cachedQuery = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+            if (canRefreshQueryCache(get(), cachedQuery)) {
+              queriesInCurentState[key].refresh = () =>
+                actions.runQuery(key, undefined, moduleId, undefined, { refreshCache: true });
+            }
           }
 
           await pyodide.globals.set('actions', actions);
@@ -1744,8 +1748,6 @@ export const createQueryPanelSlice = (set, get) => ({
         };
         const queryEntry = {
           run: (params, callbackFns) => runWithParams(params, callbackFns),
-          // Same as run(), but first drops every cached response of the query, then caches this run's result.
-          refresh: (params, callbackFns) => runWithParams(params, callbackFns, { refreshCache: true }),
           reset: () => {
             const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
             return actions.resetQuery(query.name);
@@ -1761,6 +1763,15 @@ export const createQueryPanelSlice = (set, get) => ({
         // Live getters for all state properties so that after
         // `await queries.x.run()` any field (data, error, request, response,
         // metadata, responseHeaders, …) reflects the completed run.
+        // Same as run(), but first drops every cached response of the query, then caches this run's result.
+        if (
+          canRefreshQueryCache(
+            get(),
+            dataQuery.queries.modules?.[moduleId]?.find((q) => q.name === key)
+          )
+        ) {
+          queryEntry.refresh = (params, callbackFns) => runWithParams(params, callbackFns, { refreshCache: true });
+        }
         const reservedMethods = new Set(['run', 'refresh', 'reset', 'getData', 'getRawData', 'getloadingState']);
         const liveDescriptors = {};
         for (const prop of Object.keys(resolvedState.queries[key])) {

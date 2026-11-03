@@ -1,5 +1,6 @@
 import { createJavaScriptSuggestions } from '@/AppBuilder/CodeEditor/utils';
 import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
+import { canRefreshQueryCache } from '@/AppBuilder/_utils/queryResponseCache';
 import { ROW_SCOPED_WIDGET_TYPES, ROW_SCOPED_RESOLVABLE_KEY_MAP } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 /**
@@ -100,7 +101,8 @@ function buildQueryHints(storeState, moduleId) {
     const queryData = exposedQueries[id];
     hints.push({ hint: `queries.${name}`, type: 'Object' });
     hints.push({ hint: `queries.${name}.run()`, type: 'Function' });
-    hints.push({ hint: `queries.${name}.refresh()`, type: 'Function' });
+    const query = storeState.dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === id);
+    if (canRefreshQueryCache(storeState, query)) hints.push({ hint: `queries.${name}.refresh()`, type: 'Function' });
     hints.push({ hint: `queries.${name}.reset()`, type: 'Function' });
     hints.push({ hint: `queries.${name}.getData()`, type: 'Function' });
     hints.push({ hint: `queries.${name}.getRawData()`, type: 'Function' });

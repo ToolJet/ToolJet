@@ -1,4 +1,11 @@
-import { ActionTypes, getEventActionId, getEventActionChanges, normalizeEventAction } from '../ActionTypes';
+import {
+  ActionTypes,
+  getAvailableActionTypes,
+  getDisplayedActionId,
+  getEventActionId,
+  getEventActionChanges,
+  normalizeEventAction,
+} from '../ActionTypes';
 
 describe('Refresh Query Cache event selection', () => {
   it('offers refresh alongside Run query', () => {
@@ -44,5 +51,25 @@ describe('Refresh Query Cache event selection', () => {
     expect(normalizeEventAction(run)).toBe(run);
     expect(normalizeEventAction(alert)).toBe(alert);
     expect(normalizeEventAction(undefined)).toBeUndefined();
+  });
+});
+
+describe('Refresh Query Cache availability', () => {
+  const ids = (actions) => actions.map((action) => action.id);
+
+  // Break this catches: offering Refresh Query Cache without the license or a query with caching on.
+  it('leaves the action out when refresh is unavailable', () => {
+    expect(ids(getAvailableActionTypes(false))).not.toContain('refresh-query-cache');
+    expect(ids(getAvailableActionTypes(false))).toContain('run-query');
+    expect(ids(getAvailableActionTypes(true))).toContain('refresh-query-cache');
+  });
+
+  // Break this catches: a saved refresh event showing a blank action once refresh is unavailable.
+  it('shows a saved refresh event as Run query when refresh is unavailable', () => {
+    for (const event of [{ actionId: 'run-query', refreshCache: true }, { actionId: 'refresh-query-cache' }]) {
+      expect(getDisplayedActionId(event, false)).toBe('run-query');
+      expect(getDisplayedActionId(event, true)).toBe('refresh-query-cache');
+    }
+    expect(getDisplayedActionId({ actionId: 'show-alert' }, false)).toBe('show-alert');
   });
 });
