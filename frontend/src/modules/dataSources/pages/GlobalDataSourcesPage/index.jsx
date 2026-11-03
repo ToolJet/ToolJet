@@ -62,8 +62,11 @@ export const GlobalDataSourcesPage = (props) => {
   const [selectedDataSourceIds, setSelectedDataSourceIds] = useState([]);
 
   const activeBranchId = useWorkspaceBranchesStore((state) => state.activeBranchId);
+  const lastDatasourcePushAt = useWorkspaceBranchesStore((state) => state.lastDatasourcePushAt);
   const setHasUnsyncedDatasources = useWorkspaceBranchesStore((state) => state.actions.setHasUnsyncedDatasources);
+  const setHasUncommittedDatasources = useWorkspaceBranchesStore((state) => state.actions.setHasUncommittedDatasources);
   const prevBranchIdRef = useRef(activeBranchId);
+  const prevDatasourcePushAtRef = useRef(lastDatasourcePushAt);
 
   // Multi-branch git sync: the server refuses to rename a folder that spans branches.
   const isBranchingEnabled = useWorkspaceBranchesStore((state) => {
@@ -88,6 +91,14 @@ export const GlobalDataSourcesPage = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeBranchId, environments]);
+
+  useEffect(() => {
+    if (lastDatasourcePushAt && prevDatasourcePushAtRef.current !== lastDatasourcePushAt) {
+      prevDatasourcePushAtRef.current = lastDatasourcePushAt;
+      fetchDataSources(false, selectedDataSource);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastDatasourcePushAt]);
 
   // Refetch datasources once a workspace pull actually completes. `pullWorkspace()` only
   // enqueues a background job and returns immediately — the pulled data isn't in the DB yet at
@@ -347,6 +358,9 @@ export const GlobalDataSourcesPage = (props) => {
           });
         setDataSources([...(orderedDataSources ?? [])]);
         setHasUnsyncedDatasources(orderedDataSources.some((ds) => ds?.is_synced === false || ds?.isSynced === false));
+        setHasUncommittedDatasources(
+          orderedDataSources.some((ds) => ds?.has_uncommitted_changes === true || ds?.hasUncommittedChanges === true)
+        );
         const ds = dataSource && orderedDataSources.find((ds) => ds.id === dataSource.id);
         if (!resetSelection && ds) {
           setEditing(true);

@@ -758,7 +758,9 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       // schema there, so say which tables and how far behind.
       response.tableWarnings?.forEach(({ tableName, missingCount }) =>
         toast(
-          `ToolJet Database table "${tableName}" is ${missingCount} migration${missingCount === 1 ? '' : 's'} behind in ${
+          `ToolJet Database table "${tableName}" is ${missingCount} migration${
+            missingCount === 1 ? '' : 's'
+          } behind in ${
             response.editorEnvironment?.name
           }. Run the pending migrations from the table's migration history.`,
           { icon: '⚠️', duration: 8000 }

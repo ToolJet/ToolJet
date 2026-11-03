@@ -1,7 +1,7 @@
 import { InitModule } from '@modules/app/decorators/init-module';
 import { DataSourcesService } from './service';
 import { MODULES } from '@modules/app/constants/modules';
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FeatureAbilityGuard } from './ability/guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
@@ -25,6 +25,8 @@ import { ValidateAppVersionGuard } from '@modules/versions/guards/validate-app-v
 import { IDataSourcesController } from './interfaces/IController';
 import { ValidateDataSourceGuard } from './guards/validate-query-source.guard';
 import { GitSyncDataSourceCreateGuard, GitSyncDataSourceEditGuard } from './guards/git-sync-datasource.guard';
+import { GitDirtyFlagInterceptor } from '@modules/git-sync-configs/interceptors/git-dirty-flag.interceptor';
+import { MarksDataSourceDirty } from '@modules/git-sync-configs/decorators/marks-git-dirty.decorator';
 import { WhitelistPluginGuard } from './guards/whitelist-plugin.guard';
 import { UserPermissionsDecorator } from '@modules/app/decorators/user-permission.decorator';
 import { UserPermissions } from '@modules/ability/types';
@@ -84,6 +86,8 @@ export class DataSourcesController implements IDataSourcesController {
 
   @InitFeature(FEATURE_KEY.UPDATE)
   @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard, GitSyncDataSourceEditGuard)
+  @UseInterceptors(GitDirtyFlagInterceptor)
+  @MarksDataSourceDirty()
   @Put(':id')
   async update(
     @User() user,
@@ -98,6 +102,8 @@ export class DataSourcesController implements IDataSourcesController {
 
   @InitFeature(FEATURE_KEY.DELETE)
   @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard, GitSyncDataSourceEditGuard)
+  @UseInterceptors(GitDirtyFlagInterceptor)
+  @MarksDataSourceDirty()
   @Delete(':id')
   async delete(@User() user: UserEntity, @Param('id') dataSourceId, @Query('branch_id') branchId?: string) {
     await this.dataSourcesService.delete(dataSourceId, user, branchId);
