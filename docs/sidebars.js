@@ -589,7 +589,8 @@ const sidebars = {
                       "label": "Range Slider",
                       "href": "https://docs.tooljet.com/docs/2.50.0-LTS/widgets/range-slider"
                     },
-                    "widgets/button-group"
+                    "widgets/button-group",
+                    "widgets/toggle-switch-legacy"
                   ]
                 }
               ]

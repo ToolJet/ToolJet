@@ -11,11 +11,16 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"170px"}}> Description </div> | <div style={{width: "200px"}}> RunJS Query </div>|
 | :------------ | :---------- | :------------ |
-| submitForm | Submits the form data. | `components.form1.submitForm()` |
-| resetForm | Resets the form data. | `components.form1.resetForm()` |
+| submitForm() | Submits the form. If **Validate on submit** is enabled and a field is invalid, triggers **On invalid** and shows validation errors; otherwise triggers **On submit** and, if **Reset on submit** is enabled, resets the form afterwards. | `components.form1.submitForm()` |
+| resetForm() | Resets all fields in the form to their default values and hides validation errors. | `components.form1.resetForm()` |
+| clearForm() | Clears all fields in the form, ignoring their default values, and hides validation errors. | `components.form1.clearForm()` |
 | setVisibility()| Sets the visibility of the component.            | `components.form1.setVisibility(false)`   |
 | setLoading()   | Sets the loading state of the component.         | `components.form1.setLoading(true)` |
 | setDisable()   | Disables the component.                          | `components.form1.setDisable(true)` |
+
+:::info
+`resetForm()` restores each field's **Default value**, while `clearForm()` empties every field. Use `clearForm()` when fields have default values that you don't want restored.
+:::
 
 
 ## Exposed Variables

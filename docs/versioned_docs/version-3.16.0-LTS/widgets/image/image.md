@@ -10,9 +10,10 @@ The **Image** component is used to display images in your application.
 
 | <div style={{ width:"100px"}}> Properties </div> | <div style={{ width:"100px"}}> Description </div>                                                         |
 | :----------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
-| Image URL                                        | Enter the URL of the image to display it on the component.                                                |
-| JS Object                                        | Allows setting an image using a JS object with properties like name, type, size, and base64-encoded data. |
-| Alternative                                      | Used for alt text of images.                                                                              |
+| Image Format                                     | Choose how the image source is provided: **Image URL** (default) or **JS Object**. The input field below changes based on the selection. |
+| Image URL                                        | Shown when Image Format is **Image URL**. Enter the URL of the image to display. |
+| JS Object                                        | Shown when Image Format is **JS Object**. Provide an object in the form `{ name, type, sizeBytes, base64Data }`. The image is rendered from `type` and `base64Data` as a `data:<type>;base64,<base64Data>` URL. |
+| Alternative                                      | Alternative (alt) text for the image. Also shown below the broken-image icon if the image fails to load. |
 
 ## Events
 
@@ -30,8 +31,8 @@ Following actions of component can be controlled using the component specific ac
 
 | <div style={{ width:"120px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div> |
 | :------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------- |
-| setImageURL( )                               | Sets the image URL.                               | `components.image1.setImageURL`                     |
-| clearImage( )                                | Clears the image URL.                             | `components.image1.clearImage`                      |
+| setImageURL( )                               | Sets the image URL.                               | `components.image1.setImageURL('https://example.com/img.png')`                     |
+| clearImage( )                                | Clears the image URL.                             | `components.image1.clearImage()`                      |
 | setVisibility( )                             | Sets the visibility of the component.             | `components.image1.setVisibility(false)`            |
 | setLoading( )                                | Sets the loading state of the component.          | `components.image1.setLoading(true)`                |
 | setDisable( )                                | Disables the component.                           | `components.image1.setDisable(true)`                |
@@ -40,7 +41,7 @@ Following actions of component can be controlled using the component specific ac
 
 | Variable        | Description                                      | How To Access                           |
 | :-------------- | :----------------------------------------------- | :-------------------------------------- |
-| imageURL        | Access the image URL using this variable.        | `{{components.image1.imageURL}}`        |
+| imageURL        | The current image URL. In JS Object mode, this is the generated `data:` URL. | `{{components.image1.imageURL}}`        |
 | alternativeText | Access the alternative text using this variable. | `{{components.image1.alternativeText}}` |
 | isLoading       | Indicates if the component is loading.           | `{{components.image1.isLoading}}`       |
 | isVisible       | Indicates if the component is visible.           | `{{components.image1.isVisible}}`       |
@@ -54,6 +55,8 @@ Following actions of component can be controlled using the component specific ac
 | Rotate button                                | Toggle this on to enable rotate button in the image.                         | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show loading state                           | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility                                   | Controls component visibility.                                               | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Dynamic height | Automatically adjusts the component's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when it is hidden, so surrounding components fill the space. Takes effect when the app runs (preview or released app), not on the editor canvas. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable                                      | Enables or disables the component.                                           | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String                                                                                                                       |
 
@@ -71,7 +74,7 @@ Following actions of component can be controlled using the component specific ac
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>                                                                                  |
 | :------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------- |
 | Image fit                                   | Choose an image fit - similar to object fit for the image from available options: **fill**, **cover**, **contain**, **scale-down** |
-| Shape                                       | Choose the border type for the image.                                                                                              |
+| Shape                                       | Choose the shape of the image: **None**, **Rounded**, **Circle** or **Thumbnail**. |
 | Alignment                                   | Choose the image alignment from available options: **left**, **center**, **right**.                                                |
 
 ### Container
@@ -80,9 +83,9 @@ Following actions of component can be controlled using the component specific ac
 | :------------------------------------------ | :------------------------| 
 | Background | Add a background color to component by providing the `HEX color code` or choosing the color of your choice from the color-picker. |
 | Border                                      | Add a border color to component by providing the `HEX color code` or choosing the color of your choice from the color-picker.     |
-| Border radius                               | Add the border radius to the component.                                                                                           |
-| Padding                                     | Adds padding between the image and component border.                                                                              |
-| Box shadow                                  | Sets the box shadow properties of the component.                                                                                  | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
+| Border radius                               | Add the border radius to the component. Available only when **Shape** is set to **None**. |
+| Padding                                     | Sets the padding between the image and the component border. Choose **Default** (no padding) or **Custom**, then enter a padding value in pixels. |
+| Box shadow                                  | Sets the box shadow properties of the component. Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
 
 ### Advanced
 

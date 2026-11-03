@@ -155,7 +155,9 @@ The following actions of the component can be controlled using the component-spe
 | <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
 | :---------------------------------------------------- | :----------------------------------------------------- | :---------------------------------------------------------------- |
 | Color                                                  | Sets the color of the component's label.                | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Size | Sets the font size of the label, in pixels. Defaults to `12`. | Enter a number or click on **fx** and enter code that returns a number. |
 | Alignment                                              | Sets the position of the label and the field.           | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value - **side** or **top**. |
+| Direction | When alignment is set to `side`, places the label to the left or right of the field. | Select **Left** or **Right** using the icon toggles. |
 | Width                                                  | Sets the width of the field.                            | Enable **Auto width** to use the standard width automatically. Disable it to manually adjust the width using the slider or by entering a numeric value via **fx**. You can also choose whether the width is calculated relative to the **Container** or relative to the **Field**. |
 
 ### Field
@@ -171,9 +173,16 @@ The following actions of the component can be controlled using the component-spe
 | Icon                                                   | Allows you to select an icon for the component.          | Enable the icon visibility, select icon and icon color. |
 | Border radius                                          | Modifies the border radius of the component.             | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value. |
 | Box shadow                                             | Sets the box shadow properties of the component.         | Select the box shadow color and adjust the related properties. |
-| Menu width                                             | Controls the width of the dropdown menu.                 | Choose **Match the field**, **Match the content**, or **Custom** (enter a custom width value). |
+| Menu width                                             | Controls the width of the dropdown menu.                 | Choose **Match the field** (default), **Match the content**, or **Custom**. |
+| Custom menu width                                      | Sets the width of the dropdown menu in pixels. Shown only when **Menu width** is **Custom**. | Enter a number. Default: `256`. The menu is never narrower than the field or wider than 420px. |
 
 ### Container
 
 **Padding** <br/>
 Allows you to maintain a standard padding by enabling the `Default` option.
+
+### Deprecated styles
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Legacy input size | Keeps the canvas sizing that input components used before this setting was added. When on, a top-aligned label always adds height to the component, even when the label is empty, and the component's height doesn't change when the label alignment is set with **fx**. When off, a top-aligned label adds height only when the label has text. | Enable/disable the toggle button. Off for new components. Turned on for components that existed before this setting was added, including components in imported apps. |
