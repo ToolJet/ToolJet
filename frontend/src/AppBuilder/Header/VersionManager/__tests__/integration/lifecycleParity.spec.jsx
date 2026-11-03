@@ -247,4 +247,22 @@ describe.each(['module', 'library'])('%s lifecycle parity', (kind) => {
     await waitFor(() => expect(cy('promote-version-button')).toBeInTheDocument());
     expect(document.querySelector('[data-cy="v1-draft-tag"]')).toBeNull();
   });
+  it('keeps the selected version visible when environment version lists are still empty', async () => {
+    if (kind !== 'module') return;
+    const { useVersionManagerStore } = require('@/_stores/versionManagerStore');
+    await setup([saved]);
+    // Simulate the boot gap: selectedVersion is known from init(), but environment
+    // list fetches have not populated yet (or returned before environments hydrated).
+    await session.store.act((state) => {
+      state.developmentVersions = [];
+    });
+    useVersionManagerStore.setState({ versions: [], loading: false, error: null });
+    render(dropdown(false));
+    await session.user.click(cy('version-switcher-button'));
+    await waitFor(() => {
+      expect(screen.queryByText('No versions available')).not.toBeInTheDocument();
+      expect(cy('create-draft-version-button')).toBeInTheDocument();
+      expect(cy('v1-version-name')).toBeInTheDocument();
+    });
+  });
 });

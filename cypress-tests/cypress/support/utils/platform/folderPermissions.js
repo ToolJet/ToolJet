@@ -301,7 +301,11 @@ export const openItemEditor = (resource, workspaceSlug, itemId) =>
 
 export const uiCreateDraftVersion = (versionName) => {
   cy.get(versionSwitcherSelectors.versionSwitcherButton).click();
-  cy.get(commonSelectors.buttonSelector('create draft version')).click();
+  // Create draft only appears once a saved version is in the list; wait past the
+  // empty-store boot gap instead of assuming the first open is already hydrated.
+  cy.get(commonSelectors.buttonSelector('create draft version'), { timeout: EDITOR_BOOT_TIMEOUT })
+    .should('be.visible')
+    .click();
   cy.get(versionModalSelector.versionNameInput).type(versionName);
   cy.get(versionModalSelector.createDraftVersionModal.createButton).click();
   cy.get(versionSwitcherSelectors.versionSwitcherButton).should('contain.text', versionName);

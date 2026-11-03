@@ -96,9 +96,11 @@ export function useAppVersionLifecycle({
     browsingEnvironment.current = currentEnvironment;
     if (loadVersions && appId && currentEnvironment?.id) fetchVersionsForEnvironment(appId, currentEnvironment.id);
   }, [loadVersions, appId, currentEnvironment, fetchVersionsForEnvironment]);
+  // fetchDevelopmentVersions early-returns until environments are hydrated — include
+  // environments.length so we retry after init() rather than staying on [].
   useEffect(() => {
-    if ((loadVersions || loadDevelopment) && appId) fetchDevelopmentVersions(appId);
-  }, [loadVersions, loadDevelopment, appId, fetchDevelopmentVersions]);
+    if ((loadVersions || loadDevelopment) && appId && environments.length > 0) fetchDevelopmentVersions(appId);
+  }, [loadVersions, loadDevelopment, appId, environments.length, fetchDevelopmentVersions]);
 
   const allVersions = useMemo(() => {
     const rows = new Map();
@@ -405,9 +407,12 @@ export function useAppVersionLifecycle({
       isSaving: state.app?.isSaving,
       isAiBuildingApp: state.isAiBuildingApp,
       devPinnedLibrariesCount,
-      visibleVersionIds: versions.map((v) => v.id),
+      // Empty arrays are truthy — the dropdown treats them as "restrict to these
+      // ids" and would hide every row (and Create draft) while fetches are still
+      // in flight. Omit until at least one id is known so allVersions is used as-is.
+      visibleVersionIds: versions.length > 0 ? versions.map((v) => v.id) : undefined,
       environmentOptions,
-      developmentVersionIds: developmentVersions.map((v) => v.id),
+      developmentVersionIds: developmentVersions.length > 0 ? developmentVersions.map((v) => v.id) : undefined,
       git: {
         enabled: isGitSyncEnabled || !!(orgGitProp?.git_https?.is_enabled || orgGitProp?.git_lab?.is_enabled),
         defaultBranch,
