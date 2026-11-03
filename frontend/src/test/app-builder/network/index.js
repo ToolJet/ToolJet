@@ -11,8 +11,11 @@ export function defineNetworkScenario(routes) {
     }
     // `json` may be a function so a route can answer differently across a
     // single test — e.g. a licence endpoint the test flips between calls,
-    // which is the only public way to move `license.featureAccess`.
-    return factory(url, () => HttpResponse.json(typeof json === 'function' ? json() : json, { status }));
+    // which is the only public way to move `license.featureAccess`. It receives
+    // MSW's resolver info, so a route can answer from what the request sent.
+    return factory(url, async (info) =>
+      HttpResponse.json(typeof json === 'function' ? await json(info) : json, { status })
+    );
   });
 }
 
