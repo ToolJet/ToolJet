@@ -2,6 +2,7 @@ import { URL } from 'url';
 import { QueryError } from './query.error';
 import * as dns from 'dns/promises';
 import { lookup as dnsLookup } from 'dns';
+import * as net from 'net';
 
 const CLOUD_METADATA_ENDPOINTS = [
   // AWS EC2, IBM Cloud, and OpenStack metadata endpoint (most common SSRF target)
@@ -32,13 +33,50 @@ const CLOUD_METADATA_ENDPOINTS = [
 // are configured via SSRF_BLOCKED_SCHEMES environment variable for flexibility.
 // Users should configure blocked schemes based on their security requirements.
 
+// Schemes blocked whenever the server publishes a runtime config (env var is ignored then).
+const DEFAULT_BLOCKED_SCHEMES = ['file', 'gopher', 'dict', 'ftp', 'jar', 'data', 'javascript'];
+
 interface SSRFProtectionOptions {
   enabled?: boolean;
   dnsResolutionCheck?: boolean;
   blockedSchemes?: string[];
+  allowedHostnames?: Set<string>;
+  allowedRanges?: net.BlockList;
+}
+
+/**
+ * True if the hostname or IP is on the admin allowlist (exact hostname, or an IP inside an allowed IP/CIDR).
+ */
+export function isAllowlisted(hostOrIp: string, config: SSRFProtectionOptions): boolean {
+  if (!hostOrIp) return false;
+  const host = hostOrIp.toLowerCase().replace(/^\[|\]$/g, '');
+  if (config.allowedHostnames?.has(host)) return true;
+  const family = net.isIP(host);
+  return family !== 0 && !!config.allowedRanges?.check(host, family === 6 ? 'ipv6' : 'ipv4');
 }
 
 export function getSSRFConfig(): SSRFProtectionOptions {
+  // Written by the server on EE only. When present it is the source of truth and the env vars are not read.
+  const runtime = (globalThis as any).__TOOLJET_SSRF_RUNTIME_CONFIG__;
+  if (runtime) {
+    return {
+      enabled: runtime.enabled,
+      dnsResolutionCheck: true,
+      blockedSchemes: DEFAULT_BLOCKED_SCHEMES,
+      allowedHostnames: runtime.allowedHostnames,
+      allowedRanges: runtime.allowedRanges,
+    };
+  }
+
+  // Cloud is multi-tenant: always enforced, env vars ignored. Private networks are blocked by isPrivateIP.
+  if (process.env.TOOLJET_EDITION?.toLowerCase() === 'cloud') {
+    return {
+      enabled: true,
+      dnsResolutionCheck: true,
+      blockedSchemes: DEFAULT_BLOCKED_SCHEMES,
+    };
+  }
+
   const enabled = process.env.SSRF_PROTECTION_ENABLED === 'true'; // Disabled by default (opt-in)
   const dnsResolutionCheck = process.env.SSRF_DNS_RESOLUTION_CHECK === 'true'; // Disabled by default
 
@@ -231,19 +269,64 @@ export function isPrivateIP(ip: string): boolean {
   return false;
 }
 
+// Same code in plugins/packages/common, marketplace/plugins/common and server/src/helpers ssrf-protection; keep them identical.
+/** The 8 16-bit groups of an IPv6 address (any spelling, incl. `::` and a dotted-quad tail), or null if not IPv6. */
+function ipv6Hextets(ip: string): number[] | null {
+  if (!ip || !net.isIPv6(ip)) return null;
+  let address = ip.toLowerCase().replace(/%.*$/, '');
+  const dotted = address.match(/^(.*:)(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
+  if (dotted) {
+    const [a, b, c, d] = dotted.slice(2).map(Number);
+    address = `${dotted[1]}${((a << 8) | b).toString(16)}:${((c << 8) | d).toString(16)}`;
+  }
+  const groups = (part: string) => (part ? part.split(':').map((g) => parseInt(g, 16)) : []);
+  const [head, tail] = address.split('::');
+  if (tail === undefined) return groups(head);
+  const left = groups(head);
+  const right = groups(tail);
+  return [...left, ...new Array(8 - left.length - right.length).fill(0), ...right];
+}
+
+/**
+ * ::, ::1, link-local fe80::/10, site-local fec0::/10, multicast ff00::/8 and NAT64 local-use 64:ff9b:1::/48:
+ * blocked by every policy. The local-use prefix can carry its IPv4 at any RFC 6052 offset, so it is not decoded.
+ */
+function isReservedIPv6(ip: string): boolean {
+  const h = ipv6Hextets(ip);
+  if (!h) return false;
+  if (h.slice(0, 7).every((g) => g === 0) && h[7] <= 1) return true;
+  if (h[0] === 0x64 && h[1] === 0xff9b && h[2] === 1) return true;
+  return (h[0] & 0xffc0) === 0xfe80 || (h[0] & 0xffc0) === 0xfec0 || (h[0] & 0xff00) === 0xff00;
+}
+
+/**
+ * The IPv4 address an IPv6 address carries, so it can be classified like that IPv4: IPv4-mapped ::ffff:0:0/96,
+ * SIIT ::ffff:0:0:0/96, IPv4-compatible ::/96 (not :: or ::1), NAT64 64:ff9b::/96, 6to4 2002::/16,
+ * Teredo 2001::/32 (client address, bit-inverted). Null when there is none.
+ */
+function embeddedIPv4(ip: string): string | null {
+  const h = ipv6Hextets(ip);
+  if (!h) return null;
+  const dotted = (hi: number, lo: number) => `${hi >> 8}.${hi & 0xff}.${lo >> 8}.${lo & 0xff}`;
+  const zeroUpTo = (n: number) => h.slice(0, n).every((g) => g === 0);
+  if (zeroUpTo(5) && h[5] === 0xffff) return dotted(h[6], h[7]);
+  if (zeroUpTo(4) && h[4] === 0xffff && h[5] === 0) return dotted(h[6], h[7]);
+  if (zeroUpTo(6) && (h[6] !== 0 || h[7] > 1)) return dotted(h[6], h[7]);
+  if (h[0] === 0x64 && h[1] === 0xff9b && h.slice(2, 6).every((g) => g === 0)) return dotted(h[6], h[7]);
+  if (h[0] === 0x2002) return dotted(h[1], h[2]);
+  if (h[0] === 0x2001 && h[1] === 0) return dotted(h[6] ^ 0xffff, h[7] ^ 0xffff);
+  return null;
+}
+// End of the shared IPv6 helpers.
+
 /**
  * Check if an IPv6 address is private/internal
  */
 function isPrivateIPv6(ip: string): boolean {
   const normalized = ip.toLowerCase().trim();
 
-  // Loopback: ::1
-  if (normalized === '::1' || normalized === '0:0:0:0:0:0:0:1') {
-    return true;
-  }
-
-  // Link-local: fe80::/10
-  if (normalized.startsWith('fe80:')) {
+  // Unspecified, loopback, link-local, site-local, multicast
+  if (isReservedIPv6(normalized)) {
     return true;
   }
 
@@ -252,56 +335,107 @@ function isPrivateIPv6(ip: string): boolean {
     return true;
   }
 
-  // IPv4-mapped IPv6: ::ffff:0:0/96
-  if (normalized.includes('::ffff:')) {
-    // Extract the IPv4 part and check it
-    const ipv4Part = normalized.split('::ffff:')[1];
-    if (ipv4Part) {
-      // Handle both ::ffff:192.168.1.1 and ::ffff:c0a8:101 formats
-      if (ipv4Part.includes('.')) {
-        return isPrivateIP(ipv4Part);
+  // IPv4 carried inside the address (mapped, NAT64, 6to4, ...): classify it as that IPv4
+  const ipv4 = embeddedIPv4(normalized);
+  return ipv4 !== null && isPrivateIP(ipv4);
+}
+
+// Shared host resolution and block messages (keep identical in all three SSRF copies).
+/**
+ * Every address a hostname resolves to. dns.resolve4/resolve6 query DNS servers only and never see /etc/hosts, so
+ * under the EE runtime config, when they return nothing, dns.lookup (which reads the hosts file) is asked as well.
+ * With no addresses, `failure` is the resolver's own error (e.g. "getaddrinfo ENOTFOUND host") for the block message.
+ */
+async function resolveHostAddresses(hostname: string): Promise<{ addresses: string[]; failure?: string }> {
+  const addresses: string[] = [];
+  let failure: string | undefined;
+  const collect = (answer: Promise<string[]>) =>
+    answer.then(
+      (found) => {
+        addresses.push(...found);
+      },
+      (error) => {
+        failure = failure || (error as Error)?.message;
       }
-    }
+    );
+  await Promise.all([collect(dns.resolve4(hostname)), collect(dns.resolve6(hostname))]);
+  const runtimeKey = '__TOOLJET_SSRF_RUNTIME_CONFIG__';
+  if (addresses.length > 0 || !(globalThis as unknown as Record<string, unknown>)[runtimeKey]) {
+    return { addresses, failure };
+  }
+  try {
+    const answers = await dns.lookup(hostname, { all: true });
+    return { addresses: answers.map((answer) => answer.address), failure };
+  } catch (error) {
+    return { addresses: [], failure: (error as Error)?.message || failure };
+  }
+}
+
+/** The reason for a host that resolved to nothing, carrying the resolver's error when there is one. */
+function unresolvedReason(failure?: string): string {
+  return failure ? `could not be resolved (${failure})` : 'could not be resolved';
+}
+
+/**
+ * The error text for a blocked request: the host, why (`reason` finishes "because it ..."), and, under the EE runtime
+ * config, where a super admin can allow it. Cloud and CE have no settings page for it, so they get no hint.
+ */
+function privateNetworkBlockedMessage(host: string, reason: string): string {
+  const runtimeKey = '__TOOLJET_SSRF_RUNTIME_CONFIG__';
+  const hint = (globalThis as unknown as Record<string, unknown>)[runtimeKey]
+    ? ' A super admin can allow it in Settings → Security → Outbound requests.'
+    : '';
+  return `Requests to ${host} are blocked because it ${reason}.${hint}`;
+}
+// End of the shared host resolution and block messages.
+
+/**
+ * The message for a failed outbound request: a private network block's own explanation (it names the host, the
+ * reason and where to allow it), otherwise the plugin's generic failure. got keeps the `code` of a lookup or hook error.
+ */
+export function queryErrorMessage(error: any, fallback = 'Query could not be completed'): string {
+  return error?.code === 'SSRF_BLOCKED' && error.message ? error.message : fallback;
+}
+
+/**
+ * Why a hostname must be blocked (finishing "because it ..."), or null when every address it resolves to is public
+ * or allowlisted. Covers all RFC1918, link-local, loopback, and cloud metadata ranges.
+ */
+async function hostnameBlockReason(hostname: string, config?: SSRFProtectionOptions): Promise<string | null> {
+  // IP literals have no DNS answer; the caller has already run isPrivateIP on them.
+  if (net.isIP(hostname)) {
+    return null;
   }
 
-  return false;
+  try {
+    const { addresses, failure } = await resolveHostAddresses(hostname);
+
+    // No answer: fail closed under the EE runtime config and on Cloud, fail open otherwise (self-hosted compatibility)
+    if (addresses.length === 0) {
+      console.warn(`DNS resolution failed for ${hostname}`);
+      const failClosed =
+        !!(globalThis as any).__TOOLJET_SSRF_RUNTIME_CONFIG__ || process.env.TOOLJET_EDITION?.toLowerCase() === 'cloud';
+      return failClosed ? unresolvedReason(failure) : null;
+    }
+
+    const blocked = addresses.find((addr) => isPrivateIP(addr) && !(config && isAllowlisted(addr, config)));
+    return blocked === undefined ? null : `resolves to a private network address (${blocked})`;
+  } catch (error) {
+    // Fail-closed here too: a resolver error is exactly as unverifiable as an
+    // empty answer above, and shouldn't be treated as "safe" (was previously
+    // `return false`, the opposite of the empty-address case's intentional
+    // fail-closed default — part of GHSA-9gjw-8vc2-fjcv).
+    console.warn(`DNS resolution error for ${hostname}, blocking as precaution:`, error.message);
+    return unresolvedReason(error.message);
+  }
 }
 
 /**
  * Check if a hostname resolves to any private IP address
  * This includes all RFC1918, link-local, loopback, and cloud metadata ranges
  */
-export async function resolvesToPrivateIP(hostname: string): Promise<boolean> {
-  try {
-    // Try to resolve as both IPv4 and IPv6
-    const addresses: string[] = [];
-
-    try {
-      const ipv4Addresses = await dns.resolve4(hostname);
-      addresses.push(...ipv4Addresses);
-    } catch (error) {
-      // IPv4 resolution failed, continue
-    }
-
-    try {
-      const ipv6Addresses = await dns.resolve6(hostname);
-      addresses.push(...ipv6Addresses);
-    } catch (error) {
-      // IPv6 resolution failed, continue
-    }
-
-    // If no addresses resolved, fail open for self-hosted compatibility
-    if (addresses.length === 0) {
-      console.warn(`DNS resolution failed for ${hostname}`);
-      return false;
-    }
-
-    // Check if any resolved address is a private IP
-    return addresses.some((addr) => isPrivateIP(addr));
-  } catch (error) {
-    console.warn(`DNS resolution error for ${hostname}:`, error.message);
-    return false;
-  }
+export async function resolvesToPrivateIP(hostname: string, config?: SSRFProtectionOptions): Promise<boolean> {
+  return (await hostnameBlockReason(hostname, config)) !== null;
 }
 
 /**
@@ -339,8 +473,27 @@ export async function validateUrlForSSRF(urlString: string, options?: SSRFProtec
     throw new QueryError('Invalid URL format', 'The provided URL is malformed and cannot be processed', {});
   }
 
-  const hostname = url.hostname.toLowerCase();
+  // `new URL()` keeps the brackets on IPv6 literals ([::1]); strip them so the IP checks see the address
+  const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, '');
   const scheme = url.protocol;
+
+  // 1. Check for blocked schemes (before the allowlist: an entry vouches for an address, not a scheme)
+  // By default, all schemes are allowed for self-hosted flexibility
+  // Users can configure blocked schemes via SSRF_BLOCKED_SCHEMES env variable
+  if (config.blockedSchemes && config.blockedSchemes.length > 0) {
+    if (isSchemeBlocked(scheme, config.blockedSchemes)) {
+      throw new QueryError(
+        'URL scheme blocked',
+        `The URL scheme '${scheme}' is not allowed. Blocked schemes: ${config.blockedSchemes.join(', ')}`,
+        { scheme, blockedSchemes: config.blockedSchemes }
+      );
+    }
+  }
+
+  // Allowlisted hostnames / IPs skip every check below
+  if (isAllowlisted(hostname, config)) {
+    return;
+  }
 
   // Check for @ symbol abuse (credentials in URL pointing to private IPs)
   // e.g., http://169.254.169.254@example.com - should parse as connecting to 169.254.169.254
@@ -356,24 +509,11 @@ export async function validateUrlForSSRF(urlString: string, options?: SSRFProtec
     }
   }
 
-  // 1. Check for blocked schemes
-  // By default, all schemes are allowed for self-hosted flexibility
-  // Users can configure blocked schemes via SSRF_BLOCKED_SCHEMES env variable
-  if (config.blockedSchemes && config.blockedSchemes.length > 0) {
-    if (isSchemeBlocked(scheme, config.blockedSchemes)) {
-      throw new QueryError(
-        'URL scheme blocked',
-        `The URL scheme '${scheme}' is not allowed. Blocked schemes: ${config.blockedSchemes.join(', ')}`,
-        { scheme, blockedSchemes: config.blockedSchemes }
-      );
-    }
-  }
-
   // 2. Check if hostname is a private IP address
   // When SSRF protection is enabled, block direct access to private IPs
   if (isPrivateIP(hostname)) {
     throw new QueryError(
-      'Private IP address blocked',
+      privateNetworkBlockedMessage(hostname, 'is a private network address'),
       'Direct access to private IP addresses is not allowed for security reasons',
       { hostname }
     );
@@ -382,11 +522,11 @@ export async function validateUrlForSSRF(urlString: string, options?: SSRFProtec
   // 3. DNS resolution check (if enabled)
   // This protects against DNS rebinding attacks like 169.254.169.254.nip.io
   if (config.dnsResolutionCheck) {
-    const resolves = await resolvesToPrivateIP(hostname);
-    if (resolves) {
+    const reason = await hostnameBlockReason(hostname, config);
+    if (reason) {
       throw new QueryError(
-        'Hostname resolves to private IP',
-        'This hostname resolves to a private IP address and is blocked for security reasons',
+        privateNetworkBlockedMessage(hostname, reason),
+        'This hostname resolves to a private network address or could not be resolved, and is blocked for security reasons',
         { hostname }
       );
     }
@@ -411,14 +551,17 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
   }
 
   // DNS resolution cache to prevent TOCTOU rebinding attacks
-  // Key: hostname, Value: { address, family, timestamp }
-  const dnsCache = new Map<string, { address: string; family: number; timestamp: number }>();
+  // Key: hostname (prefixed by request shape), Value: { address, family, timestamp }
+  // For options.all requests, address holds the validated array and family is undefined.
+  const dnsCache = new Map<string, { address: any; family?: number; timestamp: number }>();
   const CACHE_TTL = 60000; // 60 seconds
 
   // Return custom lookup function
   return (hostname: string, options: any, callback: (...args: any[]) => any) => {
     // Check cache first to prevent DNS rebinding between validation and connection
-    const cached = dnsCache.get(hostname);
+    // (separate keys so an all:true request never gets a single-address entry or vice versa)
+    const cacheKey = `${options?.all ? 'all' : 'one'}:${hostname}`;
+    const cached = dnsCache.get(cacheKey);
     const now = Date.now();
 
     if (cached && now - cached.timestamp < CACHE_TTL) {
@@ -427,24 +570,30 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
     }
 
     // Use Node's callback-based dns.lookup
-    dnsLookup(hostname, options, (err, address, family) => {
+    dnsLookup(hostname, options, (err, address: any, family) => {
       if (err) {
         return callback(err);
       }
 
-      // Validate the resolved IP address
-      if (isPrivateIP(address)) {
+      // With options.all (Node 22 autoSelectFamily) the result is an array of { address, family }
+      const resolved: string[] = options?.all ? address.map((a: any) => a.address) : [address];
+
+      // Validate every resolved IP address (allowlisted hostnames / resolved IPs are exempt)
+      const blocked = resolved.find(
+        (addr) => isPrivateIP(addr) && !isAllowlisted(hostname, config) && !isAllowlisted(addr, config)
+      );
+      if (blocked !== undefined) {
         const error: any = new Error(
-          `Hostname "${hostname}" resolves to private IP address "${address}" which is blocked for security reasons`
+          privateNetworkBlockedMessage(hostname, `resolves to a private network address (${blocked})`)
         );
         error.code = 'SSRF_BLOCKED';
         error.hostname = hostname;
-        error.address = address;
+        error.address = blocked;
         return callback(error);
       }
 
       // Cache the validated resolution to prevent TOCTOU attacks
-      dnsCache.set(hostname, { address, family, timestamp: now });
+      dnsCache.set(cacheKey, { address, family, timestamp: now });
 
       // Clean up old cache entries to prevent memory leak
       if (dnsCache.size > 1000) {
@@ -512,26 +661,39 @@ export function getSSRFProtectionOptions(options?: SSRFProtectionOptions, existi
 
   const ssrfOptions: any = {
     ...existingOptions,
-    // Custom DNS lookup function to validate resolved IPs
-    dnsLookup: createSSRFSafeLookup(config),
+    // Custom DNS lookup function to validate resolved IPs.
+    // got's option is `lookup` (see CacheableLookup['lookup'] in its types) — NOT
+    // `dnsLookup`. That key doesn't exist on got's Options type, so got silently
+    // ignored it and this resolver was never actually invoked (GHSA-9gjw-8vc2-fjcv).
+    lookup: createSSRFSafeLookup(config),
   };
 
   // Redirect validation hook - prevents SSRF bypass via open redirects
   // This validates redirect URLs using the same SSRF rules as the initial request,
   // blocking attacks where an allowed domain redirects to a private IP/endpoint
   const beforeRedirectHook = async (options: any, response: any) => {
-    // Validate redirect URL
-    const redirectUrl = response.headers.location;
+    // Validate the resolved target: got has already resolved a relative Location against the
+    // request URL (options.url). The raw header may be "/next", which is not a parseable URL.
+    let redirectUrl: string | undefined = options?.url?.toString();
+    if (!redirectUrl && response?.headers?.location) {
+      try {
+        redirectUrl = new URL(response.headers.location, response.url).toString();
+      } catch {
+        redirectUrl = response.headers.location;
+      }
+    }
     if (redirectUrl) {
       try {
         // Validate the redirect URL
         await validateUrlForSSRF(redirectUrl, config);
       } catch (error) {
-        throw new QueryError(
-          'Redirect blocked by SSRF protection',
+        const blocked: any = new QueryError(
+          `Redirect to ${redirectUrl} was blocked. ${error.message}`,
           `Redirect to "${redirectUrl}" was blocked: ${error.message}`,
           { redirectUrl, originalError: error }
         );
+        blocked.code = 'SSRF_BLOCKED';
+        throw blocked;
       }
     }
   };
@@ -563,7 +725,7 @@ export function getSSRFProtectionOptions(options?: SSRFProtectionOptions, existi
  * Behavior:
  * - If url redirects to private IP, beforeRedirect hook blocks it
  * - Example blocked redirect: http://allowed.com/redirect -> http://169.254.169.254
- * - Error thrown: "Redirect blocked by SSRF protection"
+ * - Error thrown: "Redirect to <url> was blocked. <reason>"
  */
 
 /**
@@ -585,7 +747,7 @@ export function validateUrlForSSRFSync(urlString: string, options?: SSRFProtecti
     throw new QueryError('Invalid URL format', 'The provided URL is malformed and cannot be processed', {});
   }
 
-  const hostname = url.hostname.toLowerCase();
+  const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, '');
   const scheme = url.protocol;
 
   // Check for blocked schemes
@@ -602,7 +764,7 @@ export function validateUrlForSSRFSync(urlString: string, options?: SSRFProtecti
   // Check if hostname is a private IP
   if (isPrivateIP(hostname)) {
     throw new QueryError(
-      'Private IP address blocked',
+      privateNetworkBlockedMessage(hostname, 'is a private network address'),
       'Direct access to private IP addresses is not allowed for security reasons',
       { hostname }
     );

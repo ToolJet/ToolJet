@@ -9,6 +9,7 @@ import {
   getCurrentToken,
   validateUrlForSSRF,
   getSSRFProtectionOptions,
+  queryErrorMessage,
 } from '@tooljet-marketplace/common';
 import got, { OptionsOfTextResponseBody } from 'got';
 import crypto from 'crypto';
@@ -350,7 +351,7 @@ export default class Confluence implements QueryService {
         });
       }
 
-      throw new QueryError('Query could not be completed', this.errorMessage(error), this.errorDetails(error));
+      throw new QueryError(queryErrorMessage(error), this.errorMessage(error), this.errorDetails(error));
     }
   }
 

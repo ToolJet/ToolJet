@@ -1,4 +1,4 @@
-import { ConnectionTestResult, QueryService, QueryResult } from '@tooljet-plugins/common';
+import { ConnectionTestResult, QueryService, QueryResult, validateUrlForSSRF } from '@tooljet-plugins/common';
 import { createCollection, getDocument, updateDocument, deleteDocument, indexDocument, search } from './operations';
 import { Client } from 'typesense';
 import { SourceOptions, QueryOptions } from './types';
@@ -50,6 +50,10 @@ export default class TypeSenseService implements QueryService {
   }
 
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
+    // SSRF Protection: Validate the data source host before connecting. Covers both
+    // run() and testConnection(), which both go through this method.
+    await validateUrlForSSRF(`${sourceOptions.protocol}://${sourceOptions.host}:${sourceOptions.port}`);
+
     const client = new Client({
       nodes: [
         {

@@ -20,6 +20,7 @@ import {
   getAuthUrl,
   validateUrlForSSRF,
   getSSRFProtectionOptions,
+  queryErrorMessage,
 } from '@tooljet-plugins/common';
 const FormData = require('form-data');
 const JSON5 = require('json5');
@@ -337,7 +338,7 @@ export default class RestapiQueryService implements QueryService {
     if (sourceOptions['auth_type'] === 'oauth2' && error?.response?.statusCode === 401) {
       throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, result);
     }
-    throw new QueryError('Query could not be completed', error.message, result, metadata);
+    throw new QueryError(queryErrorMessage(error), error.message, result, metadata);
   }
 
   fetchHttpsCertsForCustomCA(sourceOptions: any) {

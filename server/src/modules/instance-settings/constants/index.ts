@@ -3,6 +3,9 @@ export enum FEATURE_KEY {
   UPDATE = 'update',
   DELETE = 'delete',
   CREATE = 'create',
+  // SSRF settings are deliberately not licence-gated, so they get their own keys.
+  SSRF_GET = 'ssrf_get',
+  SSRF_UPDATE = 'ssrf_update',
 }
 
 export enum INSTANCE_SETTINGS_TYPE {
@@ -34,6 +37,11 @@ export enum INSTANCE_SYSTEM_SETTINGS {
   LLM_PROVIDER = 'LLM_PROVIDER',
   LLM_MODEL = 'LLM_MODEL',
   LLM_MODEL_CONTEXT_WINDOW = 'LLM_MODEL_CONTEXT_WINDOW',
+
+  //SSRF PROTECTION ENUMS (EE only)
+  SSRF_PROTECTION_ENABLED = 'SSRF_PROTECTION_ENABLED',
+  SSRF_ALLOWED_ADDRESSES = 'SSRF_ALLOWED_ADDRESSES',
+  SSRF_UPGRADE_NOTICE_DISMISSED = 'SSRF_UPGRADE_NOTICE_DISMISSED',
 }
 
 export enum INSTANCE_USER_SETTINGS {

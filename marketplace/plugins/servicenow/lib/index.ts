@@ -9,6 +9,7 @@ import {
   validateAndSetRequestOptionsBasedOnAuthType,
   validateUrlForSSRF,
   getSSRFProtectionOptions,
+  queryErrorMessage,
   getRefreshedToken,
 } from '@tooljet-marketplace/common';
 import got, { OptionsOfJSONResponseBody } from 'got';
@@ -552,7 +553,7 @@ export default class Servicenow implements QueryService {
           error.response?.body || {}
         );
       }
-      throw new QueryError('Query could not be completed', error.message, error.response?.body || {});
+      throw new QueryError(queryErrorMessage(error), error.message, error.response?.body || {});
     }
   }
 

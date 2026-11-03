@@ -1,4 +1,5 @@
 import {
+  ArrayMaxSize,
   ArrayNotEmpty,
   IsArray,
   IsBoolean,
@@ -8,7 +9,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { sanitizeInput } from '../../../helpers/utils.helper';
 import { INSTANCE_USER_SETTINGS } from '../constants';
 
@@ -88,4 +89,28 @@ class UserSettings {
   @IsBoolean()
   @IsOptional()
   is_disabled?: boolean;
+}
+
+export const SSRF_ALLOWLIST_MAX_ENTRIES = 200;
+
+export class UpdateSsrfSettingsDto {
+  @IsBoolean()
+  enabled: boolean;
+
+  @IsArray()
+  @ArrayMaxSize(SSRF_ALLOWLIST_MAX_ENTRIES)
+  @IsString({ each: true })
+  allowed_addresses: string[];
+}
+
+@Exclude()
+export class SsrfSettingsResponseDto {
+  @Expose()
+  enabled: boolean;
+
+  @Expose({ name: 'allowed_addresses' })
+  allowedAddresses: string[];
+
+  @Expose({ name: 'upgrade_notice_dismissed' })
+  upgradeNoticeDismissed: boolean;
 }

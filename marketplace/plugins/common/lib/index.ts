@@ -25,7 +25,7 @@ import {
   validateAndSetRequestOptionsBasedOnAuthType,
   initializeOAuth,
 } from './oauth';
-import { validateUrlForSSRF, getSSRFProtectionOptions } from './ssrf-protection';
+import { validateUrlForSSRF, getSSRFProtectionOptions, queryErrorMessage } from './ssrf-protection';
 
 export {
   QueryError,
@@ -55,4 +55,5 @@ export {
   initializeOAuth,
   validateUrlForSSRF,
   getSSRFProtectionOptions,
+  queryErrorMessage,
 };
