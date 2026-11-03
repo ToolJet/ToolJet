@@ -12,7 +12,6 @@ interface Features {
   [FEATURE_KEY.ADD_COLUMN]: FeatureConfig;
   [FEATURE_KEY.DROP_COLUMN]: FeatureConfig;
   [FEATURE_KEY.BULK_UPLOAD]: FeatureConfig;
-  [FEATURE_KEY.JOIN_TABLES]: FeatureConfig;
   [FEATURE_KEY.EDIT_COLUMN]: FeatureConfig;
   [FEATURE_KEY.ADD_FOREIGN_KEY]: FeatureConfig;
   [FEATURE_KEY.UPDATE_FOREIGN_KEY]: FeatureConfig;

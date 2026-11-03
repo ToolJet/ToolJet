@@ -1,5 +1,5 @@
 import React from 'react';
-import { animated } from 'react-spring';
+import { animated } from '@react-spring/web';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import StarSvg from './icons/star';

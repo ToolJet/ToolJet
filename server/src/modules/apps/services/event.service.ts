@@ -355,6 +355,7 @@ export class EventsService implements IEventsService {
       const found = await Promise.all(
         events.map(async (event) => ({
           event,
+          // Scope by appVersionId so events in other versions aren't rewritable via a known id.
           stored: await manager.findOne(EventHandler, { where: { id: event.event_id, appVersionId } }),
         }))
       );
