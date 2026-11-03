@@ -117,9 +117,9 @@ export const Listview = function Listview({
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
     boxShadow,
-    padding: `${containerPadding}px`,
-    // Always set: dropping the key when the header goes off makes React clear padding-top for good.
-    paddingTop: showHeader ? 0 : `${containerPadding}px`,
+    // One shorthand that always changes with showHeader: a conditional paddingTop key makes React clear
+    // padding-top for good when it goes away. The header takes the top edge itself, full width (Figma).
+    padding: showHeader ? `0 ${containerPadding}px ${containerPadding}px` : `${containerPadding}px`,
     overflowX: 'hidden',
     // Dynamic mode (view-only) hides the listview's own scroll to suppress
     // the one-frame flash while rows grow ahead of the parent reflow. Static
