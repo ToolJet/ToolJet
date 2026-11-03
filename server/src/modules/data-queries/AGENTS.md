@@ -59,7 +59,9 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   leaves the cache out of DI, so specs inject a cache service themselves.
   Run body `cacheControl: 'refresh'` (`RunDataQueryDto` → `runExecutionOptions`) = replace the token, run, cache
   the result; Preview replaces only its own entry. CE accepts and ignores `cacheControl`. RunJS/RunPy are never
-  cached; workflow queries are cached at the workflow trigger instead (see `workflows/AGENTS.md`).
+  cached; workflow queries are cached at the workflow trigger instead (see `workflows/AGENTS.md`). A workflow query
+  saves the workflow's `co_relation_id` as `workflowId`; the trigger's cache step binds it to the app id the trigger
+  resolved (`resolveWorkflowRefsForTrigger`), never comparing the saved id to the app id directly.
   License: `QueryResultCacheService.begin` bypasses (no read, write or token change) unless the workspace license
   has `features.queryResponseCache` (`LICENSE_FIELD.QUERY_RESPONSE_CACHE`); a missing key or failed check means off.
   Caching off on the query, or unlicensed, returns `QUERY_CACHE_OFF`: the run and workflow trigger results then carry
