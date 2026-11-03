@@ -20,18 +20,18 @@ RUN git clone https://github.com/ToolJet/ToolJet.git .
 # The branch name needs to be changed the branch with modularisation in CE repo
 RUN git checkout ${BRANCH_NAME}
 
-# Checkout the same branch in submodules if it exists, otherwise fallback to main
+# Follow a same-named submodule branch only when it contains the pinned commit (HEAD after
+# update), else keep the pin: a stale branch builds EE code older than this checkout.
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
     git submodule update --init --recursive && \
     git submodule foreach " \
-  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-    git checkout ${BRANCH_NAME}; \
+  if git fetch -q origin ${BRANCH_NAME} 2>/dev/null && \
+     git merge-base --is-ancestor HEAD FETCH_HEAD; then \
+    git checkout -B ${BRANCH_NAME} FETCH_HEAD; \
   else \
-    echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to main'; \
-    git checkout main; \
+    echo 'Submodule \$name: no ${BRANCH_NAME} branch containing the pinned commit, keeping the pin'; \
   fi"
 
 # Scripts for building

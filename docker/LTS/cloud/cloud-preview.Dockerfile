@@ -19,14 +19,22 @@ RUN git clone https://github.com/ToolJet/ToolJet.git .
 RUN git checkout ${BRANCH_NAME}
 
 # Handle submodules - try normal submodule update first, if it fails clone directly from base repo.
-# Either way, checkout the same branch in submodules if it exists, otherwise the branch .gitmodules tracks
+# On a fork, where the pinned commit is unreachable, the script takes the same-named branch, else the one .gitmodules tracks
 COPY ./docker/LTS/submodule-checkout.sh /tmp/submodule-checkout.sh
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
     if git submodule update --init --recursive; then \
   echo "Submodules initialized successfully"; \
-  git submodule foreach 'sh /tmp/submodule-checkout.sh' || exit 1; \
+  # Follow a same-named submodule branch only when it contains the pinned commit (HEAD after
+  # update), else keep the pin: a stale branch builds EE code older than this checkout.
+  git submodule foreach " \
+    if git fetch -q origin ${BRANCH_NAME} 2>/dev/null && \
+       git merge-base --is-ancestor HEAD FETCH_HEAD; then \
+      git checkout -B ${BRANCH_NAME} FETCH_HEAD; \
+    else \
+      echo 'Submodule \$name: no ${BRANCH_NAME} branch containing the pinned commit, keeping the pin'; \
+    fi"; \
 else \
   echo "Submodule update failed, likely a forked repo. Cloning EE submodules directly from base repo."; \
   # Clone frontend/ee submodule directly

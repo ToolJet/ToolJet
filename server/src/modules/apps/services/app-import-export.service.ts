@@ -1694,30 +1694,19 @@ export class AppImportExportService {
        * - If an app here already carries that identity, this import is a copy of it
        * — mint a fresh identity so existing references keep resolving to the original deterministically.
        * - Git imports skip the conflict check: branch rows of the same logical app intentionally share the id.
-       * - When importing onto a branch, the check is branch-scoped: the same identity existing on
-       *   ANOTHER branch is the normal git-sync state, not a conflict
+       * - The check is workspace-wide, never branch-scoped. A branch is an app_versions.branch_id on the
+       *   SAME apps row, so a second apps row carrying the identity is a duplicate on every branch:
+       *   idx_apps_org_type_co_relation_id_unique rejects the insert, and git pull breaks on the pair.
        */
       const sourceCoRelationId = appParams?.co_relation_id ?? appParams?.id;
       let coRelationId = sourceCoRelationId ?? uuid();
       if (!isGitApp && sourceCoRelationId) {
-        const identityHolderQb = manager
+        const identityHolder = await manager
           .createQueryBuilder(App, 'app')
           .select('app.id')
           .where('app.co_relation_id = :sourceCoRelationId', { sourceCoRelationId })
-          .andWhere('app.organizationId = :organizationId', { organizationId: user?.organizationId });
-        if (branchId) {
-          identityHolderQb.andWhere((sub) => {
-            const exists = sub
-              .subQuery()
-              .select('1')
-              .from(AppVersion, 'scope')
-              .where('scope.appId = app.id')
-              .andWhere('scope.branch_id = :branchId', { branchId })
-              .getQuery();
-            return 'EXISTS ' + exists;
-          });
-        }
-        const identityHolder = await identityHolderQb.getOne();
+          .andWhere('app.organizationId = :organizationId', { organizationId: user?.organizationId })
+          .getOne();
         if (identityHolder) coRelationId = uuid();
       }
 
