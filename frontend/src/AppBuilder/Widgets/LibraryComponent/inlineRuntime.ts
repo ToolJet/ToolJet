@@ -454,8 +454,12 @@ const fetchBundleText = async (bundleUrl: string, options: LoadOptions): Promise
   if (preloaded !== null) return preloaded;
   const res = await fetch(bundleUrl, fetchInit(options));
   if (res.status === 404) {
-    throw new Error(
-      "This app's code isn't on this server. If the app was imported, export it again from the original and import the new file."
+    // The status tells the frame the build is gone, which the editor can make again from stored source.
+    throw Object.assign(
+      new Error(
+        "This app's code isn't on this server. If the app was imported, export it again from the original and import the new file."
+      ),
+      { status: 404 }
     );
   }
   if (!res.ok) throw new Error(`couldn't fetch the app's code (HTTP ${res.status})`);
