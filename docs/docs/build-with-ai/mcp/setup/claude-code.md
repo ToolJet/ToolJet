@@ -91,7 +91,7 @@ The server reads two variables from the environment Claude Code is launched from
 
 | Variable | Required | Description | Default |
 | ---------| -------- | ----------- | --------|
-| `TOOLJET_DEPLOYMENT_URL` | Yes | URL of your ToolJet instance | `http://localhost:3000` |
+| `TOOLJET_DEPLOYMENT_URL` | For non-local instances | URL of your ToolJet instance | `http://localhost:3000` |
 | `TOOLJET_PAT` | Yes | The personal access token from Step 1 | |
 
 Most deployments serve the API and the UI from the same origin, so `TOOLJET_DEPLOYMENT_URL` covers both and is the only URL you need. It defaults to localhost, so you can omit it only when you are running ToolJet locally on the default ports.
@@ -203,15 +203,15 @@ Restart Claude Code for the change to take effect. Note that `/config` manages c
 
 #### Verify Before You Continue
 
-If you used your shell profile, confirm the variables are set in the terminal you'll launch Claude Code from. Both must print a value; if either is empty, the server reports a missing-variable error at startup.
+If you used your shell profile, check the variables in the terminal you'll launch Claude Code from without displaying the token. `TOOLJET_PAT` must be set. For a non-local instance, set `TOOLJET_DEPLOYMENT_URL` too; otherwise the server uses its localhost default.
 
 <Tabs>
 
 <TabItem value="unix" label="macOS / Linux" default>
 
 ```bash
-echo $TOOLJET_DEPLOYMENT_URL
-echo $TOOLJET_PAT
+test -n "$TOOLJET_DEPLOYMENT_URL" && echo "Deployment URL is set" || echo "Deployment URL is unset (localhost default)"
+test -n "$TOOLJET_PAT" && echo "PAT is set" || echo "PAT is missing"
 ```
 
 </TabItem>
@@ -219,8 +219,8 @@ echo $TOOLJET_PAT
 <TabItem value="powershell" label="PowerShell">
 
 ```powershell
-echo $env:TOOLJET_DEPLOYMENT_URL
-echo $env:TOOLJET_PAT
+if ($env:TOOLJET_DEPLOYMENT_URL) { "Deployment URL is set" } else { "Deployment URL is unset (localhost default)" }
+if ($env:TOOLJET_PAT) { "PAT is set" } else { "PAT is missing" }
 ```
 
 </TabItem>
