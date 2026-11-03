@@ -597,7 +597,7 @@ class BaseManageGranularAccess extends React.Component {
           <SolidIcon name="informationcircle" fill="var(--slate8)" /> {text}
           <a
             style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
-            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
+            href="https://docs.tooljet.com/docs/user-management/role-based-access/user-roles#permissions-for-user-roles"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -771,8 +771,8 @@ class BaseManageGranularAccess extends React.Component {
     const addPermissionTooltipMessage = !newPermissionName
       ? 'Please input permissions name'
       : isCustom && this.getSelectedResources().length === 0
-      ? 'Please select apps or select all apps option'
-      : '';
+        ? 'Please select apps or select all apps option'
+        : '';
     const isBasicPlan = this.props.isBasicPlan;
     const disableEditUpdate = currentGroupPermission.name == 'end-user' || isBasicPlan;
 
@@ -823,10 +823,10 @@ class BaseManageGranularAccess extends React.Component {
                       resourceType === RESOURCE_TYPE.APPS
                         ? 'apps'
                         : resourceType === RESOURCE_TYPE.MODULES
-                        ? 'modules'
-                        : resourceType === RESOURCE_TYPE.WORKFLOWS
-                        ? 'workflows'
-                        : 'datasource'
+                          ? 'modules'
+                          : resourceType === RESOURCE_TYPE.WORKFLOWS
+                            ? 'workflows'
+                            : 'datasource'
                     }
                     fill="var(--slate8)"
                   />

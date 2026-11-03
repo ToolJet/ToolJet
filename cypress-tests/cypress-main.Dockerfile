@@ -1,19 +1,17 @@
-FROM node:22.15.1 AS builder
+FROM node:22.23.4 AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@10.9.2 && npm cache clean --force
+RUN npm i -g npm@10.9.9 && npm cache clean --force
 
 RUN mkdir -p /app
 WORKDIR /app
 
-# Set GitHub token and branch as build arguments
-ARG CUSTOM_GITHUB_TOKEN
+# GitHub token is a BuildKit secret (--secret id=github_token), mounted only for the steps that
+# fetch private repos and passed to git via env, so it never lands in a layer, the image config
+# or the build provenance like a build arg does.
 ARG BRANCH_NAME
-
-# Clone and checkout the frontend repository
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
 RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
@@ -22,10 +20,12 @@ RUN git clone https://github.com/ToolJet/ToolJet.git .
 # The branch name needs to be changed the branch with modularisation in CE repo
 RUN git checkout ${BRANCH_NAME}
 
-RUN git submodule update --init --recursive
-
 # Checkout the same branch in submodules if it exists, otherwise fallback to lts-3.16
-RUN git submodule foreach " \
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    git submodule update --init --recursive && \
+    git submodule foreach " \
   if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
      git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
     git checkout ${BRANCH_NAME}; \
@@ -97,12 +97,12 @@ RUN apt-get update && \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 
-RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
-    && tar -xf node-v22.15.1-linux-x64.tar.xz \
-    && mv node-v22.15.1-linux-x64 /usr/local/lib/nodejs \
+RUN curl -O https://nodejs.org/dist/v22.23.4/node-v22.23.4-linux-x64.tar.xz \
+    && tar -xf node-v22.23.4-linux-x64.tar.xz \
+    && mv node-v22.23.4-linux-x64 /usr/local/lib/nodejs \
     && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
     && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
-    && rm node-v22.15.1-linux-x64.tar.xz
+    && rm node-v22.23.4-linux-x64.tar.xz
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production

@@ -7,6 +7,7 @@ import {
   getRedirectToWithParams,
   redirectToErrorPage,
   isCustomDomain,
+  isMcpOAuthConsentPath,
   redirectToMainHost,
   excludeWorkspaceIdFromURL,
 } from './routes';
@@ -267,7 +268,15 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
       // across domains. The CF Worker proxies /api/* with redirect:'manual',
       // so the backend's 302 + Set-Cookie flows through to the browser.
       const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-      if (data.custom_domain && !isCustomDomain() && !isLocalhost && !hasRecentRedirectAttempt()) {
+      // OAuth interactions are bound to the issuing host's browser cookie. A
+      // workspace custom-domain transfer must not move the consent transaction.
+      if (
+        data.custom_domain &&
+        !isMcpOAuthConsentPath(redirectPath) &&
+        !isCustomDomain() &&
+        !isLocalhost &&
+        !hasRecentRedirectAttempt()
+      ) {
         const slug = data.current_organization_slug || data.current_organization_id;
         // Use explicit redirectPath when provided (e.g. from SSO callback where
         // window.location.pathname is /sso/google, not the intended destination).

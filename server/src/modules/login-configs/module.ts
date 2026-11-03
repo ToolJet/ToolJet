@@ -27,6 +27,7 @@ export class LoginConfigsModule extends SubModule {
       providers: [
         LoginConfigsService,
         LoginConfigsUtilService,
+        { provide: 'MCP_LOGIN_CONFIGS', useExisting: LoginConfigsUtilService },
         OrganizationRepository,
         SSOConfigsRepository,
         SsoConfigOidcGroupSyncRepository,
@@ -34,7 +35,7 @@ export class LoginConfigsModule extends SubModule {
         SSOGuard,
         FeatureGuard,
       ],
-      exports: [LoginConfigsUtilService],
+      exports: [LoginConfigsUtilService, 'MCP_LOGIN_CONFIGS'],
     };
   }
 }

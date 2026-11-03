@@ -1,3 +1,4 @@
+import { updateSecurityEntity } from '@modules/mcp-oauth/revocation';
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, FindManyOptions, FindOptionsSelect, ILike, In, LessThan, Repository } from 'typeorm';
 import { User } from '@entities/user.entity';
@@ -116,7 +117,7 @@ export class OrganizationRepository extends Repository<Organization> {
   updateOne(id: string, updatableData: Partial<Organization>, manager?: EntityManager): Promise<any> {
     return dbTransactionWrap((manager: EntityManager) => {
       return catchDbException(() => {
-        return manager.update(Organization, id, updatableData);
+        return updateSecurityEntity(manager, Organization, id, updatableData);
       }, CONSTRAINTS);
     }, manager);
   }
@@ -235,10 +236,10 @@ export class OrganizationRepository extends Repository<Organization> {
   async changeDefaultWorkspace(organizationId: string, manager?: EntityManager): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // First, unset any existing default workspace
-      await manager.update(Organization, { isDefault: true }, { isDefault: false });
+      await updateSecurityEntity(manager, Organization, { isDefault: true }, { isDefault: false });
 
       // Then set the new default workspace
-      await manager.update(Organization, { id: organizationId }, { isDefault: true });
+      await updateSecurityEntity(manager, Organization, { id: organizationId }, { isDefault: true });
     }, manager || this.manager);
   }
 

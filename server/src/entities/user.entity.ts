@@ -1,3 +1,4 @@
+import type { WorkspaceAuthentication } from '@modules/mcp-oauth/protocol';
 import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
 import {
   Entity,
@@ -228,6 +229,11 @@ export class User extends BaseEntity {
   isSSOLogin: boolean;
   sessionId: string;
   roleGroup: USER_ROLE;
+  workspaceAuthentication?: WorkspaceAuthentication;
+  oauthGrantId?: string;
+  oauthClientId?: string;
+  oauthScopes?: string[];
+  oauthAppId?: string;
   tjApiSource?: string;
   // Session provenance, mirrored from the JWT. Session kinds: personal-access-tokens/AGENTS.md.
   isPATLogin?: boolean;

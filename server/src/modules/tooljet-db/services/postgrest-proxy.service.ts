@@ -3,6 +3,7 @@ import { isEmpty } from 'lodash';
 import { EntityManager, In, QueryFailedError } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import * as proxy from 'express-http-proxy';
+import type { RequestHandler } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -187,7 +188,7 @@ export class PostgrestProxyService {
     }
   }
 
-  protected httpProxy = proxy(this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001', {
+  protected httpProxy: RequestHandler = proxy(this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001', {
     proxyReqPathResolver: function (req) {
       return replaceUrlForPostgrest(req.url);
     },

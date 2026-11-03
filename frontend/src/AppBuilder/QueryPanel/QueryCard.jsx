@@ -185,7 +185,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                     <a
                       className="text-truncate"
                       data-tooltip-id="query-card-local-ds-info"
-                      href="https://docs.tooljet.com/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
+                      href="https://docs.tooljet.com/docs/setup/upgrade-to-v3#local-data-sources"
                       target="_blank"
                       rel="noreferrer"
                     >

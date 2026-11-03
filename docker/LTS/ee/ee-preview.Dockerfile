@@ -1,4 +1,4 @@
-FROM node:22.15.1 AS builder
+FROM node:22.23.4 AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
@@ -47,13 +47,11 @@ RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools 
 RUN mkdir -p /app
 WORKDIR /app
 
-# Set GitHub token, branch and repository URL as build arguments
-ARG CUSTOM_GITHUB_TOKEN
+# GitHub token is a BuildKit secret (--secret id=github_token), mounted only for the steps that
+# fetch private repos and passed to git via env, so it never lands in a layer, the image config
+# or the build provenance like a build arg does.
 ARG BRANCH_NAME
 ARG REPO_URL=https://github.com/ToolJet/ToolJet.git
-
-# Clone and checkout the frontend repository
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
 RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
@@ -69,7 +67,10 @@ RUN if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
     fi
 
 # Handle submodules - try normal submodule update first, if it fails clone directly from base repo
-RUN if git submodule update --init --recursive; then \
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    if git submodule update --init --recursive; then \
   echo "Submodules initialized successfully"; \
   # Checkout the same branch in submodules if it exists, otherwise fallback to lts-3.16
   git submodule foreach " \
@@ -85,12 +86,12 @@ else \
   # Clone frontend/ee submodule directly
   if [ ! -d "frontend/ee" ]; then \
     mkdir -p frontend/ee; \
-    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-frontend.git frontend/ee; \
+    git clone https://github.com/ToolJet/ee-frontend.git frontend/ee; \
   fi; \
   # Clone server/ee submodule directly  
   if [ ! -d "server/ee" ]; then \
     mkdir -p server/ee; \
-    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-server.git server/ee; \
+    git clone https://github.com/ToolJet/ee-server.git server/ee; \
   fi; \
   # Checkout the same branch in EE submodules if it exists, otherwise fallback to lts-3.16
   cd frontend/ee && \
@@ -155,7 +156,7 @@ RUN npm --prefix server run build
 # apt-get update fails with exit 100. Bookworm also matches the builder stage,
 # which fixes the libprotobuf ABI mismatch for the copied nsjail binary.
 # ---------------------------------------------------------------------------
-FROM node:22.15.1-bookworm
+FROM node:22.23.4-bookworm
 
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
@@ -164,6 +165,11 @@ RUN apt-get update -yq \
 
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
+
+# Node 22.15.1 ships tz 2025a, missing the Canada DST change of 1 Nov 2026; ICU 2026e files from unicode-org/icu-data. Remove when Node tz >= 2026e.
+COPY ./docker/icu-tz /usr/local/share/icu-tz
+ENV ICU_TIMEZONE_FILES_DIR=/usr/local/share/icu-tz
+RUN node -e "if (process.versions.tz < '2026e') throw new Error('stale tz data: ' + process.versions.tz)"
 
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee

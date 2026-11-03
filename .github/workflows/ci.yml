@@ -30,10 +30,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Use Node.js 22.15.1
+      - name: Use Node.js 22.23.4
         uses: actions/setup-node@v3
         with:
-          node-version: 22.15.1
+          node-version: 22.23.4
 
       # Cache server node modules to speed up subsequent builds
       - name: Cache server node modules
@@ -124,10 +124,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Use Node.js 22.15.1
+      - name: Use Node.js 22.23.4
         uses: actions/setup-node@v3
         with:
-          node-version: 22.15.1
+          node-version: 22.23.4
 
       # Cache server node modules to speed up subsequent builds
       - name: Cache server node modules
@@ -185,10 +185,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Use Node.js 22.15.1
+      - name: Use Node.js 22.23.4
         uses: actions/setup-node@v3
         with:
-          node-version: 22.15.1
+          node-version: 22.23.4
 
       # Cache server node modules to speed up subsequent builds
       - name: Cache server node modules
@@ -245,10 +245,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Use Node.js 22.15.1
+      - name: Use Node.js 22.23.4
         uses: actions/setup-node@v3
         with:
-          node-version: 22.15.1
+          node-version: 22.23.4
 
       # Cache server node modules to speed up subsequent builds
       - name: Cache server node modules
@@ -301,7 +301,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30 # Set a timeout of 30 minutes
     needs: build
-    container: node:22.15.1-bullseye
+    container: node:22.23.4-bookworm
     services:
       postgres:
         image: postgres
@@ -340,7 +340,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30 # Set a timeout of 30 minutes
     needs: build
-    container: node:22.15.1-bullseye
+    container: node:22.23.4-bookworm
     services:
       postgres:
         image: postgres
