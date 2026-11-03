@@ -3,6 +3,7 @@ import { determineJustifyContentValue } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { noop } from 'lodash';
 import { isCellContentOverflowing, placeCaretAtEnd } from '../utils';
+import useStore from '@/AppBuilder/_stores/store';
 
 /**
  * StringRenderer - Pure string value renderer with editing support
@@ -25,6 +26,11 @@ import { isCellContentOverflowing, placeCaretAtEnd } from '../utils';
  * @param {React.Component} props.SearchHighlightComponent - Optional component for search highlighting
  * @param {boolean} props.enableTabNavigation - Opt in to keyboard editing: makes the idle cell focusable
  *                  so Tab (and a single click) enters edit mode, and focuses the editor once it renders.
+ * @param {Object} props.validationConfig - Validation rule config (regex/minLength/maxLength/customRule),
+ *                  used to validate the in-progress draft value while editing, ahead of the commit on blur.
+ * @param {Function} props.onValidationChange - Reports the effective ({isValid, validationError}) —
+ *                  draft-based while editing, prop-driven/committed otherwise — to a parent that
+ *                  displays its own validation UI (e.g. KeyValuePair's row-level error text).
  */
 export const StringRenderer = ({
   value = '',
@@ -44,11 +50,38 @@ export const StringRenderer = ({
   setIsEditing = noop,
   widgetType,
   enableTabNavigation = false,
+  validationConfig,
+  onValidationChange,
 }) => {
   const ref = useRef(null);
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [draftValidation, setDraftValidation] = useState(null);
   // const [isEditing, setIsEditing] = useState(false);
+
+  const effectiveIsValid = draftValidation ? draftValidation.isValid : isValid;
+  const effectiveValidationError = draftValidation ? draftValidation.validationError : validationError;
+
+  const validateDraft = (draftValue) => {
+    if (!validationConfig) return;
+    setDraftValidation(
+      useStore.getState().validateWidget({
+        validationObject: {
+          regex: { value: validationConfig?.regex },
+          minLength: { value: validationConfig?.minLength },
+          maxLength: { value: validationConfig?.maxLength },
+          customRule: { value: validationConfig?.customRule },
+        },
+        widgetValue: draftValue,
+        customResolveObjects: { cellValue: draftValue },
+      })
+    );
+  };
+
+  useEffect(() => {
+    onValidationChange?.({ isValid: effectiveIsValid, validationError: effectiveValidationError });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveIsValid, effectiveValidationError]);
 
   // Set on pointerdown so onFocus can tell pointer-driven focus from keyboard focus.
   const pointerFocusRef = useRef(false);
@@ -103,7 +136,7 @@ export const StringRenderer = ({
       <div
         onMouseMove={() => !hovered && setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className={`${!isValid ? 'is-invalid h-100' : ''} ${isEditing ? 'h-100 content-editing' : ''} h-100`}
+        className={`${!effectiveIsValid ? 'is-invalid h-100' : ''} ${isEditing ? 'h-100 content-editing' : ''} h-100`}
       >
         {isEditing ? (
           <div
@@ -115,7 +148,7 @@ export const StringRenderer = ({
             // mid-commit — behaviour that varies by engine.
             tabIndex={enableTabNavigation ? 0 : undefined}
             className={`${
-              !isValid ? 'is-invalid' : ''
+              !effectiveIsValid ? 'is-invalid' : ''
             } h-100 text-container long-text-input d-flex align-items-safe-center ${
               darkMode ? 'textarea-dark-theme' : ''
             } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
@@ -127,8 +160,10 @@ export const StringRenderer = ({
               position: 'relative',
               height: '100%',
             }}
+            onInput={(e) => validateDraft(e.target.textContent)}
             onBlur={(e) => {
               setIsEditing(false);
+              setDraftValidation(null);
               if (value !== e.target.textContent) {
                 onChange?.(e.target.textContent);
               }
@@ -143,15 +178,16 @@ export const StringRenderer = ({
               e.stopPropagation();
             }}
             suppressContentEditableWarning={true}
-            dangerouslySetInnerHTML={{ __html: value }}
-          />
+          >
+            {value}
+          </div>
         ) : (
           <div
             ref={ref}
             onClick={() => setIsEditing(true)}
             // A pointer (mouse, touch or pen) must enter edit mode from onClick above, never from onFocus.
-            // Focus lands during pointerdown/mousedown, and entering edit mode there swaps the display div with editor div,
-            // whose dangerouslySetInnerHTML detaches the node the press landed on, so the browser then never dispatches the click at all.
+            // Focus lands during pointerdown/mousedown, and entering edit mode there swaps the display div
+            // for the editor div, detaching the node the press landed on, so the browser then never dispatches the click at all.
             // That click is what carries row selection, onRowClicked and selectedCell up to the <td>/<tr>
             // so entering edit mode from focus silently breaks "Select row on cell edit".
             onPointerDown={enableTabNavigation ? () => (pointerFocusRef.current = true) : undefined}
@@ -174,7 +210,7 @@ export const StringRenderer = ({
             // Reset the flag on the way out, so a press that never produced a click can't strand it.
             onBlur={enableTabNavigation ? () => (pointerFocusRef.current = false) : undefined}
             className={`${
-              !isValid ? 'is-invalid' : ''
+              !effectiveIsValid ? 'is-invalid' : ''
             } h-100 text-container long-text-input d-flex align-items-center ${
               darkMode ? 'textarea-dark-theme' : ''
             } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
@@ -191,9 +227,9 @@ export const StringRenderer = ({
           </div>
         )}
       </div>
-      {widgetType !== 'KeyValuePair' && !isValid && (
+      {widgetType !== 'KeyValuePair' && !effectiveIsValid && (
         <div className="invalid-feedback text-truncate" onClick={focusInput}>
-          {validationError}
+          {effectiveValidationError}
         </div>
       )}
     </div>

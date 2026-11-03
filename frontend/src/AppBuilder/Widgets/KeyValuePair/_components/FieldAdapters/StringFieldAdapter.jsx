@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { StringRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/StringRenderer';
 import { useStringValidation } from '@/AppBuilder/Shared/DataTypes/hooks/useValidation';
 
@@ -22,12 +22,9 @@ export const StringField = ({
   field,
   onValidationChange,
 }) => {
+  // Committed-value fallback; StringRenderer itself reports the effective (draft-while-editing,
+  // committed otherwise) validation state back via onValidationChange.
   const { isValid, validationError } = useStringValidation(field, value);
-
-  // Expose validation state to parent
-  useEffect(() => {
-    onValidationChange?.({ isValid, validationError });
-  }, [isValid, validationError, onValidationChange]);
 
   return (
     <StringRenderer
@@ -45,6 +42,8 @@ export const StringField = ({
       id={id}
       setIsEditing={setIsEditing}
       widgetType="KeyValuePair"
+      validationConfig={field}
+      onValidationChange={onValidationChange}
     />
   );
 };
