@@ -42,8 +42,16 @@ function DrawerFooter({
     const baseKeyCallback = { key: 'Escape', callbackFn: onClose };
     const keyCallbackFnArray = [baseKeyCallback];
 
+    // Enter is the keyboard twin of the primary button, so it is inert whenever that button is disabled.
+    const unlessDisabled =
+      (callbackFn) =>
+      (...args) => {
+        if (shouldDisableCreateBtn || fetching) return;
+        callbackFn(...args);
+      };
+
     const addEnterCallback = (callbackFn) => {
-      keyCallbackFnArray.push({ key: 'Enter', callbackFn });
+      keyCallbackFnArray.push({ key: 'Enter', callbackFn: unlessDisabled(callbackFn) });
     };
 
     const formType = initiator;
@@ -67,7 +75,7 @@ function DrawerFooter({
     }
 
     if (formType === 'CreateRowForm') {
-      keyCallbackFnArray.push({ key: 'Shift, Enter', callbackFn: onCreate, args: [true] });
+      keyCallbackFnArray.push({ key: 'Shift, Enter', callbackFn: unlessDisabled(onCreate), args: [true] });
     }
 
     const cleanup = triggerKeyboardShortcut(keyCallbackFnArray, initiator);
@@ -83,6 +91,8 @@ function DrawerFooter({
     isForeignKeyDraweOpen,
     isEditMode,
     editForeignKeyInCreateTable,
+    shouldDisableCreateBtn,
+    fetching,
   ]);
 
   const drawerDocumentationsLinks = {

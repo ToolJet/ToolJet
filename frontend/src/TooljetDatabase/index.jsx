@@ -7,6 +7,8 @@ import { pageTitles, fetchAndSetWindowTitle } from '@white-label/whiteLabelling'
 import { canAccessTooljetDbDashboard } from '@/_helpers/utils';
 import { TooljetDatabaseContext } from './context';
 import { TooljetDatabaseProvider } from './TooljetDatabaseContext';
+import { HeaderSlotPortal } from './HeaderSlotPortal';
+import EnvironmentSwitcher from './EnvironmentSwitcher';
 import { useTjdbActions, useIsDevelopmentEnvironment } from './_stores/tjdbStore';
 import './styles/styles.scss';
 
@@ -18,6 +20,8 @@ const TooljetDatabase = () => {
   );
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
+  // `tables` starts empty, so "no tables yet" and "workspace has none" look the same until the first list fetch succeeds.
+  const [tablesLoaded, setTablesLoaded] = useState(false);
   const [searchParam, setSearchParam] = useState('');
   const [selectedTable, setSelectedTable] = useState({});
   const [selectedTableData, setSelectedTableData] = useState([]);
@@ -73,6 +77,8 @@ const TooljetDatabase = () => {
       setOrganizationId,
       tables,
       setTables,
+      tablesLoaded,
+      setTablesLoaded,
       columns,
       setColumns,
       selectedTable,
@@ -101,6 +107,7 @@ const TooljetDatabase = () => {
       searchParam,
       organizationId,
       tables,
+      tablesLoaded,
       columns,
       selectedTable,
       selectedTableData,
@@ -135,6 +142,9 @@ const TooljetDatabase = () => {
   return (
     <div className="page-wrapper tooljet-database">
       <TooljetDatabaseProvider value={value}>
+        <HeaderSlotPortal>
+          <EnvironmentSwitcher />
+        </HeaderSlotPortal>
         <TooljetDatabasePage totalTables={tables.length || 0} collapseSidebar={collapseSidebar} />
       </TooljetDatabaseProvider>
     </div>

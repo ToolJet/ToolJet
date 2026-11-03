@@ -1,8 +1,8 @@
 import React, { useContext, ReactNode, Dispatch, SetStateAction } from 'react';
-// Single context object, defined in context.js so components outside the TooljetDatabase page
-// (e.g. the shared page Header) can read it without pulling in index.jsx's import chain.
-// This file only adds the provider + hook sugar on top; both `useContext(TooljetDatabaseContext)`
-// and `useTooljetDatabaseContext()` therefore resolve against the same provider.
+// Single context object, defined in context.js so components can read it without pulling in
+// index.jsx's import chain. This file only adds the provider + hook sugar on top; both
+// `useContext(TooljetDatabaseContext)` and `useTooljetDatabaseContext()` therefore resolve against
+// the same provider.
 import { TooljetDatabaseContext } from './context';
 
 export type TooljetDatabaseContextValue = {
@@ -18,6 +18,8 @@ export type TooljetDatabaseContextValue = {
   setSelectedTableData: Dispatch<SetStateAction<unknown[]>>;
   tables: unknown[];
   setTables: Dispatch<SetStateAction<unknown[]>>;
+  tablesLoaded: boolean;
+  setTablesLoaded: Dispatch<SetStateAction<boolean>>;
   columns: unknown[];
   setColumns: Dispatch<SetStateAction<unknown[]>>;
   totalRecords: number;

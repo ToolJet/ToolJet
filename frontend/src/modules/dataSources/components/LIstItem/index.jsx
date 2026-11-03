@@ -52,6 +52,7 @@ export const ListItem = ({
   const [rowHovered, setRowHovered] = useState(false);
   const [pushModalOpen, setPushModalOpen] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   const menuBtnRef = useRef(null);
   const hasMenu = menuOptions?.length > 0;
   const wsCurrentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
@@ -262,10 +263,10 @@ export const ListItem = ({
             <Popover
               {...overlayProps}
               id={`datasource-row-menu-${dataSource.id}`}
-              className="transparent-popover"
+              className={cx('transparent-popover', { 'dark-theme': darkMode })}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="datasource-folder-context-menu">
+              <div className={cx('datasource-folder-context-menu', { 'dark-theme': darkMode })}>
                 {menuOptions.map((option) => (
                   <button
                     key={option.label}

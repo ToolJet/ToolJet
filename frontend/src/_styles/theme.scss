@@ -12905,6 +12905,12 @@ tbody {
     color: var(--slate12);
     border-bottom: 1px solid var(--slate5);
   }
+
+  // Long unbroken names (e.g. "Delete <folder name>") must wrap instead of overflowing the modal.
+  .modal-title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
 }
 
 .gitsync-modal-body {

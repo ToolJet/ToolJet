@@ -71,7 +71,7 @@ export default function useMigrationModal() {
         ...emptyState,
         isOpen: true,
         sql: options.initialSql || '',
-        sqlOpen: !!options.initialSql,
+        sqlOpen: !!options.initialSql || !!options.sqlRequired,
         sqlRequired: !!options.sqlRequired,
         depsLoading: !!options.tableId,
       });

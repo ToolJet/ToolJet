@@ -279,10 +279,34 @@
     color: var(--icon-default, #6a727c);
   }
 
+}
+
+.move-ds-select__menu-portal {
   .move-ds-select__menu {
     font-size: 13px;
     border-radius: 6px;
+    background: var(--base, #fff);
+    border: 1px solid var(--border-weak, #e4e7eb);
     box-shadow: 0px 0px 1px rgba(48, 50, 51, 0.05), 0px 8px 16px rgba(48, 50, 51, 0.1);
+  }
+
+  .move-ds-select__option {
+    color: var(--text-default, #1b1f24);
+    background: transparent;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+
+    &--is-focused {
+      background: var(--slate3, #f1f3f5);
+    }
+
+    &--is-selected {
+      background: var(--indigo3, #f0f4ff);
+    }
+  }
+
+  .move-ds-select__menu-notice {
+    color: var(--text-placeholder, #6a727c);
   }
 }
 

@@ -20,6 +20,7 @@ import {
   VERSION_BADGES,
   isCurrentBranchRow,
   scopeVersionsForQueryPicker,
+  shouldOfferDefaultBranchDraft,
   versionBadge,
   versionLabel,
 } from '@/_helpers/versionLabels';
@@ -34,7 +35,8 @@ export function Workflows({ options, optionsChanged, currentState }) {
   const [_selectedWorkflowId, setSelectedWorkflowId] = useState(undefined);
   const [params, setParams] = useState([...(options.params ?? [{ key: '', value: '' }])]);
   const [syncExecution, setSyncExecution] = useState(options.syncExecution ?? true);
-  const [versionOptions, setVersionOptions] = useState([]);
+  const [allVersionOptions, setVersionOptions] = useState([]);
+  const [versionRows, setVersionRows] = useState([]);
 
   // Portable ids post-migration — plain value match, no name-fallback needed.
   const resolvedWorkflowId = workflowOptions.find((o) => o.value === options.workflowId)?.value ?? null;
@@ -57,6 +59,13 @@ export function Workflows({ options, optionsChanged, currentState }) {
     isOnMain && options.workflowVersionId === WORKFLOW_CURRENT_BRANCH_SENTINEL
       ? DEFAULT_BRANCH_DRAFT_SENTINEL
       : options.workflowVersionId;
+
+  const versionOptions = shouldOfferDefaultBranchDraft(versionRows, {
+    isOnFeatureBranch,
+    pinnedValue: options.workflowVersionId,
+  })
+    ? allVersionOptions
+    : allVersionOptions.filter((o) => o.value !== DEFAULT_BRANCH_DRAFT_SENTINEL);
 
   const isOrphanedVersionPin = !!displayVersionValue && !versionOptions.some((o) => o.value === displayVersionValue);
   // Orphaned pin still resolves fine server-side by name; redirect to the existing
@@ -120,6 +129,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
         .getAll(resolvedWorkflowAppId, undefined, true)
         .then((data) => {
           const all = data?.versions || [];
+          setVersionRows(all);
           // Published versions keep storing `v.name` — the value is persisted on the query, so
           // changing it would orphan every saved workflow query. Only the branch row stores a
           // sentinel, and that row is new.
@@ -129,8 +139,9 @@ export function Workflows({ options, optionsChanged, currentState }) {
             badge: versionBadge(v),
           }));
 
-          // Always offered with git on, whether or not the rows exist yet: a pin to a missing
-          // draft fails at run time with the server's own error.
+          // Offered with git on even before the rows load; a pin to a missing draft fails at run time
+          // with the server's own error. The default-branch draft is filtered out above on a feature
+          // branch when the workflow has none there.
           const sentinelEntries = isGitSyncEnabled
             ? [
                 ...(isOnFeatureBranch

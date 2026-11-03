@@ -124,5 +124,7 @@ export class MigrateDefaultCountryFxKey1790158914904 implements MigrationInterfa
     return updatedCount;
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // One-way: the toggle is moved to the key the inspector now reads; the old key was a bug.
+  }
 }

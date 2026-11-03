@@ -119,5 +119,7 @@ export class MigrateTooltipForHtmlComponent1792137283395 implements MigrationInt
     return updatedCount;
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // One-way: the tooltip is moved to where the canvas now reads it; moving it back hides it again.
+  }
 }
