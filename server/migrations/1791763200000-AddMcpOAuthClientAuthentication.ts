@@ -1,3 +1,4 @@
+// migration-lint: allow-destructive the check only covers columns this migration adds; their defaults satisfy it
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddMcpOAuthClientAuthentication1791763200000 implements MigrationInterface {

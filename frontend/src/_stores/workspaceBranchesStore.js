@@ -1,7 +1,7 @@
 import { create, zustandDevTools } from './utils';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
 import { gitSyncService } from '@/_services/git_sync.service';
-import { getBranchNameFromUrl, setActiveBranch } from '@/_helpers/active-branch';
+import { getBranchNameFromUrl, getTabBranch, setActiveBranch } from '@/_helpers/active-branch';
 
 const initialState = {
   branches: [],
@@ -96,15 +96,15 @@ function resolveCurrentBranch(branches, activeBranchId) {
   return branches[0] || null;
 }
 
-// Resolve the active branch. The browser URL (`?branch=<name>`) is the source of truth; when
-// it's absent/unknown, fall back to the server's active/default branch.
+// Resolve the active branch: URL → this tab's last branch → server last-used/default.
 function resolveActiveBranch(branches, serverActiveBranchId) {
   if (!branches || branches.length === 0) return null;
   const urlName = getBranchNameFromUrl();
-  if (urlName) {
-    const byName = branches.find((b) => b.name === urlName);
-    if (byName) return byName;
-  }
+  const byUrl = urlName && branches.find((b) => b.name === urlName);
+  if (byUrl) return byUrl;
+  const tabBranchId = getTabBranch()?.id;
+  const byTab = tabBranchId && branches.find((b) => b.id === tabBranchId);
+  if (byTab) return byTab;
   return resolveCurrentBranch(branches, serverActiveBranchId);
 }
 

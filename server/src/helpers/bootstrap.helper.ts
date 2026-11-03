@@ -73,13 +73,7 @@ export async function handleLicensingInit(app: NestExpressApplication, logger: a
 
     logger.log('Validating hostname and subpath...');
     licenseUtilService.validateHostnameSubpath(license.Instance()?.domains);
-
-    const licenseInfo = license.Instance();
     logger.log(`✅ License validation completed`);
-    logger.log(`License valid: ${licenseInfo.isValid}`);
-    logger.log(`License terms: ${JSON.stringify(licenseInfo.terms)}`);
-
-    console.log(`License valid : ${licenseInfo.isValid} License Terms : ${JSON.stringify(licenseInfo.terms)} 🚀`);
   } catch (error) {
     logger.error('❌ Failed to initialize licensing:', error);
     throw error;
@@ -647,6 +641,25 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   );
   logger.log(`Metrics Enabled: ${configService.get('ENABLE_METRICS') === 'true'}`);
   logger.log('='.repeat(60));
+}
+
+// Inside the Kubernetes default 30s grace period, so we exit before the kubelet's SIGKILL.
+export const SHUTDOWN_TIMEOUT_MS = 20_000;
+
+/** Runs `shutdown` once per process, then exits with its code; exits 1 if it outlasts `timeoutMs`. */
+export function onceWithDeadline(
+  shutdown: (signal: string) => Promise<number>,
+  exit: (code: number) => void,
+  timeoutMs = SHUTDOWN_TIMEOUT_MS
+): (signal: string) => void {
+  let started = false;
+  return (signal) => {
+    // tini -g and each npm in the start chain all deliver the same SIGTERM.
+    if (started) return;
+    started = true;
+    setTimeout(() => exit(1), timeoutMs).unref();
+    shutdown(signal).then(exit, () => exit(1));
+  };
 }
 
 /**

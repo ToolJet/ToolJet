@@ -17,6 +17,7 @@ const List = () => {
     searchParam,
     selectedTable,
     setTables,
+    setTablesLoaded,
     setSelectedTable,
     loadingState,
     setLoadingState,
@@ -38,6 +39,7 @@ const List = () => {
       return;
     }
 
+    setTablesLoaded(true);
     if (!isEmpty(data?.result)) {
       setTables(data.result || []);
       if (localStorage.getItem('tableDetails')) {
@@ -62,7 +64,13 @@ const List = () => {
   }, []);
 
   useEffect(() => {
-    const renamedTableList = tables.map((table) => (table.id === selectedTable.id ? selectedTable : table));
+    // Merge, don't replace - selectedTable is only ever set as a thin {table_name, id} shape
+    // (see every setSelectedTable call site), while a tables[] row also carries `environments`
+    // (per-env has_relation, read by EnvironmentSwitcher). A replace here wipes that off the
+    // currently open table the moment it's selected.
+    const renamedTableList = tables.map((table) =>
+      table.id === selectedTable.id ? { ...table, ...selectedTable } : table
+    );
     setTables(renamedTableList);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTable]);
@@ -120,6 +128,7 @@ const List = () => {
               key={index}
               active={id === selectedTable.id}
               text={table_name}
+              tableId={id}
               onDeleteCallback={fetchTables}
               onClick={() => {
                 setSelectedTable({ table_name, id });

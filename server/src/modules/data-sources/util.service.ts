@@ -1050,7 +1050,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       where: { name, organizationId },
       relations: [
         'apps',
-        'dataSourceOptions',
         'appVersion',
         'appVersion.app',
         'plugin',
