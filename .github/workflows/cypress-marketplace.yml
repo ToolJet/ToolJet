@@ -120,10 +120,13 @@ jobs:
         if: matrix.edition == 'ee'
         run: |
           echo "Building EE Docker image..."
-          docker buildx build \
+          # main's Dockerfile reads the token as a build arg, lts-3.16's as a BuildKit
+          # secret; pass both so label runs work for PRs into either branch.
+          CUSTOM_GITHUB_TOKEN="${{ secrets.CUSTOM_GITHUB_TOKEN }}" docker buildx build \
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
             --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --secret id=github_token,env=CUSTOM_GITHUB_TOKEN \
             --build-arg BRANCH_NAME="$BRANCH_NAME" \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
