@@ -28,7 +28,10 @@ export const Timeline = function Timeline({
     setExposedVariable('setValue', async (value) => setValueOverride(isArray(value) ? value : []));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const timelineItems = valueOverride ?? (isArray(data) ? data : []);
+  // Non-object entries (e.g. null from a sparse JS-query result) are skipped instead of crashing the render.
+  const timelineItems = (valueOverride ?? (isArray(data) ? data : [])).filter(
+    (item) => item && typeof item === 'object'
+  );
 
   const darkModeStyle = darkMode && 'text-white-50';
 

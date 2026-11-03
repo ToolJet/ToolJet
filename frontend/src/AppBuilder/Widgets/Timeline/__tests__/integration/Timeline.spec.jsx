@@ -483,4 +483,15 @@ describe('Timeline: setValue', () => {
     await widget.act('setValue', [{ title: 'back' }]);
     await waitFor(() => expect(titles(container)).toEqual(['back']));
   });
+
+  test('[Timeline-CSA-003] setValue with a null entry skips it and renders the rest', async () => {
+    // Break this catches: only the outer array guarded — `item.iconBackgroundColor` throws on null.
+    const { container } = widget.render();
+    await waitFor(() => expect(items(container)).toHaveLength(3));
+
+    await widget.act('setValue', [{ title: 'a' }, null, undefined]);
+
+    await waitFor(() => expect(titles(container)).toEqual(['a']));
+    expect(container.querySelector('[data-cy="error-boundary-fallback"]')).toBeNull();
+  });
 });

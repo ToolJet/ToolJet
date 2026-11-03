@@ -97,7 +97,8 @@ export const Tags = function Tags({
   const parsedTags = Array.isArray(tagsData)
     ? tagsData
         .filter((tag) => {
-          const isVisible = tag?.visible?.value !== undefined ? tag.visible.value : tag?.visible !== false;
+          if (!tag || typeof tag !== 'object') return false;
+          const isVisible = tag.visible?.value !== undefined ? tag.visible.value : tag.visible !== false;
           return isVisible;
         })
         .map((tag, index) => ({

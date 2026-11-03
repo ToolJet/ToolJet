@@ -575,4 +575,16 @@ describe('Tags widget', () => {
     await widget.act('setValue', [{ title: 'back' }]);
     await waitFor(() => expect(titles()).toEqual(['back']));
   });
+
+  test('[Tags-CSA-004] setValue with a null entry skips it and renders the rest', async () => {
+    // Break this catches: `tag?.visible` letting null through as visible, then `tag.id` throwing.
+    const { container } = widget.render({ properties: dynamic("[{title:'a'}]") });
+    await mounted();
+
+    await widget.act('setValue', [{ title: 'a' }, null, undefined]);
+
+    await waitFor(() => expect(titles()).toEqual(['a']));
+    expect(container.querySelector('[data-cy="error-boundary-fallback"]')).toBeNull();
+    expect(widget.exposed().tags).toEqual(['a']);
+  });
 });
