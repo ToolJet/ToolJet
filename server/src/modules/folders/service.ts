@@ -11,8 +11,7 @@ import { FoldersUtilService } from './util.service';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { MODULES } from '@modules/app/constants/modules';
-import { APP_TYPES } from '@modules/apps/constants';
-import { FOLDER_PERMISSION_BY_APP_TYPE } from '@modules/folders/constants';
+import { DATA_SOURCE_FOLDER_TYPE, FOLDER_PERMISSION_BY_TYPE } from '@modules/folders/constants';
 
 @Injectable()
 export class FoldersService implements IFoldersService {
@@ -64,7 +63,11 @@ export class FoldersService implements IFoldersService {
         user.organizationId
       );
       if (isGitSyncEnabled && isMultiBranchingEnabled) {
-        throw new BadRequestException('Folders with git-synced apps cannot be edited');
+        const message =
+          folder.type === DATA_SOURCE_FOLDER_TYPE
+            ? 'Folders with git-synced data sources cannot be renamed'
+            : 'Folders with git-synced apps cannot be edited';
+        throw new BadRequestException(message);
       }
 
       const result = await catchDbException(async () => {
@@ -92,6 +95,7 @@ export class FoldersService implements IFoldersService {
           { resource: MODULES.FOLDER },
           { resource: MODULES.WORKFLOW_FOLDER },
           { resource: MODULES.MODULE_FOLDER },
+          { resource: MODULES.DATA_SOURCE_FOLDER },
         ],
         organizationId: user.organizationId,
       },
@@ -106,7 +110,7 @@ export class FoldersService implements IFoldersService {
       return;
     }
 
-    const folderPermission = FOLDER_PERMISSION_BY_APP_TYPE[folder.type as APP_TYPES];
+    const folderPermission = FOLDER_PERMISSION_BY_TYPE[folder.type];
     const canDeleteFolder = folderPermission
       ? userPermissions[folderPermission.deleteKey]
       : userPermissions.folderDelete;
@@ -136,18 +140,24 @@ export class FoldersService implements IFoldersService {
     const { isEnabled: isGitSyncEnabled, isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(
       user.organizationId
     );
-    // Multi-branch: block deletion of any folder that has apps on any branch.
+    // Multi-branch: block deletion of any folder that still has content on any branch.
     // Single-branch: allow deletion only if the folder is empty (same check, same guard).
+    // Data-source folders track their content in folder_data_sources; every other folder type in
+    // folder_apps — pick the matching source of truth.
     if (isGitSyncEnabled && isMultiBranchingEnabled) {
-      const branchNames = await this.foldersUtilService.findBranchNamesWithApps(folder.id, manager);
+      const isDataSourceFolder = folder.type === DATA_SOURCE_FOLDER_TYPE;
+      const branchNames = isDataSourceFolder
+        ? await this.foldersUtilService.findBranchNamesWithDataSources(folder.id, manager)
+        : await this.foldersUtilService.findBranchNamesWithApps(folder.id, manager);
       if (branchNames.length > 0) {
         // AllExceptionsFilter collapses every error response down to { message, ... } and
         // drops any other fields on the exception body — so the branch list is JSON-encoded
         // into the message itself and parsed back out on the frontend (same pattern already
         // used for the SSO organizationId payload in handle-response.js).
-        throw new BadRequestException(
-          JSON.stringify({ message: 'Folder with apps cannot be deleted', branches: branchNames })
-        );
+        const message = isDataSourceFolder
+          ? 'Folder with data sources cannot be deleted'
+          : 'Folder with apps cannot be deleted';
+        throw new BadRequestException(JSON.stringify({ message, branches: branchNames }));
       }
     }
   }

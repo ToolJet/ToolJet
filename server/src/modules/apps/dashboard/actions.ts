@@ -3,7 +3,7 @@ import { UserAppsPermissions, UserFolderPermissions, UserPermissions } from '@mo
 import { MODULES } from '@modules/app/constants/modules';
 import { APP_TYPES } from '@modules/apps/constants';
 import { FOLDER_RESOURCE_TYPE_BY_APP_TYPE } from '@modules/folder-apps/ability';
-import { FOLDER_PERMISSION_BY_APP_TYPE } from '@modules/folders/constants';
+import { FOLDER_PERMISSION_BY_TYPE } from '@modules/folders/constants';
 import { SqlParams } from './sql-params';
 
 // Row actions are display hints mirroring apps/ability/{app,workflow}.ability.ts and
@@ -119,7 +119,7 @@ export function folderActions(
   const privileged = isAdmin(p) || folder.ownerId === userId;
   const f = folderPermissionsFor(p, type);
   const canRename = privileged || (!!f && (f.isAllEditable || f.editableFoldersId.includes(folder.id)));
-  const canDelete = privileged || !!p[FOLDER_PERMISSION_BY_APP_TYPE[type]?.deleteKey ?? 'folderDelete'];
+  const canDelete = privileged || !!p[FOLDER_PERMISSION_BY_TYPE[type]?.deleteKey ?? 'folderDelete'];
   // folders/service.ts:72 rejects every rename in multi-branch mode
   const rename = canRename && !git.multiBranch;
   // frontend/src/HomePage/Folders.jsx:86-91 — workflows are never branch-locked
