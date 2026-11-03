@@ -128,6 +128,10 @@ Widget configs live in the shared `packages/widget-definitions` package (`src/wi
 
 Moving, renaming, or removing a config key (e.g. moving `loadingState` from `styles` to `properties`) breaks existing apps. Write a migration in `server/data-migrations/`.
 
+### New look without a migration
+
+The server merges `definition` under every saved component on every load, so a new key's `definition` default is what every saved instance renders. To give only NEW instances a different value, keep the old value in `definition` and put the new one in `creationDefinition`: `addNewWidgetToTheEditor` (`AppCanvas/appCanvasUtils.js`) merges it over `definition` on drop and never saves the block itself. Precedent: `listview.js` (ListView 2.0).
+
 ## Glossary
 
 ### Universal props (`universalProps`)

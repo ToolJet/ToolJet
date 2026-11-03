@@ -1580,7 +1580,7 @@ describe('Listview: a saved ListView without any 2.0 key', () => {
   afterEach(widget.teardown);
 
   test.each(['edit', 'view'])(
-    '[Listview-COMPAT-002] renders as before in %s mode: 7px padding, bottom border, no header, current pager',
+    '[Listview-COMPAT-002] renders as before in %s mode: 7px padding, bottom border on, no header, current pager',
     async (currentMode) => {
       // Break this catches: a config default for a 2.0 key set to the new look (bordered style,
       // header on, 80px rows), which would change every ListView saved before 2.0 on its next load.
@@ -1595,13 +1595,14 @@ describe('Listview: a saved ListView without any 2.0 key', () => {
       expect(styles.gap).toEqual({ value: '{{0}}' });
       expect(properties.showHeader).toEqual({ value: '{{false}}' });
       expect(properties.paginationType).toEqual({ value: 'clientSide' });
+      // jsdom drops the var() border, so the separator itself is QA's (Listview-BRW-001).
+      expect(properties.showBorder).toEqual({ value: '{{true}}' });
       expect(properties.gridRecordHeight).toBeUndefined();
       expect(styles.recordBackgroundColor).toBeUndefined();
       expect(styles.recordBorderColor).toBeUndefined();
 
       expect(container().style.padding).toBe('7px');
       expect(rows()[0].style.height).toBe('100px');
-      expect(rows()[0].style.borderBottom).toBe('1px solid var(--cc-default-border)');
       expect(document.getElementById(`${ID}-header`)).toBeNull();
       expect(pager()).toBeTruthy();
     }

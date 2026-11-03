@@ -4,7 +4,8 @@ export const listviewConfig = {
   description: 'List multiple items',
   defaultSize: {
     width: 15,
-    height: 450,
+    // Header 60 + six 80px records with 12px gaps; the rest scroll.
+    height: 624,
   },
   defaultChildren: [
     {
@@ -12,7 +13,7 @@ export const listviewConfig = {
       layout: {
         top: 10,
         left: 3,
-        height: 80,
+        height: 60,
         width: 6,
       },
       properties: ['source'],
@@ -21,7 +22,7 @@ export const listviewConfig = {
     {
       componentName: 'Text',
       layout: {
-        top: 30,
+        top: 25,
         left: 11,
         height: 30,
         width: 12,
@@ -32,7 +33,7 @@ export const listviewConfig = {
     {
       componentName: 'Button',
       layout: {
-        top: 30,
+        top: 25,
         left: 25,
         height: 30,
         width: 17,
@@ -275,6 +276,14 @@ export const listviewConfig = {
       showBorder: { value: '{{true}}' },
       rowsPerPage: { value: '{{10}}' },
       enablePagination: { value: '{{false}}' },
+      // 2.0 keys hold the OLD look: the server merges these under every saved ListView on load.
+      // gridRecordHeight has no default so saved grid ListViews keep using rowHeight.
+      showHeader: { value: '{{false}}' },
+      headerHeight: { value: '{{60}}' },
+      paginationType: { value: 'clientSide' },
+      totalRecords: { value: '{{10}}' },
+      recordVisibility: { value: '{{true}}' },
+      disableRecords: { value: '{{false}}' },
     },
     events: [],
     styles: {
@@ -282,6 +291,41 @@ export const listviewConfig = {
       borderColor: { value: 'var(--cc-weak-border)' },
       borderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      // No record colour/border/shadow defaults: the legacy style renders from the widget's own styles.
+      listStyle: { value: 'legacy' },
+      gap: { value: '{{0}}' },
+      recordBorderRadius: { value: '{{0}}' },
+      headerBackgroundColor: { value: 'transparent' },
+      headerDividerColor: { value: 'var(--cc-weak-border)' },
+    },
+  },
+  // The NEW look, written over `definition` only when a ListView is dropped (D-18).
+  creationDefinition: {
+    properties: {
+      data: {
+        value: `{{[
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 1' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 2', buttonText: 'Button 2' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 3', buttonText: 'Button 3' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 4', buttonText: 'Button 4' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 5', buttonText: 'Button 5' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 6', buttonText: 'Button 6' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 7', buttonText: 'Button 7' },
+    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 8', buttonText: 'Button 8' },
+  ]}}`,
+      },
+      showHeader: { value: '{{true}}' },
+      rowHeight: { value: '80' },
+      gridRecordHeight: { value: '150' },
+    },
+    styles: {
+      listStyle: { value: 'bordered' },
+      gap: { value: '{{12}}' },
+      recordBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      recordDividerColor: { value: 'var(--cc-weak-border)' },
+      recordBorderColor: { value: 'var(--cc-weak-border)' },
+      recordBorderRadius: { value: '{{6}}' },
+      recordBoxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

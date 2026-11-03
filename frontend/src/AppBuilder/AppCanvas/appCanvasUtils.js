@@ -68,6 +68,11 @@ export const addNewWidgetToTheEditor = (
   const parentCanvasType = realCanvasRef?.getAttribute('component-type');
   const componentData = deepClone(componentMeta);
 
+  // `definition` is what saved instances load with; a new instance also gets `creationDefinition`.
+  const { creationDefinition } = componentData;
+  delete componentData.creationDefinition;
+  if (creationDefinition) _.merge(componentData.definition, creationDefinition);
+
   // Custom tab (LibraryComponent host widget): stamp WHICH library component this
   // instance renders — mirrors the moduleInfo pattern below. Must run before the
   // defaultWidth/Height reads so a manifest-declared size wins.
