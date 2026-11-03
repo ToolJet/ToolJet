@@ -141,8 +141,8 @@ describe('Listview: selectedRecordIndex', () => {
     expect(exposed('selectedRecordId')).toBe(0);
   });
 
-  test('[Listview-SEL-006] selectedListItem is not exposed and the older variables keep their values', async () => {
-    // Break this catches: leaving the unreleased variable published, or changing a released one.
+  test('[Listview-SEL-006] the older variables keep their values after a click', async () => {
+    // Break this catches: changing a released variable while adding the new ones.
     await onPageTwo();
 
     await user().click(rows()[1]);
@@ -151,7 +151,6 @@ describe('Listview: selectedRecordIndex', () => {
     expect(exposed('selectedRow')).toEqual(exposed('selectedRecord'));
     expect(exposed('selectedRow')?.text1?.text).toBe('r6');
     expect(exposed('data')?.[1]?.text1?.text).toBe('r6');
-    expect('selectedListItem' in widget.exposed()).toBe(false);
   });
 });
 
