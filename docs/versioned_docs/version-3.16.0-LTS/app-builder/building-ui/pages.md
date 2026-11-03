@@ -15,6 +15,21 @@ You can add the following items to the navigation menu in ToolJet:
 
 This guide discusses how pages and the navigation menu work, how to create new navigation items, and manage them.
 
+## Pages and Navigation Panel
+
+You manage pages and configure the navigation menu from the **Pages and navigation** panel in the right sidebar. To open it, do one of the following:
+
+- Click the **Page settings** icon in the right sidebar.
+- Click an empty area of the navigation menu on the canvas.
+- Hover over the navigation menu on the canvas and click the edit icon next to the **Page and nav** label.
+
+The panel has two tabs:
+
+- **Properties**: Contains the **Pages And Menu** section, where you add and manage pages and nav items, and the **Header And Navigation** section, where you configure the [app header](#app-header) and the [navigation menu](#navigation-menu).
+- **Styles**: Customize the colors and pill radius of the navigation menu. See [Navigation Menu Styles](#navigation-menu-styles).
+
+<img className="screenshot-full img-s" src="/img/app-builder/multi-page/pages-and-navigation-panel.png" alt="Pages and navigation panel with the Properties tab open" />
+
 ## Page Properties
 
 Each page in ToolJet comes with properties that define its identity and behavior. These properties help in organizing, referencing, and securing pages within your application.
@@ -23,19 +38,21 @@ Each page in ToolJet comes with properties that define its identity and behavior
 
 ### Name
 
-A display name for the page, shown in the application's navigation menu. It is also used to reference the page within the ToolJet application. You can optionally add an icon to make the page easier to identify in the menu. The page name and icon can be updated using the kebab menu (three dots) next to the page name and then selecting **Edit Page Details**.
+A display name for the page, shown in the application's navigation menu. It is also used to reference the page within the ToolJet application. You can optionally add an icon to make the page easier to identify in the menu. The page name and icon can be updated using the kebab menu (three dots) next to the page name and then selecting **Edit page details**.
 
 <img className="screenshot-full img-m" src="/img/app-builder/multi-page/page-name.png" alt="App Builder: Canvas"/>
 
 ### Handle
 
-The page handle is a unique identifier used to generate a shareable URL for the page. It is appended as a slug to the end of your application URL. By default, it's auto-generated from the page name. You can change it manually from the **Edit Page Details** option.
+The page handle is a unique identifier used to generate a shareable URL for the page. It is appended as a slug to the end of your application URL. By default, it's auto-generated from the page name. You can change it manually from the **Edit page details** option.
 
 ### Home Page
 
-The home page is the default landing page when the app launches. Only one page can be designated as the home page in your application. It cannot be deleted, disabled, or hidden from the page menu. A page can be marked as the home page using the kebab menu (three dots) next to the page name or by selecting the **Edit Page Details** option.
+The home page is the default landing page when the app launches. Only one page can be designated as the home page in your application. It cannot be deleted, disabled, or hidden from the page menu. A page can be marked as the home page using the kebab menu (three dots) next to the page name or by selecting the **Edit page details** option.
 
 ### Permissions
+
+<PlanBadge type="enterprise" />
 
 Page permissions control who can access a particular page. You can choose to:
 
@@ -43,7 +60,7 @@ Page permissions control who can access a particular page. You can choose to:
 - Restrict access to selected users
 - Restrict access to selected [user groups](/docs/user-management/role-based-access/user-roles)
 
-To configure page permissions, click the kebab menu (three dots) next to the page name, select **Page Permission**, and select a permission option from the popup.
+To configure page permissions, click the kebab menu (three dots) next to the page name, select **Page permission**, and select a permission option from the popup.
 
 ### Disable Page
 
@@ -53,6 +70,19 @@ To configure page permissions, click the kebab menu (three dots) next to the pag
 
 You can hide a page from the navigation menu in the released application. However, hidden pages can still be accessed using the Switch Page action or by navigating directly to the page URL. Pages set as Home cannot be hidden.
 
+To hide a page conditionally, open the page's edit popover, click the **fx** button next to **Hide this page on navigation**, and enter an expression that resolves to `true` or `false`, for example `{{!globals.currentUser.groups.includes("admin")}}`. The page's visibility updates when the values the expression references change. A hidden or disabled page can't be marked as the home page.
+
+### Page Indicators
+
+Icons next to an item in the pages panel show its state. Hover over an icon to see what it means:
+
+- A home icon marks the app's home page.
+- A skip icon marks a disabled page.
+- An eye-off icon marks an item hidden from the navigation menu.
+- A lock icon marks a page with page permissions applied.
+
+Nav items also show their type next to the name: **URL**, **TJ app**, or **Custom**.
+
 ## Header and Navigation Menu
 
 ### App Header
@@ -61,19 +91,27 @@ The app header section allows you to control what is displayed in the applicatio
 
 <img className="screenshot-full img-m" src="/img/app-builder/multi-page/app-header.png" alt="App Builder: Canvas"/>
 
-- **Show app header**: Toggle this on to display the app header.
+- **Show app title**: Toggle this on to display the app title in the header. The logo is controlled separately by **Show logo**.
 - **Show logo**: Toggle this on to display the application logo. You can update the logo from the [white labeling](/docs/tj-setup/org-branding/white-labeling/) settings.
-- **Title**: Set a title for the application. This will be displayed in the app header.
+- **Title**: Set a title for the application. This will be displayed in the app header. It defaults to the app name, can't be empty, and can be up to 32 characters long.
+
+:::info
+Hiding the app title or the logo is available on Team and Enterprise plans. On other plans, both are always shown and their toggles are disabled.
+:::
 
 ### Navigation Menu
 
 The **Navigation Menu** lets users navigate between pages, external web pages, and other ToolJet applications in your application. You can customize how it looks and works, or even hide certain pages from it.
 
-#### Show Navigation Menu
-Toggle this on to display the navigation menu. When disabled, no navigation menu will be displayed, but users will still be able to navigate using events and page URLs.
+#### Hide Navigation Menu
+Toggle **Hide navigation menu** on to hide the navigation items. It's off by default. Users can still navigate using events and page URLs. The app header stays visible unless you also turn off **Show app title** and **Show logo**.
+
+To hide the menu conditionally, click **fx** and enter an expression that returns `true` or `false`, for example `{{!globals.currentUser.groups.includes('admin')}}`.
+
+When the navigation menu is hidden, the **Position**, **Style**, and **Collapsable** options aren't shown.
 
 #### Position
-Choose whether to display the navigation menu at the top or on the side of the application.
+Choose whether to display the navigation menu at the **Top** or on the **Side** of the application. The default is **Side**.
 
 **Top Navigation Menu** <br/>
 <img className="screenshot-full img-full" style={{ marginBottom:'15px' }} src="/img/app-builder/multi-page/top-nav.png" alt="App Builder: Canvas"/>
@@ -83,11 +121,75 @@ Choose whether to display the navigation menu at the top or on the side of the a
 
 #### Style
 
-**Top Navigation Menu** <br/>
-Choose the display style for the top navigation menu: Text only or Text + Icon. The top navigation menu cannot be collapsed.
+Choose how navigation items are displayed. The default is **Text and icon**.
 
-**Side Navigation Menu** <br/>
-Choose display styles from: Text only, Icon only, or Text + Icon. The side navigation menu also supports a collapsible layout.
+| Style | Top | Side |
+|:------|:---:|:----:|
+| **Text and icon** | Yes | Yes |
+| **Text only** | Yes | Yes |
+| **Icon only** | No | Yes |
+
+If you switch the position from **Side** to **Top** while **Icon only** is selected, the style changes to **Text and icon**. With **Icon only**, the side menu always shows as a collapsed icon rail.
+
+#### Collapsable
+
+Available only when **Position** is **Side** and **Style** is **Text and icon**. Set it to **True** (default) to show a button at the bottom of the side menu that lets users collapse it to icons and expand it again. Set it to **False** to keep the side menu always expanded. The top navigation menu can't be collapsed.
+
+### Navigation Menu Styles
+
+Use the **Styles** tab of the **Pages and navigation** panel to customize the navigation menu's appearance. By default, colors use your app's theme colors.
+
+**Item list**
+
+| Style | Default |
+|:------|:--------|
+| **Default text** | Text/Placeholder |
+| **Default icon** | Icon/Default |
+| **Selected text** | Text/Primary |
+| **Selected icon** | Icon/Default |
+| **Pill hover background** | Surface/Surface2 |
+| **Pill selected background** | Surface/AppBackground |
+| **Pill radius** | `6` px |
+
+**Container**
+
+| Style | Default |
+|:------|:--------|
+| **App title** | Text/Primary |
+| **Background** | Surface/Surface1 |
+| **Border** | Border/Weak |
+
+## Page Header and Footer
+
+<PlanBadge type="team" />
+
+Each page can have its own header and footer. These areas sit above and below the page canvas, and you use them for content that should stay visible on that page, such as a logo, a title, or action buttons. Header and footer settings and content are configured per page.
+
+<img className="screenshot-full img-s" src="/img/app-builder/multi-page/page-header-footer-settings.png" alt="Edit page popover with the Page header and Page footer settings" />
+
+### Enable the Header or Footer
+
+1. In the pages panel, click the page, or click the kebab menu (three dots) next to it and select **Edit page details**.
+2. Under **Page header**, turn on **Show on desktop**, **Show on mobile**, or both.
+3. Under **Page footer**, turn on **Show on desktop**, **Show on mobile**, or both.
+
+**Show on desktop** applies to the desktop layout and **Show on mobile** applies to the mobile layout, so you can, for example, show a footer only on mobile. Both are off by default for new pages. If your plan doesn't include page headers or footers, these toggles are disabled.
+
+### Add Components
+
+Drag components into the **App header** or **App footer** area on the canvas, the same way you add them to the page. The header stays at the top of the page and the footer stays at the bottom while users scroll.
+
+The following components can't be placed in a page header or footer: Accordion, Calendar, Camera, Chart, Chat, Code Editor, Container, Form, HTML Viewer, Iframe, JSON Editor, JSON Explorer, Kanban, Key Value Pair, List View, Map, PDF, QR Scanner, Tabs, Text Editor, Timeline, and Tree Select.
+
+### Style the Header or Footer
+
+Click an empty area of the header or footer on the canvas to open the **App header** or **App footer** panel in the right sidebar.
+
+| Property | Description |
+| -------- | ----------- |
+| Background | Background color of the header or footer. Defaults to the theme's surface color. |
+| Border | Color of the header's bottom border or the footer's top border. Defaults to the theme's weak border color. |
+| Height | Height in pixels, in steps of 10. Default: `60`. |
 
 ## Event Handlers
 
@@ -112,7 +214,7 @@ Exposed variables are values from a page that can be accessed throughout the app
 
 ### New Page
 
-You can add a new page to organize the application navigation or to separate different parts of your app. To add a new page, click on the **+ New page** button at the bottom of the Pages and menu panel. Enter the page name and press enter to create the page.
+You can add a new page to organize the application navigation or to separate different parts of your app. To add a new page, click the **+ New page** button at the bottom of the **Pages And Menu** section in the **Pages and navigation** panel. Enter the page name and press enter to create the page.
 
 <img className="screenshot-full img-s" src="/img/app-builder/multi-page/new-page.png" alt="App Builder: Canvas"/>
 
@@ -140,6 +242,30 @@ Items of this type cannot be set as the home page or disabled.
 
 ### Nav Group
 
+<PlanBadge type="team" />
+
 Related navigation items can be grouped together using a nav group. To add a new nav group, click the kebab menu (three dots) next to the **+ New Page** button, then select **Add nav group**. Enter the group name and press enter to create the group. You can then drag items into the group folder. You can also add an icon to the group for better visual identification.
+
+If your plan doesn't include nav groups, **Add nav group** is disabled and the pages panel shows a flat list.
+
+A group appears in the released app's navigation menu only if it contains at least one page that isn't disabled and isn't hidden. You can hide a group itself with **Hide this item on navigation** in its edit popover.
+
+### Page and Group Actions
+
+Click the kebab menu (three dots) next to a page or nav item to see these options:
+
+- **Edit page details**: Opens the edit popover, where you can rename the item and change its settings.
+- **Mark home**: Sets the page as the home page. Available for pages only.
+- **Duplicate page**: Creates a copy named `<name> (copy)` with the handle `<handle>-copy`, including its components, event handlers, visibility settings, and page header and footer, and opens it.
+- **Delete page**: Deletes the item. The home page can't be deleted.
+- **Page permission**: Restricts who can access the page. See [Permissions](#permissions).
+
+The kebab menu next to a nav group has these options:
+
+- **Edit group details**: Rename the group, change its icon, or hide it.
+- **Duplicate group**: Creates a copy of the group and all the pages in it, with `(copy)` added to each name.
+- **Delete group**: Opens a confirmation dialog. Click **Delete** to remove only the group and move its pages out of it, or **Delete group and pages** to remove the group along with its pages. A group that contains the home page can't be deleted together with its pages.
+
+The duplicate and delete actions are also available as icons at the top of the edit popover.
 
 <img className="screenshot-full img-s" src="/img/app-builder/multi-page/new-group-v2.png" alt="App Builder: Canvas"/>

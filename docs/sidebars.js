@@ -331,6 +331,7 @@ const sidebars = {
             "app-builder/anti-patterns"
           ]
         },
+        "app-builder/app-history",
         {
           "type": "category",
           "label": "Modules",
