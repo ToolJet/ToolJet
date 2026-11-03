@@ -78,6 +78,7 @@ export const SvgImage = function SvgImage({
 
   return (
     <div
+      ref={imageRef}
       style={{
         display: visibility ? '' : 'none',
         overflow: 'hidden',
@@ -93,7 +94,6 @@ export const SvgImage = function SvgImage({
         </div>
       ) : (
         <div
-          ref={imageRef}
           role="img"
           id={`component-${id}`}
           className={`svg-image-widget${isDynamicHeightEnabled ? ' svg-image-widget--dynamic' : ''}`}

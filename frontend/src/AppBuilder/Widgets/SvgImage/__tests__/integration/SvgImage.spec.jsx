@@ -1,4 +1,4 @@
-import { waitFor, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import {
   createWidgetHarness,
   binding,
@@ -227,6 +227,17 @@ describe('SvgImage widget', () => {
     });
     await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
     expect(within(container).getByRole('img', { hidden: true })).not.toBeNull();
+  });
+
+  test('[SvgImage-TIP-001] A saved app that still stores the tooltip under general keeps showing it', async () => {
+    // Break this catches: reading only properties.tooltip once SvgImage joins
+    // SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY, so an app whose data migration has not run yet (async
+    // migration mode) shows a blank tooltip on hover.
+    const { container } = widget.render({
+      afterSeed: () => widget.setComponentProperty(ID, 'tooltip', 'Company logo', 'general'),
+    });
+    await widget.session.user.hover(canvasNode(container));
+    await waitFor(() => expect(screen.getAllByText('Company logo').length).toBeGreaterThan(0));
   });
 
   test('[SvgImage-LOAD-001] Loading state swaps the vector for the shared loader and back', async () => {
