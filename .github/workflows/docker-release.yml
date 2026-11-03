@@ -134,8 +134,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          secrets: |
+            github_token=${{ secrets.CUSTOM_GITHUB_TOKEN }}
           build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=main
           file: docker/pre-release/ee/ee-production.Dockerfile
           push: true
@@ -152,8 +153,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          secrets: |
+            github_token=${{ secrets.CUSTOM_GITHUB_TOKEN }}
           build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=lts-3.16
           file: docker/LTS/ee/ee-production.Dockerfile
           push: true
@@ -222,8 +224,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          secrets: |
+            github_token=${{ secrets.CUSTOM_GITHUB_TOKEN }}
           build-args: |
-            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=lts-3.16
           file: docker/LTS/cloud/cloud-server.Dockerfile
           push: true
