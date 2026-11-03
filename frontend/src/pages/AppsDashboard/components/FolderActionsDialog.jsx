@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { Trash, Check, TriangleAlert } from 'lucide-react';
+import { Trash, Check, TriangleAlert, Folder, X } from 'lucide-react';
 import { camelCase, capitalize, startCase } from 'lodash';
 
 import { cn } from '@/lib/utils';
 import { validateName } from '@/_helpers/utils';
 import { appTypeToDisplayNameMapping } from '../helper';
+import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Rocket/Input/Input';
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxContent,
+  ComboboxList,
+  ComboboxItem,
+  ComboboxEmpty,
+} from '@/components/ui/Rocket/Combobox/Combobox';
+import { TruncatingText } from '@/components/ui/Rocket/Tooltip/TruncatedText';
 import { Field, FieldError, FieldDescription, FieldLabel } from '@/components/ui/Rocket/Field/Field';
 import {
   useAddAppToFolder,
@@ -54,7 +64,7 @@ export default function FolderActionsDialog({ open, defaultAppType }) {
 
   const [errorText, setErrorText] = useState('');
   const [name, setName] = useState(initialFolderName);
-  const [selectedFolder, setSelectedFolder] = useState('');
+  const [selectedFolder, setSelectedFolder] = useState(null);
 
   const appId = appDetails?.id;
   const appType = appDetails?.type ?? defaultAppType;
@@ -118,12 +128,12 @@ export default function FolderActionsDialog({ open, defaultAppType }) {
         break;
       }
       case 'add-to-folder': {
-        if (!selectedFolder || !appId) {
+        if (!selectedFolder?.value || !appId) {
           toast.error('Select a folder');
           return;
         }
 
-        addToFolder({ appId, folderId: selectedFolder, appType }, { onSuccess: handleResetState });
+        addToFolder({ appId, folderId: selectedFolder.value, appType }, { onSuccess: handleResetState });
         break;
       }
       case 'remove-app-from-folder': {
@@ -158,8 +168,9 @@ export default function FolderActionsDialog({ open, defaultAppType }) {
   const isAddToFolder = actionType === 'add-to-folder';
   const isFolderHasAppsWarning = actionType === 'folder-has-apps-warning';
   const isCreateOrEditFolder = ['create-folder', 'rename-folder'].includes(actionType);
-  const isRemoveAppFromFolderOrDeleteFolder = ['remove-app-from-folder', 'delete-folder'].includes(actionType);
+  const isDeleteFolder = actionType === 'delete-folder';
   const isBulkDeleteFolders = actionType === 'bulk-delete-folder';
+  const isRemoveAppFromFolder = actionType === 'remove-app-from-folder';
 
   const isNameEmpty = isCreateOrEditFolder && !name.trim();
   const isFolderToMoveSelected = isAddToFolder && !selectedFolder;
@@ -172,11 +183,12 @@ export default function FolderActionsDialog({ open, defaultAppType }) {
   const isSubmitBtnDisabled =
     hasError || isNameEmpty || isEditTypeAndNameIsSame || isFolderToMoveSelected || isFormBeingSubmitted;
 
-  const isAlertDialog = isRemoveAppFromFolderOrDeleteFolder || isBulkDeleteFolders || isFolderHasAppsWarning;
+  const isAlertDialog = isDeleteFolder || isBulkDeleteFolders || isFolderHasAppsWarning;
 
-  const submitBtnLabel =
-    actionType === 'remove-app-from-folder'
-      ? 'Remove from folder'
+  const submitBtnLabel = isRemoveAppFromFolder
+    ? 'Remove from folder'
+    : isAddToFolder
+      ? 'Move to folder'
       : isBulkDeleteFolders
         ? `Delete folder${selectedRowCount > 1 ? 's' : ''}`
         : isFolderHasAppsWarning
@@ -223,11 +235,14 @@ export default function FolderActionsDialog({ open, defaultAppType }) {
           onFolderNameChange={handleNameChange}
           isNameInputDisabled={isFormBeingSubmitted}
         />
-      ) : isRemoveAppFromFolderOrDeleteFolder ? (
-        <DeleteOrRemoveAppFromFolder appType={appType} actionType={actionType} folderName={initialFolderName} />
-      ) : isAddToFolder ? (
-        <AddToFolder
+      ) : isDeleteFolder ? (
+        <DeleteFolder appType={appType} actionType={actionType} folderName={initialFolderName} />
+      ) : isAddToFolder || isRemoveAppFromFolder ? (
+        <MoveOrRemoveFromFolder
           appType={appType}
+          appName={appDetails?.name}
+          actionType={actionType}
+          currentFolderName={initialFolderName}
           currentFolderId={folderId}
           selectedFolder={selectedFolder}
           setSelectedFolder={setSelectedFolder}
@@ -287,7 +302,7 @@ function CreateOrRenameFolderBody({
   );
 }
 
-function DeleteOrRemoveAppFromFolder({ folderName, actionType, appType }) {
+function DeleteFolder({ folderName, actionType, appType }) {
   // TODO: folderName is representing incorrect value incase of remove app from folder action
   const appTypeDisplayName = appTypeToDisplayNameMapping[appType]?.toLowerCase() || 'app';
 
@@ -369,20 +384,58 @@ function BulkDeleteFoldersBody({ selectedRowCount }) {
   );
 }
 
-function AddToFolder({ appType, currentFolderId, selectedFolder, setSelectedFolder }) {
+function AppToMove({ appType, appName, currentFolderName }) {
+  return (
+    <div data-cy="app-to-move" className="tw-mb-4">
+      <p className="tw-font-title-default tw-text-text-default tw-mb-1">
+        {capitalize(appTypeToDisplayNameMapping[appType])} to move
+      </p>
+
+      <div className="tw-flex tw-items-center tw-justify-between tw-gap-2 tw-rounded-md tw-border tw-border-solid tw-border-border-weak tw-px-3 tw-py-2">
+        <div className="tw-min-w-0">
+          <p className="tw-font-body-default tw-text-text-default tw-mb-0.5 tw-truncate">{appName}</p>
+
+          <p className="tw-flex tw-items-center tw-gap-1 tw-font-body-small tw-text-text-placeholder tw-mb-0">
+            <Folder size={12} className="tw-shrink-0 tw-text-icon-default" />
+            <span className="tw-truncate">{currentFolderName || 'No folder'}</span>
+          </p>
+        </div>
+
+        {/* {currentFolderName && (
+          <Button
+            isLucid
+            iconOnly
+            variant="ghost"
+            size="small"
+            aria-label="Remove from folder"
+            data-cy="remove-from-folder-button"
+            onClick={onRemoveFromFolder}
+          >
+            <X size={12} />
+          </Button>
+        )} */}
+      </div>
+    </div>
+  );
+}
+
+function MoveOrRemoveFromFolder({
+  appType,
+  appName,
+  actionType,
+  currentFolderName,
+  currentFolderId,
+  selectedFolder,
+  setSelectedFolder,
+}) {
   const searchQuery = useSearchStore((state) => state.searchQuery);
 
-  const { searchTerm, setSearchTerm, debouncedSearchTerm } = useSearch({ debounceDelay: 300 });
   const { data: folders, isSuccess: isFoldersSuccess } = useFetchFolders({ appType, appSearchQuery: searchQuery });
 
   if (!isFoldersSuccess) return <></>;
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
   const baseFolderFilterLogic = (folder) => {
-    if (folder.value === 'all' || folder.value === currentFolderId) return false;
+    if (folder.value === currentFolderId) return false;
 
     const currentSession = authenticationService.currentSessionValue;
     if (currentSession?.super_admin || currentSession?.admin) return true;
@@ -396,50 +449,44 @@ function AddToFolder({ appType, currentFolderId, selectedFolder, setSelectedFold
     return !!(currentUserId && folder.created_by === currentUserId);
   };
 
-  const filteredFolder =
-    debouncedSearchTerm.trim() === ''
-      ? folders.filter(baseFolderFilterLogic)
-      : folders.filter(
-          (folder) =>
-            baseFolderFilterLogic(folder) && folder.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
-        );
+  const filteredFolder = folders.filter(baseFolderFilterLogic);
 
   return (
-    <div
-      data-cy="select-folder"
-      className="tw-px-6 tw-py-4 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak"
-    >
-      {/* <SearchBar
-        placeholder="Search folders"
-        searchTerm={searchTerm}
-        onSearchChange={handleSearchChange}
-        classes={{ searchInputContainer: 'tw-mb-4' }}
-        dataCy="search-folder-input"
-      /> */}
+    <div data-cy="select-folder" className="tw-px-6 tw-py-4">
+      <AppToMove appType={appType} appName={appName} currentFolderName={currentFolderName} />
 
-      <ul data-cy="folder-list" className="tw-list-none tw-h-56 tw-overflow-y-auto tw-pl-0 tw-mb-0">
-        {filteredFolder.length ? (
-          filteredFolder.map((folder) => (
-            <li
-              role="button"
-              key={folder.value}
-              onClick={() => setSelectedFolder(folder.value)}
-              data-cy={`folder-option-${generateCypressDataCy(folder.value)}`}
-              className="tw-flex tw-items-center tw-gap-2 tw-px-2 tw-py-1.5 tw-rounded-md tw-transition hover:tw-bg-interactive-default"
-            >
-              <div className="tw-size-4">
-                {selectedFolder === folder.value && <Check size={16} strokeWidth={3} color="var(--icon-accent)" />}
-              </div>
+      {actionType === 'remove-app-from-folder' ? (
+        <p className="tw-text-text-placeholder tw-font-body-default">
+          Apps will move out of their folders and will be added as stray apps. They won’t be deleted.
+        </p>
+      ) : (
+        <Field>
+          <FieldLabel htmlFor="folder-name-input" data-cy="folder-name-label">
+            Move to
+          </FieldLabel>
 
-              <span className="tw-font-body-default tw-text-text-default">{folder.label}</span>
-            </li>
-          ))
-        ) : (
-          <li>
-            <p className="tw-text-center tw-text-body-large tw-text-text-placeholder tw-mb-0">No results found</p>
-          </li>
-        )}
-      </ul>
+          <Combobox
+            items={filteredFolder}
+            value={selectedFolder}
+            itemToStringLabel={(item) => item.label}
+            onValueChange={setSelectedFolder}
+          >
+            <ComboboxInput placeholder="Select folder" />
+
+            <ComboboxContent positionerClassName="!tw-z-[9999]">
+              {/* <ComboboxEmpty>No results found</ComboboxEmpty> */}
+
+              <ComboboxList>
+                {(item) => (
+                  <ComboboxItem key={item.value} value={item}>
+                    {item.label}
+                  </ComboboxItem>
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
+        </Field>
+      )}
     </div>
   );
 }

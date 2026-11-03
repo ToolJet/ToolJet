@@ -1,5 +1,5 @@
 import { toast } from 'react-hot-toast';
-import { useSearchParams } from 'react-router-dom';
+import { capitalize } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -7,15 +7,10 @@ import { handleHttpErrorMessages } from '@/_helpers/utils';
 import { folderService } from '@/_services/folder.service';
 import { authenticationService } from '@/_services/authentication.service';
 import { useAppsStore } from '@/_stores/appsStore';
-import { useSearchStore } from '@/_stores/searchStore';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { appTypeToDisplayNameMapping } from '@/pages/AppsDashboard/helper';
 
-const defaultFolder = (appType) => ({
-  label: `All ${appType === 'front-end' ? 'applications' : `${appType}s`}`,
-  value: 'all',
-});
-
-const selectFolders = (appType) => (raw) => {
+const selectFolders = (raw) => {
   const formattedFolderList =
     raw?.folders?.map((folder) => ({
       label: folder.name,
@@ -24,7 +19,7 @@ const selectFolders = (appType) => (raw) => {
       createdBy: folder.created_by,
     })) || [];
 
-  return [defaultFolder(appType), ...formattedFolderList];
+  return formattedFolderList;
 };
 
 export function useFetchFolders(queryParams) {
@@ -33,8 +28,8 @@ export function useFetchFolders(queryParams) {
   return useQuery({
     queryKey: ['folders', { appSearchQuery, appType }],
     queryFn: () => folderService.getAll(appSearchQuery, appType),
-    select: selectFolders(appType),
-    staleTime: Infinity,
+    select: selectFolders,
+    // staleTime: Infinity,
   });
 }
 
@@ -100,12 +95,7 @@ export function useDeleteFolder() {
 export function useAddAppToFolder() {
   const queryClient = useQueryClient();
 
-  const searchQuery = useSearchStore((state) => state.searchQuery);
-
-  const pageSize = useAppsStore((state) => state.pageSize);
-  const currentPage = useAppsStore((state) => state.currentPage);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
-  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? '');
 
   return useMutation({
     mutationFn: ({ appId, folderId }) => folderService.addToFolder(appId, folderId),
@@ -113,7 +103,9 @@ export function useAddAppToFolder() {
       toast.error(error?.error ?? '');
     },
     onSuccess: (response, variables) => {
-      toast.success('Application added to folder successfully!');
+      setCurrentPage(1);
+
+      toast.success(`${capitalize(appTypeToDisplayNameMapping[variables.appType])} added to folder successfully!`);
 
       posthogHelper.captureEvent('click_add_to_folder_button', {
         workspace_id:
@@ -123,35 +115,7 @@ export function useAddAppToFolder() {
         folder_id: variables?.folderId,
       });
 
-      queryClient.invalidateQueries({ queryKey: ['folders', { appType: variables.appType }] });
-      queryClient.invalidateQueries({ queryKey: ['appsV2'] });
-
-      // Case 1: if you are in All apps/modules/workflows folder, then no need to refetch apps as anyways the app will be still shown in All apps/modules/workflows folder
-      // Case 2: if you are in a specific folder and you move an app to another folder, then we need to refetch the apps for that specific folder to remove that app from the list
-      if (currentFolderId) {
-        const currentAppsQueryData = queryClient.getQueryData([
-          'apps',
-          {
-            pageNo: currentPage,
-            folderId: currentFolderId,
-            appSearchQuery: searchQuery,
-            appType: variables.appType,
-            pageSize,
-          },
-        ]);
-
-        const numberOfAppsOnCurrentPageBeforeAction = currentAppsQueryData?.apps?.length ?? 0;
-
-        // If there are no apps left on the current page after moving app to another folder, move back to the previous page (if not on the first page)
-        setCurrentPage(
-          numberOfAppsOnCurrentPageBeforeAction
-            ? numberOfAppsOnCurrentPageBeforeAction === 1 && currentPage > 1
-              ? currentPage - 1
-              : currentPage
-            : 1
-        );
-        queryClient.invalidateQueries({ queryKey: ['apps', { appType: variables.appType, pageSize }] });
-      }
+      queryClient.invalidateQueries({ queryKey: ['appsV2', { appType: variables.appType }] });
     },
   });
 }
@@ -159,12 +123,7 @@ export function useAddAppToFolder() {
 export function useRemoveAppFromFolder() {
   const queryClient = useQueryClient();
 
-  const searchQuery = useSearchStore((state) => state.searchQuery);
-
-  const pageSize = useAppsStore((state) => state.pageSize);
-  const currentPage = useAppsStore((state) => state.currentPage);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
-  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? '');
 
   return useMutation({
     mutationFn: ({ appId, folderId }) => folderService.removeAppFromFolder(appId, folderId),
@@ -172,33 +131,11 @@ export function useRemoveAppFromFolder() {
       toast.error(error?.error ?? '');
     },
     onSuccess: (response, variables) => {
-      toast.success('Application removed from folder successfully!');
+      setCurrentPage(1);
 
-      queryClient.invalidateQueries({ queryKey: ['folders', { appType: variables.appType }] });
-      queryClient.invalidateQueries({ queryKey: ['appsV2'] });
+      toast.success(`${capitalize(appTypeToDisplayNameMapping[variables.appType])} removed from folder successfully!`);
 
-      const currentAppsQueryData = queryClient.getQueryData([
-        'apps',
-        {
-          pageNo: currentPage,
-          folderId: currentFolderId,
-          appSearchQuery: searchQuery,
-          appType: variables.appType,
-          pageSize,
-        },
-      ]);
-
-      const numberOfAppsOnCurrentPageBeforeAction = currentAppsQueryData?.apps?.length ?? 0;
-
-      // If there are no apps left on the current page after removing app from folder, move back to the previous page (if not on the first page)
-      setCurrentPage(
-        numberOfAppsOnCurrentPageBeforeAction
-          ? numberOfAppsOnCurrentPageBeforeAction === 1 && currentPage > 1
-            ? currentPage - 1
-            : currentPage
-          : 1
-      );
-      queryClient.invalidateQueries({ queryKey: ['apps', { appType: variables.appType, pageSize }] });
+      queryClient.invalidateQueries({ queryKey: ['appsV2', { appType: variables.appType }] });
     },
   });
 }

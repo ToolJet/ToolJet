@@ -14,7 +14,7 @@ Wraps shadcn Combobox (`@base-ui/react` Combobox primitive).
 | Component | Wraps | Token overrides |
 |---|---|---|
 | `ComboboxInput` | shadcn `ComboboxInput` | Same tokens as Select trigger — bg, border, focus, hover, disabled, error, sizes |
-| `ComboboxContent` | shadcn `ComboboxContent` | `bg-surface-layer-01`, `border-weak`, `rounded-lg` (10px), `elevation-300` |
+| `ComboboxContent` | Base UI `Portal`/`Positioner`/`Popup` (mirrors shadcn `ComboboxContent`; `positionerClassName` styles the Positioner, e.g. z-index inside dialogs) | `bg-surface-layer-01`, `border-weak`, `rounded-lg` (10px), `elevation-300` |
 | `ComboboxItem` | shadcn `ComboboxItem` | 32px height, `text-default`, hover → `interactive-hover`, `rounded-md` |
 | `ComboboxEmpty` | plain `div` (peer-based) | `text-placeholder`, centered, hides when list has items |
 | `ComboboxList` | shadcn `ComboboxList` | Adds `tw-peer` for empty state detection |

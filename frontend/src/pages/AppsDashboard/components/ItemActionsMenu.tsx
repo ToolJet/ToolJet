@@ -92,8 +92,7 @@ export default function ItemActionsMenu({ appType, itemKind, itemDetails }: Item
         id: 'move',
         label: 'Move to folder',
         icon: <FolderInput size={MENU_ICON_SIZE} />,
-        disabled: true,
-        // onSelect: handleAppActionClick('move'),
+        onSelect: handleFolderActionClick('add-to-folder'),
       },
       {
         id: 'export',
