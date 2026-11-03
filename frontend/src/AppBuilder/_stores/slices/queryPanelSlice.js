@@ -690,6 +690,12 @@ export const createQueryPanelSlice = (set, get) => ({
           queryAbortControllers.set(queryId, abortController);
         }
 
+        // Refresh clears every user's cached responses, so a public app's viewers get a normal run.
+        // The server enforces the same rule.
+        const refreshCache =
+          runOptions?.refreshCache === true &&
+          !(appStore.modules.canvas.app?.isPublic && modeStore.modules.canvas.currentMode === 'view');
+
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
           queryExecutionPromise = executeMultilineJS(query.options?.code, query?.id, false, mode, parameters, moduleId);
@@ -708,7 +714,7 @@ export const createQueryPanelSlice = (set, get) => ({
             // public views, where selectedEnvironment is never populated.
             selectedEnvironment?.id || (currentAppEnvironmentId ?? environmentId),
             query.options?.workflowVersionId,
-            runOptions?.refreshCache === true
+            refreshCache
           );
         } else {
           const isReleasedApp = appStore.modules.canvas.app?.isReleasedApp;
@@ -736,7 +742,7 @@ export const createQueryPanelSlice = (set, get) => ({
             })(),
             modeStore.modules.canvas.currentMode,
             abortController?.signal,
-            runOptions?.refreshCache === true
+            refreshCache
           );
         }
 

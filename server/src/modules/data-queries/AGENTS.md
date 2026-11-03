@@ -52,6 +52,9 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   Query ids are per app version, so that Clear never reaches the released version end users run. The app-wide
   Clear (`POST /apps/:id/query-cache/clear`, app edit ability, Global settings → Clear cache) collects every query
   of every version and clears them with `QueryResultCacheService.clearInBackground`; it answers 202 at once.
+  Refresh clears every user's cached responses, so public apps never get it: the viewer run (`runQueryForApp`,
+  `app.isPublic`) and the workflow trigger (`tj_app.isPublic`, set by its guard, modules in public apps included)
+  treat `cacheControl: 'refresh'` as a normal run, and the frontend stops sending it in a public app's viewer.
   `AppsModule` imports `DataQueriesModule` for the service. The e2e harness boots in get-context mode, which
   leaves the cache out of DI, so specs inject a cache service themselves.
   Run body `cacheControl: 'refresh'` (`RunDataQueryDto` → `runExecutionOptions`) = replace the token, run, cache
