@@ -228,9 +228,19 @@ describe('Listview: a header component is shared by every record', () => {
   });
 
   test('[Listview-HDR-004] a header component is not in the list s data or children', async () => {
-    // Break this catches: the published rows walking the header slot like a Container slot, so every
-    // record carries a copy of the header input.
-    await mount({ extraComponents: { srch1: headerSearch(), mir1: recordMirror() } });
+    // Break this catches: `getRowScopedDescendants` walking the `<id>-header` slot (its slotIdsOf filter),
+    // which sizes a header Text's resolved value to one copy per record before any input is typed.
+    const headerLabel = child('hl1', 'hlabel', 'Text', { text: binding('Title') }, HEADER);
+    await mount({ extraComponents: { srch1: headerSearch(), mir1: recordMirror(), hl1: headerLabel } });
+    await waitFor(() => expect(Object.keys(exposedRow('children') || {})).toHaveLength(3));
+    expect(Array.isArray(store().resolvedStore.modules[MODULE_ID].components.hl1)).toBe(false);
+    [0, 1, 2].forEach((row) => {
+      ['search', 'hlabel'].forEach((headerName) => {
+        expect(exposedRow('children')[row]).not.toHaveProperty(headerName);
+        expect(exposedRow('data')[row]).not.toHaveProperty(headerName);
+      });
+    });
+
     await widget.session.user.type(document.querySelector('.ele-srch1 input'), 'abc');
     await waitFor(() => expect(texts('mir1')).toEqual(['S=abc', 'S=abc', 'S=abc']));
 
