@@ -410,7 +410,7 @@ describe('Listview: the Styles tab follows List style', () => {
     // Break this catches: record and box fields in one flat list, where the two Backgrounds look alike.
     render(renderStylesTab('container'));
 
-    expect(styleGroups().map((group) => group.title)).toEqual(['Records', 'Container']);
+    expect(styleGroups().map((group) => group.title)).toEqual(['Header', 'Records', 'Container']);
     expect(groupFields('Container')).toEqual(CONTAINER_FIELDS);
   });
 });

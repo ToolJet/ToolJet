@@ -81,14 +81,26 @@ describe('Listview: a new drop gets the new look', () => {
   test('[Listview-CREATE-001] the default children fit inside the 80px record', async () => {
     // Break this catches: leaving the children at their 100px-record layout (Image top 10,
     // height 80), so the Image spills out of every new record.
-    const { savedChildren } = await dropListview();
+    const { saved, savedChildren } = await dropListview();
+    const recordChildren = savedChildren.filter((child) => child.component.parent === saved.id);
 
-    expect(savedChildren.map((child) => child.component.component)).toEqual(['Image', 'Text', 'Button']);
-    for (const child of savedChildren) {
+    expect(recordChildren.map((child) => child.component.component)).toEqual(['Image', 'Text', 'Button']);
+    for (const child of recordChildren) {
       const { top, height } = child.layouts.desktop;
       expect(top).toBeGreaterThanOrEqual(0);
       expect(top + height).toBeLessThanOrEqual(80);
     }
+  });
+
+  test('[Listview-HDR-006] a dropped ListView gets one header Text "List view", not bound to a record', async () => {
+    // Break this catches: the header Text missing, filed under the record canvas (repeated per record),
+    // or bound to `listItem` like the record template and so blank.
+    const { saved, savedChildren } = await dropListview();
+    const headerChildren = savedChildren.filter((child) => child.component.parent === `${saved.id}-header`);
+
+    expect(headerChildren).toHaveLength(1);
+    expect(headerChildren[0].component.component).toBe('Text');
+    expect(headerChildren[0].component.definition.properties.text).toEqual({ value: 'List view' });
   });
 
   test('[Listview-CREATE-001] the dropped ListView does not carry the creation block itself', async () => {
