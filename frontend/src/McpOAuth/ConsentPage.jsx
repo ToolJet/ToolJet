@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import config from 'config';
 import { Check, Database, Info, LayoutGrid, UsersRound, Workflow } from 'lucide-react';
-import TooljetLogoIcon from '@/_ui/Icon/solidIcons/TooljetLogoIcon';
+import TooljetLogo from './tooljet-logo.svg';
 import '@/_styles/componentdesign.scss';
 import '@/_styles/typography.scss';
 import './oauth.css';
@@ -238,14 +238,14 @@ export default function ConsentPage() {
       <div className="mcp-oauth-content">
         {hasConsent && (
           <div className="mcp-oauth-connection" aria-hidden="true">
-            <ClientLogo name={flow.clientName} />
+            <ClientLogo name={flow.clientName} redirectUri={flow.redirectUri} />
             <span className="mcp-oauth-connection-line" />
             <span className="mcp-oauth-connection-check">
               <Check size={16} />
             </span>
             <span className="mcp-oauth-connection-line" />
             <span className="mcp-oauth-connection-logo">
-              <TooljetLogoIcon width="32" fill="var(--icon-brand)" />
+              <TooljetLogo width="32" height="32" />
             </span>
           </div>
         )}

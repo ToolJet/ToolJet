@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import config from 'config';
+import { ArrowLeft } from 'lucide-react';
 import { OnboardingUIWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
 import { FormHeader, FormTextInput, SubmitButton } from '@/modules/common/components';
 import './workspaceLogin.scss';
@@ -49,21 +50,19 @@ export default function WorkspaceLogin({ context, onBack }) {
     <div className="login-form mcp-workspace-login">
       <OnboardingUIWrapper>
         <OnboardingFormInsideWrapper>
-          <FormHeader>Sign in with your workspace</FormHeader>
-          <p className="signup-info">Continue to the sign-in methods configured for your workspace.</p>
+          <FormHeader>Sign in to your workspace</FormHeader>
+          <p className="signup-info">Enter the URL your admin shared to continue</p>
           <form onSubmit={submit} noValidate>
             <FormTextInput
               label="Workspace URL"
               name="workspace"
-              placeholder="acme.tooljet.com"
+              placeholder="acme.tooljet.com/workspace-name"
               value={workspace}
               onChange={(event) => {
                 setWorkspace(event.target.value);
                 setError('');
               }}
-              disableStartAdornment
             />
-            <p className="signup-info">Use the workspace link shared by your admin.</p>
             {error && (
               <p role="alert" className="mcp-workspace-error">
                 {error}
@@ -71,8 +70,8 @@ export default function WorkspaceLogin({ context, onBack }) {
             )}
             <SubmitButton buttonText="Continue" isLoading={busy} disabled={busy} />
           </form>
-          <button type="button" className="mcp-workspace-link mcp-workspace-back" onClick={onBack} disabled={busy}>
-            <span aria-hidden="true">← </span>Back to sign in
+          <button type="button" className="mcp-workspace-button mcp-workspace-back" onClick={onBack} disabled={busy}>
+            <ArrowLeft size={20} aria-hidden="true" /> Back to sign in
           </button>
         </OnboardingFormInsideWrapper>
       </OnboardingUIWrapper>

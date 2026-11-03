@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { validateEmail, validatePassword } from '@/_helpers/utils';
 // import OnboardingUIWrapper from '../../../../../onboarding/components/OnboardingUIWrapper';
 // import OnboardingFormInsideWrapper from '../../../../../onboarding/components/OnboardingFormInsideWrapper/OnboardingFormInsideWrapper';
@@ -9,6 +10,7 @@ import { FormTextInput, PasswordInput, SubmitButton, FormHeader, SSOAuthModule }
 import { redirectToDashboard } from '@/_helpers/routes';
 import './resources/styles/login-form.styles.scss';
 import SepratorComponent from '@/modules/common/components/SepratorComponent';
+import '@/McpOAuth/workspaceLogin.scss';
 
 const LoginForm = ({
   configs,
@@ -124,7 +126,7 @@ const LoginForm = ({
   };
 
   return (
-    <div className="login-form">
+    <div className={`login-form${onWorkspaceSignIn ? ' mcp-workspace-entry' : ''}`}>
       <OnboardingUIWrapper>
         <OnboardingFormInsideWrapper>
           {noLoginMethodsEnabled ? (
@@ -233,9 +235,16 @@ const LoginForm = ({
             </>
           )}
           {onWorkspaceSignIn && (
-            <button type="button" className="mcp-workspace-link" onClick={onWorkspaceSignIn}>
-              Sign in with your workspace <span aria-hidden="true">→</span>
-            </button>
+            <>
+              {!noLoginMethodsEnabled && (
+                <div className="mcp-workspace-divider">
+                  <span>or</span>
+                </div>
+              )}
+              <button type="button" className="mcp-workspace-button" onClick={onWorkspaceSignIn}>
+                Select a workspace to sign in <ArrowRight size={20} aria-hidden="true" />
+              </button>
+            </>
           )}
         </OnboardingFormInsideWrapper>
       </OnboardingUIWrapper>

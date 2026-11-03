@@ -68,8 +68,8 @@ const mount = (route = entry, props = {}) => {
   );
 };
 const noEntry = () => {
-  expect(screen.queryByRole('button', { name: /Sign in with your workspace/ })).not.toBeInTheDocument();
-  expect(screen.queryByRole('textbox', { name: 'Workspace URL' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Select a workspace to sign in/ })).not.toBeInTheDocument();
+  expect(screen.queryByRole('textbox', { name: /Workspace URL/ })).not.toBeInTheDocument();
 };
 beforeEach(() => {
   window.public_config = { MCP_OAUTH_ENABLED: 'true' };
@@ -114,8 +114,11 @@ test.each([
 });
 test('a verified shared connection replaces the form and Back restores existing login controls', async () => {
   mount();
-  fireEvent.click(await screen.findByRole('button', { name: /Sign in with your workspace/ }));
-  expect(screen.getByRole('textbox', { name: 'Workspace URL' })).toHaveAttribute('placeholder', 'acme.tooljet.com');
+  fireEvent.click(await screen.findByRole('button', { name: /Select a workspace to sign in/ }));
+  expect(screen.getByRole('textbox', { name: /Workspace URL/ })).toHaveAttribute(
+    'placeholder',
+    'acme.tooljet.com/workspace-name'
+  );
   expect(screen.queryByRole('textbox', { name: /Email/ })).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Sign in with Google' })).not.toBeInTheDocument();
   expect(screen.getByText('Existing artwork')).toBeVisible();
@@ -125,13 +128,13 @@ test('a verified shared connection replaces the form and Back restores existing 
 });
 test('leaving MCP login removes both entry and form, including same-component navigation', async () => {
   mount();
-  fireEvent.click(await screen.findByRole('button', { name: /Sign in with your workspace/ }));
+  fireEvent.click(await screen.findByRole('button', { name: /Select a workspace to sign in/ }));
   act(() => navigate('/login'));
   noEntry();
   expect(getCookie('redirectPath')).toBe('/home');
   act(() => navigate(entry));
-  await screen.findByRole('button', { name: /Sign in with your workspace/ });
-  expect(screen.queryByRole('textbox', { name: 'Workspace URL' })).not.toBeInTheDocument();
+  await screen.findByRole('button', { name: /Select a workspace to sign in/ });
+  expect(screen.queryByRole('textbox', { name: /Workspace URL/ })).not.toBeInTheDocument();
 });
 test('a delayed preview cannot expose MCP controls after ordinary login navigation', async () => {
   let resolve;
@@ -164,11 +167,11 @@ test('empty and missing workspace errors stay inline and requests preserve the U
     })
   );
   mount();
-  fireEvent.click(await screen.findByRole('button', { name: /Sign in with your workspace/ }));
+  fireEvent.click(await screen.findByRole('button', { name: /Select a workspace to sign in/ }));
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
   expect(screen.getByRole('alert')).toHaveTextContent('Enter your workspace URL');
   const value = 'https://tooljet.synthetic.example/login/river';
-  fireEvent.change(screen.getByRole('textbox', { name: 'Workspace URL' }), {
+  fireEvent.change(screen.getByRole('textbox', { name: /Workspace URL/ }), {
     target: { value },
   });
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
@@ -199,12 +202,12 @@ test('waits for a slow context lookup before making credential fields interactiv
   await act(async () => resolve());
   const email = await screen.findByRole('textbox', { name: /Email/ });
   fireEvent.change(email, { target: { value: 'operator@synthetic.example' } });
-  await screen.findByRole('button', { name: /Sign in with your workspace/ });
+  await screen.findByRole('button', { name: /Select a workspace to sign in/ });
   expect(screen.getByRole('textbox', { name: /Email/ })).toHaveValue('operator@synthetic.example');
 });
 
 test('a trailing-slash shared login retains the verified workspace-entry path', async () => {
   mount(entry.replace('/login?', '/login/?'));
-  fireEvent.click(await screen.findByRole('button', { name: /Sign in with your workspace/ }));
-  expect(screen.getByRole('textbox', { name: 'Workspace URL' })).toBeVisible();
+  fireEvent.click(await screen.findByRole('button', { name: /Select a workspace to sign in/ }));
+  expect(screen.getByRole('textbox', { name: /Workspace URL/ })).toBeVisible();
 });

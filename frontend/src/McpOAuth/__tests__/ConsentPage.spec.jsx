@@ -263,6 +263,8 @@ test('shows only the permissions requested by the client', async () => {
 test.each([
   ['  orchard assistant  ', 'O'],
   ['Aster ChatGPT integration', 'A'],
+  ['Claude Code helper', 'C'],
+  ['Claude Code (orchard) helper', 'C'],
   ['🪴 garden helper', '🪴'],
 ])('uses the first character for unknown client %s', async (clientName, initial) => {
   preview({ ...flow, clientName });
@@ -271,6 +273,45 @@ test.each([
   const badge = container.querySelector('.mcp-oauth-client-logo');
   expect(badge).toHaveTextContent(initial);
   expect(badge.querySelector('svg')).toBeNull();
+});
+
+test.each(['Claude', 'Claude Desktop', '  cLaUdE   Code (orchard-tools)  ', 'claude.com'])(
+  'recognizes the registered Claude client name %s',
+  async (clientName) => {
+    preview({ ...flow, clientName });
+    const { container } = render(<ConsentPage />);
+    await screen.findByRole('button', { name: 'Allow access' });
+    expect(container.querySelector('.mcp-oauth-client-logo svg')).toBeInTheDocument();
+    expect(container.querySelector('.mcp-oauth-client-monogram')).toBeNull();
+  }
+);
+
+test.each(['https://claude.ai/api/mcp/auth_callback', 'https://claude.com/api/mcp/auth_callback'])(
+  'recognizes hosted Claude by its exact callback %s with a custom registration name',
+  async (redirectUri) => {
+    preview({ ...flow, clientName: 'Cedar connector', redirectUri });
+    const { container } = render(<ConsentPage />);
+    await screen.findByRole('button', { name: 'Allow access' });
+    expect(container.querySelector('.mcp-oauth-client-logo svg')).toBeInTheDocument();
+    expect(container.querySelector('.mcp-oauth-client-monogram')).toBeNull();
+    expect(screen.getByText(redirectUri)).toBeInTheDocument();
+    expect(screen.getByText(/ToolJet has not verified the client name/)).toBeInTheDocument();
+  }
+);
+
+test.each([
+  'https://claude.ai.synthetic.example/api/mcp/auth_callback',
+  'https://claude.ai@synthetic.example/api/mcp/auth_callback',
+  'https://claude.ai/other_callback',
+  'http://claude.ai/api/mcp/auth_callback',
+  'https://claude.ai/api/mcp/auth_callback?redirect=synthetic',
+  'https://claude.com:8443/api/mcp/auth_callback',
+])('keeps the initial for an unknown client with a non-Claude callback %s', async (redirectUri) => {
+  preview({ ...flow, clientName: 'Cedar connector', redirectUri });
+  const { container } = render(<ConsentPage />);
+  await screen.findByRole('button', { name: 'Allow access' });
+  expect(container.querySelector('.mcp-oauth-client-monogram')).toHaveTextContent('C');
+  expect(container.querySelector('.mcp-oauth-client-logo svg')).toBeNull();
 });
 test.each(['Cancel', 'Allow access'])('disables both actions while %s is being submitted', async (buttonName) => {
   let resolveDecision;
