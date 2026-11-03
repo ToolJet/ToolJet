@@ -133,11 +133,10 @@ describe('Button', () => {
 });
 
 manifestOrSkip('Theme radius styles draw as the number field', () => {
-  test('Button radius: a number field (no blank-invalid code field), the placeholder kept for fx', () => {
+  test('Button radius: a text field that says "auto" while it follows the theme radius', () => {
     const radius = manifest().components.Button.styles.find((s) => s.name === 'borderRadius');
-    expect(radius).toEqual(expect.objectContaining({ inspector: 'numberInput', placeholder: 'Theme radius' }));
-    expect('default' in radius).toBe(false);
-    expect(fieldMeta(radius).type).toBe('numberInput');
+    expect(radius.default).toBe('auto');
+    expect(radius.inspector).not.toBe('numberInput');
     expect(fieldMeta(radius).tip).toMatch(/theme radius/i);
   });
 
@@ -151,6 +150,11 @@ manifestOrSkip('Theme radius styles draw as the number field', () => {
 });
 
 describe('ButtonGroup', () => {
+  const SAMPLE = [
+    { label: 'Day', value: 'day' },
+    { label: 'Week', value: 'week' },
+    { label: 'Month', value: 'month' },
+  ];
   const CUSTOM = [
     { label: 'Low', value: 'low' },
     { label: 'High', value: 'high' },
@@ -182,7 +186,7 @@ describe('ButtonGroup', () => {
   });
 
   test('Multiple: value is the list of selected values, as selected is', async () => {
-    const g = await mount('ButtonGroup', { mode: 'multiple', value: 'week' });
+    const g = await mount('ButtonGroup', { mode: 'multiple', buttons: SAMPLE, value: 'week' });
     await waitFor(() => expect(g.exposed.value).toEqual([]));
     fireEvent.click(buttonNamed(g.root(), 'Day'));
     fireEvent.click(buttonNamed(g.root(), 'Month'));
@@ -237,6 +241,60 @@ describe('ButtonGroup', () => {
     expect(none.events.map((e) => e.event)).toEqual(['onClick']);
     const off = await mount('ButtonGroup', { disabled: true });
     expect(Array.from(off.root().querySelectorAll('.n2-group > button')).every((b) => b.disabled)).toBe(true);
+  });
+});
+
+describe('ButtonGroup: buttons marked default', () => {
+  const OPTIONS = [
+    { label: 'Day', value: 'day' },
+    { label: 'Week', value: 'week', default: true },
+    { label: 'Month', value: 'month', default: true },
+  ];
+
+  test('Single selects the first button marked default', async () => {
+    const g = await mount('ButtonGroup', { mode: 'single', buttons: OPTIONS });
+    await waitFor(() => expect(g.exposed.value).toBe('week'));
+    expect(pressed(g.root())).toEqual(['Week']);
+  });
+
+  test('Multiple selects every button marked default', async () => {
+    const g = await mount('ButtonGroup', { mode: 'multiple', buttons: OPTIONS });
+    await waitFor(() => expect(g.exposed.value).toEqual(['week', 'month']));
+    expect(pressed(g.root())).toEqual(['Week', 'Month']);
+  });
+
+  test('switching Single to Multiple keeps the defaults selected', async () => {
+    const g = await mount('ButtonGroup', { mode: 'single', buttons: OPTIONS });
+    await waitFor(() => expect(g.exposed.value).toBe('week'));
+    await g.update({ mode: 'multiple', buttons: OPTIONS });
+    await waitFor(() => expect(g.exposed.value).toEqual(['week', 'month']));
+    await g.update({ mode: 'single', buttons: OPTIONS });
+    await waitFor(() => expect(g.exposed.value).toBe('week'));
+  });
+
+  test('with no button marked default nothing starts selected', async () => {
+    const g = await mount('ButtonGroup', { mode: 'single', buttons: OPTIONS.map(({ default: _d, ...b }) => b) });
+    expect(pressed(g.root())).toEqual([]);
+    expect(g.exposed.value ?? '').toBe('');
+  });
+
+  test('Actions mode selects nothing', async () => {
+    const g = await mount('ButtonGroup', { mode: 'actions', buttons: OPTIONS });
+    expect(pressed(g.root())).toEqual([]);
+  });
+
+  manifestOrSkip('inspector', () => {
+    test('the selection inputs and outputs are not editable fields', () => {
+      for (const name of ['defaultValue', 'value', 'selected'])
+        expect(prop('ButtonGroup', name)).toEqual(expect.objectContaining({ inspector: 'hidden' }));
+    });
+
+    test('the sample buttons start with Week marked default', () => {
+      expect(prop('ButtonGroup', 'buttons').default).toEqual(
+        expect.arrayContaining([expect.objectContaining({ value: 'week', default: true })])
+      );
+      expect(prop('ButtonGroup', 'value').default).toBe('');
+    });
   });
 });
 

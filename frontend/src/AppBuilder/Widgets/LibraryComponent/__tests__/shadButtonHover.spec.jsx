@@ -18,7 +18,6 @@ jest.mock('@/AppBuilder/Widgets/LibraryComponent/inlineRuntime', () => ({
 const SOURCE = require('../../../../../../packs/shadcn/src/index.ts');
 
 const BRAND = 'var(--cc-primary-brand)';
-const BRAND_DRAWN = 'var(--cc-primary-brand, #4368e3)';
 
 afterEach(cleanup);
 
@@ -45,16 +44,17 @@ async function mountButton(props = {}, styles = {}) {
   const shadow = () => view.container.querySelector('[data-cy="hover"]')?.shadowRoot;
   await waitFor(() => expect(shadow()?.querySelector('button')).not.toBeNull());
   const button = shadow().querySelector('button');
-  return { button, hover: shadow().querySelector('.ui').style.getPropertyValue('--lk-hover') };
+  const vars = shadow().querySelector('.ui').style;
+  return { button, hover: vars.getPropertyValue('--lk-hover'), radius: vars.getPropertyValue('--lk-radius') };
 }
 
 describe('Button hover background', () => {
-  test('a default Button with hover left at Brand hovers to Brand, as the field shows', async () => {
-    // Break this catches: Brand read as "not set", so the hover rule falls back to darkening the background.
+  test('a default Button with hover left at Brand keeps its derived darker hover', async () => {
+    // The pack darkens the default variant on hover (ui.css), so an untouched hover field is "not set".
     const { button, hover } = await mountButton({}, { hoverBackgroundColor: BRAND });
 
-    expect(button.classList.contains('has-hover')).toBe(true);
-    expect(hover).toBe(BRAND_DRAWN);
+    expect(button.classList.contains('has-hover')).toBe(false);
+    expect(hover).toBe('');
   });
 
   test('a default Button hovers to the colour the builder picked', async () => {
@@ -80,5 +80,24 @@ describe('Button hover background', () => {
 
     expect(button.classList.contains('has-hover')).toBe(true);
     expect(hover).toBe('#00ff00');
+  });
+});
+
+describe('Button radius', () => {
+  test('left at "auto" it draws the theme radius, with no radius of its own', async () => {
+    // Break this catches: the word "auto" written out as a radius.
+    const { radius } = await mountButton({}, { borderRadius: 'auto' });
+
+    expect(radius).toBe('');
+  });
+
+  test.each([
+    [12, '12px'],
+    ['12', '12px'],
+  ])('a radius of %p draws %s', async (value, drawn) => {
+    // Break this catches: a typed radius ignored once the field's default became text.
+    const { radius } = await mountButton({}, { borderRadius: value });
+
+    expect(radius).toBe(drawn);
   });
 });

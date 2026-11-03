@@ -1,5 +1,5 @@
 import { readLiteralCode, writeLiteralCode } from '../literal';
-import { editorHint, fieldMeta } from '../utils';
+import { editorHint, fieldMeta, hasOptionDefault } from '../utils';
 import { withField, newEntry } from '../OptionsEditor';
 import { columnsFromData, newColumn, withColumnField } from '../ColumnsEditor';
 
@@ -62,5 +62,18 @@ describe('LibraryComponent inspector editors', () => {
     expect(newColumn([{ key: 'id' }], ['id', 'name'])).toEqual({ key: 'name', name: 'name' });
     expect(newColumn([{ key: 'id' }], ['id'])).toEqual({ key: 'column_2', name: 'Column 2' });
     expect(withColumnField({ key: 'a', currency: 'EUR' }, 'currency', '')).toEqual({ key: 'a' });
+  });
+
+  it('offers the Default switch only on the pack components that read it', () => {
+    expect(hasOptionDefault('shadcn', 'ButtonGroup')).toBe(true);
+    expect(hasOptionDefault('antd', 'ButtonGroup')).toBe(false);
+    expect(hasOptionDefault('shadcn', 'Select')).toBe(false);
+    expect(hasOptionDefault(undefined, undefined)).toBe(false);
+  });
+
+  it('stores an option marked default and drops the mark when it is turned off', () => {
+    const marked = withField({ label: 'Week', value: 'week' }, 'default', true);
+    expect(marked).toEqual({ label: 'Week', value: 'week', default: true });
+    expect(withField(marked, 'default', false)).toEqual({ label: 'Week', value: 'week' });
   });
 });
