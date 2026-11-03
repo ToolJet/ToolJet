@@ -243,7 +243,7 @@ describe('ImportExportResourcesController', () => {
         .send(body);
     }
 
-    it("should not export another workspace's ToolJet Database table (403)", async () => {
+    it("should not export another workspace's ToolJet Database table, whatever the body asks for", async () => {
       const adminA = await createAdmin(app, 'admin@tooljet.io');
       const adminB = await createAdmin(app, 'admin-b@tooljet.io');
       const orgB = adminB.user.defaultOrganizationId;
@@ -258,11 +258,16 @@ describe('ImportExportResourcesController', () => {
       await tjdb.query(`CREATE SCHEMA "workspace_${orgB}"`);
       await tjdb.query(`CREATE TABLE "workspace_${orgB}"."${table.id}" (id integer PRIMARY KEY)`);
 
+      // The controller resolves the export workspace from the session and overwrites the body's
+      // organization_id before the service sees it, so a cross-workspace body is not rejected — it
+      // is simply ignored, and workspace B's table resolves to nothing under workspace A.
       const response = await exportAs(adminA, {
         organization_id: orgB,
         tooljet_database: [{ table_id: table.id }],
-      }).expect(403);
+      }).expect(201);
+      expect(response.body.tooljet_database).toBeUndefined();
       expect(JSON.stringify(response.body)).not.toContain('workspace_b_table');
+      expect(JSON.stringify(response.body)).not.toContain(table.id);
     });
 
     it('should deny export of an app the user cannot view, even with app-create (403)', async () => {
