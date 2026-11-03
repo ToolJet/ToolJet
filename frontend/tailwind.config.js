@@ -8,7 +8,7 @@ module.exports = {
     './components/**/*.{js,jsx}',
     './app/**/*.{js,jsx}',
     './src/**/*.{js,jsx,ts,tsx}',
-    './ee/**/*.{js,jsx}',
+    './ee/**/*.{js,jsx,ts,tsx}',
   ],
   prefix: 'tw-',
   corePlugins: {
