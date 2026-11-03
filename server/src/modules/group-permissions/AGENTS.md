@@ -43,6 +43,7 @@ and granular permissions; the `ability` module consumes them to build `UserAllPe
 ## Invariants & gotchas
 
 - Default groups are immutable identity: cannot rename, delete, or directly add/remove members (`DEFAULT_GROUP_NAME_UPDATE`, `DEFAULT_GROUP_UPDATE_NOT_ALLOWED`, `DELETING_DEFAULT_GROUP_USER`). Role changes route through `roles` module (`FEATURE_KEY.USER_ROLE_CHANGE`).
+- One DEFAULT group per user per workspace: `addUsersToGroup` into a default group drops the user's other default memberships, after the end-user confirmation checks and never removing the last active Admin (`RolesUtilService.assertActiveAdminRemains`). `RolesRepository.getUserRole` tiebreaks admin > builder > end-user (`highestRole`) for rows already holding two.
 - End User group/users can never hold builder-level permissions; adding one to a builder-level custom group throws with the conflicting user list unless `allowRoleChange` promotes them.
 - `patCreate`/`patRevoke` (PAT management; Admin and Builder both by default) follow the same builder-level/end-user rule as every other boolean. They are NOT exempt from `getGroupWithBuilderLevel`'s unlicensed "force all true" override (only `appPromote`/`appRelease` are): without a custom-groups license they are forced true on non-end-user groups and the Builder row is locked in the UI; per-group granularity is a paid feature. The ability OR-merge exists twice: `ability/service.ts` (CE) and `ee/ability/service.ts`; add new flags to both.
 - Admin group cannot have granular permissions (`ADMIN_DEFAULT_GROUP_GRANULAR_PERMISSIONS`).
