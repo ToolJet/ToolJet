@@ -8,8 +8,10 @@ const CustomOption = (props) => {
   const caption = props.data?.caption;
   const hasCaption = caption !== null && caption !== undefined && caption !== '';
   const captionText = hasCaption ? String(caption) : '';
-  const { icon, iconVisibility, image } = props.data || {};
+  const { icon, iconVisibility, image, imageVisibility } = props.data || {};
   const showIcon = iconVisibility && !!icon;
+  // Gated like the icon, so an `image` key already present in dynamic option rows stays hidden.
+  const showImage = imageVisibility && !!image;
   // Server-side search: results come pre-filtered from the backend, so skip client-side highlighting.
   const serverSideSearch = props.selectProps.serverSideSearch === true;
   const renderWithHighlight = (text) => (serverSideSearch ? text : highlightText(text, props.selectProps.inputValue));
@@ -47,7 +49,7 @@ const CustomOption = (props) => {
             />
           </span>
         )}
-        {image && (
+        {showImage && (
           <img
             src={image}
             alt=""

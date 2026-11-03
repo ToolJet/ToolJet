@@ -1840,7 +1840,7 @@ describe('DropdownV2 styles, CSS class and Form lifecycle', () => {
 
 /**
  * Per-option leading icon and image (D-19 to D-21). An option may carry
- * `icon` + `iconVisibility` and/or an `image` URL; both are presentation only
+ * `icon` + `iconVisibility` and/or `image` + `imageVisibility`; both are presentation only
  * and never reach the exposed option objects. The inspector persists
  * `icon: { value }` (flattened by the resolver, like `visible`) next to a plain
  * `iconVisibility` boolean and a plain `image` string
@@ -1893,23 +1893,25 @@ describe('DropdownV2 per-option icon and image', () => {
     expect(optionLabels()).toEqual(['Alpha', 'Beta', 'Gamma', 'Delta']);
   });
 
-  test('[DropdownV2-OPT-011] a per-option image renders from its URL independently of the icon gate and collapses when it fails to load', async () => {
-    // Break this catches: tying the image to `iconVisibility`, treating an
-    // empty/null URL as an image, or dropping the onError collapse (D-20) so a
-    // dead URL leaves a broken-image box in the row.
+  test('[DropdownV2-OPT-011] a per-option image renders only behind its own imageVisibility gate, independently of the icon gate, and collapses when it fails to load', async () => {
+    // Break this catches: rendering any truthy `image` (an `image` key already in
+    // query rows would suddenly show), tying the image to `iconVisibility`,
+    // treating an empty/null URL as an image, or dropping the onError collapse
+    // (D-20) so a dead URL leaves a broken-image box in the row.
     widget.render({
       properties: {
         options: {
           value: [
-            { ...option('Alpha', 'a'), image: IMAGE },
-            { ...withIcon('Beta', 'b'), image: IMAGE },
-            { ...option('Gamma', 'c'), image: null },
-            { ...option('Delta', 'd'), image: '' },
+            { ...option('Alpha', 'a'), image: IMAGE, imageVisibility: true },
+            { ...withIcon('Beta', 'b'), image: IMAGE, imageVisibility: true },
+            { ...option('Gamma', 'c'), image: null, imageVisibility: true },
+            { ...option('Delta', 'd'), image: '', imageVisibility: true },
+            { ...option('Epsilon', 'e'), image: IMAGE },
           ],
         },
       },
     });
-    const [alpha, beta, gamma, delta] = await rows(4);
+    const [alpha, beta, gamma, delta, epsilon] = await rows(5);
 
     expect(rowImage(alpha)).toHaveAttribute('src', IMAGE);
     expect(rowIcon(alpha)).toBeNull();
@@ -1917,6 +1919,7 @@ describe('DropdownV2 per-option icon and image', () => {
     await waitFor(() => expect(rowIcon(beta)).toHaveClass('tabler-icon-user'));
     expect(rowImage(gamma)).toBeNull();
     expect(rowImage(delta)).toBeNull();
+    expect(rowImage(epsilon)).toBeNull();
 
     fireEvent.error(rowImage(alpha));
     expect(rowImage(alpha)).toHaveStyle({ display: 'none' });
@@ -1948,24 +1951,26 @@ describe('DropdownV2 per-option icon and image', () => {
     ]);
   });
 
-  test('[DropdownV2-OPT-012] advanced mode takes plain icon, iconVisibility and image fields from the schema', async () => {
+  test('[DropdownV2-OPT-013] advanced mode takes plain icon, iconVisibility, image and imageVisibility fields from the schema', async () => {
     // Break this catches: the static-options path reading the inspector's
     // `{ value }` wrapper directly, which would leave schema-sourced plain
-    // strings unrendered.
+    // strings unrendered, or a schema row's own `image` key showing without opt-in.
     widget.render({
       properties: {
         advanced: binding('{{true}}'),
         schema: binding(
-          `{{ [{ label: 'Ada', value: 1, visible: true, icon: 'IconUser', iconVisibility: true, image: '${IMAGE}' },` +
-            `{ label: 'Bob', value: 2, visible: true, icon: 'IconUser', iconVisibility: false, image: null }] }}`
+          `{{ [{ label: 'Ada', value: 1, visible: true, icon: 'IconUser', iconVisibility: true, image: '${IMAGE}', imageVisibility: true },` +
+            `{ label: 'Bob', value: 2, visible: true, icon: 'IconUser', iconVisibility: false, image: null },` +
+            `{ label: 'Cara', value: 3, visible: true, image: '${IMAGE}' }] }}`
         ),
       },
     });
-    const [ada, bob] = await rows(2);
+    const [ada, bob, cara] = await rows(3);
 
     await waitFor(() => expect(rowIcon(ada)).toHaveClass('tabler-icon-user'));
     expect(rowImage(ada)).toHaveAttribute('src', IMAGE);
     expect(rowIcon(bob)).toBeNull();
     expect(rowImage(bob)).toBeNull();
+    expect(rowImage(cara)).toBeNull();
   });
 });

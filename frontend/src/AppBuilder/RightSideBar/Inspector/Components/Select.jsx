@@ -16,6 +16,7 @@ import SortableList from '@/_components/SortableList';
 import { shallow } from 'zustand/shallow';
 import { sortArray } from '@/AppBuilder/Widgets/DropdownV2/utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import { duplicateOption, setIconVisibility, setImage } from './selectOptionTransforms';
 import './Select.scss';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
@@ -149,28 +150,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   };
 
   const handleDuplicateOption = (index) => {
-    const source = options[index];
-    if (!source) return;
-
-    // `value` is the option's identity (Draggable key + selection value), so it must stay unique.
-    const base = `${source?.value}_copy`;
-    let newValue = base;
-    let counter = 2;
-    while (options.find((option) => option.value === newValue)) {
-      newValue = `${base}_${counter}`;
-      counter += 1;
-    }
-
-    const duplicated = {
-      ...source, // copies icon, image, caption, iconVisibility, visible, disable — everything
-      label: `${source?.label} copy`,
-      value: newValue,
-      default: { ...source.default, value: '{{false}}' }, // don't carry over the default selection
-    };
-
-    const _items = [...options];
-    _items.splice(index + 1, 0, duplicated); // place right after the original
-    updateOptions(sortArray(_items, sort));
+    if (!options[index]) return;
+    updateOptions(sortArray(duplicateOption(options, index), sort));
   };
 
   const handleLabelChange = (label, index) => {
@@ -221,26 +202,11 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const handleIconVisibilityChange = (value, index) => {
     const isVisible = getResolvedValue(value);
-    const _options = options.map((option, i) =>
-      i === index
-        ? {
-            ...option,
-            iconVisibility: isVisible,
-            // Legacy/empty options: stamp the default the moment visibility turns on, so the
-            // stored value matches what the picker displays (its IconHome2 is a render-time
-            // fallback only — without this stamp the widget sees '' and shows nothing).
-            ...(isVisible && !option?.icon?.value ? { icon: { ...option?.icon, value: 'IconHome2' } } : {}),
-          }
-        : option
-    );
-    updateOptions(_options);
+    updateOptions(options.map((option, i) => (i === index ? setIconVisibility(option, isVisible) : option)));
   };
 
   const handleImageChange = (value, index) => {
-    const _options = options.map((option, i) =>
-      i === index ? { ...option, image: value === '' ? undefined : value } : option
-    );
-    updateOptions(_options);
+    updateOptions(options.map((option, i) => (i === index ? setImage(option, value) : option)));
   };
 
   const reorderOptions = async (startIndex, endIndex) => {

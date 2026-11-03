@@ -12,9 +12,10 @@ const CustomOption = (props) => {
   const hasCaption = caption !== null && caption !== undefined && caption !== '';
   const captionText = hasCaption ? String(caption) : '';
   const isSelectAll = labelText.includes('Select all');
-  const { icon, iconVisibility, image } = props.data || {};
+  const { icon, iconVisibility, image, imageVisibility } = props.data || {};
   const showIcon = !isSelectAll && iconVisibility && !!icon;
-  const showImage = !isSelectAll && !!image;
+  // Gated like the icon, so an `image` key already present in dynamic option rows stays hidden.
+  const showImage = !isSelectAll && imageVisibility && !!image;
   // Server-side search: results come pre-filtered from the backend, so skip client-side highlighting.
   const serverSideSearch = props.selectProps.serverSideSearch === true;
   const renderWithHighlight = (text) => (serverSideSearch ? text : highlightText(text, props.selectProps.inputValue));

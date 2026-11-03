@@ -382,7 +382,7 @@ describe('MultiselectV2: options, defaults, and the exposed option list', () => 
 /**
  * Per-option leading icon and image (D-22 to D-24). Same persisted shape as
  * DropdownV2: `icon: { value }` flattened by the resolver, plain
- * `iconVisibility` boolean, plain `image` URL. Presentation only — the exposed
+ * `iconVisibility` boolean, plain `image` URL gated by a plain `imageVisibility`. Presentation only — the exposed
  * option objects keep `{ label, value, caption }`.
  */
 describe('MultiselectV2: per-option icon and image', () => {
@@ -430,18 +430,20 @@ describe('MultiselectV2: per-option icon and image', () => {
     expect(screen.getAllByRole('option').filter((r) => r.querySelector('svg.tabler-icon'))).toHaveLength(2);
   });
 
-  test('[MultiselectV2-OPT-009] a per-option image renders from its URL independently of the icon gate and collapses when it fails to load', async () => {
-    // Break this catches: tying the image to `iconVisibility`, treating an
-    // empty/null URL as an image, or dropping the onError collapse (D-23).
+  test('[MultiselectV2-OPT-009] a per-option image renders only behind its own imageVisibility gate, independently of the icon gate, and collapses when it fails to load', async () => {
+    // Break this catches: rendering any truthy `image` (an `image` key already in
+    // query rows would suddenly show), tying the image to `iconVisibility`,
+    // treating an empty/null URL as an image, or dropping the onError collapse (D-23).
     harness.render({
       properties: {
         ...NONE,
         options: {
           value: [
-            { ...option('Alpha', 'a'), image: IMAGE },
-            { ...withIcon('Beta', 'b'), image: IMAGE },
-            { ...option('Gamma', 'c'), image: null },
-            { ...option('Delta', 'd'), image: '' },
+            { ...option('Alpha', 'a'), image: IMAGE, imageVisibility: true },
+            { ...withIcon('Beta', 'b'), image: IMAGE, imageVisibility: true },
+            { ...option('Gamma', 'c'), image: null, imageVisibility: true },
+            { ...option('Delta', 'd'), image: '', imageVisibility: true },
+            { ...option('Epsilon', 'e'), image: IMAGE },
           ],
         },
       },
@@ -455,6 +457,7 @@ describe('MultiselectV2: per-option icon and image', () => {
     await waitFor(() => expect(rowIcon('Beta')).toHaveClass('tabler-icon-user'));
     expect(rowImage('Gamma')).toBeNull();
     expect(rowImage('Delta')).toBeNull();
+    expect(rowImage('Epsilon')).toBeNull();
 
     fireEvent.error(rowImage('Alpha'));
     expect(rowImage('Alpha')).toHaveStyle({ display: 'none' });
@@ -490,8 +493,9 @@ describe('MultiselectV2: per-option icon and image', () => {
         ...NONE,
         advanced: binding('{{true}}'),
         schema: binding(
-          `{{ [{ label: 'Ada', value: 1, visible: true, icon: 'IconUser', iconVisibility: true, image: '${IMAGE}' },` +
-            `{ label: 'Bob', value: 2, visible: true, icon: 'IconUser', iconVisibility: false, image: null }] }}`
+          `{{ [{ label: 'Ada', value: 1, visible: true, icon: 'IconUser', iconVisibility: true, image: '${IMAGE}', imageVisibility: true },` +
+            `{ label: 'Bob', value: 2, visible: true, icon: 'IconUser', iconVisibility: false, image: null },` +
+            `{ label: 'Cara', value: 3, visible: true, image: '${IMAGE}' }] }}`
         ),
       },
     });
@@ -501,5 +505,6 @@ describe('MultiselectV2: per-option icon and image', () => {
     expect(rowImage('Ada')).toHaveAttribute('src', IMAGE);
     expect(rowIcon('Bob')).toBeNull();
     expect(rowImage('Bob')).toBeNull();
+    expect(rowImage('Cara')).toBeNull();
   });
 });
