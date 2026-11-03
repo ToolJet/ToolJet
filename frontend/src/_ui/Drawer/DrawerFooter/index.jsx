@@ -42,12 +42,22 @@ function DrawerFooter({
     const baseKeyCallback = { key: 'Escape', callbackFn: onClose };
     const keyCallbackFnArray = [baseKeyCallback];
 
+    // Enter is the keyboard twin of the primary button, so it is inert whenever that button is disabled.
+    const unlessDisabled =
+      (callbackFn) =>
+      (...args) => {
+        if (shouldDisableCreateBtn || fetching) return;
+        callbackFn(...args);
+      };
+
     const addEnterCallback = (callbackFn) => {
-      keyCallbackFnArray.push({ key: 'Enter', callbackFn });
+      keyCallbackFnArray.push({ key: 'Enter', callbackFn: unlessDisabled(callbackFn) });
     };
 
     const formType = initiator;
-    if (formType.startsWith('Create') || formType.startsWith('Upload')) {
+    if (formType === 'SeedDataForm') {
+      // enter is a no-op
+    } else if (formType.startsWith('Create') || formType.startsWith('Upload')) {
       addEnterCallback(onCreate);
     } else if (formType.startsWith('Edit')) {
       addEnterCallback(onEdit);
@@ -65,7 +75,7 @@ function DrawerFooter({
     }
 
     if (formType === 'CreateRowForm') {
-      keyCallbackFnArray.push({ key: 'Shift, Enter', callbackFn: onCreate, args: [true] });
+      keyCallbackFnArray.push({ key: 'Shift, Enter', callbackFn: unlessDisabled(onCreate), args: [true] });
     }
 
     const cleanup = triggerKeyboardShortcut(keyCallbackFnArray, initiator);
@@ -81,6 +91,8 @@ function DrawerFooter({
     isForeignKeyDraweOpen,
     isEditMode,
     editForeignKeyInCreateTable,
+    shouldDisableCreateBtn,
+    fetching,
   ]);
 
   const drawerDocumentationsLinks = {
@@ -241,7 +253,13 @@ function DrawerFooter({
                   }}
                   size="md"
                 >
-                  Create <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
+                  {initiator === 'SeedDataForm' ? (
+                    'Seed'
+                  ) : (
+                    <>
+                      Create <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
+                    </>
+                  )}
                 </ButtonSolid>
               )}
             </>
