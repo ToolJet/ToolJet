@@ -361,6 +361,9 @@ export const Listview = function Listview({
                       className="listview-record-divider-vertical"
                       style={{
                         width: DIVIDER_WIDTH,
+                        // The 0px track and Bootstrap's `.row > * { max-width: 100% }` would clamp the line to 0.
+                        minWidth: DIVIDER_WIDTH,
+                        maxWidth: 'none',
                         marginRight: -DIVIDER_WIDTH,
                         padding: 0,
                         backgroundColor: dividerColor,
