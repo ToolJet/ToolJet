@@ -29,12 +29,12 @@ The following actions of the component can be controlled using the component-spe
 
 | <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"250px"}}> Description </div>                 | <div style={{width: "200px"}}> RunJS Query </div> |
 | :------------------------------------------- | :---------------------------------------------------------------- | :------------------------------------------------ |
-| setStepVisible( )                            | Set the step visibility.                                          | `components.steps1.setStepVisible`                |
-| setStepDisable( )                            | Disables the step.                                                | `components.steps1.setStepDisable`                |
-| resetSteps( )                                | Resets the completed steps, takes user to the default step.       | `components.steps1.resetSteps`                    |
-| setStep( )                                   | Takes user to step ID, marks all the previous steps as completed. | `components.steps1.setStep`                       |
+| setStepVisible( )                            | Shows or hides the step with the given ID.                        | `components.steps1.setStepVisible(2, false)`    |
+| setStepDisable( )                            | Enables or disables the step with the given ID.                   | `components.steps1.setStepDisable(2, true)`     |
+| resetSteps( )                                | Resets the component to the first visible step.                   | `components.steps1.resetSteps()`                |
+| setStep( )                                   | Takes user to step ID, marks all the previous steps as completed. Doesn't trigger **On select**. | `components.steps1.setStep(2)`                  |
 | setVisibility( )                             | Sets the visibility of the component.                             | `components.steps1.setVisibility(false)`          |
-| setDisable( )                                | Disables the component.                                           | `components.steps1.setDisable(true)`              |
+| setDisabled( )                               | Disables the component.                                           | `components.steps1.setDisabled(true)`           |
 
 ## Exposed Variables
 
@@ -62,6 +62,8 @@ The following actions of the component can be controlled using the component-spe
 
 ## Styles
 
+### Steps
+
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | Expected Value                                 |
 | :------------------------------------------ | :------------------------------------------------ | ---------------------------------------------- |
 | Incompleted accent                          | Choose color for incomplete accent.               | Select from theme or choose from color picker. |
@@ -69,6 +71,12 @@ The following actions of the component can be controlled using the component-spe
 | Completed accent                            | Choose color for completed accent.                | Select from theme or choose from color picker. |
 | Completed label                             | Choose color for completed label.                 | Select from theme or choose from color picker. |
 | Current step label                          | Choose color for current step label.              | Select from theme or choose from color picker. |
+
+### Container
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Padding | Sets the padding around the component. | Select `Default` to maintain standard padding or `None` to remove all padding. |
 
 ### Advanced
 

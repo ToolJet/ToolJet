@@ -52,7 +52,7 @@ The React code for a **Custom Component** can be added in the **Code** field. Yo
 
 ### Data Parameter
 
-To access the data passed through the [data](#data) field, define the `data` parameter to the *MyCustomComponent* funtion.
+To access the data passed through the [data](#data) field, define the `data` parameter to the *MyCustomComponent* function.
 
 #### Example
 
@@ -81,7 +81,7 @@ While named imports from `@material-ui/core/+esm` may work in simple cases, they
 
 ### Update Data Function
 
-To update the data in the data object, you can use the in-built `updateData` function.
+To update the data in the data object, you can use the in-built `updateData` function. `updateData(object)` merges the object into the component's data and updates `components.<name>.data`.
 
 #### Example
 
@@ -115,6 +115,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);
 
 **Custom Component** in ToolJet can be used to trigger queries. You can specify the query name in the [data](#data) field. Use the in-built `runQuery` function to execute the query dynamically from within the **Custom Component**.
 
+`runQuery(queryName, parameters)` returns a Promise that resolves with the query result, the same as `queries.<queryName>.run()`: `{ status: 'ok', data }` on success or `{ status: 'failed', ... }` on failure. The optional `parameters` object is available in the query as `{{parameters.<key>}}`. See [Pass Query Parameters](/docs/widgets/custom-component/pass-query-params-in-custom-components). The Promise doesn't reject; if no query with that name exists, it resolves with `undefined`.
+
 #### Example
 
 ```js
@@ -133,17 +135,16 @@ const MyCustomComponent = ({ data, runQuery }) => (
     <Button
       color="primary"
       variant="contained"
-      onClick={() => {
-        runQuery(data.queryName);
+      onClick={async () => {
+        const result = await runQuery(data.queryName);
+        if (result?.status === 'ok') {
+          console.log(result.data);
+        }
       }}
     >
       Fetch Contact Info
     </Button>
   </Container>
-);
-
-const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
-ReactDOM.render(<ConnectedComponent />, document.body);
 );
 
 const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);

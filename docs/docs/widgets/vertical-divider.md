@@ -24,12 +24,12 @@ There are currently no exposed variables for the component.
 
 <div style={{paddingTop:'24px'}}>
 
-## General
-### Tooltip
+## Additional Actions
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
-
-Under the **General** accordion, you can set the value as **Plain text**, **Markdown**, or **HTML** by selecting the desired format from the toggle above the field. Now hovering over the component will display the tooltip.
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Visibility | Controls whether the divider is visible. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip | Provides additional information on hover. Supports **Plain text**, **Markdown**, and **HTML** formats. | String. |
 
 </div>
 
@@ -51,9 +51,10 @@ Under the **General** accordion, you can set the value as **Plain text**, **Mark
 
 | <div style={{ width:"120px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"180px"}}> Configuration Options </div> |
 | ----------- | ----------- | ----------- |
-| Divider Color | Sets the color of the divider. | Accepts any valid color value like hex (`#000000`), RGB, or predefined color names. |
-| Visibility | Controls whether the divider is visible. | You can set it as either `true` or `false` or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Divider color | Sets the color of the divider. | Select the color or click on **fx** and input code that programmatically returns a color. Black (`#000`) switches to white in dark mode. |
+| Style | Sets the line style of the divider. | Select **Solid** (default) or **Dashed**, or set it programmatically using **fx**. |
 | Box Shadow | Adds shadow around the divider to create depth. | Accepts box-shadow values like `none`, `2px 4px 6px rgba(0, 0, 0, 0.1)` |
+| Padding | Sets the padding around the divider. | Select **Default** or **None**. |
 
 :::info
 Any property having the **fx** button next to its field can be **programmatically configured**.

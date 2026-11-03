@@ -41,28 +41,52 @@ Using App Themes in ToolJet involves two simple steps — **creating the theme**
 
 ### 1. Create an App Theme
 
-Role Required: **Admin**
+Role Required: **Admin/Builder**
 
 - Go to your **Workspace Settings**.
-- Click on the **Theme** tab.
+- Click on the **Themes** tab.
 - Click **Create new theme**.
-- Configure your theme styles:
-  - Set your **Brand colors**: Primary, Secondary, Tertiary
-  - Define **Text**, **Border**, **System status**, and **Surface** colors
-  - Choose styles for both **Light** and **Dark** modes
-- Click **Save** once you're done.<br/>
+- Enter a name for the theme. The name must be 5 to 100 characters, must be unique in the workspace, and can't be `ToolJet`.
+- Configure your theme styles in each tab. Each color has a **Light** and a **Dark** value, and starts from the default ToolJet theme:
+
+  | Tab | Colors |
+  |:--- |:------ |
+  | **Brand** | **Primary**, **Secondary (Optional)**, **Tertiary (Optional)** |
+  | **Text** | **Primary**, **Placeholder** |
+  | **Border** | **Default**, **Weak** |
+  | **System status** | **Success**, **Error**, **Warning** |
+  | **Surface** | **App background**, **Surface 1**, **Surface 2**, **Surface 3** |
+
+- Use the **Light** and **Dark** toggle in the **Preview** panel to check how the theme looks in each mode.
+- Click **Save** once you're done, or click **Discard** to reset your changes.<br/>
 
 You can create multiple themes as per your needs — for different teams, environments, or clients.
+
+:::info
+App Themes is a paid feature. On plans without it, **Create new theme** is disabled, existing custom themes are disabled, and apps use the built-in **ToolJet** theme.
+:::
+
+### Manage Themes
+
+The **Themes** tab lists every theme in the workspace. The workspace default theme has a **Default** tag. Select a theme to preview it, then use these actions:
+
+- **Set as default**: Makes the theme the default for all new applications created in the workspace.
+- **Edit**: Click the edit icon next to **Set as default** to change the theme's name or colors.
+- **Rename Theme**: Available from the theme's menu in the list.
+- **Delete Theme**: Available from the theme's menu in the list, or from the delete icon in the theme's header.
+
+The built-in **ToolJet** theme can't be edited, renamed, or deleted, but you can set it back as the default.
+
+<img className="screenshot-full img-full" src="/img/app-builder/custom-theme/themes-tab.png" alt="Themes tab in workspace settings with a custom theme selected" />
 
 ### 2. Apply the Theme to Your Application
 
 Role Required: **Admin/Builder**
 
 - Open the app where you want to use the theme.
-- Click the **Settings icon** in the **left sidebar** to open **Global Settings**.
-- Scroll down to the **Theme** section.
-- You’ll see a dropdown showing the currently selected theme (usually the default).
-- Click the dropdown to view and select from all your configured themes. <br/>
+- Click the **Settings** icon in the **left sidebar** to open **Global settings**.
+- In the **Canvas Styles** section, find the **Theme** dropdown. It shows the currently selected theme, and the workspace's default theme is marked **Default**.
+- Click the dropdown to view and select from all your configured themes. To create a new one, click **Create a new theme** at the bottom of the dropdown. This opens the workspace theme settings in a new tab. <br/>
   <img  className="screenshot-full img-m" src="/img/app-builder/custom-theme/select-theme.png" alt="Configure custom theme" />
 
 Once selected, your app will now use the chosen theme as the base style for components.
@@ -80,6 +104,10 @@ These options map directly to what you configured during theme setup.
 <img className="screenshot-full img-full" src="/img/app-builder/custom-theme/choose-theme-color.png" alt="Configure custom theme" />
 
 Once components are styled using theme options, changing the theme from Global Settings will instantly update all those components, making your app visually consistent and easy to update.
+
+:::info Themes from templates
+When you create an app from a template, ToolJet adds the template's theme to your workspace and applies it to the app. Template themes are named after their color palette, for example **Slate and silver**. If your workspace already has a theme with that name, the app uses the existing theme. On plans without App Themes, no theme is added. The app keeps the **ToolJet** theme, and the template's light-mode colors are applied to its components directly.
+:::
 
 ## Scenarios
 
