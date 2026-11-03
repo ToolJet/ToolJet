@@ -33,7 +33,10 @@ describe('attachment cleanup scheduling', () => {
     await expect(listener.sweep()).resolves.toBeUndefined();
     await listener.sweep();
     expect(attachments.sweep).toHaveBeenCalledTimes(2);
-    expect(Logger.warn).toHaveBeenCalledWith('Attachment sweep will retry.', 'AiAttachmentCleanup');
+    expect(Logger.warn).toHaveBeenCalledWith(
+      expect.stringMatching(/^Attachment sweep will retry(?: \(type=Error, code=none\))?\.$/),
+      'AiAttachmentCleanup'
+    );
     expect(JSON.stringify((Logger.warn as jest.Mock).mock.calls)).not.toContain('synthetic-private-value');
   });
 
