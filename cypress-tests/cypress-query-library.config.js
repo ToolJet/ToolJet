@@ -13,6 +13,6 @@ module.exports = defineConfig({
   e2e: {
     baseUrl: process.env.QUERY_LIBRARY_FRONTEND_ORIGIN,
     supportFile: 'cypress/support/query-library.js',
-    specPattern: 'cypress/e2e/happyPath/platform/eeTestcases/queryLibrary/{versionLifecycle,licensing}.cy.js',
+    specPattern: 'cypress/e2e/happyPath/platform/eeTestcases/queryLibrary/{versionLifecycle,consumerJourneys,consumerEdgeCases,licensing}.cy.js',
   },
 });
