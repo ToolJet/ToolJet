@@ -308,13 +308,13 @@ describe('Listview: a new ListView s header', () => {
   });
 
   test('[Listview-HDR-006] the header Text of a new ListView uses the Figma text style', async () => {
-    // Break this catches: the header Text seeded bold (or another size) instead of Figma 238:1380's
-    // Inter Medium 16px, so a new ListView header looks heavier than the design.
+    // Break this catches: a weight the Text Weight select has no option for (Figma's 500), which leaves
+    // the Weight field blank, or a size other than 16px.
     seedApp({}, { moduleId: MODULE_ID });
     const seeded = addChildrenWidgetsToParent('Listview', LV, 'desktop');
     const styles = seeded.find((entry) => entry.component.parent === HEADER).component.definition.styles;
 
-    expect(styles.fontWeight.value).toBe('500');
+    expect(styles.fontWeight.value).toBe('bold');
     expect(styles.textSize.value).toBe(16);
   });
 });
