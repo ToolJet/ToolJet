@@ -12,10 +12,11 @@ export class CodeModeSourceModule extends SubModule {
     const cacheKey = this.buildCacheKey(configs, isMainImport);
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;
-    const { CodeModeSourceController, CodeModeSourceService } = await this.getProviders(configs, 'code-mode-source', [
-      'controller',
-      'service',
-    ]);
+    const { CodeModeSourceController, CodeModeSourceService, CodeModeCliController } = await this.getProviders(
+      configs,
+      'code-mode-source',
+      ['controller', 'service', 'cli.controller']
+    );
     const { CustomComponentLibrariesService, DevBundleEventsService } = await this.getProviders(
       configs,
       'custom-component-libraries',
@@ -34,7 +35,7 @@ export class CodeModeSourceModule extends SubModule {
         CustomComponentLibrariesService,
         { provide: DEV_TRACK_UPLOADER, useExisting: CustomComponentLibrariesService },
       ],
-      controllers: isMainImport ? [CodeModeSourceController] : [],
+      controllers: isMainImport ? [CodeModeSourceController, CodeModeCliController] : [],
       exports: [CodeModeSourceServiceBase],
     });
   }

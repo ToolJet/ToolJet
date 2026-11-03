@@ -155,6 +155,9 @@ RUN npm --prefix server run build
 COPY ./cli/ ./cli/
 COPY ./packs/ ./packs/
 RUN npm --prefix cli ci --include=dev && npm --prefix cli run build && node packs/build-builtin.mjs --install
+# The same CLI, packed for GET /api/code-mode/cli/tooljet-cli.tgz: `npm i -g` from the instance installs the CLI
+# that matches this server (server/scripts/pack-cli.sh).
+RUN server/scripts/pack-cli.sh
 
 FROM node:22.23.4-bookworm
 
@@ -222,6 +225,7 @@ COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 COPY --from=builder /app/server/builtin-packs ./app/server/builtin-packs
+COPY --from=builder /app/server/code-mode-cli ./app/server/code-mode-cli
 # Copy nsjail configuration for Python sandboxing
 COPY --from=builder /app/server/ee/workflows/nsjail/python-execution.cfg /etc/nsjail/python-execution.cfg
 

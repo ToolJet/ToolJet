@@ -130,6 +130,9 @@ RUN npm --prefix server run build && npm prune --production --prefix server
 COPY ./cli/ ./cli/
 COPY ./packs/ ./packs/
 RUN npm --prefix cli ci --include=dev && npm --prefix cli run build && node packs/build-builtin.mjs --install
+# The same CLI, packed for GET /api/code-mode/cli/tooljet-cli.tgz: `npm i -g` from the instance installs the CLI
+# that matches this server (server/scripts/pack-cli.sh).
+RUN server/scripts/pack-cli.sh
 
 # Install dependencies for PostgREST, curl, tar, etc.
 RUN apt-get update && apt-get install -y \
@@ -264,6 +267,7 @@ COPY --from=builder --chown=appuser:0 /app/server/templates ./app/server/templat
 COPY --from=builder --chown=appuser:0 /app/server/scripts ./app/server/scripts
 COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
 COPY --from=builder --chown=appuser:0 /app/server/builtin-packs ./app/server/builtin-packs
+COPY --from=builder --chown=appuser:0 /app/server/code-mode-cli ./app/server/code-mode-cli
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 

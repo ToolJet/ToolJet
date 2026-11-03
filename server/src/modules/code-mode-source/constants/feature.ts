@@ -16,5 +16,7 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.UPLOAD_DEV_BUNDLE]: { ...devTrack, ...checked },
     [FEATURE_KEY.LIST_REVISIONS]: checked,
     [FEATURE_KEY.PUBLISH_CODE]: { ...devTrack, ...checked },
+    // The CLI tarball this server was built with: public, like the frontend's own assets.
+    [FEATURE_KEY.DOWNLOAD_CLI]: { isPublic: true },
   },
 };

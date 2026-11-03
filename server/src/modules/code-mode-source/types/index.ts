@@ -9,6 +9,7 @@ interface Features {
   [FEATURE_KEY.UPLOAD_DEV_BUNDLE]: FeatureConfig;
   [FEATURE_KEY.LIST_REVISIONS]: FeatureConfig;
   [FEATURE_KEY.PUBLISH_CODE]: FeatureConfig;
+  [FEATURE_KEY.DOWNLOAD_CLI]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

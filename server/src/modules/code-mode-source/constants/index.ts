@@ -7,6 +7,7 @@ export enum FEATURE_KEY {
   UPLOAD_DEV_BUNDLE = 'UPLOAD_DEV_BUNDLE',
   LIST_REVISIONS = 'LIST_REVISIONS',
   PUBLISH_CODE = 'PUBLISH_CODE',
+  DOWNLOAD_CLI = 'DOWNLOAD_CLI',
 }
 
 /** Injection token: the running edition's library service, as the dev track uploader. */
