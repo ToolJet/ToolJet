@@ -7,7 +7,7 @@ Connecting an AI agent to your ToolJet workspace gives it real access to real da
 
 ## Understand What the Agent Can Reach
 
-An agent connected over MCP acts with the permissions of your access token and can run read queries against the data sources in that workspace. Because an agent's exploration is not deterministic and depends on the model you use, assume that any data reachable from that workspace may be read while it works.
+An agent connected over MCP acts with the permissions of your access token or OAuth connection and can run read queries against the data sources in that workspace. Because an agent's exploration is not deterministic and depends on the model you use, assume that any data reachable from that workspace may be read while it works.
 
 This is the single most important thing to internalize before connecting. You are not granting access to one app or one table. You are granting access to everything the token's owner can reach in that workspace.
 
@@ -35,6 +35,15 @@ The token is a credential with the same reach as the account that created it. Tr
 - **Always use an `https://` instance URL.** The token is sent to your ToolJet instance on every call, so an `http://` origin exposes it on the wire.
 - **Do not paste it into a chat with your agent.** It belongs in the environment, not in a conversation that may be logged or retained by your model provider.
 - **Rotate it if it is ever exposed**, including in a screen share or a support thread.
+
+## Review OAuth Connections
+
+On ToolJet Cloud, you can [connect with OAuth](/docs/build-with-ai/mcp/setup#choose-an-authentication-method) instead of a token. There's no token to store in your shell profile or configuration file, but the same care applies to what you approve.
+
+- **Approve one workspace at a time.** A connection is bound to the workspace you approved it in. Connect separately for each workspace.
+- **Read the consent screen.** It lists the permissions the client is requesting. The client can never act beyond your own permissions in that workspace.
+- **Check the callback address before you click Allow access.** ToolJet doesn't verify the client's name, so continue only if you started the connection and recognize the address.
+- **Disconnect clients you no longer use** under **Profile settings > Connected AI clients**. Connections also expire after 30 days, and ToolJet disconnects them when your password, workspace membership, or the workspace's login settings change.
 
 ## What Leaves Your Machine
 
