@@ -1,8 +1,9 @@
 import { Command, Flags } from '@oclif/core';
 
 import { Project } from '../../lib/app/project';
-import { formatCommand, installDependencies } from '../../lib/app/deps';
-import { formatError, formatSuccess } from '../../lib/log';
+import { prepareDependencies } from '../../lib/app/sdk';
+import { signedInServer } from '../../lib/app/session';
+import { formatError, formatSuccess, formatWarning } from '../../lib/log';
 
 export default class AppInstall extends Command {
   static description =
@@ -18,8 +19,13 @@ export default class AppInstall extends Command {
     const { flags } = await this.parse(AppInstall);
     try {
       const project = Project.find();
-      const cmd = installDependencies(project.frontend, { frozen: flags.frozen });
-      this.log(formatSuccess(`Installed with ${formatCommand(cmd)} (no install scripts ran)`));
+      const { success, warnings } = await prepareDependencies(project.frontend, {
+        always: true,
+        frozen: flags.frozen,
+        server: signedInServer(),
+      });
+      for (const line of success) this.log(formatSuccess(line));
+      for (const line of warnings) this.log(formatWarning(line));
     } catch (err) {
       this.log(formatError((err as Error).message));
       process.exit(1);

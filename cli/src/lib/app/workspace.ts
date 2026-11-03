@@ -5,6 +5,7 @@ import { ApiError, type Session } from './session';
 import { Project, GEN_FILE, Snapshot } from './project';
 import { listVersions, pickVersion, pullSnapshot, readApp, VersionInfo } from './remote';
 import { scaffoldApp } from './scaffold';
+import { repairSdk } from './sdk';
 import { findCodeRoot, parseRegistry } from './existing';
 import { generateTypes } from './typegen';
 import { applyStoredSource, fetchStoredSource, type SourceOwner } from './source-upload';
@@ -23,6 +24,7 @@ export async function pullProject(session: Session, project: Project): Promise<S
   const snapshot = await pullSnapshot(session, app.appId, version?.id);
   project.writeSnapshot(snapshot);
   fs.writeFileSync(path.join(project.frontend, GEN_FILE), generateTypes(app, snapshot));
+  repairSdk(project.frontend);
   return snapshot;
 }
 

@@ -14,8 +14,8 @@ RUN --mount=type=secret,id=github_token \
     fi
 RUN npm ci && npm run build:plugin
 
-# Custom component SDK (private), packed for Code mode projects (TOOLJET_SDK_SPEC below): npm's published SDK
-# predates Code mode. Follows BRANCH_NAME like tooljet-mcp, falling back to main.
+# Custom component SDK (private), packed for app projects (TOOLJET_SDK_SPEC below) and served to a teammate's
+# `tooljet app install` at /api/code-mode/cli/custom-component-sdk.tgz: npm's published SDK is older. Follows BRANCH_NAME like tooljet-mcp, falling back to main.
 FROM node:22.23.4 AS sdk-builder
 WORKDIR /sdk
 ARG BRANCH_NAME
@@ -278,7 +278,7 @@ COPY --from=builder /app/server/ee/packages/app-scanner ./app/server/ee/packages
 COPY --from=sdk-builder /out/custom-component-sdk.tgz /tmp/custom-component-sdk.tgz
 RUN mkdir -p /app/code-mode/custom-component-sdk /app/code-mode/apps && \
     tar -xzf /tmp/custom-component-sdk.tgz -C /app/code-mode/custom-component-sdk --strip-components=1 && \
-    rm /tmp/custom-component-sdk.tgz && \
+    mv /tmp/custom-component-sdk.tgz ./app/server/code-mode-cli/custom-component-sdk.tgz && \
     npm install -g ./app/server/code-mode-cli/tooljet-cli.tgz && tooljet --version
 ENV TOOLJET_SDK_SPEC=file:/app/code-mode/custom-component-sdk \
     TOOLJET_CODE_APP_ROOT=/app/code-mode/apps \

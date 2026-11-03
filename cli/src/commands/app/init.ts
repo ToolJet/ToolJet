@@ -3,11 +3,11 @@ import * as path from 'path';
 
 import { scaffoldApp } from '../../lib/app/scaffold';
 import { Project } from '../../lib/app/project';
-import { openSession, resolveTarget } from '../../lib/app/session';
+import { openSession, resolveTarget, signedInServer } from '../../lib/app/session';
 import { createApp } from '../../lib/app/remote';
 import { targetFlags } from '../../lib/app/flags';
-import { formatCommand, installDependencies } from '../../lib/app/deps';
-import { formatError, formatSuccess } from '../../lib/log';
+import { prepareDependencies } from '../../lib/app/sdk';
+import { formatError, formatSuccess, formatWarning } from '../../lib/log';
 
 export default class AppInit extends Command {
   static description = 'Create an app project in Code mode: app.json and the React + TypeScript source in frontend/';
@@ -39,8 +39,9 @@ export default class AppInit extends Command {
       }
       this.log(formatSuccess(`Created ${args.dir}/ (app.json, frontend/)`));
       if (flags.install) {
-        const cmd = installDependencies(project.frontend);
-        this.log(formatSuccess(`Installed dependencies with ${formatCommand(cmd)} (no install scripts ran)`));
+        const { success, warnings } = await prepareDependencies(project.frontend, { always: true, server: signedInServer(flags) });
+        for (const line of success) this.log(formatSuccess(line));
+        for (const line of warnings) this.log(formatWarning(line));
         this.log(`\nNext: cd ${args.dir} && tooljet app pull && tooljet app dev\n`);
       } else {
         this.log(`\nNext: cd ${args.dir} && tooljet app install && tooljet app pull && tooljet app dev\n`);

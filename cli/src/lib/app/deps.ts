@@ -82,15 +82,17 @@ export function requireLockfile(frontend: string): string {
 
 export const needsInstall = (frontend: string) => !fs.existsSync(path.join(frontend, 'node_modules'));
 
-type Runner = (command: string, args: string[], options: { cwd: string; env: NodeJS.ProcessEnv }) => { status: number | null; error?: Error };
+export type Runner = (command: string, args: string[], options: { cwd: string; env: NodeJS.ProcessEnv }) => { status: number | null; error?: Error };
 
 const defaultRunner: Runner = (command, args, options) =>
   spawnSync(command, args, { ...options, stdio: 'inherit', shell: process.platform === 'win32' });
 
 /** Installs the project's dependencies with scripts off. Returns the command it ran. */
-export function installDependencies(frontend: string, options: { frozen?: boolean; run?: Runner } = {}): InstallCommand {
-  const pm = detectPackageManager(frontend);
-  const cmd = installCommand(pm, !!options.frozen && !!findLockfile(frontend));
+export function installDependencies(
+  frontend: string,
+  options: { frozen?: boolean; run?: Runner; command?: InstallCommand } = {}
+): InstallCommand {
+  const cmd = options.command ?? installCommand(detectPackageManager(frontend), !!options.frozen && !!findLockfile(frontend));
   const result = (options.run ?? defaultRunner)(cmd.command, cmd.args, { cwd: frontend, env: { ...process.env, ...cmd.env } });
   if (result.error) throw new Error(`Could not run ${cmd.command}: ${result.error.message}`);
   if (result.status !== 0) throw new Error(`${formatCommand(cmd)} failed (exit ${result.status}).`);

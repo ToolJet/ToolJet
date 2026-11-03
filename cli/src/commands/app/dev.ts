@@ -12,7 +12,7 @@ import { ApiClient } from '../../lib/library/api-client';
 import { DevWatcher } from '../../lib/library/dev-watcher';
 import { build } from '../../lib/library/builder';
 import { formatError, formatSuccess, formatDuration, formatWarning } from '../../lib/log';
-import { formatCommand, installDependencies, needsInstall } from '../../lib/app/deps';
+import { prepareDependencies } from '../../lib/app/sdk';
 import {
   codeSavedLine,
   devSourceOwner,
@@ -64,12 +64,11 @@ export default class AppDev extends Command {
       const app = project.readApp();
       if (!app.appId)
         throw new Error('app.json has no appId: create the app (tooljet app init --create) or clone one.');
-      // First run in a fresh clone: install without running any package's install scripts.
-      if (needsInstall(project.frontend)) {
-        const cmd = installDependencies(project.frontend);
-        this.log(formatSuccess(`Installed dependencies with ${formatCommand(cmd)} (no install scripts ran)`));
-      }
       const target = resolveTarget(flags);
+      // First run in a fresh clone: install without running any package's install scripts.
+      const deps = await prepareDependencies(project.frontend, { server: target.url });
+      for (const line of deps.success) this.log(formatSuccess(line));
+      for (const line of deps.warnings) this.log(formatWarning(line));
       const session = await openSession(target);
       const working = await workingApp(session, project.root, app);
       const version = working.app.version;

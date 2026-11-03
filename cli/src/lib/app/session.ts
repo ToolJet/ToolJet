@@ -49,6 +49,15 @@ export const resolveTarget = (flags: { url?: string; token?: string } = {}): Tar
   return { url: stored.url.replace(/\/+$/, ''), token: stored.apiToken };
 };
 
+/** The server this command would talk to, for what does not need a session; undefined when not signed in anywhere. */
+export const signedInServer = (flags: { url?: string; token?: string } = {}): string | undefined => {
+  try {
+    return resolveTarget(flags).url;
+  } catch {
+    return undefined;
+  }
+};
+
 const jwtSubject = (jwt: string): string => {
   try {
     const payload = JSON.parse(Buffer.from(jwt.split('.')[1], 'base64url').toString('utf8'));

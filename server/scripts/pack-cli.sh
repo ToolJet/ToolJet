@@ -6,6 +6,10 @@
 #
 # It builds cli/ when cli/dist is missing, writes oclif.manifest.json for the pack and removes it again, and packs
 # without lifecycle scripts, so README.md (which `prepack` rewrites) is left as it is.
+#
+# custom-component-sdk.tgz beside it (GET /api/code-mode/cli/custom-component-sdk.tgz) comes from the private SDK repo,
+# which ee-preview.Dockerfile builds. In a checkout, from the SDK's folder once it is built:
+#   mv "$(npm pack --ignore-scripts --silent --pack-destination <server>/code-mode-cli | tail -n 1 | sed 's|^|<server>/code-mode-cli/|')" <server>/code-mode-cli/custom-component-sdk.tgz
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/../.." && pwd)"

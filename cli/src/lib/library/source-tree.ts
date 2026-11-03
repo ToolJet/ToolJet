@@ -1,6 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { manifestWithPublishedSdk } from '../app/sdk';
+
 /** The library's source tree as the manifest carries it: path (with forward slashes) to text content. */
 export interface ManifestSource {
   files: Record<string, string>;
@@ -63,7 +65,9 @@ export function collectSource(projectRoot: string, warnings: string[]): Manifest
       skipped.push(rel);
       continue;
     }
-    files[rel] = fs.readFileSync(full, 'utf8');
+    const content = fs.readFileSync(full, 'utf8');
+    // A local SDK path stays on this machine (lib/app/sdk.ts).
+    files[rel] = rel === 'package.json' ? manifestWithPublishedSdk(content) : content;
     total += size;
   }
   if (skipped.length)

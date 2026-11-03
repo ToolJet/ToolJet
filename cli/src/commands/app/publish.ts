@@ -11,7 +11,8 @@ import { fetchStoredSource, SourceOwner, storeSource } from '../../lib/app/sourc
 import { ApiClient } from '../../lib/library/api-client';
 import { build } from '../../lib/library/builder';
 import { formatError, formatSuccess, formatWarning } from '../../lib/log';
-import { installDependencies, needsInstall, requireLockfile } from '../../lib/app/deps';
+import { requireLockfile } from '../../lib/app/deps';
+import { prepareDependencies } from '../../lib/app/sdk';
 import { ApiError } from '../../lib/app/session';
 import {
   countsLine,
@@ -58,8 +59,10 @@ export default class AppPublish extends Command {
       if (flags.version) this.log(formatWarning('-v is ignored: the version is named with --name (default: the draft name).'));
       // The saved build uses exactly the tested dependency versions, installed without install scripts.
       requireLockfile(project.frontend);
-      if (needsInstall(project.frontend)) installDependencies(project.frontend, { frozen: true });
       const target = resolveTarget(flags);
+      const deps = await prepareDependencies(project.frontend, { frozen: true, server: target.url });
+      for (const line of deps.success) this.log(formatSuccess(line));
+      for (const line of deps.warnings) this.log(formatWarning(line));
       const session = await openSession(target);
       const working = await workingApp(session, project.root, app);
       const version = working.app.version;

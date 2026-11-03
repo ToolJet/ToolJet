@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { lockWithPublishedSdk, manifestWithPublishedSdk, repairSdk } from './sdk';
 import { Session } from './session';
 
 /**
@@ -47,12 +48,20 @@ const withVersion = (content: string, version: unknown): string => {
   return JSON.stringify(version === undefined ? rest : { ...rest, version }, null, 2) + '\n';
 };
 
+/** What ToolJet stores for a file: without what belongs to this checkout, its followed version and its local SDK path. */
+const storedContent = (rel: string, content: string): string => {
+  if (rel === APP_JSON) return withVersion(content, undefined);
+  if (rel === 'frontend/package.json') return manifestWithPublishedSdk(content);
+  if (rel === 'frontend/package-lock.json') return lockWithPublishedSdk(content);
+  return content;
+};
+
 /** The files the server stores, as { path, content } with paths relative to the project root and '/' separators. */
 export function collectProjectSource(root: string): { path: string; content: string }[] {
   const files: { path: string; content: string }[] = [];
   const add = (rel: string) => {
     const content = fs.readFileSync(path.join(root, rel), 'utf8');
-    files.push({ path: rel, content: rel === APP_JSON ? withVersion(content, undefined) : content });
+    files.push({ path: rel, content: storedContent(rel, content) });
   };
   for (const rel of ROOT_FILES) if (fs.existsSync(path.join(root, rel))) add(rel);
   const walk = (rel: string) => {
@@ -180,6 +189,8 @@ export function applyStoredSource(
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, content);
   }
+  // Code stored before ToolJet kept local SDK paths out of it.
+  repairSdk(path.join(root, 'frontend'));
   writeSourceState(root, {
     revision: stored.revision as number,
     owner: stored.owner as SourceOwner,

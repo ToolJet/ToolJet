@@ -9,14 +9,14 @@ import { ApiClient } from '../../../src/lib/library/api-client';
 
 describe('HTTP errors name the server', () => {
   const url = 'https://tooljet.test';
-  const body = JSON.stringify({ message: 'Code mode is not included in this plan' });
+  const body = JSON.stringify({ message: 'This feature is not included in this plan' });
   const session = () => openSession({ url, token: 'jwt', kind: 'session', workspaceId: 'w1' });
 
   it('the app routes', async () => {
     nock(url).get('/api/apps/a1').reply(451, body);
     const error = await (await session()).api('/apps/a1').catch((e: Error) => e);
     expect((error as Error).message).to.equal(
-      `GET /apps/a1 failed (HTTP 451) on ${url}: Code mode is not included in this plan`
+      `GET /apps/a1 failed (HTTP 451) on ${url}: This feature is not included in this plan`
     );
   });
 
