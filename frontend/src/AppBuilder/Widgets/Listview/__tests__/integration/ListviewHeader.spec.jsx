@@ -102,6 +102,23 @@ describe('Listview: header off', () => {
   });
 });
 
+describe('Listview: header toggled at runtime', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-HDR-001] turning Show header off after it was on gives the records their top padding back', async () => {
+    // Break this catches: `paddingTop` set only while the header shows. When the key disappears React
+    // clears padding-top and the shorthand is not re-applied, so records sit flush under the top border.
+    await mount();
+    expect(container().style.paddingTop).toBe('0px');
+
+    widget.setComponentProperty(LV, 'showHeader', '{{false}}', 'properties');
+
+    await waitFor(() => expect(headerCanvases()).toHaveLength(0));
+    expect(container().style.paddingTop).toBe('12px');
+  });
+});
+
 describe('Listview: header on', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
