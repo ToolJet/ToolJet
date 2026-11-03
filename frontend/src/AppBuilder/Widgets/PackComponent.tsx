@@ -27,14 +27,7 @@ const PackComponent = ({ properties = {}, ...props }: { properties?: Record<stri
         }
       : null;
 
-  return (
-    <SdkComponentHost
-      {...(props as any)}
-      properties={properties}
-      source={source}
-      metaKeys={META_KEYS}
-    />
-  );
+  return <SdkComponentHost {...(props as any)} properties={properties} source={source} metaKeys={META_KEYS} />;
 };
 
 export default PackComponent;

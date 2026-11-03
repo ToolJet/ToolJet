@@ -14,9 +14,10 @@ export async function assertReleaseBaseline(
   expectedReleasedVersionId: string | null | undefined
 ): Promise<void> {
   if (expectedReleasedVersionId === undefined) return;
-  const [row] = await manager.query(`SELECT current_version_id AS "currentVersionId" FROM apps WHERE id = $1 FOR UPDATE`, [
-    appId,
-  ]);
+  const [row] = await manager.query(
+    `SELECT current_version_id AS "currentVersionId" FROM apps WHERE id = $1 FOR UPDATE`,
+    [appId]
+  );
   const live = row?.currentVersionId ?? null;
   if (live !== (expectedReleasedVersionId || null)) {
     throw new ConflictException(

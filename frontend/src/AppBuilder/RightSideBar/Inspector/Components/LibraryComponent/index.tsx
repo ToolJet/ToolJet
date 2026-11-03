@@ -292,7 +292,10 @@ export const PackComponentProperties = (props: LibraryComponentPropertiesProps) 
 
 const packIdentity = (component: LibraryComponentPropertiesProps['component']) => {
   const properties = (component as any)?.component?.definition?.properties ?? {};
-  return { pack: properties.pack?.value as string | undefined, componentName: properties.componentName?.value as string | undefined };
+  return {
+    pack: properties.pack?.value as string | undefined,
+    componentName: properties.componentName?.value as string | undefined,
+  };
 };
 
 // Styles tab: the manifest's ToolJet.useStyleX fields grouped by their `section`, then the host

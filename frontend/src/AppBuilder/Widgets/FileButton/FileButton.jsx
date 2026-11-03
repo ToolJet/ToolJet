@@ -151,7 +151,7 @@ const FileButton = (props) => {
   const computedPressedBgColor = getModifiedColor(backgroundColor, 'active');
   const resolvedBgColor =
     typeof backgroundColor === 'string' && backgroundColor.startsWith('var(')
-      ? getCssVarValue(document.documentElement, backgroundColor) ?? backgroundColor
+      ? (getCssVarValue(document.documentElement, backgroundColor) ?? backgroundColor)
       : backgroundColor;
   const computedDisabledBgColor = tinycolor(resolvedBgColor).setAlpha(DISABLED_BG_ALPHA).toRgbString();
 

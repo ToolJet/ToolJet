@@ -56,8 +56,8 @@ export const useFlexWidgetLayout = ({
   let widgetWidth = fillWidth
     ? availableWidth
     : layoutV2
-    ? Math.min(effectiveWidthPx, availableWidth)
-    : effectiveWidthPx;
+      ? Math.min(effectiveWidthPx, availableWidth)
+      : effectiveWidthPx;
   if (isRowFill && measuredWidth != null) widgetWidth = measuredWidth;
   // The flex SLOT (wrapper / flex-basis) grows to the measured temp height via
   // `effectiveHeightPx`, but the WIDGET itself must render at its authored

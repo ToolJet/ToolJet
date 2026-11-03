@@ -25,7 +25,7 @@ jest.mock('@/AppBuilder/Widgets/LibraryComponent/inlineRuntime', () => ({
 
 const SOURCE = require('../../../../../../packs/shadcn/src/index.ts');
 // Intl writes a no-break space (U+00A0, or U+202F before some currency marks); compare with plain spaces.
-const plain = (text) => String(text).replace(/[  ]/g, ' ');
+const plain = (text) => String(text).replace(/[\u00a0\u202f]/g, ' ');
 
 let mounts = 0;
 const mountStat = async (props) => {

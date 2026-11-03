@@ -48,7 +48,7 @@ const resolve = ({
     contextIndices: context,
     visibility: true,
     getResolvedComponent: (id) =>
-      id === 'lv' ? { properties: lvProperties } : children.find((c) => c.id === id)?.resolved ?? { properties: {} },
+      id === 'lv' ? { properties: lvProperties } : (children.find((c) => c.id === id)?.resolved ?? { properties: {} }),
     getResolvedValue: (v) => v,
     getComponentDefinition: (id) => components[id],
     getContainerChildrenMapping: () => children.map((c) => c.id),
