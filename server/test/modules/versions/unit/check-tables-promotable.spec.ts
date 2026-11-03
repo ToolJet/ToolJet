@@ -44,4 +44,11 @@ describe('VersionUtilService.checkTablesPromotableToEnvironment', () => {
       service.checkTablesPromotableToEnvironment('app-1', 'v-1', 'env-staging', 'staging', 'env-dev', 'org-1', manager)
     ).resolves.toEqual({ warnings: [] });
   });
+
+  it('names the missing tables without throwing, for the promote dialog to show on open', async () => {
+    const { service, manager } = build(['t-2']);
+    manager.find.mockResolvedValue([{ id: 't-1', tableName: 'vendors' }]);
+    const { offenders } = await service.findTablesMissingInEnvironment('app-1', 'v-1', 'env-staging', 'org-1', manager);
+    expect(offenders.map((t) => t.tableName)).toEqual(['vendors']);
+  });
 });

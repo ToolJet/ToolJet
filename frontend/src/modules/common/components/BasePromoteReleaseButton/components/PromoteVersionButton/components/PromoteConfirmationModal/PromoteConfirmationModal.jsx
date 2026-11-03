@@ -3,7 +3,7 @@ import Modal from 'react-bootstrap/Modal';
 import { capitalize } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { gitSyncService, authenticationService, tooljetDatabaseService } from '@/_services';
+import { gitSyncService, authenticationService, tooljetDatabaseService, appVersionService } from '@/_services';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { missingTablesFrom, promoteTablesOneUp } from './missingTables';
 import { toast } from 'react-hot-toast';
@@ -46,6 +46,22 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
   useEffect(() => {
     setShow(data);
   }, [data]);
+
+  // Ask which tables the next environment is missing as the dialog opens, so it offers
+  // "Promote tables and app" from the start instead of after a failed first click.
+  useEffect(() => {
+    if (!data || !appId || !versionIdToPromote) return;
+    let cancelled = false;
+    appVersionService
+      .getMissingTablesForPromote(appId, versionIdToPromote)
+      .then((response) => {
+        if (!cancelled && response?.tables?.length) setMissingTables(response.tables);
+      })
+      .catch(() => undefined); // The promote itself still checks and reports missing tables.
+    return () => {
+      cancelled = true;
+    };
+  }, [data, appId, versionIdToPromote]);
 
   // A full-screen view opened from this dialog needs the focus and the Escape key.
   const overlayOpen = useStore((state) => state.isEditorOverlayOpen);
