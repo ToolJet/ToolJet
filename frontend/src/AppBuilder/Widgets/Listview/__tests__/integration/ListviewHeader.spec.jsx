@@ -29,6 +29,9 @@ const NAME = 'listview1';
 const THREE_RECORDS = `{{[{ text: 'Alpha' }, { text: 'Beta' }, { text: 'Gamma' }]}}`;
 // Figma 238:1379 (list) and 294:45127 (grid): the header frame is 60px tall in both. Hand-copied, not imported.
 const FIGMA_HEADER_HEIGHT = 60;
+// The 1px divider is inside that 60px (Figma: border-b inside the frame), so the canvas slot is one less.
+const DIVIDER = 1;
+const SLOT_HEIGHT = `${FIGMA_HEADER_HEIGHT - DIVIDER}px`;
 
 // WidgetWrapper hides a child without device flags, so a child seeded without them renders nothing.
 function child(id, name, type, properties, parent = LV) {
@@ -139,7 +142,10 @@ describe('Listview: header on', () => {
     expect(header.compareDocumentPosition(list()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(header.style.backgroundColor).toBe('rgb(1, 2, 3)');
     expect(header.style.borderBottom).toBe('1px solid rgb(4, 5, 6)');
-    expect(header.querySelector('.resizable-slot').style.height).toBe(`${FIGMA_HEADER_HEIGHT}px`);
+    // Figma 238:1379: the header is 60px including the divider, so the first record starts at 72.
+    expect(header.style.boxSizing).toBe('border-box');
+    expect(header.style.height).toBe(`${FIGMA_HEADER_HEIGHT}px`);
+    expect(header.querySelector('.resizable-slot').style.height).toBe(SLOT_HEIGHT);
   });
 
   test('[Listview-HDR-002] the header spans the full width above the padded records', async () => {
@@ -165,7 +171,7 @@ describe('Listview: the header height is fixed', () => {
     widget.render({ currentMode: 'edit', properties: { headerHeight: binding('{{70}}') } });
     await waitFor(() => expect(rows()).toHaveLength(3));
     const slot = () => headerSection().querySelector('.resizable-slot');
-    expect(slot().style.height).toBe(`${FIGMA_HEADER_HEIGHT}px`);
+    expect(slot().style.height).toBe(SLOT_HEIGHT);
 
     const handle = headerSection().querySelector('.resize-handle');
     if (handle) {
@@ -174,7 +180,7 @@ describe('Listview: the header height is fixed', () => {
       fireEvent.mouseUp(document);
     }
 
-    expect(slot().style.height).toBe(`${FIGMA_HEADER_HEIGHT}px`);
+    expect(slot().style.height).toBe(SLOT_HEIGHT);
     expect(handle).toBeNull();
     expect(store().getComponentDefinition(LV, MODULE_ID).component.definition.properties.headerHeight).toEqual({
       value: '{{70}}',
@@ -290,6 +296,17 @@ describe('Listview: a new ListView s header', () => {
 
     expect(headerCanvases()[0].querySelector(`.ele-${headerChild.id}`).textContent.trim()).toBe('List view');
   });
+
+  test('[Listview-HDR-006] the header Text of a new ListView uses the Figma text style', async () => {
+    // Break this catches: the header Text seeded bold (or another size) instead of Figma 238:1380's
+    // Inter Medium 16px, so a new ListView header looks heavier than the design.
+    seedApp({}, { moduleId: MODULE_ID });
+    const seeded = addChildrenWidgetsToParent('Listview', LV, 'desktop');
+    const styles = seeded.find((entry) => entry.component.parent === HEADER).component.definition.styles;
+
+    expect(styles.fontWeight.value).toBe('500');
+    expect(styles.textSize.value).toBe('{{16}}');
+  });
 });
 
 /**
@@ -334,7 +351,7 @@ describe('Listview: an imported header ListView', () => {
     expect(header.querySelector(`.ele-${imported.id}`).textContent.trim()).toBe('Orders');
     expect(header.style.backgroundColor).toBe('rgb(9, 8, 7)');
     expect(header.style.borderBottom).toBe('1px solid rgb(6, 5, 4)');
-    expect(header.querySelector('.resizable-slot').style.height).toBe(`${FIGMA_HEADER_HEIGHT}px`);
+    expect(header.querySelector('.resizable-slot').style.height).toBe(SLOT_HEIGHT);
   });
 });
 
