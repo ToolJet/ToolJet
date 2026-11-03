@@ -98,7 +98,8 @@ describe('Listview: header off', () => {
     expect(headerSection()).toBeNull();
     expect(texts('hdr1')).toEqual([]);
     expect(container().firstElementChild).toBe(list());
-    expect(container().style.padding).toBe('12px');
+    const { paddingTop, paddingRight, paddingBottom, paddingLeft } = container().style;
+    expect([paddingTop, paddingRight, paddingBottom, paddingLeft]).toEqual(['12px', '12px', '12px', '12px']);
   });
 });
 
