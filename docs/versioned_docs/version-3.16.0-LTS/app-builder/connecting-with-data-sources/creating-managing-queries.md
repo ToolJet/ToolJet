@@ -16,6 +16,24 @@ Queries are created in the Query Panel, located at the bottom of the App Builder
 
 <img className="screenshot-full img-s" src="/img/app-builder/connecting-with-datasouces/create-query.png" alt="App Builder: Create queries"/>
 
+## Finding Queries
+
+- **Search**: Click the search icon in the Query Panel and type part of a query name.
+- **Filter**: Click the sort/filter icon (**Show sort/filter**). Under **Filter By**, select **Data Source** and choose one or more data sources.
+- **Sort**: In the same menu, under **Sort By**, choose **Custom order** (default), **Name: A-Z**, **Name: Z-A**, **Type: A-Z**, **Type: Z-A**, **Last modified: oldest first** or **Last modified: newest first**.
+
+## Query Menu
+
+Click the three-dot menu on a query to see these options:
+
+- **Rename**
+- **Duplicate**
+- **Move to a folder**. See [Query Folders](#query-folders).
+- **Query permission**. See [Query Level Permission](#query-level-permission).
+- **Delete**. You're asked to confirm, because deleting a query can't be undone.
+
+To edit the query's data source, click the edit button next to the **Source** dropdown in the query's **Setup** tab. The data source settings open in a new tab. The button is shown for workspace data sources that you have permission to edit.
+
 ## Query Folders
 
 Query Folders let you group related queries into named folders inside the Query Panel, making it easier to manage and navigate large numbers of queries in a single application.
@@ -62,6 +80,12 @@ Click the three-dot menu on a folder and select **Delete**. You will be prompted
 
 ## Configuring the Query
 
+The query editor has three tabs:
+
+- **Setup**: The data source, parameters and the query itself.
+- **Transformation**: Code that reshapes the query result. See [Transforming Data](/docs/app-builder/connecting-with-data-sources/transforming-data). This tab isn't shown for RunJS, RunPy and Run Workflow queries.
+- **Settings**: When and how the query runs, notifications, timeout and events. See [Query Settings](#query-settings).
+
 The interface for configuring queries depends on the type of data source. If you are using any SQL data source, you can configure your query using either GUI mode or SQL mode. Rest of the data sources can be configured using form-based GUI.
 
 ### GUI mode
@@ -94,7 +118,7 @@ To add parameters, simply click the **+ Add** button next to the Parameters labe
 For each parameter, you need to specify:
 
 - **Name**: The identifier for the parameter.
-- **Default value**: This value can be a constant string, number, or object.
+- **Value**: The default value. This value can be a constant string, number, or object.
 
 **Syntax for utilizing the parameter:** Employ `parameters.<identifier>` in your query. It's important to note that parameters can only be utilized within the specific query where they are defined.
 
@@ -146,6 +170,16 @@ Follow these steps to configure query level permission:
 
 **Note**: If a query's permissions have been configured by an admin and the builder is not included in the allowed users or groups, the builder will not be able to run or modify the query or its permissions.
 
+## Query Settings
+
+The **Settings** tab of the query editor has these sections, in order:
+
+1. **Triggers**: **Run this query on application load**, **Run this query on dependency change**, **Request confirmation before running query**, **Show notification on success** and, for REST API queries, **Retry on network errors**.
+2. **Success Message** and **Notification duration (s)**, when **Show notification on success** is on.
+3. **Timeout ( ms )**
+4. **Disable query** and **Disable message**
+5. **Events**
+
 ## Triggers
 
 Triggers allow you to control when and how a query executes within your application. You can find them under the **Settings** tab in the query editor. Following are the triggers available:
@@ -153,6 +187,15 @@ Triggers allow you to control when and how a query executes within your applicat
 ### Run This Query on Application Load
 
 You can use this when you want data to be available as soon as the page loads, like auto-fetching a user’s dashboard data or populating dropdown options without requiring user input.
+
+### Run This Query on Dependency Change
+
+Turn this on to run the query again whenever a value it references changes. A dependency is any `{{ }}` reference in the query's fields, for example `{{components.dropdown1.value}}` in a SQL `WHERE` clause. When a dependency changes, ToolJet waits 500 ms after the last change and then runs the query, so quick changes such as typing trigger a single run.
+
+- Only the fields of the current mode or operation count. The transformation code counts when the transformation is enabled.
+- Values in the **Settings** tab don't count.
+- This setting isn't available for RunJS and RunPy queries.
+- It's off by default.
 
 ### Request Confirmation Before Running Query
 
@@ -168,12 +211,21 @@ For actions that modify or delete data, enable this to prompt users for confirma
 
 ### Show Notification on Success
 
-Let users know when actions are completed successfully. This improves UX by giving real-time feedback. You can customize the message and how long it stays visible.
+Let users know when actions are completed successfully. This improves UX by giving real-time feedback. When the toggle is on, two fields appear:
+
+- **Success Message**: The text of the notification. If left empty, the notification says *Query ran successfully*.
+- **Notification duration (s)**: How long the notification stays visible, in seconds. The default is `5`.
 <img className="screenshot-full img-l" style={{ marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/notification.png" alt="App Builder: notification on query run"/>
 
 ### Retry on Network Errors
 
 This setting is only available for REST API queries. Here, you get an option to automatically retry REST API requests in case of certain network errors or specific HTTP status codes. By default, it retries a failed API request up to 3 times before marking it as failed. Refer to [REST API Documentation](/docs/data-sources/restapi/querying-rest-api/#retry-on-network-errors) for more details.
+
+### Timeout
+
+Enter a time in milliseconds in **Timeout ( ms )**. If the query doesn't finish in that time, the server stops waiting and the query fails with *Query timed out* and *Defined query timeout of &lt;n&gt;ms exceeded.* Leave the field empty, or enter `0`, for no timeout. The field accepts `{{ }}` expressions.
+
+RunJS and RunPy queries run in the browser, so the timeout doesn't apply to them.
 
 ### Disable Query
 
@@ -194,3 +246,12 @@ Editing is in progress — save your changes before running this query.
 :::tip
 Leave the **Disable query** field empty to keep the query always enabled.
 :::
+
+### Events
+
+Use the **Events** section to run actions after the query finishes. Click **New event handler** and choose one of these events:
+
+- **Query Success**: The query ran successfully.
+- **Query Failure**: The query failed.
+
+See [Setting Up Events](/docs/app-builder/events/event-triggers) to configure the handler.

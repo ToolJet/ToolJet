@@ -17,7 +17,8 @@ There are two types of constants:
 | Components              |             ✅                |           ❌              |
 | Data Queries            |             ✅                |           ✅              |
 | Data Sources            |             ✅                |           ✅              |
-| Workflows               |             ✅                |       Coming Soon         |
+| RunJS, RunPy and transformations |    ✅                |           ❌              |
+| Workflows               |             ✅                |   ✅ (query fields and Agent node prompts) |
 | Encrypted in DB         |             ✅                |           ✅              |
 | Masked in Frontend      |             ❌                |           ✅              |
 | Resolved on Client Side |             ✅                |           ❌              |
@@ -25,7 +26,7 @@ There are two types of constants:
 | Naming Convention       | `{{constants.constant_name}}` | `{{secrets.secret_name}}` |
         
 **Note**: 
-1. Secret Constants cannot be used in RunJS or RunPy queries.
+1. Secret Constants cannot be used in RunJS or RunPy queries, or in query transformations. `secrets` isn't defined there, so referencing it fails with an error such as `ReferenceError: secrets is not defined`. Use secrets in data source and query fields, where they're resolved on the server.
 2. Secret Constants can only be used as a singular key and can't be used in a composite key manner.
 
 ## Environment Specific Configurations

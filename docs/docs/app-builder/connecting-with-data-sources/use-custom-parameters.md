@@ -9,10 +9,15 @@ Custom parameters in your queries offer a flexible way to introduce variables wi
 
 1. Open the query panel and select the query you want to add custom parameters to.
 2. Navigate to the **Parameters** section in the top bar.
-3. Click the **+** button to add a custom parameter.
-4. For each parameter, specify:
-    - **Name:** Identifier for the parameter.
-    - **Default value:** A constant string, number, or object.
+3. Click the **+ Add** button to add a custom parameter.
+4. In the **ADD PARAMETER** form, specify:
+    - **Name:** Identifier for the parameter. It must start with a letter, `_` or `$`, and contain only letters, numbers, `_` and `$`. Names must be unique within the query.
+    - **Value:** The default value. Use a constant string, number, or object. Exposed values such as `components`, `queries` and `globals` aren't supported in this field.
+5. Press **Enter** or click outside the form to save the parameter.
+
+An invalid name shows *Variable name invalid*, and a duplicate name shows *Variable name exists*. To edit a parameter, click it. To remove it, click its **x** icon.
+
+Parameters are available for queries of every data source, including RunJS, RunPy, ToolJet Database and REST API.
 
 <img className="screenshot-full img-full" src="/img/how-to/custom-parameters/param-1.png" alt="How to: use custom parameters" />
 

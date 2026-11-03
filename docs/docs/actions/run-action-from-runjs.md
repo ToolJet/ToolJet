@@ -34,8 +34,8 @@ This page is a quick-reference of every action's RunJS syntax, grouped the same 
 
 | Action | RunJS syntax |
 | --- | --- |
-| [Switch Page](/docs/actions/switch-page) | `await actions.switchPage('<pageHandle>')` (optionally with query params — see the action's page) |
-| [Go to App](/docs/actions/go-to-app) | `actions.goToApp('<slug>', queryParams)` |
+| [Switch Page](/docs/actions/switch-page) | `await actions.switchPage('<pageHandle>', [['key', 'value']])`. The handle isn't case-sensitive. While you preview a query, the page doesn't switch. |
+| [Go to App](/docs/actions/go-to-app) | `actions.goToApp('<slug>', [['key', 'value']])`. Query params are an array of `[key, value]` pairs. |
 | [Open Web Page](/docs/actions/open-webpage) | Not available via `actions.*` — use `window.open('<url>', '_blank')`, or `'_self'` for the current tab |
 
 <a id="set-variables"></a>
@@ -56,7 +56,7 @@ This page is a quick-reference of every action's RunJS syntax, grouped the same 
 | Action | RunJS syntax |
 | --- | --- |
 | [Logout](/docs/actions/logout) | `actions.logout()` |
-| [Generate File](/docs/actions/generate-file) | `actions.generateFile('<fileName>', '<fileType>', '<data>')` |
+| [Generate File](/docs/actions/generate-file) | `actions.generateFile('<fileName>', '<fileType>', <data>)`, where `fileType` is `csv`, `plaintext` or `pdf`. All three arguments are required. |
 | [Set Local Storage](/docs/actions/set-localstorage) | `actions.setLocalStorage('<key>', '<value>')` |
 | [Copy to Clipboard](/docs/actions/copy-to-clipboard) | `actions.copyToClipboard('<contentToCopy>')` |
 | [Toggle App Mode](/docs/actions/toggle-app-mode) | `actions.toggleAppMode('<light\|dark>')`, or `actions.toggleAppMode()` to switch to the other theme |
