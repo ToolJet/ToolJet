@@ -1571,6 +1571,44 @@ const legacyWidget = createWidgetHarness({
 });
 
 /**
+ * A ListView saved before 2.0 holds none of the 2.0 keys. The harness seeds the registered
+ * config `definition` under it, as the server does on every load, so the config defaults
+ * decide how it looks (D-18).
+ */
+describe('Listview: a saved ListView without any 2.0 key', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test.each(['edit', 'view'])(
+    '[Listview-COMPAT-002] renders as before in %s mode: 7px padding, bottom border, no header, current pager',
+    async (currentMode) => {
+      // Break this catches: a config default for a 2.0 key set to the new look (bordered style,
+      // header on, 80px rows), which would change every ListView saved before 2.0 on its next load.
+      await mount({
+        currentMode,
+        properties: { enablePagination: binding('{{true}}'), rowsPerPage: binding('{{2}}') },
+      });
+      await waitFor(() => expect(rows()).toHaveLength(2));
+
+      const { properties, styles } = store().getCurrentPageComponents(MODULE_ID)[ID].component.definition;
+      expect(styles.listStyle).toEqual({ value: 'legacy' });
+      expect(styles.gap).toEqual({ value: '{{0}}' });
+      expect(properties.showHeader).toEqual({ value: '{{false}}' });
+      expect(properties.paginationType).toEqual({ value: 'clientSide' });
+      expect(properties.gridRecordHeight).toBeUndefined();
+      expect(styles.recordBackgroundColor).toBeUndefined();
+      expect(styles.recordBorderColor).toBeUndefined();
+
+      expect(container().style.padding).toBe('7px');
+      expect(rows()[0].style.height).toBe('100px');
+      expect(rows()[0].style.borderBottom).toBe('1px solid var(--cc-default-border)');
+      expect(document.getElementById(`${ID}-header`)).toBeNull();
+      expect(pager()).toBeTruthy();
+    }
+  );
+});
+
+/**
  * A wrapper built on the canvas and then dragged into a row. The wrapper moves in the tree, but
  * only the dragged component itself is re-resolved — its children keep whatever scope they had.
  */
