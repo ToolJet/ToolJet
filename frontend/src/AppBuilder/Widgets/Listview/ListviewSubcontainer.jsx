@@ -18,6 +18,7 @@ export const ListviewSubcontainer = ({
   recordBoxStyle,
   recordBorderInset = 0,
   onRecordOrRowClicked,
+  onRecordHovered,
   computeCanvasBackgroundColor,
   darkMode,
   id,
@@ -80,6 +81,8 @@ export const ListviewSubcontainer = ({
         role="listitem"
         tabIndex={0}
         data-cy={`${String(dataCy).toLowerCase()}-row-${index}`}
+        // mouseenter does not bubble, so moving over the record's children does not re-fire.
+        onMouseEnter={() => onRecordHovered?.(index)}
         // Enter and Space only: focus alone must not select, or tabbing would fire Record clicked.
         onKeyDown={(event) => {
           if (event.target !== event.currentTarget) return;

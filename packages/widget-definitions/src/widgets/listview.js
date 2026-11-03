@@ -236,6 +236,8 @@ export const listviewConfig = {
   events: {
     onRowClicked: { displayName: 'Row clicked (Deprecated)' },
     onRecordClicked: { displayName: 'Record clicked' },
+    onRecordHovered: { displayName: 'Record hovered' },
+    onPageChanged: { displayName: 'On page change' },
   },
   styles: {
     headerBackgroundColor: {
@@ -341,7 +343,34 @@ export const listviewConfig = {
   },
   exposedVariables: {
     data: [{}],
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
+    pageIndex: 1,
+    selectedRecordIndex: undefined,
   },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setPage',
+      displayName: 'Set page',
+      params: [{ handle: 'page', displayName: 'Page number', defaultValue: '{{1}}' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },

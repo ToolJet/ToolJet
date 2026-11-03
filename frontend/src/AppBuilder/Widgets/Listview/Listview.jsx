@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 // import { SubContainer } from '../SubContainer';
@@ -27,6 +28,8 @@ import {
   getRecordHeight,
 } from './listStyleLayout';
 
+const HOVER_THROTTLE_MS = 200;
+
 export const Listview = function Listview({
   id,
   width,
@@ -34,6 +37,7 @@ export const Listview = function Listview({
   properties,
   styles,
   fireEvent,
+  setExposedVariable,
   setExposedVariables,
   currentLayout,
   darkMode,
@@ -67,7 +71,7 @@ export const Listview = function Listview({
     columns = 1,
     dataSourceSelector,
     dynamicHeight,
-    loadingState = false,
+    loadingState: loadingStateProperty = false,
     gridRecordHeight,
     showHeader = false,
   } = combinedProperties;
@@ -91,8 +95,35 @@ export const Listview = function Listview({
   const isLegacy = recordStyle === 'legacy';
   const isBordered = recordStyle === 'bordered';
   const recordGap = getRecordGap(recordStyle, gap);
-  const visibility = combinedProperties.visibility ?? true;
-  const disabledState = combinedProperties.disabledState ?? false;
+  const visibilityProperty = combinedProperties.visibility ?? true;
+  const disabledProperty = combinedProperties.disabledState ?? false;
+  // Action state starts from the property and is replaced by either: the newest change wins.
+  const [visibility, setVisibilityState] = useState(visibilityProperty);
+  const [disabledState, setDisabledState] = useState(disabledProperty);
+  const [loadingState, setLoadingState] = useState(loadingStateProperty);
+  useBatchedUpdateEffectArray([
+    {
+      dep: visibilityProperty,
+      sideEffect: () => {
+        setVisibilityState(visibilityProperty);
+        setExposedVariable('isVisible', visibilityProperty);
+      },
+    },
+    {
+      dep: disabledProperty,
+      sideEffect: () => {
+        setDisabledState(disabledProperty);
+        setExposedVariable('isDisabled', disabledProperty);
+      },
+    },
+    {
+      dep: loadingStateProperty,
+      sideEffect: () => {
+        setLoadingState(loadingStateProperty);
+        setExposedVariable('isLoading', loadingStateProperty);
+      },
+    },
+  ]);
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const borderColor = styles.borderColor ?? 'transparent';
@@ -208,9 +239,55 @@ export const Listview = function Listview({
   }, [columns]);
 
   const [currentPage, setCurrentPage] = useState(1);
+  // Only a user or action page change fires On page change; a clamp after data shrinks does not.
+  const pageEventPending = useRef(false);
   const pageChanged = (page) => {
+    if (page !== currentPageRef.current) pageEventPending.current = true;
     setCurrentPage(page);
   };
+  const currentPageRef = useRef(currentPage);
+  currentPageRef.current = currentPage;
+  const lastPageRef = useRef(1);
+  lastPageRef.current = enablePagination
+    ? Math.max(1, Math.ceil((_.isArray(data) ? data.length : 0) / rowPerPageValue))
+    : 1;
+  const fireEventRef = useRef(fireEvent);
+  fireEventRef.current = fireEvent;
+
+  useEffect(() => {
+    setExposedVariable('pageIndex', currentPage);
+    if (pageEventPending.current) {
+      pageEventPending.current = false;
+      fireEventRef.current('onPageChanged');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage]);
+
+  useEffect(() => {
+    setExposedVariables({
+      isVisible: visibility,
+      isDisabled: disabledState,
+      isLoading: loadingState,
+      setVisibility: async (value) => {
+        setVisibilityState(!!value);
+        setExposedVariable('isVisible', !!value);
+      },
+      setDisable: async (value) => {
+        setDisabledState(!!value);
+        setExposedVariable('isDisabled', !!value);
+      },
+      setLoading: async (value) => {
+        setLoadingState(!!value);
+        setExposedVariable('isLoading', !!value);
+      },
+      setPage: async (pageNo) => {
+        const requested = Math.floor(Number(pageNo));
+        if (Number.isNaN(requested)) return;
+        pageChanged(Math.min(Math.max(requested, 1), lastPageRef.current));
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // A delete or add must not lose the reader's place; only a page past the new end moves, to the last one.
   const prevRecordCount = useRef(_.isArray(data) ? data.length : 0);
   const recordCount = _.isArray(data) ? data.length : 0;
@@ -226,15 +303,16 @@ export const Listview = function Listview({
         selectedRecord: undefined,
         selectedRowId: undefined,
         selectedRow: undefined,
+        selectedRecordIndex: undefined,
       });
     }
   }
-  // A copy of the clicked item must not outlive a change to the records it came from (D-10).
+  // The index points at a position, so any change to the records invalidates it (D-17).
   const prevDataRef = useRef(data);
   if (prevDataRef.current !== data) {
     const contentChanged = !_.isEqual(prevDataRef.current, data);
     prevDataRef.current = data;
-    if (contentChanged) setExposedVariables({ selectedListItem: undefined });
+    if (contentChanged) setExposedVariables({ selectedRecordIndex: undefined });
   }
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
@@ -300,8 +378,8 @@ export const Listview = function Listview({
         selectedRecord: selectedRow,
         selectedRowId: index,
         selectedRow: selectedRow,
-        // The data item itself: selectedRecordId is page-relative, so it cannot find it past page one.
-        selectedListItem: filteredData[index],
+        // Across all records, unlike the page-relative selectedRecordId.
+        selectedRecordIndex: startIndexOfRowInThePage + index,
       });
       // Every row event carries its record, so a handler on the list itself can read {{listItem}}.
       const fireRowEvent = (name) =>
@@ -314,6 +392,22 @@ export const Listview = function Listview({
     },
     [id, moduleId, parentIndices, setExposedVariables, fireEvent, filteredData, startIndexOfRowInThePage]
   );
+
+  const hoverRecord = useMemo(
+    () =>
+      _.throttle(
+        (index, listItem) =>
+          fireEventRef.current('onRecordHovered', {
+            customVariables: { listItem },
+            sourceSubContainerIndex: [...parentIndices, index],
+          }),
+        HOVER_THROTTLE_MS,
+        { leading: true, trailing: true }
+      ),
+    [parentIndices]
+  );
+  useEffect(() => () => hoverRecord.cancel(), [hoverRecord]);
+  const onRecordHovered = useCallback((index) => hoverRecord(index, filteredData[index]), [hoverRecord, filteredData]);
 
   const renderedRowCount = filteredData.length;
 
@@ -388,6 +482,7 @@ export const Listview = function Listview({
                   recordBoxStyle={recordBoxStyle}
                   recordBorderInset={recordBorderInset}
                   onRecordOrRowClicked={onRecordOrRowClicked}
+                  onRecordHovered={onRecordHovered}
                   computeCanvasBackgroundColor={computeCanvasBackgroundColor}
                   darkMode={darkMode}
                   width={recordCanvasWidth}

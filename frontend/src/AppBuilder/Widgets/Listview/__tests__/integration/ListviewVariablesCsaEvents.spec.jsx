@@ -228,9 +228,11 @@ describe('Listview: Record hovered', () => {
     // Break this catches: firing on mouseover (every child move) or sending the wrong record.
     await mount({ events: HOVER_EVENTS });
 
-    await user().hover(rows()[3]);
-    await user().hover(rows()[3].querySelector('[data-cy], p, div'));
-    await user().hover(rows()[3]);
+    const row = rows()[3];
+    // user-event sends no relatedTarget, which React reads as a fresh entry on every move.
+    fireEvent.mouseOver(row, { relatedTarget: document.body });
+    fireEvent.mouseOver(row.querySelector('p, div'), { relatedTarget: row });
+    fireEvent.mouseOver(row, { relatedTarget: row.querySelector('p, div') });
 
     await waitFor(() => expect(fired('hoverCalls')).toBe(1));
     expect(store().getVariable('hoverItem', MODULE_ID)).toBe('r3');
@@ -243,7 +245,7 @@ describe('Listview: Record hovered', () => {
     await mount({ events: HOVER_EVENTS });
     jest.useFakeTimers();
 
-    [0, 1, 2, 3, 4].forEach((index) => fireEvent.mouseEnter(rows()[index]));
+    [0, 1, 2, 3, 4].forEach((index) => fireEvent.mouseOver(rows()[index], { relatedTarget: document.body }));
     await act(async () => {
       jest.advanceTimersByTime(1000);
     });
