@@ -19,6 +19,7 @@ import { listviewConfig } from '@tooljet/widget-definitions';
 import { Inspector } from '@/AppBuilder/RightSideBar/Inspector/Inspector';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager/componentTypes';
 import { resolveListviewHeightFromRows } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
+import { pasteComponents } from '@/AppBuilder/AppCanvas/copyPasteWidgetsUtils';
 
 const ID = 'lv1';
 const NAME = 'listview1';
@@ -70,6 +71,20 @@ const list = () => container().querySelector('[role="list"]');
 const rows = () => [...document.querySelectorAll('.list-item')];
 const dividers = () => [...container().querySelectorAll('.listview-record-divider')];
 const verticalDividers = () => [...container().querySelectorAll('.listview-record-divider-vertical')];
+// Layout space a divider takes along one axis: size, borders and margins (border-box is not assumed).
+const px = (value) => parseFloat(value) || 0;
+const dividerHeight = ({ style }) =>
+  px(style.height) +
+  px(style.borderTopWidth) +
+  px(style.borderBottomWidth) +
+  px(style.marginTop) +
+  px(style.marginBottom);
+const dividerWidth = ({ style }) =>
+  px(style.width) +
+  px(style.borderLeftWidth) +
+  px(style.borderRightWidth) +
+  px(style.marginLeft) +
+  px(style.marginRight);
 const SIX_RECORDS = `{{[1, 2, 3, 4, 5, 6].map((n) => ({ text: 'R' + n }))}}`;
 
 async function mount(options = {}, recordCount = 3) {
@@ -88,8 +103,7 @@ describe('Listview: list styles', () => {
   ])(
     '[Listview-STYLE-004] Legacy keeps 7px padding and the bottom separator follows showBorder (%s)',
     async (_label, showBorder, separated) => {
-      // Break this catches: the new styles leaking into Legacy, so every saved ListView changes its
-      // spacing or loses (or gains) the separator it had.
+      // Break this catches: new styles leaking into Legacy, changing every saved ListView's spacing or separator.
       await mount({ properties: { showBorder: binding(showBorder) }, styles: { listStyle: binding('legacy') } });
 
       expect(container().style.padding).toBe('7px');
@@ -104,8 +118,7 @@ describe('Listview: list styles', () => {
   );
 
   test('[Listview-STYLE-005] Bordered fills records, draws no border and centres a divider in each gap', async () => {
-    // Break this catches: a border left on the records, the divider reading another colour, a divider
-    // after the last record, or a line that is not in the middle of the gap.
+    // Break this catches: a record border, a wrong divider colour, or a divider after the last record.
     await mount({
       styles: {
         listStyle: binding('bordered'),
@@ -121,15 +134,17 @@ describe('Listview: list styles', () => {
       expect(row.style.border).toBe('');
     });
     expect(dividers()).toHaveLength(2);
-    dividers().forEach((divider) => expect(divider.style.borderTop).toBe('1px solid rgb(1, 2, 3)'));
+    dividers().forEach((divider) => {
+      expect(divider.style.backgroundColor).toBe('rgb(1, 2, 3)');
+      expect(divider.style.height).toBe('1px');
+    });
     // Half the gap on each side puts the line in the middle of the 12px gap.
     expect(list().style.rowGap).toBe('6px');
     expect(verticalDividers()).toHaveLength(0);
   });
 
-  test('[Listview-STYLE-005] a new bordered ListView matches Figma 238:1379: padding 12, gap 12, record 80', async () => {
-    // Break this catches: a non-Legacy list keeping the legacy 7px padding, or the new-look values
-    // not reaching the rendered records.
+  test('[Listview-STYLE-005] a new bordered ListView matches Figma 238:1379: padding 12, record 80, pitch 92', async () => {
+    // Break this catches: the legacy 7px padding, or a divider that adds to the gap (pitch 93, not 92).
     await mount({
       properties: { rowHeight: binding('80') },
       styles: {
@@ -140,15 +155,15 @@ describe('Listview: list styles', () => {
     });
 
     expect(container().style.padding).toBe('12px');
-    // 6px + the 1px line + 6px between two records.
-    expect(list().style.rowGap).toBe('6px');
     expect(rows()[0].style.height).toBe('80px');
     expect(rows()[0].style.borderRadius).toBe('');
+    // Record, half gap, the line (no layout space), half gap: the next record starts 92px on.
+    const pitch = px(rows()[0].style.height) + 2 * px(list().style.rowGap) + dividerHeight(dividers()[0]);
+    expect(pitch).toBe(92);
   });
 
   test('[Listview-STYLE-006] Container draws each record as a card with no divider', async () => {
-    // Break this catches: a card missing its background, border colour or radius, or a divider left
-    // between the cards.
+    // Break this catches: a card missing its background, border or radius, or a divider between cards.
     await mount({
       styles: {
         listStyle: binding('container'),
@@ -171,7 +186,7 @@ describe('Listview: list styles', () => {
   });
 
   test('[Listview-STYLE-007] Plain separates records by the gap only', async () => {
-    // Break this catches: a background, border or divider leaking into Plain from the saved record keys.
+    // Break this catches: a background, border or divider leaking into Plain from saved record keys.
     await mount({
       styles: {
         listStyle: binding('plain'),
@@ -191,8 +206,7 @@ describe('Listview: list styles', () => {
   });
 
   test('[Listview-STYLE-008] grid Bordered draws dividers between rows and between columns', async () => {
-    // Break this catches: the divider drawn in list mode only, so grid cells run together (the PRD's
-    // "grid column border not visible"), or lines past the last row or column.
+    // Break this catches: no column dividers in grid, lines past the last row or column, or 13px spacing.
     await mount(
       {
         properties: { mode: binding('grid'), columns: binding('{{3}}'), data: binding(SIX_RECORDS) },
@@ -204,9 +218,14 @@ describe('Listview: list styles', () => {
     // Two lines of three: one row divider, two column dividers per line.
     expect(dividers()).toHaveLength(1);
     expect(verticalDividers()).toHaveLength(4);
-    verticalDividers().forEach((divider) => expect(divider.style.borderLeft).toBe('1px solid rgb(1, 2, 3)'));
-    expect(list().style.columnGap).toBe('6px');
+    verticalDividers().forEach((divider) => {
+      expect(divider.style.backgroundColor).toBe('rgb(1, 2, 3)');
+      expect(divider.style.width).toBe('1px');
+    });
     rows().forEach((row) => expect(row.style.border).toBe(''));
+    // The lines sit inside the gaps, so records are exactly 12px apart both ways.
+    expect(2 * px(list().style.columnGap) + dividerWidth(verticalDividers()[0])).toBe(12);
+    expect(2 * px(list().style.rowGap) + dividerHeight(dividers()[0])).toBe(12);
   });
 
   test('[Listview-STYLE-008] grid Bordered ignores showBorder, which stays Legacy-only', async () => {
@@ -229,8 +248,7 @@ describe('Listview: list styles', () => {
   });
 
   test('[Listview-STYLE-009] Legacy in dark mode keeps the white-to-dark swap behind the records', async () => {
-    // Break this catches: a record background painted in Legacy, which covers the dark surface the
-    // swap gives a ListView saved with a white background.
+    // Break this catches: a Legacy record background covering the dark surface the white swap gives.
     await mount({ styles: { listStyle: binding('legacy'), backgroundColor: binding('#fff') }, darkMode: true });
 
     expect(container().style.backgroundColor).toBe('rgb(35, 46, 60)');
@@ -263,6 +281,53 @@ describe('Listview: grid record height', () => {
     await mount({ properties: { rowHeight: binding('80'), gridRecordHeight: binding('150') } });
 
     rows().forEach((row) => expect(row.style.height).toBe('80px'));
+  });
+});
+
+/** A Text copied from elsewhere and pasted into the ListView's record: 120 tall, 20 from the top. */
+async function pasteTallTextInto(listProperties) {
+  seedApp({
+    [ID]: componentDefinition(ID, NAME, 'Listview', {
+      dataSourceSelector: binding('rawJson'),
+      data: binding(THREE_RECORDS),
+      ...listProperties,
+    }),
+  });
+  const text = componentDefinition('txt9', 'text9', 'Text', { text: binding('tall') });
+  text.component.parent = ID;
+  text.layouts = { desktop: { top: 20, left: 0, width: 10, height: 120 } };
+  await pasteComponents(ID, {
+    isCut: false,
+    isCloning: false,
+    pageId: 'page-1',
+    newComponents: [{ component: text.component, layouts: text.layouts, parent: ID, id: 'txt9', events: [] }],
+  });
+  const pasted = Object.values(store().getCurrentPageComponents(MODULE_ID)).find(
+    (entry) => entry.component.name !== NAME && entry.component.parent === ID
+  );
+  return pasted.layouts.desktop;
+}
+
+describe('Listview: pasting into a grid record', () => {
+  test('[Listview-ROW-007] a paste into a grid record is limited by gridRecordHeight, not rowHeight', async () => {
+    // Break this catches: the paste limit read from rowHeight (80), which pulls a 120px child to the top.
+    const layout = await pasteTallTextInto({
+      mode: binding('grid'),
+      rowHeight: binding('80'),
+      gridRecordHeight: binding('150'),
+    });
+
+    expect(layout.height).toBe(120);
+    expect(layout.top).toBe(20);
+    expect(layout.top + layout.height).toBeLessThanOrEqual(150);
+  });
+
+  test('[Listview-ROW-007] a paste into a list record is still limited by rowHeight', async () => {
+    // Break this catches: the grid height leaking into list mode, letting a child run past the record.
+    const layout = await pasteTallTextInto({ rowHeight: binding('80'), gridRecordHeight: binding('150') });
+
+    expect(layout.height).toBe(120);
+    expect(layout.top).toBe(0);
   });
 });
 
@@ -306,8 +371,7 @@ describe('Listview: the Styles tab follows List style', () => {
     ['container', ['List style', 'Gap', 'Background', 'Border', 'Border radius', 'Box shadow']],
     ['plain', ['List style', 'Gap']],
   ])('[Listview-STYLE-010] List style %s shows only its own record fields', (listStyle, expected) => {
-    // Break this catches: a field shown for a style that does not use it, or one missing for a style
-    // that does, so the builder edits a value that changes nothing.
+    // Break this catches: a field shown for a style that ignores it, or missing for one that uses it.
     render(renderStylesTab(listStyle));
 
     expect(groupFields('Records')).toEqual(expected);
@@ -333,8 +397,7 @@ describe('Listview: the Styles tab follows List style', () => {
   });
 
   test('[Listview-STYLE-012] record fields sit under Records and the widget box fields under Container', () => {
-    // Break this catches: the record and box fields mixed in one flat list, so two "Background" and
-    // two "Border radius" fields cannot be told apart.
+    // Break this catches: record and box fields in one flat list, where the two Backgrounds look alike.
     render(renderStylesTab('container'));
 
     expect(styleGroups().map((group) => group.title)).toEqual(['Records', 'Container']);
@@ -386,12 +449,12 @@ describe('Listview: dynamic height counts the record style', () => {
     expect(height).toBe(321);
   });
 
-  test('[Listview-ROW-006] Bordered with gap 12 adds the 12px padding, the 2 gaps and their lines', async () => {
+  test('[Listview-ROW-006] Bordered with gap 12 adds the 12px padding and the 2 gaps', async () => {
     // Break this catches: a dynamic list sized for 7px padding and no gaps, which cuts off its last record.
     const height = await dynamicHeightFor({ styles: { listStyle: binding('bordered'), gap: binding('{{12}}') } });
 
-    // 3 x 100 + 2 x (12 gap + 1px line) + 28 chrome (12px padding x 2 + borders + safety).
-    expect(height).toBe(354);
+    // 3 x 100 + 2 x 12 gap (the line takes no space) + 28 chrome (12px padding x 2 + borders + safety).
+    expect(height).toBe(352);
   });
 
   const GRID_CONTAINER = { listStyle: binding('container'), gap: binding('{{12}}') };
@@ -442,8 +505,7 @@ describe('Listview: an export from before 2.0', () => {
   afterEach(importedWidget.teardown);
 
   test('[Listview-COMPAT-003] loads with the old look once the config defaults are merged under it', async () => {
-    // Break this catches: a config default for a 2.0 key set to the new look, which restyles every
-    // imported ListView on its first load.
+    // Break this catches: a new-look config default for a 2.0 key, restyling every imported ListView.
     importedWidget.render({ currentMode: 'view' });
     await waitFor(() => expect(rows()).toHaveLength(1));
 
