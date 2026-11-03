@@ -7,7 +7,13 @@ import { App } from 'src/entities/app.entity';
 import { Response } from 'express';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
-import { CreateDataQueryDto, ListTablesDto, UpdateDataQueryDto, UpdateSourceDto, UpdatingReferencesOptionsDto } from './dto';
+import {
+  CreateDataQueryDto,
+  ListTablesDto,
+  UpdateDataQueryDto,
+  UpdateSourceDto,
+  UpdatingReferencesOptionsDto,
+} from './dto';
 import { ValidateQueryAppGuard } from './guards/validate-query-app.guard';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
@@ -21,6 +27,7 @@ import { AppDecorator } from '@modules/app/decorators/app.decorator';
 import { DataQuery } from '@entities/data_query.entity';
 import { IDataQueriesController } from './interfaces/IController';
 import { QueryAuthGuard } from './guards/query-auth.guard';
+import { EditableAppVersionGuard } from '@modules/versions/guards/editable-app-version.guard';
 @Controller('data-queries')
 @InitModule(MODULES.DATA_QUERY)
 export class DataQueriesController implements IDataQueriesController {
@@ -45,7 +52,8 @@ export class DataQueriesController implements IDataQueriesController {
     ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
-    DataSourceFeatureAbilityGuard
+    DataSourceFeatureAbilityGuard,
+    EditableAppVersionGuard
   )
   @Post('/data-sources/:dataSourceId/versions/:versionId')
   create(
@@ -64,7 +72,8 @@ export class DataQueriesController implements IDataQueriesController {
     ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
-    DataSourceFeatureAbilityGuard
+    DataSourceFeatureAbilityGuard,
+    EditableAppVersionGuard
   )
   @Patch(':id/versions/:versionId')
   async updateDataQuery(
@@ -80,7 +89,13 @@ export class DataQueriesController implements IDataQueriesController {
 
   @InitFeature(FEATURE_KEY.UPDATE)
   //* On Updating references, need update the options of multiple queries
-  @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    ValidateAppVersionGuard,
+    ValidateQueryAppGuard,
+    AppFeatureAbilityGuard,
+    EditableAppVersionGuard
+  )
   @Patch('versions/:versionId')
   async bulkUpdate(@User() user: UserEntity, @Body() updatingReferencesOptions: UpdatingReferencesOptionsDto) {
     return await this.dataQueriesService.bulkUpdateQueryOptions(user, updatingReferencesOptions.data_queries_options);
@@ -92,7 +107,8 @@ export class DataQueriesController implements IDataQueriesController {
     ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
-    DataSourceFeatureAbilityGuard
+    DataSourceFeatureAbilityGuard,
+    EditableAppVersionGuard
   )
   @Delete(':id/versions/:versionId')
   async delete(@Param('id') dataQueryId) {
@@ -196,7 +212,8 @@ export class DataQueriesController implements IDataQueriesController {
     ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
-    DataSourceFeatureAbilityGuard
+    DataSourceFeatureAbilityGuard,
+    EditableAppVersionGuard
   )
   @Put(':id/versions/:versionId/data-source')
   async changeQueryDataSource(

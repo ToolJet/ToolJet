@@ -14,6 +14,7 @@ import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { PromoteVersionDto } from './dto';
 import { IVersionControllerV2 } from './interfaces/IControllerV2';
+import { EditableAppVersionGuard } from '@modules/versions/guards/editable-app-version.guard';
 
 @InitModule(MODULES.VERSION)
 @Controller({
@@ -38,7 +39,7 @@ export class VersionControllerV2 implements IVersionControllerV2 {
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_SETTINGS)
-  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard, EditableAppVersionGuard)
   @Put([':id/versions/:versionId/global_settings', ':id/versions/:versionId/page_settings'])
   updateGlobalSettings(
     @User() user: UserEntity,
