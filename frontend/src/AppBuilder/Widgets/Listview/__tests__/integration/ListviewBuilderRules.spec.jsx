@@ -5,7 +5,7 @@
  *
  * jsdom does no layout and drops var(): visuals are asserted as classes, inline opacity and store state.
  */
-import { waitFor } from '@testing-library/react';
+import { fireEvent, waitFor } from '@testing-library/react';
 import { createWidgetHarness, binding, store } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
 import { handleDeactivateTargets, showGridLines } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
@@ -554,6 +554,22 @@ describe('Listview builder: the fade stays on the Moveable controls', () => {
 
     await user().hover(document.body);
     await waitFor(() => expect(faded()).toEqual([false, false, false]));
+    box.remove();
+  });
+
+  test('[Listview-BLD-005] moving from the border into the component keeps records 2..K faded', async () => {
+    // Break this catches: the border's mouseout clearing the hover after React already re-entered record 1.
+    await mount(widget);
+    const { box, handle } = controls('txt1');
+    rows()[0].parentElement.appendChild(box);
+    await user().hover(handle);
+    await waitFor(() => expect(faded()).toEqual([false, true, true]));
+
+    const inside = rows()[0].querySelector('.real-canvas');
+    fireEvent.mouseOut(handle, { relatedTarget: inside });
+    fireEvent.mouseOver(inside, { relatedTarget: handle });
+
+    await waitFor(() => expect(faded()).toEqual([false, true, true]));
     box.remove();
   });
 

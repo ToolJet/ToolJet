@@ -369,9 +369,17 @@ export const Listview = function Listview({
     const onOver = (e) => {
       if (controlsOfRecords(e.target)) setMainRecordHovered(true);
     };
+    // React has already re-entered record 1 when the pointer goes from the border into it.
+    const inMainRecord = (node) => {
+      for (let item = node?.closest?.('.list-item'); item; item = item.parentElement?.closest('.list-item')) {
+        const canvas = item.querySelector('.real-canvas');
+        if (canvas?.id === `canvas-${id}`) return canvas.getAttribute('data-listview-copy') !== 'true';
+      }
+      return false;
+    };
     const onOut = (e) => {
       const box = controlsOfRecords(e.target);
-      if (box && !box.contains(e.relatedTarget)) setMainRecordHovered(false);
+      if (box && !box.contains(e.relatedTarget) && !inMainRecord(e.relatedTarget)) setMainRecordHovered(false);
     };
     document.addEventListener('mouseover', onOver);
     document.addEventListener('mouseout', onOut);
