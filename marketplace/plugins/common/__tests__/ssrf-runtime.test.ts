@@ -227,8 +227,8 @@ describe('IPv6 forms that embed an IPv4', () => {
       expect(() => validateUrlForSSRFSync(url)).toThrow();
     }
   );
-  it('keeps sending a bracketed public literal to the DNS step on CE defaults (verdict unchanged)', async () => {
-    await expect(validateUrlForSSRF('http://[2606:4700:4700::1111]/')).rejects.toThrow();
+  it('allows a bracketed public literal on CE defaults', async () => {
+    await expect(validateUrlForSSRF('http://[2606:4700:4700::1111]/')).resolves.toBeUndefined();
   });
 });
 
@@ -408,5 +408,141 @@ describe('queryErrorMessage', () => {
       'Query could not be completed'
     );
     expect(queryErrorMessage(undefined)).toBe('Query could not be completed');
+  });
+});
+
+describe('built-in check: IP literals and DNS failures', () => {
+  const publish = () => {
+    (globalThis as any)[KEY] = { enabled: true, allowedHostnames: new Set(), allowedRanges: ranges() };
+  };
+  it('blocks a hostname with no DNS answer when the runtime key is present', async () => {
+    publish();
+    await expect(validateUrlForSSRF('http://no-such-host-xyz.invalid/')).rejects.toThrow();
+  });
+  it('allows public IP literals when the runtime key is present', async () => {
+    publish();
+    await expect(validateUrlForSSRF('http://8.8.8.8/')).resolves.toBeUndefined();
+    await expect(validateUrlForSSRF('http://[2606:4700:4700::1111]/')).resolves.toBeUndefined();
+  });
+  it('keeps failing open on a hostname with no DNS answer when the runtime key is absent', async () => {
+    const options = { enabled: true, dnsResolutionCheck: true, blockedSchemes: [] };
+    await expect(validateUrlForSSRF('http://no-such-host-xyz.invalid/', options)).resolves.toBeUndefined();
+  });
+  it('blocks a bracketed loopback literal when the runtime key is absent', async () => {
+    const options = { enabled: true, dnsResolutionCheck: false, blockedSchemes: [] };
+    await expect(validateUrlForSSRF('http://[::1]/', options)).rejects.toThrow();
+  });
+  it('blocks a bracketed unique-local literal in the sync check too', () => {
+    const options = { enabled: true, blockedSchemes: [] };
+    expect(() => validateUrlForSSRFSync('http://[fd00::1]/', options)).toThrow();
+  });
+});
+
+describe('strict policy (isPrivateIP) on IPv6 forms that embed an IPv4', () => {
+  it.each([
+    '::ffff:127.0.0.1',
+    '0:0:0:0:0:ffff:7f00:1',
+    '::ffff:10.0.0.1',
+    '::ffff:0:7f00:1',
+    '::7f00:1',
+    '64:ff9b::a9fe:a9fe',
+    '64:ff9b:1::7f00:1',
+    '64:ff9b:1:7f00:0:100:808:808',
+    '64:ff9b:1::808:808',
+    'FE80::1',
+    'fe80::1%eth0',
+    '2002:a00:1::',
+    '2001:0:4136:e378:8000:63bf:80ff:fffe',
+    '::',
+    'febf::1',
+    'fec0::1',
+    'ff02::1',
+  ])('classifies %s as private', (ip) => {
+    expect(isPrivateIP(ip)).toBe(true);
+  });
+  it.each(['64:ff9b::808:808', '2002:808:808::', '::ffff:8.8.8.8', '2606:4700:4700::1111', '2001:db8::1'])(
+    'classifies %s as public',
+    (ip) => {
+      expect(isPrivateIP(ip)).toBe(false);
+    }
+  );
+});
+
+describe('edition defaults without a runtime key', () => {
+  afterEach(() => {
+    delete process.env.SSRF_DNS_RESOLUTION_CHECK;
+  });
+
+  it('Cloud blocks a hostname that resolves to a private IP', async () => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    await expect(validateUrlForSSRF('http://localhost/')).rejects.toThrow();
+  });
+
+  it('Cloud fails closed when DNS returns no addresses', async () => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    await expect(validateUrlForSSRF('http://no-such-host.invalid/')).rejects.toThrow();
+  });
+
+  it('Cloud enforces with no env vars and rejects metadata and private literals', async () => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    expect(getSSRFConfig()).toMatchObject({
+      enabled: true,
+      dnsResolutionCheck: true,
+      blockedSchemes: ['file', 'gopher', 'dict', 'ftp', 'jar', 'data', 'javascript'],
+      allowPrivateNetworks: false,
+    });
+    await expect(validateUrlForSSRF('http://169.254.169.254/')).rejects.toThrow();
+    await expect(validateUrlForSSRF('http://10.0.0.1/')).rejects.toThrow();
+  });
+
+  it('Cloud ignores SSRF_PROTECTION_ENABLED=false', () => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    process.env.SSRF_PROTECTION_ENABLED = 'false';
+    expect(getSSRFConfig().enabled).toBe(true);
+  });
+
+  it.each(['ce', undefined])('edition %s is on by default with the DNS check and blocked schemes', (edition) => {
+    if (edition !== undefined) process.env.TOOLJET_EDITION = edition;
+    expect(getSSRFConfig()).toMatchObject({
+      enabled: true,
+      dnsResolutionCheck: true,
+      blockedSchemes: ['file', 'gopher', 'dict', 'ftp', 'jar', 'data', 'javascript'],
+      allowPrivateNetworks: true,
+    });
+  });
+
+  it.each(['ce', undefined])('edition %s blocks loopback and metadata literals but allows RFC1918', async (edition) => {
+    if (edition !== undefined) process.env.TOOLJET_EDITION = edition;
+    await expect(validateUrlForSSRF('http://127.0.0.1/')).rejects.toThrow();
+    await expect(validateUrlForSSRF('http://169.254.169.254/')).rejects.toThrow();
+    await expect(validateUrlForSSRF('http://10.0.0.1/')).resolves.toBeUndefined();
+  });
+
+  it('CE turns off with SSRF_PROTECTION_ENABLED=false', async () => {
+    process.env.TOOLJET_EDITION = 'ce';
+    process.env.SSRF_PROTECTION_ENABLED = 'false';
+    expect(getSSRFConfig().enabled).toBe(false);
+    await expect(validateUrlForSSRF('http://127.0.0.1/')).resolves.toBeUndefined();
+  });
+
+  it('EE without the runtime key stays opt-in', () => {
+    process.env.TOOLJET_EDITION = 'ee';
+    expect(getSSRFConfig().enabled).toBe(false);
+    process.env.SSRF_PROTECTION_ENABLED = 'true';
+    expect(getSSRFConfig().enabled).toBe(true);
+  });
+});
+
+describe('copies stay identical', () => {
+  // plugins/packages/common and marketplace/plugins/common ship separately but must enforce the same rules.
+  it('plugins and marketplace ssrf-protection sources match byte for byte', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const read = (rel: string) => fs.readFileSync(path.resolve(__dirname, rel), 'utf8');
+    const here = read('../lib/ssrf-protection.ts');
+    const other = __dirname.includes(`${path.sep}marketplace${path.sep}`)
+      ? read('../../../../plugins/packages/common/lib/ssrf-protection.ts')
+      : read('../../../../marketplace/plugins/common/lib/ssrf-protection.ts');
+    expect(here).toBe(other);
   });
 });

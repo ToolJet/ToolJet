@@ -532,11 +532,13 @@ async function hostnameBlockReason(hostname: string, config?: SSRFProtectionOpti
   try {
     const { addresses, failure } = await resolveHostAddresses(hostname);
 
-    // Fail-closed: if DNS returns no addresses we cannot verify the destination
-    // is safe, so block it rather than allowing the request through.
+    // No answer: fail closed under the EE runtime config and on Cloud, fail open otherwise (self-hosted names that
+    // only resolve through /etc/hosts must keep working), matching the server helper.
     if (addresses.length === 0) {
-      console.warn(`DNS resolution returned no addresses for ${hostname}, blocking as precaution`);
-      return unresolvedReason(failure);
+      console.warn(`DNS resolution failed for ${hostname}`);
+      const failClosed =
+        !!(globalThis as any).__TOOLJET_SSRF_RUNTIME_CONFIG__ || process.env.TOOLJET_EDITION?.toLowerCase() === 'cloud';
+      return failClosed ? unresolvedReason(failure) : null;
     }
 
     // Check if any resolved address is a private IP.

@@ -27,6 +27,8 @@ Owns instance-wide key/value settings (the `instance_settings` table) that only 
 ## Invariants & gotchas
 
 - Runtime key name is identical in three copies: `plugins/packages/common/lib/ssrf-protection.ts`, `marketplace/plugins/common/lib/ssrf-protection.ts`, `server/src/helpers/ssrf-protection.helper.ts`. Change all or none.
+- The plugins and marketplace copies are byte-identical; a test in each suite fails if they drift. Without the runtime key both follow the server helper: Cloud always on; EE opt-in via `SSRF_PROTECTION_ENABLED=true`; CE on unless `SSRF_PROTECTION_ENABLED=false`, blocking loopback and metadata but not RFC1918, with `localhost` allowed and unresolvable names failing open.
+- The SAML `picture` attribute download (`ee/auth/oauth/util-services/saml.service.ts`) runs the same check, follows no redirects, and keeps only an `image/*` response within the 2 MB avatar limit.
 - When the key is present, env vars are ignored: DNS resolution check always on, fixed blocked-scheme list, private ranges (10/8, 172.16/12, 192.168/16) blocked, no `localhost` exemption.
 - An allowlist match skips every check, including the SSRF-safe `lookup` hook.
 - Allowlisted addresses are reachable by anyone who can run a query, including through public apps; the settings UI says so.

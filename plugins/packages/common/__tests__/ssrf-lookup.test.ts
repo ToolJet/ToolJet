@@ -11,6 +11,7 @@ describe('SSRF-safe DNS lookup with options.all (Node 22 / got 11)', () => {
   beforeEach(() => {
     ENV_KEYS.forEach((k) => (saved[k] = process.env[k]));
     process.env.SSRF_PROTECTION_ENABLED = 'true';
+    process.env.TOOLJET_EDITION = 'cloud';
   });
 
   afterEach(() => {

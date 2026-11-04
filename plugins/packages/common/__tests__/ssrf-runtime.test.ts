@@ -10,6 +10,7 @@ import {
   getSSRFProtectionOptions,
   queryErrorMessage,
   isPrivateIP,
+  isDangerousPrivateIP,
 } from '../lib/ssrf-protection';
 
 const KEY = '__TOOLJET_SSRF_RUNTIME_CONFIG__';
@@ -24,9 +25,16 @@ const ranges = (...cidrs: string[]) => {
 afterEach(() => {
   delete (globalThis as any)[KEY];
   delete process.env.SSRF_PROTECTION_ENABLED;
+  delete process.env.TOOLJET_EDITION;
 });
 
 describe('getSSRFConfig with runtime config', () => {
+  it('keeps protection off when the toggle is turned off, even with SSRF_PROTECTION_ENABLED=true', async () => {
+    process.env.SSRF_PROTECTION_ENABLED = 'true';
+    (globalThis as any)[KEY] = { enabled: false, allowedHostnames: new Set(), allowedRanges: ranges() };
+    expect(getSSRFConfig().enabled).toBe(false);
+    await expect(validateUrlForSSRF('http://10.0.0.1/')).resolves.toBeUndefined();
+  });
   it('ignores env vars and fixes DNS check + blocked schemes when the runtime key is present', () => {
     process.env.SSRF_PROTECTION_ENABLED = 'false';
     (globalThis as any)[KEY] = { enabled: true, allowedHostnames: new Set(), allowedRanges: ranges() };
@@ -36,14 +44,37 @@ describe('getSSRFConfig with runtime config', () => {
       blockedSchemes: ['file', 'gopher', 'dict', 'ftp', 'jar', 'data', 'javascript'],
     });
   });
-  it('keeps protection off when the toggle is turned off, even with SSRF_PROTECTION_ENABLED=true', async () => {
-    process.env.SSRF_PROTECTION_ENABLED = 'true';
-    (globalThis as any)[KEY] = { enabled: false, allowedHostnames: new Set(), allowedRanges: ranges() };
-    expect(getSSRFConfig().enabled).toBe(false);
-    await expect(validateUrlForSSRF('http://10.0.0.1/')).resolves.toBeUndefined();
-  });
   it('falls back to env behaviour when the runtime key is absent', () => {
-    expect(getSSRFConfig().enabled).toBe(false);
+    expect(getSSRFConfig().enabled).toBe(true); // CE/unset default is ON in this copy
+  });
+});
+
+describe('edition-aware defaults are bypassed when the runtime key is present', () => {
+  it('blocks RFC1918 when the runtime key is present even on EE', async () => {
+    process.env.TOOLJET_EDITION = 'ee';
+    (globalThis as any)[KEY] = { enabled: true, allowedHostnames: new Set(), allowedRanges: ranges() };
+    expect(getSSRFConfig().allowPrivateNetworks).toBe(false);
+    await expect(validateUrlForSSRF('http://10.1.2.3/')).rejects.toThrow();
+  });
+  it("keeps today's EE behaviour when the key is absent", async () => {
+    process.env.TOOLJET_EDITION = 'ee';
+    process.env.SSRF_PROTECTION_ENABLED = 'true';
+    await expect(validateUrlForSSRF('http://10.1.2.3/')).resolves.toBeUndefined();
+  });
+});
+
+describe('block messages without a runtime key', () => {
+  const originalEdition = process.env.TOOLJET_EDITION;
+  afterEach(() => {
+    if (originalEdition === undefined) delete process.env.TOOLJET_EDITION;
+    else process.env.TOOLJET_EDITION = originalEdition;
+  });
+
+  it('Cloud names the blocked address without pointing at a settings page it does not have', async () => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    const rejection = expect(validateUrlForSSRF('http://10.0.0.1/')).rejects;
+    await rejection.toThrow('Requests to 10.0.0.1 are blocked because it is a private network address.');
+    await expect(validateUrlForSSRF('http://10.0.0.1/')).rejects.not.toThrow(/Settings/);
   });
 });
 
@@ -82,6 +113,9 @@ describe('validateUrlForSSRF with runtime config', () => {
   it('blocks a dangerous scheme even when the host is allowlisted', async () => {
     await expect(validateUrlForSSRF('gopher://jira.corp:70/_x')).rejects.toThrow(/scheme/i);
     await expect(validateUrlForSSRF('ftp://10.0.4.12/')).rejects.toThrow(/scheme/i);
+  });
+  it('blocks a dangerous scheme on an allowlisted host in the sync check too', () => {
+    expect(() => validateUrlForSSRFSync('gopher://jira.corp:70/_x')).toThrow(/scheme/i);
   });
   it('allows anything when disabled', async () => {
     (globalThis as any)[KEY].enabled = false;
@@ -151,66 +185,51 @@ describe('lookup with options.all (Node 22 autoSelectFamily)', () => {
   });
   it('real got request succeeds with protection enabled', async () => {
     enable();
-    const res = await got('https://example.com', getSSRFProtectionOptions(undefined, { timeout: { request: 10000 }, retry: 0 }));
+    const res = await got(
+      'https://example.com',
+      getSSRFProtectionOptions(undefined, { timeout: { request: 10000 }, retry: 0 })
+    );
     expect(res.statusCode).toBe(200);
   }, 20000);
 });
 
-describe('built-in check: IP literals and DNS failures', () => {
-  const publish = () => {
-    (globalThis as any)[KEY] = { enabled: true, allowedHostnames: new Set(), allowedRanges: ranges() };
-  };
-  it('blocks a hostname with no DNS answer when the runtime key is present', async () => {
-    publish();
-    await expect(validateUrlForSSRF('http://no-such-host-xyz.invalid/')).rejects.toThrow();
-  });
-  it('allows public IP literals when the runtime key is present', async () => {
-    publish();
-    await expect(validateUrlForSSRF('http://8.8.8.8/')).resolves.toBeUndefined();
-    await expect(validateUrlForSSRF('http://[2606:4700:4700::1111]/')).resolves.toBeUndefined();
-  });
-  it('keeps failing open on a hostname with no DNS answer when the runtime key is absent', async () => {
-    const options = { enabled: true, dnsResolutionCheck: true, blockedSchemes: [] };
-    await expect(validateUrlForSSRF('http://no-such-host-xyz.invalid/', options)).resolves.toBeUndefined();
-  });
-  it('blocks a bracketed loopback literal when the runtime key is absent', async () => {
-    const options = { enabled: true, dnsResolutionCheck: false, blockedSchemes: [] };
-    await expect(validateUrlForSSRF('http://[::1]/', options)).rejects.toThrow();
-  });
-  it('blocks a bracketed unique-local literal in the sync check too', () => {
-    const options = { enabled: true, blockedSchemes: [] };
-    expect(() => validateUrlForSSRFSync('http://[fd00::1]/', options)).toThrow();
-  });
-});
-
-describe('isPrivateIP on IPv6 forms that embed an IPv4', () => {
+describe('IPv6 forms that embed an IPv4', () => {
   it.each([
     '::ffff:127.0.0.1',
     '0:0:0:0:0:ffff:7f00:1',
-    '::ffff:10.0.0.1',
-    '::ffff:0:7f00:1',
-    '::7f00:1',
-    '64:ff9b::a9fe:a9fe',
-    '64:ff9b:1::7f00:1',
-    '64:ff9b:1:7f00:0:100:808:808',
-    '64:ff9b:1::808:808',
-    'FE80::1',
-    'fe80::1%eth0',
-    '2002:a00:1::',
-    '2001:0:4136:e378:8000:63bf:80ff:fffe',
+    '64:ff9b::7f00:1',
+    '2002:a9fe:a9fe::',
     '::',
     'febf::1',
-    'fec0::1',
     'ff02::1',
-  ])('classifies %s as private', (ip) => {
-    expect(isPrivateIP(ip)).toBe(true);
+    '64:ff9b:1:7f00:0:100:808:808',
+    '64:ff9b:1::808:808',
+    'fe80::1%eth0',
+    '::FFFF:7F00:1',
+  ])('self-hosted policy (isDangerousPrivateIP) blocks %s', (ip) => {
+    expect(isDangerousPrivateIP(ip)).toBe(true);
   });
-  it.each(['64:ff9b::808:808', '2002:808:808::', '::ffff:8.8.8.8', '2606:4700:4700::1111', '2001:db8::1'])(
-    'classifies %s as public',
+  it.each(['::ffff:10.0.0.1', '64:ff9b::a00:1', '2002:c0a8:101::', '64:ff9b::808:808'])(
+    'self-hosted policy (isDangerousPrivateIP) allows %s like its IPv4',
     (ip) => {
-      expect(isPrivateIP(ip)).toBe(false);
+      expect(isDangerousPrivateIP(ip)).toBe(false);
     }
   );
+  it.each(['::ffff:10.0.0.1', '64:ff9b::a00:1', '2002:c0a8:101::', 'fec0::1'])(
+    'strict policy (isPrivateIP) blocks %s',
+    (ip) => {
+      expect(isPrivateIP(ip)).toBe(true);
+    }
+  );
+  it.each(['http://[::ffff:127.0.0.1]/', 'http://[fe80::1]/', 'http://[64:ff9b::a9fe:a9fe]/'])(
+    'sync check strips brackets and blocks %s on CE defaults',
+    (url) => {
+      expect(() => validateUrlForSSRFSync(url)).toThrow();
+    }
+  );
+  it('allows a bracketed public literal on CE defaults', async () => {
+    await expect(validateUrlForSSRF('http://[2606:4700:4700::1111]/')).resolves.toBeUndefined();
+  });
 });
 
 describe('cross-copy SSRF parity (runtime key present)', () => {
@@ -327,56 +346,6 @@ describe('cross-copy SSRF parity (runtime key present)', () => {
   });
 });
 
-describe('edition defaults without a runtime key', () => {
-  const originalEdition = process.env.TOOLJET_EDITION;
-  afterEach(() => {
-    if (originalEdition === undefined) delete process.env.TOOLJET_EDITION;
-    else process.env.TOOLJET_EDITION = originalEdition;
-    delete process.env.SSRF_PROTECTION_ENABLED;
-  });
-
-  it('Cloud blocks a hostname that resolves to a private IP', async () => {
-    process.env.TOOLJET_EDITION = 'cloud';
-    await expect(validateUrlForSSRF('http://localhost/')).rejects.toThrow();
-  });
-
-  it('Cloud names the blocked address without pointing at a settings page it does not have', async () => {
-    process.env.TOOLJET_EDITION = 'cloud';
-    const rejection = expect(validateUrlForSSRF('http://10.0.0.1/')).rejects;
-    await rejection.toThrow('Requests to 10.0.0.1 are blocked because it is a private network address.');
-    await expect(validateUrlForSSRF('http://10.0.0.1/')).rejects.not.toThrow(/Settings/);
-  });
-
-  it('Cloud fails closed when DNS returns no addresses', async () => {
-    process.env.TOOLJET_EDITION = 'cloud';
-    await expect(validateUrlForSSRF('http://no-such-host.invalid/')).rejects.toThrow();
-  });
-
-  it('Cloud enforces with no env vars and rejects metadata and private literals', async () => {
-    process.env.TOOLJET_EDITION = 'cloud';
-    expect(getSSRFConfig()).toMatchObject({
-      enabled: true,
-      dnsResolutionCheck: true,
-      blockedSchemes: ['file', 'gopher', 'dict', 'ftp', 'jar', 'data', 'javascript'],
-    });
-    await expect(validateUrlForSSRF('http://169.254.169.254/')).rejects.toThrow();
-    await expect(validateUrlForSSRF('http://10.0.0.1/')).rejects.toThrow();
-  });
-
-  it('Cloud ignores SSRF_PROTECTION_ENABLED=false', () => {
-    process.env.TOOLJET_EDITION = 'cloud';
-    process.env.SSRF_PROTECTION_ENABLED = 'false';
-    expect(getSSRFConfig().enabled).toBe(true);
-  });
-
-  it.each(['ce', undefined])('edition %s stays opt-in and allows 10.0.0.1 with no env vars', async (edition) => {
-    if (edition === undefined) delete process.env.TOOLJET_EDITION;
-    else process.env.TOOLJET_EDITION = edition;
-    expect(getSSRFConfig().enabled).toBe(false);
-    await expect(validateUrlForSSRF('http://10.0.0.1/')).resolves.toBeUndefined();
-  });
-});
-
 describe('redirect hook resolves the target before validating', () => {
   const http = require('http');
   let server: any;
@@ -424,15 +393,156 @@ describe('redirect hook resolves the target before validating', () => {
 
 describe('queryErrorMessage', () => {
   it("shows a private network block's own explanation instead of the generic failure", () => {
-    const blocked = Object.assign(new Error('Requests to 10.0.0.2 are blocked because it is a private network address.'), {
-      code: 'SSRF_BLOCKED',
-    });
-    expect(queryErrorMessage(blocked)).toBe('Requests to 10.0.0.2 are blocked because it is a private network address.');
+    const blocked = Object.assign(
+      new Error('Requests to 10.0.0.2 are blocked because it is a private network address.'),
+      {
+        code: 'SSRF_BLOCKED',
+      }
+    );
+    expect(queryErrorMessage(blocked)).toBe(
+      'Requests to 10.0.0.2 are blocked because it is a private network address.'
+    );
   });
   it('keeps the generic message for every other failure', () => {
     expect(queryErrorMessage(Object.assign(new Error('socket hang up'), { code: 'ECONNRESET' }))).toBe(
       'Query could not be completed'
     );
     expect(queryErrorMessage(undefined)).toBe('Query could not be completed');
+  });
+});
+
+describe('built-in check: IP literals and DNS failures', () => {
+  const publish = () => {
+    (globalThis as any)[KEY] = { enabled: true, allowedHostnames: new Set(), allowedRanges: ranges() };
+  };
+  it('blocks a hostname with no DNS answer when the runtime key is present', async () => {
+    publish();
+    await expect(validateUrlForSSRF('http://no-such-host-xyz.invalid/')).rejects.toThrow();
+  });
+  it('allows public IP literals when the runtime key is present', async () => {
+    publish();
+    await expect(validateUrlForSSRF('http://8.8.8.8/')).resolves.toBeUndefined();
+    await expect(validateUrlForSSRF('http://[2606:4700:4700::1111]/')).resolves.toBeUndefined();
+  });
+  it('keeps failing open on a hostname with no DNS answer when the runtime key is absent', async () => {
+    const options = { enabled: true, dnsResolutionCheck: true, blockedSchemes: [] };
+    await expect(validateUrlForSSRF('http://no-such-host-xyz.invalid/', options)).resolves.toBeUndefined();
+  });
+  it('blocks a bracketed loopback literal when the runtime key is absent', async () => {
+    const options = { enabled: true, dnsResolutionCheck: false, blockedSchemes: [] };
+    await expect(validateUrlForSSRF('http://[::1]/', options)).rejects.toThrow();
+  });
+  it('blocks a bracketed unique-local literal in the sync check too', () => {
+    const options = { enabled: true, blockedSchemes: [] };
+    expect(() => validateUrlForSSRFSync('http://[fd00::1]/', options)).toThrow();
+  });
+});
+
+describe('strict policy (isPrivateIP) on IPv6 forms that embed an IPv4', () => {
+  it.each([
+    '::ffff:127.0.0.1',
+    '0:0:0:0:0:ffff:7f00:1',
+    '::ffff:10.0.0.1',
+    '::ffff:0:7f00:1',
+    '::7f00:1',
+    '64:ff9b::a9fe:a9fe',
+    '64:ff9b:1::7f00:1',
+    '64:ff9b:1:7f00:0:100:808:808',
+    '64:ff9b:1::808:808',
+    'FE80::1',
+    'fe80::1%eth0',
+    '2002:a00:1::',
+    '2001:0:4136:e378:8000:63bf:80ff:fffe',
+    '::',
+    'febf::1',
+    'fec0::1',
+    'ff02::1',
+  ])('classifies %s as private', (ip) => {
+    expect(isPrivateIP(ip)).toBe(true);
+  });
+  it.each(['64:ff9b::808:808', '2002:808:808::', '::ffff:8.8.8.8', '2606:4700:4700::1111', '2001:db8::1'])(
+    'classifies %s as public',
+    (ip) => {
+      expect(isPrivateIP(ip)).toBe(false);
+    }
+  );
+});
+
+describe('edition defaults without a runtime key', () => {
+  afterEach(() => {
+    delete process.env.SSRF_DNS_RESOLUTION_CHECK;
+  });
+
+  it('Cloud blocks a hostname that resolves to a private IP', async () => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    await expect(validateUrlForSSRF('http://localhost/')).rejects.toThrow();
+  });
+
+  it('Cloud fails closed when DNS returns no addresses', async () => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    await expect(validateUrlForSSRF('http://no-such-host.invalid/')).rejects.toThrow();
+  });
+
+  it('Cloud enforces with no env vars and rejects metadata and private literals', async () => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    expect(getSSRFConfig()).toMatchObject({
+      enabled: true,
+      dnsResolutionCheck: true,
+      blockedSchemes: ['file', 'gopher', 'dict', 'ftp', 'jar', 'data', 'javascript'],
+      allowPrivateNetworks: false,
+    });
+    await expect(validateUrlForSSRF('http://169.254.169.254/')).rejects.toThrow();
+    await expect(validateUrlForSSRF('http://10.0.0.1/')).rejects.toThrow();
+  });
+
+  it('Cloud ignores SSRF_PROTECTION_ENABLED=false', () => {
+    process.env.TOOLJET_EDITION = 'cloud';
+    process.env.SSRF_PROTECTION_ENABLED = 'false';
+    expect(getSSRFConfig().enabled).toBe(true);
+  });
+
+  it.each(['ce', undefined])('edition %s is on by default with the DNS check and blocked schemes', (edition) => {
+    if (edition !== undefined) process.env.TOOLJET_EDITION = edition;
+    expect(getSSRFConfig()).toMatchObject({
+      enabled: true,
+      dnsResolutionCheck: true,
+      blockedSchemes: ['file', 'gopher', 'dict', 'ftp', 'jar', 'data', 'javascript'],
+      allowPrivateNetworks: true,
+    });
+  });
+
+  it.each(['ce', undefined])('edition %s blocks loopback and metadata literals but allows RFC1918', async (edition) => {
+    if (edition !== undefined) process.env.TOOLJET_EDITION = edition;
+    await expect(validateUrlForSSRF('http://127.0.0.1/')).rejects.toThrow();
+    await expect(validateUrlForSSRF('http://169.254.169.254/')).rejects.toThrow();
+    await expect(validateUrlForSSRF('http://10.0.0.1/')).resolves.toBeUndefined();
+  });
+
+  it('CE turns off with SSRF_PROTECTION_ENABLED=false', async () => {
+    process.env.TOOLJET_EDITION = 'ce';
+    process.env.SSRF_PROTECTION_ENABLED = 'false';
+    expect(getSSRFConfig().enabled).toBe(false);
+    await expect(validateUrlForSSRF('http://127.0.0.1/')).resolves.toBeUndefined();
+  });
+
+  it('EE without the runtime key stays opt-in', () => {
+    process.env.TOOLJET_EDITION = 'ee';
+    expect(getSSRFConfig().enabled).toBe(false);
+    process.env.SSRF_PROTECTION_ENABLED = 'true';
+    expect(getSSRFConfig().enabled).toBe(true);
+  });
+});
+
+describe('copies stay identical', () => {
+  // plugins/packages/common and marketplace/plugins/common ship separately but must enforce the same rules.
+  it('plugins and marketplace ssrf-protection sources match byte for byte', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const read = (rel: string) => fs.readFileSync(path.resolve(__dirname, rel), 'utf8');
+    const here = read('../lib/ssrf-protection.ts');
+    const other = __dirname.includes(`${path.sep}marketplace${path.sep}`)
+      ? read('../../../../plugins/packages/common/lib/ssrf-protection.ts')
+      : read('../../../../marketplace/plugins/common/lib/ssrf-protection.ts');
+    expect(here).toBe(other);
   });
 });
