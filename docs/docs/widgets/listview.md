@@ -21,16 +21,18 @@ Consider this data being passed inside a List View component's **Populate data f
 
 ```js
 {{[
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 1' },
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 2' },
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 3' },
+    { imageURL: 'https://randomuser.me/api/portraits/men/32.jpg', name: 'Henry, Arthur', company: 'Big Kahuna Burger Ltd.', role: 'Project manager' },
+    { imageURL: 'https://randomuser.me/api/portraits/women/44.jpg', name: 'Cooper, Kristin', company: 'Barone LLC.', role: 'Chief executive officer' },
+    { imageURL: 'https://randomuser.me/api/portraits/men/75.jpg', name: 'Black, Marvin', company: 'Abstergo Ltd.', role: 'Systems analyst' },
 ]}}
 ```
+
+A new List View starts with this kind of data: eight people, each shown as a round avatar, a bold name, a grey company and a role tag.
 
 Based on the above data, you can set the `Data` property of a Text component inside List View using the below code:
 
 ```js
-{{listItem.text}}
+{{listItem.name}}
 ```
 
 Similarly, for an Image component inside List View, you can use the below code to pass the `imageURL` value:
