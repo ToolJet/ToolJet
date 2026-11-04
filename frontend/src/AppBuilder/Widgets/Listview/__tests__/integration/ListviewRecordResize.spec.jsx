@@ -373,7 +373,8 @@ describe('Listview record resize: cleanup and rendering', () => {
     // Break this catches: a fresh handle object per render, which defeats the record's memo on every hover.
     await mount(widget);
     const recordOneRenders = () =>
-      useDynamicHeight.mock.calls.filter(([options]) => options.subContainerIndex === 0).length;
+      useDynamicHeight.mock.calls.filter(([options]) => options.isRowSubcontainer && options.subContainerIndex === 0)
+        .length;
     const before = recordOneRenders();
 
     fireEvent.mouseEnter(rows()[2]);

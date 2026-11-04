@@ -62,3 +62,9 @@
 .listview-scroll-container .list-item .listview-record-resize-handle.dragging {
     visibility: visible;
 }
+
+// The pointer leaves the 8px handle during a drag; the cursor must not fall back.
+body.listview-record-resizing,
+body.listview-record-resizing * {
+    cursor: ns-resize !important;
+}

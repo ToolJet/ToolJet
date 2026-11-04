@@ -38,8 +38,24 @@ import {
 const HOVER_THROTTLE_MS = 200;
 const NO_RECORDS = [];
 const RECORD_MIN_HEIGHT = 10;
-const RECORD_MAX_HEIGHT = 400;
 const DEFAULT_RECORD_HEIGHT = 100;
+
+// The click that ends a drag goes to the nearest common ancestor of the press and the release, which is rarely the handle.
+function swallowNextClick() {
+  let timer;
+  const stop = (event) => {
+    event.stopPropagation();
+    remove();
+  };
+  function remove() {
+    clearTimeout(timer);
+    window.removeEventListener('click', stop, true);
+    window.removeEventListener('mousedown', remove, true);
+  }
+  window.addEventListener('click', stop, true);
+  window.addEventListener('mousedown', remove, true);
+  timer = setTimeout(remove, 500);
+}
 
 export const Listview = function Listview({
   id,
@@ -208,7 +224,8 @@ export const Listview = function Listview({
   const { rootRef: mainRecordRef, getHandleProps: getRecordResizeHandleProps } = useSubContainerResizable({
     lockHorizontal: true,
     minHeight: RECORD_MIN_HEIGHT,
-    maxHeight: RECORD_MAX_HEIGHT,
+    maxHeight: Infinity,
+    floorAtStart: true,
     stepHeight: 10,
     // Not clientHeight: a Container record's border sits inside it and would shift every step by 2.
     getStartHeight: () => Number.parseFloat(recordHeight) || DEFAULT_RECORD_HEIGHT,
@@ -217,10 +234,16 @@ export const Listview = function Listview({
     onDragEnd: ({ snappedHeight }) => {
       setIsResizingRecord(false);
       setResizePreviewHeight(null);
+      swallowNextClick();
       if (snappedHeight === (Number.parseFloat(recordHeight) || DEFAULT_RECORD_HEIGHT)) return;
       setComponentProperty(id, recordHeightKey, snappedHeight, 'properties', 'value', false, moduleId);
     },
   });
+  useEffect(() => {
+    if (!isResizingRecord) return undefined;
+    document.body.classList.add('listview-record-resizing');
+    return () => document.body.classList.remove('listview-record-resizing');
+  }, [isResizingRecord]);
 
   const recordBoxStyle = useMemo(() => {
     if (recordStyle === 'bordered') return { backgroundColor: recordBackgroundColor };
