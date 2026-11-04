@@ -132,30 +132,48 @@ describe('Listview: selectedRecordIndex', () => {
     expect(exposed('selectedRecordIndex')).toBe(5);
   });
 
-  test('[Listview-SEL-005] a data change clears selectedRecordIndex but not selectedRecordId', async () => {
-    // Break this catches: keeping an index that no longer points at the record the user picked.
-    await onPageTwo();
-    await user().click(rows()[0]);
-    await waitFor(() => expect(exposed('selectedRecordIndex')).toBe(5));
-
-    await setData(records(10, 'x'));
-
-    await waitFor(() => expect(exposed('selectedRecordIndex')).toBeUndefined());
-    expect(exposed('selectedRecordId')).toBe(0);
-  });
-
-  test('[Listview-SEL-005] new data with equal content also clears selectedRecordIndex', async () => {
-    // Break this catches: a deep-equality guard that keeps the index when a query re-runs with the same rows.
+  test('[Listview-SEL-005] new data with equal content keeps the selection', async () => {
+    // Break this catches: clearing the selection when a query re-runs after a save and returns the same rows.
     await onPageTwo();
     await user().click(rows()[0]);
     await waitFor(() => expect(exposed('selectedRecordIndex')).toBe(5));
 
     await setData(recordsEqualTo10());
+    await settle();
 
-    await waitFor(() => expect(exposed('selectedRecordIndex')).toBeUndefined());
+    expect(exposed('selectedRecordIndex')).toBe(5);
+    expect(exposed('selectedRecordId')).toBe(0);
+    expect(exposed('selectedRecord')).toBeDefined();
   });
 
-  test('[Listview-SEL-005] a re-render that does not change data keeps selectedRecordIndex', async () => {
+  test('[Listview-SEL-005] new data with changed content keeps the selection while its position is in range', async () => {
+    // Break this catches: clearing the selection on every new data value instead of only past the end.
+    await onPageTwo();
+    await user().click(rows()[0]);
+    await waitFor(() => expect(exposed('selectedRecordIndex')).toBe(5));
+
+    await setData(records(10, 'x'));
+    await settle();
+
+    expect(exposed('selectedRecordIndex')).toBe(5);
+    expect(exposed('selectedRecordId')).toBe(0);
+    expect(exposed('selectedRecord')).toBeDefined();
+  });
+
+  test('[Listview-SEL-005] data that shrinks past the selected position clears index, id and record together', async () => {
+    // Break this catches: keeping one of the three variables, or none being cleared past the end.
+    await onPageTwo();
+    await user().click(rows()[0]);
+    await waitFor(() => expect(exposed('selectedRecordIndex')).toBe(5));
+
+    await setData(records(3));
+
+    await waitFor(() => expect(exposed('selectedRecordIndex')).toBeUndefined());
+    expect(exposed('selectedRecordId')).toBeUndefined();
+    expect(exposed('selectedRecord')).toBeUndefined();
+  });
+
+  test('[Listview-SEL-005] a re-render that does not change data keeps the selection', async () => {
     // Break this catches: clearing the index on every render instead of on a new data value.
     await onPageTwo();
     await user().click(rows()[0]);
@@ -165,6 +183,7 @@ describe('Listview: selectedRecordIndex', () => {
     await settle();
 
     expect(exposed('selectedRecordIndex')).toBe(5);
+    expect(exposed('selectedRecordId')).toBe(0);
   });
 
   test('[Listview-SEL-006] the older variables keep their values after a click', async () => {
