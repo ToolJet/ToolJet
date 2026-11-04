@@ -186,7 +186,7 @@ export const listviewConfig = {
       },
     },
     columns: {
-      type: 'number',
+      type: 'code',
       displayName: 'Number of columns',
       validation: {
         schema: { type: 'number' },
