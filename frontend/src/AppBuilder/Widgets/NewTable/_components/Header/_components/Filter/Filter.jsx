@@ -4,6 +4,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { FilterRow } from './FilterRow';
 import { FilterFooter } from './FilterFooter';
 import { FilterHeader } from './FilterHeader';
+import { isFilterComplete } from './filterUtils';
 import { debounce, isEqual } from 'lodash';
 
 export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter, componentName }) => {
@@ -41,15 +42,6 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter, co
     },
     [columns]
   );
-
-  const isFilterComplete = (filter) => {
-    if (!filter.id) return false;
-    if (!filter.value?.condition) return false;
-    // For isEmpty/isNotEmpty operations, we don't need a value
-    if (['isEmpty', 'isNotEmpty'].includes(filter.value.condition)) return true;
-    // For other operations, we need a value
-    return filter.value?.value !== undefined && filter.value?.value !== '';
-  };
 
   const filterOperationChanged = (index, value) => {
     const newFilters = localFilters.map((filter, i) =>

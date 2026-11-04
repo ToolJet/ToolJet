@@ -5,6 +5,7 @@ import Header from '../Header';
 import Footer from '../Footer';
 import { buildTableColumn } from '../../_utils/buildTableColumn';
 import { useTable } from '../../_hooks/useTable';
+import { getDefaultColumnFilters } from '../../_utils/defaultFilters';
 import { shallow } from 'zustand/shallow';
 import TableData from '../TableData';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +38,7 @@ export const TableContainer = ({
   const serverSidePagination = useTableStore((state) => state.getTableProperties(id)?.serverSidePagination, shallow);
   const serverSideSort = useTableStore((state) => state.getTableProperties(id)?.serverSideSort, shallow);
   const serverSideFilter = useTableStore((state) => state.getTableProperties(id)?.serverSideFilter, shallow);
+  const defaultFilters = useTableStore((state) => state.getTableProperties(id)?.defaultFilters, shallow);
   const serverSideSearch = useTableStore((state) => state.getTableProperties(id)?.serverSideSearch, shallow);
   const rowsPerPage = useTableStore((state) => state.getTableProperties(id)?.rowsPerPage, shallow);
   const serverSideRowsPerPage = useTableStore((state) => state.getTableProperties(id)?.serverSideRowsPerPage, shallow);
@@ -110,21 +112,35 @@ export const TableContainer = ({
     moduleId,
   ]);
 
-  const { table, pagination, setPagination, columnVisibility, setColumnFilters, columnOrder, setColumnOrder } =
-    useTable({
-      data,
-      columns,
-      enableSorting,
-      enablePagination,
-      showBulkSelector,
-      serverSidePagination,
-      serverSideSort,
-      serverSideFilter,
-      rowsPerPage: effectiveRowsPerPage,
-      globalFilter,
-      setGlobalFilter,
-      expandedRows,
-    });
+  const defaultColumnFilters = useMemo(
+    () => getDefaultColumnFilters(defaultFilters, columns),
+    [defaultFilters, columns]
+  );
+
+  const {
+    table,
+    pagination,
+    setPagination,
+    columnVisibility,
+    setColumnFilters,
+    seededFilters,
+    columnOrder,
+    setColumnOrder,
+  } = useTable({
+    data,
+    columns,
+    defaultColumnFilters,
+    enableSorting,
+    enablePagination,
+    showBulkSelector,
+    serverSidePagination,
+    serverSideSort,
+    serverSideFilter,
+    rowsPerPage: effectiveRowsPerPage,
+    globalFilter,
+    setGlobalFilter,
+    expandedRows,
+  });
 
   // Collapse all expanded rows when sort, filter, search or page changes
   useEffect(() => {
@@ -187,6 +203,7 @@ export const TableContainer = ({
         pageIndex={pagination.pageIndex + 1}
         lastClickedRowRef={lastClickedRowRef}
         hasDataChanged={hasDataChanged}
+        seededFilters={seededFilters}
         paginationBtnClicked={paginationBtnClicked}
       />
       <Header

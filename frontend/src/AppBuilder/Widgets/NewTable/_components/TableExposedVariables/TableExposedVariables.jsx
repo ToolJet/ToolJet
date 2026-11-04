@@ -21,6 +21,7 @@ export const TableExposedVariables = ({
   lastClickedRowRef,
   hasDataChanged,
   paginationBtnClicked,
+  seededFilters,
 }) => {
   const { moduleId } = useModuleContext();
   const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
@@ -199,7 +200,8 @@ export const TableExposedVariables = ({
   // Expose applied filters
   useEffect(() => {
     setExposedVariables({ filters: appliedFilters.map((filter) => filter.value) });
-    mounted && fireEvent('onFilterChanged');
+    // the builder's default filters being applied is not a filter change
+    mounted && appliedFilters !== seededFilters?.current && fireEvent('onFilterChanged');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appliedFilters, setExposedVariables, fireEvent]); // Didn't add mounted as it's not a dependency
 

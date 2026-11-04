@@ -108,3 +108,13 @@ export const applyFilters = (row, columnId, columnFilters) =>
     const result = filterFn(row, columnId, { value });
     return result;
   });
+
+// A filter is applied only once it is complete; the panel and the builder's default filters share this rule.
+export const isFilterComplete = (filter) => {
+  if (!filter.id) return false;
+  if (!filter.value?.condition) return false;
+  // For isEmpty/isNotEmpty operations, we don't need a value
+  if (['isEmpty', 'isNotEmpty'].includes(filter.value.condition)) return true;
+  // For other operations, we need a value
+  return filter.value?.value !== undefined && filter.value?.value !== '';
+};
