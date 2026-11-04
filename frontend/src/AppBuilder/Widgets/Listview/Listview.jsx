@@ -207,6 +207,15 @@ export const Listview = function Listview({
   const recordBorderInset = getRecordBorderInset(recordStyle);
   const recordCanvasWidth = getRecordCanvasWidth({ listStyle: recordStyle, width, gap, recordsPerLine });
   const dividerColor = recordDividerColor ?? 'var(--cc-weak-border)';
+  const columnDividerStyle = {
+    width: DIVIDER_WIDTH,
+    // The 0px track and Bootstrap's `.row > * { max-width: 100% }` would clamp the line to 0.
+    minWidth: DIVIDER_WIDTH,
+    maxWidth: 'none',
+    marginRight: -DIVIDER_WIDTH,
+    padding: 0,
+    backgroundColor: dividerColor,
+  };
   const parentRef = useRef(null);
   // Disabled list blocks the mouse via `data-disabled`; `inert` also removes the row components from
   // the tab order (runtime only — keeps the builder editable).
@@ -502,24 +511,23 @@ export const Listview = function Listview({
                     componentType={componentType}
                   />
                   {/* aria-hidden: a list may only own list items. The negative margin keeps each line inside its gap. */}
+                  {isGridLayout && isBordered && (index + 1) % recordsPerLine !== 0 && (
+                    <div aria-hidden="true" className="listview-record-divider-vertical" style={columnDividerStyle} />
+                  )}
+                  {/* An incomplete last line keeps its column lines: a filler cell per missing record holds each line's track. */}
                   {isGridLayout &&
                     isBordered &&
-                    (index + 1) % recordsPerLine !== 0 &&
-                    index < filteredData.length - 1 && (
-                      <div
-                        aria-hidden="true"
-                        className="listview-record-divider-vertical"
-                        style={{
-                          width: DIVIDER_WIDTH,
-                          // The 0px track and Bootstrap's `.row > * { max-width: 100% }` would clamp the line to 0.
-                          minWidth: DIVIDER_WIDTH,
-                          maxWidth: 'none',
-                          marginRight: -DIVIDER_WIDTH,
-                          padding: 0,
-                          backgroundColor: dividerColor,
-                        }}
-                      />
-                    )}
+                    index === filteredData.length - 1 &&
+                    Array.from({ length: Math.max(0, recordsPerLine - 2 - (index % recordsPerLine)) }, (_, missing) => (
+                      <React.Fragment key={`filler-${missing}`}>
+                        <div aria-hidden="true" />
+                        <div
+                          aria-hidden="true"
+                          className="listview-record-divider-vertical"
+                          style={columnDividerStyle}
+                        />
+                      </React.Fragment>
+                    ))}
                   {isBordered && (index + 1) % recordsPerLine === 0 && index < filteredData.length - 1 && (
                     <div
                       aria-hidden="true"
