@@ -20,7 +20,9 @@ const ROOT_FILES = [
   'frontend/tsconfig.json',
   'frontend/.tooljet/config.json',
   'frontend/.npmrc',
-  ...['tailwind', 'postcss'].flatMap((name) => ['js', 'cjs', 'mjs', 'ts'].map((ext) => `frontend/${name}.config.${ext}`)),
+  ...['tailwind', 'postcss'].flatMap((name) =>
+    ['js', 'cjs', 'mjs', 'ts'].map((ext) => `frontend/${name}.config.${ext}`)
+  ),
 ];
 const TREES = ['frontend/src', 'frontend/styles'];
 const TEXT = /\.(tsx?|jsx?|mjs|cjs|css|json|md|svg|txt)$/;
@@ -154,7 +156,36 @@ export async function fetchStoredSource(
   target: { appId: string; versionId: string },
   withContent = false
 ): Promise<StoredSource> {
-  return session.api(`/code-mode-source/${target.appId}/versions/${target.versionId}${withContent ? '?content=1' : ''}`);
+  return session.api(
+    `/code-mode-source/${target.appId}/versions/${target.versionId}${withContent ? '?content=1' : ''}`
+  );
+}
+
+/*
+  What a project trusts to run on this machine: a build loads the config files, and an install follows package.json, the
+  lockfile and .npmrc. Live sync pulls edits other people make on ToolJet, so one that changes these needs a decision.
+*/
+const BUILD_TRUST_FILES = ROOT_FILES.filter(
+  (rel) =>
+    /\/(?:postcss|tailwind)\.config\./.test(rel) ||
+    [
+      'frontend/package.json',
+      'frontend/package-lock.json',
+      'frontend/.npmrc',
+      'frontend/.tooljet/config.json',
+    ].includes(rel)
+);
+
+/** The build-trust files that stored source would change here. Compared as stored, so a local SDK path is no change. */
+export function trustFileChanges(root: string, stored: StoredSource): string[] {
+  const files = new Map((stored.files ?? []).map((f) => [f.path, f.content]));
+  return BUILD_TRUST_FILES.filter((rel) => {
+    const incoming = files.get(rel);
+    const full = path.join(root, rel);
+    const local = fs.existsSync(full) ? storedContent(rel, fs.readFileSync(full, 'utf8')) : undefined;
+    // Pulling never removes a root file, so a file stored source lacks changes nothing here.
+    return files.has(rel) && incoming !== local;
+  });
 }
 
 /** Whether a stored path is one this project keeps (and so may be written or removed here). */
@@ -226,7 +257,9 @@ export async function storeSource(
   if (options.owner === 'platform' && !options.replace) {
     const current = await fetchStoredSource(session, where);
     if (current.exists && current.owner === 'repository')
-      throw new Error("This app's source is owned by its repository; push there, or pass --source-replace to move it to ToolJet.");
+      throw new Error(
+        "This app's source is owned by its repository; push there, or pass --source-replace to move it to ToolJet."
+      );
   }
   const stored = await uploadSource(session, target, {
     owner: options.owner,

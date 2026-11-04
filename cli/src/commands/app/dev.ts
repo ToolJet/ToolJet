@@ -28,12 +28,14 @@ import {
   fetchStoredSource,
   readSourceState,
   storeSource,
+  trustFileChanges,
   writeSourceState,
 } from '../../lib/app/source-upload';
 import { behindMessage, checkAgainstStored, hashProjectSource } from '../../lib/app/source-sync';
 import type { ApiError } from '../../lib/app/session';
 import { countsLine, failedScanSarif, scanProject, ScannerNotInstalledError, uploadScan } from '../../lib/app/scan';
 import { branchLine, workingApp } from '../../lib/app/branch';
+import { isServerMode } from '../../lib/server-mode';
 
 /** How often a watching dev asks ToolJet for the stored code's revision. */
 const STORED_CODE_POLL_MS = 5000;
@@ -49,6 +51,11 @@ export default class AppDev extends Command {
   static flags = {
     debounce: Flags.integer({ description: 'Milliseconds to wait after a save', default: 200 }),
     once: Flags.boolean({ description: 'Build, upload and link once, then exit', default: false }),
+    'trust-remote-config': Flags.boolean({
+      description:
+        'Pull and build code from ToolJet even when it changes build config, package.json, the lockfile or .npmrc (a build runs those on this machine)',
+      default: false,
+    }),
     scan: Flags.boolean({
       description: 'Scan each build and upload the result to the Security panel (never blocks the build)',
       default: true,
@@ -115,11 +122,22 @@ export default class AppDev extends Command {
           return 'ok';
         }
         if (check.clean) {
-          const pulled = applyStoredSource(
-            project.root,
-            await fetchStoredSource(session, where, true),
-            where.versionId
-          );
+          const incoming = await fetchStoredSource(session, where, true);
+          // Someone else's edit to what a build runs does not run here by itself. Server mode runs none of it.
+          const changed =
+            flags['trust-remote-config'] || isServerMode() ? [] : trustFileChanges(project.root, incoming);
+          if (changed.length) {
+            this.log(
+              formatError(
+                `Stopped: revision ${check.revision} on ToolJet changes ${changed.join(
+                  ', '
+                )}, which a build runs on this machine. ` +
+                  'Nothing was pulled. Check the change in the editor, then run tooljet app dev --trust-remote-config to pull and build it.'
+              )
+            );
+            process.exit(1);
+          }
+          const pulled = applyStoredSource(project.root, incoming, where.versionId);
           warnedRevision = undefined;
           this.log(
             `  ${formatSuccess(

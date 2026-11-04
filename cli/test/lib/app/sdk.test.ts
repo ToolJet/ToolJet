@@ -180,6 +180,8 @@ describe('the custom component SDK in an app project', () => {
     it('does nothing once the SDK has the types', async () => {
       serves();
       await prepareDependencies(frontend, { server: origin, run });
+      // What npm records after installing exactly the lockfile.
+      fs.writeFileSync(path.join(frontend, 'node_modules', '.package-lock.json'), JSON.stringify(read(path.join(frontend, 'package-lock.json'))));
       calls.length = 0;
       expect(await prepareDependencies(frontend, { server: origin, run })).to.deep.equal({ success: [], warnings: [] });
       expect(calls).to.deep.equal([]);

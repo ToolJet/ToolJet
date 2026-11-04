@@ -2,7 +2,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 import fetch = require('node-fetch');
 
-import { detectPackageManager, formatCommand, installCommand, installDependencies, needsInstall, Runner } from './deps';
+import {
+  detectPackageManager,
+  formatCommand,
+  installCommand,
+  installDependencies,
+  lockMismatch,
+  needsInstall,
+  Runner,
+} from './deps';
 
 /*
   The custom component SDK in an app project. A local build replaces its import (lib/library/builder.ts), so a project
@@ -152,9 +160,13 @@ export async function prepareDependencies(
   const warnings: string[] = [];
   const repaired = repairSdk(frontend);
   if (repaired) success.push(`Replaced an SDK path from another machine with ${SDK_PACKAGE}@${publishedSdk().version}`);
-  if (options.always || repaired || needsInstall(frontend)) {
-    const cmd = installDependencies(frontend, { frozen: options.frozen, run: options.run });
-    success.push(`Installed with ${formatCommand(cmd)} (no install scripts ran)`);
+  const stale = !options.always && !repaired && !needsInstall(frontend) ? lockMismatch(frontend) : undefined;
+  if (options.always || repaired || stale || needsInstall(frontend)) {
+    // A stale install is put right from the lockfile exactly: npm ci, which fails if package.json disagrees with it.
+    const cmd = installDependencies(frontend, { frozen: options.frozen || !!stale, run: options.run });
+    success.push(
+      `${stale ? `Reinstalled, as ${stale}, with` : 'Installed with'} ${formatCommand(cmd)} (no install scripts ran)`
+    );
   }
   const sdk = await installCodeModeSdk(frontend, { server: options.server, run: options.run });
   if (sdk === 'installed') success.push('Installed the custom component SDK that matches this ToolJet');

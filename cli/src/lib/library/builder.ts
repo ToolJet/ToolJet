@@ -6,6 +6,8 @@ import { generateManifest } from './manifest-generator';
 import { recordManifest } from './manifest-recorder';
 import { ProjectConfig } from './project-config';
 import { collectSource } from './source-tree';
+import { isServerMode } from '../server-mode';
+import { assertNoCodeInCss, ignoredConfigs, trustedCssProcessor } from './trusted-css';
 
 export interface BuildResult {
   distDir: string;
@@ -85,6 +87,26 @@ const postcssPlugin = (projectRoot: string, configPath: string): esbuild.Plugin 
 
 export const APP_STYLE_FILES = { theme: path.join('styles', 'theme.css'), global: path.join('styles', 'global.css') };
 
+/** Server mode's stylesheets: this CLI's own pipeline and nothing from the project (lib/server-mode.ts). */
+const trustedCssPlugin = (projectRoot: string): esbuild.Plugin => ({
+  name: 'tooljet-trusted-css',
+  setup(build) {
+    let processor: ReturnType<typeof trustedCssProcessor> | null = null;
+    build.onLoad({ filter: /\.css$/ }, async (args) => {
+      const source = fs.readFileSync(args.path, 'utf8');
+      assertNoCodeInCss(source, args.path);
+      processor ??= trustedCssProcessor(projectRoot);
+      const result = await processor.process(source, { from: args.path, to: args.path, map: false });
+      return { contents: result.css, loader: 'css' };
+    });
+  },
+});
+
+const cssPlugins = (projectRoot: string, postcssConfig: string | undefined): esbuild.Plugin[] => {
+  if (isServerMode()) return [trustedCssPlugin(projectRoot)];
+  return postcssConfig ? [postcssPlugin(projectRoot, postcssConfig)] : [];
+};
+
 const buildStylesheet = async (
   file: string,
   projectRoot: string,
@@ -96,7 +118,7 @@ const buildStylesheet = async (
     bundle: true,
     write: false,
     outfile: path.join(projectRoot, '.tooljet-style.css'),
-    plugins: postcssConfig ? [postcssPlugin(projectRoot, postcssConfig)] : [],
+    plugins: cssPlugins(projectRoot, postcssConfig),
     loader: ASSET_LOADERS,
     logLevel: 'silent',
     minify,
@@ -217,7 +239,7 @@ export async function build(projectRoot: string, options: { env?: BuildEnv } = {
     outfile: path.join(distDir, 'index.js'),
     metafile: true,
     external: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
-    plugins: [tooljetSdkPlugin, ...(postcssConfig ? [postcssPlugin(projectRoot, postcssConfig)] : [])],
+    plugins: [tooljetSdkPlugin, ...cssPlugins(projectRoot, postcssConfig)],
     loader: ASSET_LOADERS,
     jsx: 'automatic',
     // Dev builds (the dev track, not publish): every JSX call site in the project's own code passes its file:line:col to
@@ -239,9 +261,16 @@ export async function build(projectRoot: string, options: { env?: BuildEnv } = {
   const { tsErrorCount, tsErrorReport, warnings } = generated;
   // Fields declared through the components' own helper functions: found by rendering each component once when the
   // project asks for it (recordRender), else named in a warning, since reading alone can't see them.
-  const recorded = ProjectConfig.readRecordRender(projectRoot)
-    ? await recordManifest(projectRoot, generated.manifest, warnings)
-    : (warnHelperDeclared(generated.helperDeclared, warnings), generated.manifest);
+  // Rendering executes the project's code, so server mode never does it, whatever the project's config asks.
+  const recorded =
+    ProjectConfig.readRecordRender(projectRoot) && !isServerMode()
+      ? await recordManifest(projectRoot, generated.manifest, warnings)
+      : (warnHelperDeclared(generated.helperDeclared, warnings), generated.manifest);
+  if (isServerMode()) {
+    const ignored = ignoredConfigs(projectRoot);
+    if (ignored.length)
+      warnings.push(`Ignored here, the build uses ToolJet's own Tailwind setup: ${ignored.join(', ')}.`);
+  }
   // A code app ships its source tree in the manifest, so the builder can show the files beside the component.
   const source = ProjectConfig.readIncludeSource(projectRoot) ? collectSource(projectRoot, warnings) : undefined;
   const manifest = { ...ProjectConfig.readLibrarySettings(projectRoot), ...recorded, ...(source ? { source } : {}) };
