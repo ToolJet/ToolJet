@@ -25,6 +25,8 @@ export type JWTPayload = {
   tj_api_source?: string;
   /* The app an AI builder session was minted for; scopes its library calls */
   aiAppId?: string;
+  /* The session's expiry is absolute: activity does not extend it */
+  fixedExpiry?: boolean;
   /* Set on synthetic tokens minted for admin API key (TJ_ADMIN_API_KEY) authentication */
   isAdminApiKeyAuth?: boolean;
 };

@@ -136,7 +136,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       }
 
       if (isUserMandatory || isGetUserSession || isInviteSession) {
-        await this.sessionUtilService.validateUserSession(payload.username, payload.sessionId, organizationId);
+        await this.sessionUtilService.validateUserSession(payload.username, payload.sessionId, organizationId, {
+          fixedExpiry: payload.fixedExpiry === true,
+        });
       }
 
       if (isGetUserSession) {

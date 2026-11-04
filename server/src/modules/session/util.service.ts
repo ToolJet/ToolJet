@@ -158,6 +158,7 @@ export class SessionUtilService {
         ...(isPatLogin && extraData?.appId ? { appId: extraData?.appId, scope: 'App' } : {}),
         ...(isPatLogin && extraData?.patScope ? { patScope: extraData.patScope } : {}),
         ...(isPatLogin && extraData?.aiAppId ? { aiAppId: extraData.aiAppId } : {}),
+        ...(isPatLogin && extraData?.fixedExpiry ? { fixedExpiry: true } : {}),
         ...(extraData?.tj_api_source ? { tj_api_source: extraData.tj_api_source } : {}),
       };
 
@@ -564,7 +565,12 @@ export class SessionUtilService {
     return this.userRepository.getUser({ email, status: USER_STATUS.ACTIVE });
   }
 
-  async validateUserSession(userId: string, sessionId: string, organizationId?: string): Promise<void> {
+  async validateUserSession(
+    userId: string,
+    sessionId: string,
+    organizationId?: string,
+    options?: { fixedExpiry?: boolean }
+  ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const session: UserSessions = await manager.findOne(UserSessions, {
         where: {
@@ -599,7 +605,9 @@ export class SessionUtilService {
         }
 
         // Extend PAT session expiry
-        session.expiry = new Date(Date.now() + session.pat.sessionExpiryMinutes * 60 * 1000);
+        if (!options?.fixedExpiry) {
+          session.expiry = new Date(Date.now() + session.pat.sessionExpiryMinutes * 60 * 1000);
+        }
       } else {
         // Regular session extension
         if (session.expiry < now) {

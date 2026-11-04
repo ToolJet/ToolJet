@@ -192,7 +192,8 @@ describe('Existing browser and PAT session compatibility', () => {
     expect(instance.sessionUtilService.validateUserSession).toHaveBeenCalledWith(
       owner.id,
       owner.sessionId,
-      organization.id
+      organization.id,
+      { fixedExpiry: false }
     );
     expect(instance.mcpOAuthIdentityService.validateDelegation).not.toHaveBeenCalled();
   });
