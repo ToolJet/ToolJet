@@ -236,6 +236,7 @@ export const TableContainer = ({
         table={table}
         setFilters={handleFilterChange}
         appliedFiltersLength={table.getState().columnFilters.length}
+        appliedFilters={table.getState().columnFilters}
         componentName={componentName}
       />
       <TableData

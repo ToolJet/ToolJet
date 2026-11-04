@@ -140,35 +140,50 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter, co
   }, [debouncedFilterChanged, localFilters]);
 
   return (
-    <div
-      className={`table-filters card ${darkMode ? 'dark-theme theme-dark' : 'light-theme'}`}
-      data-cy={`${componentName}-filter-panel`}
-    >
-      <FilterHeader setShowFilter={setShowFilter} />
-      <div className="card-body">
-        {localFilters.map((filter, index) => (
-          <FilterRow
-            id={id}
-            key={index}
-            filter={filter}
-            index={index}
-            columns={columns}
-            darkMode={darkMode}
-            onColumnChange={filterColumnChanged}
-            onOperationChange={filterOperationChanged}
-            onValueChange={filterValueChanged}
-            onRemove={removeFilter}
-          />
-        ))}
-        {localFilters.length === 0 && (
-          <div>
-            <center>
-              <span data-cy={`no-filters-yet-label`}>no filters yet.</span>
-            </center>
-          </div>
-        )}
+    <>
+      {/* dims the whole table (its card is the containing block); a click on it does not close the panel */}
+      <div data-cy="filter-overlay" className="tw-absolute tw-inset-0 tw-z-[99] tw-bg-black/50" aria-hidden="true" />
+      <div
+        className={`table-filters card ${darkMode ? 'dark-theme theme-dark' : 'light-theme'}`}
+        data-cy={`${componentName}-filter-panel`}
+        // centred in the table; the inline style also overrides the old right-aligned 300px panel rules
+        style={{
+          left: '50%',
+          right: 'auto',
+          top: '4.5rem',
+          transform: 'translateX(-50%)',
+          width: '68%',
+          maxWidth: '674px',
+          height: 'auto',
+          maxHeight: '80%',
+        }}
+      >
+        <FilterHeader setShowFilter={setShowFilter} />
+        <div className="card-body">
+          {localFilters.map((filter, index) => (
+            <FilterRow
+              id={id}
+              key={index}
+              filter={filter}
+              index={index}
+              columns={columns}
+              darkMode={darkMode}
+              onColumnChange={filterColumnChanged}
+              onOperationChange={filterOperationChanged}
+              onValueChange={filterValueChanged}
+              onRemove={removeFilter}
+            />
+          ))}
+          {localFilters.length === 0 && (
+            <div>
+              <center>
+                <span data-cy={`no-filters-yet-label`}>no filters yet.</span>
+              </center>
+            </div>
+          )}
+        </div>
+        <FilterFooter addFilter={addFilter} clearFilters={clearFilters} />
       </div>
-      <FilterFooter addFilter={addFilter} clearFilters={clearFilters} />
-    </div>
+    </>
   );
 });
