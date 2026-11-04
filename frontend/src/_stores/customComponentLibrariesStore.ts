@@ -11,13 +11,14 @@ import {
   diffStreamKeys,
   libraryFileUrl,
   buildManifestCacheKey,
+  seedableManifest,
 } from '@/_helpers/customComponentLibrariesStoreUtils';
 import type { LibraryManifest } from '@/AppBuilder/types/libraryComponent.types';
 
 interface CustomComponentLibrariesState {
   libraries: CustomComponentLibrary[] | null; // null = not yet fetched
   loadFailed: boolean;
-  devPreviewEmailsByUserId: Record<string, string>; // { [userId]: email } — feeds the canvas "dev: email" badge
+  devPreviewEmailsByUserId: Record<string, string>; // { [userId]: email }, the signed-in user's only: the "dev: email" badge
   devBundleUpdatedAt: Record<string, number>; // { [libraryId]: number } — nonce bumped on each live-reload push
   manifests: Record<string, LibraryManifest>; // keyed by buildManifestCacheKey(libraryId, revision)
   fetchLibraries: (options?: { force?: boolean }) => Promise<CustomComponentLibrary[]>;
@@ -42,12 +43,14 @@ let inFlightFetch: Promise<CustomComponentLibrary[]> | null = null;
 const manifestInFlight = new Map<string, Promise<void>>();
 
 // Every library list entry already carries its latest revision's manifest — seed the
-// cache with it for free so useLibraryManifest never re-fetches what's already in hand.
+// cache with it for free so useLibraryManifest never re-fetches what's already in hand
+// (unless the list trimmed it, see seedableManifest).
 function seedLatestManifests(libraries: CustomComponentLibrary[]): Record<string, LibraryManifest> {
   const seeded: Record<string, LibraryManifest> = {};
   libraries.forEach((lib) => {
     const latest = lib.revisions?.[0]?.version;
-    if (latest && lib.manifest) seeded[buildManifestCacheKey(lib.id, latest)] = lib.manifest;
+    const manifest = seedableManifest(lib);
+    if (latest && manifest) seeded[buildManifestCacheKey(lib.id, latest)] = manifest;
   });
   return seeded;
 }
@@ -101,7 +104,10 @@ export const useCustomComponentLibrariesStore = create(
                 manifests: { ...state.manifests, ...seedLatestManifests(result) },
                 devPreviewEmailsByUserId: {
                   ...state.devPreviewEmailsByUserId,
-                  ...buildDevPreviewEmailsByUserId(result),
+                  ...buildDevPreviewEmailsByUserId(
+                    (authenticationService.currentSessionValue as { current_user?: { id?: string; email?: string } })
+                      ?.current_user
+                  ),
                 },
               }),
               false,

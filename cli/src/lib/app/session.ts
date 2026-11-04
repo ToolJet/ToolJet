@@ -7,7 +7,7 @@ import { validateOriginUrl } from '../library/target-validation';
   How `tooljet app` reaches a ToolJet instance. The target is, in order: --url and --token, then TOOLJET_URL and
   TOOLJET_PAT (or TOOLJET_TOKEN) from the environment, then the stored `tooljet login`. The personal access token is
   exchanged for a session (POST /api/personal-access-tokens/session), which every app, page and query route accepts,
-  and whose JWT names the user (by email; the dev track's per-user bundle is keyed by user id, see remote.ts).
+  and whose JWT names the user (its email, and its user id, by which the dev track keys each user's bundle: see remote.ts).
 */
 
 export interface Target {
@@ -23,6 +23,8 @@ export interface Session extends Target {
   organizationSlug?: string;
   /** The signed-in user's email (the session token's subject). */
   email: string;
+  /** The signed-in user's id (the session token's `username`); empty when the token does not carry it. */
+  userId: string;
   /** fetch against the API with the session cookie and workspace header. */
   api: (path: string, init?: { method?: string; body?: unknown }) => Promise<any>;
 }
@@ -58,14 +60,18 @@ export const signedInServer = (flags: { url?: string; token?: string } = {}): st
   }
 };
 
-const jwtSubject = (jwt: string): string => {
+const jwtPayload = (jwt: string): Record<string, unknown> => {
   try {
-    const payload = JSON.parse(Buffer.from(jwt.split('.')[1], 'base64url').toString('utf8'));
-    return String(payload.sub ?? payload.userId ?? payload.id ?? '');
+    return JSON.parse(Buffer.from(jwt.split('.')[1], 'base64url').toString('utf8')) ?? {};
   } catch {
-    return '';
+    return {};
   }
 };
+const jwtSubject = (jwt: string): string => {
+  const payload = jwtPayload(jwt);
+  return String(payload.sub ?? payload.userId ?? payload.id ?? '');
+};
+const jwtUserId = (jwt: string): string => String(jwtPayload(jwt).username ?? '');
 
 export class ApiError extends Error {
   constructor(message: string, readonly status: number, readonly body: string) {
@@ -105,7 +111,13 @@ const envOverrideNote = (url: string): string =>
 export async function openSession(target: Target): Promise<Session> {
   if (target.kind === 'session' && target.workspaceId) {
     // Already a session: no exchange, and the user is the token's subject.
-    return { ...target, organizationId: target.workspaceId, email: jwtSubject(target.token), api: sessionApi(target.url, target.token, target.workspaceId) };
+    return {
+      ...target,
+      organizationId: target.workspaceId,
+      email: jwtSubject(target.token),
+      userId: jwtUserId(target.token),
+      api: sessionApi(target.url, target.token, target.workspaceId),
+    };
   }
   const res = await fetch(`${target.url}/api/personal-access-tokens/session`, {
     method: 'POST',
@@ -152,6 +164,7 @@ export async function openSession(target: Target): Promise<Session> {
     organizationId: body.organizationId,
     organizationSlug: body.organizationSlug ?? undefined,
     email: jwtSubject(body.authToken),
+    userId: jwtUserId(body.authToken),
     api,
   };
 }

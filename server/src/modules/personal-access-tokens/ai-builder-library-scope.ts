@@ -3,7 +3,8 @@ import { FEATURE_KEY as LIBRARY_FEATURE } from '@modules/custom-component-librar
 /*
   What the in-product AI builder's session (tj_api_source ai_builder) may do on the library routes: publish the
   library of the one app the AI request is for (the aiAppId claim), in the session's own workspace.
-  A library counts as that app's when no other app in the workspace uses it (a new library is nobody's yet).
+  A library counts as that app's when no other app in the workspace uses it (a new library is nobody's yet): see
+  libraryUsedByAnotherApp.
 */
 
 export type ScopeQuery = (sql: string, params: unknown[]) => Promise<Array<Record<string, any>>>;
@@ -43,6 +44,23 @@ export async function aiBuilderLibraryDenial(
   if (!app || app.organization_id !== organizationId) return 'The app of this AI request is not in this workspace.';
   if (WORKSPACE_READS.includes(feature)) return undefined;
   if (!correlationId) return 'Name the library (correlationId).';
+  if (await libraryUsedByAnotherApp(organizationId, aiAppId, correlationId, query)) {
+    return 'This AI builder session can only publish the library of the app it is building.';
+  }
+  return undefined;
+}
+
+/**
+ * Whether an app in the workspace other than `appId` uses the library (a LibraryComponent naming its correlationId).
+ * A library no other app uses counts as `appId`'s own; a new library is nobody's yet. Shared by the AI builder's
+ * session above and by code-mode-source, which publishes an app's code into its library.
+ */
+export async function libraryUsedByAnotherApp(
+  organizationId: string,
+  appId: string,
+  correlationId: string,
+  query: ScopeQuery
+): Promise<boolean> {
   const users = await query(
     `SELECT DISTINCT v.app_id FROM components c
        JOIN pages p ON p.id = c.page_id
@@ -52,8 +70,5 @@ export async function aiBuilderLibraryDenial(
        AND c.properties -> 'correlationId' ->> 'value' = $2`,
     [organizationId, correlationId]
   );
-  if (users.some((row) => row.app_id !== aiAppId)) {
-    return 'This AI builder session can only publish the library of the app it is building.';
-  }
-  return undefined;
+  return users.some((row) => row.app_id !== appId);
 }

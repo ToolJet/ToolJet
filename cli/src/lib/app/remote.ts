@@ -253,11 +253,19 @@ async function fetchWithToken(session: Session, path: string, body: unknown) {
   return JSON.parse(text);
 }
 
-/** The id of the signed-in user's dev bundle owner for a library (the dev track keys bundles by user id). */
+/**
+ * The id of the signed-in user's dev bundle owner for a library (the dev track keys bundles by user id), once the
+ * server lists the upload. The list names builds by user id only; a session token without one falls back to the email
+ * an older server listed.
+ */
 export async function devBundleOwnerId(session: Session, libraryId: string): Promise<string> {
   const libraries = (await session.api('/custom-component-libraries')) as any[];
   const library = libraries.find((l) => l.id === libraryId);
-  const own = (library?.devBundles ?? []).find((d: any) => String(d.userEmail ?? '').toLowerCase() === session.email.toLowerCase());
+  const mine = (d: any) =>
+    session.userId
+      ? d.userId === session.userId
+      : String(d.userEmail ?? '').toLowerCase() === session.email.toLowerCase();
+  const own = (library?.devBundles ?? []).find(mine);
   if (!own?.userId) throw new Error("The live preview hasn't picked up your upload yet; save again.");
   return own.userId;
 }
