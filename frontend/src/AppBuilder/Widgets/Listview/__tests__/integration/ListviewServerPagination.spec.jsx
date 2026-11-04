@@ -1,5 +1,5 @@
 /**
- * Listview 2.0 server-side pagination (tj-ee#5557): with paginationType serverSide the list shows `data`
+ * Listview 2.0 server-side pagination (tj-ee#5557): with Type set to server side the list shows `data`
  * as-is and counts pages from Total records. Contract: frontend/ee/test/app-builder/widgets/Listview/TESTING.md
  * (Listview-SRV-001..008). Real store, real RenderWidget.
  */
@@ -48,7 +48,7 @@ const widget = createWidgetHarness({
     showBorder: binding('{{true}}'),
     rowsPerPage: binding('{{5}}'),
     enablePagination: binding('{{true}}'),
-    paginationType: binding('serverSide'),
+    serverSidePagination: binding('{{true}}'),
     totalRecords: binding('{{23}}'),
   },
   defaultStyles: {
@@ -152,7 +152,7 @@ describe('Listview: server-side pagination', () => {
       {
         properties: {
           data: binding(records(10)),
-          paginationType: binding('clientSide'),
+          serverSidePagination: binding('{{false}}'),
           totalRecords: binding('{{99}}'),
         },
       },
@@ -167,9 +167,12 @@ describe('Listview: server-side pagination', () => {
     await waitFor(() => expect(exposed('pageIndex')).toBe(2));
   });
 
-  test('[Listview-SRV-004] a saved list without paginationType behaves as client side', async () => {
-    // Break this catches: defaulting a missing paginationType to server side.
-    await mount({ properties: { data: binding(records(10)), paginationType: undefined, totalRecords: undefined } }, 5);
+  test('[Listview-SRV-004] a saved list without serverSidePagination behaves as client side', async () => {
+    // Break this catches: defaulting a missing serverSidePagination to server side.
+    await mount(
+      { properties: { data: binding(records(10)), serverSidePagination: undefined, totalRecords: undefined } },
+      5
+    );
 
     expect(totalShown()).toBe('10');
     expect(rowTexts()[0]).toBe('r0');
@@ -336,7 +339,7 @@ describe('Listview: server-side pagination', () => {
     await user().click(rows()[0]);
     await waitFor(() => expect(exposed('selectedRecordIndex')).toBe(10));
 
-    await setProperty('paginationType', 'clientSide');
+    await setProperty('serverSidePagination', '{{false}}');
 
     await waitFor(() => expect(exposed('selectedRecordIndex')).toBeUndefined());
     expect(exposed('selectedRecordId')).toBeUndefined();
@@ -375,7 +378,7 @@ describe('Listview: a server-side list nested in a record', () => {
       showBorder: binding('{{true}}'),
       rowsPerPage: binding('{{5}}'),
       enablePagination: binding('{{true}}'),
-      paginationType: binding('serverSide'),
+      serverSidePagination: binding('{{true}}'),
       totalRecords: binding('{{12}}'),
     });
     definition.component.parent = ID;

@@ -48,7 +48,7 @@ describe('Listview: a new drop gets the new look', () => {
     expect(properties.showHeader).toEqual({ value: '{{true}}' });
     // The header height is fixed (Figma 60px), so there is no key to save.
     expect(properties.headerHeight).toBeUndefined();
-    expect(properties.paginationType).toEqual({ value: 'clientSide' });
+    expect(properties.serverSidePagination).toEqual({ value: '{{false}}' });
     expect(properties.totalRecords).toEqual({ value: '{{10}}' });
     expect(properties.recordVisibility).toEqual({ value: '{{true}}' });
     expect(properties.disableRecords).toEqual({ value: '{{false}}' });

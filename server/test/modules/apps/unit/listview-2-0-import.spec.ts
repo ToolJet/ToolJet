@@ -55,7 +55,7 @@ describe('ListView 2.0: an export from before 2.0', () => {
     expect(styles.listStyle).toEqual({ value: 'legacy' });
     expect(styles.gap).toEqual({ value: '{{0}}' });
     expect(properties.showHeader).toEqual({ value: '{{false}}' });
-    expect(properties.paginationType).toEqual({ value: 'clientSide' });
+    expect(properties.serverSidePagination).toEqual({ value: '{{false}}' });
     expect(properties.rowHeight).toEqual({ value: '100' });
     expect(properties.gridRecordHeight).toBeUndefined();
     expect(styles.recordBorderColor).toBeUndefined();

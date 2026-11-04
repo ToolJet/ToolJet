@@ -14,7 +14,7 @@ import { baseComponentProperties } from '../../Components/DefaultComponent';
 const LV_ID = 'lv1';
 const state = () => useStore.getState();
 
-function visibleProperties(enablePaginationExpression, paginationType) {
+function visibleProperties(enablePaginationExpression, serverSidePagination) {
   const component = {
     id: LV_ID,
     component: {
@@ -22,13 +22,13 @@ function visibleProperties(enablePaginationExpression, paginationType) {
       definition: {
         properties: {
           enablePagination: { value: enablePaginationExpression },
-          ...(paginationType ? { paginationType: { value: paginationType } } : {}),
+          ...(serverSidePagination ? { serverSidePagination: { value: serverSidePagination } } : {}),
         },
       },
     },
   };
   const items = baseComponentProperties(
-    ['data', 'enablePagination', 'paginationType', 'rowsPerPage', 'totalRecords'],
+    ['data', 'enablePagination', 'serverSidePagination', 'rowsPerPage', 'totalRecords'],
     [],
     component,
     { properties: {} },
@@ -72,18 +72,18 @@ describe('Rows per page follows Enable pagination', () => {
 describe('Pagination Type and Total records follow Enable pagination and Type', () => {
   test('[Listview-SRV-009] pagination off hides Type, Rows per page and Total records', () => {
     // Break this catches: showing pagination settings while the pager is off.
-    const shown = visibleProperties('{{false}}', 'serverSide');
+    const shown = visibleProperties('{{false}}', '{{true}}');
 
-    expect(shown).not.toContain('paginationType');
+    expect(shown).not.toContain('serverSidePagination');
     expect(shown).not.toContain('rowsPerPage');
     expect(shown).not.toContain('totalRecords');
   });
 
   test('[Listview-SRV-009] client side shows Type and Rows per page but not Total records', () => {
     // Break this catches: asking for Total records on a list that counts its own data.
-    const shown = visibleProperties('{{true}}', 'clientSide');
+    const shown = visibleProperties('{{true}}', '{{false}}');
 
-    expect(shown).toContain('paginationType');
+    expect(shown).toContain('serverSidePagination');
     expect(shown).toContain('rowsPerPage');
     expect(shown).not.toContain('totalRecords');
   });
@@ -95,8 +95,8 @@ describe('Pagination Type and Total records follow Enable pagination and Type', 
 
   test('[Listview-SRV-009] server side shows Type, Rows per page and Total records', () => {
     // Break this catches: hiding Total records when it is the field server side needs.
-    const shown = visibleProperties('{{true}}', 'serverSide');
+    const shown = visibleProperties('{{true}}', '{{true}}');
 
-    expect(shown).toEqual(expect.arrayContaining(['paginationType', 'rowsPerPage', 'totalRecords']));
+    expect(shown).toEqual(expect.arrayContaining(['serverSidePagination', 'rowsPerPage', 'totalRecords']));
   });
 });

@@ -1594,7 +1594,7 @@ describe('Listview: a saved ListView without any 2.0 key', () => {
       expect(styles.listStyle).toEqual({ value: 'legacy' });
       expect(styles.gap).toEqual({ value: '{{0}}' });
       expect(properties.showHeader).toEqual({ value: '{{false}}' });
-      expect(properties.paginationType).toEqual({ value: 'clientSide' });
+      expect(properties.serverSidePagination).toEqual({ value: '{{false}}' });
       // jsdom drops the var() border, so the separator itself is QA's (Listview-BRW-001).
       expect(properties.showBorder).toEqual({ value: '{{true}}' });
       expect(properties.gridRecordHeight).toBeUndefined();

@@ -102,7 +102,7 @@ describe('List View property panel', () => {
     const { container } = renderPanel({
       mode: 'grid',
       enablePagination: '{{true}}',
-      paginationType: 'serverSide',
+      serverSidePagination: '{{true}}',
     });
 
     expect(fieldsIn(container, 'Configure list item').filter(([name]) => name !== 'showBorder')).toEqual([
@@ -110,7 +110,7 @@ describe('List View property panel', () => {
       ['gridRecordHeight', 'Record height'],
       ['columns', 'Number of columns'],
       ['enablePagination', 'Enable pagination'],
-      ['paginationType', 'Type'],
+      ['serverSidePagination', 'Type'],
       ['rowsPerPage', 'Number of records per page'],
       ['totalRecords', 'Total records'],
     ]);
@@ -118,13 +118,29 @@ describe('List View property panel', () => {
 
   test('[Listview-INSP-005] Type, records per page and Total records are hidden while pagination is off', () => {
     // Break this catches: pagination settings shown while the pager is off.
-    const { container } = renderPanel({ enablePagination: '{{false}}', paginationType: 'serverSide' });
+    const { container } = renderPanel({ enablePagination: '{{false}}', serverSidePagination: '{{true}}' });
 
     const names = fieldsIn(container, 'Configure list item').map(([name]) => name);
     expect(names).toContain('enablePagination');
-    expect(names).not.toContain('paginationType');
+    expect(names).not.toContain('serverSidePagination');
     expect(names).not.toContain('rowsPerPage');
     expect(names).not.toContain('totalRecords');
+  });
+
+  test('[Listview-INSP-007] Type is the Table client/server switch on the boolean serverSidePagination', () => {
+    // Break this catches: a new select or a string key where Table users find a Client side / Server side switch.
+    renderPanel({ enablePagination: '{{true}}', serverSidePagination: '{{true}}' });
+
+    const type = editor('serverSidePagination');
+    expect(type.fieldMeta.type).toBe('clientServerSwitch');
+    expect(type.fieldMeta.options.map((option) => [option.displayName, option.value])).toEqual([
+      ['Client side', 'clientSide'],
+      ['Server side', 'serverSide'],
+    ]);
+    expect(type.fieldMeta.validation.schema).toEqual({ type: 'boolean' });
+    expect(type.initialValue).toBe('{{true}}');
+    expect(listviewConfig.definition.properties.serverSidePagination).toEqual({ value: '{{false}}' });
+    expect(listviewConfig.properties.paginationType).toBeUndefined();
   });
 
   test('[Listview-INSP-003] Layout is a List/Grid switch and shows List for a saved "List"', () => {
