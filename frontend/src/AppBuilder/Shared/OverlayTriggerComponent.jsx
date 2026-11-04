@@ -3,7 +3,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { Tooltip } from 'react-tooltip';
 import useStore from '@/AppBuilder/_stores/store';
 
-// This overlayTriggerComponent is used in the Table component, for download, manage columns popover and pagination
+// Shared by the Table (download, manage columns, page list) and the shared Pager.
 export const OverlayTriggerComponent = ({
   id,
   trigger = 'click',

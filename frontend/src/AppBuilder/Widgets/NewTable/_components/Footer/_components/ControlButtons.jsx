@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { Tooltip } from 'react-tooltip';
-import { OverlayTriggerComponent } from './OverlayTriggerComponent';
+import { OverlayTriggerComponent } from '@/AppBuilder/Shared/OverlayTriggerComponent';
 import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import Popover from 'react-bootstrap/Popover';

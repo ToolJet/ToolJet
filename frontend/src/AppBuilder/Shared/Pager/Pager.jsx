@@ -4,7 +4,7 @@ import Popover from 'react-bootstrap/Popover';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { PagerButton } from './PagerButton';
 import { getPageNumbers } from './pagerUtils';
-import { OverlayTriggerComponent } from '@/AppBuilder/Widgets/NewTable/_components/Footer/_components/OverlayTriggerComponent';
+import { OverlayTriggerComponent } from '@/AppBuilder/Shared/OverlayTriggerComponent';
 
 const PageList = ({ page, pageCount, onGoToPage }) => {
   const ref = useRef(null);
