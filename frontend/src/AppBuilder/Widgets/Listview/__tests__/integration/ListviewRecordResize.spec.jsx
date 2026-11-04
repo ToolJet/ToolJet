@@ -570,6 +570,26 @@ describe('Listview record resize: the other records do not fade', () => {
   });
 });
 
+describe('Listview record resize: no fade even while record 1 is hovered', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-RSZ-003] with the pointer on record 1, records 2..K stay at full opacity for the whole drag, and the hover fade returns after the release', async () => {
+    // Break this catches: the hover fade (the pointer is on record 1 when the handle is pressed) still applying during the resize.
+    await mount(widget);
+    fireEvent.mouseEnter(rows()[0]);
+    await waitFor(() => expect(faded()).toEqual([false, true, true]));
+
+    fireEvent.mouseDown(handles()[0], { clientX: 0, clientY: START_Y, button: 0 });
+    await waitFor(() => expect(faded()).toEqual([false, false, false]));
+    fireEvent.mouseMove(document, { clientX: 0, clientY: START_Y + 30 });
+    expect(faded()).toEqual([false, false, false]);
+
+    fireEvent.mouseUp(document, { clientX: 0, clientY: START_Y + 30 });
+    await waitFor(() => expect(faded()).toEqual([false, true, true]));
+  });
+});
+
 describe('Listview record resize: record 1 shows the outline and the grid while the drag is on', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
