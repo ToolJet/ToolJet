@@ -211,3 +211,48 @@ describe('findAllEntityReferences (_stores/utils.js:368-418)', () => {
     expect(findAllEntityReferences(node, [])).toEqual(['q1', 't2']);
   });
 });
+
+describe('extractAndReplaceReferencesFromString — the triple-brace path is anchored to the whole value', () => {
+  // The `{{{ ... }}}` object-literal path is selected by `input.startsWith('{{{')`. That
+  // anchoring is load-bearing and was unprotected: flipping it to `input.includes('{{{')`
+  // passed the entire 296-test frontend suite.
+
+  test('a triple-brace object literal at the start of the value takes the object path', () => {
+    // Break this catches: removing the triple-brace fast path altogether. The generic
+    // /{{(.*?)}}/gs loop stops at the first inner `}}` of a multi-key literal, which
+    // acorn then rejects, dropping the reference entirely.
+    const result = extractAndReplaceReferencesFromString('{{{ a: components.t1.value, b: 2 }}}', { t1: 'id-1' }, {});
+
+    expect(result.allRefs).toEqual([ref('id-1', 'value')]);
+    expect(result.valueWithId).toBe('{{{ a: components.id-1.value, b: 2 }}}');
+  });
+
+  test('a triple-brace sequence in the MIDDLE of a value does not take the object path', () => {
+    // Break this catches: relaxing `startsWith('{{{')` to `includes('{{{')`. The object
+    // path slices 3 characters off each END of the whole string, so a mid-string match
+    // would mangle the surrounding text instead of the literal.
+    //
+    // Characterization, deliberately: the reference is NOT extracted here today (the
+    // generic path cannot parse the multi-key literal). What this pins is that the
+    // decision is anchored to position 0 — not that dropping the ref is desirable.
+    const result = extractAndReplaceReferencesFromString('x {{{ a: components.t1.value }}}', { t1: 'id-1' }, {});
+
+    expect(result.allRefs).toEqual([]);
+    expect(result.valueWithId.startsWith('x ')).toBe(true);
+  });
+
+  test.failing('a triple-brace binding preceded only by whitespace must still be recognised', () => {
+    // A real, unfixed bug, and the reason the anchoring above is a sharp edge rather than
+    // a clean contract. This file already treats whitespace as semantically irrelevant
+    // (see the "whitespace before the closing braces" block above); a LEADING newline or
+    // space should be no different. It is: `startsWith('{{{')` fails, the value goes down
+    // the generic path, and the reference is dropped with no error and no dependency edge,
+    // so the binding never updates again.
+    //
+    // Actual today: allRefs is []. Through the store seam the whole property resolves to
+    // the string ' }' rather than the object.
+    const result = extractAndReplaceReferencesFromString('\n{{{ a: components.t1.value, b: 2 }}}', { t1: 'id-1' }, {});
+
+    expect(result.allRefs).toEqual([ref('id-1', 'value')]);
+  });
+});
