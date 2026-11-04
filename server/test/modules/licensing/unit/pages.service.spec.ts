@@ -71,6 +71,7 @@ describe('LicensePageService.getPagesLimit', () => {
     const getLicenseTerms = jest.fn().mockResolvedValue({
       [LICENSE_FIELD.APP_PAGES_LIMIT]: 10,
       [LICENSE_FIELD.APP_PAGE_GROUPS_LIMIT]: 5,
+      [LICENSE_FIELD.APP_PAGES_NAV_GROUP]: true,
       [LICENSE_FIELD.STATUS]: { isExpired: false },
     });
     const { service } = makeService({
@@ -91,6 +92,7 @@ describe('LicensePageService.getPagesLimit', () => {
     const getLicenseTerms = jest.fn().mockResolvedValue({
       [LICENSE_FIELD.APP_PAGES_LIMIT]: '',
       [LICENSE_FIELD.APP_PAGE_GROUPS_LIMIT]: '',
+      [LICENSE_FIELD.APP_PAGES_NAV_GROUP]: true,
       [LICENSE_FIELD.STATUS]: { isExpired: false },
     });
     const { service, licenseCountsService } = makeService({ getLicenseTerms });
@@ -98,6 +100,25 @@ describe('LicensePageService.getPagesLimit', () => {
     const result = await service.getPagesLimit(organizationId);
 
     expect(result.pagesCount).toMatchObject({ canAddUnlimited: true });
+    expect(result.pageGroupsCount).toMatchObject({ canAddUnlimited: true });
     expect(licenseCountsService.fetchMaxPagesCount).not.toHaveBeenCalled();
+    expect(licenseCountsService.fetchMaxPageGroupsCount).not.toHaveBeenCalled();
+  });
+
+  it('returns null for pageGroupsCount when the license has no page groups', async () => {
+    const getLicenseTerms = jest.fn().mockResolvedValue({
+      [LICENSE_FIELD.APP_PAGES_LIMIT]: 10,
+      [LICENSE_FIELD.APP_PAGE_GROUPS_LIMIT]: 5,
+      [LICENSE_FIELD.STATUS]: { isExpired: false },
+    });
+    const { service, licenseCountsService } = makeService({
+      getLicenseTerms,
+      licenseCountsService: { fetchMaxPagesCount: jest.fn().mockResolvedValue(3) },
+    });
+
+    const result = await service.getPagesLimit(organizationId);
+
+    expect(result.pageGroupsCount).toBeNull();
+    expect(licenseCountsService.fetchMaxPageGroupsCount).not.toHaveBeenCalled();
   });
 });

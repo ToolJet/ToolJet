@@ -6,7 +6,7 @@ import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseInitService } from '@modules/licensing/interfaces/IService';
 import { getLicenseFieldValue } from '@modules/licensing/helper';
-import { OrganizationsLicense } from '@entities/organization_license.entity';
+import { OrganizationsLicense } from '@entities/organization_license.entity'; // migration-import-allowed: reads the license row the same way LicenseInitService.getPlanForMigrationCloud does
 
 const MIGRATION_NAME = 'DisableUnlicensedAutomaticSsoLogin1790800000000';
 const PROGRESS_EVERY = 100;

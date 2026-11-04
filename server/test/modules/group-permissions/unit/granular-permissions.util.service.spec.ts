@@ -1,12 +1,13 @@
 /**
- * Unit tests for the release-license gating added to GranularPermissionsUtilService:
+ * Unit tests for the multi-environment license gating in GranularPermissionsUtilService:
  *
- * - validateEnvironmentPermissions (new): called on permission creation for APP-type resources.
- * - validateResourceAction's new isEnvironmentPermissions branch: same gating on permission update.
+ * - validateEnvironmentPermissions: called on permission creation for APP-type resources.
+ * - validateResourceAction's isEnvironmentPermissions branch: same gating on permission update.
  *
  * Both allow non-Released environment access (Development/Staging/Production) for a group with
- * end-users only when the org has the `release` license; otherwise they reject it the same way a
- * builder-level permission change would be rejected.
+ * end-users only when the org has the `multiEnvironment` license; otherwise they reject it the same
+ * way a builder-level permission change would be rejected. Environment access is not gated by the
+ * `release` flag, which only covers promote and release.
  */
 
 jest.mock('../../../../src/helpers/database.helper', () => ({
@@ -17,6 +18,7 @@ jest.mock('../../../../src/helpers/database.helper', () => ({
 
 import { GranularPermissionsUtilService } from '../../../../src/modules/group-permissions/util-services/granular-permissions.util.service';
 import { ERROR_HANDLER } from '../../../../src/modules/group-permissions/constants/error';
+import { LICENSE_FIELD } from '../../../../src/modules/licensing/constants';
 
 function makeService(opts: { getUsersInGroup?: jest.Mock; getRoleUsersList?: jest.Mock; getLicenseTerms?: jest.Mock }) {
   const groupPermissionsRepository = { getUsersInGroup: opts.getUsersInGroup ?? jest.fn() } as any;
@@ -35,8 +37,9 @@ const organizationId = 'org-uuid-1';
 const endUsers = [{ id: 'user-1', email: 'enduser@example.com', userGroups: [{ group: { id: groupId } }] }];
 
 describe('GranularPermissionsUtilService.validateEnvironmentPermissions', () => {
-  it('resolves when the org has the release license', async () => {
-    const service = makeService({ getLicenseTerms: jest.fn().mockResolvedValue(true) });
+  it('resolves when the org has the multi-environment license', async () => {
+    const getLicenseTerms = jest.fn().mockResolvedValue(true);
+    const service = makeService({ getLicenseTerms });
 
     await expect(
       service.validateEnvironmentPermissions(
@@ -45,9 +48,10 @@ describe('GranularPermissionsUtilService.validateEnvironmentPermissions', () => 
         {} as any
       )
     ).resolves.toBeUndefined();
+    expect(getLicenseTerms).toHaveBeenCalledWith(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId);
   });
 
-  it('throws when the org lacks the release license and the group has end-users', async () => {
+  it('throws when the org lacks the multi-environment license and the group has end-users', async () => {
     const service = makeService({
       getLicenseTerms: jest.fn().mockResolvedValue(false),
       getUsersInGroup: jest.fn().mockResolvedValue([{ userId: 'user-1' }]),
@@ -68,9 +72,11 @@ describe('GranularPermissionsUtilService.validateResourceAction (environment-per
   const params = { organizationId, groupId, isBuilderPermissions: false, isEnvironmentPermissions: true };
 
   it('returns early when licensed, even with end-users present and role-change disallowed', async () => {
-    const service = makeService({ getLicenseTerms: jest.fn().mockResolvedValue(true) });
+    const getLicenseTerms = jest.fn().mockResolvedValue(true);
+    const service = makeService({ getLicenseTerms });
 
     await expect((service as any).validateResourceAction(params, false, {} as any)).resolves.toBeUndefined();
+    expect(getLicenseTerms).toHaveBeenCalledWith(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId);
   });
 
   it('throws MethodNotAllowedException when unlicensed, end-users present, and role-change disallowed', async () => {
