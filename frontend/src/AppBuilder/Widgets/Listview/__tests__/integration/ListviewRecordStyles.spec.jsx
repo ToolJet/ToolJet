@@ -239,7 +239,7 @@ describe('Listview: list styles', () => {
     expect(2 * px(list().style.rowGap) + dividerHeight(dividers()[0])).toBe(12);
   });
 
-  test('[Listview-STYLE-010] grid Bordered keeps every column divider in an incomplete last line', async () => {
+  test('[Listview-STYLE-008] grid Bordered keeps every column divider in an incomplete last line', async () => {
     // Break this catches: no divider after the last record, so the empty side of the last line has no lines.
     await mount(
       {
@@ -265,7 +265,7 @@ describe('Listview: list styles', () => {
     ]);
   });
 
-  test('[Listview-STYLE-010] a line with one record out of four still has its three dividers, each in its own track', async () => {
+  test('[Listview-STYLE-008] a line with one record out of four still has its three dividers, each in its own track', async () => {
     // Break this catches: dividers that slide into the tracks of missing records.
     await mount(
       {
@@ -286,7 +286,7 @@ describe('Listview: list styles', () => {
   });
 
   test.each(['container', 'plain'])(
-    '[Listview-STYLE-010] a %s grid adds no divider or filler for an incomplete last line',
+    '[Listview-STYLE-008] a %s grid adds no divider or filler for an incomplete last line',
     async (listStyle) => {
       // Break this catches: lines or empty cells leaking into the styles that have no dividers.
       await mount(
