@@ -1,6 +1,7 @@
 import nock = require('nock');
 import { expect } from 'chai';
 import * as fs from 'fs';
+import Module = require('module');
 import * as os from 'os';
 import * as path from 'path';
 
@@ -168,16 +169,6 @@ describe('app security scan', function () {
       expect(message).to.equal('The security scan did not run: Cannot find package "acorn"');
     });
 
-    it('tells a missing scanner apart from a scan that failed, and says ToolJet still scans on publish', () => {
-      const saved = process.env.TOOLJET_APP_SCANNER_BIN;
-      delete process.env.TOOLJET_APP_SCANNER_BIN;
-      try {
-        expect(() => scannerBin()).to.throw(ScannerNotInstalledError, /ToolJet scans it when you publish/);
-      } finally {
-        if (saved !== undefined) process.env.TOOLJET_APP_SCANNER_BIN = saved;
-      }
-    });
-
     it('uploads as every check errored with the reason, and reads back as "Scan failed"', () => {
       const sarif = failedScanSarif('Cannot find package "acorn"');
       expect(sarif.runs.map((r) => r.properties.checkId)).to.include.members(['code-lint', 'secrets', 'osv']);
@@ -191,5 +182,24 @@ describe('app security scan', function () {
       expect(failureLine({ failure: { source: 'dev', reason: 'x' } }, 'publish')).to.equal(null);
       expect(failureLine({ failure: null })).to.equal(null);
     });
+  });
+});
+
+describe('scannerBin', () => {
+  it('tells a missing scanner apart from a scan that failed, and says ToolJet still scans on publish', () => {
+    const saved = process.env.TOOLJET_APP_SCANNER_BIN;
+    const loader = Module as unknown as { _resolveFilename: (request: string, ...rest: unknown[]) => string };
+    const resolve = loader._resolveFilename;
+    delete process.env.TOOLJET_APP_SCANNER_BIN;
+    loader._resolveFilename = function (request, ...rest) {
+      if (request === '@tooljet/app-scanner') throw new Error('not found');
+      return resolve.call(this, request, ...rest);
+    };
+    try {
+      expect(() => scannerBin()).to.throw(ScannerNotInstalledError, /ToolJet scans it when you publish/);
+    } finally {
+      loader._resolveFilename = resolve;
+      if (saved !== undefined) process.env.TOOLJET_APP_SCANNER_BIN = saved;
+    }
   });
 });
