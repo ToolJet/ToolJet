@@ -42,7 +42,10 @@ test.each([
 ])('keeps OAuth password returns tab-local without changing other login returns: %s', async (returnTo, oauth) => {
   window.history.replaceState({}, '', `/login?redirectTo=${encodeURIComponent(returnTo)}`);
   render(
-    <MemoryRouter initialEntries={[window.location.pathname + window.location.search]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      initialEntries={[window.location.pathname + window.location.search]}
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <BaseLoginPage configs={{}} />
     </MemoryRouter>
   );
