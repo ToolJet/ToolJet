@@ -60,7 +60,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
 import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
 import ConfigHandleButton from '@/_components/ConfigHandleButton';
-import { getMinWidthPx } from './minWidth';
+import { getMinWidthPx, getMinColumns } from './minWidth';
 import { getDropTargetLabel, getParentWidgetFromId } from '../appCanvasUtils';
 import {
   RESTRICTED_WIDGETS_CONFIG,
@@ -228,6 +228,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         y = Math.round(y / GRID_HEIGHT) * GRID_HEIGHT;
 
         gw = gw ? gw : gridWidth;
+        // Any resize path (edge, group) ends here, so a listed minimum cannot be bypassed.
+        newWidth = Math.max(newWidth, getMinColumns(getComponentTypeFromId(id), gw));
 
         const parent = boxList.find((box) => box.id === id)?.component?.parent;
         if (y < 0) {
@@ -262,7 +264,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         setComponentLayout(batchedLayouts);
       }
     },
-    [canvasWidth, gridWidth, setComponentLayout]
+    [canvasWidth, gridWidth, setComponentLayout, getComponentTypeFromId]
   );
 
   const configHandleWhenMultipleComponentSelected = (id) => {
@@ -886,6 +888,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           showGridLines();
           handleActivateNonDraggingComponents();
           events.forEach((ev) => {
+            const resizingWidget = boxList.find(({ id }) => id === ev.target.id);
+            const parentGridWidth = useGridStore.getState().subContainerWidths[resizingWidget?.component?.parent];
+            ev.setMin([
+              getMinWidthPx(resizingWidget?.component?.component, parentGridWidth || gridWidth, gridWidth),
+              GRID_HEIGHT,
+            ]);
             ev.target.classList.add('show-ghost-group-dragging-resizing');
             const moveableControlBox = document.getElementsByClassName(`sc-${ev.target.id}`)[0];
             if (moveableControlBox) {
@@ -938,7 +946,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               });
               let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
               let width = Math.round(ev.width / _gridWidth) * _gridWidth;
-              width = width < _gridWidth ? _gridWidth : width;
+              width = Math.max(width, getMinWidthPx(currentWidget.component?.component, _gridWidth, _gridWidth));
               const alignment = getComponentAlignment(currentWidget.id, moduleId);
               let posX = Math.round(ev.drag.translate[0] / _gridWidth) * _gridWidth;
               let posY = Math.round(ev.drag.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;

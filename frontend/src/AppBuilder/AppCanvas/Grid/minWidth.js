@@ -7,3 +7,9 @@ export const getMinWidthPx = (componentType, parentGridWidth, defaultMinWidth) =
   const minWidth = MIN_WIDTH_PX_BY_COMPONENT[componentType];
   return minWidth && parentGridWidth ? Math.ceil(minWidth / parentGridWidth) * parentGridWidth : defaultMinWidth;
 };
+
+// The same minimum in whole columns of a canvas whose column is `gridWidth` px, floored at one column.
+export const getMinColumns = (componentType, gridWidth) => {
+  const minWidth = MIN_WIDTH_PX_BY_COMPONENT[componentType];
+  return minWidth && gridWidth ? Math.ceil(minWidth / gridWidth) : 1;
+};

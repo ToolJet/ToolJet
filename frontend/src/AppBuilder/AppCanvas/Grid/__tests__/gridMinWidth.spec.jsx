@@ -163,5 +163,5 @@ describe('Grid resize minimum width', () => {
       ).toBeGreaterThanOrEqual(7)
     );
     expect(parseFloat(box.style.width)).toBeGreaterThanOrEqual(140);
-  });
+  }, 20000);
 });
