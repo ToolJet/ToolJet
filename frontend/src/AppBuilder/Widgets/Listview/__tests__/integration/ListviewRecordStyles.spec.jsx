@@ -239,6 +239,72 @@ describe('Listview: list styles', () => {
     expect(2 * px(list().style.rowGap) + dividerHeight(dividers()[0])).toBe(12);
   });
 
+  test('[Listview-STYLE-010] grid Bordered keeps every column divider in an incomplete last line', async () => {
+    // Break this catches: no divider after the last record, so the empty side of the last line has no lines.
+    await mount(
+      {
+        properties: {
+          mode: binding('grid'),
+          columns: binding('{{3}}'),
+          data: binding(`{{[1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({ text: 'R' + n }))}}`),
+        },
+        styles: { listStyle: binding('bordered'), gap: binding('{{12}}') },
+      },
+      8
+    );
+
+    // Three lines, two column dividers each; the last line has two records and still both dividers.
+    expect(verticalDividers()).toHaveLength(6);
+    expect(dividers()).toHaveLength(2);
+    const last = [...list().children].slice(-4);
+    expect(last.map((node) => node.classList.contains('listview-record-divider-vertical'))).toEqual([
+      false,
+      true,
+      false,
+      true,
+    ]);
+  });
+
+  test('[Listview-STYLE-010] a line with one record out of four still has its three dividers, each in its own track', async () => {
+    // Break this catches: dividers that slide into the tracks of missing records.
+    await mount(
+      {
+        properties: {
+          mode: binding('grid'),
+          columns: binding('{{4}}'),
+          data: binding(`{{[1].map((n) => ({ text: 'R' + n }))}}`),
+        },
+        styles: { listStyle: binding('bordered'), gap: binding('{{12}}') },
+      },
+      1
+    );
+
+    const kinds = [...list().children].map((node) =>
+      node.classList.contains('listview-record-divider-vertical') ? 'divider' : (node.getAttribute('role') ?? 'empty')
+    );
+    expect(kinds).toEqual(['listitem', 'divider', 'empty', 'divider', 'empty', 'divider']);
+  });
+
+  test.each(['container', 'plain'])(
+    '[Listview-STYLE-010] a %s grid adds no divider or filler for an incomplete last line',
+    async (listStyle) => {
+      // Break this catches: lines or empty cells leaking into the styles that have no dividers.
+      await mount(
+        {
+          properties: {
+            mode: binding('grid'),
+            columns: binding('{{3}}'),
+            data: binding(`{{[1, 2, 3, 4].map((n) => ({ text: 'R' + n }))}}`),
+          },
+          styles: { listStyle: binding(listStyle) },
+        },
+        4
+      );
+      expect(verticalDividers()).toHaveLength(0);
+      expect(list().children).toHaveLength(4);
+    }
+  );
+
   test('[Listview-STYLE-008] grid Bordered ignores showBorder, which stays Legacy-only', async () => {
     // Break this catches: the Legacy toggle hiding the Bordered dividers.
     await mount(
