@@ -94,6 +94,17 @@ describe('Table pager (characterization)', () => {
     expect(selected().textContent.trim()).toBe('5');
   });
 
+  test.each([
+    [1, ['1', '2', '3']],
+    [2, ['1', '2', '3']],
+    [3, ['2', '3', '4']],
+    [8, ['7', '8', '9']],
+    [9, ['8', '9', '10']],
+  ])('[Table-PAG-002] page %i of 10 shows %j', (startPage, expected) => {
+    mount({ startPage });
+    expect(pageLabels()).toEqual(expected);
+  });
+
   test('[Table-PAG-003] on the last page the window is the final three and next and last are disabled', () => {
     mount({ startPage: 10 });
     expect(pageLabels()).toEqual(['8', '9', '10']);
