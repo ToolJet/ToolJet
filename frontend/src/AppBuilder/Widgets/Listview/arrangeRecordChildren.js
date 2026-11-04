@@ -33,7 +33,13 @@ const arrangeRow = (children, recordHeight) => {
   return Object.fromEntries(
     children.map((child, index) => {
       const { height } = child.layout;
-      const placed = { top: Math.max(0, Math.round((recordHeight - height) / 2)), left, width: widths[index], height };
+      // Past 43 children the row cannot fit them all: later ones overlap at the right edge rather than leave the card.
+      const placed = {
+        top: Math.max(0, Math.round((recordHeight - height) / 2)),
+        left: Math.min(left, NO_OF_GRIDS - widths[index]),
+        width: widths[index],
+        height,
+      };
       left += widths[index] + gap;
       return [child.id, placed];
     })
@@ -49,7 +55,9 @@ const arrangeStack = (children, recordHeight) => {
   let top = fits ? STACK_TOP : 0;
   return Object.fromEntries(
     children.map((child) => {
-      const placed = { top, left: STACK_LEFT, width: STACK_WIDTH, height: child.layout.height };
+      // Text fills the card; an Image or a Button keeps its own width so it stays at the left edge, as in the Figma card.
+      const width = child.componentName === 'Text' ? STACK_WIDTH : Math.min(child.layout.width, STACK_WIDTH);
+      const placed = { top, left: STACK_LEFT, width, height: child.layout.height };
       top += child.layout.height + gap;
       return [child.id, placed];
     })
