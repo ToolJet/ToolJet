@@ -1,6 +1,6 @@
 import './rating.scss';
 import React from 'react';
-import { useTrail } from 'react-spring';
+import { useTrail } from '@react-spring/web';
 import Label from '@/_ui/Label';
 import RatingIcon from './RatingIcon';
 import {
