@@ -282,9 +282,9 @@ export const listviewConfig = {
       accordian: 'Records',
     },
     gap: {
-      type: 'number',
+      type: 'numberInput',
       displayName: 'Gap',
-      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 12 },
       conditionallyRender: { key: 'listStyle', value: ['bordered', 'container', 'plain'] },
       accordian: 'Records',
     },
@@ -310,9 +310,11 @@ export const listviewConfig = {
       accordian: 'Records',
     },
     recordBorderRadius: {
-      type: 'number',
+      type: 'numberInput',
       displayName: 'Border radius',
-      validation: { schema: { type: 'number' }, defaultValue: 6 },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
+      prefixIcon: 'corners',
+      staticText: '',
       conditionallyRender: { key: 'listStyle', value: 'container' },
       accordian: 'Records',
     },
@@ -326,7 +328,7 @@ export const listviewConfig = {
     },
     backgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Background color',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
@@ -343,13 +345,15 @@ export const listviewConfig = {
       accordian: 'Container',
     },
     borderRadius: {
-      type: 'number',
+      type: 'numberInput',
       displayName: 'Border radius',
       validation: {
-        schema: { type: 'number' },
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         defaultValue: 6,
       },
       accordian: 'Container',
+      prefixIcon: 'corners',
+      staticText: '',
     },
     boxShadow: {
       type: 'boxShadow',

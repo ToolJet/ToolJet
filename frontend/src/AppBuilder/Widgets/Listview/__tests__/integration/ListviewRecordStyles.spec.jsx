@@ -375,7 +375,7 @@ const styleGroups = () =>
   }));
 const groupFields = (title) => styleGroups().find((group) => group.title === title)?.fields;
 
-const CONTAINER_FIELDS = ['Background color', 'Border', 'Border radius', 'Box shadow'];
+const CONTAINER_FIELDS = ['Background', 'Border', 'Border radius', 'Box shadow'];
 
 describe('Listview: the Styles tab follows List style', () => {
   // Legacy shows a code field (Show bottom border), and the code editor watches its own visibility.
