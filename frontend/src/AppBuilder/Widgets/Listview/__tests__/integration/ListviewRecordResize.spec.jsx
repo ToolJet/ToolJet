@@ -339,6 +339,61 @@ describe('Listview record resize: the click that ends a drag', () => {
   });
 });
 
+describe('Listview record resize: no copy hover starts or survives a resize', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const copies = () => [...document.querySelectorAll('.ele-txt1')];
+  const outlined = () => copies().map((node) => node.classList.contains('listview-copy-outline'));
+  // React's enter logic needs the pointer to come from somewhere else.
+  const pointerOver = (node, from) => fireEvent.mouseOver(node, { relatedTarget: from });
+
+  test('[Listview-RSZ-005] a copy the pointer crosses during the drag shows no outline after the release', async () => {
+    // Break this catches: the live resize moving the copy out from under the pointer, so mouseleave never comes and the dotted outline stays for good.
+    await mount(widget);
+    const handle = handles()[0];
+
+    fireEvent.mouseDown(handle, { clientX: 0, clientY: START_Y, button: 0 });
+    pointerOver(copies()[1], handle);
+    fireEvent.mouseMove(document, { clientX: 0, clientY: START_Y + 33 });
+    // The records moved; no mouseleave for the copy.
+    await waitFor(() => expect(heights()).toEqual(['130px', '130px', '130px']));
+    fireEvent.mouseUp(document, { clientX: 0, clientY: START_Y + 33 });
+
+    await waitFor(() => expect(raw('rowHeight').value).toBe(130));
+    expect(outlined()).toEqual([false, false, false]);
+  });
+
+  test('[Listview-RSZ-005] an outline that is already on when the press starts is cleared', async () => {
+    // Break this catches: a hover that began before the press and never gets its mouseleave because the copy moves.
+    await mount(widget);
+    pointerOver(copies()[1], rows()[0]);
+    await waitFor(() => expect(outlined()).toEqual([false, true, false]));
+
+    fireEvent.mouseDown(handles()[0], { clientX: 0, clientY: START_Y, button: 0 });
+
+    await waitFor(() => expect(outlined()).toEqual([false, false, false]));
+    fireEvent.mouseUp(document);
+  });
+
+  test('[Listview-RSZ-005] outside a resize, hovering a copy outlines it and leaving clears it, also after a resize', async () => {
+    // Break this catches: the resize guard staying on, so copies never outline again.
+    await mount(widget);
+    pointerOver(copies()[2], rows()[2]);
+    await waitFor(() => expect(outlined()).toEqual([false, false, true]));
+    fireEvent.mouseLeave(copies()[2]);
+    await waitFor(() => expect(outlined()).toEqual([false, false, false]));
+
+    drag(handles()[0], [33]);
+    await waitFor(() => expect(raw('rowHeight').value).toBe(130));
+
+    pointerOver(copies()[1], rows()[1]);
+    await waitFor(() => expect(outlined()).toEqual([false, true, false]));
+    fireEvent.mouseLeave(copies()[1]);
+    await waitFor(() => expect(outlined()).toEqual([false, false, false]));
+  });
+});
+
 describe('Listview record resize: cleanup and rendering', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
