@@ -7,6 +7,8 @@ import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArra
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 import './tags.scss';
 
 export const Tags = function Tags({
@@ -35,6 +37,7 @@ export const Tags = function Tags({
   } = properties;
   const { boxShadow, alignment, borderRadius, size } = styles;
 
+  const { inListviewRecord } = useSubcontainerContext();
   const isInitialRender = useRef(true);
   const containerRef = useRef(null);
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
@@ -266,6 +269,8 @@ export const Tags = function Tags({
       ...sizeStyles,
       boxSizing: 'border-box',
       minHeight: sizeStyles.height,
+      // In a ListView a chip never outgrows its box; its label ends with an ellipsis instead.
+      ...(inListviewRecord && { maxWidth: width, minWidth: 0 }),
     };
 
     const tagTitle = getSafeRenderableValue(item.title);
@@ -282,7 +287,7 @@ export const Tags = function Tags({
         aria-label={`${tagTitle}${hasIcon ? ' with icon' : ''}`}
       >
         {getTagIcon(item, tagDataCy)}
-        {tagTitle}
+        {inListviewRecord ? <OverflowTooltip style={{ minWidth: 0 }}>{tagTitle}</OverflowTooltip> : tagTitle}
       </span>
     );
   }
