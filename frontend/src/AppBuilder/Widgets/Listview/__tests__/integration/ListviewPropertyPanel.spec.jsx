@@ -26,7 +26,7 @@ jest.mock('@/AppBuilder/RightSideBar/Inspector/InspectorAccordion', () => ({
 
 import React from 'react';
 import { render } from '@testing-library/react';
-import { listviewConfig, textConfig } from '@tooljet/widget-definitions';
+import { listviewConfig, textConfig, tableConfig } from '@tooljet/widget-definitions';
 import useStore from '@/AppBuilder/_stores/store';
 import { seedApp } from '@/test/app-builder';
 import { DefaultComponent } from '@/AppBuilder/RightSideBar/Inspector/Components/DefaultComponent';
@@ -177,6 +177,14 @@ describe('List View property panel', () => {
     expect(columns.fieldMeta.type).toBe(listviewConfig.properties.rowsPerPage.type);
     expect(columns.paramLabel).toBe('Number of columns');
     expect(columns.initialValue).toBe('{{4}}');
+  });
+
+  test('[Listview-INSP-011] the Set page action labels its parameter "Page" like Table', () => {
+    // Break this catches: "Page number", a name Table's Set page action does not use.
+    const param = (config) => config.actions.find((action) => action.handle === 'setPage').params[0];
+
+    expect(param(listviewConfig)).toMatchObject({ handle: 'page', displayName: 'Page' });
+    expect(param(listviewConfig).displayName).toBe(param(tableConfig).displayName);
   });
 
   test('[Listview-INSP-003] a saved "grid" still shows Grid', () => {
