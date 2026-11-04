@@ -94,7 +94,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
 };
 
 const LISTVIEW_DATA_PROPERTIES = ['dataSourceSelector', 'data'];
-// Record height is one field: it edits the key of the layout in use, so `rowHeight` is not listed here.
+// Record height is one field: in grid layout `rowHeight` is swapped for `gridRecordHeight` below.
 const LISTVIEW_CONFIGURE_ORDER = [
   'mode',
   'rowHeight',
@@ -451,7 +451,7 @@ export const baseComponentProperties = (
     id: ADDITIONAL_ACTIONS_ACCORDION_ID,
     title:
       component.component.component === 'Listview'
-        ? 'Additional actions'
+        ? `${i18next.t('widget.listview.additionalActions', 'Additional actions')}`
         : `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
     isOpen: true,
     children: additionalActions?.map((property) => {
