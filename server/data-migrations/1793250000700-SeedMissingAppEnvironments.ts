@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-const MIGRATION_NAME = 'SeedMissingAppEnvironments1787563359142';
+const MIGRATION_NAME = 'SeedMissingAppEnvironments1793250000700';
 
 // Every organization needs the 3 app_environments rows (development/staging/production) to have
 // anything to key an internal_table_relations row against later. Organizations created through a
@@ -9,7 +9,7 @@ const MIGRATION_NAME = 'SeedMissingAppEnvironments1787563359142';
 // src/helpers/utils.helper.ts) can have zero rows here. Mirrors the shape of the sibling
 // EnsureDefaultBranchForAllOrganizations1781740800000 migration, which already backfills the
 // default branch unconditionally for every org — this does the same for environments.
-export class SeedMissingAppEnvironments1787563359142 implements MigrationInterface {
+export class SeedMissingAppEnvironments1793250000700 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     console.log(`${MIGRATION_NAME}: [START] Backfilling missing app_environments rows`);
 

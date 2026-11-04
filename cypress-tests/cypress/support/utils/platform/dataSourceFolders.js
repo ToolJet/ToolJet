@@ -225,7 +225,8 @@ export const openGroupGranularAccess = (groupName) => {
   cy.visit(`/${Cypress.env("workspaceSlug")}/workspace-settings/groups`);
   // The page auto-selects Admin once it loads; a click that lands before that is overridden, so wait for Admin's header, click, then wait for the clicked group's header.
   cy.get(groupTitle("Admin"), { timeout: 30000 }).should("be.visible");
-  cy.get(groupsSelector.groupLink(groupName)).click();
+  cy.get(groupsSelector.groupLink(groupName)).realHover({ position: "left" });
+  cy.get(groupsSelector.groupLink(groupName)).click("left");
   cy.get(groupTitle(groupName)).should("be.visible");
   uiOpenGranularAccessTab({ waitForUsers: !ROLE_GROUPS.includes(groupName) });
 };
