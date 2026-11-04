@@ -4,6 +4,7 @@
  */
 import useStore from '@/AppBuilder/_stores/store';
 import { seedApp, componentDefinition, binding } from '@/test/app-builder';
+import { useGridStore } from '@/_stores/gridStore';
 
 const MODULE_ID = 'canvas';
 const LV = 'lv1';
@@ -24,14 +25,22 @@ function child(id, name, type, layout, parent = LV) {
   return definition;
 }
 
-function seed({ mode = 'list', withChildren = true } = {}) {
-  const lv = componentDefinition(LV, 'listview1', 'Listview', {
-    dataSourceSelector: binding('rawJson'),
-    data: binding('{{[{ a: 1 }]}}'),
-    mode: binding(mode),
-    rowHeight: binding('80'),
-    gridRecordHeight: binding('150'),
-  });
+function seed({ mode = 'list', withChildren = true, properties = {}, styles, layout } = {}) {
+  const lv = componentDefinition(
+    LV,
+    'listview1',
+    'Listview',
+    {
+      dataSourceSelector: binding('rawJson'),
+      data: binding('{{[{ a: 1 }]}}'),
+      mode: binding(mode),
+      rowHeight: binding('80'),
+      gridRecordHeight: binding('150'),
+      ...properties,
+    },
+    { styles }
+  );
+  if (layout) lv.layouts = { desktop: layout };
   const other = componentDefinition(OTHER, 'listview2', 'Listview', {
     mode: binding('list'),
     rowHeight: binding('80'),
@@ -131,5 +140,26 @@ describe('Listview: Layout change re-arranges the record canvas', () => {
 
     expect(() => setMode('grid')).not.toThrow();
     expect(modeOf()).toBe('grid');
+  });
+
+  test('[Listview-GRID-001] the real column widths decide: a Button keeps its pixels in a narrow 3-column card and back', () => {
+    // Break this catches: keeping columns, so a Button of 8 list columns (~82px) turns into a 26px stub in a 3-column card.
+    // 15 columns of 30px = 450px wide; Bordered, gap 12, 3 columns: a list column is ~10.2px, a card column ~3.2px.
+    seed({
+      properties: { columns: binding('{{3}}') },
+      styles: { listStyle: binding('bordered'), gap: binding('{{12}}') },
+      layout: { top: 0, left: 0, width: 15, height: 624 },
+    });
+    useGridStore.getState().actions.setSubContainerWidths('canvas', 30);
+    useStore.getState().setComponentLayout({ btn: { top: 25, left: 3, width: 8, height: 30 } }, undefined, MODULE_ID, {
+      skipUndoRedo: true,
+      saveAfterAction: false,
+    });
+
+    setMode('grid');
+    expect(Math.abs(layoutOf('btn').width - 25)).toBeLessThanOrEqual(1);
+
+    setMode('list');
+    expect(Math.abs(layoutOf('btn').width - 8)).toBeLessThanOrEqual(1);
   });
 });
