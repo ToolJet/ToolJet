@@ -2399,8 +2399,8 @@ describe('Listview: state and layout that must follow the rows', () => {
     expect(exposed('selectedRecord')).toBeUndefined();
   });
 
-  test('[Listview-BUG-033] a selection the data still holds survives', async () => {
-    // Guard, not a bug: shrinking the data must not throw away a selection that is still valid.
+  test('[Listview-BUG-033] a selection is cleared when the data shrinks but still holds its record', async () => {
+    // Break this catches: keeping an index that now points into a different data value, which Table clears.
     await mount({ properties: { data: THREE } });
     await waitFor(() => expect(rows()).toHaveLength(3));
     await user().click(rows()[0]);
@@ -2411,7 +2411,8 @@ describe('Listview: state and layout that must follow the rows', () => {
     });
 
     await waitFor(() => expect(rows()).toHaveLength(2));
-    expect(exposed('selectedRecordId')).toBe(0);
+    expect(exposed('selectedRecordId')).toBeUndefined();
+    expect(exposed('selectedRecord')).toBeUndefined();
   });
 });
 

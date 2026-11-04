@@ -198,10 +198,9 @@ describe('Listview: selectedRecordIndex', () => {
     expect(exposed('selectedRecord')?.text1?.text).toBe('r5');
 
     await setData(records(10, 'x'));
-    await settle();
 
-    expect(exposed('selectedRecordIndex')).toBe(5);
-    expect(exposed('selectedRecord')?.text1?.text).not.toBe('x0');
+    await waitFor(() => expect(exposed('selectedRecord')).toBeUndefined());
+    expect(exposed('selectedRecordIndex')).toBeUndefined();
   });
 
   test('[Listview-SEL-006] the older variables keep their values after a click', async () => {

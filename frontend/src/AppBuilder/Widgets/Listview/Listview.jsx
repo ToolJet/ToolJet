@@ -299,29 +299,21 @@ export const Listview = function Listview({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const prevRecordCount = useRef(dataLength);
   const prevDataRef = useRef(data);
-  const recordCount = dataLength;
   const prevIsServerSideRef = useRef(isServerSide);
-  // The server index counts across pages, so it means nothing once the list stops (or starts) paging by server.
-  const serverPageLoaded =
-    (isServerSide && prevDataRef.current !== data) || prevIsServerSideRef.current !== isServerSide;
+  // Like Table, any new data value drops the selection; so does a server/client switch, as the index changes meaning.
+  const dataChanged = prevDataRef.current !== data || prevIsServerSideRef.current !== isServerSide;
   prevDataRef.current = data;
   prevIsServerSideRef.current = isServerSide;
-  if (prevRecordCount.current !== recordCount || serverPageLoaded) {
-    prevRecordCount.current = recordCount;
-    // A server page replaces the records, so an index into the old page points at a different record.
-    // A selection outlives its record otherwise, and a handler acts on a row the data no longer has.
-    if (selectedRowIndex !== undefined && (serverPageLoaded || selectedRowIndex >= recordCount)) {
-      setSelectedRowIndex(undefined);
-      setExposedVariables({
-        selectedRecordId: undefined,
-        selectedRecord: undefined,
-        selectedRowId: undefined,
-        selectedRow: undefined,
-        selectedRecordIndex: undefined,
-      });
-    }
+  if (dataChanged && selectedRowIndex !== undefined) {
+    setSelectedRowIndex(undefined);
+    setExposedVariables({
+      selectedRecordId: undefined,
+      selectedRecord: undefined,
+      selectedRowId: undefined,
+      selectedRow: undefined,
+      selectedRecordIndex: undefined,
+    });
   }
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
