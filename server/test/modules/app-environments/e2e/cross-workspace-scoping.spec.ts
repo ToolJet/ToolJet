@@ -9,14 +9,11 @@ import {
   initTestApp,
 } from 'test-helper';
 
-const EDITIONS: Array<{ label: string; edition: 'ee' | 'ce'; plan?: 'enterprise' }> = [
-  { label: 'EE (plan: enterprise)', edition: 'ee', plan: 'enterprise' },
-  { label: 'CE', edition: 'ce' },
-];
+const EDITIONS: Array<{ label: string; edition: 'ce'; plan?: undefined }> = [{ label: 'CE', edition: 'ce' }];
 
 /** @group platform */
 describe('AppEnvironmentsController', () => {
-  // EE overrides init, post-action and the list without calling super, so each edition runs its own implementation.
+  // EE overrides these without calling super; EE copy lives in ee/test/modules/app-environments.
   describe.each(EDITIONS)('$label', ({ edition, plan }) => {
     describe('workspace scoping of client-supplied ids', () => {
       let app: INestApplication;
