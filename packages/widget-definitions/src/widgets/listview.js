@@ -224,9 +224,29 @@ export const listviewConfig = {
         defaultValue: false,
       },
     },
+    paginationType: {
+      type: 'select',
+      displayName: 'Type',
+      options: [
+        { name: 'Client side', value: 'clientSide' },
+        { name: 'Server side', value: 'serverSide' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'clientSide',
+      },
+    },
     rowsPerPage: {
       type: 'code',
       displayName: 'Rows per page',
+      validation: {
+        schema: { type: 'number' },
+        defaultValue: 10,
+      },
+    },
+    totalRecords: {
+      type: 'code',
+      displayName: 'Total records',
       validation: {
         schema: { type: 'number' },
         defaultValue: 10,

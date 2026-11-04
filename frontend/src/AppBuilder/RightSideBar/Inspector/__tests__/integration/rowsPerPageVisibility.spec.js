@@ -14,16 +14,21 @@ import { baseComponentProperties } from '../../Components/DefaultComponent';
 const LV_ID = 'lv1';
 const state = () => useStore.getState();
 
-function visibleProperties(enablePaginationExpression) {
+function visibleProperties(enablePaginationExpression, paginationType) {
   const component = {
     id: LV_ID,
     component: {
       component: 'Listview',
-      definition: { properties: { enablePagination: { value: enablePaginationExpression } } },
+      definition: {
+        properties: {
+          enablePagination: { value: enablePaginationExpression },
+          ...(paginationType ? { paginationType: { value: paginationType } } : {}),
+        },
+      },
     },
   };
   const items = baseComponentProperties(
-    ['data', 'enablePagination', 'rowsPerPage'],
+    ['data', 'enablePagination', 'paginationType', 'rowsPerPage', 'totalRecords'],
     [],
     component,
     { properties: {} },
@@ -61,5 +66,37 @@ describe('Rows per page follows Enable pagination', () => {
     state().setExposedValue('tgl1', 'value', false);
 
     expect(visibleProperties('{{components.toggle1.value}}')).not.toContain('rowsPerPage');
+  });
+});
+
+describe('Pagination Type and Total records follow Enable pagination and Type', () => {
+  test('[Listview-SRV-009] pagination off hides Type, Rows per page and Total records', () => {
+    // Break this catches: showing pagination settings while the pager is off.
+    const shown = visibleProperties('{{false}}', 'serverSide');
+
+    expect(shown).not.toContain('paginationType');
+    expect(shown).not.toContain('rowsPerPage');
+    expect(shown).not.toContain('totalRecords');
+  });
+
+  test('[Listview-SRV-009] client side shows Type and Rows per page but not Total records', () => {
+    // Break this catches: asking for Total records on a list that counts its own data.
+    const shown = visibleProperties('{{true}}', 'clientSide');
+
+    expect(shown).toContain('paginationType');
+    expect(shown).toContain('rowsPerPage');
+    expect(shown).not.toContain('totalRecords');
+  });
+
+  test('[Listview-SRV-009] a saved list without Type is client side: Total records stays hidden', () => {
+    // Break this catches: treating a missing Type as server side.
+    expect(visibleProperties('{{true}}')).not.toContain('totalRecords');
+  });
+
+  test('[Listview-SRV-009] server side shows Type, Rows per page and Total records', () => {
+    // Break this catches: hiding Total records when it is the field server side needs.
+    const shown = visibleProperties('{{true}}', 'serverSide');
+
+    expect(shown).toEqual(expect.arrayContaining(['paginationType', 'rowsPerPage', 'totalRecords']));
   });
 });

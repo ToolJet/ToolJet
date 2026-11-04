@@ -11,6 +11,7 @@ import {
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
+import { resolveListviewHeightFromRows } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
 const ID = 'lv1';
 const NAME = 'listview1';
@@ -248,5 +249,28 @@ describe('Listview: server-side pagination', () => {
     await setProperty('totalRecords', '{{11}}');
     await widget.act('setPage', 9);
     await waitFor(() => expect(exposed('pageIndex')).toBe(3));
+  });
+
+  test('[Listview-SRV-010] dynamic height counts every rendered server row, not one page', async () => {
+    // Break this catches: sizing a server list for rowsPerPage rows while it renders every row of data.
+    const PAGER_ALLOWANCE = 61;
+    await mount({ properties: { data: binding(records(8)) } }, 8);
+    const heightNow = () => {
+      const state = store();
+      return resolveListviewHeightFromRows({
+        componentId: ID,
+        contextIndices: null,
+        component: state.getResolvedComponent(ID),
+        currentLayout: 'desktop',
+        currentPageComponents: state.getCurrentPageComponents(MODULE_ID),
+        temporaryLayouts: {},
+        moduleId: MODULE_ID,
+      });
+    };
+    const server = heightNow();
+    await setProperty('enablePagination', '{{false}}');
+    await waitFor(() => expect(heightNow()).not.toBe(server));
+
+    expect(server).toBe(heightNow() + PAGER_ALLOWANCE);
   });
 });

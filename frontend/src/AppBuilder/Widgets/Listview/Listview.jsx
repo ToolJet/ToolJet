@@ -67,6 +67,8 @@ export const Listview = function Listview({
     showBorder,
     rowsPerPage = 10,
     enablePagination = false,
+    paginationType = 'clientSide',
+    totalRecords,
     mode: rawMode = 'list',
     columns = 1,
     dataSourceSelector,
@@ -248,7 +250,12 @@ export const Listview = function Listview({
   const currentPageRef = useRef(currentPage);
   currentPageRef.current = currentPage;
   const lastPageRef = useRef(1);
-  const lastPage = enablePagination ? Math.max(1, Math.ceil((_.isArray(data) ? data.length : 0) / rowPerPageValue)) : 1;
+  const isServerSide = enablePagination && paginationType === 'serverSide';
+  const dataLength = _.isArray(data) ? data.length : 0;
+  // Empty, zero, negative or not a number is not a count: use the rows in hand until the app supplies one.
+  const totalCount = Number(totalRecords);
+  const pagerCount = isServerSide && Number.isFinite(totalCount) && totalCount > 0 ? totalCount : dataLength;
+  const lastPage = enablePagination ? Math.max(1, Math.ceil(pagerCount / rowPerPageValue)) : 1;
   lastPageRef.current = lastPage;
   // The list owns the clamp (data, rowsPerPage or pagination changed) so the pager never reports one.
   if (currentPage > lastPage) setCurrentPage(lastPage);
@@ -287,12 +294,16 @@ export const Listview = function Listview({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const prevRecordCount = useRef(_.isArray(data) ? data.length : 0);
-  const recordCount = _.isArray(data) ? data.length : 0;
-  if (prevRecordCount.current !== recordCount) {
+  const prevRecordCount = useRef(dataLength);
+  const prevDataRef = useRef(data);
+  const recordCount = dataLength;
+  const serverPageLoaded = isServerSide && prevDataRef.current !== data;
+  prevDataRef.current = data;
+  if (prevRecordCount.current !== recordCount || serverPageLoaded) {
     prevRecordCount.current = recordCount;
+    // A server page replaces the records, so an index into the old page points at a different record.
     // A selection outlives its record otherwise, and a handler acts on a row the data no longer has.
-    if (selectedRowIndex !== undefined && selectedRowIndex >= recordCount) {
+    if (selectedRowIndex !== undefined && (serverPageLoaded || selectedRowIndex >= recordCount)) {
       setSelectedRowIndex(undefined);
       setExposedVariables({
         selectedRecordId: undefined,
@@ -306,7 +317,7 @@ export const Listview = function Listview({
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
   const filteredData = _.isArray(data)
-    ? enablePagination
+    ? enablePagination && !isServerSide
       ? data.slice(startIndexOfRowInThePage, endIndexOfRowInThePage)
       : data
     : [];
@@ -541,7 +552,7 @@ export const Listview = function Listview({
                     darkMode={darkMode}
                     currentPage={currentPage}
                     pageChanged={pagerPageChanged}
-                    count={data?.length}
+                    count={pagerCount}
                     itemsPerPage={rowPerPageValue}
                   />
                 ) : (

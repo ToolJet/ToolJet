@@ -248,8 +248,14 @@ export const baseComponentProperties = (
   };
   if (component.component.component === 'Listview') {
     // Resolved against the live store, so a binding to another component is read rather than dropped.
-    if (!useStore.getState().getResolvedValue(component.component.definition.properties?.enablePagination?.value)) {
-      properties = properties.filter((property) => property !== 'rowsPerPage');
+    const { getResolvedValue } = useStore.getState();
+    const listviewProperties = component.component.definition.properties;
+    if (!getResolvedValue(listviewProperties?.enablePagination?.value)) {
+      properties = properties.filter(
+        (property) => !['rowsPerPage', 'paginationType', 'totalRecords'].includes(property)
+      );
+    } else if (getResolvedValue(listviewProperties?.paginationType?.value) !== 'serverSide') {
+      properties = properties.filter((property) => property !== 'totalRecords');
     }
   }
   let items = [];

@@ -424,11 +424,18 @@ const getExtraContainerHeight = ({
 
 // Rendered row count in a Listview, respecting pagination.
 const getListviewRenderedRowCount = (componentProperties = {}) => {
-  const { dataSourceSelector, data, enablePagination = false, rowsPerPage = 10 } = componentProperties;
+  const {
+    dataSourceSelector,
+    data,
+    enablePagination = false,
+    paginationType = 'clientSide',
+    rowsPerPage = 10,
+  } = componentProperties;
   const resolvedData = dataSourceSelector === 'rawJson' ? data : dataSourceSelector;
   const totalRows = Array.isArray(resolvedData) ? resolvedData.length : 0;
 
-  if (!enablePagination) {
+  // Server side renders the whole of `data`: the query already returned one page.
+  if (!enablePagination || paginationType === 'serverSide') {
     return totalRows;
   }
 
