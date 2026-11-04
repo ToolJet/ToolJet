@@ -11,6 +11,7 @@ import {
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
+import useStore from '@/AppBuilder/_stores/store';
 import { resolveListviewHeightFromRows } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
 const ID = 'lv1';
@@ -272,5 +273,186 @@ describe('Listview: server-side pagination', () => {
     await waitFor(() => expect(heightNow()).not.toBe(server));
 
     expect(server).toBe(heightNow() + PAGER_ALLOWANCE);
+  });
+
+  test('[Listview-SRV-011] a query run (data and Total records empty, then back) keeps the page', async () => {
+    // Break this catches: clamping to page 1 while the bound query runs, which strands the list on page 1.
+    await mount({ events: PAGE_EVENTS });
+    await widget.act('setPage', 3);
+    await waitFor(() => expect(exposed('pageIndex')).toBe(3));
+    const seen = [];
+    const unsubscribe = useStore.subscribe(() => seen.push(exposed('pageIndex')));
+
+    await setProperty('data', '{{[]}}');
+    await setProperty('totalRecords', '{{undefined}}');
+    await settle();
+    await setData(records(5, 'n'));
+    await setProperty('totalRecords', '{{23}}');
+    await waitFor(() => expect(rowTexts()[0]).toBe('n0'));
+    await settle();
+    unsubscribe();
+
+    expect(exposed('pageIndex')).toBe(3);
+    expect(seen.filter((page) => page !== undefined && page !== 3)).toEqual([]);
+    expect(fired('pageCalls')).toBe(0);
+  });
+
+  test('[Listview-SRV-012] with a valid Total records the pager stays while data is empty', async () => {
+    // Break this catches: hiding the pager on an empty page, which leaves the user no way back.
+    await mount();
+    await widget.act('setPage', 3);
+    await waitFor(() => expect(exposed('pageIndex')).toBe(3));
+
+    await setData('{{[]}}');
+
+    await waitFor(() => expect(rows()).toHaveLength(0));
+    expect(totalShown()).toBe('23');
+    expect(document.querySelector('[data-cy="first-page-link"]')).toBeInTheDocument();
+    expect(exposed('pageIndex')).toBe(3);
+  });
+
+  test.each([
+    ['a fraction below one', '{{0.5}}', 1],
+    ['a fraction between pages', '{{5.5}}', 2],
+  ])(
+    '[Listview-SRV-013] Total records %s counts pages like the pager and fires no event',
+    async (_label, total, page) => {
+      // Break this catches: a page count the shared pager disagrees with, which it then "fixes" as a user page change.
+      await mount({ events: PAGE_EVENTS, properties: { totalRecords: binding(total) } });
+      await widget.act('setPage', 2);
+      await waitFor(() => expect(exposed('pageIndex')).toBe(Math.min(2, page === 1 ? 1 : 2)));
+      await settle();
+
+      expect(exposed('pageIndex')).toBe(page === 1 ? 1 : 2);
+      expect(fired('pageCalls')).toBe(0);
+    }
+  );
+
+  test('[Listview-SRV-014] leaving server side clears a selection counted across pages', async () => {
+    // Break this catches: an index of 10 left standing on a client list of 5 records.
+    await mount();
+    await widget.act('setPage', 3);
+    await waitFor(() => expect(exposed('pageIndex')).toBe(3));
+    await user().click(rows()[0]);
+    await waitFor(() => expect(exposed('selectedRecordIndex')).toBe(10));
+
+    await setProperty('paginationType', 'clientSide');
+
+    await waitFor(() => expect(exposed('selectedRecordIndex')).toBeUndefined());
+    expect(exposed('selectedRecordId')).toBeUndefined();
+    expect(exposed('selectedRecord')).toBeUndefined();
+  });
+
+  test('[Listview-SRV-014] turning pagination off clears a selection counted across pages', async () => {
+    // Break this catches: the same stale index after the pager is switched off.
+    await mount();
+    await widget.act('setPage', 3);
+    await waitFor(() => expect(exposed('pageIndex')).toBe(3));
+    await user().click(rows()[0]);
+    await waitFor(() => expect(exposed('selectedRecordIndex')).toBe(10));
+
+    await setProperty('enablePagination', '{{false}}');
+
+    await waitFor(() => expect(exposed('selectedRecordIndex')).toBeUndefined());
+    expect(exposed('selectedRecord')).toBeUndefined();
+  });
+});
+
+describe('Listview: a server-side list nested in a record', () => {
+  const NESTED = `{{[{ name: 'o1', items: [{ name: 'a' }, { name: 'b' }] }, { name: 'o2', items: [{ name: 'c' }] }]}}`;
+  const inner = () => {
+    const definition = componentDefinition('lv2', 'listview2', 'Listview', {
+      dataSourceSelector: binding('rawJson'),
+      data: binding('{{listItem.items}}'),
+      mode: binding('list'),
+      columns: binding('{{1}}'),
+      rowHeight: binding('100'),
+      loadingState: binding('{{false}}'),
+      dynamicHeight: binding('{{false}}'),
+      visibility: binding('{{true}}'),
+      collapseWhenHidden: binding('{{false}}'),
+      disabledState: binding('{{false}}'),
+      showBorder: binding('{{true}}'),
+      rowsPerPage: binding('{{5}}'),
+      enablePagination: binding('{{true}}'),
+      paginationType: binding('serverSide'),
+      totalRecords: binding('{{12}}'),
+    });
+    definition.component.parent = ID;
+    definition.component.definition.styles = {};
+    definition.component.definition.others = {
+      showOnDesktop: binding('{{true}}'),
+      showOnMobile: binding('{{false}}'),
+    };
+    return definition;
+  };
+  const innerText = () => {
+    const definition = componentDefinition('txt2', 'text2', 'Text', { text: binding('{{listItem.name}}') });
+    definition.component.parent = 'lv2';
+    definition.component.definition.styles = {};
+    definition.component.definition.others = {
+      showOnDesktop: binding('{{true}}'),
+      showOnMobile: binding('{{false}}'),
+    };
+    return definition;
+  };
+  const nested = createWidgetHarness({
+    componentType: 'Listview',
+    handle: NAME,
+    id: ID,
+    defaultProperties: {
+      dataSourceSelector: binding('rawJson'),
+      data: binding(NESTED),
+      mode: binding('list'),
+      columns: binding('{{1}}'),
+      rowHeight: binding('400'),
+      loadingState: binding('{{false}}'),
+      dynamicHeight: binding('{{false}}'),
+      visibility: binding('{{true}}'),
+      collapseWhenHidden: binding('{{false}}'),
+      disabledState: binding('{{false}}'),
+      showBorder: binding('{{true}}'),
+      rowsPerPage: binding('{{10}}'),
+      enablePagination: binding('{{false}}'),
+    },
+    defaultStyles: {
+      backgroundColor: binding('var(--cc-surface1-surface)'),
+      borderColor: binding('var(--cc-weak-border)'),
+    },
+    defaultExtraComponents: { lv2: inner(), txt2: innerText() },
+    capabilities: { dnd: true },
+    widgetHeight: 800,
+    widgetWidth: 600,
+  });
+  const innerRows = () => [...document.querySelectorAll('.list-item .list-item')];
+  const innerSelected = () =>
+    useStore.getState().resolvedStore.modules[MODULE_ID].exposedValues.components.lv2?.[0]?.selectedRecordIndex;
+
+  beforeEach(nested.setup);
+  afterEach(nested.teardown);
+
+  test('[Listview-SRV-015] an unrelated change keeps the inner selection; new outer data clears it', async () => {
+    // Break this catches: a fresh inner data reference on every outer update, which wipes the inner selection.
+    nested.render({ currentMode: 'view' });
+    await waitFor(() => expect(innerRows().length).toBeGreaterThan(0));
+    await nested.session.user.click(innerRows()[1]);
+    await waitFor(() => expect(innerSelected()).toBe(1));
+
+    await nested.session.store.act(() => {
+      store().setVariable('sfx', '!', MODULE_ID);
+    });
+    await settle();
+    expect(innerSelected()).toBe(1);
+
+    await nested.session.store.act(() => {
+      nested.setComponentProperty(
+        ID,
+        'data',
+        binding(`{{[{ name: 'o1', items: [{ name: 'x' }, { name: 'y' }] }, { name: 'o2', items: [{ name: 'c' }] }]}}`)
+          .value,
+        'properties'
+      );
+    });
+    await waitFor(() => expect(innerSelected()).toBeUndefined());
   });
 });
