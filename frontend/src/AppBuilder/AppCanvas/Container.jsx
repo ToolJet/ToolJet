@@ -322,6 +322,8 @@ const Container = React.memo(
         // Sub-canvases get their own data-cy so the app canvas selector matches one element.
         data-cy={id === 'canvas' ? 'real-canvas' : 'sub-canvas'}
         data-parentId={id}
+        // Read by the drop and grid helpers, which work from the DOM and cannot see React context.
+        data-listview-copy={listviewCopy ? 'true' : undefined}
         canvas-height={canvasHeight}
         onClick={handleCanvasClick}
         component-type={componentType}

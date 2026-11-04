@@ -1,10 +1,8 @@
-// True while a dragged or resized component (or a group selection) sits in the list's records, not its header.
-export const isMovingInListview = (state, listviewId, moduleId) => {
-  const moving = [state.draggingComponentId, state.resizingComponentId];
-  if (state.isGroupDragging || state.isGroupResizing) moving.push(...state.selectedComponents);
+// Does one of these components sit in the list's records (nested included, header excluded)?
+const hasComponentInRecords = (state, componentIds, listviewId, moduleId) => {
   const headerId = `${listviewId}-header`;
-  return moving.some((componentId) => {
-    let parent = state.getComponentDefinition?.(componentId, moduleId)?.component?.parent;
+  return componentIds.some((componentId) => {
+    let parent = componentId && state.getComponentDefinition?.(componentId, moduleId)?.component?.parent;
     for (let depth = 0; parent && depth < 20; depth += 1) {
       if (parent === headerId) return false;
       if (parent === listviewId || parent.startsWith(`${listviewId}-`)) return true;
@@ -17,3 +15,12 @@ export const isMovingInListview = (state, listviewId, moduleId) => {
     return false;
   });
 };
+
+export const isMovingInListview = (state, listviewId, moduleId) => {
+  const moving = [state.draggingComponentId, state.resizingComponentId];
+  if (state.isGroupDragging || state.isGroupResizing) moving.push(...state.selectedComponents);
+  return hasComponentInRecords(state, moving, listviewId, moduleId);
+};
+
+export const isSelectedInListview = (state, listviewId, moduleId) =>
+  hasComponentInRecords(state, state.selectedComponents, listviewId, moduleId);

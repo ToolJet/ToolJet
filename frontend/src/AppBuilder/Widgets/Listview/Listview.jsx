@@ -15,7 +15,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import SubcontainerContext, { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { ListviewSubcontainer } from './ListviewSubcontainer';
 import { ListviewEmptyState } from './ListviewEmptyState';
-import { isMovingInListview } from './isMovingInListview';
+import { isMovingInListview, isSelectedInListview } from './isMovingInListview';
 import { HorizontalSlot } from '@/AppBuilder/Widgets/Form/Components/HorizontalSlot';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 import cx from 'classnames';
@@ -35,6 +35,7 @@ import {
 } from './listStyleLayout';
 
 const HOVER_THROTTLE_MS = 200;
+const NO_RECORDS = [];
 
 export const Listview = function Listview({
   id,
@@ -53,9 +54,16 @@ export const Listview = function Listview({
   componentType,
 }) {
   const { moduleId } = useModuleContext();
-  const { contextPath, listviewCopy: insideCopy = false } = useSubcontainerContext();
+  const {
+    contextPath,
+    listviewCopy: insideCopy = false,
+    listviewCopyOutline: insideCopyOutline,
+  } = useSubcontainerContext();
   // The header is not row-scoped (same path as the ListView), but its Text and Button follow the record overflow rule.
-  const headerContext = useMemo(() => ({ contextPath, inListviewRecord: true }), [contextPath]);
+  const headerContext = useMemo(
+    () => ({ contextPath, inListviewRecord: true, listviewCopy: insideCopy, listviewCopyOutline: insideCopyOutline }),
+    [contextPath, insideCopy, insideCopyOutline]
+  );
   const parentIndices = useMemo(() => contextPath.map((s) => s.index), [contextPath]);
   const childComponentCount = useStore((state) => (state.containerChildrenMapping?.[id] || []).length);
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
@@ -179,6 +187,7 @@ export const Listview = function Listview({
   const [mainRecordHovered, setMainRecordHovered] = useState(false);
   const isBuilder = currentMode === 'edit';
   const isMovingInside = useStore((state) => isBuilder && isMovingInListview(state, id, moduleId));
+  const isSelectedInside = useStore((state) => isBuilder && isSelectedInListview(state, id, moduleId));
   const [positiveColumns, setPositiveColumns] = useState(columns);
 
   const recordBoxStyle = useMemo(() => {
@@ -330,15 +339,24 @@ export const Listview = function Listview({
     });
   }
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
-  // Builder only: the others fade while the pointer or an edit is on the main record (record 1 of page 1).
   const hasMainRecord = isBuilder && !insideCopy && startIndexOfRowInThePage === 0;
-  const fadeOthers = hasMainRecord && (mainRecordHovered || isMovingInside);
+  const fadeOthers = hasMainRecord && (mainRecordHovered || isMovingInside || isSelectedInside);
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
-  const filteredData = _.isArray(data)
-    ? enablePagination && !isServerSide
-      ? data.slice(startIndexOfRowInThePage, endIndexOfRowInThePage)
-      : data
-    : [];
+  // Stable between renders, so a hover re-render does not deep-diff the page again.
+  const filteredData = useMemo(
+    () =>
+      _.isArray(data)
+        ? enablePagination && !isServerSide
+          ? data.slice(startIndexOfRowInThePage, endIndexOfRowInThePage)
+          : data
+        : NO_RECORDS,
+    [data, enablePagination, isServerSide, startIndexOfRowInThePage, endIndexOfRowInThePage]
+  );
+
+  // Record 1 can vanish under the pointer, and no mouseleave follows.
+  useEffect(() => {
+    if (!hasMainRecord || filteredData.length === 0) setMainRecordHovered(false);
+  }, [hasMainRecord, filteredData.length]);
 
   // Check if parentIndices changed (component moved into/out of a ListView)
   const parentIndicesChanged =
@@ -346,11 +364,10 @@ export const Listview = function Listview({
     parentIndices.some((val, idx) => val !== prevParentIndicesRef.current[idx]);
 
   // Check if the previous filtered data is different from the current filtered data
-  if (
-    Object.keys(diff(filteredData, prevFilteredDataRef.current)).length > 0 ||
-    childComponentCount !== prevChildComponentCount.current ||
-    parentIndicesChanged
-  ) {
+  const filteredDataChanged =
+    filteredData !== prevFilteredDataRef.current &&
+    Object.keys(diff(filteredData, prevFilteredDataRef.current)).length > 0;
+  if (filteredDataChanged || childComponentCount !== prevChildComponentCount.current || parentIndicesChanged) {
     const childrenChanged = childComponentCount !== prevChildComponentCount.current;
     prevFilteredDataRef.current = filteredData;
     prevParentIndicesRef.current = parentIndices;
@@ -373,6 +390,9 @@ export const Listview = function Listview({
     }
     // Runs even at zero rows: this is the call that drops rows the data no longer has.
     initExposedValueArrayForChildren(id, filteredData.length, moduleId, parentIndices);
+  } else {
+    // Same content in a new array: remember it so the next render skips the deep diff.
+    prevFilteredDataRef.current = filteredData;
   }
 
   // Callbacks read the current page through a ref so their identity does not change every render.

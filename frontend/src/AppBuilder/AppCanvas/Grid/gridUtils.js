@@ -514,6 +514,10 @@ export function showGridLines() {
     ) {
       return false;
     }
+    // Only record 1 of page 1 is editable, so only it shows the grid.
+    if (element.getAttribute('data-listview-copy') === 'true') {
+      return false;
+    }
     return true;
   });
   elementsArray.forEach(function (element) {
@@ -774,6 +778,16 @@ export const isPointerOverCanvasArea = (clientX, clientY) => {
  * @param {string} currentTargetId - The ID of the currently dragged element to exclude from search
  * @returns {string|null} - The new parent ID or null if no valid parent is found
  */
+// True when the topmost canvas under the pointer is a read-only ListView record; a drop there must be refused.
+export const isListviewCopyCanvasAtPoint = (clientX, clientY, excludeIds = []) => {
+  const canvas = document
+    .elementsFromPoint?.(clientX, clientY)
+    ?.find(
+      (ele) => ele.classList.contains('real-canvas') && !excludeIds.includes(ele.id.replace('canvas-', '').slice(0, 36))
+    );
+  return canvas?.getAttribute('data-listview-copy') === 'true';
+};
+
 export const findNewParentIdFromMousePosition = (clientX, clientY, currentTargetId) => {
   if (!document.elementFromPoint(clientX, clientY)) {
     return null;

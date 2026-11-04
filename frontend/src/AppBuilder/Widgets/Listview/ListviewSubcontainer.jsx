@@ -7,7 +7,7 @@ import SubcontainerContext, { useSubcontainerContext } from '@/AppBuilder/_conte
 import { getDynamicLayoutKey } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 import cx from 'classnames';
 
-export const ListviewSubcontainer = ({
+const ListviewSubcontainerComponent = ({
   index,
   moduleId,
   mode,
@@ -39,13 +39,16 @@ export const ListviewSubcontainer = ({
   const parentContext = useSubcontainerContext();
   // The first record of page 1 is the only editable one; a page-relative index cannot tell it from page 2's first.
   const isCopy = !!parentContext.listviewCopy || recordOffset + index !== 0;
+  // The first record of a later page is read-only but is no copy of a record-1 selection.
+  const copyOutline = parentContext.listviewCopy ? (parentContext.listviewCopyOutline ?? true) : isCopy && index !== 0;
   const contextValue = useMemo(
     () => ({
       contextPath: [...parentContext.contextPath, { containerId: id, index }],
       inListviewRecord: true,
       listviewCopy: isCopy,
+      listviewCopyOutline: copyOutline,
     }),
-    [parentContext.contextPath, id, index, isCopy]
+    [parentContext.contextPath, id, index, isCopy, copyOutline]
   );
   const contextIndices = useMemo(
     () => [...parentContext.contextPath.map((segment) => segment.index), index],
@@ -77,7 +80,7 @@ export const ListviewSubcontainer = ({
     <SubcontainerContext.Provider value={contextValue}>
       <div
         className={cx('list-item', {
-          'listview-record-moving': isBuilder && isMoving,
+          'listview-record-moving': isMoving,
           'w-100': mode == 'list',
           'listview-legacy-divider': showBorder && mode == 'list',
         })}
@@ -141,3 +144,5 @@ export const ListviewSubcontainer = ({
     </SubcontainerContext.Provider>
   );
 };
+
+export const ListviewSubcontainer = React.memo(ListviewSubcontainerComponent);

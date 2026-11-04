@@ -606,7 +606,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         }
       }
 
-      const isParentChangeAllowed = restrictedWidgetsTobeDropped?.length === 0 && !nestingDepthExceeded;
+      const isParentChangeAllowed =
+        restrictedWidgetsTobeDropped?.length === 0 && !nestingDepthExceeded && !dragContext.targetIsListviewCopy;
 
       const isParentModuleContainer = isTargetModuleContainer(targetSlotId, isModuleEditor);
 
@@ -645,7 +646,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           setSelectedComponents([]);
         } else if (isParentModuleContainer) {
           toast.error('Modules cannot be edited inside an app');
-        } else if (!isParentChangeAllowed) {
+        } else if (!isParentChangeAllowed && !dragContext.targetIsListviewCopy) {
           toast.error(
             `${restrictedWidgetsTobeDropped} is not compatible as a child component of ${getDropTargetLabel(
               parentWidgetType,
@@ -1196,7 +1197,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
               if (isParentModuleContainer) {
                 toast.error('Modules cannot be edited inside an app');
-              } else if (!isModalToCanvas) {
+              } else if (!isModalToCanvas && !dragContext.targetIsListviewCopy) {
                 toast.error(
                   `${dragged.widgetType} is not compatible as a child component of ${getDropTargetLabel(
                     target.widgetType,

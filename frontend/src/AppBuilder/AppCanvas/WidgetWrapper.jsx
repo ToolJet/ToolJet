@@ -55,7 +55,7 @@ const WidgetWrapper = memo(
     flexDirection = 'column',
     flexShouldStack = false,
   }) => {
-    const { contextPath, listviewCopy = false } = useSubcontainerContext();
+    const { contextPath, listviewCopy = false, listviewCopyOutline = true } = useSubcontainerContext();
     const indices = useMemo(() => {
       const result = contextPath.map((s) => s.index);
       return result.length > 0 ? result : null;
@@ -103,9 +103,11 @@ const WidgetWrapper = memo(
     );
 
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
-    // A copy in a later ListView record: outlined when its original is selected, or when the pointer is on it.
     const isListviewCopy = listviewCopy && readOnly && mode === 'edit';
-    const isSelectedElsewhere = useStore((state) => isListviewCopy && state.selectedComponents.includes(id), shallow);
+    const isSelectedElsewhere = useStore(
+      (state) => isListviewCopy && listviewCopyOutline && state.selectedComponents.includes(id),
+      shallow
+    );
     const [isCopyHovered, setIsCopyHovered] = useState(false);
     const isDragging = useStore((state) => state.draggingComponentId === id);
     const isResizing = useStore((state) => state.resizingComponentId === id);
@@ -263,7 +265,7 @@ const WidgetWrapper = memo(
             [`widget-${id} nested-target`]: id !== 'canvas' && !readOnly,
             'position-absolute': isGridLayout && readOnly,
             'active-target': isWidgetActive,
-            'non-dragging-component': isListviewCopy && (isSelectedElsewhere || isCopyHovered),
+            'listview-copy-outline': isListviewCopy && (isSelectedElsewhere || isCopyHovered),
             'opacity-0 pointer-events-none': isDragging || isResizing,
             'module-container': isModuleContainer,
             'dynamic-height-target': isDynamicHeightEnabled,
@@ -279,14 +281,9 @@ const WidgetWrapper = memo(
           data-module-id={moduleId || 'canvas'}
           style={outerStyle}
           onClickCapture={isModuleViewerWidget && mode === 'edit' ? handleModuleClickCapture : undefined}
-          // mouseover bubbles, so the innermost copy under the pointer wins.
+          // Only the wrapper nearest the pointer counts, so a parent copy drops its outline once a child is hovered.
           onMouseOver={
-            isListviewCopy
-              ? (e) => {
-                  e.stopPropagation();
-                  setIsCopyHovered(true);
-                }
-              : undefined
+            isListviewCopy ? (e) => setIsCopyHovered(e.target.closest('[widgetid]') === e.currentTarget) : undefined
           }
           onMouseEnter={() => {
             if (isDragging || isModuleContainer) return;
