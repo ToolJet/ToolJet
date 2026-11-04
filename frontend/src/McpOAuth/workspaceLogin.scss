@@ -1,0 +1,98 @@
+.login-form .mcp-workspace-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 19px;
+  border: 1px solid var(--border-weak);
+  border-radius: 10px;
+  background: var(--button-outline);
+  box-shadow: var(--elevation-100-box-shadow);
+  color: var(--text-default);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  cursor: pointer;
+
+  svg {
+    flex-shrink: 0;
+    color: var(--icon-strong);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--border-default);
+    background: var(--button-outline-hover);
+  }
+
+  &:active:not(:disabled) {
+    background: var(--button-outline-pressed);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--interactive-focus-outline);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+}
+
+.mcp-workspace-entry {
+  .submit-button {
+    width: 100%;
+  }
+
+  .mcp-workspace-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: var(--text-placeholder);
+    font-size: 12px;
+    line-height: 18px;
+
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-weak);
+    }
+  }
+}
+
+.mcp-workspace-login {
+  .signup-info {
+    margin: 8px 0 32px;
+    font-size: 14px;
+  }
+
+  .mcp-workspace-back {
+    margin-top: 12px;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+
+    &:hover:not(:disabled) {
+      border-color: transparent;
+    }
+  }
+
+  .submit-button {
+    width: 100%;
+
+    svg {
+      display: none;
+    }
+  }
+
+  .mcp-workspace-error {
+    color: var(--text-danger);
+    margin-bottom: 16px;
+  }
+}
