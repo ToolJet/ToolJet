@@ -73,9 +73,10 @@ describe('Listview: Layout change re-arranges the record canvas', () => {
     setMode('grid');
 
     const stack = ['btn', 'img', 'txt'].map((id) => layoutOf(id));
-    // Left edge for all; Text takes the card width, the Image and the Button keep their own.
+    // Left edge for all; Text takes the card width. The default 3 columns make a card column a third of a list column,
+    // so the Image keeps its pixels as 18 columns and the 17-column Button is capped at the card.
     stack.forEach((layout) => expect(layout.left).toBe(1));
-    expect(stack.map((layout) => layout.width)).toEqual([17, 6, 41]);
+    expect(stack.map((layout) => layout.width)).toEqual([41, 18, 41]);
     expect(stack[0].top).toBeLessThan(stack[1].top);
     expect(stack[1].top).toBeLessThan(stack[2].top);
     expect(layoutOf('hdr')).toEqual({ top: 10, left: 1, width: 20, height: 40 });
@@ -93,7 +94,8 @@ describe('Listview: Layout change re-arranges the record canvas', () => {
 
     expect(layoutOf('img')).toEqual({ top: 10, left: 3, width: 6, height: 60 });
     expect(layoutOf('txt')).toEqual({ top: 25, left: 11, width: 12, height: 30 });
-    expect(layoutOf('btn')).toEqual({ top: 25, left: 25, width: 17, height: 30 });
+    // The Button was capped at the card on the way to Grid, so it comes back at the card's pixel width.
+    expect(layoutOf('btn')).toEqual({ top: 25, left: 25, width: 14, height: 30 });
   });
 
   test('[Listview-GRID-007] one undo restores the old Layout and every child position, a moved one included', () => {

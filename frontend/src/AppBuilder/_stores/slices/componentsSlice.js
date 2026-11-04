@@ -32,6 +32,8 @@ import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/C
 import {
   ROW_SCOPED_WIDGET_TYPES,
   NESTING_LEVEL_LIMITS,
+  NO_OF_GRIDS,
+  DEFAULT_CANVAS_WIDTH,
   isListviewHeaderSlot,
   isRowScopedCanvas,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
@@ -43,7 +45,8 @@ import {
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { arrangeRecordChildren } from '@/AppBuilder/Widgets/Listview/arrangeRecordChildren';
-import { getRecordHeight } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
+import { getRecordHeight, getRecordColumnPx } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
+import { useGridStore } from '@/_stores/gridStore';
 import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
 
 // calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
@@ -2335,7 +2338,28 @@ export const createComponentsSlice = (set, get) => ({
         layout: pageComponents[id]?.layouts?.[currentLayout],
       }))
       .filter((child) => child.layout && !isNaN(child.layout.top) && !isNaN(child.layout.left));
-    const layouts = arrangeRecordChildren(children, { toMode, fromMode, recordHeight });
+    // Both Layouts' column widths come from the same ListView width, so a child can keep its pixels.
+    const listview = pageComponents[listviewId];
+    const parentId = listview?.component?.parent;
+    const parentColumnPx =
+      useGridStore.getState().subContainerWidths[parentId || 'canvas'] ||
+      useGridStore.getState().subContainerWidths.canvas ||
+      DEFAULT_CANVAS_WIDTH / NO_OF_GRIDS;
+    const widthPx = (listview?.layouts?.[currentLayout]?.width ?? NO_OF_GRIDS) * parentColumnPx;
+    const listStyle = getResolvedValue(listview?.component?.definition?.styles?.listStyle?.value);
+    const sizing = {
+      listStyle,
+      width: widthPx,
+      gap: getResolvedValue(listview?.component?.definition?.styles?.gap?.value),
+      columns: getResolvedValue(properties.columns?.value),
+    };
+    const layouts = arrangeRecordChildren(children, {
+      toMode,
+      fromMode,
+      recordHeight,
+      fromColumnPx: getRecordColumnPx({ ...sizing, mode: fromMode }),
+      toColumnPx: getRecordColumnPx({ ...sizing, mode: toMode }),
+    });
     if (Object.keys(layouts).length === 0) return;
     setComponentLayout(layouts, undefined, moduleId, { saveAfterAction, mergeWithPrevious: true });
   },

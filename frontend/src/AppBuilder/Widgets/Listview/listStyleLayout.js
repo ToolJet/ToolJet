@@ -1,3 +1,5 @@
+import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+
 // Shared by the widget and the dynamic height calculation, so the measured height matches what renders.
 export const NEW_LIST_STYLES = ['bordered', 'container', 'plain'];
 export const LEGACY_PADDING = 7;
@@ -18,3 +20,23 @@ export const getRecordGap = (listStyle, gap) => (listStyle === 'legacy' ? 0 : Ma
 // Saved grids have no gridRecordHeight and keep their rowHeight.
 export const getRecordHeight = (mode, rowHeight, gridRecordHeight) =>
   String(mode ?? 'list').toLowerCase() === 'grid' ? (gridRecordHeight ?? rowHeight) : rowHeight;
+
+// A card's 1px border sits inside the record (border-box), so both sides come off the row canvas.
+export const getRecordBorderInset = (listStyle) => (listStyle === 'container' ? 2 : 0);
+
+// The row canvas is sized from the widget width, so the wider padding, gaps and card borders come off it.
+export const getRecordCanvasWidth = ({ listStyle, width, gap, recordsPerLine }) =>
+  listStyle === 'legacy'
+    ? width
+    : width -
+      2 * (NEW_STYLE_PADDING - LEGACY_PADDING) -
+      (recordsPerLine - 1) * getRecordGap(listStyle, gap) -
+      recordsPerLine * getRecordBorderInset(listStyle);
+
+// Pixels of one canvas grid column inside a record, as the record's SubContainer computes it (Container.jsx).
+export const getRecordColumnPx = ({ mode, listStyle, width, gap, columns }) => {
+  const isGrid = String(mode ?? 'list').toLowerCase() === 'grid';
+  const recordsPerLine = isGrid ? Math.max(1, Number(columns) || 1) : 1;
+  const canvas = getRecordCanvasWidth({ listStyle: getListStyle(listStyle), width, gap, recordsPerLine });
+  return (isGrid ? (canvas - 2) / recordsPerLine : canvas - 2) / NO_OF_GRIDS;
+};

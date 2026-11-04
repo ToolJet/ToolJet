@@ -29,6 +29,8 @@ import {
   getListStyle,
   getRecordGap,
   getRecordHeight,
+  getRecordBorderInset,
+  getRecordCanvasWidth,
 } from './listStyleLayout';
 
 const HOVER_THROTTLE_MS = 200;
@@ -202,15 +204,8 @@ export const Listview = function Listview({
             : `repeat(${positiveColumns}, minmax(0, 1fr))`,
         }),
       };
-  // A card's 1px border sits inside the record (border-box), so both sides come off the row canvas.
-  const recordBorderInset = recordStyle === 'container' ? 2 : 0;
-  // The row canvas is sized from the widget width, so the wider padding, gaps and card borders come off it.
-  const recordCanvasWidth = isLegacy
-    ? width
-    : width -
-      2 * (NEW_STYLE_PADDING - LEGACY_PADDING) -
-      (recordsPerLine - 1) * recordGap -
-      recordsPerLine * recordBorderInset;
+  const recordBorderInset = getRecordBorderInset(recordStyle);
+  const recordCanvasWidth = getRecordCanvasWidth({ listStyle: recordStyle, width, gap, recordsPerLine });
   const dividerColor = recordDividerColor ?? 'var(--cc-weak-border)';
   const parentRef = useRef(null);
   // Disabled list blocks the mouse via `data-disabled`; `inert` also removes the row components from
