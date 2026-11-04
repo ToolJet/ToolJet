@@ -42,9 +42,10 @@ sign-in, permissions, environments, data sources and queries; the code calls que
    (`frontend/src/styles/globals.css`); keep that rule.
    Charts: Recharts through `components/ui/chart` (`<ChartContainer config={...}>` around a Recharts chart, with
    `ChartTooltip` and `ChartTooltipContent`), never drawn by hand. The container animates series by default, turns that
-   off under reduced motion and past 300 points, and keeps a series with no colour neutral; a colour that carries meaning
-   goes in the config through a theme token (`orders: { label: 'Orders', color: 'var(--destructive)' }`). An app on
-   another UI library, or a user who names another chart library, uses that instead.
+   off under reduced motion and past 300 points, and gives a series with no colour the app's accent, then the theme's
+   chart hues; a colour that means something goes in the config through a theme token
+   (`overdue: { label: 'Overdue', color: 'var(--destructive)' }`). An app on another UI library, or a user who names
+   another chart library, uses that instead.
    Another React UI library (Ant Design, MUI) only when the user asks for one; wire it to the theme with
    `useToolJetTheme()` from `@tooljet/custom-component-sdk` (resolved colours, radius, font, `mode`, plus ready
    `antd` and `mui` objects; it re-renders when the theme changes):

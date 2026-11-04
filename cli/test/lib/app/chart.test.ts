@@ -46,10 +46,14 @@ describe('the code-app template charts', () => {
     expect(chart).to.contain('isAnimationActive: isAnimationActive !== false && animate');
   });
 
-  it('recognises series by name, so a chart bundles only what it uses, and leaves them neutral', () => {
+  it('recognises series by name, so a chart bundles only what it uses', () => {
     expect(chart).not.to.contain('RechartsPrimitive.Funnel');
-    expect(chart).to.contain("'var(--foreground)'");
-    expect(chart).to.contain("'var(--muted-foreground)'");
+  });
+
+  it('gives a series with no colour the accent, then the theme chart hues', () => {
+    expect(chart).to.contain("'var(--primary)'");
+    expect(chart).to.contain('`var(--chart-${(index % 5) + 1})`');
+    expect(chart).not.to.contain('muted-foreground)\'');
   });
 
   it('uses the template’s own paths', () => {

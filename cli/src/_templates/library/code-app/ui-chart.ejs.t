@@ -13,7 +13,8 @@ import { cn } from '../../lib/utils';
   ChartContainer also sets two things on the series inside it, so a chart needs neither:
   - Motion: Recharts animates in JavaScript, which the reduced-motion rule in styles/globals.css does not reach. Animation
     is on by default, and off under prefers-reduced-motion or past MAX_ANIMATED_POINTS.
-  - Colour: a Bar, Line or Area with no colour of its own takes var(--color-<dataKey>) from the config, or a neutral token.
+  - Colour: a Bar, Line or Area with no colour of its own takes var(--color-<dataKey>) from the config, else the app's accent
+    for the first series and the theme's chart hues for the rest.
 */
 
 export type ChartConfig = {
@@ -89,8 +90,8 @@ const withSeriesDefaults = (chart: React.ReactElement, config: ChartConfig, redu
       const colour = config[key]?.color
         ? `var(--color-${key})`
         : index === 0
-        ? 'var(--foreground)'
-        : 'var(--muted-foreground)';
+        ? 'var(--primary)'
+        : `var(--chart-${(index % 5) + 1})`;
       index += 1;
       const props: Record<string, unknown> = { isAnimationActive: isAnimationActive !== false && animate };
       if (name === 'Bar' || name === 'Area') {
