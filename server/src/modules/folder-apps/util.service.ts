@@ -323,6 +323,10 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     });
   }
 
+  async bulkRemove(appIds: string[], branchId: string): Promise<void> {
+    await dbTransactionWrap((manager: EntityManager) => manager.delete(FolderApp, { appId: In(appIds), branchId }));
+  }
+
   async create(
     folderId: string,
     appId: string,

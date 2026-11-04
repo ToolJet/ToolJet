@@ -30,6 +30,8 @@ export class BulkDeleteAppsDto extends BulkFlagsDto {
   type: APP_TYPES;
 }
 
+export class BulkRemoveAppsDto extends BulkDeleteAppsDto {}
+
 @Exclude()
 export class BulkResultResponseDto {
   @Expose({ name: 'blocked_ids' }) blockedIds: string[];
