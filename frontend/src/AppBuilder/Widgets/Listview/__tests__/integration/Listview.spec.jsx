@@ -1518,6 +1518,13 @@ describe('Listview: styles', () => {
     expect(container().style.borderRadius).toBe('12px');
   });
 
+  test('[Listview-STYLE-001] a Number input saves the radius as a plain string and it still renders in px', async () => {
+    // Break this catches: a bare "12" handed to CSS, which drops the whole radius.
+    await mount({ styles: { borderRadius: binding('12') } });
+
+    expect(container().style.borderRadius).toBe('12px');
+  });
+
   test('[Listview-STYLE-002] a legacy white background becomes the dark surface in dark mode', async () => {
     // Break this catches: dropping the shim, which puts a white block in the
     // middle of every dark-mode app saved before custom themes.
