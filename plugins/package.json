@@ -95,7 +95,7 @@
     "form-data@^3.0.0": "^3.0.5",
     "@databricks/sql": {
       "thrift": "0.24.0",
-      "proxy-agent": "^8.0.2"
+      "proxy-agent": "^6.5.0"
     },
     "fast-xml-parser": "^5.5.7",
     "minio": {
