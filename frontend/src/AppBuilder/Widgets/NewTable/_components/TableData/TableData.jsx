@@ -20,8 +20,6 @@ export const TableData = ({
   tableBodyRef,
   darkMode,
   table,
-  columnOrder,
-  setColumnOrder,
   setExposedVariables,
   fireEvent,
   lastClickedRowRef,
@@ -151,8 +149,6 @@ export const TableData = ({
         id={id}
         table={table}
         darkMode={darkMode}
-        columnOrder={columnOrder}
-        setColumnOrder={setColumnOrder}
         fireEvent={fireEvent}
         setExposedVariables={setExposedVariables}
       />
