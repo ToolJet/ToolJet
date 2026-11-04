@@ -1,4 +1,4 @@
-import { browserSsoUserInfo, isTokenOrDelegatedPrincipal } from '@modules/session/sso-exposure';
+import { withholdsUpstreamSso } from '@modules/session/sso-exposure';
 import {
   BadRequestException,
   ForbiddenException,
@@ -222,10 +222,11 @@ export class AuthService implements IAuthService {
       const organization = await this.organizationRepository.get(user.organizationId);
 
       const permissionData = await this.sessionUtilService.getPermissionDataToAuthorize(user, manager);
-      // This is a browser response boundary. Do not expose stored IdP tokens to a token, render or
-      // OAuth session, or mutate the shared permission data used by server-side SSO query bindings.
-      const responsePermissionData = isTokenOrDelegatedPrincipal(user)
-        ? { ...permissionData, ssoUserInfo: browserSsoUserInfo(permissionData.ssoUserInfo, user) }
+      // This is a browser response boundary. Do not expose stored IdP tokens to a workspace token,
+      // render or OAuth session (sso-exposure.ts), or mutate the shared permission data used by
+      // server-side SSO query bindings.
+      const responsePermissionData = withholdsUpstreamSso(user)
+        ? { ...permissionData, ssoUserInfo: {} }
         : permissionData;
 
       return decamelizeKeysExcept(

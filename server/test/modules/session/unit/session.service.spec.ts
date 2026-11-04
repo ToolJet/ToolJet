@@ -279,6 +279,28 @@ describe('SessionService', () => {
       expect(sessionUtilService.generateSessionPayload).not.toHaveBeenCalled();
     });
 
+    it('should open the embedded app by its slug for an embed session', async () => {
+      const embedSession = {
+        ...workspaceToken,
+        patScope: 'app',
+        patAppId: pinnedApp.id,
+      } as unknown as User;
+      appsRepository.retrieveAppDataUsingSlug.mockResolvedValue({
+        organizationId: tokenWorkspace.id,
+        isPublic: false,
+        isReleased: true,
+      });
+
+      await service.getSessionDetails(embedSession, '', pinnedApp.slug, null);
+
+      expect(sessionUtilService.generateSessionPayload).toHaveBeenCalledWith(
+        embedSession,
+        tokenWorkspace,
+        { organizationId: tokenWorkspace.id, isPublic: false, isReleased: true },
+        null
+      );
+    });
+
     it('should refuse a token session that names a second workspace', async () => {
       const widened = { ...workspaceToken, organizationIds: [tokenWorkspace.id, otherWorkspace.id] } as unknown as User;
 

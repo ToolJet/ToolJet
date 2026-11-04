@@ -1,4 +1,4 @@
-import { isTokenOrDelegatedPrincipal } from '@modules/session/sso-exposure';
+import { withholdsUpstreamSso } from '@modules/session/sso-exposure';
 import { invalidateUserCredentials } from '@modules/mcp-oauth/revocation';
 import { McpOAuthService } from '@modules/mcp-oauth/service';
 import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
@@ -202,8 +202,12 @@ export class SessionUtilService {
           ? { currentOrganizationId: organization.id, currentOrganizationSlug: organization.slug }
           : { noWorkspaceAttachedInTheSession: true }),
         ...permissionData,
-        // A token login returns a machine credential; it never carries the owner's upstream SSO data.
-        ...(isPatLogin || isTokenOrDelegatedPrincipal(user) || isTokenOrDelegatedPrincipal(loggedInUser)
+        // A workspace token or render login returns a machine credential without the owner's upstream
+        // SSO data; an embed login keeps the viewer's own (sso-exposure.ts).
+        ...((isPatLogin &&
+          withholdsUpstreamSso({ isPATLogin: true, patScope: extraData?.patScope, patAppId: extraData?.appId })) ||
+        withholdsUpstreamSso(user) ||
+        withholdsUpstreamSso(loggedInUser)
           ? { ssoUserInfo: {} }
           : {}),
         noActiveWorkspaces,
