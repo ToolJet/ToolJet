@@ -18,13 +18,11 @@ const folderDialogInitialState: IFolderDialogState = {
   folderDetails: null,
   folderId: '',
   folderHasItemsOnBranch: [],
-  selectedRowIds: [],
 };
 
 const appDialogInitialState: IAppDialogState = {
   type: '',
   appDetails: null,
-  selectedRowIds: [],
 };
 
 const initialState: IAppsStoreInitialState = {
@@ -32,9 +30,11 @@ const initialState: IAppsStoreInitialState = {
   switchBranchModal: { open: false, postSwitchActionDetails: null },
   appDialogState: { ...appDialogInitialState },
   folderDialogState: { ...folderDialogInitialState },
+  expanded: {},
+  rowSelection: {},
 };
 
-const createAppsStore: AppsStoreCreator = (set) => ({
+const createAppsStore: AppsStoreCreator = (set, get) => ({
   ...initialState,
   setCurrentPage: (page) =>
     set(
@@ -43,6 +43,35 @@ const createAppsStore: AppsStoreCreator = (set) => ({
       },
       false,
       'setCurrentPage'
+    ),
+  // Updaters run on `get()` outside `set`, so TanStack's updater functions never receive an Immer draft.
+  setExpanded: (updater) => {
+    const expanded = typeof updater === 'function' ? updater(get().expanded) : updater;
+    set(
+      (state) => {
+        state.expanded = expanded;
+      },
+      false,
+      'setExpanded'
+    );
+  },
+  setRowSelection: (updater) => {
+    const rowSelection = typeof updater === 'function' ? updater(get().rowSelection) : updater;
+    set(
+      (state) => {
+        state.rowSelection = rowSelection;
+      },
+      false,
+      'setRowSelection'
+    );
+  },
+  clearSelection: () =>
+    set(
+      (state) => {
+        state.rowSelection = {};
+      },
+      false,
+      'clearSelection'
     ),
   setAppDialogState: (updatedState) => {
     if (!updatedState.type) return;

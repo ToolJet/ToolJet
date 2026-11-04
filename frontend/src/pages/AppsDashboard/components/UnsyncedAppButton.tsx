@@ -4,7 +4,10 @@ import { RefreshCcw } from 'lucide-react';
 import { gitSyncService } from '@/_services/git_sync.service';
 import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 import { PushValidationErrorModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushValidationErrorModal';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import TooltipComp from '@/components/ui/Rocket/Tooltip';
+
+import type { IWorkspaceBranchesStore } from '@/_stores/types/workspaceBranchesStore';
 
 import { appTypeToDisplayNameMapping, type TAppType } from '../helper';
 import type { AppItem } from '../dummyData/types';
@@ -25,6 +28,14 @@ export default function UnsyncedAppButton({ appType, itemDetails }: IUnsyncedApp
 
   const [openPushAppModal, setOpenPushAppModal] = useState(false);
   const [pushValidationError, setPushValidationError] = useState<TPushValidationError>(null);
+
+  const currentBranch = useWorkspaceBranchesStore((state: IWorkspaceBranchesStore) => state.currentBranch);
+  const isGitSyncConfigured = useWorkspaceBranchesStore((state: IWorkspaceBranchesStore) => state.isGitSyncConfigured);
+
+  const isOnDefaultBranch = !!(currentBranch?.is_default || currentBranch?.isDefault);
+  const isAppUnsynced = isGitSyncConfigured && currentBranch && isOnDefaultBranch && git?.synced === false;
+
+  if (!isAppUnsynced) return null;
 
   const handlePushAppToGit = async () => {
     if (!git?.push_version_id) return;

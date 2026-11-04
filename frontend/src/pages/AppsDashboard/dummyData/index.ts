@@ -1,4 +1,4 @@
-// Used only through the list view's mock (`ItemsList/services/dashboardItemsMock.js`); the contract types in `types.ts` are shared.
+// Not in use: only the unused mock (`ItemsList/services/dashboardItemsMock.js`) imports this. The contract types in `types.ts` are in use.
 import type {
   AppItem,
   AppLaunchAction,

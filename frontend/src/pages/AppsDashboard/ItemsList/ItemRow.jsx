@@ -3,8 +3,8 @@ import { flexRender } from '@tanstack/react-table';
 import { GripVertical } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { useAppsStore } from '@/_stores/appsStore';
 import { Checkbox } from '@/components/ui/Rocket/Checkbox/Checkbox';
-import { useItemsListStore } from './store/itemsListStore';
 import { GRID_TEMPLATE_COLUMNS } from './columns';
 
 // The selection gutter fills the list's 70px side padding (checkbox right-aligned, as in Figma), so when
@@ -35,7 +35,7 @@ export const DOCKED_EDGE_SHADOW_CLASS = cn(
 
 // `level` is the treegrid nesting level (2 = inside a folder); `className`/`style` let virtualized lists position the row.
 export default function ItemRow({ row, level = 1, className, style }) {
-  const hasSelection = useItemsListStore((state) => Object.keys(state.rowSelection).length > 0);
+  const hasSelection = useAppsStore((state) => Object.keys(state.rowSelection).length > 0);
   const isSelected = row.getIsSelected();
   const isInFolderScrollBox = level > 1;
   const canReorder = row.original.pinned;

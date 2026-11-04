@@ -1,11 +1,17 @@
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 // eslint-disable-next-line import/no-unresolved
-import { keepPreviousData, queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  infiniteQueryOptions,
+  keepPreviousData,
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import { getWorkspaceId } from '@/_helpers/utils';
 import { useAppsStore } from '@/_stores/appsStore';
-import { useSearchStore } from '@/_stores/searchStore';
 import { getActiveBranchId } from '@/_helpers/active-branch';
 import { appsService } from '@/_services/apps.service';
 import { authenticationService } from '@/_services/authentication.service';
@@ -52,6 +58,20 @@ export const appsV2QueryOptions = ({
     queryFn: ({ signal }) => appsService.fetchAppsV2(queryParams, { signal }),
     // The previous page stays visible while the next one loads.
     placeholderData: keepPreviousData,
+  });
+};
+
+// A folder's apps loaded page by page, for the list view's expanded folders.
+// The `'infinite'` suffix keeps it apart from a `useQuery` entry with the same params; the prefix keeps `appsV2` invalidation covering it.
+export const appsV2InfiniteQueryOptions = ({ appType = 'front-end', folderId, searchQuery = '', pageSize = 20 }) => {
+  const queryParams = { appType, branchId: getActiveBranchId(), pageSize, folderId, searchQuery };
+
+  return infiniteQueryOptions({
+    queryKey: ['appsV2', queryParams, 'infinite'],
+    queryFn: ({ pageParam, signal }) => appsService.fetchAppsV2({ ...queryParams, pageNo: pageParam }, { signal }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.page * lastPage.page_size < lastPage.total ? lastPage.page + 1 : undefined,
   });
 };
 
@@ -107,7 +127,6 @@ export function useRenameApp() {
   const queryClient = useQueryClient();
 
   const currentPage = useAppsStore((state) => state.currentPage);
-  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? '');
 
   return useMutation({
     mutationFn: ({ appId, name, appType }) => appsService.renameApp(appId, name, appType),
@@ -117,10 +136,7 @@ export function useRenameApp() {
     onSuccess: (response, variables) => {
       toast.success(`${appTypeToDisplayNameMapping[variables.appType]} name has been updated!`);
 
-      queryClient.invalidateQueries({
-        queryKey: ['apps', { pageNo: currentPage, folderId: currentFolderId, appType: variables.appType }],
-      });
-      queryClient.invalidateQueries({ queryKey: ['appsV2'] });
+      queryClient.invalidateQueries({ queryKey: ['appsV2', { pageNo: currentPage, appType: variables.appType }] });
     },
   });
 }
@@ -165,14 +181,32 @@ export function useCreateApp() {
   });
 }
 
+// Resolves with `{ blocked_ids }`; the caller shows the blocked list. Lists refresh only when something was deleted.
+export function useBulkDeleteApps() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    /** @param {{ appIds: string[], appType: 'front-end' | 'module' | 'workflow' }} variables */
+    mutationFn: ({ appIds, appType }) => appsService.bulkDeleteApps({ appIds, appType }),
+    onError: handleError,
+    onSuccess: (response, variables) => {
+      if (response?.blocked_ids?.length) return;
+
+      queryClient.invalidateQueries({ queryKey: ['appsV2', { appType: variables.appType }] });
+      if (variables.appType === 'workflow') {
+        queryClient.invalidateQueries({ queryKey: ['workflowLimit', 'instance'] });
+        queryClient.invalidateQueries({ queryKey: ['workflowLimit', 'workspace'] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['appsLimit'] });
+      }
+    },
+  });
+}
+
 export function useDeleteApp() {
   const queryClient = useQueryClient();
 
-  const searchQuery = useSearchStore((state) => state.searchQuery);
-
-  const currentPage = useAppsStore((state) => state.currentPage);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
-  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? '');
 
   return useMutation({
     mutationFn: ({ appId, appType }) => appsService.deleteApp(appId, appType),
@@ -180,32 +214,11 @@ export function useDeleteApp() {
       toast.error('Could not delete the app.');
     },
     onSuccess: (response, variables) => {
+      setCurrentPage(1);
+
       toast.success(`${appTypeToDisplayNameMapping[variables.appType]} deleted successfully.`);
 
-      const currentAppsQueryData = queryClient.getQueryData([
-        'apps',
-        {
-          pageNo: currentPage,
-          folderId: currentFolderId,
-          appSearchQuery: searchQuery,
-          appType: variables.appType,
-        },
-      ]);
-
-      const numberOfAppsOnCurrentPageBeforeDeletion = currentAppsQueryData?.apps?.length ?? 0;
-
-      // If there are no apps left on the current page after deletion, move back to the previous page (if not on the first page)
-      setCurrentPage(
-        numberOfAppsOnCurrentPageBeforeDeletion
-          ? numberOfAppsOnCurrentPageBeforeDeletion === 1 && currentPage > 1
-            ? currentPage - 1
-            : currentPage
-          : 1
-      );
-      queryClient.invalidateQueries({
-        queryKey: ['apps', { appType: variables.appType }],
-      });
-      queryClient.invalidateQueries({ queryKey: ['appsV2'] });
+      queryClient.invalidateQueries({ queryKey: ['appsV2', { appType: variables.appType }] });
 
       if (variables.appType === 'workflow') {
         queryClient.invalidateQueries({ queryKey: ['workflowLimit', 'instance'] });
@@ -221,7 +234,6 @@ export function useChangeAppIcon() {
   const queryClient = useQueryClient();
 
   const currentPage = useAppsStore((state) => state.currentPage);
-  const currentFolderId = useAppsStore((state) => state.currentFolderDetails?.value ?? '');
 
   return useMutation({
     mutationFn: ({ icon, appId }) => appsService.changeIcon(icon, appId),
@@ -231,10 +243,7 @@ export function useChangeAppIcon() {
     onSuccess: (response, variables) => {
       toast.success('Icon updated.');
 
-      queryClient.invalidateQueries({
-        queryKey: ['apps', { pageNo: currentPage, folderId: currentFolderId, appType: variables.appType }],
-      });
-      queryClient.invalidateQueries({ queryKey: ['appsV2'] });
+      queryClient.invalidateQueries({ queryKey: ['appsV2', { pageNo: currentPage, appType: variables.appType }] });
     },
   });
 }
@@ -324,10 +333,17 @@ export function usePinResources() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    /** @param {{ resourceType: 'app' | 'folder', resourceIds: string[] }} variables */
+    /** @param {{ resourceType: 'app' | 'folder', resourceIds: string[], appType: TAppType }} variables */
     mutationFn: ({ resourceType, resourceIds }) => appsService.pinResources({ resourceType, resourceIds }),
     onError: handleError,
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['appsV2'] }),
+    onSuccess: (data, variables) => {
+      const count = variables.resourceIds.length;
+      // Apps are named after the dashboard they're on: app, module or workflow.
+      const noun = variables.resourceType === 'folder' ? 'folder' : appTypeToDisplayNameMapping[variables.appType];
+      toast.success(`${count} ${count === 1 ? noun : `${noun}s`} pinned`);
+
+      queryClient.invalidateQueries({ queryKey: ['appsV2', { appType: variables.appType }] });
+    },
   });
 }
 
@@ -335,9 +351,10 @@ export function useUnpinResource() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    /** @param {{ resourceType: 'app' | 'folder', resourceId: string }} variables */
+    /** @param {{ resourceType: 'app' | 'folder', resourceId: string, appType: TAppType }} variables */
     mutationFn: ({ resourceType, resourceId }) => appsService.unpinResource({ resourceType, resourceId }),
     onError: handleError,
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['appsV2'] }),
+    onSuccess: (response, variables) =>
+      queryClient.invalidateQueries({ queryKey: ['appsV2', { appType: variables.appType }] }),
   });
 }

@@ -4,10 +4,9 @@ import { Grid2x2, ListTodo } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Rocket/Tabs/Tabs';
 import Tooltip from '@/components/ui/Rocket/Tooltip';
-import { useIsRootItemsLoading } from '../useIsRootItemsLoading';
+import { useAppsStore } from '@/_stores/appsStore';
 import GridView from './GridView';
 import ItemsList from '@/pages/AppsDashboard/ItemsList/ItemsList';
-import { useItemsListStore } from '@/pages/AppsDashboard/ItemsList/store/itemsListStore';
 
 import type { TAppType } from '../helper';
 
@@ -20,11 +19,7 @@ const VIEW_ACTIONS = [
 // Actions sit beside TabsList, not inside it: a tablist may only own tabs (ARIA), and
 // Radix's arrow-key roving would skip them anyway.
 export default function ViewTabs({ appType }: { appType: TAppType }) {
-  const isLoading = useIsRootItemsLoading();
-
-  const setExpanded = useItemsListStore(
-    (state: { setExpanded: (expanded: Record<string, boolean>) => void }) => state.setExpanded
-  );
+  const setExpanded = useAppsStore((state) => state.setExpanded);
 
   const [selectedView, setSelectedView] = useState('grid');
 
@@ -68,7 +63,7 @@ export default function ViewTabs({ appType }: { appType: TAppType }) {
 
       {/* Panels fill the remaining height so only their content scrolls; `data-[state=active]` keeps Radix's `hidden` working. */}
       <TabsContent value="list" className="tw-min-h-0 tw-flex-col data-[state=active]:tw-flex">
-        <ItemsList isLoading={isLoading} appType={appType} />
+        <ItemsList appType={appType} />
       </TabsContent>
 
       {/* Content scrolls inside so the footer stays pinned below it, as in the list view. */}

@@ -1,4 +1,5 @@
-// List view only: the grid view reads `/v2/apps` through react-query (see `ItemsList/DECISIONS.md`).
+// Not in use: the dashboard reads `/v2/apps` through react-query and keeps its UI state in `appsStore` (see `ItemsList/DECISIONS.md`).
+// Still imported by `useListQueryParams` for `setPage`, which only the commented-out sort/filter toolbar calls.
 import { createZustandStoreWithImmer } from '@/_stores/utils';
 import { dashboardItemsService } from '../services/dashboardItemsService';
 

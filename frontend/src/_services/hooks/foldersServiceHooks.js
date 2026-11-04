@@ -92,6 +92,62 @@ export function useDeleteFolder() {
   });
 }
 
+// Resolves with `{ blocked_ids }`; the caller shows the blocked list. Lists refresh only when something was deleted.
+export function useBulkDeleteFolders() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    /** @param {{ folderIds: string[], mode: 'folder_only' | 'folder_and_apps', appType: 'front-end' | 'module' | 'workflow' }} variables */
+    mutationFn: ({ folderIds, mode, appType }) => folderService.bulkDeleteFolders({ folderIds, mode, appType }),
+    onError: (error) => {
+      toast.error(error?.error ?? 'Could not delete the folders.');
+    },
+    onSuccess: (response, variables) => {
+      if (response?.blocked_ids?.length) return;
+
+      queryClient.invalidateQueries({ queryKey: ['folders', { appType: variables.appType }] });
+      queryClient.invalidateQueries({ queryKey: ['appsV2', { appType: variables.appType }] });
+    },
+  });
+}
+
+export function useBulkMoveAppsToFolder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    /** @param {{ appIds: string[], folderId: string, appType: 'front-end' | 'module' | 'workflow' }} variables */
+    mutationFn: ({ appIds, folderId }) => folderService.bulkMoveAppsToFolder({ appIds, folderId }),
+    onError: (error) => {
+      toast.error(error?.error ?? 'Could not move the apps.');
+    },
+    onSuccess: (response, variables) => {
+      if (response?.blocked_ids?.length) return;
+
+      queryClient.invalidateQueries({ queryKey: ['folders', { appType: variables.appType }] });
+      queryClient.invalidateQueries({ queryKey: ['appsV2', { appType: variables.appType }] });
+    },
+  });
+}
+
+// TODO: pending the bulk remove endpoint (see `folderService.bulkRemoveAppsFromFolder`).
+export function useBulkRemoveAppsFromFolder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    /** @param {{ appIds: string[], appType: 'front-end' | 'module' | 'workflow' }} variables */
+    mutationFn: ({ appIds }) => folderService.bulkRemoveAppsFromFolder({ appIds }),
+    onError: (error) => {
+      toast.error(error?.error ?? error?.message ?? 'Could not remove the apps from their folders.');
+    },
+    onSuccess: (response, variables) => {
+      if (response?.blocked_ids?.length) return;
+
+      queryClient.invalidateQueries({ queryKey: ['folders', { appType: variables.appType }] });
+      queryClient.invalidateQueries({ queryKey: ['appsV2', { appType: variables.appType }] });
+    },
+  });
+}
+
 export function useAddAppToFolder() {
   const queryClient = useQueryClient();
 

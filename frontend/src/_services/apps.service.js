@@ -37,6 +37,7 @@ export const appsService = {
   releaseVersion,
   pinResources,
   unpinResource,
+  bulkDeleteApps,
 };
 
 function getAppAuthenticationConfig(slug) {
@@ -122,6 +123,12 @@ function unpinResource({ resourceType, resourceId }) {
     `${config.apiUrl}/v2/pins/${encodeURIComponent(resourceType)}/${encodeURIComponent(resourceId)}${query ? `?${query}` : ''}`,
     getAuthRequestOptions('DELETE')
   ).then(handleResponse);
+}
+
+// All or nothing: responds 200 `{ blocked_ids }`; a non-empty list means nothing was deleted.
+function bulkDeleteApps({ appIds, appType }) {
+  const body = { app_ids: appIds, type: appType, branch_id: getActiveBranchId() };
+  return fetch(`${config.apiUrl}/v2/apps/bulk-delete`, getAuthRequestOptions('POST', body)).then(handleResponse);
 }
 
 // TODO: the backend should resolve the editing version itself so the client needn't look it up before saving.

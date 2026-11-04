@@ -17,15 +17,7 @@ const HIDDEN_UNTIL_ACTIVE_CLASS =
   'tw-pointer-events-none tw-absolute tw-opacity-0 group-focus-within:tw-pointer-events-auto group-focus-within:tw-static group-focus-within:tw-opacity-100 group-hover:tw-pointer-events-auto group-hover:tw-static group-hover:tw-opacity-100 group-has-[[data-state=open]]:tw-pointer-events-auto group-has-[[data-state=open]]:tw-static group-has-[[data-state=open]]:tw-opacity-100';
 
 // `item` keeps `itemKind` and `itemDetails` together, so each stays paired when passed on.
-export default function DashboardCard({
-  icon,
-  startAction,
-  endAction,
-  appType,
-  pinned,
-  isUnsynced,
-  ...item
-}: DashboardCardProps) {
+export default function DashboardCard({ icon, startAction, endAction, appType, pinned, ...item }: DashboardCardProps) {
   const { name } = item.itemDetails;
   const description = getItemDescription(item.itemDetails, appType);
 
@@ -35,7 +27,7 @@ export default function DashboardCard({
         {icon}
 
         <div className="tw-flex tw-items-center tw-gap-1">
-          {isUnsynced && <UnsyncedAppButton {...item} appType={appType} />}
+          {item.itemKind === 'app' && <UnsyncedAppButton itemDetails={item.itemDetails} appType={appType} />}
           {pinned && <PinUnpinButton {...item} appType={appType} pinned={pinned} />}
         </div>
       </div>
@@ -52,7 +44,7 @@ export default function DashboardCard({
         </div>
 
         <div className={cn('tw-flex tw-items-center tw-gap-1', HIDDEN_UNTIL_ACTIVE_CLASS)}>
-          {isUnsynced && <UnsyncedAppButton {...item} appType={appType} />}
+          {item.itemKind === 'app' && <UnsyncedAppButton itemDetails={item.itemDetails} appType={appType} />}
           <PinUnpinButton {...item} appType={appType} pinned={pinned} />
         </div>
       </div>

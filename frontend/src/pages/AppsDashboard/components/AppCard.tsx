@@ -7,9 +7,6 @@ import LaunchButton from './LaunchButton';
 
 import type { AppItem } from '../dummyData/types';
 import type { TAppType } from '../helper';
-import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
-
-import type { IWorkspaceBranchesStore } from '@/_stores/types/workspaceBranchesStore';
 
 // Untyped JS module — cast at the import site.
 const AppIcon = RawAppIcon as React.ComponentType<{ icon?: string; color?: string; size?: number }>;
@@ -21,15 +18,7 @@ interface AppCardProps {
 }
 
 export default function AppCard({ appDetails, appType }: AppCardProps) {
-  const { icon, pinned, git } = appDetails;
-
-  const { isGitSyncConfigured, currentBranch } = useWorkspaceBranchesStore((state: IWorkspaceBranchesStore) => ({
-    isGitSyncConfigured: state.isGitSyncConfigured,
-    currentBranch: state.currentBranch,
-  }));
-
-  const isOnDefaultBranch = !!(currentBranch?.is_default || currentBranch?.isDefault);
-  const isAppUnsynced = isGitSyncConfigured && currentBranch && isOnDefaultBranch && git?.synced === false;
+  const { icon, pinned } = appDetails;
 
   return (
     <DashboardCard
@@ -40,7 +29,6 @@ export default function AppCard({ appDetails, appType }: AppCardProps) {
       startAction={<LaunchButton appDetails={appDetails} />}
       endAction={<EditButton appDetails={appDetails} />}
       itemKind="app"
-      isUnsynced={isAppUnsynced}
     />
   );
 }

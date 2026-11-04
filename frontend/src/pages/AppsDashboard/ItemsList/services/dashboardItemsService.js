@@ -1,4 +1,4 @@
-// List view only: the grid view reads `/v2/apps` through react-query (see `ItemsList/DECISIONS.md`).
+// Not in use: the dashboard reads `/v2/apps` through react-query and keeps its UI state in `appsStore` (see `ItemsList/DECISIONS.md`).
 import config from 'config';
 import queryString from 'query-string';
 import { authHeader, handleResponse } from '@/_helpers';

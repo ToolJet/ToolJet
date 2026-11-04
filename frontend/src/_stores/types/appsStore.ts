@@ -1,6 +1,5 @@
 import type { StateCreator } from 'zustand';
-
-import type { FolderItem } from '@/pages/AppsDashboard/dummyData/types';
+import type { ExpandedState, RowSelectionState, Updater } from '@tanstack/react-table';
 // '' means no dialog is open.
 export type AppDialogType =
   | ''
@@ -14,8 +13,7 @@ export type AppDialogType =
   | 'change-icon'
   | 'import'
   | 'import-anyway'
-  | 'import-from-git'
-  | 'bulk-delete';
+  | 'import-from-git';
 
 export type FolderDialogType =
   | ''
@@ -24,8 +22,7 @@ export type FolderDialogType =
   | 'delete-folder'
   | 'folder-has-apps-warning'
   | 'add-to-folder'
-  | 'remove-app-from-folder'
-  | 'bulk-delete-folder';
+  | 'remove-app-from-folder';
 
 type TAppType = 'front-end' | 'module' | 'workflow';
 
@@ -45,8 +42,6 @@ export interface IAppDetails {
 export interface IAppDialogState {
   type: AppDialogType;
   appDetails: IAppDetails | null;
-  /** Row ids (`app:<id>` / `folder:<id>`) a bulk dialog acts on. */
-  selectedRowIds?: string[];
 }
 
 export interface IFolderDialogState {
@@ -55,8 +50,6 @@ export interface IFolderDialogState {
   folderDetails: { id: string; name: string } | null;
   folderId: string;
   folderHasItemsOnBranch?: string[];
-  /** Row ids (`app:<id>` / `folder:<id>`) a bulk dialog acts on. */
-  selectedRowIds?: string[];
 }
 
 export interface ISwitchBranchModal {
@@ -69,7 +62,14 @@ export interface IAppsStore {
   switchBranchModal: ISwitchBranchModal;
   appDialogState: IAppDialogState;
   folderDialogState: IFolderDialogState;
+  /** List view folders that are open, keyed by row id (`folder:<id>`). */
+  expanded: ExpandedState;
+  /** List view selection, keyed by row id (`app:<id>` / `folder:<id>`); shared by the root and every folder table. */
+  rowSelection: RowSelectionState;
   setCurrentPage: (page: number) => void;
+  setExpanded: (updater: Updater<ExpandedState>) => void;
+  setRowSelection: (updater: Updater<RowSelectionState>) => void;
+  clearSelection: () => void;
   setAppDialogState: (updatedState: Partial<IAppDialogState>) => void;
   resetAppDialogState: () => void;
   setFolderDialogState: (updatedState: Partial<IFolderDialogState>) => void;
@@ -79,7 +79,7 @@ export interface IAppsStore {
 
 export type IAppsStoreInitialState = Pick<
   IAppsStore,
-  'currentPage' | 'switchBranchModal' | 'appDialogState' | 'folderDialogState'
+  'currentPage' | 'switchBranchModal' | 'appDialogState' | 'folderDialogState' | 'expanded' | 'rowSelection'
 >;
 
 // Mirrors createZustandStoreWithImmer, which wraps the creator as devtools(immer(...)).

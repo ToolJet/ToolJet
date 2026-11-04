@@ -6,13 +6,21 @@ import { usePinResources, useUnpinResource } from '@/_services/hooks/appsService
 import TooltipComp from '@/components/ui/Rocket/Tooltip';
 
 import type { ItemKindWithDetails } from '../types';
+import { TAppType } from '../helper';
 
 type PinUnpinButtonProps = ItemKindWithDetails & {
   className?: string;
   pinned?: boolean;
+  appType: TAppType;
 };
 
-export default function PinUnpinButton({ className, itemKind, itemDetails, pinned = false }: PinUnpinButtonProps) {
+export default function PinUnpinButton({
+  className,
+  appType,
+  itemKind,
+  itemDetails,
+  pinned = false,
+}: PinUnpinButtonProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   const { mutate: pinResources, isPending: isPinning } = usePinResources();
@@ -23,8 +31,8 @@ export default function PinUnpinButton({ className, itemKind, itemDetails, pinne
   const handleClick = () => {
     if (!itemDetails.actions.pin) return;
 
-    if (pinned) unpinResource({ resourceType: itemKind, resourceId: itemDetails.id });
-    else pinResources({ resourceType: itemKind, resourceIds: [itemDetails.id] });
+    if (pinned) unpinResource({ resourceType: itemKind, resourceId: itemDetails.id, appType });
+    else pinResources({ resourceType: itemKind, resourceIds: [itemDetails.id], appType });
   };
 
   return (

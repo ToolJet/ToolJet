@@ -3,7 +3,7 @@ import { capitalize, cloneDeep, isEmpty, sample } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { CircleAlert, Trash, TriangleAlert } from 'lucide-react';
+import { CircleAlert, Trash } from 'lucide-react';
 import config from 'config';
 import { cn } from '@/lib/utils';
 import { validateName, getWorkspaceId } from '@/_helpers/utils';
@@ -35,7 +35,7 @@ const MAX_APP_NAME_LENGTH = 100;
 export default function AppCRUDActionDialog({ open, defaultAppType, limits }) {
   const setAppDialogState = useAppsStore((state) => state.setAppDialogState);
   const resetAppDialogState = useAppsStore((state) => state.resetAppDialogState);
-  const { type: actionType, appDetails, selectedRowIds } = useAppsStore((state) => state.appDialogState);
+  const { type: actionType, appDetails } = useAppsStore((state) => state.appDialogState);
 
   const branchActions = useWorkspaceBranchesStore((state) => state.actions);
   const currentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
@@ -234,16 +234,10 @@ export default function AppCRUDActionDialog({ open, defaultAppType, limits }) {
     }
   };
 
-  const selectedRowCount = selectedRowIds?.length || 0;
-  const isDeleteActionType = actionType === 'delete' || actionType === 'bulk-delete';
+  const isDeleteActionType = actionType === 'delete';
   const isImportAnywayActionType = actionType === 'import-anyway';
   const isAlertDialog = isDeleteActionType || isImportAnywayActionType;
-  const { title, submitBtnLabel } = getDialogConfig({
-    actionType,
-    appTypeDisplayName,
-    isAlertDialog,
-    selectedRowCount,
-  });
+  const { title, submitBtnLabel } = getDialogConfig({ actionType, appTypeDisplayName, isAlertDialog });
   const isNameInvalid = name.trim().length === 0 || name?.length > MAX_APP_NAME_LENGTH || Boolean(errorText);
   const isNameChangeRequired = ['rename'].includes(actionType);
   const isNameChanged = name?.trim() !== appDetails?.name;
@@ -290,8 +284,6 @@ export default function AppCRUDActionDialog({ open, defaultAppType, limits }) {
         />
       ) : actionType === 'delete' ? (
         <DeleteAppBody appType={appType} appName={name} />
-      ) : actionType === 'bulk-delete' ? (
-        <BulkDeleteAppsBody appType={appType} selectedRowCount={selectedRowIds.length} />
       ) : actionType === 'import-anyway' ? (
         <MissingGroupsDialogBody missingGroups={appDetails?.missingGroups} />
       ) : (
@@ -391,22 +383,6 @@ function DeleteAppBody({ appType, appName }) {
   );
 }
 
-function BulkDeleteAppsBody({ appType, selectedRowCount }) {
-  const appTypeDisplayName = appTypeToDisplayNameMapping[appType];
-  const noun = selectedRowCount > 1 ? `${appTypeDisplayName}s` : appTypeDisplayName;
-  const heading = `Delete selected ${noun}?`;
-  const message = `You are about to delete ${selectedRowCount} ${noun}. This action cannot be undone and may remove any related data.`;
-
-  return (
-    <div className="tw-px-6 tw-py-4">
-      <TriangleAlert size={40} color="var(--icon-danger)" className="tw-mb-2" />
-      <h6 className="tw-font-title-x-large tw-text-text-default tw-mb-0.5">{heading}</h6>
-      <p data-cy="modal-message" className="tw-font-body-default tw-text-text-default tw-mb-0">
-        {message}
-      </p>
-    </div>
-  );
-}
 // function PluginsToBeInstalled({ dependentPlugins, dependentPluginsDetail }) {
 //   return (
 //     <Collapsible
@@ -429,7 +405,7 @@ function BulkDeleteAppsBody({ appType, selectedRowCount }) {
 //     </Collapsible>
 //   );
 // }
-function getDialogConfig({ actionType, appTypeDisplayName, isAlertDialog, selectedRowCount }) {
+function getDialogConfig({ actionType, appTypeDisplayName, isAlertDialog }) {
   switch (actionType) {
     case 'create-from-template':
       return {
@@ -440,11 +416,6 @@ function getDialogConfig({ actionType, appTypeDisplayName, isAlertDialog, select
       return {
         title: '',
         submitBtnLabel: 'Import anyway',
-      };
-    case 'bulk-delete':
-      return {
-        title: '',
-        submitBtnLabel: `Delete ${appTypeDisplayName}${selectedRowCount > 1 ? 's' : ''}`,
       };
     default: {
       const submitBtnLabel = `${capitalize(actionType)} ${appTypeDisplayName}`;

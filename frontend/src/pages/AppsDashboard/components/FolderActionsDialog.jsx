@@ -47,7 +47,6 @@ export default function FolderActionsDialog({ open, defaultAppType }) {
     type: actionType,
     folderDetails,
     appDetails,
-    selectedRowIds,
     folderHasItemsOnBranch,
   } = useAppsStore((state) => state.folderDialogState);
   const resetFolderDialogState = useAppsStore((state) => state.resetFolderDialogState);
@@ -68,7 +67,6 @@ export default function FolderActionsDialog({ open, defaultAppType }) {
 
   const appId = appDetails?.id;
   const appType = appDetails?.type ?? defaultAppType;
-  const selectedRowCount = selectedRowIds?.length ?? 0;
 
   const handleResetState = () => {
     resetFolderDialogState();
@@ -169,7 +167,6 @@ export default function FolderActionsDialog({ open, defaultAppType }) {
   const isFolderHasAppsWarning = actionType === 'folder-has-apps-warning';
   const isCreateOrEditFolder = ['create-folder', 'rename-folder'].includes(actionType);
   const isDeleteFolder = actionType === 'delete-folder';
-  const isBulkDeleteFolders = actionType === 'bulk-delete-folder';
   const isRemoveAppFromFolder = actionType === 'remove-app-from-folder';
 
   const isNameEmpty = isCreateOrEditFolder && !name.trim();
@@ -183,17 +180,15 @@ export default function FolderActionsDialog({ open, defaultAppType }) {
   const isSubmitBtnDisabled =
     hasError || isNameEmpty || isEditTypeAndNameIsSame || isFolderToMoveSelected || isFormBeingSubmitted;
 
-  const isAlertDialog = isDeleteFolder || isBulkDeleteFolders || isFolderHasAppsWarning;
+  const isAlertDialog = isDeleteFolder || isFolderHasAppsWarning;
 
   const submitBtnLabel = isRemoveAppFromFolder
     ? 'Remove from folder'
     : isAddToFolder
       ? 'Move to folder'
-      : isBulkDeleteFolders
-        ? `Delete folder${selectedRowCount > 1 ? 's' : ''}`
-        : isFolderHasAppsWarning
-          ? `I understand`
-          : t(`homePage.foldersSection.${camelCase(actionType)}Folder`, capitalize(startCase(actionType)));
+      : isFolderHasAppsWarning
+        ? `I understand`
+        : t(`homePage.foldersSection.${camelCase(actionType)}Folder`, capitalize(startCase(actionType)));
 
   const customSubmitBtnProp = isFolderHasAppsWarning
     ? { variant: 'outline' }
@@ -247,8 +242,6 @@ export default function FolderActionsDialog({ open, defaultAppType }) {
           selectedFolder={selectedFolder}
           setSelectedFolder={setSelectedFolder}
         />
-      ) : isBulkDeleteFolders ? (
-        <BulkDeleteFoldersBody selectedRowCount={selectedRowCount} />
       ) : isFolderHasAppsWarning ? (
         <FolderHasAppsWarning
           appType={appType}
@@ -363,22 +356,6 @@ function FolderHasAppsWarning({ branches, appType }) {
       <p className="mb-0">
         Make sure changes are committed and merged to {defaultBranchName || 'the default branch'}. Else, the folder will
         reappear on the next pull.
-      </p>
-    </div>
-  );
-}
-
-function BulkDeleteFoldersBody({ selectedRowCount }) {
-  const noun = selectedRowCount > 1 ? 'folders' : 'folder';
-  const heading = `Delete selected ${noun}?`;
-  const message = `You are about to delete ${selectedRowCount} ${noun}. This action cannot be undone and may remove any related data.`;
-
-  return (
-    <div className="tw-px-6 tw-py-4">
-      <TriangleAlert size={40} color="var(--icon-danger)" className="tw-mb-2" />
-      <h6 className="tw-font-title-x-large tw-text-text-default tw-mb-0.5">{heading}</h6>
-      <p data-cy="modal-message" className="tw-font-body-default tw-text-text-default tw-mb-0">
-        {message}
       </p>
     </div>
   );

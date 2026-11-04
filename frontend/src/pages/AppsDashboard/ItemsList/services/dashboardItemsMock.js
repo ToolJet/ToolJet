@@ -1,4 +1,4 @@
-// List view only: the grid view reads `/v2/apps` through react-query (see `ItemsList/DECISIONS.md`).
+// Not in use: the dashboard reads `/v2/apps` through react-query and keeps its UI state in `appsStore` (see `ItemsList/DECISIONS.md`).
 // In-memory stand-in for the dashboard items API until the backend implements the contract.
 // Responses follow `ListResponse` (see `pages/AppsDashboard/dummyData/types.ts`).
 import { getDummyListResponse } from '@/pages/AppsDashboard/dummyData';

@@ -51,6 +51,7 @@ export default function ItemNameCell({ row, depth, appType }) {
       <div className="tw-flex tw-shrink-0 tw-items-center tw-gap-1 tw-pl-2">
         {/* Pinned items show the pin at rest; others reveal it with the rest of the row actions. */}
         <PinUnpinButton
+          appType={appType}
           itemKind={item.kind}
           itemDetails={item}
           pinned={item.pinned}

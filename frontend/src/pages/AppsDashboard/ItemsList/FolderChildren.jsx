@@ -1,8 +1,13 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+// eslint-disable-next-line import/no-unresolved
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
-import { useItemsListStore } from './store/itemsListStore';
+import { useSearchStore } from '@/_stores/searchStore';
+import { appsV2InfiniteQueryOptions } from '@/_services/hooks/appsServiceHooks';
+import { FOLDER_PAGE_SIZE } from '@/pages/AppsDashboard/helper';
+import { isAppItem } from '@/pages/AppsDashboard/items';
 import { useSharedRowSelection } from './hooks/useSharedRowSelection';
 import { columns, getRowId } from './columns';
 import ItemRow from './ItemRow';
@@ -15,23 +20,28 @@ const LOAD_MORE_THRESHOLD = 5;
 const EMPTY_ITEMS = [];
 const POSITIONED_ROW_CLASS = 'tw-absolute tw-inset-x-0 tw-top-0';
 
-export default function FolderChildren({ folder, listParams, appType }) {
+// Status names the render code below switches on.
+const getStatus = ({ isLoading, isFetchingNextPage, isError }) => {
+  if (isLoading) return 'loading';
+  if (isFetchingNextPage) return 'loadingMore';
+  if (isError) return 'error';
+  return 'success';
+};
+
+export default function FolderChildren({ folder, appType }) {
   // `depth` 1 marks apps inside a folder; memoized so the table options stay stable between renders.
   const tableMeta = useMemo(() => ({ depth: 1, appType }), [appType]);
-  const folderState = useItemsListStore((state) => state.folders[folder.id]);
-  const fetchFolderItems = useItemsListStore((state) => state.fetchFolderItems);
+  const searchQuery = useSearchStore((state) => state.searchQuery);
+  const folderQuery = useInfiniteQuery(
+    appsV2InfiniteQueryOptions({ appType, folderId: folder.id, searchQuery, pageSize: FOLDER_PAGE_SIZE })
+  );
+  const { data, hasNextPage, fetchNextPage, refetch } = folderQuery;
   const { rowSelection, onRowSelectionChange, enableRowSelection } = useSharedRowSelection();
   const scrollContainerRef = useRef(null);
   const [scrollbarWidth, setScrollbarWidth] = useState(0);
 
-  // Runs on first expand and again after resetFolders drops the cache (e.g. on a sort change).
-  const isCached = Boolean(folderState);
-  useEffect(() => {
-    if (!isCached) fetchFolderItems(folder.id, listParams);
-  }, [isCached, folder.id, listParams, fetchFolderItems]);
-
-  const items = folderState?.items ?? EMPTY_ITEMS;
-  const status = folderState?.status ?? 'loading';
+  const items = useMemo(() => data?.pages.flatMap((page) => page.items).filter(isAppItem) ?? EMPTY_ITEMS, [data]);
+  const status = getStatus(folderQuery);
   const table = useReactTable({
     data: items,
     columns,
@@ -64,13 +74,12 @@ export default function FolderChildren({ folder, listParams, appType }) {
   }, [totalSize]);
   const lastRenderedIndex = virtualItems[virtualItems.length - 1]?.index ?? -1;
 
-  const shouldLoadMore =
-    status === 'success' && folderState.hasMore && lastRenderedIndex >= rows.length - LOAD_MORE_THRESHOLD;
+  const shouldLoadMore = status === 'success' && hasNextPage && lastRenderedIndex >= rows.length - LOAD_MORE_THRESHOLD;
   useEffect(() => {
-    if (shouldLoadMore) fetchFolderItems(folder.id, listParams, { nextPage: true });
-  }, [shouldLoadMore, folder.id, listParams, fetchFolderItems]);
+    if (shouldLoadMore) fetchNextPage();
+  }, [shouldLoadMore, fetchNextPage]);
 
-  const retry = () => fetchFolderItems(folder.id, listParams, { nextPage: rows.length > 0 });
+  const retry = () => (rows.length > 0 ? fetchNextPage() : refetch());
 
   if (status === 'loading') {
     return (
