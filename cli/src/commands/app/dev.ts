@@ -4,7 +4,7 @@ import * as path from 'path';
 
 import { Project, GEN_FILE } from '../../lib/app/project';
 import { openSession, resolveTarget } from '../../lib/app/session';
-import { devBundleOwnerId, findOrCreateLibrary, pullSnapshot, syncApp } from '../../lib/app/remote';
+import { appLibrary, appLibraryLine, devBundleOwnerId, pullSnapshot, syncApp } from '../../lib/app/remote';
 import { generateTypes } from '../../lib/app/typegen';
 import { checkSources } from '../../lib/app/check';
 import { targetFlags } from '../../lib/app/flags';
@@ -82,9 +82,13 @@ export default class AppDev extends Command {
       const working = await workingApp(session, project.root, app);
       const version = working.app.version;
       if (working.branch) this.log(formatSuccess(branchLine(working.branch)));
-      const { correlationId, libraryName } = project.readLibraryConfig();
-      const library = await findOrCreateLibrary(session, correlationId, libraryName);
       const snapshot = await pullSnapshot(session, app.appId, version?.id);
+      const appId = app.appId;
+      const { library, changed } = await project.useAppLibrary((wanted) =>
+        appLibrary(session, { appId, versionId: snapshot.versionId }, wanted)
+      );
+      const { correlationId, name: libraryName } = library;
+      if (changed) this.log(formatSuccess(appLibraryLine(library)));
       project.writeSnapshot(snapshot);
       fs.writeFileSync(path.join(project.frontend, GEN_FILE), generateTypes(app, snapshot));
       const client = new ApiClient(

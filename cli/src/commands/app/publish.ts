@@ -3,7 +3,7 @@ import * as path from 'path';
 
 import { Project } from '../../lib/app/project';
 import { openSession, resolveTarget } from '../../lib/app/session';
-import { devBundleOwnerId, findOrCreateLibrary, pullSnapshot, syncApp } from '../../lib/app/remote';
+import { appLibrary, appLibraryLine, devBundleOwnerId, pullSnapshot, syncApp } from '../../lib/app/remote';
 import { checkSources } from '../../lib/app/check';
 import { targetFlags } from '../../lib/app/flags';
 import { codeSavedLine, sourceFlags } from '../../lib/app/source-flags';
@@ -77,8 +77,12 @@ export default class AppPublish extends Command {
       if (result.tsErrors > 0) throw new Error(`${result.tsErrors} TypeScript error(s):\n${result.tsErrorReport}`);
 
       // 1. The draft runs this build: the dev track upload, pinned on the draft.
-      const { correlationId, libraryName } = project.readLibraryConfig();
-      const library = await findOrCreateLibrary(session, correlationId, libraryName);
+      const appId = app.appId;
+      const { library, changed } = await project.useAppLibrary((wanted) =>
+        appLibrary(session, { appId, versionId: snapshot.versionId }, wanted)
+      );
+      const { correlationId, name: libraryName } = library;
+      if (changed) this.log(formatSuccess(appLibraryLine(library)));
       await new ApiClient(
         target.url,
         target.token,

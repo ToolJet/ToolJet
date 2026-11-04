@@ -87,6 +87,38 @@ describe('git branch to draft', () => {
     expect(session.calls).to.include('/apps/app-1?branch_id=b-2');
   });
 
+  describe('outside a git checkout (the AI builds in a folder that is not one)', () => {
+    const noGit = () => fs.mkdtempSync(path.join(os.tmpdir(), 'tj-nogit-'));
+    const active = (answer: () => any): Session & { calls: string[] } => {
+      const calls: string[] = [];
+      return {
+        calls,
+        api: async (p: string) => {
+          calls.push(p);
+          if (p === '/code-mode-source/app-1/branch-draft') return answer();
+          return {};
+        },
+      } as any;
+    };
+
+    it('works on the draft of the feature branch open in ToolJet, not the default one', async () => {
+      const session = active(() => ({ branch: feature, version: { id: 'ver-9', name: 'feature-x', status: 'DRAFT' } }));
+      const result = await workingApp(session, noGit(), app);
+      expect(result.app.version).to.deep.equal({ id: 'ver-9', name: 'feature-x' });
+      expect(result.branch).to.deep.equal({ name: 'feature-x', isDefault: false, active: true });
+    });
+
+    it('keeps the editing version on the default branch, without branches, and on a ToolJet that predates this', async () => {
+      const main = active(() => ({ branch: { id: 'b-1', name: 'main', isDefault: true }, version: { id: 'ver-1', name: 'v1', status: 'DRAFT' } }));
+      expect((await workingApp(main, noGit(), app)).app).to.equal(app);
+      expect((await workingApp(active(() => ({ branch: null, version: null })), noGit(), app)).app).to.equal(app);
+      const old = active(() => {
+        throw new ApiError('branch is required', 400, '{}');
+      });
+      expect((await workingApp(old, noGit(), app)).app).to.equal(app);
+    });
+  });
+
   it('says so when the workspace has no such branch', async () => {
     let error: Error | undefined;
     await workingApp(fakeSession({ main: { branch: { id: 'b-1', name: 'main', isDefault: true }, version: null } }), repo('feature-y'), app).catch(

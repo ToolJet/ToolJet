@@ -62,6 +62,8 @@ function fakeSession(stored: StoredCode = 'none'): Session & { calls: string[] }
   const source = '/code-mode-source/app-1/versions/ver-2';
   const summary = { exists: true, revision: 2, owner: 'platform', contentHash: 'hash-2' };
   const routes: Record<string, unknown> = {
+    // A workspace without git sync: no branch, so the editing version.
+    '/code-mode-source/app-1/branch-draft': { branch: null, version: null },
     '/apps/app-1': v2,
     '/v2/apps/app-1/versions/ver-2': v2,
     '/v2/apps/app-1/versions/ver-1': v1,
@@ -176,7 +178,8 @@ describe('tooljet app clone, pull and checkout', () => {
     fs.rmSync(path.join(project.root, '.tooljet'), { recursive: true });
     const session = fakeSession();
     const snapshot = await pullProject(session, project);
-    expect(session.calls[0]).to.equal('GET /apps/app-1');
+    // Which branch the project works on first (none here), then the editing version.
+    expect(session.calls.slice(0, 2)).to.deep.equal(['GET /code-mode-source/app-1/branch-draft', 'GET /apps/app-1']);
     expect(snapshot).to.include({ versionId: 'ver-2', versionName: 'v2' });
     expect(snapshot.queries.map((q) => q.name)).to.deep.equal(['orders', 'setStatus']);
     expect(snapshot.queries[1].params).to.deep.equal(['id', 'status']);

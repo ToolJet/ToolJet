@@ -103,6 +103,25 @@ export class Project {
     return JSON.parse(fs.readFileSync(path.join(this.frontend, '.tooljet', 'config.json'), 'utf8'));
   }
 
+  /**
+   * The library ToolJet says the app builds into (remote.ts appLibrary). When it is not the one the config names (the
+   * app already has its own, or a new one got a name of its own), the config follows it, keeping its other settings,
+   * so the code stored next names it.
+   */
+  async useAppLibrary<T extends { name: string; correlationId: string }>(
+    resolve: (wanted: { correlationId: string; name: string }) => Promise<T>
+  ): Promise<{ library: T; changed: boolean }> {
+    const file = path.join(this.frontend, '.tooljet', 'config.json');
+    const config = JSON.parse(fs.readFileSync(file, 'utf8'));
+    const library = await resolve({ correlationId: config.correlationId, name: config.libraryName });
+    const changed = library.correlationId !== config.correlationId || library.name !== config.libraryName;
+    if (changed) {
+      const next = { ...config, libraryName: library.name, correlationId: library.correlationId };
+      fs.writeFileSync(file, JSON.stringify(next, null, 2) + '\n');
+    }
+    return { library, changed };
+  }
+
   readSnapshot(): Snapshot | null {
     const file = path.join(this.root, SNAPSHOT_FILE);
     return fs.existsSync(file) ? (JSON.parse(fs.readFileSync(file, 'utf8')) as Snapshot) : null;

@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 
-import type { Session } from './session';
+import { ApiError, type Session } from './session';
 import type { AppJson, Snapshot, SnapshotColumn } from './project';
 
 /* The ToolJet calls `tooljet app` makes, all through the user's session (session.ts). */
@@ -220,6 +220,45 @@ export async function syncApp(
     editorUrl: (appUrl: string) => `${appUrl}/${session.organizationSlug ?? session.organizationId}/apps/${remote.id}/${app.codePage.handle}`,
   };
 }
+
+export interface AppLibrary {
+  id: string;
+  name: string;
+  correlationId: string;
+  created: boolean;
+  /** The app's own library, which the project's .tooljet/config.json did not name. */
+  reused?: boolean;
+  /** The version's stored code named no library and now names this one. */
+  linked?: boolean;
+}
+
+/**
+ * The library this app's project builds into, asked of ToolJet for the app: an app in Code mode keeps its own library
+ * whatever the project names, so a new project folder for an existing app (or a git branch's draft) never makes a
+ * second library with the app's name. A ToolJet without the route: find-or-create by the project's correlationId.
+ */
+export async function appLibrary(
+  session: Session,
+  target: { appId: string; versionId?: string },
+  wanted: { correlationId: string; name: string }
+): Promise<AppLibrary> {
+  try {
+    return (await session.api(`/code-mode-source/${target.appId}/library`, {
+      method: 'POST',
+      body: { ...wanted, ...(target.versionId ? { versionId: target.versionId } : {}) },
+    })) as AppLibrary;
+  } catch (err) {
+    const missingRoute = err instanceof ApiError && err.status === 404 && /Cannot POST/i.test(`${err.message} ${err.body}`);
+    if (!missingRoute) throw err;
+  }
+  return findOrCreateLibrary(session, wanted.correlationId, wanted.name);
+}
+
+/** What dev and publish say when the project's config now names another library. */
+export const appLibraryLine = (library: AppLibrary): string =>
+  library.reused
+    ? `Building into the app's component library "${library.name}" (frontend/.tooljet/config.json updated)`
+    : `Building into a new component library "${library.name}" (frontend/.tooljet/config.json updated)`;
 
 /** The app project's library on the server (created on first use), and the signed-in user's dev bundle owner id. */
 export async function findOrCreateLibrary(session: Session, correlationId: string, name: string) {
