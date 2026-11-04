@@ -42,6 +42,8 @@ import {
 } from './componentsSliceUtils';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { arrangeRecordChildren } from '@/AppBuilder/Widgets/Listview/arrangeRecordChildren';
+import { getRecordHeight } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
 import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
 
 // calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
@@ -1911,11 +1913,11 @@ export const createComponentsSlice = (set, get) => ({
     componentLayouts,
     newParentId,
     moduleId = 'canvas',
-    { skipUndoRedo = false, updateParent = false, saveAfterAction = true, targetLayout } = {}
+    { skipUndoRedo = false, updateParent = false, saveAfterAction = true, targetLayout, mergeWithPrevious = false } = {}
   ) => {
     const {
       saveComponentChanges,
-      withUndoRedo,
+      withUndoRedo: baseWithUndoRedo,
       getComponentTypeFromId,
       setResolvedComponent,
       getComponentDefinition,
@@ -1928,6 +1930,8 @@ export const createComponentsSlice = (set, get) => ({
       addToDependencyGraph,
       removeNode,
     } = get();
+    // One user action spread over several writes undoes as one step.
+    const withUndoRedo = (fn, skip) => baseWithUndoRedo(fn, skip, { mergeWithPrevious });
     // Undo/redo replays a patch captured in another layout, so the caller can name the target.
     const layoutKey = targetLayout || currentLayout;
     const currentPageIndex = getCurrentPageIndex(moduleId);
@@ -2306,6 +2310,36 @@ export const createComponentsSlice = (set, get) => ({
     get().multiplayer.broadcastUpdates({ componentId, updates }, 'components', 'update');
   },
 
+  arrangeListviewRecordChildren: (
+    listviewId,
+    previousMode,
+    nextMode,
+    moduleId = 'canvas',
+    { saveAfterAction = true } = {}
+  ) => {
+    const { getResolvedValue, getCurrentPageComponents, setComponentLayout, currentLayout } = get();
+    const toMode = String(getResolvedValue(nextMode) ?? 'list').toLowerCase();
+    const fromMode = String(getResolvedValue(previousMode) ?? 'list').toLowerCase();
+    if (toMode === fromMode || !['list', 'grid'].includes(toMode)) return;
+
+    const pageComponents = getCurrentPageComponents(moduleId);
+    const { properties = {} } = pageComponents[listviewId]?.component?.definition ?? {};
+    const recordHeight =
+      Number(
+        getResolvedValue(getRecordHeight(toMode, properties.rowHeight?.value, properties.gridRecordHeight?.value))
+      ) || 100;
+    const children = (get().containerChildrenMapping?.[listviewId] ?? [])
+      .map((id) => ({
+        id,
+        componentName: pageComponents[id]?.component?.component,
+        layout: pageComponents[id]?.layouts?.[currentLayout],
+      }))
+      .filter((child) => child.layout && !isNaN(child.layout.top) && !isNaN(child.layout.left));
+    const layouts = arrangeRecordChildren(children, { toMode, fromMode, recordHeight });
+    if (Object.keys(layouts).length === 0) return;
+    setComponentLayout(layouts, undefined, moduleId, { saveAfterAction, mergeWithPrevious: true });
+  },
+
   setComponentProperty: (
     componentId,
     property,
@@ -2418,6 +2452,17 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'setComponentProperty'
     );
+
+    // A changed Layout re-arranges the record's children in the same undo step; an undo replay restores them itself.
+    if (
+      !skipUndoRedo &&
+      componentDef.component.component === 'Listview' &&
+      property === 'mode' &&
+      paramType === 'properties' &&
+      attr === 'value'
+    ) {
+      get().arrangeListviewRecordChildren(componentId, oldValue?.value, updatedValue, moduleId, { saveAfterAction });
+    }
 
     if (attr !== 'fxActive') {
       setValueToComponent(

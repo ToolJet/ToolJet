@@ -85,9 +85,15 @@ describe('Listview: Layout change re-arranges the record canvas', () => {
     expect(layoutOf('btn')).toEqual({ top: 25, left: 25, width: 17, height: 30 });
   });
 
-  test('[Listview-GRID-007] one undo restores the old Layout and every child position', () => {
-    // Break this catches: an undo that flips the switch back but leaves the children stacked, or the reverse.
+  test('[Listview-GRID-007] one undo restores the old Layout and every child position, a moved one included', () => {
+    // Break this catches: an undo that flips the switch back but leaves the children stacked, or re-arranges them again.
     seed();
+    useStore
+      .getState()
+      .setComponentLayout({ txt: { top: 40, left: 20, width: 12, height: 30 } }, undefined, MODULE_ID, {
+        skipUndoRedo: true,
+        saveAfterAction: false,
+      });
 
     setMode('grid');
     expect(layoutOf('txt').left).toBe(1);
@@ -95,7 +101,7 @@ describe('Listview: Layout change re-arranges the record canvas', () => {
 
     expect(modeOf()).toBe('list');
     expect(layoutOf('img')).toEqual({ top: 10, left: 3, width: 6, height: 60 });
-    expect(layoutOf('txt')).toEqual({ top: 25, left: 11, width: 12, height: 30 });
+    expect(layoutOf('txt')).toEqual({ top: 40, left: 20, width: 12, height: 30 });
     expect(layoutOf('btn')).toEqual({ top: 25, left: 25, width: 17, height: 30 });
     useStore.getState().handleRedo();
     expect(modeOf()).toBe('grid');
@@ -117,7 +123,7 @@ describe('Listview: Layout change re-arranges the record canvas', () => {
     expect(layoutOf('txt')).toEqual({ top: 40, left: 20, width: 12, height: 30 });
   });
 
-  test('[Listview-GRID-008] a record with no children changes Layout without error', () => {
+  test('[Listview-GRID-009] a record with no children changes Layout without error', () => {
     // Break this catches: a crash on a ListView whose record canvas is empty.
     seed({ withChildren: false });
 
