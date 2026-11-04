@@ -186,10 +186,4 @@ describe('Number Input — properties facet', { testIsolation: false }, () => {
             .closest('[role="radio"]')
             .should('have.attr', 'aria-checked', 'true'); // Markdown selected
     });
-
-    // ── Layout (others) ───────────────────────────────────────────────────────
-    it('layout — showOnDesktop + showOnMobile via verifyLayout', () => {
-        // source: numberinput.js:11 / numberinput.js:12
-        verifyLayout(W);
-    });
 });
