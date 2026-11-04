@@ -14,6 +14,7 @@ import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { ListviewSubcontainer } from './ListviewSubcontainer';
+import { ListviewEmptyState } from './ListviewEmptyState';
 import { HorizontalSlot } from '@/AppBuilder/Widgets/Form/Components/HorizontalSlot';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 import cx from 'classnames';
@@ -470,70 +471,74 @@ export const Listview = function Listview({
               />
             </div>
           )}
-          <div role="list" className="row w-100 m-0 p-0" style={recordListStyle}>
-            {filteredData.map((_listItem, index) => (
-              // Keyed by record: a page-local key makes React reuse row 0's children on every page.
-              <React.Fragment key={startIndexOfRowInThePage + index}>
-                <ListviewSubcontainer
-                  id={id}
-                  index={index}
-                  moduleId={moduleId}
-                  mode={mode}
-                  rowHeight={recordHeight}
-                  positiveColumns={positiveColumns}
-                  showBorder={isLegacy && showBorder}
-                  recordWidth={isGridLayout ? '100%' : `${100 / positiveColumns}%`}
-                  recordBoxStyle={recordBoxStyle}
-                  recordBorderInset={recordBorderInset}
-                  onRecordOrRowClicked={onRecordOrRowClicked}
-                  onRecordHovered={onRecordHovered}
-                  computeCanvasBackgroundColor={computeCanvasBackgroundColor}
-                  darkMode={darkMode}
-                  width={recordCanvasWidth}
-                  isDynamicHeightEnabled={isDynamicHeightEnabled}
-                  data={data}
-                  currentLayout={currentLayout}
-                  visibility={visibility}
-                  parentHeight={height}
-                  dataCy={dataCy}
-                  componentType={componentType}
-                />
-                {/* aria-hidden: a list may only own list items. The negative margin keeps each line inside its gap. */}
-                {isGridLayout &&
-                  isBordered &&
-                  (index + 1) % recordsPerLine !== 0 &&
-                  index < filteredData.length - 1 && (
+          {filteredData.length === 0 ? (
+            <ListviewEmptyState />
+          ) : (
+            <div role="list" className="row w-100 m-0 p-0" style={recordListStyle}>
+              {filteredData.map((_listItem, index) => (
+                // Keyed by record: a page-local key makes React reuse row 0's children on every page.
+                <React.Fragment key={startIndexOfRowInThePage + index}>
+                  <ListviewSubcontainer
+                    id={id}
+                    index={index}
+                    moduleId={moduleId}
+                    mode={mode}
+                    rowHeight={recordHeight}
+                    positiveColumns={positiveColumns}
+                    showBorder={isLegacy && showBorder}
+                    recordWidth={isGridLayout ? '100%' : `${100 / positiveColumns}%`}
+                    recordBoxStyle={recordBoxStyle}
+                    recordBorderInset={recordBorderInset}
+                    onRecordOrRowClicked={onRecordOrRowClicked}
+                    onRecordHovered={onRecordHovered}
+                    computeCanvasBackgroundColor={computeCanvasBackgroundColor}
+                    darkMode={darkMode}
+                    width={recordCanvasWidth}
+                    isDynamicHeightEnabled={isDynamicHeightEnabled}
+                    data={data}
+                    currentLayout={currentLayout}
+                    visibility={visibility}
+                    parentHeight={height}
+                    dataCy={dataCy}
+                    componentType={componentType}
+                  />
+                  {/* aria-hidden: a list may only own list items. The negative margin keeps each line inside its gap. */}
+                  {isGridLayout &&
+                    isBordered &&
+                    (index + 1) % recordsPerLine !== 0 &&
+                    index < filteredData.length - 1 && (
+                      <div
+                        aria-hidden="true"
+                        className="listview-record-divider-vertical"
+                        style={{
+                          width: DIVIDER_WIDTH,
+                          // The 0px track and Bootstrap's `.row > * { max-width: 100% }` would clamp the line to 0.
+                          minWidth: DIVIDER_WIDTH,
+                          maxWidth: 'none',
+                          marginRight: -DIVIDER_WIDTH,
+                          padding: 0,
+                          backgroundColor: dividerColor,
+                        }}
+                      />
+                    )}
+                  {isBordered && (index + 1) % recordsPerLine === 0 && index < filteredData.length - 1 && (
                     <div
                       aria-hidden="true"
-                      className="listview-record-divider-vertical"
+                      className="listview-record-divider"
                       style={{
-                        width: DIVIDER_WIDTH,
-                        // The 0px track and Bootstrap's `.row > * { max-width: 100% }` would clamp the line to 0.
-                        minWidth: DIVIDER_WIDTH,
-                        maxWidth: 'none',
-                        marginRight: -DIVIDER_WIDTH,
+                        gridColumn: '1 / -1',
+                        flex: '0 0 100%',
+                        height: DIVIDER_WIDTH,
+                        marginBottom: -DIVIDER_WIDTH,
                         padding: 0,
                         backgroundColor: dividerColor,
                       }}
                     />
                   )}
-                {isBordered && (index + 1) % recordsPerLine === 0 && index < filteredData.length - 1 && (
-                  <div
-                    aria-hidden="true"
-                    className="listview-record-divider"
-                    style={{
-                      gridColumn: '1 / -1',
-                      flex: '0 0 100%',
-                      height: DIVIDER_WIDTH,
-                      marginBottom: -DIVIDER_WIDTH,
-                      padding: 0,
-                      backgroundColor: dividerColor,
-                    }}
-                  />
-                )}
-              </React.Fragment>
-            ))}
-          </div>
+                </React.Fragment>
+              ))}
+            </div>
+          )}
           {enablePagination && (
             // Last flex item; sticky so it stays at the bottom while the records scroll behind it.
             <div
