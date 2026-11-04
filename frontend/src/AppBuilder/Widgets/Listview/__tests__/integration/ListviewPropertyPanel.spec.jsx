@@ -75,7 +75,7 @@ const fieldsIn = (container, title) =>
 const editor = (name) => editors.filter((props) => props.paramName === name).pop();
 
 describe('List View property panel', () => {
-  test('[Listview-INSP-001] sections run Header, Data, Configure list item, Events, Additional Actions, Devices', () => {
+  test('[Listview-INSP-005] sections run Header, Data, Configure list item, Events, Additional Actions, Devices', () => {
     // Break this catches: a section moved or left under the old "Properties" title.
     const { container } = renderPanel();
 
@@ -97,7 +97,7 @@ describe('List View property panel', () => {
     expect(editor('dataSourceSelector').initialValue).toBe('{{queries.q1.data}}');
   });
 
-  test('[Listview-INSP-001] Configure list item lists the fields in order under their new labels', () => {
+  test('[Listview-INSP-005] Configure list item lists the fields in order under their new labels', () => {
     // Break this catches: an old label, a wrong order, or Type left outside the section.
     const { container } = renderPanel({
       mode: 'grid',
@@ -116,7 +116,7 @@ describe('List View property panel', () => {
     ]);
   });
 
-  test('[Listview-INSP-001] Type, records per page and Total records are hidden while pagination is off', () => {
+  test('[Listview-INSP-005] Type, records per page and Total records are hidden while pagination is off', () => {
     // Break this catches: pagination settings shown while the pager is off.
     const { container } = renderPanel({ enablePagination: '{{false}}', paginationType: 'serverSide' });
 
