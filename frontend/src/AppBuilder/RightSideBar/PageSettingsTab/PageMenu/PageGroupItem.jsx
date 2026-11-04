@@ -9,7 +9,6 @@ import { AddEditPagePopup } from './AddNewPagePopup';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
-import Skip from '@/_ui/Icon/solidIcons/Skip';
 
 export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -102,14 +101,7 @@ export const PageGroupItem = memo(({ page, highlight, darkMode }) => {
               </OverflowTooltip>
             </div>
             <span className="color-slate09 meta-text d-flex align-items-center justify-content-center">
-              {page?.disabled && (
-                <ToolTip message="Disabled group" placement="bottom">
-                  <div className=" d-flex align-items-center justify-content-center">
-                    <Skip fill="var(--icons-default)" className="" width={16} height={16} viewBox="0 0 16 16" />
-                  </div>
-                </ToolTip>
-              )}
-              {pageVisibility && !page?.disabled && (
+              {pageVisibility && (
                 <ToolTip message="Hidden group" placement="bottom">
                   <div className=" d-flex align-items-center justify-content-center">
                     <EyeDisable fill="var(--icons-default)" className="" width={16} height={16} />

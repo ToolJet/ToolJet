@@ -387,7 +387,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
                       let evaluated = false;
                       try {
                         evaluated = !!getResolvedValue(currentExpression, {}, moduleId);
-                      } catch {
+                      } catch (e) {
                         evaluated = false;
                       }
                       optionsChanged({

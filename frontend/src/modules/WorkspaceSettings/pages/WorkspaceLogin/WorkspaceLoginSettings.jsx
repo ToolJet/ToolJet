@@ -654,7 +654,6 @@ class OrganizationLogin extends React.Component {
                         options={options}
                         canToggleAutomaticSSOLogin={canToggleAutomaticSSOLogin}
                         handleCheckboxChange={this.handleCheckboxChange}
-                        automaticSsoLoginLicensed={featureAccess?.automaticSsoLogin}
                       />
                     </form>
                   </div>
