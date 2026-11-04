@@ -358,3 +358,28 @@ export function useUnpinResource() {
       queryClient.invalidateQueries({ queryKey: ['appsV2', { appType: variables.appType }] }),
   });
 }
+
+// Reorder answers 204, so the root page is reordered in the cache at once, restored on error, and refetched after.
+export function useReorderPins() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    /** @param {{ appType: TAppType, rootQueryKey: unknown[], items: ListItem[] }} variables `items`: the root page's rows in their new order */
+    mutationFn: ({ appType, items }) =>
+      appsService.reorderPins({
+        appType,
+        pins: items.filter((item) => item.pinned).map((item) => ({ resource_type: item.kind, resource_id: item.id })),
+      }),
+    onMutate: async ({ rootQueryKey, items }) => {
+      await queryClient.cancelQueries({ queryKey: rootQueryKey, exact: true });
+      const previous = queryClient.getQueryData(rootQueryKey);
+      queryClient.setQueryData(rootQueryKey, (data) => data && { ...data, items });
+      return { previous };
+    },
+    onError: (error, { rootQueryKey }, context) => {
+      queryClient.setQueryData(rootQueryKey, context?.previous);
+      handleError(error);
+    },
+    onSettled: (data, error, { appType }) => queryClient.invalidateQueries({ queryKey: ['appsV2', { appType }] }),
+  });
+}

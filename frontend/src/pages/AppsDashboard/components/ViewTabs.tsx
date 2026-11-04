@@ -21,7 +21,7 @@ const VIEW_ACTIONS = [
 export default function ViewTabs({ appType }: { appType: TAppType }) {
   const setExpanded = useAppsStore((state) => state.setExpanded);
 
-  const [selectedView, setSelectedView] = useState('grid');
+  const [selectedView, setSelectedView] = useState('list');
 
   const handleCollapseFolder = () => {
     setExpanded({});

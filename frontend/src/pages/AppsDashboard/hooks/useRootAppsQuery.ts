@@ -27,10 +27,15 @@ export const appsV2QueryOptions = untypedAppsV2QueryOptions as (
   params: AppsV2Params
 ) => UseQueryOptions<ListResponse, AppsV2Error>;
 
-// `index.tsx` and `GridView` both call this with the same params, so they share one cache entry and one request.
-export function useRootAppsQuery(appType: TAppType) {
+// Options for the root page on screen; its `queryKey` lets mutations edit that cache entry.
+export function useRootAppsQueryOptions(appType: TAppType) {
   const currentPage = useAppsStore((state) => state.currentPage);
   const searchQuery: string = useSearchStore((state: { searchQuery: string }) => state.searchQuery);
 
-  return useQuery(appsV2QueryOptions({ appType, pageNo: currentPage, pageSize: ROOT_PAGE_SIZE, searchQuery }));
+  return appsV2QueryOptions({ appType, pageNo: currentPage, pageSize: ROOT_PAGE_SIZE, searchQuery });
+}
+
+// `index.tsx` and `GridView` both call this with the same params, so they share one cache entry and one request.
+export function useRootAppsQuery(appType: TAppType) {
+  return useQuery(useRootAppsQueryOptions(appType));
 }

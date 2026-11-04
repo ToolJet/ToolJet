@@ -37,6 +37,7 @@ export const appsService = {
   releaseVersion,
   pinResources,
   unpinResource,
+  reorderPins,
   bulkDeleteApps,
 };
 
@@ -123,6 +124,12 @@ function unpinResource({ resourceType, resourceId }) {
     `${config.apiUrl}/v2/pins/${encodeURIComponent(resourceType)}/${encodeURIComponent(resourceId)}${query ? `?${query}` : ''}`,
     getAuthRequestOptions('DELETE')
   ).then(handleResponse);
+}
+
+// `pins` must be every pin of `appType`, in the new order; any other set is a 400. Responds 204 with no body.
+function reorderPins({ appType, pins }) {
+  const body = { type: appType, items: pins, branch_id: getActiveBranchId() };
+  return fetch(`${config.apiUrl}/v2/pins/order`, getAuthRequestOptions('PUT', body)).then(handleResponse);
 }
 
 // All or nothing: responds 200 `{ blocked_ids }`; a non-empty list means nothing was deleted.

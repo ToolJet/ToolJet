@@ -15,7 +15,8 @@ import { getSelectedKind, isInPinnedSection } from '@/pages/AppsDashboard/items'
 import { useListQueryParams } from './hooks/useListQueryParams';
 import { useSharedRowSelection } from './hooks/useSharedRowSelection';
 import { GRID_TEMPLATE_COLUMNS, columns, getRowId } from './columns';
-import ItemRow, { DOCKED_EDGE_SHADOW_CLASS, DOCKED_GUTTER_CLASS, GUTTER_CLASS } from './ItemRow';
+import { DropIndicator, PinReorderProvider, SortableItemRow } from './PinReorder';
+import { DOCKED_EDGE_SHADOW_CLASS, DOCKED_GUTTER_CLASS, GUTTER_CLASS } from './ItemRow';
 import FolderChildren from './FolderChildren';
 import SelectionBar from './SelectionBar';
 import SortMenu from './SortMenu';
@@ -189,16 +190,21 @@ export default function ItemsList({ appType }) {
               {isLoading ? (
                 <ListViewLoading />
               ) : (
-                table.getRowModel().rows.map((row, index, rows) => (
-                  <Fragment key={row.id}>
-                    <ItemRow row={row} />
-                    {row.getIsExpanded() && <FolderChildren folder={row.original} appType={appType} />}
-                    {/* Pinned rows come first, so the divider goes after the last one (and its open folder children). */}
-                    {isInPinnedSection(row.original) &&
-                      rows[index + 1] &&
-                      !isInPinnedSection(rows[index + 1].original) && <Separator decorative className="tw-my-2" />}
-                  </Fragment>
-                ))
+                <PinReorderProvider appType={appType} items={items} pinnedTotal={data?.counts.pinned ?? 0}>
+                  {table.getRowModel().rows.map((row, index, rows) => (
+                    <Fragment key={row.id}>
+                      <DropIndicator rowId={row.id} side="before" />
+                      <SortableItemRow row={row} />
+                      {row.getIsExpanded() && <FolderChildren folder={row.original} appType={appType} />}
+                      {/* After the folder's open children, since that's where a drop below the folder lands. */}
+                      <DropIndicator rowId={row.id} side="after" />
+                      {/* Pinned rows come first, so the divider goes after the last one (and its open folder children). */}
+                      {isInPinnedSection(row.original) &&
+                        rows[index + 1] &&
+                        !isInPinnedSection(rows[index + 1].original) && <Separator decorative className="tw-my-2" />}
+                    </Fragment>
+                  ))}
+                </PinReorderProvider>
               )}
             </div>
           </div>

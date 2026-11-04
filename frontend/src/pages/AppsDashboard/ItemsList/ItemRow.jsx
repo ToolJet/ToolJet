@@ -34,14 +34,15 @@ export const DOCKED_EDGE_SHADOW_CLASS = cn(
 );
 
 // `level` is the treegrid nesting level (2 = inside a folder); `className`/`style` let virtualized lists position the row.
-export default function ItemRow({ row, level = 1, className, style }) {
+// `rowRef`, `dragHandle` (`{ ref, listeners, attributes }`) and `isDragging` come from `SortableItemRow` for pinned rows.
+export default function ItemRow({ row, level = 1, className, style, rowRef, dragHandle, isDragging = false }) {
   const hasSelection = useAppsStore((state) => Object.keys(state.rowSelection).length > 0);
   const isSelected = row.getIsSelected();
   const isInFolderScrollBox = level > 1;
-  const canReorder = row.original.pinned;
 
   return (
     <div
+      ref={rowRef}
       role="row"
       aria-level={level}
       aria-expanded={row.getCanExpand() ? row.getIsExpanded() : undefined}
@@ -57,14 +58,24 @@ export default function ItemRow({ row, level = 1, className, style }) {
           isInFolderScrollBox ? OFFSET_DOCKED_GUTTER_CLASS : DOCKED_GUTTER_CLASS
         )}
       >
-        {/* Figma 1339-125228. Drag-and-drop is not wired yet; this is the handle's placeholder. */}
-        {canReorder && (
-          <span
-            aria-hidden
-            className="tw-flex tw-size-5 tw-cursor-grab tw-items-center tw-justify-center tw-opacity-0 group-hover:tw-opacity-100 group-has-[[data-state=open]]:tw-opacity-100"
+        {/* The dragged row keeps its hover look (Figma 1339-126678) by matching the open-menu hover lock. */}
+        {isDragging && <span hidden data-state="open" />}
+        {/* Figma 1339-125228 */}
+        {dragHandle && (
+          <button
+            type="button"
+            ref={dragHandle.ref}
+            {...dragHandle.attributes}
+            {...dragHandle.listeners}
+            aria-label={`Reorder ${row.original.name}`}
+            className={cn(
+              'tw-flex tw-size-5 tw-cursor-grab tw-items-center tw-justify-center tw-rounded tw-border-0 tw-bg-transparent tw-p-0',
+              'tw-opacity-0 focus-visible:tw-opacity-100 group-hover:tw-opacity-100 group-has-[[data-state=open]]:tw-opacity-100',
+              'focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline'
+            )}
           >
             <GripVertical size={12} className="tw-text-icon-default" />
-          </span>
+          </button>
         )}
         <span className="tw-flex tw-size-5 tw-items-center tw-justify-center">
           {/* Hidden until hover/focus while nothing is selected; opacity (not visibility) keeps it focusable. */}

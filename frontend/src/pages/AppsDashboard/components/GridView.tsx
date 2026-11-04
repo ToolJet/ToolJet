@@ -9,7 +9,7 @@ import { useSearchStore } from '@/_stores/searchStore';
 import { FolderNotFound, NoMatchesFound, NoAppsExist } from './EmptyStates';
 import { BreadcrumbNameLoading, FolderViewLoading, GridViewLoading } from './LoadingStates';
 import { useRootAppsQuery } from '../hooks/useRootAppsQuery';
-import { isAppItem, isFolderItem } from '../items';
+import { isAppItem, isFolderItem, isInPinnedSection } from '../items';
 import { useFolderView } from '../useFolderView';
 import AppCard from './AppCard';
 import FolderCard from './FolderCard';
@@ -149,13 +149,12 @@ function GridViewData({ appType }: { appType: TAppType }) {
   const folders = useMemo(() => (rootItems ?? []).filter(isFolderItem), [rootItems]);
   const apps = useMemo(() => (rootItems ?? []).filter(isAppItem), [rootItems]);
 
-  const isPinnedFolder = (folder: FolderItem) => folder.pinned || folder.has_pinned_apps;
-  const pinnedEntries: PinnedEntry[] = [
-    ...folders.filter(isPinnedFolder).map((folder): PinnedEntry => ({ kind: 'folder', folder })),
-    ...apps.filter((app) => app.pinned).map((app): PinnedEntry => ({ kind: 'app', app })),
-  ];
-  const otherFolders = folders.filter((folder) => !isPinnedFolder(folder));
-  const otherApps = apps.filter((app) => !app.pinned);
+  // Kept in response order: the server lists pins by the user's saved order, folders and apps interleaved.
+  const pinnedEntries = (rootItems ?? [])
+    .filter(isInPinnedSection)
+    .map((item): PinnedEntry => (isFolderItem(item) ? { kind: 'folder', folder: item } : { kind: 'app', app: item }));
+  const otherFolders = folders.filter((folder) => !isInPinnedSection(folder));
+  const otherApps = apps.filter((app) => !isInPinnedSection(app));
 
   // An empty workspace never reaches here: `index.tsx` shows its empty state instead.
   const hasNoMatches = !isLoading && (data?.total ?? 0) === 0 && searchQuery.trim() !== '';
