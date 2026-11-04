@@ -239,8 +239,8 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
             activeTab === 'components'
               ? t('globals.searchComponents', 'Search widgets')
               : activeTab === 'custom'
-              ? t('globals.searchCustomComponents', 'Search components')
-              : t('globals.searchModules', 'Search modules')
+                ? t('globals.searchCustomComponents', 'Search components')
+                : t('globals.searchModules', 'Search modules')
           }
           customClass={`tj-widgets-search-input tj-text-xsm`}
           showClearButton={false}
