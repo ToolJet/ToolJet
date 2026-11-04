@@ -188,25 +188,26 @@ describe('Listview: overflow', () => {
   );
 
   test.each(FORMATS)(
-    '[Listview-OVF-004] %s text shows the full text in a tooltip only when it overflows',
+    '[Listview-OVF-004] %s text shows the full text in a tooltip when it overflows',
     async (format) => {
-      // Break this catches: text clipped with no way to read the rest, or a tooltip repeating text that fits.
+      // Break this catches: text clipped with no way to read the rest.
       await mountRecord({ extraComponents: { txt1: recordText(format, ONE_LINE_BOX) } });
-      await listview.session.user.hover(recordText1());
-      const shown = await waitFor(() => {
-        expect(tooltip()).toBeInTheDocument();
-        return tooltip();
-      });
-      expect(shown.textContent).toBe(LONG);
 
-      listview.teardown();
-      await listview.setup();
-      setGeometry({ overflowing: false });
-      await mountRecord({ extraComponents: { txt1: recordText(format, ONE_LINE_BOX) } });
       await listview.session.user.hover(recordText1());
-      expect(tooltip()).toBeNull();
+
+      await waitFor(() => expect(tooltip()?.textContent).toBe(LONG));
     }
   );
+
+  test.each(FORMATS)('[Listview-OVF-004] %s text that fits shows no tooltip', async (format) => {
+    // Break this catches: a tooltip on every record, repeating text that is fully visible.
+    setGeometry({ overflowing: false });
+    await mountRecord({ extraComponents: { txt1: recordText(format, ONE_LINE_BOX) } });
+
+    await listview.session.user.hover(recordText1());
+
+    expect(tooltip()).toBeNull();
+  });
 
   test.each(STYLES)('[Listview-OVF-005] the rule holds in the %s style', async (listStyle) => {
     // Break this catches: the rule applied to the new styles only, leaving saved Legacy ListViews wrapping.
