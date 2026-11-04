@@ -79,6 +79,16 @@ describe('dev keeps in step with code the ToolJet editor owns', () => {
       });
     });
 
+    it('does not call a new draft newer: its code is what this copy last synced, under a restarted revision', () => {
+      const clone = { revision: 12, owner: 'platform' as const, versionId: 'released', contentHash: 'h12' };
+      expect(checkAgainstStored(clone, 'draft', stored(1, 'h12'), 'edited')).to.deep.equal({
+        kind: 'same-files',
+        revision: 1,
+      });
+      // The draft's code did move on: that is newer, and local changes hold it back.
+      expect(checkAgainstStored(clone, 'draft', stored(2, 'h2'), 'edited')).to.include({ kind: 'behind', clean: false });
+    });
+
     it('only moves the recorded revision on when the files already match the stored code', () => {
       expect(checkAgainstStored(local, 'v', stored(9, 'h9'), 'h9')).to.deep.equal({ kind: 'same-files', revision: 9 });
     });

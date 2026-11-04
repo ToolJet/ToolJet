@@ -38,7 +38,8 @@ export function hashProjectSource(root: string): string {
 export type SourceCheck =
   /** Upload away: ToolJet holds no editor-owned code newer than this copy. */
   | { kind: 'in-step' }
-  /** The files already match what ToolJet stores; only source.json's revision is behind. */
+  /** ToolJet's files are these files, or the ones this copy last synced (a new draft restarts its revision at 1):
+   *  nothing is newer there, and only source.json's revision is behind. */
   | { kind: 'same-files'; revision: number }
   /** ToolJet holds newer code; `clean` when the local files are unchanged since the last sync, so a pull loses nothing. */
   | { kind: 'behind'; revision: number; clean: boolean };
@@ -61,7 +62,8 @@ function compareWithStored(
   localHash: string
 ): Exclude<SourceCheck, { kind: 'in-step' }> {
   const revision = stored.revision as number;
-  if (stored.contentHash && stored.contentHash === localHash) return { kind: 'same-files', revision };
+  if (stored.contentHash && (stored.contentHash === localHash || stored.contentHash === local?.contentHash))
+    return { kind: 'same-files', revision };
   const synced = local && local.versionId === versionId ? local.contentHash : undefined;
   return { kind: 'behind', revision, clean: !!synced && synced === localHash };
 }
