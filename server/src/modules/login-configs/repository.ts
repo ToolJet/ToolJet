@@ -1,3 +1,4 @@
+import { saveSecurityEntity, updateSecurityEntity, deleteSecurityEntity } from '@modules/mcp-oauth/revocation';
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { SSOConfigs, SSOType, ConfigScope } from '@entities/sso_config.entity';
@@ -24,19 +25,23 @@ export class SSOConfigsRepository extends Repository<SSOConfigs> {
     });
 
     if (existingConfig) {
-      return this.save({ ...existingConfig, ...configData });
+      return this.saveConfig({ ...existingConfig, ...configData });
     }
 
-    return this.save(this.create(configData));
+    return this.saveConfig(this.create(configData));
+  }
+
+  async saveConfig(config: Partial<SSOConfigs>): Promise<SSOConfigs> {
+    return saveSecurityEntity(this.manager, SSOConfigs, config);
   }
 
   async updateConfig(id: string, updateData: Partial<SSOConfigs>): Promise<SSOConfigs> {
-    await this.update(id, updateData);
+    await updateSecurityEntity(this.manager, SSOConfigs, id, updateData);
     return this.findOne({ where: { id } });
   }
 
   async deleteConfig(id: string): Promise<void> {
-    await this.delete(id);
+    await deleteSecurityEntity(this.manager, SSOConfigs, id);
   }
 
   async getSSOConfigsForOrganization(organizationId: string, sso: SSOType | string): Promise<SSOConfigs | null> {

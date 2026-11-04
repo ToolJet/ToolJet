@@ -1,9 +1,9 @@
-FROM node:22.15.1 AS builder
+FROM node:22.23.4 AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=8096"
 
-RUN npm i -g npm@10.9.2
+RUN npm i -g npm@10.9.9
 RUN mkdir -p /app
 
 WORKDIR /app
@@ -48,12 +48,12 @@ RUN apt-get update -yq \
     && apt-get clean -y
 
 
-RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
-    && tar -xf node-v22.15.1-linux-x64.tar.xz \
-    && mv node-v22.15.1-linux-x64 /usr/local/lib/nodejs \
+RUN curl -O https://nodejs.org/dist/v22.23.4/node-v22.23.4-linux-x64.tar.xz \
+    && tar -xf node-v22.23.4-linux-x64.tar.xz \
+    && mv node-v22.23.4-linux-x64 /usr/local/lib/nodejs \
     && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
     && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
-    && rm node-v22.15.1-linux-x64.tar.xz
+    && rm node-v22.23.4-linux-x64.tar.xz
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 # Node 22.15.1 ships tz 2025a, missing the Canada DST change of 1 Nov 2026; ICU 2026e files from unicode-org/icu-data. Remove when Node tz >= 2026e.
@@ -64,7 +64,7 @@ RUN node -e "if (process.versions.tz < '2026e') throw new Error('stale tz data: 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apt-get update && \
-    apt-get install -y postgresql-client freetds-dev libaio1 libxml2 wget supervisor && \
+    apt-get install -y postgresql-client freetds-dev libaio1 libxml2 wget supervisor tini && \
     apt-get -o Dpkg::Options::="--force-confold" upgrade -q -y --force-yes && \
     apt-get -y autoremove && \
     apt-get -y autoclean
@@ -138,4 +138,4 @@ WORKDIR /app
 # Dependencies for scripts outside nestjs
 RUN npm install dotenv@10.0.0 joi@17.4.1
 
-ENTRYPOINT ["./server/entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/tini", "-g", "--", "./server/entrypoint.sh"]
