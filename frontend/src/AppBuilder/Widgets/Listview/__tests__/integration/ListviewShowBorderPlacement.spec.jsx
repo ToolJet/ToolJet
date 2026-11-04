@@ -40,6 +40,7 @@ jest.mock('@/AppBuilder/RightSideBar/Inspector/InspectorAccordion', () => ({
 import React from 'react';
 import { render } from '@testing-library/react';
 import { listviewConfig } from '@tooljet/widget-definitions';
+import useStore from '@/AppBuilder/_stores/store';
 import { seedApp } from '@/test/app-builder';
 import { DefaultComponent } from '@/AppBuilder/RightSideBar/Inspector/Components/DefaultComponent';
 import { Inspector } from '@/AppBuilder/RightSideBar/Inspector/Inspector';
@@ -141,5 +142,11 @@ describe('Show bottom border placement', () => {
   test('[Listview-INSP-006] it is not in the Properties tab', () => {
     // Break this catches: the field shown twice.
     expect(inspectorFor({ mode: 'list', listStyle: 'legacy' }).propertiesFields).not.toContain('showBorder');
+  });
+
+  test('[Listview-INSP-006] a Legacy layout bound by an expression that resolves to list still shows it', () => {
+    // Break this catches: judging the layout from the raw expression text.
+    expect(useStore.getState().getResolvedValue("{{'list'}}")).toBe('list');
+    expect(inspectorFor({ mode: "{{'list'}}" }).recordsFields.map(([name]) => name)).toContain('showBorder');
   });
 });
