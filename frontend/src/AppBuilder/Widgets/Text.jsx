@@ -10,6 +10,8 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import OverflowTooltip from '@/_components/OverflowTooltip';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -35,6 +37,7 @@ export const Text = function Text({
   subContainerIndex,
   componentType,
 }) {
+  const { inListviewRecord } = useSubcontainerContext();
   let {
     textSize,
     textColor,
@@ -217,9 +220,15 @@ export const Text = function Text({
     >
       {!isLoading && (
         <div style={commonStyles} className="text-widget-section">
-          {textFormat === 'plainText' && (
-            <div style={commonScrollStyle}>{typeof text === 'object' ? JSON.stringify(text) : text}</div>
-          )}
+          {textFormat === 'plainText' &&
+            (inListviewRecord ? (
+              // A ListView card keeps one line: clipped text gets the full text on hover.
+              <OverflowTooltip style={commonScrollStyle}>
+                {typeof text === 'object' ? JSON.stringify(text) : text}
+              </OverflowTooltip>
+            ) : (
+              <div style={commonScrollStyle}>{typeof text === 'object' ? JSON.stringify(text) : text}</div>
+            ))}
           {textFormat === 'markdown' && (
             <div style={commonScrollStyle}>
               <Markdown className={'reactMarkdown'} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>

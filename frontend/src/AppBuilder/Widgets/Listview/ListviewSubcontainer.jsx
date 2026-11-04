@@ -33,7 +33,7 @@ export const ListviewSubcontainer = ({
 }) => {
   const parentContext = useSubcontainerContext();
   const contextValue = useMemo(
-    () => ({ contextPath: [...parentContext.contextPath, { containerId: id, index }] }),
+    () => ({ contextPath: [...parentContext.contextPath, { containerId: id, index }], inListviewRecord: true }),
     [parentContext.contextPath, id, index]
   );
   const contextIndices = useMemo(

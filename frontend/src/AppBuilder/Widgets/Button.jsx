@@ -6,10 +6,13 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 
 import { getModifiedColor, getSafeRenderableValue } from './utils';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
+  const { inListviewRecord } = useSubcontainerContext();
   const {
     backgroundColor,
     hoverBackgroundMode,
@@ -260,20 +263,38 @@ export const Button = function Button(props) {
               }}
             >
               <span style={{ maxWidth: ' 100%', minWidth: '0' }}>
-                <p
-                  className="tj-text-sm"
-                  style={{
-                    fontWeight: computedFontWeight,
-                    fontSize: `${computedFontSize}px`,
-                    lineHeight: `${computedLineHeight}px`,
-                    margin: '0px',
-                    padding: '0px',
-                    color: computedTextColor,
-                  }}
-                  data-cy={`${dataCy}-label`}
-                >
-                  {getSafeRenderableValue(label)}
-                </p>
+                {inListviewRecord ? (
+                  // A ListView card keeps one line: a clipped label gets the full text on hover.
+                  <OverflowTooltip
+                    childrenClassName="tj-text-sm"
+                    style={{
+                      fontWeight: computedFontWeight,
+                      fontSize: `${computedFontSize}px`,
+                      lineHeight: `${computedLineHeight}px`,
+                      margin: '0px',
+                      padding: '0px',
+                      color: computedTextColor,
+                    }}
+                    data-cy={`${dataCy}-label`}
+                  >
+                    {getSafeRenderableValue(label)}
+                  </OverflowTooltip>
+                ) : (
+                  <p
+                    className="tj-text-sm"
+                    style={{
+                      fontWeight: computedFontWeight,
+                      fontSize: `${computedFontSize}px`,
+                      lineHeight: `${computedLineHeight}px`,
+                      margin: '0px',
+                      padding: '0px',
+                      color: computedTextColor,
+                    }}
+                    data-cy={`${dataCy}-label`}
+                  >
+                    {getSafeRenderableValue(label)}
+                  </p>
+                )}
               </span>
             </div>
             {iconVisibility && (

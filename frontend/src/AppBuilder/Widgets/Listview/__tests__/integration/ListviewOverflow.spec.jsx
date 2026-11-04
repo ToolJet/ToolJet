@@ -43,7 +43,7 @@ const listview = createWidgetHarness({
     borderColor: binding('var(--cc-weak-border)'),
   },
   defaultExtraComponents: {
-    txt1: child('txt1', 'text1', 'Text', { text: binding('{{listItem.name}}') }),
+    txt1: child('txt1', 'text1', 'Text', { text: binding('{{listItem.name}}'), textFormat: binding('plainText') }),
     btn1: child('btn1', 'button1', 'Button', { text: binding('{{listItem.cta}}') }),
   },
   capabilities: { dnd: true },
@@ -55,7 +55,12 @@ const standaloneText = createWidgetHarness({
   componentType: 'Text',
   handle: 'text9',
   id: 'txt9',
-  defaultProperties: { text: binding(LONG), visibility: binding('{{true}}'), loadingState: binding('{{false}}') },
+  defaultProperties: {
+    text: binding(LONG),
+    textFormat: binding('plainText'),
+    visibility: binding('{{true}}'),
+    loadingState: binding('{{false}}'),
+  },
   widgetHeight: 40,
   widgetWidth: 200,
 });
