@@ -389,7 +389,7 @@ export const listviewConfig = {
     {
       handle: 'setPage',
       displayName: 'Set page',
-      params: [{ handle: 'page', displayName: 'Page number', defaultValue: '{{1}}' }],
+      params: [{ handle: 'page', displayName: 'Page', defaultValue: '{{1}}' }],
     },
   ],
   definition: {
