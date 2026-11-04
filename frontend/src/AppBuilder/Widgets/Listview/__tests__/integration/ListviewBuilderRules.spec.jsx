@@ -527,6 +527,48 @@ describe('Listview builder: hovering a copy does not light up the original', () 
   });
 });
 
+describe('Listview builder: the fade stays on the Moveable controls', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const controls = (targetId) => {
+    const box = document.createElement('div');
+    box.className = 'moveable-control-box';
+    box.setAttribute('target-id', targetId);
+    const handle = document.createElement('div');
+    box.appendChild(handle);
+    document.body.appendChild(box);
+    return { box, handle };
+  };
+
+  test('[Listview-BLD-005] pointer on the border or resize handles of a record 1 component keeps records 2..K faded', async () => {
+    // Break this catches: the controls living outside the record, so reaching them ends the hover and the fade.
+    await mount(widget);
+    await user().hover(rows()[0]);
+    await waitFor(() => expect(faded()).toEqual([false, true, true]));
+    const { box, handle } = controls('txt1');
+
+    await user().unhover(rows()[0]);
+    await user().hover(handle);
+    await waitFor(() => expect(faded()).toEqual([false, true, true]));
+
+    await user().hover(document.body);
+    await waitFor(() => expect(faded()).toEqual([false, false, false]));
+    box.remove();
+  });
+
+  test('[Listview-BLD-005] controls of a component outside the list do not fade it', async () => {
+    // Break this catches: any Moveable control box on the page fading every list.
+    await mount(widget);
+    const { box, handle } = controls('somewhere-else');
+
+    await user().hover(handle);
+
+    expect(faded()).toEqual([false, false, false]);
+    box.remove();
+  });
+});
+
 describe('Listview builder: nested header on a copy record', () => {
   const innerHeaderChild = () => child('hdr2', 'title2', 'Text', { text: binding('Inner') }, `${INNER}-header`);
   const harness = createWidgetHarness({
