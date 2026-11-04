@@ -26,6 +26,7 @@ to: <%= name %>/package.json
     "clsx": "^2.1.1",
     "lucide-react": "^1.61.0",
     "react-router": "^7.1.0",
+    "recharts": "^2.15.4",
     "tailwind-merge": "^3.7.0",
     "tailwindcss-animate": "^1.0.7"
   },
