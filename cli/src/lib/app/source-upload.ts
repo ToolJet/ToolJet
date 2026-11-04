@@ -162,6 +162,18 @@ const isProjectPath = (rel: string) =>
   !rel.split('/').some((part) => part === '..' || part === '') &&
   (ROOT_FILES.includes(rel) || TREES.some((tree) => rel.startsWith(`${tree}/`)));
 
+/** The project's files a pull of `stored` would overwrite with other content or remove. */
+export function filesAPullWouldChange(root: string, stored: StoredSource): string[] {
+  const incoming = new Map((stored.files ?? []).map((f) => [f.path, f.content]));
+  return collectProjectSource(root)
+    .filter((local) =>
+      incoming.has(local.path)
+        ? incoming.get(local.path) !== local.content
+        : TREES.some((tree) => local.path.startsWith(`${tree}/`))
+    )
+    .map((local) => local.path);
+}
+
 /**
  * Bring ToolJet's stored source into the project when it is newer than the project's last sync: files written,
  * files the editor deleted removed. Returns what changed, or `pulled: false` when the project is already in step.

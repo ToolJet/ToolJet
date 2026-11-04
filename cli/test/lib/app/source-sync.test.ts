@@ -4,7 +4,9 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
-import { behindMessage, checkAgainstStored, hashProjectSource } from '../../../src/lib/app/source-sync';
+import { Session } from '../../../src/lib/app/session';
+import { behindMessage, checkAgainstStored, hashProjectSource, pullStoredCode } from '../../../src/lib/app/source-sync';
+import { readSourceState, writeSourceState } from '../../../src/lib/app/source-upload';
 
 /*
   Before dev uploads a build (and while it watches) it compares the copy with ToolJet's stored code: a copy behind the
@@ -79,6 +81,85 @@ describe('dev keeps in step with code the ToolJet editor owns', () => {
 
     it('only moves the recorded revision on when the files already match the stored code', () => {
       expect(checkAgainstStored(local, 'v', stored(9, 'h9'), 'h9')).to.deep.equal({ kind: 'same-files', revision: 9 });
+    });
+  });
+
+  describe('pullStoredCode', () => {
+    const where = { appId: 'a', versionId: 'v' };
+    const hashOf = (files: Array<{ path: string; content: string }>) =>
+      sha(
+        [...files]
+          .sort((x, y) => (x.path < y.path ? -1 : 1))
+          .map((f) => `${f.path}\0${sha(f.content)}\n`)
+          .join('')
+      );
+    const remote = (files: Array<{ path: string; content: string }>) => ({
+      exists: true,
+      revision: 9,
+      owner: 'platform' as const,
+      contentHash: hashOf(files),
+      files,
+    });
+    const sessionWith = (stored: object) => ({ api: async () => stored } as unknown as Session);
+    const newer = [{ path: 'frontend/src/a.tsx', content: 'theirs' }];
+    const pull = (force = false) => {
+      const stored = remote(newer);
+      return pullStoredCode(sessionWith(stored), root, where, { ...stored, files: undefined }, force);
+    };
+    const synced = (content: string) =>
+      writeSourceState(root, {
+        revision: 3,
+        owner: 'platform',
+        versionId: 'v',
+        contentHash: hashOf([{ path: 'frontend/src/a.tsx', content }]),
+      });
+
+    it('pulls a copy unchanged since its last sync', async () => {
+      write('frontend/src/a.tsx', 'base');
+      synced('base');
+      expect(await pull()).to.include({ kind: 'pulled', written: 1, kept: 0 });
+      expect(fs.readFileSync(path.join(root, 'frontend/src/a.tsx'), 'utf8')).to.equal('theirs');
+    });
+
+    it('never overwrites a file changed here unless told to, and records nothing when it refuses', async () => {
+      write('frontend/src/a.tsx', 'my edit');
+      write('frontend/src/mine.tsx', 'my new file');
+      synced('base');
+      expect(await pull()).to.deep.equal({
+        kind: 'local-changes',
+        revision: 9,
+        files: ['frontend/src/a.tsx', 'frontend/src/mine.tsx'],
+      });
+      expect(fs.readFileSync(path.join(root, 'frontend/src/a.tsx'), 'utf8')).to.equal('my edit');
+      expect(fs.existsSync(path.join(root, 'frontend/src/mine.tsx'))).to.equal(true);
+      expect(readSourceState(root)?.revision).to.equal(3);
+    });
+
+    it('refuses when there is no record of a last sync, as nothing says the files are unchanged', async () => {
+      write('frontend/src/a.tsx', 'unknown');
+      expect(await pull()).to.include({ kind: 'local-changes' });
+    });
+
+    it('with force, takes the stored code and keeps a copy of what it replaced', async () => {
+      write('frontend/src/a.tsx', 'my edit');
+      write('frontend/src/mine.tsx', 'my new file');
+      synced('base');
+      const result = await pull(true);
+      expect(result).to.include({ kind: 'pulled', kept: 2 });
+      const keptIn = (result as { keptIn: string }).keptIn;
+      expect(fs.readFileSync(path.join(root, keptIn, 'frontend/src/a.tsx'), 'utf8')).to.equal('my edit');
+      expect(fs.readFileSync(path.join(root, keptIn, 'frontend/src/mine.tsx'), 'utf8')).to.equal('my new file');
+      expect(fs.readFileSync(path.join(root, 'frontend/src/a.tsx'), 'utf8')).to.equal('theirs');
+      expect(fs.existsSync(path.join(root, 'frontend/src/mine.tsx'))).to.equal(false);
+      // The copies aren't project source: the next upload and comparison ignore them.
+      expect(hashProjectSource(root)).to.equal(hashOf(newer));
+    });
+
+    it('only records the revision when the files already match', async () => {
+      write('frontend/src/a.tsx', 'theirs');
+      synced('base');
+      expect(await pull()).to.deep.equal({ kind: 'same-files', revision: 9 });
+      expect(readSourceState(root)).to.include({ revision: 9, versionId: 'v' });
     });
   });
 

@@ -1,6 +1,19 @@
 import { createHash } from 'crypto';
+import * as fs from 'fs';
+import * as path from 'path';
 
-import { collectProjectSource, inStepWith, SourceState, StoredSource } from './source-upload';
+import { Session } from './session';
+import {
+  applyStoredSource,
+  collectProjectSource,
+  fetchStoredSource,
+  filesAPullWouldChange,
+  inStepWith,
+  readSourceState,
+  SourceState,
+  StoredSource,
+  writeSourceState,
+} from './source-upload';
 
 /*
   `tooljet app dev` and code the ToolJet editor owns: before a build is uploaded, and while it watches, dev asks ToolJet
@@ -38,6 +51,15 @@ export function checkAgainstStored(
 ): SourceCheck {
   if (!stored?.exists || stored.owner !== 'platform' || inStepWith(local, versionId, stored))
     return { kind: 'in-step' };
+  return compareWithStored(local, versionId, stored, localHash);
+}
+
+function compareWithStored(
+  local: SourceState | undefined,
+  versionId: string,
+  stored: StoredSource,
+  localHash: string
+): Exclude<SourceCheck, { kind: 'in-step' }> {
   const revision = stored.revision as number;
   if (stored.contentHash && stored.contentHash === localHash) return { kind: 'same-files', revision };
   const synced = local && local.versionId === versionId ? local.contentHash : undefined;
@@ -48,3 +70,50 @@ export const behindMessage = (revision?: number): string =>
   `ToolJet has newer code (${
     revision !== undefined ? `revision ${revision}, ` : ''
   }changed in the editor or by AI). Run tooljet app source-pull, then save again.`;
+
+export type PullResult =
+  | { kind: 'same-files'; revision: number }
+  /** Nothing was written: these local files differ from ToolJet's and a pull would lose them. */
+  | { kind: 'local-changes'; revision: number; files: string[] }
+  | { kind: 'pulled'; revision: number; written: number; removed: number; keptIn?: string; kept: number };
+
+const keepCopies = (root: string, files: string[], revision: number): string => {
+  const dir = path.join('.tooljet', 'before-pull', `revision-${revision}-${Date.now()}`);
+  for (const file of files) {
+    const target = path.join(root, dir, file);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(path.join(root, file), target);
+  }
+  return dir;
+};
+
+/**
+ * `tooljet app source-pull` for a copy that isn't in step. A pull never loses work without being asked: files changed
+ * here since the last sync stop it, and `force` takes ToolJet's code after keeping a copy of them.
+ */
+export async function pullStoredCode(
+  session: Session,
+  root: string,
+  where: { appId: string; versionId: string },
+  summary: StoredSource,
+  force: boolean
+): Promise<PullResult> {
+  const local = readSourceState(root);
+  const check = compareWithStored(local, where.versionId, summary, hashProjectSource(root));
+  const { revision } = check;
+  if (check.kind === 'same-files') {
+    writeSourceState(root, {
+      revision,
+      owner: summary.owner as SourceState['owner'],
+      versionId: where.versionId,
+      ...(summary.contentHash ? { contentHash: summary.contentHash } : {}),
+    });
+    return { kind: 'same-files', revision };
+  }
+  const stored = await fetchStoredSource(session, where, true);
+  const changed = check.clean ? [] : filesAPullWouldChange(root, stored);
+  if (changed.length && !force) return { kind: 'local-changes', revision, files: changed };
+  const keptIn = changed.length ? keepCopies(root, changed, revision) : undefined;
+  const { written, removed } = applyStoredSource(root, stored, where.versionId);
+  return { kind: 'pulled', revision, written, removed, keptIn, kept: changed.length };
+}
