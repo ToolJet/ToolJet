@@ -323,7 +323,7 @@ export const resolveWidgetVisibility = ({
 //   - Tabs: flat 40px for the tab bar.
 //   - Listview row context: subtract 40 to normalize against the widget-level
 //     allowance added elsewhere.
-const getExtraContainerHeight = ({
+export const getExtraContainerHeight = ({
   componentId,
   componentType,
   contextIndices,

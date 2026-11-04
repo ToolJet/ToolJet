@@ -13,6 +13,8 @@ import {
   resolveWidgetVisibility,
   shouldBubbleToParent,
 } from '../utils/dynamicHeightReflow';
+import { isDynamicHeightV2Enabled } from '../dynamicHeight/flags';
+import { scheduleDynamicHeight, watchSavedLayouts } from '../dynamicHeight/scheduler';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Grid slice — owns the mutable reflow state for dynamic-height layout.
@@ -47,7 +49,7 @@ const initialState = {
   flexContainerDropTarget: null,
 };
 
-export const createGridSlice = (set, get) => {
+export const createGridSlice = (set, get, store) => {
   // Batch reflow scheduler. Collects adjustComponentPositions requests that
   // arrive in the same JS tick (e.g. 50 Tables in a ListView all reporting
   // height changes on data load), fires them in one shared rAF, and lets
@@ -56,7 +58,14 @@ export const createGridSlice = (set, get) => {
   const _pendingReflows = new Map();
   let _reflowRafId = null;
 
+  // The new engine re-solves a module whenever its saved layouts change.
+  if (isDynamicHeightV2Enabled() && store?.subscribe) store.subscribe(watchSavedLayouts(get));
+
   const scheduleReflow = (id, layout, isContainer, contextIndices, moduleId) => {
+    if (isDynamicHeightV2Enabled()) {
+      scheduleDynamicHeight(get, { id, layout, isContainer, contextIndices, moduleId });
+      return;
+    }
     const ctxKey = contextIndices ? contextIndices.join('.') : '';
     const key = `${id}|${layout}|${isContainer ? '1' : '0'}|${ctxKey}|${moduleId || 'canvas'}`;
     _pendingReflows.set(key, { id, layout, isContainer, contextIndices, moduleId: moduleId || 'canvas' });
