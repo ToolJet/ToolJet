@@ -31,5 +31,13 @@ export const moveFilter = (filters, from, to) => {
   return moved;
 };
 
-// Stub so the red spec imports something that resolves; replaced by the real helper in the GREEN commit.
-export const getPanelRect = () => undefined;
+// The popup is positioned against the properties panel the cog sits in, so it opens beside the panel, not over it.
+export const getPanelRect = (element) => (element.closest('.inspector') ?? element).getBoundingClientRect();
+
+// Offsets that put a popup opening to the left of `element` against the panel instead: its right edge `gap` before
+// the panel's left edge, its top at the panel's top.
+export const getPanelPlacement = (element, gap) => {
+  const panel = getPanelRect(element);
+  const rect = element.getBoundingClientRect();
+  return { sideOffset: rect.left - panel.left + gap, alignOffset: panel.top - rect.top };
+};

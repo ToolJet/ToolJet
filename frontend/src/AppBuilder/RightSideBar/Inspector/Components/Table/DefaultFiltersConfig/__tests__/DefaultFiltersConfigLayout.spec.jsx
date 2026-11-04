@@ -5,7 +5,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DefaultFiltersConfig } from '../DefaultFiltersConfig';
-import { getPanelRect } from '../filterConfigUtils';
+import { getPanelPlacement, getPanelRect } from '../filterConfigUtils';
 
 const columns = [
   { id: 'c-name', name: 'Name', columnType: 'string' },
@@ -54,8 +54,25 @@ describe('Table-FILTERUI-034 the popup opens beside the properties panel', () =>
     expect(getPanelRect(cog)).toEqual(COG);
   });
 
-  test('Table-FILTERUI-034 the popup ends at the left edge of the panel and starts at its top', async () => {
+  test('Table-FILTERUI-034 the offsets end the popup 8px before the panel and start it at the top of the panel', () => {
+    // Break this catches: a popup that covers the panel, or hangs from the cog instead of the top of the panel.
+    const panel = document.createElement('div');
+    panel.className = 'inspector';
+    panel.getBoundingClientRect = () => PANEL;
+    const cog = document.createElement('button');
+    cog.getBoundingClientRect = () => COG;
+    panel.appendChild(cog);
+
+    // sideOffset is measured from the cog, so it spans the cog's distance to the panel edge plus the gap
+    expect(getPanelPlacement(cog, 8)).toEqual({
+      sideOffset: COG.left - PANEL.left + 8,
+      alignOffset: PANEL.top - COG.top,
+    });
+  });
+
+  test('Table-FILTERUI-034 the open popup ends at the left edge of the panel', async () => {
     // Break this catches: the popup covering the panel instead of sitting next to it.
+    // Only the horizontal position is checked: jsdom has no viewport, so collision handling pins the vertical one.
     await openInsidePanel();
 
     const wrapper = await waitFor(() => {
@@ -64,7 +81,7 @@ describe('Table-FILTERUI-034 the popup opens beside the properties panel', () =>
       return element;
     });
     // jsdom has no layout, so the popup is 0 wide: it ends where the 8px gap before the panel starts
-    expect(wrapper.style.transform).toBe(`translate(${PANEL.left - 8}px, ${PANEL.top}px)`);
+    expect(wrapper.style.transform).toMatch(new RegExp(`^translate\\(${PANEL.left - 8}px, `));
   });
 });
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Bolt, Check, ChevronDown, GripVertical, MousePointerClick, Plus, Trash2, X } from 'lucide-react';
@@ -8,7 +8,16 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Rocket/Popover/Popover';
 import { FILTER_OPTIONS } from '@/AppBuilder/Widgets/NewTable/_components/Header/_components/Filter/filterConstants';
 import { getColumnSelectOptions } from '@/AppBuilder/Widgets/NewTable/_utils/addNewRowConfig';
-import { createDefaultFilter, describeFilter, getFilterableColumns, moveFilter, needsValue } from './filterConfigUtils';
+import {
+  createDefaultFilter,
+  describeFilter,
+  getFilterableColumns,
+  getPanelPlacement,
+  moveFilter,
+  needsValue,
+} from './filterConfigUtils';
+
+const PANEL_GAP = 8;
 
 const MODES = [
   { label: 'Client side', value: false },
@@ -61,7 +70,7 @@ const FilterSelect = ({ label, prefix, value, options, onChange, darkMode }) => 
         collisionPadding={8}
         // above the config popup (1042) and the dialogs the builder lifts to 1050
         className={cn(
-          'tw-z-[1060] tw-w-[var(--radix-popover-trigger-width)] tw-gap-0 tw-p-1',
+          'tw-z-[1060] tw-w-max tw-min-w-[max(196px,var(--radix-popover-trigger-width))] tw-max-w-[280px] tw-gap-0 tw-p-1',
           darkMode && 'dark-theme'
         )}
       >
@@ -161,6 +170,16 @@ export const DefaultFiltersConfig = ({ columns, defaultFilters, serverSideFilter
     if (destination) saveFilters(moveFilter(filters, source.index, destination.index));
   };
 
+  const cogRef = useRef(null);
+  const [placement, setPlacement] = useState({ sideOffset: PANEL_GAP, alignOffset: 0 });
+
+  // Place the popup against the properties panel, not the cog: its right edge sits PANEL_GAP left of the panel
+  // and its top lines up with the panel's top, which leaves room below for the dropdown lists.
+  const placeBesidePanel = (open) => {
+    if (!open || !cogRef.current) return;
+    setPlacement(getPanelPlacement(cogRef.current, PANEL_GAP));
+  };
+
   const addLabel = serverSideFilter ? 'Add new custom filter' : 'Add new filter';
   const addButton = (
     <button
@@ -175,9 +194,10 @@ export const DefaultFiltersConfig = ({ columns, defaultFilters, serverSideFilter
   );
 
   return (
-    <Popover>
+    <Popover onOpenChange={placeBesidePanel}>
       <PopoverTrigger asChild>
         <button
+          ref={cogRef}
           type="button"
           aria-label="Configure filters"
           data-cy="default-filters-config-button"
@@ -189,7 +209,8 @@ export const DefaultFiltersConfig = ({ columns, defaultFilters, serverSideFilter
       <PopoverContent
         side="left"
         align="start"
-        sideOffset={8}
+        sideOffset={placement.sideOffset}
+        alignOffset={placement.alignOffset}
         collisionPadding={8}
         data-cy="default-filters-config-popover"
         data-testid="default-filters-config-popover"
