@@ -72,6 +72,47 @@ describe('arrangeRecordChildren', () => {
     });
   });
 
+  test('[Listview-GRID-001] Image and Button keep their pixel width when the columns get narrower, Text takes the card', () => {
+    // Break this catches: keeping the width in columns, so a 17-column Button becomes a 75px stub in a narrow card.
+    const layouts = arrangeRecordChildren(ROW, {
+      toMode: 'grid',
+      fromMode: 'list',
+      recordHeight: 150,
+      fromColumnPx: 10,
+      toColumnPx: 4,
+    });
+
+    expect(layouts.img.width).toBe(15);
+    expect(layouts.btn.width).toBe(41);
+    expect(layouts.txt.width).toBe(41);
+    expect(layouts.img.left).toBe(1);
+  });
+
+  test('[Listview-GRID-001] a child keeps its pixel width list to grid to list, within one column', () => {
+    // Break this catches: a width that drifts or resets to the dropped width on the way back.
+    const sized = [
+      kid('b', 'Button', { top: 25, left: 3, width: 8 }),
+      kid('i', 'Image', { top: 5, left: 20, width: 5 }),
+    ];
+    const stacked = arrangeRecordChildren(sized, {
+      toMode: 'grid',
+      fromMode: 'list',
+      recordHeight: 150,
+      fromColumnPx: 10,
+      toColumnPx: 3,
+    });
+    expect(stacked.b.width).toBe(27);
+    expect(stacked.i.width).toBe(17);
+
+    const row = arrangeRecordChildren(
+      sized.map((child) => ({ ...child, layout: stacked[child.id] })),
+      { toMode: 'list', fromMode: 'grid', recordHeight: 80, fromColumnPx: 3, toColumnPx: 10 }
+    );
+
+    expect(Math.abs(row.b.width - 8)).toBeLessThanOrEqual(1);
+    expect(Math.abs(row.i.width - 5)).toBeLessThanOrEqual(1);
+  });
+
   test('[Listview-GRID-001] a non-Text child wider than the card is capped to the card width', () => {
     // Break this catches: a child that sticks out of the card after the switch.
     const wide = [kid('c', 'Container', { width: 43 }), kid('t', 'Text', { top: 40 })];
