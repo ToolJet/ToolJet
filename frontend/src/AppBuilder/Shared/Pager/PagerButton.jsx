@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-export const PaginationButton = memo(
+export const PagerButton = memo(
   ({ pageIndex, onClick, disabled, icon, dataCy, currentPageIndex, className, style }) => {
     const isSelected = pageIndex && currentPageIndex && pageIndex === currentPageIndex;
 
