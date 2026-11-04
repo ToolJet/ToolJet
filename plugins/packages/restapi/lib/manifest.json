@@ -297,6 +297,13 @@
             "key": "retry_network_errors",
             "type": "toggle",
             "description": "key-value pair headers for rest api"
+          },
+          "request_timeout": {
+            "label": "Request timeout (ms)",
+            "key": "request_timeout",
+            "type": "text",
+            "description": "120000",
+            "helpText": "Requests are cancelled after this time. Defaults to 120000 ms (2 minutes). Set 0 to disable. A query's own timeout takes precedence."
           }
         }
       }
