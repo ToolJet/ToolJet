@@ -428,14 +428,14 @@ const getListviewRenderedRowCount = (componentProperties = {}) => {
     dataSourceSelector,
     data,
     enablePagination = false,
-    paginationType = 'clientSide',
+    serverSidePagination = false,
     rowsPerPage = 10,
   } = componentProperties;
   const resolvedData = dataSourceSelector === 'rawJson' ? data : dataSourceSelector;
   const totalRows = Array.isArray(resolvedData) ? resolvedData.length : 0;
 
   // Server side renders the whole of `data`: the query already returned one page.
-  if (!enablePagination || paginationType === 'serverSide') {
+  if (!enablePagination || serverSidePagination) {
     return totalRows;
   }
 

@@ -100,7 +100,7 @@ const LISTVIEW_CONFIGURE_ORDER = [
   'rowHeight',
   'columns',
   'enablePagination',
-  'paginationType',
+  'serverSidePagination',
   'rowsPerPage',
   'totalRecords',
 ];
@@ -345,9 +345,9 @@ export const baseComponentProperties = (
     const listviewProperties = component.component.definition.properties;
     if (!getResolvedValue(listviewProperties?.enablePagination?.value)) {
       properties = properties.filter(
-        (property) => !['rowsPerPage', 'paginationType', 'totalRecords'].includes(property)
+        (property) => !['rowsPerPage', 'serverSidePagination', 'totalRecords'].includes(property)
       );
-    } else if (getResolvedValue(listviewProperties?.paginationType?.value) !== 'serverSide') {
+    } else if (!getResolvedValue(listviewProperties?.serverSidePagination?.value)) {
       properties = properties.filter((property) => property !== 'totalRecords');
     }
   }

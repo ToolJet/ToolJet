@@ -67,7 +67,7 @@ export const Listview = function Listview({
     showBorder,
     rowsPerPage = 10,
     enablePagination = false,
-    paginationType = 'clientSide',
+    serverSidePagination = false,
     totalRecords,
     mode: rawMode = 'list',
     columns = 1,
@@ -250,7 +250,7 @@ export const Listview = function Listview({
   const currentPageRef = useRef(currentPage);
   currentPageRef.current = currentPage;
   const lastPageRef = useRef(1);
-  const isServerSide = enablePagination && paginationType === 'serverSide';
+  const isServerSide = enablePagination && !!serverSidePagination;
   const dataLength = _.isArray(data) ? data.length : 0;
   // Store validation turns an empty, text or undefined Total records into 0, so 0 is "no count yet".
   const totalCount = Math.ceil(Number(totalRecords));

@@ -222,17 +222,17 @@ export const listviewConfig = {
         defaultValue: false,
       },
     },
-    paginationType: {
-      type: 'select',
+    serverSidePagination: {
+      type: 'clientServerSwitch',
       displayName: 'Type',
-      options: [
-        { name: 'Client side', value: 'clientSide' },
-        { name: 'Server side', value: 'serverSide' },
-      ],
       validation: {
-        schema: { type: 'string' },
-        defaultValue: 'clientSide',
+        schema: { type: 'boolean' },
+        defaultValue: false,
       },
+      options: [
+        { displayName: 'Client side', value: 'clientSide' },
+        { displayName: 'Server side', value: 'serverSide' },
+      ],
     },
     rowsPerPage: {
       type: 'code',
@@ -422,7 +422,7 @@ export const listviewConfig = {
       enablePagination: { value: '{{false}}' },
       // Old look: the server merges these under every saved ListView; no gridRecordHeight, so saved grids keep rowHeight.
       showHeader: { value: '{{false}}' },
-      paginationType: { value: 'clientSide' },
+      serverSidePagination: { value: '{{false}}' },
       totalRecords: { value: '{{10}}' },
       recordVisibility: { value: '{{true}}' },
       disableRecords: { value: '{{false}}' },
