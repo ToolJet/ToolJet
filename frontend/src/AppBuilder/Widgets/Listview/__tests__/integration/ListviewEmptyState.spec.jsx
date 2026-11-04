@@ -4,6 +4,7 @@
  * (Listview-EMPTY-001..005). Real store, real RenderWidget.
  */
 import { waitFor } from '@testing-library/react';
+import i18next from 'i18next';
 import { createWidgetHarness, binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
 
@@ -123,4 +124,26 @@ describe('Listview: empty state', () => {
 
     expect(emptyState()).toBeNull();
   });
+
+  test.each(['edit', 'view'])(
+    '[Listview-EMPTY-007] the title and the subtitle follow the workspace language, in %s mode',
+    async (currentMode) => {
+      // Break this catches: hard-coded English, or a subtitle shown only to builders.
+      i18next.addResourceBundle(
+        'en',
+        'translation',
+        { widget: { listview: { noDataTitle: 'Sin datos', noDataSubtitle: 'Conecta tu base de datos' } } },
+        true,
+        true
+      );
+      try {
+        await mount({ currentMode });
+
+        expect(emptyState().textContent).toContain('Sin datos');
+        expect(emptyState().textContent).toContain('Conecta tu base de datos');
+      } finally {
+        i18next.removeResourceBundle('en', 'translation');
+      }
+    }
+  );
 });
