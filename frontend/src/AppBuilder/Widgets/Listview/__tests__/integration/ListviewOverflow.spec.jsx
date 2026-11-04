@@ -1,26 +1,55 @@
 /**
- * Listview 2.0 overflow: text in a record's children never wraps; it clips with an ellipsis and the full text
- * shows in a tooltip on hover. Only components inside a ListView record change. Contract:
- * frontend/ee/test/app-builder/widgets/Listview/TESTING.md (Listview-OVF-001..005). Real store, real RenderWidget.
+ * Listview overflow rule, for every ListView (Legacy and the new styles), in records and in the header slot:
+ * Text wraps while it fits; when it does not fit its box the last visible line ends with an ellipsis (a
+ * multi-line clamp of as many lines as the box holds, one line for a one-line box) and a tooltip shows the full
+ * text. Text with Dynamic height keeps growing. A Button label is one line with an ellipsis and a tooltip.
+ * Only components inside a ListView change. Contract: frontend/ee/test/app-builder/widgets/Listview/TESTING.md
+ * (Listview-OVF-001..009). Real store, real RenderWidget.
  */
 import { waitFor } from '@testing-library/react';
 import { createWidgetHarness, binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
 
-const ID = 'lv1';
+const ID = 'b1b1b1b1-0000-4000-8000-0000000000bb';
+const HEADER = `${ID}-header`;
 const LONG = 'A very long record title that cannot fit in a narrow card';
-const RECORDS = `{{[{ name: '${LONG}', cta: '${LONG} button' }]}}`;
+const FIELD_BY_FORMAT = { plainText: 'plain', markdown: 'md', html: 'html' };
+const RECORDS = `{{[{ plain: '${LONG}', md: '**${LONG}**', html: '<b>${LONG}</b>', cta: '${LONG} button' }]}}`;
+// Default Text: 14px at line height 1.5 is 21px a line; the box loses 2px to its border.
+const ONE_LINE_BOX = 30;
+const THREE_LINE_BOX = 70;
 
-function child(id, name, type, properties) {
+function child(id, name, type, properties, { parent = ID, height = ONE_LINE_BOX } = {}) {
   const definition = componentDefinition(id, name, type, properties);
-  definition.component.parent = ID;
+  definition.component.parent = parent;
   definition.component.definition.styles = {};
   definition.component.definition.others = {
     showOnDesktop: binding('{{true}}'),
     showOnMobile: binding('{{false}}'),
   };
+  definition.layouts.desktop.height = height;
   return definition;
 }
+
+const recordText = (format, height, extra = {}) =>
+  child(
+    'txt1',
+    'text1',
+    'Text',
+    { text: binding(`{{listItem.${FIELD_BY_FORMAT[format]}}}`), textFormat: binding(format), ...extra },
+    { height }
+  );
+const headerText = (format, height) =>
+  child(
+    'hdr1',
+    'headerText',
+    'Text',
+    {
+      text: binding(format === 'plainText' ? LONG : format === 'markdown' ? `**${LONG}**` : `<b>${LONG}</b>`),
+      textFormat: binding(format),
+    },
+    { parent: HEADER, height }
+  );
 
 const listview = createWidgetHarness({
   componentType: 'Listview',
@@ -43,7 +72,7 @@ const listview = createWidgetHarness({
     borderColor: binding('var(--cc-weak-border)'),
   },
   defaultExtraComponents: {
-    txt1: child('txt1', 'text1', 'Text', { text: binding('{{listItem.name}}'), textFormat: binding('plainText') }),
+    txt1: recordText('plainText', ONE_LINE_BOX),
     btn1: child('btn1', 'button1', 'Button', { text: binding('{{listItem.cta}}') }),
   },
   capabilities: { dnd: true },
@@ -61,75 +90,169 @@ const standaloneText = createWidgetHarness({
     visibility: binding('{{true}}'),
     loadingState: binding('{{false}}'),
   },
-  widgetHeight: 40,
+  widgetHeight: ONE_LINE_BOX,
   widgetWidth: 200,
 });
 
-const recordText = () => document.querySelector('.list-item .text-widget-section > div');
-const recordButtonLabel = () => document.querySelector('.list-item [data-cy$="-label"]');
+const FORMATS = ['plainText', 'markdown', 'html'];
+const STYLES = [['legacy'], ['bordered'], ['card']];
 
-// jsdom has no layout: report the text as wider than its box (browser geometry is a genuine boundary).
-let scrollSpy;
-let clientSpy;
-beforeEach(() => {
-  scrollSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(400);
-  clientSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(100);
-});
-afterEach(() => {
-  scrollSpy.mockRestore();
-  clientSpy.mockRestore();
-});
+const sectionChild = (scope) => document.querySelector(`${scope} .text-widget-section > div`);
+const recordText1 = () => sectionChild('.list-item');
+const headerText1 = () => sectionChild('.listview-header-wrapper');
+const recordButtonLabel = () => document.querySelector('.list-item [data-cy$="-label"]');
+const headerButtonLabel = () => document.querySelector('.listview-header-wrapper [data-cy$="-label"]');
+const lineClamp = (node) => String(node.style.WebkitLineClamp ?? '');
+const isClamped = (node) => lineClamp(node) !== '' || node.style.whiteSpace === 'nowrap';
+const tooltip = () => document.querySelector('[role="tooltip"]');
+
+// jsdom has no layout: report the content as bigger than its box, or as fitting (browser geometry is a genuine boundary).
+const spies = [];
+const setGeometry = ({ overflowing }) => {
+  spies.splice(0).forEach((spy) => spy.mockRestore());
+  const [scroll, client] = overflowing ? [400, 100] : [100, 100];
+  ['scrollWidth', 'scrollHeight'].forEach((name) =>
+    spies.push(jest.spyOn(HTMLElement.prototype, name, 'get').mockReturnValue(scroll))
+  );
+  ['clientWidth', 'clientHeight'].forEach((name) =>
+    spies.push(jest.spyOn(HTMLElement.prototype, name, 'get').mockReturnValue(client))
+  );
+};
+beforeEach(() => setGeometry({ overflowing: true }));
+afterEach(() => spies.splice(0).forEach((spy) => spy.mockRestore()));
+
+const mountRecord = async (options = {}) => {
+  listview.render({ currentMode: 'view', ...options });
+  await waitFor(() => expect(recordText1() ?? recordButtonLabel()).toBeInTheDocument());
+};
+const mountHeader = async (format, height) => {
+  listview.render({
+    currentMode: 'view',
+    properties: { showHeader: binding('{{true}}') },
+    extraComponents: {
+      hdr1: headerText(format, height),
+      btn2: child('btn2', 'button2', 'Button', { text: binding(`${LONG} header`) }, { parent: HEADER }),
+    },
+  });
+  await waitFor(() => expect(headerText1()).toBeInTheDocument());
+};
 
 describe('Listview: overflow', () => {
   beforeEach(listview.setup);
   afterEach(listview.teardown);
 
-  test('[Listview-OVF-001] text in a record does not wrap and clips with an ellipsis', async () => {
-    // Break this catches: a card whose title wraps onto a second line and spills out of the record.
-    listview.render({ currentMode: 'view' });
-    await waitFor(() => expect(recordText()).toBeInTheDocument());
+  test.each(FORMATS)(
+    '[Listview-OVF-001] %s text in a one-line box clamps to one line with an ellipsis',
+    async (format) => {
+      // Break this catches: a one-line card whose title wraps onto a second line and spills out of the record.
+      await mountRecord({ extraComponents: { txt1: recordText(format, ONE_LINE_BOX) } });
 
-    expect(recordText().textContent).toBe(LONG);
-    expect(recordText().style.whiteSpace).toBe('nowrap');
-    expect(recordText().style.overflow).toBe('hidden');
-    expect(recordText().style.textOverflow).toBe('ellipsis');
-  });
+      const text = recordText1();
+      expect(text.textContent).toBe(LONG);
+      if (format === 'plainText') {
+        expect(text.style.whiteSpace).toBe('nowrap');
+        expect(text.style.textOverflow).toBe('ellipsis');
+      } else {
+        expect(lineClamp(text)).toBe('1');
+      }
+      expect(text.style.overflow).toBe('hidden');
+    }
+  );
 
-  test('[Listview-OVF-002] hovering clipped record text shows the full text in a tooltip', async () => {
-    // Break this catches: text clipped with no way to read the rest.
-    listview.render({ currentMode: 'view' });
-    await waitFor(() => expect(recordText()).toBeInTheDocument());
+  test.each(FORMATS)(
+    '[Listview-OVF-002] %s text in a three-line box wraps and clamps to three lines',
+    async (format) => {
+      // Break this catches: a tall box cut to one line, or text that runs past its box without an ellipsis.
+      await mountRecord({ extraComponents: { txt1: recordText(format, THREE_LINE_BOX) } });
 
-    await listview.session.user.hover(recordText());
+      const text = recordText1();
+      expect(text.textContent).toBe(LONG);
+      expect(lineClamp(text)).toBe('3');
+      expect(text.style.whiteSpace).not.toBe('nowrap');
+      expect(text.style.overflow).toBe('hidden');
+    }
+  );
 
-    const tooltip = await waitFor(() => {
-      const node = document.querySelector('[role="tooltip"]');
-      expect(node).toBeInTheDocument();
-      return node;
+  test.each(FORMATS)(
+    '[Listview-OVF-003] %s text with Dynamic height keeps growing and is not clamped',
+    async (format) => {
+      // Break this catches: a Dynamic height Text that stops growing and hides its tail behind an ellipsis.
+      await mountRecord({
+        extraComponents: { txt1: recordText(format, ONE_LINE_BOX, { dynamicHeight: binding('{{true}}') }) },
+      });
+
+      expect(isClamped(recordText1())).toBe(false);
+      await listview.session.user.hover(recordText1());
+      expect(tooltip()).toBeNull();
+    }
+  );
+
+  test.each(FORMATS)(
+    '[Listview-OVF-004] %s text shows the full text in a tooltip only when it overflows',
+    async (format) => {
+      // Break this catches: text clipped with no way to read the rest, or a tooltip repeating text that fits.
+      await mountRecord({ extraComponents: { txt1: recordText(format, ONE_LINE_BOX) } });
+      await listview.session.user.hover(recordText1());
+      const shown = await waitFor(() => {
+        expect(tooltip()).toBeInTheDocument();
+        return tooltip();
+      });
+      expect(shown.textContent).toBe(LONG);
+
+      listview.teardown();
+      await listview.setup();
+      setGeometry({ overflowing: false });
+      await mountRecord({ extraComponents: { txt1: recordText(format, ONE_LINE_BOX) } });
+      await listview.session.user.hover(recordText1());
+      expect(tooltip()).toBeNull();
+    }
+  );
+
+  test.each(STYLES)('[Listview-OVF-005] the rule holds in the %s style', async (listStyle) => {
+    // Break this catches: the rule applied to the new styles only, leaving saved Legacy ListViews wrapping.
+    await mountRecord({
+      styles: { listStyle: binding(listStyle) },
+      extraComponents: { txt1: recordText('html', THREE_LINE_BOX) },
     });
-    expect(tooltip.textContent).toBe(LONG);
+
+    expect(lineClamp(recordText1())).toBe('3');
   });
 
-  test('[Listview-OVF-003] a Button label in a record clips with an ellipsis and shows a tooltip', async () => {
+  test('[Listview-OVF-007] a Button label in a record is one line with an ellipsis and a tooltip', async () => {
     // Break this catches: a button label that wraps ("But\n1") inside a narrow grid card.
-    listview.render({ currentMode: 'view' });
-    await waitFor(() => expect(recordButtonLabel()).toBeInTheDocument());
+    await mountRecord();
 
     expect(recordButtonLabel().style.whiteSpace).toBe('nowrap');
     expect(recordButtonLabel().style.textOverflow).toBe('ellipsis');
     await listview.session.user.hover(recordButtonLabel());
-    await waitFor(() => expect(document.querySelector('[role="tooltip"]')?.textContent).toBe(`${LONG} button`));
+    await waitFor(() => expect(tooltip()?.textContent).toBe(`${LONG} button`));
   });
+});
 
-  test('[Listview-OVF-004] text that fits shows no tooltip', async () => {
-    // Break this catches: a tooltip on every record, repeating text that is fully visible.
-    scrollSpy.mockReturnValue(100);
-    listview.render({ currentMode: 'view' });
-    await waitFor(() => expect(recordText()).toBeInTheDocument());
+describe('Listview: overflow in the header slot', () => {
+  beforeEach(listview.setup);
+  afterEach(listview.teardown);
 
-    await listview.session.user.hover(recordText());
+  test.each(FORMATS)(
+    '[Listview-OVF-006] %s Text in the header clamps to its box and shows a tooltip',
+    async (format) => {
+      // Break this catches: the rule covering the records only, so a long header title wraps out of the header.
+      await mountHeader(format, THREE_LINE_BOX);
 
-    expect(document.querySelector('[role="tooltip"]')).toBeNull();
+      expect(lineClamp(headerText1())).toBe('3');
+      await listview.session.user.hover(headerText1());
+      await waitFor(() => expect(tooltip()?.textContent).toBe(LONG));
+    }
+  );
+
+  test('[Listview-OVF-008] a Button label in the header is one line with an ellipsis and a tooltip', async () => {
+    // Break this catches: the header Button wrapping its label while the record Buttons clip.
+    await mountHeader('plainText', ONE_LINE_BOX);
+
+    expect(headerButtonLabel().style.whiteSpace).toBe('nowrap');
+    expect(headerButtonLabel().style.textOverflow).toBe('ellipsis');
+    await listview.session.user.hover(headerButtonLabel());
+    await waitFor(() => expect(tooltip()?.textContent).toBe(`${LONG} header`));
   });
 });
 
@@ -137,15 +260,16 @@ describe('Text outside a ListView', () => {
   beforeEach(standaloneText.setup);
   afterEach(standaloneText.teardown);
 
-  test('[Listview-OVF-005] a Text outside a ListView keeps wrapping and shows no tooltip', async () => {
-    // Break this catches: the clipping leaking to every Text in the app.
-    standaloneText.render({ currentMode: 'view' });
-    await waitFor(() => expect(document.querySelector('.text-widget-section > div')).toBeInTheDocument());
+  test.each(FORMATS)(
+    '[Listview-OVF-009] a %s Text outside a ListView keeps wrapping and shows no tooltip',
+    async (format) => {
+      // Break this catches: the clipping leaking to every Text in the app.
+      standaloneText.render({ currentMode: 'view', properties: { textFormat: binding(format) } });
+      await waitFor(() => expect(sectionChild('')).toBeInTheDocument());
 
-    const text = document.querySelector('.text-widget-section > div');
-    expect(text.style.whiteSpace).not.toBe('nowrap');
-    expect(text.style.textOverflow).not.toBe('ellipsis');
-    await standaloneText.session.user.hover(text);
-    expect(document.querySelector('[role="tooltip"]')).toBeNull();
-  });
+      expect(isClamped(sectionChild(''))).toBe(false);
+      await standaloneText.session.user.hover(sectionChild(''));
+      expect(tooltip()).toBeNull();
+    }
+  );
 });
