@@ -12,7 +12,7 @@ import { diff } from 'deep-object-diff';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
+import SubcontainerContext, { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { ListviewSubcontainer } from './ListviewSubcontainer';
 import { ListviewEmptyState } from './ListviewEmptyState';
 import { HorizontalSlot } from '@/AppBuilder/Widgets/Form/Components/HorizontalSlot';
@@ -51,6 +51,8 @@ export const Listview = function Listview({
 }) {
   const { moduleId } = useModuleContext();
   const { contextPath } = useSubcontainerContext();
+  // The header is not row-scoped (same path as the ListView), but its Text and Button follow the record overflow rule.
+  const headerContext = useMemo(() => ({ contextPath, inListviewRecord: true }), [contextPath]);
   const parentIndices = useMemo(() => contextPath.map((s) => s.index), [contextPath]);
   const childComponentCount = useStore((state) => (state.containerChildrenMapping?.[id] || []).length);
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
@@ -451,24 +453,26 @@ export const Listview = function Listview({
                 backgroundColor,
               }}
             >
-              <HorizontalSlot
-                slotName="header"
-                id={`${id}-header`}
-                height={HEADER_HEIGHT - HEADER_DIVIDER_HEIGHT}
-                width={width}
-                darkMode={darkMode}
-                isActive={activeSlot === `${id}-header`}
-                isResizable={false}
-                slotStyle={{
-                  backgroundColor: headerBackgroundColor,
-                  boxSizing: 'border-box',
-                  height: HEADER_HEIGHT,
-                  borderBottom: `1px solid ${headerDividerColor ?? 'var(--cc-weak-border)'}`,
-                  overflow: 'hidden',
-                }}
-                componentType="Listview"
-                dataCy={dataCy}
-              />
+              <SubcontainerContext.Provider value={headerContext}>
+                <HorizontalSlot
+                  slotName="header"
+                  id={`${id}-header`}
+                  height={HEADER_HEIGHT - HEADER_DIVIDER_HEIGHT}
+                  width={width}
+                  darkMode={darkMode}
+                  isActive={activeSlot === `${id}-header`}
+                  isResizable={false}
+                  slotStyle={{
+                    backgroundColor: headerBackgroundColor,
+                    boxSizing: 'border-box',
+                    height: HEADER_HEIGHT,
+                    borderBottom: `1px solid ${headerDividerColor ?? 'var(--cc-weak-border)'}`,
+                    overflow: 'hidden',
+                  }}
+                  componentType="Listview"
+                  dataCy={dataCy}
+                />
+              </SubcontainerContext.Provider>
             </div>
           )}
           {filteredData.length === 0 ? (
