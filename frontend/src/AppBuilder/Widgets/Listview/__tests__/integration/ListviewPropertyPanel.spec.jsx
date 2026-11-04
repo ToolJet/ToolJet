@@ -26,7 +26,7 @@ jest.mock('@/AppBuilder/RightSideBar/Inspector/InspectorAccordion', () => ({
 
 import React from 'react';
 import { render } from '@testing-library/react';
-import { listviewConfig } from '@tooljet/widget-definitions';
+import { listviewConfig, textConfig } from '@tooljet/widget-definitions';
 import useStore from '@/AppBuilder/_stores/store';
 import { seedApp } from '@/test/app-builder';
 import { DefaultComponent } from '@/AppBuilder/RightSideBar/Inspector/Components/DefaultComponent';
@@ -75,7 +75,7 @@ const fieldsIn = (container, title) =>
 const editor = (name) => editors.filter((props) => props.paramName === name).pop();
 
 describe('List View property panel', () => {
-  test('[Listview-INSP-005] sections run Header, Data, Configure list item, Events, Additional Actions, Devices', () => {
+  test('[Listview-INSP-005] sections run Header, Data, Configure list item, Events, Additional actions, Devices', () => {
     // Break this catches: a section moved or left under the old "Properties" title.
     const { container } = renderPanel();
 
@@ -84,7 +84,7 @@ describe('List View property panel', () => {
       'Data',
       'Configure list item',
       'Events',
-      'Additional Actions',
+      'Additional actions',
       'Devices',
     ]);
   });
@@ -211,5 +211,34 @@ describe('List View property panel', () => {
 
     expect(editor('gridRecordHeight').initialValue).toBe('90');
     expect(editor('rowHeight')).toBeUndefined();
+  });
+
+  test('[Listview-INSP-005] another widget keeps the title "Additional Actions"', () => {
+    // Break this catches: the lower-case title leaking to every widget.
+    seedApp({});
+    const definition = textConfig.definition;
+    const component = {
+      id: 't1',
+      component: { name: 'text1', component: 'Text', definition, properties: textConfig.properties },
+    };
+    const { container } = render(
+      <DefaultComponent
+        componentMeta={{ ...textConfig, general: { tooltip: { displayName: 'Tooltip' } } }}
+        darkMode={false}
+        component={component}
+        paramUpdated={jest.fn()}
+        layoutPropertyChanged={jest.fn()}
+        dataQueries={[]}
+        currentState={{}}
+        eventsChanged={jest.fn()}
+        apps={[]}
+        components={{}}
+        pages={[]}
+        selectedComponentId="t1"
+      />
+    );
+
+    expect(sectionNames(container)).toContain('Additional Actions');
+    expect(sectionNames(container)).not.toContain('Additional actions');
   });
 });

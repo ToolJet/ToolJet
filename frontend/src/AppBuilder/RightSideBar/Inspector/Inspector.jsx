@@ -807,7 +807,7 @@ const widgetsWithStyleConditions = {
   },
 };
 
-const RenderStyleOptions = ({
+export const RenderStyleOptions = ({
   componentMeta,
   component,
   paramUpdated,
