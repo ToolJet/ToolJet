@@ -118,7 +118,7 @@ describe("List view widget", { testIsolation: false }, () => {
     cy.get('[data-cy="enable-pagination-toggle-button"]').click();
     scopedCanvasClick();
     cy.waitForAutoSave();
-    cy.get(`${commonWidgetSelector.draggableWidget(data.widgetName)} .pagination`)
+    cy.get(`${commonWidgetSelector.draggableWidget(data.widgetName)} [data-cy="pagination-section"]`)
       .should("exist");
   });
 

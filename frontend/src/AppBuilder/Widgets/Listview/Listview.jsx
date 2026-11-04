@@ -154,7 +154,7 @@ export const Listview = function Listview({
     height: isDynamicHeightEnabled ? '100%' : height,
     display: visibility ? 'flex' : 'none',
     // The Number input saves a plain string such as "6", which CSS needs as a number.
-    borderRadius: Number.parseFloat(borderRadius) || 0,
+    borderRadius: Math.max(0, Number.parseFloat(borderRadius) || 0),
     boxShadow,
     // One shorthand: a conditional paddingTop key leaves padding-top cleared after showHeader turns off.
     padding: showHeader ? `0 ${containerPadding}px ${containerPadding}px` : `${containerPadding}px`,
@@ -181,7 +181,7 @@ export const Listview = function Listview({
     return {
       backgroundColor: recordBackgroundColor,
       border: `1px solid ${recordBorderColor ?? 'var(--cc-weak-border)'}`,
-      borderRadius: Math.max(0, Number(recordBorderRadius) || 0),
+      borderRadius: Math.max(0, Number.parseFloat(recordBorderRadius) || 0),
       ...(recordBoxShadow && { boxShadow: recordBoxShadow }),
     };
   }, [recordStyle, recordBackgroundColor, recordBorderColor, recordBorderRadius, recordBoxShadow]);

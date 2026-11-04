@@ -53,7 +53,7 @@ Similarly, for an Image component inside List View, you can use the below code t
 | Number of columns | The number of columns in the List View component. This option is only available when the **Layout** is set to `Grid`. | Any numerical value |
 | Record height | The height of each record in the List View component. In `Grid` layout it is saved separately from the `List` height. | Any number between 1 and 100 |
 | Enable pagination | Whether to enable pagination. If enabled, you can set the number of records per page. | `true` or `false` |
-| Type | How pagination works: `Client side` pages the data already loaded, `Server side` expects each page from a query. This option is only available when **Enable pagination** is enabled. | `Client side` or `Server side` |
+| Type | How pagination works: `Client side` pages the data already loaded, `Server side` expects each page from a query. This option is only available when **Enable pagination** is enabled. | Switch between `Client side` and `Server side` |
 | Number of records per page | The number of records per page. This option is only available when **Enable pagination** is enabled. | Any numerical value |
 | Total records | The number of records across all pages. This option is only available when **Type** is `Server side`. | Any numerical value |
 
