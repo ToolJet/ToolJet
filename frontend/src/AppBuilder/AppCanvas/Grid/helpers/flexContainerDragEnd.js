@@ -1,6 +1,7 @@
 import { useGridStore } from '@/_stores/gridStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { NO_OF_GRIDS } from '../../appCanvasConstants';
+import { isListviewCopyCanvasAtPoint } from '../gridUtils';
 import { getDroppableSlotIdOnScreen, getParentFromSlotId, DragContext } from './dragEnd';
 import {
   computeFlexInsertIndex,
@@ -55,6 +56,12 @@ export function handleFlexContainerDragEnd({
 
   // No actual movement — reset transform and bail
   if (!e.lastEvent) {
+    e.target.style.transform = '';
+    return true;
+  }
+
+  // The drops below bypass Grid's own gate, which refuses a read-only ListView record.
+  if (isListviewCopyCanvasAtPoint(e.clientX, e.clientY, [widgetId])) {
     e.target.style.transform = '';
     return true;
   }

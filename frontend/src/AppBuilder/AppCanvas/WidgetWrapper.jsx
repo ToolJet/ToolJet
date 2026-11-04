@@ -290,12 +290,13 @@ const WidgetWrapper = memo(
             if (isFlexLayout) {
               flexLayout.refreshConfigWidgetTop();
             }
-            setHoveredComponentForGrid(id);
+            // Every copy shares the original's id, so publishing it would open the original's handle.
+            if (!isListviewCopy) setHoveredComponentForGrid(id);
           }}
           onMouseLeave={() => {
             if (isCopyHovered) setIsCopyHovered(false);
             if (isDragging || isModuleContainer) return;
-            setHoveredComponentForGrid('');
+            if (!isListviewCopy) setHoveredComponentForGrid('');
           }}
         >
           {mode == 'edit' && (

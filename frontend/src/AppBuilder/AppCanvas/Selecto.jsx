@@ -120,6 +120,8 @@ const EditorSelecto = () => {
         selection.removeAllRanges();
       }
       const target = e.inputEvent.target;
+      // A copy record is not editable: its click must not climb to the ListView and select it.
+      if (target.closest?.('[data-listview-copy="true"]')) return false;
       // Condition to allow group selection using drawing of square using cursor in canvas and main subcontainer
       const isAppCanvas = target.getAttribute('component-id') === 'canvas';
       const isSubContainer = target.getAttribute('component-id') !== 'canvas' || target.getAttribute('data-parentId');

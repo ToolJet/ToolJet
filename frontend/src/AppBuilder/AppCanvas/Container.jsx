@@ -305,8 +305,9 @@ const Container = React.memo(
         }}
         className={cx('real-canvas', {
           'sub-canvas': id !== 'canvas' && appType !== 'module',
+          // A child drag rewrites this className, which would drop the class showGridLines added.
           'show-grid':
-            isDragging &&
+            (isDragging || (componentType === 'Listview' && isWidgetInSubContainerDragging)) &&
             (index === 0 || index === null) &&
             !isInsideLaterRow &&
             !listviewCopy &&
