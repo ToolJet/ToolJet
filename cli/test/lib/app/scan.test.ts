@@ -13,6 +13,8 @@ import {
   scanProject,
   uploadScan,
   vetPackages,
+  scannerBin,
+  ScannerNotInstalledError,
 } from '../../../src/lib/app/scan';
 import { Session } from '../../../src/lib/app/session';
 
@@ -164,6 +166,16 @@ describe('app security scan', function () {
       let message = '';
       await scanProject(path.join(FIXTURES, 'safe-app'), { offline: true }).catch((err) => (message = err.message));
       expect(message).to.equal('The security scan did not run: Cannot find package "acorn"');
+    });
+
+    it('tells a missing scanner apart from a scan that failed, and says ToolJet still scans on publish', () => {
+      const saved = process.env.TOOLJET_APP_SCANNER_BIN;
+      delete process.env.TOOLJET_APP_SCANNER_BIN;
+      try {
+        expect(() => scannerBin()).to.throw(ScannerNotInstalledError, /ToolJet scans it when you publish/);
+      } finally {
+        if (saved !== undefined) process.env.TOOLJET_APP_SCANNER_BIN = saved;
+      }
     });
 
     it('uploads as every check errored with the reason, and reads back as "Scan failed"', () => {

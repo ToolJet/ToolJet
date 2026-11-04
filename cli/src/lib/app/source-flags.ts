@@ -52,6 +52,13 @@ export function devSourceOwner(
 /** A 409 from the source upload: ToolJet holds a newer revision (an editor or AI edit) than the one this build is on. */
 export const isSourceConflict = (err: unknown): boolean => err instanceof ApiError && err.status === 409;
 
+/** The version dev started on was locked while it ran (saved or released); dev stays on the one it started with. */
+export const isVersionLocked = (err: unknown): boolean =>
+  err instanceof ApiError && err.status === 403 && /not a draft/i.test(err.message);
+
+export const VERSION_LOCKED_LINE =
+  "This version is locked, so this code wasn't saved. If there's a new draft, restart tooljet app dev to follow it.";
+
 export function sourceConflictLines(err: ApiError): string[] {
   let current: number | undefined;
   try {

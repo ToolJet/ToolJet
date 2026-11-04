@@ -4,7 +4,13 @@ import * as os from 'os';
 import * as path from 'path';
 
 import { ApiError } from '../../../src/lib/app/session';
-import { devSourceOwner, isSourceConflict, sourceConflictLines } from '../../../src/lib/app/source-flags';
+import {
+  devSourceOwner,
+  isSourceConflict,
+  isVersionLocked,
+  sourceConflictLines,
+  VERSION_LOCKED_LINE,
+} from '../../../src/lib/app/source-flags';
 import { readSourceState, storeSource, writeSourceState } from '../../../src/lib/app/source-upload';
 
 /*
@@ -63,6 +69,17 @@ describe('tooljet app dev stores the source by default', () => {
         'ToolJet has newer code (revision 4, changed in the editor or by AI). Run tooljet app source-pull, then save again.',
       ]);
       expect(readSourceState(root)?.revision).to.equal(2);
+    });
+
+    it('tells a version locked under dev apart from any other refusal, and says to restart', () => {
+      expect(
+        isVersionLocked(
+          new ApiError('failed (HTTP 403): This version is not a draft, so its source is read-only', 403, '')
+        )
+      ).to.equal(true);
+      expect(isVersionLocked(new ApiError('failed (HTTP 403): Forbidden', 403, ''))).to.equal(false);
+      expect(isVersionLocked(new Error('This version is not a draft'))).to.equal(false);
+      expect(VERSION_LOCKED_LINE).to.contain('restart tooljet app dev');
     });
 
     it('only a 409 counts as that conflict', () => {

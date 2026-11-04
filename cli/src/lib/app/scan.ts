@@ -39,6 +39,9 @@ export interface LocalScan {
   dependencies: { name: string; version: string; license?: string; direct?: boolean; dev?: boolean }[];
 }
 
+/** The scanner isn't on this computer: nothing is known about the code, so nothing is reported about it. */
+export class ScannerNotInstalledError extends Error {}
+
 export function scannerBin(): string {
   if (process.env.TOOLJET_APP_SCANNER_BIN) return process.env.TOOLJET_APP_SCANNER_BIN;
   // The scanner ships with ToolJet's enterprise server, not with the CLI: install @tooljet/app-scanner beside the CLI or
@@ -46,8 +49,9 @@ export function scannerBin(): string {
   try {
     return path.join(path.dirname(require.resolve('@tooljet/app-scanner')), '..', 'bin', 'tj-app-scan.js');
   } catch {
-    throw new Error(
-      'The security scanner is not installed. Set TOOLJET_APP_SCANNER_BIN to its tj-app-scan.js, or install @tooljet/app-scanner.'
+    throw new ScannerNotInstalledError(
+      "The security scanner isn't on this computer, so this code wasn't scanned here. ToolJet scans it when you publish. " +
+        'To scan here, set TOOLJET_APP_SCANNER_BIN to its tj-app-scan.js, or install @tooljet/app-scanner.'
     );
   }
 }

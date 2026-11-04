@@ -18,8 +18,10 @@ import {
   devSourceOwner,
   isSourceConflict,
   noSourceFlag,
+  isVersionLocked,
   sourceConflictLines,
   sourceFlags,
+  VERSION_LOCKED_LINE,
 } from '../../lib/app/source-flags';
 import {
   applyStoredSource,
@@ -30,7 +32,7 @@ import {
 } from '../../lib/app/source-upload';
 import { behindMessage, checkAgainstStored, hashProjectSource } from '../../lib/app/source-sync';
 import type { ApiError } from '../../lib/app/session';
-import { countsLine, failedScanSarif, scanProject, uploadScan } from '../../lib/app/scan';
+import { countsLine, failedScanSarif, scanProject, ScannerNotInstalledError, uploadScan } from '../../lib/app/scan';
 import { branchLine, workingApp } from '../../lib/app/branch';
 
 /** How often a watching dev asks ToolJet for the stored code's revision. */
@@ -131,6 +133,7 @@ export default class AppDev extends Command {
         return 'behind';
       };
       let synced = false;
+      let warnedNoScanner = false;
       this.log(
         formatSuccess(
           `Live preview of "${app.name}" is on (${snapshot.queries.length} queries). Watching frontend/src ...\n`
@@ -176,18 +179,24 @@ export default class AppDev extends Command {
               )}`
             );
           } catch (err) {
-            // Tell the Security panel the scan failed, so it never shows the last result (or nothing) as current.
-            const reason = (err as Error).message.replace(/^The security scan did not run: /, '').slice(0, 500);
-            const where = { appId: app.appId as string, versionId: snapshot.versionId };
-            const reported = await uploadScan(session, where, { sarif: failedScanSarif(reason) }, 'dev').then(
-              () => true,
-              () => false
-            );
-            this.log(
-              `  ${formatWarning(
-                `Security scan failed: ${reason}${reported ? ' (shown in the Security panel)' : '; not uploaded'}`
-              )}`
-            );
+            // No scanner on this computer says nothing about the app, so nothing goes to the panel everyone sees.
+            if (err instanceof ScannerNotInstalledError) {
+              if (!warnedNoScanner) this.log(`  ${formatWarning(err.message)}`);
+              warnedNoScanner = true;
+            } else {
+              // Tell the Security panel the scan failed, so it never shows the last result (or nothing) as current.
+              const reason = (err as Error).message.replace(/^The security scan did not run: /, '').slice(0, 500);
+              const where = { appId: app.appId as string, versionId: snapshot.versionId };
+              const reported = await uploadScan(session, where, { sarif: failedScanSarif(reason) }, 'dev').then(
+                () => true,
+                () => false
+              );
+              this.log(
+                `  ${formatWarning(
+                  `Security scan failed: ${reason}${reported ? ' (shown in the Security panel)' : '; not uploaded'}`
+                )}`
+              );
+            }
           }
         }
         await client.uploadDev(correlationId, result.distDir);
@@ -220,8 +229,10 @@ export default class AppDev extends Command {
             );
             this.log(`  ${formatSuccess(codeSavedLine(saved, flags.verbose))}`);
           } catch (err) {
-            if (!isSourceConflict(err)) throw err;
-            for (const line of sourceConflictLines(err as ApiError)) this.log(`  ${formatWarning(line)}`);
+            if (isVersionLocked(err)) this.log(`  ${formatWarning(VERSION_LOCKED_LINE)}`);
+            else if (isSourceConflict(err))
+              for (const line of sourceConflictLines(err as ApiError)) this.log(`  ${formatWarning(line)}`);
+            else throw err;
             stored = false;
           }
         }
