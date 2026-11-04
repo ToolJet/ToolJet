@@ -103,6 +103,8 @@ const rows = () => [...document.querySelectorAll('.list-item')];
 const handles = () => [...document.querySelectorAll('.list-item .resize-handle')];
 const heights = () => rows().map((row) => row.style.height);
 const faded = () => rows().map((row) => row.style.opacity === '0.4');
+const framed = () => rows().map((row) => row.classList.contains('listview-record-moving'));
+const gridded = () => rows().map((row) => !!row.querySelector('.show-grid'));
 const raw = (key, id = ID) => store().getComponentDefinition(id, MODULE_ID).component.definition.properties[key];
 
 const START_Y = 300;
@@ -546,34 +548,117 @@ describe('Listview record resize: Record height holds an expression', () => {
   });
 });
 
-describe('Listview record resize: the other records fade', () => {
+describe('Listview record resize: the other records do not fade', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
 
-  test('[Listview-RSZ-003] records 2..K fade from mousedown to mouseup and not before or after', async () => {
-    // Break this catches: no fade, a fade on record 1, a fade that starts on the first move, or one that sticks after release.
+  test('[Listview-RSZ-003] records 2..K keep full opacity from mousedown to mouseup', async () => {
+    // Break this catches: any fade of records 2..K while the handle is held (Figma frame 14 shows none).
     await mount(widget);
     expect(faded()).toEqual([false, false, false]);
 
     fireEvent.mouseDown(handles()[0], { clientX: 0, clientY: START_Y, button: 0 });
-    await waitFor(() => expect(faded()).toEqual([false, true, true]));
+    await waitFor(() => expect(framed()).toEqual([true, false, false]));
+    expect(faded()).toEqual([false, false, false]);
 
     fireEvent.mouseMove(document, { clientX: 0, clientY: START_Y + 30 });
-    expect(faded()).toEqual([false, true, true]);
+    expect(faded()).toEqual([false, false, false]);
 
     fireEvent.mouseUp(document, { clientX: 0, clientY: START_Y + 30 });
-    await waitFor(() => expect(faded()).toEqual([false, false, false]));
+    await waitFor(() => expect(framed()).toEqual([false, false, false]));
+    expect(faded()).toEqual([false, false, false]);
+  });
+});
+
+describe('Listview record resize: record 1 shows the outline and the grid while the drag is on', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-RSZ-006] the outline and the grid start at mousedown and end at mouseup, on record 1 only', async () => {
+    // Break this catches: no outline, no grid, either on a copy, or one that sticks after the release.
+    await mount(widget);
+    expect(framed()).toEqual([false, false, false]);
+    expect(gridded()).toEqual([false, false, false]);
+
+    fireEvent.mouseDown(handles()[0], { clientX: 0, clientY: START_Y, button: 0 });
+    await waitFor(() => expect(framed()).toEqual([true, false, false]));
+    expect(gridded()).toEqual([true, false, false]);
+
+    fireEvent.mouseMove(document, { clientX: 0, clientY: START_Y + 30 });
+    expect(framed()).toEqual([true, false, false]);
+    expect(gridded()).toEqual([true, false, false]);
+
+    fireEvent.mouseUp(document, { clientX: 0, clientY: START_Y + 30 });
+    await waitFor(() => expect(framed()).toEqual([false, false, false]));
+    expect(gridded()).toEqual([false, false, false]);
   });
 
-  test('[Listview-RSZ-003] a click without a move fades for the press and then restores', async () => {
-    // Break this catches: the fade cleared only when a height was written.
+  test('[Listview-RSZ-006] a click without a move shows them for the press and then removes them', async () => {
+    // Break this catches: the outline or grid cleared only when a height was written.
     await mount(widget);
 
     fireEvent.mouseDown(handles()[0], { clientX: 0, clientY: START_Y, button: 0 });
-    await waitFor(() => expect(faded()).toEqual([false, true, true]));
+    await waitFor(() => expect(gridded()).toEqual([true, false, false]));
     fireEvent.mouseUp(document);
 
-    await waitFor(() => expect(faded()).toEqual([false, false, false]));
+    await waitFor(() => expect(framed()).toEqual([false, false, false]));
+    expect(gridded()).toEqual([false, false, false]);
+  });
+
+  test('[Listview-RSZ-006] a grid layout shows them on card 1 only', async () => {
+    // Break this catches: the rule written for the List layout only.
+    await mount(widget, {
+      properties: { mode: binding('grid'), columns: binding('{{2}}'), gridRecordHeight: binding('150') },
+    });
+
+    fireEvent.mouseDown(handles()[0], { clientX: 0, clientY: START_Y, button: 0 });
+
+    await waitFor(() => expect(framed()).toEqual([true, false, false]));
+    expect(gridded()).toEqual([true, false, false]);
+  });
+});
+
+describe('Listview record resize: the handle sits on the bottom edge of record 1', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const clippingBetween = (handle) => {
+    const clipping = [];
+    for (let node = handle.parentElement; node && !node.classList.contains('list-item'); node = node.parentElement) {
+      if (node.style.overflow && node.style.overflow !== 'visible') clipping.push(node);
+    }
+    return clipping;
+  };
+
+  test('[Listview-RSZ-007] the handle is 26px wide, half of its height below the edge, and no element that clips lies between it and the record', async () => {
+    // Break this catches: the handle inside the clipped box (half cut), a width other than 26px, or a bottom offset that leaves it above the edge.
+    await mount(widget);
+    const handle = handles()[0];
+
+    expect(handle.style.width).toBe('26px');
+    expect(handle.style.height).toBe('8px');
+    expect(handle.style.bottom).toBe('-4px');
+    expect(handle.style.left).toBe('50%');
+    expect(clippingBetween(handle)).toEqual([]);
+  });
+
+  test('[Listview-RSZ-007] the record children are still clipped at the record', async () => {
+    // Break this catches: lifting the clip off the record canvas to free the handle.
+    await mount(widget);
+
+    const canvas = rows()[0].querySelector('.real-canvas');
+    const clipped = [];
+    for (let node = canvas; node && node !== rows()[0].parentElement; node = node.parentElement) {
+      if (node.style.overflow === 'hidden') clipped.push(node);
+    }
+    expect(clipped.length).toBeGreaterThan(0);
+  });
+
+  test('[Listview-RSZ-007] a Container record puts the edge on its border: the handle centre follows the edge', async () => {
+    // Break this catches: a fixed offset that ignores the 1px border under the record.
+    await mount(widget, { styles: { listStyle: binding('container') } });
+
+    expect(handles()[0].style.bottom).toBe('-5px');
   });
 });
 
@@ -657,6 +742,20 @@ describe('Listview record resize: nested ListView', () => {
 
     await waitFor(() => expect(raw('rowHeight').value).toBe(300));
     expect(raw('rowHeight', INNER)).toEqual({ value: '100' });
+  });
+
+  test('[Listview-RSZ-006] an inner ListView inside record 1 shows no grid when the outer record is resized', async () => {
+    // Break this catches: a global resize flag that turns every record canvas into a grid.
+    nestedWidget.render({ currentMode: 'edit' });
+    await waitFor(() => expect(document.querySelectorAll('.ele-txt2')).toHaveLength(2));
+
+    fireEvent.mouseDown(outerHandle(), { clientX: 0, clientY: START_Y, button: 0 });
+
+    await waitFor(() => expect(rows()[0].classList.contains('listview-record-moving')).toBe(true));
+    const innerRows = [...rows()[0].querySelectorAll('.list-item')];
+    expect(innerRows.length).toBeGreaterThan(0);
+    expect(innerRows.every((row) => !row.classList.contains('listview-record-moving'))).toBe(true);
+    expect(innerRows.every((row) => !row.querySelector('.show-grid'))).toBe(true);
   });
 
   test('[Listview-RSZ-001] on outer page 2 the inner list is a copy and has no handle', async () => {
