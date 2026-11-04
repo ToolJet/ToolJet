@@ -13,6 +13,8 @@ You decide which data sources ToolJet's AI features can reach, and this section 
 
 **Data Discovery**: Your schema is what the AI is designed to work from, but it is not a boundary we can enforce. When the AI explores a connected data source to identify the entities relevant to your application, we cannot guarantee that it will not read data within your tables. Discovery is not deterministic, and its behavior depends on the underlying model you select. If a table must never be read by the AI, do not expose it through the credentials you connect.
 
+**Workspace Access**: While ToolJet AI builds or changes an app, it works in your workspace as you, through a token named **AI app builder** that appears in **Profile settings** under **Personal access tokens**. The AI can do only what your role allows, and only with apps, data, workflows, and workspace users. It can't change workspace settings, use ToolJet AI, or create or revoke tokens. The apps, queries, and tables it creates are attributed to you. Revoking the token ends the AI's access right away, and ToolJet creates it again the next time you build with AI.
+
 ### 2. Deployment Options
 
 You can meet your organization's specific security, compliance, and data residency requirements while maintaining control over your infrastructure with our self-hosted deployment option.
