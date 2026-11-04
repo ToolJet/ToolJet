@@ -311,6 +311,23 @@ export function resolvePastedComponentName({
   return computeComponentName(utilityFuncForNameSeed(componentDef), mergedComponents);
 }
 
+// A ListView's saved layouts are keyed by child id; a copy's children have new ids, and a child that was not copied has none.
+function remapListviewRecordLayouts(component, idMapping) {
+  const memory = component.component.definition?.properties?.recordLayouts?.value;
+  if (component.component.component !== 'Listview' || !memory || idMapping.size === 0) return component;
+  component.component.definition.properties.recordLayouts.value = Object.fromEntries(
+    Object.entries(memory).map(([mode, layouts]) => [
+      mode,
+      Object.fromEntries(
+        Object.entries(layouts ?? {})
+          .filter(([childId]) => idMapping.has(childId))
+          .map(([childId, layout]) => [idMapping.get(childId), layout])
+      ),
+    ])
+  );
+  return component;
+}
+
 export async function pasteComponents(targetParentId, copiedComponentObj) {
   const finalComponents = [];
   const componentMap = {};
@@ -464,7 +481,7 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
         field.componentId = componentIdMappingSet.get(field.componentId) || field.componentId;
       });
     }
-    return component;
+    return remapListviewRecordLayouts(component, componentIdMappingSet);
   });
 
   const filteredComponentsCount = filteredFinalComponents.length;

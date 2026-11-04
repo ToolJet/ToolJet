@@ -77,3 +77,48 @@ export const arrangeRecordChildren = (
   const px = { fromColumnPx, toColumnPx };
   return toMode === 'grid' ? arrangeStack(ordered, recordHeight, px) : arrangeRow(ordered, recordHeight, px);
 };
+
+const pickBox = ({ top, left, width, height }) => ({ top, left, width, height });
+const isBox = (box) => box && [box.top, box.left, box.width, box.height].every((value) => Number.isFinite(value));
+
+/** The saved shape of one Layout's memory: every child's box, keyed by component id. */
+export const snapshotRecordLayouts = (children) =>
+  Object.fromEntries(children.map((child) => [child.id, pickBox(child.layout)]));
+
+/**
+ * Layouts for the children when a Layout that has a memory is switched to: each remembered child gets its saved box;
+ * children added since (no entry) are arranged as usual and placed after the remembered ones. Ids in the memory that
+ * are no longer children are ignored.
+ */
+export const restoreRecordChildren = (children, remembered, options) => {
+  const restored = children.filter((child) => isBox(remembered?.[child.id]));
+  const added = children.filter((child) => !isBox(remembered?.[child.id]));
+  const layouts = Object.fromEntries(restored.map((child) => [child.id, pickBox(remembered[child.id])]));
+  if (added.length === 0) return layouts;
+
+  const arranged = arrangeRecordChildren(added, options);
+  const boxes = Object.values(layouts);
+  if (boxes.length === 0) return arranged;
+
+  const isGrid = options.toMode === 'grid';
+  const arrangedBoxes = Object.values(arranged);
+  if (isGrid) {
+    const shift =
+      Math.max(...boxes.map((box) => box.top + box.height)) +
+      STACK_MAX_GAP -
+      Math.min(...arrangedBoxes.map((box) => box.top));
+    Object.entries(arranged).forEach(([id, box]) => {
+      layouts[id] = { ...box, top: box.top + shift };
+    });
+  } else {
+    const shift =
+      Math.max(...boxes.map((box) => box.left + box.width)) +
+      ROW_GAP -
+      Math.min(...arrangedBoxes.map((box) => box.left));
+    Object.entries(arranged).forEach(([id, box]) => {
+      // Past the right edge a child overlaps there rather than leave the card.
+      layouts[id] = { ...box, left: Math.max(0, Math.min(box.left + shift, NO_OF_GRIDS - box.width)) };
+    });
+  }
+  return layouts;
+};

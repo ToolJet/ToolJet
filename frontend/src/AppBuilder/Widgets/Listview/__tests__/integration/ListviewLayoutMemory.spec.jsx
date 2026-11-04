@@ -144,24 +144,32 @@ describe('Listview: each Layout remembers its own layout', () => {
     expect(layoutOf('new2').left).toBe(1);
   });
 
-  test('[Listview-GRID-013] one undo of a switch restores the Layout, every child position and the memory', () => {
-    // Break this catches: an undo that flips the Layout but leaves the memory written, or two undo steps for one switch.
+  test('[Listview-GRID-013] one undo of a switch restores the Layout and every child position, and the memory agrees with them', () => {
+    // Break this catches: an undo that flips the Layout but leaves the children stacked, two undo steps for one switch, or a memory that disagrees with the restored page.
     seed();
     setMode('grid');
     setMode('list');
-    const afterFirst = JSON.parse(JSON.stringify(memoryOf()));
     moveTo('txt', { top: 40, left: 20, width: 9, height: 30 });
 
     setMode('grid');
+    expect(layoutOf('txt').left).toBe(1);
     handleUndo();
 
     expect(modeOf()).toBe('list');
+    expect(layoutOf('img')).toEqual(IMG);
     expect(layoutOf('txt')).toEqual({ top: 40, left: 20, width: 9, height: 30 });
-    expect(memoryOf()).toEqual(afterFirst);
+    expect(layoutOf('btn')).toEqual(BTN);
+    expect(memoryOf().list.txt).toEqual({ top: 40, left: 20, width: 9, height: 30 });
 
     handleRedo();
     expect(modeOf()).toBe('grid');
+    expect(layoutOf('txt').left).toBe(1);
     expect(memoryOf().list.txt).toEqual({ top: 40, left: 20, width: 9, height: 30 });
+
+    handleUndo();
+    setMode('grid');
+    handleUndo();
+    expect(modeOf()).toBe('list');
   });
 
   test('[Listview-GRID-013] undoing the first switch restores the List layout, and switching again then behaves like the first time', () => {
@@ -225,6 +233,20 @@ describe('Listview: each Layout remembers its own layout', () => {
     expect(layoutOf('img', 'mobile')).toEqual(mobile);
     expect(memoryOf().list.img).toEqual(IMG);
     expect(memoryOf().list.img.mobile).toBeUndefined();
+  });
+
+  test('[Listview-GRID-015] a switch made in the mobile view neither saves nor restores desktop layouts', () => {
+    // Break this catches: the memory read from or written to the mobile layouts, or the desktop layouts moved from the mobile view.
+    seed();
+    components().img.layouts.mobile = { top: 5, left: 5, width: 10, height: 30 };
+    useStore.getState().setCurrentLayout('mobile');
+
+    setMode('grid');
+
+    expect(memoryOf()).toBeUndefined();
+    expect(layoutOf('img')).toEqual(IMG);
+    expect(layoutOf('txt')).toEqual(TXT);
+    useStore.getState().setCurrentLayout('desktop');
   });
 
   test('[Listview-GRID-015] choosing the Layout the list already has writes no memory', () => {

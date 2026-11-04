@@ -44,7 +44,11 @@ import {
 } from './componentsSliceUtils';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
-import { arrangeRecordChildren } from '@/AppBuilder/Widgets/Listview/arrangeRecordChildren';
+import {
+  arrangeRecordChildren,
+  restoreRecordChildren,
+  snapshotRecordLayouts,
+} from '@/AppBuilder/Widgets/Listview/arrangeRecordChildren';
 import { getRecordHeight, getRecordColumnPx } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
 import { useGridStore } from '@/_stores/gridStore';
 import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
@@ -2353,14 +2357,36 @@ export const createComponentsSlice = (set, get) => ({
       gap: getResolvedValue(listview?.component?.definition?.styles?.gap?.value),
       columns: getResolvedValue(properties.columns?.value),
     };
-    const layouts = arrangeRecordChildren(children, {
+    const arrangeOptions = {
       toMode,
       fromMode,
       recordHeight,
       fromColumnPx: getRecordColumnPx({ ...sizing, mode: fromMode }),
       toColumnPx: getRecordColumnPx({ ...sizing, mode: toMode }),
-    });
+    };
+    // Each Layout remembers its own last desktop layout; the mobile layouts are never remembered or restored.
+    const remembers = currentLayout === 'desktop';
+    const memory = remembers ? (properties.recordLayouts?.value ?? {}) : {};
+    const remembered = remembers && Object.keys(memory[toMode] ?? {}).length > 0 ? memory[toMode] : null;
+    const layouts = remembered
+      ? restoreRecordChildren(children, remembered, arrangeOptions)
+      : arrangeRecordChildren(children, arrangeOptions);
     if (Object.keys(layouts).length === 0) return;
+    if (remembers) {
+      // Only the children that exist now: a deleted child's saved box is dropped here.
+      const recordLayouts = { ...memory, [fromMode]: snapshotRecordLayouts(children) };
+      const pageIndex = get().getCurrentPageIndex(moduleId);
+      // Not an undo patch: a first write adds a key, and the undo replay reads an added or removed key as a component.
+      // The memory needs none: it only ever gets the Layout being left, which is what an undo restores on the page.
+      set(
+        (state) => {
+          const definition = state.modules[moduleId].pages[pageIndex].components[listviewId].component.definition;
+          definition.properties.recordLayouts = { value: recordLayouts };
+        },
+        false,
+        'arrangeListviewRecordChildren'
+      );
+    }
     setComponentLayout(layouts, undefined, moduleId, { saveAfterAction, mergeWithPrevious: true });
   },
 
