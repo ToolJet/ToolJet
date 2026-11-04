@@ -19,6 +19,7 @@ jest.mock('@/_ui/Accordion', () => ({
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import { listviewConfig } from '@tooljet/widget-definitions';
+import useStore from '@/AppBuilder/_stores/store';
 import { seedApp } from '@/test/app-builder';
 import { Inspector } from '@/AppBuilder/RightSideBar/Inspector/Inspector';
 
@@ -80,6 +81,7 @@ describe('List View Styles panel', () => {
     // Break this catches: a numeric control that shows the expression text or goes blank for a saved binding.
     renderStyles({ gap: { value: '{{12}}' }, recordBorderRadius: { value: '{{6}}' }, borderRadius: { value: 4 } });
 
+    expect(useStore.getState().getResolvedValue('{{12}}')).toBe(12);
     expect(numberInputs('gap')[0].value).toBe('12');
     expect(numberInputs('recordBorderRadius')[0].value).toBe('6');
     expect(numberInputs('borderRadius')[0].value).toBe('4');
