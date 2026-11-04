@@ -1,5 +1,5 @@
 // Does one of these components sit in the list's records (nested included, header excluded)?
-const hasComponentInRecords = (state, componentIds, listviewId, moduleId) => {
+export const hasComponentInRecords = (state, componentIds, listviewId, moduleId) => {
   const headerId = `${listviewId}-header`;
   return componentIds.some((componentId) => {
     let parent = componentId && state.getComponentDefinition?.(componentId, moduleId)?.component?.parent;

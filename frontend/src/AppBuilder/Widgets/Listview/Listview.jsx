@@ -15,7 +15,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import SubcontainerContext, { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { ListviewSubcontainer } from './ListviewSubcontainer';
 import { ListviewEmptyState } from './ListviewEmptyState';
-import { isMovingInListview, isSelectedInListview } from './isMovingInListview';
+import { hasComponentInRecords, isMovingInListview, isSelectedInListview } from './isMovingInListview';
 import { HorizontalSlot } from '@/AppBuilder/Widgets/Form/Components/HorizontalSlot';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 import cx from 'classnames';
@@ -357,6 +357,29 @@ export const Listview = function Listview({
   useEffect(() => {
     if (!hasMainRecord || filteredData.length === 0) setMainRecordHovered(false);
   }, [hasMainRecord, filteredData.length]);
+
+  // Moveable draws a component's border and resize handles outside the record, so reaching them must not end the hover.
+  useEffect(() => {
+    if (!hasMainRecord) return undefined;
+    const controlsOfRecords = (node) => {
+      const box = node?.closest?.('.moveable-control-box[target-id]');
+      const targetId = box?.getAttribute('target-id');
+      return targetId && hasComponentInRecords(useStore.getState(), [targetId], id, moduleId) ? box : null;
+    };
+    const onOver = (e) => {
+      if (controlsOfRecords(e.target)) setMainRecordHovered(true);
+    };
+    const onOut = (e) => {
+      const box = controlsOfRecords(e.target);
+      if (box && !box.contains(e.relatedTarget)) setMainRecordHovered(false);
+    };
+    document.addEventListener('mouseover', onOver);
+    document.addEventListener('mouseout', onOut);
+    return () => {
+      document.removeEventListener('mouseover', onOver);
+      document.removeEventListener('mouseout', onOut);
+    };
+  }, [hasMainRecord, id, moduleId]);
 
   // Check if parentIndices changed (component moved into/out of a ListView)
   const parentIndicesChanged =
