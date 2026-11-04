@@ -14,6 +14,13 @@ import {
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
 
+// Wraps, never replaces: counts how often each record re-renders.
+jest.mock('@/_hooks/useDynamicHeight', () => {
+  const actual = jest.requireActual('@/_hooks/useDynamicHeight');
+  return { ...actual, useDynamicHeight: jest.fn((...args) => actual.useDynamicHeight(...args)) };
+});
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+
 const ID = 'lv1';
 const INNER = 'lv2';
 const records = (count) =>
@@ -132,9 +139,10 @@ describe('Listview record resize: the written height', () => {
     [-33, 70],
     [-36, 60],
     [-500, 10],
-    [1000, 400],
+    [900, 1000],
+    [1234, 1330],
   ])('[Listview-RSZ-001] 100 dragged by %i becomes %i', async (delta, expected) => {
-    // Break this catches: rounding down instead of to the nearest 10, a drag up that grows, or no clamp at 10 and 400.
+    // Break this catches: rounding down instead of to the nearest 10, a drag up that grows, or a floor missing at 10 or a cap added above.
     await mount(widget);
 
     drag(handles()[0], [delta]);
@@ -244,6 +252,138 @@ describe('Listview record resize: the written height', () => {
   });
 });
 
+describe('Listview record resize: no upper limit, a floor of 10 that never jumps', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test.each([
+    ['600', -5, null],
+    ['600', 33, 630],
+    ['5', -20, null],
+    ['8', -3, null],
+    ['5', 33, 40],
+  ])('[Listview-RSZ-001] saved %s dragged by %i writes %p', async (saved, delta, expected) => {
+    // Break this catches: a cap that pulls 600 down to its limit on the first pixel, or a floor that lifts 5 or 8 to 10 when dragging up.
+    await mount(widget, { properties: { rowHeight: binding(saved) } });
+    const handle = handles()[0];
+
+    fireEvent.mouseDown(handle, { clientX: 0, clientY: START_Y, button: 0 });
+    fireEvent.mouseMove(document, { clientX: 0, clientY: START_Y + delta });
+    if (expected === null) expect(heights()[0]).toBe(`${saved}px`);
+    fireEvent.mouseUp(document, { clientX: 0, clientY: START_Y + delta });
+
+    if (expected === null) expect(raw('rowHeight')).toEqual({ value: saved });
+    else await waitFor(() => expect(raw('rowHeight').value).toBe(expected));
+  });
+
+  test('[Listview-RSZ-001] a capitalised Grid layout writes the grid key', async () => {
+    // Break this catches: comparing the layout without lower-casing, so "Grid" shows the grid height and writes rowHeight.
+    await mount(widget, {
+      properties: { mode: binding('Grid'), columns: binding('{{2}}'), gridRecordHeight: binding('150') },
+    });
+
+    drag(handles()[0], [33]);
+
+    await waitFor(() => expect(raw('gridRecordHeight').value).toBe(180));
+    expect(raw('rowHeight')).toEqual({ value: '100' });
+  });
+});
+
+describe('Listview record resize: the click that ends a drag', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 20));
+  const dragThenRelease = (distance = 30) => {
+    fireEvent.mouseDown(handles()[0], { clientX: 0, clientY: START_Y, button: 0 });
+    fireEvent.mouseMove(document, { clientX: 0, clientY: START_Y + distance });
+    fireEvent.mouseUp(document, { clientX: 0, clientY: START_Y + distance });
+  };
+
+  test.each([
+    ['the record body', () => rows()[0]],
+    ['a child in the record', () => document.querySelector('.ele-txt1')],
+  ])('[Listview-RSZ-001] a release over %s does not select record 1', async (_name, target) => {
+    // Break this catches: the click a browser sends to the common ancestor of the press and the release reaching the record, so a resize selects it and fires Record clicked.
+    await mount(widget);
+    dragThenRelease();
+
+    fireEvent.click(target());
+    await settle();
+
+    expect(widget.exposed()?.selectedRecordIndex).toBeUndefined();
+  });
+
+  test('[Listview-RSZ-001] only that one click is ignored: the next click selects the record', async () => {
+    // Break this catches: a guard that stays on, so record 1 can no longer be selected after a resize.
+    await mount(widget);
+    dragThenRelease();
+    fireEvent.click(rows()[0]);
+    await settle();
+
+    fireEvent.click(rows()[0]);
+
+    await waitFor(() => expect(widget.exposed()?.selectedRecordIndex).toBe(0));
+  });
+
+  test('[Listview-RSZ-001] when no click follows the release, the next press and click select the record', async () => {
+    // Break this catches: a guard that waits for a click that never came and eats the next real one.
+    await mount(widget);
+    dragThenRelease();
+
+    fireEvent.mouseDown(rows()[0], { clientX: 0, clientY: START_Y, button: 0 });
+    fireEvent.mouseUp(rows()[0]);
+    fireEvent.click(rows()[0]);
+
+    await waitFor(() => expect(widget.exposed()?.selectedRecordIndex).toBe(0));
+  });
+});
+
+describe('Listview record resize: cleanup and rendering', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-RSZ-001] unmounting during a drag drops the listeners, so a later release writes nothing', async () => {
+    // Break this catches: document listeners that outlive the ListView and write from a stale render.
+    await mount(widget);
+    const view = widget.render({ currentMode: 'edit' });
+    fireEvent.mouseDown(handles()[0], { clientX: 0, clientY: START_Y, button: 0 });
+    fireEvent.mouseMove(document, { clientX: 0, clientY: START_Y + 40 });
+
+    view.unmount();
+    fireEvent.mouseMove(document, { clientX: 0, clientY: START_Y + 80 });
+    fireEvent.mouseUp(document, { clientX: 0, clientY: START_Y + 80 });
+
+    expect(raw('rowHeight')).toEqual({ value: '100' });
+  });
+
+  test('[Listview-RSZ-001] the page shows a resize cursor for the whole drag and not after it', async () => {
+    // Break this catches: the cursor falling back to the default once the pointer leaves the 8px handle.
+    await mount(widget);
+    expect(document.body.classList.contains('listview-record-resizing')).toBe(false);
+
+    fireEvent.mouseDown(handles()[0], { clientX: 0, clientY: START_Y, button: 0 });
+    await waitFor(() => expect(document.body.classList.contains('listview-record-resizing')).toBe(true));
+    fireEvent.mouseUp(document);
+
+    await waitFor(() => expect(document.body.classList.contains('listview-record-resizing')).toBe(false));
+  });
+
+  test('[Listview-RSZ-001] a ListView re-render that changes nothing for record 1 does not re-render record 1', async () => {
+    // Break this catches: a fresh handle object per render, which defeats the record's memo on every hover.
+    await mount(widget);
+    const recordOneRenders = () =>
+      useDynamicHeight.mock.calls.filter(([options]) => options.subContainerIndex === 0).length;
+    const before = recordOneRenders();
+
+    fireEvent.mouseEnter(rows()[2]);
+    fireEvent.mouseEnter(rows()[0]);
+    await waitFor(() => expect(faded()).toEqual([false, true, true]));
+
+    expect(recordOneRenders()).toBe(before);
+  });
+});
+
 describe.each(['legacy', 'bordered', 'container', 'plain'])('Listview record resize: %s style', (listStyle) => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
@@ -312,13 +452,15 @@ describe('Listview record resize: Record height holds an expression', () => {
     expect(raw('rowHeight')).toEqual({ value: '{{components.text2.text}}' });
   });
 
-  test('[Listview-RSZ-002] a drag attempted on the row does nothing to the expression', async () => {
-    // Break this catches: any other element answering mousedown by starting a resize.
+  test('[Listview-RSZ-002] pressing, moving and releasing on any element of record 1 leaves the expression alone', async () => {
+    // Break this catches: any element of the record, not only the handle, starting a resize that overwrites the expression.
     await mount(widget, expressionHeight);
 
-    fireEvent.mouseDown(rows()[0], { clientX: 0, clientY: START_Y, button: 0 });
-    fireEvent.mouseMove(document, { clientX: 0, clientY: START_Y + 50 });
-    fireEvent.mouseUp(document);
+    [rows()[0], ...rows()[0].querySelectorAll('*')].forEach((node) => {
+      fireEvent.mouseDown(node, { clientX: 0, clientY: START_Y, button: 0 });
+      fireEvent.mouseMove(document, { clientX: 0, clientY: START_Y + 50 });
+      fireEvent.mouseUp(document, { clientX: 0, clientY: START_Y + 50 });
+    });
 
     expect(raw('rowHeight')).toEqual({ value: '{{components.text2.text}}' });
     expect(faded()).toEqual([false, false, false]);
