@@ -505,8 +505,11 @@ interface LoadOptions {
   isDevBuild?: boolean;
 }
 
-const fetchInit = ({ isDevBuild = false }: LoadOptions): RequestInit | undefined =>
-  isDevBuild ? { cache: 'no-store' } : undefined;
+// credentials: a private app's bundle needs the session, also when the API is on another origin.
+const fetchInit = ({ isDevBuild = false }: LoadOptions): RequestInit => ({
+  credentials: 'include',
+  ...(isDevBuild ? { cache: 'no-store' } : {}),
+});
 
 // cacheKey: published revisions are immutable; a dev slot appends its push nonce so a push re-imports.
 export const loadLibraryModule = (
