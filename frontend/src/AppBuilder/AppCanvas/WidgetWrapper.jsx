@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo } from 'react';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import { shallow } from 'zustand/shallow';
@@ -55,7 +55,7 @@ const WidgetWrapper = memo(
     flexDirection = 'column',
     flexShouldStack = false,
   }) => {
-    const { contextPath } = useSubcontainerContext();
+    const { contextPath, listviewCopy = false } = useSubcontainerContext();
     const indices = useMemo(() => {
       const result = contextPath.map((s) => s.index);
       return result.length > 0 ? result : null;
@@ -103,6 +103,10 @@ const WidgetWrapper = memo(
     );
 
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
+    // A copy in a later ListView record: outlined when its original is selected, or when the pointer is on it.
+    const isListviewCopy = listviewCopy && readOnly && mode === 'edit';
+    const isSelectedElsewhere = useStore((state) => isListviewCopy && state.selectedComponents.includes(id), shallow);
+    const [isCopyHovered, setIsCopyHovered] = useState(false);
     const isDragging = useStore((state) => state.draggingComponentId === id);
     const isResizing = useStore((state) => state.resizingComponentId === id);
     const componentType = useStore(
@@ -259,6 +263,7 @@ const WidgetWrapper = memo(
             [`widget-${id} nested-target`]: id !== 'canvas' && !readOnly,
             'position-absolute': isGridLayout && readOnly,
             'active-target': isWidgetActive,
+            'non-dragging-component': isListviewCopy && (isSelectedElsewhere || isCopyHovered),
             'opacity-0 pointer-events-none': isDragging || isResizing,
             'module-container': isModuleContainer,
             'dynamic-height-target': isDynamicHeightEnabled,
@@ -274,6 +279,15 @@ const WidgetWrapper = memo(
           data-module-id={moduleId || 'canvas'}
           style={outerStyle}
           onClickCapture={isModuleViewerWidget && mode === 'edit' ? handleModuleClickCapture : undefined}
+          // mouseover bubbles, so the innermost copy under the pointer wins.
+          onMouseOver={
+            isListviewCopy
+              ? (e) => {
+                  e.stopPropagation();
+                  setIsCopyHovered(true);
+                }
+              : undefined
+          }
           onMouseEnter={() => {
             if (isDragging || isModuleContainer) return;
             if (isFlexLayout) {
@@ -282,6 +296,7 @@ const WidgetWrapper = memo(
             setHoveredComponentForGrid(id);
           }}
           onMouseLeave={() => {
+            if (isCopyHovered) setIsCopyHovered(false);
             if (isDragging || isModuleContainer) return;
             setHoveredComponentForGrid('');
           }}

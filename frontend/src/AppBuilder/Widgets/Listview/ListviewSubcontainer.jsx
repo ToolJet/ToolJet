@@ -30,11 +30,22 @@ export const ListviewSubcontainer = ({
   parentHeight,
   dataCy,
   componentType,
+  recordOffset = 0,
+  isBuilder = false,
+  isFaded = false,
+  isMoving = false,
+  onMainHoverChange,
 }) => {
   const parentContext = useSubcontainerContext();
+  // The first record of page 1 is the only editable one; a page-relative index cannot tell it from page 2's first.
+  const isCopy = !!parentContext.listviewCopy || recordOffset + index !== 0;
   const contextValue = useMemo(
-    () => ({ contextPath: [...parentContext.contextPath, { containerId: id, index }], inListviewRecord: true }),
-    [parentContext.contextPath, id, index]
+    () => ({
+      contextPath: [...parentContext.contextPath, { containerId: id, index }],
+      inListviewRecord: true,
+      listviewCopy: isCopy,
+    }),
+    [parentContext.contextPath, id, index, isCopy]
   );
   const contextIndices = useMemo(
     () => [...parentContext.contextPath.map((segment) => segment.index), index],
@@ -66,6 +77,7 @@ export const ListviewSubcontainer = ({
     <SubcontainerContext.Provider value={contextValue}>
       <div
         className={cx('list-item', {
+          'listview-record-moving': isBuilder && isMoving,
           'w-100': mode == 'list',
           'listview-legacy-divider': showBorder && mode == 'list',
         })}
@@ -75,6 +87,7 @@ export const ListviewSubcontainer = ({
           width: recordWidth ?? `${100 / positiveColumns}%`,
           padding: '0px',
           overflow: 'hidden',
+          ...(isFaded && { opacity: 0.4 }),
           ...recordBoxStyle,
         }}
         key={index}
@@ -82,7 +95,13 @@ export const ListviewSubcontainer = ({
         tabIndex={0}
         data-cy={`${String(dataCy).toLowerCase()}-row-${index}`}
         // mouseenter does not bubble, so moving over the record's children does not re-fire.
-        onMouseEnter={() => onRecordHovered?.(index)}
+        onMouseEnter={() => {
+          onRecordHovered?.(index);
+          if (isBuilder && !isCopy) onMainHoverChange?.(true);
+        }}
+        onMouseLeave={() => {
+          if (isBuilder && !isCopy) onMainHoverChange?.(false);
+        }}
         // Enter and Space only: focus alone must not select, or tabbing would fire Record clicked.
         onKeyDown={(event) => {
           if (event.target !== event.currentTarget) return;

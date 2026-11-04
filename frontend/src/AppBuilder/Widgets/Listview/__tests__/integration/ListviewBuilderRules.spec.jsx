@@ -113,7 +113,11 @@ async function mount(harness, options = {}, count = 3) {
   await waitFor(() => expect(rows()).toHaveLength(count));
 }
 
-const serverProperties = { serverSidePagination: binding('{{true}}'), totalRecords: binding('{{7}}') };
+const serverProperties = {
+  data: binding(records(3)),
+  serverSidePagination: binding('{{true}}'),
+  totalRecords: binding('{{7}}'),
+};
 
 afterEach(() => {
   mockDragLayer.on = false;
@@ -143,7 +147,7 @@ describe('Listview builder: only record 1 of page 1 is editable', () => {
 
     await widget.act('setPage', 2);
 
-    await waitFor(() => expect(widget.exposed('pageIndex')).toBe(2));
+    await waitFor(() => expect(widget.exposed()?.pageIndex).toBe(2));
     await waitFor(() => expect(editable('txt1')).toEqual([false, false, false]));
   });
 });

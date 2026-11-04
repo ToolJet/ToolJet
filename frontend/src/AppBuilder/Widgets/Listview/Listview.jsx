@@ -15,6 +15,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import SubcontainerContext, { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { ListviewSubcontainer } from './ListviewSubcontainer';
 import { ListviewEmptyState } from './ListviewEmptyState';
+import { isMovingInListview } from './isMovingInListview';
 import { HorizontalSlot } from '@/AppBuilder/Widgets/Form/Components/HorizontalSlot';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 import cx from 'classnames';
@@ -52,7 +53,7 @@ export const Listview = function Listview({
   componentType,
 }) {
   const { moduleId } = useModuleContext();
-  const { contextPath } = useSubcontainerContext();
+  const { contextPath, listviewCopy: insideCopy = false } = useSubcontainerContext();
   // The header is not row-scoped (same path as the ListView), but its Text and Button follow the record overflow rule.
   const headerContext = useMemo(() => ({ contextPath, inListviewRecord: true }), [contextPath]);
   const parentIndices = useMemo(() => contextPath.map((s) => s.index), [contextPath]);
@@ -175,6 +176,9 @@ export const Listview = function Listview({
   }, [computedStyles.backgroundColor, mode]);
 
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
+  const [mainRecordHovered, setMainRecordHovered] = useState(false);
+  const isBuilder = currentMode === 'edit';
+  const isMovingInside = useStore((state) => isBuilder && isMovingInListview(state, id, moduleId));
   const [positiveColumns, setPositiveColumns] = useState(columns);
 
   const recordBoxStyle = useMemo(() => {
@@ -326,6 +330,9 @@ export const Listview = function Listview({
     });
   }
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
+  // Builder only: the others fade while the pointer or an edit is on the main record (record 1 of page 1).
+  const hasMainRecord = isBuilder && !insideCopy && startIndexOfRowInThePage === 0;
+  const fadeOthers = hasMainRecord && (mainRecordHovered || isMovingInside);
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
   const filteredData = _.isArray(data)
     ? enablePagination && !isServerSide
@@ -509,6 +516,11 @@ export const Listview = function Listview({
                     parentHeight={height}
                     dataCy={dataCy}
                     componentType={componentType}
+                    recordOffset={startIndexOfRowInThePage}
+                    isBuilder={isBuilder}
+                    isFaded={fadeOthers && index > 0}
+                    isMoving={hasMainRecord && isMovingInside && index === 0}
+                    onMainHoverChange={setMainRecordHovered}
                   />
                   {/* aria-hidden: a list may only own list items. The negative margin keeps each line inside its gap. */}
                   {isGridLayout && isBordered && (index + 1) % recordsPerLine !== 0 && (

@@ -34,3 +34,9 @@
 .listview-scroll-container .list-item.listview-legacy-divider {
     border-bottom: 1px solid var(--cc-default-border);
 }
+
+// Outline, not border, so the record does not shift while a child moves.
+.listview-scroll-container .list-item.listview-record-moving {
+    outline: 1px solid var(--border-accent-weak);
+    outline-offset: -1px;
+}

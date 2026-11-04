@@ -159,12 +159,17 @@ const Container = React.memo(
       setCurrentDragCanvasId,
     ]);
 
-    const { contextPath } = useSubcontainerContext();
+    const { contextPath, listviewCopy = false } = useSubcontainerContext();
     // A canvas inside a later row of any enclosing list is a copy too, not only a later row of this one.
     const isInsideLaterRow = contextPath.some((segment) => segment.index != null && segment.index !== 0);
     const isContainerReadOnly = useMemo(() => {
-      return (index !== 0 && isRowScopedCanvas(id, componentType)) || isInsideLaterRow || currentMode === 'view';
-    }, [index, id, componentType, isInsideLaterRow, currentMode]);
+      return (
+        (index !== 0 && isRowScopedCanvas(id, componentType)) ||
+        isInsideLaterRow ||
+        listviewCopy ||
+        currentMode === 'view'
+      );
+    }, [index, id, componentType, isInsideLaterRow, listviewCopy, currentMode]);
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
@@ -304,6 +309,7 @@ const Container = React.memo(
             isDragging &&
             (index === 0 || index === null) &&
             !isInsideLaterRow &&
+            !listviewCopy &&
             currentMode === 'edit' &&
             appType !== 'module',
           'module-container': appType === 'module',
