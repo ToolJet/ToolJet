@@ -1,6 +1,8 @@
 import * as ts from 'typescript';
 import * as path from 'path';
 
+import { assertTsconfigConfined, Confinement, confinedCompilerHost, projectConfinement } from './confinement';
+
 export interface ManifestProp {
   name: string;
   type: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'enumeration';
@@ -193,7 +195,10 @@ export interface ManifestResult {
   warnings: string[];
 }
 
-export async function generateManifest(projectRoot: string): Promise<ManifestResult> {
+export async function generateManifest(
+  projectRoot: string,
+  confinement: Confinement = projectConfinement(projectRoot)
+): Promise<ManifestResult> {
   const entryFile = path.join(projectRoot, 'src/index.ts');
   const tsConfigPath = path.join(projectRoot, 'tsconfig.json');
 
@@ -202,9 +207,16 @@ export async function generateManifest(projectRoot: string): Promise<ManifestRes
     throw new Error(`Invalid tsconfig.json: ${ts.flattenDiagnosticMessageText(error.messageText, '\n')}`);
   }
 
+  assertTsconfigConfined(ts, confinement, tsConfigPath);
   const parsedConfig = ts.parseJsonConfigFileContent(config, ts.sys, projectRoot);
 
-  const program = ts.createProgram(parsedConfig.fileNames, parsedConfig.options);
+  // The program sees only the project and its packages, so neither the manifest nor an error report can quote a file
+  // from elsewhere on this machine.
+  const program = ts.createProgram(
+    parsedConfig.fileNames,
+    parsedConfig.options,
+    confinedCompilerHost(ts, confinement, parsedConfig.options)
+  );
   const checker = program.getTypeChecker();
 
   const components: Record<string, ManifestComponent> = {};

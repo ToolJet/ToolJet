@@ -176,16 +176,118 @@ const BUILD_TRUST_FILES = ROOT_FILES.filter(
     ].includes(rel)
 );
 
-/** The build-trust files that stored source would change here. Compared as stored, so a local SDK path is no change. */
+const localStoredContent = (root: string, rel: string): string | undefined => {
+  const full = path.join(root, rel);
+  try {
+    return fs.statSync(full).isFile() ? storedContent(rel, fs.readFileSync(full, 'utf8')) : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const STYLESHEET = /\.(?:css|pcss|postcss|scss|sass|less)$/i;
+const CODE_FILE = /\.(?:[cm]?[jt]s|[jt]sx)$/i;
+
+/*
+  Stylesheet directives that make a local build load code: Tailwind's @config and @plugin, and an @import naming a
+  script. A stylesheet is source, outside the fixed trust files, so a pull that adds or changes one of these runs
+  someone else's code here unless it is checked the same way.
+*/
+const CODE_DIRECTIVE =
+  /@(?:config|plugin)\b[^;{}]*|@import\s+(?:url\()?\s*["']?[^"');\s]+\.(?:[cm]?[jt]s|[jt]sx|json)\b[^;{}]*/gi;
+
+const codeDirectives = (css: string | undefined): string[] =>
+  (css ?? '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .match(CODE_DIRECTIVE)
+    ?.map((directive) => directive.replace(/\s+/g, ' ').trim()) ?? [];
+
+/** The relative file a directive or an import names, as a stored path; undefined for a package name. */
+const relativeTarget = (from: string, spec: string): string | undefined => {
+  if (!spec.startsWith('./') && !spec.startsWith('../')) return undefined;
+  const target = path.posix.normalize(path.posix.join(path.posix.dirname(from), spec));
+  return target.startsWith('..') ? undefined : target;
+};
+
+const directiveTarget = (from: string, directive: string): string | undefined => {
+  const spec = /["']([^"']+)["']/.exec(directive)?.[1] ?? /^@(?:config|plugin)\s+([^\s;]+)/i.exec(directive)?.[1];
+  return spec ? relativeTarget(from, spec) : undefined;
+};
+
+const CODE_IMPORT = /(?:require\s*\(\s*|import\s*\(\s*|\bfrom\s+|\bimport\s+)["'](\.{1,2}\/[^"']+)["']/g;
+const RESOLVE_SUFFIXES = ['', '.js', '.cjs', '.mjs', '.ts', '.cts', '.mts', '.jsx', '.tsx', '/index.js', '/index.ts'];
+
+/**
+ * The project files a local build runs as code: what root build configs import, what stylesheet @config and
+ * @plugin directives name, and what those files import in turn. Read from both the local copy and the pull.
+ */
+function filesTheBuildRuns(root: string, incoming: Map<string, string | undefined>): Set<string> {
+  const read = (rel: string): string[] =>
+    [incoming.get(rel), localStoredContent(root, rel)].filter((c): c is string => typeof c === 'string');
+  const exists = (rel: string) => incoming.has(rel) || localStoredContent(root, rel) !== undefined;
+  const queue: string[] = [];
+  const seen = new Set<string>();
+  const add = (rel: string | undefined) => {
+    if (!rel) return;
+    const found = RESOLVE_SUFFIXES.map((suffix) => rel + suffix).find(exists);
+    if (found && !seen.has(found)) {
+      seen.add(found);
+      queue.push(found);
+    }
+  };
+  for (const rel of BUILD_TRUST_FILES.filter((r) => /\.config\./.test(r))) add(rel);
+  const stylesheets = new Set([
+    ...[...incoming.keys()].filter((rel) => STYLESHEET.test(rel)),
+    ...collectProjectSource(root)
+      .map((f) => f.path)
+      .filter((rel) => STYLESHEET.test(rel)),
+  ]);
+  for (const sheet of stylesheets)
+    for (const content of read(sheet)) for (const d of codeDirectives(content)) add(directiveTarget(sheet, d));
+  while (queue.length) {
+    const rel = queue.shift() as string;
+    if (!CODE_FILE.test(rel)) continue;
+    for (const content of read(rel))
+      for (const match of content.matchAll(CODE_IMPORT)) add(relativeTarget(rel, match[1]));
+  }
+  return seen;
+}
+
+const recordsRenders = (root: string): boolean => {
+  const config = parseJson(localStoredContent(root, 'frontend/.tooljet/config.json') ?? '');
+  return config?.recordRender === true;
+};
+
+/**
+ * What a pull of `stored` would change here that a local build runs: the fixed build-trust files, a stylesheet that
+ * adds or changes a code-loading directive, a file such a directive or a build config loads, and, when this project
+ * renders components in Node (recordRender), any changed component code. Compared as stored, so a local SDK path is
+ * no change.
+ */
 export function trustFileChanges(root: string, stored: StoredSource): string[] {
   const files = new Map((stored.files ?? []).map((f) => [f.path, f.content]));
-  return BUILD_TRUST_FILES.filter((rel) => {
-    const incoming = files.get(rel);
-    const full = path.join(root, rel);
-    const local = fs.existsSync(full) ? storedContent(rel, fs.readFileSync(full, 'utf8')) : undefined;
-    // Pulling never removes a root file, so a file stored source lacks changes nothing here.
-    return files.has(rel) && incoming !== local;
-  });
+  const changes = (rel: string) => files.has(rel) && files.get(rel) !== localStoredContent(root, rel);
+  // Pulling never removes a root file, so a file stored source lacks changes nothing here.
+  const changed = BUILD_TRUST_FILES.filter(changes);
+  const named = new Set(changed);
+  const note = (entry: string, rel: string) => {
+    if (named.has(rel)) return;
+    named.add(rel);
+    changed.push(entry);
+  };
+  for (const [rel, content] of files) {
+    if (!STYLESHEET.test(rel) || !changes(rel)) continue;
+    const before = new Set(codeDirectives(localStoredContent(root, rel)));
+    const added = codeDirectives(content).filter((directive) => !before.has(directive));
+    if (added.length) note(`${rel} (${added.map((d) => d.split(' ')[0]).join(', ')})`, rel);
+  }
+  for (const rel of filesTheBuildRuns(root, files)) if (changes(rel)) note(`${rel} (loaded by the build)`, rel);
+  if (recordsRenders(root)) {
+    for (const rel of files.keys())
+      if (CODE_FILE.test(rel) && TREES.some((tree) => rel.startsWith(`${tree}/`)) && changes(rel))
+        note(`${rel} (recordRender runs it)`, rel);
+  }
+  return changed;
 }
 
 /** Whether a stored path is one this project keeps (and so may be written or removed here). */

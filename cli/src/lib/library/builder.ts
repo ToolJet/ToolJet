@@ -8,6 +8,8 @@ import { ProjectConfig } from './project-config';
 import { collectSource } from './source-tree';
 import { isServerMode } from '../server-mode';
 import { assertNoCodeInCss, ignoredConfigs, trustedCssProcessor } from './trusted-css';
+import { assertTsconfigConfined, Confinement, confinementPlugin, projectConfinement } from './confinement';
+import * as ts from 'typescript';
 
 export interface BuildResult {
   distDir: string;
@@ -111,14 +113,15 @@ const buildStylesheet = async (
   file: string,
   projectRoot: string,
   postcssConfig: string | undefined,
-  minify: boolean
+  minify: boolean,
+  confinement: Confinement = projectConfinement(projectRoot)
 ) => {
   const result = await esbuild.build({
     entryPoints: [file],
     bundle: true,
     write: false,
     outfile: path.join(projectRoot, '.tooljet-style.css'),
-    plugins: cssPlugins(projectRoot, postcssConfig),
+    plugins: [confinementPlugin(confinement), ...cssPlugins(projectRoot, postcssConfig)],
     loader: ASSET_LOADERS,
     logLevel: 'silent',
     minify,
@@ -182,7 +185,8 @@ export async function orderAppStyles(
   projectRoot: string,
   distDir: string,
   postcssConfig: string | undefined,
-  minify: boolean
+  minify: boolean,
+  confinement: Confinement = projectConfinement(projectRoot)
 ) {
   const themeFile = path.join(projectRoot, APP_STYLE_FILES.theme);
   const globalFile = path.join(projectRoot, APP_STYLE_FILES.global);
@@ -192,13 +196,13 @@ export async function orderAppStyles(
   if (fs.existsSync(themeFile))
     parts.push({
       label: 'styles/theme.css',
-      css: await buildStylesheet(themeFile, projectRoot, postcssConfig, minify),
+      css: await buildStylesheet(themeFile, projectRoot, postcssConfig, minify, confinement),
     });
   if (fs.existsSync(bundleCss)) parts.push({ label: "the code's own CSS", css: fs.readFileSync(bundleCss, 'utf8') });
   if (fs.existsSync(globalFile))
     parts.push({
       label: 'styles/global.css (last)',
-      css: await buildStylesheet(globalFile, projectRoot, postcssConfig, minify),
+      css: await buildStylesheet(globalFile, projectRoot, postcssConfig, minify, confinement),
     });
   fs.writeFileSync(bundleCss, joinStylesheets(parts));
 }
@@ -231,6 +235,9 @@ export async function build(projectRoot: string, options: { env?: BuildEnv } = {
 
   fs.rmSync(distDir, { recursive: true, force: true });
   const postcssConfig = findPostcssConfig(projectRoot);
+  // Every file the build reads stays inside the project and its installed packages (confinement.ts).
+  const confinement = projectConfinement(projectRoot);
+  assertTsconfigConfined(ts, confinement, path.join(projectRoot, 'tsconfig.json'));
 
   await esbuild.build({
     entryPoints: [path.join(projectRoot, 'src/index.ts')],
@@ -239,7 +246,7 @@ export async function build(projectRoot: string, options: { env?: BuildEnv } = {
     outfile: path.join(distDir, 'index.js'),
     metafile: true,
     external: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
-    plugins: [tooljetSdkPlugin, ...cssPlugins(projectRoot, postcssConfig)],
+    plugins: [confinementPlugin(confinement), tooljetSdkPlugin, ...cssPlugins(projectRoot, postcssConfig)],
     loader: ASSET_LOADERS,
     jsx: 'automatic',
     // Dev builds (the dev track, not publish): every JSX call site in the project's own code passes its file:line:col to
@@ -254,10 +261,10 @@ export async function build(projectRoot: string, options: { env?: BuildEnv } = {
   // App-wide styles (an app project's convention, tooljet app init): styles/theme.css first (tokens as CSS variables),
   // then the CSS the bundle imports (Tailwind, components), then styles/global.css last, so app-wide overrides of a
   // library's defaults win over the rules they override, whatever order the code imports things in.
-  await orderAppStyles(projectRoot, distDir, postcssConfig, isProduction);
+  await orderAppStyles(projectRoot, distDir, postcssConfig, isProduction, confinement);
 
   // Manifest generation via TS Compiler API
-  const generated = await generateManifest(projectRoot);
+  const generated = await generateManifest(projectRoot, confinement);
   const { tsErrorCount, tsErrorReport, warnings } = generated;
   // Fields declared through the components' own helper functions: found by rendering each component once when the
   // project asks for it (recordRender), else named in a warning, since reading alone can't see them.

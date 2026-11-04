@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { manifestWithPublishedSdk } from '../app/sdk';
+import { Confinement, confinementDenial, projectConfinement } from './confinement';
 
 /** The library's source tree as the manifest carries it: path (with forward slashes) to text content. */
 export interface ManifestSource {
@@ -44,7 +45,11 @@ const walk = (dir: string, out: string[]) => {
 };
 
 /** src/ plus the project's root files, as the manifest's `source` entry. Text files only, size-capped. */
-export function collectSource(projectRoot: string, warnings: string[]): ManifestSource {
+export function collectSource(
+  projectRoot: string,
+  warnings: string[],
+  confinement: Confinement = projectConfinement(projectRoot, true)
+): ManifestSource {
   const candidates: string[] = [];
   const srcDir = path.join(projectRoot, 'src');
   if (fs.existsSync(srcDir)) walk(srcDir, candidates);
@@ -60,6 +65,11 @@ export function collectSource(projectRoot: string, warnings: string[]): Manifest
   for (const full of candidates) {
     const rel = path.relative(projectRoot, full).split(path.sep).join('/');
     const ext = path.extname(full).toLowerCase();
+    // A symlink to a file outside the project is not the project's source.
+    if (confinementDenial(confinement, full)) {
+      skipped.push(rel);
+      continue;
+    }
     const size = fs.statSync(full).size;
     if (!TEXT_EXTENSIONS.has(ext) || size > FILE_LIMIT || total + size > TOTAL_LIMIT) {
       skipped.push(rel);
