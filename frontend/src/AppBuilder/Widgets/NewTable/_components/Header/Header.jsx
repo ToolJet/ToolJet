@@ -29,6 +29,8 @@ export const Header = memo(
     // not read: it changes when a filter's value does, which redraws this memoised header
     appliedFilters: _redrawOnFilterChange,
     componentName,
+    filterMatch,
+    onFilterMatchChange,
   }) => {
     const displaySearchBox = useTableStore((state) => state.getTableProperties(id)?.displaySearchBox, shallow);
     const showFilterButton = useTableStore((state) => state.getTableProperties(id)?.showFilterButton, shallow);
@@ -194,6 +196,10 @@ export const Header = memo(
             setFilters={setFilters}
             setShowFilter={setShowFilter}
             componentName={componentName}
+            defaultFilters={defaultFilters}
+            filterMatch={filterMatch}
+            onFilterMatchChange={onFilterMatchChange}
+            getOptions={getChipOptions}
           />
         )}
       </>

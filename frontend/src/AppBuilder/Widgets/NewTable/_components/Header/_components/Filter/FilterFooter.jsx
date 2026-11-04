@@ -2,11 +2,11 @@ import React, { memo } from 'react';
 import { Plus } from 'lucide-react';
 
 const BUTTON_CLASS =
-  'tw-flex tw-h-9 tw-items-center tw-justify-center tw-gap-1.5 tw-rounded-md tw-px-3 tw-text-lg tw-font-medium [font-family:inherit]';
+  'tw-flex tw-h-8 tw-items-center tw-justify-center tw-gap-1.5 tw-rounded-md tw-px-3 tw-text-lg tw-font-medium [font-family:inherit]';
 
 export const FilterFooter = memo(({ addFilter, clearFilters }) => {
   return (
-    <div className="card-footer tw-flex tw-items-center tw-justify-between tw-px-4 tw-py-3">
+    <div className="card-footer tw-flex tw-items-center tw-justify-between" style={{ padding: '16px' }}>
       <button
         type="button"
         onClick={clearFilters}

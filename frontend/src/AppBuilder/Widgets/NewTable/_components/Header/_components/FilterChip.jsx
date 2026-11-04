@@ -12,9 +12,10 @@ export const CHIP_CLASS =
 
 const Divider = () => <span className="tw-h-3.5 tw-w-px tw-bg-border-default" aria-hidden="true" />;
 
-const ClearButton = ({ chip, onClear }) => (
+export const ClearButton = ({ chip, onClear, dataCy }) => (
   <button
     type="button"
+    data-cy={dataCy}
     aria-label={`Clear ${chip.column} filter`}
     onClick={() => onClear(chip)}
     className="tw-flex tw-h-5 tw-w-5 tw-shrink-0 tw-items-center tw-justify-center tw-rounded tw-border-0 tw-bg-transparent tw-p-0 tw-text-icon-default hover:tw-bg-interactive-hover"
@@ -71,7 +72,7 @@ const TextValue = ({ chip, label, onChange }) => {
 };
 
 // A value picked from a list of options
-const OptionValue = ({ chip, label, options, onChange, darkMode }) => {
+export const OptionValue = ({ chip, label, options, onChange, darkMode, dataCy = 'filter-chip-value' }) => {
   const [open, setOpen] = useState(false);
   const selected = options.find((option) => option.value === chip.value);
   const shown = chip.value === '' ? chip.placeholder : (selected?.label ?? chip.value);
@@ -82,7 +83,7 @@ const OptionValue = ({ chip, label, options, onChange, darkMode }) => {
         <button
           type="button"
           data-chip-part="value"
-          data-cy="filter-chip-value"
+          data-cy={dataCy}
           data-empty={chip.value === '' ? 'true' : 'false'}
           aria-label={`${label} value`}
           aria-haspopup="listbox"
@@ -136,7 +137,7 @@ export const FilterChip = memo(({ chip, dataCy, options, onValueChange, onClear,
   const hasValue = chip.applied && (!chip.needsValue || chip.value !== '');
 
   return (
-    <div data-cy={dataCy} className={cn(CHIP_CLASS, fill && 'tw-w-full')}>
+    <div data-cy={dataCy} data-chip-id={chip.id} className={cn(CHIP_CLASS, fill && 'tw-w-full')}>
       {chip.needsValue ? (
         <>
           <span data-chip-part="column" className="tw-font-medium tw-text-text-default">

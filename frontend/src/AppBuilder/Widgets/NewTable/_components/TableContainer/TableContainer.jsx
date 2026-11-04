@@ -40,7 +40,12 @@ export const TableContainer = ({
   const serverSideSort = useTableStore((state) => state.getTableProperties(id)?.serverSideSort, shallow);
   const serverSideFilter = useTableStore((state) => state.getTableProperties(id)?.serverSideFilter, shallow);
   const defaultFilters = useTableStore((state) => state.getTableProperties(id)?.defaultFilters, shallow);
-  const filterMatch = useTableStore((state) => state.getTableProperties(id)?.filterMatch, shallow);
+  const savedFilterMatch = useTableStore((state) => state.getTableProperties(id)?.filterMatch, shallow);
+  // The user can switch and/or in the filters panel; that is theirs for this session and never saved. The builder
+  // changing the setting takes it back.
+  const [filterMatchChoice, setFilterMatchChoice] = useState(null);
+  useEffect(() => setFilterMatchChoice(null), [savedFilterMatch]);
+  const filterMatch = filterMatchChoice ?? savedFilterMatch;
   const serverSideSearch = useTableStore((state) => state.getTableProperties(id)?.serverSideSearch, shallow);
   const rowsPerPage = useTableStore((state) => state.getTableProperties(id)?.rowsPerPage, shallow);
   const serverSideRowsPerPage = useTableStore((state) => state.getTableProperties(id)?.serverSideRowsPerPage, shallow);
@@ -238,6 +243,8 @@ export const TableContainer = ({
         appliedFiltersLength={table.getState().columnFilters.length}
         appliedFilters={table.getState().columnFilters}
         componentName={componentName}
+        filterMatch={filterMatch}
+        onFilterMatchChange={serverSideFilter ? undefined : setFilterMatchChoice}
       />
       <TableData
         id={id}

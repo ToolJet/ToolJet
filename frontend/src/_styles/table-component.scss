@@ -15,7 +15,8 @@
   }
 
   .table-filters {
-    border: 1px solid var(--slate3, #F1F3F5) !important;
+    // no outline: the panel is told apart by its shadow and the dimmed table behind it
+    border: 0 !important;
 
     .card-body {
       overflow-y: auto;
@@ -32,7 +33,7 @@
     background-color: var(--cc-surface1-surface);
   }
 
-  .card {
+  .card:not(.table-filters) {
     border: 1px solid var(--cc-default-border) !important;
   }
 
