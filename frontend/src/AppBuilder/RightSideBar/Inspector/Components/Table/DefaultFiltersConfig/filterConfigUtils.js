@@ -34,10 +34,20 @@ export const moveFilter = (filters, from, to) => {
 // The popup is positioned against the properties panel the cog sits in, so it opens beside the panel, not over it.
 export const getPanelRect = (element) => (element.closest('.inspector') ?? element).getBoundingClientRect();
 
-// Offsets that put a popup opening to the left of `element` against the panel instead: its right edge `gap` before
-// the panel's left edge, its top at the panel's top.
-export const getPanelPlacement = (element, gap) => {
+const POPUP_HEADER_HEIGHT = 44;
+const POPUP_BODY_MAX_HEIGHT = 560;
+const VIEWPORT_MARGIN = 8;
+const ABOVE_COG = 8;
+
+// Offsets that put a popup opening to the left of `element` beside its properties panel, level with `element`: its
+// right edge `gap` before the panel's left edge, its top ABOVE_COG above the element so it reads as the cog's.
+// The popup body is at most min(70vh, 560px) tall; the top is lifted when the popup would run off the bottom of the
+// screen, and kept below the top edge.
+export const getPanelPlacement = (element, gap, viewportHeight = window.innerHeight) => {
   const panel = getPanelRect(element);
   const rect = element.getBoundingClientRect();
-  return { sideOffset: rect.left - panel.left + gap, alignOffset: panel.top - rect.top };
+  const popupHeight = POPUP_HEADER_HEIGHT + Math.min(0.7 * viewportHeight, POPUP_BODY_MAX_HEIGHT);
+  const lowestTop = viewportHeight - VIEWPORT_MARGIN - popupHeight;
+  const top = Math.max(VIEWPORT_MARGIN, Math.min(rect.top - ABOVE_COG, lowestTop));
+  return { sideOffset: rect.left - panel.left + gap, alignOffset: top - rect.top };
 };

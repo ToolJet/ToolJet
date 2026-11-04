@@ -101,6 +101,10 @@ const shouldFireEvent = (diff, filter) => {
   }
 };
 
+// Match any: the row passes when one filter, on any column, matches
+export const applyAnyFilter = (row, columnFilters) =>
+  columnFilters.some(({ id, value: { condition, value } }) => filterFunctions[condition](row, id, { value }));
+
 export const applyFilters = (row, columnId, columnFilters) =>
   columnFilters.every((filter) => {
     const { value, condition } = filter.value;

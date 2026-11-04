@@ -53,6 +53,8 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.defaultFilters = Array.isArray(properties?.defaultFilters)
           ? properties.defaultFilters
           : [];
+        // missing on apps saved before the property existed, which always matched every filter
+        state.components[id].properties.filterMatch = properties?.filterMatch === 'or' ? 'or' : 'and';
         state.components[id].properties.showAddNewRowButton = properties?.showAddNewRowButton ?? true;
         state.components[id].properties.addNewRowIn = resolveAddNewRowIn(properties?.addNewRowIn);
         // missing on apps saved before the property existed, which always allowed several rows

@@ -396,6 +396,7 @@ export const Table = (props) => {
   const defaultFilters = component.component.definition.properties.defaultFilters?.value;
   const serverSideFilter =
     resolveReferences(component.component.definition.properties.serverSideFilter?.value) ?? false;
+  const filterMatch = component.component.definition.properties.filterMatch?.value;
 
   const handleFilterConfigChange = useCallback(
     (name, value) => paramUpdated({ name, ...component.component.properties?.[name] }, 'value', value, 'properties'),
@@ -779,6 +780,7 @@ export const Table = (props) => {
                 columns={columns}
                 defaultFilters={defaultFilters}
                 serverSideFilter={serverSideFilter}
+                filterMatch={filterMatch}
                 darkMode={darkMode}
                 onChange={handleFilterConfigChange}
               />
@@ -886,6 +888,7 @@ export const Table = (props) => {
       displayServerSideFilter,
       defaultFilters,
       serverSideFilter,
+      filterMatch,
       handleFilterConfigChange,
     ]
   );

@@ -3,6 +3,7 @@ import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Bolt, Check, ChevronDown, GripVertical, MousePointerClick, Plus, Trash2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Fx from '@/_ui/Icon/bulkIcons/Fx';
 import { resolveReferences } from '@/_helpers/utils';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Rocket/Popover/Popover';
@@ -24,6 +25,11 @@ const MODES = [
   { label: 'Server side', value: true },
 ];
 
+const MATCHES = [
+  { label: 'All (and)', value: 'and' },
+  { label: 'Any (or)', value: 'or' },
+];
+
 const OPTION_COLUMN_TYPES = ['select', 'newMultiSelect', 'tagsV2'];
 const BOOLEAN_COLUMN_TYPES = ['boolean', 'toggle'];
 const BOOLEAN_OPTIONS = [
@@ -35,6 +41,33 @@ const FIELD_CLASS =
   'tw-flex tw-h-8 tw-w-full tw-min-w-0 tw-items-center tw-gap-1.5 tw-rounded-md tw-border tw-border-solid tw-border-border-default tw-bg-background-surface-layer-01 tw-px-2.5 tw-font-body-default tw-text-text-default';
 
 const DASHED_LINE = 'tw-flex-1 tw-border-0 tw-border-t tw-border-dashed tw-border-border-default';
+
+// Two or more choices in one rounded box, the selected one raised.
+const Segmented = ({ label, options, selected, onSelect }) => (
+  <div
+    role="radiogroup"
+    aria-label={label}
+    className="tw-flex tw-items-center tw-gap-0.5 tw-rounded-lg tw-bg-background-surface-layer-02 tw-p-0.5"
+  >
+    {options.map(({ label: optionLabel, value }) => (
+      <button
+        key={optionLabel}
+        type="button"
+        role="radio"
+        aria-checked={selected === value}
+        onClick={() => selected !== value && onSelect(value)}
+        className={cn(
+          'tw-h-7 tw-rounded-md tw-border-0 tw-px-3 tw-font-body-default',
+          selected === value
+            ? 'tw-bg-background-surface-layer-01 tw-font-title-default tw-text-text-default tw-shadow-elevation-100'
+            : 'tw-bg-transparent tw-text-text-placeholder'
+        )}
+      >
+        {optionLabel}
+      </button>
+    ))}
+  </div>
+);
 
 const SectionTitle = ({ children }) => (
   <div className="tw-flex tw-h-5 tw-items-center tw-gap-3">
@@ -70,7 +103,7 @@ const FilterSelect = ({ label, prefix, value, options, onChange, darkMode }) => 
         collisionPadding={8}
         // above the config popup (1042) and the dialogs the builder lifts to 1050
         className={cn(
-          'tw-z-[1060] tw-w-max tw-min-w-[max(196px,var(--radix-popover-trigger-width))] tw-max-w-[280px] tw-gap-0 tw-p-1',
+          'tw-z-[1060] tw-w-max tw-min-w-[max(196px,var(--radix-popover-trigger-width))] tw-max-w-[280px] tw-gap-0 tw-p-2',
           darkMode && 'dark-theme'
         )}
       >
@@ -85,7 +118,7 @@ const FilterSelect = ({ label, prefix, value, options, onChange, darkMode }) => 
                 onChange(option.value);
                 setOpen(false);
               }}
-              className="tw-flex tw-h-8 tw-w-full tw-items-center tw-gap-2 tw-rounded-md tw-border-0 tw-bg-transparent tw-px-2 tw-text-left tw-font-body-default tw-text-text-default hover:tw-bg-interactive-hover"
+              className="tw-flex tw-h-8 tw-w-full tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-md tw-border-0 tw-bg-transparent tw-px-2 tw-text-left tw-font-body-default tw-text-text-default hover:tw-bg-interactive-hover"
             >
               <span className="tw-flex tw-w-4 tw-shrink-0 tw-justify-center" aria-hidden="true">
                 {option.value === value && <Check size={14} className="tw-text-icon-accent" />}
@@ -100,7 +133,7 @@ const FilterSelect = ({ label, prefix, value, options, onChange, darkMode }) => 
 };
 
 const DefaultValueField = ({ filter, column, serverSideFilter, onChange, darkMode }) => {
-  if (serverSideFilter) {
+  if (serverSideFilter || filter.fx) {
     return (
       <div className="tw-min-w-0">
         <CodeHinter
@@ -152,7 +185,14 @@ const DefaultValueField = ({ filter, column, serverSideFilter, onChange, darkMod
   );
 };
 
-export const DefaultFiltersConfig = ({ columns, defaultFilters, serverSideFilter, onChange, darkMode = false }) => {
+export const DefaultFiltersConfig = ({
+  columns,
+  defaultFilters,
+  serverSideFilter,
+  filterMatch,
+  onChange,
+  darkMode = false,
+}) => {
   const filterableColumns = getFilterableColumns(columns);
   const columnOptions = filterableColumns.map(({ id, name }) => ({ label: name, value: id }));
   const operatorOptions = FILTER_OPTIONS.map(({ name, value }) => ({ label: name, value }));
@@ -173,8 +213,8 @@ export const DefaultFiltersConfig = ({ columns, defaultFilters, serverSideFilter
   const cogRef = useRef(null);
   const [placement, setPlacement] = useState({ sideOffset: PANEL_GAP, alignOffset: 0 });
 
-  // Place the popup against the properties panel, not the cog: its right edge sits PANEL_GAP left of the panel
-  // and its top lines up with the panel's top, which leaves room below for the dropdown lists.
+  // Place the popup beside the properties panel, not over it: its right edge sits PANEL_GAP left of the panel and it
+  // is level with the cog, so it reads as the cog's.
   const placeBesidePanel = (open) => {
     if (!open || !cogRef.current) return;
     setPlacement(getPanelPlacement(cogRef.current, PANEL_GAP));
@@ -211,7 +251,8 @@ export const DefaultFiltersConfig = ({ columns, defaultFilters, serverSideFilter
         align="start"
         sideOffset={placement.sideOffset}
         alignOffset={placement.alignOffset}
-        collisionPadding={8}
+        // placement is worked out against the panel and the screen (see getPanelPlacement); flipping would cover the panel
+        avoidCollisions={false}
         data-cy="default-filters-config-popover"
         data-testid="default-filters-config-popover"
         // same layer as the other inspector popovers; below it the properties panel covers this one
@@ -233,29 +274,22 @@ export const DefaultFiltersConfig = ({ columns, defaultFilters, serverSideFilter
         <div className="tw-flex tw-max-h-[min(70vh,560px)] tw-flex-col tw-gap-3 tw-overflow-y-auto tw-p-4">
           <div className="tw-flex tw-h-8 tw-items-center tw-justify-between">
             <span className="tw-font-body-default tw-text-text-default">Type</span>
-            <div
-              role="radiogroup"
-              aria-label="Type"
-              className="tw-flex tw-items-center tw-gap-0.5 tw-rounded-lg tw-bg-background-surface-layer-02 tw-p-0.5"
-            >
-              {MODES.map(({ label, value }) => (
-                <button
-                  key={label}
-                  type="button"
-                  role="radio"
-                  aria-checked={!!serverSideFilter === value}
-                  onClick={() => !!serverSideFilter !== value && onChange('serverSideFilter', `{{${value}}}`)}
-                  className={cn(
-                    'tw-h-7 tw-rounded-md tw-border-0 tw-px-3 tw-font-body-default',
-                    !!serverSideFilter === value
-                      ? 'tw-bg-background-surface-layer-01 tw-font-title-default tw-text-text-default tw-shadow-elevation-100'
-                      : 'tw-bg-transparent tw-text-text-placeholder'
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <Segmented
+              label="Type"
+              options={MODES}
+              selected={!!serverSideFilter}
+              onSelect={(value) => onChange('serverSideFilter', `{{${value}}}`)}
+            />
+          </div>
+
+          <div className="tw-flex tw-h-8 tw-items-center tw-justify-between">
+            <span className="tw-font-body-default tw-text-text-default">Match</span>
+            <Segmented
+              label="Match"
+              options={MATCHES}
+              selected={filterMatch === 'or' ? 'or' : 'and'}
+              onSelect={(value) => onChange('filterMatch', value)}
+            />
           </div>
 
           <SectionTitle>Quick filters</SectionTitle>
@@ -298,6 +332,26 @@ export const DefaultFiltersConfig = ({ columns, defaultFilters, serverSideFilter
                                   <span className="tw-flex-1 tw-truncate tw-font-title-default tw-text-text-default">
                                     {describeFilter(filter, columns)}
                                   </span>
+                                  {needsValue(filter.condition) && (
+                                    <button
+                                      type="button"
+                                      aria-label="Use code for default value"
+                                      aria-pressed={!!(serverSideFilter || filter.fx)}
+                                      // with server-side filtering the value is always code: nothing else is known here
+                                      disabled={!!serverSideFilter}
+                                      onClick={() =>
+                                        updateFilter(filter.id, filter.fx ? { fx: false, value: '' } : { fx: true })
+                                      }
+                                      className={cn(
+                                        'tw-flex tw-h-6 tw-w-6 tw-items-center tw-justify-center tw-rounded-md tw-border-0 disabled:tw-cursor-default',
+                                        serverSideFilter || filter.fx
+                                          ? 'tw-bg-button-primary tw-text-icon-on-solid'
+                                          : 'tw-bg-transparent tw-text-[var(--slate9)] hover:tw-bg-interactive-hover'
+                                      )}
+                                    >
+                                      <Fx width={16} fill="currentColor" />
+                                    </button>
+                                  )}
                                   <button
                                     type="button"
                                     aria-label="Delete filter"

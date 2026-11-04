@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import useTableStore from '../../_stores/tableStore';
+import useStore from '@/AppBuilder/_stores/store';
 import TableExposedVariables from '../TableExposedVariables';
 import Header from '../Header';
 import Footer from '../Footer';
@@ -39,6 +40,7 @@ export const TableContainer = ({
   const serverSideSort = useTableStore((state) => state.getTableProperties(id)?.serverSideSort, shallow);
   const serverSideFilter = useTableStore((state) => state.getTableProperties(id)?.serverSideFilter, shallow);
   const defaultFilters = useTableStore((state) => state.getTableProperties(id)?.defaultFilters, shallow);
+  const filterMatch = useTableStore((state) => state.getTableProperties(id)?.filterMatch, shallow);
   const serverSideSearch = useTableStore((state) => state.getTableProperties(id)?.serverSideSearch, shallow);
   const rowsPerPage = useTableStore((state) => state.getTableProperties(id)?.rowsPerPage, shallow);
   const serverSideRowsPerPage = useTableStore((state) => state.getTableProperties(id)?.serverSideRowsPerPage, shallow);
@@ -112,9 +114,26 @@ export const TableContainer = ({
     moduleId,
   ]);
 
+  // A default value bound to code (fx, or any value with server-side filtering) is resolved like the table's other
+  // bindings. Selecting the resolved values keeps the filters current when what they read changes.
+  const defaultFilterValues = useStore(
+    (state) =>
+      Array.isArray(defaultFilters)
+        ? defaultFilters.map(({ fx, value }) =>
+            fx || serverSideFilter ? state.getResolvedValue(value, {}, moduleId) : value
+          )
+        : [],
+    shallow
+  );
   const defaultColumnFilters = useMemo(
-    () => getDefaultColumnFilters(defaultFilters, columns),
-    [defaultFilters, columns]
+    () =>
+      getDefaultColumnFilters(
+        Array.isArray(defaultFilters)
+          ? defaultFilters.map((filter, index) => ({ ...filter, value: defaultFilterValues[index] }))
+          : defaultFilters,
+        columns
+      ),
+    [defaultFilters, defaultFilterValues, columns]
   );
 
   const {
@@ -130,6 +149,7 @@ export const TableContainer = ({
     data,
     columns,
     defaultColumnFilters,
+    filterMatch,
     enableSorting,
     enablePagination,
     showBulkSelector,
