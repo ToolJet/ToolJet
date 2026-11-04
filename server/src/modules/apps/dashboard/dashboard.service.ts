@@ -254,7 +254,7 @@ export class DashboardService {
   }
 
   private async gitStates(appIds: string[], scope: DashboardScope): Promise<Map<string, AppGitState>> {
-    if (!scope.git.enabled || scope.type === APP_TYPES.WORKFLOW || appIds.length === 0) return new Map();
+    if (!scope.git.enabled || appIds.length === 0) return new Map();
     const rows: {
       app_id: string;
       id: string;

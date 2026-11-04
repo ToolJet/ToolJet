@@ -122,8 +122,7 @@ export function folderActions(
   const canDelete = privileged || !!p[FOLDER_PERMISSION_BY_TYPE[type]?.deleteKey ?? 'folderDelete'];
   // folders/service.ts:72 rejects every rename in multi-branch mode
   const rename = canRename && !git.multiBranch;
-  // frontend/src/HomePage/Folders.jsx:86-91 — workflows are never branch-locked
-  const branchLocked = git.multiBranch && git.onDefaultBranch && type !== APP_TYPES.WORKFLOW;
+  const branchLocked = git.multiBranch && git.onDefaultBranch;
   const del = canDelete && !branchLocked && !(git.enabled && folder.appCount > 0);
   return { rename, delete: del, pin: true };
 }

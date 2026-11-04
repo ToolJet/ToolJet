@@ -167,12 +167,12 @@ describe('dashboard actions', () => {
       ).toMatchObject({ rename: true });
     });
 
-    it('should block delete on the locked default branch for apps and modules, not workflows', () => {
+    it('should block delete on the locked default branch for every type', () => {
       const locked = { enabled: true, multiBranch: true, onDefaultBranch: true };
       const empty = { ...folder, appCount: 0 };
       expect(folderActions(builder, APP_TYPES.FRONT_END, 'owner', empty, locked)).toMatchObject({ delete: false });
       expect(folderActions(builder, APP_TYPES.MODULE, 'owner', empty, locked)).toMatchObject({ delete: false });
-      expect(folderActions(builder, APP_TYPES.WORKFLOW, 'owner', empty, locked)).toMatchObject({ delete: true });
+      expect(folderActions(builder, APP_TYPES.WORKFLOW, 'owner', empty, locked)).toMatchObject({ delete: false });
       expect(
         folderActions(builder, APP_TYPES.FRONT_END, 'owner', empty, { ...locked, onDefaultBranch: false })
       ).toMatchObject({ delete: true });
