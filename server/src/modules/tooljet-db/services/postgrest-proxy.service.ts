@@ -168,7 +168,7 @@ export class PostgrestProxyService {
 
       return response.body;
     } catch (error) {
-      if (!isEmpty(error.response.rawBody) && (error.response.statusCode < 200 || error.response.statusCode >= 300)) {
+      if (!isEmpty(error.response?.rawBody) && (error.response.statusCode < 200 || error.response.statusCode >= 300)) {
         const postgrestResponse = JSON.parse(error.response.rawBody.toString().toString('utf8'));
         const errorMessage = postgrestResponse.message;
         const errorContext: {

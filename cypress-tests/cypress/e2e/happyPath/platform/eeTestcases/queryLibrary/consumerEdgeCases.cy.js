@@ -301,4 +301,26 @@ describe(`Query Library consumer edge cases${phase ? `: ${phase}` : ''}`, () => 
       });
     });
   });
+
+  // F03: at narrow desktop widths the library header's Run controls (QueryManagerHeader.jsx .query-header-buttons,
+  // flex: 0 0 auto in queryManager.scss) cover the Transformation tab, so clicking the tab runs the query.
+  scenario('keeps the Transformation tab clickable at a narrow desktop width', () => {
+    request('POST', 'query-library/queries', {
+      name: 'narrowHeader', kind: 'restapi', dataSourceId: Cypress.env('runSourceId'),
+      options: { method: 'post', url: '/anything', headers: [], body: [], url_params: [], inputs: [] },
+    });
+    cy.viewport(955, 1260);
+    cy.intercept('POST', '**/api/query-library/queries/*/run/**').as('libraryRun');
+    libraryPage();
+    get('list-query-narrowheader').click();
+    get('query-tab-transformation').should('be.visible').then(($tab) => {
+      const box = $tab[0].getBoundingClientRect();
+      const hit = $tab[0].ownerDocument.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+      expect($tab[0].contains(hit), 'Transformation tab is the element under its own centre').to.eq(true);
+    });
+    get('query-tab-transformation').click();
+    get('query-tab-transformation').should('have.attr', 'aria-selected', 'true');
+    cy.get('@libraryRun.all').should('have.length', 0);
+    picture('library-narrow-header');
+  });
 });

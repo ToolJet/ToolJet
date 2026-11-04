@@ -116,6 +116,40 @@ describe('ImportExportResourcesService.export library tables', () => {
     expect(exported.versions[0].options.table_id).toBe(`portable-${TABLE('1')}`);
   });
 
+  // F10: SQL-mode library queries name their tables in the SQL text, not under table_id.
+  it('includes the table a SQL-mode library query reads', async () => {
+    const sqlQuery = {
+      drafts: [
+        {
+          kind: 'tooljetdb',
+          dataSourceId: null,
+          options: { operation: 'sql_execution', sql_execution: { sqlQuery: 'SELECT * FROM orders' } },
+        },
+      ],
+      versions: [],
+    };
+    const { service, findTables } = build([sqlQuery]);
+    // The workspace has `orders`; answer any org-scoped lookup by id or by name.
+    const tables = [{ id: TABLE('5'), tableName: 'orders' }];
+    const valuesOf = (where: Record<string, unknown>) =>
+      Object.values(where ?? {}).flatMap((v) => {
+        const raw = (v as { _value?: unknown })?._value ?? v;
+        return Array.isArray(raw) ? raw : [raw];
+      });
+    findTables.mockImplementation(async (_entity: unknown, options: { where: unknown }) => {
+      const clauses = (Array.isArray(options.where) ? options.where : [options.where]) as Record<string, unknown>[];
+      return tables.filter((table) =>
+        clauses.some((where) => valuesOf(where).some((value) => value === table.id || value === table.tableName))
+      );
+    });
+
+    const requested: { table_id: string }[] = [];
+    const result = await service.export(user, dto(requested));
+
+    expect(requested).toEqual([{ table_id: TABLE('5') }]);
+    expect(result.tooljet_database).toEqual([{ id: TABLE('5') }]);
+  });
+
   it('skips the table lookup when no library table ids are found', async () => {
     const { service, findTables } = build([]);
     await service.export(user, dto([{ table_id: TABLE('1') }]));

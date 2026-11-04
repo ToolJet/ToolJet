@@ -431,7 +431,8 @@ describe('library query run', () => {
 
       expect(body.draftId).toBe('r1-draft');
       expect(body.libraryVersionId).toBeUndefined();
-      expect(body.inputs).toEqual({ id: '7' });
+      // F08: draft run sends unsupplied declared defaults as inputs (queryPanelSlice.js:786, libraryQuery.js:56-66)
+      expect(body.inputs ?? {}).toEqual({});
       expect(body.options.url).toContain('{{input.id}}');
     });
 
@@ -467,7 +468,28 @@ describe('library query run', () => {
 
         await state().queryPanel.runQuery('r1', 'getCustomer', true, 'edit');
 
-        expect(seen.body.inputs).toEqual({ x: '9' });
+        // F08: draft run sends unsupplied declared defaults as inputs (queryPanelSlice.js:786, libraryQuery.js:56-66)
+        expect(seen.body.inputs ?? {}).toEqual({});
+      });
+
+      // F08: unsupplied `{{constants.x}}` default sent as literal input, server skips default resolution (queryPanelSlice.js:786, :802, :1153)
+      it('should leave an unsupplied constants default for the server to resolve in a draft run', async () => {
+        const seen = capture();
+        seedLibraryApp({
+          queries: [
+            restQuery({
+              url: 'http://x/{{input.region}}',
+              inputs: [{ name: 'region', defaultValue: '{{constants.region}}' }],
+            }),
+          ],
+          mode: 'edit',
+          appType: 'query_library',
+        });
+
+        await state().queryPanel.runQuery('r1', 'getCustomer', true, 'edit');
+
+        expect(seen.body.draftId).toBe('r1-draft');
+        expect(seen.body.inputs ?? {}).not.toHaveProperty('region');
       });
 
       it('should run the library transformation with input and the restricted scope', async () => {

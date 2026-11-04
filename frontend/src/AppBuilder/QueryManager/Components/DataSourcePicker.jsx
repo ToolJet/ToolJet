@@ -20,6 +20,12 @@ import { staticDataSources, LIBRARY_UNSUPPORTED_KINDS } from '../constants';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { isQueryLibraryEnabled } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
 import { buildDataSourceFolderGroups } from './dataSourceFolderGrouping';
+import { create } from 'zustand';
+
+// The Query library choice is staged here until a query and version are picked; the query panel's Plus menu
+// stages into the same place (stageLibrarySource), so both entry points share one selection flow.
+const useStagedLibrarySource = create(() => ({ source: null }));
+export const stageLibrarySource = (source) => useStagedLibrarySource.setState({ source });
 
 function DataSourcePicker({ darkMode }) {
   const dataSources = useStore((state) => state.dataSources);
@@ -34,7 +40,8 @@ function DataSourcePicker({ darkMode }) {
     () => [...dataSources, ...globalDataSources].filter((ds) => ds.type !== DATA_SOURCE_TYPE.STATIC && !ds.is_dummy),
     [dataSources, globalDataSources]
   );
-  const [librarySource, setLibrarySource] = useState(null);
+  const librarySource = useStagedLibrarySource((state) => state.source);
+  const setLibrarySource = stageLibrarySource;
   const [libraryOptions, setLibraryOptions] = useState({});
   const [resolvedLibrarySource, setResolvedLibrarySource] = useState(null);
   const [librarySourceError, setLibrarySourceError] = useState(null);
@@ -90,6 +97,9 @@ function DataSourcePicker({ darkMode }) {
     if (!source) throw new Error('The Query Library data source is unavailable. Reopen the picker to try again.');
     return { ...librarySource, ...source };
   };
+
+  // A staged choice belongs to this picker; drop it once the picker goes away (a query got selected).
+  useEffect(() => () => setLibrarySource(null), []);
 
   useEffect(() => {
     if (!librarySource) return;

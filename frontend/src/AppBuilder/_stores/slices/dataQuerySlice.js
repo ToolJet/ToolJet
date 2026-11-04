@@ -12,6 +12,7 @@ import {
   isQueryLibraryMode,
   isLibraryQueryLocked,
   viewedLibraryDraft,
+  withViewedLibraryVersion,
   viewedLibraryVersionId,
 } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 
@@ -489,7 +490,11 @@ export const createDataQuerySlice = (set, get) => {
       },
       duplicateQuery: (id, appId, moduleId = 'canvas') => {
         if (isQueryLibraryMode(get())) {
-          const query = get().dataQuery.queries.modules[moduleId].find((query) => query.id === id);
+          // The catalog row is identity-only; copy the draft/version snapshot the user is viewing.
+          const query = withViewedLibraryVersion(
+            get(),
+            get().dataQuery.queries.modules[moduleId].find((query) => query.id === id)
+          );
           let name = query.name + '_copy';
           let suffix = 1;
           while (get().dataQuery.checkExistingQueryName(name, moduleId)) name = query.name + '_copy' + suffix++;

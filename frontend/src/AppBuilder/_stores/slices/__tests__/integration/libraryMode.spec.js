@@ -278,3 +278,30 @@ it('captures the app workspace and version before a trailing save follows a work
   authenticationService.updateCurrentSession(prior);
   jest.useRealTimers();
 });
+
+// F05: duplicateQuery reads kind/data_source_id/options from the identity-only catalog row (dataQuerySlice.js:491-502)
+it('duplicates a server-loaded library query from its viewed draft', async () => {
+  const seen = [];
+  server.use(
+    http.post(`${config.apiUrl}/query-library/queries`, async ({ request }) => {
+      const body = await request.json();
+      seen.push(body);
+      // Mirrors server validation: kind is required on create.
+      if (!body.kind) return HttpResponse.json({ error: 'kind must be a string' }, { status: 400 });
+      return HttpResponse.json({ id: 'copy', name: body.name, draftId: 'copy-draft' });
+    }),
+    http.get(`${config.apiUrl}/query-library/queries/copy/versions`, () =>
+      HttpResponse.json({ drafts: [{ ...draft, id: 'copy-draft' }], versions: [] })
+    )
+  );
+  await seed();
+  await state().dataQuery.duplicateQuery('q1');
+  expect(seen).toHaveLength(1);
+  expect(seen[0]).toMatchObject({
+    name: 'query_copy',
+    kind: 'restapi',
+    dataSourceId: 'source-a',
+    options: { url: 'draft' },
+  });
+  expect(state().dataQuery.queries.modules.canvas.map(({ id }) => id)).toContain('copy');
+});

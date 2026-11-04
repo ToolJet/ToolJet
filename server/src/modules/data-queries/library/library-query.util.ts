@@ -524,7 +524,10 @@ export function libraryTransformationOf(options: Record<string, unknown>): strin
   if (options.transformationLanguage === 'python') {
     throw new BadRequestException('Library transformations must be JavaScript');
   }
-  return String(options.transformation ?? '');
+  // Same rule as the app runner: the editor saves per-language code under `transformations`.
+  const language = options.transformationLanguage as string | undefined;
+  const perLanguage = options.transformations as Record<string, unknown> | undefined;
+  return String(perLanguage?.[language ?? 'javascript'] ?? options.transformation ?? '');
 }
 
 // Same strings as APP_TYPES.FRONT_END / APP_TYPES.MODULE, as literals so the type is a plain union.

@@ -9,6 +9,7 @@ import { LibraryQueryVersion } from '@entities/library_query_version.entity';
 import { LibraryQueryState } from '@entities/library_query_state.entity';
 import { LibraryQueryFolder } from '@entities/library_query_folder.entity';
 import { DataSourceScopes } from '@modules/data-sources/constants';
+import { tableNamesInSqlQuery } from '@helpers/tooljet_db.helper';
 import { assertSupportedLibraryKind, isLibraryUuid, parseLibraryReference } from './library-query.util';
 
 export type LibraryExportSnapshot = { kind: string; dataSourceId: string | null; options: Record<string, unknown> };
@@ -232,6 +233,13 @@ export function libraryTooljetDbTableIds(queries: LibraryExportQuery[]): string[
   }
   return [...ids];
 }
+
+// Tables SQL-mode ToolJet DB snapshots name in their SQL text (they carry no table id).
+export const libraryTooljetDbTableNames = (queries: LibraryExportQuery[]): string[] => [
+  ...new Set(
+    snapshotsOf(queries).flatMap(({ kind, options }) => (kind === 'tooljetdb' ? tableNamesInSqlQuery(options) : []))
+  ),
+];
 
 // Rewrites the table ids of every ToolJet DB snapshot in place. The export carries a table under its portable id
 // (co_relation_id, minted on first export) and import maps tables by that id, so snapshots must use it too.

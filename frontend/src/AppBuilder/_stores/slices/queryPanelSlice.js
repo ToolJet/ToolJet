@@ -158,6 +158,9 @@ export const createQueryPanelSlice = (set, get) => ({
       const selectedDS = [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource]
         .filter(Boolean)
         .find((datasource) => datasource.id === query?.data_source_id);
+      // Library static sources are real rows with ids, so a source-less library REST/ToolJet DB draft lost its
+      // source (deleted -> SET NULL). Leave it unresolved so the editor offers the Source selector, like any other kind.
+      if (isQueryLibraryMode(get()) && !selectedDS && !['runjs', 'runpy'].includes(query?.kind)) return null;
       if (
         query?.kind in defaultSources &&
         (!query?.data_source_id || ['runjs', 'runpy'].includes(query?.data_source_id) || !selectedDS)
@@ -783,7 +786,7 @@ export const createQueryPanelSlice = (set, get) => ({
               : {
                   draftId: viewedLibraryDraft(get(), query.id)?.id,
                   options: query.options,
-                  inputs: libraryEditorInput(query, parameters),
+                  inputs: parameters,
                 },
             abortController?.signal,
             { workspaceId: get().queryLibrary.workspaceId }
@@ -799,7 +802,7 @@ export const createQueryPanelSlice = (set, get) => ({
                   : {
                       draftId: viewedLibraryDraft(get(), query.id)?.id,
                       options: query.options,
-                      inputs: libraryEditorInput(query, parameters),
+                      inputs: parameters,
                     },
                 abortController?.signal,
                 { workspaceId: get().queryLibrary.workspaceId }
@@ -1150,7 +1153,7 @@ export const createQueryPanelSlice = (set, get) => ({
                   : {
                       draftId: viewedLibraryDraft(get(), query.id)?.id,
                       options: query.options,
-                      inputs: libraryEditorInput(query, parameters),
+                      inputs: parameters,
                     },
                 abortController?.signal,
                 { workspaceId: get().queryLibrary.workspaceId }

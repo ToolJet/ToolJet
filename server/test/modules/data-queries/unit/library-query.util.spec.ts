@@ -490,6 +490,19 @@ describe('library-query.util', () => {
     it('treats an enabled but empty transformation as an empty string', () => {
       expect(libraryTransformationOf({ enableTransformation: true })).toBe('');
     });
+    // F01: the editor writes per-language code under `transformations`, which was ignored.
+    it('returns the code the editor saved for the transformation language', () => {
+      expect(
+        libraryTransformationOf({
+          enableTransformation: true,
+          transformationLanguage: 'javascript',
+          transformations: { javascript: 'return 1' },
+        })
+      ).toBe('return 1');
+      expect(libraryTransformationOf({ enableTransformation: true, transformations: { javascript: 'return 2' } })).toBe(
+        'return 2'
+      );
+    });
   });
 
   describe('withoutLibraryRequestDetails', () => {

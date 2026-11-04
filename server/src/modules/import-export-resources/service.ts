@@ -16,6 +16,7 @@ import { isLibraryUuid } from '@modules/data-queries/library/library-query.util'
 import { dbTransactionWrap } from '@helpers/database.helper';
 import {
   libraryTooljetDbTableIds,
+  libraryTooljetDbTableNames,
   LibraryExportQuery,
   remapLibraryTooljetDbTables,
 } from '@modules/data-queries/library/library-export.util';
@@ -184,14 +185,21 @@ export class ImportExportResourcesService {
       // A table deleted since the snapshot was taken is skipped by the table export, which would shift git push's
       // index-based mapping of the entries after it. Only append tables that still exist in this workspace.
       const candidateIds = libraryTooljetDbTableIds(libraryQueries).filter(isLibraryUuid);
-      const existing = candidateIds.length
+      // SQL-mode queries name tables, not ids; resolved by name in this workspace, as findTooljetDbTables does.
+      const names = libraryTooljetDbTableNames(libraryQueries);
+      const organizationId = exportResourcesDto.organization_id;
+      const clauses = [
+        ...(candidateIds.length ? [{ organizationId, id: In(candidateIds) }] : []),
+        ...(names.length ? [{ organizationId, tableName: In(names) }] : []),
+      ];
+      const existing = clauses.length
         ? await this.internalTableRepository.manager.find(InternalTable, {
-            where: { organizationId: exportResourcesDto.organization_id, id: In(candidateIds) },
+            where: clauses.length === 1 ? clauses[0] : clauses,
             select: ['id'],
           })
         : [];
       const existingIds = new Set(existing.map((table) => table.id));
-      for (const table_id of candidateIds) {
+      for (const table_id of new Set([...candidateIds, ...existingIds])) {
         if (existingIds.has(table_id) && !tableList.some((table) => table.table_id === table_id)) {
           tableList.push({ table_id });
         }

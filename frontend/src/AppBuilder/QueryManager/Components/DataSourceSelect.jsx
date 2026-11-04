@@ -16,6 +16,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 import { ToolTip } from '@/_components';
 import { buildDataSourceFolderGroups } from './dataSourceFolderGrouping';
+import { stageLibrarySource } from './DataSourcePicker';
 
 const ITEM_HEIGHTS = {
   'defaults-header': 40,
@@ -80,7 +81,16 @@ function DataSourceSelect({
   }, [selectRef]);
 
   const queryLibraryAccess = useStore((state) => state.license.featureAccess);
+  const hasCreateCallback = !!onQueryCreate;
   const handleChangeDataSource = (source) => {
+    if (source.kind === 'library') {
+      // A library consumer needs a query and version first: open the body card's staged picker instead of creating.
+      stageLibrarySource(source);
+      useStore.getState().queryPanel.setSelectedQuery(null);
+      setPreviewData(null);
+      if (!skipClosePopup) closePopup();
+      return;
+    }
     const extraProps = { callbackFunction: onQueryCreate };
     if (folderId) extraProps.folderId = folderId;
     createDataQuery(source, false, {}, 'canvas', null, extraProps);
@@ -140,9 +150,10 @@ function DataSourceSelect({
     // Defaults section
     const staticSources = dataSources?.filter((gds) => gds.type === DATA_SOURCE_TYPE.STATIC) || [];
     // Workflows have no runner for library queries; a query library can't hold library/runpy/workflows queries.
+    // Callback-driven menus (component Add query, folder Add query) can't wait for the staged library picker.
     const defaultsList = (workflowDataSources ? defaultDataSources || [] : staticSources).filter(
       (ds) =>
-        !(workflowDataSources && ds.kind === 'library') &&
+        !((workflowDataSources || hasCreateCallback) && ds.kind === 'library') &&
         (ds.kind !== 'library' || isQueryLibraryEnabled(queryLibraryAccess)) &&
         (!isQueryLibrary || !LIBRARY_UNSUPPORTED_KINDS.includes(ds.kind))
     );
@@ -217,6 +228,7 @@ function DataSourceSelect({
     dataSources,
     defaultDataSources,
     workflowDataSources,
+    hasCreateCallback,
     defaultsCollapsed,
     allowNewFolder,
     createFolder,

@@ -751,7 +751,9 @@ class HomePageComponent extends React.Component {
       }
 
       this.setState({ isImportingApp: false });
-      if (error.statusCode === 409) return false;
+      // Only the server's app-name conflict becomes the modal's "name already exists"; other 409s (e.g. a bundled
+      // library version name) show their own message.
+      if (error.statusCode === 409 && error.error === 'This app name is already taken.') return false;
       toast.error(error?.error || error?.message || `${capitalize(this.getAppType())} import failed`);
     }
   };

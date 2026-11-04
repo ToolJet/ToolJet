@@ -496,3 +496,21 @@ it.each(['query', 'session', 'selection'])(
     else expect(viewedLibraryVersionId(state(), 'q1')).toBe(switchKind === 'selection' ? 'b' : 'a');
   }
 );
+
+// F11: saveLibraryDraft guard compares against rows[0] fallback, skips viewLibraryVersion (ee queryLibrarySlice.js:206-223)
+it('keeps the saved draft viewed after it moves from drafts to versions', async () => {
+  let current = { drafts: [draft('a'), draft('b')], versions: [] };
+  server.use(
+    http.get(`${config.apiUrl}/query-library/queries/q1/versions`, () => HttpResponse.json(current)),
+    http.post(`${config.apiUrl}/query-library/queries/q1/drafts/a/save`, async ({ request }) => {
+      const saved = { ...draft('a'), ...(await request.json()) };
+      current = { drafts: [draft('b')], versions: [saved] };
+      return HttpResponse.json(saved);
+    })
+  );
+  await seed();
+  expect(viewedLibraryVersionId(state(), 'q1')).toBe('a');
+  const saved = await state().queryLibrary.saveLibraryDraft('q1', 'a', { name: 'saved A' });
+  expect(saved.id).toBe('a');
+  expect(viewedLibraryVersionId(state(), 'q1')).toBe('a');
+});
