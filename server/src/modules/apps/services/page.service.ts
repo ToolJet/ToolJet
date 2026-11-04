@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { remapRecordLayoutIds } from '@helpers/record_layouts.helper';
 import { EntityManager } from 'typeorm';
 import { Page } from '@entities/page.entity';
 import { ComponentsService } from './component.service';
@@ -366,7 +367,7 @@ export class PageService implements IPageService {
             name: component.name,
             type: component.type,
             pageId: clonePageId,
-            properties: component.properties,
+            properties: remapRecordLayoutIds(component.properties, componentsIdMap),
             styles: component.styles,
             validation: component.validation,
             general: component.general,

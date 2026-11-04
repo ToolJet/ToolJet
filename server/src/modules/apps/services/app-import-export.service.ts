@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { remapRecordLayoutIds } from '@helpers/record_layouts.helper';
 import { isEmpty, set } from 'lodash';
 import { isUUID } from 'class-validator';
 import { App } from 'src/entities/app.entity';
@@ -2789,7 +2790,7 @@ export class AppImportExportService {
                 }
               }
             }
-            newComponent.properties = properties || {};
+            newComponent.properties = remapRecordLayoutIds(properties || {}, newComponentIdsMap);
 
             newComponent.page = pageCreated;
 

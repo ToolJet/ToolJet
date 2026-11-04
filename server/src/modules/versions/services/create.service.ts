@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { remapRecordLayoutIds } from '@helpers/record_layouts.helper';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { DataQuery } from '@entities/data_query.entity';
@@ -542,7 +543,7 @@ export class VersionsCreateService implements IVersionsCreateService {
           name: originalComponent.name,
           type: originalComponent.type,
           pageId: savedPage.id,
-          properties: originalComponent.properties,
+          properties: remapRecordLayoutIds(originalComponent.properties, oldComponentToNewComponentMapping),
           styles: originalComponent.styles,
           validation: originalComponent.validation,
           general: originalComponent.general,
