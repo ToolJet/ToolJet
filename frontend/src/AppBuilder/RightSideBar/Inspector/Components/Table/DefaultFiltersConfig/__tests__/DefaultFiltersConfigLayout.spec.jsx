@@ -54,8 +54,8 @@ describe('Table-FILTERUI-034 the popup opens beside the properties panel', () =>
     expect(getPanelRect(cog)).toEqual(COG);
   });
 
-  test('Table-FILTERUI-034 the offsets end the popup 8px before the panel and start it at the top of the panel', () => {
-    // Break this catches: a popup that covers the panel, or hangs from the cog instead of the top of the panel.
+  test('Table-FILTERUI-034 the offsets end the popup 8px before the panel and start it level with the cog', () => {
+    // Break this catches: a popup that covers the panel, or is not level with the cog it belongs to.
     const panel = document.createElement('div');
     panel.className = 'inspector';
     panel.getBoundingClientRect = () => PANEL;
@@ -64,9 +64,9 @@ describe('Table-FILTERUI-034 the popup opens beside the properties panel', () =>
     panel.appendChild(cog);
 
     // sideOffset is measured from the cog, so it spans the cog's distance to the panel edge plus the gap
-    expect(getPanelPlacement(cog, 8)).toEqual({
+    expect(getPanelPlacement(cog, 8, 1400)).toEqual({
       sideOffset: COG.left - PANEL.left + 8,
-      alignOffset: PANEL.top - COG.top,
+      alignOffset: -8,
     });
   });
 
