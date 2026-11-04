@@ -27,6 +27,7 @@ jest.mock('@/AppBuilder/RightSideBar/Inspector/InspectorAccordion', () => ({
 import React from 'react';
 import { render } from '@testing-library/react';
 import { listviewConfig } from '@tooljet/widget-definitions';
+import useStore from '@/AppBuilder/_stores/store';
 import { seedApp } from '@/test/app-builder';
 import { DefaultComponent } from '@/AppBuilder/RightSideBar/Inspector/Components/DefaultComponent';
 
@@ -205,6 +206,8 @@ describe('List View property panel', () => {
   test('[Listview-ROW-005] a layout bound by an expression that resolves to grid edits gridRecordHeight', () => {
     // Break this catches: reading the raw expression text, so a bound grid is treated as a list.
     renderPanel({ mode: "{{'grid'}}", rowHeight: '90' });
+
+    expect(useStore.getState().getResolvedValue("{{'grid'}}")).toBe('grid');
 
     expect(editor('gridRecordHeight').initialValue).toBe('90');
     expect(editor('rowHeight')).toBeUndefined();
