@@ -57,6 +57,9 @@ describe('DashboardBulkMoveController', () => {
   const folderOf = async (appId: string) =>
     (await getEntityRepository(FolderApp).findOne({ where: { appId } }))?.folderId ?? null;
 
+  const folderOn = async (appId: string, branchId: string) =>
+    (await getEntityRepository(FolderApp).findOne({ where: { appId, branchId } }))?.folderId ?? null;
+
   // End user who created the folder, no folder grants: only the owner rule can allow a move.
   const ownerSetup = async (tag: string) => {
     const admin = await createAdmin(nestApp, `bulk-move-admin-${tag}@tooljet.io`);
@@ -395,7 +398,9 @@ describe('DashboardBulkMoveController', () => {
         isDefault: false,
       } as WorkspaceBranch);
       const target = await createFolder(nestApp, { name: 'Target', organizationId: admin.workspace.id });
+      const onDefault = await createFolder(nestApp, { name: 'On default', organizationId: admin.workspace.id });
       const { app } = await seedDashboardApp(nestApp, { user: admin.user, name: 'A', branchId: feature.id });
+      await saveEntity(FolderApp, { folderId: onDefault.id, appId: app.id, branchId: branch.id } as FolderApp);
       const spy = multiBranchGit(branch);
       try {
         const moved = await bulkMove(admin.cookie, admin.workspace.id, {
@@ -404,7 +409,8 @@ describe('DashboardBulkMoveController', () => {
           branch_id: feature.id,
         }).expect(200);
         expect(moved.body).toEqual({ blocked_ids: [] });
-        expect(await folderOf(app.id)).toBe(target.id);
+        expect(await folderOn(app.id, feature.id)).toBe(target.id);
+        expect(await folderOn(app.id, branch.id)).toBe(onDefault.id);
 
         const removed = await bulkRemove(admin.cookie, admin.workspace.id, {
           app_ids: [app.id],
@@ -412,7 +418,35 @@ describe('DashboardBulkMoveController', () => {
           branch_id: feature.id,
         }).expect(200);
         expect(removed.body).toEqual({ blocked_ids: [] });
-        expect(await folderOf(app.id)).toBeNull();
+        expect(await folderOn(app.id, feature.id)).toBeNull();
+        expect(await folderOn(app.id, branch.id)).toBe(onDefault.id);
+      } finally {
+        spy.mockRestore();
+      }
+    });
+
+    it('should check the folder on the requested branch, not another branch', async () => {
+      const { admin, endUser, folder: owned } = await ownerSetup('remove-branch');
+      const branch = await resolveOrSeedDefaultBranch(admin.workspace.id);
+      const feature = await saveEntity(WorkspaceBranch, {
+        organizationId: admin.workspace.id,
+        name: 'feature',
+        isDefault: false,
+      } as WorkspaceBranch);
+      const adminFolder = await createFolder(nestApp, { name: 'Admin only', organizationId: admin.workspace.id });
+      const { app } = await seedDashboardApp(nestApp, { user: endUser.user, name: 'A', branchId: feature.id });
+      await saveEntity(FolderApp, { folderId: owned.id, appId: app.id, branchId: feature.id } as FolderApp);
+      await saveEntity(FolderApp, { folderId: adminFolder.id, appId: app.id, branchId: branch.id } as FolderApp);
+      const spy = multiBranchGit(branch);
+      try {
+        const res = await bulkRemove(endUser.cookie, admin.workspace.id, {
+          app_ids: [app.id],
+          type: APP_TYPES.FRONT_END,
+          branch_id: feature.id,
+        }).expect(200);
+        expect(res.body).toEqual({ blocked_ids: [] });
+        expect(await folderOn(app.id, feature.id)).toBeNull();
+        expect(await folderOn(app.id, branch.id)).toBe(adminFolder.id);
       } finally {
         spy.mockRestore();
       }
