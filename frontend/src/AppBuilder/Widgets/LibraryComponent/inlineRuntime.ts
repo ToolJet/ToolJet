@@ -453,16 +453,8 @@ const fetchBundleText = async (bundleUrl: string, options: LoadOptions): Promise
   const preloaded = compareText(bundleUrl);
   if (preloaded !== null) return preloaded;
   const res = await fetch(bundleUrl, fetchInit(options));
-  if (res.status === 404) {
-    // The status tells the frame the build is gone, which the editor can make again from stored source.
-    throw Object.assign(
-      new Error(
-        "This app's code isn't on this server. If the app was imported, export it again from the original and import the new file."
-      ),
-      { status: 404 }
-    );
-  }
-  if (!res.ok) throw new Error(`couldn't fetch the app's code (HTTP ${res.status})`);
+  // The status lets a host tell a missing bundle from any other failure, and say what that means where it is shown.
+  if (!res.ok) throw Object.assign(new Error(`couldn't fetch this code (HTTP ${res.status})`), { status: res.status });
   return res.text();
 };
 
