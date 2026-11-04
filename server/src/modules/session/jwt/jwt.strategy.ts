@@ -147,6 +147,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
         user.aiAppId = payload.aiAppId;
+        // Signed token scope travels with the principal on every branch, or the scope
+        // interceptor and session bootstrap would treat a token session as a browser login.
+        user.isPATLogin = !!payload.isPATLogin;
+        user.patAppId = payload.appId;
+        user.patScope = payload.patScope;
         user.organizationId = user.organizationId ?? organizationId;
         user.branchId = await this.resolveBranchId(req, user.organizationId);
 

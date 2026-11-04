@@ -1,3 +1,4 @@
+import { isTokenOrDelegatedPrincipal } from '@modules/session/sso-exposure';
 import { invalidateUserCredentials } from '@modules/mcp-oauth/revocation';
 import { McpOAuthService } from '@modules/mcp-oauth/service';
 import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
@@ -201,6 +202,10 @@ export class SessionUtilService {
           ? { currentOrganizationId: organization.id, currentOrganizationSlug: organization.slug }
           : { noWorkspaceAttachedInTheSession: true }),
         ...permissionData,
+        // A token login returns a machine credential; it never carries the owner's upstream SSO data.
+        ...(isPatLogin || isTokenOrDelegatedPrincipal(user) || isTokenOrDelegatedPrincipal(loggedInUser)
+          ? { ssoUserInfo: {} }
+          : {}),
         noActiveWorkspaces,
         ...publicExtraData,
         ...(isPatLogin ? { signedPat } : {}),

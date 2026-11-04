@@ -16,6 +16,7 @@ import { User } from '@entities/user.entity';
 import { PersonalAccessTokenScope } from '@modules/external-apis/constants';
 import { AI_BUILDER_API_SOURCE, FEATURE_KEY as PAT_FEATURE } from '@modules/personal-access-tokens/constants';
 import { aiBuilderLibraryDenial } from '@modules/personal-access-tokens/ai-builder-library-scope';
+import { FEATURE_KEY as SESSION_FEATURE } from '@modules/session/constants';
 import {
   PAT_ALLOWED_BUNDLES,
   PAT_APP_VIEWER_MODULES,
@@ -59,6 +60,12 @@ export class PatScopeInterceptor implements NestInterceptor {
 
     const module = this.reflector.get<MODULES>('tjModuleId', context.getClass());
     const feature = this.reflector.get<string>('tjFeatureId', context.getHandler());
+
+    // The browser's session bootstrap read, needed to open the pinned app. SessionService keeps it to
+    // the token's own workspace and app and leaves out upstream SSO data; it creates no session.
+    if (isSessionBootstrap(request, module, feature)) {
+      return next.handle();
+    }
 
     if (user.patScope === PersonalAccessTokenScope.APP) {
       return next.handle();
@@ -127,6 +134,10 @@ export class PatScopeInterceptor implements NestInterceptor {
     );
     if (denial) throw new ForbiddenException(denial);
   }
+}
+
+function isSessionBootstrap(request: { method?: string }, module: MODULES | undefined, feature: string | undefined) {
+  return request?.method === 'GET' && module === MODULES.SESSION && feature === SESSION_FEATURE.GET_USER_SESSION;
 }
 
 /** Shared app-pinned render ceiling for workspace PAT and OAuth viewer credentials. */
