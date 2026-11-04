@@ -241,7 +241,7 @@
     "typescript": "^5.9.3",
     "webpack": "^5.75.0",
     "webpack-bundle-analyzer": "^4.10.2",
-    "webpack-cli": "^5.0.1",
+    "webpack-cli": "^7.2.3",
     "webpack-dev-server": "^5.2.2"
   },
   "overrides": {
