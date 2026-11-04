@@ -68,23 +68,39 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.ADD_FOREIGN_KEY,
           FEATURE_KEY.UPDATE_FOREIGN_KEY,
           FEATURE_KEY.DELETE_FOREIGN_KEY,
+          FEATURE_KEY.PROMOTE_TABLE,
+          FEATURE_KEY.PROMOTE_TABLE_PREVIEW,
+          FEATURE_KEY.REPAIR_BASELINE,
+          FEATURE_KEY.BASELINE_REPORT,
+          FEATURE_KEY.ADD_RAW_SQL_MIGRATION,
+          FEATURE_KEY.REVERT_MIGRATION,
         ],
         InternalTable
       );
     }
     if (superAdmin || isAdmin || (isBuilder && !isEditRestrictedToAdmins)) {
-      can([FEATURE_KEY.BULK_UPLOAD], InternalTable);
+      can([FEATURE_KEY.BULK_UPLOAD, FEATURE_KEY.SQL_EXECUTION], InternalTable);
     }
 
     if (isPublicAppRequest) {
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 
-    if (isUserLoggedin && (isAdmin || isBuilder || !orgMismatch) && !isBlockedProxyWrite) {
-      //For logged in users only with valid organization and data query, allow proxy postgrest feature
+    if (isUserLoggedin && (isAdmin || isBuilder || (!isEmpty(dataQuery) && !orgMismatch)) && !isBlockedProxyWrite) {
+      // Admins/builders (dashboard, App Builder editor); anyone else only through a data query of
+      // their own workspace - without one, an end user would get raw access to every table.
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 
-    can([FEATURE_KEY.VIEW_TABLE, FEATURE_KEY.VIEW_TABLES, FEATURE_KEY.JOIN_TABLES], InternalTable);
+    can(
+      [
+        FEATURE_KEY.VIEW_TABLE,
+        FEATURE_KEY.VIEW_TABLES,
+        FEATURE_KEY.JOIN_TABLES,
+        FEATURE_KEY.TABLE_MIGRATIONS,
+        FEATURE_KEY.TABLE_DEPENDENTS,
+      ],
+      InternalTable
+    );
   }
 }
