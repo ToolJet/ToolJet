@@ -1,0 +1,47 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Directus Collections and Fields API",
+    "version": "1.0.0",
+    "description": "List collections and fields in a Directus instance."
+  },
+  "servers": [
+    {
+      "url": "https://your-instance.directus.app"
+    }
+  ],
+  "paths": {
+    "/collections": {
+      "get": {
+        "operationId": "listCollections",
+        "summary": "List collections",
+        "responses": {
+          "200": {
+            "description": "Collections retrieved successfully"
+          }
+        }
+      }
+    },
+    "/fields/{collection}": {
+      "get": {
+        "operationId": "listFields",
+        "summary": "List fields in a collection",
+        "parameters": [
+          {
+            "name": "collection",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fields retrieved successfully"
+          }
+        }
+      }
+    }
+  }
+}

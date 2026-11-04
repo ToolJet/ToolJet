@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Directus datasource",
+  "description": "Manage Directus items, collections, fields, files, and users.",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "directus_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Select a Directus operation",
+      "specUrl": {
+        "Items": "@spec/directus/items",
+        "Collections and Fields": "@spec/directus/collections",
+        "Files": "@spec/directus/files",
+        "Users": "@spec/directus/users"
+      }
+    }
+  }
+}

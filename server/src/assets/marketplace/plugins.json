@@ -420,4 +420,13 @@
       "AI"
     ]
   }
+,
+  {
+    "name": "Directus",
+    "description": "Connect to a Directus instance to manage items, collections, files, and users.",
+    "version": "1.0.0",
+    "id": "directus",
+    "author": "Tooljet",
+    "timestamp": "Tue, 13 Oct 2026 07:28:50 GMT"
+  }
 ]
