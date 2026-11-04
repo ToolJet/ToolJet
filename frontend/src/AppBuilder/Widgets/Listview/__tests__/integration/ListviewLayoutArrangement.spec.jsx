@@ -84,7 +84,7 @@ describe('Listview: Layout change re-arranges the record canvas', () => {
     expect(modeOf()).toBe('grid');
   });
 
-  test('[Listview-GRID-006] Grid to List puts the children in one row again', () => {
+  test('[Listview-GRID-006] Grid to List puts the children back in the row they had', () => {
     // Break this catches: children left stacked and full width in a list.
     seed();
     setMode('grid');
@@ -94,8 +94,8 @@ describe('Listview: Layout change re-arranges the record canvas', () => {
 
     expect(layoutOf('img')).toEqual({ top: 10, left: 3, width: 6, height: 60 });
     expect(layoutOf('txt')).toEqual({ top: 25, left: 11, width: 12, height: 30 });
-    // The Button was capped at the card on the way to Grid, so it comes back at the card's pixel width.
-    expect(layoutOf('btn')).toEqual({ top: 25, left: 25, width: 14, height: 30 });
+    // The List remembers its own row, so the Button comes back at its own width, not the card's.
+    expect(layoutOf('btn')).toEqual({ top: 25, left: 25, width: 17, height: 30 });
   });
 
   test('[Listview-GRID-007] one undo restores the old Layout and every child position, a moved one included', () => {
