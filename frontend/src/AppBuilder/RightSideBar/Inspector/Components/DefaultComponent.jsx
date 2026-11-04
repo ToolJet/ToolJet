@@ -93,6 +93,98 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   FlexContainer: 'Layout',
 };
 
+const LISTVIEW_DATA_PROPERTIES = ['dataSourceSelector', 'data'];
+// Record height is one field: it edits the key of the layout in use, so `rowHeight` is not listed here.
+const LISTVIEW_CONFIGURE_ORDER = [
+  'mode',
+  'rowHeight',
+  'columns',
+  'enablePagination',
+  'paginationType',
+  'rowsPerPage',
+  'totalRecords',
+];
+
+const buildListviewPropertyItems = (
+  properties,
+  component,
+  componentMeta,
+  paramUpdated,
+  dataQueries,
+  currentState,
+  allComponents,
+  darkMode
+) => {
+  const savedProperties = component.component.definition.properties ?? {};
+  const savedMode = savedProperties.mode;
+  // A hand-written "List" is shown as List; only the display changes, the saved value stays until edited.
+  const isPlainString = typeof savedMode?.value === 'string' && !savedMode.value.includes('{{');
+  // An expression is resolved against the live store, as the widget does.
+  const resolvedMode = isPlainString ? savedMode.value : useStore.getState().getResolvedValue(savedMode?.value);
+  const mode = String(resolvedMode ?? 'list').toLowerCase();
+  const isGrid = mode === 'grid';
+
+  let viewComponent = component;
+  let viewMeta = componentMeta;
+  if (isPlainString && savedMode.value !== mode) {
+    viewComponent = withProperty(viewComponent, 'mode', { ...savedMode, value: mode });
+  }
+  // The grid reads `gridRecordHeight ?? rowHeight`, so a grid without its own height shows `rowHeight`.
+  if (isGrid) {
+    viewComponent = withProperty(
+      viewComponent,
+      'gridRecordHeight',
+      savedProperties.gridRecordHeight ?? savedProperties.rowHeight
+    );
+    viewMeta = {
+      ...componentMeta,
+      properties: { ...componentMeta.properties, gridRecordHeight: componentMeta.properties.rowHeight },
+    };
+  }
+
+  const render = (property) =>
+    renderElement(
+      viewComponent,
+      viewMeta,
+      paramUpdated,
+      dataQueries,
+      property,
+      'properties',
+      currentState,
+      allComponents,
+      darkMode,
+      ''
+    );
+
+  const present = (names) => names.filter((name) => properties.includes(name));
+  const known = [...LISTVIEW_DATA_PROPERTIES, ...LISTVIEW_CONFIGURE_ORDER];
+  const configure = [
+    ...present(LISTVIEW_CONFIGURE_ORDER),
+    ...properties.filter((property) => !known.includes(property)),
+  ].map((property) => (property === 'rowHeight' && isGrid ? 'gridRecordHeight' : property));
+
+  const items = [];
+  const dataFields = present(LISTVIEW_DATA_PROPERTIES);
+  if (dataFields.length > 0) {
+    items.push({ title: 'Data', isOpen: true, children: dataFields.map(render) });
+  }
+  if (configure.length > 0) {
+    items.push({ title: 'Configure list item', isOpen: true, children: configure.map(render) });
+  }
+  return items;
+};
+
+const withProperty = (component, name, value) => ({
+  ...component,
+  component: {
+    ...component.component,
+    definition: {
+      ...component.component.definition,
+      properties: { ...component.component.definition.properties, [name]: value },
+    },
+  },
+});
+
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   const {
     layoutPropertyChanged,
@@ -259,7 +351,20 @@ export const baseComponentProperties = (
     }
   }
   let items = [];
-  if (properties.length > 0) {
+  if (component.component.component === 'Listview') {
+    items.push(
+      ...buildListviewPropertyItems(
+        properties,
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        currentState,
+        allComponents,
+        darkMode
+      )
+    );
+  } else if (properties.length > 0) {
     items.push({
       title:
         PROPERTIES_VS_ACCORDION_TITLE[component?.component?.component] ??

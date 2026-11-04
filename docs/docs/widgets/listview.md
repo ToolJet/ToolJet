@@ -17,7 +17,7 @@ Certain components, namely **Calendar** and **Kanban**, are restricted from bein
 
 To dynamically populate List View components, you can use specific data properties.
 
-Consider this data being passed inside a List View component's `List data` property:
+Consider this data being passed inside a List View component's **Populate data from** property:
 
 ```js
 {{[
@@ -47,13 +47,15 @@ Similarly, for an Image component inside List View, you can use the below code t
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:---|:---|:---|
-| List data | The data that you want to display in the List View component. This can be an array of objects or data from a query that returns an array of objects. | An array of objects or a query that returns an array of objects. |
-| Mode | The layout of the List View component. You can choose between `List` and `Grid` mode. | `list` or `grid` |
-| Show bottom border | Whether to show or hide the bottom border on a row. This option is only available when the **Mode** is set to `List`. | `true` or `false` |
-| Columns | The number of columns in the List View component. This option is only available when the **Mode** is set to `Grid`. | Any numerical value |
-| Row height | The height of each row in the List View component. | Any number between 1 and 100 |
-| Enable pagination | Whether to enable pagination. If enabled, you can set the number of rows per page. | `true` or `false` |
-| Rows per page | The number of rows per page. This option is only available when **Enable pagination** is enabled. | Any numerical value |
+| Populate data from | The data that you want to display in the List View component. This can be an array of objects or data from a query that returns an array of objects. | An array of objects or a query that returns an array of objects. |
+| Layout | The layout of the List View component. You can choose between `List` and `Grid`. | `list` or `grid` |
+| Show bottom border | Whether to show or hide the bottom border on a row. This option is only available when the **Layout** is set to `List`. | `true` or `false` |
+| Number of columns | The number of columns in the List View component. This option is only available when the **Layout** is set to `Grid`. | Any numerical value |
+| Record height | The height of each record in the List View component. In `Grid` layout it is saved separately from the `List` height. | Any number between 1 and 100 |
+| Enable pagination | Whether to enable pagination. If enabled, you can set the number of records per page. | `true` or `false` |
+| Type | How pagination works: `Client side` pages the data already loaded, `Server side` expects each page from a query. This option is only available when **Enable pagination** is enabled. | `clientSide` or `serverSide` |
+| Number of records per page | The number of records per page. This option is only available when **Enable pagination** is enabled. | Any numerical value |
+| Total records | The number of records across all pages. This option is only available when **Type** is `Server side`. | Any numerical value |
 
 </div>
 

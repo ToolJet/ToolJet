@@ -45,7 +45,7 @@ function visibleProperties(enablePaginationExpression, paginationType) {
     [],
     LV_ID
   );
-  return items.find((item) => item.children)?.children ?? [];
+  return items.find((item) => item.title === 'Configure list item')?.children ?? [];
 }
 
 beforeEach(() => {

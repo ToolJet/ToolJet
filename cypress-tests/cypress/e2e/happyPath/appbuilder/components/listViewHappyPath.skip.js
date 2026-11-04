@@ -85,7 +85,7 @@ describe("List view widget", { testIsolation: false }, () => {
     cy.get(`[data-cy="${data.widgetName}-row-1"]`).should("exist");
     cy.get(`[data-cy="${data.widgetName}-row-2"]`).should("exist");
 
-    // ---- Row height (displayName "Row height" → row-height-input-field) ----
+    // ---- Record height (displayName "Record height" → record-height-input-field) ----
     openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(listviewText.rowHeight, "99");
     scopedCanvasClick();

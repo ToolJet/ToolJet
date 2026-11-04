@@ -27,7 +27,6 @@ jest.mock('@/AppBuilder/RightSideBar/Inspector/InspectorAccordion', () => ({
 import React from 'react';
 import { render } from '@testing-library/react';
 import { listviewConfig } from '@tooljet/widget-definitions';
-import useStore from '@/AppBuilder/_stores/store';
 import { seedApp } from '@/test/app-builder';
 import { DefaultComponent } from '@/AppBuilder/RightSideBar/Inspector/Components/DefaultComponent';
 
@@ -155,7 +154,12 @@ describe('List View property panel', () => {
     expect(field.paramLabel).toBe('Record height');
     expect(editor('gridRecordHeight')).toBeUndefined();
     field.onChange('120');
-    expect(paramUpdated).toHaveBeenCalledWith(expect.objectContaining({ name: 'rowHeight' }), 'value', '120', 'properties');
+    expect(paramUpdated).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'rowHeight' }),
+      'value',
+      '120',
+      'properties'
+    );
   });
 
   test('[Listview-ROW-005] in grid layout Record height edits gridRecordHeight and leaves rowHeight', () => {
@@ -180,7 +184,6 @@ describe('List View property panel', () => {
     // Break this catches: the field going blank or showing a default when the grid has no height of its own.
     const { paramUpdated } = renderPanel({ mode: 'grid', rowHeight: '90' });
 
-    expect(useStore.getState()).toBeDefined();
     const field = editor('gridRecordHeight');
     expect(field.initialValue).toBe('90');
     field.onChange('110');
@@ -197,5 +200,13 @@ describe('List View property panel', () => {
     const { paramUpdated } = renderPanel({ mode: 'grid', rowHeight: '90' });
 
     expect(paramUpdated).not.toHaveBeenCalled();
+  });
+
+  test('[Listview-ROW-005] a layout bound by an expression that resolves to grid edits gridRecordHeight', () => {
+    // Break this catches: reading the raw expression text, so a bound grid is treated as a list.
+    renderPanel({ mode: "{{'grid'}}", rowHeight: '90' });
+
+    expect(editor('gridRecordHeight').initialValue).toBe('90');
+    expect(editor('rowHeight')).toBeUndefined();
   });
 });

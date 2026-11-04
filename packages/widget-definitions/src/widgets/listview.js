@@ -77,7 +77,7 @@ export const listviewConfig = {
     },
     dataSourceSelector: {
       type: 'dropdownMenu',
-      displayName: 'Data source',
+      displayName: 'Populate data from',
       options: [{ name: 'Raw JSON', value: 'rawJson' }],
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'array' }, { type: 'object' }] } },
       newLine: true,
@@ -173,11 +173,13 @@ export const listviewConfig = {
       showLabel: false,
     },
     mode: {
-      type: 'select',
-      displayName: 'Mode',
+      type: 'switch',
+      displayName: 'Layout',
+      fullWidth: true,
+      newLine: true,
       options: [
-        { name: 'list', value: 'list' },
-        { name: 'grid', value: 'grid' },
+        { displayName: 'List', value: 'list' },
+        { displayName: 'Grid', value: 'grid' },
       ],
       validation: {
         schema: { type: 'string' },
@@ -186,7 +188,7 @@ export const listviewConfig = {
     },
     columns: {
       type: 'number',
-      displayName: 'Columns',
+      displayName: 'Number of columns',
       validation: {
         schema: { type: 'number' },
         defaultValue: 3,
@@ -198,7 +200,7 @@ export const listviewConfig = {
     },
     rowHeight: {
       type: 'code',
-      displayName: 'Row height',
+      displayName: 'Record height',
       validation: {
         schema: { type: 'number' },
         defaultValue: 100,
@@ -238,7 +240,7 @@ export const listviewConfig = {
     },
     rowsPerPage: {
       type: 'code',
-      displayName: 'Rows per page',
+      displayName: 'Number of records per page',
       validation: {
         schema: { type: 'number' },
         defaultValue: 10,
