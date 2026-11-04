@@ -266,6 +266,16 @@ input:disabled+.slider {
   margin: 0 auto;
   background: var(--page-weak);
 
+  .workspace-login-url-wrapper {
+    border-color: var(--border-default);
+  }
+
+  [data-cy="password-allowed-domains-input"]:not(:focus):not(:disabled):not(.is-invalid):not(:invalid),
+  [data-cy="password-restricted-domains-input"]:not(:focus):not(:disabled):not(.is-invalid):not(:invalid),
+  [data-cy="sso-allowed-domains-input"]:not(:focus):not(:disabled):not(.is-invalid):not(:invalid) {
+    border-color: var(--border-default);
+  }
+
   .card {
     width: 880px;
 
