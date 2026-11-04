@@ -36,7 +36,8 @@ This setup also streamlines the login experience: users can authenticate directl
 - Setup the OpenID Connect SSO by following this [guide](/docs/user-management/sso/oidc/setup).
 - Enable the **Group Sync** toggle and provide the following information:
 
-    - **Claim name**: Enter the name of the claim in the OIDC token that contains group information (e.g., groups).
+    - **Claim name**: Enter the name of the claim in the OIDC token that contains group information (e.g., `groups`). For a [nested claim](#nested-group-claims), enter its dot path, such as `custom_attributes.groups`.
+    - **Delimiter**: Enter the character that separates group names when the claim is [sent as a single string](#group-claims-sent-as-a-string) (e.g., `,` or `;`). Enter `space` for a single space. Leave it empty for array claims.
     - **Group mapping**: Configure how IdP groups map to ToolJet groups. Use the format:
     <br/>
    ```
@@ -60,7 +61,7 @@ ToolJet will apply these settings to one default workspace automatically.
 You can choose other workspaces to inherit the instance-level configuration.
 - Click **Add Workspace**
 - Pick a workspace from the dropdown
-- The workspace will inherit the **Claim Name** and **Group Mappings**
+- The workspace will inherit the **Claim Name**, **Delimiter** and **Group Mappings**
 - You can edit them if needed (overrides the inherited config)
 This makes it easy to roll out consistent role mappings across all workspaces.
   
@@ -98,3 +99,43 @@ Group mapping in ToolJet follows these principles:
 | **engineers** | **engineers** - Doesn't exist <br/> **developer** - Exists | **engineers → developers** | User added to **developers** custom group and assigned **builder** or **end-user** role based on permissions. |
 | **admin**, **developers** | Exists | None | User added to **developers** custom group and assigned **admin** user role. |
 | no group | N/A | None | User added to **end-users** default group. |
+
+## Group Claims Sent as a String
+
+Most identity providers send groups as an array, such as `["engineering", "marketing"]`. Some send them as a single string instead, such as `"engineering,marketing"`. To sync groups from a string claim, set the **Delimiter** field to the character that separates the group names.
+
+| Claim value | Delimiter | Groups synced |
+|-------------|-----------|---------------|
+| `["engineering", "marketing"]` | Empty | **engineering**, **marketing** |
+| `"engineering,marketing"` | `,` | **engineering**, **marketing** |
+| `"engineering; marketing"` | `;` | **engineering**, **marketing** |
+| `"engineering marketing"` | `space` | **engineering**, **marketing** |
+| `"engineering,marketing"` | Empty | None |
+| `["engineering", "marketing"]` | `,` | None |
+
+ToolJet trims spaces around each group name and drops empty or duplicate entries. It checks the user info response, then the ID token, then the access token, and uses the first claim in the expected format.
+
+### Set the Delimiter with an Environment Variable
+
+On self-hosted ToolJet, the delimiter can also be set with the `OIDC_GROUPS_DELIMITER` environment variable. When set, it overrides the **Delimiter** field in every OIDC group sync configuration on the instance.
+
+```
+OIDC_GROUPS_DELIMITER=,
+```
+
+## Nested Group Claims
+
+Some identity providers send the groups claim inside another object instead of at the top level of the token:
+
+```json
+{
+  "custom_attributes": {
+    "groups": "engineering,marketing"
+  }
+}
+```
+
+To read a nested claim, enter its dot path in **Claim name**, such as `custom_attributes.groups`. If the nested value is a string, also set the **Delimiter** field as described in [Group Claims Sent as a String](#group-claims-sent-as-a-string).
+
+- A top-level claim named exactly `custom_attributes.groups` takes priority over the nested path.
+- If any part of the path is missing, no groups are synced from the claim.
