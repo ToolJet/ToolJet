@@ -234,8 +234,18 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
     const defaultChildren = deepClone(parentMeta)['defaultChildren'];
 
     defaultChildren.forEach((child) => {
-      const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles, slotName } =
-        child;
+      const {
+        componentName,
+        layout,
+        incrementWidth,
+        properties,
+        accessorKey,
+        tab,
+        defaultValue,
+        styles,
+        slotName,
+        creationValues,
+      } = child;
 
       // A ListView header child is shared by every record, so it takes its own value, not a record's.
       const customResolverVariable = slotName ? undefined : recordResolverVariable;
@@ -283,6 +293,13 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
         });
         _.set(componentData, 'definition.styles', newComponentStyles);
       }
+
+      // Fixed values for a child's own look (a bold name, a round avatar), set after any record binding.
+      Object.entries(creationValues ?? {}).forEach(([paramType, values]) => {
+        Object.entries(values).forEach(([key, value]) => {
+          _.set(componentData, ['definition', paramType, key], { value });
+        });
+      });
 
       if (currentLayout === 'mobile') {
         componentData.definition.others.showOnDesktop.value = `{{false}}`;

@@ -7,40 +7,38 @@ export const listviewConfig = {
     // 12 padding + 60 header + 6 x 80 records + 5 x 12 gaps + 12 padding: six records show, the rest scroll.
     height: 624,
   },
+  // Seeded on drop only: saved ListViews keep their own children, so this is the new look (Figma 238:1379, list and grid).
   defaultChildren: [
     {
       componentName: 'Image',
-      layout: {
-        top: 10,
-        left: 3,
-        height: 60,
-        width: 6,
-      },
+      layout: { top: 20, left: 2, height: 40, width: 4 },
       properties: ['source'],
       accessorKey: 'imageURL',
+      creationValues: { styles: { borderType: 'rounded-circle', imageFit: 'cover' } },
     },
     {
       componentName: 'Text',
-      layout: {
-        top: 25,
-        left: 11,
-        height: 30,
-        width: 12,
-      },
+      layout: { top: 15, left: 7, height: 25, width: 17 },
       properties: ['text'],
-      accessorKey: 'text',
+      accessorKey: 'name',
+      creationValues: { styles: { fontWeight: 'bold' } },
     },
     {
-      componentName: 'Button',
-      layout: {
-        top: 25,
-        left: 25,
-        height: 30,
-        width: 17,
-      },
-      // incrementWidth: 2,
+      componentName: 'Text',
+      layout: { top: 40, left: 7, height: 25, width: 17 },
       properties: ['text'],
-      accessorKey: 'buttonText',
+      accessorKey: 'company',
+      creationValues: { styles: { textColor: 'var(--cc-placeholder-text)' } },
+    },
+    {
+      componentName: 'Tags',
+      layout: { top: 25, left: 26, height: 30, width: 16 },
+      creationValues: {
+        properties: {
+          data: "{{[{ title: listItem.role, color: 'var(--cc-surface3-surface)', textColor: 'var(--cc-primary-text)' }]}}",
+        },
+        styles: { size: 'large', borderRadius: '14' },
+      },
     },
     // Seeded on drop only, and every drop is a new ListView, so saved ListViews never gain it.
     {
@@ -448,19 +446,19 @@ export const listviewConfig = {
     properties: {
       data: {
         value: `{{[
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 1' },
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 2', buttonText: 'Button 2' },
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 3', buttonText: 'Button 3' },
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 4', buttonText: 'Button 4' },
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 5', buttonText: 'Button 5' },
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 6', buttonText: 'Button 6' },
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 7', buttonText: 'Button 7' },
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 8', buttonText: 'Button 8' },
+    { imageURL: 'https://randomuser.me/api/portraits/men/32.jpg', name: 'Henry, Arthur', company: 'Big Kahuna Burger Ltd.', role: 'Project manager' },
+    { imageURL: 'https://randomuser.me/api/portraits/women/44.jpg', name: 'Cooper, Kristin', company: 'Barone LLC.', role: 'Chief executive officer' },
+    { imageURL: 'https://randomuser.me/api/portraits/men/75.jpg', name: 'Black, Marvin', company: 'Abstergo Ltd.', role: 'Systems analyst' },
+    { imageURL: 'https://randomuser.me/api/portraits/women/12.jpg', name: 'Nguyen, Shane', company: 'Binford Ltd.', role: 'Marketing director' },
+    { imageURL: 'https://randomuser.me/api/portraits/women/65.jpg', name: 'Flores, Juanita', company: 'Acme Co.', role: 'Sociologist' },
+    { imageURL: 'https://randomuser.me/api/portraits/women/26.jpg', name: 'Miles, Esther', company: 'Biffco Enterprises Ltd.', role: 'Photographer' },
+    { imageURL: 'https://randomuser.me/api/portraits/women/33.jpg', name: 'Flores, Juanita', company: 'Barone LLC.', role: 'Waitress' },
+    { imageURL: 'https://randomuser.me/api/portraits/women/90.jpg', name: 'Miles, Esther', company: 'Binford Ltd.', role: 'Flight engineer' },
   ]}}`,
       },
       showHeader: { value: '{{true}}' },
       rowHeight: { value: '80' },
-      gridRecordHeight: { value: '150' },
+      gridRecordHeight: { value: '170' },
     },
     styles: {
       listStyle: { value: 'bordered' },

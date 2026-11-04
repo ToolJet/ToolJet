@@ -113,6 +113,30 @@ describe('arrangeRecordChildren', () => {
     expect(Math.abs(row.i.width - 5)).toBeLessThanOrEqual(1);
   });
 
+  test('[Listview-GRID-001] a new ListView card stacks as avatar, name, company, chip inside its 170px grid record', () => {
+    // Break this catches: the Figma card turning into a row, a wrong order, or a stack taller than the grid record.
+    const card = [
+      kid('avatar', 'Image', { top: 20, left: 2, width: 4, height: 40 }),
+      kid('name', 'Text', { top: 15, left: 7, width: 17, height: 25 }),
+      kid('company', 'Text', { top: 40, left: 7, width: 17, height: 25 }),
+      kid('role', 'Tags', { top: 25, left: 26, width: 16, height: 30 }),
+    ];
+
+    const layouts = arrangeRecordChildren(card, {
+      toMode: 'grid',
+      fromMode: 'list',
+      recordHeight: 170,
+      fromColumnPx: 10,
+      toColumnPx: 3.2,
+    });
+
+    const order = Object.keys(layouts).sort((a, b) => layouts[a].top - layouts[b].top);
+    expect(order).toEqual(['avatar', 'name', 'company', 'role']);
+    Object.values(layouts).forEach((layout) => expect(layout.left).toBe(1));
+    expect(layouts.name.width).toBe(41);
+    expect(layouts.role.top + layouts.role.height).toBeLessThanOrEqual(170);
+  });
+
   test('[Listview-GRID-001] a non-Text child wider than the card is capped to the card width', () => {
     // Break this catches: a child that sticks out of the card after the switch.
     const wide = [kid('c', 'Container', { width: 43 }), kid('t', 'Text', { top: 40 })];
