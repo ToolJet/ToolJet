@@ -449,10 +449,7 @@ export const baseComponentProperties = (
 
   items.push({
     id: ADDITIONAL_ACTIONS_ACCORDION_ID,
-    title:
-      component.component.component === 'Listview'
-        ? `${i18next.t('widget.listview.additionalActions', 'Additional actions')}`
-        : `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
+    title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
     isOpen: true,
     children: additionalActions?.map((property) => {
       const paramType = property === 'Tooltip' ? 'general' : 'properties';
