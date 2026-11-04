@@ -57,6 +57,7 @@ const Container = React.memo(
     hasNoScroll = false,
     flexEffectiveDirection,
     flexShouldStack = false,
+    forceShowGrid = false,
   }) => {
     const { moduleId, isModuleEditor, isModuleMode } = useModuleContext();
     const realCanvasRef = useRef(null);
@@ -307,7 +308,7 @@ const Container = React.memo(
           'sub-canvas': id !== 'canvas' && appType !== 'module',
           // A child drag rewrites this className, which would drop the class showGridLines added.
           'show-grid':
-            (isDragging || (componentType === 'Listview' && isWidgetInSubContainerDragging)) &&
+            (isDragging || forceShowGrid || (componentType === 'Listview' && isWidgetInSubContainerDragging)) &&
             (index === 0 || index === null) &&
             !isInsideLaterRow &&
             !listviewCopy &&

@@ -41,14 +41,8 @@
     outline-offset: -1px;
 }
 
-// Same look as the Form header handle (.resizable-slot .resize-handle), kept inside the record because it clips its overflow.
+// Same look as the Form header handle; size and position are inline, centred on the record's bottom edge.
 .listview-scroll-container .list-item .listview-record-resize-handle {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 24px;
-    height: 8px;
     border-radius: 4px;
     background-color: var(--cc-surface1-surface);
     border: 1px solid var(--background-accent-strong);

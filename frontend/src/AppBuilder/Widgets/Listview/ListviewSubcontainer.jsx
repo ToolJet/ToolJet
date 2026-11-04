@@ -7,6 +7,9 @@ import SubcontainerContext, { useSubcontainerContext } from '@/AppBuilder/_conte
 import { getDynamicLayoutKey } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 import cx from 'classnames';
 
+const RESIZE_HANDLE_HEIGHT = 8;
+const RESIZE_HANDLE_WIDTH = 26;
+
 const ListviewSubcontainerComponent = ({
   index,
   moduleId,
@@ -78,12 +81,16 @@ const ListviewSubcontainerComponent = ({
   });
 
   const pendingClickRef = useRef(false);
+  // Only record 1 has the handle props, so the drag's outline and grid never reach a copy.
+  const isResizeTarget = isResizing && !!resizeHandleProps;
+  // The handle sits on the bottom edge, half outside the record, so the record itself must not clip; its children are clipped by the inner box.
+  const handleBottom = -(RESIZE_HANDLE_HEIGHT / 2 + recordBorderInset / 2);
 
   return (
     <SubcontainerContext.Provider value={contextValue}>
       <div
         className={cx('list-item', {
-          'listview-record-moving': isMoving,
+          'listview-record-moving': isMoving || isResizeTarget,
           'w-100': mode == 'list',
           'listview-legacy-divider': showBorder && mode == 'list',
         })}
@@ -92,7 +99,7 @@ const ListviewSubcontainerComponent = ({
           height: `${transformedRowHeight}px`,
           width: recordWidth ?? `${100 / positiveColumns}%`,
           padding: '0px',
-          overflow: 'hidden',
+          overflow: resizeHandleProps ? undefined : 'hidden',
           ...(isFaded && { opacity: 0.4 }),
           ...recordBoxStyle,
         }}
@@ -134,22 +141,33 @@ const ListviewSubcontainerComponent = ({
           }, 0);
         }}
       >
-        <SubContainer
-          index={index}
-          id={id}
-          key={`${id}-${index}`}
-          canvasHeight={transformedRowHeight - recordBorderInset}
-          canvasWidth={width}
-          styles={computeCanvasBackgroundColor}
-          columns={positiveColumns}
-          listViewMode={mode}
-          darkMode={darkMode}
-          componentType="Listview"
-        />
+        <div style={{ height: '100%', overflow: 'hidden', borderRadius: 'inherit' }}>
+          <SubContainer
+            index={index}
+            id={id}
+            key={`${id}-${index}`}
+            canvasHeight={transformedRowHeight - recordBorderInset}
+            canvasWidth={width}
+            styles={computeCanvasBackgroundColor}
+            columns={positiveColumns}
+            listViewMode={mode}
+            darkMode={darkMode}
+            componentType="Listview"
+            forceShowGrid={isResizeTarget}
+          />
+        </div>
         {resizeHandleProps && (
           <div
             className={cx('resize-handle', 'listview-record-resize-handle', { dragging: isResizing })}
             data-cy={`${String(dataCy).toLowerCase()}-record-resize-handle`}
+            style={{
+              position: 'absolute',
+              bottom: handleBottom,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: RESIZE_HANDLE_WIDTH,
+              height: RESIZE_HANDLE_HEIGHT,
+            }}
             {...resizeHandleProps}
           />
         )}

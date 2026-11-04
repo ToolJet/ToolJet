@@ -400,7 +400,7 @@ export const Listview = function Listview({
   }
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
   const hasMainRecord = isBuilder && !insideCopy && startIndexOfRowInThePage === 0;
-  const fadeOthers = hasMainRecord && (mainRecordHovered || isMovingInside || isSelectedInside || isResizingRecord);
+  const fadeOthers = hasMainRecord && (mainRecordHovered || isMovingInside || isSelectedInside);
   // No handle on an expression, so a drag can never overwrite it.
   const canResizeRecord = hasMainRecord && !isDynamicRecordHeight;
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
