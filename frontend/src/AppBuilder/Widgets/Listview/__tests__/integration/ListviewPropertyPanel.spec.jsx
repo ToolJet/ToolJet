@@ -168,6 +168,17 @@ describe('List View property panel', () => {
     expect(listviewConfig.definition.properties.mode).toEqual({ value: 'list' });
   });
 
+  test('[Listview-INSP-009] Number of columns is a full-width code field like Number of records per page', () => {
+    // Break this catches: the native number input, whose inline layout wraps the long label.
+    renderPanel({ mode: 'grid', columns: '{{4}}' });
+
+    const columns = editor('columns');
+    expect(columns.fieldMeta.type).toBe('code');
+    expect(columns.fieldMeta.type).toBe(listviewConfig.properties.rowsPerPage.type);
+    expect(columns.paramLabel).toBe('Number of columns');
+    expect(columns.initialValue).toBe('{{4}}');
+  });
+
   test('[Listview-INSP-003] a saved "grid" still shows Grid', () => {
     // Guard, not a bug: the normalising must not turn every layout into List.
     renderPanel({ mode: 'grid' });
