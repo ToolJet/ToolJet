@@ -180,7 +180,7 @@ export function uploadScan(
   session: Session,
   target: { appId: string; versionId: string },
   scan: Pick<LocalScan, 'sarif'> & Partial<Pick<LocalScan, 'dependencies'>>,
-  source: 'dev' | 'publish' | 'external'
+  source: 'dev' | 'ci'
 ): Promise<any> {
   return session.api(`/apps/${target.appId}/versions/${target.versionId}/scan-results`, {
     method: 'POST',
