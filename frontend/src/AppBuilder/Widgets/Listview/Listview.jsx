@@ -18,6 +18,7 @@ import { ListviewEmptyState } from './ListviewEmptyState';
 import { hasComponentInRecords, isMovingInListview, isSelectedInListview } from './isMovingInListview';
 import { HorizontalSlot } from '@/AppBuilder/Widgets/Form/Components/HorizontalSlot';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
+import { useSubContainerResizable } from '@/AppBuilder/_hooks/useSubContainerResizable';
 import cx from 'classnames';
 import Spinner from '@/_ui/Spinner';
 import {
@@ -36,6 +37,9 @@ import {
 
 const HOVER_THROTTLE_MS = 200;
 const NO_RECORDS = [];
+const RECORD_MIN_HEIGHT = 10;
+const RECORD_MAX_HEIGHT = 400;
+const DEFAULT_RECORD_HEIGHT = 100;
 
 export const Listview = function Listview({
   id,
@@ -185,10 +189,38 @@ export const Listview = function Listview({
 
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
   const [mainRecordHovered, setMainRecordHovered] = useState(false);
+  const [isResizingRecord, setIsResizingRecord] = useState(false);
+  const [resizePreviewHeight, setResizePreviewHeight] = useState(null);
   const isBuilder = currentMode === 'edit';
   const isMovingInside = useStore((state) => isBuilder && isMovingInListview(state, id, moduleId));
   const isSelectedInside = useStore((state) => isBuilder && isSelectedInListview(state, id, moduleId));
   const [positiveColumns, setPositiveColumns] = useState(columns);
+  const recordHeightKey = mode === 'grid' ? 'gridRecordHeight' : 'rowHeight';
+  // The saved text, not the resolved value: a number and an expression that resolves to one look alike.
+  const isDynamicRecordHeight = useStore((state) => {
+    const saved = state.getComponentDefinition(id, moduleId)?.component?.definition?.properties;
+    const value = (
+      recordHeightKey === 'gridRecordHeight' ? (saved?.gridRecordHeight ?? saved?.rowHeight) : saved?.rowHeight
+    )?.value;
+    return typeof value === 'string' && value.includes('{{');
+  });
+  const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+  const { rootRef: mainRecordRef, getHandleProps: getRecordResizeHandleProps } = useSubContainerResizable({
+    lockHorizontal: true,
+    minHeight: RECORD_MIN_HEIGHT,
+    maxHeight: RECORD_MAX_HEIGHT,
+    stepHeight: 10,
+    // Not clientHeight: a Container record's border sits inside it and would shift every step by 2.
+    getStartHeight: () => Number.parseFloat(recordHeight) || DEFAULT_RECORD_HEIGHT,
+    onDragStart: () => setIsResizingRecord(true),
+    onResize: ({ newHeight }) => setResizePreviewHeight(newHeight),
+    onDragEnd: ({ snappedHeight }) => {
+      setIsResizingRecord(false);
+      setResizePreviewHeight(null);
+      if (snappedHeight === (Number.parseFloat(recordHeight) || DEFAULT_RECORD_HEIGHT)) return;
+      setComponentProperty(id, recordHeightKey, snappedHeight, 'properties', 'value', false, moduleId);
+    },
+  });
 
   const recordBoxStyle = useMemo(() => {
     if (recordStyle === 'bordered') return { backgroundColor: recordBackgroundColor };
@@ -340,7 +372,9 @@ export const Listview = function Listview({
   }
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
   const hasMainRecord = isBuilder && !insideCopy && startIndexOfRowInThePage === 0;
-  const fadeOthers = hasMainRecord && (mainRecordHovered || isMovingInside || isSelectedInside);
+  const fadeOthers = hasMainRecord && (mainRecordHovered || isMovingInside || isSelectedInside || isResizingRecord);
+  // No handle on an expression, so a drag can never overwrite it.
+  const canResizeRecord = hasMainRecord && !isDynamicRecordHeight;
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
   // Stable between renders, so a hover re-render does not deep-diff the page again.
   const filteredData = useMemo(
@@ -549,7 +583,7 @@ export const Listview = function Listview({
                     index={index}
                     moduleId={moduleId}
                     mode={mode}
-                    rowHeight={recordHeight}
+                    rowHeight={resizePreviewHeight ?? recordHeight}
                     positiveColumns={positiveColumns}
                     showBorder={isLegacy && showBorder}
                     recordWidth={isGridLayout ? '100%' : `${100 / positiveColumns}%`}
@@ -570,6 +604,9 @@ export const Listview = function Listview({
                     recordOffset={startIndexOfRowInThePage}
                     isBuilder={isBuilder}
                     isFaded={fadeOthers && index > 0}
+                    recordRef={index === 0 && canResizeRecord ? mainRecordRef : undefined}
+                    resizeHandleProps={index === 0 && canResizeRecord ? getRecordResizeHandleProps() : undefined}
+                    isResizing={isResizingRecord}
                     isMoving={hasMainRecord && isMovingInside && index === 0}
                     onMainHoverChange={setMainRecordHovered}
                   />

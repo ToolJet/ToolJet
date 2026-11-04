@@ -13,6 +13,7 @@ const defaultProps = {
   onDragStart: null,
   onDragEnd: null,
   isReverseVerticalDrag: false,
+  getStartHeight: null, // Lets a caller whose element has a border or padding supply the height the drag starts from.
 };
 
 export const useSubContainerResizable = (options = {}) => {
@@ -46,7 +47,7 @@ export const useSubContainerResizable = (options = {}) => {
       if (!parentRef.current) return;
       e.stopPropagation();
       e.preventDefault();
-      const startHeight = parseInt(parentRef.current.clientHeight);
+      const startHeight = props.getStartHeight ? props.getStartHeight() : parseInt(parentRef.current.clientHeight);
       const startWidth = parseInt(parentRef.current.clientWidth);
       const parentWidth = parentRef.current.parentElement ? parentRef.current.parentElement.clientWidth : startWidth;
       const startY = e.clientY;
@@ -58,6 +59,8 @@ export const useSubContainerResizable = (options = {}) => {
       if (props.onDragStart) {
         props.onDragStart({ newHeight: startHeight, newWidth: startWidth });
       }
+
+      let snappedHeight = startHeight;
 
       const handleMouseMove = (moveEvent) => {
         moveEvent.stopPropagation();
@@ -85,12 +88,14 @@ export const useSubContainerResizable = (options = {}) => {
           }
         }
 
+        snappedHeight = newHeight;
         setHeight(`${newHeight}px`);
         setWidth(newWidth);
 
         if (parentRef.current) {
           parentRef.current.style.height = `${newHeight}px`;
-          parentRef.current.style.width = newWidth;
+          // A locked axis keeps the element's own width; the number written here is ignored by browsers.
+          if (!props.lockHorizontal) parentRef.current.style.width = newWidth;
         }
 
         if (props.onResize) {
@@ -115,7 +120,7 @@ export const useSubContainerResizable = (options = {}) => {
           // Get the updated height and width from the DOM instead of relying on state
           const finalHeight = parentRef.current ? parseInt(parentRef.current.clientHeight) : parseInt(height);
           const finalWidth = parentRef.current ? parseInt(parentRef.current.clientWidth) : parseInt(width);
-          props.onDragEnd({ newHeight: finalHeight, newWidth: finalWidth });
+          props.onDragEnd({ newHeight: finalHeight, newWidth: finalWidth, snappedHeight });
         }
       };
 

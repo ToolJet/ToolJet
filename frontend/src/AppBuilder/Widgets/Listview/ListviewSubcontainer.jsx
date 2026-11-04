@@ -35,6 +35,9 @@ const ListviewSubcontainerComponent = ({
   isFaded = false,
   isMoving = false,
   onMainHoverChange,
+  recordRef,
+  resizeHandleProps,
+  isResizing = false,
 }) => {
   const parentContext = useSubcontainerContext();
   // The first record of page 1 is the only editable one; a page-relative index cannot tell it from page 2's first.
@@ -94,6 +97,7 @@ const ListviewSubcontainerComponent = ({
           ...recordBoxStyle,
         }}
         key={index}
+        ref={recordRef}
         role="listitem"
         tabIndex={0}
         data-cy={`${String(dataCy).toLowerCase()}-row-${index}`}
@@ -118,6 +122,8 @@ const ListviewSubcontainerComponent = ({
           // A modal this row opened covers the page; clicking it is not clicking the row beneath.
           // It is lifted out of the row in a browser and left inside it under jsdom, so both count.
           if (!event.currentTarget.contains(event.target)) return;
+          // The click that ends a resize is not a click on the record.
+          if (event.target?.closest?.('.listview-record-resize-handle')) return;
           const dialog = event.target?.closest?.('[role="dialog"]');
           if (dialog && event.currentTarget.contains(dialog)) return;
           if (pendingClickRef.current) return;
@@ -140,6 +146,13 @@ const ListviewSubcontainerComponent = ({
           darkMode={darkMode}
           componentType="Listview"
         />
+        {resizeHandleProps && (
+          <div
+            className={cx('resize-handle', 'listview-record-resize-handle', { dragging: isResizing })}
+            data-cy={`${String(dataCy).toLowerCase()}-record-resize-handle`}
+            {...resizeHandleProps}
+          />
+        )}
       </div>
     </SubcontainerContext.Provider>
   );
