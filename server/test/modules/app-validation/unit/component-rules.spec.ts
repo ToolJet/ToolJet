@@ -213,6 +213,31 @@ describe('component rules', () => {
       ]);
     });
 
+    it('accepts a Listview mode in either casing, the way the widget reads it, and still rejects other values', () => {
+      const listview = (mode: string): ComponentWrite => ({
+        op: 'create',
+        id: 'lv1',
+        data: { name: 'listview1', type: 'Listview', properties: { mode: { value: mode } } },
+      });
+      for (const mode of ['list', 'grid', 'List', 'Grid']) {
+        expect(componentValueTypes.check(listview(mode), ctx)).toEqual([]);
+      }
+      expect(componentValueTypes.check(listview('table'), ctx)).toEqual([
+        expect.objectContaining({ code: 'PROPERTY_ENUM_MISMATCH', severity: 'high' }),
+      ]);
+    });
+
+    it('keeps other widgets\u2019 option checks case-sensitive', () => {
+      const styled: ComponentWrite = {
+        op: 'create',
+        id: 'c1',
+        data: { name: 'button1', type: 'Button', styles: { type: { value: 'Primary' } } },
+      };
+      expect(componentValueTypes.check(styled, ctx)).toEqual([
+        expect.objectContaining({ code: 'PROPERTY_ENUM_MISMATCH' }),
+      ]);
+    });
+
     it('skips the option check in fx mode, where the editor\u2019s code box saves any plain value', () => {
       const fxStyled: ComponentWrite = {
         op: 'create',
