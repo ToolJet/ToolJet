@@ -303,12 +303,6 @@ export const Listview = function Listview({
       });
     }
   }
-  // The index points at a position, so any new data value invalidates it, equal content included (D-17).
-  const prevDataRef = useRef(data);
-  if (prevDataRef.current !== data) {
-    prevDataRef.current = data;
-    setExposedVariables({ selectedRecordIndex: undefined });
-  }
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
   const filteredData = _.isArray(data)
