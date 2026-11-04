@@ -1,0 +1,20 @@
+# Read by GitHub when it generates release notes (main and lts-3.16 both need this file).
+# PRs are grouped by label. Rename the labels below to match the ones your team really uses.
+changelog:
+  exclude:
+    labels:
+      - skip-changelog
+    authors:
+      - dependabot
+      - renovate
+  categories:
+    - title: 🚀 Features
+      labels: [feature]
+    - title: 🌟 Enhancements
+      labels: [enhancement]
+    - title: 🛠️ Fixes
+      labels: [bug, fix]
+    - title: 🧪 Specs
+      labels: [specs, test]
+    - title: 📝 Other Changes
+      labels: ["*"]
