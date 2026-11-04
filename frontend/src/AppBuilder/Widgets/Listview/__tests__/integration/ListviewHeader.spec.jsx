@@ -69,7 +69,7 @@ const widget = createWidgetHarness({
   defaultExtraComponents: { txt1: recordText() },
   capabilities: { dnd: true },
   // The drop template's Image (Listview-HDR-006).
-  preload: ['Image'],
+  preload: ['Image', 'Tags'],
   widgetHeight: 624,
   widgetWidth: 600,
 });
@@ -305,6 +305,30 @@ describe('Listview: a new ListView s header', () => {
     await mount({ extraComponents });
 
     expect(headerCanvases()[0].querySelector(`.ele-${headerChild.id}`).textContent.trim()).toBe('List view');
+  });
+
+  test('[Listview-CREATE-001] the role chip of a new ListView shows the record role, not the Tags sample tags', async () => {
+    // Break this catches: a Tags child left on its static options (advanced off), which renders "success" for every record.
+    seedApp({}, { moduleId: MODULE_ID });
+    const seeded = addChildrenWidgetsToParent('Listview', LV, 'desktop');
+    const extraComponents = Object.fromEntries(seeded.map((entry) => [entry.id, entry]));
+    const tags = seeded.find((entry) => entry.component.component === 'Tags');
+
+    await mount(
+      {
+        extraComponents,
+        properties: {
+          data: binding(
+            `{{[{ imageURL: '', name: 'Henry, Arthur', company: 'Big Kahuna Burger Ltd.', role: 'Project manager' }]}}`
+          ),
+        },
+      },
+      1
+    );
+
+    const chip = document.querySelector(`.ele-${tags.id}`);
+    await waitFor(() => expect(chip.textContent).toContain('Project manager'));
+    expect(chip.textContent).not.toContain('success');
   });
 
   test('[Listview-HDR-006] the header Text of a new ListView uses the Figma text style', async () => {

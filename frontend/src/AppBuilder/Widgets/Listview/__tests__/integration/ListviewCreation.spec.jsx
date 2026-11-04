@@ -114,6 +114,10 @@ describe('Listview: a new drop gets the new look', () => {
     const chips = role.component.definition.properties.data.value;
     expect(chips).toContain('listItem.role');
     expect(chips).not.toMatch(/#[0-9a-fA-F]{3,8}/);
+    // Without Dynamic tags the Tags widget ignores `data` and shows its sample options.
+    expect(role.component.definition.properties.advanced).toEqual({ value: '{{true}}' });
+    expect(chips).toContain('color-mix(in srgb, var(--cc-primary-brand)');
+    expect(chips).not.toContain('surface3');
   });
 
   test('[Listview-CREATE-001] the default children fill the 80px list record: avatar left, texts stacked, chip right', async () => {
@@ -132,8 +136,11 @@ describe('Listview: a new drop gets the new look', () => {
     expect(name.top + name.height).toBeLessThanOrEqual(company.top);
     expect(name.left + name.width).toBeLessThanOrEqual(role.left);
     expect(role.left + role.width).toBeLessThanOrEqual(43);
+    // A large chip is 28px plus its own margin and padding; 30px clipped it.
+    expect(role.height).toBeGreaterThanOrEqual(40);
     // Centred on the same line as the avatar.
     expect(avatar.top + avatar.height / 2).toBe(40);
+    expect(role.top + role.height / 2).toBe(40);
   });
 
   test('[Listview-CREATE-001] a new ListView gets a grid card tall enough for the stacked children', async () => {
