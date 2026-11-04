@@ -933,7 +933,11 @@ const DynamicFormV2 = ({
       const component = uiProperties[key];
       const componentType = component.widget || component.type;
 
-      if (componentType && componentType !== 'dropdown-component-flip' && componentType !== 'toggle-flip') {
+      if (
+        typeof componentType === 'string' &&
+        componentType !== 'dropdown-component-flip' &&
+        componentType !== 'toggle-flip'
+      ) {
         allComponents.push({
           order: component.order, // Keep undefined if not set
           insertIndex: insertIndex++,
