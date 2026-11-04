@@ -52,7 +52,7 @@ describe('Grid resize minimum width', () => {
   let session;
   let restore;
 
-  async function mountSelected(id, type) {
+  async function mountSelectedAll(entries) {
     const original = Element.prototype.getBoundingClientRect;
     Element.prototype.getBoundingClientRect = function () {
       const key = this.getAttribute?.('data-rect');
@@ -66,6 +66,13 @@ describe('Grid resize minimum width', () => {
     const heightSpy = jest.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function () {
       return this.getAttribute?.('data-rect') === 'box' ? RECT.height : 0;
     });
+    // The group resize reads the canvas size to keep the group inside it.
+    const clientWidthSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function () {
+      return this.getAttribute?.('data-rect') === 'canvas' ? 1000 : 0;
+    });
+    const scrollHeightSpy = jest.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockImplementation(function () {
+      return this.getAttribute?.('data-rect') === 'canvas' ? 1000 : 0;
+    });
     // jsdom has no hit-testing; Moveable asks what is under the pointer when the drag ends.
     document.elementFromPoint = () => document.body;
     restore = () => {
@@ -73,29 +80,38 @@ describe('Grid resize minimum width', () => {
       Element.prototype.getBoundingClientRect = original;
       widthSpy.mockRestore();
       heightSpy.mockRestore();
+      clientWidthSpy.mockRestore();
+      scrollHeightSpy.mockRestore();
     };
     session = new AppBuilderTestSession({ scenario });
-    const store = seedApp({ [id]: widgetDefinition(id, type) });
+    const store = seedApp(Object.fromEntries(entries.map(([id, type]) => [id, widgetDefinition(id, type)])));
     store().setEditorLoading(false, 'canvas');
     store().setCurrentMode('edit', 'canvas');
-    await session.store.act('setSelectedComponents', [id]);
+    await session.store.act(
+      'setSelectedComponents',
+      entries.map(([id]) => id)
+    );
     session.render(
       <>
         <div id="real-canvas" className="real-canvas" data-rect="canvas" style={{ width: 1000, height: 1000 }}>
-          <div
-            id={id}
-            widgetid={id}
-            className={`moveable-box target ele-${id}`}
-            data-rect="box"
-            style={{ width: `${RECT.width}px`, height: `${RECT.height}px`, transform: 'translate(100px, 100px)' }}
-          />
+          {entries.map(([id]) => (
+            <div
+              key={id}
+              id={id}
+              widgetid={id}
+              className={`moveable-box target ele-${id}`}
+              data-rect="box"
+              style={{ width: `${RECT.width}px`, height: `${RECT.height}px`, transform: 'translate(100px, 100px)' }}
+            />
+          ))}
         </div>
         <Grid gridWidth={GRID_WIDTH} currentLayout="desktop" mainCanvasWidth={1000} />
       </>
     );
     await waitFor(() => expect(document.querySelector('.moveable-control.moveable-e')).not.toBeNull());
-    return document.getElementById(id);
+    return entries.map(([id]) => document.getElementById(id));
   }
+  const mountSelected = async (id, type) => (await mountSelectedAll([[id, type]]))[0];
 
   afterEach(() => restore?.());
 
@@ -131,5 +147,21 @@ describe('Grid resize minimum width', () => {
     dragEastEdge(280);
 
     await waitFor(() => expect(parseFloat(box.style.width)).toBeLessThan(140));
+  });
+
+  test('[Listview-SIZE-005] a ListView cannot be shrunk below 140px by a group resize', async () => {
+    // Break this catches: the group resize path, which only floors a width at one column.
+    const [box] = await mountSelectedAll([
+      ['lv1', 'Listview'],
+      ['btn1', 'Button'],
+    ]);
+
+    dragEastEdge(280);
+    await waitFor(() =>
+      expect(
+        session.store.read((state) => state.getCurrentPageComponents('canvas').lv1.layouts.desktop.width)
+      ).toBeGreaterThanOrEqual(7)
+    );
+    expect(parseFloat(box.style.width)).toBeGreaterThanOrEqual(140);
   });
 });
