@@ -53,7 +53,7 @@ describe('Listview: a new drop gets the new look', () => {
     expect(properties.recordVisibility).toEqual({ value: '{{true}}' });
     expect(properties.disableRecords).toEqual({ value: '{{false}}' });
     expect(properties.rowHeight).toEqual({ value: '80' });
-    expect(properties.gridRecordHeight).toEqual({ value: '150' });
+    expect(properties.gridRecordHeight).toEqual({ value: '170' });
 
     // listStyle bordered is what gives the 12px container padding.
     expect(styles.listStyle).toEqual({ value: 'bordered' });
@@ -79,18 +79,68 @@ describe('Listview: a new drop gets the new look', () => {
     expect(saved.layouts.desktop.height).toBe(624);
   });
 
-  test('[Listview-CREATE-001] the default children fit inside the 80px record', async () => {
-    // Break this catches: leaving the children at their 100px-record layout (Image top 10,
-    // height 80), so the Image spills out of every new record.
-    const { saved, savedChildren } = await dropListview();
-    const recordChildren = savedChildren.filter((child) => child.component.parent === saved.id);
+  test('[Listview-CREATE-001] a new ListView holds 8 people with a photo, name, company and role', async () => {
+    // Break this catches: the old text/buttonText sample, or a record missing a field the children bind.
+    const { saved } = await dropListview();
 
-    expect(recordChildren.map((child) => child.component.component)).toEqual(['Image', 'Text', 'Button']);
-    for (const child of recordChildren) {
-      const { top, height } = child.layouts.desktop;
+    const records = new Function(`return ${saved.component.definition.properties.data.value.slice(2, -2)}`)();
+    expect(records).toHaveLength(8);
+    records.forEach((record) => {
+      expect(Object.keys(record).sort()).toEqual(['company', 'imageURL', 'name', 'role']);
+      expect(record.imageURL).toMatch(/^https:\/\/randomuser\.me\/api\/portraits\/(men|women)\/\d+\.jpg$/);
+    });
+    expect(records[0]).toMatchObject({
+      name: 'Henry, Arthur',
+      company: 'Big Kahuna Burger Ltd.',
+      role: 'Project manager',
+    });
+  });
+
+  test('[Listview-CREATE-001] the default children are the Figma card: round avatar, bold name, grey company, role chip', async () => {
+    // Break this catches: the old Image/Text/Button row, an avatar that is not 40px and round, or a chip that is not the Tags widget.
+    const { saved, savedChildren } = await dropListview();
+    const record = savedChildren.filter((child) => child.component.parent === saved.id);
+
+    expect(record.map((child) => child.component.component)).toEqual(['Image', 'Text', 'Text', 'Tags']);
+    const [avatar, name, company, role] = record;
+    expect(avatar.component.definition.properties.source).toEqual({ value: '{{listItem.imageURL}}' });
+    expect(avatar.component.definition.styles.borderType).toEqual({ value: 'rounded-circle' });
+    expect(avatar.component.definition.styles.imageFit).toEqual({ value: 'cover' });
+    expect(avatar.layouts.desktop.height).toBe(40);
+    expect(name.component.definition.properties.text).toEqual({ value: '{{listItem.name}}' });
+    expect(name.component.definition.styles.fontWeight).toEqual({ value: 'bold' });
+    expect(company.component.definition.properties.text).toEqual({ value: '{{listItem.company}}' });
+    expect(company.component.definition.styles.textColor).toEqual({ value: 'var(--cc-placeholder-text)' });
+    const chips = role.component.definition.properties.data.value;
+    expect(chips).toContain('listItem.role');
+    expect(chips).not.toMatch(/#[0-9a-fA-F]{3,8}/);
+  });
+
+  test('[Listview-CREATE-001] the default children fill the 80px list record: avatar left, texts stacked, chip right', async () => {
+    // Break this catches: children spilling out of the record, or a card that is not avatar | name over company | chip.
+    const { saved, savedChildren } = await dropListview();
+    const [avatar, name, company, role] = savedChildren
+      .filter((child) => child.component.parent === saved.id)
+      .map((child) => child.layouts.desktop);
+
+    [avatar, name, company, role].forEach(({ top, height }) => {
       expect(top).toBeGreaterThanOrEqual(0);
       expect(top + height).toBeLessThanOrEqual(80);
-    }
+    });
+    expect(avatar.left + avatar.width).toBeLessThanOrEqual(name.left);
+    expect(name.left).toBe(company.left);
+    expect(name.top + name.height).toBeLessThanOrEqual(company.top);
+    expect(name.left + name.width).toBeLessThanOrEqual(role.left);
+    expect(role.left + role.width).toBeLessThanOrEqual(43);
+    // Centred on the same line as the avatar.
+    expect(avatar.top + avatar.height / 2).toBe(40);
+  });
+
+  test('[Listview-CREATE-001] a new ListView gets a grid card tall enough for the stacked children', async () => {
+    // Break this catches: a grid record that is too short for avatar, name, company and chip.
+    const { saved } = await dropListview();
+
+    expect(saved.component.definition.properties.gridRecordHeight).toEqual({ value: '170' });
   });
 
   test('[Listview-HDR-006] a dropped ListView gets one header Text "List view", not bound to a record', async () => {
