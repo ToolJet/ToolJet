@@ -15,7 +15,7 @@ import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
-import { SquareDashedMousePointer, Bug, Bolt, History, Waypoints, Search, ScanSearch } from 'lucide-react';
+import { SquareDashedMousePointer, Bug, Bolt, History, Waypoints, Search, ScanSearch, LockKeyhole } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { EditorView } from '@codemirror/view';
 import CodeSearch from './CodeSearch/CodeSearch';
@@ -32,7 +32,7 @@ import AppLibrariesIcon from './AppLibraries/AppLibrariesIcon';
 import AppLibraries from './AppLibraries';
 import Beta from '@/_ui/Beta';
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
-import { SecurityPanel, CodeHistoryPanel, useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
+import { SecurityPanel, AccessPanel, CodeHistoryPanel, useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 import { railClick } from './railClick';
 
 // Human names for the error-boundary label/location of each sidebar panel.
@@ -45,6 +45,7 @@ const LEFT_SIDEBAR_PANEL_LABELS = {
   libraries: 'Libraries',
   debugger: 'Debugger',
   security: 'Security',
+  access: 'Access',
   settings: 'Global settings',
 };
 
@@ -221,6 +222,8 @@ export const BaseLeftSidebar = ({
         return <Debugger onClose={() => toggleLeftSidebar(false)} darkMode={darkMode} />;
       case 'security':
         return <SecurityPanel />;
+      case 'access':
+        return <AccessPanel />;
       case 'dependencies':
         return <DependencyViewer darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'settings':
@@ -298,6 +301,20 @@ export const BaseLeftSidebar = ({
             ref={setSideBarBtnRefs('security')}
           >
             <ScanSearch width="16" height="16" className="tw-text-icon-strong" />
+          </SidebarItem>
+        )}
+
+        {(codeMode || buildMode === 'code') && !isModuleEditor && (
+          <SidebarItem
+            icon="access"
+            selectedSidebarItem={selectedSidebarItem}
+            darkMode={darkMode}
+            onClick={() => handleSelectedSidebarItem('access')}
+            className={`left-sidebar-item  left-sidebar-layout`}
+            tip="Access"
+            ref={setSideBarBtnRefs('access')}
+          >
+            <LockKeyhole width="16" height="16" className="tw-text-icon-strong" />
           </SidebarItem>
         )}
 
@@ -413,6 +430,7 @@ export const BaseLeftSidebar = ({
               'search',
               'debugger',
               'security',
+              'access',
               'settings',
               'libraries',
               'dependencies',

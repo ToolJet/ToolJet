@@ -36,6 +36,7 @@ export const exposeCompareProbe = ee.exposeCompareProbe ?? noop;
 export const ReleaseScanGate = ee.ReleaseScanGate ?? Nothing;
 export const SecurityPanel = ee.SecurityPanel ?? Nothing;
 export const SecurityStatusChip = ee.SecurityStatusChip ?? Nothing;
+export const AccessPanel = ee.AccessPanel ?? Nothing;
 export const useCodeModePin = ee.useCodeModePin ?? (() => false);
 export const FrameLibraryComponent = ee.FrameLibraryComponent ?? Nothing;
 export const useCodeMode = ee.useCodeMode ?? (() => false);
