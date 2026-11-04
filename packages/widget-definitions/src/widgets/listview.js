@@ -176,7 +176,6 @@ export const listviewConfig = {
       type: 'switch',
       displayName: 'Layout',
       fullWidth: true,
-      newLine: true,
       options: [
         { displayName: 'List', value: 'list' },
         { displayName: 'Grid', value: 'grid' },
