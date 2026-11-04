@@ -149,3 +149,26 @@ test.each(['', '/tools'])('preserves a workspace named mcp with subpath %s', (su
   expect(getWorkspaceIdOrSlugFromURL()).toBe('mcp');
   expect(getRedirectURL(consentPath, true)).toBe(consentPath);
 });
+
+test.each([
+  [consentPath, true],
+  ['/home', false],
+])('general login honors fresh login only for OAuth: %s', async (returnTo, fresh) => {
+  render(
+    <MemoryRouter initialEntries={[`/login?redirectTo=${encodeURIComponent(returnTo)}&oauth_reauthenticate=1`]}>
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            <AuthRoute>
+              <LoginContent />
+            </AuthRoute>
+          }
+        />
+      </Routes>
+    </MemoryRouter>
+  );
+  await waitFor(() => expect(mockSetLoading).toHaveBeenCalledWith(false));
+  if (fresh) expect(mockNavigate).not.toHaveBeenCalled();
+  else await waitFor(() => expect(mockNavigate).toHaveBeenCalled());
+});
