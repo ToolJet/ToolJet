@@ -60,6 +60,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
 import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
 import ConfigHandleButton from '@/_components/ConfigHandleButton';
+import { getMinWidthPx } from './minWidth';
 import { getDropTargetLabel, getParentWidgetFromId } from '../appCanvasUtils';
 import {
   RESTRICTED_WIDGETS_CONFIG,
@@ -782,7 +783,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           }
           handleActivateNonDraggingComponents();
           updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
-          e.setMin([gridWidth, GRID_HEIGHT]);
+          const resizingWidget = boxList.find(({ id }) => id === e.target.id);
+          const parentGridWidth = useGridStore.getState().subContainerWidths[resizingWidget?.component?.parent];
+          e.setMin([
+            getMinWidthPx(resizingWidget?.component?.component, parentGridWidth || gridWidth, gridWidth),
+            GRID_HEIGHT,
+          ]);
         }}
         onResizeEnd={(e) => {
           try {
