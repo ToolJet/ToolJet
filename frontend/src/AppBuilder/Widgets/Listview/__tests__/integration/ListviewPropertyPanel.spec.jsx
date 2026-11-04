@@ -156,6 +156,18 @@ describe('List View property panel', () => {
     expect(layout.initialValue).toBe('list');
   });
 
+  test('[Listview-INSP-008] Layout renders inline like Text Format, label left and switch right, and keeps fx', () => {
+    // Break this catches: the stacked full-width layout (newLine) that no other primary switch uses.
+    renderPanel();
+
+    const layout = editor('mode').fieldMeta;
+    expect(layout.newLine).toBeFalsy();
+    expect(layout.isFxNotRequired).toBeUndefined();
+    expect(layout.fullWidth).toBe(textConfig.properties.textFormat.fullWidth);
+    expect(textConfig.properties.textFormat.newLine).toBeFalsy();
+    expect(listviewConfig.definition.properties.mode).toEqual({ value: 'list' });
+  });
+
   test('[Listview-INSP-003] a saved "grid" still shows Grid', () => {
     // Guard, not a bug: the normalising must not turn every layout into List.
     renderPanel({ mode: 'grid' });
