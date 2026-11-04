@@ -24,8 +24,8 @@ export default class AppClone extends Command {
       const routes = result.project.readApp().routes.length;
       this.log(formatSuccess(`Cloned "${result.name}" into ${result.dir}/ (${result.snapshot.queries.length} queries, ${routes} routes)`));
       if (result.source) {
-        const { revision, owner, written } = result.source;
-        this.log(formatSuccess(`Pulled revision ${revision} (owner ${owner}): ${written} files written`));
+        const { revision, written } = result.source;
+        this.log(formatSuccess(`Pulled revision ${revision}: ${written} files written`));
       } else if (result.hasCodePage) {
         this.log("This app's code isn't saved in ToolJet. Copy it from your repository into frontend/.");
       }

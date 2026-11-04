@@ -66,7 +66,8 @@ export default class AppSourcePull extends Command {
       this.log(
         formatSuccess(`Pulled revision ${result.revision}: ${result.written} files written, ${result.removed} removed`)
       );
-      if (result.keptIn) this.log(formatSuccess(`Your ${result.kept} changed files are copied to ${result.keptIn}`));
+      if (result.keptIn)
+        this.log(formatSuccess(`A copy of your changed files (${result.kept}) is in ${result.keptIn}`));
     } catch (err) {
       this.log(formatError((err as Error).message));
       process.exit(1);
