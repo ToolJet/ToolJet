@@ -160,7 +160,8 @@ const buildListviewPropertyItems = (
   const known = [...LISTVIEW_DATA_PROPERTIES, ...LISTVIEW_CONFIGURE_ORDER];
   const configure = [
     ...present(LISTVIEW_CONFIGURE_ORDER),
-    ...properties.filter((property) => !known.includes(property)),
+    // Shown in the Styles tab, Records group: it only acts on a Legacy list.
+    ...properties.filter((property) => !known.includes(property) && property !== 'showBorder'),
   ].map((property) => (property === 'rowHeight' && isGrid ? 'gridRecordHeight' : property));
 
   const items = [];
@@ -448,7 +449,10 @@ export const baseComponentProperties = (
 
   items.push({
     id: ADDITIONAL_ACTIONS_ACCORDION_ID,
-    title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
+    title:
+      component.component.component === 'Listview'
+        ? 'Additional actions'
+        : `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
     isOpen: true,
     children: additionalActions?.map((property) => {
       const paramType = property === 'Tooltip' ? 'general' : 'properties';

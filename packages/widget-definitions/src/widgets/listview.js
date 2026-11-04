@@ -213,10 +213,6 @@ export const listviewConfig = {
         schema: { type: 'boolean' },
         defaultValue: true,
       },
-      conditionallyRender: {
-        key: 'mode',
-        value: 'list',
-      },
     },
     enablePagination: {
       type: 'toggle',

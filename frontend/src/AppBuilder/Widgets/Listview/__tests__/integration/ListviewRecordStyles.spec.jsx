@@ -7,6 +7,7 @@
  * class; real geometry (scroll inside a record) is QA's Listview-BRW-008.
  */
 import React from 'react';
+import { MemoryRouter } from 'react-router-dom';
 import { render, waitFor } from '@testing-library/react';
 import {
   createWidgetHarness,
@@ -352,15 +353,17 @@ function renderStylesTab(listStyle) {
   };
   const component = { id: ID, component: JSON.parse(JSON.stringify(componentMeta)) };
   return (
-    <Inspector.RenderStyleOptions
-      componentMeta={componentMeta}
-      component={component}
-      paramUpdated={() => {}}
-      dataQueries={[]}
-      currentState={{}}
-      allComponents={{}}
-      hasCustomStyling={false}
-    />
+    <MemoryRouter>
+      <Inspector.RenderStyleOptions
+        componentMeta={componentMeta}
+        component={component}
+        paramUpdated={() => {}}
+        dataQueries={[]}
+        currentState={{}}
+        allComponents={{}}
+        hasCustomStyling={false}
+      />
+    </MemoryRouter>
   );
 }
 
@@ -375,8 +378,17 @@ const groupFields = (title) => styleGroups().find((group) => group.title === tit
 const CONTAINER_FIELDS = ['Background color', 'Border', 'Border radius', 'Box shadow'];
 
 describe('Listview: the Styles tab follows List style', () => {
+  // Legacy shows a code field (Show bottom border), and the code editor watches its own visibility.
+  beforeAll(() => {
+    global.IntersectionObserver ??= class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+  });
+
   test.each([
-    ['legacy', ['List style']],
+    ['legacy', ['List style', 'Show bottom border']],
     ['bordered', ['List style', 'Gap', 'Background', 'Divider']],
     ['container', ['List style', 'Gap', 'Background', 'Border', 'Border radius', 'Box shadow']],
     ['plain', ['List style', 'Gap']],

@@ -17,6 +17,7 @@ import { LibraryComponentProperties } from './Components/LibraryComponent';
 import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
+import { getListStyle } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
@@ -807,7 +808,16 @@ const widgetsWithStyleConditions = {
   },
 };
 
-export const RenderStyleOptions = ({
+// "Show bottom border" acts only on a Legacy list; the widget lower-cases the layout, so this does too.
+const shouldShowListviewBottomBorder = (component) => {
+  if (component.component.component !== 'Listview') return false;
+  const { getResolvedValue } = useStore.getState();
+  const { properties, styles } = component.component.definition;
+  const mode = String(getResolvedValue(properties?.mode?.value) ?? 'list').toLowerCase();
+  return mode === 'list' && getListStyle(getResolvedValue(styles?.listStyle?.value)) === 'legacy';
+};
+
+const RenderStyleOptions = ({
   componentMeta,
   component,
   paramUpdated,
@@ -875,9 +885,8 @@ export const RenderStyleOptions = ({
     const items = [];
 
     if (NEW_REVAMPED_COMPONENTS.includes(component.component.component)) {
-      items.push({
-        title: `${style}`,
-        children: Object.entries(groupedProperties[style]).map(([key, value]) => ({
+      const children = Object.entries(groupedProperties[style]).flatMap(([key, value]) => {
+        const field = {
           ...renderCustomStyles(
             component,
             componentMeta,
@@ -889,8 +898,32 @@ export const RenderStyleOptions = ({
             allComponents,
             value.accordian
           ),
-        })),
+        };
+        // The saved value stays at `properties.showBorder`; only the place it is shown moves.
+        if (key === 'listStyle' && shouldShowListviewBottomBorder(component)) {
+          return [
+            field,
+            {
+              ...renderCustomStyles(
+                component,
+                componentMeta,
+                paramUpdated,
+                dataQueries,
+                'showBorder',
+                'properties',
+                currentState,
+                allComponents,
+                value.accordian,
+                false,
+                '',
+                componentMeta.properties.showBorder
+              ),
+            },
+          ];
+        }
+        return [field];
       });
+      items.push({ title: `${style}`, children });
       return <Accordion key={style} items={items} />;
     } else {
       return renderElement(

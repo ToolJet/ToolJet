@@ -42,7 +42,7 @@ import { render } from '@testing-library/react';
 import { listviewConfig } from '@tooljet/widget-definitions';
 import { seedApp } from '@/test/app-builder';
 import { DefaultComponent } from '@/AppBuilder/RightSideBar/Inspector/Components/DefaultComponent';
-import { RenderStyleOptions } from '@/AppBuilder/RightSideBar/Inspector/Inspector';
+import { Inspector } from '@/AppBuilder/RightSideBar/Inspector/Inspector';
 
 const LV_ID = 'lv1';
 
@@ -89,7 +89,7 @@ function inspectorFor({ mode = 'list', listStyle = 'legacy', showBorder } = {}) 
   );
   properties.unmount();
   editors.length = 0;
-  const styles = render(<RenderStyleOptions componentMeta={meta} hasCustomStyling={false} {...common} />);
+  const styles = render(<Inspector.RenderStyleOptions componentMeta={meta} hasCustomStyling={false} {...common} />);
   const recordsFields = [
     ...(styles.container.querySelector('[data-section="Records"]')?.querySelectorAll('[data-cy^="stub-editor-"]') ??
       []),

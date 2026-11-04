@@ -49,7 +49,7 @@ Similarly, for an Image component inside List View, you can use the below code t
 |:---|:---|:---|
 | Populate data from | The data that you want to display in the List View component. This can be an array of objects or data from a query that returns an array of objects. | An array of objects or a query that returns an array of objects. |
 | Layout | The layout of the List View component. You can choose between `List` and `Grid`. | `list` or `grid` |
-| Show bottom border | Whether to show or hide the bottom border on a row. This option is only available when the **Layout** is set to `List`. | `true` or `false` |
+| Show bottom border | Whether to show or hide the bottom border on a row. It is set in the **Styles** tab, under **Records**, and is only available when **List style** is `Legacy` and the **Layout** is set to `List`. | `true` or `false` |
 | Number of columns | The number of columns in the List View component. This option is only available when the **Layout** is set to `Grid`. | Any numerical value |
 | Record height | The height of each record in the List View component. In `Grid` layout it is saved separately from the `List` height. | Any number between 1 and 100 |
 | Enable pagination | Whether to enable pagination. If enabled, you can set the number of records per page. | `true` or `false` |
