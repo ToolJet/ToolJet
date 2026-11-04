@@ -92,6 +92,9 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
   their `tj:qc:*` cache keys first; mixed ledger implementations are not compatible. Do not flush shared Redis.
 
 - Transformation code (`transformation` and `transformations`) is excluded from cache identity because it runs in the browser.
+- The ToolJet release (`TOOLJET_VERSION`) is stored in each entry, not in its key. Another release reads it as a miss and its
+  save replaces the entry under the same key (reserve drops the old value first), so upgrades and rolling deploys never leave
+  unreadable copies counted against the budget. Entries of queries nobody runs after an upgrade still wait for their TTL.
 - Create and update reject a `ttlSeconds` above 1 day. Import (`normalizeImportedQueryOptions`, also used by git pull) and the
   editor Run (which saves the options it is sent) cap it at 1 day instead, so a value from another instance never leaves a
   query that fails validation on every later save.
