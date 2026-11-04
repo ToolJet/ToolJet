@@ -8,6 +8,7 @@
 import { waitFor } from '@testing-library/react';
 import { createWidgetHarness, binding, store } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
+import { handleDeactivateTargets, showGridLines } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 
 // The grid background needs react-dnd's drag layer; jsdom has no drag, so the flag is flipped per test.
 const mockDragLayer = { on: false };
@@ -102,7 +103,7 @@ const user = () => widget.session.user;
 const rows = () => [...document.querySelectorAll('.list-item')];
 const copiesOf = (id) => [...document.querySelectorAll(`.ele-${id}`)];
 const editable = (id) => copiesOf(id).map((node) => node.classList.contains('moveable-box'));
-const dotted = (id) => copiesOf(id).map((node) => node.classList.contains('non-dragging-component'));
+const dotted = (id) => copiesOf(id).map((node) => node.classList.contains('listview-copy-outline'));
 const faded = () => rows().map((row) => row.style.opacity === '0.4');
 const framed = () => rows().map((row) => row.classList.contains('listview-record-moving'));
 const gridded = () => rows().map((row) => !!row.querySelector('.show-grid'));
@@ -322,6 +323,217 @@ describe('Listview builder: grid background while dragging', () => {
     const canvas = rows()[0].querySelector('.show-grid');
     expect(rows()[0].style.backgroundColor).toBe('rgb(255, 0, 0)');
     expect(canvas.style.backgroundColor).toBe('transparent');
+  });
+});
+
+const HEADER_CHILD = () => child('hdr1', 'title1', 'Text', { text: binding('Title') }, `${ID}-header`);
+const withHeader = { showHeader: binding('{{true}}') };
+
+describe('Listview builder: a drag in the header does not fade the records', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-BLD-005] dragging or selecting a header component fades nothing and frames nothing', async () => {
+    // Break this catches: the header slot counting as a record, so editing the header fades every record.
+    await mount(widget, { properties: withHeader, extraComponents: { hdr1: HEADER_CHILD() } });
+
+    await act(() => store().setDraggingComponentId('hdr1'));
+    expect(faded()).toEqual([false, false, false]);
+    expect(framed()).toEqual([false, false, false]);
+
+    await act(() => {
+      store().setDraggingComponentId(null);
+      store().setSelectedComponents(['hdr1']);
+    });
+    expect(faded()).toEqual([false, false, false]);
+  });
+});
+
+describe('Listview builder: fade while a record 1 component is selected', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-BLD-005] records 2..K stay faded while a record 1 component is selected, pointer elsewhere', async () => {
+    // Break this catches: the fade tied to hover and drag only, so selecting a component leaves the copies at full strength.
+    await mount(widget);
+
+    await act(() => store().setSelectedComponents(['txt1']));
+    await waitFor(() => expect(faded()).toEqual([false, true, true]));
+
+    await act(() => store().setSelectedComponents([]));
+    await waitFor(() => expect(faded()).toEqual([false, false, false]));
+  });
+
+  test('[Listview-BLD-005] selecting something that is not in the list does not fade it', async () => {
+    // Break this catches: any selection fading every list.
+    await mount(widget);
+
+    await act(() => store().setSelectedComponents(['somewhere-else']));
+
+    expect(faded()).toEqual([false, false, false]);
+  });
+
+  test('[Listview-BLD-005] a selection kept while the pager shows page 2 fades nothing', async () => {
+    // Break this catches: page 2's first record being treated as the main record.
+    await mount(widget);
+    await act(() => store().setSelectedComponents(['txt1']));
+    await widget.act('setPage', 2);
+    await waitFor(() => expect(document.querySelector('.ele-txt1')?.textContent).toContain('r3'));
+
+    expect(faded()).toEqual([false, false, false]);
+  });
+
+  test('[Listview-BLD-005] the fade does not come back from a hover that ended while record 1 was gone', async () => {
+    // Break this catches: a stale hover flag when record 1 unmounts under the pointer (no mouseleave ever fires).
+    await mount(widget);
+    await user().hover(rows()[0]);
+    await waitFor(() => expect(faded()).toEqual([false, true, true]));
+
+    await act(() => {
+      widget.setComponentProperty(ID, 'data', binding(records(0)).value, 'properties');
+    });
+    await waitFor(() => expect(rows()).toHaveLength(0));
+    await act(() => {
+      widget.setComponentProperty(ID, 'data', binding(records(7)).value, 'properties');
+    });
+    await waitFor(() => expect(rows()).toHaveLength(3));
+
+    expect(faded()).toEqual([false, false, false]);
+  });
+});
+
+describe('Listview builder: dotted copies on another page', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-BLD-006] with a record 1 component selected and page 2 shown, the first record of the page is not dotted', async () => {
+    // Break this catches: every copy dotted, so page 2's first record looks like a copy of the selection.
+    await mount(widget);
+    await act(() => store().setSelectedComponents(['txt1']));
+    await widget.act('setPage', 2);
+    await waitFor(() => expect(document.querySelector('.ele-txt1')?.textContent).toContain('r3'));
+
+    expect(dotted('txt1')).toEqual([false, true, true]);
+  });
+
+  test('[Listview-BLD-006] the dotted outline survives the drag clean-up that strips other outlines', async () => {
+    // Break this catches: reusing the class that handleDeactivateTargets removes, so a drop clears the copies' outline.
+    await mount(widget);
+    await act(() => store().setSelectedComponents(['txt1']));
+    await waitFor(() => expect(dotted('txt1')).toEqual([false, true, true]));
+
+    handleDeactivateTargets();
+
+    expect(dotted('txt1')).toEqual([false, true, true]);
+  });
+
+  test('[Listview-BLD-006] the outline is the same dotted style as a non-dragging component', () => {
+    // Break this catches: a new look instead of the existing token and style.
+    const css = require('fs').readFileSync(
+      require('path').resolve(__dirname, '../../../../AppCanvas/Grid/Grid.css'),
+      'utf8'
+    );
+    expect(css).toMatch(
+      /\.non-dragging-component,\s*\.listview-copy-outline\s*\{[^}]*dotted var\(--border-accent-weak\)/
+    );
+  });
+});
+
+describe('Listview builder: hover outlines the innermost copy only', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-BLD-007] hovering a child inside a Container copy outlines the child, not the Container', async () => {
+    // Break this catches: the parent staying outlined once the pointer moves onto its child.
+    const box = child('cont1', 'container1', 'Container', {});
+    const inner = child('txt3', 'text3', 'Text', { text: binding('In box') }, 'cont1');
+    await mount(widget, { extraComponents: { cont1: box, txt3: inner } });
+    await waitFor(() => expect(copiesOf('txt3')).toHaveLength(3));
+
+    await user().hover(copiesOf('cont1')[2]);
+    await waitFor(() => expect(dotted('cont1')).toEqual([false, false, true]));
+
+    await user().hover(copiesOf('txt3')[2]);
+
+    await waitFor(() => expect(dotted('txt3')).toEqual([false, false, true]));
+    expect(dotted('cont1')).toEqual([false, false, false]);
+    expect(dotted('txt3')).toEqual([false, false, true]);
+  });
+
+  test('[Listview-BLD-007] hovering a copy does not stop the event reaching ancestors', async () => {
+    // Break this catches: stopPropagation on mouseover, which hides the hover from every ancestor handler.
+    let seen = 0;
+    const onOver = () => {
+      seen += 1;
+    };
+    await mount(widget);
+    document.body.addEventListener('mouseover', onOver);
+    await user().hover(copiesOf('txt1')[2]);
+    document.body.removeEventListener('mouseover', onOver);
+
+    expect(seen).toBeGreaterThan(0);
+  });
+});
+
+describe('Listview builder: grid lines on a move', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-BLD-001] a component move turns the grid on in record 1 of page 1 only', async () => {
+    // Break this catches: showGridLines (run on every move start) painting the grid on every record.
+    await mount(widget);
+
+    showGridLines();
+
+    expect(gridded()).toEqual([true, false, false]);
+
+    await widget.act('setPage', 2);
+    await waitFor(() => expect(document.querySelector('.ele-txt1')?.textContent).toContain('r3'));
+    showGridLines();
+    expect(gridded()).toEqual([false, false, false]);
+  });
+});
+
+describe('Listview builder: nested header on a copy record', () => {
+  const innerHeaderChild = () => child('hdr2', 'title2', 'Text', { text: binding('Inner') }, `${INNER}-header`);
+  const harness = createWidgetHarness({
+    componentType: 'Listview',
+    handle: 'listview1',
+    id: ID,
+    defaultProperties: {
+      ...baseProperties,
+      data: binding(NESTED),
+      rowsPerPage: binding('{{1}}'),
+      rowHeight: binding('250'),
+    },
+    defaultStyles: baseStyles,
+    defaultExtraComponents: {
+      [INNER]: child(INNER, 'listview2', 'Listview', {
+        ...baseProperties,
+        data: binding('{{listItem.items}}'),
+        rowsPerPage: binding('{{10}}'),
+        enablePagination: binding('{{false}}'),
+        showHeader: binding('{{true}}'),
+      }),
+      txt2: innerText(),
+      hdr2: innerHeaderChild(),
+    },
+    capabilities: { dnd: true },
+    widgetHeight: 800,
+    widgetWidth: 600,
+  });
+  beforeEach(harness.setup);
+  afterEach(harness.teardown);
+
+  test('[Listview-BLD-003] the header of a nested list in record 1 of page 2 is read-only', async () => {
+    // Break this catches: the header context dropping the copy flag, so page 2's nested header stays editable.
+    await mount(harness, {}, 3);
+    await waitFor(() => expect(editable('hdr2')).toEqual([true]));
+
+    await harness.act('setPage', 2);
+
+    await waitFor(() => expect(copiesOf('txt2').map((node) => node.textContent.slice(-1))).toEqual(['c', 'd']));
+    await waitFor(() => expect(editable('hdr2')).toEqual([false]));
   });
 });
 
