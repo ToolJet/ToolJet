@@ -481,6 +481,14 @@ export const listViewComponentSlice = (set, get) => {
       const clonedRowData = removeFunctionObjects(deepClone(rowData));
 
       let selectionUpdated = false;
+      // selectedRecordId is page-relative, so a row of another page can share it: match the absolute index.
+      const listviewProperties = get().getResolvedComponent(
+        listviewId,
+        outerIndices.length ? outerIndices : null,
+        moduleId
+      )?.properties;
+      const requestedPerPage = Math.floor(Number(listviewProperties?.rowsPerPage));
+      const perPage = requestedPerPage >= 1 ? requestedPerPage : 10;
       set((state) => {
         const exposed = state.resolvedStore.modules[moduleId].exposedValues.components;
 
@@ -523,7 +531,8 @@ export const listViewComponentSlice = (set, get) => {
         // phase, so a child's own click handler (e.g. a table row selection) updates
         // its exposed values after selectedRecord was already snapshotted — without
         // this, selectedRecord stays one update behind until the next row click.
-        if (target.selectedRecordId === rowIndex || target.selectedRowId === rowIndex) {
+        const pageOffset = ((Number(target.pageIndex) || 1) - 1) * perPage;
+        if (target.selectedRecordIndex !== undefined && target.selectedRecordIndex === pageOffset + rowIndex) {
           target.selectedRecord = rowData;
           target.selectedRow = rowData;
           selectionUpdated = true;

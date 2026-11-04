@@ -252,12 +252,17 @@ export const Listview = function Listview({
   const lastPageRef = useRef(1);
   const isServerSide = enablePagination && paginationType === 'serverSide';
   const dataLength = _.isArray(data) ? data.length : 0;
-  // Empty, zero, negative or not a number is not a count: use the rows in hand until the app supplies one.
-  const totalCount = Number(totalRecords);
-  const pagerCount = isServerSide && Number.isFinite(totalCount) && totalCount > 0 ? totalCount : dataLength;
-  const lastPage = enablePagination ? Math.max(1, Math.ceil(pagerCount / rowPerPageValue)) : 1;
+  // Store validation turns an empty, text or undefined Total records into 0, so 0 is "no count yet".
+  const totalCount = Math.ceil(Number(totalRecords));
+  const hasValidTotal = Number.isFinite(totalCount) && totalCount > 0;
+  // Without a count (a bound query is running) the current page must stay reachable, not be clamped away.
+  const serverFallbackCount = Math.max(dataLength, (currentPage - 1) * rowPerPageValue + 1);
+  const pagerCount = !isServerSide ? dataLength : hasValidTotal ? totalCount : serverFallbackCount;
+  // Same formula as the shared Pagination, which "fixes" a page count it disagrees with as a user page change.
+  const showPager = isServerSide ? hasValidTotal || dataLength > 0 || currentPage > 1 : dataLength > 0;
+  const lastPage = enablePagination ? Math.max(1, Math.floor((pagerCount - 1) / rowPerPageValue) + 1) : 1;
   lastPageRef.current = lastPage;
-  // The list owns the clamp (data, rowsPerPage or pagination changed) so the pager never reports one.
+  // The list owns the clamp (data, Total records, rowsPerPage or pagination changed) so the pager never reports one.
   if (currentPage > lastPage) setCurrentPage(lastPage);
   const fireEventRef = useRef(fireEvent);
   fireEventRef.current = fireEvent;
@@ -297,8 +302,12 @@ export const Listview = function Listview({
   const prevRecordCount = useRef(dataLength);
   const prevDataRef = useRef(data);
   const recordCount = dataLength;
-  const serverPageLoaded = isServerSide && prevDataRef.current !== data;
+  const prevIsServerSideRef = useRef(isServerSide);
+  // The server index counts across pages, so it means nothing once the list stops (or starts) paging by server.
+  const serverPageLoaded =
+    (isServerSide && prevDataRef.current !== data) || prevIsServerSideRef.current !== isServerSide;
   prevDataRef.current = data;
+  prevIsServerSideRef.current = isServerSide;
   if (prevRecordCount.current !== recordCount || serverPageLoaded) {
     prevRecordCount.current = recordCount;
     // A server page replaces the records, so an index into the old page points at a different record.
@@ -534,7 +543,7 @@ export const Listview = function Listview({
               </React.Fragment>
             ))}
           </div>
-          {enablePagination && _.isArray(data) && (
+          {enablePagination && (isServerSide || _.isArray(data)) && (
             <div
               className={cx({ 'fixed-bottom position-fixed': !isDynamicHeightEnabled })}
               style={{
@@ -547,7 +556,7 @@ export const Listview = function Listview({
               }}
             >
               <div style={{ backgroundColor }}>
-                {data?.length > 0 ? (
+                {showPager ? (
                   <Pagination
                     darkMode={darkMode}
                     currentPage={currentPage}
