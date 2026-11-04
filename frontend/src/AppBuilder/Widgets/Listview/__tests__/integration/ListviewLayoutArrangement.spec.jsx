@@ -54,7 +54,7 @@ function seed({ mode = 'list', withChildren = true } = {}) {
 
 describe('Listview: Layout change re-arranges the record canvas', () => {
   test('[Listview-GRID-005] List to Grid stacks every child, the moved ones too, and leaves the header and other lists alone', () => {
-    // Break this catches: a card that keeps the list row's side-by-side children.
+    // Break this catches: a card that keeps the list row's side-by-side children, or stretches the Image and the Button.
     seed();
     useStore.getState().setComponentLayout({ btn: { top: 25, left: 0, width: 17, height: 30 } }, undefined, MODULE_ID, {
       skipUndoRedo: true,
@@ -64,7 +64,9 @@ describe('Listview: Layout change re-arranges the record canvas', () => {
     setMode('grid');
 
     const stack = ['btn', 'img', 'txt'].map((id) => layoutOf(id));
-    stack.forEach((layout) => expect(layout).toMatchObject({ left: 1, width: 41 }));
+    // Left edge for all; Text takes the card width, the Image and the Button keep their own.
+    stack.forEach((layout) => expect(layout.left).toBe(1));
+    expect(stack.map((layout) => layout.width)).toEqual([17, 6, 41]);
     expect(stack[0].top).toBeLessThan(stack[1].top);
     expect(stack[1].top).toBeLessThan(stack[2].top);
     expect(layoutOf('hdr')).toEqual({ top: 10, left: 1, width: 20, height: 40 });

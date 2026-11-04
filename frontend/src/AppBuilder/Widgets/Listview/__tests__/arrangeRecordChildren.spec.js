@@ -18,13 +18,13 @@ const ROW = [
 ];
 
 describe('arrangeRecordChildren', () => {
-  test('[Listview-GRID-001] Grid stacks every child full width, in top-to-bottom order, inside the record', () => {
-    // Break this catches: children left in a row, so a card shows a squeezed image, text and button side by side.
+  test('[Listview-GRID-001] Grid stacks the children top to bottom at the left edge; Text takes the card width, the rest keep their own', () => {
+    // Break this catches: children left in a row, or an Image and a Button stretched to a centred avatar and a bar.
     const layouts = arrangeRecordChildren(ROW, { toMode: 'grid', fromMode: 'list', recordHeight: 150 });
 
-    expect(layouts.img).toMatchObject({ left: 1, width: 41, height: 60 });
+    expect(layouts.img).toMatchObject({ left: 1, width: 6, height: 60 });
     expect(layouts.txt).toMatchObject({ left: 1, width: 41, height: 30 });
-    expect(layouts.btn).toMatchObject({ left: 1, width: 41, height: 30 });
+    expect(layouts.btn).toMatchObject({ left: 1, width: 17, height: 30 });
     expect(layouts.img.top).toBeLessThan(layouts.txt.top);
     expect(layouts.txt.top).toBeGreaterThanOrEqual(layouts.img.top + 60);
     expect(layouts.btn.top).toBeGreaterThanOrEqual(layouts.txt.top + 30);
@@ -70,6 +70,24 @@ describe('arrangeRecordChildren', () => {
       expect(layout.width).toBeGreaterThanOrEqual(1);
       if (index > 0) expect(layout.left).toBeGreaterThanOrEqual(ordered[index - 1].left + ordered[index - 1].width);
     });
+  });
+
+  test('[Listview-GRID-001] a non-Text child wider than the card is capped to the card width', () => {
+    // Break this catches: a child that sticks out of the card after the switch.
+    const wide = [kid('c', 'Container', { width: 43 }), kid('t', 'Text', { top: 40 })];
+
+    const layouts = arrangeRecordChildren(wide, { toMode: 'grid', fromMode: 'list', recordHeight: 150 });
+
+    expect(layouts.c).toMatchObject({ left: 1, width: 41 });
+  });
+
+  test('[Listview-GRID-002] more children than columns stay inside the 43 columns', () => {
+    // Break this catches: the 44th child placed past the right edge of the row.
+    const crowd = Array.from({ length: 50 }, (_, index) => kid(`c${index}`, 'Container', { left: index % 43 }));
+
+    const layouts = arrangeRecordChildren(crowd, { toMode: 'list', fromMode: 'grid', recordHeight: 80 });
+
+    Object.values(layouts).forEach((layout) => expect(layout.left + layout.width).toBeLessThanOrEqual(43));
   });
 
   test('[Listview-GRID-003] children taller than the record keep their order and overflow rather than overlap', () => {
