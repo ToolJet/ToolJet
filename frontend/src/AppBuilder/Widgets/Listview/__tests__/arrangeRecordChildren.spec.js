@@ -119,7 +119,7 @@ describe('arrangeRecordChildren', () => {
       kid('avatar', 'Image', { top: 20, left: 2, width: 4, height: 40 }),
       kid('name', 'Text', { top: 15, left: 7, width: 17, height: 25 }),
       kid('company', 'Text', { top: 40, left: 7, width: 17, height: 25 }),
-      kid('role', 'Tags', { top: 25, left: 26, width: 16, height: 30 }),
+      kid('role', 'Tags', { top: 20, left: 26, width: 16, height: 40 }),
     ];
 
     const layouts = arrangeRecordChildren(card, {

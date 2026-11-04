@@ -32,10 +32,12 @@ export const listviewConfig = {
     },
     {
       componentName: 'Tags',
-      layout: { top: 25, left: 26, height: 30, width: 16 },
+      layout: { top: 20, left: 26, height: 40, width: 16 },
       creationValues: {
         properties: {
-          data: "{{[{ title: listItem.role, color: 'var(--cc-surface3-surface)', textColor: 'var(--cc-primary-text)' }]}}",
+          // Without Dynamic tags the Tags widget shows its static sample options and ignores `data`.
+          advanced: '{{true}}',
+          data: "{{[{ title: listItem.role, color: 'color-mix(in srgb, var(--cc-primary-brand) 10%, transparent)', textColor: 'var(--cc-primary-text)' }]}}",
         },
         styles: { size: 'large', borderRadius: '14' },
       },
