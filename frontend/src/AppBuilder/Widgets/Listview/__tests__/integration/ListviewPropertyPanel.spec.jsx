@@ -75,8 +75,8 @@ const fieldsIn = (container, title) =>
 const editor = (name) => editors.filter((props) => props.paramName === name).pop();
 
 describe('List View property panel', () => {
-  test('[Listview-INSP-005] sections run Header, Data, Configure list item, Events, Additional actions, Devices', () => {
-    // Break this catches: a section moved or left under the old "Properties" title.
+  test('[Listview-INSP-005] sections run Header, Data, Configure list item, Events, Additional Actions, Devices', () => {
+    // Break this catches: a section moved or left under the old "Properties" title, or a ListView-only title spelling.
     const { container } = renderPanel();
 
     expect(sectionNames(container)).toEqual([
@@ -84,7 +84,7 @@ describe('List View property panel', () => {
       'Data',
       'Configure list item',
       'Events',
-      'Additional actions',
+      'Additional Actions',
       'Devices',
     ]);
   });
