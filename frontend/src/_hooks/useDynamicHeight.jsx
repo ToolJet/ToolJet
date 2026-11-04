@@ -4,8 +4,10 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { getDynamicElementSelector, normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import useStore from '@/AppBuilder/_stores/store';
+import { isDynamicHeightV2Enabled } from '@/AppBuilder/_stores/dynamicHeight/flags';
+import { useDynamicHeightV2 } from './useDynamicHeightV2';
 
-export const useDynamicHeight = ({
+const useLegacyDynamicHeight = ({
   isDynamicHeightEnabled,
   id,
   height,
@@ -173,3 +175,6 @@ export const useDynamicHeight = ({
 
   return;
 };
+
+// The flag is read once per page load, so every render takes the same branch.
+export const useDynamicHeight = isDynamicHeightV2Enabled() ? useDynamicHeightV2 : useLegacyDynamicHeight;

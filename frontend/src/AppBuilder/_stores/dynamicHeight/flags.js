@@ -1,8 +1,10 @@
 // The new dynamic-height engine (stateless solver, shared height registry,
 // live heights in the editor). On by default; set localStorage
 // `tj-dynamic-height-v2` to `off` and reload to compare with the old engine.
+// Jest keeps the old engine unless a spec opts in: the existing widget specs
+// describe its behaviour, and the new engine has its own specs.
 const STORAGE_KEY = 'tj-dynamic-height-v2';
-const ENABLED_BY_DEFAULT = true;
+const ENABLED_BY_DEFAULT = typeof process === 'undefined' || !process.env?.JEST_WORKER_ID;
 
 const readFlag = () => {
   try {

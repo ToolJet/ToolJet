@@ -11,6 +11,7 @@ import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerConte
 import { getDynamicLayoutKey, serializeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 import { useFlexWidgetLayout } from '@/AppBuilder/Widgets/FlexContainer/useFlexWidgetLayout';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
+import { isDynamicHeightV2Enabled } from '@/AppBuilder/_stores/dynamicHeight/flags';
 
 const DYNAMIC_HEIGHT_AUTO_LIST = [
   'CodeEditor',
@@ -35,6 +36,10 @@ const DYNAMIC_HEIGHT_AUTO_LIST = [
   'ReorderableList',
   'ButtonGroupV2',
 ];
+
+// The new engine measures every content-sized leaf through the height
+// registry, so these two need height:auto as well (the old hook set it inline).
+const DYNAMIC_HEIGHT_AUTO_LIST_V2 = [...DYNAMIC_HEIGHT_AUTO_LIST, 'Html', 'Navigation'];
 
 const WidgetWrapper = memo(
   ({
@@ -200,7 +205,8 @@ const WidgetWrapper = memo(
       width: gridWidthPx + 'px',
       height:
         isDynamicHeightEnabledInModeView &&
-        (isTruthyOrZero(subContainerIndex) || DYNAMIC_HEIGHT_AUTO_LIST.includes(componentType))
+        (isTruthyOrZero(subContainerIndex) ||
+          (isDynamicHeightV2Enabled() ? DYNAMIC_HEIGHT_AUTO_LIST_V2 : DYNAMIC_HEIGHT_AUTO_LIST).includes(componentType))
           ? 'auto'
           : gridFinalHeight + 'px',
       transform: `translate(${newLayoutData.left * gridWidth}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,
