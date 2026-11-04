@@ -12,7 +12,6 @@ import {
   findHighestLevelofSelection,
   hasParentWithClass,
   getPositionForGroupDrag,
-  adjustWidth,
   hideGridLines,
   showGridLines,
   handleActivateTargets,
@@ -41,7 +40,13 @@ import {
   getContainerIdFromSlotId,
 } from './helpers/dragEnd';
 import { handleFlexContainerDragEnd } from './helpers/flexContainerDragEnd';
-import { computeFlexResizeStyles, computeFlexResizeEndPatch } from './helpers/gridResizeUtils';
+import {
+  computeFlexResizeStyles,
+  computeFlexResizeEndPatch,
+  computeResizeStopPosition,
+  computeResizeEndRect,
+  clampResizeToCanvas,
+} from './helpers/gridResizeUtils';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { useFlexContainerDropTarget } from '@/AppBuilder/Widgets/FlexContainer/useFlexContainerDropTarget';
 import useStore from '@/AppBuilder/_stores/store';
@@ -204,14 +209,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         const _canvasWidth = gw ? gw * NO_OF_GRIDS : canvasWidth;
         let newWidth = Math.round((width * NO_OF_GRIDS) / _canvasWidth);
 
-        y = Math.round(y / GRID_HEIGHT) * GRID_HEIGHT;
-
         gw = gw ? gw : gridWidth;
 
+        const { top, left } = computeResizeStopPosition({ x, y, gw, gridHeight: GRID_HEIGHT });
+        y = top;
+
         const parent = boxList.find((box) => box.id === id)?.component?.parent;
-        if (y < 0) {
-          y = 0;
-        }
         if (parent) {
           const parentElem = document.getElementById(`canvas-${parent}`);
           const parentId = parent.includes('-') ? parent?.split('-').slice(0, -1).join('-') : parent;
@@ -232,7 +235,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           height: height ? height : GRID_HEIGHT,
           width: newWidth ? newWidth : 1,
           top: y,
-          left: Math.round(x / gw),
+          left,
         };
       });
 
@@ -724,21 +727,39 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           const maxY = containerHeight - e.target.clientHeight;
           const maxLeft = containerWidth - e.target.clientWidth;
 
+          // A top-aligned label adds TOP_ALIGNMENT_HEIGHT_INCREMENT to the live box but not to the stored
+          // height, which inflates diffHeight (and so how far transformY overshoots the top border) by that much.
+          const hasTopAlignmentIncrement =
+            isTopChanged &&
+            transformY < 0 &&
+            getComponentAlignment(currentWidget.id, moduleId) === 'top' &&
+            getComponentLabel(currentWidget.id, moduleId)?.length > 0;
+
+          // Main canvas grows downward and has no bottom border; nested widgets keep their original behaviour.
+          const { width: resizeWidth, height: resizeHeight } = clampResizeToCanvas({
+            x: transformX,
+            y: transformY,
+            width: e.width,
+            height: e.height,
+            containerWidth,
+            extraHeight: hasTopAlignmentIncrement ? TOP_ALIGNMENT_HEIGHT_INCREMENT : 0,
+            isNested: Boolean(currentWidget.component?.parent),
+          });
           transformY = Math.max(0, Math.min(transformY, maxY));
           transformX = Math.max(0, Math.min(transformX, maxLeft));
 
           // Update element style
           const maxWidthHit = transformX < 0 || transformX >= maxLeft;
           const maxHeightHit = transformY < 0 || transformY >= maxY;
-          if (!maxWidthHit || e.width < e.target.clientWidth) {
-            e.target.style.width = `${e.width}px`;
+          if (!maxWidthHit || resizeWidth < e.target.clientWidth) {
+            e.target.style.width = `${resizeWidth}px`;
           }
-          if (!maxHeightHit || e.height < e.target.clientHeight) {
-            e.target.style.height = `${e.height}px`;
+          if (!maxHeightHit || resizeHeight < e.target.clientHeight) {
+            e.target.style.height = `${resizeHeight}px`;
           }
           e.target.style.transform = `translate(${transformX + scrollDelta.x}px, ${transformY + scrollDelta.y}px)`;
-          if (e.width > 0) e.target.style.width = `${e.width}px`;
-          if (e.height > 0) e.target.style.height = `${e.height}px`;
+          if (resizeWidth > 0) e.target.style.width = `${resizeWidth}px`;
+          if (resizeHeight > 0) e.target.style.height = `${resizeHeight}px`;
 
           positionGhostElement(e.target, 'moveable-ghost-widget');
         }}
@@ -792,7 +813,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             let topAlignmentAddedHeight =
               alignment === 'top' && directions[1] !== 0 && label?.length > 0 ? TOP_ALIGNMENT_HEIGHT_INCREMENT : 0;
 
-            const height = Math.max(
+            let height = Math.max(
               GRID_HEIGHT,
               Math.round((e?.lastEvent?.height - topAlignmentAddedHeight) / GRID_HEIGHT) * GRID_HEIGHT
             );
@@ -811,12 +832,32 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               transformY = currentWidget.top - diffHeight;
             }
 
-            width = adjustWidth(width, transformX, _gridWidth);
             const elemContainer = e.target.closest('.real-canvas');
             const containerHeight = elemContainer.clientHeight;
             const containerWidth = elemContainer.clientWidth;
+            // Main canvas grows downward and has no bottom border; nested widgets keep their original behaviour.
+            const isNested = Boolean(currentWidget.component?.parent);
+            // One clamped + snapped rectangle feeds both the DOM write and the saved layout so they cannot disagree.
+            const resizeRect = computeResizeEndRect({
+              x: transformX,
+              y: transformY,
+              width: e.lastEvent.width,
+              height,
+              gridWidth: _gridWidth,
+              gridHeight: GRID_HEIGHT,
+              containerWidth,
+              isNested,
+            });
+            width = resizeRect.width;
+            height = resizeRect.height;
+            transformX = resizeRect.x;
+            transformY = resizeRect.y;
+            // Recompute after clamping: a resize clamped back to the stored height must not rewrite the DOM
+            // height, since that write drops the top-aligned label increment and no re-render restores it.
+            const committedDiffHeight = height - currentWidget?.height;
             const maxY = containerHeight - e.target.clientHeight;
             const maxLeft = containerWidth - e.target.clientWidth;
+
             const maxWidthHit = transformX < 0 || transformX >= maxLeft;
             const maxHeightHit = transformY < 0 || transformY >= maxY;
 
@@ -826,11 +867,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT
             }px)`;
             if (!maxWidthHit || e.width < e.target.clientWidth) {
-              e.target.style.width = `${Math.round(e.lastEvent.width / _gridWidth) * _gridWidth}px`;
+              e.target.style.width = `${width}px`;
             }
 
             // Added diffHeight !== 0 to prevent the height from being changed and messing up the top alignment.
-            if ((!maxHeightHit || e.height < e.target.clientHeight) && diffHeight !== 0) {
+            if ((!maxHeightHit || e.height < e.target.clientHeight) && committedDiffHeight !== 0) {
               e.target.style.height = `${height}px`;
             }
             const resizeData = {

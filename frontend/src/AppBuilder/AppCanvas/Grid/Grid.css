@@ -8,6 +8,15 @@
   z-index: 2;
 }
 
+/* Moveable draws each 1px line centred on the widget edge. The grid is rendered inside the canvas's
+   `overflow: hidden` wrapper, so for a widget flush with the right canvas border half of the right
+   (render-line-1) line, which is what the east resize handle hangs off, gets clipped. Make it 2px and
+   shift it fully inside so it stays crisp even when the canvas width is fractional. */
+.moveable-control-box .moveable-line[data-line-key="render-line-1"] {
+  height: 2px;
+  margin-left: -1px;
+}
+
 .moveable-control-box.moveable-dynamic-height .moveable-line[data-line-key="render-line-0"],
 .moveable-control-box.moveable-dynamic-height .moveable-line[data-line-key="render-line-1"],
 .moveable-control-box.moveable-dynamic-height .moveable-line[data-line-key="render-line-2"],
