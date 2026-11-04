@@ -6,7 +6,7 @@
 #   SHA, RUN_URL, VERDICT              — always
 #   BASE_REF, SCOPE                    — changed lane
 #   RESULT_BUILD_{SERVER,PLUGINS,FRONTEND,MARKETPLACE}
-#   RESULT_AI_UNIT, RESULT_UNIT, RESULT_E2E, RESULT_CYPRESS_{PLATFORM,MARKETPLACE}, RESULT_VULN_GATE  — full lane
+#   RESULT_UNIT, RESULT_E2E, RESULT_CYPRESS_{PLATFORM,MARKETPLACE}, RESULT_VULN_GATE  — full lane
 #   RESULT_CE, RESULT_SERVER_COVERAGE  — full lane
 #   RESULT_CHANGED                     — changed lane
 #   RESULT_FRONTEND                    — both lanes
@@ -56,7 +56,6 @@ echo "| **Lint & Build** | $(icon "$RESULT_BUILD_SERVER") server · $(icon "$RES
 echo "| **Frontend tests** | $(cell "${RESULT_FRONTEND:-skipped}") |"
 if [ "$MODE" = "full" ]; then
   echo "| **Unit tests** | $(row unit "$RESULT_UNIT") |"
-  echo "| **AI execution — server** | $(cell "${RESULT_AI_UNIT:-skipped}") |"
   echo "| **Server CE tests** | $(cell "${RESULT_CE:-skipped}") |"
   echo "| **E2E tests** | $(row e2e "$RESULT_E2E") |"
   echo "| **Cypress — Platform** | $(cell "$RESULT_CYPRESS_PLATFORM") |"
