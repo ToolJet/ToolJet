@@ -4,7 +4,7 @@
  * multi-line clamp of as many lines as the box holds, one line for a one-line box) and a tooltip shows the full
  * text. Text with Dynamic height keeps growing. A Button label is one line with an ellipsis and a tooltip.
  * Only components inside a ListView change. Contract: frontend/ee/test/app-builder/widgets/Listview/TESTING.md
- * (Listview-OVF-001..009). Real store, real RenderWidget.
+ * (Listview-OVF-001..010). Real store, real RenderWidget.
  */
 import { waitFor } from '@testing-library/react';
 import { createWidgetHarness, binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
@@ -76,6 +76,7 @@ const listview = createWidgetHarness({
     btn1: child('btn1', 'button1', 'Button', { text: binding('{{listItem.cta}}') }),
   },
   capabilities: { dnd: true },
+  preload: ['Tags'],
   widgetHeight: 300,
   widgetWidth: 200,
 });
@@ -274,4 +275,79 @@ describe('Text outside a ListView', () => {
       expect(tooltip()).toBeNull();
     }
   );
+});
+
+const TAGS_DATA = `{{[{ title: 'Chief executive officer', color: 'rgb(1, 2, 3)', textColor: 'rgb(4, 5, 6)' }]}}`;
+const tagsChild = (extra = {}) =>
+  child('tag1', 'tags1', 'Tags', { advanced: binding('{{true}}'), data: binding(TAGS_DATA), ...extra }, { height: 40 });
+const chipOf = (scope) => document.querySelector(`${scope} .badge`);
+const chipLabel = (scope) => chipOf(scope).querySelector('div');
+
+const standaloneTags = createWidgetHarness({
+  componentType: 'Tags',
+  handle: 'tags9',
+  id: 'tag9',
+  defaultProperties: { advanced: binding('{{true}}'), data: binding(TAGS_DATA), overflow: binding('wrap') },
+  defaultStyles: { size: binding('large') },
+  widgetHeight: 40,
+  widgetWidth: 120,
+});
+
+describe('Listview: a Tags chip follows the overflow rule', () => {
+  beforeEach(listview.setup);
+  afterEach(listview.teardown);
+
+  test.each(['scroll', 'wrap'])(
+    '[Listview-OVF-010] a too-wide chip in %s mode is capped at the box and ellipsized',
+    async (overflow) => {
+      // Break this catches: a chip wider than its box whose label is cut on both sides and loses its padding.
+      await listview.render({
+        currentMode: 'view',
+        extraComponents: { tag1: tagsChild({ overflow: binding(overflow) }) },
+      });
+      await waitFor(() => expect(chipOf('.list-item')).toBeInTheDocument());
+
+      const chip = chipOf('.list-item');
+      expect(Number.parseFloat(chip.style.maxWidth)).toBeGreaterThan(0);
+      expect(chip.style.maxWidth).toMatch(/px$/);
+      expect(chip.style.padding).not.toBe('');
+      expect(chipLabel('.list-item').style.whiteSpace).toBe('nowrap');
+      expect(chipLabel('.list-item').style.textOverflow).toBe('ellipsis');
+      expect(chipLabel('.list-item').style.overflow).toBe('hidden');
+      expect(chipLabel('.list-item').textContent).toBe('Chief executive officer');
+    }
+  );
+
+  test('[Listview-OVF-010] the full label shows in a tooltip only when the chip is cut', async () => {
+    // Break this catches: no way to read a cut label, or a tooltip on every chip that fits.
+    await listview.render({ currentMode: 'view', extraComponents: { tag1: tagsChild() } });
+    await waitFor(() => expect(chipOf('.list-item')).toBeInTheDocument());
+    await listview.session.user.hover(chipLabel('.list-item'));
+    await waitFor(() => expect(tooltip()?.textContent).toBe('Chief executive officer'));
+  });
+
+  test('[Listview-OVF-010] a chip that fits shows no tooltip', async () => {
+    // Break this catches: a tooltip repeating a fully visible label.
+    setGeometry({ overflowing: false });
+    await listview.render({ currentMode: 'view', extraComponents: { tag1: tagsChild() } });
+    await waitFor(() => expect(chipOf('.list-item')).toBeInTheDocument());
+    await listview.session.user.hover(chipLabel('.list-item'));
+    expect(tooltip()).toBeNull();
+  });
+});
+
+describe('Tags outside a ListView', () => {
+  beforeEach(standaloneTags.setup);
+  afterEach(standaloneTags.teardown);
+
+  test('[Listview-OVF-010] a chip outside a ListView keeps its own sizing and shows no tooltip', async () => {
+    // Break this catches: the clipping leaking to every Tags widget in the app.
+    standaloneTags.render({ currentMode: 'view' });
+    await waitFor(() => expect(chipOf('')).toBeInTheDocument());
+
+    expect(chipOf('').style.maxWidth).toBe('');
+    expect(chipOf('').querySelector('div')).toBeNull();
+    await standaloneTags.session.user.hover(chipOf(''));
+    expect(tooltip()).toBeNull();
+  });
 });
