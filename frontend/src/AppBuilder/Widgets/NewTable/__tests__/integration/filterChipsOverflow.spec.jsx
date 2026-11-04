@@ -2,12 +2,14 @@
  * Chips that do not fit in the header collapse into a "+N more" chip; its menu lists the rest, each editable.
  * jsdom has no layout, so the widths of the chips and of their row are supplied.
  */
-import { screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import { createWidgetHarness, binding } from '../../../__tests__/integration/widgetHarness';
 
 const CHIP_WIDTH = 120;
 const MORE_WIDTH = 60;
 const ROW_WIDTH = 400;
+let chipWidth = CHIP_WIDTH;
+let observed = [];
 
 const widget = createWidgetHarness({
   componentType: 'Table',
@@ -47,7 +49,7 @@ beforeEach(() => {
       measure === 'more'
         ? MORE_WIDTH
         : measure !== undefined
-          ? CHIP_WIDTH
+          ? chipWidth
           : this.dataset?.cy === 'table1-filter-chips'
             ? ROW_WIDTH
             : 0;
@@ -58,6 +60,8 @@ beforeEach(() => {
 });
 afterEach(() => {
   restoreRect();
+  chipWidth = CHIP_WIDTH;
+  observed = [];
   widget.teardown();
 });
 
@@ -170,5 +174,160 @@ describe('Table-FILTERUI-054 the chips in the "+N more" menu', () => {
     const chips = [...document.querySelectorAll('[data-cy^="table1-filter-menu-chip-"]')];
     expect(chips).toHaveLength(2);
     chips.forEach((menuChip) => expect(menuChip).toHaveClass('tw-w-full'));
+  });
+});
+
+describe('Table-FILTERUI-066 the "+N more" chip is measured as it is drawn', () => {
+  test('Table-FILTERUI-066 its hidden copy has the bold count and the grey word, like the real chip', async () => {
+    // Break this catches: a copy set in one weight, narrower than the chip it stands for.
+    await renderOverflowing();
+
+    const copy = document.querySelector('[data-chip-measure="more"]');
+    expect(copy.querySelector('[data-chip-part="count"]')).toHaveClass('tw-font-medium');
+    expect(copy.querySelector('[data-chip-part="more-label"]')).toHaveClass('tw-text-text-placeholder');
+    expect(copy.className).toBe(moreChip().className);
+  });
+});
+
+// jsdom has no ResizeObserver: this one only records what is watched, and runs its callbacks when told to. It is
+// installed from a beforeEach of the describe, after the harness's own setup (which installs one of its own)
+function installResizeObserver() {
+  global.ResizeObserver = class {
+    constructor(callback) {
+      this.callback = callback;
+      this.targets = [];
+      observed.push(this);
+    }
+    observe(target) {
+      this.targets.push(target);
+    }
+    unobserve(target) {
+      this.targets = this.targets.filter((candidate) => candidate !== target);
+    }
+    disconnect() {
+      this.targets = [];
+    }
+  };
+}
+
+const resized = () => act(() => observed.forEach((observer) => observer.callback([])));
+
+describe('Table-FILTERUI-067 the "+N more" chip stays in view', () => {
+  // after the harness's own setup, which installs a ResizeObserver of its own
+  beforeEach(installResizeObserver);
+
+  test('Table-FILTERUI-067 it sits beside the clipped chips, not inside the area that clips', async () => {
+    // Break this catches: the more chip being the last thing in a clipped row, so any chip wider than measured
+    // pushes it out of sight (or under the search box).
+    await renderOverflowing();
+
+    const more = moreChip();
+    const firstChip = visibleChips()[0];
+    expect(more).toHaveClass('tw-shrink-0');
+    expect(firstChip.parentElement).not.toBe(more.parentElement);
+    expect(firstChip.parentElement).toHaveClass('tw-overflow-hidden', 'tw-min-w-0');
+    expect(more.parentElement).toBe(firstChip.parentElement.parentElement);
+    expect(more.parentElement.contains(more)).toBe(true);
+    expect(firstChip.parentElement.contains(more)).toBe(false);
+  });
+
+  test('Table-FILTERUI-067 chips are measured again when their copies change width (a web font arriving late)', async () => {
+    // Break this catches: widths measured once, with the fallback font, and never again once the real font changes them.
+    await renderOverflowing();
+    expect(visibleChips()).toHaveLength(2);
+    const watched = observed.flatMap((observer) => observer.targets);
+    expect(watched.some((target) => target.hasAttribute('data-chip-measure-root'))).toBe(true);
+
+    chipWidth = 200;
+    await resized();
+
+    // 400 wide, 68 kept for the more chip: one 200px chip fits, two (408) do not
+    await waitFor(() => expect(visibleChips()).toHaveLength(1));
+    expect(moreChip()).toHaveTextContent('+3 more');
+  });
+});
+
+describe('Table-FILTERUI-068 a chip that does not fit whole moves into the "+N more" chip', () => {
+  // What the chips really take is not always what their hidden copies said (fonts, values being typed): the
+  // clipping area reports its content wider than itself, as a browser does
+  const REAL_GAP = 8;
+  let realChipWidth;
+  let restoreSizes;
+  beforeEach(() => {
+    installResizeObserver();
+    realChipWidth = CHIP_WIDTH;
+    const scroll = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollWidth');
+    const client = Object.getOwnPropertyDescriptor(Element.prototype, 'clientWidth');
+    Object.defineProperty(Element.prototype, 'scrollWidth', {
+      configurable: true,
+      get() {
+        if (!this.hasAttribute('data-chip-area')) return 0;
+        const count = this.querySelectorAll('[data-cy^="table1-filter-chip-"]').length;
+        return count * realChipWidth + Math.max(0, count - 1) * REAL_GAP;
+      },
+    });
+    Object.defineProperty(Element.prototype, 'clientWidth', {
+      configurable: true,
+      // the row, less the more chip and the gap before it
+      get() {
+        return this.hasAttribute('data-chip-area') ? ROW_WIDTH - MORE_WIDTH - REAL_GAP : 0;
+      },
+    });
+    restoreSizes = () => {
+      Object.defineProperty(Element.prototype, 'scrollWidth', scroll);
+      Object.defineProperty(Element.prototype, 'clientWidth', client);
+    };
+  });
+  afterEach(() => restoreSizes());
+
+  test('Table-FILTERUI-068 the last chip that sticks out goes into the menu, and the others stay whole', async () => {
+    // Break this catches: a chip cut off at the edge of the row, with its value out of sight, beside the more chip.
+    // measured at 120 each, two chips are placed (248 of 332); really they are 200 each (408), so one has to go
+    realChipWidth = 200;
+    await renderOverflowing();
+
+    await waitFor(() => expect(visibleChips()).toHaveLength(1));
+    expect(chipNames()).toEqual(['A contains value']);
+    expect(moreChip()).toHaveTextContent('+3 more');
+  });
+
+  test('Table-FILTERUI-068 a chip too wide for the row on its own is only in the menu', async () => {
+    // Break this catches: one very wide chip left clipped in a narrow table.
+    realChipWidth = 400;
+    await renderOverflowing();
+
+    await waitFor(() => expect(visibleChips()).toHaveLength(0));
+    expect(moreChip()).toHaveTextContent('+4 more');
+    await widget.session.user.click(moreChip());
+    expect(document.querySelectorAll('[data-cy^="table1-filter-menu-chip-"]')).toHaveLength(4);
+  });
+
+  test('Table-FILTERUI-068 a chip being typed in is not the one that goes', async () => {
+    // Break this catches: the chip under the user\'s cursor disappearing while they type, taking the focus with it.
+    realChipWidth = 200;
+    widget.render({ currentMode: 'view' });
+    await waitFor(() => expect(moreChip() ?? visibleChips()[0]).toBeTruthy());
+    await waitFor(() => expect(visibleChips()).toHaveLength(1));
+    // the second chip comes back when there is room, and is then the one in use
+    realChipWidth = CHIP_WIDTH;
+    await resized();
+    await waitFor(() => expect(visibleChips()).toHaveLength(2));
+    const last = visibleChips()[1].querySelector('input');
+    last.focus();
+    realChipWidth = 200;
+
+    await resized();
+
+    await waitFor(() => expect(visibleChips()).toHaveLength(1));
+    expect(chipNames()).toEqual(['B contains value']);
+  });
+
+  test('Table-FILTERUI-068 when everything fits whole, nothing is moved', async () => {
+    // Characterization: Break this catches: chips being taken out of the row that fit.
+    await renderOverflowing();
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(visibleChips()).toHaveLength(2);
+    expect(moreChip()).toHaveTextContent('+2 more');
   });
 });

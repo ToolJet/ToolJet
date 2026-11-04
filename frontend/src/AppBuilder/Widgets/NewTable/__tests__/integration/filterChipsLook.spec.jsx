@@ -133,3 +133,23 @@ describe('Table-FILTERUI-052 a chip draws no extra border around its value box',
     [0, 1].forEach((index) => expect(chip(index)).toHaveClass('focus-within:tw-border-border-accent-strong'));
   });
 });
+
+describe('Table-FILTERUI-066 chips are measured as they are drawn', () => {
+  test('Table-FILTERUI-066 the hidden copy used to measure a chip is the chip itself, so it is as wide as the chip', async () => {
+    // Break this catches: a plain-text stand-in that leaves out the caret, the cross or the width of the value box,
+    // so more chips are kept in the row than fit and the "+N more" chip runs under the search box.
+    await renderChips();
+
+    ['f1', 'f2', 'f3'].forEach((id, index) => {
+      const real = chip(index);
+      const copy = document.querySelector(`[data-chip-measure="${id}"]`);
+      expect(copy.closest('[aria-hidden="true"]')).not.toBeNull();
+      const drawn = copy.firstElementChild;
+      expect(drawn.className).toBe(real.className);
+      expect(drawn.querySelectorAll('svg')).toHaveLength(real.querySelectorAll('svg').length);
+      expect(drawn.querySelectorAll('button')).toHaveLength(real.querySelectorAll('button').length);
+      expect(drawn.querySelector('input')?.style.width).toBe(real.querySelector('input')?.style.width);
+      expect(drawn.textContent).toBe(real.textContent);
+    });
+  });
+});

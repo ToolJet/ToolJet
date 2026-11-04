@@ -54,6 +54,15 @@ describe('Table-FILTERUI-045 the filters panel shell', () => {
     expect(q('filter-overlay')).toBeNull();
   });
 
+  test('Table-FILTERUI-067 the title bar has a bottom border, like the footer has a top one', async () => {
+    // Break this catches: the title running into the rows with no line between them (the generic card header rule
+    // takes its border off, so the bar must not be a `.card-header`).
+    await openPanel();
+
+    expect(q('filter-header').parentElement).toHaveClass('tw-border-b', 'tw-border-solid', 'tw-border-border-default');
+    expect(q('filter-header').parentElement.className).not.toContain('card-header');
+  });
+
   test('Table-FILTERUI-045 the footer has Clear all filters on the left and Add filter on the right', async () => {
     // Break this catches: the footer buttons swapped, or still labelled as before.
     await openPanel();
@@ -121,10 +130,12 @@ describe('Table-FILTERUI-046 the rows of the panel behave as before', () => {
       defaultFilters: { value: [{ id: 'f1', column: 'c-name', condition: 'contains', value: 'a' }] },
     });
     await waitFor(() => expect(widget.exposed().filters).toHaveLength(1));
-    expect(q('filter-value-input-0')).not.toBeNull();
+    // the builder's filter is a quick row (its value box is the quick one), and it stays after clearing, empty
+    expect(q('quick-filter-value-0')).toHaveValue('a');
 
     await widget.session.user.click(q('button-clear-filters'));
 
+    expect(q('quick-filter-value-0')).toHaveValue('');
     expect(q('filter-value-input-0')).toBeNull();
     await waitFor(() => expect(widget.exposed().filters).toEqual([]));
   });
