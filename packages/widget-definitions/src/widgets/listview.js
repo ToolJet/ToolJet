@@ -175,7 +175,6 @@ export const listviewConfig = {
     mode: {
       type: 'switch',
       displayName: 'Layout',
-      fullWidth: true,
       options: [
         { displayName: 'List', value: 'list' },
         { displayName: 'Grid', value: 'grid' },
