@@ -15,6 +15,7 @@ To connect with UPS you need the following credentials:
 - **Client ID**
 - **Client secret**
 - **Shipper number**
+- **Base URL**: Select `https://onlinetools.ups.com` for production or `https://wwwcie.ups.com` (UPS Customer Integration Environment) for testing. The form pre-selects `https://wwwcie.ups.com`.
 
 You can follow the steps in the [Getting Started with UPS APIs](https://developer.ups.com/get-started) guide to generate these credentials.
 
@@ -59,6 +60,7 @@ You can follow the steps in the [Getting Started with UPS APIs](https://develope
 | ------ | -------------| -------------|
 | GET | `/track/v1/details/{inquiryNumber}` | Retrieve shipment tracking details using the tracking (inquiry) number |
 | GET | <div style={{ width:"300px"}}> `/track/v1/reference/details/{referenceNumber}` </div> | Retrieve tracking information using a shipment reference number |
+| GET | <div style={{ width:"300px"}}> `/track/v1/shipment/details/{inquiryNumber}` </div> | Retrieve tracking details for each package in a shipment |
 
 ### Address Validation
 
@@ -78,7 +80,7 @@ You can follow the steps in the [Getting Started with UPS APIs](https://develope
 
 | Method | API Endpoint | Description |
 | ------ | ------------ | ----------- |
-| POST   | `/shipments/{version}/{transittimes}` | Retrieve estimated transit times for shipments using UPS API |
+| POST   | `/shipments/{version}/transittimes` | Retrieve estimated transit times for shipments using UPS API |
 
 ### Pickup
 
@@ -99,6 +101,28 @@ You can follow the steps in the [Getting Started with UPS APIs](https://develope
 | ------ | -------------| ------------|
 | DELETE | <div style={{ width:"300px"}}> `/shipments/{deprecatedVersion}/pickup/{CancelBy}` </div> | Cancel a scheduled pickup using a deprecated UPS API version   |
 | POST   | <div style={{ width:"300px"}}> `/pickupcreation/{deprecatedVersion}/pickup` </div>       | Create a new pickup request using a deprecated UPS API version |
+
+### Paperless Invoice
+
+:::note
+UPS requires a `ShipperNumber` request header for these endpoints, and a `DocumentId` header to delete a document. The query form has no fields for request headers, so ToolJet doesn't send them.
+:::
+
+#### Version
+
+| Method | API Endpoint | Description |
+| ------ | ------------ | ----------- |
+| POST   | <div style={{ width:"300px"}}> `/paperlessdocuments/{version}/upload` </div> | Upload a paperless document |
+| POST   | <div style={{ width:"300px"}}> `/paperlessdocuments/{version}/image` </div> | Push an uploaded document image to a shipment |
+| DELETE | <div style={{ width:"300px"}}> `/paperlessdocuments/{version}/DocumentId/ShipperNumber` </div> | Delete a paperless document |
+
+#### Deprecated Version
+
+| Method | API Endpoint | Description |
+| ------ | ------------ | ----------- |
+| POST   | <div style={{ width:"300px"}}> `/paperlessdocuments/{deprecatedVersion}/upload` </div> | Upload a paperless document using a deprecated UPS API version |
+| POST   | <div style={{ width:"300px"}}> `/paperlessdocuments/{deprecatedVersion}/image` </div> | Push a document image using a deprecated UPS API version |
+| DELETE | <div style={{ width:"300px"}}> `/paperlessdocuments/{deprecatedVersion}/DocumentId/ShipperNumber` </div> | Delete a paperless document using a deprecated UPS API version |
 
 ## Example Queries
 

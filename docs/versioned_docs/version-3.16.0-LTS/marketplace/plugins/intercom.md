@@ -198,12 +198,11 @@ ToolJet supports multiple Intercom operations through REST API calls, enabling y
 #### FIND_BY_EXTERNAL_ID
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
-| POST | `/contacts/merge` | Merge a lead and a user |
+| GET | `/contacts/find_by_external_id/{external_id}` | Get a contact by External ID |
 
 #### CONVERSATION_ID
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
-| GET | `/contacts/find_by_external_id/{external_id}` | Get a contact by External ID |
 | POST | `/conversations/{conversation_id}/tags` | Add tag to a conversation |
 | DELETE | `/conversations/{conversation_id}/tags/{tag_id}` | Remove tag from a conversation |
 | GET | `/conversations/{conversation_id}` | Retrieve a conversation |

@@ -64,7 +64,20 @@ You can create query for Supabase data source to perform several operations such
 <summary>**Example Response**</summary>
 
 ```yaml
-created: true
+[
+  {
+    "id": 1,
+    "created_at": "2026-02-23T12:10:17.780412+00:00",
+    "likes": 100,
+    "content": "Photo post",
+  },
+  {
+    "id": 2,
+    "created_at": "2026-02-23T12:12:37.624735+00:00",
+    "likes": 300,
+    "content": "Reel post",
+  },
+]
 ```
 
 </details>
@@ -90,20 +103,7 @@ Here's the **Sample Input** below :
 <summary>**Example Response**</summary>
 
 ```yaml
-[
-  {
-    "id": 1,
-    "created_at": "2026-02-23T12:10:17.780412+00:00",
-    "likes": 100,
-    "content": "Photo post",
-  },
-  {
-    "id": 2,
-    "created_at": "2026-02-23T12:12:37.624735+00:00",
-    "likes": 300,
-    "content": "Reel post",
-  },
-]
+created: true
 ```
 
 </details>
@@ -143,6 +143,11 @@ Here's the **Sample Input** below :
 
 - **Table** - Database table name.
 - **Where** - Delete rows based on a condition.
+
+#### Optional Parameters
+
+- **Sort** - Sort rows by a column before the limit is applied.
+- **Limit** - Maximum number of rows to delete.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/supabase/delete-rows.png" alt="Delete Rows query" />
 

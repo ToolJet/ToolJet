@@ -95,16 +95,18 @@ This operation generates chat completions based on a series of messages.
 
 #### Required Parameters:
 
-- **Messages**: An array of message objects representing the conversation.
+- **Message**: An array of message objects representing the conversation.
 - **Model**: The AI model to use.
 
-#### Operational Parameters:
+#### Optional Parameters:
 
 - **Max Tokens**: Maximum number of tokens to generate.
 - **Temperature**: Controls randomness.
 - **Stop Sequence**: Sequences where the API will stop generating further tokens.
 - **Metadata**: Additional metadata for the request.
 - **Other Parameters**: Any other parameters to include in the request.
+- **Config**: Optional JSON object to pass additional Portkey request configuration such as caching, routing, retries, or timeout settings. Overrides the **Config** set on the data source.
+- **Virtual Key**: The Portkey virtual API key used to authenticate and route the request through a specific configured provider or workspace. Overrides the **Default virtual key** set on the data source.
 
 <div style={{textAlign: 'center'}}>
   <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/marketplace/plugins/portkey/chat-query.png" alt="Chat Operation for Portkey" />
@@ -154,6 +156,8 @@ This operation generates completions based on a pre-defined prompt.
 - **Variables**: Variables to be used in the prompt.
 - **Parameters**: Additional parameters for the prompt completion.
 - **Metadata**: Additional metadata for the request.
+- **Config**: Optional JSON object to pass additional Portkey request configuration such as caching, routing, retries, or timeout settings. Overrides the **Config** set on the data source.
+- **Virtual Key**: The Portkey virtual API key used to authenticate and route the request through a specific configured provider or workspace. Overrides the **Default virtual key** set on the data source.
 
 <div style={{textAlign: 'center'}}>
   <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/portkey/prompt-comp-query.png" alt="Prompt Completion Operation for Portkey" />

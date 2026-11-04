@@ -45,7 +45,7 @@ Fetches all available foundation models from your AWS Bedrock account, including
 **Optional Parameters**
 
 - **Provider**: Filter models by the model provider (e.g., Anthropic, Amazon, Cohere).
-- **Customization Type**: Filter by customization type such as fine-tuned or base models.
+- **Customization Type**: Return only models that support the selected customization method: **Fine Tuning**, **Continued Pre-Training** or **Distillation**.
 - **Inference Type**: Filter models based on the inference mode, like on-demand or provisioned.
 - **Output Modality**: Filter by the type of output the model supports, such as text, embeddings or images.
 

@@ -3,7 +3,7 @@ id: marketplace-plugin-awsredshift
 title: Amazon Redshift
 ---
 
-ToolJet can connect to Amazon Redshift, enabling your applications to query data directly from a Redshift cluster.
+ToolJet can connect to Amazon Redshift, enabling your applications to query data in an Amazon Redshift Serverless workgroup.
 
 :::info NOTE
 Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
@@ -13,18 +13,14 @@ Before following this guide, it is assumed that you have already completed the p
 
 To connect to Amazon Redshift, you need to provide the following details:
 
-#### Required Parameters
+- **Region**: The AWS region of your Amazon Redshift Serverless workgroup. For example, `us-east-1`.
+- **Workgroup name**: The name of the Redshift Serverless workgroup to run queries in. ToolJet sends every query through the Redshift Data API to this workgroup, so only Redshift Serverless is supported; provisioned clusters aren't.
+- **Database**: The name of the database you want to connect to. The form pre-fills `dev`.
+- **Authentication**: Only **Use IAM Access Keys** is supported. After you select it, the form shows the **Access key** and **Secret key** fields.
+- **Access key**: The access key of the IAM user that ToolJet uses to call the Redshift Data API.
+- **Secret key**: The secret key of that IAM user.
 
-- **Region**: The region where your Redshift cluster is located. For example, `us-east-1`.
-- **Database Name**: The name of the database you want to connect to.
-- **Authentication Type**: The type of authentication you want to use to connect to the Redshift cluster. Currently, only **IAM** is supported.
-- **Access Key**: The access key of the user you want to use to connect to the Redshift cluster.
-- **Secret Key**: The secret key of the user you want to use to connect to the Redshift cluster.
-
-#### Optional Parameters
-
-- **Port**: The port number of the Redshift cluster. The default port number is `5439`.
-- **Workgroup name**: The name of the workgroup you want to use to connect to the Redshift cluster.
+The connection form also shows a **Port** field, pre-filled with `5439`. ToolJet doesn't use it, because queries go through the Redshift Data API over HTTPS rather than a direct database connection.
 
 <div style={{textAlign: 'center'}}>
     <img style={{ marginBottom:'15px'}} className="screenshot-full" src="/img/marketplace/plugins/redshift/connection-v2.png" alt="Marketplace Plugin: Amazon Redshift" />

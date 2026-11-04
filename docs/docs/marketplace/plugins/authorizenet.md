@@ -12,8 +12,14 @@ Before following this guide, it is assumed that you have already completed the p
 ## Configuration
 
 To configure the Authorize.net plugin in ToolJet, you will need the following credentials from your Authorize.net account:
-- **API Login ID**
-- **Transaction Key**
+- **API login ID**
+- **Transaction key**
+
+Then select the **Environment** that ToolJet sends requests to:
+- **Sandbox [https://apitest.authorize.net]**: The default. Use it with sandbox account credentials for testing.
+- **Production [https://api.authorize.net]**: Use it with live account credentials to process real transactions.
+
+If no environment is set, requests go to the sandbox.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/authorizenet/config.png" alt="Authorize.net data source connection" style={{ marginBottom:'15px' }} />
 

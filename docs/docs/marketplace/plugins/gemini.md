@@ -23,7 +23,14 @@ Use this operation to generate text based on the prompt, system instructions, an
 
 **Required Parameters**
 
-- **Model**: Specifies the Gemini model to use for generating responses.
+- **Model**: Specifies the Gemini model to use for generating responses. The default is **Gemini 3.8 Flash**. The available models are:
+    - **Gemini 3.6 Flash**
+    - **Gemini 3.8 Flash**
+    - **Gemini 3.7 Flash**
+    - **Gemini 3.5 Flash**
+    - **Gemini 3.5 Flash Lite**
+    - **Gemini 3.1 Pro Preview**
+    - **Gemini 3.1 Flash Lite**
     - **Gemini 3 Pro Preview**
     - **Gemini 3 Flash Preview**
     - **Gemini 2.5 Pro**
@@ -31,14 +38,18 @@ Use this operation to generate text based on the prompt, system instructions, an
     - **Gemini 2.5 Flash Lite**
     - **Gemini 2.0 Flash**
     - **Gemini 2.0 Flash Lite**
+    - **Gemini 2.0 Flash Exp (Deprecated)**
+    - **Gemini 1.5 Flash (Deprecated)**
+    - **Gemini 1.5 Flash-8B (Deprecated)**
+    - **Gemini 1.5 Pro (Deprecated)**
 
-- **Prompt**: The main user input for generating responses.
+- **User message**: The main user input for generating responses.
 
 **Optional Parameters**
 
-- **System Prompt**: A predefined instruction guiding the model's tone and behavior.
-- **Max Tokens**: Limits the maximum number of tokens (words and characters) in the response.
-- **Temperature**: Defines the randomness of the response. It takes a value between 0 and 1, with a default of 1.
+- **System prompt**: A predefined instruction guiding the model's tone and behavior.
+- **Max tokens**: Limits the maximum number of tokens (words and characters) in the response. For the Gemini 3.x and 2.5 models, the value is capped at `65536` and `8192` is used if left empty. For other models, the value is capped at `4096` and `1000` is used if left empty.
+- **Temperature**: Defines the randomness of the response. It takes a value between 0 and 1. If left empty, `0.1` is used.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/gemini/chat-v2.png" alt="Gemini Query" />
 
@@ -79,16 +90,15 @@ Use this operation for a chat-like conversation, where the model responds based 
 
 **Required Parameters**
 
-- **Model**: Specifies the Gemini model to use for generating responses in the chat.
-    - **Gemini 3 Pro Preview**
-- **User Prompt**: The user's question or request that the model will respond to.
+- **Model**: Specifies the Gemini model to use for generating responses in the chat. The default is **Gemini 3.8 Flash**. The available models are the same as for [Text Generation](#text-generation), except that `models/gemini-2.0-flash-exp` is listed as **Gemini 2.0 Flash (Deprecated)**.
+- **User message**: The user's question or request that the model will respond to.
 
 **Optional Parameters**
 
-- **System Prompt**: Provides the model with guidance on the style and type of responses expected.
-- **History**: Keeps track of previous interactions to maintain context in the conversation.
-- **Max Tokens**: Limits the maximum number of tokens (words and characters) in the response.
-- **Temperature**: Defines the randomness of the response. It takes a value between 0 and 1, with a default of 1.
+- **System prompt**: Provides the model with guidance on the style and type of responses expected.
+- **Message History**: Keeps track of previous interactions to maintain context in the conversation.
+- **Max tokens**: Limits the maximum number of tokens (words and characters) in the response. The same limits and defaults apply as for [Text Generation](#text-generation).
+- **Temperature**: Defines the randomness of the response. It takes a value between 0 and 1. If left empty, `0.1` is used.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/gemini/chat-v2.png" alt="Gemini Query" />
 

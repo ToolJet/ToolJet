@@ -73,10 +73,10 @@ To connect **EasyPost** with ToolJet, you will need an EasyPost API Key. Follow 
 
 | Method | Endpoint             | Description                   |
 | ------ | -------------------- | ----------------------------- |
-| POST   | `/custom_items`      | Create a new custom item.     |
-| GET    | `/custom_items/{id}` | Retrieve a custom item.       |
-| POST   | `/custom_infos`      | Create customs information.   |
-| GET    | `/custom_infos/{id}` | Retrieve customs information. |
+| POST   | `/customs_items`      | Create a new customs item.    |
+| GET    | `/customs_items/{id}` | Retrieve a customs item.      |
+| POST   | `/customs_infos`      | Create customs information.   |
+| GET    | `/customs_infos/{id}` | Retrieve customs information. |
 
 ### End Shippers
 

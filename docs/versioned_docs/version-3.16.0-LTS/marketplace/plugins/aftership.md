@@ -13,12 +13,21 @@ Before following this guide, it is assumed that you have already completed the p
 
 To connect AfterShip with ToolJet you will need the API Key, which you can generate from [Aftership Tracking API](https://www.aftership.com/tracking-api).
 
+:::note
+ToolJet sends each entity to a fixed AfterShip API base URL. You can't change it in the connection settings.
+- **Shipping**: `https://sandbox-api.aftership.com/postmen/v3` (sandbox)
+- **Tracking**: `https://api.aftership.com/tracking/2024-07` (production)
+- **Returns**: `https://api.aftership.com/returns/2025-07` (production)
+
+Shipping queries and the connection test always run against the AfterShip Shipping sandbox, so Shipping operations create sandbox records, not live labels or pickups.
+:::
+
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/aftership/connection-v2.png" alt="Aftership Configuration" style={{ marginBottom:'15px' }} />
 
 ## Supported Entities
 - Shipping
 - Tracking
-- Retruns
+- Returns
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/aftership/list-entities.png" alt="Aftership supported entities" style={{ marginBottom:'15px'}} />
 
@@ -76,7 +85,7 @@ To connect AfterShip with ToolJet you will need the API Key, which you can gener
 
 | Method | Endpoint     | Description                                 |
 | ------ | ------------ | ------------------------------------------- |
-| GET    | `/locations` | Get carrier locations (requires production) |
+| GET    | `/locations` | Get carrier locations |
 
 #### Pickup
 

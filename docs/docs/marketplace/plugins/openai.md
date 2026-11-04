@@ -11,13 +11,12 @@ Before following this guide, it is assumed that you have already completed the p
 
 ## Connection
 
-For connecting to OpenAI, the following credentials are required:
+For connecting to OpenAI, the following credential is required:
 
-- **API key**: API key for OpenAI can be generated [here](https://platform.openai.com/account/api-keys).
-- **Organization ID**: Find the Organization ID [here](https://platform.openai.com/account/org-settings).
+- **API Key**: API key for OpenAI can be generated [here](https://platform.openai.com/account/api-keys).
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/connection-v4.png" alt="Configuring OpenAI in ToolJet" />
+    <img className="screenshot-full img-l" src="/img/marketplace/plugins/openai/connection-v5.png" alt="OpenAI data source connection form with the API Key field" />
 </div>
 
 ## Supported Operations
@@ -32,7 +31,13 @@ The function of this operation is to examine the user's input and generate a sui
 
 #### Required Parameters
 
-- **Model**: The model to use for generating the chat response. The available models are:
+- **Model**: The model to use for generating the chat response. If no model is selected, `gpt-4o` is used. The available models are:
+    - **GPT-6 Astra**
+    - **GPT-6 Sol**
+    - **GPT-6 Luna**
+    - **GPT-5.6 Terra**
+    - **GPT-5.6 Sol**
+    - **GPT-5.6 Luna**
     - **GPT-5.2**
     - **GPT-5.1**
     - **GPT-5**
@@ -51,21 +56,28 @@ The function of this operation is to examine the user's input and generate a sui
     - **GPT-4o Mini**
     - **GPT-3.5 Turbo**
 
-- **Prompt**: A prompt is the initial message or question that is provided as input to the chatbot model to start a conversation.
+- **User message**: The message the model replies to. ToolJet sends it as the last `user` message, after the **System Prompt** and **Message History**.
 
 #### Optional Parameters
 
+- **System Prompt**: Defines the role, context and behavior of the model. ToolJet sends it as a `system` message at the start of the conversation.
+- **Message History**: Earlier turns of the conversation, as a JSON array of objects with `role` and `content`, for example `[{ "role": "user", "content": "Hello" }, { "role": "assistant", "content": "Hi! How can I help?" }]`. The query fails if the value isn't valid JSON.
 - **Max Tokens**: This parameter specifies the maximum number of tokens to generate in the text completion output. For example, if you set it to 50, then it will generate a text completion that contains up to 50 tokens.
 - **Temperature**: Temperature is used to control the creativity and randomness of the generated text. It ranges from 0 to 2, a higher value such as 0.8 will increase the randomness of the output, whereas a lower value such as 0.2 will make it more focused and deterministic.
 - **Stop sequence**: This Stop sequence/parameter is used to specify when the API should stop generating text completions. This parameter is optional and can be used to customize the length and quality of the generated text.
 - **Suffix**: The suffix that follows the inserted text completion.
+
+:::note
+Reasoning models don't accept a temperature. The **Temperature** field isn't shown for the GPT-6 and GPT-5.6 models, and for any model whose name starts with `o` (o-series), `gpt-5` or `gpt-6`, ToolJet doesn't send a temperature even if one is entered.
+:::
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
 
 ```yaml
 Model: GPT-4 Turbo
-Prompt: What are the key principles of machine learning?
+System Prompt: You are a helpful assistant.
+User message: What are the key principles of machine learning?
 Max Tokens: 100
 Temperature: 0.7
 Stop sequence: END
@@ -73,7 +85,7 @@ Suffix: \n
 ```
 </details>
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/chat-v4.png" alt="Chat Operation" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/chat-v5.png" alt="Chat operation with System Prompt, Message History and User message filled in for the GPT-4.1 model" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
@@ -89,18 +101,29 @@ This operation generates AI images based on the given prompt.
 
 #### Required Parameters
 
-- **Model**: The model to use for generating the image. The available models are:
+- **Model**: The model to use for generating the image. The default is **GPT Image 2.5 Flare**. The available models are:
+    - **GPT Image 2.5 Sunburst**
+    - **GPT Image 2.5 Flare**
+    - **GPT Image 2**
+    - **GPT Image 1.5**
     - **GPT Image 1**
-    - **DALL-E 3**
-    - **DALL-E 2**
+    - **GPT Image 1 Mini**
+    - **DALL-E 3 (Deprecated)**
+    - **DALL-E 2 (Deprecated)**
 - **Prompt**: The prompt is the initial message or question that is provided as input to the AI model to generate an image.
 
 #### Optional Parameters
 
-- **Size (in pixels)**: The size of the image to be generated in pixels. The default value is 1024x1024. The allowed sizes depend on the model:
-    - **GPT Image 1**: Must be one of `1792x1024`, `1024x1792`, or `1024x1024`.
-    - **DALL-E 2**: Must be one of `256x256`, `512x512`, or `1024x1024`.
-    - **DALL-E 3**: Must be one of `1024x1024`, `1792x1024`, or `1024x1792`.
+- **Size (in pixels)**: The size of the image to be generated in pixels. The default value is `1024x1024`, which is also used when the entered size isn't allowed for the selected model. The allowed sizes depend on the model:
+    - **GPT Image 2.5 Sunburst** and **GPT Image 2.5 Flare**: Any `WIDTHxHEIGHT` with both sides a multiple of 16, up to 3840px and an aspect ratio between 1:3 and 3:1 (for example `1920x1088`), or `1024x1024`, `1536x1024`, `1024x1536` or `auto`.
+    - **GPT Image 2**: Any `WIDTHxHEIGHT` up to `3840x2160` (for example `1920x1080`), or `1024x1024`, `1536x1024`, `1024x1536` or `auto`.
+    - **GPT Image 1.5**, **GPT Image 1** and **GPT Image 1 Mini**: One of `1024x1024`, `1536x1024`, `1024x1536` or `auto`.
+    - **DALL-E 3**: One of `1024x1024`, `1792x1024` or `1024x1792`.
+    - **DALL-E 2**: One of `256x256`, `512x512` or `1024x1024`.
+
+:::note
+GPT Image models return the generated image as base64 in `data.b64_json`. DALL-E models return a link to the image in `data.url`, as in the response example below.
+:::
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>

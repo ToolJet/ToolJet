@@ -263,6 +263,7 @@ Use this operation to create a new collection.
 **Optional Parameters**
 
 - **Consistency**: Ensures the request is handled by the leader node to maintain accuracy.
+- **Vector index type**: The type of vector index for the collection, for example `hnsw`. If left empty, ToolJet doesn't send it and Weaviate uses its default index type.
 - **Sharding config**: Controls behavior of the collection in a multi-node setting.
 - **Stop words**: Controls which words should be ignored in the inverted index.
 - **Index time stamps**: Maintains inverted indexes for each object by its internal timestamps.

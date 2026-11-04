@@ -223,7 +223,7 @@ Use this operation to search data points in a collection using a query, typicall
 **Optional Parameters**
 
 - **With Vectors:** Indicates whether the vector data for the retrieved points should be included in the response (true or false).
-- **Include Metadata:** Specifies if metadata associated with the points should be returned (true or false).
+- **Include payload:** Specifies if the payload stored with each point should be returned (`true` or `false`).
 - **Filter:** Defines conditions to narrow down the search.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/marketplace/plugins/qdrant/query-points-v2.png" alt="Query Points" />

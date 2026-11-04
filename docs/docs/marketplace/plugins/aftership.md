@@ -18,7 +18,7 @@ To connect AfterShip with ToolJet you will need the API Key, which you can gener
 ## Supported Entities
 - Shipping
 - Tracking
-- Retruns
+- Returns
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/aftership/list-entities.png" alt="Aftership supported entities" style={{ marginBottom:'15px'}} />
 
@@ -76,7 +76,7 @@ To connect AfterShip with ToolJet you will need the API Key, which you can gener
 
 | Method | Endpoint     | Description                                 |
 | ------ | ------------ | ------------------------------------------- |
-| GET    | `/locations` | Get carrier locations (requires production) |
+| GET    | `/locations` | Get carrier locations |
 
 #### Pickup
 

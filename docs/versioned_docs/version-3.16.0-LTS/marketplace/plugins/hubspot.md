@@ -13,10 +13,12 @@ Before following this guide, it is assumed that you have already completed the p
 
 To connect HubSpot with ToolJet, you need the following credentials:
 
+- **OAuth type** (ToolJet Cloud only): Select **ToolJet app** to connect through ToolJet's own HubSpot app, or **Custom app** to use your own HubSpot app. With **ToolJet app**, the **Client ID** and **Client secret** fields are hidden. New data sources default to **Custom app**. On self-hosted ToolJet, this dropdown isn't shown and the data source always uses **Custom app**.
 - **Client ID**
 - **Client secret**
+- **Scope(s)**: The permissions ToolJet requests from HubSpot, as a space-separated list. The field is pre-filled with a broad set of HubSpot scopes covering CRM objects and schemas, CMS, marketing, conversations, files, and settings. ToolJet sends exactly what is in this field. If you clear it, connecting fails with `HubSpot OAuth "scope" config is missing`. Edit the list so it matches the scopes configured on your HubSpot app.
 
-You also need to define the scope(s) for the operations you plan to perform. You can refer to the [HubSpot guide](https://developers.hubspot.com/docs/guides/apps/private-apps/overview) for detailed steps to generate these credentials.
+You can refer to the [HubSpot guide](https://developers.hubspot.com/docs/guides/apps/private-apps/overview) for detailed steps to generate these credentials.
 
 <img className="screenshot-full img-l" src="/img/marketplace/plugins/hubspot/config-v2.png" alt="HubSpot Configuration" />
 
