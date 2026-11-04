@@ -364,6 +364,19 @@ describe('Listview record resize: no copy hover starts or survives a resize', ()
     expect(outlined()).toEqual([false, false, false]);
   });
 
+  test('[Listview-RSZ-005] no outline starts while the drag is on', async () => {
+    // Break this catches: a copy hover starting mid-drag, which the release alone would only hide afterwards.
+    await mount(widget);
+    const handle = handles()[0];
+
+    fireEvent.mouseDown(handle, { clientX: 0, clientY: START_Y, button: 0 });
+    pointerOver(copies()[1], handle);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(outlined()).toEqual([false, false, false]);
+    fireEvent.mouseUp(document);
+  });
+
   test('[Listview-RSZ-005] an outline that is already on when the press starts is cleared', async () => {
     // Break this catches: a hover that began before the press and never gets its mouseleave because the copy moves.
     await mount(widget);

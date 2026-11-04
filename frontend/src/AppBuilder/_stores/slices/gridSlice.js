@@ -38,6 +38,8 @@ const initialState = {
   temporaryLayouts: {},
   draggingComponentId: null,
   resizingComponentId: null,
+  // A ListView record is being drag-resized: its copies move under the pointer, so none may start a hover.
+  isListviewRecordResizing: false,
   isGroupDragging: false,
   isGroupResizing: false,
   reorderContainerChildren: {
@@ -100,6 +102,7 @@ export const createGridSlice = (set, get) => {
     }, 200),
     setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
     setResizingComponentId: (id) => set(() => ({ resizingComponentId: id })),
+    setIsListviewRecordResizing: (isListviewRecordResizing) => set(() => ({ isListviewRecordResizing })),
     setIsGroupDragging: (isGroupDragging) => set(() => ({ isGroupDragging: isGroupDragging })),
     setIsGroupResizing: (isGroupResizing) => set(() => ({ isGroupResizing: isGroupResizing })),
     moveComponentPosition: (direction) => {

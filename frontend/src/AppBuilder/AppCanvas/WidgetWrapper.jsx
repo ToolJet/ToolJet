@@ -109,6 +109,9 @@ const WidgetWrapper = memo(
       shallow
     );
     const [isCopyHovered, setIsCopyHovered] = useState(false);
+    const isRecordResizing = useStore((state) => isListviewCopy && state.isListviewRecordResizing);
+    // The resize moves the copy from under the pointer, so its mouseleave never comes; drop the hover when a resize starts or ends.
+    useEffect(() => setIsCopyHovered(false), [isRecordResizing]);
     const isDragging = useStore((state) => state.draggingComponentId === id);
     const isResizing = useStore((state) => state.resizingComponentId === id);
     const componentType = useStore(
@@ -283,7 +286,9 @@ const WidgetWrapper = memo(
           onClickCapture={isModuleViewerWidget && mode === 'edit' ? handleModuleClickCapture : undefined}
           // Only the wrapper nearest the pointer counts, so a parent copy drops its outline once a child is hovered.
           onMouseOver={
-            isListviewCopy ? (e) => setIsCopyHovered(e.target.closest('[widgetid]') === e.currentTarget) : undefined
+            isListviewCopy && !isRecordResizing
+              ? (e) => setIsCopyHovered(e.target.closest('[widgetid]') === e.currentTarget)
+              : undefined
           }
           onMouseEnter={() => {
             if (isDragging || isModuleContainer) return;

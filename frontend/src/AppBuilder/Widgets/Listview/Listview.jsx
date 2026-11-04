@@ -221,6 +221,7 @@ export const Listview = function Listview({
     return typeof value === 'string' && value.includes('{{');
   });
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+  const setIsListviewRecordResizing = useStore((state) => state.setIsListviewRecordResizing, shallow);
   const { rootRef: mainRecordRef, getHandleProps: getRecordResizeHandleProps } = useSubContainerResizable({
     lockHorizontal: true,
     minHeight: RECORD_MIN_HEIGHT,
@@ -242,8 +243,12 @@ export const Listview = function Listview({
   useEffect(() => {
     if (!isResizingRecord) return undefined;
     document.body.classList.add('listview-record-resizing');
-    return () => document.body.classList.remove('listview-record-resizing');
-  }, [isResizingRecord]);
+    setIsListviewRecordResizing(true);
+    return () => {
+      document.body.classList.remove('listview-record-resizing');
+      setIsListviewRecordResizing(false);
+    };
+  }, [isResizingRecord, setIsListviewRecordResizing]);
 
   const recordBoxStyle = useMemo(() => {
     if (recordStyle === 'bordered') return { backgroundColor: recordBackgroundColor };
