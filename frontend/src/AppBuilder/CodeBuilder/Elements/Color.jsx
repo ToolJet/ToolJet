@@ -90,6 +90,9 @@ export const Color = ({
           <div>
             {/* <div style={coverStyles} onClick={() => setShowPicker(false)} /> */}
             <div style={pickerStyle}>
+              {/* Background overlay for closing the color picker */}
+              <div className="tw-fixed tw-inset-0" onClick={() => setShowPicker(false)} />
+
               <SketchPicker
                 onFocus={() => setShowPicker(true)}
                 color={value}
