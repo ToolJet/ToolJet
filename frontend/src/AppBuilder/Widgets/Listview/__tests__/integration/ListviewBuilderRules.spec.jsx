@@ -9,6 +9,7 @@ import { waitFor } from '@testing-library/react';
 import { createWidgetHarness, binding, store } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
 import { handleDeactivateTargets, showGridLines } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import useTransientStore from '@/AppBuilder/_stores/transientStore';
 
 // The grid background needs react-dnd's drag layer; jsdom has no drag, so the flag is flipped per test.
 const mockDragLayer = { on: false };
@@ -491,6 +492,38 @@ describe('Listview builder: grid lines on a move', () => {
     await waitFor(() => expect(document.querySelector('.ele-txt1')?.textContent).toContain('r3'));
     showGridLines();
     expect(gridded()).toEqual([false, false, false]);
+  });
+});
+
+describe('Listview builder: grid lines survive a re-render during a move', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-BLD-001] record 1 keeps the grid for the whole move of one of its components', async () => {
+    // Break this catches: React rewriting record 1's className when the drag starts, wiping the class showGridLines added.
+    await mount(widget);
+    showGridLines();
+    expect(gridded()).toEqual([true, false, false]);
+
+    await act(() => store().setDraggingComponentId('txt1'));
+
+    expect(gridded()).toEqual([true, false, false]);
+  });
+});
+
+describe('Listview builder: hovering a copy does not light up the original', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-BLD-007] hovering a copy leaves the hovered-component id alone, so record 1 shows no handle', async () => {
+    // Break this catches: the copy publishing the shared component id, which opens the original's config handle.
+    await mount(widget);
+
+    await user().hover(copiesOf('txt1')[2]);
+    expect(useTransientStore.getState().hoveredComponentForGrid).toBe('');
+
+    await user().hover(copiesOf('txt1')[0]);
+    expect(useTransientStore.getState().hoveredComponentForGrid).toBe('txt1');
   });
 });
 

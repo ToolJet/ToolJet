@@ -65,4 +65,19 @@ describe('Dragging out of a FlexContainer', () => {
     expect(handled).toBe(true);
     expect(setComponentLayout).toHaveBeenCalled();
   });
+
+  test('[Listview-BLD-001] a widget dragged out onto a ListView copy record is refused', () => {
+    // Break this catches: the drag-out path skipping the copy-record check, so the widget lands in a read-only record.
+    const copyCanvas = document.createElement('div');
+    copyCanvas.className = 'real-canvas';
+    copyCanvas.id = `canvas-${CONTAINER_ID}`;
+    copyCanvas.setAttribute('data-listview-copy', 'true');
+    document.elementsFromPoint = () => [copyCanvas];
+
+    const { handled, setComponentLayout } = dragOutTo(CONTAINER_ID);
+    delete document.elementsFromPoint;
+
+    expect(handled).toBe(true);
+    expect(setComponentLayout).not.toHaveBeenCalled();
+  });
 });
