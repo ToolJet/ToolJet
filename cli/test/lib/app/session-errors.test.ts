@@ -37,4 +37,33 @@ describe('HTTP errors name the server', () => {
     const error = await new ApiClient(url, 'pat').verifyLibrary('c1').catch((e: Error) => e);
     expect((error as Error).message).to.include(`(on ${url})`);
   });
+
+  describe('when TOOLJET_URL chose the server', () => {
+    const saved = process.env.TOOLJET_URL;
+    afterEach(() => {
+      if (saved === undefined) delete process.env.TOOLJET_URL;
+      else process.env.TOOLJET_URL = saved;
+    });
+
+    it('says so when that server rejects the token, as it overrides the login', async () => {
+      process.env.TOOLJET_URL = `${url}/`;
+      nock(url).post('/api/personal-access-tokens/session').reply(401, '{}');
+      const error = await openSession({ url, token: 'pat' }).catch((e: Error) => e);
+      expect((error as Error).message).to.contain('TOOLJET_URL is set in your environment');
+    });
+
+    it('says so when that server cannot be reached', async () => {
+      process.env.TOOLJET_URL = url;
+      nock(url).post('/api/personal-access-tokens/session').replyWithError('connect ECONNREFUSED');
+      const error = await openSession({ url, token: 'pat' }).catch((e: Error) => e);
+      expect((error as Error).message).to.match(/Could not reach ToolJet.*TOOLJET_URL is set in your environment/);
+    });
+
+    it('stays quiet when the server came from elsewhere', async () => {
+      delete process.env.TOOLJET_URL;
+      nock(url).post('/api/personal-access-tokens/session').reply(401, '{}');
+      const error = await openSession({ url, token: 'pat' }).catch((e: Error) => e);
+      expect((error as Error).message).to.not.contain('TOOLJET_URL');
+    });
+  });
 });

@@ -96,6 +96,12 @@ const sessionApi = (url: string, token: string, workspaceId: string) => async (p
   return text ? JSON.parse(text) : null;
 };
 
+/** TOOLJET_URL beats the login, which is easy to forget when the server it names is the one that fails. */
+const envOverrideNote = (url: string): string =>
+  process.env.TOOLJET_URL?.replace(/\/+$/, '') === url
+    ? ' TOOLJET_URL is set in your environment and overrides tooljet auth login; unset it to use your login.'
+    : '';
+
 export async function openSession(target: Target): Promise<Session> {
   if (target.kind === 'session' && target.workspaceId) {
     // Already a session: no exchange, and the user is the token's subject.
@@ -104,13 +110,15 @@ export async function openSession(target: Target): Promise<Session> {
   const res = await fetch(`${target.url}/api/personal-access-tokens/session`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${target.token}` },
+  }).catch((err: Error) => {
+    throw new Error(`Could not reach ToolJet at ${target.url}: ${err.message}.${envOverrideNote(target.url)}`);
   });
   if (!res.ok) {
     const text = await res.text();
     throw new ApiError(
       res.status === 401
-        ? `The ToolJet token was rejected by ${target.url}: check it is a current personal access token for this instance.`
-        : `Could not open a ToolJet session on ${target.url} (HTTP ${res.status}).`,
+        ? `The ToolJet token was rejected by ${target.url}: check it is a current personal access token for this instance.${envOverrideNote(target.url)}`
+        : `Could not open a ToolJet session on ${target.url} (HTTP ${res.status}).${envOverrideNote(target.url)}`,
       res.status,
       text
     );
