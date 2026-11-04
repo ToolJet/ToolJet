@@ -67,8 +67,11 @@ const rowTexts = () => rows().map((node) => node.textContent);
 const exposed = (key) => widget.exposed()?.[key];
 const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 80)));
 const fired = (key) => store().getVariable(key, MODULE_ID) ?? 0;
-const totalShown = () => document.querySelector('[data-cy="total-count"]')?.textContent;
-const lastPageLink = () => user().click(document.querySelector('[data-cy="last-page-link"]'));
+const nextButton = () => document.querySelector('[data-cy="pagination-button-to-next"]');
+// The shared pager has no last-page button: walk to the end with Next, which is also what proves the page count.
+const lastPageLink = async () => {
+  for (let step = 0; step < 60 && nextButton() && !nextButton().disabled; step += 1) await user().click(nextButton());
+};
 const setProperty = (name, value) =>
   widget.session.store.act(() => {
     widget.setComponentProperty(ID, name, binding(value).value, 'properties');
@@ -105,7 +108,6 @@ describe('Listview: server-side pagination', () => {
     await mount({ properties: { data: binding(records(8)) } }, 8);
 
     expect(rowTexts()).toEqual(Array.from({ length: 8 }, (_, index) => `r${index}`));
-    expect(totalShown()).toBe('23');
     await lastPageLink();
     await waitFor(() => expect(exposed('pageIndex')).toBe(5));
     expect(rows()).toHaveLength(8);
@@ -159,7 +161,6 @@ describe('Listview: server-side pagination', () => {
       5
     );
 
-    expect(totalShown()).toBe('10');
     await lastPageLink();
     await waitFor(() => expect(exposed('pageIndex')).toBe(2));
     expect(rowTexts()[0]).toBe('r5');
@@ -174,8 +175,9 @@ describe('Listview: server-side pagination', () => {
       5
     );
 
-    expect(totalShown()).toBe('10');
     expect(rowTexts()[0]).toBe('r0');
+    await lastPageLink();
+    await waitFor(() => expect(exposed('pageIndex')).toBe(2));
   });
 
   test('[Listview-SRV-005] a clamp after Total records shrinks moves the page and fires no On page change', async () => {
@@ -199,7 +201,6 @@ describe('Listview: server-side pagination', () => {
     // Break this catches: a NaN or negative page count, or trusting a value that is not a count.
     await mount({ properties: { data: binding(records(8)), totalRecords: binding(total) } }, 8);
 
-    expect(totalShown()).toBe('8');
     await lastPageLink();
     await waitFor(() => expect(exposed('pageIndex')).toBe(2));
   });
@@ -309,8 +310,7 @@ describe('Listview: server-side pagination', () => {
     await setData('{{[]}}');
 
     await waitFor(() => expect(rows()).toHaveLength(0));
-    expect(totalShown()).toBe('23');
-    expect(document.querySelector('[data-cy="first-page-link"]')).toBeInTheDocument();
+    expect(document.querySelector('[data-cy="pagination-button-to-previous"]')).toBeInTheDocument();
     expect(exposed('pageIndex')).toBe(3);
   });
 

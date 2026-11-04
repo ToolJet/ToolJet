@@ -98,7 +98,12 @@ const user = () => widget.session.user;
 const container = () => document.getElementById(ID);
 const rows = () => [...document.querySelectorAll('.list-item')];
 const rowTexts = () => rows().map((node) => node.textContent);
-const pager = () => document.querySelector('[data-cy="next-page-link"]')?.closest('ul');
+const pager = () => document.querySelector('[data-cy="pagination-section"]');
+const nextButton = () => document.querySelector('[data-cy="pagination-button-to-next"]');
+const goToLastPage = async (userEvent) => {
+  for (let step = 0; step < 60 && nextButton() && !nextButton().disabled; step += 1)
+    await userEvent.click(nextButton());
+};
 const spinner = () => document.querySelector('[class*="spinner"]');
 const exposed = (key) => widget.exposed()?.[key];
 
@@ -307,7 +312,7 @@ describe('Listview: a page change does not carry child state across records', ()
     await paginatedWidget.session.user.click(boxes()[0].parentElement);
     await waitFor(() => expect(boxes()[0]).toBeChecked());
 
-    await paginatedWidget.session.user.click(document.querySelector('[data-cy="next-page-link"]'));
+    await paginatedWidget.session.user.click(document.querySelector('[data-cy="pagination-button-to-next"]'));
 
     await waitFor(() => expect(rowTexts()[0]).toContain('r5'));
     expect(boxes()[0]).not.toBeChecked();
@@ -1423,7 +1428,7 @@ describe('Listview: pagination', () => {
     });
     await waitFor(() => expect(rows()).toHaveLength(2));
 
-    await user().click(document.querySelector('[data-cy="next-page-link"]'));
+    await user().click(document.querySelector('[data-cy="pagination-button-to-next"]'));
 
     await waitFor(() => expect(rowTexts()).toEqual(['Gamma']));
 
@@ -1455,7 +1460,7 @@ describe('Listview: pagination', () => {
     // reaches, which strands the user on a blank page after a query refresh.
     await mount({ properties: { enablePagination: binding('{{true}}'), rowsPerPage: binding('{{2}}') } });
     await waitFor(() => expect(rows()).toHaveLength(2));
-    await user().click(document.querySelector('[data-cy="next-page-link"]'));
+    await user().click(document.querySelector('[data-cy="pagination-button-to-next"]'));
     await waitFor(() => expect(rowTexts()).toEqual(['Gamma']));
 
     await widget.session.store.act(async () => {
@@ -1842,8 +1847,8 @@ describe('Listview: the pager is operable without a mouse', () => {
   afterEach(widget.teardown);
 
   const arrows = () => ({
-    previous: document.querySelector('[data-cy="previous-page-link"]'),
-    next: document.querySelector('[data-cy="next-page-link"]'),
+    previous: document.querySelector('[data-cy="pagination-button-to-previous"]'),
+    next: document.querySelector('[data-cy="pagination-button-to-next"]'),
   });
 
   test('[Listview-BUG-018] the page arrows are focusable and carry a name', async () => {
@@ -1875,19 +1880,21 @@ describe('Listview: the pager is operable without a mouse', () => {
     // Previous on page one or Next on the last page walks off the end of the list.
     await mount({ properties: { enablePagination: binding('{{true}}'), rowsPerPage: binding('{{2}}') } });
     await waitFor(() => expect(rowTexts()).toEqual(['Alpha', 'Beta']));
-    const footer = () => document.querySelector('[data-cy="container-pagination"] p').textContent;
+    const footer = () => document.querySelector('[data-cy="container-pagination"]').textContent;
 
     arrows().previous.focus();
     await user().keyboard('{Enter}');
     expect(rowTexts()).toEqual(['Alpha', 'Beta']);
-    expect(footer()).toBe('Showing 1 to 2 of 3');
+    expect(footer()).not.toContain('Showing');
+    expect(document.querySelector('.table-pagination-btn.selected').textContent).toBe('1');
 
     await user().click(arrows().next);
     await waitFor(() => expect(rowTexts()).toEqual(['Gamma']));
     arrows().next.focus();
     await user().keyboard('{Enter}');
     expect(rowTexts()).toEqual(['Gamma']);
-    expect(footer()).toBe('Showing 3 to 3 of 3');
+    expect(footer()).not.toContain('Showing');
+    expect(document.querySelector('.table-pagination-btn.selected').textContent).toBe('2');
   });
 });
 
@@ -2047,7 +2054,7 @@ describe('Listview: the pager follows the data', () => {
     },
   });
 
-  const activePage = () => document.querySelector('.page-item.active')?.textContent;
+  const activePage = () => document.querySelector('[data-cy="pagination-button-go-to-page"].selected')?.textContent;
 
   test('[Listview-BUG-020] a new data set that still reaches the page opens on that page', async () => {
     // Break this catches: reading the page against the old records, so the new set shows stale rows
@@ -2055,8 +2062,8 @@ describe('Listview: the pager follows the data', () => {
     await mount(paged(manyRecords(30, 'a'), binding('{{10}}')));
     await waitFor(() => expect(rowTexts()[0]).toBe('a0'));
 
-    await user().click(document.querySelector('[data-cy="next-page-link"]'));
-    await user().click(document.querySelector('[data-cy="next-page-link"]'));
+    await user().click(document.querySelector('[data-cy="pagination-button-to-next"]'));
+    await user().click(document.querySelector('[data-cy="pagination-button-to-next"]'));
     await waitFor(() => expect(rowTexts()[0]).toBe('a20'));
 
     await widget.session.store.act(() => {
@@ -2072,15 +2079,14 @@ describe('Listview: the pager follows the data', () => {
     // add or count-changing search throws the reader back to the start.
     await mount(paged(manyRecords(50, 'o'), binding('{{10}}')));
     await waitFor(() => expect(rowTexts()[0]).toBe('o0'));
-    await user().click(document.querySelector('[data-cy="next-page-link"]'));
-    await user().click(document.querySelector('[data-cy="next-page-link"]'));
+    await user().click(document.querySelector('[data-cy="pagination-button-to-next"]'));
+    await user().click(document.querySelector('[data-cy="pagination-button-to-next"]'));
     await waitFor(() => expect(rowTexts()[0]).toBe('o20'));
 
     await widget.session.store.act(() => {
       widget.setComponentProperty(ID, 'data', manyRecords(49, 'o').value, 'properties');
     });
 
-    await waitFor(() => expect(document.querySelector('[data-cy="total-count"]').textContent).toBe('49'));
     expect(rowTexts()[0]).toBe('o20');
     expect(activePage()).toBe('3');
   });
@@ -2089,7 +2095,7 @@ describe('Listview: the pager follows the data', () => {
     // Break this catches: keeping a page number past the new end, which renders an empty page.
     await mount(paged(manyRecords(50, 'p'), binding('{{10}}')));
     await waitFor(() => expect(rowTexts()[0]).toBe('p0'));
-    await user().click(document.querySelector('[data-cy="last-page-link"]'));
+    await goToLastPage(user());
     await waitFor(() => expect(rowTexts()[0]).toBe('p40'));
 
     await widget.session.store.act(() => {
@@ -2114,7 +2120,7 @@ describe('Listview: the pager follows the data', () => {
     await mount(paged(manyRecords(12, 'd'), binding('{{2.5}}')));
     await waitFor(() => expect(rows()).toHaveLength(2));
 
-    await user().click(document.querySelector('[data-cy="next-page-link"]'));
+    await user().click(document.querySelector('[data-cy="pagination-button-to-next"]'));
 
     await waitFor(() => expect(rowTexts()).toEqual(['d2', 'd3']));
   });
@@ -2444,7 +2450,7 @@ describe('Listview: the clicked item on a paginated list', () => {
 
   const pagedUser = () => paginatedWidget.session.user;
   const pagedExposed = (key) => paginatedWidget.exposed()?.[key];
-  const nextPage = () => pagedUser().click(document.querySelector('[data-cy="next-page-link"]'));
+  const nextPage = () => pagedUser().click(document.querySelector('[data-cy="pagination-button-to-next"]'));
   const rebind = (records) =>
     paginatedWidget.session.store.act(() => {
       paginatedWidget.setComponentProperty(ID, 'data', binding(records).value, 'properties');

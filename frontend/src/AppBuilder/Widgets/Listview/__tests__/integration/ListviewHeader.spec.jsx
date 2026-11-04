@@ -274,7 +274,7 @@ describe('Listview: the header is editable on every page', () => {
       extraComponents: { hdr1: headerTitle() },
     });
     await waitFor(() => expect(rows()).toHaveLength(2));
-    await widget.session.user.click(document.querySelector('[data-cy="next-page-link"]'));
+    await widget.session.user.click(document.querySelector('[data-cy="pagination-button-to-next"]'));
     await waitFor(() => expect(rows()).toHaveLength(1));
 
     const headerCanvas = headerCanvases()[0];
