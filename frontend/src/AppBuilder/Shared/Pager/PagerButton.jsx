@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const PagerButton = memo(
-  ({ pageIndex, onClick, disabled, icon, dataCy, currentPageIndex, className, style }) => {
+  ({ pageIndex, onClick, disabled, icon, dataCy, currentPageIndex, className, style, ariaLabel }) => {
     const isSelected = pageIndex && currentPageIndex && pageIndex === currentPageIndex;
 
     return (
@@ -17,6 +17,7 @@ export const PagerButton = memo(
         onClick={onClick}
         disabled={disabled}
         data-cy={dataCy}
+        aria-label={ariaLabel}
         style={style}
       >
         {pageIndex}

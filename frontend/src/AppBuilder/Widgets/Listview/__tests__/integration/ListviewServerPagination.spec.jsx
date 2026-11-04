@@ -258,7 +258,7 @@ describe('Listview: server-side pagination', () => {
 
   test('[Listview-SRV-010] dynamic height counts every rendered server row, not one page', async () => {
     // Break this catches: sizing a server list for rowsPerPage rows while it renders every row of data.
-    const PAGER_ALLOWANCE = 61;
+    const PAGER_ALLOWANCE = 60;
     await mount({ properties: { data: binding(records(8)) } }, 8);
     const heightNow = () => {
       const state = store();

@@ -134,7 +134,8 @@ describe('Listview: pager', () => {
     expect(footer().style.height).toBe('60px');
     expect(footer().className).not.toContain('fixed-bottom');
     expect(footer().style.position).not.toBe('fixed');
-    expect(container().style.height).toBe('600px');
+    // The canvas hands a widget its box minus 4px; nothing more comes off for the pager.
+    expect(container().style.height).toBe('596px');
     expect(container().contains(footer())).toBe(true);
     expect(footer().style.justifyContent).toBe('center');
   });

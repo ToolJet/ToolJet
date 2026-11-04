@@ -218,6 +218,7 @@ export function createWidgetHarness({
     currentMode = 'edit',
     afterSeed,
     also = defaultAlso,
+    widgetWidth: renderWidth = widgetWidth,
   } = {}) {
     assertLazyWidgetsLoaded([componentType, ...typesOf(also, { ...defaultExtraComponents, ...extraComponents })]);
     const definition = componentDefinition(
@@ -261,7 +262,12 @@ export function createWidgetHarness({
     return session.render(
       <>
         <RenderWidget
-          {...widgetProps(componentId, componentType, { darkMode, widgetHeight, widgetWidth, currentMode })}
+          {...widgetProps(componentId, componentType, {
+            darkMode,
+            widgetHeight,
+            widgetWidth: renderWidth,
+            currentMode,
+          })}
         />
         {also.map(({ id: siblingId, componentType: siblingType, ...rest }) => (
           <RenderWidget key={siblingId} {...widgetProps(siblingId, siblingType, rest)} />

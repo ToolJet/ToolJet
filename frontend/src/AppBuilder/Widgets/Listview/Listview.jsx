@@ -3,7 +3,8 @@ import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArra
 import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 // import { SubContainer } from '../SubContainer';
-import { Pagination } from '@/_components/Pagination';
+import { Pager } from '@/AppBuilder/Shared/Pager/Pager';
+import { getWidthRule } from '@/AppBuilder/Shared/Pager/pagerUtils';
 import _ from 'lodash';
 import './listview.scss';
 // eslint-disable-next-line import/no-unresolved
@@ -21,6 +22,7 @@ import {
   DIVIDER_WIDTH,
   HEADER_HEIGHT,
   HEADER_DIVIDER_HEIGHT,
+  PAGER_FOOTER_HEIGHT,
   LEGACY_PADDING,
   NEW_STYLE_PADDING,
   getListStyle,
@@ -146,7 +148,7 @@ export const Listview = function Listview({
     border: '1px solid',
     borderColor,
     ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
-    height: isDynamicHeightEnabled ? '100%' : enablePagination ? height - 54 : height,
+    height: isDynamicHeightEnabled ? '100%' : height,
     display: visibility ? 'flex' : 'none',
     // The Number input saves a plain string such as "6", which CSS needs as a number.
     borderRadius: Number.parseFloat(borderRadius) || 0,
@@ -468,11 +470,7 @@ export const Listview = function Listview({
               />
             </div>
           )}
-          <div
-            role="list"
-            className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}
-            style={recordListStyle}
-          >
+          <div role="list" className="row w-100 m-0 p-0" style={recordListStyle}>
             {filteredData.map((_listItem, index) => (
               // Keyed by record: a page-local key makes React reuse row 0's children on every page.
               <React.Fragment key={startIndexOfRowInThePage + index}>
@@ -536,31 +534,43 @@ export const Listview = function Listview({
               </React.Fragment>
             ))}
           </div>
-          {enablePagination && (isServerSide || _.isArray(data)) && (
+          {enablePagination && (
+            // Last flex item; sticky so it stays at the bottom while the records scroll behind it.
             <div
-              className={cx({ 'fixed-bottom position-fixed': !isDynamicHeightEnabled })}
+              data-cy="container-pagination"
               style={{
-                border: '1px solid',
-                borderColor,
-                margin: '1px',
-                borderTop: 0,
-                // fixed-bottom brings z-index 1030, which paints the pager over the widget's config handle.
-                ...(isDynamicHeightEnabled ? { marginTop: 'auto' } : { left: '1px', right: '1px', zIndex: 1 }),
+                position: 'sticky',
+                bottom: 0,
+                zIndex: 2,
+                flexShrink: 0,
+                marginTop: 'auto',
+                marginLeft: -containerPadding,
+                marginRight: -containerPadding,
+                marginBottom: -containerPadding,
+                height: PAGER_FOOTER_HEIGHT,
+                boxSizing: 'border-box',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderTop: '1px solid var(--cc-weak-border)',
+                backgroundColor,
               }}
             >
-              <div style={{ backgroundColor }}>
-                {showPager ? (
-                  <Pagination
-                    darkMode={darkMode}
-                    currentPage={currentPage}
-                    pageChanged={pagerPageChanged}
-                    count={pagerCount}
-                    itemsPerPage={rowPerPageValue}
-                  />
-                ) : (
-                  <div style={{ height: '61px' }}></div>
-                )}
-              </div>
+              {showPager && (
+                <Pager
+                  id={id}
+                  page={currentPage}
+                  pageCount={lastPage}
+                  onGoToPage={pagerPageChanged}
+                  onPrevious={() => pagerPageChanged(currentPage - 1)}
+                  onNext={() => pagerPageChanged(currentPage + 1)}
+                  canPrevious={currentPage > 1}
+                  canNext={currentPage < lastPage}
+                  {...getWidthRule(width)}
+                  darkMode={darkMode}
+                  height={height}
+                />
+              )}
             </div>
           )}
         </>

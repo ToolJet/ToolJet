@@ -7,6 +7,8 @@ export const DIVIDER_WIDTH = 1;
 export const HEADER_HEIGHT = 60;
 // Inside HEADER_HEIGHT, not added to it.
 export const HEADER_DIVIDER_HEIGHT = 1;
+// Pager footer (Figma 993:21793), divider inside; shared with the dynamic height calculation.
+export const PAGER_FOOTER_HEIGHT = 60;
 
 // Anything but a known new style is Legacy, so a saved ListView keeps today's look.
 export const getListStyle = (listStyle) => (NEW_LIST_STYLES.includes(listStyle) ? listStyle : 'legacy');

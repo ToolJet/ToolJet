@@ -11,6 +11,7 @@ import { isProperNumber } from '../utils';
 import { resolveFlexContainerHeight } from './dynamicHeightReflowFlexContainer';
 import {
   HEADER_HEIGHT,
+  PAGER_FOOTER_HEIGHT,
   LEGACY_PADDING,
   NEW_STYLE_PADDING,
   getListStyle,
@@ -525,7 +526,7 @@ export const resolveListviewHeightFromRows = ({
   // outer chrome (padding × 2: 7px Legacy, 12px other styles; + 1px outer border × 2
   // + 2 safety for `.real-canvas` `calc(100% + 1px)` extension and rounding drift).
   const borderAllowance = isLegacy && componentProperties.showBorder && mode === 'list' ? rowCount : 0;
-  const paginationAllowance = componentProperties.enablePagination ? 61 : 0;
+  const paginationAllowance = componentProperties.enablePagination ? PAGER_FOOTER_HEIGHT : 0;
   const outerPaddingAllowance = 18 + (isLegacy ? 0 : 2 * (NEW_STYLE_PADDING - LEGACY_PADDING));
   // New styles space record lines by the gap (Bordered's line sits inside it); Legacy has no gap.
   const recordLines = mode === 'grid' ? Math.ceil(rowCount / positiveColumns) : rowCount;

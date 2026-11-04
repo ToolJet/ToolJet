@@ -102,6 +102,7 @@ export const Pager = function Pager({
             disabled={!canFirst}
             icon="IconChevronsLeft"
             dataCy="pagination-button-to-first"
+            ariaLabel="First page"
           />
         )}
 
@@ -110,6 +111,7 @@ export const Pager = function Pager({
           disabled={!canPrevious}
           icon="IconChevronLeft"
           dataCy="pagination-button-to-previous"
+          ariaLabel="Previous page"
         />
 
         {pageNumbers.map((pageNum) => (
@@ -130,11 +132,17 @@ export const Pager = function Pager({
             rootClose={true}
             placement={'top-end'}
           >
-            <PagerButton icon="IconDots" dataCy="pagination-button-more-pages" />
+            <PagerButton icon="IconDots" dataCy="pagination-button-more-pages" ariaLabel="More pages" />
           </OverlayTriggerComponent>
         )}
 
-        <PagerButton onClick={onNext} disabled={!canNext} icon="IconChevronRight" dataCy="pagination-button-to-next" />
+        <PagerButton
+          onClick={onNext}
+          disabled={!canNext}
+          icon="IconChevronRight"
+          dataCy="pagination-button-to-next"
+          ariaLabel="Next page"
+        />
 
         {showFirstLast && (
           <PagerButton
@@ -142,6 +150,7 @@ export const Pager = function Pager({
             disabled={!canLast}
             icon="IconChevronsRight"
             dataCy="pagination-button-to-last"
+            ariaLabel="Last page"
           />
         )}
       </div>
