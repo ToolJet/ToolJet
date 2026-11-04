@@ -295,9 +295,12 @@ export class PostgrestProxyService {
   protected signJwtPayload(role: string) {
     const payload = { role };
     const secretKey = this.configService.get<string>('PGRST_JWT_SECRET');
+    // No iat: PostgREST rejects a token issued "in the future" by its own clock, which a token signed
+    // in the same second can be. The short expiry is all that bounds this token.
     const token = jwt.sign(payload, secretKey, {
       algorithm: 'HS256',
       expiresIn: '1m',
+      noTimestamp: true,
     });
 
     return token;
