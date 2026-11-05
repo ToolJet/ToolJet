@@ -1,3 +1,4 @@
+import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 export const NO_OF_GRIDS = 43;
 
 export const GRID_HEIGHT = 10;
@@ -77,6 +78,15 @@ export const ROW_SCOPED_WIDGET_TYPES = [
   'LibraryComponent',
   'PackComponent',
 ];
+
+/**
+ * Whether a child whose parent link is `parentId` (a component id, or `<componentId>-<suffix>`) sits in a row of
+ * `parentType`, the type of `baseParentId`. A pack or library component is row-scoped only through its ToolJet.RowSlot
+ * rows, whose children name it directly: a child of one of its named slots (`<componentId>-<slotName>`) is an ordinary
+ * widget and reads its siblings as any other does.
+ */
+export const isRowScopedParent = (parentType, parentId, baseParentId) =>
+  ROW_SCOPED_WIDGET_TYPES.includes(parentType) && !(isSdkComponentType(parentType) && parentId !== baseParentId);
 
 // Maps per-row subcontainer type → custom resolvable key used inside {{ }} expressions
 export const ROW_SCOPED_RESOLVABLE_KEY_MAP = {
