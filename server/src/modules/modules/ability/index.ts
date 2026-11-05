@@ -21,7 +21,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     _extractedMetadata: { moduleName: string; features: string[] },
     request?: any
   ): void {
-    const { superAdmin, isAdmin, isBuilder, userPermission } = userAllPermissions;
+    const { superAdmin, isAdmin, userPermission } = userAllPermissions;
     const modulePerms = userPermission?.[MODULES.MODULES];
     const editableAppsId = modulePerms?.editableAppsId ?? [];
     const isAllEditable = modulePerms?.isAllEditable ?? false;
@@ -59,8 +59,15 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       }
     }
 
-    // EXPORT is read-only → builder or above.
-    if (superAdmin || isAdmin || isBuilder) {
+    // EXPORT matches /v2/resources/export: module-create + edit on each requested module, and
+    // ToolJet Database tables need tjdbCRUD. Ids the guard didn't resolve to a module are denied.
+    const exportModuleIds = new Set<string>(request?.tj_export_module_ids ?? []);
+    const exportIds: string[] = (request?.body?.app ?? []).map((app) => app?.id).filter(Boolean);
+    const canExportModules = exportIds.every(
+      (id) => exportModuleIds.has(id) && (isAllEditable || editableAppsId.includes(id))
+    );
+    const canExportTables = !request?.body?.tooljet_database?.length || !!userPermission?.tjdbCRUD;
+    if (superAdmin || isAdmin || (userPermission?.moduleCreate && canExportModules && canExportTables)) {
       can(FEATURE_KEY.EXPORT_MODULE, App);
     }
   }
