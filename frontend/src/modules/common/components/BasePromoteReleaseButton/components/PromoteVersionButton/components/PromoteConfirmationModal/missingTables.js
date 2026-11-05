@@ -19,3 +19,11 @@ export const promoteTablesOneUp = async (promoteTable, organizationId, tables, s
   }
   return null;
 };
+
+// The promote error's text and details, from either shape the API gives: a string, or { error, details }.
+export const promoteErrorMessage = (error, fallback) => {
+  const raw = error?.error || error?.message;
+  const message = typeof raw === 'object' ? raw?.error || fallback : raw || fallback;
+  const details = typeof raw === 'object' ? raw?.details : message;
+  return { message, details: details || message };
+};

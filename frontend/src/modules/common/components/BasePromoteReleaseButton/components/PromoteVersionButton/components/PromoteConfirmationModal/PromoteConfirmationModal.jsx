@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { gitSyncService, authenticationService, tooljetDatabaseService, appVersionService } from '@/_services';
 import { getPrivateRoute } from '@/_helpers/routes';
-import { missingTablesFrom, promoteTablesOneUp } from './missingTables';
+import { missingTablesFrom, promoteErrorMessage, promoteTablesOneUp } from './missingTables';
 import { toast } from 'react-hot-toast';
 import ArrowRight from '@/_ui/Icon/solidIcons/ArrowRight';
 import '@/_styles/versions.scss';
@@ -13,12 +13,19 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import PromoteConfirmationExtras from './PromoteConfirmationExtras';
+import { ReleaseScanGate } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) => {
   const { moduleId } = useModuleContext();
   const [promotingEnvironment, setPromotingEnvironment] = useState(false);
   const [missingTables, setMissingTables] = useState(null);
   const [tablePromoteError, setTablePromoteError] = useState(null);
+  // Tables this dialog already promoted, so a failed app step says they are in the target without the app.
+  const [promotedTables, setPromotedTables] = useState(null);
+  // Why the app step failed, kept in the dialog: a toast is gone before it is read.
+  const [promoteError, setPromoteError] = useState(null);
+  // A Code mode app's security result holds the promotion (ReleaseScanGate): checked before anything moves.
+  const [scanLocked, setScanLocked] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true' || false;
   const currentVersionId = useStore((state) => state.currentVersionId);
   const [showModal, setShow] = useState(data);
@@ -74,6 +81,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
 
   const handleConfirm = () => {
     setPromotingEnvironment(true);
+    setPromoteError(null);
 
     promoteAppVersionAction(
       versionIdToPromote,
@@ -135,13 +143,12 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
           setPromotingEnvironment(false);
           return;
         }
-        const rawError = error?.error || error?.message;
-        const errorMessage =
-          typeof rawError === 'object'
-            ? rawError.error
-            : rawError || `${versionToPromote.name} could not be promoted to ${data.target.name}. Please try again!`;
-        const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
+        const { message: errorMessage, details: errorDetails } = promoteErrorMessage(
+          error,
+          `${versionToPromote.name} could not be promoted to ${data.target.name}. Please try again!`
+        );
         toast.error(errorMessage);
+        setPromoteError(errorMessage);
         useStore.getState().debugger.log({
           logLevel: 'error',
           type: 'component',
@@ -172,6 +179,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
       setPromotingEnvironment(false);
       return;
     }
+    setPromotedTables(missingTables.map((table) => table.name));
     setMissingTables(null);
     handleConfirm();
   };
@@ -265,8 +273,8 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
               {missingTables.map((table) => table.name).join(', ')}
             </div>
             <div className="promote-missing-tables__help">
-              The app reads them there. Promoting the tables copies their structure to{' '}
-              {capitalize(data?.target?.name)}, without any rows, and then promotes the app.{' '}
+              The app reads them there. Promoting the tables copies their structure to {capitalize(data?.target?.name)},
+              without any rows, and then promotes the app.{' '}
               <a href={getPrivateRoute('database')} target="_blank" rel="noreferrer" data-cy="open-tooljet-database">
                 Open ToolJet Database
               </a>
@@ -278,6 +286,29 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
             )}
           </div>
         )}
+        {showModal && (
+          <ReleaseScanGate
+            appId={appId}
+            versionId={versionIdToPromote}
+            action="promote"
+            onLockedChange={setScanLocked}
+          />
+        )}
+        {promoteError && (
+          <div className="promote-missing-tables" role="alert" data-cy="promote-app-error">
+            <div className="promote-missing-tables__title">
+              {promotedTables?.length
+                ? `The tables are in ${capitalize(data?.target?.name)}, but the app wasn't promoted`
+                : `${versionToPromote.name} wasn't promoted`}
+            </div>
+            {promotedTables?.length > 0 && (
+              <div className="promote-missing-tables__names" data-cy="promote-promoted-tables">
+                Promoted: {promotedTables.join(', ')}
+              </div>
+            )}
+            <div className="promote-missing-tables__error">{promoteError}</div>
+          </div>
+        )}
       </Modal.Body>
       <Modal.Footer className="mt-3 env-modal-footer">
         <ButtonSolid variant="tertiary" onClick={handleClose} data-cy="cancel-button">
@@ -287,9 +318,10 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
           variant="primary"
           onClick={missingTables?.length ? handlePromoteTablesAndApp : handleConfirm}
           isLoading={promotingEnvironment}
+          disabled={scanLocked}
           data-cy="promote-button"
         >
-          {missingTables?.length ? 'Promote tables and app' : 'Promote'}
+          {missingTables?.length ? 'Promote tables and app' : promoteError ? 'Try again' : 'Promote'}
           <span style={{ marginTop: '2px' }}>
             <ArrowRight fill="#FDFDFE" width="22" />
           </span>
