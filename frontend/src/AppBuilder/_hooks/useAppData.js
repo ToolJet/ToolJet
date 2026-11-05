@@ -195,6 +195,13 @@ const useAppData = (
     return () => setCurrentAppName('');
   }, [appName]);
 
+  // Periodic query timers live outside the store and survive page switches, so stop them when
+  // the canvas unmounts (e.g. leaving the app for the dashboard). Embedded modules don't own them.
+  useEffect(() => {
+    if (moduleMode && moduleId !== 'canvas') return;
+    return () => clearAllPeriodicTimers();
+  }, [moduleMode, moduleId]);
+
   useEffect(() => {
     setCurrentAppMeta({
       environment: selectedEnvironment?.name,

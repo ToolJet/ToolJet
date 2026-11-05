@@ -177,6 +177,9 @@ function armPeriodicTimer(queryId, moduleId, intervalMs, getStore) {
     armPeriodicTimer(queryId, moduleId, nextMs, getStore);
     // Skip the actual run if a previous run is still in flight (no overlap / pile-up).
     if (store.getAllExposedValues(moduleId)?.queries?.[queryId]?.isLoading) return;
+    // Skip while the query is disabled: runQuery would log "Query skipped" (and toast the
+    // disabled message) on every tick. The chain stays armed so re-enabling resumes it.
+    if (query.options?.disableQuery && store.getResolvedValue(query.options.disableQuery, {}, moduleId)) return;
     // Run in the module's current mode so released/public apps don't toast errors on
     // every failing tick (runQuery only toasts when mode !== 'view').
     const mode = store.modeStore?.modules?.[moduleId]?.currentMode || 'edit';
