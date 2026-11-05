@@ -16,6 +16,8 @@ describe('QueryAuthGuard', () => {
   const jwtCanActivate = jest.spyOn(AuthGuard('jwt').prototype, 'canActivate');
   const existsBy = jest.fn();
   const findByDataQuery = jest.fn();
+  const findPublicParentAppForModuleQuery = jest.fn();
+  const findParentAppsForModuleQuery = jest.fn();
 
   const guard = new QueryAuthGuard(
     {
@@ -23,13 +25,17 @@ describe('QueryAuthGuard', () => {
       touchLastAccessedAt: jest.fn(),
     } as unknown as ConstructorParameters<typeof QueryAuthGuard>[0],
     { findByDataQuery } as unknown as ConstructorParameters<typeof QueryAuthGuard>[1],
-    { existsBy } as unknown as ConstructorParameters<typeof QueryAuthGuard>[2],
+    {
+      existsBy,
+      findPublicParentAppForModuleQuery,
+      findParentAppsForModuleQuery,
+    } as unknown as ConstructorParameters<typeof QueryAuthGuard>[2],
     { log: jest.fn() } as unknown as ConstructorParameters<typeof QueryAuthGuard>[3]
   );
 
-  const contextFor = (queryId: string) =>
+  const contextFor = (queryId: string, request: Record<string, unknown> = {}) =>
     ({
-      switchToHttp: () => ({ getRequest: () => ({ params: { id: queryId } }) }),
+      switchToHttp: () => ({ getRequest: () => Object.assign(request, { params: { id: queryId } }) }),
     }) as unknown as ExecutionContext;
 
   const publicApp = (overrides: Partial<App> = {}) =>
@@ -90,6 +96,42 @@ describe('QueryAuthGuard', () => {
 
       await expect(guard.canActivate(contextFor('workflow-query'))).resolves.toBe(true);
       expect(existsBy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('POST /data-queries/:id/run | module query', () => {
+    const moduleApp = () => publicApp({ id: 'module1', type: APP_TYPES.MODULE, isPublic: false });
+    const parents = [
+      { id: 'parent1', isPublic: false },
+      { id: 'parent2', isPublic: true },
+    ];
+
+    it('should hand a signed-in user the released parent apps embedding the module to the ability', async () => {
+      findByDataQuery.mockResolvedValue(moduleApp());
+      findParentAppsForModuleQuery.mockResolvedValue(parents);
+      jwtCanActivate.mockResolvedValue(true);
+      const request: Record<string, unknown> = {};
+
+      await expect(guard.canActivate(contextFor('module-query', request))).resolves.toBe(true);
+      expect(findParentAppsForModuleQuery).toHaveBeenCalledWith('module1', 'module-query');
+      expect(request.tj_module_parent_apps).toEqual(parents);
+      // Parent resolution feeds the ability; it must not mark the module itself public.
+      expect((request.tj_app as App).isPublic).toBe(false);
+    });
+
+    it('should let an anonymous run through only when a public parent app embeds the module', async () => {
+      findByDataQuery.mockResolvedValue(moduleApp());
+      findPublicParentAppForModuleQuery.mockResolvedValue({ id: 'parent2' });
+
+      await expect(guard.canActivate(contextFor('module-query'))).resolves.toBe(true);
+      expect(findParentAppsForModuleQuery).not.toHaveBeenCalled();
+    });
+
+    it('should require authentication when no public parent app embeds the module', async () => {
+      findByDataQuery.mockResolvedValue(moduleApp());
+      findPublicParentAppForModuleQuery.mockResolvedValue(null);
+
+      await expect(guard.canActivate(contextFor('module-query'))).rejects.toBeInstanceOf(UnauthorizedException);
     });
   });
 });

@@ -1,18 +1,25 @@
 import { AbilityBuilder } from '@casl/ability';
 import { UserAllPermissions } from '@modules/app/types';
+import { UserAppsPermissions } from '@modules/ability/types';
 import { FEATURE_KEY } from '../../constants';
 import { App } from '@entities/app.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { APP_TYPES } from '@modules/apps/constants';
 import { FeatureAbility } from './index';
 
+/** A released front-end app that embeds a module (see DataQueryRepository.findParentAppsForModuleQuery). */
+export type ModuleParentApp = { id: string; isPublic: boolean };
+
+const VIEWER_FEATURES = [FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR];
+
 export function defineDataQueryAppAbility(
   can: AbilityBuilder<FeatureAbility>['can'],
   UserAllPermissions: UserAllPermissions,
-  app: App
+  app: App,
+  moduleParentApps: ModuleParentApp[] = []
 ): void {
   const appId = app?.id;
-  const { superAdmin, isAdmin, userPermission, isEndUser } = UserAllPermissions;
+  const { superAdmin, isAdmin, userPermission } = UserAllPermissions;
   const isModule = app?.type === APP_TYPES.MODULE;
   // Modules resolve via their own MODULES.MODULES bucket (granular module permissions),
   // not the front-end app bucket — same mapping the guard used to fetch it.
@@ -81,17 +88,27 @@ export function defineDataQueryAppAbility(
   }
 
   if (isAllViewable) {
-    can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
+    can(VIEWER_FEATURES, App);
     return;
   }
 
   if (resourcePermissions?.viewableAppsId?.length && appId && resourcePermissions?.viewableAppsId?.includes(appId)) {
-    can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
+    can(VIEWER_FEATURES, App);
     return;
   }
 
-  if (isEndUser) {
-    can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
-    return;
+  // Modules carry no viewer (end-user) permissions of their own. A module's query runs for whoever
+  // can open an app that embeds it: a public parent, or one they can view through the app bucket.
+  // Never grant by role alone — that would let a user run queries of apps they cannot open.
+  if (isModule && canViewAnyParentApp(userPermission?.[MODULES.APP], moduleParentApps)) {
+    can(VIEWER_FEATURES, App);
   }
+}
+
+function canViewAnyParentApp(appPermissions: UserAppsPermissions | undefined, parentApps: ModuleParentApp[]): boolean {
+  if (!parentApps?.length) return false;
+  if (parentApps.some((parent) => parent.isPublic)) return true;
+  if (appPermissions?.isAllViewable || appPermissions?.isAllEditable) return true;
+  const grantedAppIds = new Set([...(appPermissions?.viewableAppsId ?? []), ...(appPermissions?.editableAppsId ?? [])]);
+  return parentApps.some((parent) => grantedAppIds.has(parent.id));
 }

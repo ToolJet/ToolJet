@@ -58,8 +58,9 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
 
       if (app.type === APP_TYPES.MODULE) {
         // Module queries require authentication unless the module is embedded in a public parent app.
+        let authenticated = false;
         try {
-          return await super.canActivate(context);
+          authenticated = (await super.canActivate(context)) as boolean;
         } catch {
           // If the module is embedded in a public parent app, allow access and mark the module app as public
           const parentApp = await this.dataQueryRepository.findPublicParentAppForModuleQuery(app.id, id);
@@ -74,6 +75,12 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
             })
           );
         }
+        // A module has no viewer permissions of its own: the data-query ability lets a signed-in user
+        // run its queries only through a released app embedding it — a public one, or one they can view.
+        if (authenticated) {
+          request.tj_module_parent_apps = await this.dataQueryRepository.findParentAppsForModuleQuery(app.id, id);
+        }
+        return authenticated;
       }
       // Throw a custom exception if the app is not public
       try {

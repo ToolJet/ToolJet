@@ -5,7 +5,7 @@ import { UserAllPermissions } from '@modules/app/types';
 import { FEATURE_KEY } from '../../constants';
 import { App } from '@entities/app.entity';
 import { MODULES } from '@modules/app/constants/modules';
-import { defineDataQueryAppAbility } from './data-query-app.ability';
+import { defineDataQueryAppAbility, ModuleParentApp } from './data-query-app.ability';
 import { defineDataQueryWorkflowAbility } from './data-query-workflow.ability';
 
 type Subjects = InferSubjects<typeof App> | 'all';
@@ -25,6 +25,8 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
   ): void {
     const resourceId = request?.tj_resource_id;
     const app = request?.tj_app as App;
+    // Set by QueryAuthGuard on viewer runs of a module query (released apps embedding the module).
+    const moduleParentApps = request?.tj_module_parent_apps as ModuleParentApp[] | undefined;
     const resourceType = UserAllPermissions.resource[0].resourceType;
 
     switch (resourceType) {
@@ -32,7 +34,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         defineDataQueryAppAbility(can, UserAllPermissions, app);
         break;
       case MODULES.MODULES:
-        defineDataQueryAppAbility(can, UserAllPermissions, app);
+        defineDataQueryAppAbility(can, UserAllPermissions, app, moduleParentApps);
         break;
       case MODULES.WORKFLOWS:
         defineDataQueryWorkflowAbility(can, UserAllPermissions, resourceId);

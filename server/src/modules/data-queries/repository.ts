@@ -36,6 +36,36 @@ export class DataQueryRepository extends Repository<DataQuery> {
 
   async findPublicParentAppForModuleQuery(moduleAppId: string, dataQueryId: string): Promise<App | null> {
     return (
+      this.parentAppsForModuleQuery(moduleAppId, dataQueryId)
+        // apps.is_public is never written (AppsUtilService.update), so app_version.is_public
+        // is the only real fallback if av_meta doesn't match.
+        .andWhere('COALESCE(av_meta.is_public, app_version.is_public) = true')
+        .limit(1)
+        .getOne()
+    );
+  }
+
+  /**
+   * Front-end apps whose released version embeds (via a ModuleViewer) the module that owns
+   * `dataQueryId`, with each app's canonical `is_public`. A module has no viewer permissions of
+   * its own, so the data-query ability lets a signed-in user run a module query only through one
+   * of these parent apps (one they can view, or a public one).
+   */
+  async findParentAppsForModuleQuery(
+    moduleAppId: string,
+    dataQueryId: string
+  ): Promise<{ id: string; isPublic: boolean }[]> {
+    const rows = await this.parentAppsForModuleQuery(moduleAppId, dataQueryId)
+      .select('app.id', 'id')
+      .addSelect('COALESCE(av_meta.is_public, app_version.is_public, false)', 'is_public')
+      .distinct(true)
+      .getRawMany<{ id: string; is_public: boolean }>();
+    return rows.map((row) => ({ id: row.id, isPublic: row.is_public === true }));
+  }
+
+  /** Parent apps whose released version embeds the module owning `dataQueryId` (same graph as above). */
+  private parentAppsForModuleQuery(moduleAppId: string, dataQueryId: string) {
+    return (
       this.manager
         .createQueryBuilder(App, 'app')
         // Structural join: traverse the deployed version's pages and components.
@@ -66,9 +96,6 @@ export class DataQueryRepository extends Repository<DataQuery> {
          )`
         )
         .where('component.type = :componentType', { componentType: 'ModuleViewer' })
-        // apps.is_public is never written (AppsUtilService.update), so app_version.is_public
-        // is the only real fallback if av_meta doesn't match.
-        .andWhere('COALESCE(av_meta.is_public, app_version.is_public) = true')
         .andWhere('module_version.app_id = :moduleAppId', { moduleAppId })
         .andWhere('module_version.app_id != app.id')
         .andWhere('app.organization_id = module_app.organization_id')
@@ -84,8 +111,6 @@ export class DataQueryRepository extends Repository<DataQuery> {
              data_query.app_version_id::text
            )`
         )
-        .limit(1)
-        .getOne()
     );
   }
 

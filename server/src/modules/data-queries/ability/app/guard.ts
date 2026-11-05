@@ -36,6 +36,9 @@ export class FeatureAbilityGuard extends AbilityGuard {
       {
         resourceType: MODULES.GLOBAL_DATA_SOURCE,
       },
+      // A module query can also be run through an app that embeds the module, so resolve the
+      // app bucket too (see defineDataQueryAppAbility). Order matters: resource[0] picks the ability.
+      ...(appResource === MODULES.MODULES ? [{ resourceType: MODULES.APP }] : []),
     ];
   }
 
