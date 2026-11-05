@@ -9,6 +9,7 @@ import type { AppsUtilService } from '@modules/apps/util.service';
 import { FOLDER_RESOURCE_TYPE_BY_APP_TYPE } from '@modules/folder-apps/ability';
 import { getPermissionResourceForAppType } from '@modules/folder-apps/util.service';
 import type { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { assertGitSyncCreateAllowedForOrg } from '@modules/git-sync-configs/guards/git-sync-edit-guard';
 import { AppGitState, appActions, folderActions, resolveFolderAccess } from './actions';
 import {
   BuiltQuery,
@@ -104,6 +105,10 @@ export class DashboardService {
       for (const id of await this.visibleIds(user, type, branchId, pinIds)) visible.add(id);
     }
     return visible;
+  }
+
+  assertFolderWritable(user: User, branchId?: string): Promise<void> {
+    return assertGitSyncCreateAllowedForOrg(this.gitSyncConfigsUtilService, user.organizationId, branchId, 'folder');
   }
 
   async resolveBranchId(user: User, branchId?: string): Promise<string> {
@@ -249,7 +254,7 @@ export class DashboardService {
   }
 
   private async gitStates(appIds: string[], scope: DashboardScope): Promise<Map<string, AppGitState>> {
-    if (!scope.git.enabled || scope.type === APP_TYPES.WORKFLOW || appIds.length === 0) return new Map();
+    if (!scope.git.enabled || appIds.length === 0) return new Map();
     const rows: {
       app_id: string;
       id: string;

@@ -12,6 +12,7 @@
   "apps | APP | get | GET | /apps/addable | version=(default) | src/modules/apps/controller.ts | AppsController.indexAddable",
   "apps | APP | get | POST | /apps/bulk-delete | version=2 | src/modules/apps/dashboard/dashboard.controller.ts | DashboardAppsController.bulkDelete",
   "apps | APP | get | POST | /folder-apps/bulk-move | version=2 | src/modules/apps/dashboard/bulk-move.controller.ts | DashboardBulkMoveController.move",
+  "apps | APP | get | POST | /folder-apps/bulk-remove | version=2 | src/modules/apps/dashboard/bulk-move.controller.ts | DashboardBulkMoveController.remove",
   "apps | APP | get | POST | /folders/bulk-delete | version=2 | src/modules/apps/dashboard/bulk-folder-delete.controller.ts | DashboardBulkFolderDeleteController.delete",
   "apps | APP | get | POST | /pins | version=2 | src/modules/apps/dashboard/pins.controller.ts | PinsController.pin",
   "apps | APP | get | PUT | /pins/order | version=2 | src/modules/apps/dashboard/pins.controller.ts | PinsController.reorder",

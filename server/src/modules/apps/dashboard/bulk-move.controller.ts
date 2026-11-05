@@ -16,7 +16,7 @@ import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { FeatureAbilityGuard } from '../ability/guard';
 import { FEATURE_KEY } from '../constants';
 import { BulkMoveService } from './bulk-move.service';
-import { BulkMoveAppsDto, BulkResultResponseDto } from './dto/bulk.dto';
+import { BulkMoveAppsDto, BulkRemoveAppsDto, BulkResultResponseDto } from './dto/bulk.dto';
 
 // Coarse gate = app listing (everyone); per-app check runs in BulkMoveService.
 @InitModule(MODULES.APP)
@@ -31,5 +31,13 @@ export class DashboardBulkMoveController {
   @HttpCode(200)
   move(@User() user: UserEntity, @Body() body: BulkMoveAppsDto): Promise<BulkResultResponseDto> {
     return this.bulkMoveService.move(user, body);
+  }
+
+  @InitFeature(FEATURE_KEY.GET)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Post('bulk-remove')
+  @HttpCode(200)
+  remove(@User() user: UserEntity, @Body() body: BulkRemoveAppsDto): Promise<BulkResultResponseDto> {
+    return this.bulkMoveService.remove(user, body);
   }
 }

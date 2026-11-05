@@ -122,8 +122,7 @@ export function folderActions(
   const canDelete = privileged || !!p[FOLDER_PERMISSION_BY_TYPE[type]?.deleteKey ?? 'folderDelete'];
   // folders/service.ts:72 rejects every rename in multi-branch mode
   const rename = canRename && !git.multiBranch;
-  // frontend/src/HomePage/Folders.jsx:86-91 — workflows are never branch-locked
-  const branchLocked = git.multiBranch && git.onDefaultBranch && type !== APP_TYPES.WORKFLOW;
+  const branchLocked = git.multiBranch && git.onDefaultBranch;
   const del = canDelete && !branchLocked && !(git.enabled && folder.appCount > 0);
   return { rename, delete: del, pin: true };
 }
@@ -170,4 +169,18 @@ export function canMoveApp(p: UserPermissions, userId: string, folder: MoveFolde
   const f = folderPermissionsFor(p, folder.type);
   if (f ? f.isAllEditable || f.editableFoldersId.includes(folder.id) : p.folderCreate) return true;
   return folder.ownerId === userId && app.ownerId === userId;
+}
+
+// v1 parity: folder-apps/ability/index.ts defineAbilityFor + folder-apps/ability/guard.ts owner/type flags.
+export function canRemoveApp(
+  p: UserPermissions,
+  userId: string,
+  folder: MoveFolder,
+  app: { type: APP_TYPES }
+): boolean {
+  if (app.type !== folder.type) return false;
+  if (isAdmin(p)) return true;
+  const f = folderPermissionsFor(p, folder.type);
+  if (f ? f.isAllEditable || f.editableFoldersId.includes(folder.id) : p.folderCreate) return true;
+  return folder.ownerId === userId;
 }

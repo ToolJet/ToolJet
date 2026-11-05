@@ -5,6 +5,7 @@ import { SqlParams } from '@modules/apps/dashboard/sql-params';
 import {
   appActions,
   canMoveApp,
+  canRemoveApp,
   folderActions,
   folderVisibilityPredicate,
   likePattern,
@@ -167,12 +168,12 @@ describe('dashboard actions', () => {
       ).toMatchObject({ rename: true });
     });
 
-    it('should block delete on the locked default branch for apps and modules, not workflows', () => {
+    it('should block delete on the locked default branch for every type', () => {
       const locked = { enabled: true, multiBranch: true, onDefaultBranch: true };
       const empty = { ...folder, appCount: 0 };
       expect(folderActions(builder, APP_TYPES.FRONT_END, 'owner', empty, locked)).toMatchObject({ delete: false });
       expect(folderActions(builder, APP_TYPES.MODULE, 'owner', empty, locked)).toMatchObject({ delete: false });
-      expect(folderActions(builder, APP_TYPES.WORKFLOW, 'owner', empty, locked)).toMatchObject({ delete: true });
+      expect(folderActions(builder, APP_TYPES.WORKFLOW, 'owner', empty, locked)).toMatchObject({ delete: false });
       expect(
         folderActions(builder, APP_TYPES.FRONT_END, 'owner', empty, { ...locked, onDefaultBranch: false })
       ).toMatchObject({ delete: true });
@@ -227,20 +228,20 @@ describe('dashboard actions', () => {
     });
   });
 
+  const folderBucket = (over: Record<string, unknown> = {}) => ({
+    editableFoldersId: [],
+    isAllEditable: false,
+    viewableFoldersId: [],
+    isAllViewable: false,
+    editAppsInFoldersId: [],
+    isAllEditApps: false,
+    ...over,
+  });
+
   describe('canMoveApp', () => {
     const folder = { id: 'f1', type: APP_TYPES.FRONT_END, ownerId: 'u' };
     const mine = { type: APP_TYPES.FRONT_END, ownerId: 'u' };
     const theirs = { type: APP_TYPES.FRONT_END, ownerId: 'other' };
-    const folderBucket = (over: Record<string, unknown> = {}) => ({
-      editableFoldersId: [],
-      isAllEditable: false,
-      viewableFoldersId: [],
-      isAllViewable: false,
-      editAppsInFoldersId: [],
-      isAllEditApps: false,
-      ...over,
-    });
-
     it('should block a type mismatch for everyone, admins included', () => {
       expect(canMoveApp(perms({ isAdmin: true }), 'u', folder, { ...mine, type: APP_TYPES.MODULE })).toBe(false);
     });
@@ -277,6 +278,40 @@ describe('dashboard actions', () => {
       expect(canMoveApp(perms(), 'u', folder, mine)).toBe(true);
       expect(canMoveApp(perms(), 'u', folder, theirs)).toBe(false);
       expect(canMoveApp(perms(), 'u', { ...folder, ownerId: 'x' }, mine)).toBe(false);
+    });
+  });
+
+  describe('canRemoveApp', () => {
+    const folder = { id: 'f1', type: APP_TYPES.FRONT_END, ownerId: 'x' };
+    const app = { type: APP_TYPES.FRONT_END };
+
+    it('should block a type mismatch for everyone, admins included', () => {
+      expect(canRemoveApp(perms({ isAdmin: true }), 'u', folder, { type: APP_TYPES.MODULE })).toBe(false);
+    });
+
+    it('should allow admins, and group editors of that folder through the folder bucket', () => {
+      expect(canRemoveApp(perms({ isAdmin: true }), 'u', folder, app)).toBe(true);
+      expect(canRemoveApp(perms({ [MODULES.FOLDER]: folderBucket({ isAllEditable: true }) }), 'u', folder, app)).toBe(
+        true
+      );
+      expect(
+        canRemoveApp(perms({ [MODULES.FOLDER]: folderBucket({ editableFoldersId: ['f1'] }) }), 'u', folder, app)
+      ).toBe(true);
+      expect(
+        canRemoveApp(perms({ [MODULES.FOLDER]: folderBucket({ editableFoldersId: ['f2'] }) }), 'u', folder, app)
+      ).toBe(false);
+    });
+
+    it('should fall back to folderCreate only when there is no folder bucket', () => {
+      expect(canRemoveApp(perms({ folderCreate: true }), 'u', folder, app)).toBe(true);
+      expect(canRemoveApp(perms({ folderCreate: true, [MODULES.FOLDER]: folderBucket() }), 'u', folder, app)).toBe(
+        false
+      );
+    });
+
+    it('should allow a folder owner, and no one else without a grant', () => {
+      expect(canRemoveApp(perms(), 'u', { ...folder, ownerId: 'u' }, app)).toBe(true);
+      expect(canRemoveApp(perms(), 'u', folder, app)).toBe(false);
     });
   });
 });
