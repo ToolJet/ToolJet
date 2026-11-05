@@ -15,6 +15,8 @@ import PromoteConfirmationExtras from './PromoteConfirmationExtras';
 const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) => {
   const { moduleId } = useModuleContext();
   const [promotingEnvironment, setPromotingEnvironment] = useState(false);
+  // A review still waiting on this version holds the promotion (PromoteConfirmationExtras says why).
+  const [promoteLocked, setPromoteLocked] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true' || false;
   const currentVersionId = useStore((state) => state.currentVersionId);
   const [showModal, setShow] = useState(data);
@@ -207,6 +209,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
           versionId={versionIdToPromote}
           targetEnvironment={data?.target}
           releasedVersionId={releasedVersionId}
+          onLockedChange={setPromoteLocked}
         />
       </Modal.Body>
       <Modal.Footer className="mt-3 env-modal-footer">
@@ -217,6 +220,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
           variant="primary"
           onClick={handleConfirm}
           isLoading={promotingEnvironment}
+          disabled={promoteLocked}
           data-cy="promote-button"
         >
           Promote

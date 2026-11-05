@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { ArrowBigUpDash } from 'lucide-react';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useTranslation } from 'react-i18next';
+import { useVersionActionRequest } from '@/AppBuilder/_utils/versionActions';
 
 const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = false }) => {
   const [promoteModalData, setPromoteModalData] = useState(null);
@@ -46,6 +47,11 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
       target: environments[currentEnvIndex + 1],
     });
   };
+  useVersionActionRequest(
+    'promote',
+    editingVersion,
+    () => !shouldDisablePromote && isPromoteVersionEnabled && handlePromote()
+  );
   const renderTooltipMessage = () => {
     if (!isPromoteVersionEnabled) {
       return "You don't have access to promote application. Contact admin to know more.";

@@ -1,6 +1,12 @@
 import { useEffect } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
-import { COMPARE_OVERLAY_MESSAGE, COMPARE_OVERLAY_RESULT, muteCompareEvents } from '@/AppBuilder/_utils/compareFrame';
+import {
+  COMPARE_OVERLAY_MESSAGE,
+  COMPARE_OVERLAY_RESULT,
+  COMPARE_PAGE_MESSAGE,
+  COMPARE_PAGE_RESULT,
+  muteCompareEvents,
+} from '@/AppBuilder/_utils/compareFrame';
 
 // Overlays the compare view can open: the ones with an open and a close action.
 const OVERLAY_TYPES = /^(Modal|ModalV2|ShadDialog)$/;
@@ -67,6 +73,18 @@ export function createCompareOverlayHandler(getState, moduleId = 'canvas') {
 }
 
 /**
+ * Shows another page of the version already running in the frame: `switched`, or `missing` when this
+ * version has no page with that handle (the compare view then loads the frame afresh).
+ */
+export function switchComparePage(getState, handle, moduleId = 'canvas') {
+  const state = getState();
+  const page = (state.modules?.[moduleId]?.pages ?? []).find((item) => item.handle === handle);
+  if (!page) return { status: 'missing' };
+  if (state.getCurrentPageId?.(moduleId) !== page.id) state.switchPage(page.id, page.handle, [], moduleId);
+  return { status: 'switched' };
+}
+
+/**
  * Listens for the compare view's requests in a frame that previews a version (`?version=`) inside
  * a same-origin parent, and replies to each with what happened.
  */
@@ -77,6 +95,14 @@ export function useCompareOverlayBridge(moduleId = 'canvas', enabled = true) {
     const handle = createCompareOverlayHandler(useStore.getState, moduleId);
     const onMessage = (event) => {
       if (event.source !== window.parent || event.origin !== window.location.origin) return;
+      if (event.data?.type === COMPARE_PAGE_MESSAGE) {
+        const result = switchComparePage(useStore.getState, event.data.handle, moduleId);
+        window.parent.postMessage(
+          { type: COMPARE_PAGE_RESULT, requestId: event.data.requestId, ...result },
+          window.location.origin
+        );
+        return;
+      }
       if (event.data?.type !== COMPARE_OVERLAY_MESSAGE) return;
       const result = handle(event.data.names);
       window.parent.postMessage(

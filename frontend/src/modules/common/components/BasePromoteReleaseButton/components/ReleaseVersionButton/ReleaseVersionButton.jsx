@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button/Button';
 import useStore from '@/AppBuilder/_stores/store';
 import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useVersionActionRequest } from '@/AppBuilder/_utils/versionActions';
 
 const ReleaseVersionButton = function DeployVersionButton({ version = null, variant = 'default', darkMode = false }) {
   const { moduleId } = useModuleContext();
@@ -80,6 +81,12 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
     if (e) e.stopPropagation();
     setShowConfirmation(true);
   };
+
+  useVersionActionRequest(
+    'release',
+    versionToBeReleased,
+    () => !isVersionReleased && isReleaseVersionEnabled && setShowConfirmation(true)
+  );
 
   const onReleaseConfirm = () => {
     releaseVersion();
