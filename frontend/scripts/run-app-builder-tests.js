@@ -8,8 +8,8 @@ const editionArg = args.find((arg) => arg.startsWith('--edition'));
 const edition = editionArg?.includes('=')
   ? editionArg.split('=')[1]
   : editionArg
-  ? args[args.indexOf(editionArg) + 1]
-  : undefined;
+    ? args[args.indexOf(editionArg) + 1]
+    : undefined;
 const forwarded = editionArg
   ? args.filter((arg, index) => arg !== editionArg && index !== args.indexOf(editionArg) + 1)
   : args;
@@ -26,7 +26,14 @@ const patterns = {
   ],
   parity: ['src/test/app-builder/__tests__/parity.spec.js'],
 };
-const jestArgs = [...(patterns[mode] || patterns.all), ...forwarded];
+const appBuilderCoverage = require('../jest.config').collectCoverageFrom.filter(
+  (pattern) => pattern.startsWith('src/AppBuilder/') || pattern.startsWith('!')
+);
+const jestArgs = [
+  ...(patterns[mode] || patterns.all),
+  ...appBuilderCoverage.map((pattern) => `--collectCoverageFrom=${pattern}`),
+  ...forwarded,
+];
 if (mode === 'watch') jestArgs.push('--watch');
 const result = spawnSync(process.execPath, [require.resolve('jest/bin/jest'), ...jestArgs], {
   stdio: 'inherit',

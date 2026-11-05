@@ -5,14 +5,20 @@
  * and fail on the extensionless relative import below. Keep the ts-node loader.
  */
 import type { Config } from '@jest/types';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import { coverageConfig } from './test/jest-coverage.config';
+import { editionProjects } from './test/jest-projects.config';
 
-const config: Config.InitialOptions = {
-  verbose: true,
+// CE when asked for, or when the private test tree is absent (public clone).
+const isCE = process.env.TOOLJET_EDITION === 'ce' || !existsSync(join(__dirname, 'ee/test'));
+
+// Per-tree options. `roots`, `rootDir` and the `test-helper` mapping are set per project by editionProjects().
+const shared: Config.InitialProjectOptions = {
   moduleFileExtensions: ['js', 'json', 'ts', 'node'],
-  rootDir: '.',
   testEnvironment: 'node',
   globalSetup: '<rootDir>/test/jest-global-setup.ts',
+  globalTeardown: '<rootDir>/test/jest-global-teardown.ts',
   setupFiles: ['<rootDir>/test/jest-setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/test/jest-transaction-setup.ts'],
   testRegex: 'test/modules/.*/unit/.*spec\\.ts$',
@@ -44,19 +50,25 @@ const config: Config.InitialOptions = {
     '@otel/(.*)': '<rootDir>/src/otel/$1',
     // Mock mariadb — v3.5.0+ is ESM-only, Jest can't require() it (jestjs/jest#15275)
     '^mariadb$': '<rootDir>/test/__mocks__/mariadb.ts',
-    '^test-helper$': '<rootDir>/test/test.helper.ts',
   },
-  ...coverageConfig(),
-  coverageDirectory: '<rootDir>/coverage-unit',
   runner: 'groups',
-  testTimeout: 30000,
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   transformIgnorePatterns: [
-    // thrift's nested uuid dependency ships an ESM-only build; both names must be
-    // whitelisted since node_modules/ appears twice in that nested path and each
-    // occurrence is checked independently.
-    'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object|thrift|uuid)/)',
+    'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object)/)(?!(thrift/node_modules/)?uuid/dist-node/)',
   ],
+};
+
+const config: Config.InitialOptions = {
+  rootDir: '.',
+  projects: editionProjects(__dirname, isCE, shared),
+  // Global-only options: Jest ignores these inside a project.
+  verbose: true,
+  testTimeout: 30000,
+  // CI: recycle a worker once it holds >25% of RAM between spec files, so a leak
+  // cannot grow until the OS SIGKILLs it. Not a CLI flag; global-only.
+  ...(process.env.CI ? { workerIdleMemoryLimit: 0.25 } : {}),
+  ...coverageConfig(isCE),
+  coverageDirectory: '<rootDir>/coverage-unit',
 };
 
 export default config;

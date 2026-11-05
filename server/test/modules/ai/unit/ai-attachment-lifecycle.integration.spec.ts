@@ -1,7 +1,8 @@
 /** @group working */
+import { assertAiTestDatabase } from '../../../helpers/ai-test-database';
 // Opt in only with a disposable PostgreSQL database; all tables live in a private random schema.
 import { randomUUID, createHash } from 'crypto';
-import { DataSource } from 'typeorm';
+import { DataSource, QueryRunner } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { AiAttachment } from '@entities/ai_attachment.entity';
 import { AiAttachmentService } from '@modules/ai/services/ai-attachment.service';
@@ -18,6 +19,7 @@ integration('attachment lifecycle with PostgreSQL', () => {
     destination = randomUUID();
   const inherited = randomUUID();
   let admin: DataSource, db: DataSource, service: AiAttachmentService;
+  let olderTransaction: QueryRunner;
   let agent: any, originals: Map<string, Buffer>;
   const file = () => {
     const buffer = Buffer.from('location,quantity\nGlasshouse,23');
@@ -29,15 +31,19 @@ integration('attachment lifecycle with PostgreSQL', () => {
     };
   };
   beforeAll(async () => {
-    const url = process.env.ATTACHMENT_TEST_DATABASE_URL;
+    const url = assertAiTestDatabase(process.env.ATTACHMENT_TEST_DATABASE_URL);
     admin = await new DataSource({ type: 'postgres', url }).initialize();
+    // Concurrent suites can retain an older transaction while these migration indexes are rebuilt.
+    olderTransaction = admin.createQueryRunner();
+    await olderTransaction.startTransaction();
+    await olderTransaction.query('SELECT txid_current()');
     await admin.query(`CREATE SCHEMA "${schema}"`);
     db = await new DataSource({
       type: 'postgres',
       url,
       entities: [AiAttachment],
       schema,
-      extra: { options: `-c search_path=${schema}`, max: 8 },
+      extra: { options: `-c search_path=${schema}`, max: 8, application_name: schema },
     }).initialize();
     await db.query(`CREATE TABLE organizations (id uuid PRIMARY KEY);
       CREATE TABLE users (id uuid PRIMARY KEY);
@@ -82,6 +88,8 @@ integration('attachment lifecycle with PostgreSQL', () => {
     service = new AiAttachmentService(db, { get: () => undefined } as unknown as ConfigService, agent);
   });
   afterAll(async () => {
+    if (olderTransaction?.isTransactionActive) await olderTransaction.rollbackTransaction();
+    await olderTransaction?.release();
     if (db?.isInitialized) await db.destroy();
     if (admin?.isInitialized) {
       await admin.query(`DROP SCHEMA "${schema}" CASCADE`);
@@ -100,10 +108,11 @@ integration('attachment lifecycle with PostgreSQL', () => {
   it('adds the reconciliation index to an already migrated database and tolerates earlier copies', async () => {
     const runner = db.createQueryRunner();
     const migration = new IndexAiAttachmentReconciliation1790683260000();
-    const indexes = () => db.query(
-      'SELECT indexdef FROM pg_indexes WHERE schemaname=$1 AND indexname=$2',
-      [schema, 'idx_ai_attachments_reconcile']
-    );
+    const indexes = () =>
+      db.query('SELECT indexdef FROM pg_indexes WHERE schemaname=$1 AND indexname=$2', [
+        schema,
+        'idx_ai_attachments_reconcile',
+      ]);
     try {
       expect(await indexes()).toHaveLength(0);
       await migration.up(runner);
@@ -140,8 +149,11 @@ integration('attachment lifecycle with PostgreSQL', () => {
     try {
       const second = await service.upload(owner, file());
       expect(second.id).toBeTruthy();
-      const [active] = await db.query(`SELECT count(*) FROM pg_stat_activity WHERE state='idle in transaction'
-        AND query LIKE '%ai_attachments%' AND pid <> pg_backend_pid()`);
+      const [active] = await db.query(
+        `SELECT count(*) FROM pg_stat_activity WHERE state='idle in transaction'
+        AND application_name=$1 AND query LIKE '%ai_attachments%' AND pid <> pg_backend_pid()`,
+        [schema]
+      );
       expect(Number(active.count)).toBe(0);
     } finally {
       release();
@@ -227,10 +239,24 @@ integration('attachment lifecycle with PostgreSQL', () => {
       [due]
     );
     await db.query('ANALYZE ai_attachments');
-    const plan = await db.query(`EXPLAIN (FORMAT JSON) SELECT a.id FROM ai_attachments a
-      WHERE state <> 'deleting' AND next_cleanup_at <= now() ORDER BY next_cleanup_at,id LIMIT 100 FOR UPDATE SKIP LOCKED`);
-    expect(JSON.stringify(plan)).toMatch(/idx_ai_attachments_(reconcile|cleanup)/);
+    // Rebuilt indexes can be hidden by an older transaction's xmin after HOT updates.
+    // Apply the real reconciliation migration to an empty temporary copy before inserting
+    // rows. This tests its ordered plan without relying on visibility of rebuilt indexes
+    // or on the older single-column cleanup index. The real sweep still runs below.
+    const plan = await db.transaction(async (manager) => {
+      if (!manager.queryRunner) throw new Error('The fixture requires a transaction query runner');
+      await manager.query(`CREATE TEMP TABLE ai_attachments
+        (LIKE "${schema}".ai_attachments) ON COMMIT DROP`);
+      await new IndexAiAttachmentReconciliation1790683260000().up(manager.queryRunner);
+      await manager.query(`INSERT INTO ai_attachments SELECT * FROM "${schema}".ai_attachments`);
+      await manager.query('ANALYZE ai_attachments');
+      return manager.query(`EXPLAIN (FORMAT JSON) SELECT a.id FROM ai_attachments a
+        WHERE state <> 'deleting' AND next_cleanup_at <= now() ORDER BY next_cleanup_at,id LIMIT 100 FOR UPDATE SKIP LOCKED`);
+    });
+    expect(JSON.stringify(plan)).toContain('idx_ai_attachments_reconcile');
+    expect(JSON.stringify(plan)).toContain('Index Scan');
     expect(JSON.stringify(plan)).not.toContain('Seq Scan');
+    expect(JSON.stringify(plan)).not.toContain('Sort');
     await service.sweep();
     const [changed] = await db.query('SELECT state FROM ai_attachments WHERE id=$1', [due]);
     expect(changed.state).toBe('deleting');
