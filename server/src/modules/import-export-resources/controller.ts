@@ -27,7 +27,7 @@ export class ImportExportResourcesController {
   @UseGuards(JwtAuthGuard, AppFeatureAbilityGuard)
   @Post('/export')
   async export(@User() user, @Body() exportResourcesDto: ExportResourcesDto) {
-    const result = await this.importExportResourcesService.export(user, exportResourcesDto, user.branchId);
+    const result = await this.importExportResourcesService.export(user, exportResourcesDto, user.branchId, 'file');
     return {
       ...result,
       tooljet_version: globalThis.TOOLJET_VERSION,

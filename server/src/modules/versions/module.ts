@@ -1,3 +1,4 @@
+import { CodeModeSourceModule } from '@modules/code-mode-source/module';
 import { DynamicModule } from '@nestjs/common';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { VersionRepository } from '@modules/versions/repository';
@@ -68,6 +69,7 @@ export class VersionModule extends SubModule {
         await EncryptionModule.register(configs),
         await GitSyncConfigsModule.register(configs),
         await TooljetDbModule.register(configs),
+        await CodeModeSourceModule.register(configs),
       ],
       controllers: isMainImport
         ? [

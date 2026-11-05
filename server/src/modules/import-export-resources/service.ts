@@ -123,7 +123,10 @@ export class ImportExportResourcesService {
   async export(
     user: User,
     exportResourcesDto: ExportResourcesDto,
-    branchId?: string
+    branchId?: string,
+    // An app's stored code and builds: for a file a person takes elsewhere and for a clone. Git sync has its own
+    // folder for code, and the AI callers want the definition only.
+    code?: 'file' | 'clone'
   ): Promise<{
     tooljet_database?: Array<ImportTooljetDatabaseDto>;
     app?: Array<Record<string, any>>; // TODO: Define the type for app
@@ -155,6 +158,7 @@ export class ImportExportResourcesService {
       const exportedApps: Record<string, unknown>[] = [];
       for (const app of exportResourcesDto.app) {
         const definition = await this.appImportExportService.export(user, app.id, app.search_params, branchId);
+        if (code) await this.appImportExportService.addCodeToExport(user, definition, code === 'file');
         if (!isEmpty(coRelationIdByTableId)) {
           this.appImportExportService.pointTooljetDbQueriesAtCoRelationIds(definition, coRelationIdByTableId);
         }
@@ -251,7 +255,11 @@ export class ImportExportResourcesService {
             isTemplateApp
           );
 
-          imports.app.push({ id: createdApp.newApp.id, name: createdApp.newApp.name });
+          imports.app.push({
+            id: createdApp.newApp.id,
+            name: createdApp.newApp.name,
+            ...(createdApp.codeMissing && { codeMissing: true }),
+          });
 
           RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
             userId: user.id,
@@ -336,7 +344,7 @@ export class ImportExportResourcesService {
       tooljet_database: tablesForApp,
     };
 
-    const resourceExport = await this.export(user, exportResourcesDto);
+    const resourceExport = await this.export(user, exportResourcesDto, undefined, 'clone');
 
     // Prevent cloning a stub app (pulled from git but not yet hydrated — has no pages).
     // AppVersion.isStub is a real DB column (is_stub, default false) — reliable to check here.

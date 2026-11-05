@@ -73,6 +73,10 @@ export class App extends BaseEntity {
   @Column({ name: 'app_generated_from_prompt', default: false })
   appGeneratedFromPrompt: boolean;
 
+  /** How the app is built: 'visual' (the default) or 'code'. Set at creation. */
+  @Column({ name: 'build_mode', default: 'visual' })
+  buildMode: 'visual' | 'code';
+
   @Column({ name: 'co_relation_id', nullable: true })
   co_relation_id: string;
 

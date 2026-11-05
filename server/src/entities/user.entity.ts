@@ -239,6 +239,8 @@ export class User extends BaseEntity {
   oauthScopes?: string[];
   oauthAppId?: string;
   tjApiSource?: string;
+  // The app an AI builder session was minted for (its aiAppId claim).
+  aiAppId?: string;
   // Session provenance, mirrored from the JWT. Session kinds: personal-access-tokens/AGENTS.md.
   isPATLogin?: boolean;
   patScope?: PersonalAccessTokenScope;
