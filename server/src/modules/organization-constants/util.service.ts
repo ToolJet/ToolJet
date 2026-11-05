@@ -6,6 +6,8 @@ import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_consta
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { Injectable } from '@nestjs/common';
+import { OrganizationConstantType, SECRET_VALUE_MASK } from './constants';
+import { ConstantWithEnvironmentValues } from './types';
 
 @Injectable()
 export class OrganizationConstantsUtilService implements IOrganizationConstantsUtilService {
@@ -119,13 +121,12 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
     });
   }
 
-  removeSecretValues(constants = []) {
-    constants.forEach((constant) => {
-      if (constant.type === 'Secret') {
-        constant.values = constant.values.map((value) => {
-          return { ...value, value: '*'.repeat(8) };
-        });
-      }
-    });
+  // Returns copies: callers may pass objects owned by the .env constants cache.
+  removeSecretValues(constants: ConstantWithEnvironmentValues[]): ConstantWithEnvironmentValues[] {
+    return constants.map((constant) =>
+      constant.type === OrganizationConstantType.SECRET
+        ? { ...constant, values: constant.values.map((value) => ({ ...value, value: SECRET_VALUE_MASK })) }
+        : constant
+    );
   }
 }

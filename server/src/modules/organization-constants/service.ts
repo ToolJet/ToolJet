@@ -6,9 +6,9 @@ import { OrganizationConstant } from '@entities/organization_constants.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { IOrganizationConstantsService } from './interfaces/IService';
 import { OrganizationConstantsUtilService } from './util.service';
-import { OrganizationConstantType } from './constants';
+import { OrganizationConstantType, SECRET_VALUE_MASK } from './constants';
 import { OrganizationConstantRepository } from './repository';
-const secretValue = '**********';
+import { ConstantWithEnvironmentValues } from './types';
 @Injectable()
 export class OrganizationConstantsService implements IOrganizationConstantsService {
   constructor(
@@ -19,22 +19,14 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
 
   async allEnvironmentConstants(
     organizationId: string,
-    decryptSecretValue?: boolean,
     type?: OrganizationConstantType
-  ): Promise<OrganizationConstant[]> {
+  ): Promise<ConstantWithEnvironmentValues[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const result = await this.organizationConstantRepository.findAllByOrganizationId(organizationId, type);
       const appEnvironments = await this.appEnvironmentUtilService.getAll(organizationId);
 
       const constantsWithValues = await Promise.all(
         result.map(async (constant) => {
-          // Skip processing values if type is SECRET and decryptSecretValue is false
-          if (constant.type === OrganizationConstantType.SECRET && !decryptSecretValue) {
-            return {
-              name: constant.constantName,
-            };
-          }
-
           const values = await Promise.all(
             appEnvironments.map(async (env) => {
               let resolvedValue = '';
@@ -42,9 +34,7 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
               const value = constant.orgEnvironmentConstantValues.find((value) => value.environmentId === env.id);
               if (value) {
                 if (constant.type === OrganizationConstantType.SECRET) {
-                  resolvedValue = decryptSecretValue
-                    ? await this.organizationConstantsUtilService.decryptSecret(organizationId, value.value)
-                    : secretValue;
+                  resolvedValue = value.value ? SECRET_VALUE_MASK : '';
                 } else {
                   resolvedValue = await this.organizationConstantsUtilService.decryptSecret(
                     organizationId,
@@ -89,7 +79,7 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
                 organizationId,
                 constant.orgEnvironmentConstantValues[0].value
               )
-            : secretValue;
+            : SECRET_VALUE_MASK;
 
           return {
             id: constant.id,

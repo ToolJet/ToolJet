@@ -1,4 +1,4 @@
-import { FEATURE_KEY } from '../constants';
+import { FEATURE_KEY, OrganizationConstantType } from '../constants';
 import { FeatureConfig } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
 
@@ -15,4 +15,20 @@ interface Features {
 
 export interface FeaturesConfig {
   [MODULES.ORGANIZATION_CONSTANT]: Features;
+}
+
+export interface ConstantEnvironmentValue {
+  environmentName: string;
+  value: string;
+  id?: string;
+}
+
+// Response row of allEnvironmentConstants. `fromEnv` marks constants read from server environment variables.
+export interface ConstantWithEnvironmentValues {
+  id: string;
+  name: string;
+  type: OrganizationConstantType;
+  createdAt: Date | string;
+  values: ConstantEnvironmentValue[];
+  fromEnv?: boolean;
 }

@@ -16,6 +16,7 @@ import {
 } from 'test-helper';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
+import { SECRET_VALUE_MASK } from '@modules/organization-constants/constants';
 
 const createConstant = async (app: INestApplication, adminUserData: any, body: any) => {
   return await request(app.getHttpServer())
@@ -140,6 +141,47 @@ describe('OrgConstantsController', () => {
 
         expect(orgConstant).toEqual(expectedConstant);
       });
+    });
+
+    it('should never return the plaintext of a Secret constant', async () => {
+      const adminUserData = await createUser(app, {
+        email: 'admin@tooljet.io',
+        groups: ['admin', 'all_users'],
+      });
+      const appEnvironments = await ensureAppEnvironments(app, adminUserData.user.organizationId);
+      const loggedUser = await login(app);
+      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+      const createResponse = await createConstant(app, adminUserData, {
+        constant_name: 'api_key',
+        value: 'plaintext-secret',
+        type: 'Secret',
+        environments: appEnvironments.map((env) => env.id),
+      });
+      const [unsetEnvironment, ...setEnvironments] = appEnvironments;
+      const unsetValue = await findEntityOrFail(OrgEnvironmentConstantValue, {
+        organizationConstantId: createResponse.body.constant.id,
+        environmentId: unsetEnvironment.id,
+      });
+      await updateEntity(OrgEnvironmentConstantValue, unsetValue.id, { value: '' });
+
+      const listResponse = await request(app.getHttpServer())
+        .get('/api/organization-constants/decrypted')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', adminUserData['tokenCookie'])
+        .expect(200);
+
+      expect(JSON.stringify(listResponse.body)).not.toContain('plaintext-secret');
+      expect(listResponse.body.constants).toEqual([
+        expect.objectContaining({
+          name: 'api_key',
+          type: 'Secret',
+          values: [
+            { environmentName: unsetEnvironment.name, value: '' },
+            ...setEnvironments.map((env) => ({ environmentName: env.name, value: SECRET_VALUE_MASK })),
+          ],
+        }),
+      ]);
     });
   });
 

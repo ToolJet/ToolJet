@@ -23,7 +23,7 @@ export class OrganizationConstantController implements IOrganizationConstantCont
   @InitFeature(FEATURE_KEY.GET_DECRYPTED_CONSTANTS)
   @Get('decrypted')
   async getDecryptedConstants(@User() user, @Query('type') type: OrganizationConstantType) {
-    const result = await this.organizationConstantsService.allEnvironmentConstants(user.organizationId, true, type);
+    const result = await this.organizationConstantsService.allEnvironmentConstants(user.organizationId, type);
     return { constants: result };
   }
 
@@ -31,12 +31,11 @@ export class OrganizationConstantController implements IOrganizationConstantCont
   @InitFeature(FEATURE_KEY.GET_SECRETS)
   @Get('secrets')
   async getAllSecrets(@User() user) {
-    const result = await this.organizationConstantsService.allEnvironmentConstants(
+    const secrets = await this.organizationConstantsService.allEnvironmentConstants(
       user.organizationId,
-      false,
       OrganizationConstantType.SECRET
     );
-    return { constants: result };
+    return { constants: secrets.map(({ name }) => ({ name })) };
   }
 
   //by default, this api fetches only global constants (for public apps, need to fetch app to get orgId in the public guard)
