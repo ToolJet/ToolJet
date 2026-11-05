@@ -21,11 +21,11 @@ describe('DataQueriesService', () => {
     let getDetails: jest.Mock;
     let runAndGetResult: jest.SpyInstance;
 
-    async function run(appVersion: { branchId: string; isSynced: boolean; status: AppVersionStatus }) {
+    async function run(appVersion: { branchId: string; isSynced: boolean; status: AppVersionStatus }, user: object = {}) {
       const repository = module.get(DataQueryRepository) as unknown as { getOneById: jest.Mock };
       repository.getOneById.mockResolvedValue({ id: 'query-1', options: {}, appVersion });
       await service.runQueryOnBuilder(
-        { organizationId: 'org-1' } as never,
+        { organizationId: 'org-1', ...user } as never,
         'query-1',
         'env-1',
         { options: OPTIONS, resolvedOptions: {} } as never,
@@ -67,6 +67,13 @@ describe('DataQueriesService', () => {
 
     it('should run without saving options on a synced draft on the default branch', async () => {
       await run({ branchId: DEFAULT_BRANCH_ID, isSynced: true, status: AppVersionStatus.DRAFT });
+
+      expect(updateOne).not.toHaveBeenCalled();
+      expect(runAndGetResult).toHaveBeenCalled();
+    });
+
+    it('should run without saving options on an app-pinned session', async () => {
+      await run({ branchId: FEATURE_BRANCH_ID, isSynced: true, status: AppVersionStatus.DRAFT }, { patAppId: 'app-1' });
 
       expect(updateOne).not.toHaveBeenCalled();
       expect(runAndGetResult).toHaveBeenCalled();

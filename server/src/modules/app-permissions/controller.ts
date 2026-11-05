@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { User } from '@modules/app/decorators/user.decorator';
 import { IAppPermissionsController } from './interfaces/IController';
@@ -34,6 +34,13 @@ export class AppPermissionsController implements IAppPermissionsController {
     @Param('appId') appId: string,
     @Res({ passthrough: true }) response: Response
   ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  // EE: the people who can open a Code mode app, for its own screens (ee/app-permissions/app-members.ts).
+  @InitFeature(FEATURE_KEY.FETCH_APP_MEMBERS)
+  @Get(':appId/members')
+  async fetchAppMembers(@User() user, @Param('appId') appId: string, @Query() query: Record<string, unknown>): Promise<any> {
     throw new NotFoundException();
   }
 

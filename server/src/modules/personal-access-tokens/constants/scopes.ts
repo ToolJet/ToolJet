@@ -8,6 +8,7 @@ import { FEATURE_KEY as PLUGIN_FEATURE } from '@modules/plugins/constants';
 import { FEATURE_KEY as LIBRARY_FEATURE } from '@modules/custom-component-libraries/constants';
 import { FEATURE_KEY as APP_FEATURE } from '@modules/apps/constants';
 import { FEATURE_KEY as DATA_QUERY_FOLDER_FEATURE } from '@modules/data-query-folders/constants';
+import { FEATURE_KEY as APP_SECURITY_FEATURE } from '@modules/app-security/constants';
 
 /**
  * What a WORKSPACE personal access token may reach.
@@ -50,6 +51,9 @@ export const PAT_BUNDLE_MODULES: Record<PAT_BUNDLE, MODULES[]> = {
     MODULES.THREAD,
     MODULES.FILE,
     MODULES.ORGANIZATION_THEMES,
+    // Scan an app version and upload SARIF from CI; per-app edit permission still applies. Releasing past a failed
+    // gate is not reachable (PAT_DENIED_FEATURES).
+    MODULES.APP_SECURITY,
     // An app's stored source: read and written with the app's own permissions. Import, publish and dev uploads act
     // only on a library no other app uses (checked in the service, for every caller).
     MODULES.CODE_MODE_SOURCE,
@@ -121,6 +125,10 @@ export const PAT_UNASSIGNED_MODULES: MODULES[] = [
   MODULES.FRONTEND_METRICS, // browser telemetry ingestion, not required by automation clients
   MODULES.CUSTOM_COMPONENT_LIBRARIES, // uploads code that runs inside apps; not granted pending a decision
   MODULES.ROOT, // health and version
+  // Widens what pages may reach (their Content Security Policy); an admin's decision in the browser only.
+  MODULES.CODE_PAGE_SECURITY,
+  // Scan policy and exceptions decide what may ship; an admin's decision in the browser only.
+  MODULES.APP_SECURITY_POLICY,
   // Uploads and publishes JS bundles that execute inside every app that uses them.
   MODULES.CUSTOM_COMPONENT_LIBRARIES,
 ];
@@ -247,6 +255,18 @@ const PAT_ALLOWED_FEATURES: Partial<Record<MODULES, ReadonlySet<string>>> = {
   ]),
 };
 
+/**
+ * Features a token never reaches inside a module it may otherwise use: decisions a person makes in the browser,
+ * because each one decides what may ship. A deny set rather than an allowlist, so the rest of each module stays
+ * reachable and a new feature there is not silently dropped.
+ */
+export const PAT_DENIED_FEATURES: Partial<Record<MODULES, ReadonlySet<string>>> = {
+  // "Release anyway" past a failed security gate.
+  [MODULES.APP_SECURITY]: new Set<string>([APP_SECURITY_FEATURE.OVERRIDE_GATE]),
+  // Approving a review, and releasing without one. Review reads, comments and the rest stay available.
+  [MODULES.VERSION]: new Set<string>([VERSION_FEATURE.REVIEW_APPROVE, VERSION_FEATURE.REVIEW_OVERRIDE]),
+};
+
 /** Which bundle a module belongs to, for the denial message. Undefined if unassigned. */
 export function patBundleOf(module: MODULES): PAT_BUNDLE | undefined {
   return (Object.keys(PAT_BUNDLE_MODULES) as PAT_BUNDLE[]).find((b) => PAT_BUNDLE_MODULES[b].includes(module));
@@ -287,6 +307,7 @@ export function patCanAccess(module: MODULES | undefined, feature?: string): boo
     );
   }
   if (!ALLOWED_MODULES.has(module)) return false;
+  if (feature && PAT_DENIED_FEATURES[module]?.has(feature)) return false;
   const allowedFeatures = PAT_ALLOWED_FEATURES[module];
   return !allowedFeatures || (!!feature && allowedFeatures.has(feature));
 }

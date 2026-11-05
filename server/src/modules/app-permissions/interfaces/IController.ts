@@ -7,6 +7,8 @@ export interface IAppPermissionsController {
 
   fetchUserGroups(user: User, appId: string, response: Response): Promise<any>;
 
+  fetchAppMembers(user: User, appId: string, query: Record<string, unknown>): Promise<any>;
+
   fetchPagePermissions(user: User, appId: string, pageId: string, response: Response): Promise<any>;
 
   createPagePermissions(
