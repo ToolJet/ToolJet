@@ -72,17 +72,6 @@ const CreateVersionModal = ({
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
   const textareaRef = React.useRef(null);
 
-  const handleDescriptionInput = (e) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-    textarea.style.height = 'auto';
-    const lineHeight = 24;
-    const maxLines = 4;
-    const maxHeight = lineHeight * maxLines;
-    textarea.style.height = Math.min(textarea.scrollHeight, maxHeight) + 'px';
-    textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
-  };
-
   useEffect(() => {
     if (appId) {
       fetchDevelopmentVersions(appId);
@@ -374,7 +363,6 @@ const CreateVersionModal = ({
               <textarea
                 type="text"
                 ref={textareaRef}
-                onInput={handleDescriptionInput}
                 onChange={(e) => setVersionDescription(e.target.value)}
                 className="form-control app-version-description"
                 data-cy="version-description-input-field"
@@ -384,7 +372,7 @@ const CreateVersionModal = ({
                 autoFocus={!isGitSyncEnabled}
                 minLength="0"
                 maxLength="500"
-                rows={1}
+                rows={3}
               />
               <small className="version-description-helper-text" data-cy="version-description-helper-text">
                 {t('editor.appVersionManager.versionDescriptionHelper', 'Description must be max 500 characters')}
