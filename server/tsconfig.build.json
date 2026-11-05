@@ -11,6 +11,7 @@
     "src/temporal",
     "src/modules/ignored",
     "src/modules/feature",
-    "ee/ignored"
+    "ee/ignored",
+    "ee/packages"
   ]
 }
