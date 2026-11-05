@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -83,6 +83,12 @@ const ListviewSubcontainerComponent = ({
   const pendingClickRef = useRef(false);
   // Only record 1 has the handle props, so the drag's outline and grid never reach a copy.
   const isResizeTarget = isResizing && !!resizeHandleProps;
+  const handleRef = useRef(null);
+  const [isHandleHovered, setIsHandleHovered] = useState(false);
+  // A live resize moves the handle from under the pointer, so its mouseleave may never fire.
+  useEffect(() => {
+    if (!isResizing) setIsHandleHovered(!!handleRef.current?.matches(':hover'));
+  }, [isResizing]);
   // The handle sits on the bottom edge, half outside the record, so the record itself must not clip; its children are clipped by the inner box.
   const handleBottom = -(RESIZE_HANDLE_HEIGHT / 2 + recordBorderInset / 2);
 
@@ -90,7 +96,7 @@ const ListviewSubcontainerComponent = ({
     <SubcontainerContext.Provider value={contextValue}>
       <div
         className={cx('list-item', {
-          'listview-record-moving': isMoving || isResizeTarget,
+          'listview-record-moving': isMoving || isResizeTarget || (isHandleHovered && !!resizeHandleProps),
           'w-100': mode == 'list',
           'listview-legacy-divider': showBorder && mode == 'list',
         })}
@@ -169,6 +175,9 @@ const ListviewSubcontainerComponent = ({
               height: RESIZE_HANDLE_HEIGHT,
             }}
             {...resizeHandleProps}
+            ref={handleRef}
+            onMouseEnter={() => setIsHandleHovered(true)}
+            onMouseLeave={() => setIsHandleHovered(false)}
           />
         )}
       </div>

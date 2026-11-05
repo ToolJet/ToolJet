@@ -621,9 +621,23 @@ describe('Listview record resize: the pointer on the handle shows the outline', 
     fireEvent.mouseEnter(handles()[0]);
     fireEvent.mouseDown(handles()[0], { clientX: 0, clientY: START_Y, button: 0 });
     fireEvent.mouseMove(document, { clientX: 0, clientY: START_Y + 30 });
+    // The pointer is elsewhere now, and the handle never got a mouseleave.
+    fireEvent.mouseOver(document.body);
     fireEvent.mouseUp(document, { clientX: 0, clientY: START_Y + 30 });
 
     await waitFor(() => expect(framed()).toEqual([false, false, false]));
+  });
+
+  test('[Listview-RSZ-008] a release with the pointer still on the handle keeps the outline', async () => {
+    // Break this catches: clearing the hover on every drag end, so the outline vanishes under a resting pointer.
+    await mount(widget);
+
+    fireEvent.mouseEnter(handles()[0]);
+    fireEvent.mouseDown(handles()[0], { clientX: 0, clientY: START_Y, button: 0 });
+    fireEvent.mouseUp(document, { clientX: 0, clientY: START_Y });
+
+    await waitFor(() => expect(gridded()).toEqual([false, false, false]));
+    expect(framed()).toEqual([true, false, false]);
   });
 });
 
