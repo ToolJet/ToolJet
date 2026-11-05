@@ -3,6 +3,7 @@ import { DataSource, EntityManager } from 'typeorm';
 import { UnauthorizedException } from '@nestjs/common';
 import type { ILoginConfigsUtilService } from '@modules/login-configs/interfaces/IUtilsService';
 import { hash, canonicalJson } from './protocol';
+import { isValidPasswordDomain, isValidSSODomain } from '@helpers/login-domain';
 
 export async function loadLoginPolicy(dataSource: DataSource, loginConfigs: Pick<ILoginConfigsUtilService, 'fetchOrganizationDetails'>, organizationId: string) {
   const configs: any = await loginConfigs.fetchOrganizationDetails(
@@ -11,7 +12,10 @@ export async function loadLoginPolicy(dataSource: DataSource, loginConfigs: Pick
     true,
     true,
   );
-  if (!configs) throw new UnauthorizedException('Workspace login is unavailable');
+  // The platform login lookup accepts both slugs and IDs, preferring a slug.
+  // OAuth has already bound an immutable ID: never accept another workspace's
+  // policy if a slug happens to equal that ID.
+  if (!configs || configs.id !== organizationId) throw new UnauthorizedException('Workspace login is unavailable');
   const providers = ['form', 'google', 'git', 'openid', 'saml', 'ldap'].flatMap((type) => {
     const list = Array.isArray(configs[type]) ? configs[type] : configs[type] ? [configs[type]] : [];
     return list.map((provider) => ({
@@ -46,6 +50,23 @@ export async function loadLoginPolicy(dataSource: DataSource, loginConfigs: Pick
   );
   return {
     providers,
+    requiresWorkspaceAuthentication: (method: string, providerId: string | null) => method === 'openid' &&
+      groupSync.some((sync) => sync.enable_group_sync && (providerId
+        ? sync.sso_config_id === providerId
+        : storedProviders.some((provider) => provider.id === sync.sso_config_id &&
+          provider.sso === method && provider.config_scope === 'instance' && provider.enabled))),
+    allowsEmail: (email: string, method: string) => {
+      const instance = Object.fromEntries(instancePolicy.map((row) => [row.key, row.value]));
+      return method === 'form'
+        ? isValidPasswordDomain(
+            email,
+            workspacePolicy?.password_allowed_domains,
+            workspacePolicy?.password_restricted_domains,
+            instance.PASSWORD_ALLOWED_DOMAINS,
+            instance.PASSWORD_RESTRICTED_DOMAINS
+          )
+        : isValidSSODomain(email, workspacePolicy?.domain, instance.ALLOWED_DOMAINS);
+    },
     fingerprint: hash(canonicalJson({
       providers: providers.sort((a, b) => `${a.type}:${a.id || ''}`.localeCompare(`${b.type}:${b.id || ''}`)),
       version: 1,

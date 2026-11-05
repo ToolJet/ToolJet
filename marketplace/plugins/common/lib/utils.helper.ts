@@ -1,6 +1,7 @@
 import { QueryError } from './query.error';
 import * as tls from 'tls';
 import { readFileSync } from 'fs';
+import * as crypto from 'crypto';
 
 const CACHED_CONNECTIONS: any = {};
 
@@ -15,6 +16,31 @@ export function parseJson(jsonString: string, errorMessage?: string): object {
 export function cacheConnection(dataSourceId: string, connection: any): any {
   const updatedAt = new Date();
   CACHED_CONNECTIONS[dataSourceId] = { connection, updatedAt };
+}
+
+export function generateSourceOptionsHash(sourceOptions: any): string {
+  const sortedEntries = Object.entries(sourceOptions || {})
+    .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}:${value}`)
+    .join('|');
+
+  return crypto.createHash('sha256').update(sortedEntries).digest('hex').substring(0, 16);
+}
+
+export function cacheConnectionWithConfiguration(dataSourceId: string, enhancedCacheKey: string, connection: any): any {
+  const updatedAt = new Date();
+  const oldKeysForThisDatasource = Object.keys(CACHED_CONNECTIONS).filter(
+    (key) => key.startsWith(`${dataSourceId}_`) && key !== enhancedCacheKey
+  );
+  // Destroy evicted knex pools so they do not leak connections
+  oldKeysForThisDatasource.forEach((oldKey) => {
+    const old = CACHED_CONNECTIONS[oldKey]?.connection;
+    if (old && typeof old.destroy === 'function') old.destroy().catch(() => {});
+    delete CACHED_CONNECTIONS[oldKey];
+  });
+
+  CACHED_CONNECTIONS[enhancedCacheKey] = { connection, updatedAt };
 }
 
 export function getCachedConnection(dataSourceId: string | number, dataSourceUpdatedAt: any): any {
