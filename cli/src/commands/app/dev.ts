@@ -190,37 +190,6 @@ export default class AppDev extends Command {
         for (const warning of result.warnings) this.log(`  ${formatWarning(warning)}`);
         const findings = checkSources(path.join(project.frontend, 'src'), project.readApp(), snapshot);
         for (const f of findings) this.log(`  ${formatWarning(`${f.file}:${f.line} ${f.message}`)}`);
-        // Scan every good build and send the result to the builder's Security panel. Never blocks the build or the upload.
-        if (flags.scan) {
-          try {
-            const scan = await scanProject(project.root);
-            await uploadScan(session, { appId: app.appId as string, versionId: snapshot.versionId }, scan, 'dev');
-            this.log(
-              `  ${formatSuccess(
-                `Security scan: ${countsLine(scan.summary.counts)} (gate ${scan.summary.gate}); see the Security panel`
-              )}`
-            );
-          } catch (err) {
-            // No scanner on this computer says nothing about the app, so nothing goes to the panel everyone sees.
-            if (err instanceof ScannerNotInstalledError) {
-              if (!warnedNoScanner) this.log(`  ${formatWarning(err.message)}`);
-              warnedNoScanner = true;
-            } else {
-              // Tell the Security panel the scan failed, so it never shows the last result (or nothing) as current.
-              const reason = (err as Error).message.replace(/^The security scan did not run: /, '').slice(0, 500);
-              const where = { appId: app.appId as string, versionId: snapshot.versionId };
-              const reported = await uploadScan(session, where, { sarif: failedScanSarif(reason) }, 'dev').then(
-                () => true,
-                () => false
-              );
-              this.log(
-                `  ${formatWarning(
-                  `Security scan failed: ${reason}${reported ? ' (shown in the Security panel)' : '; not uploaded'}`
-                )}`
-              );
-            }
-          }
-        }
         await client.uploadDev(correlationId, result.distDir);
         if (!synced) {
           const sync = await syncApp(
@@ -256,6 +225,43 @@ export default class AppDev extends Command {
               for (const line of sourceConflictLines(err as ApiError)) this.log(`  ${formatWarning(line)}`);
             else throw err;
             stored = false;
+          }
+        }
+        // Scan every good build and send the result to the builder's Security panel. Never blocks the build or the upload.
+        // After the source is stored, so the scan names the stored revision it is of (scannedSourceIdentity).
+        if (flags.scan) {
+          try {
+            const scan = await scanProject(project.root);
+            await uploadScan(
+              session,
+              { appId: app.appId as string, versionId: snapshot.versionId, root: project.root },
+              scan,
+              'dev'
+            );
+            this.log(
+              `  ${formatSuccess(
+                `Security scan: ${countsLine(scan.summary.counts)} (gate ${scan.summary.gate}); see the Security panel`
+              )}`
+            );
+          } catch (err) {
+            // No scanner on this computer says nothing about the app, so nothing goes to the panel everyone sees.
+            if (err instanceof ScannerNotInstalledError) {
+              if (!warnedNoScanner) this.log(`  ${formatWarning(err.message)}`);
+              warnedNoScanner = true;
+            } else {
+              // Tell the Security panel the scan failed, so it never shows the last result (or nothing) as current.
+              const reason = (err as Error).message.replace(/^The security scan did not run: /, '').slice(0, 500);
+              const where = { appId: app.appId as string, versionId: snapshot.versionId, root: project.root };
+              const reported = await uploadScan(session, where, { sarif: failedScanSarif(reason) }, 'dev').then(
+                () => true,
+                () => false
+              );
+              this.log(
+                `  ${formatWarning(
+                  `Security scan failed: ${reason}${reported ? ' (shown in the Security panel)' : '; not uploaded'}`
+                )}`
+              );
+            }
           }
         }
         this.log(

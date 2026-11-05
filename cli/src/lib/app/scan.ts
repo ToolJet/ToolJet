@@ -4,7 +4,8 @@ import * as os from 'os';
 import * as path from 'path';
 
 import { Session } from './session';
-import { collectProjectSource } from './source-upload';
+import { collectProjectSource, readSourceState } from './source-upload';
+import { hashProjectSource } from './source-sync';
 
 /*
   Security scans of an app project with @tooljet/app-scanner. The scanner is an ES module, so it
@@ -175,16 +176,37 @@ export const failureLine = (
       }`
     : null;
 
-/** Upload a scan to the app version (source dev or publish), with the project's packages. */
+/*
+  Which stored code a scan is of: the revision and content hash of the project's last pull or push
+  (.tooljet/source.json), sent only when that state is for this version and the files scanned are exactly that code.
+  ToolJet counts an upload toward a required scanner only with a matching identity, and refuses a mismatch (409), so a
+  copy with local changes not yet stored sends none: its scan is shown, but proves nothing about the stored code.
+*/
+export function scannedSourceIdentity(
+  root: string,
+  versionId: string
+): { sourceRevision: number; sourceContentHash: string } | undefined {
+  const state = readSourceState(root);
+  if (!state || state.versionId !== versionId || !state.contentHash) return undefined;
+  try {
+    if (hashProjectSource(root) !== state.contentHash) return undefined;
+  } catch {
+    return undefined;
+  }
+  return { sourceRevision: state.revision, sourceContentHash: state.contentHash };
+}
+
+/** Upload a scan to the app version (source dev or publish), with the project's packages and, given the project root, the stored code it is of. */
 export function uploadScan(
   session: Session,
-  target: { appId: string; versionId: string },
+  target: { appId: string; versionId: string; root?: string },
   scan: Pick<LocalScan, 'sarif'> & Partial<Pick<LocalScan, 'dependencies'>>,
   source: 'dev' | 'ci'
 ): Promise<any> {
+  const identity = target.root ? scannedSourceIdentity(target.root, target.versionId) : undefined;
   return session.api(`/apps/${target.appId}/versions/${target.versionId}/scan-results`, {
     method: 'POST',
-    body: { source, sarif: scan.sarif, dependencies: scan.dependencies },
+    body: { source, sarif: scan.sarif, dependencies: scan.dependencies, ...(identity ?? {}) },
   });
 }
 
