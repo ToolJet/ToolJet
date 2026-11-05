@@ -52,3 +52,5 @@ lerna-debug.log*
 # Local git-sync runtime storage (created by the dev server)
 /tooljet/
 /builtin-packs/
+# The CLI tarball scripts/pack-cli.sh writes, served at /api/code-mode/cli/tooljet-cli.tgz.
+/code-mode-cli/
