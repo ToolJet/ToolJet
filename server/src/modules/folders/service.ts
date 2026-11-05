@@ -11,19 +11,7 @@ import { FoldersUtilService } from './util.service';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { MODULES } from '@modules/app/constants/modules';
-import { APP_TYPES } from '@modules/apps/constants';
-import { DATA_SOURCE_FOLDER_TYPE } from './constants';
-
-// folder.type → the delete-permission key and MODULES bucket that gate its folders. Keyed by the
-// raw folder `type` string (app folders use APP_TYPES values; data-source folders use
-// DATA_SOURCE_FOLDER_TYPE, which is not an app type). Add an entry here (not another ternary arm)
-// when a new folder-owning resource type is introduced. Front-end folders fall through to
-// folderDelete / MODULES.FOLDER.
-const FOLDER_PERMISSION_BY_TYPE: Partial<Record<string, { deleteKey: string; resourceType: MODULES }>> = {
-  [APP_TYPES.WORKFLOW]: { deleteKey: 'workflowFolderDelete', resourceType: MODULES.WORKFLOW_FOLDER },
-  [APP_TYPES.MODULE]: { deleteKey: 'moduleFolderDelete', resourceType: MODULES.MODULE_FOLDER },
-  [DATA_SOURCE_FOLDER_TYPE]: { deleteKey: 'dataSourceFolderDelete', resourceType: MODULES.DATA_SOURCE_FOLDER },
-};
+import { DATA_SOURCE_FOLDER_TYPE, FOLDER_PERMISSION_BY_TYPE } from '@modules/folders/constants';
 
 @Injectable()
 export class FoldersService implements IFoldersService {
@@ -145,37 +133,42 @@ export class FoldersService implements IFoldersService {
     throw new ForbiddenException('You do not have access to perform this action');
   }
 
+  // Refusals single folder delete applies; the dashboard bulk folder delete dry run reuses them.
+  async assertFolderDeletable(user, folder: Folder, manager: EntityManager): Promise<void> {
+    await this.checkFolderManagePermission(user, folder, manager, 'delete');
+
+    const { isEnabled: isGitSyncEnabled, isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(
+      user.organizationId
+    );
+    // Multi-branch: block deletion of any folder that still has content on any branch.
+    // Single-branch: allow deletion only if the folder is empty (same check, same guard).
+    // Data-source folders track their content in folder_data_sources; every other folder type in
+    // folder_apps — pick the matching source of truth.
+    if (isGitSyncEnabled && isMultiBranchingEnabled) {
+      const isDataSourceFolder = folder.type === DATA_SOURCE_FOLDER_TYPE;
+      const branchNames = isDataSourceFolder
+        ? await this.foldersUtilService.findBranchNamesWithDataSources(folder.id, manager)
+        : await this.foldersUtilService.findBranchNamesWithApps(folder.id, manager);
+      if (branchNames.length > 0) {
+        // AllExceptionsFilter collapses every error response down to { message, ... } and
+        // drops any other fields on the exception body — so the branch list is JSON-encoded
+        // into the message itself and parsed back out on the frontend (same pattern already
+        // used for the SSO organizationId payload in handle-response.js).
+        const message = isDataSourceFolder
+          ? 'Folder with data sources cannot be deleted'
+          : 'Folder with apps cannot be deleted';
+        throw new BadRequestException(JSON.stringify({ message, branches: branchNames }));
+      }
+    }
+  }
+
   async deleteFolder(user, id): Promise<DeleteResult> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const folder = await manager.findOneOrFail(Folder, {
         where: { id, organizationId: user.organizationId },
       });
 
-      await this.checkFolderManagePermission(user, folder, manager, 'delete');
-
-      const { isEnabled: isGitSyncEnabled, isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(
-        user.organizationId
-      );
-      // Multi-branch: block deletion of any folder that still has content on any branch.
-      // Single-branch: allow deletion only if the folder is empty (same check, same guard).
-      // Data-source folders track their content in folder_data_sources; every other folder type in
-      // folder_apps — pick the matching source of truth.
-      if (isGitSyncEnabled && isMultiBranchingEnabled) {
-        const isDataSourceFolder = folder.type === DATA_SOURCE_FOLDER_TYPE;
-        const branchNames = isDataSourceFolder
-          ? await this.foldersUtilService.findBranchNamesWithDataSources(folder.id, manager)
-          : await this.foldersUtilService.findBranchNamesWithApps(folder.id, manager);
-        if (branchNames.length > 0) {
-          // AllExceptionsFilter collapses every error response down to { message, ... } and
-          // drops any other fields on the exception body — so the branch list is JSON-encoded
-          // into the message itself and parsed back out on the frontend (same pattern already
-          // used for the SSO organizationId payload in handle-response.js).
-          const message = isDataSourceFolder
-            ? 'Folder with data sources cannot be deleted'
-            : 'Folder with apps cannot be deleted';
-          throw new BadRequestException(JSON.stringify({ message, branches: branchNames }));
-        }
-      }
+      await this.assertFolderDeletable(user, folder, manager);
 
       return manager.delete(Folder, { id: folder.id, organizationId: user.organizationId });
     });

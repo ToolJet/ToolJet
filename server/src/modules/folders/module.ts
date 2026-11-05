@@ -20,7 +20,7 @@ export class FoldersModule extends SubModule {
       imports: [await GitSyncConfigsModule.register(configs)],
       controllers: isMainImport ? [FoldersController] : [],
       providers: [FoldersUtilService, FoldersService, FeatureAbilityFactory],
-      exports: [FoldersUtilService],
+      exports: [FoldersUtilService, FoldersService],
     });
   }
 }

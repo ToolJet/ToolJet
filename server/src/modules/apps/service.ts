@@ -490,10 +490,8 @@ export class AppsService implements IAppsService {
     return response;
   }
 
-  async delete(app: App, user: User) {
-    const { organizationId } = user;
-    const { id } = app;
-
+  // Refusals single delete applies before touching data; the dashboard bulk delete dry run reuses them.
+  async assertDeletable(app: App, user: User, _branchId?: string): Promise<void> {
     // Git checks: block deleting a synced app on the default branch (multi-branch) or any
     // feature-branch delete (single-branch), and the whole workspace when license-locked.
     // Uses the resolved version's branch/synced state.
@@ -521,6 +519,17 @@ export class AppsService implements IAppsService {
         }
       });
     }
+  }
+
+  async delete(app: App, user: User, branchId?: string) {
+    await this.assertDeletable(app, user, branchId);
+    return this.performDelete(app, user);
+  }
+
+  // Deletion without the checks; EE's branch-aware delete falls back to it after its own checks.
+  protected async performDelete(app: App, user: User) {
+    const { organizationId } = user;
+    const { id } = app;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       const schedules = await manager
