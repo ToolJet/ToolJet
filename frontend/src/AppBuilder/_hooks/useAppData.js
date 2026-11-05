@@ -21,7 +21,7 @@ import { camelCase, isEmpty, mapKeys, noop } from 'lodash';
 import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
-import { setSuppressQueryRerun } from '@/AppBuilder/_stores/slices/componentsSlice';
+import { setSuppressQueryRerun, clearAllPeriodicTimers } from '@/AppBuilder/_stores/slices/componentsSlice';
 import useRouter from '@/_hooks/use-router';
 import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
@@ -427,7 +427,11 @@ const useAppData = (
         // Canvas-only (mirrors the version-change effect's own cleanUpStore); embedded modules manage
         // their own. Standalone module editor (moduleId === 'canvas') is its own canvas mount too.
         const isFreshCanvasMount = !moduleMode || moduleId === 'canvas';
-        if (isFreshCanvasMount) cleanUpStore();
+        if (isFreshCanvasMount) {
+          cleanUpStore();
+          // Periodic query timers survive page switches; stop them only on full app teardown.
+          clearAllPeriodicTimers();
+        }
         let appData = { ...result };
         // The module-by-name endpoint returns the module alone, without `editorEnvironment`
         // (that field is only populated by the parent app's fetchApp response). Fall back to
@@ -1070,6 +1074,7 @@ const useAppData = (
       }
       appVersionService.getAppVersionData(appId, selectedVersion?.id, mode).then(async (appData) => {
         cleanUpStore();
+        clearAllPeriodicTimers();
         const { should_freeze_editor } = appData;
         setIsEditorFreezed(should_freeze_editor);
 

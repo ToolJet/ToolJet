@@ -12,6 +12,11 @@ import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAb
 import { ABORT_UNSUPPORTED_KINDS, defaultSources, TJ_QUERY_ERROR_TYPE } from '@/AppBuilder/QueryManager/constants';
 import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import {
+  reconcileQueryPeriodicRun,
+  pauseQueryPeriodicRun,
+  resumeQueryPeriodicRun,
+} from '@/AppBuilder/_stores/slices/componentsSlice';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
@@ -343,6 +348,15 @@ export const createQueryPanelSlice = (set, get) => ({
 
       return asyncHandler;
     },
+    // Stop a query's periodic re-run at runtime (pausePeriodicRun CSA). The pause is
+    // sticky: reconcile won't auto-restart it on the next manual run / option edit.
+    pausePeriodicRun: (queryId) => {
+      pauseQueryPeriodicRun(queryId);
+    },
+    // Resume a paused periodic re-run (resumePeriodicRun CSA).
+    resumePeriodicRun: (queryId, moduleId = 'canvas') => {
+      resumeQueryPeriodicRun(queryId, moduleId, get);
+    },
     resetQuery: (queryId, moduleId = 'canvas') => {
       const { setResolvedQuery } = get();
       setResolvedQuery(
@@ -525,6 +539,11 @@ export const createQueryPanelSlice = (set, get) => ({
           return;
         }
       }
+
+      // Query is committed to executing now — start/refresh its periodic timer if
+      // "Run this query periodically" is on. Idempotent: a tick re-running the query
+      // re-enters here and no-ops when the resolved interval is unchanged.
+      reconcileQueryPeriodicRun(queryId, moduleId, get);
 
       // Handler for transformation and completion of query results
       const processQueryResults = async (data, rawData = null) => {
