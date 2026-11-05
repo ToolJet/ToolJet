@@ -14,6 +14,23 @@ RUN --mount=type=secret,id=github_token \
     fi
 RUN npm ci && npm run build:plugin
 
+# Custom component SDK (private), packed for app projects (TOOLJET_SDK_SPEC below) and served to a teammate's
+# `tooljet app install` at /api/code-mode/cli/custom-component-sdk.tgz: npm's published SDK is older. Follows BRANCH_NAME like tooljet-mcp, falling back to main.
+FROM node:22.23.4 AS sdk-builder
+WORKDIR /sdk
+ARG BRANCH_NAME
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    git clone https://github.com/ToolJet/custom-component-sdk.git . && \
+    if [ -n "${BRANCH_NAME}" ] && git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then \
+      git checkout "${BRANCH_NAME}"; \
+    else \
+      echo "Branch ${BRANCH_NAME} not found in custom-component-sdk, falling back to main"; \
+    fi
+RUN npm ci && npm run build && mkdir -p /out && \
+    mv "/out/$(npm pack --ignore-scripts --silent --pack-destination /out | tail -n 1)" /out/custom-component-sdk.tgz
+
 FROM node:22.23.4 AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -176,6 +193,8 @@ RUN npm --prefix cli ci --include=dev && npm --prefix cli run build && node pack
 # The same CLI, packed for GET /api/code-mode/cli/tooljet-cli.tgz: `npm i -g` from the instance installs the CLI
 # that matches this server (server/scripts/pack-cli.sh).
 RUN server/scripts/pack-cli.sh
+# The security scanner for code apps (ee/app-security runs it in a child process).
+RUN npm --prefix server/ee/packages/app-scanner ci --omit=dev
 
 # ---------------------------------------------------------------------------
 # Runtime stage
@@ -264,6 +283,21 @@ COPY --from=builder /app/server/ee/workflows/nsjail/python-execution.cfg /etc/ns
 COPY --from=mcp-builder /mcp/bundle/ ./app/mcp/
 COPY --from=mcp-builder /mcp/package.json ./app/mcp/package.json
 COPY --from=mcp-builder /mcp/data ./app/data
+# The MCP's code app tools run the `tooljet` CLI, install the SDK into each project and keep projects
+# under TOOLJET_CODE_APP_ROOT; the server scans code apps with the app scanner. The render check stays off
+# (no browser in this image).
+COPY --from=builder /app/server/ee/packages/app-scanner ./app/server/ee/packages/app-scanner
+# The SDK as a folder, not the tarball: npm links a folder, and the app scanner skips links, while a tarball entry
+# resolves outside the registry and fails its lockfile host check (the SDK has no dependencies of its own).
+COPY --from=sdk-builder /out/custom-component-sdk.tgz /tmp/custom-component-sdk.tgz
+RUN mkdir -p /app/code-mode/custom-component-sdk /app/code-mode/apps && \
+    tar -xzf /tmp/custom-component-sdk.tgz -C /app/code-mode/custom-component-sdk --strip-components=1 && \
+    mv /tmp/custom-component-sdk.tgz ./app/server/code-mode-cli/custom-component-sdk.tgz && \
+    npm install -g ./app/server/code-mode-cli/tooljet-cli.tgz && tooljet --version
+ENV TOOLJET_SDK_SPEC=file:/app/code-mode/custom-component-sdk \
+    TOOLJET_CODE_APP_ROOT=/app/code-mode/apps \
+    TOOLJET_APP_SCANNER_BIN=/app/server/ee/packages/app-scanner/bin/tj-app-scan.js \
+    MCP_RENDER_AUDIT_ENABLED=false
 
 WORKDIR /app
 
