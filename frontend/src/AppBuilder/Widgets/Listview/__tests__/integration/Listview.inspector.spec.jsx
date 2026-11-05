@@ -132,11 +132,34 @@ describe('ListviewPropertyPanel', () => {
         ['mode', 'Layout'],
         ['gridRecordHeight', 'Record height'],
         ['columns', 'Number of columns'],
+        ['disableRecords', 'Disable records'],
         ['enablePagination', 'Enable pagination'],
         ['serverSidePagination', 'Type'],
         ['rowsPerPage', 'Number of records per page'],
         ['totalRecords', 'Total records'],
       ]);
+    });
+
+    test('[Listview-REC-011] Disable records is a code field with a false default, between Record height and pagination', () => {
+      // Break this catches: a missing field, a non-code control, or one that moves behind the pagination settings.
+      const { container } = renderPanel({ mode: 'list' });
+
+      const names = fieldsIn(container, 'Configure list item').map(([name]) => name);
+      expect(names.indexOf('disableRecords')).toBe(names.indexOf('rowHeight') + 1);
+      expect(names.indexOf('disableRecords')).toBeLessThan(names.indexOf('enablePagination'));
+      expect(editor('disableRecords').fieldMeta.type).toBe('code');
+      expect(editor('disableRecords').fieldMeta.validation.schema).toEqual({ type: 'boolean' });
+      expect(editor('disableRecords').initialValue).toBe('{{false}}');
+      expect(listviewConfig.definition.properties.disableRecords).toEqual({ value: '{{false}}' });
+    });
+
+    test('[Listview-REC-011] Record visibility is gone from the config and the panel', () => {
+      // Break this catches: the dropped record visibility key coming back in the definition or the Properties panel.
+      const { container } = renderPanel();
+
+      expect(listviewConfig.properties.recordVisibility).toBeUndefined();
+      expect(listviewConfig.definition.properties.recordVisibility).toBeUndefined();
+      expect(fieldsIn(container, 'Configure list item').map(([name]) => name)).not.toContain('recordVisibility');
     });
 
     test('[Listview-INSP-005] Type, records per page and Total records are hidden while pagination is off', () => {

@@ -128,6 +128,25 @@ describe('ListviewBuilderClicks', () => {
       expect(store().selectedComponents).toEqual([ID]);
     });
 
+    test('[Listview-REC-008] a click on a component in a disabled record 1 selects nothing, and the ListView stays selectable', async () => {
+      // Break this catches: the disabled record 1 staying an editable original, so its component is selectable.
+      widget.render({ currentMode: 'edit', properties: { disableRecords: binding(`{{listItem.name === 'r0'}}`) } });
+      await waitFor(() => expect(document.querySelectorAll('.list-item')).toHaveLength(2));
+      const box = document.getElementById(ID);
+      box.classList.add('moveable-box');
+      box.setAttribute('widgetid', ID);
+      render(<EditorSelecto />);
+      await widget.session.store.act(() => store().setSelectedComponents(['txt1']));
+
+      click(copy(0));
+      click(document.querySelector('.list-item .real-canvas'));
+      expect(store().selectedComponents).toEqual(['txt1']);
+
+      // A blocked record lets the pointer through to the list, so the author can still reach the expression.
+      click(document.querySelector('[role="list"]'));
+      expect(store().selectedComponents).toEqual([ID]);
+    });
+
     test('[Listview-BLD-007] a click on the editable record 1 still selects its component', async () => {
       // Break this catches: the guard also catching the original, which would make record 1 unselectable.
       await mount();
@@ -239,6 +258,18 @@ describe('ListviewBuilderDrops', () => {
       releaseOn(canvasOf(rows()[1]));
       releaseOn(canvasOf(rows()[2]));
       expect(mockHandleDrop).not.toHaveBeenCalled();
+    });
+
+    test('[Listview-REC-008] a panel drop and a move onto a disabled record 1 are refused', async () => {
+      // Break this catches: the disabled record 1 still being a drop target for the shared record template.
+      widget.render({ currentMode: 'edit', properties: { disableRecords: binding(`{{listItem.name === 'r0'}}`) } });
+      await waitFor(() => expect(rows()).toHaveLength(3));
+      render(<DragLayer index={0} component={{ component: 'Button' }} />);
+
+      releaseOn(canvasOf(rows()[0]));
+
+      expect(mockHandleDrop).not.toHaveBeenCalled();
+      expect(moveOver(canvasOf(rows()[0])).isDroppable).toBe(false);
     });
 
     test('[Listview-BLD-001] a panel drop on record 1 of page 2 is refused', async () => {
@@ -901,6 +932,66 @@ describe('ListviewBuilderRules', () => {
 
       await waitFor(() => expect(copiesOf('txt2').map((node) => node.textContent.slice(-1))).toEqual(['c', 'd']));
       await waitFor(() => expect(editable('hdr2')).toEqual([false]));
+    });
+  });
+
+  describe('Listview builder: a disabled record 1 locks the template', () => {
+    beforeEach(widget.setup);
+    afterEach(widget.teardown);
+
+    const DISABLE_R0 = binding(`{{listItem.name === 'r0'}}`);
+    const handles = () => [...document.querySelectorAll('.list-item .listview-record-resize-handle')];
+    const setDisable = (value) =>
+      act(() => widget.setComponentProperty(ID, 'disableRecords', binding(value).value, 'properties'));
+
+    test('[Listview-REC-008] record 1 is read-only with no resize handle, and editable again once enabled', async () => {
+      // Break this catches: the builder gate ignoring Disable records, so a disabled record 1 stays the editable original.
+      await mount(widget, { properties: { disableRecords: DISABLE_R0 } });
+      await waitFor(() => expect(editable('txt1')).toEqual([false, false, false]));
+      expect(handles()).toHaveLength(0);
+      expect(rows()[0].querySelector('.real-canvas')).toHaveAttribute('data-listview-copy', 'true');
+
+      await setDisable('{{false}}');
+
+      await waitFor(() => expect(editable('txt1')).toEqual([true, false, false]));
+      expect(handles()).toHaveLength(1);
+    });
+
+    test('[Listview-REC-008] hovering a disabled record 1 fades nothing, shows no frame, handle or copy outline', async () => {
+      // Break this catches: the main-record hover still starting from a disabled record 1.
+      await mount(widget, { properties: { disableRecords: DISABLE_R0 } });
+
+      await user().hover(rows()[0]);
+      await user().hover(copiesOf('txt1')[0]);
+
+      expect(faded()).toEqual([false, false, false]);
+      expect(framed()).toEqual([false, false, false]);
+      expect(dotted('txt1')).toEqual([false, false, false]);
+      expect(rows()[0].style.opacity).toBe('0.4');
+    });
+
+    test('[Listview-REC-008] a disabled record 1 does not fade the others when a component moves or is selected', async () => {
+      // Break this catches: the drag or selection fade running for a record 1 nobody can edit.
+      await mount(widget, { properties: { disableRecords: DISABLE_R0 } });
+
+      await act(() => {
+        store().setSelectedComponents(['txt1']);
+        store().setDraggingComponentId('txt1');
+      });
+
+      expect(faded()).toEqual([false, false, false]);
+      expect(framed()).toEqual([false, false, false]);
+    });
+
+    test('[Listview-REC-008] a disabled record 2 leaves record 1 editable, and fades only once with the hover fade', async () => {
+      // Break this catches: the lock spreading to every record, or the hover fade stacking a second fade on a disabled record.
+      await mount(widget, { properties: { disableRecords: binding(`{{listItem.name === 'r1'}}`) } });
+      await waitFor(() => expect(editable('txt1')).toEqual([true, false, false]));
+
+      await user().hover(rows()[0]);
+
+      await waitFor(() => expect(faded()).toEqual([false, true, true]));
+      expect(rows()[1].style.opacity).toBe('0.4');
     });
   });
 

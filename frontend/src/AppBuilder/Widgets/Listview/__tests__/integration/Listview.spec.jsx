@@ -2839,7 +2839,6 @@ describe('ListviewCreation', () => {
       expect(properties.headerHeight).toBeUndefined();
       expect(properties.serverSidePagination).toEqual({ value: '{{false}}' });
       expect(properties.totalRecords).toEqual({ value: '{{10}}' });
-      expect(properties.recordVisibility).toEqual({ value: '{{true}}' });
       expect(properties.disableRecords).toEqual({ value: '{{false}}' });
       expect(properties.rowHeight).toEqual({ value: '80' });
       expect(properties.gridRecordHeight).toEqual({ value: '170' });
@@ -7439,5 +7438,386 @@ describe('ListviewVariablesCsaEvents', () => {
         expect(widgetState(variable)).toBe(!actionValue);
       }
     );
+  });
+});
+
+describe('ListviewDisabledRecords', () => {
+  /**
+   * Listview 2.0 Disable records (tj-ee#5556): an expression resolved per record with `listItem`. A disabled record
+   * fades, blocks the pointer and the keyboard, and fires no record event. Contract: frontend/ee/test/app-builder/
+   * widgets/Listview/TESTING.md (Listview-REC-002..012). Real store, real RenderWidget, real children in every record.
+   *
+   * jsdom enforces neither `pointer-events` nor `inert`, so those are asserted as the attribute or property that
+   * asks for them; the blocking itself is Listview-BRW territory (browser).
+   */
+
+  const ID = 'lv1';
+  const NAME = 'listview1';
+  const INNER = 'lv2';
+  const records = `{{${JSON.stringify(Array.from({ length: 10 }, (_, index) => ({ name: `r${index}` })))}}}`;
+  const DISABLE_R1_R7 = `{{listItem.name === 'r1' || listItem.name === 'r7'}}`;
+
+  function child(id, name, type, properties, parent = ID) {
+    const definition = componentDefinition(id, name, type, properties);
+    definition.component.parent = parent;
+    definition.component.definition.styles = {};
+    definition.component.definition.others = {
+      showOnDesktop: binding('{{true}}'),
+      showOnMobile: binding('{{false}}'),
+    };
+    return definition;
+  }
+
+  const baseProperties = {
+    dataSourceSelector: binding('rawJson'),
+    data: binding(records),
+    mode: binding('list'),
+    columns: binding('{{1}}'),
+    rowHeight: binding('100'),
+    loadingState: binding('{{false}}'),
+    dynamicHeight: binding('{{false}}'),
+    visibility: binding('{{true}}'),
+    collapseWhenHidden: binding('{{false}}'),
+    disabledState: binding('{{false}}'),
+    showBorder: binding('{{true}}'),
+    rowsPerPage: binding('{{5}}'),
+    enablePagination: binding('{{true}}'),
+  };
+  const baseStyles = {
+    backgroundColor: binding('var(--cc-surface1-surface)'),
+    borderColor: binding('var(--cc-weak-border)'),
+  };
+
+  const widget = createWidgetHarness({
+    componentType: 'Listview',
+    handle: NAME,
+    id: ID,
+    defaultProperties: baseProperties,
+    defaultStyles: baseStyles,
+    defaultExtraComponents: {
+      txt1: child('txt1', 'text1', 'Text', { text: binding('{{listItem.name}}') }),
+      btn1: child('btn1', 'button1', 'Button', { text: binding('Go') }),
+    },
+    capabilities: { dnd: true },
+    widgetHeight: 600,
+    widgetWidth: 600,
+  });
+
+  const NESTED = `{{[{ name: 'o1', items: [{ name: 'a' }, { name: 'b' }] }, { name: 'o2', items: [{ name: 'c' }, { name: 'b' }] }]}}`;
+  const nestedWidget = createWidgetHarness({
+    componentType: 'Listview',
+    handle: NAME,
+    id: ID,
+    defaultProperties: {
+      ...baseProperties,
+      data: binding(NESTED),
+      rowHeight: binding('250'),
+      enablePagination: binding('{{false}}'),
+    },
+    defaultStyles: baseStyles,
+    defaultExtraComponents: {
+      [INNER]: child(INNER, 'listview2', 'Listview', {
+        ...baseProperties,
+        data: binding('{{listItem.items}}'),
+        enablePagination: binding('{{false}}'),
+        disableRecords: binding(`{{listItem.name === 'b'}}`),
+      }),
+      txt2: child('txt2', 'text2', 'Text', { text: binding('{{listItem.name}}') }, INNER),
+    },
+    capabilities: { dnd: true },
+    widgetHeight: 800,
+    widgetWidth: 600,
+  });
+
+  const rows = () => [...document.querySelectorAll('.list-item')];
+  const exposed = (key) => widget.exposed()?.[key];
+  const fired = (key) => store().getVariable(key, MODULE_ID) ?? 0;
+  const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 450)));
+  const disabledRows = () =>
+    rows().flatMap((row, index) => (row.getAttribute('aria-disabled') === 'true' ? [index] : []));
+  const setDisableRecords = (value) =>
+    widget.session.store.act(() => {
+      widget.setComponentProperty(ID, 'disableRecords', binding(value).value, 'properties');
+    });
+  const counting = (eventId, key, sourceId = ID) => ({
+    id: `evt-${eventId}`,
+    index: 0,
+    sourceId,
+    name: `evt-${eventId}`,
+    target: 'component',
+    event: { eventId, actionId: 'set-custom-variable', key, value: `{{(variables.${key} ?? 0) + 1}}` },
+  });
+  const RECORD_EVENTS = [
+    counting('onRecordClicked', 'rec'),
+    counting('onRowClicked', 'row'),
+    counting('onRecordHovered', 'hover'),
+  ];
+
+  async function mount(disableRecords = DISABLE_R1_R7, options = {}) {
+    widget.render({
+      currentMode: 'view',
+      properties: disableRecords === null ? {} : { disableRecords: binding(disableRecords) },
+      ...options,
+    });
+    await waitFor(() => expect(rows()).toHaveLength(5));
+  }
+  const nextPage = () => widget.session.user.click(document.querySelector('[data-cy="pagination-button-to-next"]'));
+
+  describe('Listview: a disabled record fires no record event', () => {
+    beforeEach(widget.setup);
+    afterEach(widget.teardown);
+
+    test('[Listview-REC-002] a click on a disabled record, or on a component in it, fires neither Record clicked nor Row clicked', async () => {
+      // Break this catches: a click guard missing from the record, so the programmatic click still fires both events.
+      await mount(DISABLE_R1_R7, { events: RECORD_EVENTS });
+
+      fireEvent.click(rows()[1]);
+      fireEvent.click(rows()[1].querySelector('p, div'));
+      await settle();
+
+      expect(fired('rec')).toBe(0);
+      expect(fired('row')).toBe(0);
+      expect(exposed('selectedRecordIndex')).toBeUndefined();
+
+      fireEvent.click(rows()[2]);
+      await waitFor(() => expect(fired('rec')).toBe(1));
+      expect(fired('row')).toBe(1);
+    });
+
+    test('[Listview-REC-002] Enter and Space on a disabled record fire nothing, and still work on an enabled one', async () => {
+      // Break this catches: only the pointer being guarded, so the keyboard still clicks a disabled record.
+      await mount(DISABLE_R1_R7, { events: RECORD_EVENTS });
+
+      fireEvent.keyDown(rows()[1], { key: 'Enter' });
+      fireEvent.keyDown(rows()[1], { key: ' ' });
+      await settle();
+      expect(fired('rec')).toBe(0);
+
+      fireEvent.keyDown(rows()[2], { key: 'Enter' });
+      await waitFor(() => expect(fired('rec')).toBe(1));
+    });
+
+    test('[Listview-REC-002] hovering a disabled record fires no Record hovered, and an enabled one fires once', async () => {
+      // Break this catches: the hover guard missing, so a disabled record still runs the hover handler.
+      await mount(DISABLE_R1_R7, { events: RECORD_EVENTS });
+
+      fireEvent.mouseOver(rows()[1], { relatedTarget: document.body });
+      await settle();
+      expect(fired('hover')).toBe(0);
+
+      fireEvent.mouseOver(rows()[2], { relatedTarget: document.body });
+      await waitFor(() => expect(fired('hover')).toBe(1));
+    });
+
+    test('[Listview-REC-002] on page 2 the disabled record is still guarded', async () => {
+      // Break this catches: the guard keyed to the page-relative index, so page 2 loses it.
+      await mount(DISABLE_R1_R7, { events: RECORD_EVENTS });
+      await nextPage();
+      await waitFor(() => expect(rows()[0].textContent).toContain('r5'));
+
+      fireEvent.click(rows()[2]);
+      await settle();
+
+      expect(fired('rec')).toBe(0);
+    });
+  });
+
+  describe('Listview: the children of a disabled record', () => {
+    beforeEach(widget.setup);
+    afterEach(widget.teardown);
+
+    const buttons = () => [...document.querySelectorAll('button')].filter((node) => node.textContent === 'Go');
+
+    test('[Listview-REC-003] a click on a component in a disabled record does not reach the component, and its isDisabled stays false', async () => {
+      // Break this catches: the record only fading, so its Button still runs its own On click handler.
+      await mount(DISABLE_R1_R7, { events: [counting('onClick', 'btnClicks', 'btn1')] });
+
+      fireEvent.click(buttons()[1]);
+      await settle();
+      expect(fired('btnClicks')).toBe(0);
+
+      fireEvent.click(buttons()[2]);
+      await waitFor(() => expect(fired('btnClicks')).toBe(1));
+      await waitFor(() => expect(exposed('children')?.[1]?.button1?.isDisabled).toBeFalsy());
+      expect(exposed('children')?.[1]?.button1?.isDisabled).toBeFalsy();
+    });
+  });
+
+  describe('Listview: how a disabled record looks and is announced', () => {
+    beforeEach(widget.setup);
+    afterEach(widget.teardown);
+
+    test('[Listview-REC-005] a disabled record fades to 0.4 once, with no data-disabled that the global 0.6 rule would stack', async () => {
+      // Break this catches: no fade, or data-disabled on the record so the global rule overrides the 0.4.
+      await mount();
+
+      expect(rows().map((row) => row.style.opacity)).toEqual(['', '0.4', '', '', '']);
+      expect(rows()[1].hasAttribute('data-disabled')).toBe(false);
+    });
+
+    test('[Listview-REC-006] a disabled record is aria-disabled, out of the tab order, inert and blocks the pointer', async () => {
+      // Break this catches: any one of the four being dropped, which leaves the keyboard or a screen reader a way in.
+      await mount();
+
+      const row = rows()[1];
+      expect(row).toHaveAttribute('aria-disabled', 'true');
+      expect(row.hasAttribute('tabindex')).toBe(false);
+      await waitFor(() => expect(row.inert).toBe(true));
+      expect(row.style.pointerEvents).toBe('none');
+    });
+
+    test('[Listview-REC-006] an enabled record keeps tabindex 0 and carries no disabled attribute', async () => {
+      // Break this catches: the disabled attributes leaking onto every record.
+      await mount();
+
+      const row = rows()[2];
+      expect(row).toHaveAttribute('tabindex', '0');
+      expect(row.hasAttribute('aria-disabled')).toBe(false);
+      expect(row.inert).toBeFalsy();
+      expect(row.style.pointerEvents).toBe('');
+    });
+  });
+
+  describe('Listview: Disable records is resolved per record', () => {
+    beforeEach(widget.setup);
+    afterEach(widget.teardown);
+
+    test('[Listview-REC-007] listItem picks the record on page 1 and again on page 2', async () => {
+      // Break this catches: resolving once for the list, or with the page-relative record, so page 2 disables the wrong one.
+      await mount();
+      expect(disabledRows()).toEqual([1]);
+
+      await nextPage();
+      await waitFor(() => expect(rows()[0].textContent).toContain('r5'));
+
+      expect(disabledRows()).toEqual([2]);
+    });
+
+    test('[Listview-REC-007] server pagination resolves against the records of the current page', async () => {
+      // Break this catches: the server rows being indexed from the whole data, so a later page disables the wrong record.
+      widget.render({
+        currentMode: 'view',
+        properties: {
+          disableRecords: binding(`{{listItem.name === 'r3'}}`),
+          data: binding(`{{[{ name: 'r3' }, { name: 'r4' }, { name: 'r5' }]}}`),
+          serverSidePagination: binding('{{true}}'),
+          totalRecords: binding('{{9}}'),
+        },
+      });
+      await waitFor(() => expect(rows()).toHaveLength(3));
+      await widget.act('setPage', 2);
+      await waitFor(() => expect(exposed('pageIndex')).toBe(2));
+
+      expect(disabledRows()).toEqual([0]);
+    });
+
+    test('[Listview-REC-007] a change to the expression re-resolves the records', async () => {
+      // Break this catches: the result cached on first render, so editing the expression changes nothing.
+      await mount();
+
+      await setDisableRecords(`{{listItem.name === 'r4'}}`);
+
+      await waitFor(() => expect(disabledRows()).toEqual([4]));
+    });
+
+    test('[Listview-REC-007] in a nested list the inner expression reads the inner record', async () => {
+      // Break this catches: the outer record shadowing the inner one, so the inner list disables the wrong record.
+      nestedWidget.render({ currentMode: 'view' });
+      await waitFor(() => expect(document.querySelectorAll('.list-item')).toHaveLength(6));
+
+      const flags = [...document.querySelectorAll('.list-item')].map((row) => [
+        row.textContent.replace(/\s/g, ''),
+        row.getAttribute('aria-disabled') === 'true',
+      ]);
+      expect(flags.filter(([, disabled]) => disabled).map(([text]) => text)).toEqual(['b', 'b']);
+      expect(flags.filter(([text]) => text.startsWith('o1') || text.startsWith('o2')).every(([, d]) => !d)).toBe(true);
+    });
+  });
+
+  describe('Listview: an expression that cannot say yes disables nothing', () => {
+    beforeEach(widget.setup);
+    afterEach(widget.teardown);
+
+    test.each([
+      ['throws', `{{listItem.missing.deep}}`],
+      ['is a string', `{{listItem.name}}`],
+      ['is a number', `{{1}}`],
+      ['is empty', ''],
+    ])('[Listview-REC-012] an expression that %s leaves every record enabled', async (_label, expression) => {
+      // Break this catches: truthiness alone, so a string or an unresolved expression disables the whole list.
+      await mount(expression);
+
+      expect(disabledRows()).toEqual([]);
+      expect(rows().every((row) => row.style.opacity === '')).toBe(true);
+    });
+  });
+
+  describe('Listview: a disabled record keeps the selection and its place', () => {
+    beforeEach(widget.setup);
+    afterEach(widget.teardown);
+
+    test('[Listview-REC-009] a selected record that becomes disabled keeps selectedRecord, id and index', async () => {
+      // Break this catches: an effect that clears the selection when its record is disabled.
+      await mount(`{{false}}`);
+      fireEvent.click(rows()[2]);
+      await waitFor(() => expect(exposed('selectedRecordIndex')).toBe(2));
+      const selected = exposed('selectedRecord');
+
+      await setDisableRecords(`{{listItem.name === 'r2'}}`);
+      await waitFor(() => expect(disabledRows()).toEqual([2]));
+
+      expect(exposed('selectedRecordIndex')).toBe(2);
+      expect(exposed('selectedRecordId')).toBe(2);
+      expect(exposed('selectedRecord')).toEqual(selected);
+    });
+
+    test('[Listview-REC-010] a disabled record keeps its place: the page, data and selectedRecordIndex do not shift', async () => {
+      // Break this catches: a disabled record dropped from the page, so later records move up and renumber.
+      await mount();
+
+      expect(rows().map((row) => row.textContent.trim())).toEqual(['r0Go', 'r1Go', 'r2Go', 'r3Go', 'r4Go']);
+      expect(exposed('data')).toHaveLength(10);
+      fireEvent.click(rows()[2]);
+      await waitFor(() => expect(exposed('selectedRecordIndex')).toBe(2));
+
+      await nextPage();
+      await waitFor(() => expect(rows()[0].textContent).toContain('r5'));
+      fireEvent.click(rows()[3]);
+      await waitFor(() => expect(exposed('selectedRecordIndex')).toBe(8));
+      expect(exposed('selectedRecordId')).toBe(3);
+    });
+  });
+
+  describe('Listview: a ListView saved before Disable records', () => {
+    beforeEach(widget.setup);
+    afterEach(widget.teardown);
+
+    test('[Listview-REC-004] without the key every record is enabled with the same attributes as before', async () => {
+      // Break this catches: a default that disables, fades or re-attributes records of a ListView saved before 2.0.
+      await mount(null, { events: RECORD_EVENTS });
+
+      expect(disabledRows()).toEqual([]);
+      expect(rows().every((row) => row.getAttribute('tabindex') === '0' && row.style.opacity === '')).toBe(true);
+      expect(rows().some((row) => row.inert)).toBe(false);
+      fireEvent.click(rows()[1]);
+      await waitFor(() => expect(fired('rec')).toBe(1));
+    });
+  });
+
+  describe('Listview: the whole-list disabledState', () => {
+    beforeEach(widget.setup);
+    afterEach(widget.teardown);
+
+    test('[Listview-REC-004] disabledState still disables the list through data-disabled and inert, and records stay unflagged', async () => {
+      // Break this catches: Disable records taking over the list-level disabled mechanism.
+      await mount(`{{false}}`, {
+        properties: { disabledState: binding('{{true}}'), disableRecords: binding('{{false}}') },
+      });
+
+      const list = document.getElementById(ID);
+      expect(list).toHaveAttribute('data-disabled', 'true');
+      await waitFor(() => expect(list.inert).toBe(true));
+      expect(disabledRows()).toEqual([]);
+    });
   });
 });
