@@ -134,6 +134,53 @@ describe('dynamic height', () => {
 
     await waitFor(() => expect(field().style.height).toBe('100%'));
   });
+
+  // Break this catches: resizing the field while its parent hides it. A field with no
+  // box reports scrollHeight 0, so it shrinks to the authored height and grows back a
+  // frame after it is shown, moving every widget below it twice.
+  //
+  // jsdom has no layout, so the browser geometry is controlled at the boundary: the
+  // field reports a rendered 60 px box, then no box at all, and the height observer is
+  // told it resized each time.
+  test('[TextArea-DYN-002] a hidden Text Area keeps its height until it is shown again', async () => {
+    const resizeCallbacks = [];
+    const originalObserver = window.ResizeObserver;
+    window.ResizeObserver = class {
+      constructor(callback) {
+        resizeCallbacks.push(callback);
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+    const setBox = (element, height) => {
+      Object.defineProperty(element, 'scrollHeight', { configurable: true, get: () => height });
+      Object.defineProperty(element, 'offsetHeight', { configurable: true, get: () => height });
+      element.getClientRects = () => (height > 0 ? [{ height }] : []);
+    };
+    const reportResize = () => resizeCallbacks.forEach((callback) => callback([]));
+    try {
+      harness.render({
+        properties: { value: binding('line 1\nline 2'), dynamicHeight: binding('{{true}}') },
+        currentMode: 'view',
+      });
+      await waitFor(() => expect(field()).toBeTruthy());
+      await drain();
+
+      setBox(field(), 60);
+      reportResize();
+      await waitFor(() => expect(field().style.height).toBe('60px'));
+
+      // The parent hides it: no box, nothing to measure.
+      setBox(field(), 0);
+      reportResize();
+      await drain();
+
+      expect(field().style.height).toBe('60px');
+    } finally {
+      window.ResizeObserver = originalObserver;
+    }
+  });
 });
 
 describe('default value', () => {

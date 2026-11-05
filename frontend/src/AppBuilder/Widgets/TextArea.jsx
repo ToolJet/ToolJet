@@ -17,6 +17,10 @@ export const TextArea = (props) => {
       inputRef.current.style.height = '100%';
       return;
     }
+    // A field its parent hides (collapsed accordion, inactive tab) has no box and
+    // measures as empty; keep the height it had when last shown.
+    const isHidden = inputRef.current.getClientRects().length === 0;
+    if (isHidden && inputRef.current.style.height.endsWith('px')) return;
     inputRef.current.style.height = 'auto';
     // Subtract the input container's padding + border so the outer wrapper
     // matches the authored widget height when content fits. Without this,
