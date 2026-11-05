@@ -75,3 +75,8 @@ export interface ConstantDetailPayload {
   created_at: string;
   values: { environment_id: string; environment_name: string; has_value: boolean; value: string | null }[];
 }
+
+export interface BulkDeleteConstantsPayload {
+  deleted_ids: string[];
+  skipped_ids: string[];
+}

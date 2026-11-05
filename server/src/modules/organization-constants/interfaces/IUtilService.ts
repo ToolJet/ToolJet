@@ -1,4 +1,5 @@
 import { EntityManager, DeleteResult } from 'typeorm';
+import { OrganizationConstantType } from '../constants';
 import { OrgEnvironmentConstantValue } from '@entities/org_environment_constant_values.entity';
 
 export interface IOrganizationConstantsUtilService {
@@ -23,9 +24,9 @@ export interface IOrganizationConstantsUtilService {
     constantName: string,
     organizationId: string,
     environmentId: string,
-    type?: string,
+    type: OrganizationConstantType,
     manager?: EntityManager
-  ): Promise<OrgEnvironmentConstantValue>;
+  ): Promise<OrgEnvironmentConstantValue | null>;
 
   deleteOrgEnvironmentConstant(
     constantId: string,

@@ -133,3 +133,13 @@ export class ConstantDetailResponseDto {
   @Type(() => ConstantEnvironmentValueDto)
   values: ConstantEnvironmentValueDto[];
 }
+
+@Exclude()
+export class BulkDeleteConstantsResponseDto {
+  @Expose({ name: 'deleted_ids' })
+  deletedIds: string[];
+
+  // Ids that were not deleted: read-only `.env` rows, malformed ids, and ids not found in the workspace.
+  @Expose({ name: 'skipped_ids' })
+  skippedIds: string[];
+}

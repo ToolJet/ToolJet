@@ -400,6 +400,27 @@ describe('OrgConstantsController', () => {
       expect(stored).toMatchObject({ createdBy: adminUserData.user.id, updatedBy: developerUserData.user.id });
       expect(stored.updatedAt.getTime()).toBeGreaterThan(staleUpdatedAt.getTime());
     });
+
+    it('should accept a new name of up to 50 characters, as create does', async () => {
+      const adminUserData = await createUser(app, { email: 'admin@tooljet.io', groups: ['all_users', 'admin'] });
+      const appEnvironments = await ensureAppEnvironments(app, adminUserData.user.organizationId);
+      adminUserData['tokenCookie'] = (await login(app)).tokenCookie;
+      const createResponse = await createConstant(app, adminUserData, {
+        constant_name: 'short_name',
+        value: 'v',
+        type: 'Global',
+        environments: appEnvironments.map((env) => env.id),
+      });
+      const patch = (name: string) =>
+        request(app.getHttpServer())
+          .patch(`/api/organization-constants/${createResponse.body.constant.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', adminUserData['tokenCookie'])
+          .send({ constant_name: name, value: 'v', environment_id: appEnvironments[0].id });
+
+      await patch('n'.repeat(50)).expect(200);
+      await patch('n'.repeat(51)).expect(400);
+    });
   });
 
   describe('DELETE /api/organization-constants/:id | Delete constant', () => {

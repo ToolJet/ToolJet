@@ -1,20 +1,31 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { isUUID } from 'class-validator';
 import { DeleteResult, EntityManager } from 'typeorm';
 import { CreateOrganizationConstantDto, UpdateOrganizationConstantDto } from '@modules/organization-constants/dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { OrganizationConstant } from '@entities/organization_constants.entity';
+import { OrgEnvironmentConstantValue } from '@entities/org_environment_constant_values.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { IOrganizationConstantsService } from './interfaces/IService';
 import { OrganizationConstantsUtilService } from './util.service';
 import { ConstantSource, OrganizationConstantType, SECRET_VALUE_MASK } from './constants';
 import { OrganizationConstantRepository } from './repository';
 import {
+  BulkDeleteConstantsPayload,
   ConstantDetailPayload,
   ConstantListItemPayload,
   ConstantListPayload,
   ConstantWithEnvironmentValues,
 } from './types';
 import { ListConstantsQueryDto } from './dto/v2/list-constants.query.dto';
+import { CreateConstantDto } from './dto/v2/create-constant.dto';
+import { UpdateConstantValuesDto } from './dto/v2/update-constant.dto';
+import {
+  EnvironmentValueWrite,
+  isDuplicateConstantError,
+  resolveCreateWrites,
+  resolveUpdateWrites,
+} from './helpers/constant-values';
 import {
   buildConstantsPage,
   ConstantListRow,
@@ -135,6 +146,126 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
       created_at: constant.createdAt.toISOString(),
       values,
     };
+  }
+
+  async createConstant(organizationId: string, userId: string, dto: CreateConstantDto): Promise<ConstantDetailPayload> {
+    const environmentIds = (await this.appEnvironmentUtilService.getAll(organizationId)).map((env) => env.id);
+    const writes = resolveCreateWrites(
+      dto.values,
+      environmentIds,
+      await this.isMultiEnvironmentEnabled(organizationId)
+    );
+
+    let constantId: string;
+    try {
+      constantId = await dbTransactionWrap(async (manager: EntityManager) => {
+        const saved = await manager.save(
+          OrganizationConstant,
+          manager.create(OrganizationConstant, {
+            constantName: dto.name,
+            organizationId,
+            type: dto.type,
+            createdBy: userId,
+            updatedBy: userId,
+          })
+        );
+        await this.organizationConstantsUtilService.createOrgConstantsInAllEnvironments(
+          organizationId,
+          saved.id,
+          manager
+        );
+        await this.writeValues(organizationId, saved.id, userId, writes, manager);
+        return saved.id;
+      });
+    } catch (error) {
+      // No pre-check for an existing name: it would race with a concurrent create. The unique constraint decides.
+      if (isDuplicateConstantError(error)) {
+        throw new ConflictException(`A ${dto.type} constant named "${dto.name}" already exists`);
+      }
+      throw error;
+    }
+
+    return this.getConstant(organizationId, constantId);
+  }
+
+  async updateConstantValues(
+    organizationId: string,
+    constantId: string,
+    userId: string,
+    dto: UpdateConstantValuesDto
+  ): Promise<ConstantDetailPayload> {
+    const environmentIds = (await this.appEnvironmentUtilService.getAll(organizationId)).map((env) => env.id);
+    const isMultiEnvironmentEnabled = await this.isMultiEnvironmentEnabled(organizationId);
+
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      // The row lock makes concurrent updates of one constant run one after another, so the
+      // "keeps a value" check below always sees the values the previous update left.
+      const constant = await manager.findOne(OrganizationConstant, {
+        where: { id: constantId, organizationId },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!constant) {
+        throw new NotFoundException('Constant not found');
+      }
+      const stored = await manager.find(OrgEnvironmentConstantValue, { where: { organizationConstantId: constantId } });
+      const writes = resolveUpdateWrites(
+        dto.values,
+        environmentIds,
+        stored.filter((v) => !!v.value).map((v) => v.environmentId),
+        isMultiEnvironmentEnabled
+      );
+      await this.writeValues(organizationId, constantId, userId, writes, manager);
+    });
+
+    return this.getConstant(organizationId, constantId);
+  }
+
+  async bulkDeleteConstants(organizationId: string, ids: string[]): Promise<BulkDeleteConstantsPayload> {
+    const candidateIds = ids.filter((id) => isUUID(id));
+    const deletedRows: { id: string }[] = candidateIds.length
+      ? await dbTransactionWrap(
+          async (manager: EntityManager) =>
+            (
+              await manager
+                .createQueryBuilder()
+                .delete()
+                .from(OrganizationConstant)
+                .where('id IN (:...candidateIds) AND organization_id = :organizationId', {
+                  candidateIds,
+                  organizationId,
+                })
+                .returning('id')
+                .execute()
+            ).raw
+        )
+      : [];
+
+    // One statement, so the delete is atomic. Postgres returns ids in lower case.
+    const deleted = new Set(deletedRows.map((row) => row.id));
+    return {
+      deleted_ids: ids.filter((id) => deleted.has(id.toLowerCase())),
+      skipped_ids: ids.filter((id) => !deleted.has(id.toLowerCase())),
+    };
+  }
+
+  private async writeValues(
+    organizationId: string,
+    constantId: string,
+    userId: string,
+    writes: EnvironmentValueWrite[],
+    manager: EntityManager
+  ): Promise<void> {
+    for (const { environmentId, value } of writes) {
+      const stored =
+        value === '' ? '' : await this.organizationConstantsUtilService.encryptSecret(organizationId, value);
+      await this.organizationConstantsUtilService.updateOrgEnvironmentConstant(
+        stored,
+        environmentId,
+        constantId,
+        userId,
+        manager
+      );
+    }
   }
 
   async allEnvironmentConstants(

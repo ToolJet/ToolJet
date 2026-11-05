@@ -73,18 +73,21 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
     await manager.update(OrganizationConstant, { id: orgConstantId }, { updatedBy: userId });
   }
 
+  // A Global and a Secret can share a name, so the lookup needs the type. Null when the constant does not exist.
   async getOrgEnvironmentConstant(
     constantName: string,
     organizationId: string,
     environmentId: string,
-    type?: string,
+    type: OrganizationConstantType,
     manager?: EntityManager
-  ): Promise<OrgEnvironmentConstantValue> {
+  ): Promise<OrgEnvironmentConstantValue | null> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const constant = await this.organizationConstantRepository.findOneByNameAndOrganizationId(
+      const constant = await this.organizationConstantRepository.findOneByNameOrganizationIdAndType(
         constantName,
-        organizationId
+        organizationId,
+        type
       );
+      if (!constant) return null;
 
       return manager.findOneOrFail(OrgEnvironmentConstantValue, {
         where: { organizationConstantId: constant.id, environmentId },

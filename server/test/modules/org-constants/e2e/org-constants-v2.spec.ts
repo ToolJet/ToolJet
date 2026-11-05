@@ -39,6 +39,19 @@ describe('OrgConstantsControllerV2', () => {
       .set('tj-workspace-id', workspaceId)
       .set('Cookie', cookie);
 
+  const send = (
+    method: 'post' | 'patch',
+    path: string,
+    cookie: string[],
+    body: unknown,
+    workspaceId = organizationId
+  ) =>
+    request(app.getHttpServer())
+      [method](`/api/v2/organization-constants${path}`)
+      .set('tj-workspace-id', workspaceId)
+      .set('Cookie', cookie)
+      .send(body as object);
+
   const createConstant = async (cookie: string[], workspaceId: string, body: Record<string, unknown>) => {
     const response = await request(app.getHttpServer())
       .post('/api/organization-constants/')
@@ -258,6 +271,178 @@ describe('OrgConstantsControllerV2', () => {
 
     it('should return 400 for an id that is not a UUID', async () => {
       await get('/not-a-uuid', adminCookie).expect(400);
+    });
+  });
+
+  describe('POST /api/v2/organization-constants | Create a constant', () => {
+    const body = (overrides: Record<string, unknown> = {}) => ({
+      name: 'new_constant',
+      type: 'Global',
+      values: [{ environment_id: environments[0].id, value: 'created-value' }],
+      ...overrides,
+    });
+
+    it('should write the single value to every environment and return the detail', async () => {
+      const response = await send('post', '', adminCookie, body()).expect(201);
+
+      expect(response.body).toMatchObject({
+        name: 'new_constant',
+        type: 'Global',
+        owner: { id: adminId, name: 'Ada Lovelace' },
+        modified_by: { id: adminId, name: 'Ada Lovelace' },
+      });
+      expect(response.body.values).toEqual(
+        environments.map((env) => ({
+          environment_id: env.id,
+          environment_name: env.name,
+          has_value: true,
+          value: 'created-value',
+        }))
+      );
+    });
+
+    it('should never return a Secret value in plaintext', async () => {
+      const response = await send(
+        'post',
+        '',
+        adminCookie,
+        body({
+          name: 'new_secret',
+          type: 'Secret',
+          values: [{ environment_id: environments[0].id, value: SECRET_PLAINTEXT }],
+        })
+      ).expect(201);
+
+      expect(response.body.values.map((v: { has_value: boolean }) => v.has_value)).toEqual([true, true, true]);
+      expect(JSON.stringify(response.body)).not.toContain(SECRET_PLAINTEXT);
+    });
+
+    it('should reject more than one value when the workspace has no multi-environment license', async () => {
+      await send(
+        'post',
+        '',
+        adminCookie,
+        body({
+          values: [
+            { environment_id: environments[0].id, value: 'a' },
+            { environment_id: environments[1].id, value: 'b' },
+          ],
+        })
+      ).expect(400);
+    });
+
+    it('should reject a duplicate name and type with 409', async () => {
+      await send('post', '', adminCookie, body({ name: 'api_url' })).expect(409);
+    });
+
+    it('should allow the same name with the other type', async () => {
+      await send('post', '', adminCookie, body({ name: 'api_url', type: 'Secret' })).expect(201);
+    });
+
+    it('should reject an environment that is not in the workspace', async () => {
+      await send(
+        'post',
+        '',
+        adminCookie,
+        body({ values: [{ environment_id: otherEnvironmentId, value: 'v' }] })
+      ).expect(400);
+    });
+
+    it('should reject an invalid body', async () => {
+      const environment_id = environments[0].id;
+
+      await send('post', '', adminCookie, body({ name: '1bad-name' })).expect(400);
+      await send('post', '', adminCookie, body({ name: 'a'.repeat(51) })).expect(400);
+      await send('post', '', adminCookie, body({ type: 'Server' })).expect(400);
+      await send('post', '', adminCookie, body({ values: [] })).expect(400);
+      await send('post', '', adminCookie, body({ values: [{ environment_id: 'not-a-uuid', value: 'v' }] })).expect(400);
+      await send('post', '', adminCookie, body({ values: [{ environment_id, value: '' }] })).expect(400);
+      await send('post', '', adminCookie, body({ values: [{ environment_id, value: 'x'.repeat(10001) }] })).expect(400);
+    });
+
+    it('should reject users without constant permission', async () => {
+      await send('post', '', developerCookie, body()).expect(403);
+    });
+  });
+
+  describe('PATCH /api/v2/organization-constants/:id | Update values', () => {
+    it('should write the single value to every environment and stamp modified_by', async () => {
+      const response = await send('patch', `/${apiUrlId}`, adminCookie, {
+        values: [{ environment_id: environments[1].id, value: 'https://changed.example.com' }],
+      }).expect(200);
+
+      expect(response.body.modified_by).toEqual({ id: adminId, name: 'Ada Lovelace' });
+      expect(response.body.values.map((v: { value: string }) => v.value)).toEqual(
+        environments.map(() => 'https://changed.example.com')
+      );
+    });
+
+    it('should keep a Secret value out of the response', async () => {
+      const response = await send('patch', `/${dbPasswordId}`, adminCookie, {
+        values: [{ environment_id: environments[0].id, value: 'rotated-secret-plaintext' }],
+      }).expect(200);
+
+      expect(
+        response.body.values.every((v: { has_value: boolean; value: null }) => v.has_value && v.value === null)
+      ).toBe(true);
+      expect(JSON.stringify(response.body)).not.toContain('rotated-secret-plaintext');
+    });
+
+    it('should reject a null value when the workspace has no multi-environment license', async () => {
+      await send('patch', `/${apiUrlId}`, adminCookie, {
+        values: [{ environment_id: environments[0].id, value: null }],
+      }).expect(400);
+    });
+
+    it('should reject an environment that is not in the workspace', async () => {
+      await send('patch', `/${apiUrlId}`, adminCookie, {
+        values: [{ environment_id: otherEnvironmentId, value: 'v' }],
+      }).expect(400);
+    });
+
+    it('should return 404 for a constant of another workspace and 400 for a malformed id', async () => {
+      const values = [{ environment_id: environments[0].id, value: 'v' }];
+
+      await send('patch', `/${otherWorkspaceConstantId}`, adminCookie, { values }).expect(404);
+      await send('patch', '/not-a-uuid', adminCookie, { values }).expect(400);
+    });
+
+    it('should reject an empty values list', async () => {
+      await send('patch', `/${apiUrlId}`, adminCookie, { values: [] }).expect(400);
+    });
+
+    it('should reject users without constant permission', async () => {
+      await send('patch', `/${apiUrlId}`, developerCookie, {
+        values: [{ environment_id: environments[0].id, value: 'v' }],
+      }).expect(403);
+    });
+  });
+
+  describe('POST /api/v2/organization-constants/bulk-delete | Delete several constants', () => {
+    it('should delete the constants of the workspace and skip every other id', async () => {
+      const envId = 'env:Global:FROM_ENV';
+      const unknownId = uuidv4();
+      const ids = [apiUrlId, dbPasswordId, envId, unknownId, otherWorkspaceConstantId, 'not-a-uuid'];
+
+      const response = await send('post', '/bulk-delete', adminCookie, { ids }).expect(200);
+
+      expect(response.body).toEqual({
+        deleted_ids: [apiUrlId, dbPasswordId],
+        skipped_ids: [envId, unknownId, otherWorkspaceConstantId, 'not-a-uuid'],
+      });
+      await get(`/${apiUrlId}`, adminCookie).expect(404);
+      await get(`/${otherWorkspaceConstantId}`, otherAdminCookie, otherOrganizationId).expect(200);
+    });
+
+    it('should reject an invalid body', async () => {
+      await send('post', '/bulk-delete', adminCookie, { ids: [] }).expect(400);
+      await send('post', '/bulk-delete', adminCookie, { ids: [apiUrlId, apiUrlId] }).expect(400);
+      await send('post', '/bulk-delete', adminCookie, { ids: Array.from({ length: 101 }, () => uuidv4()) }).expect(400);
+      await send('post', '/bulk-delete', adminCookie, { ids: [1] }).expect(400);
+    });
+
+    it('should reject users without constant permission', async () => {
+      await send('post', '/bulk-delete', developerCookie, { ids: [apiUrlId] }).expect(403);
     });
   });
 });
