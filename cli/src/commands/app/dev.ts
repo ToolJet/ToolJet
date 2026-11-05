@@ -53,7 +53,7 @@ export default class AppDev extends Command {
     once: Flags.boolean({ description: 'Build, upload and link once, then exit', default: false }),
     'trust-remote-config': Flags.boolean({
       description:
-        'Pull and build code from ToolJet even when it changes what a build runs on this machine: build config, package.json, the lockfile, .npmrc, a stylesheet @config or @plugin and the files they load, components while recordRender is on, or any code or data file while a build config loads files by a computed name',
+        'Pull and build code from ToolJet even when it changes what a build runs on this machine: build config, package.json, the lockfile, .npmrc, a stylesheet @config or @plugin and the files they load, components while recordRender is on, or any changed file, of any type, while a build config loads files by a computed name',
       default: false,
     }),
     scan: Flags.boolean({
