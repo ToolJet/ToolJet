@@ -4,7 +4,15 @@
  */
 import { readdirSync } from 'fs';
 import { join } from 'path';
-import { LEGACY_VARIANTS, loosenStep, restoreSteps } from 'src/migration-helpers/legacy-3-21-58-upgrade';
+import { DataSource, QueryRunner } from 'typeorm';
+import {
+  LEGACY_BRANCH_MIGRATION,
+  LEGACY_VARIANTS,
+  loosenStep,
+  restoreSteps,
+} from 'src/migration-helpers/legacy-3-21-58-upgrade';
+import { DataMigration } from 'src/migration-helpers/migration-mode';
+import { collectBeforeCommitSteps } from 'src/migration-helpers/run-all-migrations';
 
 describe('migration-helpers/legacy-3-21-58-upgrade', () => {
   it.each([
@@ -44,5 +52,26 @@ describe('migration-helpers/legacy-3-21-58-upgrade', () => {
     );
 
     expect(files).toEqual(expect.arrayContaining([...LEGACY_VARIANTS.keys()]));
+  });
+
+  it('should run the branch key swap after the beforeCommit() of a later migration, so no step runs under its lock', async () => {
+    const ran: string[] = [];
+    const migration = (name: string): DataMigration & { name: string } => ({
+      name,
+      up: async () => undefined,
+      down: async () => undefined,
+      beforeCommit: async () => {
+        ran.push(name);
+      },
+    });
+    const later = 'CopySvgImageAdditionalActions1793400000000';
+    const migrations = [migration(LEGACY_BRANCH_MIGRATION), migration(later)];
+    const steps = collectBeforeCommitSteps({ migrations } as unknown as DataSource);
+    const queryRunner = {} as QueryRunner;
+
+    for (const { up } of migrations) await up(queryRunner);
+    await steps.run(queryRunner);
+
+    expect(ran).toEqual([later, LEGACY_BRANCH_MIGRATION]);
   });
 });
