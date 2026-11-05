@@ -7,6 +7,10 @@
  * real store side effect of runQuery: `{ isLoading: true }` in
  * exposedValues.queries[id] once it starts executing.
  */
+import '@/test/setupMsw';
+import { http, HttpResponse } from 'msw';
+import { waitFor } from '@testing-library/react';
+import { server } from '@/test/msw/server';
 import useStore from '@/AppBuilder/_stores/store';
 import { resetAllStores } from '@/AppBuilder/_stores/utils';
 // Module-level exports, not store actions.
@@ -20,11 +24,11 @@ const didRun = (queryId = 'q1') =>
 
 const skippedLogs = () => state().debugger.logs.filter((log) => log.message?.startsWith('Query skipped'));
 
-function seedPeriodicQuery(options = {}) {
+function seedPeriodicQuery(options = {}, id = 'q1') {
   seedApp({});
   state().setApp({ appId: 'app-1', appName: 'Test app', homePageId: 'page-1' });
   const query = {
-    id: 'q1',
+    id,
     name: 'query1',
     kind: 'restapi',
     options: { url: 'https://example.test', runPeriodically: true, queryRunInterval: 1000, ...options },
@@ -37,7 +41,11 @@ function seedPeriodicQuery(options = {}) {
 }
 
 describe('run query periodically', () => {
-  beforeEach(() => jest.useFakeTimers());
+  beforeEach(() => {
+    jest.useFakeTimers();
+    // Ticks really send the run request; answer it so runs settle quietly.
+    server.use(http.post('*/data-queries/:queryId/run', () => HttpResponse.json({ status: 'ok', data: [] })));
+  });
 
   afterEach(() => {
     clearAllPeriodicTimers();
@@ -96,6 +104,76 @@ describe('run query periodically', () => {
     jest.advanceTimersByTime(3000);
 
     expect(didRun()).toBe(false);
+  });
+
+  describe('in an inactive browser tab', () => {
+    let hidden;
+    beforeEach(() => {
+      hidden = true;
+      jest.spyOn(document, 'hidden', 'get').mockImplementation(() => hidden);
+    });
+    afterEach(() => jest.restoreAllMocks());
+
+    const showTab = () => {
+      hidden = false;
+      document.dispatchEvent(new Event('visibilitychange'));
+    };
+
+    test('ticks pause, then the query runs once as soon as the tab is visible again', () => {
+      seedPeriodicQuery();
+
+      jest.advanceTimersByTime(3000);
+      expect(didRun()).toBe(false);
+
+      showTab();
+      jest.advanceTimersByTime(0);
+      expect(didRun()).toBe(true);
+    });
+
+    test('a query set to keep running in inactive tabs still runs', () => {
+      seedPeriodicQuery({ runPeriodicallyInBackground: true });
+
+      jest.advanceTimersByTime(1000);
+      expect(didRun()).toBe(true);
+    });
+  });
+
+  describe('after consecutive failures', () => {
+    // Real timers: the failed run settles through MSW and promise chains that fake timers stall.
+    beforeEach(() => jest.useRealTimers());
+
+    function serveFailingRuns() {
+      const runs = [];
+      server.use(
+        http.post('*/data-queries/:queryId/run', ({ params }) => {
+          runs.push(params.queryId);
+          return HttpResponse.json({ statusCode: 500, message: 'Service unavailable' }, { status: 500 });
+        })
+      );
+      return runs;
+    }
+
+    const pausedLogs = () => state().debugger.logs.filter((log) => log.message?.startsWith('Periodic run paused'));
+
+    test('periodic runs pause once the configured number of runs failed in a row', async () => {
+      const runs = serveFailingRuns();
+      // Own query id: a run still in flight from an earlier test must not count here.
+      seedPeriodicQuery({ pauseAfterFailures: '2' }, 'q-fail-threshold');
+
+      await waitFor(() => expect(pausedLogs()).toHaveLength(1), { timeout: 4000 });
+      expect(runs).toHaveLength(2);
+
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      expect(runs).toHaveLength(2);
+    }, 10000);
+
+    test('without a threshold, failing runs keep going', async () => {
+      const runs = serveFailingRuns();
+      seedPeriodicQuery({}, 'q-fail-no-threshold');
+
+      await waitFor(() => expect(runs.length).toBeGreaterThanOrEqual(3), { timeout: 5000 });
+      expect(pausedLogs()).toHaveLength(0);
+    }, 10000);
   });
 
   test('clearing all timers (app teardown) stops further ticks', () => {

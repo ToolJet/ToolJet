@@ -125,12 +125,50 @@ const hasObjectEntry = (items) => items.some((item) => item && typeof item === '
 // Keyed by queryId (queries are app-global); moduleId is stored in the value so
 // each tick targets the right module.
 // ---------------------------------------------------------------------------
-const queryPeriodicTimers = new Map(); // queryId -> { timeoutId, intervalMs, moduleId }
+const queryPeriodicTimers = new Map(); // queryId -> { timeoutId, intervalMs, moduleId, getStore }
 // Queries explicitly paused via the pausePeriodicRun CSA. Reconcile must not
 // auto-restart these (a manual run / option edit shouldn't override a pause).
 const pausedPeriodicQueries = new Set();
+// Consecutive failed periodic runs per query, for the `pauseAfterFailures` auto-pause.
+const periodicFailureCounts = new Map();
+// Queries whose tick fell while the tab was hidden; each runs once when the tab is visible again.
+const missedWhileHidden = new Set();
+let visibilityListenerAdded = false;
 // Floor for the interval to protect the backend from runaway polling.
 const MIN_PERIODIC_INTERVAL_MS = 1000;
+
+function runMissedPeriodicTicks() {
+  if (document.hidden) return;
+  missedWhileHidden.forEach((queryId) => {
+    const entry = queryPeriodicTimers.get(queryId);
+    // Fire the tick now; it re-arms itself with the real interval.
+    if (entry) armPeriodicTimer(queryId, entry.moduleId, 0, entry.getStore);
+  });
+  missedWhileHidden.clear();
+}
+
+// Track a periodic run's outcome and stop the timer once `pauseAfterFailures` consecutive runs
+// failed. Only ticks are counted; running the query again (manually / event) re-arms it.
+function recordPeriodicRunResult(query, moduleId, store, status) {
+  if (status === 'ok') {
+    periodicFailureCounts.delete(query.id);
+    return;
+  }
+  if (status !== 'failed') return; // aborted / skipped runs don't count either way
+  const failures = (periodicFailureCounts.get(query.id) ?? 0) + 1;
+  periodicFailureCounts.set(query.id, failures);
+  const threshold = Number(store.getResolvedValue(query.options?.pauseAfterFailures, {}, moduleId));
+  if (!(threshold > 0) || failures < threshold || !queryPeriodicTimers.has(query.id)) return;
+  clearPeriodicTimer(query.id);
+  store.debugger?.log({
+    logLevel: 'warning',
+    type: 'query',
+    kind: query.kind,
+    key: query.name,
+    message: `Periodic run paused after ${failures} consecutive failures. Run the query to resume.`,
+    errorTarget: 'Queries',
+  });
+}
 
 // Resolve the current desired state from a query's options. `runPeriodically`
 // may be a boolean (fx off) or a `{{…}}` expression (fx on); `queryRunInterval`
@@ -180,13 +218,26 @@ function armPeriodicTimer(queryId, moduleId, intervalMs, getStore) {
     // Skip while the query is disabled: runQuery would log "Query skipped" (and toast the
     // disabled message) on every tick. The chain stays armed so re-enabling resumes it.
     if (query.options?.disableQuery && store.getResolvedValue(query.options.disableQuery, {}, moduleId)) return;
+    // Pause in inactive tabs unless the query opts into background runs; catch up once on return.
+    if (document.hidden && !query.options?.runPeriodicallyInBackground) {
+      missedWhileHidden.add(queryId);
+      return;
+    }
     // Run in the module's current mode so released/public apps don't toast errors on
     // every failing tick (runQuery only toasts when mode !== 'view').
     const mode = store.modeStore?.modules?.[moduleId]?.currentMode || 'edit';
     // confirmed=true so periodic ticks bypass the "request confirmation" modal.
-    store.queryPanel.runQuery(queryId, query.name, true, mode, {}, undefined, undefined, false, false, moduleId);
+    Promise.resolve(
+      store.queryPanel.runQuery(queryId, query.name, true, mode, {}, undefined, undefined, false, false, moduleId)
+    )
+      .then((result) => recordPeriodicRunResult(query, moduleId, getStore(), result?.status))
+      .catch(() => recordPeriodicRunResult(query, moduleId, getStore(), 'failed'));
   }, intervalMs);
-  queryPeriodicTimers.set(queryId, { timeoutId, intervalMs, moduleId });
+  queryPeriodicTimers.set(queryId, { timeoutId, intervalMs, moduleId, getStore });
+  if (!visibilityListenerAdded) {
+    document.addEventListener('visibilitychange', runMissedPeriodicTicks);
+    visibilityListenerAdded = true;
+  }
 }
 
 /**
@@ -200,6 +251,8 @@ export function clearPeriodicTimer(queryId, { forgetPaused = false } = {}) {
     clearTimeout(queryPeriodicTimers.get(queryId).timeoutId);
     queryPeriodicTimers.delete(queryId);
   }
+  periodicFailureCounts.delete(queryId);
+  missedWhileHidden.delete(queryId);
   if (forgetPaused) pausedPeriodicQueries.delete(queryId);
 }
 
@@ -208,6 +261,8 @@ export function clearAllPeriodicTimers() {
   queryPeriodicTimers.forEach(({ timeoutId }) => clearTimeout(timeoutId));
   queryPeriodicTimers.clear();
   pausedPeriodicQueries.clear();
+  periodicFailureCounts.clear();
+  missedWhileHidden.clear();
 }
 
 /**

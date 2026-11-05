@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import Checkbox from '@/components/ui/Checkbox/Index';
 
 // Revealed directly under the "Run this query periodically" toggle.
 // When fx is active, shows the expression editor for the toggle value itself
@@ -42,6 +43,28 @@ export default function PeriodicRunInputs({ options, optionchanged }) {
             cyLabel="time-interval"
           />
         </div>
+      </div>
+      <div data-param="pauseAfterFailures" className="tw-flex tw-items-center tw-gap-[5px] tw-pl-[34px]">
+        <label className="form-label tw-items-center !tw-w-[132px]" data-cy="label-pause-after-failures-input">
+          {t('editor.queryManager.pauseAfterFailures', 'Pause after failures')}
+        </label>
+        <div className="tw-grow tw-max-w-[530px]">
+          <CodeHinter
+            type="basic"
+            initialValue={options?.pauseAfterFailures ?? ''}
+            onChange={(value) => optionchanged('pauseAfterFailures', value)}
+            placeholder={t('editor.queryManager.pauseAfterFailuresPlaceholder', 'Never')}
+            cyLabel="pause-after-failures"
+          />
+        </div>
+      </div>
+      <div data-param="runPeriodicallyInBackground" className="tw-pl-[34px]">
+        <Checkbox
+          checked={!!options?.runPeriodicallyInBackground}
+          onCheckedChange={(checked) => optionchanged('runPeriodicallyInBackground', !!checked)}
+          label={t('editor.queryManager.runInInactiveTabs', 'Keep running when the browser tab is inactive')}
+          data-cy="run-periodically-in-background-checkbox"
+        />
       </div>
     </div>
   );

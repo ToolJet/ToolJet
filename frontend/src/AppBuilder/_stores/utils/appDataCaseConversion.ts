@@ -90,6 +90,8 @@ const QUERY_OPTION_KEYS_TO_NORMALIZE = [
   'runPeriodically',
   'runPeriodicallyFx',
   'queryRunInterval',
+  'pauseAfterFailures',
+  'runPeriodicallyInBackground',
   'workflowId',
   'workflowVersionId',
 ];

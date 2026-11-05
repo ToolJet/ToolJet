@@ -249,6 +249,8 @@ const SETTINGS_OPTIONS = new Set([
   'runPeriodically',
   'runPeriodicallyFx',
   'queryRunInterval',
+  'pauseAfterFailures',
+  'runPeriodicallyInBackground',
   'events',
 ]);
 
