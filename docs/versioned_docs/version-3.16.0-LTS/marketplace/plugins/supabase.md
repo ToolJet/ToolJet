@@ -37,7 +37,7 @@ Supabase data sources created before connection types were added use **Secret ke
 
 - Click **Test Connection** to validate your credentials. Click **Save** to store the data source.
 
-  <!-- TODO screenshot: Supabase data source configuration with Connection type set to Secret key, showing Project URL and Secret key fields (key blurred) -->
+  <img className="screenshot-full img-l" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/connection-secret-key.png" alt="Supabase data source configured with the Secret key connection type" />
 
 ### Connection String (PostgreSQL)
 
@@ -59,7 +59,7 @@ Use this connection type to run raw SQL queries against your Supabase database.
 
 - Click **Test Connection** to validate the connection. Click **Save** to store the data source.
 
-  <!-- TODO screenshot: Supabase data source configuration with Connection type set to Connection string (PostgreSQL), showing Connection string and CA certificate fields (password blurred) -->
+  <img className="screenshot-full img-l" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/supabase/connection-string.png" alt="Supabase data source configured with the Connection string (PostgreSQL) connection type" />
 
 ## Querying Supabase
 
@@ -68,8 +68,7 @@ Use this connection type to run raw SQL queries against your Supabase database.
 - In the Operation dropdown, select the desired operation type. ToolJet currently [supports](#supported-operations) six query types for Supabase interactions.
 - Enter the table name and other required parameters for the selected operation and click on **Run** button to run the query.
 
-<!-- TODO screenshot: refresh of listops.png showing the Operation dropdown with the Run SQL (connection string) option -->
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/supabase/listops.png" alt="Supabase supported operations" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/supabase/listops-v2.png" alt="Supabase supported operations" />
 
 :::info
 Query results can be transformed using transformations. Read our [transformations documentation](/docs/app-builder/custom-code/transform-data).
@@ -246,7 +245,7 @@ SQL Parameters:
 - Key: `status`
 - Value: `{{ components.statusSelect.value }}`
 
-<!-- TODO screenshot: Run SQL query in the query panel with a SELECT query and one SQL parameter -->
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/supabase/run-sql.png" alt="Run SQL query with a SQL parameter" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
