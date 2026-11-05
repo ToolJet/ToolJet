@@ -37,7 +37,7 @@ Workflows are visual automations: a graph of nodes/edges stored as an app-versio
 - Priority: manual/webhook 0, scheduled 1; retries default 0 attempts (`WORKFLOW_JOB_RETRY_CONFIG`).
 - Timeout: `WORKFLOW_TIMEOUT_SECONDS` env (default 60s), checked cooperatively between nodes (`stopCheck`) — timeout/termination logged as `failure`, then execution status set to `failure`/`terminated`. `WorkflowTerminationError` (`types/index.ts`) marks user-initiated kills so the processor skips job-completion and cleans up isolates.
 - Bundle lifecycle: `none → building → ready | failed` (`error` column holds failure reason). JS build = `npm install --package-lock-only` → `npm ci --production --ignore-scripts` → esbuild; `findExistingBundle` (dep-hash reuse) is stubbed — always returns null, every build is fresh. Isolate memory capped by `WORKFLOW_JS_MEMORY_LIMIT_MB` (default 20).
-- Python: nsjail sandbox mandatory when detected (`SecurityModeDetectorService`; no silent fallback — bypass only via explicit env opt-in or nsjail absent).
+- Python: nsjail sandbox mandatory (`SecurityModeDetectorService`). nsjail absent → steps refused unless `TOOLJET_WORKFLOW_SANDBOX_BYPASS=true`.
 - Schedules are BullMQ job schedulers keyed by schedule id; DB (`workflow_schedules`) is source of truth, reconciled on worker boot by `ScheduleBootstrapService`. Cron validated with `cron-validator`.
 - Job payload carries a serialized `WorkflowExecution` + dto; default params come from `appVersion.definition.defaultParams` merged with call params at process time.
 - Webhook endpoint is versioned (`version: '2'`) and throttled via `WEBHOOK_THROTTLE_TTL`/`WEBHOOK_THROTTLE_LIMIT`.
