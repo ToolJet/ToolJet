@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { extractAndReplaceReferencesFromString as extractAndReplaceReferencesFromStringAst } from '@/AppBuilder/_stores/ast';
 import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
 import { materializeFileHandleRefs } from '@/AppBuilder/_utils/fileHandleRegistry';
+import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
 
 var _ = require('lodash');
 
@@ -157,7 +158,7 @@ export const resolveCode = (
     error = `Cannot resolve function call ${code}`;
   } else {
     try {
-      const evalFunction = Function(
+      const evalFunction = (strictMode.isStrict?.() ? strictMode.compileBinding : Function)(
         [
           'variables',
           'components',

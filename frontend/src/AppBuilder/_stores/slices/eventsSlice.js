@@ -6,6 +6,7 @@ import { getHostURL, getSubpath } from '@/_helpers/routes';
 import urlJoin from 'url-join';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
+import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
 import { logoutAction } from '@/AppBuilder/_utils/auth';
 import { isCompareMuted } from '@/AppBuilder/_utils/compareFrame';
 import { copyToClipboard } from '@/_helpers/appUtils';
@@ -700,6 +701,7 @@ export const createEventsSlice = (set, get) => ({
               //! if resolvecode default value should be the value itself not empty string ... Ask KAVIN
               const resolvedValue = getResolvedValue(event.url, customVariables, moduleId);
               // const url = resolveReferences(event.url, undefined, customVariables);
+              if (strictMode.strictUrlAllowed && !strictMode.strictUrlAllowed(resolvedValue)) return Promise.resolve();
               window.open(resolvedValue, event?.windowTarget === 'currentTab' ? '_self' : '_blank');
               return Promise.resolve();
             }
@@ -788,6 +790,7 @@ export const createEventsSlice = (set, get) => ({
             case 'set-localstorage-value': {
               const key = getResolvedValue(event.key, customVariables, moduleId);
               const value = getResolvedValue(event.value, customVariables, moduleId);
+              if (strictMode.isStrict?.()) return Promise.resolve();
               localStorage.setItem(key, value);
 
               return Promise.resolve();

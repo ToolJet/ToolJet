@@ -5,6 +5,7 @@ import * as ReactJSXRuntime from 'react/jsx-runtime';
 import { init as initLexer, parse as parseImports } from 'es-module-lexer';
 
 import FormSignalContext from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
 import {
   compareText,
   debugApi,
@@ -35,6 +36,7 @@ const RUNTIME_STORAGE_KEY = 'tj-cc-runtime';
 // Every library runs inline for now; the sandboxed iframe stays available behind
 // localStorage.setItem('tj-cc-runtime', 'iframe').
 export const getLibraryComponentRuntime = (): LibraryRuntime => {
+  if (strictMode.isStrict?.()) return 'iframe';
   try {
     return window.localStorage.getItem(RUNTIME_STORAGE_KEY) === 'iframe' ? 'iframe' : 'inline';
   } catch {
@@ -452,7 +454,7 @@ export const installGlobalsOn = (win: Window) => {
   w.__tjDebug = debugApi;
 };
 
-const fetchBundleText = async (bundleUrl: string, options: LoadOptions): Promise<string> => {
+export const fetchBundleText = async (bundleUrl: string, options: LoadOptions): Promise<string> => {
   const preloaded = compareText(bundleUrl);
   if (preloaded !== null) return preloaded;
   const res = await fetch(bundleUrl, fetchInit(options));

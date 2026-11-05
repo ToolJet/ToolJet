@@ -3,6 +3,7 @@ import { TrackedSuspense } from './SuspenseTracker';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { getComponentToRender } from '@/AppBuilder/_helpers/editorHelpers';
+import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
 import { OverlayTrigger } from 'react-bootstrap';
 import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
@@ -244,7 +245,10 @@ const RenderWidget = ({
     }
   }, [id, moduleId, resetComponentExposedValues, resetComponentExposedValuesPerRow, nearestListviewId, resolveIndex]);
 
-  const ComponentToRender = useMemo(() => getComponentToRender(componentType), [componentType]);
+  const ComponentToRender = useMemo(
+    () => (strictMode.strictWidgetRefused?.(componentType) ? null : getComponentToRender(componentType)),
+    [componentType]
+  );
   const setExposedVariable = useCallback(
     (key, value) => {
       if (nearestListviewId && resolveIndex) {
