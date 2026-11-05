@@ -1,3 +1,4 @@
+import { withholdsUpstreamSso } from '@modules/session/sso-exposure';
 import {
   BadRequestException,
   ForbiddenException,
@@ -215,15 +216,18 @@ export class AuthService implements IAuthService {
 
   async authorizeOrganization(user: User) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      if (!user.oauthAppId && user.defaultOrganizationId !== user.organizationId)
+      if (!user.oauthAppId && !user.isPATLogin && user.defaultOrganizationId !== user.organizationId)
         await this.userRepository.updateOne(user.id, { defaultOrganizationId: user.organizationId }, manager);
 
       const organization = await this.organizationRepository.get(user.organizationId);
 
       const permissionData = await this.sessionUtilService.getPermissionDataToAuthorize(user, manager);
-      // This is a browser response boundary. Do not expose stored IdP tokens to an OAuth
-      // viewer or mutate the shared permission data used by server-side SSO query bindings.
-      const responsePermissionData = user.oauthGrantId ? { ...permissionData, ssoUserInfo: {} } : permissionData;
+      // This is a browser response boundary. Do not expose stored IdP tokens to a workspace token,
+      // render or OAuth session (sso-exposure.ts), or mutate the shared permission data used by
+      // server-side SSO query bindings.
+      const responsePermissionData = withholdsUpstreamSso(user)
+        ? { ...permissionData, ssoUserInfo: {} }
+        : permissionData;
 
       return decamelizeKeysExcept(
         {

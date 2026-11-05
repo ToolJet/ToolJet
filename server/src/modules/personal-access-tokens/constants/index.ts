@@ -4,6 +4,13 @@ export enum FEATURE_KEY {
   DELETE_PAT = 'DELETE_PAT',
   VALIDATE_PAT = 'VALIDATE_PAT',
   CREATE_PAT_SESSION = 'CREATE_PAT_SESSION',
+  // A short-lived viewer session for the app an AI builder session is building.
+  CREATE_AI_RENDER_SESSION = 'CREATE_AI_RENDER_SESSION',
+  // Device login (tooljet auth login)
+  START_DEVICE_LOGIN = 'START_DEVICE_LOGIN',
+  POLL_DEVICE_LOGIN = 'POLL_DEVICE_LOGIN',
+  LOOKUP_DEVICE_LOGIN = 'LOOKUP_DEVICE_LOGIN',
+  APPROVE_DEVICE_LOGIN = 'APPROVE_DEVICE_LOGIN',
 }
 
 export const PAT_TOKEN_PREFIX = 'tj_pat_';
