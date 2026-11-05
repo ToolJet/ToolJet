@@ -1,3 +1,7 @@
+/**
+ * @group working
+ * @group security
+ */
 import { openRefreshRetry, sealRefreshRetry } from '@modules/mcp-oauth/refresh-retry';
 
 test('retry envelopes authenticate the complete tag, purpose key and artifact binding', () => {

@@ -1,3 +1,7 @@
+/**
+ * @group working
+ * @group security
+ */
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { resolveLiveCustomDomainHost, resolveSsoCustomDomainHost } from '@modules/custom-domains/live-origin';
 

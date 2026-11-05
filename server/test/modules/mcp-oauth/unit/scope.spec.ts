@@ -1,3 +1,7 @@
+/**
+ * @group working
+ * @group security
+ */
 import 'reflect-metadata';
 import { Reflector } from '@nestjs/core';
 import { GUARDS_METADATA } from '@nestjs/common/constants';

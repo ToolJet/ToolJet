@@ -1,3 +1,7 @@
+/**
+ * @group working
+ * @group security
+ */
 import { sameSecurityValue, ssoSecurityConfig } from '@modules/mcp-oauth/security-policy';
 
 test('OIDC metadata and the authorization-code default do not change the security policy', () => {

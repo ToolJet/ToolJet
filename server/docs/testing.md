@@ -93,6 +93,8 @@ Addition criteria alone produce accretion, not quality. Two removal signals:
 
 ## Coverage: qualitative, not numeric
 
+When an older baseline omitted untouched AI source files, the coverage job counts those files as uncovered in the baseline before comparing percentages. This applies only to files with identical Git blobs in the baseline run and the PR; new or modified files receive no adjustment. Both original and comparable baseline counts are published, and the existing thresholds remain unchanged.
+
 No global % target to chase. Coverage tooling (`test/jest-coverage.config.ts`) is a regression tripwire, not a scoreboard. The `run-ci` gate enforces only the tripwire: overall server line coverage may not drop more than 0.1pt below the base branch, changed executable lines need ≥ 80% coverage (unit + e2e + git-sync suites combined, via diff-cover), and a new file can't be 0% covered (`scripts/coverage-gate.sh`). Read it as a diff signal on **changed files**: did this PR add a branch with no test touching it? Don't chase a number — use it to spot a specific untested `if`. Exclusions in the config are intentional; uncovered lines in excluded files are not gaps.
 
 ## TDD note

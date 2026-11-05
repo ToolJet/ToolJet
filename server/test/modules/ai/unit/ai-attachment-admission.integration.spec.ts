@@ -1,4 +1,5 @@
 /** @group working */
+import { assertAiTestDatabase } from '../../../helpers/ai-test-database';
 import { randomUUID } from 'crypto';
 import { DataSource } from 'typeorm';
 import { reserveAttachmentUpload, MAX_OWNER_UPLOADS } from '@modules/ai/services/ai-attachment-admission';
@@ -13,7 +14,7 @@ integration('ToolJet-owned attachment admission with PostgreSQL', () => {
   beforeAll(async () => {
     db = await new DataSource({
       type: 'postgres',
-      url: process.env.ATTACHMENT_TEST_DATABASE_URL,
+      url: assertAiTestDatabase(process.env.ATTACHMENT_TEST_DATABASE_URL),
       extra: { options: `-c search_path=${schema}`, max: 8 },
     }).initialize();
     await db.query(`CREATE SCHEMA "${schema}"`);

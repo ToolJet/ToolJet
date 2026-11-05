@@ -1,3 +1,7 @@
+/**
+ * @group working
+ * @group security
+ */
 import 'reflect-metadata';
 jest.mock('@modules/session/util.service', () => ({ SessionUtilService: class {} }));
 jest.mock('@modules/users/repositories/repository', () => ({ UserRepository: class {} }));

@@ -1,3 +1,7 @@
+/**
+ * @group working
+ * @group security
+ */
 import 'reflect-metadata';
 import { ExecutionContext } from '@nestjs/common';
 import { Request } from 'express';
