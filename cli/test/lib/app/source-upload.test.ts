@@ -237,3 +237,74 @@ describe('codeSavedLine', () => {
     });
   });
 });
+
+/*
+  Source sync reads and writes only the project: a symlinked frontend/src, frontend, root file or .tooljet that leads
+  outside is refused, before anything is sent or written. Links that stay inside the project still work.
+*/
+describe('source sync stays inside the project', () => {
+  let root: string;
+  let outside: string;
+  const write = (base: string, rel: string, content = 'x') => {
+    fs.mkdirSync(path.dirname(path.join(base, rel)), { recursive: true });
+    fs.writeFileSync(path.join(base, rel), content);
+  };
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), 'tj-confine-'));
+    outside = fs.mkdtempSync(path.join(os.tmpdir(), 'tj-outside-'));
+    write(root, 'app.json', '{"appId":"a"}');
+    write(outside, 'sentinel.json', '{"secret":true}');
+  });
+  afterEach(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+    fs.rmSync(outside, { recursive: true, force: true });
+  });
+
+  it('refuses to collect a symlinked frontend/src that leads outside', () => {
+    fs.mkdirSync(path.join(root, 'frontend'));
+    fs.symlinkSync(outside, path.join(root, 'frontend', 'src'), 'dir');
+    expect(() => collectProjectSource(root)).to.throw(/frontend\/src.*outside the project/);
+  });
+
+  it('refuses a symlinked frontend folder and a symlinked root file', () => {
+    write(outside, 'src/index.ts', 'export const secret = 1;');
+    fs.symlinkSync(outside, path.join(root, 'frontend'), 'dir');
+    expect(() => collectProjectSource(root)).to.throw(/frontend\/src.*outside the project/);
+    fs.rmSync(path.join(root, 'frontend'));
+    write(root, 'frontend/src/index.ts');
+    fs.symlinkSync(path.join(outside, 'sentinel.json'), path.join(root, 'frontend', 'package.json'));
+    expect(() => collectProjectSource(root)).to.throw(/frontend\/package.json.*outside the project/);
+  });
+
+  it('still collects a tree linked inside the project, and skips links inside a tree as before', () => {
+    write(root, 'shared/src/index.ts', 'export {}');
+    fs.mkdirSync(path.join(root, 'frontend'));
+    fs.symlinkSync(path.join(root, 'shared', 'src'), path.join(root, 'frontend', 'src'), 'dir');
+    fs.symlinkSync(path.join(outside, 'sentinel.json'), path.join(root, 'shared', 'src', 'leak.json'));
+    expect(collectProjectSource(root).map((f) => f.path)).to.deep.equal(['app.json', 'frontend/src/index.ts']);
+  });
+
+  it('refuses a pull that would write through a link outside, and writes nothing', () => {
+    write(root, 'frontend/src/App.tsx', 'local');
+    fs.symlinkSync(outside, path.join(root, 'frontend', 'src', 'lib'), 'dir');
+    const stored = {
+      exists: true,
+      revision: 2,
+      owner: 'platform' as const,
+      files: [
+        { path: 'frontend/src/App.tsx', content: 'pulled' },
+        { path: 'frontend/src/lib/evil.ts', content: 'escaped' },
+      ],
+    };
+    expect(() => applyStoredSource(root, stored, 'v1')).to.throw(/frontend\/src\/lib\/evil.ts.*outside the project/);
+    expect(fs.existsSync(path.join(outside, 'evil.ts'))).to.equal(false);
+    expect(fs.readFileSync(path.join(root, 'frontend', 'src', 'App.tsx'), 'utf8')).to.equal('local');
+  });
+
+  it('refuses to write the sync state through a symlinked .tooljet', () => {
+    fs.symlinkSync(outside, path.join(root, '.tooljet'), 'dir');
+    expect(() => writeSourceState(root, { revision: 1, owner: 'platform' })).to.throw(/outside the project/);
+    expect(fs.existsSync(path.join(outside, 'source.json'))).to.equal(false);
+    expect(readSourceState(root)).to.equal(undefined);
+  });
+});

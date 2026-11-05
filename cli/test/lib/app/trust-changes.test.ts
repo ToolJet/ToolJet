@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
-import { StoredSource, trustFileChanges } from '../../../src/lib/app/source-upload';
+import { loadsByComputedName, StoredSource, trustFileChanges } from '../../../src/lib/app/source-upload';
 
 /* Live sync stops before pulling a change that a local build would run as code. */
 describe('live sync and code a build loads', () => {
@@ -67,9 +67,11 @@ describe('live sync and code a build loads', () => {
       })
     );
 
+    // The pulled brand.ts loads a built-in that runs code, so the rest of the pull counts too.
     expect(changes).to.have.members([
       'frontend/src/brand.ts (loaded by the build)',
       'frontend/src/tokens.cjs (loaded by the build)',
+      'frontend/src/App.tsx (frontend/src/brand.ts loads files by a computed name)',
     ]);
   });
 
@@ -98,5 +100,107 @@ describe('live sync and code a build loads', () => {
     );
 
     expect(changes).to.deep.equal(['frontend/src/App/index.tsx (recordRender runs it)']);
+  });
+});
+
+/*
+  A build config that names what it loads at run time (require(configName)) can run any project file, so the literal
+  inventory above cannot say which pulled change it runs: then every pulled change except documents, plain text,
+  images and stylesheets needs --trust-remote-config.
+*/
+describe('live sync when a build config loads files by a computed name', () => {
+  let root: string;
+  const write = (rel: string, content: string) => {
+    fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
+    fs.writeFileSync(path.join(root, rel), content);
+  };
+  const stored = (files: Record<string, string>): StoredSource => ({
+    files: Object.entries(files).map(([p, content]) => ({ path: p, content })),
+  });
+  /** The scaffold's own config, without its front matter. */
+  const template = (name: string) =>
+    fs
+      .readFileSync(path.join(__dirname, '..', '..', '..', 'src', '_templates', 'library', 'code-app', name), 'utf8')
+      .replace(/^---[\s\S]*?---\n/, '');
+
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), 'tj-trust-computed-'));
+    write('frontend/package.json', '{"name":"x"}');
+  });
+  afterEach(() => fs.rmSync(root, { recursive: true, force: true }));
+
+  it('names a changed file a computed require could load, which the literal inventory missed', () => {
+    write(
+      'frontend/postcss.config.cjs',
+      "const configName = './src/config.js';\nmodule.exports = require(configName);\n"
+    );
+    write('frontend/src/config.js', 'module.exports = { plugins: {} };\n');
+
+    const changes = trustFileChanges(root, stored({ 'frontend/src/config.js': "require('child_process');\n" }));
+
+    expect(changes).to.deep.equal([
+      'frontend/src/config.js (frontend/postcss.config.cjs loads files by a computed name)',
+    ]);
+  });
+
+  it('then names every changed code or data file, and lets documents, images and plain stylesheets through', () => {
+    write('frontend/tailwind.config.cjs', 'const load = require;\nmodule.exports = load(`./src/${"theme"}.cjs`);\n');
+
+    const changes = trustFileChanges(
+      root,
+      stored({
+        'frontend/src/App/index.tsx': 'changed',
+        'frontend/src/data/tokens.json': '{"a":1}',
+        'frontend/src/notes.md': 'changed',
+        'frontend/src/logo.svg': '<svg/>',
+        'frontend/styles/global.css': '.a { color: red; }',
+      })
+    );
+
+    expect(changes).to.have.members([
+      'frontend/src/App/index.tsx (frontend/tailwind.config.cjs loads files by a computed name)',
+      'frontend/src/data/tokens.json (frontend/tailwind.config.cjs loads files by a computed name)',
+    ]);
+  });
+
+  it('counts a computed load in a file a config imports literally', () => {
+    write('frontend/tailwind.config.cjs', "module.exports = require('./src/theme.cjs');\n");
+    write('frontend/src/theme.cjs', "module.exports = require(process.env.THEME || './a.cjs');\n");
+
+    expect(trustFileChanges(root, stored({ 'frontend/src/App.tsx': 'changed' }))).to.deep.equal([
+      'frontend/src/App.tsx (frontend/src/theme.cjs loads files by a computed name)',
+    ]);
+  });
+
+  it("keeps the scaffold's own configs on the literal inventory, so component edits still pull", () => {
+    write('frontend/postcss.config.cjs', template('postcss.ejs.t'));
+    write('frontend/tailwind.config.cjs', template('tailwind.ejs.t'));
+
+    expect(trustFileChanges(root, stored({ 'frontend/src/App/index.tsx': 'changed' }))).to.deep.equal([]);
+  });
+
+  it('reads indirect loading loosely: anything that might be one counts', () => {
+    for (const code of [
+      'module.exports = require(name);',
+      'const r = require; module.exports = r("./x");',
+      'module.exports = import(spec);',
+      'module.exports = require(`./${x}`);',
+      'const { createRequire } = require("module");',
+      'module.exports = eval("require")("./x");',
+      'module.exports = this.constructor.constructor("return process")();',
+      'module.exports = globalThis["req" + "uire"]("./x");',
+      'module.exports = module["require"]("./x");',
+      'module.exports = JSON.parse(require("fs").readFileSync("./x"));',
+      'export default await import(new URL("./x", import.meta.url));',
+      'module.exports = __non_webpack_require__("./x");',
+    ])
+      expect(loadsByComputedName(code), code).to.equal(true);
+    for (const code of [
+      'module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } };',
+      "module.exports = { plugins: [require('tailwindcss-animate')], presets: [require('./preset.cjs')] };",
+      "import preset from './preset.js';\nexport default { presets: [preset] };",
+      "/** @type {import('tailwindcss').Config} */\nmodule.exports = {};",
+    ])
+      expect(loadsByComputedName(code), code).to.equal(false);
   });
 });

@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { confinementDenial, projectConfinement } from '../library/confinement';
 import { lockWithPublishedSdk, manifestWithPublishedSdk, repairSdk } from './sdk';
 import { Session } from './session';
 
@@ -58,16 +59,31 @@ const storedContent = (rel: string, content: string): string => {
   return content;
 };
 
+/*
+  Source sync reads and writes only the project itself: every folder it walks, every file it reads and every file it
+  writes or removes is checked after following symlinks (confinement.ts), so a symlinked frontend/src, frontend or root
+  file cannot send another folder's files to ToolJet, or let a pull write outside the project. Packages are never
+  source, so the hoisted and linked node_modules a local build may read do not count here.
+*/
+export const projectPath = (root: string, rel: string): string => {
+  const full = path.join(root, rel);
+  if (confinementDenial(projectConfinement(root, true), full))
+    throw new Error(
+      `Refused ${rel}: it leads outside the project (a symlink), so source sync does not read or write it.`
+    );
+  return full;
+};
+
 /** The files the server stores, as { path, content } with paths relative to the project root and '/' separators. */
 export function collectProjectSource(root: string): { path: string; content: string }[] {
   const files: { path: string; content: string }[] = [];
   const add = (rel: string) => {
-    const content = fs.readFileSync(path.join(root, rel), 'utf8');
+    const content = fs.readFileSync(projectPath(root, rel), 'utf8');
     files.push({ path: rel, content: storedContent(rel, content) });
   };
   for (const rel of ROOT_FILES) if (fs.existsSync(path.join(root, rel))) add(rel);
   const walk = (rel: string) => {
-    for (const entry of fs.readdirSync(path.join(root, rel), { withFileTypes: true })) {
+    for (const entry of fs.readdirSync(projectPath(root, rel), { withFileTypes: true })) {
       if (entry.name.startsWith('.') || entry.name === 'node_modules') continue;
       const child = `${rel}/${entry.name}`;
       if (entry.isDirectory()) walk(child);
@@ -131,7 +147,7 @@ const stateFile = (root: string) => path.join(root, '.tooljet', 'source.json');
 
 export function readSourceState(root: string): SourceState | undefined {
   try {
-    const state = JSON.parse(fs.readFileSync(stateFile(root), 'utf8'));
+    const state = JSON.parse(fs.readFileSync(projectPath(root, path.relative(root, stateFile(root))), 'utf8'));
     return typeof state?.revision === 'number' ? state : undefined;
   } catch {
     return undefined;
@@ -139,8 +155,9 @@ export function readSourceState(root: string): SourceState | undefined {
 }
 
 export function writeSourceState(root: string, state: SourceState): void {
-  fs.mkdirSync(path.dirname(stateFile(root)), { recursive: true });
-  fs.writeFileSync(stateFile(root), JSON.stringify(state, null, 2) + '\n');
+  const file = projectPath(root, path.relative(root, stateFile(root)));
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(state, null, 2) + '\n');
 }
 
 export interface StoredSource {
@@ -177,8 +194,8 @@ const BUILD_TRUST_FILES = ROOT_FILES.filter(
 );
 
 const localStoredContent = (root: string, rel: string): string | undefined => {
-  const full = path.join(root, rel);
   try {
+    const full = projectPath(root, rel);
     return fs.statSync(full).isFile() ? storedContent(rel, fs.readFileSync(full, 'utf8')) : undefined;
   } catch {
     return undefined;
@@ -253,6 +270,34 @@ function filesTheBuildRuns(root: string, incoming: Map<string, string | undefine
   return seen;
 }
 
+/*
+  The inventory above follows literal imports only. A file the build runs that names what it loads at run time
+  (`require(configName)`, `import(x)`, require passed around, eval or Function, createRequire, fs, process,
+  globalThis, constructor tricks) could load any project file, and no reading of JavaScript can say which. Such a
+  file is matched loosely on purpose: anything that might be indirect counts as indirect. A literal
+  `require('./x')` or `import x from 'y'` does not.
+*/
+const LITERAL_REQUIRE = /\brequire\s*\(\s*(["'])[^"'`$\\]*\1\s*\)/g;
+const LITERAL_DYNAMIC_IMPORT = /\bimport\s*\(\s*(["'])[^"'`$\\]*\1\s*\)/g;
+const INDIRECT_LOAD =
+  /require|\bimport\s*\(|import\.meta|\beval\b|\bFunction\b|\bconstructor\b|createRequire|\bjiti\b|\bglobalThis\b|\bglobal\b|\bprocess\b|\barguments\b|\bmodule\s*(?:\[|\.(?!exports\b))|\bReflect\b|\bvm\b/;
+/** Node built-ins that read files or load code, named anywhere (a literal require of one is still indirect). */
+const LOADER_BUILTIN = /["'](?:node:)?(?:fs|fs\/promises|vm|module|child_process|worker_threads)["']/;
+
+/**
+ * Whether code may load a file by a name computed at run time. Comments are read too: stripping them from JavaScript
+ * by pattern can swallow code (a glob such as './src/**' opens one), and a false alarm only asks for approval.
+ */
+export function loadsByComputedName(code: string): boolean {
+  return (
+    LOADER_BUILTIN.test(code) ||
+    INDIRECT_LOAD.test(code.replace(LITERAL_REQUIRE, '0').replace(LITERAL_DYNAMIC_IMPORT, '0'))
+  );
+}
+
+/** Files a pull may change without any build running them: documents, plain text and images. */
+const INERT = /\.(?:md|txt|svg|png|jpe?g|gif|webp|avif|ico|woff2?|ttf|otf)$/i;
+
 const recordsRenders = (root: string): boolean => {
   const config = parseJson(localStoredContent(root, 'frontend/.tooljet/config.json') ?? '');
   return config?.recordRender === true;
@@ -261,8 +306,10 @@ const recordsRenders = (root: string): boolean => {
 /**
  * What a pull of `stored` would change here that a local build runs: the fixed build-trust files, a stylesheet that
  * adds or changes a code-loading directive, a file such a directive or a build config loads, and, when this project
- * renders components in Node (recordRender), any changed component code. Compared as stored, so a local SDK path is
- * no change.
+ * renders components in Node (recordRender), any changed component code. When a file the build runs loads by a
+ * computed name (loadsByComputedName), in this copy or in the pull, the inventory cannot be trusted, so every changed
+ * file except documents, plain text, images and stylesheets (whose directives are checked above) counts. Compared as
+ * stored, so a local SDK path is no change.
  */
 export function trustFileChanges(root: string, stored: StoredSource): string[] {
   const files = new Map((stored.files ?? []).map((f) => [f.path, f.content]));
@@ -281,7 +328,18 @@ export function trustFileChanges(root: string, stored: StoredSource): string[] {
     const added = codeDirectives(content).filter((directive) => !before.has(directive));
     if (added.length) note(`${rel} (${added.map((d) => d.split(' ')[0]).join(', ')})`, rel);
   }
-  for (const rel of filesTheBuildRuns(root, files)) if (changes(rel)) note(`${rel} (loaded by the build)`, rel);
+  const runs = filesTheBuildRuns(root, files);
+  for (const rel of runs) if (changes(rel)) note(`${rel} (loaded by the build)`, rel);
+  const indirect = [...runs].find(
+    (rel) =>
+      CODE_FILE.test(rel) &&
+      [files.get(rel), localStoredContent(root, rel)].some((c) => typeof c === 'string' && loadsByComputedName(c))
+  );
+  if (indirect) {
+    for (const rel of files.keys())
+      if (!INERT.test(rel) && !STYLESHEET.test(rel) && changes(rel))
+        note(`${rel} (${indirect} loads files by a computed name)`, rel);
+  }
   if (recordsRenders(root)) {
     for (const rel of files.keys())
       if (CODE_FILE.test(rel) && TREES.some((tree) => rel.startsWith(`${tree}/`)) && changes(rel))
@@ -319,14 +377,17 @@ export function applyStoredSource(
   const files = (stored.files ?? []).filter((f) => isProjectPath(f.path) && typeof f.content === 'string');
   const keep = new Set(files.map((f) => f.path));
   let removed = 0;
+  // Every target is checked before anything is written, so a refused pull changes nothing.
+  for (const f of files) projectPath(root, f.path);
+  projectPath(root, 'frontend/package.json');
   for (const local of collectProjectSource(root)) {
     if (!keep.has(local.path) && TREES.some((tree) => local.path.startsWith(`${tree}/`))) {
-      fs.rmSync(path.join(root, local.path));
+      fs.rmSync(projectPath(root, local.path));
       removed++;
     }
   }
   for (const f of files) {
-    const target = path.join(root, f.path);
+    const target = projectPath(root, f.path);
     let content = f.content as string;
     if (f.path === APP_JSON && fs.existsSync(target)) {
       content = withVersion(content, parseJson(fs.readFileSync(target, 'utf8'))?.version);
