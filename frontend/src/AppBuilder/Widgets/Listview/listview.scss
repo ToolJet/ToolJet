@@ -2,7 +2,9 @@
     .dynamic-height-target {
         > .canvas-component {
             .list-item  {
-                > .sub-canvas {
+                // The clip box sits between the record and its canvas.
+                > .sub-canvas,
+                > .listview-record-clip > .sub-canvas {
                     overflow-y: hidden !important;
                 }
             }

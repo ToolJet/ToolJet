@@ -141,7 +141,7 @@ const ListviewSubcontainerComponent = ({
           }, 0);
         }}
       >
-        <div style={{ height: '100%', overflow: 'hidden', borderRadius: 'inherit' }}>
+        <div className="listview-record-clip" style={{ height: '100%', overflow: 'hidden', borderRadius: 'inherit' }}>
           <SubContainer
             index={index}
             id={id}
