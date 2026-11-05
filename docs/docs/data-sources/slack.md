@@ -7,9 +7,12 @@ ToolJet supports integration with your Slack workspace, enabling you to automate
 
 ## Connection
 
-ToolJet offers two ways to connect with Slack:
+ToolJet offers the following ways to connect with Slack:
 - [Custom Slack App](#custom-slack-app): Offers full control over permissions, OAuth scopes, and configuration.
 - [ToolJet Slack App](#tooljet-slack-app): Provides a quick setup where you just need to authorize it with your Slack workspace, and no need to manually configure OAuth scopes. This option is available only in ToolJet Cloud.
+- [Use Environment Variables](#use-environment-variables): Available on self-hosted ToolJet. Uses the Slack app credentials set in the `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET` environment variables.
+
+Choose the option from the **Slack app** dropdown on the data source configuration page.
 
 ### Custom Slack App
 
@@ -24,7 +27,7 @@ ToolJet offers two ways to connect with Slack:
     <img className="screenshot-full img-full" style={{ marginTop:'15px' }} src="/img/datasource-reference/slack/creds.png" alt="Slack datasource: ToolJet"/>
 6. From the left navigation bar, go to the **OAuth & Permissions** tab and add the Redirect URL you copied from ToolJet under Redirect URLs. Click Save URLs. <br/>
     <img className="screenshot-full img-full" style={{ marginTop:'15px' }} src="/img/datasource-reference/slack/oauth.png" alt="Slack datasource: ToolJet"/>
-7. In the same tab, scroll down to Scopes and add the necessary OAuth scopes, including the mandatory scopes required by ToolJet (as mentioned on the Slack Data Source configuration page).
+7. In the same tab, scroll down to Scopes and add the OAuth scopes that ToolJet requests. See [Permission Scopes](#permission-scopes).
 8. Return to the ToolJet Slack Data Source configuration page and enter the Client ID and Client Secret obtained in step 5.
 9. Click **Connect to Slack**. You will be redirected to Slack to authorize the app for your workspace. <br/>
     <img className="screenshot-full img-full" style={{ marginTop:'15px' }} src="/img/datasource-reference/slack/slack-auth.png" alt="Slack datasource: ToolJet"/>
@@ -45,6 +48,23 @@ You can use the ToolJet Slack App to quickly set up and test Slack integration. 
 3. Click **Connect to Slack**.
 4. You will be redirected to Slack to authorize the app and add the Redirect URL automatically.
 5. After authorization, click **Save data source** in ToolJet. This will add a new Slack bot to your workspace.
+
+### Use Environment Variables
+
+On self-hosted ToolJet, you can store your Slack app's credentials in environment variables instead of in the data source.
+
+1. Create a Slack app as described in steps 3–7 of [Custom Slack App](#custom-slack-app), using the **Redirect URI** shown on the Slack data source configuration page.
+2. Set `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET` to the app's Client ID and Client Secret. See [Environment Variables](/docs/setup/env-vars#slack).
+3. Add a new Slack data source, select **Use environment variables** from the **Slack app** dropdown, and click **Connect to Slack**.
+4. After authorization, click **Save data source** in ToolJet.
+
+### Permission Scopes
+
+ToolJet always requests these scopes, which are listed under **Authorize** on the data source configuration page:
+
+`users:read`, `channels:read`, `groups:read`, `im:read`, `mpim:read`, `channels:history`, `groups:history`, `im:history`, `mpim:history`
+
+Select the **chat:write** option to also request `chat:write`, which lets your apps send messages to users and channels.
 
 ## Querying Slack
 

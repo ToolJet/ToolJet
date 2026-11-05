@@ -39,7 +39,7 @@ Query results can be transformed using transformations. Read our transformations
 
 ### Create a Collection
 
-With this operation you can easily create `Collections` in your TypeSense cluster. In the schema field, you'll need to define the schema for creating a new collection. Check out TypeSense docs to know more about collections **[here](https://typesense.org/docs/30.2/api/collections.html#create-a-collection)**
+With this operation you can easily create `Collections` in your TypeSense cluster. In the **Schema** field, enter the full collection schema as a JSON object, with the collection `name` and its `fields` array. Check out TypeSense docs to know more about collections **[here](https://typesense.org/docs/30.2/api/collections.html#create-a-collection)**
 
 #### Required Parameter
 
@@ -49,30 +49,29 @@ With this operation you can easily create `Collections` in your TypeSense cluste
 
 #### Example
 
-```yaml
-[
-  { "name": "id", "type": "string" },
-  { "name": "name", "type": "string" },
-  { "name": "price", "type": "float" },
-]
+```json
+{
+  "name": "products",
+  "fields": [
+    { "name": "name", "type": "string" },
+    { "name": "price", "type": "float" }
+  ]
+}
 ```
 
 ### Search
 
 Use this operation to perform a search within the specified collection. Know more about the search parameters in the TypeSense doc **[here](https://typesense.org/docs/30.2/api/documents.html#search)**.
 
-#### Required Parameter
+#### Required Parameters
 
 - **Collection**
-
-#### Optional Parameter
-
-- **Search parameters**
+- **Search parameters**: A JSON object of search parameters. It must include `q` (the search text) and `query_by` (the fields to search).
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/typesense/search-query.png" alt="typesense search" style={{marginBottom:'15px'}}/>
 
-```yaml
-{ "filter_by": "price:<1000", "sort_by": "price:desc", "per_page": 10 }
+```json
+{ "q": "laptop", "query_by": "name", "filter_by": "price:<1000", "sort_by": "price:desc", "per_page": 10 }
 ```
 ### Index a Document
 

@@ -19,16 +19,24 @@ Authenticates via a Google user account using OAuth consent, allowing ToolJet to
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/connection-v2.png" alt="GS2.0 oauth auth type connection" style={{ marginBottom:'15px' }} />
 
-**Self-Hosted Configuration**
+**OAuth Configuration**
 
-If you decide to self-host ToolJet, there are a few additional steps you need to take:
+| Field | Description |
+|-------|-------------|
+| **OAuth type** | Shown only on ToolJet Cloud. **ToolJet app** uses ToolJet's Google OAuth app, so you don't enter any credentials. **Custom app** uses your own Google OAuth client. Self-hosted ToolJet doesn't show this field and always uses a custom app. |
+| **Client ID** | The client ID of your Google OAuth client. Shown when **OAuth type** is **Custom app**, and always on self-hosted ToolJet. |
+| **Client secret** | The client secret of your Google OAuth client. Shown with **Client ID**. |
+| **Redirect URI** | Read-only. Add this URL as an authorized redirect URI in your Google OAuth client. |
 
-1. Proceed with the setup steps provided in the [Google OAuth guide](/docs/setup/env-vars#google-oauth) to configure the necessary settings.
-2. Assign the corresponding values obtained from the previous step to the following environment variables:
-   - **GOOGLE_CLIENT_ID**
-   - **GOOGLE_CLIENT_SECRET**
-   - **REDIRECT_URI (TOOLJET_HOST)**
-3. Activate the Google Sheets API within the Google Cloud Platform (GCP) console.
+To connect with a custom app:
+
+1. In the Google Cloud console, create an OAuth client and add the **Redirect URI** shown in ToolJet as an authorized redirect URI.
+2. Enable the Google Sheets API. Also enable the Google Drive API, which ToolJet uses to list your spreadsheets.
+3. In ToolJet, enter the **Client ID** and **Client secret**, choose the access level under **Authorize**, and click **Save and Connect** to complete Google's consent screen.
+
+:::info
+Self-hosted ToolJet doesn't read the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` environment variables for Google Sheets 2.0. They're used only by the **ToolJet app** OAuth type on ToolJet Cloud. Enter your OAuth client's credentials in the data source instead.
+:::
 
  **Multi-Factor Authentication**
 
@@ -47,10 +55,12 @@ Authenticates using a Google Cloud service account, enabling server-to-server ac
 When connecting to a Google Sheets data source, you can choose between two permission scopes:
 
 ### Read Only
-This allows you to only access and retrieve, you cannot edit/write the data from the Google Sheets.
+This allows you to only access and retrieve, you cannot edit/write the data from the Google Sheets. ToolJet requests the `https://www.googleapis.com/auth/spreadsheets.readonly` scope.
 
 ### Read and Write
-This scope grants you both read and write permissions, enabling you to retrieve and modify data within the Google Sheets.
+This scope grants you both read and write permissions, enabling you to retrieve and modify data within the Google Sheets. ToolJet requests the `https://www.googleapis.com/auth/spreadsheets` scope.
+
+With either option, ToolJet also requests `https://www.googleapis.com/auth/drive.metadata.readonly` to list your spreadsheets. You can't add other scopes.
 
 ## Selecting Spreadsheet
 
@@ -180,14 +190,16 @@ This operation fetches all accessible spreadsheets associated with the authentic
 </details>
 
 ### Delete Data From A Spreadsheet By Data Filter
-This Operation removes rows that match the specified filter conditions.
+This operation clears the cell values in the ranges that match the data filters you provide. The rows themselves aren't removed.
 
 #### Required Parameter
 - Spreadsheet : The ID of the spreadsheet from which data will be deleted.
-- Sheet : The sheet (tab) within the spreadsheet where the filter will be applied.
+- Filter : A JSON array of Google Sheets [DataFilter](https://developers.google.com/sheets/api/reference/rest/v4/DataFilter) objects that select the ranges to clear. Enter it as JSON text.
 
-#### Optional Parameter
-- Filter : Filters the list of spreadsheets based on specified criteria.
+#### Example
+```yaml
+ Filter : [{ "a1Range": "Sheet1!A2:C5" }]
+ ```
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/delete-byfilter-query.png" alt="delete operation" />
 
@@ -456,20 +468,20 @@ spreadsheetId:"2npLSovBJU2FCzNiGO5gGPnzS3elPxD_crmPg-KiU8ox"
 </details>
 
 ### Update Spreadsheet
-This operation updates spreadsheet properties such as title or configuration settings.
+This operation writes values to a range of cells in a sheet, replacing the values already in that range.
 
 #### Required Parameter
 - Spreadsheet : The ID of the spreadsheet to update.
 - Sheet : The target sheet for the update.
-- Values : The data values to be written to the spreadsheet.
+- Range : The range of cells to write to, without the sheet name (for example, `A1:D2`). ToolJet combines it with **Sheet** as `Sheet!Range`.
+- Values : A two-dimensional array of values, with one inner array per row.
 
 #### Optional Parameter
-- Range : The specific range of cells to update.
-- Input Options : Determines how input values are interpreted (raw or user-entered).
+- Input Options : Determines how Google Sheets interprets the values. `RAW` stores them exactly as entered. `USER_ENTERED` parses them as if typed into Google Sheets, so formulas, numbers, and dates are converted. The form pre-selects `RAW`; if the field is empty, ToolJet sends `USER_ENTERED`. Don't use `FORMULA`: the Google Sheets API doesn't accept it and the query fails. To write formulas, use `USER_ENTERED`.
 
 #### Example
 ```yaml
- Data : 
+ Values : 
  [
   ["Inception", "2010", "Christopher Nolan", "Sci-Fi"],
   ["Interstellar", "2014", "Christopher Nolan", "Sci-Fi"]
@@ -482,11 +494,20 @@ This operation updates spreadsheet properties such as title or configuration set
 <summary>**Sample Output**</summary>
 ```
 {
-  "spreadsheetId": "1CzNiGO5gGPnzSn2F3elPxD_KiU8pLSovBJUox-crmPg",
-  "updatedRange": "DigiDB_movelist!A1:Z500",
+  "status": "success",
+  "message": "Spreadsheet updated",
+  "sheet": "DigiDB_movelist",
+  "spreadsheetRange": "A1:D2",
+  "updatedCells": 8,
   "updatedRows": 2,
   "updatedColumns": 4,
-  "updatedCells": 2
+  "result": {
+    "spreadsheetId": "1CzNiGO5gGPnzSn2F3elPxD_KiU8pLSovBJUox-crmPg",
+    "updatedRange": "DigiDB_movelist!A1:D2",
+    "updatedRows": 2,
+    "updatedColumns": 4,
+    "updatedCells": 8
+  }
 }
 ```
 </details>

@@ -33,8 +33,23 @@ The method of authentication to use with GraphQL requests.
   - **Bearer**: Requires a token, typically a JSON Web Token (JWT), to grant access.
   <img className="screenshot-full img-full" src="/img/datasource-reference/graphql/bearer-connection.png" alt="bearer-GraphQL-Connection" style={{marginBottom:'15px'}}/>
 
-  - **OAuth 2.0**: The OAuth 2.0 protocol mandates the provision of the following parameters: access token URL, access token URL custom headers, client ID, client secret, scopes, client authentication, access tokens, authorization URL, custom authentication parameters, and custom query parameters.
-  <img className="screenshot-full img-l" src="/img/datasource-reference/graphql/oauth-connection.png" alt="oauth 2.0-GraphQL-Connection"/>
+  - **OAuth 2.0**: Select a **Grant type**, either **Authorization code** or **Client credentials**. Both grant types use **Access token URL**, **Access token URL custom headers**, **Client ID**, **Client secret**, **Scope(s)**, and **Client authentication**. **Scope(s)** is pre-filled with `read, write`; replace it with the scopes your provider expects. **Client authentication** can be **Send as basic auth header** (default) or **Send client credentials in body**.
+
+    - **Authorization code** also uses **Add access token to** (only **Request header** is available), **Header prefix** (default `Bearer `), **Authorization URL**, **Custom authentication parameters**, and **Custom query parameters**. Turn on **Authentication required for all users** to have each user authorize with their own account the first time they run a query from this data source. When it's off, all users share one token.
+    - **Client credentials** also uses **Audience**, which is sent with the token request when set. The access token is always sent in the `Authorization` header with the `Bearer ` prefix.
+
+    :::caution
+    The **Grant type** dropdown also lists **Authorization code with PKCE**, but ToolJet doesn't send a code challenge or code verifier for it, so the flow doesn't work with providers that require PKCE. Use **Authorization code** or **Client credentials**.
+    :::
+
+    <img className="screenshot-full img-l" src="/img/datasource-reference/graphql/oauth-connection.png" alt="oauth 2.0-GraphQL-Connection"/>
+
+### Secure Sockets Layer (SSL)
+
+- **SSL certificate**: The certificate to use with GraphQL requests. Supported types:
+  - **None** (default): No custom certificate. The server's certificate isn't verified.
+  - **CA certificate**: Requires a CA certificate in **CA cert** to verify the server certificate.
+  - **Client certificate**: Requires **Client key**, **Client cert**, and **CA cert** to authenticate with the server.
 
 ## Querying GraphQL
 

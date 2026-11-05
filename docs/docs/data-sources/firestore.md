@@ -9,7 +9,7 @@ ToolJet can connect to **Cloud Firestore** databases to read and write data.
 
 To establish a connection with the **Cloud Firestore** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Cloud Firestore as the data source.
 
-ToolJet requires the following to connect to your BigQuery:
+ToolJet requires the following to connect to Cloud Firestore:
 
 - **Private key**
 

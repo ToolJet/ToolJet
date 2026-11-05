@@ -4,7 +4,7 @@ title: gRPC 2.0
 ---
 
 :::info gRPC 2.0
-This documentation covers the **gRPC 2.0** data source with enhanced features including server reflection and OAuth2 authentication. The [legacy gRPC](/docs/data-sources/grpc) data source is still available but is deprecated.
+This documentation covers the **gRPC 2.0** data source with enhanced features including server reflection and proto file URL import. The [legacy gRPC](/docs/data-sources/grpc) data source is still available but is deprecated.
 :::
 
 ## What's New in gRPC 2.0
@@ -12,7 +12,7 @@ This documentation covers the **gRPC 2.0** data source with enhanced features in
 The new gRPC 2.0 data source provides significant improvements over the legacy version:
 - **Server Reflection Support**: Dynamically discover services and methods without proto files
 - **Proto File URL Import**: Import proto files from remote URLs
-- **Enhanced Authentication**: Full OAuth2 support, improved basic/bearer authentication
+- **Authentication**: Basic, Bearer, and API Key authentication
 - **SSL/TLS Configuration**: Comprehensive certificate management
 - **Custom Metadata Headers**: Support for API keys and custom authentication
 - **Cloud-Ready**: No local file system dependencies
@@ -22,9 +22,11 @@ The new gRPC 2.0 data source provides significant improvements over the legacy v
 Find instructions on how to do this in the setup guides located here: [ToolJet Setup](/docs/setup/try-tooljet).
 
 :::note
-Unlike the legacy gRPC data source, gRPC 2.0 **does not require** adding proto files to your server or mounting volumes. The new version supports:
+Unlike the legacy gRPC data source, gRPC 2.0 doesn't require proto files on your server unless you choose to import them from the file system. It supports:
 - **Server Reflection**: Automatically discover services from your gRPC server
 - **Proto File URLs**: Import proto files directly from remote URLs
+- **File system**: Import proto files from the ToolJet server. See [Proto Files from the File System](#proto-files-from-the-file-system).
+:::
 
 :::tip Migration from Legacy gRPC
 If you're upgrading from the legacy gRPC data source, you no longer need to:
@@ -35,7 +37,7 @@ If you're upgrading from the legacy gRPC data source, you no longer need to:
 
 ## Proto File Configuration
 
-gRPC 2.0 offers two methods for defining your service schema:
+gRPC 2.0 offers three methods for defining your service schema:
 
 ### Server Reflection (Recommended)
 
@@ -76,6 +78,12 @@ If server reflection is not available or you prefer to use a specific proto file
 
 <img className="screenshot-full img-l" src="/img/datasource-reference/grpc-2/proto.png" alt="gRPC 2.0: connection configuration" />
 
+### Proto Files from the File System
+
+If you self-host ToolJet, you can load `.proto` files from a directory on the ToolJet server. ToolJet reads every file matching `**/*.proto` under `~/protos`, the `protos` directory in the home directory of the user running the ToolJet server. In the official Docker images this is `/home/appuser/protos`, so mount your proto files there.
+
+When you select **Import .proto files from the file system**, ToolJet scans the directory and lists the services it finds in **Services**. Select at least one service. Only the selected services are available in queries. If the directory doesn't exist or contains no proto files, the list is empty.
+
 ## Connecting to gRPC 2.0
 After configuring your proto schema, establish a connection by going to the [data source](/docs/data-sources/overview) page.
 
@@ -84,33 +92,28 @@ ToolJet gRPC 2.0 requires the following configuration:
 
 #### Basic Settings
 - **Server URL**: Your gRPC server endpoint (e.g., `grpcb.in:9001` or `https://api.example.com:443`)
-- **Proto Files**: Choose between "Server Reflection" or "Import Proto File URL"
-- **Custom Metadata**: Key-value pairs for custom headers (optional)
+- **Proto files**: Choose **Use server reflection for multiple files**, **Import single .proto file from URL** (then enter the **Proto file URL**), or **Import .proto files from the file system** (then select **Services**)
+- **Metadata**: Key-value pairs for custom headers (optional)
 
 <img className="screenshot-full img-l" src="/img/datasource-reference/grpc-2/config.png" alt="gRPC 2.0: connection configuration" />
 
 #### Authentication Options
 
-gRPC 2.0 supports comprehensive authentication methods:
+Select one of the following in **Authentication type**:
 
-- **None (Default)**
+- **None** (default)
     - No authentication required
-- **Basic Authentication**
-    - Username and password
-    - Automatically adds authentication metadata to requests
-- **Bearer Token**
-    - Token-based authentication
-    - Supports custom header prefixes
--**OAuth2 (New)**
-    - Full OAuth2 flow support
-    - Authorization Code, Client Credentials grant types
-    - Custom OAuth parameters and scopes
-    - Automatic token refresh
-- **API Key via Metadata**
-    - Use custom metadata headers for API key authentication
-    - Support for multiple header formats
+- **Basic**
+    - **Username** and **Password**
+    - Sends an `authorization: Basic <credentials>` metadata entry with each request
+- **Bearer**
+    - **Token**
+    - Sends an `authorization: Bearer <token>` metadata entry with each request. The `Bearer` prefix can't be changed. To use a different prefix, select **None** and add the `authorization` entry in **Metadata**.
+- **API Key**
+    - **KEY** and **Value**
+    - Sends a metadata entry named after the key, for example `x-api-key: <your-api-key>`
 
-<img className="screenshot-full img-l" src="/img/datasource-reference/grpc-2/oauth.png" alt="gRPC 2.0: connection configuration" />
+<img className="screenshot-full img-l" src="/img/datasource-reference/grpc-2/auth-api-key.png" alt="gRPC 2.0 Authentication section with Authentication type set to API Key, KEY x-api-key and a placeholder Value" />
 
 #### SSL/TLS Configuration
 
@@ -119,7 +122,7 @@ Enhanced security options for encrypted connections:
 - **SSL/TLS Toggle**
     - Enable/disable SSL encryption
 - **Certificate Types:**
-    - **None**: No certificate validation
+    - **None**: Verifies the server certificate against the default trusted CAs
     - **CA Certificate**: Verify server with custom CA
     - **Client Certificate**: Mutual TLS with client certificates
 - **Certificate Management:**
@@ -150,30 +153,20 @@ Once configured, the gRPC 2.0 data source will be available in your application'
 
 ### Service and Method Selection
 
-1. With **Server Reflection**:
-    1. Select your gRPC 2.0 data source
-    2. Choose from automatically discovered services
-    3. Select available methods for the chosen service
-    4. Method parameters are dynamically generated based on the proto schema
-
-2. With **Proto File URL**:
-    1. Import completes automatically after URL validation
-    2. Services and methods populate from the imported proto file
-    3. Parameter forms are generated from the proto definitions
+1. Select your gRPC 2.0 data source.
+2. Open the **Select service** dropdown. It lists each service with its methods, discovered through server reflection, loaded from the proto file URL, or, in file system mode, the services selected in the data source. Type to search.
+3. Select a method. Streaming methods are listed but disabled, because only unary methods are supported.
 
 <img className="screenshot-full img-l" src="/img/datasource-reference/grpc-2/service.png" alt="gRPC 2.0: query interface" />
 
 ### Request Configuration
 
-- **Method Parameters:**
-    - Support for nested objects and repeated fields
-    - JSON or form-based input modes
-- **Request Metadata:**
-    - Override connection-level metadata for specific requests
-    - Add request-specific headers
-- **Advanced Options:**
-    - Request timeout configuration
-    - Custom deadline settings
+The query editor has two tabs:
+
+- **Request**: The request message as JSON. Write nested objects and repeated fields as JSON objects and arrays.
+- **Metadata**: Key-value metadata entries for this query. They're sent along with the data source's **Metadata**, and an entry with the same key replaces the data source's value.
+
+Each call times out after 2 minutes. The timeout can't be changed.
 
 ## Migration from Legacy gRPC
 
@@ -183,8 +176,8 @@ If you're currently using the legacy gRPC data source, here's how to migrate:
 
 | Feature | Legacy gRPC | gRPC 2.0 |
 |---------|-------------|----------|
-| Proto Files | Local file system | Server Reflection + URL Import |
-| Authentication | Basic, Bearer, API Key | Basic, Bearer, OAuth2, Custom Metadata |
+| Proto Files | Local file system | Server Reflection, URL Import, or local file system |
+| Authentication | Basic, Bearer, API Key | Basic, Bearer, API Key |
 | SSL/TLS | Limited | Full certificate management |
 | Setup | Manual file mounting | Zero configuration |
 | Schema Updates | Server restart required | Automatic with reflection |
@@ -195,11 +188,9 @@ If you're currently using the legacy gRPC data source, here's how to migrate:
    - Configure with the same server URL
 2. **Choose Proto Method**
    - **If your server supports reflection**: Select "Server Reflection"
-   - **If using proto files**: Upload to a public URL and use "Import Proto File URL"
+   - **If using proto files**: Upload them to a public URL and use **Import single .proto file from URL**, or mount them on the ToolJet server and use **Import .proto files from the file system**
 3. **Update Authentication**
-   - Basic and Bearer tokens work the same way
-   - API keys should be configured as custom metadata headers
-   - OAuth2 setup
+   - Basic, Bearer, and API Key authentication work the same way
 4. **Update Queries**
    - Recreate queries using the new data source
    - Test functionality with the new interface
