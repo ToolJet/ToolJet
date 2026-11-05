@@ -1,3 +1,4 @@
+import { handleDeactivateTargets, hideGridLines } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import moment from 'moment';
 import { useDrag } from 'react-dnd';
@@ -312,7 +313,13 @@ const CustomComponentCard = ({ libraryId, correlationId, libraryName, revisionId
       type: 'box',
       item: { componentType: 'LibraryComponent', component: dragComponent },
       collect: (monitor) => ({ isDragging: monitor.isDragging() }),
-      end: (item) => {
+      end: (item, monitor) => {
+        if (monitor.getDropResult()?.refused) {
+          handleDeactivateTargets();
+          hideGridLines();
+          useStore.getState().setShowModuleBorder?.(false);
+          return;
+        }
         const currentDragCanvasId = useGridStore.getState().currentDragCanvasId;
         handleDrop(item, currentDragCanvasId);
         const { globalSettings, globalSettingsChanged } = useStore.getState();

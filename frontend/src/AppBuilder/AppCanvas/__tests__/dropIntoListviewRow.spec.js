@@ -1,3 +1,4 @@
+import { isRowScopedCanvas } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 /**
  * Where a component lands when it is dropped into a List View row.
  *
@@ -29,5 +30,14 @@ describe('Dropping into a List View row', () => {
     // Guard, not a bug: the common case must keep working.
     expect(wrapDropIntoListviewRow(0, CANVAS_HEIGHT)).toBe(0);
     expect(wrapDropIntoListviewRow(30, CANVAS_HEIGHT)).toBe(30);
+  });
+});
+
+describe('row gating of the other row-scoped widgets', () => {
+  test('[Listview-BLD-004] Kanban and Table row canvases stay row scoped, other containers do not', () => {
+    // Break this catches: the ListView's editable-record rule narrowing the gate Kanban and Table share with it.
+    expect(isRowScopedCanvas('kanban1', 'Kanban')).toBe(true);
+    expect(isRowScopedCanvas('table1', 'Table')).toBe(true);
+    expect(isRowScopedCanvas('container1', 'Container')).toBe(false);
   });
 });

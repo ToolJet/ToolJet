@@ -23,7 +23,11 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
 import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveableGhost';
-import { findNewParentIdFromMousePosition, isPointerOverCanvasArea } from './Grid/gridUtils';
+import {
+  findNewParentIdFromMousePosition,
+  isListviewCopyCanvasAtPoint,
+  isPointerOverCanvasArea,
+} from './Grid/gridUtils';
 import { computeFlexInsertIndex } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { isLockedCanvas } from '@/AppBuilder/Widgets/Listview/isMovingInListview';
 import { FlexContainerDropIndicator } from '@/AppBuilder/Widgets/FlexContainer/FlexContainerDropIndicator';
@@ -176,6 +180,11 @@ const Container = React.memo(
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
       canDrop: () => !isContainerReadOnly,
+      // react-dnd resets the pointer offset after a drop, so a drag source's `end` can only learn this from the drop result.
+      drop: (item, monitor) => {
+        const droppedAt = monitor.getClientOffset();
+        if (droppedAt && isListviewCopyCanvasAtPoint(droppedAt.x, droppedAt.y)) return { refused: true };
+      },
       hover: (item, monitor) => {
         if (isContainerReadOnly) return;
         const clientOffset = monitor.getClientOffset();

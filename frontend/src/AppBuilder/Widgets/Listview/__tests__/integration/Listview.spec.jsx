@@ -6550,19 +6550,19 @@ describe('ListviewRecordStyles', () => {
           styles: { listStyle: binding('legacy') },
         });
 
-      test('a negative rows-per-page counts the ten records the list shows', async () => {
+      test('[Listview-ROW-009] a negative rows-per-page counts the ten records the list shows', async () => {
         // Break this catches: the height rule keeping -5 while the list falls back to ten.
         // 10 x 100 + 10 bottom borders + 60 pager + 18 chrome.
         expect(await pagedHeight('{{-5}}')).toBe(1088);
       });
 
-      test('a fractional rows-per-page counts the whole records the list shows', async () => {
+      test('[Listview-ROW-009] a fractional rows-per-page counts the whole records the list shows', async () => {
         // Break this catches: a half record in the count, which gives a fractional height.
         // 2 x 100 + 2 bottom borders + 60 pager + 18 chrome.
         expect(await pagedHeight('{{2.5}}')).toBe(280);
       });
 
-      test('a capitalised Grid is sized as the grid the list shows', async () => {
+      test('[Listview-ROW-009] a capitalised Grid is sized as the grid the list shows', async () => {
         // Break this catches: only the lower-case word meaning grid, which stacks the records in the height.
         const height = await dynamicHeightFor({
           properties: { mode: binding('Grid'), gridRecordHeight: binding('150') },

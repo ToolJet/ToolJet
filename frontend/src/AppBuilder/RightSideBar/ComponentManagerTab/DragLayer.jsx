@@ -40,7 +40,10 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
           return;
         }
         // Every record shares the ListView's id, so only the pointer position tells a read-only record apart.
-        if (releasedAt && isListviewCopyCanvasAtPoint(releasedAt.x, releasedAt.y)) {
+        if (
+          monitor.getDropResult?.()?.refused ||
+          (releasedAt && isListviewCopyCanvasAtPoint(releasedAt.x, releasedAt.y))
+        ) {
           handleDeactivateTargets();
           hideGridLines();
           setShowModuleBorder(false);
