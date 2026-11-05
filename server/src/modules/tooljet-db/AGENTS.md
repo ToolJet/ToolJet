@@ -65,6 +65,9 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   `resolveAndRewrite()`. Known third path: `server/ee/external-apis/service.ts`'s
   `exportTjdbTableAsCSV` calls PostgREST directly (needs `Accept: text/csv`); it resolves the
   relation id itself via the resolver — keep that if you touch it.
+- HTTP `/proxy/*` (`PROXY_POSTGREST`, `ability/index.ts`) admits admins, builders and calls tied to a data
+  query - end users get 403. `TOOLJET_DB_PROXY_ALLOW_END_USERS=true` (temporary, off by default) restores the
+  pre-3.21.87 rule for apps that still call `/proxy` from RunJS: any logged-in workspace member passes.
 - Fail-closed: a uuid this workspace doesn't own is always 404. An owned-but-unpromoted uuid is 404
   in the URL path (doesn't exist here), 400 in an embedded querystring reference (malformed request).
 - **Five independent resolution seams**, each wireable to `environmentId` — a miss silently resolves

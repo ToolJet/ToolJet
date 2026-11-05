@@ -85,7 +85,11 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 
-    if (isUserLoggedin && (isAdmin || isBuilder || (!isEmpty(dataQuery) && !orgMismatch))) {
+    // Temporary opt-in for apps that still call /proxy from RunJS: restores the pre-3.21.87 rule, which
+    // gives every workspace member raw read/write access to every table. Off unless explicitly set.
+    const isEndUserProxyAllowed = process.env.TOOLJET_DB_PROXY_ALLOW_END_USERS === 'true';
+
+    if (isUserLoggedin && (isAdmin || isBuilder || isEndUserProxyAllowed || (!isEmpty(dataQuery) && !orgMismatch))) {
       // Admins/builders (dashboard, App Builder editor); anyone else only through a data query of
       // their own workspace - without one, an end user would get raw access to every table.
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
