@@ -503,6 +503,10 @@ describe('ListviewBuilderRules', () => {
   const framed = () => rows().map((row) => row.classList.contains('listview-record-moving'));
   const gridded = () => rows().map((row) => !!row.querySelector('.show-grid'));
   const act = (fn) => widget.session.store.act(fn);
+  const goToPage2 = async () => {
+    await widget.act('setPage', 2);
+    await waitFor(() => expect(document.querySelector('.ele-txt1')?.textContent).toContain('r3'));
+  };
 
   async function mount(harness, options = {}, count = 3) {
     harness.render({ currentMode: 'edit', ...options });
@@ -1204,6 +1208,76 @@ describe('ListviewBuilderRules', () => {
       expect(store().showWidgetDeleteConfirmation).toBe(true);
     });
 
+    test('[Listview-REC-019] on page 2 of a client list a locked child still ignores Backspace and the sidebar delete', async () => {
+      // Break this catches: the lock needing record 1 on screen, so page 2 leaves the template editable.
+      await mountHotkeys();
+      await goToPage2();
+      await act(() => store().setSelectedComponents(['txt1']));
+
+      key('Backspace');
+      const { result } = renderHook(() => useCallbackActions());
+      result.current
+        .find((group) => group.for === 'components')
+        .actions.find((a) => a.name === 'Delete Component')
+        .dispatchAction({ nodeName: 'text1' });
+
+      expect(store().showWidgetDeleteConfirmation).toBe(false);
+    });
+
+    test('[Listview-REC-019] a first row that is enabled locks nothing, even when record 3 is disabled, on either page', async () => {
+      // Break this catches: any disabled record, not the first row of the data, locking the template.
+      await mountHotkeys(`{{listItem.name === 'r2'}}`);
+      expect(store().lockedListviews).toEqual({});
+      await goToPage2();
+      expect(store().lockedListviews).toEqual({});
+      await act(() => store().setSelectedComponents(['txt1']));
+
+      key('Backspace');
+
+      expect(store().showWidgetDeleteConfirmation).toBe(true);
+    });
+
+    test('[Listview-REC-019] with server pagination the lock is known only while page 1 shows', async () => {
+      // Break this catches: a guess about page 1 from the rows of another page; the gap is written in D-21.
+      await mount(widget, {
+        properties: { ...serverProperties, disableRecords: binding(`{{listItem.name === 'r0'}}`) },
+      });
+      await waitFor(() => expect(store().lockedListviews).toEqual({ [ID]: 'canvas' }));
+
+      await widget.act('setPage', 2);
+      await act(() =>
+        widget.setComponentProperty(
+          ID,
+          'data',
+          binding(`{{[{ name: 'x0' }, { name: 'x1' }, { name: 'x2' }]}}`).value,
+          'properties'
+        )
+      );
+
+      await waitFor(() => expect(store().lockedListviews).toEqual({}));
+    });
+
+    test('[Listview-REC-019] new data that disables the first row, seen from page 2, clears the selection', async () => {
+      // Break this catches: the selection clear waiting for page 1, so a child stays selected under a lock.
+      await mountHotkeys(`{{listItem.name === 'zz'}}`);
+      await goToPage2();
+      await act(() => store().setSelectedComponents(['txt1', ID]));
+
+      await act(() =>
+        widget.setComponentProperty(
+          ID,
+          'data',
+          binding(
+            `{{[{ name: 'zz' }, { name: 'r1' }, { name: 'r2' }, { name: 'r3' }, { name: 'r4' }, { name: 'r5' }, { name: 'r6' }]}}`
+          ).value,
+          'properties'
+        )
+      );
+
+      await waitFor(() => expect(store().selectedComponents).toEqual([ID]));
+      expect(store().lockedListviews).toEqual({ [ID]: 'canvas' });
+    });
+
     describe('the right panel', () => {
       const renderInspector = (selectedComponentId) =>
         render(
@@ -1237,6 +1311,19 @@ describe('ListviewBuilderRules', () => {
         });
         expect(header.classList.contains('disabled')).toBe(true);
         expect(body.classList.contains('disabled')).toBe(true);
+      });
+
+      test('[Listview-REC-019] on page 2 a locked child shows greyed and inert in the right panel', async () => {
+        // Break this catches: the panel reading the lock only while record 1 shows.
+        await mount(widget, { properties: { disableRecords: binding(`{{listItem.name === 'r0'}}`) } });
+        await goToPage2();
+        await act(() => store().setSelectedComponents(['txt1']));
+
+        const { container } = renderInspector('txt1');
+
+        const { header, body } = guarded(container);
+        expect(header.inert).toBe(true);
+        expect(body.inert).toBe(true);
       });
 
       test('[Listview-REC-013] a child of an unlocked list, and the ListView itself, are not greyed or inert', async () => {
@@ -1279,6 +1366,19 @@ describe('ListviewBuilderRules', () => {
       await waitFor(() => expect(pasteComponents).toHaveBeenCalled());
       expect(pasteComponents.mock.calls[0][0]).not.toBe(ID);
       expect(store().focusedParentId).not.toBe(ID);
+    });
+
+    test('[Listview-REC-019] on page 2 a click on a record still keeps the locked template off the paste target', async () => {
+      // Break this catches: the focus rule needing the first record on screen.
+      await mount(widget, { properties: { disableRecords: binding(`{{listItem.name === 'r0'}}`) } });
+      await goToPage2();
+      render(<HotkeyProvider mode="edit" currentLayout="desktop" />);
+
+      fireEvent.click(recordCanvas(1));
+      fireEvent.keyDown(document, { code: 'KeyV', key: 'v', metaKey: true });
+
+      await waitFor(() => expect(pasteComponents).toHaveBeenCalled());
+      expect(pasteComponents.mock.calls[0][0]).not.toBe(ID);
     });
 
     test('[Listview-REC-016] on a list that is not locked a click on a copy still focuses the ListView, as before', async () => {
