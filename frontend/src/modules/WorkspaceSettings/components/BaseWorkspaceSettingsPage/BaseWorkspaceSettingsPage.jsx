@@ -31,6 +31,7 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
       wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
       // admins and builders only on EE or Cloud
       canAccessThemes: isEEorCloud && (isAdmin || isBuilder),
+      canAccessMcpServers: isEEorCloud && (isAdmin || isBuilder),
     };
   });
 
@@ -55,6 +56,7 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
         isBuilder,
         wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
         canAccessThemes: isEEorCloudNow && (isAdmin || isBuilder),
+        canAccessMcpServers: isEEorCloudNow && (isAdmin || isBuilder),
       });
     });
 

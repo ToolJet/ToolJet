@@ -24,6 +24,13 @@ export const aiService = {
   updateLlmPreference,
   getOpenRouterModels,
   getProviderModels,
+  listMcpServers,
+  createMcpServer,
+  deleteMcpServer,
+  testMcpServer,
+  listAvailableMcpServers,
+  startMcpOAuth,
+  disconnectMcpOAuth,
 };
 
 async function downloadAttachment(id, signal, thumbnail = false) {
@@ -359,6 +366,44 @@ async function getProviderModels(provider) {
   return fetch(`${config.apiUrl}/ai/provider-models?provider=${encodeURIComponent(provider)}`, requestOptions).then(
     handleResponse
   );
+}
+
+function mcpServerRequest(path, method = 'GET', body) {
+  const requestOptions = {
+    method,
+    headers: authHeader(),
+    credentials: 'include',
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  };
+  return fetch(`${config.apiUrl}/ai/mcp-servers${path}`, requestOptions).then(handleResponse);
+}
+
+function listMcpServers() {
+  return mcpServerRequest('');
+}
+
+function createMcpServer(input) {
+  return mcpServerRequest('', 'POST', input);
+}
+
+function deleteMcpServer(id) {
+  return mcpServerRequest(`/${encodeURIComponent(id)}`, 'DELETE');
+}
+
+function testMcpServer(id) {
+  return mcpServerRequest(`/${encodeURIComponent(id)}/test`, 'POST');
+}
+
+function listAvailableMcpServers() {
+  return mcpServerRequest('/available');
+}
+
+function startMcpOAuth(id) {
+  return mcpServerRequest(`/${encodeURIComponent(id)}/oauth/start`, 'POST');
+}
+
+function disconnectMcpOAuth(id) {
+  return mcpServerRequest(`/${encodeURIComponent(id)}/oauth`, 'DELETE');
 }
 
 // `conversationId` selects which chat's provider/model is being read or written. Omitted on the
