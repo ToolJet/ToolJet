@@ -447,7 +447,20 @@ export const Listview = function Listview({
   const fadeOthers = hasMainRecord && !isResizingRecord && (mainRecordHovered || isMovingInside || isSelectedInside);
   // No handle on an expression, so a drag can never overwrite it.
   const canResizeRecord = hasMainRecord && !isDynamicRecordHeight && !isVersionFrozen;
-  const isTemplateLocked = isEditableInstance && startIndexOfRowInThePage === 0 && !!disabledRecords[0];
+  // Client side: the first row of all the data, so the lock is the same on every page. Server side knows page 1 only.
+  const needsFirstRowOfData = !neverDisabled && startIndexOfRowInThePage !== 0 && !isServerSide;
+  const firstRowOfDataDisabled = useMemo(
+    () =>
+      needsFirstRowOfData &&
+      _.isArray(data) &&
+      data.length > 0 &&
+      isRecordDisabled(disableRecordsExpression, data[0], moduleId),
+    // exposedValues is the signal that something the expression reads changed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [needsFirstRowOfData, data, disableRecordsExpression, exposedValues, moduleId]
+  );
+  const isTemplateLocked =
+    isEditableInstance && (startIndexOfRowInThePage === 0 ? !!disabledRecords[0] : firstRowOfDataDisabled);
   const setListviewLocked = useStore((state) => state.setListviewLocked, shallow);
   // Published for the keys, the right panel and the sidebar, which only know component ids.
   useEffect(() => {

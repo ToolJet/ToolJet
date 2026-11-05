@@ -1238,7 +1238,7 @@ describe('ListviewBuilderRules', () => {
     });
 
     test('[Listview-REC-019] with server pagination the lock is known only while page 1 shows', async () => {
-      // Break this catches: a guess about page 1 from the rows of another page; the gap is written in D-21.
+      // Break this catches: a guess about page 1 from the rows of another page (here page 2 also starts with r0); the gap is in D-21.
       await mount(widget, {
         properties: { ...serverProperties, disableRecords: binding(`{{listItem.name === 'r0'}}`) },
       });
@@ -1249,7 +1249,7 @@ describe('ListviewBuilderRules', () => {
         widget.setComponentProperty(
           ID,
           'data',
-          binding(`{{[{ name: 'x0' }, { name: 'x1' }, { name: 'x2' }]}}`).value,
+          binding(`{{[{ name: 'r0' }, { name: 'x1' }, { name: 'x2' }]}}`).value,
           'properties'
         )
       );
