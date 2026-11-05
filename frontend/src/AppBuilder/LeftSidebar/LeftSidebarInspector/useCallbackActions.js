@@ -3,6 +3,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { copyToClipboard } from './utils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const useCallbackActions = () => {
   const { isModuleEditor } = useModuleContext();
@@ -10,6 +11,7 @@ const useCallbackActions = () => {
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const currentPageComponents = useStore((state) => state?.getCurrentPageComponents(), shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const codeMode = useCodeMode();
   const runQuery = useStore((state) => state.queryPanel.runQuery);
   const getComponentIdToAutoScroll = useStore((state) => state.getComponentIdToAutoScroll);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery, shallow);
@@ -110,7 +112,7 @@ const useCallbackActions = () => {
           iconName: 'corners',
           enableInspectorTreeView: true,
         },
-        ...(!shouldFreeze
+        ...(!shouldFreeze && !codeMode
           ? [
               {
                 name: 'Delete Component',

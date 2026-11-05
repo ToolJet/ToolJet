@@ -5,9 +5,11 @@ import { pasteComponents, copyComponents } from './copyPasteWidgetsUtils';
 import useKeyHooks from '@/_hooks/useKeyHooks';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 
 export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, isModuleMode }) => {
-  const { isModuleEditor } = useModuleContext();
+  const { isModuleEditor, moduleId } = useModuleContext();
+  const codeMode = useCodeMode(moduleId);
   const canvasRef = useRef(null);
   const focusedParentId = useStore((state) => state.focusedParentId, shallow);
   const handleUndo = useStore((state) => state.handleUndo);
@@ -110,6 +112,8 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
         }
       }
     }
+
+    if (codeMode && key !== 'Escape') return;
 
     switch (key) {
       case 'Escape':

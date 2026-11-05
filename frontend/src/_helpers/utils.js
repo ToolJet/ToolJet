@@ -1076,6 +1076,7 @@ export const validateName = (
       ':workspaceId',
       'confirm-invite',
       'oauth2',
+      'cli',
       'applications',
       'integrations',
       'login',

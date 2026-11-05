@@ -6,6 +6,7 @@ import '@/_styles/versions.scss';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import ReleaseConfirmationExtras from './ReleaseConfirmationExtras';
+import { ReleaseScanGate, ReleaseCodeChanges } from '@/AppBuilder/_helpers/codeModeHooks';
 
 export default function ReleaseConfirmation(props) {
   const { onClose, onConfirm, show } = props;
@@ -26,6 +27,7 @@ export default function ReleaseConfirmation(props) {
   // A full-screen view opened from this dialog needs the focus and the Escape key.
   const overlayOpen = useStore((state) => state.isEditorOverlayOpen);
   const [releaseLocked, setReleaseLocked] = useState(false);
+  const [scanLocked, setScanLocked] = useState(false);
   const releasedVersionName =
     versionsPromotedToEnvironment.find((v) => v.id === releasedVersionId)?.name ||
     developmentVersions.find((v) => v.id === releasedVersionId)?.name;
@@ -75,12 +77,14 @@ export default function ReleaseConfirmation(props) {
           releasedVersionName={releasedVersionName}
           onLockedChange={setReleaseLocked}
         />
+        <ReleaseCodeChanges show={show} appId={appId} versionId={selectedVersionId} />
+        {show && <ReleaseScanGate appId={appId} versionId={selectedVersionId} onLockedChange={setScanLocked} />}
       </Modal.Body>
       <Modal.Footer className="env-modal-footer">
         <ButtonSolid variant="tertiary" onClick={onClose} data-cy="cancel-button">
           {t('globals.cancel', 'Cancel')}
         </ButtonSolid>
-        <ButtonSolid variant="primary" onClick={onConfirm} data-cy="yes-button" disabled={releaseLocked}>
+        <ButtonSolid variant="primary" onClick={onConfirm} data-cy="yes-button" disabled={releaseLocked || scanLocked}>
           Yes
         </ButtonSolid>
       </Modal.Footer>

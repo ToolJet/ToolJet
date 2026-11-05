@@ -262,6 +262,34 @@ describe('LibraryComponent integration', () => {
     await waitFor(() => expect(getWrapperEl()).toBeNull());
   });
 
+  test('[LibraryComponent-CODEPAGE-001] a page root renders whatever its visibility and device settings say', async () => {
+    const codePage = { codePage: binding('{{true}}'), visibility: binding('{{false}}') };
+    const hidden = { showOnDesktop: binding('{{false}}'), showOnMobile: binding('{{false}}') };
+
+    renderWrapped({ properties: codePage, others: hidden, currentMode: 'view' });
+    await waitFor(() => expect(getWrapperEl()).toBeInTheDocument());
+    expect(getWrapperEl()).not.toHaveStyle({ display: 'none' });
+
+    renderWrapped({ properties: codePage, others: hidden, currentMode: 'view', currentLayout: 'mobile' });
+    await waitFor(() => expect(getWrapperEl()).toBeInTheDocument());
+    expect(getWrapperEl()).not.toHaveStyle({ display: 'none' });
+
+    renderWrapped({ properties: codePage, others: hidden, currentMode: 'edit' });
+    await waitFor(() => expect(getWrapperEl()).toBeInTheDocument());
+    expect(getWrapperEl()).not.toHaveStyle({ height: '0px' });
+  });
+
+  test('[LibraryComponent-CODEPAGE-002] the same settings still hide a component that is not a page root', async () => {
+    renderWrapped({ others: { showOnDesktop: binding('{{false}}') }, currentMode: 'view' });
+    await waitFor(() => expect(getWrapperEl()).toBeNull());
+    renderWrapped({
+      properties: { codePage: binding('{{false}}') },
+      others: { showOnMobile: binding('{{false}}') },
+      currentLayout: 'mobile',
+    });
+    await waitFor(() => expect(getWrapperEl()).toBeNull());
+  });
+
   test('[LibraryComponent-STYLE-001] visibility: false collapses a configured instance to zero height', async () => {
     // Break this catches: the configured iframe branch skipping the shared
     // visibility gate that every other widget goes through.

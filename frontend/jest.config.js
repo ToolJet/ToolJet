@@ -66,6 +66,7 @@ module.exports = {
     // the CommonJS copy those icons load under jest.
     '^rc-util/es/(.*)$': 'rc-util/lib/$1',
     '^config$': '<rootDir>/src/test/mocks/config.js',
+    '(^|/)createBuildWorker$': '<rootDir>/src/test/mocks/createBuildWorker.js',
     '^@tooljet/plugins/client$': '<rootDir>/src/test/mocks/tooljetPluginsClient.js',
     // Real module uses top-level await (bundler-only); analytics stay dead in tests.
     'modules/common/helpers/posthogHelper(\\.js)?$': '<rootDir>/src/test/mocks/posthogHelper.js',

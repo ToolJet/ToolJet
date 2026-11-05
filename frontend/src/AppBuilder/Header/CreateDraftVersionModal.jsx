@@ -12,10 +12,12 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '../../_styles/version-modal.scss';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { saveErrorMessage } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion, fetchingOrgGit }) => {
   const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
+  const [createError, setCreateError] = useState(null);
   const { isGitSyncEnabled, defaultBranch } = useGitSyncConfig();
   const refreshVersions = useVersionManagerStore((state) => state.refreshVersions);
   const {
@@ -142,6 +144,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
     }
 
     setIsCreatingVersion(true);
+    setCreateError(null);
 
     const draftName = useGitDraftName ? defaultBranch : versionName.trim();
     const draftDescription = useGitDraftName ? 'Latest commit to main will appear here' : '';
@@ -173,11 +176,9 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
         );
       },
       (error) => {
-        if (error?.data?.code === '23505') {
-          toast.error('Version name already exists.');
-        } else {
-          toast.error(error?.message || error?.error || 'Error while creating version. Please try again.');
-        }
+        const message = error?.data?.code === '23505' ? 'Version name already exists.' : saveErrorMessage(error);
+        toast.error(message);
+        setCreateError(message);
         setIsCreatingVersion(false);
       },
       'version',
@@ -278,6 +279,13 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
             </Alert>
           </div>
 
+          {createError && (
+            <div className="mt-3" role="alert" data-cy="create-draft-version-error">
+              <Alert placeSvgTop={true} svg="warning-icon" className="create-version-alert">
+                <div className="create-version-helper-text">{createError}</div>
+              </Alert>
+            </div>
+          )}
           <div className="create-draft-version-footer">
             <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
             <div className="col d-flex justify-content-end">
