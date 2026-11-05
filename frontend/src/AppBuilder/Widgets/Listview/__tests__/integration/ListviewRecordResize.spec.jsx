@@ -590,6 +590,43 @@ describe('Listview record resize: no fade even while record 1 is hovered', () =>
   });
 });
 
+describe('Listview record resize: the pointer on the handle shows the outline', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-RSZ-008] entering the handle outlines record 1 only, with no grid, and leaving removes it', async () => {
+    // Break this catches: the outline only during a drag, on a copy, or the grid shown on hover too.
+    await mount(widget);
+
+    fireEvent.mouseEnter(handles()[0]);
+    await waitFor(() => expect(framed()).toEqual([true, false, false]));
+    expect(gridded()).toEqual([false, false, false]);
+
+    fireEvent.mouseLeave(handles()[0]);
+    await waitFor(() => expect(framed()).toEqual([false, false, false]));
+  });
+
+  test.each(['bordered', 'plain', 'container'])('[Listview-RSZ-008] the %s style shows it too', async (listStyle) => {
+    // Break this catches: the outline tied to one list style.
+    await mount(widget, { styles: { listStyle: binding(listStyle) } });
+
+    fireEvent.mouseEnter(handles()[0]);
+    await waitFor(() => expect(framed()).toEqual([true, false, false]));
+  });
+
+  test('[Listview-RSZ-008] a drag that ends away from the handle leaves no outline behind', async () => {
+    // Break this catches: a live resize moves the handle from under the pointer, so its mouseleave never fires.
+    await mount(widget);
+
+    fireEvent.mouseEnter(handles()[0]);
+    fireEvent.mouseDown(handles()[0], { clientX: 0, clientY: START_Y, button: 0 });
+    fireEvent.mouseMove(document, { clientX: 0, clientY: START_Y + 30 });
+    fireEvent.mouseUp(document, { clientX: 0, clientY: START_Y + 30 });
+
+    await waitFor(() => expect(framed()).toEqual([false, false, false]));
+  });
+});
+
 describe('Listview record resize: record 1 shows the outline and the grid while the drag is on', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
