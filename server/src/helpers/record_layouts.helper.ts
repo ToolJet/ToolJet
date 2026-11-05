@@ -5,11 +5,13 @@ export function remapRecordLayoutIds(properties: any, idMap: Record<string, stri
   const remapped = Object.fromEntries(
     Object.entries(memory).map(([mode, layouts]) => [
       mode,
-      Object.fromEntries(
-        Object.entries((layouts as Record<string, unknown>) ?? {})
-          .filter(([childId]) => Object.prototype.hasOwnProperty.call(idMap, childId))
-          .map(([childId, layout]) => [idMap[childId], layout])
-      ),
+      layouts && typeof layouts === 'object'
+        ? Object.fromEntries(
+            Object.entries(layouts as Record<string, unknown>)
+              .filter(([childId]) => Object.prototype.hasOwnProperty.call(idMap, childId))
+              .map(([childId, layout]) => [idMap[childId], layout])
+          )
+        : layouts,
     ])
   );
   return { ...properties, recordLayouts: { ...properties.recordLayouts, value: remapped } };
