@@ -6,6 +6,7 @@ import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_consta
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { Injectable } from '@nestjs/common';
+import { OrganizationConstant } from '@entities/organization_constants.entity';
 import { OrganizationConstantType, SECRET_VALUE_MASK } from './constants';
 import { ConstantWithEnvironmentValues } from './types';
 
@@ -54,6 +55,7 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
     constantValue: string,
     environmentId: string,
     orgConstantId: string,
+    userId: string,
     manager?: EntityManager
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -62,7 +64,13 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
         { environmentId, organizationConstantId: orgConstantId },
         { value: constantValue, updatedAt: new Date() }
       );
+      await this.touchConstant(orgConstantId, userId, manager);
     }, manager);
+  }
+
+  // Values live in a child table, so a value write must stamp the parent row to show who changed it and when.
+  protected async touchConstant(orgConstantId: string, userId: string, manager: EntityManager): Promise<void> {
+    await manager.update(OrganizationConstant, { id: orgConstantId }, { updatedBy: userId });
   }
 
   async getOrgEnvironmentConstant(
@@ -87,6 +95,7 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
   async deleteOrgEnvironmentConstant(
     constantId: string,
     organizationId: string,
+    userId: string,
     environmentId?: string
   ): Promise<DeleteResult> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -112,6 +121,7 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
         if (!environmentValueToDelete) {
           throw new Error('Environment value not found');
         }
+        await this.touchConstant(constantId, userId, manager);
         return manager.update(
           OrgEnvironmentConstantValue,
           { id: environmentValueToDelete.id },

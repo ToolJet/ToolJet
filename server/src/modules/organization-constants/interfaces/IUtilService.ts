@@ -15,6 +15,7 @@ export interface IOrganizationConstantsUtilService {
     constantValue: string,
     environmentId: string,
     orgConstantId: string,
+    userId: string,
     manager?: EntityManager
   ): Promise<void>;
 
@@ -29,6 +30,7 @@ export interface IOrganizationConstantsUtilService {
   deleteOrgEnvironmentConstant(
     constantId: string,
     organizationId: string,
-    environmentId: string
+    userId: string,
+    environmentId?: string
   ): Promise<DeleteResult>;
 }

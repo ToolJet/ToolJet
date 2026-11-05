@@ -95,6 +95,7 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
   async create(
     organizationConstant: CreateOrganizationConstantDto,
     organizationId: string,
+    userId: string,
     isMultiEnvEnabled?: boolean
   ): Promise<OrganizationConstant | []> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -102,6 +103,8 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
         constantName: organizationConstant.constant_name,
         organizationId,
         type: organizationConstant.type,
+        createdBy: userId,
+        updatedBy: userId,
       });
 
       const savedOrganizationConstant = await manager.save(OrganizationConstant, newOrganizationConstant);
@@ -137,6 +140,7 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
             encryptedValue,
             (await environment).id,
             savedOrganizationConstant.id,
+            userId,
             manager
           );
         })
@@ -150,6 +154,7 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
     constantId: string,
     organizationId: string,
     params: UpdateOrganizationConstantDto,
+    userId: string,
     isMultiEnvironmentEnabled = false
   ): Promise<OrganizationConstant> {
     const { constant_name, environment_id, value } = params;
@@ -169,6 +174,7 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
 
       if (constant_name) {
         constantToUpdate.constantName = constant_name;
+        constantToUpdate.updatedBy = userId;
       }
 
       await manager.save(constantToUpdate);
@@ -188,6 +194,7 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
               encryptedValue,
               environment.id,
               constantToUpdate.id,
+              userId,
               manager
             );
           })
@@ -198,10 +205,16 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
     });
   }
 
-  async delete(constantId: string, organizationId: string, environmentId?: string): Promise<DeleteResult> {
+  async delete(
+    constantId: string,
+    organizationId: string,
+    userId: string,
+    environmentId?: string
+  ): Promise<DeleteResult> {
     return await this.organizationConstantsUtilService.deleteOrgEnvironmentConstant(
       constantId,
       organizationId,
+      userId,
       environmentId
     );
   }

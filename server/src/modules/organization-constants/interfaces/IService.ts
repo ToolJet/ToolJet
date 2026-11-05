@@ -17,13 +17,15 @@ export interface IOrganizationConstantsService {
   create(
     organizationConstant: CreateOrganizationConstantDto,
     organizationId: string,
+    userId: string,
     isMultiEnvEnabled?: boolean
   ): Promise<OrganizationConstant | []>;
   update(
     constantId: string,
     organizationId: string,
     params: UpdateOrganizationConstantDto,
+    userId: string,
     isMultiEnvEnabled?: boolean
   ): Promise<OrganizationConstant>;
-  delete(constantId: string, organizationId: string, environmentId?: string): Promise<DeleteResult>;
+  delete(constantId: string, organizationId: string, userId: string, environmentId?: string): Promise<DeleteResult>;
 }

@@ -13,8 +13,10 @@ import {
   findEntity,
   updateEntity,
   countEntities,
+  getDefaultDataSource,
 } from 'test-helper';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
+import { OrganizationConstant } from 'src/entities/organization_constants.entity';
 import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
 import { SECRET_VALUE_MASK } from '@modules/organization-constants/constants';
 
@@ -258,6 +260,24 @@ describe('OrgConstantsController', () => {
         })
         .expect(403);
     });
+
+    it('should record the creator as both created_by and updated_by', async () => {
+      const adminUserData = await createUser(app, { email: 'admin@tooljet.io', groups: ['all_users', 'admin'] });
+      const appEnvironments = await ensureAppEnvironments(app, adminUserData.user.organizationId);
+      const { tokenCookie } = await login(app);
+      adminUserData['tokenCookie'] = tokenCookie;
+
+      const response = await createConstant(app, adminUserData, {
+        constant_name: 'owned_constant',
+        value: 'v1',
+        type: 'Global',
+        environments: [appEnvironments[0].id],
+      });
+      expect(response.status).toBe(201);
+
+      const stored = await findEntityOrFail(OrganizationConstant, { id: response.body.constant.id });
+      expect(stored).toMatchObject({ createdBy: adminUserData.user.id, updatedBy: adminUserData.user.id });
+    });
   });
 
   describe('PATCH /api/organization-constants/:id | Update constant', () => {
@@ -339,6 +359,46 @@ describe('OrgConstantsController', () => {
           environment_id: appEnvironments[0].id,
         })
         .expect(403);
+    });
+
+    it('should record the updating user as updated_by and bump updated_at without changing created_by', async () => {
+      const adminUserData = await createUser(app, { email: 'admin@tooljet.io', groups: ['all_users', 'admin'] });
+      const developerUserData = await createUser(app, {
+        email: 'dev@tooljet.io',
+        groups: ['all_users', 'developer'],
+        organization: adminUserData.organization,
+      });
+      const developerGroup = await findEntityOrFail(GroupPermissions, { name: 'developer' });
+      await updateEntity(GroupPermissions, developerGroup.id, { orgConstantCRUD: true });
+      const appEnvironments = await ensureAppEnvironments(app, adminUserData.user.organizationId);
+      adminUserData['tokenCookie'] = (await login(app)).tokenCookie;
+      developerUserData['tokenCookie'] = (await login(app, 'dev@tooljet.io')).tokenCookie;
+
+      const createResponse = await createConstant(app, adminUserData, {
+        constant_name: 'tracked_constant',
+        value: 'before',
+        type: 'Global',
+        environments: appEnvironments.map((env) => env.id),
+      });
+      const constantId = createResponse.body.constant.id;
+
+      // The suite runs in one transaction, so now() never advances; start from a past timestamp.
+      const staleUpdatedAt = new Date('2000-01-01T00:00:00Z');
+      await getDefaultDataSource().query(`UPDATE organization_constants SET updated_at = $1 WHERE id = $2`, [
+        staleUpdatedAt,
+        constantId,
+      ]);
+
+      await request(app.getHttpServer())
+        .patch(`/api/organization-constants/${constantId}`)
+        .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
+        .set('Cookie', developerUserData['tokenCookie'])
+        .send({ value: 'after', environment_id: appEnvironments[0].id })
+        .expect(200);
+
+      const stored = await findEntityOrFail(OrganizationConstant, { id: constantId });
+      expect(stored).toMatchObject({ createdBy: adminUserData.user.id, updatedBy: developerUserData.user.id });
+      expect(stored.updatedAt.getTime()).toBeGreaterThan(staleUpdatedAt.getTime());
     });
   });
 
