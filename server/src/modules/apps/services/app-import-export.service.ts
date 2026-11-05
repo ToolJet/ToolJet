@@ -5210,7 +5210,7 @@ export function migrateProperties(
   return { properties, styles, general, generalStyles, validation };
 }
 
-function transformComponentData(
+export function transformComponentData(
   data: object,
   componentEvents: any[],
   componentsMapping: Record<string, string>,

@@ -395,6 +395,50 @@ describe('Listview: the layout memory reaches the other editors', () => {
     setMode('list');
     expect(layoutOf('txt')).toEqual({ top: 40, left: 20, width: 9, height: 30 });
   });
+
+  const MOBILE = { top: 5, left: 5, width: 10, height: 30 };
+  const MOVED = { top: 40, left: 20, width: 9, height: 30 };
+  afterEach(() => useStore.getState().setCurrentLayout('desktop'));
+  const layoutUpdate = (layouts) => ({
+    type: 'components/layout',
+    operation: 'update',
+    pageId: useStore.getState().getCurrentPageId('canvas'),
+    versionId: useStore.getState().selectedVersion?.id,
+    diff: { txt: { layouts } },
+  });
+
+  test('[Listview-GRID-018] a peer in the mobile view puts a desktop move in its desktop layout, not its mobile one', () => {
+    // Break this catches: every diff written to the view on screen, so the peer's next switch saves a stale desktop box.
+    seed();
+    components().txt.layouts.mobile = { ...MOBILE };
+    useStore.getState().setCurrentLayout('mobile');
+
+    useStore.getState().multiplayer.processUpdate(layoutUpdate({ desktop: MOVED }));
+
+    expect(layoutOf('txt', 'desktop')).toEqual(MOVED);
+    expect(layoutOf('txt', 'mobile')).toEqual(MOBILE);
+    expect(useStore.getState().currentLayout).toBe('mobile');
+  });
+
+  test('[Listview-GRID-018] a peer in the desktop view puts a mobile move in its mobile layout', () => {
+    // Break this catches: a mobile diff read as desktop, which writes undefined over the peer's desktop box.
+    seed();
+    components().txt.layouts.mobile = { ...MOBILE };
+
+    useStore.getState().multiplayer.processUpdate(layoutUpdate({ mobile: MOVED }));
+
+    expect(layoutOf('txt', 'mobile')).toEqual(MOVED);
+    expect(layoutOf('txt', 'desktop')).toEqual(TXT);
+  });
+
+  test('[Listview-GRID-018] a desktop move reaches a peer in the desktop view as before', () => {
+    // Break this catches: the common case broken by the per-layout write, for every widget.
+    seed();
+
+    useStore.getState().multiplayer.processUpdate(layoutUpdate({ desktop: MOVED }));
+
+    expect(layoutOf('txt', 'desktop')).toEqual(MOVED);
+  });
 });
 
 describe('Listview: the layout memory follows a copy', () => {
