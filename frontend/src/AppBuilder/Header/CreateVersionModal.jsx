@@ -13,11 +13,13 @@ import '../../_styles/version-modal.scss';
 import { suggestVersionName } from '@/AppBuilder/_helpers/versionNames';
 import {
   BUILDING_CODE_LABEL,
+  blocksSave,
   CodeBuildError,
   codeSaveRefusal,
   saveErrorMessage,
   saveVersionWithBuild,
   SaveVersionError,
+  useSaveVersionCodeCheck,
 } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const CreateVersionModal = ({
@@ -82,6 +84,18 @@ const CreateVersionModal = ({
 
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
   const textareaRef = React.useRef(null);
+
+  // Code mode: whether the latest code builds is checked as the dialog opens, so a broken build shows before the first
+  // click. A refusal from an earlier opening is not shown again: the code may have been fixed since.
+  const codeCheck = useSaveVersionCodeCheck({
+    open: showCreateAppVersion,
+    appId,
+    versionId: selectedVersionForCreation?.id,
+  });
+  useEffect(() => {
+    if (showCreateAppVersion) setCodeBuildError(null);
+  }, [showCreateAppVersion]);
+  const saveError = codeBuildError ?? codeCheck.error;
 
   useEffect(() => {
     if (appId) {
@@ -459,7 +473,7 @@ const CreateVersionModal = ({
             </div>
           </div>
 
-          <SaveVersionError error={codeBuildError} onOpenCode={() => setShowCreateAppVersion(false)} />
+          <SaveVersionError error={saveError} onOpenCode={() => setShowCreateAppVersion(false)} />
 
           <div className="create-version-footer">
             <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
@@ -482,7 +496,7 @@ const CreateVersionModal = ({
                 variant="primary"
                 className=""
                 type="submit"
-                disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly}
+                disabled={!selectedVersionForCreation || isCreatingVersion || isEditorReadOnly || blocksSave(saveError)}
                 data-cy="create-version-save-button"
               >
                 {buildingCode ? BUILDING_CODE_LABEL : t('editor.appVersionManager.saveVersion', 'Save version')}
