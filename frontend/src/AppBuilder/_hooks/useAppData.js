@@ -195,8 +195,9 @@ const useAppData = (
     return () => setCurrentAppName('');
   }, [appName]);
 
-  // Periodic query timers live outside the store and survive page switches, so stop them when
-  // the canvas unmounts (e.g. leaving the app for the dashboard). Embedded modules don't own them.
+  // Periodic query timers live outside the store and survive page switches; this is their only
+  // teardown (leaving the app). A version switch needs none: new query ids, so old ticks stop
+  // themselves when their query is gone. Embedded modules don't own them.
   useEffect(() => {
     if (moduleMode && moduleId !== 'canvas') return;
     return () => clearAllPeriodicTimers();
@@ -434,11 +435,7 @@ const useAppData = (
         // Canvas-only (mirrors the version-change effect's own cleanUpStore); embedded modules manage
         // their own. Standalone module editor (moduleId === 'canvas') is its own canvas mount too.
         const isFreshCanvasMount = !moduleMode || moduleId === 'canvas';
-        if (isFreshCanvasMount) {
-          cleanUpStore();
-          // Periodic query timers survive page switches; stop them only on full app teardown.
-          clearAllPeriodicTimers();
-        }
+        if (isFreshCanvasMount) cleanUpStore();
         let appData = { ...result };
         // The module-by-name endpoint returns the module alone, without `editorEnvironment`
         // (that field is only populated by the parent app's fetchApp response). Fall back to
@@ -1081,7 +1078,6 @@ const useAppData = (
       }
       appVersionService.getAppVersionData(appId, selectedVersion?.id, mode).then(async (appData) => {
         cleanUpStore();
-        clearAllPeriodicTimers();
         const { should_freeze_editor } = appData;
         setIsEditorFreezed(should_freeze_editor);
 

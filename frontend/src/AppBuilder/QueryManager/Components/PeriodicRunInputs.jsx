@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import './PeriodicRunInputs.scss';
 
 // Revealed directly under the "Run this query periodically" toggle.
 // When fx is active, shows the expression editor for the toggle value itself
@@ -17,9 +16,9 @@ export default function PeriodicRunInputs({ options, optionchanged }) {
   const fxValue = typeof options?.runPeriodically === 'string' ? options.runPeriodically : '';
 
   return (
-    <div className="periodic-run-inputs">
+    <div className="tw-flex tw-flex-col tw-gap-2 tw-mt-2 tw-mb-4">
       {fxMode && (
-        <div className="periodic-run-fx-input">
+        <div data-param="runPeriodically" className="tw-w-full tw-max-w-[715px] tw-pl-8 tw-box-border">
           <CodeHinter
             type="basic"
             initialValue={fxValue}
@@ -29,11 +28,12 @@ export default function PeriodicRunInputs({ options, optionchanged }) {
           />
         </div>
       )}
-      <div className="periodic-run-interval-row">
-        <label className="form-label align-items-center" data-cy="label-time-interval-input" style={{ width: 132 }}>
+      <div data-param="queryRunInterval" className="tw-flex tw-items-center tw-gap-[5px] tw-pl-[34px]">
+        {/* form-label is the query manager's label style; ! beats its `.query-details .form-label` 100px width */}
+        <label className="form-label tw-items-center !tw-w-[132px]" data-cy="label-time-interval-input">
           {t('editor.queryManager.timeInterval', 'Time interval ( ms )')}
         </label>
-        <div className="flex-grow-1" style={{ maxWidth: '530px' }}>
+        <div className="tw-grow tw-max-w-[530px]">
           <CodeHinter
             type="basic"
             initialValue={options?.queryRunInterval ?? ''}

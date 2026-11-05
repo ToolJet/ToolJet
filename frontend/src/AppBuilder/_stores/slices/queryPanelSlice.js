@@ -542,8 +542,9 @@ export const createQueryPanelSlice = (set, get) => ({
 
       // Query is committed to executing now — start/refresh its periodic timer if
       // "Run this query periodically" is on. Idempotent: a tick re-running the query
-      // re-enters here and no-ops when the resolved interval is unchanged.
-      reconcileQueryPeriodicRun(queryId, moduleId, get);
+      // re-enters here and no-ops when the resolved interval is unchanged. Skipped when the toggle is
+      // off: turning it off already stops the timer (updateDataQuery reconcile, and the tick itself).
+      if (dataQuery.options?.runPeriodically) reconcileQueryPeriodicRun(queryId, moduleId, get);
 
       // Handler for transformation and completion of query results
       const processQueryResults = async (data, rawData = null) => {

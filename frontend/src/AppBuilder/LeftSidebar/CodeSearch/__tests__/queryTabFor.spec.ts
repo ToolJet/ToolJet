@@ -16,6 +16,8 @@ describe('queryTabFor', () => {
     expect(queryTabFor(queryField('options', 'runOnPageLoad'))).toBe('settings');
     expect(queryTabFor(queryField('options', 'successMessage'))).toBe('settings');
     expect(queryTabFor(queryField('options', 'query_timeout'))).toBe('settings');
+    expect(queryTabFor(queryField('options', 'runPeriodically'))).toBe('settings');
+    expect(queryTabFor(queryField('options', 'queryRunInterval'))).toBe('settings');
   });
 
   test("a query's event handlers live in the Settings tab", () => {
