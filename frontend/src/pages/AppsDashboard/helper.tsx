@@ -11,6 +11,12 @@ export const appTypeToDisplayNameMapping = {
 
 export type TAppType = keyof typeof appTypeToDisplayNameMapping;
 
+export const searchPlaceholderByAppType: Record<TAppType, string> = {
+  'front-end': 'Search for apps and folders',
+  module: 'Search for modules and folders',
+  workflow: 'Search for workflows and folders',
+};
+
 // Page sizes the grid view requests from `/v2/apps`.
 export const ROOT_PAGE_SIZE = 50;
 export const FOLDER_PAGE_SIZE = 20;

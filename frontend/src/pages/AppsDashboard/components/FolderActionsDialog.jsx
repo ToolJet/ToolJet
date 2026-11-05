@@ -89,7 +89,7 @@ export default function FolderActionsDialog({ open, defaultAppType }) {
         break;
       }
       case 'rename-folder': {
-        if (formattedFolderName === initialFolderName || !folderDetails.actions.rename) {
+        if (formattedFolderName === initialFolderName) {
           handleResetState();
           return;
         }
@@ -405,7 +405,7 @@ function MoveOrRemoveFromFolder({
   selectedFolder,
   setSelectedFolder,
 }) {
-  const searchQuery = useSearchStore((state) => state.searchQuery);
+  const searchQuery = useSearchStore((state) => state.debouncedSearchQuery);
 
   const { data: folders, isSuccess: isFoldersSuccess } = useFetchFolders({ appType, appSearchQuery: searchQuery });
 

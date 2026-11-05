@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Pin, PinOff } from 'lucide-react';
+import React from 'react';
+import { Pin } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { usePinResources, useUnpinResource } from '@/_services/hooks/appsServiceHooks';
@@ -21,8 +21,6 @@ export default function PinUnpinButton({
   itemDetails,
   pinned = false,
 }: PinUnpinButtonProps) {
-  const [isHovered, setIsHovered] = useState(false);
-
   const { mutate: pinResources, isPending: isPinning } = usePinResources();
   const { mutate: unpinResource, isPending: isUnpinning } = useUnpinResource();
 
@@ -40,20 +38,15 @@ export default function PinUnpinButton({
       <button
         type="button"
         className={cn(
-          'tw-flex tw-items-center tw-justify-center tw-size-5 tw-p-0 tw-border-0 tw-bg-transparent tw-cursor-pointer hover:tw-bg-interactive-hover active:tw-bg-interactive-selected',
+          'tw-flex tw-items-center tw-justify-center tw-size-5 tw-p-0 tw-border-0 tw-bg-transparent tw-cursor-pointer hover:tw-bg-button-outline-hover active:tw-bg-button-outline-pressed',
+          { 'hover:tw-bg-interactive-hover active:tw-bg-interactive-selected': pinned },
           className
         )}
         aria-label={`${pinned ? 'Unpin' : 'Pin'} ${itemDetails.name} ${itemKind}`}
         disabled={!itemDetails.actions?.pin || isPinning || isUnpinning}
         onClick={handleClick}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
       >
-        {pinned && isHovered ? (
-          <PinOff size={12} className="tw-stroke-icon-default" />
-        ) : (
-          <Pin size={12} className={cn('tw-stroke-icon-default', { 'tw-fill-icon-default': pinned || isHovered })} />
-        )}
+        <Pin size={12} className={cn('tw-stroke-icon-default', { 'tw-fill-icon-default': pinned })} />
       </button>
     </TooltipComp>
   );

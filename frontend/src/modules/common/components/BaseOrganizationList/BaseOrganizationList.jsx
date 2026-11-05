@@ -10,13 +10,14 @@ import { CreateOrganization, EditOrganization } from '@/modules/common/component
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { WorkspaceDropDown } from '@/modules/dashboard/components';
 import { fetchEdition } from '@/modules/common/helpers/utils';
-import WorkspaceSelector from '@/_ui/Header/WorkspaceSelector';
+
+import WorkspaceSelectorV2 from '@/modules/dashboard/components/OrganizationList/WorkspaceSelectorV2';
 
 /* TODO: 
   each workspace related component has organizations list component which can be moved to a single wrapper. 
   otherwise this component will intiate everytime we switch between pages
 */
-const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => null, variant = 'legacy', ...props }) => {
+const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => null, variant = 'v1', ...props }) => {
   const { current_organization_id, admin, super_admin } = authenticationService.currentSessionValue;
   const { fetchOrganizations, organizationList, isGettingOrganizations } = useCurrentSessionStore(
     (state) => ({
@@ -139,8 +140,8 @@ const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => nul
 
   return (
     <>
-      {variant === 'new' && (
-        <WorkspaceSelector
+      {variant === 'v2' && (
+        <WorkspaceSelectorV2
           workspaceList={organizationList ?? []}
           onSwitchWorkspace={switchOrganization}
           onCreateNewWorkspace={handleAddWorkspace}
@@ -149,7 +150,7 @@ const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => nul
         />
       )}
 
-      {variant === 'legacy' && (
+      {variant === 'v1' && (
         <div className="org-select-container">
           <WorkspaceDropDown
             {...(workspacesLimit != null ? { workspacesLimit } : null)}

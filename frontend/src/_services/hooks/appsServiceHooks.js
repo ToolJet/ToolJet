@@ -63,8 +63,8 @@ export const appsV2QueryOptions = ({
 
 // A folder's apps loaded page by page, for the list view's expanded folders.
 // The `'infinite'` suffix keeps it apart from a `useQuery` entry with the same params; the prefix keeps `appsV2` invalidation covering it.
-export const appsV2InfiniteQueryOptions = ({ appType = 'front-end', folderId, searchQuery = '', pageSize = 20 }) => {
-  const queryParams = { appType, branchId: getActiveBranchId(), pageSize, folderId, searchQuery };
+export const appsV2InfiniteQueryOptions = ({ appType = 'front-end', folderId, pageSize = 20 }) => {
+  const queryParams = { appType, branchId: getActiveBranchId(), pageSize, folderId };
 
   return infiniteQueryOptions({
     queryKey: ['appsV2', queryParams, 'infinite'],

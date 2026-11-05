@@ -8,22 +8,15 @@ const COLLAPSED_LABEL = 'Search';
 const motionClasses = 'tw-duration-300 tw-ease-out motion-reduce:tw-transition-none';
 
 export default function SearchInput({ value, onChange, onClear, placeholder = COLLAPSED_LABEL, className }) {
-  const [innerValue, setInnerValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
 
-  const searchText = value ?? innerValue;
-  const isExpanded = isFocused || !!searchText;
+  const isExpanded = isFocused || !!value;
   // The collapsed label grows into the placeholder, so only the text after "Search" animates in
   const placeholderSuffix = placeholder.startsWith(COLLAPSED_LABEL) ? placeholder.slice(COLLAPSED_LABEL.length) : '';
   const placeholderPrefix = placeholderSuffix ? COLLAPSED_LABEL : placeholder;
 
-  const updateSearchText = (nextValue) => {
-    setInnerValue(nextValue);
-    onChange?.(nextValue);
-  };
-
-  const clearSearchText = () => {
-    updateSearchText('');
+  const clearSearch = () => {
+    onChange('');
     onClear?.();
   };
 
@@ -49,7 +42,7 @@ export default function SearchInput({ value, onChange, onClear, placeholder = CO
           className={cn(
             'tw-flex tw-min-w-0 tw-whitespace-nowrap tw-font-body-default tw-text-text-placeholder tw-transition-opacity',
             motionClasses,
-            searchText && 'tw-opacity-0'
+            value && 'tw-opacity-0'
           )}
         >
           {placeholderPrefix}
@@ -70,10 +63,10 @@ export default function SearchInput({ value, onChange, onClear, placeholder = CO
 
       <input
         type="text"
-        value={searchText}
+        value={value}
         aria-label={placeholder}
-        onChange={(event) => updateSearchText(event.target.value)}
-        onKeyDown={(event) => event.key === 'Escape' && clearSearchText()}
+        onChange={(event) => onChange(event.target.value)}
+        onKeyDown={(event) => event.key === 'Escape' && clearSearch()}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         className="tw-size-full tw-rounded-md tw-border-0 tw-bg-transparent tw-py-0 tw-pl-[2.125rem] tw-pr-9 tw-font-body-default tw-text-text-default tw-appearance-none"
@@ -87,11 +80,11 @@ export default function SearchInput({ value, onChange, onClear, placeholder = CO
         aria-label="Clear search"
         // Keep focus in the input so clearing doesn't collapse the bar
         onMouseDown={(event) => event.preventDefault()}
-        onClick={clearSearchText}
+        onClick={clearSearch}
         className={cn(
           'tw-absolute tw-right-3 tw-top-1/2 -tw-translate-y-1/2 tw-rounded tw-text-icon-strong tw-transition-[opacity,visibility]',
           motionClasses,
-          !searchText && 'tw-invisible tw-opacity-0'
+          !value && 'tw-invisible tw-opacity-0'
         )}
         data-cy="search-input-clear"
       >

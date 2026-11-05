@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { useAppsStore } from '@/_stores/appsStore';
-import { useSearchStore } from '@/_stores/searchStore';
 
 import { appsV2QueryOptions } from './hooks/useRootAppsQuery';
 import { isAppItem } from './items';
@@ -18,13 +17,12 @@ interface FolderView {
   meta: ListResponse | undefined;
 }
 
-// The apps of one folder on the current page; with a search, whatever the backend returns for it.
+// The apps of one folder, scoped to the current search and page.
 export function useFolderView(folderId: string, appType: TAppType): FolderView {
   const currentPage = useAppsStore((state) => state.currentPage);
-  const searchQuery: string = useSearchStore((state: { searchQuery: string }) => state.searchQuery);
 
   const { data, error, isLoading } = useQuery(
-    appsV2QueryOptions({ appType, folderId, pageNo: currentPage, pageSize: FOLDER_PAGE_SIZE, searchQuery })
+    appsV2QueryOptions({ appType, folderId, pageNo: currentPage, pageSize: FOLDER_PAGE_SIZE })
   );
 
   const apps = useMemo(() => data?.items.filter(isAppItem) ?? [], [data]);

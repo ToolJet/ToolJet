@@ -30,7 +30,7 @@ export const appsV2QueryOptions = untypedAppsV2QueryOptions as (
 // Options for the root page on screen; its `queryKey` lets mutations edit that cache entry.
 export function useRootAppsQueryOptions(appType: TAppType) {
   const currentPage = useAppsStore((state) => state.currentPage);
-  const searchQuery: string = useSearchStore((state: { searchQuery: string }) => state.searchQuery);
+  const searchQuery: string = useSearchStore((state) => state.debouncedSearchQuery);
 
   return appsV2QueryOptions({ appType, pageNo: currentPage, pageSize: ROOT_PAGE_SIZE, searchQuery });
 }

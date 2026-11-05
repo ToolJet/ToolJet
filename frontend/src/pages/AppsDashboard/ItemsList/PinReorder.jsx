@@ -45,7 +45,7 @@ function detectPinnedRow(args) {
 
 // Drag-and-drop reorder of the root page's pinned rows. `pinnedTotal` is `counts.pinned` from the root response.
 export function PinReorderProvider({ appType, items, pinnedTotal, children }) {
-  const searchQuery = useSearchStore((state) => state.searchQuery);
+  const searchQuery = useSearchStore((state) => state.debouncedSearchQuery);
   const currentPage = useAppsStore((state) => state.currentPage);
   const { queryKey: rootQueryKey } = useRootAppsQueryOptions(appType);
   const reorderPins = useReorderPins();

@@ -1,43 +1,15 @@
-import React, { useEffect, useMemo } from 'react';
-import { useLocation, useMatch } from 'react-router-dom';
-import { debounce } from 'lodash';
+import React from 'react';
 
 import { cn } from '@/lib/utils';
-import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
-import { WorkspaceBranchDropdown } from '@/_ui/WorkspaceBranchDropdown';
-import { Separator } from '@/components/ui/Rocket/Separator/Separator';
 import { OrganizationList } from '@/modules/dashboard/components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
-import { useSearchStore } from '@/_stores/searchStore';
+
+import { useHeaderSearch } from './useHeaderSearch';
 import SearchInput from './SearchInput';
+import BranchingActionButtons from './BranchingActionButtons';
 
-const SEARCH_DEBOUNCE_DELAY = 300;
-
-export default function NewLayoutHeader({ featureAccess, showBranchingBtns }) {
-  const isAppsRoute = useMatch('/:workspaceId');
-  const isModulesRoute = useMatch('/:workspaceId/modules');
-  const isWorkflowsRoute = useMatch('/:workspaceId/workflows');
-
-  const searchPlaceholder =
-    (isAppsRoute && 'Search for apps and folders') ||
-    (isModulesRoute && 'Search for modules and folders') ||
-    (isWorkflowsRoute && 'Search for workflows and folders') ||
-    'Search';
-
-  const { pathname } = useLocation();
-  const setSearchQuery = useSearchStore((state) => state.setSearchQuery);
-  const debouncedSetSearchQuery = useMemo(() => debounce(setSearchQuery, SEARCH_DEBOUNCE_DELAY), [setSearchQuery]);
-
-  // A query typed on one page shouldn't filter the next one, including a still-pending debounced one
-  useEffect(() => {
-    setSearchQuery('');
-    return () => debouncedSetSearchQuery.cancel();
-  }, [pathname, setSearchQuery, debouncedSetSearchQuery]);
-
-  const clearSearchQuery = () => {
-    debouncedSetSearchQuery.cancel();
-    setSearchQuery('');
-  };
+export default function NewLayoutHeader({ featureAccess }) {
+  const searchProps = useHeaderSearch();
 
   return (
     <header
@@ -45,28 +17,14 @@ export default function NewLayoutHeader({ featureAccess, showBranchingBtns }) {
         'tw-grid tw-grid-cols-3 tw-items-center tw-h-12 tw-border-0 tw-border-b tw-border-solid tw-border-border-weak tw-px-3'
       )}
     >
-      <OrganizationList variant="new" />
+      <OrganizationList variant="v2" />
 
-      {/* Keyed by pathname so the input's own state resets along with the store */}
-      <SearchInput
-        key={pathname}
-        placeholder={searchPlaceholder}
-        onChange={debouncedSetSearchQuery}
-        onClear={clearSearchQuery}
-      />
+      <SearchInput {...searchProps} />
 
       <div className="tw-flex tw-justify-end tw-items-center tw-gap-2.5">
-        {Object.keys(featureAccess).length > 0 && <LicenseBanner limits={featureAccess} showNavBarActions={true} />}
+        {Object.keys(featureAccess).length > 0 && <LicenseBanner showNavBarActions limits={featureAccess} />}
 
-        {showBranchingBtns && (
-          <div className="tw-flex tw-justify-end tw-items-center tw-gap-1">
-            <WorkspaceBranchDropdown />
-
-            <Separator orientation="vertical" className="tw-h-4 tw-hidden has-[+*]:tw-block" />
-
-            <WorkspaceGitCTA />
-          </div>
-        )}
+        <BranchingActionButtons />
       </div>
     </header>
   );

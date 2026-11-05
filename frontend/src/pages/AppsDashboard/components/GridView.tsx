@@ -143,7 +143,7 @@ const renderPinnedEntry = (appType: TAppType) => (entry: PinnedEntry) =>
 function GridViewData({ appType }: { appType: TAppType }) {
   // Same params as `index.tsx`, so this reads its cache entry rather than sending a second request.
   const { data, isLoading } = useRootAppsQuery(appType);
-  const searchQuery: string = useSearchStore((state: { searchQuery: string }) => state.searchQuery);
+  const searchQuery: string = useSearchStore((state) => state.debouncedSearchQuery);
 
   const rootItems = data?.items;
   const folders = useMemo(() => (rootItems ?? []).filter(isFolderItem), [rootItems]);
@@ -195,7 +195,7 @@ interface FolderViewProps {
 function FolderView({ folderId, appType }: FolderViewProps) {
   const [, setSearchParams] = useSearchParams();
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
-  const searchQuery: string = useSearchStore((state: { searchQuery: string }) => state.searchQuery);
+  const searchQuery: string = useSearchStore((state) => state.debouncedSearchQuery);
   const { status, apps, folderName, meta } = useFolderView(folderId, appType);
 
   const handleBack = () => {

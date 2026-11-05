@@ -3,6 +3,7 @@ import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 import { getWorkspaceId } from '@/_helpers/utils';
+import { useHeaderSearchConfig } from '@/_hooks/useHeaderSearchConfig';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import { authenticationService } from '@/_services/authentication.service';
 
@@ -27,6 +28,7 @@ import Dialogs from './components/Dialogs';
 import {
   appTypeToDisplayNameMapping,
   canUserPerformWorkflowAction,
+  searchPlaceholderByAppType,
   staticContentMappingByAppType,
   type TAppType,
 } from './helper';
@@ -46,6 +48,8 @@ export default function AppsDashboard({
 }) {
   const navigate = useNavigate();
 
+  useHeaderSearchConfig({ placeholder: searchPlaceholderByAppType[appType] });
+
   const { data: appsLimit } = useFetchAppsLimit({ enabled: appType === 'front-end' });
 
   const { data: workflowInstanceLevelLimit, isSuccess: isInstanceLimitFetchedSuccessfully } = useFetchWorkflowLimit(
@@ -61,7 +65,7 @@ export default function AppsDashboard({
 
   const checkModuleAccess = useLicenseStore((state: ILicenseStore) => state.actions.checkModuleAccess);
 
-  const searchQuery: string = useSearchStore((state: { searchQuery: string }) => state.searchQuery);
+  const searchQuery: string = useSearchStore((state) => state.debouncedSearchQuery);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
 
   const { data: rootApps, isLoading: isRootAppsLoading } = useRootAppsQuery(appType);

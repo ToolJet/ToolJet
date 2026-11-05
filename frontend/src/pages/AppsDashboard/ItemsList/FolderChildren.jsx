@@ -31,7 +31,7 @@ const getStatus = ({ isLoading, isFetchingNextPage, isError }) => {
 export default function FolderChildren({ folder, appType }) {
   // `depth` 1 marks apps inside a folder; memoized so the table options stay stable between renders.
   const tableMeta = useMemo(() => ({ depth: 1, appType }), [appType]);
-  const searchQuery = useSearchStore((state) => state.searchQuery);
+  const searchQuery = useSearchStore((state) => state.debouncedSearchQuery);
   const folderQuery = useInfiniteQuery(
     appsV2InfiniteQueryOptions({ appType, folderId: folder.id, searchQuery, pageSize: FOLDER_PAGE_SIZE })
   );
@@ -85,7 +85,7 @@ export default function FolderChildren({ folder, appType }) {
     return (
       <div role="rowgroup" aria-label={`Apps in ${folder.name}`}>
         <FolderSkeletonRow />
-        <FolderStatusRow variant="loading" />
+        <FolderStatusRow variant="loading" appType={appType} />
       </div>
     );
   }
@@ -93,7 +93,7 @@ export default function FolderChildren({ folder, appType }) {
   if (!rows.length) {
     return (
       <div role="rowgroup" aria-label={`Apps in ${folder.name}`}>
-        <FolderStatusRow variant={status === 'error' ? 'error' : 'empty'} onRetry={retry} />
+        <FolderStatusRow variant={status === 'error' ? 'error' : 'empty'} appType={appType} onRetry={retry} />
       </div>
     );
   }
@@ -119,6 +119,7 @@ export default function FolderChildren({ folder, appType }) {
             <FolderStatusRow
               key={virtualItem.key}
               variant={trailingStatus}
+              appType={appType}
               onRetry={retry}
               className={POSITIONED_ROW_CLASS}
               style={style}
