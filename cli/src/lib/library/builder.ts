@@ -9,6 +9,7 @@ import { collectSource } from './source-tree';
 import { isServerMode } from '../server-mode';
 import { assertNoCodeInCss, ignoredConfigs, trustedCssProcessor } from './trusted-css';
 import { assertTsconfigConfined, Confinement, confinementPlugin, projectConfinement } from './confinement';
+import { formatProblem, typeCheck, TypeProblem } from './type-check';
 import * as ts from 'typescript';
 
 export interface BuildResult {
@@ -226,6 +227,28 @@ const prodBuildOptions: Partial<esbuild.BuildOptions> = {
   drop: ['debugger'],
 };
 
+/**
+ * A bundle that fails (an import that does not resolve, a syntax error) stops before the type check, so its TypeScript
+ * errors only showed on the next build: in the Code mode builds of 2026-11-04, 10 failed bundles were followed by a
+ * build that failed on TypeScript. The bundle's error now carries the type errors too, so one round fixes both.
+ * Errors on lines the bundle already names (the same unresolved import) are left out.
+ */
+function withTypeErrors(err: Error, projectRoot: string, confinement: Confinement): Error {
+  if (!/^Build failed with/.test(err.message)) return err;
+  let problems: TypeProblem[];
+  try {
+    problems = typeCheck(projectRoot, confinement).problems;
+  } catch {
+    return err;
+  }
+  const fresh = problems.filter((p) => !err.message.includes(`${p.file}:${p.line}:`));
+  if (!fresh.length) return err;
+  return new Error(
+    `${err.message}\n\nTypeScript compiled (${fresh.length} errors), in the same check:\n\n` +
+      fresh.map(formatProblem).join('\n')
+  );
+}
+
 export async function build(projectRoot: string, options: { env?: BuildEnv } = {}): Promise<BuildResult> {
   const { env = 'development' } = options;
   const isProduction = env === 'production';
@@ -239,24 +262,28 @@ export async function build(projectRoot: string, options: { env?: BuildEnv } = {
   const confinement = projectConfinement(projectRoot);
   assertTsconfigConfined(ts, confinement, path.join(projectRoot, 'tsconfig.json'));
 
-  await esbuild.build({
-    entryPoints: [path.join(projectRoot, 'src/index.ts')],
-    bundle: true,
-    format: 'esm',
-    outfile: path.join(distDir, 'index.js'),
-    metafile: true,
-    external: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
-    plugins: [confinementPlugin(confinement), tooljetSdkPlugin, ...cssPlugins(projectRoot, postcssConfig)],
-    loader: ASSET_LOADERS,
-    jsx: 'automatic',
-    // Dev builds (the dev track, not publish): every JSX call site in the project's own code passes its file:line:col to
-    // the host's jsx-dev-runtime (source tags for mapping a clicked node to its JSX), paths relative to the project, and
-    // the JS and CSS carry inline source maps. Published builds have neither.
-    ...(isProduction ? {} : { jsxDev: true, sourcemap: 'inline' as const, absWorkingDir: projectRoot }),
-    tsconfig: path.join(projectRoot, 'tsconfig.json'),
-    logLevel: 'silent',
-    ...(isProduction ? prodBuildOptions : {}),
-  });
+  await esbuild
+    .build({
+      entryPoints: [path.join(projectRoot, 'src/index.ts')],
+      bundle: true,
+      format: 'esm',
+      outfile: path.join(distDir, 'index.js'),
+      metafile: true,
+      external: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
+      plugins: [confinementPlugin(confinement), tooljetSdkPlugin, ...cssPlugins(projectRoot, postcssConfig)],
+      loader: ASSET_LOADERS,
+      jsx: 'automatic',
+      // Dev builds (the dev track, not publish): every JSX call site in the project's own code passes its file:line:col to
+      // the host's jsx-dev-runtime (source tags for mapping a clicked node to its JSX), paths relative to the project, and
+      // the JS and CSS carry inline source maps. Published builds have neither.
+      ...(isProduction ? {} : { jsxDev: true, sourcemap: 'inline' as const, absWorkingDir: projectRoot }),
+      tsconfig: path.join(projectRoot, 'tsconfig.json'),
+      logLevel: 'silent',
+      ...(isProduction ? prodBuildOptions : {}),
+    })
+    .catch((err: Error) => {
+      throw withTypeErrors(err, projectRoot, confinement);
+    });
 
   // App-wide styles (an app project's convention, tooljet app init): styles/theme.css first (tokens as CSS variables),
   // then the CSS the bundle imports (Tailwind, components), then styles/global.css last, so app-wide overrides of a

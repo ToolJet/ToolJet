@@ -194,6 +194,52 @@ describe('the custom component SDK in an app project', () => {
       expect(read(path.join(frontend, 'package.json')).dependencies[SDK_PACKAGE]).to.equal(publishedSdk().version);
     });
 
+    describe('in server mode, where a build reads only the project', () => {
+      const savedMode = process.env.TOOLJET_CLI_SERVER_MODE;
+      let sdkFolder: string;
+      beforeEach(() => {
+        process.env.TOOLJET_CLI_SERVER_MODE = '1';
+        sdkFolder = fs.mkdtempSync(path.join(os.tmpdir(), 'tj-sdk-folder-'));
+        fs.mkdirSync(path.join(sdkFolder, 'dist'), { recursive: true });
+        fs.writeFileSync(path.join(sdkFolder, 'dist', 'types.d.ts'), 'useNavigation');
+        process.env.TOOLJET_SDK_SPEC = `file:${sdkFolder}`;
+      });
+      afterEach(() => {
+        if (savedMode === undefined) delete process.env.TOOLJET_CLI_SERVER_MODE;
+        else process.env.TOOLJET_CLI_SERVER_MODE = savedMode;
+        fs.rmSync(sdkFolder, { recursive: true, force: true });
+      });
+      const sdkDir = () => path.join(frontend, 'node_modules', SDK_PACKAGE);
+      const link = () => {
+        fs.mkdirSync(path.dirname(sdkDir()), { recursive: true });
+        fs.symlinkSync(sdkFolder, sdkDir(), 'dir');
+      };
+      /** npm with --install-links: the link goes, a copy takes its place. */
+      const copying: typeof run = (command, args, options) => {
+        fs.rmSync(sdkDir(), { recursive: true, force: true });
+        return run(command, args, options);
+      };
+
+      it('copies a file: SDK into node_modules instead of linking it', async () => {
+        expect(await installCodeModeSdk(frontend, { run: copying })).to.equal('installed');
+        expect(calls[0]).to.include.members(['--install-links', `file:${sdkFolder}`]);
+      });
+
+      it('replaces a linked SDK that has the types (TS2307 on every ToolJet import, 2026-11-04)', async () => {
+        link();
+        expect(await installCodeModeSdk(frontend, { run: copying })).to.equal('installed');
+        expect(calls[0]).to.include('--install-links');
+        expect(await installCodeModeSdk(frontend, { run: copying })).to.equal('current');
+      });
+
+      it('leaves a linked SDK alone in a local build, which may read it', async () => {
+        delete process.env.TOOLJET_CLI_SERVER_MODE;
+        link();
+        expect(await installCodeModeSdk(frontend, { run: copying })).to.equal('current');
+        expect(calls).to.deep.equal([]);
+      });
+    });
+
     it('warns, naming the server, when it offers none: a 404, or a dev frontend answering HTML', async () => {
       for (const [status, type] of [
         [404, 'application/json'],

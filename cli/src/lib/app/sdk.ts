@@ -11,6 +11,7 @@ import {
   needsInstall,
   Runner,
 } from './deps';
+import { isServerMode } from '../server-mode';
 
 /*
   The custom component SDK in an app project. A local build replaces its import (lib/library/builder.ts), so a project
@@ -132,17 +133,42 @@ async function servedSdk(server: string): Promise<string | undefined> {
 
 export type SdkSource = 'current' | 'installed' | 'unavailable';
 
-/** Gives a project whose SDK lacks the app types the right one, without recording it in the project's files. */
+/** True when node_modules holds the SDK as a link to a folder elsewhere (npm's install of a file: spec). */
+export const sdkIsLinked = (frontend: string): boolean => {
+  try {
+    return fs.lstatSync(path.join(frontend, 'node_modules', SDK_PACKAGE)).isSymbolicLink();
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Gives a project whose SDK lacks the app types the right one, without recording it in the project's files.
+ *
+ * In server mode the SDK is copied into node_modules (--install-links), never linked: a server-mode build reads only
+ * the project (lib/library/confinement.ts), so a linked SDK's types were out of its reach. Every `ToolJet` import then
+ * failed with TS2307 and every hook result was `any` (TS7006 on each callback): 33 failed build rounds in 17 AI builds
+ * on 2026-11-04, some of which declared the module themselves to get past it. A linked SDK is replaced the same way.
+ */
 export async function installCodeModeSdk(
   frontend: string,
   options: { server?: string; run?: Runner } = {}
 ): Promise<SdkSource> {
-  if (hasCodeModeTypes(frontend)) return 'current';
+  const copyIn = isServerMode();
+  if (hasCodeModeTypes(frontend) && !(copyIn && sdkIsLinked(frontend))) return 'current';
   if (detectPackageManager(frontend) !== 'npm') return 'unavailable';
   const spec = process.env.TOOLJET_SDK_SPEC || (options.server ? await servedSdk(options.server) : undefined);
   if (!spec) return 'unavailable';
   const { env } = installCommand('npm', false);
-  const args = ['install', '--no-save', '--ignore-scripts', '--no-audit', '--no-fund', spec];
+  const args = [
+    'install',
+    '--no-save',
+    '--ignore-scripts',
+    '--no-audit',
+    '--no-fund',
+    ...(copyIn ? ['--install-links'] : []),
+    spec,
+  ];
   installDependencies(frontend, { run: options.run, command: { command: 'npm', args, env } });
   return 'installed';
 }
