@@ -48,6 +48,7 @@ import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import cx from 'classnames';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
+import useDarkModeAcrossTabs from '@/_hooks/useDarkModeAcrossTabs';
 import { setFaviconAndTitle } from '@white-label/whiteLabelling';
 import {
   onboarding,
@@ -86,6 +87,8 @@ const AppWrapper = (props) => {
     }),
     shallow
   );
+  // Dark mode toggled in another tab applies to this whole tab, not only the parts that re-read it.
+  useDarkModeAcrossTabs(updateIsTJDarkMode);
   // NOTE: BrowserRouter removed - now handled by RootRouter.jsx
   // App.jsx is now wrapped by RootRouter which provides the router context
   return (
