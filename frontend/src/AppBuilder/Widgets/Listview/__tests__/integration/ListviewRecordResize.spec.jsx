@@ -642,15 +642,7 @@ describe('Listview record resize: the handle sits on the bottom edge of record 1
   beforeEach(widget.setup);
   afterEach(widget.teardown);
 
-  const clippingBetween = (handle) => {
-    const clipping = [];
-    for (let node = handle.parentElement; node && !node.classList.contains('list-item'); node = node.parentElement) {
-      if (node.style.overflow && node.style.overflow !== 'visible') clipping.push(node);
-    }
-    return clipping;
-  };
-
-  test('[Listview-RSZ-007] the handle is 26px wide, half of its height below the edge, and no element that clips lies between it and the record', async () => {
+  test('[Listview-RSZ-007] the handle is 26px wide, half of its height below the edge, and the record that holds it does not clip', async () => {
     // Break this catches: the handle inside the clipped box (half cut), a width other than 26px, or a bottom offset that leaves it above the edge.
     await mount(widget);
     const handle = handles()[0];
@@ -659,7 +651,11 @@ describe('Listview record resize: the handle sits on the bottom edge of record 1
     expect(handle.style.height).toBe('8px');
     expect(handle.style.bottom).toBe('-4px');
     expect(handle.style.left).toBe('50%');
-    expect(clippingBetween(handle)).toEqual([]);
+    // The handle is a direct child of the record, so the record's own overflow is the only clip around it.
+    expect(handle.parentElement).toBe(rows()[0]);
+    expect(rows()[0].style.overflow).not.toBe('hidden');
+    // The copies have no handle and still clip.
+    expect(rows()[1].style.overflow).toBe('hidden');
   });
 
   test('[Listview-RSZ-007] the record children are still clipped at the record', async () => {
