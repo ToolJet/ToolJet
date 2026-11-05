@@ -322,6 +322,30 @@ If a log file path is specified in environment variables, a log file containing 
 | -------- | --------------------------------------------------------------------------- |
 | LOG_FILE_PATH | the path where the log file will be created ( eg: tooljet/log/tooljet-audit.log) |
 
+## Code app isolation (Enterprise, optional)
+
+A code app's own code can run in a frame the browser treats as a separate origin. It then reaches ToolJet only through a message channel the page checks, so it can't read the viewer's session, cookies or the ToolJet page, and it can run only its own app's queries, with the viewer's rights. Off by default.
+
+| Variable | Description | Default |
+| -------- | ----------- | ------- |
+| CODE_MODE_ISOLATION | `off`: code apps run in a frame on the ToolJet origin, as before. `viewer`: released apps, Preview and the in-browser build run isolated; the editor does not. `on`: the editor canvas and version comparisons run isolated too. Any other value means `off`. | `off` |
+| CODE_MODE_SANDBOX_URL | Optional second domain for the app frame. It must be `https`, must not share a site with `TOOLJET_HOST`, and must route to this server. `https://sandbox.example.com` serves the frame from that domain, and every app still runs on the browser's `null` origin. `https://*.example-usercontent.com` gives each app an origin of its own, `a<app id without dashes>.example-usercontent.com`, which needs wildcard DNS and a wildcard certificate. Unset, the frame comes from this server on the `null` origin. A value that fails these checks is ignored, with a warning in the server log. Has no effect while isolation is `off`. | unset |
+| CODE_MODE_STRICT_BINDINGS | Strict mode for isolated code apps: RunJS, RunPy and transformations are refused, `{{ }}` bindings go through a small interpreter instead of being compiled, JS libraries and preloaded scripts don't load, and the Custom component widget and script addresses in an IFrame are refused. `false` turns strict mode off, for a pilot with trusted authors only. Visual apps are never affected. | on whenever the app is isolated |
+
+The second domain serves only the frame document. Every other path on it returns 404, and it sets and reads no cookies.
+
+:::caution
+Isolation protects the viewer's session, not the data the app is given. App code still sees what its queries return, and it can send that out by opening a popup or by navigating its own frame. It is not data-loss prevention. What an app may read and write is controlled by query permissions on the server.
+:::
+
+Before `on` can become the default, these must hold:
+
+- **DNS and TLS for the app origin:** a separate registrable domain with wildcard DNS and a wildcard certificate, for each app to get its own origin. Without one, apps share the `null` origin, which works but gives them no storage of their own.
+- **Strict mode:** RunJS and transformations are refused in code apps, so apps that use them must move that logic into their code first.
+- **Production and Docker builds:** the frame runtime and the build worker ship in `frontend/build/assets/code-frame/`. They need checking in the released images, and the MCP server must be deployed with the same release, since its render check reads the isolated frame.
+- **Public and embedded apps:** checked in a browser, signed out and inside a customer's page.
+- **Custom domains:** checked with an app opened from a custom domain, which the frame must accept as a parent.
+
 ## ToolJet Apps
 
 ### Enabling embedding of private apps
