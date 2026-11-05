@@ -42,6 +42,8 @@ jobs:
       plugins: ${{ steps.filter.outputs.plugins }}
       marketplace: ${{ steps.filter.outputs.marketplace }}
       migrations: ${{ steps.filter.outputs.migrations }}
+      # false = nothing CI-relevant changed (docs, cypress-tests, deploy, …): only the gate runs
+      any: ${{ (steps.filter.outputs.changes != '[]' || steps.sub.outputs.server == 'true' || steps.sub.outputs.frontend == 'true') && 'true' || 'false' }}
       # secrets aren't allowed in job-level if:, so expose only whether the snapshot is configured
       snapshot: ${{ secrets.MIGRATION_SNAPSHOT_BUCKET != '' }}
       # changed = fast lane (run-ci-changed label): lint+build always, changed tests only,
@@ -85,6 +87,9 @@ jobs:
             migrations:
               - 'server/{migrations,data-migrations}/**'
               - '!**/*.md'
+            # version bump = release cut: runs only the vulnerability gate (no job reads this output)
+            version:
+              - '{.version,server/.version,frontend/.version}'
             # toolchain / workflow changes affect every suite
             root:
               - '{package.json,package-lock.json,.nvmrc,.node-version,.github/workflows/**}'
@@ -364,13 +369,13 @@ jobs:
             npm run validate:widget-testing-contracts
           fi
 
-  # Server unit tests and each of the 3 e2e shards run on their own machine, in
+  # Each of the 3 unit shards and each of the 3 e2e shards run on their own machine, in
   # parallel. Running the shards side by side on one machine (run-e2e.sh --ci) ran
   # it out of memory. test-server-coverage merges their coverage once all pass.
   test-server:
     name: 'Test Suite · server'
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     needs:
       - detect-changes
       - build-plugins
@@ -387,8 +392,10 @@ jobs:
       && needs.build-server.result == 'success'
       && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
       && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
-    outputs:
-      unit: ${{ steps.unit.outcome }}
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     container: node:22.23.4-bookworm
     services: &server-test-services
       postgres:
@@ -449,36 +456,42 @@ jobs:
         with:
           path: server/node_modules
           key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
-      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
+      - run: |
+          apt-get update && apt-get install -y postgresql-common python3 python3-pip
+          /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          apt-get install -y postgresql-client-16
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
       - run: NODE_ENV= npm run --prefix server db:create
       - run: NODE_ENV= npm run --prefix server db:migrate
       - name: Unit tests
-        id: unit
         # --group=-gitsync excludes the git-sync unit specs (they run in the test-gitsync job).
+        # --shard splits the file list before the groups runner filters it, so every
+        # spec runs in exactly one shard.
         run: >-
           npm run --prefix server test --
           --group=-gitsync
+          --shard=${{ matrix.shard }}/3
+          --logHeapUsage
           --coverage --coverageReporters=json
-          --json --outputFile /tmp/tj-unit-results.json
+          --json --outputFile /tmp/tj-unit-results-${{ matrix.shard }}.json
       - name: Strip coverage map from results JSON
         # --coverage attaches a full coverageMap to the --json output (~12MB for this
         # suite) — coverage-unit/coverage-final.json below is the report that matters.
         if: ${{ !cancelled() }}
-        run: node server/scripts/strip-coverage-map.mjs /tmp/tj-unit-results.json
+        run: node server/scripts/strip-coverage-map.mjs /tmp/tj-unit-results-${{ matrix.shard }}.json
       - name: Upload unit results for the PR comment
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
-          name: full-unit-results
-          path: /tmp/tj-unit-results.json
+          name: full-unit-results-${{ matrix.shard }}
+          path: /tmp/tj-unit-results-${{ matrix.shard }}.json
           if-no-files-found: ignore
           retention-days: 1
       - name: Upload unit coverage for the merge
         uses: actions/upload-artifact@v7
         with:
-          name: coverage-raw-unit
+          name: coverage-raw-unit-${{ matrix.shard }}
           path: server/coverage-unit/coverage-final.json
           retention-days: 1
 
@@ -525,7 +538,10 @@ jobs:
         with:
           path: server/node_modules
           key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
-      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
+      - run: |
+          apt-get update && apt-get install -y postgresql-common python3 python3-pip
+          /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          apt-get install -y postgresql-client-16
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
       - run: NODE_ENV= npm run --prefix server db:create
@@ -583,11 +599,11 @@ jobs:
           key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
+      # one subfolder per shard; merge-coverage.mjs finds coverage-final.json recursively
       - uses: actions/download-artifact@v8
         with:
-          name: coverage-raw-unit
+          pattern: coverage-raw-unit-*
           path: server/coverage-unit
-      # one subfolder per shard; merge-coverage.mjs finds coverage-final.json recursively
       - uses: actions/download-artifact@v8
         with:
           pattern: coverage-raw-e2e-*
@@ -677,7 +693,10 @@ jobs:
         with:
           path: server/node_modules
           key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
-      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
+      - run: |
+          apt-get update && apt-get install -y postgresql-common python3 python3-pip
+          /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          apt-get install -y postgresql-client-16
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
       - run: NODE_ENV= npm run --prefix server db:create
@@ -685,7 +704,7 @@ jobs:
       - name: Unit tests
         id: unit
         continue-on-error: true
-        run: TOOLJET_EDITION=ce npm run --prefix server test -- --group=-gitsync
+        run: TOOLJET_EDITION=ce npm run --prefix server test -- --group=-gitsync --logHeapUsage
       - name: E2E tests
         id: e2e
         run: TOOLJET_EDITION=ce npm run --prefix server test:e2e -- --group=-gitsync --testTimeout=60000
@@ -785,7 +804,10 @@ jobs:
         with:
           path: server/node_modules
           key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
-      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
+      - run: |
+          apt-get update && apt-get install -y postgresql-common python3 python3-pip
+          /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          apt-get install -y postgresql-client-16
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
       - run: NODE_ENV= npm run --prefix server db:create
@@ -921,7 +943,10 @@ jobs:
         with:
           path: server/node_modules
           key: ${{ runner.os }}-server-nm-${{ hashFiles('server/package-lock.json') }}
-      - run: apt-get update && apt-get install -y postgresql-client python3 python3-pip
+      - run: |
+          apt-get update && apt-get install -y postgresql-common python3 python3-pip
+          /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          apt-get install -y postgresql-client-16
       - run: npm ci --prefix server
         if: steps.server-nm.outputs.cache-hit != 'true'
       - run: NODE_ENV= npm run --prefix server db:create
@@ -957,14 +982,14 @@ jobs:
           retention-days: 1
 
   # ---------------------------------------------------------------------------
-  # 3c-bis. Migration import check — new or edited migrations must be self-contained:
-  # typeorm and Node built-ins only, no entities/helpers/modules. Those follow today's code,
-  # so importing them lets a later change silently alter an old migration. Use
-  # queryRunner.query() with SQL; a needed import stays if its line has
-  # '// migration-import-allowed: <reason>'. Existing migrations aren't checked until edited.
+  # 3c-bis. Migration entity check — new or edited migrations must not import TypeORM
+  # entities: entities follow today's schema, so a later change could silently alter an old
+  # migration. Use queryRunner.query() with SQL; a needed import stays if its line has
+  # '// migration-import-allowed: <reason>'. Other imports are fine. Existing migrations
+  # aren't checked until edited.
   # ---------------------------------------------------------------------------
   migration-import-check:
-    name: 'Migration import check'
+    name: 'Migration entity check'
     runs-on: ubuntu-latest
     needs: detect-changes
     if: github.event_name == 'pull_request' && needs.detect-changes.outputs.migrations == 'true'
@@ -974,7 +999,7 @@ jobs:
           fetch-depth: 2   # HEAD^1 = PR base
       - name: Test the import checker
         run: node --test scripts/check-migration-imports.test.mjs
-      - name: Fail if a new or edited migration imports project code
+      - name: Fail if a new or edited migration imports an entity
         shell: bash
         run: |
           mapfile -t files < <(git diff --name-only --diff-filter=AMR HEAD^1 HEAD -- server/migrations server/data-migrations)
@@ -997,7 +1022,7 @@ jobs:
       && needs.detect-changes.outputs.mode == 'full'
       && needs.detect-changes.outputs.migrations == 'true'
       && needs.build-plugins.result == 'success'
-    container: node:22.15.1-bookworm
+    container: node:22.23.4-bookworm
     services:
       postgres:
         image: postgres:16
@@ -1216,7 +1241,10 @@ jobs:
   # Repo-wide Dependabot-alert policy (not PR-diff scoped) — full lane only, feeds ci-gate.
   vulnerability-gate:
     needs: detect-changes
-    if: needs.detect-changes.result == 'success' && needs.detect-changes.outputs.mode == 'full'
+    # repo-wide Dependabot alerts shouldn't block a PR that touches no code; pushes always check
+    if: >-
+      needs.detect-changes.result == 'success' && needs.detect-changes.outputs.mode == 'full'
+      && (github.event_name != 'pull_request' || needs.detect-changes.outputs.any == 'true')
     uses: ./.github/workflows/release-vulnerability-gate.yml
     secrets:
       DEPENDABOT_ALERTS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN }}
@@ -1274,8 +1302,9 @@ jobs:
         continue-on-error: true
         uses: actions/download-artifact@v8
         with:
-          name: full-unit-results
-          path: /tmp/ci-results
+          pattern: full-unit-results-*
+          path: /tmp/ci-results/tj-unit-json
+          merge-multiple: true
 
       - name: Download full-run e2e results
         if: >-
@@ -1411,16 +1440,16 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           BASE_REF: ${{ github.base_ref }}
           UNIT_JSON: /tmp/ci-results/tj-unit-results.json
+          UNIT_JSON_DIR: /tmp/ci-results/tj-unit-json
           E2E_JSON_DIR: /tmp/ci-results/tj-e2e-json
           COVERAGE_MD: /tmp/ci-results/coverage.md
           RESULT_BUILD_SERVER: ${{ needs.build-server.result }}
           RESULT_BUILD_PLUGINS: ${{ needs.build-plugins.result }}
           RESULT_BUILD_FRONTEND: ${{ needs.build-frontend.result }}
           RESULT_BUILD_MARKETPLACE: ${{ needs.build-marketplace.result }}
-          # test-server.outputs.{unit,e2e} are step outcomes and read as empty
-          # strings when the whole job is skipped (server=='false') — fall back to
-          # the job result itself so the comment shows "skipped", not "❓".
-          RESULT_UNIT: ${{ needs.test-server.outputs.unit || needs.test-server.result }}
+          # test-server is a matrix job: its result is the aggregate of all unit shards,
+          # and "skipped" when the whole job is skipped (server=='false').
+          RESULT_UNIT: ${{ needs.test-server.result }}
           RESULT_E2E: ${{ needs.test-server-e2e.result }}
           RESULT_CHANGED: ${{ needs.test-changed.result }}
           RESULT_FRONTEND: ${{ needs.test-frontend.result }}
@@ -1429,13 +1458,14 @@ jobs:
           RESULT_VULN_GATE: ${{ needs.vulnerability-gate.result }}
         run: |
           jobs_json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs?per_page=100" 2>/dev/null || echo '{}')
-          job_url() { echo "$jobs_json" | jq -r --arg n "$1" '.jobs[]? | select(.name | contains($n)) | .html_url' | head -1; }
+          # $1 is a jq regex; prefer a failed job so the link lands on the failure
+          job_url() { echo "$jobs_json" | jq -r --arg n "$1" '[.jobs[]? | select(.name | test($n))] | (map(select(.conclusion == "failure")) + .)[0].html_url // empty'; }
           if [ "$MODE" = "changed" ]; then
             export UNIT_STEP_URL=$(job_url "Changed OK")
             export E2E_STEP_URL="$UNIT_STEP_URL"
             export SCOPE=$(cat /tmp/ci-results/tj-scope.txt 2>/dev/null || echo "not recorded")
           else
-            export UNIT_STEP_URL=$(job_url "Test Suite · server")
+            export UNIT_STEP_URL=$(job_url "Test Suite · server [(][0-9]+[)]")
             export E2E_STEP_URL=$(job_url "Test Suite · server e2e")
           fi
           bash scripts/render-ci-comment.sh "$MODE" > /tmp/ci-comment.md

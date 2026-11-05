@@ -1,3 +1,4 @@
+import { EntityManager } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { GITConnectionType } from 'src/entities/organization_git_sync.entity';
 import { IGitSyncEnvUtilService } from '@modules/organization-env/interfaces/IGitSyncEnvUtilService';
@@ -38,7 +39,7 @@ export class GitSyncEnvUtilService implements IGitSyncEnvUtilService {
     return GITConnectionType.DISABLED;
   }
 
-  async ensureResolved(_workspaceId: string): Promise<void> {}
+  async ensureResolved(_workspaceId: string, _manager?: EntityManager): Promise<void> {}
 
   applyLicenseToResolvedOrgs(): Promise<void> {
     throw new Error('Method not implemented.');
