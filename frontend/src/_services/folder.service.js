@@ -74,9 +74,11 @@ function bulkMoveAppsToFolder({ appIds, folderId }) {
   return fetch(`${config.apiUrl}/v2/folder-apps/bulk-move`, getAuthRequestOptions('POST', body)).then(handleResponse);
 }
 
-// TODO: the bulk remove endpoint isn't defined yet; wire it here once the API doc has it.
-function bulkRemoveAppsFromFolder() {
-  return Promise.reject(new Error('Bulk remove from folder is not available yet.'));
+// All or nothing: responds 200 `{ blocked_ids }`; a non-empty list means nothing was removed.
+// The backend finds each app's folder, so none is sent; apps already at root are skipped, not blocked.
+function bulkRemoveAppsFromFolder({ appIds, appType }) {
+  const body = { app_ids: appIds, type: appType, branch_id: getActiveBranchId() };
+  return fetch(`${config.apiUrl}/v2/folder-apps/bulk-remove`, getAuthRequestOptions('POST', body)).then(handleResponse);
 }
 
 function bulkAddToFolder(appIds, folderId) {

@@ -129,15 +129,14 @@ export function useBulkMoveAppsToFolder() {
   });
 }
 
-// TODO: pending the bulk remove endpoint (see `folderService.bulkRemoveAppsFromFolder`).
 export function useBulkRemoveAppsFromFolder() {
   const queryClient = useQueryClient();
 
   return useMutation({
     /** @param {{ appIds: string[], appType: 'front-end' | 'module' | 'workflow' }} variables */
-    mutationFn: ({ appIds }) => folderService.bulkRemoveAppsFromFolder({ appIds }),
+    mutationFn: ({ appIds, appType }) => folderService.bulkRemoveAppsFromFolder({ appIds, appType }),
     onError: (error) => {
-      toast.error(error?.error ?? error?.message ?? 'Could not remove the apps from their folders.');
+      toast.error(error?.error ?? 'Could not remove the apps from their folders.');
     },
     onSuccess: (response, variables) => {
       if (response?.blocked_ids?.length) return;

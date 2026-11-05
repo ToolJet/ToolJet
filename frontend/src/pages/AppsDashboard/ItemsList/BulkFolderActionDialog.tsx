@@ -42,9 +42,6 @@ interface FolderOption {
 
 const pluralize = (count: number, noun: string) => (count === 1 ? noun : `${noun}s`);
 
-// TODO: the bulk remove endpoint isn't defined yet, so Remove stays disabled (see DECISIONS.md).
-const IS_BULK_REMOVE_AVAILABLE = false;
-
 // Mounted by the selection bar, its only entry point, so it keeps its own state.
 // Move (Figma 1399-48713) and Remove (3403-55402) share the layout; a blocked response swaps in the list
 // of blocked apps (Figma 2251-178635) and offers to act on the rest.
@@ -90,7 +87,7 @@ export default function BulkFolderActionDialog({
 
   const isBlocked = blockedItems.length > 0;
   const visibleItems = items.filter((item) => rowIds.includes(`app:${item.id}`));
-  const isSubmitDisabled = isSubmitting || remainingCount === 0 || (isMove ? !targetFolder : !IS_BULK_REMOVE_AVAILABLE);
+  const isSubmitDisabled = isSubmitting || remainingCount === 0 || (isMove && !targetFolder);
 
   const verb = isMove ? 'move' : 'remove';
   const submitLabel = isBlocked

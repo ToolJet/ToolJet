@@ -17,7 +17,6 @@ import {
   ComboboxItem,
   ComboboxEmpty,
 } from '@/components/ui/Rocket/Combobox/Combobox';
-import { TruncatingText } from '@/components/ui/Rocket/Tooltip/TruncatedText';
 import { Field, FieldError, FieldDescription, FieldLabel } from '@/components/ui/Rocket/Field/Field';
 import {
   useAddAppToFolder,
@@ -31,7 +30,6 @@ import { useAppsStore } from '@/_stores/appsStore';
 import { useSearchStore } from '@/_stores/searchStore';
 import { authenticationService } from '@/_services/authentication.service';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
-import { useSearch } from '@/_hooks/useSearch';
 
 import ActionDialog from './ActionDialog';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';

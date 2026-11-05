@@ -144,7 +144,7 @@ export default function AppsDashboard({
     >
       <WorkspaceLockedBanner showNewBanner pageContext={`${appTypeToDisplayNameMapping[appType]}s`} />
 
-      <div className="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-4 tw-pt-10">
+      <main className="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-4 tw-pt-10">
         <PageHeader
           title={staticContentMappingByAppType[appType].title}
           description={staticContentMappingByAppType[appType].description}
@@ -171,7 +171,7 @@ export default function AppsDashboard({
             <NoAppsExist showContent appType={appType} {...staticContentMappingByAppType[appType].emptyState} />
           </>
         )}
-      </div>
+      </main>
 
       <Dialogs
         appType={appType}
