@@ -118,7 +118,7 @@ const LifecycleCTAButton = () => {
   // Only show on the draft version — saved/released versions are read-only and have no
   // commit or pull action to perform. "Sync" is the exception: it acts on the app's
   // default-branch draft regardless of which version is selected in the current environment.
-  if (selectedVersion && selectedVersion.status !== 'DRAFT' && !isUnsynced) {
+  if (selectedVersion && selectedVersion.status !== 'DRAFT' && !isUnsynced && isGitSyncConfigured) {
     return null;
   }
 
@@ -227,29 +227,43 @@ const LifecycleCTAButton = () => {
         />
       )}
       <div className="lifecycle-cta-button">
-        <ToolTip
-          message={config.unsynced ? 'App not synced in remote git' : ''}
-          placement="bottom"
-          show={config.unsynced}
-        >
-          <Button
-            variant={config.variant}
-            onClick={handleClick}
-            disabled={config.disabled}
-            data-tooltip-id="editor-header-tooltip"
-            data-tooltip-content={config.tooltip}
-            data-cy="lifecycle-cta-button"
-            style={config.unsynced ? { borderColor: '#E54D2E' } : undefined}
+        {!isGitSyncConfigured ? (
+          <ToolTip message="Configure Git: connect this workspace to a Git repository" placement="bottom">
+            <Button
+              variant="ghost"
+              iconOnly
+              onClick={handleClick}
+              aria-label="Configure Git"
+              data-cy="lifecycle-cta-button"
+            >
+              <SolidIcon fill="var(--icon-strong)" viewBox="0 0 16 16" name="commit" width="16" />
+            </Button>
+          </ToolTip>
+        ) : (
+          <ToolTip
+            message={config.unsynced ? 'App not synced in remote git' : ''}
+            placement="bottom"
+            show={config.unsynced}
           >
-            <SolidIcon
-              fill={config.unsynced ? '#E54D2E' : 'var(--icon-accent)'}
-              viewBox="0 0 16 16"
-              name={config.icon}
-              width="16"
-            />
-            <span>{config.label}</span>
-          </Button>
-        </ToolTip>
+            <Button
+              variant={config.variant}
+              onClick={handleClick}
+              disabled={config.disabled}
+              data-tooltip-id="editor-header-tooltip"
+              data-tooltip-content={config.tooltip}
+              data-cy="lifecycle-cta-button"
+              style={config.unsynced ? { borderColor: '#E54D2E' } : undefined}
+            >
+              <SolidIcon
+                fill={config.unsynced ? '#E54D2E' : 'var(--icon-accent)'}
+                viewBox="0 0 16 16"
+                name={config.icon}
+                width="16"
+              />
+              <span>{config.label}</span>
+            </Button>
+          </ToolTip>
+        )}
       </div>
     </>
   );
