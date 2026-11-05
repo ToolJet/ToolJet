@@ -6,6 +6,7 @@ import {
   MODULE_ID,
   setVariableOn,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { componentDefinition } from '@/test/app-builder';
 
 // Engineering scenarios for Calendar (react-big-calendar).
 // Contract: frontend/ee/test/app-builder/widgets/Calendar/TESTING.md.
@@ -36,14 +37,18 @@ const defaultProperties = {
   displayViewSwitcher: binding('{{true}}'),
   highlightToday: binding('{{true}}'),
   showPopOverOnEventClick: binding('{{false}}'),
+  // moved from styles to properties (Additional Actions, bug-fix batch 2026-10-27)
+  visibility: binding('{{true}}'),
+  tooltip: binding(''),
+  tooltipFormat: binding('plainText'),
 };
 
 const defaultStyles = {
-  visibility: binding('{{true}}'),
   cellSizeInViewsClassifiedByResource: binding('spacious'),
   weekDateFormat: binding('DD MMM'),
   borderColor: binding('var(--cc-weak-border)'),
   borderRadius: binding('{{6}}'),
+  boxShadow: binding('0px 0px 0px 0px #00000040'),
 };
 
 const widget = createWidgetHarness({
@@ -180,6 +185,43 @@ describe('Calendar widget', () => {
     expect(widget.variables().evtCount).toBe(1);
   });
 
+  test('[Calendar-EVENT-002] ISO-8601 event dates render and clicking publishes selectedEvent', async () => {
+    // Break this catches: prepareEvent parsing event dates ONLY with the widget
+    // dateFormat (Calendar.jsx:11-15) — an ISO string like 2026-10-23T09:00:00Z
+    // under 'MM-DD-YYYY' becomes Invalid Date, react-big-calendar silently drops
+    // the event, and selectedEvent can never be populated (QA bugs 1 + 4,
+    // 2026-10-27: "manually added events not reflected" / "selectedEvent empty").
+    widget.render({
+      properties: {
+        defaultDate: binding('10-23-2026'),
+        events: binding("{{[{ title: 'Quick Standup', start: '2026-10-23T09:00:00Z', end: '2026-10-23T09:15:00Z' }]}}"),
+      },
+    });
+    await waitCal();
+
+    await waitFor(() => expect(document.querySelector('.rbc-event')).toBeTruthy());
+    expect(document.body.textContent).toContain('Quick Standup');
+
+    await clickBtn(document.querySelector('.rbc-event'));
+    await waitFor(() => expect(exposed().selectedEvent?.title).toBe('Quick Standup'));
+    expect(Number.isNaN(new Date(exposed().selectedEvent.start).getTime())).toBe(false);
+  });
+
+  test('[Calendar-EVENT-003] a single event object (not an array) still renders', async () => {
+    // Break this catches: the Array.isArray(events) guard (Calendar.jsx:44-46)
+    // silently discarding a bare event object — QA's repro configures Events with
+    // one object, which renders nothing (bug 4 example shape, 2026-10-27).
+    widget.render({
+      properties: {
+        events: binding("{{({ title: 'Solo standup', start: '06-15-2022', end: '06-15-2022', allDay: true })}}"),
+      },
+    });
+    await waitCal();
+
+    await waitFor(() => expect(document.querySelector('.rbc-event')).toBeTruthy());
+    expect(document.body.textContent).toContain('Solo standup');
+  });
+
   test('[Calendar-DATE-001] currentDate honors a custom dateFormat', async () => {
     // Break this catches: not formatting currentDate with the widget dateFormat
     // (Calendar.jsx:96-98).
@@ -201,12 +243,53 @@ describe('Calendar widget', () => {
   });
 
   test('[Calendar-STYLE-001] visibility=false hides the root with display:none', async () => {
-    // Break this catches: dropping the visibility -> display:none mapping
-    // (Calendar.jsx:126).
-    widget.render({ styles: { visibility: binding('{{false}}') } });
+    // Break this catches: dropping the visibility -> display:none mapping or the
+    // properties.visibility read (Calendar.jsx) after the styles->properties move
+    // (bug-fix batch 2026-10-27).
+    widget.render({ properties: { visibility: binding('{{false}}') } });
     await waitFor(() => expect(calRoot()).toBeTruthy(), { timeout: 8000 });
 
     expect(calRoot()).toHaveStyle({ display: 'none' });
+  });
+
+  test('[Calendar-LEGACY-001] unmigrated styles-based visibility still applies', async () => {
+    // Break this catches: dropping the styles fallback (properties.visibility ??
+    // styles.visibility) the runtime keeps for definitions the data migration has
+    // not touched — old exports imported after this release would otherwise ignore
+    // their saved hidden state. The sibling is seeded WITHOUT registered defaults
+    // so the moved key is truly absent from properties, exactly like a
+    // pre-migration saved definition.
+    const LEGACY = 'calLegacy';
+    widget.render({
+      extraComponents: {
+        [LEGACY]: componentDefinition(
+          LEGACY,
+          'callegacy1',
+          'Calendar',
+          {
+            dateFormat: binding('MM-DD-YYYY'),
+            defaultDate: binding('06-15-2022'),
+            events: binding('{{[]}}'),
+            resources: binding('{{[]}}'),
+            defaultView: binding("{{'month'}}"),
+            displayToolbar: binding('{{true}}'),
+            displayViewSwitcher: binding('{{true}}'),
+            highlightToday: binding('{{true}}'),
+            showPopOverOnEventClick: binding('{{false}}'),
+          },
+          {
+            styles: { visibility: binding('{{false}}') },
+            seedFromRegisteredDefinition: false,
+          }
+        ),
+      },
+      also: [{ id: LEGACY, componentType: 'Calendar' }],
+    });
+
+    await waitFor(() => expect(document.querySelectorAll('.scrollbar-container')).toHaveLength(2), { timeout: 8000 });
+    const legacyRoot = document.getElementById(LEGACY);
+    expect(legacyRoot).toBeTruthy();
+    expect(legacyRoot).toHaveStyle({ display: 'none' });
   });
 
   test('[Calendar-STYLE-002] borderColor is applied to the root inline border', async () => {
@@ -254,6 +337,16 @@ describe('Calendar widget', () => {
 
     await clickBtn(toolbarBtn('Week'));
     await waitFor(() => expect(rbc().className).toContain('resources-week-cls'));
+  });
+
+  test('[Calendar-STYLE-007] boxShadow is applied to the root inline style', async () => {
+    // Break this catches: dropping the styles.boxShadow -> root inline box-shadow
+    // forwarding (Calendar.jsx) — registered in calendar.js since the 2026-10-27
+    // batch (required by the NewRevampedComponents import normalization).
+    widget.render({ styles: { boxShadow: binding('1px 2px 3px 0px #11223344') } });
+    await waitCal();
+
+    expect(calRoot().getAttribute('style')).toContain('box-shadow: 1px 2px 3px 0px #11223344');
   });
 
   test('[Calendar-TOOLBAR-001] displayToolbar=false removes the toolbar', async () => {

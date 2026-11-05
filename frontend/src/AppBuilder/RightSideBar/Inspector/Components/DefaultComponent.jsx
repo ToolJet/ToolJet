@@ -62,6 +62,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'PDF',
   'Spinner',
   'BoundedBox',
+  'Calendar',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -210,6 +211,8 @@ export const baseComponentProperties = (
       'ProgressBar',
       'AudioRecorder',
       'Camera',
+      'RichTextEditor',
+      'Calendar',
       'JSONExplorer',
       'JSONEditor',
       'IFrame',
