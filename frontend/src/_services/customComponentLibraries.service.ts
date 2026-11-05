@@ -14,9 +14,9 @@ export interface CustomComponentLibraryRevision {
   createdAt?: string;
 }
 
+// Who built a dev preview, by user id only: the list reaches every workspace member.
 export interface CustomComponentLibraryDevBundle {
   userId: string;
-  userEmail?: string;
 }
 
 export interface CustomComponentLibrary {
@@ -26,6 +26,8 @@ export interface CustomComponentLibrary {
   revisions: CustomComponentLibraryRevision[];
   devBundles?: CustomComponentLibraryDevBundle[];
   manifest?: LibraryManifest; // the latest revision's manifest, embedded so callers can skip a fetch for the common case
+  // Set when the list left that manifest's embedded source out; its manifest file still has it.
+  manifestSourceOmitted?: boolean;
 }
 
 function list(): Promise<CustomComponentLibrary[]> {
