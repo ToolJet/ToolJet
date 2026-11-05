@@ -84,3 +84,4 @@ export { buttonGroupV2Config } from './widgets/buttonGroupV2.js';
 export { flexContainerConfig } from './widgets/flexContainer.js';
 
 export { NEW_REVAMPED_COMPONENTS, universalProps, legacyUniversalProps, combineProperties } from './utils.js';
+export { MOVED_COMPONENT_KEYS } from './movedComponentKeys.js';

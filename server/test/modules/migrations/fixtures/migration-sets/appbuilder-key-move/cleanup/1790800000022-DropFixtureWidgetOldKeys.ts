@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { withShortLock } from '../../../../../../../src/migration-helpers/with-short-lock'; // migration-import-allowed: cleanup steps must go through the short-lock helper
-import { SVG_COPY_SET, SVG_NEEDS_COPY } from '../data/1790800000021-CopyFixtureWidgetKeys'; // migration-import-allowed: reruns the copy for late rows
+import { contractMovedKeys } from '../../../../../../../src/migration-helpers/component-key-moves'; // migration-import-allowed: drops the sync trigger, then the old keys in short steps
+import { SVG_IMAGE_MOVES, SVG_IMAGE_SYNC } from '../data/1790800000021-CopyFixtureWidgetKeys'; // migration-import-allowed: the moves this cleanup finishes
 
 // Verbatim the cleanup migration template in server/docs/APP_DEFINITION_MIGRATIONS.md; only the names differ.
 
@@ -9,21 +9,7 @@ export class DropFixtureWidgetOldKeys1790800000022 implements MigrationInterface
   requires = 'CopyFixtureWidgetKeys1790800000021';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await withShortLock(queryRunner, [
-      // Rows old code saved after the copy ran only have the old keys.
-      `UPDATE components SET ${SVG_COPY_SET} WHERE ${SVG_NEEDS_COPY}`,
-      // Each old key goes only where its new key exists.
-      `UPDATE components SET
-         styles = CASE WHEN COALESCE(properties::jsonb, '{}'::jsonb) ? 'visibility'
-                    THEN (styles::jsonb - 'visibility')::json ELSE styles END,
-         general_properties = CASE WHEN COALESCE(properties::jsonb, '{}'::jsonb) ? 'tooltip'
-                    THEN (general_properties::jsonb - 'tooltip')::json ELSE general_properties END,
-         general_styles = CASE WHEN COALESCE(styles::jsonb, '{}'::jsonb) ? 'boxShadow'
-                    THEN (general_styles::jsonb - 'boxShadow')::json ELSE general_styles END
-       WHERE type = 'SvgImage' AND (COALESCE(styles::jsonb, '{}'::jsonb) ? 'visibility'
-         OR COALESCE(general_properties::jsonb, '{}'::jsonb) ? 'tooltip'
-         OR COALESCE(general_styles::jsonb, '{}'::jsonb) ? 'boxShadow')`,
-    ]);
+    await contractMovedKeys(queryRunner, SVG_IMAGE_SYNC, SVG_IMAGE_MOVES);
   }
 
   public async down(): Promise<void> {

@@ -222,7 +222,8 @@ export const LEGACY_VARIANTS: ReadonlyMap<string, LegacyVariant> = new Map<strin
         // data. The SET NULL key goes in the same statement that makes branch_id required, so deleting a branch
         // never sets NULL into a required column. The CHECK rides this lock; cleanup validates both and its
         // setNotNull turns the CHECK into NOT NULL.
-        // ponytail: must stay the last beforeCommit() statement; a later data with a beforeCommit() would run under this lock.
+        // Must stay the last beforeCommit() statement: the runner runs this migration's step after every other one
+        // (collectBeforeCommitSteps), so no later step runs under this lock.
         run(
           "SET LOCAL lock_timeout = '2s'",
           `ALTER TABLE app_versions
