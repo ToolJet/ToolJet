@@ -28,7 +28,9 @@ async function resolveDefaultBranch(
   if (existing) return { id: existing.id, name: existing.name };
 
   logger.error(`No default branch found for org ${organizationId}; creating one as a fallback`);
-  return ensureDefaultBranch(manager, organizationId, 'main');
+  // Own transaction: the caller's manager may be a borrowed connection shared by parallel
+  // readers (AppsSubscriber.afterLoad), and a unique-violation here would abort its transaction.
+  return dbTransactionWrap((txManager: EntityManager) => ensureDefaultBranch(txManager, organizationId, 'main'));
 }
 
 // Look up a branch with the given name; promote it (clearing stale defaults on siblings)
@@ -94,7 +96,7 @@ export class GitSyncConfigsUtilService implements IGitSyncConfigsUtilService {
     _orgGitObj?: OrganizationGitSync,
     options: GetDetailsOptions = {}
   ): Promise<GitSyncDetails> {
-    const { isGitMandatory = false, isMultiBranchingMandatory = false } = options;
+    const { isGitMandatory = false, isMultiBranchingMandatory = false, manager: callerManager } = options;
     // Mandatory-git (or mandatory multi-branch, which requires git) callers expect git to be
     // enabled; on CE it never is, so surface the same 451 the EE license gate would. Non-mandatory
     // callers get the disabled shape, still carrying the org's default branch.
@@ -113,7 +115,7 @@ export class GitSyncConfigsUtilService implements IGitSyncConfigsUtilService {
         },
         orgGit: null,
       };
-    });
+    }, callerManager);
   }
 
   // Git sync is EE-only, so the community edition is never in a git-locked state.
