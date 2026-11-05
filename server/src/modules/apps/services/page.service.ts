@@ -26,6 +26,7 @@ import {
 } from '../interfaces/services/IPageService';
 import { RequestContext } from '@modules/request-context/service';
 import { TransactionLogger } from '@modules/logging/service';
+import { LicensePageService } from '@modules/licensing/interfaces/IService';
 import { AppValidationService } from '@modules/app-validation/service';
 import { lockForValidation } from '@modules/app-validation/lock';
 import { PageWrite } from '@modules/app-validation/types';
@@ -37,7 +38,8 @@ export class PageService implements IPageService {
     protected pageHelperService: PageHelperService,
     protected eventHandlerService: EventsService,
     protected readonly transactionLogger: TransactionLogger,
-    protected readonly appValidationService: AppValidationService
+    protected readonly appValidationService: AppValidationService,
+    protected readonly licensePageService: LicensePageService
   ) {}
 
   protected toPageWrite(op: 'create' | 'update', page: Page): PageWrite {
@@ -197,7 +199,9 @@ export class PageService implements IPageService {
         organizationId,
         manager,
       });
-      return await manager.save(Page, newPage);
+      const savedPage = await manager.save(Page, newPage);
+      await this.licensePageService.validatePages(manager, appVersionId, organizationId, !!savedPage.isPageGroup);
+      return savedPage;
     });
 
     const operationTimestamp = Date.now();
@@ -262,6 +266,7 @@ export class PageService implements IPageService {
       });
 
       clonedPage = await manager.save(newPage);
+      await this.licensePageService.validatePages(manager, appVersionId, organizationId, false);
 
       await this.clonePageEventsAndComponents(pageId, clonedPage.id, manager);
 

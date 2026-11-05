@@ -18,17 +18,30 @@ jest.mock('../../../../src/helpers/database.helper', () => ({
 
 import { RolesUtilService } from '../../../../src/modules/roles/util.service';
 import { ResourceType } from '../../../../src/modules/group-permissions/constants';
+import { LICENSE_FIELD } from '../../../../src/modules/licensing/constants';
 
-function makePermission(type: ResourceType, appPermission: { canEdit?: boolean; canView?: boolean } = {}) {
+function makePermission(
+  type: ResourceType,
+  appPermission: {
+    canEdit?: boolean;
+    canView?: boolean;
+    canAccessDevelopment?: boolean;
+    canAccessStaging?: boolean;
+    canAccessProduction?: boolean;
+  } = {}
+) {
   return {
     type,
     appsGroupPermissions: appPermission,
   } as any;
 }
 
-function makeService(getAllGranularPermissions: jest.Mock): RolesUtilService {
+function makeService(getAllGranularPermissions: jest.Mock, getLicenseTerms?: jest.Mock): RolesUtilService {
   const groupPermissionsRepository = { getAllGranularPermissions } as any;
-  return new RolesUtilService(groupPermissionsRepository, null as any, null as any);
+  const licenseTermsService = {
+    getLicenseTerms: getLicenseTerms ?? jest.fn(),
+  } as any;
+  return new RolesUtilService(groupPermissionsRepository, null as any, licenseTermsService);
 }
 
 describe('RolesUtilService.checkIfBuilderLevelResourcesPermissions', () => {
@@ -110,5 +123,49 @@ describe('RolesUtilService.checkIfBuilderLevelResourcesPermissions', () => {
     );
 
     await expect(service.checkIfBuilderLevelResourcesPermissions(groupId, organizationId)).resolves.toBeTruthy();
+  });
+});
+
+/**
+ * Unit tests for RolesUtilService.checkIfBuilderLevelEnvironmentPermissions:
+ * non-Released environment access (Development/Staging/Production) counts as builder-level
+ * only when the org lacks the `multiEnvironment` license (not `release`).
+ */
+describe('RolesUtilService.checkIfBuilderLevelEnvironmentPermissions', () => {
+  const groupId = 'group-uuid-1';
+  const organizationId = 'org-uuid-1';
+
+  it('returns falsy when a non-Released environment is granted and the org has the multi-environment license', async () => {
+    const getLicenseTerms = jest.fn().mockResolvedValue(true);
+    const service = makeService(
+      jest.fn().mockResolvedValue([makePermission(ResourceType.APP, { canAccessProduction: true })]),
+      getLicenseTerms
+    );
+
+    await expect(service.checkIfBuilderLevelEnvironmentPermissions(groupId, organizationId)).resolves.toBeFalsy();
+    expect(getLicenseTerms).toHaveBeenCalledWith(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId);
+  });
+
+  it('returns truthy when a non-Released environment is granted and the org lacks the multi-environment license', async () => {
+    const service = makeService(
+      jest.fn().mockResolvedValue([makePermission(ResourceType.APP, { canAccessDevelopment: true })]),
+      jest.fn().mockResolvedValue(false)
+    );
+
+    await expect(service.checkIfBuilderLevelEnvironmentPermissions(groupId, organizationId)).resolves.toBeTruthy();
+  });
+});
+
+// isEditableGroup ORs in the check above - one test locking in that branch is enough,
+// since checkIfBuilderLevelEnvironmentPermissions itself is already covered above.
+describe('RolesUtilService.isEditableGroup', () => {
+  it('returns truthy purely from the environment-permissions branch', async () => {
+    const service = makeService(
+      jest.fn().mockResolvedValue([makePermission(ResourceType.APP, { canAccessStaging: true })]),
+      jest.fn().mockResolvedValue(false)
+    );
+    const group = { id: 'group-uuid-2', isAll: false } as any;
+
+    await expect(service.isEditableGroup(group, 'org-uuid-1')).resolves.toBeTruthy();
   });
 });

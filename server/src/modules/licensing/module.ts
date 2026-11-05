@@ -1,7 +1,7 @@
 import { DynamicModule } from '@nestjs/common';
 import { UserRepository } from '@modules/users/repositories/repository';
 import { LicenseRepository } from './repository';
-import { LicenseInitService, LicenseTermsService } from './interfaces/IService';
+import { LicenseInitService, LicenseTermsService, LicensePageService } from './interfaces/IService';
 import { FeatureAbilityFactory } from './ability';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { SubModule } from '@modules/app/sub-module';
@@ -12,6 +12,7 @@ export class LicenseModule extends SubModule {
       LicenseService,
       LicenseUserService,
       LicenseAppsService,
+      LicensePageService: LicensePageServiceImport,
       LicenseCountsService,
       LicenseTermsService: LicenseTermsServiceImport,
       LicenseDecryptService,
@@ -26,10 +27,12 @@ export class LicenseModule extends SubModule {
       LicenseWorkflowsController,
       LicenseAppsController,
       LicenseOrganizationController,
+      LicensePagesController,
     } = await this.getProviders(configs, 'licensing', [
       'service',
       'services/user.service',
       'services/apps.service',
+      'services/pages.service',
       'services/count.service',
       'services/terms.service',
       'services/decrypt.service',
@@ -44,6 +47,7 @@ export class LicenseModule extends SubModule {
       'controllers/workflows.controller',
       'controllers/apps.controller',
       'controllers/organization.controller',
+      'controllers/pages.controller',
     ]);
 
     return {
@@ -67,6 +71,10 @@ export class LicenseModule extends SubModule {
         LicenseOrganizationService,
         LicenseUtilService,
         LicenseAppsService,
+        {
+          provide: LicensePageService,
+          useClass: LicensePageServiceImport,
+        },
         LicenseDecryptService,
         LicenseWorkflowsService,
         FeatureAbilityFactory,
@@ -80,6 +88,7 @@ export class LicenseModule extends SubModule {
         LicenseWorkflowsController,
         LicenseOrganizationController,
         LicenseAppsController,
+        LicensePagesController,
       ],
       exports: [
         LicenseUserService,
@@ -87,6 +96,7 @@ export class LicenseModule extends SubModule {
         LicenseTermsService,
         LicenseCountsService,
         LicenseUtilService,
+        LicensePageService,
         LicenseInitService,
         LicenseDecryptService,
       ],

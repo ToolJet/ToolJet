@@ -105,9 +105,15 @@ export class EmailUtilService implements IEmailUtilService {
     });
   }
 
-  async sendEmail(to: string | string[], subject: string, templateData: any) {
+  async sendEmail(to: string | string[], subject: string, templateData: any, cc?: string | string[]) {
     if (!to) {
       return;
+    }
+
+    // Callers that use EmailUtilService directly (bypassing EmailService, which always calls init()
+    // first) would otherwise hit this.SMTP as undefined on a freshly started process.
+    if (!this.SMTP) {
+      await this.init();
     }
 
     // Filter out test emails if configured
@@ -143,6 +149,7 @@ export class EmailUtilService implements IEmailUtilService {
     // Define the email options
     const mailOptions = {
       to,
+      ...(cc ? { cc } : {}),
       subject,
       html: htmlToSend,
       from: `"${this.WHITE_LABEL_TEXT}" <${this.SMTP[INSTANCE_SYSTEM_SETTINGS.SMTP_FROM_EMAIL]}>`,
@@ -273,6 +280,32 @@ export class EmailUtilService implements IEmailUtilService {
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
     });
+  }
+
+  async sendSelfhostLicensePurchaseEmail(to: string, name: string) {
+    if (!to) {
+      return;
+    }
+    const subject = 'Action needed - one thing we need before your license is ready';
+    const templateData = {
+      name: name || '',
+      whiteLabelText: DEFAULT_WHITE_LABELLING_SETTINGS.white_label_text,
+      whiteLabelLogo: DEFAULT_WHITE_LABELLING_SETTINGS.white_label_logo,
+    };
+    const templatePath = 'selfhost_license_purchase.hbs';
+    const htmlEmailContent = this.compileTemplate(templatePath, templateData);
+
+    return await this.sendEmail(
+      to,
+      subject,
+      {
+        bodyContent: htmlEmailContent,
+        footerText: 'You have received this email because you purchased a self-hosted ToolJet license',
+        whiteLabelText: DEFAULT_WHITE_LABELLING_SETTINGS.white_label_text,
+        whiteLabelLogo: DEFAULT_WHITE_LABELLING_SETTINGS.white_label_logo,
+      },
+      ['souvik@tooljet.com', 'manpreet@tooljet.com', 'adish@tooljet.com']
+    );
   }
 
   async sendPaymentConfirmationEmail(to: string, firstName: string, invoiceLink: string, amount: string) {
