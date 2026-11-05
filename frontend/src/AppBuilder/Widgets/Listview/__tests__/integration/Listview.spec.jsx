@@ -1328,6 +1328,30 @@ describe('Listview: row layout', () => {
     expect(rows()[0].style.width).toBe('50%');
   });
 
+  test.each([
+    ['a plain number', 2],
+    ['a plain string', '2'],
+    ['an expression', '{{2}}'],
+  ])('[Listview-COMPAT-004] a Number of columns saved as %s still divides the grid', async (_label, saved) => {
+    // Break this catches: the code-field control reading only {{...}}, which would break a list saved by the old number control.
+    await mount({ properties: { mode: binding('grid'), columns: { value: saved } } });
+
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    expect(rows()[0].style.width).toBe('50%');
+  });
+
+  test.each([
+    ['a plain number', 9],
+    ['a plain string', '9'],
+    ['an expression', '{{9}}'],
+  ])('[Listview-COMPAT-004] a Border radius saved as %s still rounds the list', async (_label, saved) => {
+    // Break this catches: the number-input control's value shape reaching the runtime, which would square saved lists.
+    await mount({ styles: { borderRadius: { value: saved } } });
+
+    await waitFor(() => expect(rows()).toHaveLength(3));
+    expect(container().style.borderRadius).toBe('9px');
+  });
+
   test('[Listview-ROW-003] a column count below 1 is clamped to a single column', async () => {
     // Break this catches: removing the clamp, so a binding that resolves to 0
     // divides by zero and renders zero-width (invisible) rows.
