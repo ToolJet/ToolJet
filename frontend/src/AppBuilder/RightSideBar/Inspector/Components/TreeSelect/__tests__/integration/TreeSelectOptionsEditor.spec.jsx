@@ -8,8 +8,8 @@ import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AppBuilderTestSession, defineAppBuilderScenario } from '@/test/app-builder';
-import TreeSelectOptionsList from '../components/TreeSelectOptionsList';
-import { useTreeSelectItemsManager } from '../hooks/useTreeSelectItemsManager';
+import TreeSelectOptionsList from '../../components/TreeSelectOptionsList';
+import { useTreeSelectItemsManager } from '../../hooks/useTreeSelectItemsManager';
 import useStore from '@/AppBuilder/_stores/store';
 
 const scenario = defineAppBuilderScenario({

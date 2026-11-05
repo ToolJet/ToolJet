@@ -8,7 +8,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AppBuilderTestSession, defineAppBuilderScenario } from '@/test/app-builder';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
-import { TreeSelectSchemaField } from '../components/TreeSelectSchemaField';
+import { TreeSelectSchemaField } from '../../components/TreeSelectSchemaField';
 import useStore from '@/AppBuilder/_stores/store';
 
 const scenario = defineAppBuilderScenario({
