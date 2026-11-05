@@ -18,3 +18,7 @@ export const useCodeAppNavigation =
   ee.useNavigation ??
   (() => ({ path: '/', routes: [], match: () => null, navigate: noop, back: noop, pages: [], goToPage: noop }));
 export const useCodeAppTheme = ee.useTheme ?? (() => ({ mode: 'light' }));
+// The people who can open the app (EE). Without it, an empty list that never loads.
+export const useCodeAppWorkspaceUsers =
+  ee.useWorkspaceUsers ??
+  (() => ({ data: [], isLoading: false, error: null, hasMore: false, refetch: async () => [] }));

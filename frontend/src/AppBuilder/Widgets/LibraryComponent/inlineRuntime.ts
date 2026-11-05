@@ -13,6 +13,7 @@ import {
   useCodeAppNavigation,
   useCodeAppQuery,
   useCodeAppTheme,
+  useCodeAppWorkspaceUsers,
 } from './runtimeExtensions';
 
 /* POC: run a published custom-component bundle in the host page instead of the sandboxed shell iframe.
@@ -349,6 +350,8 @@ export const toolJetSdk = {
   useQuery: (name: string) => useCodeAppQuery(name),
   useGlobals: () => useCodeAppGlobals(),
   useTheme: () => useCodeAppTheme(),
+  useWorkspaceUsers: (options?: { search?: string; limit?: number; offset?: number }) =>
+    useCodeAppWorkspaceUsers(options),
   useNavigation: function useTjNavigation() {
     const instance = React.useContext(LibraryInstanceContext);
     return useCodeAppNavigation(instance?.props);
