@@ -56,10 +56,6 @@ ToolJet’s REST API data source supports OAuth 2.0 as the authentication type. 
 - **Authorization Code Grant Type**: This grant type is used by confidential and public clients to exchange an authorization code for an access token.
 - **Client Credentials Grant Type**: This grant type is used by clients to obtain an access token outside of the context of a user.
 
-:::caution
-The **Grant type** dropdown also lists **Authorization code with PKCE**, but ToolJet doesn't send a code challenge or code verifier for it, so the flow doesn't work with providers that require PKCE. Use **Authorization code** or **Client credentials**.
-:::
-
 ### Setting up Google Cloud Platform
 
 :::info
