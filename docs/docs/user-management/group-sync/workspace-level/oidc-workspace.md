@@ -43,7 +43,8 @@ To set up OIDC group synchronization in ToolJet follow these steps:
 3. Setup the OpenID Connect SSO by following this [guide](/docs/user-management/sso/oidc/setup).
 4. Enable the **Group Sync** toggle and provide the following information:
 
-  - **Claim name**: Enter the name of the claim in the OIDC token that contains group information (e.g., groups).
+  - **Claim name**: Enter the name of the claim in the OIDC token that contains group information (e.g., `groups`). For a [nested claim](#nested-group-claims), enter its dot path, such as `custom_attributes.groups`.
+  - **Delimiter**: Enter the character that separates group names when the claim is [sent as a single string](#group-claims-sent-as-a-string) (e.g., `,` or `;`). Enter `space` for a single space. Leave it empty for array claims.
   - **Group mapping**: Configure how IdP groups map to ToolJet groups. Use the format:
     ```
     IdP Group -> ToolJet Group, Another IdP Group -> Another ToolJet Group
@@ -55,6 +56,50 @@ To set up OIDC group synchronization in ToolJet follow these steps:
 
    <img className="screenshot-full img-full" src="/img/user-management/group-sync/oidc/mapping.png" alt="OIDC Group Sync Config" />
 
+## Group Claims Sent as a String
+
+Most identity providers send groups as an array, such as `["engineering", "marketing"]`. Some send them as a single string instead, such as `"engineering,marketing"`. To sync groups from a string claim, set the **Delimiter** field to the character that separates the group names.
+
+| Claim value | Delimiter | Groups synced |
+|-------------|-----------|---------------|
+| `["engineering", "marketing"]` | Empty | **engineering**, **marketing** |
+| `"engineering,marketing"` | `,` | **engineering**, **marketing** |
+| `"engineering; marketing"` | `;` | **engineering**, **marketing** |
+| `"engineering marketing"` | `space` | **engineering**, **marketing** |
+| `"engineering,marketing"` | Empty | None |
+| `["engineering", "marketing"]` | `,` | None |
+
+ToolJet trims spaces around each group name and drops empty or duplicate entries. It checks the user info response, then the ID token, then the access token, and uses the first claim in the expected format.
+
+### Set the Delimiter with an Environment Variable
+
+On self-hosted ToolJet, the delimiter can also be set with the `OIDC_GROUPS_DELIMITER` environment variable. When set, it overrides the **Delimiter** field in every OIDC group sync configuration on the instance.
+
+```
+OIDC_GROUPS_DELIMITER=,
+```
+
+:::note
+If the delimiter isn't picked up from the environment variable, wrap the value in quotes, such as `OIDC_GROUPS_DELIMITER="#"`. The **Delimiter** field in the UI doesn't need quotes.
+:::
+
+## Nested Group Claims
+
+Some identity providers send the groups claim inside another object instead of at the top level of the token:
+
+```json
+{
+  "custom_attributes": {
+    "groups": "engineering,marketing"
+  }
+}
+```
+
+To read a nested claim, enter its dot path in **Claim name**, such as `custom_attributes.groups`. If the nested value is a string, also set the **Delimiter** field as described in [Group Claims Sent as a String](#group-claims-sent-as-a-string).
+
+- A top-level claim named exactly `custom_attributes.groups` takes priority over the nested path.
+- If any part of the path is missing, no groups are synced from the claim.
+
 ## Custom Scopes
 
 OIDC providers often allow requesting additional custom scopes beyond the standard ones. These scopes define what information or permissions an application can access, such as groups, roles, or directory access permissions. 
@@ -62,10 +107,17 @@ ToolJet includes the following scopes by default:
 ```
 OIDC_CUSTOM_SCOPES=openid, email, profile
 ```
-When group synchronization is enabled and no custom scopes are configured, ToolJet automatically adds:
+ToolJet automatically adds the `groups` scope when all of the following are true:
+
+- Group synchronization is enabled.
+- No custom scopes are configured.
+- The identity provider supports `groups`: it lists the scope under `scopes_supported` in its discovery document, or publishes no `scopes_supported` list.
+
 ```
 OIDC_CUSTOM_SCOPES=groups
 ```
+
+This prevents a login from failing at identity providers that don't support the `groups` scope.
 
 ### Configuration
 
