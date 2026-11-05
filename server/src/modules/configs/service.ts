@@ -81,6 +81,9 @@ export class ConfigService implements IConfigService {
       'TOOLJET_DB_DISABLE_BUILDER_EDIT',
       // ESM CDN the editor's in-browser build fetches packages from (default esm.sh); set a mirror when offline.
       'CODE_MODE_CDN_URL',
+      'CODE_MODE_ISOLATION',
+      'CODE_MODE_SANDBOX_URL',
+      'CODE_MODE_STRICT_BINDINGS',
     ];
   }
 

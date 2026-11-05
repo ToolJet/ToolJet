@@ -291,6 +291,36 @@ async function fetchCustomDomainOrigins(
 }
 
 /**
+ * What the enterprise edition serves ahead of every other middleware, on hosts and paths of its own. It has to come before
+ * session handling and helmet, whose headers don't apply there. Nothing happens on an edition without it.
+ */
+export async function setupEditionEarlyRoutes(app: NestExpressApplication, configService: ConfigService, logger: any) {
+  let middleware;
+  try {
+    const importPath = await getImportPath();
+    const { codeFrameMiddleware } = await import(`${importPath}/code-page-security/frame-route`);
+    middleware = codeFrameMiddleware({
+      isolation: configService.get<string>('CODE_MODE_ISOLATION'),
+      sandboxUrl: configService.get<string>('CODE_MODE_SANDBOX_URL'),
+      tooljetHost: configService.get<string>('TOOLJET_HOST'),
+      subPath: configService.get<string>('SUB_PATH'),
+      allowedParents: async () => {
+        const tooljetHost = configService.get<string>('TOOLJET_HOST')?.replace(/\/+$/, '');
+        const custom =
+          configService.get<string>('ENABLE_CUSTOM_DOMAINS') === 'true'
+            ? await fetchCustomDomainOrigins(app.get<DataSource>(DataSource), logger, tryGetCacheService(app) ?? undefined)
+            : [];
+        return [tooljetHost, ...custom].filter(Boolean);
+      },
+      logger,
+    });
+  } catch {
+    return;
+  }
+  app.use(middleware);
+}
+
+/**
  * Middleware that validates the Origin header on mutation requests when custom domains are enabled.
  *
  * With custom domains, cookies must use SameSite=None, which means any site can send
