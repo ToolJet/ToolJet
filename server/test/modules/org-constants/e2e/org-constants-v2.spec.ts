@@ -360,6 +360,14 @@ describe('OrgConstantsControllerV2', () => {
       await send('post', '', adminCookie, body({ values: [{ environment_id, value: 'x'.repeat(10001) }] })).expect(400);
     });
 
+    it('should reject more than 50 values', async () => {
+      const values = Array.from({ length: 51 }, () => ({ environment_id: uuidv4(), value: 'v' }));
+
+      const response = await send('post', '', adminCookie, body({ values })).expect(400);
+
+      expect(response.body.message).toContain('values must contain no more than 50 elements');
+    });
+
     it('should reject users without constant permission', async () => {
       await send('post', '', developerCookie, body()).expect(403);
     });
@@ -409,6 +417,14 @@ describe('OrgConstantsControllerV2', () => {
 
     it('should reject an empty values list', async () => {
       await send('patch', `/${apiUrlId}`, adminCookie, { values: [] }).expect(400);
+    });
+
+    it('should reject more than 50 values', async () => {
+      const values = Array.from({ length: 51 }, () => ({ environment_id: uuidv4(), value: 'v' }));
+
+      const response = await send('patch', `/${apiUrlId}`, adminCookie, { values }).expect(400);
+
+      expect(response.body.message).toContain('values must contain no more than 50 elements');
     });
 
     it('should reject users without constant permission', async () => {
