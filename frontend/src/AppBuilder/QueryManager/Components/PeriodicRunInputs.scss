@@ -1,0 +1,20 @@
+.periodic-run-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 16px;
+
+  .periodic-run-fx-input {
+    padding-left: 32px;
+    width: 100%;
+    max-width: 715px;
+    box-sizing: border-box;
+  }
+
+  .periodic-run-interval-row {
+    display: flex;
+    align-items: center;
+    padding-left: 34px;
+    gap: 5px;
+  }
+}
