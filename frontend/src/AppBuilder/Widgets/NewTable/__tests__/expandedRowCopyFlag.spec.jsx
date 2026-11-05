@@ -5,7 +5,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import SubcontainerContext from '@/AppBuilder/_contexts/SubcontainerContext';
-import { ExpandedRowContainer } from '../../_components/TableData/_components/ExpandedRowContainer';
+import { ExpandedRowContainer } from '../_components/TableData/_components/ExpandedRowContainer';
 
 jest.mock('@/AppBuilder/AppCanvas/Container', () => {
   const mockReact = require('react');
