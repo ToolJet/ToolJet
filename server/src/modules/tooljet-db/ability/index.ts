@@ -51,9 +51,10 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const isUserLoggedin = !isEmpty(requestContext.user) && !isEmpty(organizationId);
     const orgMismatch = !isEmpty(dataQuery) && dataQuery?.app?.organizationId !== organizationId;
 
-    // Instance-wide switch: only admins may change ToolJet Database schema, regardless of group permissions.
-    // Row access through the proxy is deliberately untouched: app code (e.g. RunJS) calls it for every user.
+    // Instance-wide switch: only admins may modify ToolJet Database, regardless of group permissions.
     const isEditRestrictedToAdmins = process.env.TOOLJET_DB_DISABLE_BUILDER_EDIT === 'true' && !(superAdmin || isAdmin);
+    // App queries reach PostgREST in-process and never pass this guard, so any proxy write here is a direct API call.
+    const isBlockedProxyWrite = isEditRestrictedToAdmins && requestContext.method !== 'GET';
 
     if (superAdmin || isAdmin || (userPermission.tjdbCRUD && !isEditRestrictedToAdmins)) {
       can(
@@ -79,7 +80,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
 
-    if (isUserLoggedin && (isAdmin || isBuilder || !orgMismatch)) {
+    if (isUserLoggedin && (isAdmin || isBuilder || !orgMismatch) && !isBlockedProxyWrite) {
       //For logged in users only with valid organization and data query, allow proxy postgrest feature
       can([FEATURE_KEY.PROXY_POSTGREST], InternalTable);
     }
