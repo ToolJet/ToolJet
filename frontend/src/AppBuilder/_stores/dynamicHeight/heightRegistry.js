@@ -1,4 +1,4 @@
-import { scheduleMeasuredHeights } from './scheduler';
+import { expectMeasurement, measurementArrived, scheduleMeasuredHeights } from './scheduler';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Height registry — one ResizeObserver for every content-sized widget.
@@ -20,6 +20,7 @@ const handleResize = (entries) => {
   for (const entry of entries) {
     const widget = entry.target[WIDGET];
     if (!widget) continue;
+    measurementArrived(widget.key);
     const size = entry.borderBoxSize?.[0]?.blockSize ?? entry.target.offsetHeight;
     const height = Math.round(size);
     // 0 means the widget sits in a hidden tab, closed modal or collapsed
@@ -38,11 +39,13 @@ const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(hand
 export const observeHeight = (element, widget) => {
   if (!observer || !element) return;
   element[WIDGET] = widget;
+  expectMeasurement(widget.key);
   observer.observe(element);
 };
 
 export const unobserveHeight = (element, key) => {
   lastHeights.delete(key);
+  measurementArrived(key);
   if (!observer || !element) return;
   observer.unobserve(element);
   delete element[WIDGET];

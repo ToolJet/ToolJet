@@ -1,6 +1,10 @@
 import { scheduleMeasuredHeights } from '../scheduler';
 
-jest.mock('../scheduler', () => ({ scheduleMeasuredHeights: jest.fn() }));
+jest.mock('../scheduler', () => ({
+  scheduleMeasuredHeights: jest.fn(),
+  expectMeasurement: jest.fn(),
+  measurementArrived: jest.fn(),
+}));
 
 let reportSizes;
 global.ResizeObserver = class {

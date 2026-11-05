@@ -8,7 +8,24 @@ const pendingFullModules = new Set();
 let frame = null;
 let storeGet = null;
 
+// Widgets the height registry has started observing but that have not reported
+// a size yet. A pass waits for them (a few frames at most), so a container
+// that just mounted is sized once from real heights instead of from defaults
+// and again a frame later.
+const awaitingMeasurement = new Set();
+const MAX_MEASUREMENT_WAIT_FRAMES = 3;
+let waitedFrames = 0;
+
+export const expectMeasurement = (key) => awaitingMeasurement.add(key);
+export const measurementArrived = (key) => awaitingMeasurement.delete(key);
+
 const flush = () => {
+  if (awaitingMeasurement.size > 0 && waitedFrames < MAX_MEASUREMENT_WAIT_FRAMES) {
+    waitedFrames += 1;
+    frame = requestAnimationFrame(flush);
+    return;
+  }
+  waitedFrames = 0;
   frame = null;
   const requests = [...pendingRequests.values()];
   const measuredHeights = new Map(pendingHeights);
