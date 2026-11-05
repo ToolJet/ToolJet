@@ -1,13 +1,13 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import Checkbox from '@/components/ui/Checkbox/Index';
+import { CustomToggleSwitch } from './CustomToggleSwitch';
 
 // Revealed directly under the "Run this query periodically" toggle.
 // When fx is active, shows the expression editor for the toggle value itself
 // (stored as a string in options.runPeriodically). The time interval is in
 // milliseconds and supports fx (resolved + clamped to a safe minimum at runtime).
-export default function PeriodicRunInputs({ options, optionchanged }) {
+export default function PeriodicRunInputs({ options, darkMode, optionchanged }) {
   const { t } = useTranslation();
   const fxMode = !!options?.runPeriodicallyFx;
   const toggleOn = !fxMode && !!options?.runPeriodically;
@@ -59,11 +59,15 @@ export default function PeriodicRunInputs({ options, optionchanged }) {
         </div>
       </div>
       <div data-param="runPeriodicallyInBackground" className="tw-pl-[34px]">
-        <Checkbox
-          checked={!!options?.runPeriodicallyInBackground}
-          onCheckedChange={(checked) => optionchanged('runPeriodicallyInBackground', !!checked)}
+        <CustomToggleSwitch
+          action="runPeriodicallyInBackground"
+          dataCy="run-periodically-in-background"
+          isChecked={!!options?.runPeriodicallyInBackground}
+          toggleSwitchFunction={() =>
+            optionchanged('runPeriodicallyInBackground', !options?.runPeriodicallyInBackground)
+          }
+          darkMode={darkMode}
           label={t('editor.queryManager.runInInactiveTabs', 'Keep running when the browser tab is inactive')}
-          data-cy="run-periodically-in-background-checkbox"
         />
       </div>
     </div>
