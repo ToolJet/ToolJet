@@ -106,6 +106,51 @@ describe('run query periodically', () => {
     expect(didRun()).toBe(false);
   });
 
+  describe('when the toggle turns off or the interval becomes invalid', () => {
+    // What a changing fx value or an option edit looks like to the timer.
+    const setOptions = (query, options) =>
+      state().dataQuery.setQueries([{ ...query, options: { ...query.options, ...options } }], 'canvas');
+
+    test('polling idles, then resumes without another run once the toggle is back on', () => {
+      const query = seedPeriodicQuery();
+
+      setOptions(query, { runPeriodically: false });
+      jest.advanceTimersByTime(3000);
+      expect(didRun()).toBe(false);
+
+      setOptions(query, { runPeriodically: true });
+      jest.advanceTimersByTime(1000);
+      expect(didRun()).toBe(true);
+    });
+
+    test('polling idles, then resumes once an invalid interval is fixed', () => {
+      const query = seedPeriodicQuery();
+
+      setOptions(query, { queryRunInterval: 'not a number' });
+      jest.advanceTimersByTime(3000);
+      expect(didRun()).toBe(false);
+
+      setOptions(query, { queryRunInterval: 1000 });
+      jest.advanceTimersByTime(1000);
+      expect(didRun()).toBe(true);
+    });
+
+    test('an editor edit turning it back on restarts the clock from the edit', () => {
+      const query = seedPeriodicQuery();
+
+      setOptions(query, { runPeriodically: false });
+      jest.advanceTimersByTime(1500); // the tick at 1000ms idles
+
+      setOptions(query, { runPeriodically: true });
+      reconcileQueryPeriodicRun(query.id, 'canvas', state, { allowStart: false });
+
+      jest.advanceTimersByTime(999);
+      expect(didRun()).toBe(false); // the idle check that was due at 2000ms was replaced
+      jest.advanceTimersByTime(1);
+      expect(didRun()).toBe(true);
+    });
+  });
+
   describe('in an inactive browser tab', () => {
     let hidden;
     beforeEach(() => {

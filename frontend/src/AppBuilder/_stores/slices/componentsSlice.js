@@ -117,7 +117,7 @@ const hasObjectEntry = (items) => items.some((item) => item && typeof item === '
 // Periodic query re-runs ("Run this query periodically" query setting).
 // Unlike the dependency-change debounce above, these are long-lived timers that
 // survive page navigation (a health-check query keeps polling) and are only torn
-// down on full app teardown, query delete, toggle-off, or pause.
+// down on full app teardown, query delete, auto-pause after failures, or pause (toggle-off idles them).
 // Per product: "time to the next run is always calculated from the last run." So
 // these are self-re-arming one-shot setTimeouts (NOT a fixed-rate setInterval):
 // every run of the query — manual, event, page/app load, or a periodic tick —
@@ -142,7 +142,7 @@ function runMissedPeriodicTicks() {
   missedWhileHidden.forEach((queryId) => {
     const entry = queryPeriodicTimers.get(queryId);
     // Fire the tick now; it re-arms itself with the real interval.
-    if (entry) armPeriodicTimer(queryId, entry.moduleId, 0, entry.getStore);
+    if (entry) armPeriodicTimer(queryId, entry.moduleId, entry.intervalMs, entry.getStore, { delayMs: 0 });
   });
   missedWhileHidden.clear();
 }
@@ -191,7 +191,9 @@ function resolvePeriodicConfig(query, moduleId, store) {
 // Arm (or re-arm) the one-shot timer that runs the query once, `intervalMs` from now.
 // The tick re-arms itself, so the chain continues; re-resolving config each tick lets a
 // changed fx interval / toggle-off take effect without an explicit reconcile.
-function armPeriodicTimer(queryId, moduleId, intervalMs, getStore) {
+// `idle` marks a chain whose toggle/fx is off or interval invalid: it keeps checking at the last
+// valid interval without running, so re-enabling or fixing it resumes polling with no extra run.
+function armPeriodicTimer(queryId, moduleId, intervalMs, getStore, { delayMs = intervalMs, idle = false } = {}) {
   // Idempotent: clear any pending timer before scheduling (avoids HMR/re-run dupes and
   // resets the clock when a fresh run re-anchors the next tick).
   if (queryPeriodicTimers.has(queryId)) {
@@ -206,7 +208,7 @@ function armPeriodicTimer(queryId, moduleId, intervalMs, getStore) {
     }
     const { shouldRun, intervalMs: nextMs, invalid } = resolvePeriodicConfig(query, moduleId, store);
     if (!shouldRun || invalid) {
-      clearPeriodicTimer(queryId);
+      armPeriodicTimer(queryId, moduleId, intervalMs, getStore, { idle: true });
       return;
     }
     // Re-arm BEFORE running so the chain survives even when this tick skips the run.
@@ -232,8 +234,8 @@ function armPeriodicTimer(queryId, moduleId, intervalMs, getStore) {
     )
       .then((result) => recordPeriodicRunResult(query, moduleId, getStore(), result?.status))
       .catch(() => recordPeriodicRunResult(query, moduleId, getStore(), 'failed'));
-  }, intervalMs);
-  queryPeriodicTimers.set(queryId, { timeoutId, intervalMs, moduleId, getStore });
+  }, delayMs);
+  queryPeriodicTimers.set(queryId, { timeoutId, intervalMs, moduleId, getStore, idle });
   if (!visibilityListenerAdded) {
     document.addEventListener('visibilitychange', runMissedPeriodicTicks);
     visibilityListenerAdded = true;
@@ -285,8 +287,9 @@ export function reconcileQueryPeriodicRun(queryId, moduleId, getStore, { allowSt
   const { shouldRun, intervalMs, invalid, rawInterval } = resolvePeriodicConfig(query, moduleId, store);
   const existing = queryPeriodicTimers.get(queryId);
   if (!shouldRun || invalid) {
-    // Toggle off, or the interval is invalid → ensure no timer runs. Warn once, only
-    // on a genuine start attempt (a real run with no timer yet) — never on edits/ticks.
+    // Toggle off, or the interval is invalid → no runs. Warn once, only on a genuine start
+    // attempt (a real run with no timer yet) — never on edits/ticks. An existing chain goes
+    // idle rather than stopping, so turning it back on / fixing the interval resumes it.
     if (invalid && allowStart && !existing) {
       // eslint-disable-next-line no-console
       console.warn(
@@ -295,7 +298,7 @@ export function reconcileQueryPeriodicRun(queryId, moduleId, getStore, { allowSt
         }" has an invalid time interval (${rawInterval}); periodic run not started.`
       );
     }
-    clearPeriodicTimer(queryId);
+    if (existing) existing.idle = true;
     return;
   }
   if (allowStart) {
@@ -304,9 +307,9 @@ export function reconcileQueryPeriodicRun(queryId, moduleId, getStore, { allowSt
     armPeriodicTimer(queryId, moduleId, intervalMs, getStore);
     return;
   }
-  // Editor option edit: never start a timer for an unrun query; only re-anchor an
-  // already-running one when the resolved interval actually changed.
-  if (existing && existing.intervalMs !== intervalMs) {
+  // Editor option edit: never start a timer for an unrun query; restart an idle one that was
+  // just turned back on, or re-anchor a running one whose resolved interval changed.
+  if (existing && (existing.idle || existing.intervalMs !== intervalMs)) {
     armPeriodicTimer(queryId, moduleId, intervalMs, getStore);
   }
 }

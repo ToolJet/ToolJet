@@ -484,7 +484,7 @@ export const createDataQuerySlice = (set, get) => ({
       });
 
       // Reconcile an already-running periodic timer with the edited options
-      // (interval change → restart, toggle off → stop). allowStart:false so editing
+      // (interval change or toggled back on → restart, toggle off → idle). allowStart:false so editing
       // options never starts a timer for a query that hasn't been run yet.
       reconcileQueryPeriodicRun(selectedQuery.id, moduleId, get, { allowStart: false });
 
