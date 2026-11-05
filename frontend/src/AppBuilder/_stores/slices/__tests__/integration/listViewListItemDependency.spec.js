@@ -162,7 +162,7 @@ describe('which reference shapes register a listItem dependency', () => {
     // accepted cost of that; its spaced form is covered by the whitespace boundary.
     ['prose ending in a question mark', '{{"have you picked a listItem?"}}'],
     ['an unspaced ternary', '{{listItem?a:b}}'],
-  ])('%s is not a reference', (_label, expression) => {
+  ])('[Listview-BUG-053] %s is not a reference', (_label, expression) => {
     expect(refsFor(expression)).toEqual([]);
   });
 
@@ -174,7 +174,7 @@ describe('which reference shapes register a listItem dependency', () => {
     ['whitespace padding', '{{ listItem }}'],
     ['a property access', '{{listItem.name}}'],
     ['an index', '{{listItem[0]}}'],
-  ])('%s IS a reference', (_label, expression) => {
+  ])('[Listview-BUG-053] %s IS a reference', (_label, expression) => {
     expect(refsFor(expression)).toEqual([{ entityType: 'components', entityNameOrId: LV, entityKey: 'listItem' }]);
   });
 });

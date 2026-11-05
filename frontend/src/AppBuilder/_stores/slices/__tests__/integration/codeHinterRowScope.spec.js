@@ -74,7 +74,11 @@ describe('Autocomplete for components stored per row', () => {
   test('[Listview-BUG-055] a nested row offers its own listItem fields', () => {
     // Break this catches: the hint builder reading a nested list's row group (an array) as one row,
     // so no `listItem` hints appear inside a nested list.
-    expect(hintNames(useStore.getState().getContextHints(INNER_TEXT, 'canvas'))).toContain('listItem.name');
+    const hints = hintNames(useStore.getState().getContextHints(INNER_TEXT, 'canvas'));
+
+    expect(hints).toContain('listItem.name');
+    // The nearest list shadows the outer one, whose record has no `name`.
+    expect(hints).not.toContain('listItem["First Name"]');
   });
 });
 
@@ -104,5 +108,7 @@ describe('Autocomplete inserts valid code', () => {
     expect(hints).toContain('listItem["First Name"]');
     expect(hints).toContain('listItem.tags');
     expect(hints).not.toContain('listItem.First Name');
+    expect(hints).toContain('listItem.tags[0]');
+    expect(hints).not.toContain('listItem.tags.0');
   });
 });

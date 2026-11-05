@@ -33,7 +33,11 @@ jest.mock('@/AppBuilder/Widgets/Listview/disabledRecords', () => {
   const actual = jest.requireActual('@/AppBuilder/Widgets/Listview/disabledRecords');
   return { ...actual, isRecordDisabled: jest.fn((...args) => actual.isRecordDisabled(...args)) };
 });
-jest.mock('react-hot-toast', () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
+jest.mock('react-hot-toast', () => {
+  // The alert action imports the default export; the specs import the named one. Both must be one object.
+  const toast = { success: jest.fn(), error: jest.fn() };
+  return { __esModule: true, default: toast, toast };
+});
 // Wraps, never replaces: counts how often each record re-renders.
 jest.mock('@/_hooks/useDynamicHeight', () => {
   const actual = jest.requireActual('@/_hooks/useDynamicHeight');
@@ -656,6 +660,22 @@ describe('Listview', () => {
       expect(JSON.stringify(exposed('children'))).not.toContain('Alpha');
       expect(JSON.stringify(exposed('selectedRecord') ?? {})).not.toContain('Alpha');
     });
+
+    test('[Listview-BUG-011] a selected record and the deprecated selected row drop the removed child', async () => {
+      // Break this catches: rebuilding data and children but leaving the selection holding the departed child's values.
+      await mount();
+      await waitFor(() => expect(dataRows()[0]?.text1?.text).toBe('Alpha'));
+      await user().click(rows()[0]);
+      await waitFor(() => expect(JSON.stringify(exposed('selectedRecord') ?? {})).toContain('Alpha'));
+
+      await widget.session.store.act(() => {
+        store().deleteComponents(['txt1'], MODULE_ID, { saveAfterAction: false });
+      });
+      await waitFor(() => expect(dataRows()[0]?.text1).toBeUndefined());
+
+      expect(JSON.stringify(exposed('selectedRecord') ?? {})).not.toContain('Alpha');
+      expect(JSON.stringify(exposed('selectedRow') ?? {})).not.toContain('Alpha');
+    });
   });
 
   describe('Listview: a row event knows which record fired it', () => {
@@ -752,6 +772,18 @@ describe('Listview', () => {
 
       await waitFor(() => expect(store().getVariable('submits', MODULE_ID)).toBe(1));
     });
+
+    test('[Listview-BUG-005] every row s Form keeps its Submit button', async () => {
+      // Break this catches: footer slot children expanded per row, which blanks the Submit button in every row.
+      submitWidget.render({ currentMode: 'view' });
+      await waitFor(() => expect(rows()).toHaveLength(3));
+
+      expect(rows().map((row) => row.querySelector('.widget-button button')?.textContent)).toEqual([
+        'Submit',
+        'Submit',
+        'Submit',
+      ]);
+    });
   });
 
   describe('Listview: a Form inside a row keeps its header and footer', () => {
@@ -765,6 +797,14 @@ describe('Listview', () => {
       await waitFor(() => expect(rows()).toHaveLength(2));
 
       expect(document.body.textContent).toContain('Form title');
+    });
+
+    test('[Listview-BUG-005] every row s Form keeps its title', async () => {
+      // Break this catches: slot children blanked in all rows but the first, which a body-wide text search cannot see.
+      formWidget.render({ currentMode: 'view' });
+      await waitFor(() => expect(rows()).toHaveLength(2));
+
+      expect(rows().map((row) => row.textContent.includes('Form title'))).toEqual([true, true]);
     });
   });
 
@@ -793,6 +833,14 @@ describe('Listview', () => {
 
       await waitFor(() => expect(rows()).toHaveLength(3));
       expect(rowTexts()).toEqual(['Alpha', '', 'Gamma']);
+    });
+
+    test('[Listview-BUG-003] a list of numbers is still not a list of records', async () => {
+      // Break this catches: loosening the null fix to accept any non-object entry, which would render a row per number (D-05).
+      await mount({ properties: { data: binding('{{[1, 2, 3]}}') } });
+
+      expect(rows()).toHaveLength(0);
+      expect(container()).toBeInTheDocument();
     });
   });
 
@@ -1238,6 +1286,43 @@ describe('Listview', () => {
       await waitFor(() => expect(wrapperShown('btn7')).toEqual([true, false, true]));
     });
 
+    test.each([
+      ['setDisable', 'disable'],
+      ['setLoading', 'loading'],
+    ])(
+      '[Listview-BUG-045] %s on a target inside the row s Container acts on the clicked row only',
+      async (handle, param) => {
+        // Break this catches: the wrapper reading isDisabled or isLoading from row 0, so every row greys out or none does.
+        const stateOnClick = {
+          ...hideTargetOnClick('btn6', 'btn7'),
+          event: {
+            eventId: 'onClick',
+            actionId: 'control-component',
+            componentId: 'btn7',
+            componentSpecificActionHandle: handle,
+            componentSpecificActionParams: [{ handle: param, value: '{{true}}' }],
+          },
+        };
+        await mount({
+          extraComponents: {
+            cont7: wrapper('cont7', 'container7', 'Container', {}),
+            btn7: targetIn('cont7'),
+            btn6: GO(),
+          },
+          events: [stateOnClick],
+        });
+        await waitFor(() => expect(buttonsNamed('Target')).toHaveLength(3));
+
+        await user().click(buttonsNamed('Go')[1]);
+
+        const greyed = () =>
+          [...document.querySelectorAll('.ele-btn7 .canvas-component')].map((node) =>
+            node.classList.contains('disabled')
+          );
+        await waitFor(() => expect(greyed()).toEqual([false, true, false]));
+      }
+    );
+
     test('[Listview-BUG-045] a target inside the row s Form is hidden in the clicked row only', async () => {
       // Break this catches: the wrapper reading the row 0 Form's copy of its child.
       await mount({
@@ -1319,6 +1404,14 @@ describe('Listview', () => {
       // Break this catches: removing the isArray guard, so a still-loading query
       // binding (null/undefined/an object) crashes the canvas.
       await mount({ properties: { data: binding('{{null}}') } });
+
+      expect(rows()).toHaveLength(0);
+      expect(container()).toBeInTheDocument();
+    });
+
+    test('[Listview-DATA-006] data that is an object renders no rows and no error', async () => {
+      // Break this catches: an object, which a query can return while loading, reaching the row slice and crashing the canvas.
+      await mount({ properties: { data: binding('{{{ text: "Alpha" }}}') } });
 
       expect(rows()).toHaveLength(0);
       expect(container()).toBeInTheDocument();
@@ -1973,6 +2066,17 @@ describe('Listview', () => {
       await waitFor(() => expect(rowTexts()).toEqual(['Gamma']));
     });
 
+    test('[Listview-BUG-018] Space on the next arrow turns the page', async () => {
+      // Break this catches: the arrow answering Enter but not Space, which leaves half of the keyboard contract broken.
+      await mount({ properties: { enablePagination: binding('{{true}}'), rowsPerPage: binding('{{2}}') } });
+      await waitFor(() => expect(rows()).toHaveLength(2));
+
+      arrows().next.focus();
+      await user().keyboard(' ');
+
+      await waitFor(() => expect(rowTexts()).toEqual(['Gamma']));
+    });
+
     test('[Listview-BUG-037] Enter on a greyed-out arrow leaves the page where it is', async () => {
       // Break this catches: the keyboard path skipping the disabled check the mouse gets from CSS, so
       // Previous on page one or Next on the last page walks off the end of the list.
@@ -1993,6 +2097,22 @@ describe('Listview', () => {
       expect(rowTexts()).toEqual(['Gamma']);
       expect(footer()).not.toContain('Showing');
       expect(document.querySelector('.table-pagination-btn.selected').textContent).toBe('2');
+    });
+
+    test('[Listview-BUG-037] Space on a greyed-out arrow leaves the page where it is', async () => {
+      // Break this catches: the Space key reaching a disabled arrow's handler, which Enter alone would not show.
+      await mount({ properties: { enablePagination: binding('{{true}}'), rowsPerPage: binding('{{2}}') } });
+      await waitFor(() => expect(rowTexts()).toEqual(['Alpha', 'Beta']));
+
+      arrows().previous.focus();
+      await user().keyboard(' ');
+      expect(rowTexts()).toEqual(['Alpha', 'Beta']);
+
+      await user().click(arrows().next);
+      await waitFor(() => expect(rowTexts()).toEqual(['Gamma']));
+      arrows().next.focus();
+      await user().keyboard(' ');
+      expect(rowTexts()).toEqual(['Gamma']);
     });
   });
 
@@ -2130,6 +2250,50 @@ describe('Listview', () => {
       await typeInRowTwoAndClickItsButton();
 
       await waitFor(() => expect(store().getVariable('gated', MODULE_ID)).toBe('ran'));
+    });
+
+    test('[Listview-BUG-043] an alert message reads the sibling input of the clicked row', async () => {
+      // Break this catches: the alert message resolving outside the firing row, so it shows nothing or row 1's value.
+      toast.success.mockClear();
+      await mount({
+        extraComponents: { inp3: INPUT_CHILD(), btn3: BUTTON_CHILD() },
+        events: [
+          onButtonClick({
+            actionId: 'show-alert',
+            message: '{{components.textinput3.value}}',
+            alertType: 'success',
+          }),
+        ],
+      });
+
+      await typeInRowTwoAndClickItsButton();
+
+      await waitFor(() => expect(toast.success).toHaveBeenCalledWith('abc'));
+    });
+
+    test('[Listview-BUG-043] a Control component value reads the sibling input of the clicked row', async () => {
+      // Break this catches: the action parameters resolving outside the firing row, so the target is set to row 1's value.
+      await mount({
+        extraComponents: { inp3: INPUT_CHILD(), btn3: BUTTON_CHILD() },
+        events: [
+          onButtonClick({
+            actionId: 'control-component',
+            componentId: 'btn3',
+            componentSpecificActionHandle: 'setText',
+            componentSpecificActionParams: [{ handle: 'text', value: '{{components.textinput3.value}}' }],
+          }),
+        ],
+      });
+
+      await typeInRowTwoAndClickItsButton();
+
+      await waitFor(() =>
+        expect([...document.querySelectorAll('.ele-btn3 button')].map((n) => n.textContent)).toEqual([
+          'Go',
+          'abc',
+          'Go',
+        ])
+      );
     });
   });
 
@@ -2295,6 +2459,18 @@ describe('Listview', () => {
 
       rows()[2].focus();
       await user().keyboard('{Enter}');
+
+      await waitFor(() => expect(fired('rec')).toBe(1));
+      expect(exposed('selectedRecordId')).toBe(2);
+    });
+
+    test('[Listview-BUG-024] Space on a focused row selects that record', async () => {
+      // Break this catches: the row key handler accepting Enter only, so a Space-key user cannot choose a record.
+      await mount({ events: [counting('onRecordClicked', 'rec')] });
+      await waitFor(() => expect(rows()).toHaveLength(3));
+
+      rows()[2].focus();
+      await user().keyboard(' ');
 
       await waitFor(() => expect(fired('rec')).toBe(1));
       expect(exposed('selectedRecordId')).toBe(2);
