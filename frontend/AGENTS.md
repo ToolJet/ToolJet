@@ -138,7 +138,7 @@ Widget configs live in the shared `packages/widget-definitions` package (`src/wi
 
 ### Key changes require migrations
 
-Moving, renaming, or removing a config key (e.g. moving `loadingState` from `styles` to `properties`) breaks existing apps, and the previous release must keep rendering them after an upgrade. In one PR: a data migration in `server/migrations/data/` copies the key and keeps the old one, a cleanup migration in `server/migrations/cleanup/` removes the old key one upgrade later, and the import path converts old exports. Recipe and templates: `server/docs/APP_DEFINITION_MIGRATIONS.md`.
+Moving, renaming, or removing a config key (e.g. moving `loadingState` from `styles` to `properties`) breaks existing apps, and the previous release must keep rendering them after an upgrade. In one PR: every reader switches to the new place, the move goes in `MOVED_COMPONENT_KEYS` (`packages/widget-definitions`, so the App Builder drops the old place on load and a missed reader fails at once), a data migration in `server/migrations/data/` copies the key and keeps both places in sync, a cleanup migration in `server/migrations/cleanup/` removes the old key one upgrade later, and the import path converts old exports. Recipe and templates: `server/docs/APP_DEFINITION_MIGRATIONS.md`.
 
 ## Glossary
 

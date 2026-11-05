@@ -1,11 +1,11 @@
 /**
- * Covers: migration-helpers/run-all-migrations.ts and migration-mode.ts for App Builder key moves
- * (server/docs/APP_DEFINITION_MIGRATIONS.md): a data migration copies a component key to its new place,
- * and a cleanup migration shipped in the same release removes the old key one upgrade later.
- * The fixtures are the doc's templates verbatim, so this checks the code the team copies.
+ * Covers: migration-helpers/component-key-moves.ts with run-all-migrations.ts and migration-mode.ts for App Builder
+ * key moves (server/docs/APP_DEFINITION_MIGRATIONS.md): a data migration copies a component key to its new place and
+ * adds a trigger that keeps both places equal; a cleanup migration shipped in the same release drops the trigger and
+ * the old key one upgrade later. The fixtures are the doc's templates verbatim, so this checks the code the team copies.
  * @group database
  */
-import { DataSource, MigrationInterface } from 'typeorm';
+import { DataSource, QueryRunner } from 'typeorm';
 import { classifyLocks } from 'src/migration-helpers/lock-probe';
 import {
   createScratchDatabase,
@@ -15,13 +15,15 @@ import {
   withScratchConnection,
 } from '../fixtures/harness';
 import { CopyFixtureWidgetKeys1790800000021 } from '../fixtures/migration-sets/appbuilder-key-move/data/1790800000021-CopyFixtureWidgetKeys';
-import { DropFixtureWidgetOldKeys1790800000022 } from '../fixtures/migration-sets/appbuilder-key-move/cleanup/1790800000022-DropFixtureWidgetOldKeys';
 
 const FIXTURE_SET = 'appbuilder-key-move';
 const COPY = 'CopyFixtureWidgetKeys1790800000021';
 const CLEANUP = 'DropFixtureWidgetOldKeys1790800000022';
+const SYNC_TRIGGER = 'trg_components_sync_svg_image_additional_actions';
 const SHADOW = '0px 4px 12px 0px #00000059';
 const SVG = { data: { value: '<svg/>' } };
+const SHOWN = { value: '{{true}}' };
+const HIDDEN = { value: '{{false}}' };
 /** More rows than one 2000-row batch, so the copy pages through them. */
 const BULK_ROWS = 2500;
 const VERSION_WITH_SVGS = '11111111-1111-1111-1111-111111111111';
@@ -110,6 +112,22 @@ describe('App Builder key move: copy in the data phase, remove the old key in cl
     return row;
   }
 
+  /** Saves one key the way the editor does: the server merges the change into the stored column and writes it back. */
+  async function edit(name: string, column: string, key: string, value: object) {
+    const [row] = await db.query(`SELECT ${column} AS value FROM components WHERE name = $1`, [name]);
+    await db.query(`UPDATE components SET ${column} = $1 WHERE name = $2`, [
+      JSON.stringify({ ...row.value, [key]: value }),
+      name,
+    ]);
+  }
+
+  async function syncTriggerExists(): Promise<boolean> {
+    const [{ exists }] = await db.query('SELECT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = $1) AS exists', [
+      SYNC_TRIGGER,
+    ]);
+    return exists;
+  }
+
   /** SvgImages still holding an old key, and SvgImages still missing a new one. */
   async function svgCounts() {
     const [counts] = await db.query(`SELECT
@@ -160,6 +178,7 @@ describe('App Builder key move: copy in the data phase, remove the old key in cl
       expect(await stored('svg')).toEqual(copiedSvg('Company logo'));
       expect(await svgCounts()).toEqual({ withOldKeys: TOTAL, missingNewKeys: 0 });
       expect(await historyByVersion()).toEqual({ [VERSION_WITHOUT_SVGS]: 1 });
+      expect(await syncTriggerExists()).toBe(true);
 
       const firstCleanup = await upgrade('keymove-cleanup-1', { MIGRATION_PHASE: 'cleanup' });
       expect(firstCleanup).toMatchObject({ exitCode: 0, result: { error: null } });
@@ -168,13 +187,16 @@ describe('App Builder key move: copy in the data phase, remove the old key in cl
       expect(await recorded()).not.toContain(CLEANUP);
       expect(await stored('svg')).toEqual(copiedSvg('Company logo'));
 
-      // Old code saves a widget after the copy ran: an editor tab opened before the upgrade, or an old pod.
+      // Old code saves a widget after the copy ran (an editor tab opened before the upgrade, or an old pod): the
+      // trigger gives it the new places at once, so this release shows its values, not the defaults.
       await save('late', 'SvgImage', previousReleaseSvg('Saved by old code'));
+      expect(await stored('late')).toEqual(copiedSvg('Saved by old code'));
 
       await nextRelease();
       const nextCleanup = await upgrade('keymove-cleanup-2', { MIGRATION_PHASE: 'cleanup' });
       expect(nextCleanup).toMatchObject({ exitCode: 0, result: { error: null } });
       expect(await recorded()).toEqual(expect.arrayContaining([COPY, CLEANUP]));
+      expect(await syncTriggerExists()).toBe(false);
       expect(await stored('svg')).toEqual(contractedSvg('Company logo'));
       expect(await stored('late')).toEqual(contractedSvg('Saved by old code'));
       expect(await svgCounts()).toEqual({ withOldKeys: 0, missingNewKeys: 0 });
@@ -191,10 +213,12 @@ describe('App Builder key move: copy in the data phase, remove the old key in cl
       expect(firstUpgrade.stdout).toContain(HOLDING_BACK);
       expect(await recorded()).not.toContain(CLEANUP);
       expect(await stored('svg')).toEqual(copiedSvg('Company logo'));
+      expect(await syncTriggerExists()).toBe(true);
 
       await nextRelease();
       expect(await upgrade('keymove-single-2')).toMatchObject({ exitCode: 0, result: { error: null } });
       expect(await recorded()).toEqual(expect.arrayContaining([COPY, CLEANUP]));
+      expect(await syncTriggerExists()).toBe(false);
       expect(await stored('svg')).toEqual(contractedSvg('Company logo'));
       expect(await svgCounts()).toEqual({ withOldKeys: 0, missingNewKeys: 0 });
       expect(await stored('button')).toEqual(BUTTON);
@@ -204,17 +228,57 @@ describe('App Builder key move: copy in the data phase, remove the old key in cl
       expect(await upgrade('keymove-fresh')).toMatchObject({ exitCode: 0, result: { error: null } });
       expect(await recorded()).toEqual(expect.arrayContaining([COPY, CLEANUP]));
       expect(await stored('svg')).toEqual(contractedSvg('Company logo'));
+      expect(await syncTriggerExists()).toBe(false);
+    }, 300_000);
+  });
+
+  describe('Both places stay equal until the cleanup', () => {
+    it('should carry each edit to the other place, whichever release saves it, and keep it through the cleanup', async () => {
+      await previousReleaseRecorded();
+      expect(await upgrade('keymove-sync-1')).toMatchObject({ exitCode: 0, result: { error: null } });
+
+      // An editor tab opened before the upgrade shows the image. It writes the old place only; this release reads
+      // the new one.
+      await edit('svg', 'styles', 'visibility', SHOWN);
+      expect((await stored('svg')).properties.visibility).toEqual(SHOWN);
+
+      // This release hides it again. It writes the new place only; a rollback reads the old one.
+      await edit('svg', 'properties', 'visibility', HIDDEN);
+      expect((await stored('svg')).styles.visibility).toEqual(HIDDEN);
+
+      // After a rollback, the previous release edits the tooltip at the old place; upgrading again must keep it.
+      await edit('svg', 'general_properties', 'tooltip', { value: 'Edited after a rollback' });
+      expect((await stored('svg')).properties.tooltip).toEqual({ value: 'Edited after a rollback' });
+
+      // This release creates a widget with only the new places; the previous release can still render it.
+      await save('created', 'SvgImage', contractedSvg('Created by this release'));
+      expect(await stored('created')).toEqual(copiedSvg('Created by this release'));
+
+      // Other widget types keep their keys where they are.
+      await edit('button', 'styles', 'visibility', SHOWN);
+      expect(await stored('button')).toEqual({ ...BUTTON, styles: { visibility: SHOWN } });
+
+      await nextRelease();
+      expect(await upgrade('keymove-sync-2')).toMatchObject({ exitCode: 0, result: { error: null } });
+      expect(await syncTriggerExists()).toBe(false);
+      expect(await stored('svg')).toEqual(contractedSvg('Edited after a rollback'));
+      expect(await stored('created')).toEqual(contractedSvg('Created by this release'));
+      expect(await svgCounts()).toEqual({ withOldKeys: 0, missingNewKeys: 0 });
+
+      // Once the cleanup ran, nothing puts an old key back.
+      await edit('svg', 'properties', 'visibility', SHOWN);
+      expect((await stored('svg')).styles).toEqual(contractedSvg('Edited after a rollback').styles);
     }, 300_000);
   });
 
   describe('Locks', () => {
-    /** Table locks a migration's up() holds at the end of its transaction. */
-    const locksHeldBy = (migration: MigrationInterface) =>
+    /** Table locks one step holds at the end of its transaction. */
+    const locksHeldBy = (step: (queryRunner: QueryRunner) => Promise<void>) =>
       withScratchConnection(database, async (connection) => {
         const queryRunner = connection.createQueryRunner();
         await queryRunner.startTransaction();
         try {
-          await migration.up(queryRunner);
+          await step(queryRunner);
           const locks: { table: string; mode: string }[] = await queryRunner.query(
             `SELECT c.relname AS "table", l.mode FROM pg_locks l JOIN pg_class c ON c.oid = l.relation
              WHERE l.pid = pg_backend_pid() AND l.locktype = 'relation' AND c.relkind = 'r'
@@ -232,16 +296,16 @@ describe('App Builder key move: copy in the data phase, remove the old key in cl
         .map(({ mode }) => mode)
         .filter((mode) => !['AccessShareLock', 'RowShareLock', 'RowExclusiveLock'].includes(mode));
 
-    it('should only take row locks, which never block the reads the app serves during an upgrade', async () => {
-      const copyLocks = await locksHeldBy(new CopyFixtureWidgetKeys1790800000021());
+    it('should only take row locks in the copy, and pause writes but never reads while adding the trigger', async () => {
+      const copy = new CopyFixtureWidgetKeys1790800000021();
+      const copyLocks = await locksHeldBy((queryRunner) => copy.up(queryRunner));
       expect(copyLocks).toContainEqual({ table: 'components', mode: 'RowExclusiveLock', existed: true });
       expect(stronger(copyLocks)).toEqual([]);
       expect(classifyLocks('data', 'up', copyLocks)).toEqual([]);
 
-      const cleanupLocks = await locksHeldBy(new DropFixtureWidgetOldKeys1790800000022());
-      expect(cleanupLocks).toContainEqual({ table: 'components', mode: 'RowExclusiveLock', existed: true });
-      expect(stronger(cleanupLocks)).toEqual([]);
-      expect(classifyLocks('cleanup', 'up', cleanupLocks)).toEqual([]);
+      const syncLocks = await locksHeldBy((queryRunner) => copy.beforeCommit(queryRunner));
+      expect(stronger(syncLocks)).toEqual(['ShareRowExclusiveLock']);
+      expect(classifyLocks('data', 'beforeCommit', syncLocks)).toEqual([]);
     }, 60_000);
   });
 });

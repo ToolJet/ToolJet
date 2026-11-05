@@ -1,67 +1,45 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm';
 import { deleteAppHistoryForStructuralMigration } from '@helpers/migration.helper';
+import { DataMigration } from '../../../../../../../src/migration-helpers/migration-mode';
+import {
+  ComponentKeyMove,
+  copyMovedKeys,
+  createKeyMoveSync,
+  dropKeyMoveSync,
+} from '../../../../../../../src/migration-helpers/component-key-moves'; // migration-import-allowed: copy, sync trigger and cleanup come from one declaration
 
 // Verbatim the data migration template in server/docs/APP_DEFINITION_MIGRATIONS.md; only the names differ.
 
 const MIGRATION_NAME = 'CopyFixtureWidgetKeys1790800000021';
-const BATCH_SIZE = 2000;
 
-/** Rows that still miss a new key they can get. Shared with the cleanup. */
-export const SVG_NEEDS_COPY = `type = 'SvgImage' AND (
-    (COALESCE(styles::jsonb, '{}'::jsonb) ? 'visibility' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'visibility')
-    OR (COALESCE(general_properties::jsonb, '{}'::jsonb) ? 'tooltip' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'tooltip')
-    OR (COALESCE(general_styles::jsonb, '{}'::jsonb) ? 'boxShadow' AND NOT COALESCE(styles::jsonb, '{}'::jsonb) ? 'boxShadow'))`;
+/** SvgImage's visibility, tooltip and box shadow move to the places the other widgets use. Shared with the cleanup. */
+export const SVG_IMAGE_MOVES: ComponentKeyMove[] = [
+  { types: ['SvgImage'], from: ['styles', 'visibility'], to: ['properties', 'visibility'] },
+  { types: ['SvgImage'], from: ['general_properties', 'tooltip'], to: ['properties', 'tooltip'] },
+  { types: ['SvgImage'], from: ['general_styles', 'boxShadow'], to: ['styles', 'boxShadow'] },
+];
+/** Names the trigger that keeps both places equal until the cleanup. */
+export const SVG_IMAGE_SYNC = 'svg_image_additional_actions';
 
-/** Adds each key at its new place unless already there; the old places stay. Shared with the cleanup. */
-export const SVG_COPY_SET = `
-  properties = (COALESCE(properties::jsonb, '{}'::jsonb)
-    || CASE WHEN COALESCE(styles::jsonb, '{}'::jsonb) ? 'visibility' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'visibility'
-         THEN jsonb_build_object('visibility', styles::jsonb -> 'visibility') ELSE '{}'::jsonb END
-    || CASE WHEN COALESCE(general_properties::jsonb, '{}'::jsonb) ? 'tooltip' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'tooltip'
-         THEN jsonb_build_object('tooltip', general_properties::jsonb -> 'tooltip') ELSE '{}'::jsonb END)::json,
-  styles = (COALESCE(styles::jsonb, '{}'::jsonb)
-    || CASE WHEN COALESCE(general_styles::jsonb, '{}'::jsonb) ? 'boxShadow' AND NOT COALESCE(styles::jsonb, '{}'::jsonb) ? 'boxShadow'
-         THEN jsonb_build_object('boxShadow', general_styles::jsonb -> 'boxShadow') ELSE '{}'::jsonb END)::json`;
-
-export class CopyFixtureWidgetKeys1790800000021 implements MigrationInterface {
+export class CopyFixtureWidgetKeys1790800000021 implements DataMigration {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const [{ count }] = await queryRunner.query(`SELECT COUNT(*) FROM components WHERE ${SVG_NEEDS_COPY}`);
-    const total = parseInt(count, 10);
-    console.log(`${MIGRATION_NAME}: [START] Copy SvgImage visibility/tooltip/boxShadow | Total: ${total}`);
-
-    const touchedVersions = new Set<string>();
-    let lastId = '00000000-0000-0000-0000-000000000000';
-    let done = 0;
-    while (true) {
-      const rows: { id: string }[] = await queryRunner.query(
-        `SELECT id FROM components WHERE ${SVG_NEEDS_COPY} AND id > $1 ORDER BY id LIMIT $2`,
-        [lastId, BATCH_SIZE]
-      );
-      if (!rows.length) break;
-      lastId = rows[rows.length - 1].id;
-      const ids = rows.map((row) => row.id);
-      await queryRunner.query(`UPDATE components SET ${SVG_COPY_SET} WHERE id = ANY($1::uuid[])`, [ids]);
-      const versions: { app_version_id: string }[] = await queryRunner.query(
-        `SELECT DISTINCT p.app_version_id FROM components c JOIN pages p ON p.id = c.page_id WHERE c.id = ANY($1::uuid[])`,
-        [ids]
-      );
-      versions.forEach(({ app_version_id }) => app_version_id && touchedVersions.add(app_version_id));
-      done += rows.length;
-      console.log(`${MIGRATION_NAME}: [PROGRESS] ${done}/${total} (${((done / total) * 100).toFixed(1)}%)`);
-    }
-
-    if (touchedVersions.size) {
+    const touchedVersions = await copyMovedKeys(queryRunner, MIGRATION_NAME, SVG_IMAGE_MOVES);
+    if (touchedVersions.length) {
       await deleteAppHistoryForStructuralMigration(
         queryRunner.manager,
-        { appVersionIds: [...touchedVersions] },
+        { appVersionIds: touchedVersions },
         MIGRATION_NAME
       );
     }
-    console.log(`${MIGRATION_NAME}: [SUCCESS] Copy finished. Updated: ${done}`);
   }
 
-  public async down(): Promise<void> {
-    // Nothing to undo: up() only adds keys, and the previous release still reads the old ones.
-    // The deleted app-history snapshots are unrecoverable; restore the pre-upgrade backup if needed.
+  /** Until the cleanup, keeps both places equal whatever release writes them. */
+  public async beforeCommit(queryRunner: QueryRunner): Promise<void> {
+    await createKeyMoveSync(queryRunner, SVG_IMAGE_SYNC, SVG_IMAGE_MOVES);
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // The copied keys stay: the previous release ignores them. Deleted app-history snapshots are unrecoverable.
+    await queryRunner.query(dropKeyMoveSync(SVG_IMAGE_SYNC));
   }
 }

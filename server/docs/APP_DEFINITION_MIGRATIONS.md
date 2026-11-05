@@ -14,104 +14,83 @@ The previous release must keep rendering every saved app after an upgrade. It is
 
 Why it matters: before any widget sees a component, the server fills every key its widget definition expects with that release's default (`buildComponentMetaDefinition` in `src/modules/apps/util.service.ts`). If a migration deletes `styles.visibility`, the previous release quietly renders the default: a hidden widget shows, a disabled editor becomes editable, a tooltip disappears. Nothing errors.
 
+While both places exist, two things keep them honest:
+
+- **A trigger keeps both places equal.** The data migration adds it and the cleanup drops it. Whatever saves a component (this release, an editor tab opened before the upgrade, an old pod, the release a rollback returns to), the trigger copies the value to the other place. No edit is lost, and a rollback shows every edit.
+- **Release code sees only the new place.** The App Builder drops the old place when an app loads (`MOVED_COMPONENT_KEYS` in `packages/widget-definitions`). A reader that still uses the old place breaks in the release that moved the key, not one release later when the cleanup runs.
+
 ## Which change needs what
 
 | Change | Release N (one PR) | Cleanup removes |
 |---|---|---|
 | Add a key with a default (backfill) | Data migration adds it where missing | Nothing |
-| Move or rename a key | Data migration copies it; code reads the new place | The old key |
+| Move or rename a key | Data migration copies it and adds the sync trigger; code reads the new place; the move is registered for the App Builder | The trigger and the old key |
 | Change a value's format | Data migration writes the new format under a new key; code reads it | The old key |
 | Remove a key no code reads | Nothing (the code stopped reading it) | The key |
 | Convert components to another widget type | Ship the new widget first; convert in a later release | — |
 
 ## Release N: one PR
 
-1. **Widget definition and widget code** read the new place only. Do not add a `properties.x ?? styles.x` fallback in the widget: the server has already filled `properties.x` with its default, so the fallback never runs for a saved app.
-2. **Data migration** in `migrations/data/` (template below):
-   - Adds keys only: `||` with `jsonb_build_object`. Never `- 'key'`, `#-`, `delete`, `unset()` or `omit()`; the lint rejects them in data migrations.
-   - A key already at the new place wins, and values are copied as stored.
-   - Selects only rows that still need the copy, so a rerun changes nothing.
-   - Batches by `id` with one bulk `UPDATE` per batch, never `OFFSET` or one `UPDATE` per row. In async mode writes stay paused until the whole data phase commits.
-   - Logs `[START] … | Total`, `[PROGRESS] i/total`, `[SUCCESS]`.
-   - Calls `deleteAppHistoryForStructuralMigration` for the app versions it touched. Restoring an older snapshot would bring back rows without the new key.
-   - Exports its copy SQL, so the cleanup can run it again.
-   - Uses a current timestamp (`date +%s%3N`), the same one in the file name and at the end of the class name.
-3. **Cleanup migration** in `migrations/cleanup/`, in the same PR (template below):
-   - `transaction = false` and `requires = '<the data migration class name>'`.
-   - One `withShortLock` step: run the copy again for rows old code saved after it ran, then remove each old key only where its new key exists.
-   - The runner holds it back on the upgrade that ships it and runs it on the next upgrade. An instance that skips your release waits one more upgrade. A fresh install runs both at once.
-4. **Import of old exports.** Exports keep the old shape forever, and so do templates. Make `migrateProperties()` in `src/modules/apps/services/app-import-export.service.ts` convert them: add the widget to `NewRevampedComponents` for the shared `visibility`, `disabledState`, `tooltip` and `boxShadow` moves, or add a widget-specific block like Navigation's.
+1. **Readers.** The widget definition and every place that reads the key switch to the new place in this PR. The shared canvas code (`RenderWidget`, `WidgetWrapper`, `Grid`) already reads `properties.visibility ?? styles.visibility`; widget files that read the old place directly do not. Do not add a `properties.x ?? styles.x` fallback in a widget: the server has already filled `properties.x` with its default, so the fallback never runs for a saved app.
+2. **Register the move** in `MOVED_COMPONENT_KEYS` (`packages/widget-definitions/src/movedComponentKeys.js`), with the widget definition's section names (`general`, `generalStyles`, `others`, not the column names). Add a widget spec for the moved key: seeded through the real store, it fails while any reader still uses the old place.
+3. **Data migration** in `migrations/data/` (template below). Declare the moves once; `src/migration-helpers/component-key-moves.ts` turns them into the copy, the trigger and the cleanup:
+   - `copyMovedKeys()` in `up()` copies each key where its new place is missing (a key already there wins), in batches of 2,000 by `id` with one bulk `UPDATE` each, and logs `[START] … | Total`, `[PROGRESS] i/total`, `[SUCCESS]`.
+   - Pass the app versions it returns to `deleteAppHistoryForStructuralMigration`. Restoring an older snapshot would bring back rows without the new key.
+   - `createKeyMoveSync()` in `beforeCommit()` adds the trigger. It pauses writes to `components`, never reads, until the data phase commits.
+   - Never `- 'key'`, `#-`, `delete`, `unset()` or `omit()`; the lint rejects them in data migrations.
+   - A current timestamp (`date +%s%3N`), the same one in the file name and at the end of the class name.
+4. **Cleanup migration** in `migrations/cleanup/`, in the same PR (template below): `transaction = false`, `requires = '<the data migration class name>'`, and `contractMovedKeys()` with the same moves and sync name. It drops the trigger in its own short step, then per batch copies anything still missing and removes the old keys.
+   - The runner holds it back on the upgrade that ships it and runs it on the next upgrade whose release adds a migration. An instance that skips your release waits one more upgrade. A fresh install runs both at once.
+5. **Import of old exports.** Exports keep the old shape forever, and so do templates. Make `migrateProperties()` in `src/modules/apps/services/app-import-export.service.ts` convert them: add the widget to `NewRevampedComponents` for the shared `visibility`, `disabledState`, `tooltip` and `boxShadow` moves, or add a widget-specific block like Navigation's.
 
-**Release N+1 and later:** nothing is required. The cleanup runs by itself on the next upgrade. Remove any code that still reads the old place.
+**Release N+1 and later:** nothing is required. The cleanup runs by itself. The `MOVED_COMPONENT_KEYS` entry can stay; once the cleanup has run there is nothing left for it to drop.
 
 ## Templates
 
 Data migration, `migrations/data/1793400000000-CopySvgImageAdditionalActions.ts`:
 
 ```ts
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm';
 import { deleteAppHistoryForStructuralMigration } from '@helpers/migration.helper';
+import { DataMigration } from '../../src/migration-helpers/migration-mode';
+import {
+  ComponentKeyMove,
+  copyMovedKeys,
+  createKeyMoveSync,
+  dropKeyMoveSync,
+} from '../../src/migration-helpers/component-key-moves'; // migration-import-allowed: copy, sync trigger and cleanup come from one declaration
 
 const MIGRATION_NAME = 'CopySvgImageAdditionalActions1793400000000';
-const BATCH_SIZE = 2000;
 
-/** Rows that still miss a new key they can get. Shared with the cleanup. */
-export const SVG_NEEDS_COPY = `type = 'SvgImage' AND (
-    (COALESCE(styles::jsonb, '{}'::jsonb) ? 'visibility' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'visibility')
-    OR (COALESCE(general_properties::jsonb, '{}'::jsonb) ? 'tooltip' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'tooltip')
-    OR (COALESCE(general_styles::jsonb, '{}'::jsonb) ? 'boxShadow' AND NOT COALESCE(styles::jsonb, '{}'::jsonb) ? 'boxShadow'))`;
+/** SvgImage's visibility, tooltip and box shadow move to the places the other widgets use. Shared with the cleanup. */
+export const SVG_IMAGE_MOVES: ComponentKeyMove[] = [
+  { types: ['SvgImage'], from: ['styles', 'visibility'], to: ['properties', 'visibility'] },
+  { types: ['SvgImage'], from: ['general_properties', 'tooltip'], to: ['properties', 'tooltip'] },
+  { types: ['SvgImage'], from: ['general_styles', 'boxShadow'], to: ['styles', 'boxShadow'] },
+];
+/** Names the trigger that keeps both places equal until the cleanup. */
+export const SVG_IMAGE_SYNC = 'svg_image_additional_actions';
 
-/** Adds each key at its new place unless already there; the old places stay. Shared with the cleanup. */
-export const SVG_COPY_SET = `
-  properties = (COALESCE(properties::jsonb, '{}'::jsonb)
-    || CASE WHEN COALESCE(styles::jsonb, '{}'::jsonb) ? 'visibility' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'visibility'
-         THEN jsonb_build_object('visibility', styles::jsonb -> 'visibility') ELSE '{}'::jsonb END
-    || CASE WHEN COALESCE(general_properties::jsonb, '{}'::jsonb) ? 'tooltip' AND NOT COALESCE(properties::jsonb, '{}'::jsonb) ? 'tooltip'
-         THEN jsonb_build_object('tooltip', general_properties::jsonb -> 'tooltip') ELSE '{}'::jsonb END)::json,
-  styles = (COALESCE(styles::jsonb, '{}'::jsonb)
-    || CASE WHEN COALESCE(general_styles::jsonb, '{}'::jsonb) ? 'boxShadow' AND NOT COALESCE(styles::jsonb, '{}'::jsonb) ? 'boxShadow'
-         THEN jsonb_build_object('boxShadow', general_styles::jsonb -> 'boxShadow') ELSE '{}'::jsonb END)::json`;
-
-export class CopySvgImageAdditionalActions1793400000000 implements MigrationInterface {
+export class CopySvgImageAdditionalActions1793400000000 implements DataMigration {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const [{ count }] = await queryRunner.query(`SELECT COUNT(*) FROM components WHERE ${SVG_NEEDS_COPY}`);
-    const total = parseInt(count, 10);
-    console.log(`${MIGRATION_NAME}: [START] Copy SvgImage visibility/tooltip/boxShadow | Total: ${total}`);
-
-    const touchedVersions = new Set<string>();
-    let lastId = '00000000-0000-0000-0000-000000000000';
-    let done = 0;
-    while (true) {
-      const rows: { id: string }[] = await queryRunner.query(
-        `SELECT id FROM components WHERE ${SVG_NEEDS_COPY} AND id > $1 ORDER BY id LIMIT $2`,
-        [lastId, BATCH_SIZE]
-      );
-      if (!rows.length) break;
-      lastId = rows[rows.length - 1].id;
-      const ids = rows.map((row) => row.id);
-      await queryRunner.query(`UPDATE components SET ${SVG_COPY_SET} WHERE id = ANY($1::uuid[])`, [ids]);
-      const versions: { app_version_id: string }[] = await queryRunner.query(
-        `SELECT DISTINCT p.app_version_id FROM components c JOIN pages p ON p.id = c.page_id WHERE c.id = ANY($1::uuid[])`,
-        [ids]
-      );
-      versions.forEach(({ app_version_id }) => app_version_id && touchedVersions.add(app_version_id));
-      done += rows.length;
-      console.log(`${MIGRATION_NAME}: [PROGRESS] ${done}/${total} (${((done / total) * 100).toFixed(1)}%)`);
-    }
-
-    if (touchedVersions.size) {
+    const touchedVersions = await copyMovedKeys(queryRunner, MIGRATION_NAME, SVG_IMAGE_MOVES);
+    if (touchedVersions.length) {
       await deleteAppHistoryForStructuralMigration(
         queryRunner.manager,
-        { appVersionIds: [...touchedVersions] },
+        { appVersionIds: touchedVersions },
         MIGRATION_NAME
       );
     }
-    console.log(`${MIGRATION_NAME}: [SUCCESS] Copy finished. Updated: ${done}`);
   }
 
-  public async down(): Promise<void> {
-    // Nothing to undo: up() only adds keys, and the previous release still reads the old ones.
-    // The deleted app-history snapshots are unrecoverable; restore the pre-upgrade backup if needed.
+  /** Until the cleanup, keeps both places equal whatever release writes them. */
+  public async beforeCommit(queryRunner: QueryRunner): Promise<void> {
+    await createKeyMoveSync(queryRunner, SVG_IMAGE_SYNC, SVG_IMAGE_MOVES);
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // The copied keys stay: the previous release ignores them. Deleted app-history snapshots are unrecoverable.
+    await queryRunner.query(dropKeyMoveSync(SVG_IMAGE_SYNC));
   }
 }
 ```
@@ -120,29 +99,15 @@ Cleanup migration, same PR, `migrations/cleanup/1793400000001-DropSvgImageOldAdd
 
 ```ts
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { withShortLock } from '../../src/migration-helpers/with-short-lock'; // migration-import-allowed: cleanup steps must go through the short-lock helper
-import { SVG_COPY_SET, SVG_NEEDS_COPY } from '../data/1793400000000-CopySvgImageAdditionalActions'; // migration-import-allowed: reruns the copy for late rows
+import { contractMovedKeys } from '../../src/migration-helpers/component-key-moves'; // migration-import-allowed: drops the sync trigger, then the old keys in short steps
+import { SVG_IMAGE_MOVES, SVG_IMAGE_SYNC } from '../data/1793400000000-CopySvgImageAdditionalActions'; // migration-import-allowed: the moves this cleanup finishes
 
 export class DropSvgImageOldAdditionalActions1793400000001 implements MigrationInterface {
   transaction = false;
   requires = 'CopySvgImageAdditionalActions1793400000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await withShortLock(queryRunner, [
-      // Rows old code saved after the copy ran only have the old keys.
-      `UPDATE components SET ${SVG_COPY_SET} WHERE ${SVG_NEEDS_COPY}`,
-      // Each old key goes only where its new key exists.
-      `UPDATE components SET
-         styles = CASE WHEN COALESCE(properties::jsonb, '{}'::jsonb) ? 'visibility'
-                    THEN (styles::jsonb - 'visibility')::json ELSE styles END,
-         general_properties = CASE WHEN COALESCE(properties::jsonb, '{}'::jsonb) ? 'tooltip'
-                    THEN (general_properties::jsonb - 'tooltip')::json ELSE general_properties END,
-         general_styles = CASE WHEN COALESCE(styles::jsonb, '{}'::jsonb) ? 'boxShadow'
-                    THEN (general_styles::jsonb - 'boxShadow')::json ELSE general_styles END
-       WHERE type = 'SvgImage' AND (COALESCE(styles::jsonb, '{}'::jsonb) ? 'visibility'
-         OR COALESCE(general_properties::jsonb, '{}'::jsonb) ? 'tooltip'
-         OR COALESCE(general_styles::jsonb, '{}'::jsonb) ? 'boxShadow')`,
-    ]);
+    await contractMovedKeys(queryRunner, SVG_IMAGE_SYNC, SVG_IMAGE_MOVES);
   }
 
   public async down(): Promise<void> {
@@ -151,31 +116,50 @@ export class DropSvgImageOldAdditionalActions1793400000001 implements MigrationI
 }
 ```
 
+App Builder, same PR, in `packages/widget-definitions/src/movedComponentKeys.js` (section names as in the widget definition):
+
+```js
+export const MOVED_COMPONENT_KEYS = {
+  SvgImage: [
+    { from: ['styles', 'visibility'], to: ['properties', 'visibility'] },
+    { from: ['general', 'tooltip'], to: ['properties', 'tooltip'] },
+    { from: ['generalStyles', 'boxShadow'], to: ['styles', 'boxShadow'] },
+  ],
+};
+```
+
 ## What this protects, and what it does not
 
 | Situation | Result |
 |---|---|
-| Roll back to the previous image after the upgrade | Renders as before: the old keys are untouched until the cleanup |
+| Roll back to the previous image after the upgrade | Renders as before, with every edit made since: the trigger kept the old places current |
+| An editor tab opened before the upgrade, or an old pod, saves a widget | The trigger carries the value to the new place: this release shows it and the cleanup keeps it |
+| Edits made after a rollback, then upgraded again | Kept: the trigger stays until the cleanup runs |
+| A widget created by this release | Gets the old places too, so the previous release renders it |
+| A reader that still uses the old place | Breaks in this release, in dev and in specs: the App Builder dropped the old place on load |
 | A release skipped, then upgraded | The copy runs; the cleanup waits one more upgrade, so the skipped-from release can still be rolled back to |
-| An edit saved after the upgrade, then a rollback | The previous release shows the value from before the edit |
-| A widget saved by old code after the copy ran: an editor tab opened before the upgrade, an old pod, the time rolled back | This release shows the widget's defaults until the cleanup copies it on the next upgrade |
+| One save writes both places with different values | The new place wins |
+| Pasting a widget copied from an editor tab of the previous release | The moved key takes this release's default: the copy only carries the old place |
+| Writes with triggers off (`session_replication_role = replica`, `pg_restore --disable-triggers`) | Not synced. The cleanup still copies a missing new key, but such an edit at the old place is lost |
 | Upgrading across migrations older than the cutoff (`MIGRATION_AUTHORING_RULES_CUTOFF`) | Not covered; rolling back needs the pre-upgrade backup |
-
-The two middle rows need server-side help to close: a save path that writes both places while both exist, and a read path that falls back to the old place when the new one is missing.
 
 ## Review checklist
 
+- [ ] Every reader of the key switched to the new place in this PR; no widget-level `??` fallback.
+- [ ] The move is in `MOVED_COMPONENT_KEYS`, and a widget spec covers the moved key.
 - [ ] No data migration removes a key (`- 'key'`, `#-`, `delete`, `unset()`, `omit()`). The lint enforces this.
 - [ ] No key changes format or meaning in place; the new format has a new key.
-- [ ] The data migration selects only rows that still need the copy, batches by `id`, logs progress and clears app history for the versions it touched.
-- [ ] The cleanup `requires` the data migration, reruns the copy first and removes an old key only where its new key exists.
+- [ ] The data migration declares its moves once, copies with `copyMovedKeys()`, clears app history for the versions it returns and adds the trigger in `beforeCommit()`.
+- [ ] The cleanup `requires` the data migration and calls `contractMovedKeys()` with the same moves and sync name.
 - [ ] `migrateProperties()` converts old exports and templates for this widget.
-- [ ] The widget reads only the new place.
 - [ ] One migration per widget change, timestamped now, with the same timestamp in the file name and the class name.
 
 ## Tests
 
-| File (under `server/test/modules/`) | Covers |
+| File | Covers |
 |---|---|
-| `migrations/e2e/appbuilder-key-move.spec.ts` | The real runner on a key move: the copy in the data phase, the cleanup held back on that upgrade and run on the next, in async and blocking mode; rows old code saved after the copy; a fresh install; only row locks |
-| `migrations/unit/migration-lint.spec.ts` | Data migrations that remove JSON keys are rejected, including in helpers `up()` calls; cleanup may remove them |
+| `server/test/modules/migrations/e2e/appbuilder-key-move.spec.ts` | The real runner on a key move: the copy and the trigger in the data phase, the cleanup held back on that upgrade and run on the next, in async and blocking mode, and a fresh install. Edits from an editor tab opened before the upgrade, before and after a rollback, widgets created by either release, other widget types. Row locks only in the copy; adding the trigger pauses writes, never reads |
+| `server/test/modules/migrations/unit/component-key-moves.spec.ts` | The cleanup drops the trigger in its own transaction, before the batches that remove old keys |
+| `server/test/modules/migrations/unit/legacy-3-21-58-upgrade.spec.ts` | The 3.21.58 branch key swap runs after a later migration's `beforeCommit()`, so the trigger never waits under its lock |
+| `server/test/modules/migrations/unit/migration-lint.spec.ts` | Data migrations that remove JSON keys are rejected, including in helpers `up()` calls; cleanup may remove them |
+| `frontend/src/AppBuilder/_stores/utils/__tests__/dropMovedComponentKeys.spec.ts` | The App Builder drops a moved key's old place on load, per component type, and copies only what it changes |

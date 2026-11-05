@@ -55,13 +55,17 @@ export function isTransientError(error: unknown): boolean {
   return TRANSIENT_ERROR_CODES.has(driverError?.code ?? code ?? '');
 }
 
-interface BeforeCommitSteps {
+export interface BeforeCommitSteps {
   run(queryRunner: QueryRunner): Promise<void>;
   clear(): void;
 }
 
-/** Collects the beforeCommit() step of each data whose up() ran in this attempt. */
-function collectBeforeCommitSteps(dataDS: DataSource): BeforeCommitSteps {
+/**
+ * Collects the beforeCommit() step of each data whose up() ran in this attempt, to run in migration order. The legacy
+ * branch key swap runs last whatever its order: it ends holding ACCESS EXCLUSIVE on app_versions until commit, and a
+ * later step would run under that lock.
+ */
+export function collectBeforeCommitSteps(dataDS: DataSource): BeforeCommitSteps {
   const beforeCommitSteps: { name: string; beforeCommit: (queryRunner: QueryRunner) => Promise<void> }[] = [];
   for (const migration of dataDS.migrations as DataMigration[]) {
     if (!migration.beforeCommit) continue;
@@ -76,7 +80,12 @@ function collectBeforeCommitSteps(dataDS: DataSource): BeforeCommitSteps {
   return {
     clear: () => beforeCommitSteps.splice(0),
     async run(queryRunner) {
-      for (const { name, beforeCommit } of beforeCommitSteps.splice(0)) {
+      const steps = beforeCommitSteps.splice(0);
+      const ordered = [
+        ...steps.filter(({ name }) => name !== LEGACY_BRANCH_MIGRATION),
+        ...steps.filter(({ name }) => name === LEGACY_BRANCH_MIGRATION),
+      ];
+      for (const { name, beforeCommit } of ordered) {
         console.log(`[migrations] BEFORE COMMIT ${name}`);
         await beforeCommit(queryRunner);
       }
