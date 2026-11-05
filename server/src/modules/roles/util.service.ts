@@ -122,7 +122,7 @@ export class RolesUtilService implements IRolesUtilService {
                 `COALESCE((SELECT av.app_name FROM app_versions av
                    WHERE av.app_id = app.id AND av.version_type = 'version'
                      AND av.is_stub = false AND av.app_name IS NOT NULL
-                   ORDER BY av.is_synced DESC, av.updated_at DESC LIMIT 1), app.id::text)`,
+                   ORDER BY av.is_synced DESC, av.updated_at DESC LIMIT 1), app.name, app.id::text)`,
                 'name'
               )
               .where('app.userId = :userId', { userId })
