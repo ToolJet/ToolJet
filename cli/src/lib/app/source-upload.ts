@@ -295,9 +295,6 @@ export function loadsByComputedName(code: string): boolean {
   );
 }
 
-/** Files a pull may change without any build running them: documents, plain text and images. */
-const INERT = /\.(?:md|txt|svg|png|jpe?g|gif|webp|avif|ico|woff2?|ttf|otf)$/i;
-
 const recordsRenders = (root: string): boolean => {
   const config = parseJson(localStoredContent(root, 'frontend/.tooljet/config.json') ?? '');
   return config?.recordRender === true;
@@ -308,8 +305,8 @@ const recordsRenders = (root: string): boolean => {
  * adds or changes a code-loading directive, a file such a directive or a build config loads, and, when this project
  * renders components in Node (recordRender), any changed component code. When a file the build runs loads by a
  * computed name (loadsByComputedName), in this copy or in the pull, the inventory cannot be trusted, so every changed
- * file except documents, plain text, images and stylesheets (whose directives are checked above) counts. Compared as
- * stored, so a local SDK path is no change.
+ * stored file counts, whatever its extension: such a loader can read a document, plain text, an SVG or a stylesheet
+ * and run what it holds (fs.readFileSync and new Function). Compared as stored, so a local SDK path is no change.
  */
 export function trustFileChanges(root: string, stored: StoredSource): string[] {
   const files = new Map((stored.files ?? []).map((f) => [f.path, f.content]));
@@ -336,9 +333,8 @@ export function trustFileChanges(root: string, stored: StoredSource): string[] {
       [files.get(rel), localStoredContent(root, rel)].some((c) => typeof c === 'string' && loadsByComputedName(c))
   );
   if (indirect) {
-    for (const rel of files.keys())
-      if (!INERT.test(rel) && !STYLESHEET.test(rel) && changes(rel))
-        note(`${rel} (${indirect} loads files by a computed name)`, rel);
+    // No extension is safe here: the loader decides how it reads a file, so a changed .txt, .md or .svg counts too.
+    for (const rel of files.keys()) if (changes(rel)) note(`${rel} (${indirect} loads files by a computed name)`, rel);
   }
   if (recordsRenders(root)) {
     for (const rel of files.keys())

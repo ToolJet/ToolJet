@@ -67,10 +67,11 @@ describe('live sync and code a build loads', () => {
       })
     );
 
-    // The pulled brand.ts loads a built-in that runs code, so the rest of the pull counts too.
+    // The pulled brand.ts loads a built-in that runs code, so the rest of the pull counts too, the stylesheet included.
     expect(changes).to.have.members([
       'frontend/src/brand.ts (loaded by the build)',
       'frontend/src/tokens.cjs (loaded by the build)',
+      'frontend/src/index.css (frontend/src/brand.ts loads files by a computed name)',
       'frontend/src/App.tsx (frontend/src/brand.ts loads files by a computed name)',
     ]);
   });
@@ -105,8 +106,8 @@ describe('live sync and code a build loads', () => {
 
 /*
   A build config that names what it loads at run time (require(configName)) can run any project file, so the literal
-  inventory above cannot say which pulled change it runs: then every pulled change except documents, plain text,
-  images and stylesheets needs --trust-remote-config.
+  inventory above cannot say which pulled change it runs: then every pulled change, whatever its extension, needs
+  --trust-remote-config.
 */
 describe('live sync when a build config loads files by a computed name', () => {
   let root: string;
@@ -143,7 +144,7 @@ describe('live sync when a build config loads files by a computed name', () => {
     ]);
   });
 
-  it('then names every changed code or data file, and lets documents, images and plain stylesheets through', () => {
+  it('then names every changed stored file, documents, SVGs and plain stylesheets included', () => {
     write('frontend/tailwind.config.cjs', 'const load = require;\nmodule.exports = load(`./src/${"theme"}.cjs`);\n');
 
     const changes = trustFileChanges(
@@ -157,10 +158,44 @@ describe('live sync when a build config loads files by a computed name', () => {
       })
     );
 
+    const by = '(frontend/tailwind.config.cjs loads files by a computed name)';
     expect(changes).to.have.members([
-      'frontend/src/App/index.tsx (frontend/tailwind.config.cjs loads files by a computed name)',
-      'frontend/src/data/tokens.json (frontend/tailwind.config.cjs loads files by a computed name)',
+      `frontend/src/App/index.tsx ${by}`,
+      `frontend/src/data/tokens.json ${by}`,
+      `frontend/src/notes.md ${by}`,
+      `frontend/src/logo.svg ${by}`,
+      `frontend/styles/global.css ${by}`,
     ]);
+  });
+
+  /* A trusted config that reads a file and runs it: the extension says nothing about how the loader treats it. */
+  const readsAndRuns =
+    "const fs = require('fs');\nconst name = './src/payload' + '.txt';\n" +
+    "new Function(fs.readFileSync(require('path').join(__dirname, name), 'utf8'))();\nmodule.exports = {};\n";
+
+  for (const rel of ['frontend/src/payload.txt', 'frontend/src/notes.md', 'frontend/src/logo.svg']) {
+    it(`names a changed ${path.extname(rel)} file a computed loader could read and run`, () => {
+      write('frontend/postcss.config.cjs', readsAndRuns);
+      write(rel, 'before');
+
+      expect(trustFileChanges(root, stored({ [rel]: 'after' }))).to.deep.equal([
+        `${rel} (frontend/postcss.config.cjs loads files by a computed name)`,
+      ]);
+    });
+
+    it(`lets the same ${path.extname(rel)} change through without a computed loader`, () => {
+      write('frontend/postcss.config.cjs', 'module.exports = { plugins: { tailwindcss: {} } };\n');
+      write(rel, 'before');
+
+      expect(trustFileChanges(root, stored({ [rel]: 'after' }))).to.deep.equal([]);
+    });
+  }
+
+  it('does not name an unchanged document under a computed loader', () => {
+    write('frontend/postcss.config.cjs', readsAndRuns);
+    write('frontend/src/payload.txt', 'same');
+
+    expect(trustFileChanges(root, stored({ 'frontend/src/payload.txt': 'same' }))).to.deep.equal([]);
   });
 
   it('counts a computed load in a file a config imports literally', () => {
