@@ -22,9 +22,9 @@ const CustomValueContainer = ({ children, ...props }) => {
 
   return (
     <ValueContainer {...props}>
-      <div className="d-inline-flex">
+      <div className="d-inline-flex w-100" style={{ minWidth: 0, maxWidth: '100%', overflow: 'hidden' }}>
         {selectProps?.doShowIcon && (
-          <div>
+          <div style={{ flexShrink: 0 }}>
             <TablerIcon
               iconName={selectProps?.icon}
               style={{
@@ -37,7 +37,7 @@ const CustomValueContainer = ({ children, ...props }) => {
             />
           </div>
         )}
-        <span className="d-flex" {...props}>
+        <span className="d-flex flex-grow-1" style={{ minWidth: 0, maxWidth: '100%', overflow: 'hidden' }}>
           {React.Children.map(children, (child) => {
             return child ? (
               child
