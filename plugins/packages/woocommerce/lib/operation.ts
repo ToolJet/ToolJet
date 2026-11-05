@@ -1,6 +1,5 @@
 import { QueryOptions } from './types';
 const JSON5 = require('json5');
-const querystring = require('querystring');
 
 function parseJSON(json: any) {
   if (!json) {
@@ -28,13 +27,13 @@ export async function customerOpeations(WooCommerce, queryOptions: QueryOptions,
         ...(email?.length > 0 && { email }),
         ...(role?.length > 0 && { role }),
       };
-      const data = await WooCommerce.get(generateEndpointWithQueryParams('customers', searchParams))
+      const data = await WooCommerce.get('customers', searchParams)
         .then((response) => {
           returnValue = { statusCode: response.status, ...response?.data };
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
       return data;
     }
@@ -45,7 +44,7 @@ export async function customerOpeations(WooCommerce, queryOptions: QueryOptions,
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     case 'delete_customer': {
@@ -57,7 +56,7 @@ export async function customerOpeations(WooCommerce, queryOptions: QueryOptions,
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     case 'batch_update_customer': {
@@ -67,7 +66,7 @@ export async function customerOpeations(WooCommerce, queryOptions: QueryOptions,
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     case 'create_customer': {
@@ -77,7 +76,7 @@ export async function customerOpeations(WooCommerce, queryOptions: QueryOptions,
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     case 'retrieve_customer': {
@@ -87,7 +86,7 @@ export async function customerOpeations(WooCommerce, queryOptions: QueryOptions,
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     default:
@@ -162,13 +161,13 @@ export async function productOperations(WooCommerce, queryOptions: QueryOptions,
         ...(parent_exclude?.length > 0 && { parent_exclude }),
         ...(parent?.length > 0 && { parent }),
       };
-      return await WooCommerce.get(generateEndpointWithQueryParams('products', searchParams))
+      return await WooCommerce.get('products', searchParams)
         .then((response) => {
           returnValue = { statusCode: response.status, ...response?.data };
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     case 'update_product': {
@@ -178,7 +177,7 @@ export async function productOperations(WooCommerce, queryOptions: QueryOptions,
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     case 'delete_product': {
@@ -190,7 +189,7 @@ export async function productOperations(WooCommerce, queryOptions: QueryOptions,
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     case 'batch_update_product': {
@@ -200,7 +199,7 @@ export async function productOperations(WooCommerce, queryOptions: QueryOptions,
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     case 'create_product': {
@@ -210,7 +209,7 @@ export async function productOperations(WooCommerce, queryOptions: QueryOptions,
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     case 'retrieve_product': {
@@ -220,7 +219,7 @@ export async function productOperations(WooCommerce, queryOptions: QueryOptions,
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     default:
@@ -273,13 +272,13 @@ export async function orderOperations(WooCommerce, queryOptions: QueryOptions, o
         ...(product && { product }),
         ...(dp && { dp }),
       };
-      return await WooCommerce.get(generateEndpointWithQueryParams('orders', searchParams))
+      return await WooCommerce.get('orders', searchParams)
         .then((response) => {
           returnValue = { statusCode: response.status, ...response?.data };
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     case 'update_order': {
@@ -289,7 +288,7 @@ export async function orderOperations(WooCommerce, queryOptions: QueryOptions, o
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     case 'delete_order': {
@@ -301,7 +300,7 @@ export async function orderOperations(WooCommerce, queryOptions: QueryOptions, o
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     case 'batch_update_order': {
@@ -311,7 +310,7 @@ export async function orderOperations(WooCommerce, queryOptions: QueryOptions, o
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     case 'create_order': {
@@ -321,7 +320,7 @@ export async function orderOperations(WooCommerce, queryOptions: QueryOptions, o
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     case 'retrieve_order': {
@@ -331,7 +330,7 @@ export async function orderOperations(WooCommerce, queryOptions: QueryOptions, o
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     default:
@@ -360,13 +359,13 @@ export async function couponOperations(WooCommerce, queryOptions: QueryOptions, 
         ...(after?.length > 0 && { after }),
         ...(code?.length > 0 && { code }),
       };
-      return await WooCommerce.get(generateEndpointWithQueryParams(`coupons`, searchParams))
+      return await WooCommerce.get('coupons', searchParams)
         .then((response) => {
           returnValue = { statusCode: response.status, ...response?.data };
           return returnValue;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     case 'create_coupon': {
@@ -375,7 +374,7 @@ export async function couponOperations(WooCommerce, queryOptions: QueryOptions, 
           return response.data;
         })
         .catch((error) => {
-          return error.response.data;
+          return handleError(error);
         });
     }
     default:
@@ -383,8 +382,9 @@ export async function couponOperations(WooCommerce, queryOptions: QueryOptions, 
   }
 }
 
-const generateEndpointWithQueryParams = (resource: string, searchParams) => {
-  const queryString = querystring.stringify(searchParams);
-  const endpoint = queryString ? `${resource}?${queryString}` : resource;
-  return endpoint;
+// woocommerce-rest-ts-api v8 throws WooCommerceApiError where `response` is already the
+// response body (null for network/validation errors), not an axios response.
+export const handleError = (error: any) => {
+  if (error?.response) return error.response;
+  return { message: error?.message, statusCode: error?.statusCode };
 };
