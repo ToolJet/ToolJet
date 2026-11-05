@@ -145,7 +145,8 @@ type NewRevampedComponent =
   | 'ModalV2'
   | 'PopoverMenu'
   | 'Pagination'
-  | 'Timeline';
+  | 'Timeline'
+  | 'SvgImage';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -200,6 +201,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'PopoverMenu',
   'Pagination',
   'Timeline',
+  'SvgImage',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -362,6 +364,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'ReorderableList',
   'StarRating',
   'Statistics',
+  'SvgImage',
   'Tabs',
   'Tags',
   'TagsInput',

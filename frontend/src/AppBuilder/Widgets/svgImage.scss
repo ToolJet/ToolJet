@@ -1,0 +1,15 @@
+// Authored markup (Tabler's global `.icon` class, the file's own width/height attributes) must not
+// pin the vector's size: it fills the widget height, keeps its viewBox aspect ratio, and never
+// overflows the box horizontally.
+.svg-image-widget > svg {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+}
+
+// Dynamic height (view mode): width is the fixed axis, height follows the viewBox ratio. Data
+// without a viewBox has no ratio, so the browser keeps its authored height attribute.
+.svg-image-widget--dynamic > svg {
+  width: 100%;
+  height: auto;
+}
