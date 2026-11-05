@@ -11,12 +11,12 @@ To establish a connection with the **Amazon SES** data source, you can either cl
 
 ToolJet requires the following to connect to Amazon SES:
 
+- **Authentication**: **Use IAM Access Keys**, **Use AWS Instance Credentials**, or **Use AWS ARN Role**.
 - **Region**
-- **Authentication**
-- **Access key**
-- **Secret key**
+- **Access key** and **Secret key**: Required only when **Authentication** is **Use IAM Access Keys**.
+- **Role ARN**: Required only when **Authentication** is **Use AWS ARN Role**, e.g. `arn:aws:iam::123456789012:role/role-name`. ToolJet assumes this role through AWS STS using the credentials available to the ToolJet server, so the server's AWS identity must be allowed to assume it.
 
-You may also select **AWS Instance Credentials** or **AWS ARN Role** as authentication methods from the dropdown. These options enable authentication through AWS-managed roles, eliminating the need to manually supply IAM access keys and allowing integration based on the configuration of your AWS environment.
+**Use AWS Instance Credentials** and **Use AWS ARN Role** authenticate through your AWS environment, so you don't supply IAM access keys.
 
 **Note:** It is recommended to create a new IAM user for the database so that you can control the access levels of ToolJet.
 
@@ -36,15 +36,15 @@ You may also select **AWS Instance Credentials** or **AWS ARN Role** as authenti
 ### Email service
 
 #### Required parameters:
-- **Send email to**
-- **Send email from**
+- **Send mail to**
+- **Send mail from**
 - **Subject**
 - **Body**
 
 
 #### Optional parameters:
-- **CC Addresses**
-- **BCC Addresses**
+- **CC mail to**
+- **BCC mail to**
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/amazonses/ses-query.png" alt="Amazon SES" />
 

@@ -13,10 +13,15 @@ To establish a connection with the **BigQuery** data source, you can either clic
 
 ToolJet requires the following to make an OAuth connection with your BigQuery:
 
+- **Access type**: Select **Read only** or **Read and Write**. Defaults to **Read only**. With **Read only**, ToolJet requests the `https://www.googleapis.com/auth/bigquery.readonly` scope. Select **Read and Write** (scope `https://www.googleapis.com/auth/bigquery`) to run queries that modify data.
 - **Project ID**: Enter the Google Cloud project ID that contains your BigQuery datasets.
 - **Region**: Select the region where your BigQuery resources are located.
 - **Client ID**: Enter the OAuth 2.0 Client ID obtained from your Google Cloud project.
-- **Client Secret**: Enter the OAuth 2.0 Client Secret associated with the Client ID.
+- **Client secret**: Enter the OAuth 2.0 Client Secret associated with the Client ID.
+
+:::info
+On ToolJet Cloud, you can select **ToolJet app** in the **OAuth type** dropdown to use ToolJet's preconfigured OAuth app instead of entering a **Client ID** and **Client secret**. The **ToolJet app** option is available only on ToolJet Cloud. Self-hosted ToolJet uses **Custom app**.
+:::
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/connection-oauth.png" alt=" Bigquery Oauth connection " />
 

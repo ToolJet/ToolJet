@@ -14,12 +14,12 @@ Please make sure the **Host/IP** of the database is accessible from your VPC if 
 :::
 
 ### Connection Format
-**Standard(mongodb)**
+**Standard (mongodb)**
 
   Use this option when connecting to a specific MongoDB host and port.
 It requires manually entering server details and is suitable for standalone MongoDB deployments or custom network setups.
 
- **DNS Seed List (mongodb + srv)**
+ **DNS Seed list (mongodb+srv)**
 
 Use this option for MongoDB Atlas or replica set clusters.
 It automatically discovers hosts using DNS, reduces configuration effort, and is the recommended approach for scalable and managed MongoDB deployments.
@@ -28,9 +28,13 @@ It automatically discovers hosts using DNS, reduces configuration effort, and is
 ToolJet requires the following to connect to your MongoDB.
 
 - **Host**
-- **Port**
-- **Username**
-- **Password**
+- **Port**: Shown only for the **Standard (mongodb)** format. Defaults to `27017`.
+
+You can also set the following optional fields:
+
+- **Database**: The database that queries run against.
+- **Username** and **Password**: ToolJet adds the credentials to the connection only when both are filled in.
+- **Connection options**: Key-value pairs passed to the MongoDB driver as client options, for example `authSource` with the value `admin`.
 
 **Note:** It is recommended to create a new MongoDB user so that you can control the access levels of ToolJet.
 
@@ -38,10 +42,11 @@ ToolJet requires the following to connect to your MongoDB.
 
 ### Secure Sockets Layer (SSL)
 
-- **SSL Certificate**: SSL certificate to use with MongoDB. Supported Types:
-  - **None**: No SSL certificate verification.
-  - **CA Certificate**: Requires a CA certificate to verify the server certificate.
-  - **Client Certificate**: Requires a client certificate, client key, and CA certificate to authenticate with the server.
+- **SSL/TLS**: Turn on to connect to MongoDB over SSL/TLS. Off by default.
+- **SSL/TLS certificate**: Shown when **SSL/TLS** is on. Supported types:
+  - **CA certificate**: Verifies the server certificate against the certificate you enter in **CA cert**.
+  - **Client certificate**: Authenticates with the server using **Client key**, **Client cert**, and **CA cert**.
+  - **None**: Connects over SSL/TLS without a custom certificate.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/ssl.png" alt="MongoDB - SSL Certificate" />
 
@@ -63,6 +68,14 @@ For example: `mongodb+srv://tooljettest:dummypassword@cluster0.urul7.mongodb.net
 
 **Note:** Make sure to replace username, password, cluster, and database with your actual MongoDB details. If your MongoDB instance requires additional connection options, you can usually append these options to the connection string.
 
+The connection string form also shows **Connection format**, **Host**, **Port**, **Database**, **Username**, **Password**, **Connection options**, **SSL/TLS**, and **SSH tunnel**. These fields are optional. When you fill them in, they override the matching part of the connection string:
+
+- **Host** replaces the first host in the string. **Port** is applied only when **Host** is also set.
+- **Database**, **Username**, and **Password** replace the values in the string.
+- The protocol (`mongodb://` or `mongodb+srv://`) comes from the string. **Connection format** is used only when the string has no protocol.
+
+In connection string mode, ToolJet applies the **SSL/TLS** toggle but not the CA or client certificate fields. To connect with a CA or client certificate, use **Manual connection**.
+
 ### SSH Tunnelling 
 
 ToolJet now supports SSH tunnelling for the MongoDB data source, allowing secure connections to databases hosted inside private networks. This can be used to :
@@ -80,13 +93,17 @@ To securely connect to a private MongoDB database using SSH tunnelling:
 2. Provide the following details:
    - **SSH host** – Server hostname or IP address.
    - **SSH port** – Port number (default: `22`).
-   - ***SSH dst host** - Destination host that the SSH tunnel forwards traffic to (usually `localhost`)
    - **SSH username** – Username for the SSH server.
-   - **Authentication method** – Choose either:
-     - **Private key**
-     - **Password**
+   - **SSH dst host** – The MongoDB host, as reached from the SSH server, that the tunnel forwards traffic to. If left empty, ToolJet uses **Host** (or the first host in the connection string). The tunnel forwards to the MongoDB port (**Port**, or the port in the connection string; default `27017`).
+   - **Authentication type** – Choose either:
+     - **Private Key**: Enter the **SSH private key**, and the **SSH passphrase** if the key has one.
+     - **Password**: Enter the **SSH password**.
 
 Once configured, ToolJet establishes a secure SSH connection. All MongoDB queries are routed through this encrypted tunnel.
+
+:::note
+SSH tunnelling isn't supported with the **DNS Seed list (mongodb+srv)** format or a `mongodb+srv://` connection string. The connection fails with `SSH tunnel is not supported with mongodb+srv format`.
+:::
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/ssh-tunnel.png" alt="SSH tunnelling mongodb connection"/>
 
@@ -105,6 +122,7 @@ Query results can be transformed using transformations. Read our transformations
 ## Supported Operations
 
 - **[List Collections](#list-collections)**
+- **[Create a Collection](#create-a-collection)**
 - **[Find One](#find-one)**
 - **[Find Many](#find-many)**
 - **[Total Count](#total-count)**
@@ -128,6 +146,30 @@ Query results can be transformed using transformations. Read our transformations
 Returns list of collections
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-listcollections.png" alt="ToolJet - Mongo DB List Collection"/>
+
+### Create a Collection
+
+Creates a new collection in the connected database. The query returns the new collection's `collectionName` and `namespace`.
+
+#### Required Parameters:
+
+- **Name**: Name of the collection to create.
+
+#### Optional Parameters:
+
+- **Options**: Collection options as a JSON object, for example `capped`, `size`, `max`, `timeseries`, or `validator`.
+
+
+
+#### Example:
+
+```json
+{
+  "capped": true,
+  "size": 10485760,
+  "max": 1000
+}
+```
 
 ### Find One
 

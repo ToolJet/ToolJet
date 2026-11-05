@@ -17,25 +17,31 @@ To establish a connection with the MariaDB global datasource, you can either cli
 
 - **Password:** The password for the MariaDB account.
 
-- **Connection Limit:** The maximum number of concurrent connections allowed to the MariaDB server.
+- **Connection limit:** The maximum number of connections in ToolJet's connection pool for this data source. If you leave it empty, ToolJet uses `10`.
 
 - **Port:** The port number of the MariaDB server.
 
 - **Database:** The name of the database that you want to connect to.
 
+- **Connection options:** Optional key-value pairs passed to the MariaDB connection pool configuration.
+
+:::note
+The connection form shows an **Allow dynamic connection parameters** toggle, but the MariaDB query editor has no **Host** or **Database** fields, so turning it on has no effect.
+:::
+
 ### SSL/TLS Connection
 
 It enables encrypted communication between ToolJet and the MariaDB server to protect data transmitted over the network.
 
-- **SSL:** Whether or not to use SSL to connect to the MariaDB server.
+- **SSL/TLS:** Turn on to encrypt the connection to the MariaDB server.
 
-- **SSL Certificate:** There are three options for the SSL Certificate connection detail:
+- **SSL certificate:** There are three options for the SSL certificate connection detail:
 
-  - **CA Certificate:** This option allows you to use a certificate issued by a Certificate Authority (CA). This is the most secure option, as it ensures that the identity of the MariaDB server has been verified by a trusted third party.
+  - **CA certificate:** Verifies the MariaDB server's certificate against the **CA cert** you provide.
 
-  - **Self-Signed Certificate:** This option allows you to use a self-signed certificate. This is less secure than using a CA certificate, as it does not ensure the identity of the MariaDB server has been verified by a trusted third party. However, it is a good option if you do not have access to a CA certificate.
+  - **Self-signed certificate:** Verifies the MariaDB server's certificate against the **Server cert** you provide, and authenticates ToolJet with the **Client cert** and **Client key**.
 
-  - **None:** This option does not use SSL. This is the least secure option, as it allows anyone to intercept your communications with the MariaDB server.
+  - **None:** Encrypts the connection without verifying the server's certificate. When **SSH tunnel** is on, ToolJet doesn't use SSL with this option.
 
 ### SSH Tunnelling & Configuration
 
@@ -56,10 +62,10 @@ To securely connect to a private MariaDB using SSH tunnelling:
 
    - **SSH username:**  Username for the SSH server.
 
-   - **Authentication method:**  Choose either:
-      - **Private key:** The private key used to authenticate securely with the MariaDB server when key-based authentication is enabled.
+   - **Authentication type:**  Choose either:
+      - **Private key:** Enter the **SSH private key** used to authenticate with the SSH server, and the **SSH passphrase** if the key is protected by one.
 
-     - **Password:** The password associated with the database user account for authentication.
+      - **Password:** Enter the **SSH password** for the SSH user.
 
 <img className="screenshot-full img-l" src="/img/datasource-reference/mariadb/connection-v4.png" alt="MariaDB data source connection" />
 
@@ -77,6 +83,25 @@ Query results can be transformed using Transformation. For more information on t
 :::
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/query-v3.png" alt="MariaDB query" />
+
+### Parameterized Queries
+
+Parameterized queries pass values to the database separately from the SQL text, which prevents SQL injection. To use them:
+
+1. Use `:parameter_name` as placeholders in your SQL query where you want to insert parameters.
+2. In the **SQL Parameters** section below the query editor, add key-value pairs for each parameter.
+3. The keys should match the parameter names used in the query (without the colon).
+4. The values can be static values or dynamic values using the `{{ }}` notation.
+
+**Example:**
+
+```sql
+SELECT * FROM user WHERE email = :email
+```
+
+SQL Parameters:
+- Key: email
+- Value: `{{ components.emailInput.value }}`
 
 ## CRUD Queries
 
@@ -218,11 +243,15 @@ Modify existing row values in the selected table based on the specified conditio
 
 In the editor, ensure the **Columns** input is provided in `string` format.
 
-#### Required Parameter
+#### Required Parameters
+- **Filter**: Apply conditions to identify which row(s) should be updated. At least one filter condition is required.
 - **Columns**: Specify the column names and values to be updated in the selected row(s).
 
-#### Optional Parameter
-- **Filter**: Apply conditions to identify which row(s) should be updated.
+#### Optional Parameters
+- **Allow this query to update multiple rows**: When enabled, the query can modify multiple rows at once. When disabled, the query fails if the filter matches more than one row.
+- **Consider query that updates zero records as success**: When enabled, a query that matches no rows is still treated as successful. When disabled, the query fails if no row matches the filter.
+
+Both toggles are off by default. When a toggle's condition is violated, the update is rolled back, so no rows are changed.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/updaterows-gui.png" alt="MariaDB update row gui mode"/>
 
@@ -230,10 +259,14 @@ In the editor, ensure the **Columns** input is provided in `string` format.
 Remove one or more rows from the selected table that match the given conditions.
 
 #### Required Parameter
-- **Filter**: Apply conditions to specify which row(s) should be deleted.
+- **Filter**: Apply conditions to specify which row(s) should be deleted. Required unless you set a **Limit**.
 
-#### Optional Parameter
+#### Optional Parameters
 - **Limit**: Specify the maximum number of rows to delete.
+- **Allow this query to delete multiple rows**: When enabled, the query can delete multiple rows at once. When disabled, the query fails if more than one row would be deleted.
+- **Consider query that deletes zero records as success**: When enabled, a query that matches no rows is still treated as successful. When disabled, the query fails if no row matches the filter.
+
+Both toggles are off by default. When a toggle's condition is violated, the delete is rolled back and no rows are deleted.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/deleterows-gui.png" alt="Mariadb delete row gui mode"/>
 

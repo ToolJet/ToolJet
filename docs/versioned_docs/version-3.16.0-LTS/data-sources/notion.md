@@ -367,28 +367,24 @@ This operation updates the content for the specified block_id based on the block
 
 #### Optional Parameters:
 
-- **Properties**
-- **Archive**
+- **Properties** : An object keyed by the block's type (for example `paragraph`, `heading_1`, or `to_do`) that holds the fields to change for that type. ToolJet merges this object into the update request.
+- **Archive** : **Archive**, **Un archive**, or **None** to leave the archive state unchanged.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/notion/update-block.png" alt="notion block update"/>
 
 #### Example
+This example replaces the text of a `paragraph` block:
 ```yaml
 {
-    "Title": {
-      "title": [
+    "paragraph": {
+      "rich_text": [
         {
           "type": "text",
           "text": {
-            "content": "Updated Page Title"
+            "content": "Updated paragraph text"
           }
         }
       ]
-    },
-    "Status": {
-      "select": {
-        "name": "In Progress"
-      }
     }
 }
 ```

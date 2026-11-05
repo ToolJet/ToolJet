@@ -12,7 +12,7 @@ To establish a connection with the PostgreSQL data source, you can either click 
 ToolJet offers following connection types to connect to your PostgreSQL database:
 
 - **[Manual connection](#manual-connection)**
-- **[Connection string](#connection-string)**
+- **[Connection string (encoded)](#connection-string)**
 - **[Dynamic Connection](#dynamic-connection)**
 
 ### Manual Connection
@@ -21,18 +21,19 @@ To connect to PostgreSQL using Manual connection parameters, select **Manual con
 
 - **Host**
 - **Port**
-- **Database Name**
+- **Database**
 - **Username**
 - **Password**
-- **Connection Options**
-- **SSL Certificate**
-- **SSH Tunnelling**
+- **Connection options**: Optional key-value pairs added to the database client configuration.
+- **SSL/TLS**: On by default. See [SSL/TLS](#ssltls).
+- **SSH tunnel**: See [SSH Tunnelling](#ssh-tunnelling).
+- **Allow dynamic connection parameters**: See [Dynamic Connection](#dynamic-connection).
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/postgresql/manual-conn-ux-v5.png" alt="PG connection-manual"/>
 
 ### Connection String
 
-To connect to PostgreSQL using a connection string, select **Connection String** as the connection type and provide the following details:
+To connect to PostgreSQL using a connection string, select **Connection string (encoded)** as the connection type and paste the connection string, such as `postgresql://username:password@host:5432/database?sslmode=require`. ToolJet fills in **Host**, **Port**, **Database**, **Username**, **Password** and **SSL/TLS** from the string. You can still edit these fields, and ToolJet connects using their values. **Connection options**, **SSL/TLS**, **SSH tunnel** and **Allow dynamic connection parameters** work the same way as in a manual connection.
 
 :::info
 If your connection string (username, password, database) contains any special characters, you need to URL-encode them.
@@ -52,6 +53,14 @@ For example, const POSTGRES_URL = `postgresql://${encodeURIComponent(user)}:${en
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
 :::
 
+### SSL/TLS
+
+**SSL/TLS** is on by default for a new PostgreSQL data source. Turn it off if your server doesn't accept SSL connections. When it's on, select the **SSL certificate** type:
+
+- **CA certificate**: Verifies the server certificate against the **CA cert** you provide.
+- **Self-signed certificate**: Enter the **Client key**, **Client cert** and **Root cert**.
+- **None**: Encrypts the connection without verifying the server certificate.
+
 ### SSH Tunnelling
 
 ToolJet now supports SSH tunnelling for the PostgreSQL data source, allowing secure connections to databases hosted inside private networks. This can be used to :
@@ -70,9 +79,9 @@ To securely connect to a private PostgreSQL database using SSH tunnelling:
    - **SSH host** – Server hostname or IP address.
    - **SSH port** – Port number (default: `22`).
    - **SSH username** – Username for the SSH server.
-   - **Authentication method** – Choose either:
-     - **Private key**
-     - **Password**
+   - **Authentication type** – Choose either:
+     - **Private key** – Enter the **SSH private key**, and the **SSH passphrase** if the key is protected by one.
+     - **Password** – Enter the **SSH password** for the SSH user.
 
 Once configured, ToolJet establishes a secure SSH connection. All PostgreSQL queries are routed through this encrypted tunnel.
 
@@ -135,6 +144,12 @@ PostgreSQL offers dynamic functions that provide runtime information about the c
 ### Dynamic Connection
 
 ToolJet allows overriding PostgreSQL connection parameters such as host and database directly at **query runtime** when dynamic connection parameters are enabled. This enables a single data source to support multiple environments or tenants without requiring separate configurations.
+
+To use it, turn on **Allow dynamic connection parameters** in the data source configuration. Each PostgreSQL query then shows **Host** and **Database** fields. Leave a field empty to use the value from the data source configuration.
+
+:::caution
+In this release, the **Host** and **Database** overrides don't apply when the data source uses **Connection string (encoded)**. Use **Manual connection** if you need them.
+:::
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/pg-dynamic-conn.png" alt="PG dynamic host"/>
 
