@@ -108,11 +108,9 @@ export class ResourceCountGuard implements CanActivate {
       }
       whereCondition.organization.id = organizationId;
     }
-    const apps = await manager.find(App, {
+    return await manager.count(App, {
       where: whereCondition,
       relations: ['organization'],
     });
-
-    return apps.length;
   }
 }
