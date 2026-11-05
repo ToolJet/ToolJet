@@ -98,7 +98,7 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 - The summary line carries the verdict:
   - `🟢 reversible` — a plain revert undoes the PR;
   - `🔴 not reversible` — a migration that drops or rewrites data, a public API or contract change, a release or external side effect, or a deletion.
-- Decide by naming the leftover: what would still be changed after a plain revert? No concrete leftover → 🟢. Behaviour changes (stricter validation, new errors, refused requests or runs) are 🟢, even though requests failed while the change was live: that is history, not a leftover.
+- Decide by naming the leftover: what would still be changed after a plain revert? No concrete leftover → 🟢. Behaviour changes (stricter validation, new errors, refused requests or runs) are 🟢 unless external clients must adapt to a changed public API. Requests refused while live are history, not a leftover.
 - Irreversible → `<details open>`, so the risk is never folded away.
 - Blank line after `</summary>` and before `</details>`, or the bullets don't render.
 - **Can't undo:** irreversible only. What a revert leaves behind.
@@ -114,7 +114,7 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 - End with `Each layer was reviewed and verified in its own PR; this PR is their sum plus <trunk>.`
 
 **Sources:** under the summary, no emoji. One item → one line, `**Issue:** Closes #123` (or `**PRD:** …`); two or more → `**Sources:**` with one bullet per item; none → drop it:
-- **Issue:** `Closes #123` when fully resolved, `Relates to #123` when partly. Private-tracker issues (e.g. from `kickoff`) need the full reference `ToolJet/tj-ee#123` — reference only, never the issue title or body, in a public PR. Write `Closes` whenever the PR fully resolves the issue, whatever the base. GitHub only links the PR to the issue when the base is the default branch; for a stacked or release-line PR, tell the user the link must be added by hand (issue → *Development* → gear → pick the repo and PR). There is no API for it.
+- **Issue:** `Closes #123` when fully resolved (any base), `Relates to #123` when partly. Private-tracker issues (e.g. from `kickoff`) need the full reference `ToolJet/tj-ee#123` — reference only, never the issue title or body, in a public PR. GitHub only links the PR to the issue when the base is the default branch; for a stacked or release-line PR, tell the user the link must be added by hand (issue → *Development* → gear → pick the repo and PR). There is no API for it.
 - **PRD and design:** `PRD: [title](url)`, `Design: [title](url)`, when those links (ClickUp, Figma, a GitHub spec issue) are in the conversation.
 - **Sub-issues:** `Sub-issues: #124, #125` — numbers only (GitHub renders titles). Multiple parents: one bullet each, `Sub-issues (#123): #124, #125`. More than ~6 → wrap in `<details>`.
 
