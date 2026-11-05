@@ -283,7 +283,8 @@ describe('PatScopeInterceptor', () => {
           const orgs = { [AI_APP]: WS, 'app-other-ws': 'ws-2' };
           return orgs[params[0]] ? [{ organization_id: orgs[params[0]] }] : [];
         }
-        return params[1] === 'lib-other' ? [{ app_id: 'app-other' }] : params[1] === 'lib-own' ? [{ app_id: AI_APP }] : [];
+        // library-ownership.ts: owners (stored code links) and references (components, pins) answer alike here.
+        return params[1] === 'lib-other' ? [{ appId: 'app-other' }] : params[1] === 'lib-own' ? [{ appId: AI_APP }] : [];
       },
     };
     const libraryInterceptor = (feature: string) =>
@@ -330,16 +331,21 @@ describe('PatScopeInterceptor', () => {
       await expect(run('DELETE_LIBRARY', aiSession())).rejects.toThrow(ForbiddenException);
     });
 
-    it('still refuses every other PAT session', () => {
-      expect(() => libraryInterceptor('FIND_OR_CREATE_LIBRARY').intercept(contextFor({ isPATLogin: true }), handled)).toThrow(
-        ForbiddenException
-      );
-      expect(() =>
-        libraryInterceptor('FIND_OR_CREATE_LIBRARY').intercept(
-          contextFor({ isPATLogin: true, tjApiSource: 'pat', aiAppId: AI_APP, organizationId: WS }),
-          handled
-        )
-      ).toThrow(ForbiddenException);
+    it('holds every other workspace token to the library features a token may use (the routes check the owning app)', () => {
+      for (const feature of ['CREATE_LIBRARY', 'FIND_OR_CREATE_LIBRARY', 'GET_LIBRARY', 'UPLOAD_DEV_BUNDLE', 'PUBLISH_REVISION']) {
+        expect(libraryInterceptor(feature).intercept(contextFor({ isPATLogin: true }), handled)).toBeDefined();
+      }
+      for (const feature of ['DELETE_LIBRARY', 'STREAM_DEV_BUNDLE']) {
+        expect(() => libraryInterceptor(feature).intercept(contextFor({ isPATLogin: true }), handled)).toThrow(
+          ForbiddenException
+        );
+        expect(() =>
+          libraryInterceptor(feature).intercept(
+            contextFor({ isPATLogin: true, tjApiSource: 'pat', aiAppId: AI_APP, organizationId: WS }),
+            handled
+          )
+        ).toThrow(ForbiddenException);
+      }
     });
   });
 

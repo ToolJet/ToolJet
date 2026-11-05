@@ -1,9 +1,10 @@
 import { FEATURE_KEY as LIBRARY_FEATURE } from '@modules/custom-component-libraries/constants';
+import { heldByAnotherApp, libraryClaims } from '@modules/custom-component-libraries/library-ownership';
 
 /*
   What the in-product AI builder's session (tj_api_source ai_builder) may do on the library routes: publish the
   library of the one app the AI request is for (the aiAppId claim), in the session's own workspace.
-  A library counts as that app's when no other app in the workspace uses it (a new library is nobody's yet): see
+  A library counts as that app's when no other app in the workspace holds it (a new library is nobody's yet): see
   libraryUsedByAnotherApp.
 */
 
@@ -51,9 +52,10 @@ export async function aiBuilderLibraryDenial(
 }
 
 /**
- * Whether an app in the workspace other than `appId` uses the library (a LibraryComponent naming its correlationId).
- * A library no other app uses counts as `appId`'s own; a new library is nobody's yet. Shared by the AI builder's
- * session above and by code-mode-source, which publishes an app's code into its library.
+ * Whether the library is another app's, by the one ownership model (custom-component-libraries/library-ownership.ts):
+ * owned by another app's stored code, or, while no app owns it, named by another app's components or pins. A library
+ * no other app holds counts as `appId`'s own; a new library is nobody's yet. Shared by the AI builder's session above
+ * and by code-mode-source, which publishes an app's code into its library.
  */
 export async function libraryUsedByAnotherApp(
   organizationId: string,
@@ -61,14 +63,5 @@ export async function libraryUsedByAnotherApp(
   correlationId: string,
   query: ScopeQuery
 ): Promise<boolean> {
-  const users = await query(
-    `SELECT DISTINCT v.app_id FROM components c
-       JOIN pages p ON p.id = c.page_id
-       JOIN app_versions v ON v.id = p.app_version_id
-       JOIN apps a ON a.id = v.app_id
-     WHERE a.organization_id = $1 AND c.type = 'LibraryComponent'
-       AND c.properties -> 'correlationId' ->> 'value' = $2`,
-    [organizationId, correlationId]
-  );
-  return users.some((row) => row.app_id !== appId);
+  return heldByAnotherApp(await libraryClaims(organizationId, correlationId, query), appId);
 }
