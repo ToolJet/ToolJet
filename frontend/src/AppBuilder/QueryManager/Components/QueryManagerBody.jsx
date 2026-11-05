@@ -31,7 +31,7 @@ import NotificationBanner from '@/_components/NotificationBanner';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
-export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null }) => {
+export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null, renderResponseCache = null }) => {
   const { t } = useTranslation();
   const { moduleId } = useModuleContext();
   const getResolvedValue = useStore((state) => state.getResolvedValue);
@@ -368,7 +368,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     return (
       <div className={cx({ 'disabled ': isFreezed })}>
         <div
-          className={cx(`d-flex pb-1`, {
+          className={cx(`d-flex pb-1 tw-mb-3`, {
             'disabled ': isFreezed,
           })}
           data-cy="query-triggers-section"
@@ -426,6 +426,9 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
                       queryName={queryName}
                     />
                   )}
+                  {config.action === 'showSuccessNotification' && (
+                    <SuccessNotificationInputs options={options} optionchanged={optionchanged} />
+                  )}
                 </React.Fragment>
               );
             })}
@@ -442,16 +445,8 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
               ))}
           </div>
         </div>
-        <div className="d-flex">
-          <div className="form-label">{}</div>
-          <SuccessNotificationInputs
-            // currentState={currentState}
-            options={options}
-            darkMode={darkMode}
-            optionchanged={optionchanged}
-          />
-        </div>
         {renderTimeout()}
+        {renderResponseCache?.({ selectedQuery, optionchanged, darkMode, isFreezed })}
         {renderDisableQuery()}
         {renderDisabledMessage()}
         {renderEventManager()}

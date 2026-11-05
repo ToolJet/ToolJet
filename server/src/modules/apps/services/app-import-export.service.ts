@@ -2987,6 +2987,11 @@ export class AppImportExportService {
     return filteredDataSources;
   }
 
+  /** Edition hook: adjusts an imported query's options before they are saved. CE keeps them as exported. */
+  protected normalizeImportedQueryOptions(options: DataQuery['options']): DataQuery['options'] {
+    return options;
+  }
+
   async createDataQueriesForAppVersion(
     manager: EntityManager,
     organizationId: string,
@@ -3015,7 +3020,7 @@ export class AppImportExportService {
 
       const newQuery = manager.create(DataQuery, {
         name: importingQuery.name,
-        options,
+        options: this.normalizeImportedQueryOptions(options),
         dataSourceId: dataSourceForAppVersion.id,
         appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
       });
@@ -4217,14 +4222,15 @@ export class AppImportExportService {
         name: query.name,
         dataSourceId: !dataSourceId ? defaultDataSourceIds[query.kind] : dataSourceId,
         appVersionId: query.appVersionId,
-        options:
+        options: this.normalizeImportedQueryOptions(
           dataSourceId == defaultDataSourceIds['tooljetdb']
             ? this.replaceTooljetDbTableIds(
                 query.options,
                 externalResourceMappings['tooljet_database'],
                 user?.organizationId
               )
-            : query.options,
+            : query.options
+        ),
       });
       await manager.save(newQuery);
       dataQueryMapping[query.id] = newQuery.id;
@@ -4463,7 +4469,10 @@ export class AppImportExportService {
     for (const event of allEvents) {
       const eventDefinition = updateEntityReferences(event.event, mappings);
 
-      if (eventDefinition?.actionId === 'run-query' && oldDataQueryToNewMapping[eventDefinition.queryId]) {
+      if (
+        ['run-query', 'refresh-query-cache'].includes(eventDefinition?.actionId) &&
+        oldDataQueryToNewMapping[eventDefinition.queryId]
+      ) {
         eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
       }
 

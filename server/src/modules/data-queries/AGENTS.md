@@ -46,6 +46,68 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
 - EE util `runQuery` override: query-level access check (`AppPermissionsUtilService.checkQueryAccess`)
   in `view` mode, gated by `LICENSE_FIELD.APP_PERMISSIONS_QUERY`; public app + any query permission = denied.
 - EE controller adds `POST /workflow-node` (create workflow-node query) and re-guards run/update endpoints.
+- EE response cache (`ee/data-queries/cache/`, loaded by `module.ts` only for EE/Cloud): opt-in per query via
+  saved `options.responseCache` (`enabled`, `ttlSeconds` ≤ 1 day, `keyByUser`). Entries live in Redis under a
+  per-query token; Clear (`POST :id/versions/:versionId/cache/clear`, builder-only) invalidates the token.
+  Query ids are per app version, so that Clear never reaches the released version end users run. The app-wide
+  Clear (`POST /apps/:id/query-cache/clear`, app edit ability, Global settings → Clear cache) collects every query
+  of every version and clears them with `QueryResultCacheService.clearInBackground`; it answers 202 at once.
+  Refresh clears every user's cached responses, so public apps never get it: the viewer run (`runQueryForApp`,
+  `app.isPublic`) and the workflow trigger (`tj_app.isPublic`, set by its guard, modules in public apps included)
+  treat `cacheControl: 'refresh'` as a normal run, and the frontend stops sending it in a public app's viewer.
+  `AppsModule` imports `DataQueriesModule` for the service. The e2e harness boots in get-context mode, which
+  leaves the cache out of DI, so specs inject a cache service themselves.
+  Run body `cacheControl: 'refresh'` (`RunDataQueryDto` → `runExecutionOptions`) = replace the token, run, cache
+  the result; Preview replaces only its own entry. CE accepts and ignores `cacheControl`. RunJS/RunPy are never
+  cached; workflow queries are cached at the workflow trigger instead (see `workflows/AGENTS.md`). A workflow query
+  saves the workflow's `co_relation_id` as `workflowId`; the trigger's cache step binds it to the app id the trigger
+  resolved (`resolveWorkflowRefsForTrigger`), never comparing the saved id to the app id directly.
+  License: `QueryResultCacheService.begin` bypasses (no read, write or token change) unless the workspace license
+  has `features.queryResponseCache` (`LICENSE_FIELD.QUERY_RESPONSE_CACHE`); a missing key or failed check means off.
+  Caching off on the query, or unlicensed, returns `QUERY_CACHE_OFF`: the run and workflow trigger results then carry
+  no `metadata.cache` at all. Other skips on a cache-enabled query (cookie forwarding, zero budget, Redis down) report `bypass`.
+  The builder disables the toggle with the upgrade crown; Clear stays available to free entries saved earlier.
+  Memory: Redis is shared with BullMQ (`noeviction`). `RedisQueryCacheStore` enforces one fixed
+  `QUERY_CACHE_MAX_TOTAL_BYTES` budget (default 128 MiB; 0 bypasses reads/writes without purging). `QUERY_CACHE_MAX_WORKSPACE_BYTES`
+  (default 16 MiB, 1/8 of the default budget; 0 stops that workspace's writes) caps each workspace on the same ledger,
+  checked in the same Lua script as each charge, so parallel writers cannot overshoot either limit. Charges always go to
+  the workspace that owns the query (`appFromParam.organizationId`), never a signed-in visitor's. Published entries
+  charge `MEMORY USAGE` plus `3 × key length + 512` for query/global tracking. A separate 2048-byte
+  `@overhead` record charges container overhead once per query until its last entry/pending/purge record
+  is removed; all admission checks include it. Token-only queries reserve this overhead before creation;
+  capacity refusal reports miss/refresh with `stored: false`; purge-in-progress and Redis failures bypass. Clear does not create a replacement token; refresh admits one normally. Every pending save has
+  its own charged staging record; the entry record is a zero-byte publication owner until confirm.
+  Reserve → plain `SET … PXAT` to `<entry>:pending:<reservationId>` → confirm atomically checks ownership,
+  publishes with `RENAME`, rechecks limits and transfers the charge. Stale writers delete/release only
+  their own staging allocation. Clear revokes publication but retains pending charges until completion/expiry.
+  The global `tj:qc:expiry` sorted set lets any write reclaim expired values AND tracking across idle
+  queries/workspaces, in bounded batches. Clear drains the existing index in place; a generation-tagged
+  purge marker blocks new tokens until cleanup finishes and permits interrupted purges to recover there.
+  Small oversized tracking containers are rebuilt in bounded copies to reclaim retained dictionary capacity.
+  Usage hashes group bytes in 10-minute windows, but never forgive a charge merely because its window
+  ended. Accounting/index keys have no TTL: they disappear when their last record is reclaimed. With no
+  writes, expired records remain charged; the next writes clean them up. Redis server time controls expiry.
+  Usage/expiry keys are outside query hash tags, so the cache requires single-node Redis.
+  Rollout from any earlier ledger (including workspace counters) requires stopping old cache writers and draining
+  their `tj:qc:*` cache keys first; mixed ledger implementations are not compatible. Do not flush shared Redis.
+
+- Transformation code (`transformation` and `transformations`) is excluded from cache identity because it runs in the browser.
+- The ToolJet release (`TOOLJET_VERSION`) is stored in each entry, not in its key. Another release reads it as a miss and its
+  save replaces the entry under the same key (reserve drops the old value first), so upgrades and rolling deploys never leave
+  unreadable copies counted against the budget. Entries of queries nobody runs after an upgrade still wait for their TTL.
+- Create and update reject a `ttlSeconds` above 1 day. Import (`normalizeImportedQueryOptions`, also used by git pull) and the
+  editor Run (which saves the options it is sent) cap it at 1 day instead, so a value from another instance never leaves a
+  query that fails validation on every later save.
+- Cache refusal logs include workspace/query identifiers and the token/reserve/confirm stage, without inputs or response data.
+- Telemetry (`ENABLE_OTEL=true`, `src/otel/query-cache-metrics.ts`): `tooljet.query_cache.writes{write_result}` counts each
+  logged write outcome; `tooljet.query_cache.bytes_stored{organization.id}` adds the charge CONFIRM returns. The
+  `memory.used`/`memory.limit` gauges read a snapshot each pod refreshes from the global usage hash every 30 s, since
+  gauge callbacks cannot wait on Redis. Every pod reports the same global value: aggregate with max, not sum.
+- On `WORKER=true`, BullMQ's `query-cache-cleanup` queue scans the shared expiry index every minute, in cursor batches
+  limited to one job per second. It checks committed query existence before clearing deleted queries, covering cascades
+  without adding work to delete requests. Jobs retry three times; later sweeps recover interrupted work. No worker means
+  no proactive deletion cleanup. Zero budget pauses sweeps; manual Clear remains available. In-flight saves retain their
+  charges until they finish or expire; expired tracking is reclaimed in bounded batches during sweeps.
 
 ## Invariants & gotchas
 

@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsUUID, IsString, IsOptional, IsObject, IsNotEmpty, IsArray, IsNumber } from 'class-validator';
+import { IsUUID, IsString, IsOptional, IsObject, IsNotEmpty, IsArray, IsNumber, IsIn } from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
 
@@ -40,6 +40,13 @@ export class CreateDataQueryDto {
 }
 
 export class UpdateDataQueryDto extends PartialType(CreateDataQueryDto) {}
+
+export class RunDataQueryDto extends UpdateDataQueryDto {
+  // 'refresh' (EE response cache): drop every cached response of the query, run it, and cache this result.
+  @IsOptional()
+  @IsIn(['refresh'])
+  cacheControl?: 'refresh';
+}
 
 export interface IUpdatingReferencesOptions {
   id: string;

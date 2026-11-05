@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
-import { CreateDataQueryDto, IUpdatingReferencesOptions, UpdateDataQueryDto } from '../dto';
+import { CreateDataQueryDto, IUpdatingReferencesOptions, RunDataQueryDto, UpdateDataQueryDto } from '../dto';
 import { DataQuery } from '@entities/data_query.entity';
 import { App } from '@entities/app.entity';
 
@@ -43,7 +43,7 @@ export interface IDataQueriesService {
     user: User,
     dataQueryId: string,
     environmentId: string,
-    updateDataQueryDto: UpdateDataQueryDto,
+    updateDataQueryDto: RunDataQueryDto,
     ability: object,
     dataSource: DataSource,
     response: Response,
@@ -53,7 +53,7 @@ export interface IDataQueriesService {
   runQueryForApp(
     user: User,
     dataQueryId: string,
-    updateDataQueryDto: UpdateDataQueryDto,
+    updateDataQueryDto: RunDataQueryDto,
     response: Response
   ): Promise<object>;
 

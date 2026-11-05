@@ -13,6 +13,12 @@ export const METRIC = {
 
   ORGANIZATION_SEATS: 'tooljet.organization.seats',
   APP_ACTIVE_USERS: 'tooljet.app.active_users',
+
+  // EE query response cache. The memory gauges are global, so every pod reports the same value.
+  QUERY_CACHE_MEMORY_USED: 'tooljet.query_cache.memory.used',
+  QUERY_CACHE_MEMORY_LIMIT: 'tooljet.query_cache.memory.limit',
+  QUERY_CACHE_BYTES_STORED: 'tooljet.query_cache.bytes_stored',
+  QUERY_CACHE_WRITES: 'tooljet.query_cache.writes',
 } as const;
 
 // SDK defaults top out at 10s; real lcp/fcp and app loads overflow it and pin every quantile.
@@ -48,6 +54,10 @@ export const ATTR = {
   QUERY_NAME: 'tooljet.query.name',
   QUERY_TYPE: 'tooljet.query.type',
   QUERY_TEXT: 'tooljet.query.text',
+  // EE query response cache: hit | miss | refresh | bypass. Absent when the cache is not in play.
+  QUERY_CACHE_STATUS: 'tooljet.query.cache_status',
+  // stored | over_limit | token_refused | confirm_refused | token_changed
+  QUERY_CACHE_WRITE_RESULT: 'tooljet.query_cache.write_result',
   DATA_SOURCE_TYPE: 'tooljet.data_source.type',
 
   // Workspace environment, not where the server runs.

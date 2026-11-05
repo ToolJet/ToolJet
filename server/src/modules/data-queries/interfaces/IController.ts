@@ -1,6 +1,6 @@
 import { UserEntity } from '@modules/app/decorators/user.decorator';
 import { DataSourceEntity } from '@modules/app/decorators/data-source.decorator';
-import { CreateDataQueryDto, UpdateDataQueryDto } from '../dto';
+import { CreateDataQueryDto, RunDataQueryDto, UpdateDataQueryDto } from '../dto';
 import { UpdatingReferencesOptionsDto } from '../dto';
 import { AppAbility } from '@modules/casl/casl-ability.factory';
 import { App } from '@entities/app.entity';
@@ -33,7 +33,7 @@ export interface IDataQueriesController {
     app: App,
     dataQueryId: string,
     environmentId: string,
-    updateDataQueryDto: UpdateDataQueryDto,
+    updateDataQueryDto: RunDataQueryDto,
     ability: AppAbility,
     dataSource: DataSourceEntity,
     response: Response,
@@ -44,7 +44,7 @@ export interface IDataQueriesController {
     user: UserEntity,
     app: App,
     dataQueryId: string,
-    updateDataQueryDto: UpdateDataQueryDto,
+    updateDataQueryDto: RunDataQueryDto,
     response: Response
   ): Promise<object>;
 

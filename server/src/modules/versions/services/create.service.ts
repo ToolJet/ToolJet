@@ -711,6 +711,7 @@ export class VersionsCreateService implements IVersionsCreateService {
 
       if (
         eventDefinition?.actionId === 'run-query' ||
+        eventDefinition?.actionId === 'refresh-query-cache' ||
         eventDefinition?.actionId === 'reset-query' ||
         eventDefinition?.actionId === 'abort-query'
       ) {

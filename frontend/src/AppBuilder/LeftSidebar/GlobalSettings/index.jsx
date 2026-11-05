@@ -6,6 +6,7 @@ import AppExport from './AppExport';
 import useStore from '@/AppBuilder/_stores/store';
 import AppModeToggle from './AppModeToggle';
 import ThemeSelect from '@/modules/Appbuilder/components/ThemeSelect';
+import QueryCacheClear from '@/modules/Appbuilder/components/QueryCacheClear';
 import MaintenanceMode from './MaintenanceMode';
 import GlobalSettingsHeader from './GlobalSettingsHeader';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
@@ -47,6 +48,7 @@ const GlobalSettings = ({ darkMode, onClose, onBackToSearch, isModuleEditor = fa
             </>
           )}
           <AppExport darkMode={darkMode} isModuleEditor={isModuleEditor} />
+          <QueryCacheClear darkMode={darkMode} />
         </div>
 
         {/* Canvas Styles Accordion */}

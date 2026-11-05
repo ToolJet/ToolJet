@@ -101,6 +101,16 @@ No change may break existing saved applications. Always ask: would an app saved 
 - Events: `fireEvent → handleEvent → executeActionsForEventId → executeAction`. Events support `runOnlyIf` and `debounce`
 - Queries: `runQuery` → resolve options → API call → update `exposedValues.queries[name]` → trigger dependency updates
 - Event definitions live in `eventsSlice`, not in component definitions
+- **Refresh Query Cache** in the event action list is an editor alias for `run-query` with `refreshCache: true`. Preserve this saved contract so parameters, references, and existing events use the normal Run Query path. Selecting another action removes the refresh flag. `executeAction` maps the alias id back through `normalizeEventAction`, because events built outside the Event Manager (Table button labels) can carry `refresh-query-cache` itself.
+- Refresh exists only where it can work: `canRefreshQueryCache` (`_utils/queryResponseCache.js`) needs the
+  `queryResponseCache` license and the query's `responseCache.enabled`. Otherwise `queries.<name>.refresh()` and its hint
+  are absent, the Event Manager hides Refresh Query Cache and shows saved refresh events as Run query, and `runQuery`
+  sends no `cacheControl`, so the query behaves exactly as without the response cache.
+
+- Query result Preview displays `metadata.cache` from the corresponding completed run only when the selected query
+  explicitly enables response caching. Disabling caching hides prior feedback immediately. Every new preview result clears
+  the previous cache status unless its own metadata is supplied; loading hides the old status. Status reports saved/not
+  saved without inferring a refusal reason. Synchronous workflow previews use the workflow result metadata.
 
 ### Grouped error notifications
 

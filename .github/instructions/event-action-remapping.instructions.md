@@ -27,7 +27,7 @@ replace the stale UUID field with the new one from the appropriate mapping objec
 
 | `actionId` | Field remapped | Mapping used |
 |---|---|---|
-| `run-query` / `reset-query` / `abort-query` | `queryId` | `oldDataQueryToNewMapping` |
+| `run-query` / `refresh-query-cache` / `reset-query` / `abort-query` | `queryId` | `oldDataQueryToNewMapping` |
 | `control-component` | `componentId` | `oldComponentToNewComponentMapping` |
 | `scroll-component-into-view` | `componentId` | `oldComponentToNewComponentMapping` |
 | `show-modal` / `close-modal` | `modal` | `oldComponentToNewComponentMapping` |

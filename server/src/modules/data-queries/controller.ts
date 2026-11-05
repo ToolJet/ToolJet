@@ -12,6 +12,7 @@ import {
   CreateDataQueryDto,
   ListTablesDto,
   UpdateDataQueryDto,
+  RunDataQueryDto,
   UpdateSourceDto,
   UpdatingReferencesOptionsDto,
 } from './dto';
@@ -126,7 +127,7 @@ export class DataQueriesController implements IDataQueriesController {
     @AppDecorator() app: App,
     @Param('id') dataQueryId,
     @Param('environmentId') environmentId,
-    @Body() updateDataQueryDto: UpdateDataQueryDto,
+    @Body() updateDataQueryDto: RunDataQueryDto,
     @Ability() ability: AppAbility,
     @DataSource() dataSource: DataSourceEntity,
     @Res({ passthrough: true }) response: Response,
@@ -152,7 +153,7 @@ export class DataQueriesController implements IDataQueriesController {
     @User() user: UserEntity,
     @AppDecorator() app: App,
     @Param('id') dataQueryId,
-    @Body() updateDataQueryDto: UpdateDataQueryDto,
+    @Body() updateDataQueryDto: RunDataQueryDto,
     @Res({ passthrough: true }) response: Response
   ) {
     return this.dataQueriesService.runQueryForApp(user, dataQueryId, updateDataQueryDto, response, app);

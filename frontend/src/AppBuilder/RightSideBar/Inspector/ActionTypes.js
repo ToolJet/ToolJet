@@ -6,6 +6,12 @@ export const ActionTypes = [
     group: 'run-action',
   },
   {
+    name: 'Refresh Query Cache',
+    id: 'refresh-query-cache',
+    options: [{ queryId: '' }],
+    group: 'run-action',
+  },
+  {
     name: 'Reset query',
     id: 'reset-query',
     options: [{ queryId: '' }],
@@ -168,3 +174,25 @@ export const ActionTypes = [
     group: 'other',
   },
 ];
+
+// Refresh is an editor choice, persisted as a normal query run with its existing flag.
+// Keeping the execution contract preserves query parameters, references and saved apps.
+export const getEventActionId = (event) =>
+  event.actionId === 'run-query' && event.refreshCache === true ? 'refresh-query-cache' : event.actionId;
+
+export const getEventActionChanges = (actionId) =>
+  actionId === 'refresh-query-cache'
+    ? { actionId: 'run-query', refreshCache: true }
+    : { actionId, refreshCache: undefined };
+
+// Events built outside the Event Manager (e.g. Table button labels) can carry the alias id itself.
+export const normalizeEventAction = (event) =>
+  event?.actionId === 'refresh-query-cache' ? { ...event, ...getEventActionChanges(event.actionId) } : event;
+
+// Refresh Query Cache is offered only while it can do something (license and a query with caching on).
+// Without it, the action is left out and a saved refresh event shows as the plain Run query it runs as.
+export const getAvailableActionTypes = (refreshAvailable) =>
+  refreshAvailable ? ActionTypes : ActionTypes.filter((action) => action.id !== 'refresh-query-cache');
+
+export const getDisplayedActionId = (event, refreshAvailable) =>
+  refreshAvailable ? getEventActionId(event) : normalizeEventAction(event).actionId;
