@@ -26,7 +26,13 @@ import fs from 'fs';
 import path from 'path';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { listviewConfig } from '@tooljet/widget-definitions';
+import SingleLineCodeEditor from '@/AppBuilder/CodeEditor/SingleLineCodeEditor';
+import { isNeverDisabled, isRecordDisabled } from '@/AppBuilder/Widgets/Listview/disabledRecords';
 
+jest.mock('@/AppBuilder/Widgets/Listview/disabledRecords', () => {
+  const actual = jest.requireActual('@/AppBuilder/Widgets/Listview/disabledRecords');
+  return { ...actual, isRecordDisabled: jest.fn((...args) => actual.isRecordDisabled(...args)) };
+});
 jest.mock('react-hot-toast', () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
 // Wraps, never replaces: counts how often each record re-renders.
 jest.mock('@/_hooks/useDynamicHeight', () => {
@@ -1850,6 +1856,35 @@ describe('Listview', () => {
       await user().click(inside);
 
       expect(fired('rec')).toBe(afterOpening);
+    });
+
+    test('[Listview-REC-017] a Modal that is open when its record becomes disabled still takes clicks and closes', async () => {
+      // Break this catches: the disabled block running before the portal checks, so the open Modal looks live but is dead.
+      // The Modal portals to the canvas area in a browser, outside the record; the harness has none, so add it.
+      const canvasArea = document.body.appendChild(
+        Object.assign(document.createElement('div'), { className: 'tj-canvas-area' })
+      );
+      await mount({
+        properties: { disableRecords: binding('{{false}}') },
+        events: [counting('onRecordClicked', 'rec')],
+        extraComponents: { mod1: MODAL_CHILD() },
+      });
+      await waitFor(() => expect(rows()).toHaveLength(3));
+      await user().click(trigger());
+      await waitFor(() => expect(document.querySelector('[role="dialog"], .modal-content')).toBeTruthy());
+
+      await widget.session.store.act(() => {
+        widget.setComponentProperty(ID, 'disableRecords', binding(`{{listItem.text === 'Alpha'}}`).value, 'properties');
+      });
+      await waitFor(() => expect(rows()[0]).toHaveAttribute('aria-disabled', 'true'));
+      const opened = fired('rec');
+
+      expect(fireEvent.click(document.querySelector('[role="dialog"], .modal-content'))).toBe(true);
+      await user().click(document.querySelector('[data-cy="modal-close-button"]'));
+
+      await waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeNull());
+      expect(fired('rec')).toBe(opened);
+      canvasArea.remove();
     });
 
     test('[Listview-BUG-016] clicking the row s Modal open button fires Record clicked once', async () => {
@@ -7442,14 +7477,7 @@ describe('ListviewVariablesCsaEvents', () => {
 });
 
 describe('ListviewDisabledRecords', () => {
-  /**
-   * Listview 2.0 Disable records (tj-ee#5556): an expression resolved per record with `listItem`. A disabled record
-   * fades, blocks the pointer and the keyboard, and fires no record event. Contract: frontend/ee/test/app-builder/
-   * widgets/Listview/TESTING.md (Listview-REC-002..012). Real store, real RenderWidget, real children in every record.
-   *
-   * jsdom enforces neither `pointer-events` nor `inert`, so those are asserted as the attribute or property that
-   * asks for them; the blocking itself is Listview-BRW territory (browser).
-   */
+  // jsdom enforces neither `pointer-events` nor `inert`, so those are asserted as the attribute that asks for them.
 
   const ID = 'lv1';
   const NAME = 'listview1';
@@ -7540,10 +7568,10 @@ describe('ListviewDisabledRecords', () => {
       widget.setComponentProperty(ID, 'disableRecords', binding(value).value, 'properties');
     });
   const counting = (eventId, key, sourceId = ID) => ({
-    id: `evt-${eventId}`,
+    id: `evt-${eventId}-${key}`,
     index: 0,
     sourceId,
-    name: `evt-${eventId}`,
+    name: `evt-${eventId}-${key}`,
     target: 'component',
     event: { eventId, actionId: 'set-custom-variable', key, value: `{{(variables.${key} ?? 0) + 1}}` },
   });
@@ -7622,6 +7650,31 @@ describe('ListviewDisabledRecords', () => {
     });
   });
 
+  describe('Listview: a disabled record inside an enabled one', () => {
+    beforeEach(async () => {
+      await nestedWidget.setup();
+    });
+    afterEach(nestedWidget.teardown);
+
+    test('[Listview-REC-002] a click on a disabled inner record reaches the enabled outer record only', async () => {
+      // Break this catches: the inner record firing its own Record clicked, or the outer one losing the click.
+      nestedWidget.render({
+        currentMode: 'view',
+        events: [counting('onRecordClicked', 'outer'), counting('onRecordClicked', 'inner', INNER)],
+      });
+      await waitFor(() => expect(document.querySelectorAll('.list-item')).toHaveLength(6));
+      const disabledInner = [...document.querySelectorAll('.list-item')].find(
+        (row) => row.getAttribute('aria-disabled') === 'true'
+      );
+
+      fireEvent.click(disabledInner);
+      await settle();
+
+      expect(fired('outer')).toBe(1);
+      expect(fired('inner')).toBe(0);
+    });
+  });
+
   describe('Listview: the children of a disabled record', () => {
     beforeEach(widget.setup);
     afterEach(widget.teardown);
@@ -7638,8 +7691,8 @@ describe('ListviewDisabledRecords', () => {
 
       fireEvent.click(buttons()[2]);
       await waitFor(() => expect(fired('btnClicks')).toBe(1));
-      await waitFor(() => expect(exposed('children')?.[1]?.button1?.isDisabled).toBeFalsy());
-      expect(exposed('children')?.[1]?.button1?.isDisabled).toBeFalsy();
+      await waitFor(() => expect(exposed('children')?.[1]?.button1).toBeDefined());
+      expect(exposed('children')[1].button1.isDisabled).toBe(false);
     });
   });
 
@@ -7664,6 +7717,16 @@ describe('ListviewDisabledRecords', () => {
       expect(row.hasAttribute('tabindex')).toBe(false);
       await waitFor(() => expect(row.inert).toBe(true));
       expect(row.style.pointerEvents).toBe('none');
+    });
+
+    test('[Listview-REC-005] in a list with Disabled state on, a disabled record is not dimmed on top of the list', async () => {
+      // Break this catches: 0.6 from the list and 0.4 from the record stacking to 0.24.
+      await mount(DISABLE_R1_R7, {
+        properties: { disabledState: binding('{{true}}'), disableRecords: binding(DISABLE_R1_R7) },
+      });
+
+      expect(rows().map((row) => row.style.opacity)).toEqual(['', '', '', '', '']);
+      expect(disabledRows()).toEqual([1]);
     });
 
     test('[Listview-REC-006] an enabled record keeps tabindex 0 and carries no disabled attribute', async () => {
@@ -7755,6 +7818,154 @@ describe('ListviewDisabledRecords', () => {
 
       expect(disabledRows()).toEqual([]);
       expect(rows().every((row) => row.style.opacity === '')).toBe(true);
+    });
+  });
+
+  describe('Listview: the Disable records field in the inspector', () => {
+    beforeEach(widget.setup);
+    afterEach(widget.teardown);
+
+    const editorFor = (initialValue) =>
+      render(
+        <MemoryRouter>
+          <SingleLineCodeEditor
+            componentId={ID}
+            componentName={NAME}
+            paramName="disableRecords"
+            initialValue={initialValue}
+            onChange={() => {}}
+            portalProps={{
+              handleTogglePopupExapand: () => {},
+              isOpen: false,
+              setIsOpen: () => {},
+              forceUpdate: () => {},
+            }}
+            fieldMeta={{ validation: { schema: { type: 'boolean' }, defaultValue: false } }}
+          />
+        </MemoryRouter>
+      );
+
+    test('[Listview-REC-011] listItem in the field resolves to the first record, so a valid expression shows no error', async () => {
+      // Break this catches: the field resolving listItem against nothing, which marks every record expression as an error.
+      await mount(`{{false}}`);
+      const { container } = editorFor(`{{listItem.name === 'r0'}}`);
+
+      await waitFor(() => expect(container.querySelector('.codehinter-container')).toBeTruthy());
+      expect(container.querySelector('.border-danger')).toBeNull();
+    });
+
+    test('[Listview-REC-011] a real mistake in the field still shows as an error', async () => {
+      // Break this catches: the field accepting anything once listItem is in scope.
+      await mount(`{{false}}`);
+      const { container } = editorFor(`{{listItem.missing.deep}}`);
+
+      await waitFor(() => expect(container.querySelector('.border-danger')).toBeTruthy());
+    });
+  });
+
+  describe('Listview: what counts as true', () => {
+    beforeEach(widget.setup);
+    afterEach(widget.teardown);
+
+    test.each([
+      ['plain text true', 'true'],
+      ['a spaced capitalised string', `{{' True '}}`],
+      ['a field holding the text true', `{{String(listItem.name !== '')}}`],
+    ])('[Listview-REC-012] %s disables the record like the boolean schema does', async (_label, expression) => {
+      // Break this catches: only a real boolean disabling, so the inspector preview says true and the record stays enabled.
+      await mount(expression);
+
+      expect(disabledRows()).toEqual([0, 1, 2, 3, 4]);
+    });
+
+    test.each([
+      ['the text false', `{{'false'}}`],
+      ['yes', `{{'yes'}}`],
+      ['an object', `{{{}}}`],
+    ])('[Listview-REC-012] %s leaves every record enabled', async (_label, expression) => {
+      // Break this catches: any non-empty string disabling the list.
+      await mount(expression);
+
+      expect(disabledRows()).toEqual([]);
+    });
+  });
+
+  describe('Listview: Disable records is resolved only when what it reads changes', () => {
+    beforeEach(async () => {
+      await widget.setup();
+      isRecordDisabled.mockClear();
+    });
+    afterEach(widget.teardown);
+
+    const TOGGLE = () => componentDefinition('tg1', 'toggle1', 'ToggleSwitchV2', {});
+
+    test.each([[null], [`{{false}}`], [` {{ false }} `]])(
+      '[Listview-REC-004] %s never reaches the resolver',
+      async (expression) => {
+        // Break this catches: the default being resolved for every record on every store change.
+        await mount(expression);
+        fireEvent.mouseOver(rows()[0], { relatedTarget: document.body });
+        await act(() => store().setVariable('x', 1, MODULE_ID));
+
+        expect(isRecordDisabled).not.toHaveBeenCalled();
+      }
+    );
+
+    test('[Listview-REC-004] isNeverDisabled is true for every spelling of the default and false for anything else', () => {
+      // Break this catches: the fast path missing a spelling, or catching an expression that can be true.
+      [undefined, null, false, '', '  ', 'false', '{{false}}', '{{ false }}', '{{\nfalse\n}}'].forEach((value) =>
+        expect(isNeverDisabled(value)).toBe(true)
+      );
+      [true, 'true', '{{true}}', '{{listItem.x}}', '{{false || x}}', '0'].forEach((value) =>
+        expect(isNeverDisabled(value)).toBe(false)
+      );
+    });
+
+    test('[Listview-REC-018] hovering, selecting and clicking do not resolve again; a variable the expression reads does', async () => {
+      // Break this catches: the store selector re-running the expression for every record on every store change.
+      await mount(`{{variables.x === 1}}`);
+      expect(disabledRows()).toEqual([]);
+      isRecordDisabled.mockClear();
+
+      fireEvent.mouseOver(rows()[1], { relatedTarget: document.body });
+      await act(() => store().setSelectedComponents(['somewhere']));
+      expect(isRecordDisabled).not.toHaveBeenCalled();
+
+      await act(() => store().setVariable('x', 1, MODULE_ID));
+      await waitFor(() => expect(disabledRows()).toEqual([0, 1, 2, 3, 4]));
+    });
+
+    test('[Listview-REC-018] a component value the expression reads updates the records', async () => {
+      // Break this catches: only variables being tracked, so a toggle or a query never changes the records.
+      await mount(`{{components.toggle1.value === true}}`, { extraComponents: { tg1: TOGGLE() } });
+      expect(disabledRows()).toEqual([]);
+
+      await act(() => store().setExposedValue('tg1', 'value', true, MODULE_ID));
+
+      await waitFor(() => expect(disabledRows()).toEqual([0, 1, 2, 3, 4]));
+    });
+
+    test('[Listview-REC-007] the resolver reads the module it is asked for, and a syntax error does not throw', () => {
+      // Break this catches: always reading the canvas, so a ListView in a module sees the wrong variables.
+      useStore.setState((state) => {
+        state.modules.modX = { componentNameIdMapping: {}, queryNameIdMapping: {} };
+        state.resolvedStore.modules.modX = {
+          exposedValues: {
+            components: {},
+            queries: {},
+            variables: { flag: true },
+            globals: {},
+            constants: {},
+            page: {},
+          },
+        };
+      });
+
+      expect(isRecordDisabled('{{variables.flag === true}}', {}, 'modX')).toBe(true);
+      expect(isRecordDisabled('{{variables.flag === true}}', {}, 'canvas')).toBe(false);
+      expect(() => isRecordDisabled('{{listItem.x ===}}', { x: 1 }, 'canvas')).not.toThrow();
+      expect(isRecordDisabled('{{listItem.x ===}}', { x: 1 }, 'canvas')).toBe(false);
+      expect(isRecordDisabled('{{listItem.missing.deep}}', {}, 'canvas')).toBe(false);
     });
   });
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, waitFor, fireEvent } from '@testing-library/react';
+import { render, waitFor, fireEvent, renderHook } from '@testing-library/react';
 import { createWidgetHarness, binding, store } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 import { componentDefinition } from '@/test/app-builder';
 import EditorSelecto from '@/AppBuilder/AppCanvas/Selecto';
@@ -7,7 +7,24 @@ import { DragLayer } from '@/AppBuilder/RightSideBar/ComponentManagerTab/DragLay
 import { dragContextBuilder } from '@/AppBuilder/AppCanvas/Grid/helpers/dragEnd';
 import { handleDeactivateTargets, showGridLines } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
+import useStore from '@/AppBuilder/_stores/store';
+import { HotkeyProvider } from '@/AppBuilder/AppCanvas/HotkeyProvider';
+import { pasteComponents } from '@/AppBuilder/AppCanvas/copyPasteWidgetsUtils';
+import useCallbackActions from '@/AppBuilder/LeftSidebar/LeftSidebarInspector/useCallbackActions';
+import { Inspector } from '@/AppBuilder/RightSideBar/Inspector/Inspector';
+import { MemoryRouter } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
+jest.mock('@/AppBuilder/AppCanvas/copyPasteWidgetsUtils', () => ({
+  ...jest.requireActual('@/AppBuilder/AppCanvas/copyPasteWidgetsUtils'),
+  pasteComponents: jest.fn(),
+}));
+jest.mock('react-hot-toast', () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
+// The whole Inspector pulls an icon that the jsdom build of lucide cannot draw; the icons are not under test.
+jest.mock(
+  'lucide-react',
+  () => new Proxy({ __esModule: true }, { get: (target, name) => (name in target ? target[name] : () => null) })
+);
 const mockHandleDrop = jest.fn();
 let mockDragSpec;
 let mockSelectoProps;
@@ -260,16 +277,76 @@ describe('ListviewBuilderDrops', () => {
       expect(mockHandleDrop).not.toHaveBeenCalled();
     });
 
-    test('[Listview-REC-008] a panel drop and a move onto a disabled record 1 are refused', async () => {
-      // Break this catches: the disabled record 1 still being a drop target for the shared record template.
-      widget.render({ currentMode: 'edit', properties: { disableRecords: binding(`{{listItem.name === 'r0'}}`) } });
-      await waitFor(() => expect(rows()).toHaveLength(3));
-      render(<DragLayer index={0} component={{ component: 'Button' }} />);
+    describe('with the hit list a browser returns', () => {
+      // A browser's elementsFromPoint skips an inert record, so the list under it is the first thing found.
+      const recordBox = (index) => ({ left: 0, right: 600, top: index * 100, bottom: index * 100 + 100 });
+      const mountDisabled = async (name) => {
+        widget.render({
+          currentMode: 'edit',
+          properties: { disableRecords: binding(`{{listItem.name === '${name}'}}`) },
+        });
+        await waitFor(() => expect(rows()).toHaveLength(3));
+        rows().forEach((row, index) => {
+          row.getBoundingClientRect = () => recordBox(index);
+        });
+        render(<DragLayer index={0} component={{ component: 'Button' }} />);
+      };
+      const hitList = (...extra) => {
+        const list = document.querySelector('[role="list"]');
+        const top = (extra.length ? extra : [null]).map((node) => node ?? list);
+        const hits = [...top, document.body];
+        document.elementsFromPoint = () => hits;
+        document.elementFromPoint = () => hits[0];
+      };
+      const releaseAt = (x, y) =>
+        mockDragSpec.end(
+          { componentType: 'Button', component: { component: 'Button' } },
+          { getClientOffset: () => ({ x, y }) }
+        );
+      const moveAt = (x, y) =>
+        dragContextBuilder({
+          event: { target: document.querySelector('.ele-txt1'), clientX: x, clientY: y },
+          widgets: boxes,
+        });
 
-      releaseOn(canvasOf(rows()[0]));
+      test.each([
+        ['record 1', 'r0', 50],
+        ['record 2', 'r1', 150],
+        ['record 3', 'r2', 250],
+      ])('[Listview-REC-008] a panel drop and a move onto the disabled %s are refused', async (_label, name, y) => {
+        // Break this catches: the refuse check asking only the hit list, which never contains an inert record.
+        await mountDisabled(name);
+        hitList();
 
-      expect(mockHandleDrop).not.toHaveBeenCalled();
-      expect(moveOver(canvasOf(rows()[0])).isDroppable).toBe(false);
+        releaseAt(5, y);
+
+        expect(mockHandleDrop).not.toHaveBeenCalled();
+        expect(moveAt(5, y).isDroppable).toBe(false);
+      });
+
+      test('[Listview-REC-008] an enabled record next to a disabled one still takes a drop', async () => {
+        // Break this catches: the refuse check refusing the whole list once any record is disabled.
+        await mountDisabled('r1');
+        pointerOver(canvasOf(rows()[0]));
+
+        releaseOn(canvasOf(rows()[0]));
+
+        expect(mockHandleDrop).toHaveBeenCalledTimes(1);
+      });
+
+      test('[Listview-REC-008] a point the scrolling list clips, or the pager covers, is not a disabled record', async () => {
+        // Break this catches: the record box alone deciding, so a clipped record refuses a drop outside the list.
+        await mountDisabled('r0');
+
+        hitList(document.querySelector('[data-cy="container-pagination"]'), null);
+        releaseAt(5, 50);
+        expect(mockHandleDrop).toHaveBeenCalledTimes(1);
+        mockHandleDrop.mockClear();
+
+        document.elementsFromPoint = () => [document.body];
+        releaseAt(5, 50);
+        expect(mockHandleDrop).toHaveBeenCalledTimes(1);
+      });
     });
 
     test('[Listview-BLD-001] a panel drop on record 1 of page 2 is refused', async () => {
@@ -992,6 +1069,278 @@ describe('ListviewBuilderRules', () => {
 
       await waitFor(() => expect(faded()).toEqual([false, true, true]));
       expect(rows()[1].style.opacity).toBe('0.4');
+    });
+  });
+
+  describe('Listview builder: the lock clears the selection once', () => {
+    beforeEach(widget.setup);
+    afterEach(widget.teardown);
+
+    test('[Listview-REC-008] a child selected in record 1 leaves the selection when the lock starts, other components stay', async () => {
+      // Break this catches: the lock leaving a selected child in the selection, so keys still act on the template.
+      await mount(widget, { properties: { disableRecords: binding('{{false}}') } });
+      await act(() => store().setSelectedComponents(['txt1', ID]));
+
+      await act(() =>
+        widget.setComponentProperty(ID, 'disableRecords', binding(`{{listItem.name === 'r0'}}`).value, 'properties')
+      );
+
+      await waitFor(() => expect(store().selectedComponents).toEqual([ID]));
+    });
+
+    test('[Listview-REC-008] the child can be selected again later: the clear happens once, when the lock starts', async () => {
+      // Break this catches: a store filter or a repeating effect that keeps a locked child out of the selection.
+      await mount(widget, { properties: { disableRecords: binding(`{{listItem.name === 'r0'}}`) } });
+
+      await act(() => store().setSelectedComponents(['txt1']));
+
+      expect(store().selectedComponents).toEqual(['txt1']);
+    });
+  });
+
+  describe('Listview builder: a locked child is look only', () => {
+    beforeEach(async () => {
+      await widget.setup();
+      pasteComponents.mockClear();
+      toast.success.mockClear();
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: { readText: jest.fn().mockResolvedValue('{}'), writeText: jest.fn() },
+      });
+    });
+    afterEach(widget.teardown);
+
+    const key = (code, extra = {}) => fireEvent.keyDown(document, { code, key: code, ...extra });
+    const mountHotkeys = async (disableRecords = `{{listItem.name === 'r0'}}`) => {
+      await mount(widget, { properties: { disableRecords: binding(disableRecords) } });
+      render(<HotkeyProvider mode="edit" currentLayout="desktop" />);
+      return () => store().getCurrentPageComponents()['txt1']?.layouts.desktop;
+    };
+    const componentCount = () => Object.keys(store().getCurrentPageComponents()).length;
+
+    test.each([
+      ['ArrowRight', {}],
+      ['Backspace', {}],
+      ['KeyD', { metaKey: true }],
+      ['KeyX', { metaKey: true }],
+      ['KeyV', { metaKey: true }],
+    ])('[Listview-REC-014] %s on a selected locked child does nothing and shows no popup', async (code, extra) => {
+      // Break this catches: the editing keys acting on a child of a locked record that was selected from the sidebar.
+      const layout = await mountHotkeys();
+      const before = { ...layout(), count: componentCount(), toasts: 0 };
+      await act(() => store().setSelectedComponents(['txt1']));
+
+      key(code, extra);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect({ ...layout(), count: componentCount(), toasts: toast.success.mock.calls.length }).toEqual(before);
+      expect(store().showWidgetDeleteConfirmation).toBe(false);
+      expect(store().isUserEditingTheVersion).toBeFalsy();
+      expect(pasteComponents).not.toHaveBeenCalled();
+    });
+
+    test('[Listview-REC-014] Escape still clears the selection, and a mix of locked and unlocked children blocks the whole action', async () => {
+      // Break this catches: Escape blocked with the rest, or one unlocked component letting the action through.
+      await mountHotkeys();
+      await act(() => store().setSelectedComponents(['txt1', ID]));
+
+      key('Backspace');
+      expect(store().showWidgetDeleteConfirmation).toBe(false);
+
+      key('Escape');
+      await waitFor(() => expect(store().selectedComponents).toEqual([]));
+    });
+
+    test('[Listview-REC-014] a child of an unlocked list still deletes with Backspace and moves with the arrows', async () => {
+      // Break this catches: the new gate blocking every selection instead of only a locked one.
+      const layout = await mountHotkeys('{{false}}');
+      const left = layout().left;
+      await act(() => store().setSelectedComponents(['txt1']));
+
+      key('ArrowRight');
+      await waitFor(() => expect(layout().left).toBe(left + 1));
+      key('Backspace');
+
+      expect(store().showWidgetDeleteConfirmation).toBe(true);
+    });
+
+    test('[Listview-REC-014] a frozen version still shows the released-version popup, as before', async () => {
+      // Break this catches: the new gate running before the freeze gate and hiding its popup.
+      await mountHotkeys('{{false}}');
+      await act(() => store().setSelectedComponents(['txt1']));
+      await act(() => useStore.setState({ isVersionReleased: true }));
+
+      key('Backspace');
+
+      expect(store().isUserEditingTheVersion).toBe(true);
+      expect(store().showWidgetDeleteConfirmation).toBe(false);
+      await act(() => useStore.setState({ isVersionReleased: false }));
+    });
+
+    test('[Listview-REC-015] the left sidebar Delete Component is refused for a locked child and works for a normal one', async () => {
+      // Break this catches: the sidebar opening the delete dialog for a child of a locked record.
+      await mount(widget, { properties: { disableRecords: binding(`{{listItem.name === 'r0'}}`) } });
+      const { result } = renderHook(() => useCallbackActions());
+      const remove = () =>
+        result.current.find((group) => group.for === 'components').actions.find((a) => a.name === 'Delete Component');
+
+      remove().dispatchAction({ nodeName: 'text1' });
+      expect(store().showWidgetDeleteConfirmation).toBe(false);
+
+      await act(() => widget.setComponentProperty(ID, 'disableRecords', binding('{{false}}').value, 'properties'));
+      await waitFor(() => expect(editable('txt1')[0]).toBe(true));
+      remove().dispatchAction({ nodeName: 'text1' });
+
+      expect(store().showWidgetDeleteConfirmation).toBe(true);
+    });
+
+    describe('the right panel', () => {
+      const renderInspector = (selectedComponentId) =>
+        render(
+          <MemoryRouter>
+            <Inspector
+              componentDefinitionChanged={jest.fn()}
+              darkMode={false}
+              pages={[]}
+              selectedComponentId={selectedComponentId}
+              handleRightSidebarToggle={jest.fn()}
+            />
+          </MemoryRouter>
+        );
+      const guarded = (container) => ({
+        header: container.querySelector('.panel-header-name'),
+        menu: container.querySelector('[data-cy="component-inspector-options"]'),
+        body: container.querySelector('.inspector > div > div:last-child'),
+      });
+
+      test('[Listview-REC-013] a locked child shows greyed, with the name, the menu and the properties unreachable by Tab', async () => {
+        // Break this catches: a locked child editable in the right panel, or reachable by keyboard.
+        await mount(widget, { properties: { disableRecords: binding(`{{listItem.name === 'r0'}}`) } });
+        await act(() => store().setSelectedComponents(['txt1']));
+
+        const { container } = renderInspector('txt1');
+
+        const { header, menu, body } = guarded(container);
+        [header, menu, body].forEach((node) => {
+          expect(node.closest('.disabled') ?? node.querySelector('.disabled') ?? node).toBeTruthy();
+          expect(node.inert).toBe(true);
+        });
+        expect(header.classList.contains('disabled')).toBe(true);
+        expect(body.classList.contains('disabled')).toBe(true);
+      });
+
+      test('[Listview-REC-013] a child of an unlocked list, and the ListView itself, are not greyed or inert', async () => {
+        // Break this catches: the look-only state leaking onto every selection.
+        await mount(widget, { properties: { disableRecords: binding('{{false}}') } });
+
+        for (const id of ['txt1', ID]) {
+          await act(() => store().setSelectedComponents([id]));
+          const { container, unmount } = renderInspector(id);
+          const { header, menu, body } = guarded(container);
+          [header, menu, body].forEach((node) => expect(node.inert).toBeFalsy());
+          expect(header.classList.contains('disabled')).toBe(false);
+          unmount();
+        }
+      });
+    });
+  });
+
+  describe('Listview builder: a click on a record does not focus a locked template', () => {
+    beforeEach(async () => {
+      await widget.setup();
+      pasteComponents.mockClear();
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: { readText: jest.fn().mockResolvedValue('{}'), writeText: jest.fn() },
+      });
+    });
+    afterEach(widget.teardown);
+
+    const recordCanvas = (index) => rows()[index].querySelector('.real-canvas');
+
+    test('[Listview-REC-016] clicking an enabled record of a locked list leaves paste and select all off the template', async () => {
+      // Break this catches: the click on a copy making the locked ListView the paste and select-all target.
+      await mount(widget, { properties: { disableRecords: binding(`{{listItem.name === 'r0'}}`) } });
+      render(<HotkeyProvider mode="edit" currentLayout="desktop" />);
+
+      fireEvent.click(recordCanvas(1));
+      fireEvent.keyDown(document, { code: 'KeyV', key: 'v', metaKey: true });
+
+      await waitFor(() => expect(pasteComponents).toHaveBeenCalled());
+      expect(pasteComponents.mock.calls[0][0]).not.toBe(ID);
+      expect(store().focusedParentId).not.toBe(ID);
+    });
+
+    test('[Listview-REC-016] on a list that is not locked a click on a copy still focuses the ListView, as before', async () => {
+      // Break this catches: the focus change reaching every copy instead of only a locked list.
+      await mount(widget, { properties: { disableRecords: binding('{{false}}') } });
+      render(<HotkeyProvider mode="edit" currentLayout="desktop" />);
+
+      fireEvent.click(recordCanvas(1));
+      fireEvent.keyDown(document, { code: 'KeyV', key: 'v', metaKey: true });
+
+      await waitFor(() => expect(pasteComponents).toHaveBeenCalled());
+      expect(pasteComponents.mock.calls[0][0]).toBe(ID);
+    });
+  });
+
+  describe('Listview builder: a disabled record is dimmed once', () => {
+    const innerDisabled = () =>
+      child(INNER, 'listview2', 'Listview', {
+        ...baseProperties,
+        data: binding('{{listItem.items}}'),
+        rowsPerPage: binding('{{10}}'),
+        enablePagination: binding('{{false}}'),
+        disableRecords: binding(`{{listItem.name === 'd'}}`),
+      });
+    const harness = createWidgetHarness({
+      componentType: 'Listview',
+      handle: 'listview1',
+      id: ID,
+      defaultProperties: {
+        ...baseProperties,
+        data: binding(NESTED),
+        rowsPerPage: binding('{{2}}'),
+        rowHeight: binding('250'),
+      },
+      defaultStyles: baseStyles,
+      defaultExtraComponents: { [INNER]: innerDisabled(), txt2: innerText() },
+      capabilities: { dnd: true },
+      widgetHeight: 800,
+      widgetWidth: 600,
+    });
+    beforeEach(harness.setup);
+    afterEach(harness.teardown);
+
+    test('[Listview-REC-005] a disabled inner record under the outer hover fade is not dimmed a second time', async () => {
+      // Break this catches: 0.4 on the faded outer record and 0.4 again on the inner one, which shows as 0.16.
+      await mount(harness, {}, 6);
+
+      await user().hover(rows()[0]);
+
+      await waitFor(() => expect(rows()[3].style.opacity).toBe('0.4'));
+      expect(rows()[5]).toHaveAttribute('aria-disabled', 'true');
+      expect(rows()[5].style.opacity).toBe('');
+    });
+
+    test('[Listview-REC-005] a disabled inner record inside a disabled outer record is not dimmed a second time', async () => {
+      // Break this catches: stacked fades on a record whose whole branch is already dimmed.
+      await mount(harness, { properties: { disableRecords: binding(`{{listItem.name === 'o2'}}`) } }, 6);
+
+      expect(rows()[3]).toHaveAttribute('aria-disabled', 'true');
+      expect(rows()[3].style.opacity).toBe('0.4');
+      expect(rows()[5]).toHaveAttribute('aria-disabled', 'true');
+      expect(rows()[5].style.opacity).toBe('');
+    });
+
+    test('[Listview-REC-006] a child in an inner list under a disabled outer record gets no copy outline on hover', async () => {
+      // Break this catches: the outline flag not following the record down into a nested list.
+      await mount(harness, { properties: { disableRecords: binding(`{{listItem.name === 'o2'}}`) } }, 6);
+
+      fireEvent.mouseOver(copiesOf('txt2')[2], { relatedTarget: document.body });
+      fireEvent.mouseOver(copiesOf('txt2')[1], { relatedTarget: document.body });
+
+      expect(dotted('txt2')).toEqual([false, true, false, false]);
     });
   });
 
