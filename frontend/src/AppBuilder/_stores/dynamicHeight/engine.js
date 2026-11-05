@@ -125,11 +125,21 @@ export const flushDynamicHeight = (get, { requests = [], measuredHeights = new M
   const patch = {};
   const tempOf = (key) => (key in patch ? patch[key] : baseTemps[key]);
   // Legacy helpers read temporaryLayouts as a plain object; give them this
-  // pass's results without copying the whole map.
-  const temporaryLayouts = new Proxy(baseTemps, {
-    get: (target, key) => (key in patch ? patch[key] : target[key]),
-    has: (target, key) => key in patch || key in target,
-  });
+  // pass's results without copying the whole map. The store's object is
+  // frozen, and a proxy may not report a different value for a frozen
+  // property of its target, so the target is an empty object.
+  const temporaryLayouts = new Proxy(
+    {},
+    {
+      get: (_, key) => tempOf(key),
+      has: (_, key) => key in patch || key in baseTemps,
+      ownKeys: () => [...new Set([...Reflect.ownKeys(baseTemps), ...Reflect.ownKeys(patch)])],
+      getOwnPropertyDescriptor: (_, key) =>
+        key in patch || key in baseTemps
+          ? { value: tempOf(key), writable: false, enumerable: true, configurable: true }
+          : undefined,
+    }
+  );
 
   const scopes = new Map();
   const scopeFor = (moduleId, layout) => {
@@ -154,8 +164,19 @@ export const flushDynamicHeight = (get, { requests = [], measuredHeights = new M
     (buckets[priority] ||= []).push(item);
   };
 
+  // A Listview row reports with its row index appended to the Listview's own
+  // context.
+  const isListviewRow = (scope, id, context) =>
+    scope.typeOf(id) === 'Listview' && (context?.length ?? 0) > scope.listviewAncestors(id);
+
   const enqueueWidget = (scope, id, contextIndices, isContainer) => {
     const context = normalizeLayoutContext(contextIndices);
+    // A row is the slot holding the row's children, one level below the
+    // Listview, so it is placed before the Listview it resizes.
+    if (isContainer && isListviewRow(scope, id, context)) {
+      enqueueSlot(scope, id, context, scope.depthOf(id) + 1);
+      return;
+    }
     const priority = 2 * scope.depthOf(id) + 1;
     const key = `w|${scope.moduleId}|${scope.currentLayout}|${id}|${contextKey(context)}`;
     enqueue(priority, key, { kind: 'widget', scope, id, context, isContainer });
@@ -243,6 +264,7 @@ export const flushDynamicHeight = (get, { requests = [], measuredHeights = new M
       resolved,
       getExposedValue,
       solveSlot: (slotId) => solveSlot(scope, slotId, context).bottom,
+      isListviewRow: isListviewRow(scope, id, context),
       legacyArgs: {
         componentId: id,
         componentType,
@@ -270,13 +292,6 @@ export const flushDynamicHeight = (get, { requests = [], measuredHeights = new M
     const key = getDynamicLayoutKey(id, context, '', scope.moduleId);
     const visibility = isVisible(scope, id, context);
     const componentType = scope.typeOf(id);
-
-    // A Listview row reports with its row index appended to the Listview's
-    // own context: place the row's children and size the row.
-    if (componentType === 'Listview' && isContainer && (context?.length ?? 0) > scope.listviewAncestors(id)) {
-      processSlot({ scope, slotId: id, context });
-      return;
-    }
 
     let height;
     if (isContainer) {

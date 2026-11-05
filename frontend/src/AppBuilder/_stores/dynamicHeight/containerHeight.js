@@ -1,9 +1,18 @@
 import { isTruthyOrZero } from '@/_helpers/appUtils';
-import { getExtraContainerHeight, resolveContainerHeight } from '../utils/dynamicHeightReflow';
+import {
+  getExtraContainerHeight,
+  resolveContainerHeight,
+  resolveListviewHeightFromRows,
+} from '../utils/dynamicHeightReflow';
 
 // Container types whose height comes from data or flex rules rather than from
 // grid children; the existing calculation already handles them and is kept.
 const DELEGATED_TYPES = new Set(['Listview', 'FlexContainer']);
+
+// Space around a Listview's rows: 2px wrapper padding, 7px inner padding and
+// a 1px border, top and bottom. A row's bottom border is drawn inside the
+// row's own height, so it adds nothing.
+const LISTVIEW_CHROME = 20;
 
 // Slot that holds a container's grid content: the body for most containers,
 // the active tab's pane for Tabs.
@@ -31,11 +40,29 @@ export const resolveContainerHeightV2 = ({
   resolved,
   getExposedValue,
   solveSlot,
+  isListviewRow = false,
   legacyArgs,
 }) => {
   const properties = resolved?.properties || {};
   const isAccordionExpanded = getExposedValue('isExpanded') ?? true;
   const isJsonSchemaForm = componentType === 'Form' && legacyArgs.isJsonSchemaForm;
+
+  // The Listview itself: its rows stacked, never below the drawn height.
+  if (componentType === 'Listview' && !isListviewRow) {
+    if (properties.dynamicHeight === false) return canonicalHeight;
+    const stacked = resolveListviewHeightFromRows({
+      componentId,
+      contextIndices,
+      component: resolved,
+      currentLayout: legacyArgs.currentLayout,
+      currentPageComponents: legacyArgs.currentPageComponents,
+      temporaryLayouts: legacyArgs.temporaryLayouts,
+      moduleId: legacyArgs.moduleId,
+      rowBordersInside: true,
+      outerChrome: LISTVIEW_CHROME,
+    });
+    return Math.max(stacked, canonicalHeight);
+  }
 
   if (
     DELEGATED_TYPES.has(componentType) ||

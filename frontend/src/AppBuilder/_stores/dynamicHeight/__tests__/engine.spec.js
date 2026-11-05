@@ -7,11 +7,17 @@ const widget = (id, type, top, left, width, height, { parent = null, properties 
   properties,
 });
 
+// The store freezes its state, as Immer does.
+const deepFreeze = (value) => {
+  if (value && typeof value === 'object') Object.values(Object.freeze(value)).forEach(deepFreeze);
+  return value;
+};
+
 const createState = (widgets, temporaryLayouts = {}) => {
   const components = Object.fromEntries(widgets.map((w) => [w.id, w]));
   const state = {
     currentLayout: 'desktop',
-    temporaryLayouts,
+    temporaryLayouts: deepFreeze(temporaryLayouts),
     getCurrentPageComponents: () => components,
     getResolvedComponent: (id) => ({ properties: components[id]?.properties ?? {} }),
     getComponentTypeFromId: (id) => components[id]?.component?.component,
@@ -22,7 +28,7 @@ const createState = (widgets, temporaryLayouts = {}) => {
     getBaseParentId: (parentId) => parentId?.match(/^([^-]+)-.+$/)?.[1] ?? parentId,
     getContainerChildrenMapping: (id) => widgets.filter((w) => w.component.parent === id).map((w) => w.id),
     setTemporaryLayouts: (patch) => {
-      state.temporaryLayouts = { ...state.temporaryLayouts, ...patch };
+      state.temporaryLayouts = deepFreeze({ ...state.temporaryLayouts, ...patch });
     },
     incrementCanvasUpdater: jest.fn(),
   };
@@ -59,6 +65,68 @@ describe('dynamic height engine', () => {
     const boxHeight = state.temporaryLayouts.box.height;
     expect(boxHeight).toBeGreaterThan(410);
     expect(state.temporaryLayouts.footer.top).toBe(boxHeight + 10);
+  });
+
+  it('sizes a list view from rows that report after the list view itself', () => {
+    const listProperties = {
+      ...dynamic,
+      dataSourceSelector: 'rawJson',
+      data: [{}, {}],
+      showBorder: true,
+      rowHeight: 30,
+    };
+    const state = createState(
+      [
+        widget('list', 'Listview', 0, 0, 43, 100, { properties: listProperties }),
+        widget('body', 'Text', 0, 0, 43, 30, { parent: 'list', properties: dynamic }),
+        widget('below', 'Button', 110, 0, 43, 40),
+      ],
+      { 'body-0': { top: 0, height: 50 }, 'body-1': { top: 0, height: 70 } }
+    );
+    const listRequest = (contextIndices) => ({
+      id: 'list',
+      layout: 'desktop',
+      isContainer: true,
+      contextIndices,
+      moduleId: 'canvas',
+    });
+    flushDynamicHeight(() => state, { requests: [listRequest(null), listRequest([0]), listRequest([1])] });
+    expect(state.temporaryLayouts.list.height).toBe(50 + 70 + 20);
+    expect(state.temporaryLayouts.below.top).toBe(150);
+  });
+
+  it('resizes a list view again when rows it already sized grow', () => {
+    const listProperties = { ...dynamic, dataSourceSelector: 'rawJson', data: [{}, {}], rowHeight: 30 };
+    const state = createState(
+      [
+        widget('list', 'Listview', 0, 0, 43, 100, { properties: listProperties }),
+        widget('body', 'Text', 0, 0, 43, 30, { parent: 'list', properties: dynamic }),
+        widget('below', 'Button', 110, 0, 43, 40),
+      ],
+      {
+        'body-0': { top: 0, height: 30 },
+        'body-1': { top: 0, height: 30 },
+        'list-0': { top: 0, height: 30 },
+        'list-1': { top: 0, height: 30 },
+        list: { top: 0, height: 100 },
+      }
+    );
+    const bodyRequest = (row) => ({
+      id: 'body',
+      layout: 'desktop',
+      isContainer: false,
+      contextIndices: [row],
+      moduleId: 'canvas',
+    });
+    flushDynamicHeight(() => state, {
+      requests: [bodyRequest(0), bodyRequest(1)],
+      measuredHeights: new Map([
+        ['body-0', 90],
+        ['body-1', 110],
+      ]),
+    });
+    expect(state.temporaryLayouts.list.height).toBe(90 + 110 + 20);
+    expect(state.temporaryLayouts.below.top).toBe(230);
   });
 
   it('writes nothing when every widget is at its saved size', () => {
