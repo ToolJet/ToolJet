@@ -195,9 +195,9 @@ const useAppData = (
     return () => setCurrentAppName('');
   }, [appName]);
 
-  // Periodic query timers live outside the store and survive page switches; this is their only
-  // teardown (leaving the app). A version switch needs none: new query ids, so old ticks stop
-  // themselves when their query is gone. Embedded modules don't own them.
+  // Periodic query timers live outside the store and survive page switches; stop them when
+  // leaving the app (and on environment / version / restore reloads, below). Embedded modules
+  // don't own them.
   useEffect(() => {
     if (moduleMode && moduleId !== 'canvas') return;
     return () => clearAllPeriodicTimers();
@@ -1062,6 +1062,10 @@ const useAppData = (
     const isVersionConsistent = selectedVersion?.id && selectedVersion.id === currentVersionId;
 
     if (isEnvChanged || (isVersionChanged && isVersionConsistent) || isForceRefreshTriggered || isHotReload) {
+      // Environment / version / restore reload the app's data context: stop periodic polling so
+      // nothing keeps running against the new environment unasked. Run-on-page-load queries
+      // restart it. A hot reload only swaps the canvas, so polling carries on.
+      if (!isHotReload) clearAllPeriodicTimers();
       if (isHotReload) {
         setCanvasReloading(true, moduleId);
         // The canvas subtree unmounts while reloading (AppCanvas), but AppCanvas itself stays
