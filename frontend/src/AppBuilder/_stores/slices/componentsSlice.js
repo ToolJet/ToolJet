@@ -2335,59 +2335,71 @@ export const createComponentsSlice = (set, get) => ({
       Number(
         getResolvedValue(getRecordHeight(toMode, properties.rowHeight?.value, properties.gridRecordHeight?.value))
       ) || 100;
-    const children = (get().containerChildrenMapping?.[listviewId] ?? [])
-      .map((id) => ({
-        id,
-        componentName: pageComponents[id]?.component?.component,
-        layout: pageComponents[id]?.layouts?.[currentLayout],
-      }))
-      .filter((child) => child.layout && !isNaN(child.layout.top) && !isNaN(child.layout.left));
-    // Both Layouts' column widths come from the same ListView width, so a child can keep its pixels.
     const listview = pageComponents[listviewId];
     const parentId = listview?.component?.parent;
-    const parentColumnPx =
-      useGridStore.getState().subContainerWidths[parentId || 'canvas'] ||
-      useGridStore.getState().subContainerWidths.canvas ||
-      DEFAULT_CANVAS_WIDTH / NO_OF_GRIDS;
-    const widthPx = (listview?.layouts?.[currentLayout]?.width ?? NO_OF_GRIDS) * parentColumnPx;
-    const listStyle = getResolvedValue(listview?.component?.definition?.styles?.listStyle?.value);
-    const sizing = {
-      listStyle,
-      width: widthPx,
-      gap: getResolvedValue(listview?.component?.definition?.styles?.gap?.value),
-      columns: getResolvedValue(properties.columns?.value),
+
+    const arrangeIn = (layoutKey, remembers) => {
+      const children = (get().containerChildrenMapping?.[listviewId] ?? [])
+        .map((id) => ({
+          id,
+          componentName: pageComponents[id]?.component?.component,
+          layout: pageComponents[id]?.layouts?.[layoutKey],
+        }))
+        .filter((child) => child.layout && !isNaN(child.layout.top) && !isNaN(child.layout.left));
+      // Both Layouts' column widths come from the same ListView width, so a child can keep its pixels.
+      // The canvas measured is the one on screen, so another view's width falls back to the default canvas.
+      const parentColumnPx =
+        (layoutKey === currentLayout &&
+          (useGridStore.getState().subContainerWidths[parentId || 'canvas'] ||
+            useGridStore.getState().subContainerWidths.canvas)) ||
+        DEFAULT_CANVAS_WIDTH / NO_OF_GRIDS;
+      const widthPx = (listview?.layouts?.[layoutKey]?.width ?? NO_OF_GRIDS) * parentColumnPx;
+      const listStyle = getResolvedValue(listview?.component?.definition?.styles?.listStyle?.value);
+      const sizing = {
+        listStyle,
+        width: widthPx,
+        gap: getResolvedValue(listview?.component?.definition?.styles?.gap?.value),
+        columns: getResolvedValue(properties.columns?.value),
+      };
+      const arrangeOptions = {
+        toMode,
+        fromMode,
+        recordHeight,
+        fromColumnPx: getRecordColumnPx({ ...sizing, mode: fromMode }),
+        toColumnPx: getRecordColumnPx({ ...sizing, mode: toMode }),
+      };
+      const memory = remembers ? (properties.recordLayouts?.value ?? {}) : {};
+      const remembered = remembers && Object.keys(memory[toMode] ?? {}).length > 0 ? memory[toMode] : null;
+      const layouts = remembered
+        ? restoreRecordChildren(children, remembered, arrangeOptions)
+        : arrangeRecordChildren(children, arrangeOptions);
+      if (Object.keys(layouts).length === 0) return;
+      if (remembers) {
+        // Only the children that exist now: a deleted child's saved box is dropped here.
+        const recordLayouts = { ...memory, [fromMode]: snapshotRecordLayouts(children) };
+        const pageIndex = get().getCurrentPageIndex(moduleId);
+        // Not an undo patch: a first write adds a key, and the undo replay reads an added or removed key as a component.
+        // Undo leaves the memory as it is, so an undone edit can come back on the next switch (Parth's call).
+        set(
+          (state) => {
+            const definition = state.modules[moduleId].pages[pageIndex].components[listviewId].component.definition;
+            definition.properties.recordLayouts = { value: recordLayouts };
+          },
+          false,
+          'arrangeListviewRecordChildren'
+        );
+      }
+      setComponentLayout(layouts, undefined, moduleId, {
+        saveAfterAction,
+        mergeWithPrevious: true,
+        targetLayout: layoutKey,
+      });
     };
-    const arrangeOptions = {
-      toMode,
-      fromMode,
-      recordHeight,
-      fromColumnPx: getRecordColumnPx({ ...sizing, mode: fromMode }),
-      toColumnPx: getRecordColumnPx({ ...sizing, mode: toMode }),
-    };
-    // Each Layout remembers its own last desktop layout; the mobile layouts are never remembered or restored.
-    const remembers = currentLayout === 'desktop';
-    const memory = remembers ? (properties.recordLayouts?.value ?? {}) : {};
-    const remembered = remembers && Object.keys(memory[toMode] ?? {}).length > 0 ? memory[toMode] : null;
-    const layouts = remembered
-      ? restoreRecordChildren(children, remembered, arrangeOptions)
-      : arrangeRecordChildren(children, arrangeOptions);
-    if (Object.keys(layouts).length === 0) return;
-    if (remembers) {
-      // Only the children that exist now: a deleted child's saved box is dropped here.
-      const recordLayouts = { ...memory, [fromMode]: snapshotRecordLayouts(children) };
-      const pageIndex = get().getCurrentPageIndex(moduleId);
-      // Not an undo patch: a first write adds a key, and the undo replay reads an added or removed key as a component.
-      // The memory needs none: it only ever gets the Layout being left, which is what an undo restores on the page.
-      set(
-        (state) => {
-          const definition = state.modules[moduleId].pages[pageIndex].components[listviewId].component.definition;
-          definition.properties.recordLayouts = { value: recordLayouts };
-        },
-        false,
-        'arrangeListviewRecordChildren'
-      );
-    }
-    setComponentLayout(layouts, undefined, moduleId, { saveAfterAction, mergeWithPrevious: true });
+
+    // Each Layout remembers its own last desktop layout, whichever view made the switch, so the desktop children
+    // always follow the mode. The mobile layouts are never remembered: they are arranged as before.
+    arrangeIn('desktop', true);
+    if (currentLayout !== 'desktop') arrangeIn(currentLayout, false);
   },
 
   setComponentProperty: (
@@ -2504,13 +2516,12 @@ export const createComponentsSlice = (set, get) => ({
     );
 
     // A changed Layout re-arranges the record's children in the same undo step; an undo replay restores them itself.
-    if (
-      !skipUndoRedo &&
+    const isListviewModeChange =
       componentDef.component.component === 'Listview' &&
       property === 'mode' &&
       paramType === 'properties' &&
-      attr === 'value'
-    ) {
+      attr === 'value';
+    if (!skipUndoRedo && isListviewModeChange) {
       get().arrangeListviewRecordChildren(componentId, oldValue?.value, updatedValue, moduleId, { saveAfterAction });
     }
 
@@ -2528,7 +2539,24 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     if (saveAfterAction) {
-      saveComponentPropertyChanges(componentId, property, updatedValue, paramType, attr, moduleId);
+      // A peer needs the memory the switch just wrote, or its next switch saves its own over it.
+      const recordLayouts =
+        !skipUndoRedo && isListviewModeChange
+          ? get().modules[moduleId].pages[currentPageIndex].components[componentId]?.component?.definition?.properties
+              ?.recordLayouts
+          : null;
+      if (recordLayouts) {
+        get().saveComponentPropertyChangesBatch(
+          componentId,
+          [
+            { property: 'recordLayouts', value: recordLayouts.value, paramType: 'properties', attr: 'value' },
+            { property, value: updatedValue, paramType, attr },
+          ],
+          moduleId
+        );
+      } else {
+        saveComponentPropertyChanges(componentId, property, updatedValue, paramType, attr, moduleId);
+      }
     }
 
     if (attr !== 'value' || skipResolve) return;

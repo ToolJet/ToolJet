@@ -102,13 +102,26 @@ export const restoreRecordChildren = (children, remembered, options) => {
 
   const isGrid = options.toMode === 'grid';
   const arrangedBoxes = Object.values(arranged);
+  // A child that does not fit after the remembered ones is kept inside the card, each one a step apart so none hides another.
+  let crowded = 0;
+  const keepInside = (box) => {
+    const maxTop = Math.max(0, options.recordHeight - box.height);
+    const overflows = isGrid ? box.top > maxTop : box.left + box.width > NO_OF_GRIDS;
+    if (!overflows) return box;
+    const step = crowded++ * STACK_MAX_GAP;
+    return {
+      ...box,
+      left: Math.max(0, Math.min(box.left, NO_OF_GRIDS - box.width)),
+      top: isGrid ? Math.max(0, maxTop - step) : Math.min(box.top + step, maxTop),
+    };
+  };
   if (isGrid) {
     const shift =
       Math.max(...boxes.map((box) => box.top + box.height)) +
       STACK_MAX_GAP -
       Math.min(...arrangedBoxes.map((box) => box.top));
     Object.entries(arranged).forEach(([id, box]) => {
-      layouts[id] = { ...box, top: box.top + shift };
+      layouts[id] = keepInside({ ...box, top: box.top + shift });
     });
   } else {
     const shift =
@@ -116,8 +129,7 @@ export const restoreRecordChildren = (children, remembered, options) => {
       ROW_GAP -
       Math.min(...arrangedBoxes.map((box) => box.left));
     Object.entries(arranged).forEach(([id, box]) => {
-      // Past the right edge a child overlaps there rather than leave the card.
-      layouts[id] = { ...box, left: Math.max(0, Math.min(box.left + shift, NO_OF_GRIDS - box.width)) };
+      layouts[id] = keepInside({ ...box, left: box.left + shift });
     });
   }
   return layouts;

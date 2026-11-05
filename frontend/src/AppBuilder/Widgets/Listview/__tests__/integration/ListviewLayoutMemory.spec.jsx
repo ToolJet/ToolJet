@@ -44,7 +44,7 @@ function child(id, name, type, layout, extra = {}) {
   return definition;
 }
 
-function seed({ mode = 'list', recordLayouts } = {}) {
+function seed({ mode = 'list', recordLayouts, gridRecordHeight = '150' } = {}) {
   seedApp(
     {
       [LV]: componentDefinition(LV, 'listview1', 'Listview', {
@@ -52,7 +52,7 @@ function seed({ mode = 'list', recordLayouts } = {}) {
         data: binding('{{[{ a: 1 }]}}'),
         mode: binding(mode),
         rowHeight: binding('80'),
-        gridRecordHeight: binding('150'),
+        gridRecordHeight: binding(gridRecordHeight),
         ...(recordLayouts && { recordLayouts: { value: recordLayouts } }),
       }),
       img: child('img', 'image1', 'Image', IMG),
@@ -105,7 +105,8 @@ describe('Listview: each Layout remembers its own layout', () => {
 
   test('[Listview-GRID-012] a child added in Grid goes after the row in List; one added in List goes under the stack in Grid', () => {
     // Break this catches: a new child dropped at its Grid position, on top of the restored row, or at the top of the stack.
-    seed();
+    // The card is tall enough for the stack: a child that would not fit stays inside it instead (next tests).
+    seed({ gridRecordHeight: '400' });
     moveTo('btn', { top: 25, left: 25, width: 8, height: 30 });
     setMode('grid');
     useStore.getState().addComponentToCurrentPage(

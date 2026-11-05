@@ -47,7 +47,8 @@ export const createUndoRedoSlice = (set, get) => {
     processPatches: (rawPatches) => {
       const patches = filterAndFormatPatches(rawPatches);
       const componentIdsToDelete = [];
-      const componentLayoutsToUpdate = {};
+      // One undo step can hold writes to several layouts (a Layout switch made in the mobile view writes both).
+      const componentLayoutsByName = new Map();
       const componentParentToUpdate = {};
       const componentIdsToAdd = [];
 
@@ -66,7 +67,10 @@ export const createUndoRedoSlice = (set, get) => {
         }
 
         if (op === 'layoutUpdate') {
-          componentLayoutsToUpdate[componentId] = value.layouts;
+          componentLayoutsByName.set(value.layoutName, {
+            ...componentLayoutsByName.get(value.layoutName),
+            [componentId]: value.layouts,
+          });
           newParentId = value.parentId;
           updateParent = value.updateParent;
           targetLayout = value.layoutName;
@@ -122,20 +126,24 @@ export const createUndoRedoSlice = (set, get) => {
         get().setAutoComputeLayout(autoComputeLayoutToUpdate);
       }
 
-      if (!isEmpty(componentLayoutsToUpdate)) {
+      if (componentLayoutsByName.size > 0) {
         // Guessing the layout corrupts the other one; skipping is recoverable.
         if (!targetLayout) {
           // eslint-disable-next-line no-console
           console.warn('[undo] layout patch has no layout name — skipped to avoid writing to the wrong layout');
         } else {
-          // A silent off-screen revert reads as "undo did nothing" and invites repeated presses.
-          if (targetLayout !== get().currentLayout) {
+          // A silent off-screen revert reads as "undo did nothing" and invites repeated presses; a view that
+          // is among the reverted layouts stays on screen.
+          if (!componentLayoutsByName.has(get().currentLayout)) {
             get().setCurrentLayout(targetLayout);
           }
-          get().setComponentLayout(componentLayoutsToUpdate, newParentId, 'canvas', {
-            skipUndoRedo: true,
-            updateParent,
-            targetLayout,
+          componentLayoutsByName.forEach((componentLayoutsToUpdate, layoutName) => {
+            if (!layoutName) return;
+            get().setComponentLayout(componentLayoutsToUpdate, newParentId, 'canvas', {
+              skipUndoRedo: true,
+              updateParent,
+              targetLayout: layoutName,
+            });
           });
         }
       }
