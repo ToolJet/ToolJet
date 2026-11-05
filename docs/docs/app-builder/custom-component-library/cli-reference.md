@@ -36,11 +36,19 @@ This page lists the ToolJet CLI commands, flags, limits and naming rules for Cus
 
 | <div style={{ width:"200px"}}> Flag </div> | <div style={{ width:"150px"}}> Commands </div> | <div style={{ width:"300px"}}> Purpose </div> |
 |:---------- | :---------- | :------------ |
-| `--url` and `--token` | `dev`, `publish` | Target a workspace directly instead of using the stored login. Use both together. |
+| `--url` and `--token` | `dev`, `publish` | Target a workspace directly instead of using the stored login. Use both together. `--url` must use `https://`, except for `localhost` and `127.0.0.1`. |
 | `--debounce` | `dev` | Milliseconds to wait after a save before rebuilding. Defaults to `300`. |
 | `--version`, `-v` | `publish` | Required. The version to publish. |
-| `--message` | `publish` | Optional. A message describing the version. |
+| `--message`, `-m` | `publish` | Optional. A label for the version, shown in the App Builder's version picker. |
 | `--skip-type-check` | `publish` | Publish even if there are TypeScript errors. |
+
+## Files
+
+| <div style={{ width:"250px"}}> File </div> | <div style={{ width:"400px"}}> Purpose </div> |
+|:---------- | :---------- |
+| `~/.tooljet/credentials.json` | Saved by `tooljet login`. Holds the origin URL and token for each workspace you've signed in to. Only your user account can read it. |
+| `<library>/.tooljet/config.json` | Created by `tooljet library init`. Links the project to the library through its `correlationId`. `build`, `dev` and `publish` must run from a directory that contains it. |
+| `<library>/dist/` | Build output: `index.js`, `manifest.json` and, if your components import CSS, `index.css`. |
 
 ## Limits
 
@@ -62,5 +70,6 @@ This page lists the ToolJet CLI commands, flags, limits and naming rules for Cus
 
 ## Runtime Notes
 
+- The CLI needs Node.js 18 or later.
 - ToolJet provides React 18 at runtime. `react`, `react-dom` and `react/jsx-runtime` are left out of the bundle, which keeps component bundles small.
 - CSS imported by a component is collected into `dist/index.css` and loaded automatically.

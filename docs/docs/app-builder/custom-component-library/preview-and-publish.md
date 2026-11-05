@@ -28,7 +28,9 @@ Run this from inside the library directory:
 tooljet library dev
 ```
 
-The CLI watches `src/`, rebuilds on every save, and uploads the result to your **dev track**. A dev track is a private slot, one per developer per library. After each save, the CLI prints the build time, any TypeScript errors, and whether the upload succeeded.
+The CLI first checks that the library exists in the workspace you're signed in to. If it doesn't, for example because you signed in to a different workspace, the CLI asks whether to create it there. Answer `y` to create it and continue, or `n` to stop. `tooljet library publish` does the same check.
+
+The CLI then watches `src/`, rebuilds on every save, and uploads the result to your **dev track**. A dev track is a private slot, one per developer per library. After each save, the CLI prints the build time, any TypeScript errors, and whether the upload succeeded.
 
 To see your dev build in the App Builder:
 
@@ -47,7 +49,7 @@ Keep these points in mind:
 | <div style={{ width:"150px"}}> Flag </div> | <div style={{ width:"100px"}}> Default </div> | <div style={{ width:"350px"}}> Purpose </div> |
 |:---------- | :---------- | :------------ |
 | `--debounce` | `300` | Milliseconds to wait after a save before rebuilding. |
-| `--url` and `--token` | — | Target a workspace directly instead of using the stored login. Use both together. |
+| `--url` and `--token` | — | Target a workspace directly instead of using the stored login. Use both together. If the library doesn't exist in that workspace, the CLI creates it without asking. |
 
 :::info
 **Hot reload not working?** Ad blockers and some browser extensions can block the live connection that dev preview uses. If your saved changes stop appearing in the App Builder, disable them and try again.
@@ -59,7 +61,7 @@ Keep these points in mind:
 tooljet library build
 ```
 
-This builds the library to `dist/` without uploading anything. It doesn't need you to be signed in, so it works well as a CI check.
+This builds the library to `dist/` without uploading anything. It doesn't need you to be signed in, so it works well as a CI check. If the build reports TypeScript errors, the command exits with a non-zero status code.
 
 ## Publish a Version
 
@@ -68,7 +70,7 @@ tooljet library publish --version 1.0.0 --message "Add dark mode support"
 ```
 
 - `--version` is required. It accepts `X`, `X.Y` or `X.Y.Z`. Missing parts default to zero, so `1` becomes `1.0.0`. Leading zeros are not allowed.
-- `--message` is optional.
+- `--message` (or `-m`) is optional. It labels the version in the App Builder's version picker.
 
 The command builds the library, generates the manifest, type-checks the code, and uploads it. As it runs, it prints the number of components, the bundle size and the CSS size.
 
@@ -81,7 +83,7 @@ The command builds the library, generates the manifest, type-checks the code, an
 
 ### Publish from CI
 
-`--url` and `--token` work the same way as in dev mode. Use them to publish from a CI pipeline without a stored login:
+`--url` and `--token` work the same way as in dev mode. Use them to publish from a CI pipeline without a stored login. If the library doesn't exist in the target workspace yet, the CLI creates it:
 
 ```bash
 tooljet library publish --version 1.2.0 --url https://app.tooljet.ai --token <your-token>
