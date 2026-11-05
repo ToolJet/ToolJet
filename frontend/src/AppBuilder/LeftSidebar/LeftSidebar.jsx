@@ -220,9 +220,9 @@ export const BaseLeftSidebar = ({
       case 'debugger':
         return <Debugger onClose={() => toggleLeftSidebar(false)} darkMode={darkMode} />;
       case 'security':
-        return <SecurityPanel />;
+        return <SecurityPanel onClose={() => toggleLeftSidebar(false)} />;
       case 'access':
-        return <AccessPanel />;
+        return <AccessPanel onClose={() => toggleLeftSidebar(false)} />;
       case 'dependencies':
         return <DependencyViewer darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
       case 'settings':
