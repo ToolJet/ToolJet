@@ -108,6 +108,9 @@ export class AppsRepository extends Repository<App> {
       .andWhere('av.branch_id = :branchId', { branchId: resolvedDefaultBranchId })
       .orderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
+      // Every version row of the app matches; without LIMIT each loads its own App and runs
+      // AppsSubscriber.afterLoad — one hydration per version row. av→app is many-to-one.
+      .limit(1)
       .getOne();
 
     if (!resolvedVersion?.app || resolvedVersion.app.organizationId !== organizationId) {
@@ -141,6 +144,9 @@ export class AppsRepository extends Repository<App> {
       .where('av.slug = :slug', { slug })
       .orderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
+      // Every version row of the app matches; without LIMIT each loads its own App and runs
+      // AppsSubscriber.afterLoad — one hydration per version row. av→app is many-to-one.
+      .limit(1)
       .getOne();
 
     if (!resolvedVersion?.app) {
@@ -214,6 +220,9 @@ export class AppsRepository extends Repository<App> {
       .andWhere('app.organization_id = :organizationId', { organizationId })
       .orderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
+      // Every version row of the app matches; without LIMIT each loads its own App and runs
+      // AppsSubscriber.afterLoad — one hydration per version row. av→app is many-to-one.
+      .limit(1)
       .getOne();
 
     if (resolved?.app) {

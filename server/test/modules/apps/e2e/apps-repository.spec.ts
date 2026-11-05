@@ -343,6 +343,37 @@ describe('AppsRepository', () => {
       expect(response.body.organizationId).toBe(manyVersionsApp.organizationId);
       expect(getDetailsSpy).not.toHaveBeenCalled();
     });
+
+    // These callers (app-auth / private-app-auth / valid-app guards) keep afterLoad hydration, so
+    // the query must load exactly one App — not one per version row sharing the slug.
+    it('findAppBySlug hydrates a single App, not one per version row', async () => {
+      const found = await appsRepository.findAppBySlug(sharedSlug);
+
+      expect(found.id).toBe(manyVersionsApp.id);
+      expect(getDetailsSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('findBySlug hydrates a single App, not one per version row', async () => {
+      const found = await appsRepository.findBySlug(sharedSlug, manyVersionsApp.organizationId, null);
+
+      expect(found.id).toBe(manyVersionsApp.id);
+      expect(getDetailsSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('findByAppName hydrates a single App, not one per version row', async () => {
+      const defaultBranch = await getDefaultDataSource()
+        .getRepository(WorkspaceBranch)
+        .findOneOrFail({ where: { organizationId: manyVersionsApp.organizationId, isDefault: true } });
+
+      const found = await appsRepository.findByAppName(
+        manyVersionsApp.name,
+        manyVersionsApp.organizationId,
+        defaultBranch.id
+      );
+
+      expect(found.id).toBe(manyVersionsApp.id);
+      expect(getDetailsSpy).toHaveBeenCalledTimes(1);
+    });
   });
 
   // Gap check: isModuleEmbeddedInApp filters only on `app.id = parentAppId` — it never
