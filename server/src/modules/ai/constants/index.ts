@@ -17,4 +17,6 @@ export enum FEATURE_KEY {
   GET_THREAD_TOKEN_USAGE = 'getThreadTokenUsage',
   GET_LLM_PREFERENCE = 'getLlmPreference',
   UPDATE_LLM_PREFERENCE = 'updateLlmPreference',
+  MANAGE_MCP_SERVERS = 'manageMcpServers',
+  CONNECT_MCP_SERVER = 'connectMcpServer',
 }

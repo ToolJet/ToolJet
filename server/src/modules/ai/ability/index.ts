@@ -39,6 +39,8 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           // the whole point of the preference is that it needs no admin involvement.
           FEATURE_KEY.GET_LLM_PREFERENCE,
           FEATURE_KEY.UPDATE_LLM_PREFERENCE,
+          // Each builder connects their own account to an OAuth MCP server an admin enabled.
+          FEATURE_KEY.CONNECT_MCP_SERVER,
         ],
         AiConversation
       );
@@ -47,6 +49,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     if (isAdmin || superAdmin) {
       can([FEATURE_KEY.UPDATE_KEY], AiConversation);
       can([FEATURE_KEY.GET_KEY_SETTINGS], AiConversation);
+      can([FEATURE_KEY.MANAGE_MCP_SERVERS], AiConversation);
     }
   }
 }

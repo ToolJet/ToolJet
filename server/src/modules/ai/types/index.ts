@@ -21,6 +21,8 @@ interface Features {
   [FEATURE_KEY.GET_THREAD_TOKEN_USAGE]: FeatureConfig;
   [FEATURE_KEY.GET_LLM_PREFERENCE]: FeatureConfig;
   [FEATURE_KEY.UPDATE_LLM_PREFERENCE]: FeatureConfig;
+  [FEATURE_KEY.MANAGE_MCP_SERVERS]: FeatureConfig;
+  [FEATURE_KEY.CONNECT_MCP_SERVER]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

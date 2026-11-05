@@ -59,5 +59,11 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.UPDATE_LLM_PREFERENCE]: {
       license: LICENSE_FIELD.AI_FEATURE,
     },
+    [FEATURE_KEY.MANAGE_MCP_SERVERS]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
+    [FEATURE_KEY.CONNECT_MCP_SERVER]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
   },
 };
