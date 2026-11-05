@@ -1,4 +1,4 @@
-/** @group working */
+/** @group database */
 /**
  * The result shape apps read from ToolJet Database queries. Apps bind to `data.results` (SQL mode) and
  * `data.result` (join) - changing either breaks every existing app on upgrade, so it is pinned here.
