@@ -34,9 +34,15 @@ describe('dynamic height solver', () => {
     expect(results).toEqual([220, 320, 320, 120]);
   });
 
-  it('pulls widgets up into a collapsed hidden widget and keeps the gap below it', () => {
+  it('moves a widget up to the top of a collapsed hidden widget, gap included', () => {
     const boxes = [box('h', 0, 0, 43, 100, { collapsible: true }), box('b', 110, 0, 43, 40)];
-    expect(solveWith(boxes, { h: 0 }).tops.get('b')).toBe(10);
+    expect(solveWith(boxes, { h: 0 }).tops.get('b')).toBe(0);
+    expect(solveWith(boxes, { h: 100 }).tops.get('b')).toBe(110);
+  });
+
+  it('closes up a run of collapsed hidden widgets under a visible one', () => {
+    const boxes = [box('a', 0, 0, 43, 30), box('h', 40, 0, 43, 40, { collapsible: true }), box('b', 90, 0, 43, 40)];
+    expect(solveWith(boxes, { h: 0 }).tops.get('b')).toBe(40);
   });
 
   it('keeps the offset of a widget drawn inside a collapsible widget area', () => {
@@ -105,9 +111,15 @@ describe('saved top for a visible drop position', () => {
     ).toBe(40);
   });
 
-  it('saves a drop under a collapsed widget below it, so it is pushed when shown', () => {
-    const context = siblingsFor([box('h', 0, 0, 43, 100, { collapsible: true })], { h: 0 });
-    expect(savedTopForVisibleTop({ visibleTop: 10, left: 0, width: 43, height: 40, ...context })).toBe(110);
+  it('saves a drop under a collapsed widget inside its area, so it is pushed below it when shown', () => {
+    const hidden = box('h', 0, 0, 43, 100, { collapsible: true });
+    const context = siblingsFor([hidden], { h: 0 });
+    const saved = savedTopForVisibleTop({ visibleTop: 10, left: 0, width: 43, height: 40, ...context });
+    expect(saved).toBe(10);
+    const shown = siblingsFor([hidden], { h: 100 });
+    expect(
+      renderedTopFor({ top: saved, left: 0, width: 43, height: 40 }, shown.siblings, shown.tops, shown.flowOf)
+    ).toBe(110);
   });
 
   it('keeps the visible top when nothing is above the drop', () => {

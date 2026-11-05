@@ -73,11 +73,20 @@ export const buildBlockers = (sortedBoxes) => {
   return blockers;
 };
 
+// How far below `blocker`'s rendered bottom `box` sits. A collapsed widget
+// gives up its gap as well as its height, so what was drawn below it moves up
+// to its top, as the existing engine does.
+const offsetBelow = (blocker, box, flow) => {
+  if (blocker.collapsible && flow === 0 && box.top >= blocker.top + blocker.height) return 0;
+  return box.top - gapBottom(blocker, box.top);
+};
+
 const topFromBlockers = (box, above, tops, flowOf) => {
   if (above.length === 0) return box.top;
   let top = -Infinity;
   for (const blocker of above) {
-    const pushed = tops.get(blocker.id) + flowOf(blocker.id) + (box.top - gapBottom(blocker, box.top));
+    const flow = flowOf(blocker.id);
+    const pushed = tops.get(blocker.id) + flow + offsetBelow(blocker, box, flow);
     if (pushed > top) top = pushed;
   }
   return top;
