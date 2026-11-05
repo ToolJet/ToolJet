@@ -42,6 +42,7 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 - **`is_synced=false` on create in every mode** (git-off, multi-branch feature, single-branch default) — a brand-new DSV is never-committed, so it stays unsynced until a push (git-sync). There is no single-branch synced-on-create exemption (removed) — mirrors the apps/modules rule. A git-sync pull that finds a synced DSV absent from git **deactivates** it (`isActive=false`), it does not delete the row.
 - Sample sources connect as a restricted `tooljet_sample_*` role (`helpers/sample-db-role.helper.ts`), provisioned on boot by `SAMPLE_PG_DB_USER` or `PG_USER`; never the admin user. If provisioning fails, `sample_sql_disabled` is set and queries are rejected. Role setup and `populate-sample-db` share one advisory lock.
 - Scope change is one-way (local → global); sample sources can't be deleted; delete is blocked while dependent queries exist (`findQueriesLinkedToDatasource`).
+- Marketplace plugins run in a `vm` sandbox (`PluginsServiceSelector.findMarketplacePluginService`). `...global` copies only enumerable globals, so web globals like `MessagePort`/`DOMException` must be listed explicitly or bundled libraries (e.g. undici 7) fail at load.
 - NEVER abbreviate `data_source` as `ds` in code or docs.
 
 ## Related modules
