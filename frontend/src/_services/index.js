@@ -25,6 +25,7 @@ export * from './license.service';
 export * from './copilot.service';
 export * from './git_sync.service';
 export * from './organization_constants.service';
+export * from './organization_constants_v2.service';
 export * from './groupPermission.v2.service';
 export * from './workflow_executions.service';
 export * from './workflow_schedules.service';
