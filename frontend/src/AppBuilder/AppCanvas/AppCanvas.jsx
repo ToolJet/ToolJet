@@ -31,6 +31,7 @@ import useEnableMainCanvasScroll from './Hooks/useEnableMainCanvasScroll';
 
 import useCanvasResizing from './Hooks/useCanvasResizing';
 import { CodeCanvasViewport, useCodePage, useRoutePageRedirect } from '@/AppBuilder/_helpers/codeModeHooks';
+import { useIsAppPreview } from '@/AppBuilder/_hooks/useIsAppPreview';
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
@@ -68,9 +69,11 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
   const { isCodePage } = useCodePage(moduleId);
   useRoutePageRedirect(moduleId);
+  const isAppPreview = useIsAppPreview();
 
   const isMobileLayout = currentLayout === 'mobile';
-  const isCodeCanvas = isCodePage && currentMode === 'edit' && moduleId === 'canvas' && !isMobileLayout;
+  const isCodeCanvas =
+    isCodePage && (currentMode === 'edit' || isAppPreview) && moduleId === 'canvas' && !isMobileLayout;
   const pageLoader = useStore((state) => state.pageLoader, shallow);
   const isCanvasReloading = useStore((state) => state.loaderStore.modules[moduleId].isCanvasReloading, shallow);
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
