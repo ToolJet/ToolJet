@@ -1,3 +1,4 @@
+// migration-lint: allow-destructive the foreign key only covers the nullable column this migration adds
 import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey, TableIndex } from 'typeorm';
 
 const INDEX_NAME = 'idx_workflow_executions_trigger_source_app_id';
