@@ -37,9 +37,12 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     if (isAdmin || superAdmin || orgConstantPermission) {
       can(
         [
+          FEATURE_KEY.LIST,
+          FEATURE_KEY.GET,
           FEATURE_KEY.CREATE,
           FEATURE_KEY.UPDATE,
           FEATURE_KEY.DELETE,
+          FEATURE_KEY.BULK_DELETE,
           FEATURE_KEY.GET_DECRYPTED_CONSTANTS,
           FEATURE_KEY.GET_FROM_APP,
           FEATURE_KEY.GET_FROM_ENVIRONMENT,

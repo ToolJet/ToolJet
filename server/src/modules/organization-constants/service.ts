@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { DeleteResult, EntityManager } from 'typeorm';
 import { CreateOrganizationConstantDto, UpdateOrganizationConstantDto } from '@modules/organization-constants/dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
@@ -6,9 +6,41 @@ import { OrganizationConstant } from '@entities/organization_constants.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { IOrganizationConstantsService } from './interfaces/IService';
 import { OrganizationConstantsUtilService } from './util.service';
-import { OrganizationConstantType, SECRET_VALUE_MASK } from './constants';
+import { ConstantSource, OrganizationConstantType, SECRET_VALUE_MASK } from './constants';
 import { OrganizationConstantRepository } from './repository';
-import { ConstantWithEnvironmentValues } from './types';
+import {
+  ConstantDetailPayload,
+  ConstantListItemPayload,
+  ConstantListPayload,
+  ConstantWithEnvironmentValues,
+} from './types';
+import { ListConstantsQueryDto } from './dto/v2/list-constants.query.dto';
+import {
+  buildConstantsPage,
+  ConstantListRow,
+  mergeConstantRows,
+  toEnvironmentConstantRow,
+  toUserRef,
+  toWorkspaceConstantRow,
+} from './helpers/constants-list';
+
+function toListItemPayload(row: ConstantListRow, value: string | null): ConstantListItemPayload {
+  const isEditable = row.source === ConstantSource.WORKSPACE;
+  return {
+    kind: 'constant',
+    id: row.id,
+    name: row.name,
+    type: row.type,
+    source: row.source,
+    value,
+    environments_with_value: row.environmentIdsWithValue,
+    last_modified_at: row.lastModifiedAt?.toISOString() ?? null,
+    owner: row.owner,
+    modified_by: row.modifiedBy,
+    actions: { edit: isEditable, delete: isEditable },
+  };
+}
+
 @Injectable()
 export class OrganizationConstantsService implements IOrganizationConstantsService {
   constructor(
@@ -16,6 +48,94 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
     protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService
   ) {}
+
+  // Edition seam: `.env` constants exist only in the enterprise edition, so CE has none.
+  protected async listEnvironmentConstants(organizationId: string): Promise<ConstantWithEnvironmentValues[]> {
+    return [];
+  }
+
+  // Edition seam: whether each environment can hold its own value. Used by the write paths.
+  protected async isMultiEnvironmentEnabled(organizationId: string): Promise<boolean> {
+    return false;
+  }
+
+  async listConstants(organizationId: string, query: ListConstantsQueryDto): Promise<ConstantListPayload> {
+    const environments = await this.appEnvironmentUtilService.getAll(organizationId);
+    if (!environments.some((environment) => environment.id === query.environment_id)) {
+      throw new BadRequestException('environment_id is not an environment of this workspace');
+    }
+
+    const [records, envConstants] = await Promise.all([
+      this.organizationConstantRepository.findWithValuesAndUsers(organizationId),
+      this.listEnvironmentConstants(organizationId),
+    ]);
+    const workspaceRows = records
+      .map((record) => toWorkspaceConstantRow(record, query.environment_id))
+      .filter((row): row is ConstantListRow => row !== null);
+    // An .env constant only hides a database one when it has a value in this environment.
+    const envRows = envConstants
+      .map((constant) => toEnvironmentConstantRow(constant, query.environment_id))
+      .filter((row): row is ConstantListRow => row !== null);
+
+    const page = buildConstantsPage(mergeConstantRows(workspaceRows, envRows), {
+      type: query.type,
+      search: query.search,
+      sources: query.source,
+      sort: query.sort,
+      page: query.page,
+      perPage: query.per_page,
+    });
+
+    // Decrypt only the Globals on the returned page, never the whole workspace.
+    const items = await Promise.all(
+      page.items.map(async (row) => toListItemPayload(row, await this.resolveListValue(organizationId, row)))
+    );
+
+    return { items, page: query.page, page_size: query.per_page, total: page.total, counts: page.counts };
+  }
+
+  // Secrets resolve to null: their plaintext must not leave the server. `.env` values are already plaintext.
+  private async resolveListValue(organizationId: string, row: ConstantListRow): Promise<string | null> {
+    if (row.type !== OrganizationConstantType.GLOBAL) return null;
+    if (row.source === ConstantSource.ENV) return row.value;
+    return this.organizationConstantsUtilService.decryptSecret(organizationId, row.value);
+  }
+
+  async getConstant(organizationId: string, constantId: string): Promise<ConstantDetailPayload> {
+    const [constant] = await this.organizationConstantRepository.findWithValuesAndUsers(organizationId, constantId);
+    if (!constant) {
+      throw new NotFoundException('Constant not found');
+    }
+    const environments = await this.appEnvironmentUtilService.getAll(organizationId);
+    const isGlobal = constant.type === OrganizationConstantType.GLOBAL;
+
+    const values = await Promise.all(
+      environments.map(async (environment) => {
+        const stored = constant.orgEnvironmentConstantValues.find((v) => v.environmentId === environment.id)?.value;
+        const hasValue = !!stored;
+        return {
+          environment_id: environment.id,
+          environment_name: environment.name,
+          has_value: hasValue,
+          value:
+            isGlobal && hasValue
+              ? await this.organizationConstantsUtilService.decryptSecret(organizationId, stored)
+              : null,
+        };
+      })
+    );
+
+    return {
+      id: constant.id,
+      name: constant.constantName,
+      type: constant.type,
+      owner: toUserRef(constant.createdByUser),
+      modified_by: toUserRef(constant.updatedByUser),
+      last_modified_at: constant.updatedAt.toISOString(),
+      created_at: constant.createdAt.toISOString(),
+      values,
+    };
+  }
 
   async allEnvironmentConstants(
     organizationId: string,
