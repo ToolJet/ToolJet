@@ -5314,6 +5314,11 @@ export function transformComponentData(
     }
   }
 
+  // After the walk: the mapping fills as it goes, so a ListView can come before its children.
+  transformedComponents.forEach((transformed) => {
+    transformed.properties = remapRecordLayoutIds(transformed.properties, componentsMapping);
+  });
+
   return transformedComponents;
 }
 

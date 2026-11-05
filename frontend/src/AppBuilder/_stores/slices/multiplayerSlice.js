@@ -34,22 +34,26 @@ export const createMultiplayerSlice = (set, get) => ({
             const { setComponentLayout } = get();
             let parentId;
             let updateParent = false;
-            const componentLayouts = Object.fromEntries(
-              // TODO: Do this for mobile view
-              Object.entries(diff).map(([componentId, layoutsObject]) => {
-                if (layoutsObject?.component && 'parent' in layoutsObject.component) {
-                  updateParent = true;
-                  parentId = layoutsObject.component?.parent;
-                }
+            const layoutsByType = {};
+            Object.entries(diff).forEach(([componentId, layoutsObject]) => {
+              if (layoutsObject?.component && 'parent' in layoutsObject.component) {
+                updateParent = true;
                 parentId = layoutsObject.component?.parent;
-                return [componentId, layoutsObject.layouts['desktop']];
-              })
-            );
+              }
+              parentId = layoutsObject.component?.parent;
+              Object.entries(layoutsObject.layouts ?? {}).forEach(([layoutType, layout]) => {
+                (layoutsByType[layoutType] ??= {})[componentId] = layout;
+              });
+            });
 
-            setComponentLayout(componentLayouts, parentId, 'canvas', {
-              saveAfterAction: false,
-              updateParent,
-              skipUndoRedo: true,
+            // Each diff goes to the layout it was made in, whichever view this editor has on screen.
+            Object.entries(layoutsByType).forEach(([layoutType, componentLayouts]) => {
+              setComponentLayout(componentLayouts, parentId, 'canvas', {
+                saveAfterAction: false,
+                updateParent,
+                skipUndoRedo: true,
+                targetLayout: layoutType,
+              });
             });
             break;
           }
