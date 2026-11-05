@@ -39,6 +39,7 @@ import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
+import { isCompareFrame, withoutCompareNavigation } from '@/AppBuilder/_utils/compareFrame';
 
 // calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
 const INPUT_COMPONENTS_FOR_FORM_SET = new Set(INPUT_COMPONENTS_FOR_FORM);
@@ -212,7 +213,7 @@ export const createComponentsSlice = (set, get) => ({
   setPageSettings: (pageSettings = {}, moduleId) => {
     set(
       (state) => {
-        state.pageSettings = pageSettings;
+        state.pageSettings = isCompareFrame() ? withoutCompareNavigation(pageSettings) : pageSettings;
       },
       false,
       'setPageSettings'

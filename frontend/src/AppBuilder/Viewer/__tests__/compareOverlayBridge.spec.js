@@ -76,3 +76,39 @@ describe('opening it', () => {
     expect(handle(['legacyText'])).toEqual({ status: 'unsupported', name: 'legacyModal' });
   });
 });
+
+// Team testing, 2026-10-28: every page switch in the compare view loaded both versions again.
+describe('switching the compared page in a running frame', () => {
+  const { switchComparePage } = require('../useCompareOverlayBridge');
+  const state = (current) => {
+    const switchPage = jest.fn();
+    return {
+      switchPage,
+      getState: () => ({
+        modules: {
+          canvas: {
+            pages: [
+              { id: 'p-1', handle: 'home' },
+              { id: 'p-2', handle: 'deals' },
+            ],
+          },
+        },
+        getCurrentPageId: () => current,
+        switchPage,
+      }),
+    };
+  };
+
+  it('shows the page with that handle', () => {
+    const { getState, switchPage } = state('p-1');
+    expect(switchComparePage(getState, 'deals')).toEqual({ status: 'switched' });
+    expect(switchPage).toHaveBeenCalledWith('p-2', 'deals', [], 'canvas');
+  });
+
+  it('stays put on the page already shown, and says when this version has no such page', () => {
+    const { getState, switchPage } = state('p-2');
+    expect(switchComparePage(getState, 'deals')).toEqual({ status: 'switched' });
+    expect(switchComparePage(getState, 'reports')).toEqual({ status: 'missing' });
+    expect(switchPage).not.toHaveBeenCalled();
+  });
+});
