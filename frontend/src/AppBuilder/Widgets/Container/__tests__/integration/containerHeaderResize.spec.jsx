@@ -1,7 +1,7 @@
 /**
  * Container header slot stays drag-resizable after `HorizontalSlot` gained `isResizable` (default true)
  * for the ListView header (Listview-HDR-008). The ListView side is asserted in
- * `Widgets/Listview/__tests__/integration/ListviewHeader.spec.jsx`.
+ * `Widgets/Listview/__tests__/integration/Listview.spec.jsx`.
  */
 import { waitFor } from '@testing-library/react';
 import { createWidgetHarness, binding } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
