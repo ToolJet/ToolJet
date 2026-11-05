@@ -27,6 +27,7 @@ jest.mock(
 );
 const mockHandleDrop = jest.fn();
 let mockDragSpec;
+let mockDropSpec;
 let mockSelectoProps;
 // The grid background needs react-dnd's drag layer; jsdom has no drag, so the flag is flipped per test.
 const mockDragLayer = { on: false };
@@ -40,6 +41,10 @@ jest.mock('react-dnd', () => {
       if (!mockDrag.on) return actual.useDrag(factory);
       mockDragSpec = factory();
       return [{ isDragging: false }, jest.fn(), jest.fn()];
+    },
+    useDrop: (spec, deps) => {
+      if (mockDrag.on) mockDropSpec = typeof spec === 'function' ? spec() : spec;
+      return actual.useDrop(spec, deps);
     },
     useDragLayer: (collect) =>
       mockDragLayer.on ? { isDragging: true, clientOffset: null, draggedItem: null } : actual.useDragLayer(collect),
@@ -322,6 +327,26 @@ describe('ListviewBuilderDrops', () => {
 
         expect(mockHandleDrop).not.toHaveBeenCalled();
         expect(moveAt(5, y).isDroppable).toBe(false);
+      });
+
+      test.each([
+        ['disabled record', 'r1', 150, true],
+        ['enabled record 3', 'r1', 250, true],
+        ['enabled record 1', 'r1', 50, false],
+      ])('[Listview-REC-008] a real drop on a %s: the offset is gone by drag end', async (_label, name, y, refused) => {
+        // Break this catches: the refuse check reading the offset at drag end, where react-dnd has already reset it after the drop.
+        await mountDisabled(name);
+        const copy = canvasOf(rows()[Math.floor(y / 100)]);
+        if (y === 150) hitList();
+        else pointerOver(copy);
+        const dropResult = mockDropSpec.drop({}, { getClientOffset: () => ({ x: 5, y }) });
+
+        expect(dropResult?.refused ?? false).toBe(refused);
+        mockDragSpec.end(
+          { componentType: 'Button', component: { component: 'Button' } },
+          { getClientOffset: () => null, getDropResult: () => dropResult }
+        );
+        expect(mockHandleDrop).toHaveBeenCalledTimes(refused ? 0 : 1);
       });
 
       test('[Listview-REC-008] an enabled record next to a disabled one still takes a drop', async () => {
