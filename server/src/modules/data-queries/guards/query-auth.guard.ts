@@ -45,12 +45,7 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
       request.tj_app = app;
       request.tj_resource_id = app.id;
 
-      // Public access reaches only the released version (as getBySlug does): a draft query of a
-      // public app falls through to normal authentication below.
-      if (
-        app.isPublic === true &&
-        (app.type !== APP_TYPES.FRONT_END || (await this.isReleasedQuery(app.currentVersionId, id)))
-      ) {
+      if (app.isPublic === true) {
         // No need to do user validation
         this.organizationRepository.touchLastAccessedAt(app.organizationId);
         return true;
@@ -88,10 +83,5 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
     } finally {
       this.transactionLogger.log(`QueryAuthGuard completed at ${new Date().toISOString()} for app id ${id}`);
     }
-  }
-
-  private async isReleasedQuery(releasedVersionId: string | null, dataQueryId: string): Promise<boolean> {
-    if (!releasedVersionId) return false;
-    return this.dataQueryRepository.existsBy({ id: dataQueryId, appVersionId: releasedVersionId });
   }
 }
