@@ -42,6 +42,7 @@
     "@tooljet-plugins/ibmdb": "file:packages/ibmdb",
     "@tooljet-plugins/influxdb": "file:packages/influxdb",
     "@tooljet-plugins/mailgun": "file:packages/mailgun",
+    "@tooljet-plugins/mailtrap": "file:packages/mailtrap",
     "@tooljet-plugins/mariadb": "file:packages/mariadb",
     "@tooljet-plugins/minio": "file:packages/minio",
     "@tooljet-plugins/mongodb": "file:packages/mongodb",
