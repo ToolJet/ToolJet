@@ -136,6 +136,34 @@ const missedWhileHidden = new Set();
 let visibilityListenerAdded = false;
 // Floor for the interval to protect the backend from runaway polling.
 const MIN_PERIODIC_INTERVAL_MS = 1000;
+// setTimeout stores its delay as a signed 32-bit int (~24.8 days); a larger delay overflows and
+// fires almost immediately, which would re-run the query back to back.
+const MAX_PERIODIC_INTERVAL_MS = 2 ** 31 - 1;
+// Last invalid `pauseAfterFailures` value warned about per query, so each bad value warns once.
+const warnedFailureThresholds = new Map();
+
+// `pauseAfterFailures` as a whole number of failures, or null for "never pause". Positive
+// fractions round up (2.5 → pause after the 3rd failure); anything else set warns once.
+function resolveFailureThreshold(query, moduleId, store) {
+  const raw = store.getResolvedValue(query.options?.pauseAfterFailures, {}, moduleId);
+  const num = Number(raw);
+  if (raw === undefined || raw === null || raw === '' || num === 0) return null;
+  const threshold = Number.isFinite(num) && num > 0 ? Math.ceil(num) : null;
+  if (num !== threshold && warnedFailureThresholds.get(query.id) !== String(raw)) {
+    warnedFailureThresholds.set(query.id, String(raw));
+    store.debugger?.log({
+      logLevel: 'warning',
+      type: 'query',
+      kind: query.kind,
+      key: query.name,
+      message: `Pause after failures "${raw}" is not a positive whole number; ${
+        threshold ? `using ${threshold}.` : 'periodic runs will not auto-pause.'
+      }`,
+      errorTarget: 'Queries',
+    });
+  }
+  return threshold;
+}
 
 function runMissedPeriodicTicks() {
   if (document.hidden) return;
@@ -157,8 +185,8 @@ function recordPeriodicRunResult(query, moduleId, store, status) {
   if (status !== 'failed') return; // aborted / skipped runs don't count either way
   const failures = (periodicFailureCounts.get(query.id) ?? 0) + 1;
   periodicFailureCounts.set(query.id, failures);
-  const threshold = Number(store.getResolvedValue(query.options?.pauseAfterFailures, {}, moduleId));
-  if (!(threshold > 0) || failures < threshold || !queryPeriodicTimers.has(query.id)) return;
+  const threshold = resolveFailureThreshold(query, moduleId, store);
+  if (!threshold || failures < threshold || !queryPeriodicTimers.has(query.id)) return;
   clearPeriodicTimer(query.id);
   store.debugger?.log({
     logLevel: 'warning',
@@ -185,7 +213,10 @@ function resolvePeriodicConfig(query, moduleId, store) {
   if (!Number.isFinite(num) || num <= 0) {
     return { shouldRun: true, intervalMs: null, invalid: true, rawInterval };
   }
-  return { shouldRun: true, intervalMs: Math.max(num, MIN_PERIODIC_INTERVAL_MS) };
+  return {
+    shouldRun: true,
+    intervalMs: Math.min(Math.max(num, MIN_PERIODIC_INTERVAL_MS), MAX_PERIODIC_INTERVAL_MS),
+  };
 }
 
 // Arm (or re-arm) the one-shot timer that runs the query once, `intervalMs` from now.
@@ -265,6 +296,7 @@ export function clearAllPeriodicTimers() {
   pausedPeriodicQueries.clear();
   periodicFailureCounts.clear();
   missedWhileHidden.clear();
+  warnedFailureThresholds.clear();
 }
 
 /**

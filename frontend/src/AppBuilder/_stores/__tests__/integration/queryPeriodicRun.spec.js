@@ -82,6 +82,16 @@ describe('run query periodically', () => {
     expect(didRun()).toBe(true);
   });
 
+  test('an interval above the browser timer limit is capped instead of firing immediately', () => {
+    seedPeriodicQuery({ queryRunInterval: 3_000_000_000 }); // ~35 days, overflows a 32-bit delay
+
+    jest.advanceTimersByTime(1000);
+    expect(didRun()).toBe(false);
+
+    jest.advanceTimersByTime(2 ** 31 - 1 - 1000);
+    expect(didRun()).toBe(true);
+  });
+
   test('an option edit never starts a timer for a query that has not run', () => {
     seedApp({});
     state().dataQuery.setQueries(
@@ -210,6 +220,29 @@ describe('run query periodically', () => {
 
       await new Promise((resolve) => setTimeout(resolve, 1500));
       expect(runs).toHaveLength(2);
+    }, 10000);
+
+    const thresholdWarnings = () =>
+      state().debugger.logs.filter((log) => log.message?.startsWith('Pause after failures'));
+
+    test('a fractional threshold rounds up, with one warning', async () => {
+      const runs = serveFailingRuns();
+      seedPeriodicQuery({ pauseAfterFailures: '1.5' }, 'q-fail-fraction');
+
+      await waitFor(() => expect(pausedLogs()).toHaveLength(1), { timeout: 4000 });
+      expect(runs).toHaveLength(2);
+      expect(thresholdWarnings()).toEqual([
+        expect.objectContaining({ message: 'Pause after failures "1.5" is not a positive whole number; using 2.' }),
+      ]);
+    }, 10000);
+
+    test('a negative threshold never pauses, with one warning', async () => {
+      const runs = serveFailingRuns();
+      seedPeriodicQuery({ pauseAfterFailures: '-1' }, 'q-fail-negative');
+
+      await waitFor(() => expect(runs.length).toBeGreaterThanOrEqual(3), { timeout: 5000 });
+      expect(pausedLogs()).toHaveLength(0);
+      expect(thresholdWarnings()).toHaveLength(1);
     }, 10000);
 
     test('without a threshold, failing runs keep going', async () => {
