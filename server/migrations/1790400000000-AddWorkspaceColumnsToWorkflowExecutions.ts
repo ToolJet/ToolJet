@@ -1,3 +1,4 @@
+// migration-lint: allow-destructive the foreign keys only cover nullable columns this migration adds
 import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey } from 'typeorm';
 
 const MIGRATION_NAME = 'AddWorkspaceColumnsToWorkflowExecutions1790400000000';

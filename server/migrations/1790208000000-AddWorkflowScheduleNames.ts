@@ -1,3 +1,4 @@
+// migration-lint: allow-destructive the foreign key and unique index only cover columns this migration adds
 import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey } from 'typeorm';
 
 export class AddWorkflowScheduleNames1790208000000 implements MigrationInterface {
@@ -13,11 +14,8 @@ export class AddWorkflowScheduleNames1790208000000 implements MigrationInterface
       FROM app_versions version
       WHERE version.id = schedule.workflow_id
     `);
-    await queryRunner.changeColumn(
-      'workflow_schedules',
-      'app_id',
-      new TableColumn({ name: 'app_id', type: 'uuid', isNullable: false })
-    );
+    // app_id stays nullable this release: the previous release still inserts schedules without it
+    // while async mode runs it on this schema. Set NOT NULL a release later.
     await queryRunner.createForeignKey(
       'workflow_schedules',
       new TableForeignKey({
