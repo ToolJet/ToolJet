@@ -22,6 +22,7 @@ import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
 import { setSuppressQueryRerun } from '@/AppBuilder/_stores/slices/componentsSlice';
+import { discardInFlightQueries } from '@/AppBuilder/_utils/queryAbort';
 import useRouter from '@/_hooks/use-router';
 import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
@@ -1054,6 +1055,9 @@ const useAppData = (
     const isVersionConsistent = selectedVersion?.id && selectedVersion.id === currentVersionId;
 
     if (isEnvChanged || (isVersionChanged && isVersionConsistent) || isForceRefreshTriggered || isHotReload) {
+      // Environment / version / restore reload the app's data context: drop in-flight results so they
+      // don't land in the new context. A hot reload only swaps the canvas, so runs carry on.
+      if (!isHotReload) discardInFlightQueries();
       if (isHotReload) {
         setCanvasReloading(true, moduleId);
         // The canvas subtree unmounts while reloading (AppCanvas), but AppCanvas itself stays

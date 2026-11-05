@@ -16,3 +16,17 @@ export const queryAbortControllers = new Map();
 //   e.name === 'AbortError'         — raw rejection from fetch()
 //   e.error.name === 'AbortError'   — wrapped by handleResponse / service layer
 export const isAbortError = (e) => e?.name === 'AbortError' || e?.error?.name === 'AbortError';
+
+// Bumped when the app's data context (environment, version, restore) reloads. A run or preview
+// started under an older context drops its result instead of writing it into the new one.
+let queryRunContext = 0;
+export const getQueryRunContext = () => queryRunContext;
+export const isStaleQueryRun = (runContext) => runContext !== queryRunContext;
+
+// Cancels every in-flight fetch; runs that can't be cancelled (RunJS, RunPy, workflows) are
+// dropped by isStaleQueryRun when they settle.
+export const discardInFlightQueries = () => {
+  queryRunContext += 1;
+  queryAbortControllers.forEach((controller) => controller.abort());
+  queryAbortControllers.clear();
+};
