@@ -590,54 +590,106 @@ describe('Listview record resize: no fade even while record 1 is hovered', () =>
   });
 });
 
-describe('Listview record resize: the pointer on the handle shows the outline', () => {
+describe('Listview record resize: the pointer on record 1 shows the handle and the outline', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
 
-  test('[Listview-RSZ-008] entering the handle outlines record 1 only, with no grid, and leaving removes it', async () => {
-    // Break this catches: the outline only during a drag, on a copy, or the grid shown on hover too.
-    await mount(widget);
+  const handleShown = () => handles()[0].classList.contains('listview-record-handle-shown');
 
-    fireEvent.mouseEnter(handles()[0]);
+  test('[Listview-RSZ-008] entering record 1 shows both, with no grid, on record 1 only, and leaving removes them', async () => {
+    // Break this catches: the outline only on the handle or during a drag, on a copy, or the grid shown on hover too.
+    await mount(widget);
+    expect(handleShown()).toBe(false);
+
+    fireEvent.mouseEnter(rows()[0]);
     await waitFor(() => expect(framed()).toEqual([true, false, false]));
+    expect(handleShown()).toBe(true);
     expect(gridded()).toEqual([false, false, false]);
 
-    fireEvent.mouseLeave(handles()[0]);
+    fireEvent.mouseLeave(rows()[0]);
     await waitFor(() => expect(framed()).toEqual([false, false, false]));
+    expect(handleShown()).toBe(false);
   });
 
-  test.each(['bordered', 'plain', 'container'])('[Listview-RSZ-008] the %s style shows it too', async (listStyle) => {
-    // Break this catches: the outline tied to one list style.
-    await mount(widget, { styles: { listStyle: binding(listStyle) } });
-
-    fireEvent.mouseEnter(handles()[0]);
-    await waitFor(() => expect(framed()).toEqual([true, false, false]));
-  });
-
-  test('[Listview-RSZ-008] a drag that ends away from the handle leaves no outline behind', async () => {
-    // Break this catches: a live resize moves the handle from under the pointer, so its mouseleave never fires.
+  test('[Listview-RSZ-008] entering record 2 shows neither', async () => {
+    // Break this catches: the hover signal read by every record.
     await mount(widget);
 
-    fireEvent.mouseEnter(handles()[0]);
+    fireEvent.mouseEnter(rows()[1]);
+    fireEvent.mouseOver(rows()[1]);
+
+    expect(framed()).toEqual([false, false, false]);
+    expect(handleShown()).toBe(false);
+  });
+
+  test.each(['bordered', 'plain', 'container', 'legacy'])(
+    '[Listview-RSZ-008] the %s style shows both',
+    async (listStyle) => {
+      // Break this catches: the outline tied to one list style.
+      await mount(widget, { styles: { listStyle: binding(listStyle) } });
+
+      fireEvent.mouseEnter(rows()[0]);
+      await waitFor(() => expect(framed()).toEqual([true, false, false]));
+      expect(handleShown()).toBe(true);
+    }
+  );
+
+  test('[Listview-RSZ-008] a grid layout shows both on card 1 only', async () => {
+    // Break this catches: the rule written for the List layout only.
+    await mount(widget, {
+      properties: { mode: binding('grid'), columns: binding('{{2}}'), gridRecordHeight: binding('150') },
+    });
+
+    fireEvent.mouseEnter(rows()[0]);
+    await waitFor(() => expect(framed()).toEqual([true, false, false]));
+    expect(handleShown()).toBe(true);
+  });
+
+  test('[Listview-RSZ-008] the pointer on the Moveable controls of a record 1 component keeps both', async () => {
+    // Break this catches: CSS :hover on the record, which ends here because Moveable draws outside the record's DOM.
+    await mount(widget);
+    fireEvent.mouseEnter(rows()[0]);
+    await waitFor(() => expect(handleShown()).toBe(true));
+
+    const box = document.createElement('div');
+    box.className = 'moveable-control-box';
+    box.setAttribute('target-id', 'txt1');
+    document.body.appendChild(box);
+    fireEvent.mouseLeave(rows()[0]);
+    fireEvent.mouseOver(box);
+
+    await waitFor(() => expect(handleShown()).toBe(true));
+    expect(framed()).toEqual([true, false, false]);
+    box.remove();
+  });
+
+  test('[Listview-RSZ-008] a drag that ends away from record 1 leaves neither behind', async () => {
+    // Break this catches: a live resize moves the record from under the pointer, so its mouseleave never fires.
+    await mount(widget);
+
+    fireEvent.mouseEnter(rows()[0]);
     fireEvent.mouseDown(handles()[0], { clientX: 0, clientY: START_Y, button: 0 });
     fireEvent.mouseMove(document, { clientX: 0, clientY: START_Y + 30 });
-    // The pointer is elsewhere now, and the handle never got a mouseleave.
+    // The pointer is elsewhere now, and the record never got a mouseleave.
     fireEvent.mouseOver(document.body);
     fireEvent.mouseUp(document, { clientX: 0, clientY: START_Y + 30 });
 
     await waitFor(() => expect(framed()).toEqual([false, false, false]));
+    expect(handleShown()).toBe(false);
   });
 
-  test('[Listview-RSZ-008] a release with the pointer still on the handle keeps the outline', async () => {
-    // Break this catches: clearing the hover on every drag end, so the outline vanishes under a resting pointer.
+  test('[Listview-RSZ-008] a release with the pointer still on the handle keeps both', async () => {
+    // Break this catches: clearing the hover on every drag end, so they vanish under a resting pointer.
     await mount(widget);
 
-    fireEvent.mouseEnter(handles()[0]);
+    fireEvent.mouseEnter(rows()[0]);
+    fireEvent.mouseOver(handles()[0]);
     fireEvent.mouseDown(handles()[0], { clientX: 0, clientY: START_Y, button: 0 });
     fireEvent.mouseUp(document, { clientX: 0, clientY: START_Y });
 
     await waitFor(() => expect(gridded()).toEqual([false, false, false]));
     expect(framed()).toEqual([true, false, false]);
+    expect(handleShown()).toBe(true);
   });
 });
 
