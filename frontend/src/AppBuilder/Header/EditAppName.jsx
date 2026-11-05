@@ -81,7 +81,7 @@ function EditAppName() {
 
   return (
     <>
-      <div className="tw-h-full tw-flex tw-items-start tw-justify-start">
+      <div className="tw-h-full tw-flex tw-items-center tw-justify-start">
         <ToolTip
           message={getDisabledTooltipMessage()}
           placement="bottom"
