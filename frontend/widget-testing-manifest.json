@@ -157,7 +157,7 @@
     },
     {
       "componentType": "TreeSelect",
-      "status": "partial",
+      "status": "verified",
       "contract": "ee/test/app-builder/widgets/TreeSelect/TESTING.md"
     },
     {
@@ -310,7 +310,8 @@
     },
     {
       "componentType": "IFrame",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/IFrame/TESTING.md"
     },
     {
       "componentType": "FilePicker",
@@ -329,7 +330,7 @@
     },
     {
       "componentType": "BoundedBox",
-      "status": "grilling",
+      "status": "verified",
       "contract": "ee/test/app-builder/widgets/BoundedBox/TESTING.md"
     },
     {
@@ -343,7 +344,8 @@
     },
     {
       "componentType": "ReorderableList",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/ReorderableList/TESTING.md"
     },
     {
       "componentType": "JSONEditor",

@@ -4,6 +4,7 @@ import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../inspectorConstants';
 import { EventManager } from '../../EventManager';
 import { TreeSelectOptionsList } from './components';
+import { TreeSelectSchemaField } from './components/TreeSelectSchemaField';
 import { useTreeSelectItemsManager } from './hooks';
 import './treeSelect.scss';
 
@@ -28,6 +29,7 @@ export const TreeSelect = ({ componentMeta, darkMode, ...restProps }) => {
     expandedItems,
     toggleItemExpanded,
     handleItemChange,
+    validateItemField,
     handleDeleteItem,
     handleAddItem,
     handleAddNestedItem,
@@ -65,6 +67,7 @@ export const TreeSelect = ({ componentMeta, darkMode, ...restProps }) => {
         onMouseLeave={() => setHoveredItemIndex(null)}
         onDeleteItem={handleDeleteItem}
         onItemChange={handleItemChange}
+        validateItemField={validateItemField}
         onAddItem={handleAddItem}
         onAddNestedItem={handleAddNestedItem}
         onReorder={handleReorder}
@@ -115,7 +118,15 @@ export const TreeSelect = ({ componentMeta, darkMode, ...restProps }) => {
       custom: () => (
         <>
           {createRenderElement('advanced')}
-          {isAdvanced && createRenderElement('data')}
+          {isAdvanced && (
+            <TreeSelectSchemaField
+              component={component}
+              componentMeta={componentMeta}
+              paramUpdated={paramUpdated}
+              dataQueries={dataQueries}
+              darkMode={darkMode}
+            />
+          )}
           {!isAdvanced && _renderTreeItems()}
           {createRenderElement('allowIndependentSelection')}
           {isAdvanced && createRenderElement('checkedData')}
