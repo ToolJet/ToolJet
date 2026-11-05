@@ -19,6 +19,7 @@ import { GetQueryVariables, UpdateOptions } from './types';
 import { DataSource } from '@entities/data_source.entity';
 import { PluginsServiceSelector } from './services/plugin-selector.service';
 import { IDataSourcesService } from './interfaces/IService';
+import { FolderDataSourcesUtilService } from '@modules/folder-data-sources/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import * as fs from 'fs';
@@ -36,14 +37,15 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
     protected readonly dataQueriesUtilService: DataQueriesUtilService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
-    protected readonly pluginsServiceSelector: PluginsServiceSelector
+    protected readonly pluginsServiceSelector: PluginsServiceSelector,
+    protected readonly folderDataSourcesUtilService: FolderDataSourcesUtilService
   ) {}
 
   async getForApp(
     query: GetQueryVariables,
     user: User,
     userPermissions: UserPermissions
-  ): Promise<{ data_sources: object[] }> {
+  ): Promise<{ data_sources: object[]; data_source_folders: object[] }> {
     const shouldIncludeWorkflows = query.shouldIncludeWorkflows ?? true;
 
     // Removed: appVersionId-based branchId derivation (app_version_id dropped from data_source_versions).
@@ -57,7 +59,53 @@ export class DataSourcesService implements IDataSourcesService {
       dataSources = dataSources.filter((dataSource) => dataSource.kind !== 'workflows');
     }
     const decamelizedDatasources = decamelizeKeys(dataSources);
-    return { data_sources: decamelizedDatasources };
+
+    // Group the (already permission-filtered) data sources by their data-source folder. Only ids
+    // that survived the permission filter above are kept, and empty folders are dropped — so no
+    // permission is resolved a second time here.
+    const dataSourceFolders = await this.getDataSourceFoldersForApp(
+      user.organizationId,
+      query?.branchId,
+      dataSources.map((dataSource) => dataSource.id)
+    );
+
+    return { data_sources: decamelizedDatasources, data_source_folders: dataSourceFolders };
+  }
+
+  // Assembles the `data_source_folders` payload for getForApp: each folder's metadata plus the ids
+  // of the permitted data sources it contains. `permittedDataSourceIds` is the id list of the
+  // already permission-filtered data sources, so this only intersects — it never re-resolves
+  // permissions. Folder membership is branch-scoped; the effective branch mirrors the data-source
+  // read (the passed branch, else the org's default branch).
+  private async getDataSourceFoldersForApp(
+    organizationId: string,
+    branchId: string | undefined,
+    permittedDataSourceIds: string[]
+  ): Promise<object[]> {
+    if (permittedDataSourceIds.length === 0) return [];
+
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const effectiveBranchId =
+        branchId ?? (await DataSourcesRepository.resolveDefaultBranchId(manager, organizationId));
+      if (!effectiveBranchId) return [];
+
+      const folders = await this.folderDataSourcesUtilService.getFoldersWithDataSourceIds(
+        organizationId,
+        effectiveBranchId,
+        permittedDataSourceIds,
+        manager
+      );
+
+      return folders.map((folder) => ({
+        id: folder.id,
+        name: folder.name,
+        type: folder.type,
+        organization_id: folder.organizationId,
+        created_at: folder.createdAt,
+        updated_at: folder.updatedAt,
+        data_sources: folder.dataSourceIds,
+      }));
+    });
   }
 
   async getAll(
@@ -261,8 +309,17 @@ export class DataSourcesService implements IDataSourcesService {
           );
           await manager.update(WorkspaceBranch, { id: effectiveBranchId }, { lastSyncedCommit: null });
         }
+
+        // Drop this data source's folder mapping on the branch it was removed from. Both arms above
+        // leave the data_sources row and the branch intact, so neither folder_data_sources FK
+        // cascade fires — the mapping would otherwise linger and (on the default branch, where the
+        // DSV is hard-deleted) survive a re-add. Scoped to effectiveBranchId; other branches keep
+        // their mapping. Runs in the same transaction so the removal is atomic with the DSV change.
+        await this.folderDataSourcesUtilService.removeDataSourceFromFolders(dataSourceId, effectiveBranchId, manager);
       });
     } else {
+      // Whole data source deleted (no branch context) — the data_sources row goes, so every
+      // branch's folder_data_sources row is removed by the FK cascade. No manual cleanup needed.
       await this.dataSourcesRepository.delete(dataSourceId);
     }
 

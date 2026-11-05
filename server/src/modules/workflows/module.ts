@@ -38,6 +38,8 @@ import { RolesRepository } from '@modules/roles/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { WorkflowAccessGuard } from './guards/workflow-access.guard';
 import { SubModule } from '@modules/app/sub-module';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { UsersModule } from '@modules/users/module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppHistoryModule } from '@modules/app-history/module';
@@ -171,19 +173,24 @@ export class WorkflowsModule extends SubModule {
           // Fired timers are not kept; boot-time re-arm skips reminders that are already due.
           defaultJobOptions: { removeOnComplete: true, removeOnFail: 100 },
         }),
-        // Register queues with Bull Board for dashboard visibility
-        BullBoardModule.forFeature({
-          name: WORKFLOW_SCHEDULE_QUEUE,
-          adapter: BullMQAdapter,
-        }),
-        BullBoardModule.forFeature({
-          name: WORKFLOW_EXECUTION_QUEUE,
-          adapter: BullMQAdapter,
-        }),
-        BullBoardModule.forFeature({
-          name: WORKFLOW_APPROVAL_TIMEOUT_QUEUE,
-          adapter: BullMQAdapter,
-        }),
+        // Register queues with Bull Board for dashboard visibility. AppModule only mounts the Bull
+        // Board root outside Cloud, and forFeature can't resolve without it.
+        ...(getTooljetEdition() !== TOOLJET_EDITIONS.Cloud
+          ? [
+              BullBoardModule.forFeature({
+                name: WORKFLOW_SCHEDULE_QUEUE,
+                adapter: BullMQAdapter,
+              }),
+              BullBoardModule.forFeature({
+                name: WORKFLOW_EXECUTION_QUEUE,
+                adapter: BullMQAdapter,
+              }),
+              BullBoardModule.forFeature({
+                name: WORKFLOW_APPROVAL_TIMEOUT_QUEUE,
+                adapter: BullMQAdapter,
+              }),
+            ]
+          : []),
         await AppsModule.register(configs),
         await GitSyncConfigsModule.register(configs),
         await TooljetDbModule.register(configs),
