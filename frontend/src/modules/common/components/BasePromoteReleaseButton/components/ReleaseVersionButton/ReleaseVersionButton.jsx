@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button/Button';
 import useStore from '@/AppBuilder/_stores/store';
 import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useVersionActionRequest } from '@/AppBuilder/_utils/versionActions';
 
 const ReleaseVersionButton = function DeployVersionButton({ version = null, variant = 'default', darkMode = false }) {
   const { moduleId } = useModuleContext();
@@ -81,6 +82,12 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
     setShowConfirmation(true);
   };
 
+  useVersionActionRequest(
+    'release',
+    versionToBeReleased,
+    () => !isVersionReleased && isReleaseVersionEnabled && setShowConfirmation(true)
+  );
+
   const onReleaseConfirm = () => {
     releaseVersion();
   };
@@ -89,11 +96,15 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
   if (variant === 'inline') {
     return (
       <>
-        <ReleaseConfirmation
-          show={showConfirmation}
-          onClose={() => setShowConfirmation(false)}
-          onConfirm={onReleaseConfirm}
-        />
+        {/* Rendered inside the version row: keep the dialog's clicks from reselecting the row and
+            closing the menu (and with it this dialog). */}
+        <span onClick={(event) => event.stopPropagation()}>
+          <ReleaseConfirmation
+            show={showConfirmation}
+            onClose={() => setShowConfirmation(false)}
+            onConfirm={onReleaseConfirm}
+          />
+        </span>
         <ToolTip
           message={
             !isReleaseVersionEnabled

@@ -25,6 +25,9 @@ const PIN_KEY = dashlessId(CORRELATION_ID);
 // (see useEffectiveLibraryRevision). Every scenario below that expects a
 // configured/iframe render sets this pin explicitly instead of a `revisionId`
 // property on the instance.
+// These scenarios drive the sandboxed-iframe runtime; the POC inline runtime is the default otherwise.
+window.localStorage.setItem('tj-cc-runtime', 'iframe');
+
 const setPin = (value) =>
   act(() => store().setGlobalSettings({ customComponentLibraries: value ? { [PIN_KEY]: value } : {} }));
 

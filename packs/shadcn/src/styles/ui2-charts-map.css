@@ -1,0 +1,847 @@
+/* The Map, ported from UI 2.0's .sc-map rules (Widgets/Ui2/_shared/styles/shadcn.scss) onto the pack's --ui-* tokens.
+   Leaflet's panes, controls and popups are restyled from the tokens, so they follow light, dark and brand themes. Pins
+   are toned by status (info is a fixed blue and warning a fixed amber: on a map the states must stay apart whatever the
+   brand colour; pins with no status take the accent). Leaflet positions markers with inline transforms, margins and
+   sizes, so no rule here sets those on .leaflet-marker-icon. Marker and popup classes are ui-map-mark and ui-map-pop:
+   complex.css's older .ui-map-marker and .ui-map-popup rules would restyle them. */
+.ui.ui-map {
+  --ui-map-info: #2563eb;
+  --ui-map-warning: #d97706;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid var(--lk-border, var(--ui-border));
+  border-radius: var(--lk-radius, calc(var(--ui-radius) + 4px));
+  background: var(--lk-bg, var(--ui-muted));
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+.ui.ui-map[data-dark] {
+  --ui-map-info: #60a5fa;
+  --ui-map-warning: #f59e0b;
+}
+/* Buttons start bare, as UI 2.0's do under its preflight. */
+.ui-map button {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.ui-map ul {
+  margin: 0;
+}
+.ui-map[data-disabled] .ui-map-canvas {
+  opacity: 0.6;
+  filter: grayscale(0.4);
+}
+.ui-map .ui-map-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--lk-bg, var(--ui-muted));
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+}
+.ui-map .ui-map-canvas:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--lk-accent, var(--ui-primary));
+}
+/* Zoom buttons: a small bordered group, like the pack's outline buttons. */
+.ui-map .leaflet-control-zoom {
+  margin: 10px 10px 0 0;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  overflow: hidden;
+  background: var(--ui-bg);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.08);
+}
+.ui-map .leaflet-control-zoom a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--ui-fg);
+  background: var(--ui-bg);
+  text-decoration: none;
+}
+.ui-map .leaflet-control-zoom a + a {
+  border-top: 1px solid var(--ui-border);
+}
+.ui-map .leaflet-control-zoom a:hover {
+  background: var(--ui-muted);
+}
+.ui-map .leaflet-control-zoom a.leaflet-disabled {
+  color: var(--ui-muted-fg);
+  opacity: 0.5;
+  cursor: default;
+}
+.ui-map[data-disabled] .leaflet-control-zoom {
+  display: none;
+}
+/* Attribution: small and quiet, on a translucent surface. */
+.ui-map .leaflet-control-attribution {
+  margin: 0;
+  padding: 1px 6px;
+  font-size: 10px;
+  line-height: 16px;
+  color: var(--ui-muted-fg);
+  background: color-mix(in srgb, var(--ui-bg) 82%, transparent);
+  border-top-left-radius: 6px;
+}
+.ui-map .leaflet-control-attribution a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+}
+/* Pins: a teardrop in the status tone with a white heart; the selected pin is larger with a ring. */
+.ui-map .ui-map-pin {
+  --pin: var(--lk-accent, var(--ui-primary));
+  display: block;
+  width: 28px;
+  height: 36px;
+  color: var(--pin);
+  cursor: pointer;
+  filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.35));
+  transform-origin: 50% 100%;
+  transition: transform 120ms ease;
+}
+.ui-map .ui-map-pin[data-tone='success'],
+.ui-map .ui-map-image[data-tone='success'] {
+  --pin: var(--ui-success);
+}
+.ui-map .ui-map-pin[data-tone='warning'],
+.ui-map .ui-map-image[data-tone='warning'] {
+  --pin: var(--ui-map-warning);
+}
+.ui-map .ui-map-pin[data-tone='danger'],
+.ui-map .ui-map-image[data-tone='danger'] {
+  --pin: var(--ui-destructive);
+}
+.ui-map .ui-map-pin[data-tone='info'],
+.ui-map .ui-map-image[data-tone='info'] {
+  --pin: var(--ui-map-info);
+}
+.ui-map .ui-map-pin[data-tone='neutral'],
+.ui-map .ui-map-image[data-tone='neutral'] {
+  --pin: var(--ui-muted-fg);
+}
+.ui-map .ui-map-pin svg {
+  display: block;
+  overflow: visible;
+}
+.ui-map .ui-map-pin-body {
+  fill: var(--pin);
+  stroke: #ffffff;
+  stroke-width: 1.5px;
+}
+.ui-map .ui-map-pin-dot {
+  fill: #ffffff;
+}
+.ui-map .ui-map-mark:hover .ui-map-pin,
+.ui-map .ui-map-mark:focus-visible .ui-map-pin {
+  transform: scale(1.12);
+}
+.ui-map .ui-map-pin[data-selected] {
+  transform: scale(1.25);
+  filter: drop-shadow(0 0 0 var(--pin)) drop-shadow(0 2px 4px rgb(0 0 0 / 0.4));
+}
+.ui-map .ui-map-pin[data-selected] .ui-map-pin-body {
+  stroke-width: 2px;
+}
+.ui-map .ui-map-mark {
+  outline: none;
+}
+.ui-map[data-disabled] .ui-map-pin,
+.ui-map[data-disabled] .ui-map-cluster {
+  cursor: default;
+}
+/* Groups: a count in the foreground colour (apart from every status colour), with a soft halo. */
+.ui-map .ui-map-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--lk-cluster, var(--ui-fg));
+  color: var(--ui-bg);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--lk-cluster, var(--ui-fg)) 18%, transparent),
+    0 1px 3px rgb(0 0 0 / 0.25);
+  border: 2px solid #ffffff;
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+.ui-map .ui-map-mark:hover .ui-map-cluster,
+.ui-map .ui-map-mark:focus-visible .ui-map-cluster {
+  transform: scale(1.08);
+}
+/* Popup: a popover card from the tokens. */
+.ui-map .ui-map-pop .leaflet-popup-content-wrapper {
+  padding: 0;
+  border: 1px solid var(--ui-border);
+  border-radius: calc(var(--ui-radius) + 2px);
+  background: var(--ui-bg);
+  color: var(--ui-fg);
+  box-shadow: 0 10px 24px -6px rgb(0 0 0 / 0.18), 0 2px 6px rgb(0 0 0 / 0.08);
+}
+.ui-map .ui-map-pop .leaflet-popup-content {
+  margin: 12px 30px 12px 14px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.ui-map .ui-map-pop .leaflet-popup-tip {
+  background: var(--ui-bg);
+  box-shadow: none;
+  border: 1px solid var(--ui-border);
+}
+.ui-map .ui-map-pop a.leaflet-popup-close-button {
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  font-size: 18px;
+  line-height: 20px;
+  border-radius: 6px;
+  color: var(--ui-muted-fg);
+  text-align: center;
+}
+.ui-map .ui-map-pop a.leaflet-popup-close-button:hover {
+  background: var(--ui-muted);
+  color: var(--ui-fg);
+}
+.ui-map .ui-map-popup-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+}
+.ui-map .ui-map-popup-title {
+  font-weight: 600;
+  color: var(--ui-fg);
+}
+.ui-map .ui-map-popup-sub {
+  margin-top: 2px;
+  color: var(--ui-muted-fg);
+}
+.ui-map .ui-map-popup-lines {
+  margin: 8px 0 0;
+  padding: 8px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--ui-border);
+  color: var(--ui-fg);
+  font-size: 12px;
+}
+.ui-map .ui-map-popup-lines li + li {
+  margin-top: 2px;
+}
+.ui-map .ui-map-chip {
+  --chip: var(--ui-muted-fg);
+  padding: 1px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  background: color-mix(in srgb, var(--chip) 14%, transparent);
+  color: color-mix(in srgb, var(--chip) 78%, var(--ui-fg));
+}
+.ui-map .ui-map-chip[data-tone='success'] {
+  --chip: var(--ui-success);
+}
+.ui-map .ui-map-chip[data-tone='warning'] {
+  --chip: var(--ui-map-warning);
+}
+.ui-map .ui-map-chip[data-tone='danger'] {
+  --chip: var(--ui-destructive);
+}
+.ui-map .ui-map-chip[data-tone='info'] {
+  --chip: var(--ui-map-info);
+}
+/* The empty state, the skipped-rows footnote and the loading veil sit over the map. */
+.ui-map .ui-map-empty {
+  position: absolute;
+  inset: 0;
+  z-index: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.ui-map .ui-map-empty span {
+  padding: 6px 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--ui-bg) 92%, transparent);
+  color: var(--ui-muted-fg);
+  font-size: 13px;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.06);
+}
+.ui-map .ui-map-note {
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 2px 8px;
+  border: 1px solid var(--ui-border);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--ui-bg) 90%, transparent);
+  color: var(--ui-muted-fg);
+  font-size: 11px;
+  line-height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ui-map .ui-map-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--ui-bg) 55%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-map .ui-map-pin,
+  .ui-map .ui-map-image,
+  .ui-map .ui-map-cluster {
+    transition: none;
+  }
+}
+/* The default basemap (OpenStreetMap's tiles, mapModel.tileSource) toned to the theme: muted under light themes, so */
+/* the pins carry the colour, and inverted under dark ones, so the map is not a bright block on a dark page. Tiles an */
+/* author or the install chose carry no data-basemap and are drawn as they are. The filter goes on each tile, not on the */
+/* tile pane: filtering the pane as one layer drew hairline seams between tiles. */
+.ui-map .ui-map-canvas[data-basemap='light'] img.leaflet-tile {
+  filter: saturate(0.28) contrast(0.9) brightness(1.06);
+}
+.ui-map .ui-map-canvas[data-basemap='dark'] img.leaflet-tile {
+  filter: invert(1) hue-rotate(180deg) saturate(0.35) brightness(0.88) contrast(0.86);
+}
+/* Pin contents: a short label (a stop number) or an icon in place of the dot, white on the pin's colour. */
+.ui-map .ui-map-pin {
+  position: relative;
+}
+.ui-map .ui-map-pin-label,
+.ui-map .ui-map-pin-glyph {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 28px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.ui-map .ui-map-pin-glyph svg {
+  display: block;
+}
+/* markerSize: small and large pins, the drawing scaled and the label or icon kept in the pin's head. */
+.ui-map .ui-map-pin[data-size='small'] {
+  width: 22px;
+  height: 28px;
+}
+.ui-map .ui-map-pin[data-size='small'] .ui-map-pin-label,
+.ui-map .ui-map-pin[data-size='small'] .ui-map-pin-glyph {
+  top: 3px;
+  width: 22px;
+  height: 16px;
+  font-size: 9px;
+}
+.ui-map .ui-map-pin[data-size='small'] .ui-map-pin-glyph svg {
+  width: 11px;
+  height: 11px;
+}
+.ui-map .ui-map-pin[data-size='large'] {
+  width: 36px;
+  height: 46px;
+}
+.ui-map .ui-map-pin[data-size='large'] .ui-map-pin-label,
+.ui-map .ui-map-pin[data-size='large'] .ui-map-pin-glyph {
+  top: 5px;
+  width: 36px;
+  height: 26px;
+  font-size: 14px;
+}
+.ui-map .ui-map-pin[data-size='large'] .ui-map-pin-glyph svg {
+  width: 18px;
+  height: 18px;
+}
+/* imageField: the row's image in place of the pin, centred on its spot. A status shows as a thin ring of its colour; */
+/* the selected image is larger with an outline. A heading turns the image only (Map/mapMarkers.ts). */
+.ui-map .ui-map-image {
+  --pin: var(--lk-accent, var(--ui-primary));
+  display: block;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.35));
+  transition: transform 120ms ease;
+}
+.ui-map .ui-map-image[data-size='small'] {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+.ui-map .ui-map-image[data-size='large'] {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+}
+.ui-map .ui-map-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+  pointer-events: none;
+  user-select: none;
+}
+.ui-map .ui-map-image[data-ring] {
+  box-shadow: 0 0 0 2px var(--pin);
+}
+.ui-map .ui-map-mark:hover .ui-map-image,
+.ui-map .ui-map-mark:focus-visible .ui-map-image {
+  transform: scale(1.12);
+}
+.ui-map .ui-map-mark:focus-visible .ui-map-image,
+.ui-map .ui-map-image[data-selected] {
+  outline: 2px solid var(--lk-accent, var(--ui-primary));
+  outline-offset: 3px;
+}
+.ui-map .ui-map-image[data-selected] {
+  transform: scale(1.2);
+  filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.4));
+}
+.ui-map[data-disabled] .ui-map-image {
+  cursor: default;
+}
+/* A longer label is a pill with a pointer (a price): the card surface, a dot of the status colour; selected, filled. */
+.ui-map .ui-map-pill {
+  --pin: var(--lk-accent, var(--ui-primary));
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 9px 0 8px;
+  border: 1px solid color-mix(in srgb, var(--pin) 55%, var(--ui-border));
+  border-radius: 9999px;
+  background: var(--ui-bg);
+  color: var(--ui-fg);
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+.ui-map .ui-map-pill::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--pin);
+}
+.ui-map .ui-map-pill::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  transform: rotate(45deg);
+  background: inherit;
+  border-right: 1px solid color-mix(in srgb, var(--pin) 55%, var(--ui-border));
+  border-bottom: 1px solid color-mix(in srgb, var(--pin) 55%, var(--ui-border));
+}
+.ui-map .ui-map-pill-icon {
+  display: flex;
+  color: var(--pin);
+}
+.ui-map .ui-map-pill-icon svg {
+  stroke: currentColor;
+}
+.ui-map .ui-map-pill[data-tone='success'] {
+  --pin: var(--ui-success);
+}
+.ui-map .ui-map-pill[data-tone='warning'] {
+  --pin: var(--ui-map-warning);
+}
+.ui-map .ui-map-pill[data-tone='danger'] {
+  --pin: var(--ui-destructive);
+}
+.ui-map .ui-map-pill[data-tone='info'] {
+  --pin: var(--ui-map-info);
+}
+.ui-map .ui-map-pill[data-selected] {
+  background: var(--ui-fg);
+  color: var(--ui-bg);
+  border-color: var(--ui-fg);
+  z-index: 1;
+}
+.ui-map .ui-map-mark:hover .ui-map-pill {
+  transform: translateY(-1px) scale(1.04);
+}
+/* Where the routes start (a depot), and the picked spot. */
+.ui-map .ui-map-start {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: var(--ui-fg);
+  border: 3px solid var(--ui-bg);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+}
+.ui-map .ui-map-picked {
+  --pin: var(--lk-accent, var(--ui-primary));
+  display: block;
+  color: var(--pin);
+  filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.4));
+  cursor: grab;
+}
+.ui-map .ui-map-picked svg {
+  display: block;
+  overflow: visible;
+}
+.ui-map .ui-map-picked .ui-map-pin-body {
+  fill: var(--pin);
+  stroke: #ffffff;
+  stroke-width: 2px;
+}
+.ui-map[data-picking] .ui-map-canvas {
+  cursor: crosshair;
+}
+/* Routes: a line in its colour over a light casing; areas: a tinted fill with an outline. The colour arrives as the */
+/* --shape variable on each path (an SVG attribute cannot hold var()). */
+.ui-map path.ui-map-route-casing {
+  stroke: var(--ui-bg);
+  stroke-opacity: 0.9;
+  fill: none;
+}
+.ui-map path.ui-map-route {
+  stroke: var(--shape, var(--lk-accent, var(--ui-primary)));
+  stroke-opacity: 0.9;
+  fill: none;
+  cursor: pointer;
+}
+.ui-map path.ui-map-route[data-selected] {
+  stroke-width: 6px;
+  stroke-opacity: 1;
+}
+.ui-map path.ui-map-area {
+  stroke: var(--shape, var(--lk-accent, var(--ui-primary)));
+  stroke-opacity: 0.75;
+  fill: var(--shape, var(--lk-accent, var(--ui-primary)));
+  fill-opacity: 0.1;
+  cursor: pointer;
+}
+.ui-map path.ui-map-area:hover {
+  fill-opacity: 0.16;
+}
+.ui-map path.ui-map-area[data-selected] {
+  stroke-width: 2.5px;
+  stroke-opacity: 1;
+  fill-opacity: 0.2;
+}
+.ui-map .leaflet-tooltip.ui-map-area-label,
+.ui-map .leaflet-tooltip.ui-map-route-label {
+  padding: 2px 8px;
+  border: 1px solid var(--ui-border);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--ui-bg) 88%, transparent);
+  color: var(--ui-fg);
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+.ui-map .leaflet-tooltip.ui-map-area-label {
+  color: var(--ui-muted-fg);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+}
+.ui-map .leaflet-tooltip.ui-map-area-label::before,
+.ui-map .leaflet-tooltip.ui-map-route-label::before {
+  display: none;
+}
+/* The bottom-left corner: the legend, then the skipped-rows footnote. */
+.ui-map .ui-map-corner {
+  position: absolute;
+  left: 8px;
+  bottom: 22px;
+  z-index: 800;
+  max-width: calc(100% - 16px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  pointer-events: none;
+}
+.ui-map .ui-map-corner > * {
+  pointer-events: auto;
+}
+.ui-map .ui-map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  max-width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--ui-border);
+  border-radius: calc(var(--ui-radius) + 2px);
+  background: color-mix(in srgb, var(--ui-bg) 92%, transparent);
+  color: var(--ui-fg);
+  font-size: 11.5px;
+  line-height: 18px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+.ui-map .ui-map-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.ui-map .ui-map-legend-count {
+  color: var(--ui-muted-fg);
+  font-variant-numeric: tabular-nums;
+}
+.ui-map .ui-map-legend-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  background: var(--swatch, var(--lk-accent, var(--ui-primary)));
+}
+.ui-map .ui-map-legend-swatch.is-line {
+  width: 14px;
+  height: 4px;
+}
+.ui-map .ui-map-legend-swatch.is-area {
+  width: 12px;
+  height: 10px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--swatch, var(--lk-accent, var(--ui-primary))) 22%, transparent);
+  border: 1.5px solid var(--swatch, var(--lk-accent, var(--ui-primary)));
+}
+/* Address search, top left. */
+.ui-map .ui-map-search {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 850;
+  width: min(320px, calc(100% - 70px));
+}
+.ui-map .ui-map-search input {
+  width: 100%;
+  height: 34px;
+  padding: 0 30px 0 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-bg);
+  color: var(--ui-fg);
+  font-size: 13px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  outline: none;
+}
+.ui-map .ui-map-search input:focus {
+  border-color: var(--lk-accent, var(--ui-primary));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--lk-accent, var(--ui-primary)) 22%, transparent);
+}
+.ui-map .ui-map-search-spin {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+.ui-map .ui-map-search-results {
+  margin: 4px 0 0;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-bg);
+  box-shadow: 0 10px 24px -6px rgb(0 0 0 / 0.2);
+}
+.ui-map .ui-map-search-results button {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: calc(var(--ui-radius) - 2px);
+  color: var(--ui-fg);
+  font-size: 12.5px;
+  line-height: 1.35;
+  text-align: left;
+}
+.ui-map .ui-map-search-results button:hover,
+.ui-map .ui-map-search-results button:focus-visible {
+  background: var(--ui-muted);
+  outline: none;
+}
+.ui-map .ui-map-search-note {
+  margin-top: 4px;
+  padding: 6px 10px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-bg);
+  color: var(--ui-muted-fg);
+  font-size: 12px;
+}
+/* Tools under the zoom buttons (fullscreen), and the Map | Satellite switch above the attribution. */
+.ui-map .ui-map-tools {
+  position: absolute;
+  top: 82px;
+  right: 10px;
+  z-index: 850;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  overflow: hidden;
+  background: var(--ui-bg);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.08);
+}
+.ui-map .ui-map-tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: var(--ui-bg);
+  color: var(--ui-fg);
+}
+.ui-map .ui-map-tool:hover {
+  background: var(--ui-muted);
+}
+.ui-map[data-disabled] .ui-map-tools {
+  display: none;
+}
+.ui-map .ui-map-style-switch {
+  position: absolute;
+  right: 8px;
+  bottom: 24px;
+  z-index: 850;
+  display: flex;
+  padding: 2px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-bg);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.14);
+}
+.ui-map .ui-map-style-switch button {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: calc(var(--ui-radius) - 2px);
+  color: var(--ui-muted-fg);
+  font-size: 12px;
+  font-weight: 600;
+}
+.ui-map .ui-map-style-switch button[data-active] {
+  background: var(--ui-fg);
+  color: var(--ui-bg);
+}
+/* Hints over the map: how to place the picked pin, and how to zoom with the wheel off. */
+.ui-map .ui-map-pick-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  z-index: 820;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: var(--ui-fg);
+  color: var(--ui-bg);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.ui-map .ui-map-wheel-hint {
+  position: absolute;
+  inset: 0;
+  z-index: 880;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.38);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  pointer-events: none;
+}
+/* Fullscreen without the browser's (inside a frame that does not allow it): the map fills the window. */
+.ui-map[data-expanded] {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  height: 100vh;
+  border-radius: 0;
+}
+.ui-map:fullscreen {
+  height: 100vh;
+  border-radius: 0;
+}
+.ui-map .ui-map-heat {
+  pointer-events: none;
+}
+/* The routes and areas list: visually hidden until a keyboard user tabs into it, then a small panel at the top left. */
+.ui-map .ui-map-shapes {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ui-map .ui-map-shapes:focus-within {
+  top: 10px;
+  left: 10px;
+  z-index: 900;
+  width: auto;
+  height: auto;
+  max-height: calc(100% - 20px);
+  overflow: auto;
+  clip: auto;
+  padding: 4px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+  background: var(--ui-bg);
+  box-shadow: 0 10px 24px -6px rgb(0 0 0 / 0.2);
+}
+.ui-map .ui-map-shapes button {
+  display: block;
+  width: 100%;
+  padding: 4px 8px;
+  border-radius: calc(var(--ui-radius) - 2px);
+  font-size: 12px;
+  text-align: left;
+  color: var(--ui-fg);
+}
+.ui-map .ui-map-shapes button[aria-pressed='true'],
+.ui-map .ui-map-shapes button:focus-visible {
+  background: var(--ui-muted);
+  outline: none;
+}
+.ui-map .ui-map-search-spin {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--ui-border);
+  border-top-color: var(--ui-muted-fg);
+  border-radius: 9999px;
+  animation: ui-map-spin 0.8s linear infinite;
+}
+@keyframes ui-map-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

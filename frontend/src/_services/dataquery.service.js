@@ -1,6 +1,7 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 import { getActiveBranchId } from '@/_helpers/active-branch';
+import { getPreviewQueryParams } from '@/_helpers/routes';
 
 export const dataqueryService = {
   create,
@@ -96,6 +97,9 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode, 
     resolvedOptions: resolvedOptions,
     options: options,
   };
+  // Rendering a point in app history: the server runs the query as it was then, without saving.
+  const { snapshot } = getPreviewQueryParams();
+  if (snapshot && window.location.pathname.includes('/applications/')) body.snapshotId = snapshot;
 
   let url = `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/run${
     environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''

@@ -34,6 +34,8 @@ export class VersionModule extends SubModule {
       VersionService,
       VersionUtilService,
       GitSyncEditGuard,
+      VersionCompareControllers,
+      VersionCompareProviders,
     } = await this.getProviders(configs, 'versions', [
       'controller',
       'controller.v2',
@@ -44,6 +46,7 @@ export class VersionModule extends SubModule {
       'service',
       'util.service',
       'guards/git-sync-edit.guard',
+      'compare',
     ]);
 
     // Get apps related providers
@@ -67,7 +70,14 @@ export class VersionModule extends SubModule {
         await TooljetDbModule.register(configs),
       ],
       controllers: isMainImport
-        ? [ComponentsController, EventsController, PagesController, VersionController, VersionControllerV2]
+        ? [
+            ComponentsController,
+            EventsController,
+            PagesController,
+            ...VersionCompareControllers,
+            VersionController,
+            VersionControllerV2,
+          ]
         : [],
       providers: [
         ComponentsService,
@@ -84,6 +94,7 @@ export class VersionModule extends SubModule {
         EventsService,
         VersionService,
         VersionUtilService,
+        ...VersionCompareProviders,
         FeatureAbilityFactory,
         GroupPermissionsRepository,
         ValidModuleByCorrelationGuard,

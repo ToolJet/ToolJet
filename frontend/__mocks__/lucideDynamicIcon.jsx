@@ -25,10 +25,13 @@ const toPascalCase = (name) =>
 const iconNames = Object.keys(lucide.icons || {});
 
 const DynamicIcon = React.forwardRef(({ name, fallback: Fallback, ...props }, ref) => {
-  const iconNode = (lucide.icons || {})[toPascalCase(name)];
-  if (!iconNode) return Fallback ? React.createElement(Fallback) : null;
-  // Tag the rendered icon so a test can assert on WHICH icon was requested.
-  return React.createElement(lucide.Icon, { ref, ...props, 'data-lucide-name': name, iconNode });
+  const icon = (lucide.icons || {})[toPascalCase(name)];
+  if (!icon) return Fallback ? React.createElement(Fallback) : null;
+  // Tag the rendered icon so a test can assert on WHICH icon was requested. Depending on the lucide
+  // version the barrel's `icons` holds raw icon nodes or ready icon components; render either.
+  if (Array.isArray(icon))
+    return React.createElement(lucide.Icon, { ref, ...props, 'data-lucide-name': name, iconNode: icon });
+  return React.createElement(icon, { ref, ...props, 'data-lucide-name': name });
 });
 DynamicIcon.displayName = 'DynamicIcon';
 

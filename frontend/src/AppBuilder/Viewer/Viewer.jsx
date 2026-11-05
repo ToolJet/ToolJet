@@ -17,6 +17,7 @@ import Spinner from '@/_ui/Spinner';
 import TooljetBanner from './TooljetBanner';
 import PreviewHeader from './PreviewHeader';
 import { useAutoMobileLayout } from '@/AppBuilder/_hooks/useAutoMobileLayout';
+import { useCompareOverlayBridge } from './useCompareOverlayBridge';
 
 export const Viewer = ({
   id: appId,
@@ -45,6 +46,8 @@ export const Viewer = ({
     false,
     appSlug
   );
+  // In a compare view frame: opens the dialog a changed component sits in, when asked.
+  useCompareOverlayBridge(moduleId, !moduleMode);
   const temporaryLayouts = useStore((state) => state.temporaryLayouts, shallow);
   const checkIfLicenseNotValid = useStore((state) => state.checkIfLicenseNotValid, shallow);
   const triggerCanvasUpdater = useStore((state) => state.triggerCanvasUpdater, shallow);

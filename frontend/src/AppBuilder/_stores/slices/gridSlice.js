@@ -1,4 +1,4 @@
-import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { NO_OF_GRIDS, isModalType } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { debounce } from 'lodash';
 import {
   bindModuleAwareGetResolvedComponent,
@@ -13,6 +13,7 @@ import {
   resolveWidgetVisibility,
   shouldBubbleToParent,
 } from '../utils/dynamicHeightReflow';
+import { heightHeldInView, isUi2PerRowType } from '@/AppBuilder/_helpers/dynamicHeightPolicy';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Grid slice — owns the mutable reflow state for dynamic-height layout.
@@ -324,7 +325,7 @@ export const createGridSlice = (set, get) => {
             moduleId,
           });
 
-          if (componentType === 'ModalV2' && isContainer) {
+          if (isModalType(componentType) && isContainer) {
             mergedPatch[getDynamicLayoutKey(componentId, contextIndices, '-body', moduleId)] = {
               ...changedComponent.layouts[currentLayout],
               ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices, '-body', moduleId)],
@@ -346,6 +347,21 @@ export const createGridSlice = (set, get) => {
               const nextCtx = contextIndices.length > 1 ? contextIndices.slice(0, -1) : null;
               const selfKey = `${componentId}|${currentLayout}|${nextCtx ? nextCtx.join('.') : ''}`;
               nextBubbles.set(selfKey, { id: componentId, layout: currentLayout, contextIndices: nextCtx, moduleId });
+              return;
+            }
+          }
+
+          // A UI 2.0 List view row or Kanban card: write the row's height under the row's context and stop there (no
+          // sibling temps in the row; the list's own height is its leaf reflow, useAutoHeight, once React draws the
+          // taller row).
+          if (isUi2PerRowType(componentType) && contextIndices && isContainer) {
+            const scopedElement = document.querySelector(getDynamicElementSelector(componentId, contextIndices));
+            if (!scopedElement) {
+              mergedPatch[getDynamicLayoutKey(componentId, contextIndices)] = {
+                ...changedComponent.layouts[currentLayout],
+                ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices)],
+                height: newHeight,
+              };
               return;
             }
           }
@@ -415,7 +431,7 @@ export const createGridSlice = (set, get) => {
 
           if (Object.keys(temporaryLayoutPatch).length === 0) return;
 
-          if (isContainer && componentType !== 'Listview') {
+          if (isContainer && componentType !== 'Listview' && !isUi2PerRowType(componentType)) {
             const element = document.querySelector(getDynamicElementSelector(componentId, contextIndices, moduleId));
             if (element && visibility) element.style.height = `${newHeight}px`;
           }
@@ -453,7 +469,8 @@ export const createGridSlice = (set, get) => {
           const nextBubbleResolved = nextBubbleTargetId
             ? boundGetResolvedComponent(nextBubbleTargetId, nextBubbleContext)
             : null;
-          const nextBubbleHasDynamicHeight = nextBubbleResolved?.properties?.dynamicHeight !== false;
+          const nextBubbleType = nextBubbleTargetId ? getComponentTypeFromId(nextBubbleTargetId, moduleId) : undefined;
+          const nextBubbleHasDynamicHeight = !heightHeldInView(nextBubbleType, nextBubbleResolved?.properties);
 
           if (
             nextBubbleHasDynamicHeight &&

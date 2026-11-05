@@ -1,0 +1,103 @@
+/* Motion, matching shadcn/ui's tailwindcss-animate behaviour:
+   - popups (menus, select lists, popovers, calendar, dialog) animate in AND out; Radix keeps the content
+     mounted while a [data-state='closed'] animation runs, so the exit animation plays before unmount;
+   - popups slide in from the side they open on (Radix sets data-side);
+   - interactive controls fade their colors on hover/press instead of switching instantly. */
+
+/* Open: fade + zoom from 95%, sliding from the trigger's side */
+.ui-menu,
+.ui-calendar {
+  --ui-slide-x: 0;
+  --ui-slide-y: -4px;
+  animation: ui-popup-in 0.15s ease-out;
+}
+.ui-menu[data-side='top'],
+.ui-calendar[data-side='top'] {
+  --ui-slide-y: 4px;
+}
+.ui-menu[data-side='left'],
+.ui-calendar[data-side='left'] {
+  --ui-slide-x: 4px;
+  --ui-slide-y: 0;
+}
+.ui-menu[data-side='right'],
+.ui-calendar[data-side='right'] {
+  --ui-slide-x: -4px;
+  --ui-slide-y: 0;
+}
+
+/* Close */
+.ui-menu[data-state='closed'],
+.ui-calendar[data-state='closed'] {
+  animation: ui-popup-out 0.1s ease-in forwards;
+}
+.ui-dialog-overlay[data-state='closed'] {
+  animation: ui-fade-out 0.15s ease-in forwards;
+}
+.ui-dialog[data-state='closed'] {
+  animation: ui-dialog-out 0.15s ease-in forwards;
+}
+
+@keyframes ui-popup-in {
+  from {
+    opacity: 0;
+    transform: translate(var(--ui-slide-x), var(--ui-slide-y)) scale(0.95);
+  }
+}
+@keyframes ui-popup-out {
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+@keyframes ui-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes ui-dialog-out {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.95);
+  }
+}
+
+/* Color transitions on hover/press/selection */
+.ui-toggle,
+.ui-tab,
+.ui-menu-item,
+.ui-checkbox,
+.ui-radio,
+.ui-icon-btn,
+.ui-badge,
+.ui-accordion-trigger,
+.ui-calendar-day,
+.ui-stepper-dot,
+.ui-chip-remove,
+.ui-table tbody tr,
+.ui-table-sort,
+.ui-otp-slot {
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s,
+    opacity 0.15s;
+}
+.ui-rating-star:hover:not(:disabled) {
+  transform: scale(1.1);
+}
+.ui-rating-star {
+  transition:
+    transform 0.1s,
+    opacity 0.15s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui *,
+  .ui-popup,
+  .ui-popup * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

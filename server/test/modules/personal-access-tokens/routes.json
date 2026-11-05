@@ -155,6 +155,7 @@
   "data | appEnvironments | INIT | GET | /app-environments/init | version=(default) | src/modules/app-environments/controller.ts | AppEnvironmentsController.init",
   "data | appEnvironments | POST_ACTION | POST | /app-environments/post-action/:action | version=(default) | src/modules/app-environments/controller.ts | AppEnvironmentsController.environmentActions",
   "data | appEnvironments | UPDATE | PUT | /app-environments/:versionId/:id | version=(default) | src/modules/app-environments/controller.ts | AppEnvironmentsController.update",
+  "special | CustomComponentLibraries | LIST_LIBRARIES | GET | /custom-component-libraries | version=(default) | src/modules/custom-component-libraries/controller.ts | CustomComponentLibrariesController.list",
   "workflows | workflows | activate_scheduled_workflow | PUT | /workflow-schedules/activate/:id | version=(default) | src/modules/workflows/controllers/workflow-schedules.controller.ts | WorkflowSchedulesController.activate",
   "workflows | workflows | create_workflow | POST | /workflows | version=(default) | src/modules/workflows/controllers/workflows.controller.ts | WorkflowsController.create",
   "workflows | workflows | create_workflow_schedule | POST | /workflow-schedules | version=(default) | src/modules/workflows/controllers/workflow-schedules.controller.ts | WorkflowSchedulesController.create",

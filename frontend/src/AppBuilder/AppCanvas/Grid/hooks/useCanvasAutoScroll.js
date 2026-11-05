@@ -63,6 +63,7 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
   const targetElementRef = useRef(null); // Track the dragged element (single)
   const targetElementsRef = useRef([]); // Track multiple dragged elements (for group drag)
   const modeRef = useRef('drag'); // 'drag' or 'groupDrag' - controls position update behavior
+  const waitForEdgeExitRef = useRef(false); // Edges stay inactive until the pointer has been away from them
 
   /**
    * Check if widget(s) are near the bottom of canvas and need to extend it
@@ -206,13 +207,20 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
       }
     }
 
-    if (verticalContainer && clientY > verticalTopBoundary && clientY <= verticalTopBoundary + threshold) {
+    const isNearTop =
+      !!verticalContainer && clientY > verticalTopBoundary && clientY <= verticalTopBoundary + threshold;
+    const isNearBottom =
+      !!verticalContainer && clientY < verticalBottomBoundary && clientY >= verticalBottomBoundary - threshold;
+    let isNearLeft = false;
+    let isNearRight = false;
+
+    if (isNearTop) {
       // Mouse within threshold of top edge - scroll up
       const remainingTopScroll = Math.floor(verticalContainer.scrollTop);
       if (remainingTopScroll > 1) {
         scrollY = -Math.min(scrollSpeed, remainingTopScroll);
       }
-    } else if (verticalContainer && clientY < verticalBottomBoundary && clientY >= verticalBottomBoundary - threshold) {
+    } else if (isNearBottom) {
       // Mouse within threshold of bottom edge - scroll down
       scrollY = scrollSpeed;
     }
@@ -230,7 +238,8 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
         }
       }
 
-      if (clientX <= leftBoundary) {
+      isNearLeft = clientX <= leftBoundary;
+      if (isNearLeft) {
         // Mouse within threshold of left boundary - scroll left
         const remainingLeftScroll = Math.floor(horizontalContainer.scrollLeft);
         if (remainingLeftScroll > 1) {
@@ -252,13 +261,25 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
         }
       }
 
-      if (clientX >= rightBoundary) {
+      isNearRight = clientX >= rightBoundary;
+      if (isNearRight) {
         // Mouse within threshold of right boundary - scroll right
         const maxScrollLeft = horizontalContainer.scrollWidth - horizontalContainer.clientWidth;
         const remainingScroll = Math.floor(maxScrollLeft - horizontalContainer.scrollLeft);
         if (remainingScroll > 1) {
           scrollX = Math.min(scrollSpeed, remainingScroll);
         }
+      }
+    }
+
+    // A drag that begins inside an edge zone (a component coming in from the panel over the canvas's
+    // right edge) must not scroll there until the pointer has left it, or the canvas slides on entry.
+    if (waitForEdgeExitRef.current) {
+      if (isNearTop || isNearBottom || isNearLeft || isNearRight) {
+        scrollX = 0;
+        scrollY = 0;
+      } else {
+        waitForEdgeExitRef.current = false;
       }
     }
 
@@ -353,10 +374,14 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
    * @param {number} clientY - Mouse Y position
    * @param {HTMLElement|HTMLElement[]} target - The element(s) being dragged (single element or array for group)
    * @param {string} mode - 'drag' or 'groupDrag' - controls position update behavior
+   * @param {Object} options
+   * @param {boolean} options.waitForEdgeExit - don't scroll at an edge the drag starts in until the pointer
+   *   has left it (a component dragged in from the panel enters at the canvas's right edge)
    */
   const startAutoScroll = useCallback(
-    (clientX, clientY, target = null, mode = 'drag') => {
+    (clientX, clientY, target = null, mode = 'drag', { waitForEdgeExit = false } = {}) => {
       isScrollingRef.current = true;
+      waitForEdgeExitRef.current = waitForEdgeExit;
       mousePositionRef.current = { clientX, clientY };
       scrollDeltaRef.current = { x: 0, y: 0 }; // Reset delta on start
       modeRef.current = mode === 'groupDrag' ? 'groupDrag' : 'drag'; // Normalize mode for this scroll session
@@ -403,6 +428,7 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
     targetElementRef.current = null;
     targetElementsRef.current = []; // Reset group targets
     modeRef.current = 'drag'; // Reset mode to default
+    waitForEdgeExitRef.current = false;
   }, []);
 
   useEffect(() => {

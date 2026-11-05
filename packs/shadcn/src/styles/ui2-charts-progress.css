@@ -1,0 +1,253 @@
+/* UI 2.0's Progress, Progress list and Circular progress looks. Each set style is a --pg-* variable on the widget's
+   root; unset, the theme's value applies. */
+
+/* Progress */
+.ui2-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ui2-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.ui2-progress-label {
+  font-weight: 500;
+  color: var(--pg-label, var(--ui-fg));
+}
+.ui2-progress-value {
+  font-variant-numeric: tabular-nums;
+  color: var(--pg-value, var(--ui-muted-fg));
+}
+.ui2-progress .ui-progress {
+  height: var(--pg-height, 8px);
+  background: var(--pg-track, color-mix(in srgb, var(--ui-primary) 20%, transparent));
+}
+
+/* Progress list */
+.ui2-plist {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--pg-bg, transparent);
+}
+.ui2-plist.is-card {
+  border: 1px solid var(--pg-border, var(--ui-border));
+  border-radius: var(--pg-radius, calc(var(--ui-radius) + 4px));
+  background: var(--pg-bg, var(--ui-bg));
+}
+.ui2-plist.is-fill {
+  height: 100%;
+  overflow-y: auto;
+}
+.ui2-plist-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ui2-plist.is-card .ui2-plist-rows {
+  padding: 4px 0;
+}
+.ui2-plist-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
+  padding: 12px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.15s;
+}
+.ui2-plist.is-card .ui2-plist-row {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+.ui2-plist-row:hover {
+  background: color-mix(in srgb, var(--ui-fg) 4%, transparent);
+}
+.ui2-plist-row:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--pg-accent, var(--ui-ring));
+}
+.ui2-plist-head,
+.ui2-plist-foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+.ui2-plist-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.ui2-plist-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.375;
+  color: var(--pg-title, var(--ui-fg));
+  font-family: var(--pg-title-font, inherit);
+}
+.ui2-plist-figure {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--pg-title, var(--ui-fg));
+}
+.ui2-plist-figure b {
+  font-weight: 600;
+}
+.ui2-plist-pct {
+  color: var(--pg-text, var(--ui-muted-fg));
+}
+.ui2-plist-figure b + .ui2-plist-pct {
+  margin-left: 8px;
+}
+.ui2-plist-foot {
+  font-size: 12px;
+  line-height: 16px;
+}
+.ui2-plist-caption {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--pg-text, var(--ui-muted-fg));
+}
+.ui2-plist-foot .ui2-plist-pct {
+  flex-shrink: 0;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.ui2-plist-bar {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--pg-track, color-mix(in srgb, var(--ui-fg) 9%, transparent));
+}
+.ui2-plist-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--pg-accent, var(--ui-primary));
+  transition: width 0.5s ease-out;
+}
+.ui2-chip {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 2px 10px;
+  border-radius: 999px;
+  vertical-align: middle;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+}
+.ui2-plist-empty {
+  margin: 0;
+  padding: 40px 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--ui-muted-fg);
+}
+.ui2-plist.is-fill .ui2-plist-empty-wrap {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+.ui2-plist-more {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+  border-top: 1px solid var(--pg-border, var(--ui-border));
+}
+.ui2-plist-more button {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: var(--ui-radius);
+  background: transparent;
+  color: var(--ui-muted-fg);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+.ui2-plist-more button:hover {
+  background: var(--ui-muted);
+  color: var(--ui-fg);
+}
+
+/* Circular progress */
+.ui2-ring-wrap {
+  display: flex;
+}
+.ui2-ring-wrap.is-left {
+  justify-content: flex-start;
+}
+.ui2-ring-wrap.is-center {
+  justify-content: center;
+}
+.ui2-ring-wrap.is-right {
+  justify-content: flex-end;
+}
+.ui2-ring {
+  position: relative;
+  flex-shrink: 0;
+}
+.ui2-ring svg {
+  display: block;
+  transform: rotate(-90deg);
+}
+.ui2-ring-track {
+  stroke: var(--pg-track, color-mix(in srgb, var(--pg-bar, var(--ui-primary)) 15%, transparent));
+}
+.ui2-ring-bar {
+  stroke: var(--pg-bar, var(--ui-primary));
+  transition: stroke-dashoffset 0.5s ease-out;
+}
+.ui2-ring-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  text-align: center;
+  line-height: 1.25;
+}
+.ui2-ring-text > span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ui2-ring-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+  color: var(--pg-fg, var(--ui-fg));
+}
+.ui2-ring-label {
+  color: var(--pg-label, var(--ui-muted-fg));
+}
