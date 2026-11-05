@@ -55,7 +55,12 @@ const WidgetWrapper = memo(
     flexDirection = 'column',
     flexShouldStack = false,
   }) => {
-    const { contextPath, listviewCopy = false, listviewCopyOutline = true } = useSubcontainerContext();
+    const {
+      contextPath,
+      listviewCopy = false,
+      listviewCopyOutline = true,
+      listviewDisabled = false,
+    } = useSubcontainerContext();
     const indices = useMemo(() => {
       const result = contextPath.map((s) => s.index);
       return result.length > 0 ? result : null;
@@ -104,8 +109,10 @@ const WidgetWrapper = memo(
 
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
     const isListviewCopy = listviewCopy && readOnly && mode === 'edit';
+    // A disabled record has no hover or selection outline: nothing in it can be acted on.
+    const showsCopyOutline = isListviewCopy && !listviewDisabled;
     const isSelectedElsewhere = useStore(
-      (state) => isListviewCopy && listviewCopyOutline && state.selectedComponents.includes(id),
+      (state) => showsCopyOutline && listviewCopyOutline && state.selectedComponents.includes(id),
       shallow
     );
     const [isCopyHovered, setIsCopyHovered] = useState(false);
@@ -268,7 +275,7 @@ const WidgetWrapper = memo(
             [`widget-${id} nested-target`]: id !== 'canvas' && !readOnly,
             'position-absolute': isGridLayout && readOnly,
             'active-target': isWidgetActive,
-            'listview-copy-outline': isListviewCopy && (isSelectedElsewhere || isCopyHovered),
+            'listview-copy-outline': showsCopyOutline && (isSelectedElsewhere || isCopyHovered),
             'opacity-0 pointer-events-none': isDragging || isResizing,
             'module-container': isModuleContainer,
             'dynamic-height-target': isDynamicHeightEnabled,
@@ -286,7 +293,7 @@ const WidgetWrapper = memo(
           onClickCapture={isModuleViewerWidget && mode === 'edit' ? handleModuleClickCapture : undefined}
           // Only the wrapper nearest the pointer counts, so a parent copy drops its outline once a child is hovered.
           onMouseOver={
-            isListviewCopy && !isRecordResizing
+            showsCopyOutline && !isRecordResizing
               ? (e) => setIsCopyHovered(e.target.closest('[widgetid]') === e.currentTarget)
               : undefined
           }

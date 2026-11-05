@@ -15,6 +15,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import SubcontainerContext, { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { ListviewSubcontainer } from './ListviewSubcontainer';
 import { ListviewEmptyState } from './ListviewEmptyState';
+import { isNeverDisabled, isRecordDisabled } from './disabledRecords';
 import { hasComponentInRecords, isMovingInListview, isSelectedInListview } from './isMovingInListview';
 import { HorizontalSlot } from '@/AppBuilder/Widgets/Form/Components/HorizontalSlot';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
@@ -39,6 +40,7 @@ import {
 
 const HOVER_THROTTLE_MS = 200;
 const NO_RECORDS = [];
+const NO_DISABLED_RECORDS = [];
 const RECORD_MIN_HEIGHT = 10;
 const DEFAULT_RECORD_HEIGHT = 100;
 
@@ -405,11 +407,6 @@ export const Listview = function Listview({
     });
   }
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
-  const hasMainRecord = isEditableInstance && startIndexOfRowInThePage === 0;
-  // No fade while resizing, whatever is hovered or selected.
-  const fadeOthers = hasMainRecord && !isResizingRecord && (mainRecordHovered || isMovingInside || isSelectedInside);
-  // No handle on an expression, so a drag can never overwrite it.
-  const canResizeRecord = hasMainRecord && !isDynamicRecordHeight && !isVersionFrozen;
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
   // Stable between renders, so a hover re-render does not deep-diff the page again.
   const filteredData = useMemo(
@@ -422,6 +419,23 @@ export const Listview = function Listview({
     [data, enablePagination, isServerSide, startIndexOfRowInThePage, endIndexOfRowInThePage]
   );
 
+  // Read as typed: the resolved property has no record, so `listItem` is resolved here once per record of the page.
+  const disableRecordsExpression = useStore(
+    (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.properties?.disableRecords?.value
+  );
+  const disabledRecords = useStore(
+    () =>
+      isNeverDisabled(disableRecordsExpression)
+        ? NO_DISABLED_RECORDS
+        : filteredData.map((listItem) => isRecordDisabled(disableRecordsExpression, listItem)),
+    shallow
+  );
+  // A disabled record 1 is no editable template, so nothing about it fades, frames or resizes.
+  const hasMainRecord = isEditableInstance && startIndexOfRowInThePage === 0 && !disabledRecords[0];
+  // No fade while resizing, whatever is hovered or selected.
+  const fadeOthers = hasMainRecord && !isResizingRecord && (mainRecordHovered || isMovingInside || isSelectedInside);
+  // No handle on an expression, so a drag can never overwrite it.
+  const canResizeRecord = hasMainRecord && !isDynamicRecordHeight && !isVersionFrozen;
   // Record 1 can vanish under the pointer, and no mouseleave follows.
   useEffect(() => {
     if (!hasMainRecord || filteredData.length === 0) setMainRecordHovered(false);
@@ -639,6 +653,7 @@ export const Listview = function Listview({
                     recordOffset={startIndexOfRowInThePage}
                     isBuilder={isBuilder}
                     isFaded={fadeOthers && index > 0}
+                    isDisabled={!!disabledRecords[index]}
                     recordRef={index === 0 && canResizeRecord ? mainRecordRef : undefined}
                     resizeHandleProps={index === 0 && canResizeRecord ? getRecordResizeHandleProps() : undefined}
                     isResizing={isResizingRecord}

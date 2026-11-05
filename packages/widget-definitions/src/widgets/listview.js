@@ -204,6 +204,15 @@ export const listviewConfig = {
         defaultValue: 100,
       },
     },
+    // Resolved per record with `listItem`, so the expression is read from the saved definition, not from the resolved value.
+    disableRecords: {
+      type: 'code',
+      displayName: 'Disable records',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
     showBorder: {
       type: 'code',
       displayName: 'Show bottom border',
@@ -426,7 +435,6 @@ export const listviewConfig = {
       showHeader: { value: '{{false}}' },
       serverSidePagination: { value: '{{false}}' },
       totalRecords: { value: '{{10}}' },
-      recordVisibility: { value: '{{true}}' },
       disableRecords: { value: '{{false}}' },
     },
     events: [],

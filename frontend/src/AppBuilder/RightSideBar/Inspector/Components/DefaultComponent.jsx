@@ -100,6 +100,7 @@ const LISTVIEW_CONFIGURE_ORDER = [
   'mode',
   'rowHeight',
   'columns',
+  'disableRecords',
   'enablePagination',
   'serverSidePagination',
   'rowsPerPage',

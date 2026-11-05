@@ -1,4 +1,5 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
+import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -36,6 +37,7 @@ const ListviewSubcontainerComponent = ({
   recordOffset = 0,
   isBuilder = false,
   isFaded = false,
+  isDisabled = false,
   isMoving = false,
   onMainHoverChange,
   recordRef,
@@ -45,17 +47,24 @@ const ListviewSubcontainerComponent = ({
 }) => {
   const parentContext = useSubcontainerContext();
   // The first record of page 1 is the only editable one; a page-relative index cannot tell it from page 2's first.
-  const isCopy = !!parentContext.listviewCopy || recordOffset + index !== 0;
+  // A disabled record 1 is read-only too: it locks the template for every record until it is enabled.
+  const isCopy = !!parentContext.listviewCopy || recordOffset + index !== 0 || isDisabled;
   // The first record of a later page is read-only but is no copy of a record-1 selection.
-  const copyOutline = parentContext.listviewCopy ? (parentContext.listviewCopyOutline ?? true) : isCopy && index !== 0;
+  const copyOutline = isDisabled
+    ? false
+    : parentContext.listviewCopy
+      ? (parentContext.listviewCopyOutline ?? true)
+      : isCopy && index !== 0;
+  const isDisabledTree = isDisabled || !!parentContext.listviewDisabled;
   const contextValue = useMemo(
     () => ({
       contextPath: [...parentContext.contextPath, { containerId: id, index }],
       inListviewRecord: true,
       listviewCopy: isCopy,
       listviewCopyOutline: copyOutline,
+      listviewDisabled: isDisabledTree,
     }),
-    [parentContext.contextPath, id, index, isCopy, copyOutline]
+    [parentContext.contextPath, id, index, isCopy, copyOutline, isDisabledTree]
   );
   const contextIndices = useMemo(
     () => [...parentContext.contextPath.map((segment) => segment.index), index],
@@ -82,6 +91,16 @@ const ListviewSubcontainerComponent = ({
   });
 
   const pendingClickRef = useRef(false);
+  const ownRef = useRef(null);
+  // `inert` also takes the record's components out of the tab order, which pointer-events cannot.
+  useDisableInert(ownRef, isDisabled);
+  const setRecordNode = useCallback(
+    (node) => {
+      ownRef.current = node;
+      if (recordRef) recordRef.current = node;
+    },
+    [recordRef]
+  );
   // Only record 1 has the handle props, so the drag's outline and grid never reach a copy.
   const isResizeTarget = isResizing && !!resizeHandleProps;
   // The handle sits on the bottom edge, half outside the record, so the record itself must not clip; its children are clipped by the inner box.
@@ -101,16 +120,20 @@ const ListviewSubcontainerComponent = ({
           width: recordWidth ?? `${100 / positiveColumns}%`,
           padding: '0px',
           overflow: resizeHandleProps ? undefined : 'hidden',
-          ...(isFaded && { opacity: 0.4 }),
+          // One 0.4 for both, so a disabled record under the builder hover fade is not dimmed twice.
+          ...((isFaded || isDisabled) && { opacity: 0.4 }),
+          ...(isDisabled && { pointerEvents: 'none' }),
           ...recordBoxStyle,
         }}
         key={index}
-        ref={recordRef}
+        ref={setRecordNode}
         role="listitem"
-        tabIndex={0}
+        aria-disabled={isDisabled || undefined}
+        tabIndex={isDisabled ? undefined : 0}
         data-cy={`${String(dataCy).toLowerCase()}-row-${index}`}
         // mouseenter does not bubble, so moving over the record's children does not re-fire.
         onMouseEnter={() => {
+          if (isDisabled) return;
           onRecordHovered?.(index);
           if (isBuilder && !isCopy) onMainHoverChange?.(true);
         }}
@@ -119,7 +142,7 @@ const ListviewSubcontainerComponent = ({
         }}
         // Enter and Space only: focus alone must not select, or tabbing would fire Record clicked.
         onKeyDown={(event) => {
-          if (event.target !== event.currentTarget) return;
+          if (isDisabled || event.target !== event.currentTarget) return;
           if (event.key !== 'Enter' && event.key !== ' ') return;
           event.preventDefault();
           onRecordOrRowClicked(index);
@@ -127,6 +150,12 @@ const ListviewSubcontainerComponent = ({
         // Capture, so a child that stops propagation cannot hide the click (D-13); deferred, so the
         // child's own handler writes first; coalesced, so a label and its synthetic input click count once.
         onClickCapture={(event) => {
+          // jsdom and a script click ignore pointer-events, so the click is also stopped before it reaches a component.
+          if (isDisabled) {
+            event.stopPropagation();
+            event.preventDefault();
+            return;
+          }
           // A modal this row opened covers the page; clicking it is not clicking the row beneath.
           // It is lifted out of the row in a browser and left inside it under jsdom, so both count.
           if (!event.currentTarget.contains(event.target)) return;

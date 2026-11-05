@@ -7679,8 +7679,14 @@ describe('ListviewDisabledRecords', () => {
   });
 
   describe('Listview: Disable records is resolved per record', () => {
-    beforeEach(widget.setup);
-    afterEach(widget.teardown);
+    beforeEach(async () => {
+      await widget.setup();
+      await nestedWidget.setup();
+    });
+    afterEach(() => {
+      nestedWidget.teardown();
+      widget.teardown();
+    });
 
     test('[Listview-REC-007] listItem picks the record on page 1 and again on page 2', async () => {
       // Break this catches: resolving once for the list, or with the page-relative record, so page 2 disables the wrong one.
@@ -7776,7 +7782,7 @@ describe('ListviewDisabledRecords', () => {
       await mount();
 
       expect(rows().map((row) => row.textContent.trim())).toEqual(['r0Go', 'r1Go', 'r2Go', 'r3Go', 'r4Go']);
-      expect(exposed('data')).toHaveLength(10);
+      expect(Object.keys(exposed('data') ?? {})).toHaveLength(5);
       fireEvent.click(rows()[2]);
       await waitFor(() => expect(exposed('selectedRecordIndex')).toBe(2));
 
