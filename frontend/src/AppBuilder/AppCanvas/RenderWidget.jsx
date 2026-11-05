@@ -51,6 +51,8 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'ProgressBar',
   'AudioRecorder',
   'Camera',
+  'RichTextEditor',
+  'Calendar',
   'JSONExplorer',
   'JSONEditor',
   'IFrame',
@@ -69,6 +71,8 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'ModalV2',
   'Container',
   'Timeline',
+  'Spinner',
+  'BoundedBox',
 ];
 
 const WIDGETS_WITH_PORTALED_CONTENT = ['ModalV2'];

@@ -55,6 +55,10 @@ export const treeSelectConfig = {
     data: {
       type: 'code',
       displayName: 'Schema',
+      // Top level only: a failed check coerces the whole value to [], so per-entry checks would hide valid nodes (D-01).
+      validation: {
+        schema: { type: 'array' },
+      },
     },
     allowIndependentSelection: {
       type: 'toggle',

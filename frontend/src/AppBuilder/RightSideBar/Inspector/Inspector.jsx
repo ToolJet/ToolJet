@@ -616,6 +616,17 @@ export const Inspector = ({
           />
         </div>
         {!isRevampedComponent && buildGeneralStyle()}
+        {!isRevampedComponent && (
+          <Inspector.RenderLegacyAdvancedStyles
+            componentMeta={componentMeta}
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            currentState={currentState}
+            allComponents={allComponents}
+            hasCustomStyling={hasCustomStyling}
+          />
+        )}
       </div>
     </FallbackBoundary>
   );
@@ -848,7 +859,7 @@ const RenderStyleOptions = ({
     ? Object.keys(groupedProperties)
         .filter((key) => key !== 'Advanced' || hasCustomStyling)
         .sort((a, b) => (a === 'Advanced' ? 1 : b === 'Advanced' ? -1 : 0))
-    : Object.keys(componentMeta.styles).filter((key) => key !== 'cssClass' || hasCustomStyling);
+    : Object.keys(componentMeta.styles).filter((key) => key !== 'cssClass');
 
   const styleAccordions = orderedStyleKeys.map((style) => {
     const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
@@ -935,6 +946,41 @@ const RenderStyleOptions = ({
       ]}
     />,
   ];
+};
+
+// Legacy widgets have no style accordions, so their CSS class gets its own "Advanced" section, rendered last.
+const RenderLegacyAdvancedStyles = ({
+  componentMeta,
+  component,
+  paramUpdated,
+  dataQueries,
+  currentState,
+  allComponents,
+  hasCustomStyling,
+}) => {
+  if (!hasCustomStyling || !componentMeta?.styles?.cssClass) return null;
+  return (
+    <Accordion
+      items={[
+        {
+          title: 'Advanced',
+          isOpen: true,
+          children: [
+            renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              'cssClass',
+              'styles',
+              currentState,
+              allComponents
+            ),
+          ],
+        },
+      ]}
+    />
+  );
 };
 
 const resolveConditionalStyle = (definition, condition, currentState) => {
@@ -1056,3 +1102,4 @@ const GetAccordion = React.memo(
 );
 
 Inspector.RenderStyleOptions = RenderStyleOptions;
+Inspector.RenderLegacyAdvancedStyles = RenderLegacyAdvancedStyles;

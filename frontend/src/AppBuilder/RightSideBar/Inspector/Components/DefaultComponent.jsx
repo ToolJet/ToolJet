@@ -60,6 +60,9 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'FlexContainer',
   'Timeline',
   'PDF',
+  'Spinner',
+  'BoundedBox',
+  'Calendar',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -208,6 +211,8 @@ export const baseComponentProperties = (
       'ProgressBar',
       'AudioRecorder',
       'Camera',
+      'RichTextEditor',
+      'Calendar',
       'JSONExplorer',
       'JSONEditor',
       'IFrame',
@@ -219,6 +224,8 @@ export const baseComponentProperties = (
       'ModalV2',
       'Container',
       'Timeline',
+      'Spinner',
+      'BoundedBox',
     ],
     Layout: [],
   };

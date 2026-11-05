@@ -112,6 +112,7 @@ export const reorderableListConfig = {
   },
   exposedVariables: {
     options: [],
+    values: [],
     isVisible: true,
     isDisabled: false,
     isLoading: false,

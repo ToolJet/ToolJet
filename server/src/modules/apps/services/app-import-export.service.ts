@@ -138,7 +138,9 @@ type NewRevampedComponent =
   | 'ModalV2'
   | 'PopoverMenu'
   | 'Pagination'
-  | 'Timeline';
+  | 'Timeline'
+  | 'RichTextEditor'
+  | 'Calendar';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -193,6 +195,8 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'PopoverMenu',
   'Pagination',
   'Timeline',
+  'RichTextEditor',
+  'Calendar',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -316,6 +320,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'AudioRecorder',
   'Button',
   'ButtonGroupV2',
+  'Calendar',
   'Camera',
   'Cascader',
   'Checkbox',
@@ -353,6 +358,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'RadioButtonV2',
   'RangeSliderV2',
   'ReorderableList',
+  'RichTextEditor',
   'StarRating',
   'Statistics',
   'Tabs',
@@ -366,6 +372,8 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'ToggleSwitchV2',
   'TreeSelect',
   'VerticalDivider',
+  'Spinner',
+  'BoundedBox',
 ];
 
 @Injectable()
@@ -4662,6 +4670,28 @@ export function migrateProperties(
 
   if (MAX_LIMIT_COMPONENT_TYPES.includes(componentType) && properties.maxLimit === undefined) {
     properties.maxLimit = { value: '' };
+  }
+
+  // Old exports, versioned or not, still carry these keys where the Move*KeysToProperties data migrations found them.
+  const MOVED_STYLE_KEYS: Record<string, string[]> = {
+    Spinner: ['visibility'],
+    BoundedBox: ['visibility', 'disabledState'],
+  };
+  if (MOVED_STYLE_KEYS[componentType]) {
+    for (const key of MOVED_STYLE_KEYS[componentType]) {
+      if (styles[key] !== undefined) {
+        if (properties[key] === undefined) {
+          properties[key] = styles[key];
+        }
+        delete styles[key];
+      }
+    }
+    if (general?.tooltip !== undefined) {
+      if (properties.tooltip === undefined) {
+        properties.tooltip = general.tooltip;
+      }
+      delete general.tooltip;
+    }
   }
 
   if (TOOLTIP_FORMAT_COMPONENT_TYPES.includes(componentType) && properties.tooltipFormat === undefined) {

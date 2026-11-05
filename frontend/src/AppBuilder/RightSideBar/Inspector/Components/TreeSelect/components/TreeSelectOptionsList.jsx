@@ -7,6 +7,7 @@ const TreeSelectOptionsList = ({
   darkMode,
   onDeleteItem,
   onItemChange,
+  validateItemField,
   onAddItem,
   onAddNestedItem,
   onReorder,
@@ -21,6 +22,7 @@ const TreeSelectOptionsList = ({
           darkMode={darkMode}
           onDeleteItem={onDeleteItem}
           onItemChange={onItemChange}
+          validateItemField={validateItemField}
           onAddNestedItem={onAddNestedItem}
           onReorder={onReorder}
           getResolvedValue={getResolvedValue}

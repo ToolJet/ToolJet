@@ -1,24 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Select from '@/_ui/Select';
-import { v4 as uuid } from 'uuid';
 
-export const RenderEditor = ({
-  annotation,
-  labels,
-  setAnnotation,
-  setAnnotations,
-  setExposedVariable,
-  fireEvent,
-  darkMode,
-  selectElementStyles,
-  getExposedAnnotations,
-}) => {
-  useEffect(() => {
-    if (geometry) {
-      fireEvent('onChange');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+export const RenderEditor = ({ annotation, labels, onCreate, darkMode, selectElementStyles }) => {
   const { geometry } = annotation;
   if (!geometry) return null;
   return (
@@ -34,26 +17,11 @@ export const RenderEditor = ({
       className="col"
     >
       <Select
+        aria-label="Label for new annotation"
         options={labels}
-        onChange={(value) => {
-          setAnnotation({});
-          setAnnotations((prevState) => {
-            const annotations = prevState.concat({
-              geometry,
-              data: {
-                text: value,
-                id: uuid(),
-              },
-            });
-
-            setExposedVariable('annotations', getExposedAnnotations(annotations));
-            fireEvent('onChange');
-            return annotations;
-          });
-        }}
+        onChange={(value) => onCreate(geometry, value)}
         className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
         useCustomStyles={true}
-        // useMenuPortal={false}
         useMenuPortal
         styles={selectElementStyles(darkMode, '100%')}
       />
