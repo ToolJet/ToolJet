@@ -123,6 +123,10 @@ On self-hosted ToolJet, the delimiter can also be set with the `OIDC_GROUPS_DELI
 OIDC_GROUPS_DELIMITER=,
 ```
 
+:::note
+If the delimiter isn't picked up from the environment variable, wrap the value in quotes, such as `OIDC_GROUPS_DELIMITER="#"`. The **Delimiter** field in the UI doesn't need quotes.
+:::
+
 ## Nested Group Claims
 
 Some identity providers send the groups claim inside another object instead of at the top level of the token:
