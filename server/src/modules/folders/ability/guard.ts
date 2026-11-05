@@ -8,6 +8,8 @@ import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { TransactionLogger } from '@modules/logging/service';
 import { cloneDeep } from 'lodash';
 import { FEATURE_KEY } from '../constants';
+import { MODULES } from '@modules/app/constants/modules';
+import { ResourceDetails } from '@modules/app/types';
 
 @Injectable()
 export class FeatureAbilityGuard extends AbilityGuard {
@@ -27,6 +29,18 @@ export class FeatureAbilityGuard extends AbilityGuard {
 
   protected getSubjectType() {
     return Folder;
+  }
+
+  // FeatureAbilityFactory's UPDATE_FOLDER branch needs the granular bucket matching whichever
+  // folder type is being managed, to let a per-folder canEditFolder grant through this guard
+  // (not just isBuilder/the coarse create flag) — request all four so the lookup always hits.
+  protected getResource(): ResourceDetails[] {
+    return [
+      { resourceType: MODULES.FOLDER },
+      { resourceType: MODULES.WORKFLOW_FOLDER },
+      { resourceType: MODULES.MODULE_FOLDER },
+      { resourceType: MODULES.DATA_SOURCE_FOLDER },
+    ];
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

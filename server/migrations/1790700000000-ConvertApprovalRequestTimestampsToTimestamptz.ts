@@ -1,3 +1,4 @@
+// migration-lint: allow-destructive workflow_approval_requests is new in this release; no released code reads it
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 // The implicit cast reads existing values in the session zone, the zone now() wrote them in.

@@ -1,31 +1,36 @@
 import HttpClient from '@/_helpers/http-client';
 
-const adapter = new HttpClient();
+// Constructed on first use, not at module load. These service modules are reachable from
+// http-client's own import chain (http-client -> authentication.service -> '@/_helpers' -> ...
+// -> the '@/_services' barrel), so a module-scope `new HttpClient()` can run while http-client
+// is still initialising and has not exported the class yet.
+let httpClient;
+const getAdapter = () => (httpClient ??= new HttpClient());
 
 function list({ status = 'all', limit = 20, before } = {}) {
   const params = new URLSearchParams({ status, limit: String(limit) });
   if (before) params.set('before', before);
-  return adapter.get(`/notifications?${params.toString()}`);
+  return getAdapter().get(`/notifications?${params.toString()}`);
 }
 
 function unreadCount() {
-  return adapter.get(`/notifications/unread-count`);
+  return getAdapter().get(`/notifications/unread-count`);
 }
 
 function markRead(recipientId) {
-  return adapter.patch(`/notifications/${recipientId}/read`, {});
+  return getAdapter().patch(`/notifications/${recipientId}/read`, {});
 }
 
 function markAllRead() {
-  return adapter.patch(`/notifications/read-all`, {});
+  return getAdapter().patch(`/notifications/read-all`, {});
 }
 
 function clearRead() {
-  return adapter.delete(`/notifications/read`);
+  return getAdapter().delete(`/notifications/read`);
 }
 
 function remove(recipientId) {
-  return adapter.delete(`/notifications/${recipientId}`);
+  return getAdapter().delete(`/notifications/${recipientId}`);
 }
 
 export const notificationsService = { list, unreadCount, markRead, markAllRead, clearRead, remove };
