@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import useStore from '@/AppBuilder/_stores/store';
 import { seedApp, componentDefinition, binding } from '@/test/app-builder';
 import { copyComponents, pasteComponents } from '@/AppBuilder/AppCanvas/copyPasteWidgetsUtils';
+import { appVersionService } from '@/_services';
 
 jest.mock('react-hot-toast', () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
 
@@ -144,6 +145,45 @@ describe('Listview: each Layout remembers its own layout', () => {
     expect(layoutOf('new2').left).toBe(1);
   });
 
+  test('[Listview-GRID-012] a child added in List stays inside the card when the remembered Grid layout already fills it', () => {
+    // Break this catches: the new child placed below the remembered ones, past the card, where the inner box hides it.
+    seed({
+      recordLayouts: {
+        grid: {
+          img: { top: 0, left: 1, width: 6, height: 70 },
+          txt: { top: 70, left: 1, width: 41, height: 80 },
+        },
+      },
+    });
+
+    setMode('grid');
+
+    const box = layoutOf('btn');
+    expect(box.top).toBeGreaterThanOrEqual(0);
+    expect(box.top + box.height).toBeLessThanOrEqual(150);
+    expect(layoutOf('img')).toEqual({ top: 0, left: 1, width: 6, height: 70 });
+    expect(layoutOf('txt')).toEqual({ top: 70, left: 1, width: 41, height: 80 });
+  });
+
+  test('[Listview-GRID-012] children added in Grid do not pile on one spot when the remembered row fills the record', () => {
+    // Break this catches: every added child clamped to the same right-edge box, so all but one are hidden under it.
+    seed({
+      mode: 'grid',
+      recordLayouts: { list: { img: { top: 10, left: 0, width: 43, height: 60 } } },
+    });
+
+    setMode('list');
+
+    const [a, b] = [layoutOf('txt'), layoutOf('btn')];
+    expect(a.left + a.width).toBeLessThanOrEqual(43);
+    expect(b.left + b.width).toBeLessThanOrEqual(43);
+    expect(a.top).not.toBe(b.top);
+    [a, b].forEach((box) => {
+      expect(box.top).toBeGreaterThanOrEqual(0);
+      expect(box.top + box.height).toBeLessThanOrEqual(80);
+    });
+  });
+
   test('[Listview-GRID-013] one undo of a switch restores the Layout and every child position, and the memory agrees with them', () => {
     // Break this catches: an undo that flips the Layout but leaves the children stacked, two undo steps for one switch, or a memory that disagrees with the restored page.
     seed();
@@ -235,18 +275,67 @@ describe('Listview: each Layout remembers its own layout', () => {
     expect(memoryOf().list.img.mobile).toBeUndefined();
   });
 
-  test('[Listview-GRID-015] a switch made in the mobile view neither saves nor restores desktop layouts', () => {
-    // Break this catches: the memory read from or written to the mobile layouts, or the desktop layouts moved from the mobile view.
-    seed();
-    components().img.layouts.mobile = { top: 5, left: 5, width: 10, height: 30 };
-    useStore.getState().setCurrentLayout('mobile');
+  describe('a switch made in the mobile view', () => {
+    const MOBILE = { top: 5, left: 5, width: 10, height: 30 };
+    const toMobile = () => {
+      ['img', 'txt', 'btn'].forEach((id) => {
+        components()[id].layouts.mobile = { ...MOBILE };
+      });
+      useStore.getState().setCurrentLayout('mobile');
+    };
+    afterEach(() => useStore.getState().setCurrentLayout('desktop'));
 
-    setMode('grid');
+    test('[Listview-GRID-015] saves the desktop layout it leaves and arranges the desktop children for the new Layout', () => {
+      // Break this catches: desktop children left in the List row while the mode says Grid, and no desktop memory.
+      seed();
+      toMobile();
 
-    expect(memoryOf()).toBeUndefined();
-    expect(layoutOf('img')).toEqual(IMG);
-    expect(layoutOf('txt')).toEqual(TXT);
-    useStore.getState().setCurrentLayout('desktop');
+      setMode('grid');
+
+      expect(memoryOf().list).toEqual({ img: IMG, txt: TXT, btn: BTN });
+      expect(layoutOf('txt').left).toBe(1);
+      expect(layoutOf('txt').width).toBe(41);
+      expect(modeOf()).toBe('grid');
+    });
+
+    test('[Listview-GRID-015] never writes the mobile layouts into the memory', () => {
+      // Break this catches: the mobile boxes saved as a Layout's memory.
+      seed();
+      toMobile();
+
+      setMode('grid');
+
+      expect(JSON.stringify(memoryOf())).not.toContain('"left":5,"width":10');
+      expect(layoutOf('img', 'mobile').left).toBe(1);
+    });
+
+    test('[Listview-GRID-015] leaves the desktop memory right: back on desktop, List then Grid again gives the same stack', () => {
+      // Break this catches: the Grid memory saved from a List row (the card would open with the row squeezed in it).
+      seed();
+      toMobile();
+      setMode('grid');
+      const stacked = ['img', 'txt', 'btn'].map((id) => layoutOf(id));
+      useStore.getState().setCurrentLayout('desktop');
+
+      setMode('list');
+      expect(['img', 'txt', 'btn'].map((id) => layoutOf(id))).toEqual([IMG, TXT, BTN]);
+      setMode('grid');
+
+      expect(['img', 'txt', 'btn'].map((id) => layoutOf(id))).toEqual(stacked);
+    });
+
+    test('[Listview-GRID-015] one undo in the mobile view restores the desktop children too', () => {
+      // Break this catches: a desktop write outside the undo step of the switch.
+      seed();
+      toMobile();
+      setMode('grid');
+
+      handleUndo();
+
+      expect(modeOf()).toBe('list');
+      expect(['img', 'txt', 'btn'].map((id) => layoutOf(id))).toEqual([IMG, TXT, BTN]);
+      expect(layoutOf('txt', 'mobile')).toEqual(MOBILE);
+    });
   });
 
   test('[Listview-GRID-015] choosing the Layout the list already has writes no memory', () => {
@@ -256,6 +345,54 @@ describe('Listview: each Layout remembers its own layout', () => {
     setMode('list');
 
     expect(memoryOf()).toBeUndefined();
+  });
+});
+
+describe('Listview: the layout memory reaches the other editors', () => {
+  let broadcasts;
+
+  beforeEach(() => {
+    broadcasts = [];
+    jest.spyOn(appVersionService, 'autoSaveApp').mockResolvedValue({});
+    useStore.getState().multiplayer.setYMap({ set: (_key, update) => broadcasts.push(update) });
+  });
+
+  afterEach(() => {
+    useStore.getState().multiplayer.setYMap(undefined);
+    jest.restoreAllMocks();
+  });
+
+  const switchAndSave = (value) =>
+    useStore.getState().setComponentProperty(LV, 'mode', value, 'properties', 'value', false, MODULE_ID);
+  const componentUpdates = () => broadcasts.filter((update) => update.type === 'components');
+
+  test('[Listview-GRID-017] a Layout switch broadcasts the memory together with the mode, memory first', () => {
+    // Break this catches: only the mode sent, so a peer has no memory and its next switch overwrites it.
+    seed();
+
+    switchAndSave('grid');
+
+    const [update] = componentUpdates();
+    expect(update.diff.componentId).toBe(LV);
+    expect(update.diff.updates.map((item) => item.property)).toEqual(['recordLayouts', 'mode']);
+    expect(update.diff.updates[0].value).toEqual({ list: { img: IMG, txt: TXT, btn: BTN } });
+    expect(update.diff.updates[1].value).toBe('grid');
+  });
+
+  test("[Listview-GRID-017] a peer that applies the broadcast holds the memory, and its next switch keeps the sender's edits", () => {
+    // Break this catches: a peer without the memory, which auto-arranges and then saves its own over the sender's.
+    seed();
+    moveTo('txt', { top: 40, left: 20, width: 9, height: 30 });
+    switchAndSave('grid');
+    const [update] = componentUpdates();
+
+    seed({ mode: 'list' });
+    useStore.getState().multiplayer.processUpdate(update);
+    expect(memoryOf()).toEqual({ list: { img: IMG, txt: { top: 40, left: 20, width: 9, height: 30 }, btn: BTN } });
+    expect(modeOf()).toBe('grid');
+
+    setMode('list');
+    expect(layoutOf('txt')).toEqual({ top: 40, left: 20, width: 9, height: 30 });
   });
 });
 
