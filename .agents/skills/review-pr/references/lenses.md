@@ -29,9 +29,10 @@ Phrase as the consequence for a user or operator, then the trace that gets there
 Authority: `server/docs/testing.md`, especially:
 
 - "When to delete a test" (mutation heuristic): for each new test, break the implementation it
-  claims to cover; if the suite stays green, the test asserts nothing. Put the exact mutation in
-  the comment so the author can reproduce it. The branch a file's longest comment describes is
-  usually the one nothing tests.
+  claims to cover; if the suite stays green, the test asserts nothing. Say it in the author's terms
+  ("removing `!p.isPageGroup &&` keeps every test green") and give a ready-to-paste test that
+  fails on that change. The branch a file's longest comment describes is usually the one nothing
+  tests.
 - "Assertions": response shape via `toMatchObject()`, never per-field `toBe` chains. A changed
   response shape with no updated shape assertion is unverified.
 - "The behavior matrix" and "Pruning rule": the right set of cases, not the biggest.
@@ -43,7 +44,8 @@ Frontend: `frontend/AGENTS.md` → Testing, and the guide it names (`src/test/RE
 conventions and what belongs in Cypress.
 
 Specs are for concretion, not abstraction: the contract must be readable without opening a helper.
-Suggest rewording where the spec hides the detail that makes it pass.
+Ask for the one missing case or assertion, not a restructured suite: a shared harness, registry or
+new spec file is taste, not a test gap.
 
 ## Typing
 
@@ -84,7 +86,8 @@ Simplicity, pragmatically). Look for:
 - Complexity pushed to callers: every caller re-deriving the same field list or guard.
 - General-purpose and special-purpose code in one function.
 
-Practical refactors only, with the shape shown. Never speculative ("this might need...").
+Raise one only when it removes code or the bug needs it, with the shape shown. Never speculative
+("this might need..."). See "Asks stay small" in `references/comment-format.md`.
 
 ## Conventions
 

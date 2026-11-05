@@ -69,9 +69,12 @@ A small PR touching a migration or an auth path gets the large-tier lenses at sm
    (its lookup never matches, a constraint blocks its input) is not a finding; this is the most
    common first-pass miss, because it checks presence, not execution. Withdraw what fails and say
    so in the report, with evidence.
-9. Write the report (Output contract) and hand the path to the user. Stop. Each finding is already
-   the comment it would become, so posting later is a copy.
-10. Only when the user asks to post: confirm which findings, re-verify anchors against current
+9. Reader pass. Reread every drafted comment as the author would, cold, and rewrite it until it
+   passes the checklist in `references/comment-format.md`. The refutation pass checks facts; this
+   one checks that a stranger to the review can follow them.
+10. Write the report (Output contract) and hand the path to the user. Stop. Each finding is already
+    the comment it would become, so posting later is a copy.
+11. Only when the user asks to post: confirm which findings, re-verify anchors against current
     heads, then follow `references/posting.md`.
 
 ## Lenses
@@ -85,7 +88,7 @@ Cite the repo's authority in the finding instead of restating the rule. Read
 | Tests        | `server/docs/testing.md`: mutation heuristic, `toMatchObject` shape assertions, behavior matrix, boundary rule. `frontend/AGENTS.md` → Testing (names `src/test/README.md`; App Builder layer).        |
 | Typing       | `server/AGENTS.md` Design principles. No `any`; precise types or `unknown` casts.                                                                                                                      |
 | Comments     | Exhaustive sweep, one verdict per added block: DELETE (default), KEEP as one line only when the WHY is not deducible from code, symbol, or test name, AGENTS.md only for a general module rule.         |
-| Design       | `server/AGENTS.md` Design principles: pure calculations out of I/O, stratified design, deep modules. Practical refactors only.                                                                         |
+| Design       | `server/AGENTS.md` Design principles: pure calculations out of I/O, stratified design, deep modules. Only when it removes code or the bug needs it.                                                    |
 | Conventions  | Closest `AGENTS.md` plus the living-docs rule in root `AGENTS.md`: a changed invariant with no `AGENTS.md` update is a finding. Glossary terms from `UBIQUITOUS_LANGUAGE.md`.                          |
 | API contract | `.agents/skills/api-design/SKILL.md`. Only when `server/src/modules/**/controller*.ts`, `dto/`, or `external-apis/` are touched.                                                                       |
 | Merge impact | Honest reversible verdict, stated Reach vs the diff, Rollback plan and Evidence on irreversible PRs.                                                                                                   |
@@ -102,22 +105,9 @@ data, or private issue context: state the invariant in public terms and point at
 
 ## Finding format
 
-Write every finding as the comment it would become, per `references/comment-format.md` (read it
-before the first finding). Line 1: plain consequence sentence for small and medium; severity-tagged
-for large.
-
-Tone rules, every finding, every tier:
-
-- Address the author, "we" voice, suggestion tone. `suggestion` blocks when the change sits on the
-  anchored lines.
-- Plain English: short paragraphs, simple words, domain terms from `UBIQUITOUS_LANGUAGE.md`,
-  anything else explained on first use. Bullets only for lists the reader scans. A diagram (mermaid
-  or ascii) whenever the point is a flow or two paths converging.
-- An `Impact.` paragraph, as the scenario the user or operator hits, only when the finding reaches
-  past the codebase.
-- No em dashes. No meta-commentary about how the review was done. No praise padding; a decision
-  worth affirming is a finding ("keep X, because Y").
-- One finding per entry. GitHub resolves per thread, so a bundled entry cannot be posted as is.
+Write every finding as the comment it would become, one finding per entry, per
+`references/comment-format.md`. It holds every format and tone rule; read it before the first
+finding.
 
 ## Output contract
 
@@ -126,6 +116,7 @@ summary: blocker count, what was checked and found clean, open questions.
 
 Every finding entry carries: target PR and head SHA, `path:line` (`start_line` for a range), the
 drafted comment body, and a one-line severity rationale. The report doubles as the posting queue.
+Numbers, severity, section and cross-finding notes stay in the entry's metadata, never in the body.
 
 - Small and medium: one `review.md`, findings by severity, then a "checked and clean" list.
 - Large:
