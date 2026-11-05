@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import * as ts from 'typescript';
 
 import { checkSources } from '../../../src/lib/app/check';
 import { validateAppJson, AppJson, Snapshot } from '../../../src/lib/app/project';
@@ -154,5 +155,56 @@ describe('typed hooks', () => {
     expect(out).to.contain('  revenue: { data: unknown; params: { from?: unknown } };');
     expect(out).to.contain('  order: "/orders/:id",');
     expect(out).to.contain('export const PAGES = ["reports"] as const;');
+  });
+
+  it('refuses a run() value the query does not declare, spread or not', () => {
+    // The generated file against the SDK's QueryHandle shape: a filter whose parameter never reached the query built and
+    // filtered nothing (2026-11-05), because ToolJet drops an undeclared value and a spread escapes excess-property checks.
+    const sdk = [
+      'export interface QueryHandle<D = unknown, P extends Record<string, unknown> = Record<string, unknown>> {',
+      '  data: D | undefined; loading: boolean; error: Error | null; run: (params?: P) => Promise<D>;',
+      '}',
+      'export declare const ToolJet: {',
+      '  useQuery<D = unknown, P extends Record<string, unknown> = Record<string, unknown>>(name: string): QueryHandle<D, P>;',
+      '};',
+    ].join('\n');
+    const usage = [
+      "import { useAppQuery } from './tooljet.gen';",
+      "const update = useAppQuery('updateStatus');",
+      "const orders = useAppQuery('orders');",
+      "const bounds = Math.random() > 0.5 ? { from: 'a', to: 'b' } : { from: 'c', to: 'd' };",
+      "void update.run({ id: 1, status: 'done' });",
+      'void update.run();',
+      'const loose: Record<string, unknown> = { id: 1 };',
+      'void update.run(loose);',
+      'void orders.run();',
+      'const total: number = (orders.data ?? []).length + (orders.loading ? 1 : 0);',
+      'void total;',
+      'void update.run({ id: 1, ...bounds });',
+      "void update.run({ id: 1, month: 'x' });",
+    ].join('\n');
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tj-typegen-'));
+    const sdkDir = path.join(root, 'node_modules', '@tooljet', 'custom-component-sdk');
+    fs.mkdirSync(sdkDir, { recursive: true });
+    const sdkPackage = { name: '@tooljet/custom-component-sdk', types: 'index.d.ts' };
+    fs.writeFileSync(path.join(sdkDir, 'package.json'), JSON.stringify(sdkPackage));
+    fs.writeFileSync(path.join(sdkDir, 'index.d.ts'), sdk);
+    fs.writeFileSync(path.join(root, 'tooljet.gen.ts'), generateTypes(app, snapshot));
+    fs.writeFileSync(path.join(root, 'use.ts'), usage);
+    const program = ts.createProgram([path.join(root, 'use.ts')], {
+      strict: true,
+      noEmit: true,
+      target: ts.ScriptTarget.ES2020,
+      moduleResolution: ts.ModuleResolutionKind.Node10,
+      types: [],
+    });
+    const errors = ts.getPreEmitDiagnostics(program).map((d) => ({
+      line: d.file && d.start !== undefined ? d.file.getLineAndCharacterOfPosition(d.start).line + 1 : 0,
+      text: ts.flattenDiagnosticMessageText(d.messageText, '\n'),
+    }));
+    fs.rmSync(root, { recursive: true, force: true });
+    expect(errors.map((e) => e.line)).to.deep.equal([12, 13]);
+    expect(errors[0].text).to.contain('from is not a parameter of this query');
+    expect(errors[1].text).to.contain('month is not a parameter of this query');
   });
 });

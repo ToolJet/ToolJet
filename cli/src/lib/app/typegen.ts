@@ -65,9 +65,24 @@ export function generateTypes(app: AppJson, snapshot: Snapshot): string {
   }
   lines.push('}', '');
   lines.push('export type QueryName = keyof AppQueries;', '');
+  // run() takes only the parameters the query declares. ToolJet drops a value the query does not declare, so a filter
+  // whose parameter never reached the query filtered nothing and still built; an object spread hides it from
+  // TypeScript's own excess-property check, which this one does not rely on. A value typed Record<string, ...> passes.
+  lines.push("type Params<K extends QueryName> = AppQueries[K]['params'];");
+  lines.push('type Undeclared<P, A> = string extends keyof A');
+  lines.push('  ? unknown');
+  lines.push(
+    '  : { [X in Exclude<keyof A, keyof P>]: `${X & string} is not a parameter of this query: declare it in the query and read it there` };'
+  );
   lines.push("/** ToolJet.useQuery with the query's data and parameter types. */");
-  lines.push('export const useAppQuery = <K extends QueryName>(name: K) =>');
-  lines.push("  ToolJet.useQuery<AppQueries[K]['data'], AppQueries[K]['params']>(name);");
+  lines.push(
+    "export type AppQuery<K extends QueryName> = Omit<ReturnType<typeof ToolJet.useQuery>, 'data' | 'run'> & {"
+  );
+  lines.push("  data: AppQueries[K]['data'] | undefined;");
+  lines.push("  run: <A extends Params<K>>(params?: A & Undeclared<Params<K>, A>) => Promise<AppQueries[K]['data']>;");
+  lines.push('};');
+  lines.push('export const useAppQuery = <K extends QueryName>(name: K): AppQuery<K> =>');
+  lines.push("  ToolJet.useQuery<AppQueries[K]['data'], Params<K>>(name) as unknown as AppQuery<K>;");
   lines.push('');
   lines.push("/** The app's routes (app.json), by id. */");
   lines.push('export const ROUTES = {');
