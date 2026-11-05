@@ -275,3 +275,18 @@ describe('per-row exposed value writes are deferred (asymmetric with the flat pa
     });
   });
 });
+
+describe('getRowScopedAncestorIds', () => {
+  const INNER_LV = '77777777-7777-4777-8777-777777777777';
+
+  it('lists the row-scoped ancestors outermost first, through a slot canvas', () => {
+    // Break this catches: inner-first order, which reads an outer row with the inner index.
+    seedPage({
+      [LV]: component('outer', 'Listview'),
+      [TABS]: component('tabs1', 'Tabs', LV),
+      [INNER_LV]: component('inner', 'Listview', `${TABS}-tab-1`),
+    });
+
+    expect(useStore.getState().getRowScopedAncestorIds(INNER_LV, 'canvas')).toEqual([LV, INNER_LV]);
+  });
+});

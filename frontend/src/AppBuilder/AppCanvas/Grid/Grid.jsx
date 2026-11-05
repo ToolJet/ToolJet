@@ -29,6 +29,8 @@ import {
   getCanvasBottomBound,
   findNewParentIdFromMousePosition,
   wrapDropIntoListviewRow,
+  getMinWidthPx,
+  getMinColumns,
 } from './gridUtils';
 import {
   dragContextBuilder,
@@ -60,7 +62,6 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
 import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
 import ConfigHandleButton from '@/_components/ConfigHandleButton';
-import { getMinWidthPx, getMinColumns } from './minWidth';
 import { getDropTargetLabel, getParentWidgetFromId } from '../appCanvasUtils';
 import {
   RESTRICTED_WIDGETS_CONFIG,

@@ -92,6 +92,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   FileButton: 'Data',
   FlexContainer: 'Layout',
 };
+import { getListviewMode } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
 
 const LISTVIEW_DATA_PROPERTIES = ['dataSourceSelector', 'data'];
 // Record height is one field: in grid layout `rowHeight` is swapped for `gridRecordHeight` below.
@@ -121,7 +122,7 @@ const buildListviewPropertyItems = (
   const isPlainString = typeof savedMode?.value === 'string' && !savedMode.value.includes('{{');
   // An expression is resolved against the live store, as the widget does.
   const resolvedMode = isPlainString ? savedMode.value : useStore.getState().getResolvedValue(savedMode?.value);
-  const mode = String(resolvedMode ?? 'list').toLowerCase();
+  const mode = getListviewMode(resolvedMode);
   const isGrid = mode === 'grid';
 
   let viewComponent = component;

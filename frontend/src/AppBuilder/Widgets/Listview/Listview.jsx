@@ -29,6 +29,8 @@ import {
   LEGACY_PADDING,
   NEW_STYLE_PADDING,
   getListStyle,
+  getListviewMode,
+  getRowsPerPage,
   getRecordGap,
   getRecordHeight,
   getRecordBorderInset,
@@ -165,13 +167,10 @@ export const Listview = function Listview({
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const borderColor = styles.borderColor ?? 'transparent';
-  // A page size has to be a whole number of at least one: a negative runs the slice backwards and
-  // returns nothing, and a fraction lands mid-record and hands neighbouring pages different sizes.
-  const requestedRowsPerPage = Math.floor(Number(rowsPerPage));
-  const rowPerPageValue = requestedRowsPerPage >= 1 ? requestedRowsPerPage : 10;
+  const rowPerPageValue = getRowsPerPage(rowsPerPage);
   // Two places compare this against their own lower-case literal, so a capitalised value would
   // match neither and the row and its canvas would pick different modes.
-  const mode = String(rawMode ?? 'list').toLowerCase();
+  const mode = getListviewMode(rawMode);
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
   const recordHeight = getRecordHeight(mode, rowHeight, gridRecordHeight);
   const containerPadding = isLegacy ? LEGACY_PADDING : NEW_STYLE_PADDING;
@@ -208,13 +207,16 @@ export const Listview = function Listview({
   const [isResizingRecord, setIsResizingRecord] = useState(false);
   const [resizePreviewHeight, setResizePreviewHeight] = useState(null);
   const isBuilder = currentMode === 'edit';
-  const isMovingInside = useStore((state) => isBuilder && isMovingInListview(state, id, moduleId));
-  const isSelectedInside = useStore((state) => isBuilder && isSelectedInListview(state, id, moduleId));
-  const isVersionFrozen = useStore((state) => state.getShouldFreeze());
+  // These selectors run on every store change, and only the editable record reads them.
+  const isEditableInstance = isBuilder && !insideCopy;
+  const isMovingInside = useStore((state) => isEditableInstance && isMovingInListview(state, id, moduleId));
+  const isSelectedInside = useStore((state) => isEditableInstance && isSelectedInListview(state, id, moduleId));
+  const isVersionFrozen = useStore((state) => isEditableInstance && state.getShouldFreeze());
   const [positiveColumns, setPositiveColumns] = useState(columns);
   const recordHeightKey = mode === 'grid' ? 'gridRecordHeight' : 'rowHeight';
   // The saved text, not the resolved value: a number and an expression that resolves to one look alike.
   const isDynamicRecordHeight = useStore((state) => {
+    if (!isEditableInstance) return false;
     const saved = state.getComponentDefinition(id, moduleId)?.component?.definition?.properties;
     const value = (
       recordHeightKey === 'gridRecordHeight' ? (saved?.gridRecordHeight ?? saved?.rowHeight) : saved?.rowHeight
@@ -223,6 +225,7 @@ export const Listview = function Listview({
   });
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const setIsListviewRecordResizing = useStore((state) => state.setIsListviewRecordResizing, shallow);
+  const recordHeightPx = Number.parseFloat(recordHeight) || DEFAULT_RECORD_HEIGHT;
   const { rootRef: mainRecordRef, getHandleProps: getRecordResizeHandleProps } = useSubContainerResizable({
     lockHorizontal: true,
     minHeight: RECORD_MIN_HEIGHT,
@@ -230,14 +233,14 @@ export const Listview = function Listview({
     floorAtStart: true,
     stepHeight: 10,
     // Not clientHeight: a Container record's border sits inside it and would shift every step by 2.
-    getStartHeight: () => Number.parseFloat(recordHeight) || DEFAULT_RECORD_HEIGHT,
+    getStartHeight: () => recordHeightPx,
     onDragStart: () => setIsResizingRecord(true),
     onResize: ({ newHeight }) => setResizePreviewHeight(newHeight),
     onDragEnd: ({ snappedHeight }) => {
       setIsResizingRecord(false);
       setResizePreviewHeight(null);
       swallowNextClick();
-      if (snappedHeight === (Number.parseFloat(recordHeight) || DEFAULT_RECORD_HEIGHT)) return;
+      if (snappedHeight === recordHeightPx) return;
       setComponentProperty(id, recordHeightKey, snappedHeight, 'properties', 'value', false, moduleId);
     },
   });
@@ -402,7 +405,7 @@ export const Listview = function Listview({
     });
   }
   const startIndexOfRowInThePage = currentPage === 1 ? 0 : currentPage * rowPerPageValue - rowPerPageValue;
-  const hasMainRecord = isBuilder && !insideCopy && startIndexOfRowInThePage === 0;
+  const hasMainRecord = isEditableInstance && startIndexOfRowInThePage === 0;
   // No fade while resizing, whatever is hovered or selected.
   const fadeOthers = hasMainRecord && !isResizingRecord && (mainRecordHovered || isMovingInside || isSelectedInside);
   // No handle on an expression, so a drag can never overwrite it.

@@ -2,6 +2,7 @@ import { isEqual } from 'lodash';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { isListviewHeaderSlot } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { getRowsPerPage } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
 
 export const listViewComponentSlice = (set, get) => {
   // Microtask dedup for _deriveListviewChain calls outside an explicit batch window.
@@ -487,8 +488,7 @@ export const listViewComponentSlice = (set, get) => {
         outerIndices.length ? outerIndices : null,
         moduleId
       )?.properties;
-      const requestedPerPage = Math.floor(Number(listviewProperties?.rowsPerPage));
-      const perPage = requestedPerPage >= 1 ? requestedPerPage : 10;
+      const perPage = getRowsPerPage(listviewProperties?.rowsPerPage);
       set((state) => {
         const exposed = state.resolvedStore.modules[moduleId].exposedValues.components;
 

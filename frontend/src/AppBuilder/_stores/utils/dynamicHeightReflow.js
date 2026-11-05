@@ -10,6 +10,8 @@ import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { isProperNumber } from '../utils';
 import { resolveFlexContainerHeight } from './dynamicHeightReflowFlexContainer';
 import {
+  getListviewMode,
+  getRowsPerPage,
   HEADER_HEIGHT,
   PAGER_FOOTER_HEIGHT,
   LEGACY_PADDING,
@@ -440,7 +442,7 @@ const getListviewRenderedRowCount = (componentProperties = {}) => {
     return totalRows;
   }
 
-  return Math.min(Number(rowsPerPage) || 10, totalRows);
+  return Math.min(getRowsPerPage(rowsPerPage), totalRows);
 };
 
 // Real height one Listview row occupies = max bottom of its template children
@@ -493,7 +495,7 @@ export const resolveListviewHeightFromRows = ({
     temporaryLayouts,
     context,
   });
-  const mode = componentProperties.mode ?? 'list';
+  const mode = getListviewMode(componentProperties.mode);
   const baseRowHeight =
     templateRowHeight ||
     getRecordHeight(mode, componentProperties.rowHeight, componentProperties.gridRecordHeight) ||

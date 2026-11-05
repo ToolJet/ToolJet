@@ -17,7 +17,7 @@ import { LibraryComponentProperties } from './Components/LibraryComponent';
 import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
-import { getListStyle } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
+import { getListStyle, getListviewMode } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
@@ -813,7 +813,7 @@ const shouldShowListviewBottomBorder = (component) => {
   if (component.component.component !== 'Listview') return false;
   const { getResolvedValue } = useStore.getState();
   const { properties, styles } = component.component.definition;
-  const mode = String(getResolvedValue(properties?.mode?.value) ?? 'list').toLowerCase();
+  const mode = getListviewMode(getResolvedValue(properties?.mode?.value));
   return mode === 'list' && getListStyle(getResolvedValue(styles?.listStyle?.value)) === 'legacy';
 };
 

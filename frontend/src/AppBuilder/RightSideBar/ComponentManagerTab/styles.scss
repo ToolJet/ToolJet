@@ -1,9 +1,3 @@
-// Rendered height of .panel-header (confirmed in browser). Single source of
-// truth for anything that needs to sit flush beneath the sticky header.
-:root {
-  --panel-header-height: 52px;
-}
-
 // Panel Header - shared across all right sidebar panels
 .panel-header {
   display: flex;

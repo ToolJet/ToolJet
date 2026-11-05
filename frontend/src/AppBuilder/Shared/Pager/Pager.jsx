@@ -1,10 +1,35 @@
-import React, { useEffect, useRef } from 'react';
+import React, { memo, useEffect, useRef } from 'react';
 import Popover from 'react-bootstrap/Popover';
 // eslint-disable-next-line import/no-unresolved
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { PagerButton } from './PagerButton';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { getPageNumbers } from './pagerUtils';
 import { OverlayTriggerComponent } from '@/AppBuilder/Shared/OverlayTriggerComponent';
+
+const PagerButton = memo(
+  ({ pageIndex, onClick, disabled, icon, dataCy, currentPageIndex, className, style, ariaLabel }) => {
+    const isSelected = pageIndex && currentPageIndex && pageIndex === currentPageIndex;
+
+    return (
+      <ButtonSolid
+        variant="ghostBlack"
+        className={`tj-text-sm table-pagination-btn ${isSelected && 'selected'} ${className}`}
+        leftIcon={icon}
+        fill={disabled ? 'var(--slate8)' : 'var(--cc-primary-icon, var(--cc-default-icon))'}
+        iconWidth="16"
+        isTablerIcon={true}
+        size="md"
+        onClick={onClick}
+        disabled={disabled}
+        data-cy={dataCy}
+        aria-label={ariaLabel}
+        style={style}
+      >
+        {pageIndex}
+      </ButtonSolid>
+    );
+  }
+);
 
 const PageList = ({ page, pageCount, onGoToPage }) => {
   const ref = useRef(null);

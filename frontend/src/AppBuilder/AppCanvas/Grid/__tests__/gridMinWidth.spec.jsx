@@ -1,4 +1,4 @@
-import { getMinWidthPx } from '../minWidth';
+import { getMinWidthPx } from '../gridUtils';
 import React from 'react';
 import { fireEvent, waitFor } from '@testing-library/react';
 import { AppBuilderTestSession, defineAppBuilderScenario, seedApp, componentDefinition } from '@/test/app-builder';

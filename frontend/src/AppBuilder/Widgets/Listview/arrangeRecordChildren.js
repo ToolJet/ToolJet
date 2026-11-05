@@ -101,6 +101,7 @@ export const restoreRecordChildren = (children, remembered, options) => {
   if (boxes.length === 0) return arranged;
 
   const isGrid = options.toMode === 'grid';
+  const [position, size, gap] = isGrid ? ['top', 'height', STACK_MAX_GAP] : ['left', 'width', ROW_GAP];
   const arrangedBoxes = Object.values(arranged);
   // A child that does not fit after the remembered ones is kept inside the card, each one a step apart so none hides another.
   let crowded = 0;
@@ -115,22 +116,12 @@ export const restoreRecordChildren = (children, remembered, options) => {
       top: isGrid ? Math.max(0, maxTop - step) : Math.min(box.top + step, maxTop),
     };
   };
-  if (isGrid) {
-    const shift =
-      Math.max(...boxes.map((box) => box.top + box.height)) +
-      STACK_MAX_GAP -
-      Math.min(...arrangedBoxes.map((box) => box.top));
-    Object.entries(arranged).forEach(([id, box]) => {
-      layouts[id] = keepInside({ ...box, top: box.top + shift });
-    });
-  } else {
-    const shift =
-      Math.max(...boxes.map((box) => box.left + box.width)) +
-      ROW_GAP -
-      Math.min(...arrangedBoxes.map((box) => box.left));
-    Object.entries(arranged).forEach(([id, box]) => {
-      layouts[id] = keepInside({ ...box, left: box.left + shift });
-    });
-  }
+  const shift =
+    Math.max(...boxes.map((box) => box[position] + box[size])) +
+    gap -
+    Math.min(...arrangedBoxes.map((box) => box[position]));
+  Object.entries(arranged).forEach(([id, box]) => {
+    layouts[id] = keepInside({ ...box, [position]: box[position] + shift });
+  });
   return layouts;
 };

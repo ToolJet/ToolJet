@@ -49,9 +49,27 @@ import {
   restoreRecordChildren,
   snapshotRecordLayouts,
 } from '@/AppBuilder/Widgets/Listview/arrangeRecordChildren';
-import { getRecordHeight, getRecordColumnPx } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
+import { getListviewMode, getRecordHeight, getRecordColumnPx } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
 import { useGridStore } from '@/_stores/gridStore';
 import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
+
+// Every `<id>-` prefix of every mapping key. getRowScopedDescendants runs per record, and the store replaces the
+// mapping object on each change, so the index is rebuilt only then.
+const slotKeyIndexes = new WeakMap();
+const getSlotKeysByOwner = (containerChildrenMapping) => {
+  let index = slotKeyIndexes.get(containerChildrenMapping);
+  if (index) return index;
+  index = new Map();
+  Object.keys(containerChildrenMapping).forEach((key) => {
+    for (let dash = key.indexOf('-'); dash !== -1; dash = key.indexOf('-', dash + 1)) {
+      const owner = key.slice(0, dash);
+      if (!index.has(owner)) index.set(owner, []);
+      index.get(owner).push(key);
+    }
+  });
+  slotKeyIndexes.set(containerChildrenMapping, index);
+  return index;
+};
 
 // calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
 const INPUT_COMPONENTS_FOR_FORM_SET = new Set(INPUT_COMPONENTS_FOR_FORM);
@@ -477,7 +495,7 @@ export const createComponentsSlice = (set, get) => ({
       getCustomResolvables,
       setAllValueToComponent,
       getComponentDefinition,
-      getBaseParentId,
+      getRowScopedAncestorIds,
     } = get();
     let customResolvables = {};
     const parentId = component?.parent;
@@ -489,24 +507,8 @@ export const createComponentsSlice = (set, get) => ({
       // For components nested inside row-scoped ancestors, build parentIndices by walking up the ancestor chain.
       // Row-scoped parent IDs don't contain row indices — the row info is only available at render time.
       // At drop time, we use index 0 for each row-scoped ancestor as a default for initial resolution.
-      const parentIndices = [];
-
-      // Walk up the ancestor chain starting from the nearest row-scoped ancestor's parent
       const nearestDef = getComponentDefinition(nearestRowScopedAncestorId, moduleId);
-      let ancestorId = nearestDef?.component?.parent;
-      const ancestorVisited = new Set();
-      while (ancestorId) {
-        const baseAncestorId = getBaseParentId(ancestorId) || ancestorId;
-        if (ancestorVisited.has(baseAncestorId)) break;
-        ancestorVisited.add(baseAncestorId);
-        const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
-        const ancestorType = ancestorDef?.component?.component;
-        if (isRowScopedCanvas(ancestorId, ancestorType)) {
-          // Add 0 at the beginning for each row-scoped ancestor (outer-most first)
-          parentIndices.unshift(0);
-        }
-        ancestorId = ancestorDef?.component?.parent;
-      }
+      const parentIndices = getRowScopedAncestorIds(nearestDef?.component?.parent, moduleId).map(() => 0);
 
       customResolvables = getCustomResolvables(nearestRowScopedAncestorId, null, moduleId, parentIndices);
     }
@@ -695,8 +697,7 @@ export const createComponentsSlice = (set, get) => ({
       getCustomResolvables,
       getCustomResolvableReference,
       findNearestSubcontainerAncestor,
-      getComponentDefinition,
-      getBaseParentId,
+      getRowScopedAncestorIds,
       updateRowScope,
     } = get();
 
@@ -723,20 +724,7 @@ export const createComponentsSlice = (set, get) => ({
 
     // Component is inside a ListView - need to handle N-level nesting
     // Build the parent hierarchy to find all ListView ancestors
-    const listviewAncestors = [];
-    let currentParentId = parentId;
-    const listviewAncestorVisited = new Set();
-    while (currentParentId) {
-      const baseId = getBaseParentId?.(currentParentId) || currentParentId;
-      if (listviewAncestorVisited.has(baseId)) break;
-      listviewAncestorVisited.add(baseId);
-      const parentDef = getComponentDefinition(baseId, moduleId);
-      const parentType = parentDef?.component?.component;
-      if (isRowScopedCanvas(currentParentId, parentType)) {
-        listviewAncestors.unshift(baseId); // Add to front to maintain order from outer to inner
-      }
-      currentParentId = parentDef?.component?.parent;
-    }
+    const listviewAncestors = getRowScopedAncestorIds(parentId, moduleId);
 
     if (listviewAncestors.length === 0) {
       // Fallback - shouldn't happen but handle gracefully
@@ -1539,27 +1527,12 @@ export const createComponentsSlice = (set, get) => ({
         // For ListView, initialize customResolvables immediately after processing
         // so that child components processed later can access them
         if (newComponent.component.component === 'Listview') {
-          const { getResolvedComponent, updateCustomResolvables, getBaseParentId, getComponentDefinition } = get();
+          const { getResolvedComponent, updateCustomResolvables, getRowScopedAncestorIds } = get();
           const resolvedComponent = getResolvedComponent(newComponent.id, null, moduleId);
           const data = resolvedComponent?.properties?.data;
           if (Array.isArray(data) && data.length > 0) {
             // Build parentIndices for each row-scoped ancestor (outer-most first)
-            const parentIndices = [];
-            const componentParentId = newComponent.component.parent;
-            if (componentParentId) {
-              let ancestorId = componentParentId;
-              const ancestorVisited = new Set();
-              while (ancestorId) {
-                const baseAncestorId = getBaseParentId(ancestorId);
-                if (ancestorVisited.has(baseAncestorId)) break;
-                ancestorVisited.add(baseAncestorId);
-                const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
-                if (isRowScopedCanvas(ancestorId, ancestorDef?.component?.component)) {
-                  parentIndices.unshift(0);
-                }
-                ancestorId = ancestorDef?.component?.parent;
-              }
-            }
+            const parentIndices = getRowScopedAncestorIds(newComponent.component.parent, moduleId).map(() => 0);
             const listItems = data.map((listItem) => ({ listItem }));
             updateCustomResolvables(newComponent.id, listItems, 'listItem', moduleId, parentIndices);
           }
@@ -2325,8 +2298,8 @@ export const createComponentsSlice = (set, get) => ({
     { saveAfterAction = true } = {}
   ) => {
     const { getResolvedValue, getCurrentPageComponents, setComponentLayout, currentLayout } = get();
-    const toMode = String(getResolvedValue(nextMode) ?? 'list').toLowerCase();
-    const fromMode = String(getResolvedValue(previousMode) ?? 'list').toLowerCase();
+    const toMode = getListviewMode(getResolvedValue(nextMode));
+    const fromMode = getListviewMode(getResolvedValue(previousMode));
     if (toMode === fromMode || !['list', 'grid'].includes(toMode)) return;
 
     const pageComponents = getCurrentPageComponents(moduleId);
@@ -3013,12 +2986,11 @@ export const createComponentsSlice = (set, get) => ({
     const { getContainerChildrenMapping, getComponentDefinition, containerChildrenMapping } = get();
     const collected = [];
     const seen = new Set();
+    const slotKeysByOwner = getSlotKeysByOwner(containerChildrenMapping);
     // Slot children (a Container's header or footer, a Tab) are filed under `<id>-<slot>`, not `<id>`.
     const slotIdsOf = (id) => {
       const type = getComponentDefinition(id, moduleId)?.component?.component;
-      return Object.keys(containerChildrenMapping).filter(
-        (key) => key.startsWith(`${id}-`) && !isListviewHeaderSlot(key, type)
-      );
+      return (slotKeysByOwner.get(id) ?? []).filter((key) => !isListviewHeaderSlot(key, type));
     };
     const walk = (id) => {
       [id, ...slotIdsOf(id)]
@@ -3497,6 +3469,23 @@ export const createComponentsSlice = (set, get) => ({
 
   // Walk up from startParentId through component.parent links to find the nearest row-scoped ancestor whose widget type is included in ROW_SCOPED_WIDGET_TYPES.
   // Returns the base UUID of that ancestor, or null if none found.
+  // Row-scoped ancestors of a canvas, outermost first.
+  getRowScopedAncestorIds: (startParentId, moduleId = 'canvas') => {
+    const { getBaseParentId, getComponentDefinition } = get();
+    const ancestorIds = [];
+    const visited = new Set();
+    let currentId = startParentId;
+    while (currentId) {
+      const baseId = getBaseParentId(currentId) || currentId;
+      if (visited.has(baseId)) break;
+      visited.add(baseId);
+      const definition = getComponentDefinition(baseId, moduleId);
+      if (isRowScopedCanvas(currentId, definition?.component?.component)) ancestorIds.unshift(baseId);
+      currentId = definition?.component?.parent;
+    }
+    return ancestorIds;
+  },
+
   findNearestSubcontainerAncestor: (startParentId, moduleId) => {
     const { getBaseParentId, getComponentDefinition } = get();
     const visited = new Set();
