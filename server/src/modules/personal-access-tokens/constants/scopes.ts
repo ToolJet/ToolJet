@@ -50,6 +50,9 @@ export const PAT_BUNDLE_MODULES: Record<PAT_BUNDLE, MODULES[]> = {
     MODULES.THREAD,
     MODULES.FILE,
     MODULES.ORGANIZATION_THEMES,
+    // An app's stored source: read and written with the app's own permissions. Import, publish and dev uploads act
+    // only on a library no other app uses (checked in the service, for every caller).
+    MODULES.CODE_MODE_SOURCE,
   ],
   [PAT_BUNDLE.DATA]: [
     MODULES.DATA_QUERY,
