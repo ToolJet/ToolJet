@@ -210,6 +210,7 @@ export const Listview = function Listview({
   const isBuilder = currentMode === 'edit';
   const isMovingInside = useStore((state) => isBuilder && isMovingInListview(state, id, moduleId));
   const isSelectedInside = useStore((state) => isBuilder && isSelectedInListview(state, id, moduleId));
+  const isVersionFrozen = useStore((state) => state.getShouldFreeze());
   const [positiveColumns, setPositiveColumns] = useState(columns);
   const recordHeightKey = mode === 'grid' ? 'gridRecordHeight' : 'rowHeight';
   // The saved text, not the resolved value: a number and an expression that resolves to one look alike.
@@ -405,7 +406,7 @@ export const Listview = function Listview({
   // No fade while resizing, whatever is hovered or selected.
   const fadeOthers = hasMainRecord && !isResizingRecord && (mainRecordHovered || isMovingInside || isSelectedInside);
   // No handle on an expression, so a drag can never overwrite it.
-  const canResizeRecord = hasMainRecord && !isDynamicRecordHeight;
+  const canResizeRecord = hasMainRecord && !isDynamicRecordHeight && !isVersionFrozen;
   const endIndexOfRowInThePage = startIndexOfRowInThePage + rowPerPageValue;
   // Stable between renders, so a hover re-render does not deep-diff the page again.
   const filteredData = useMemo(
