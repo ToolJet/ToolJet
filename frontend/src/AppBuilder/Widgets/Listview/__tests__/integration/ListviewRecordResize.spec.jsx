@@ -507,6 +507,25 @@ describe('Listview record resize: which record has the handle', () => {
   });
 });
 
+describe('Listview record resize: a frozen version', () => {
+  beforeEach(widget.setup);
+  afterEach(widget.teardown);
+
+  test('[Listview-RSZ-009] a frozen editor shows no handle and no outline, and gets them back when unfrozen', async () => {
+    // Break this catches: the drag writing and saving Record height on a released or read-only version.
+    await mount(widget);
+    expect(handles()).toHaveLength(1);
+
+    act(() => useStore.setState({ isEditorFreezed: true }));
+    await waitFor(() => expect(handles()).toHaveLength(0));
+    fireEvent.mouseEnter(rows()[0]);
+    expect(framed()).toEqual([false, false, false]);
+
+    act(() => useStore.setState({ isEditorFreezed: false }));
+    await waitFor(() => expect(handles()).toHaveLength(1));
+  });
+});
+
 describe('Listview record resize: Record height holds an expression', () => {
   beforeEach(widget.setup);
   afterEach(widget.teardown);
