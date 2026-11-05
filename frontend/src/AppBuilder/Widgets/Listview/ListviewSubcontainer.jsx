@@ -38,6 +38,7 @@ const ListviewSubcontainerComponent = ({
   isBuilder = false,
   isFaded = false,
   isDisabled = false,
+  isListDisabled = false,
   isMoving = false,
   onMainHoverChange,
   recordRef,
@@ -50,12 +51,11 @@ const ListviewSubcontainerComponent = ({
   // A disabled record 1 is read-only too: it locks the template for every record until it is enabled.
   const isCopy = !!parentContext.listviewCopy || recordOffset + index !== 0 || isDisabled;
   // The first record of a later page is read-only but is no copy of a record-1 selection.
-  const copyOutline = isDisabled
-    ? false
-    : parentContext.listviewCopy
-      ? (parentContext.listviewCopyOutline ?? true)
-      : isCopy && index !== 0;
+  const copyOutline = parentContext.listviewCopy ? (parentContext.listviewCopyOutline ?? true) : isCopy && index !== 0;
   const isDisabledTree = isDisabled || !!parentContext.listviewDisabled;
+  // The list's own Disabled state (0.6) and an enclosing dimmed record already fade this one.
+  const isDimmedAbove = isListDisabled || !!parentContext.listviewDimmed;
+  const isDimmed = isDimmedAbove || isFaded || isDisabled;
   const contextValue = useMemo(
     () => ({
       contextPath: [...parentContext.contextPath, { containerId: id, index }],
@@ -63,8 +63,9 @@ const ListviewSubcontainerComponent = ({
       listviewCopy: isCopy,
       listviewCopyOutline: copyOutline,
       listviewDisabled: isDisabledTree,
+      listviewDimmed: isDimmed,
     }),
-    [parentContext.contextPath, id, index, isCopy, copyOutline, isDisabledTree]
+    [parentContext.contextPath, id, index, isCopy, copyOutline, isDisabledTree, isDimmed]
   );
   const contextIndices = useMemo(
     () => [...parentContext.contextPath.map((segment) => segment.index), index],
@@ -120,8 +121,8 @@ const ListviewSubcontainerComponent = ({
           width: recordWidth ?? `${100 / positiveColumns}%`,
           padding: '0px',
           overflow: resizeHandleProps ? undefined : 'hidden',
-          // One 0.4 for both, so a disabled record under the builder hover fade is not dimmed twice.
-          ...((isFaded || isDisabled) && { opacity: 0.4 }),
+          // One 0.4 for the hover fade and Disabled, and none when the list or an outer record already dims it.
+          ...((isFaded || isDisabled) && !isDimmedAbove && { opacity: 0.4 }),
           ...(isDisabled && { pointerEvents: 'none' }),
           ...recordBoxStyle,
         }}
@@ -150,19 +151,18 @@ const ListviewSubcontainerComponent = ({
         // Capture, so a child that stops propagation cannot hide the click (D-13); deferred, so the
         // child's own handler writes first; coalesced, so a label and its synthetic input click count once.
         onClickCapture={(event) => {
-          // jsdom and a script click ignore pointer-events, so the click is also stopped before it reaches a component.
-          if (isDisabled) {
-            event.stopPropagation();
-            event.preventDefault();
-            return;
-          }
           // A modal this row opened covers the page; clicking it is not clicking the row beneath.
           // It is lifted out of the row in a browser and left inside it under jsdom, so both count.
           if (!event.currentTarget.contains(event.target)) return;
-          // The click that ends a resize is not a click on the record.
-          if (event.target?.closest?.('.listview-record-resize-handle')) return;
           const dialog = event.target?.closest?.('[role="dialog"]');
           if (dialog && event.currentTarget.contains(dialog)) return;
+          // jsdom and a script click ignore pointer-events, so the click is also stopped before it reaches a component.
+          if (isDisabled) {
+            event.stopPropagation();
+            return;
+          }
+          // The click that ends a resize is not a click on the record.
+          if (event.target?.closest?.('.listview-record-resize-handle')) return;
           if (pendingClickRef.current) return;
           pendingClickRef.current = true;
           setTimeout(() => {

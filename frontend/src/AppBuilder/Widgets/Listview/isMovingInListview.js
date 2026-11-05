@@ -24,3 +24,12 @@ export const isMovingInListview = (state, listviewId, moduleId) => {
 
 export const isSelectedInListview = (state, listviewId, moduleId) =>
   hasComponentInRecords(state, state.selectedComponents, listviewId, moduleId);
+
+// A disabled record 1 locks the shared template: a locked child may be looked at and selected, not changed.
+export const isInLockedRecord = (state, componentIds) =>
+  Object.entries(state.lockedListviews ?? {}).some(([listviewId, moduleId]) =>
+    hasComponentInRecords(state, componentIds, listviewId, moduleId)
+  );
+
+export const isLockedCanvas = (state, canvasId) =>
+  !!canvasId && (!!state.lockedListviews?.[canvasId] || isInLockedRecord(state, [canvasId]));

@@ -40,7 +40,6 @@ import {
 
 const HOVER_THROTTLE_MS = 200;
 const NO_RECORDS = [];
-const NO_DISABLED_RECORDS = [];
 const RECORD_MIN_HEIGHT = 10;
 const DEFAULT_RECORD_HEIGHT = 100;
 
@@ -423,19 +422,45 @@ export const Listview = function Listview({
   const disableRecordsExpression = useStore(
     (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.properties?.disableRecords?.value
   );
-  const disabledRecords = useStore(
-    () =>
-      isNeverDisabled(disableRecordsExpression)
-        ? NO_DISABLED_RECORDS
-        : filteredData.map((listItem) => isRecordDisabled(disableRecordsExpression, listItem)),
-    shallow
+  const neverDisabled = isNeverDisabled(disableRecordsExpression);
+  // Only what the expression can read: a hover or a selection leaves this value, and so the records, alone.
+  const exposedValues = useStore((state) =>
+    neverDisabled ? null : state.resolvedStore.modules[moduleId]?.exposedValues
   );
+  const computedDisabledRecords = useMemo(
+    () =>
+      neverDisabled
+        ? NO_RECORDS
+        : filteredData.map((listItem) => isRecordDisabled(disableRecordsExpression, listItem, moduleId)),
+    // exposedValues is not read inside, it is the signal that something the expression reads changed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [neverDisabled, disableRecordsExpression, filteredData, exposedValues, moduleId]
+  );
+  const disabledRecordsRef = useRef(NO_RECORDS);
+  const disabledRecords = _.isEqual(disabledRecordsRef.current, computedDisabledRecords)
+    ? disabledRecordsRef.current
+    : computedDisabledRecords;
+  disabledRecordsRef.current = disabledRecords;
   // A disabled record 1 is no editable template, so nothing about it fades, frames or resizes.
   const hasMainRecord = isEditableInstance && startIndexOfRowInThePage === 0 && !disabledRecords[0];
   // No fade while resizing, whatever is hovered or selected.
   const fadeOthers = hasMainRecord && !isResizingRecord && (mainRecordHovered || isMovingInside || isSelectedInside);
   // No handle on an expression, so a drag can never overwrite it.
   const canResizeRecord = hasMainRecord && !isDynamicRecordHeight && !isVersionFrozen;
+  const isTemplateLocked = isEditableInstance && startIndexOfRowInThePage === 0 && !!disabledRecords[0];
+  const setListviewLocked = useStore((state) => state.setListviewLocked, shallow);
+  // Published for the keys, the right panel and the sidebar, which only know component ids.
+  useEffect(() => {
+    if (!isTemplateLocked) return undefined;
+    setListviewLocked(id, true, moduleId);
+    // Once, when the lock starts: a selected child would otherwise stay editable by key.
+    const state = useStore.getState();
+    const kept = state.selectedComponents.filter(
+      (componentId) => !hasComponentInRecords(state, [componentId], id, moduleId)
+    );
+    if (kept.length !== state.selectedComponents.length) state.setSelectedComponents(kept);
+    return () => setListviewLocked(id, false, moduleId);
+  }, [isTemplateLocked, id, moduleId, setListviewLocked]);
   // Record 1 can vanish under the pointer, and no mouseleave follows.
   useEffect(() => {
     if (!hasMainRecord || filteredData.length === 0) setMainRecordHovered(false);
@@ -654,6 +679,7 @@ export const Listview = function Listview({
                     isBuilder={isBuilder}
                     isFaded={fadeOthers && index > 0}
                     isDisabled={!!disabledRecords[index]}
+                    isListDisabled={!!disabledState}
                     recordRef={index === 0 && canResizeRecord ? mainRecordRef : undefined}
                     resizeHandleProps={index === 0 && canResizeRecord ? getRecordResizeHandleProps() : undefined}
                     isResizing={isResizingRecord}

@@ -778,14 +778,25 @@ export const isPointerOverCanvasArea = (clientX, clientY) => {
  * @param {string} currentTargetId - The ID of the currently dragged element to exclude from search
  * @returns {string|null} - The new parent ID or null if no valid parent is found
  */
-// True when the topmost canvas under the pointer is a read-only ListView record; a drop there must be refused.
+// A disabled record is inert, so the browser's hit test skips it and the first ListView part it finds is the list itself.
+// A pager, header or enabled record found first, or a point the list clips, never reaches the list: not a disabled record.
+const isDisabledRecordAtPoint = (hits, clientX, clientY) => {
+  const topmost = hits.find((ele) => ele.closest?.('.listview-scroll-container'));
+  if (topmost?.getAttribute?.('role') !== 'list') return false;
+  return [...topmost.children].some((record) => {
+    if (record.getAttribute('aria-disabled') !== 'true') return false;
+    const box = record.getBoundingClientRect();
+    return clientX >= box.left && clientX <= box.right && clientY >= box.top && clientY <= box.bottom;
+  });
+};
+
+// True when the topmost canvas under the pointer is a read-only ListView record, or the point is a disabled record; a drop there must be refused.
 export const isListviewCopyCanvasAtPoint = (clientX, clientY, excludeIds = []) => {
-  const canvas = document
-    .elementsFromPoint?.(clientX, clientY)
-    ?.find(
-      (ele) => ele.classList.contains('real-canvas') && !excludeIds.includes(ele.id.replace('canvas-', '').slice(0, 36))
-    );
-  return canvas?.getAttribute('data-listview-copy') === 'true';
+  const hits = document.elementsFromPoint?.(clientX, clientY) ?? [];
+  const canvas = hits.find(
+    (ele) => ele.classList.contains('real-canvas') && !excludeIds.includes(ele.id.replace('canvas-', '').slice(0, 36))
+  );
+  return canvas?.getAttribute('data-listview-copy') === 'true' || isDisabledRecordAtPoint(hits, clientX, clientY);
 };
 
 export const findNewParentIdFromMousePosition = (clientX, clientY, currentTargetId) => {

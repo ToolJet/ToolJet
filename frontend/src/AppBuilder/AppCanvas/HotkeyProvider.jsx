@@ -5,6 +5,7 @@ import { pasteComponents, copyComponents } from './copyPasteWidgetsUtils';
 import useKeyHooks from '@/_hooks/useKeyHooks';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { isInLockedRecord } from '@/AppBuilder/Widgets/Listview/isMovingInListview';
 
 export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, isModuleMode }) => {
   const { isModuleEditor } = useModuleContext();
@@ -91,6 +92,10 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
       }
       return;
     }
+
+    // A child of a locked ListView record can be selected from the sidebar but not changed; Copy and Select all change nothing.
+    if (!['Escape', 'KeyC', 'KeyA'].includes(key) && isInLockedRecord(useStore.getState(), getSelectedComponents()))
+      return;
 
     // Disable cut, copy, paste, delete shortcuts in module editor
     // or when a ModuleContainer is selected

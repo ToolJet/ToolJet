@@ -25,6 +25,7 @@ import useSortedComponents from '../_hooks/useSortedComponents';
 import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveableGhost';
 import { findNewParentIdFromMousePosition, isPointerOverCanvasArea } from './Grid/gridUtils';
 import { computeFlexInsertIndex } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { isLockedCanvas } from '@/AppBuilder/Widgets/Listview/isMovingInListview';
 import { FlexContainerDropIndicator } from '@/AppBuilder/Widgets/FlexContainer/FlexContainerDropIndicator';
 
 // Lazy load editor-only component to reduce viewer bundle size
@@ -232,7 +233,10 @@ const Container = React.memo(
       (e) => {
         const realCanvas = e.target.closest('.real-canvas');
         const canvasId = realCanvas?.getAttribute('data-parentId');
-        setFocusedParentId(canvasId);
+        // A copy's canvas shares the template's id; focusing it would send paste and select all into a locked template.
+        const lockedTemplate =
+          realCanvas?.getAttribute('data-listview-copy') === 'true' && isLockedCanvas(useStore.getState(), canvasId);
+        setFocusedParentId(lockedTemplate ? null : canvasId);
         if (realCanvas) {
           const rect = realCanvas.getBoundingClientRect();
           const scrollLeft = realCanvas.scrollLeft || 0;

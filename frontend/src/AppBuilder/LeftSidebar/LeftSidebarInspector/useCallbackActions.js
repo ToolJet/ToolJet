@@ -3,6 +3,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { copyToClipboard } from './utils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { isInLockedRecord } from '@/AppBuilder/Widgets/Listview/isMovingInListview';
 
 const useCallbackActions = () => {
   const { isModuleEditor } = useModuleContext();
@@ -22,7 +23,10 @@ const useCallbackActions = () => {
   const handleRemoveComponent = (component) => {
     const { nodeName } = component;
     const componentId = getComponentIdFromName(nodeName);
-    if (componentId) setWidgetDeleteConfirmation(true, [componentId]);
+    // This menu needs no selection, so the key gate does not see it; a child of a locked ListView record is look only.
+    if (componentId && !isInLockedRecord(useStore.getState(), [componentId])) {
+      setWidgetDeleteConfirmation(true, [componentId]);
+    }
   };
 
   const handleSelectComponentOnEditor = (component) => {

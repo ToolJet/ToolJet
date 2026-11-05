@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
+import { isInLockedRecord } from '@/AppBuilder/Widgets/Listview/isMovingInListview';
 import { Table } from './Components/Table/Table.jsx';
 import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
@@ -168,6 +170,15 @@ export const Inspector = ({
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const setComponentName = useStore((state) => state.setComponentName, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  // A child of a locked ListView record can be inspected from the sidebar but not changed, as in a frozen version.
+  const isLockedChild = useStore((state) => isInLockedRecord(state, [selectedComponentId]));
+  const lookOnly = shouldFreeze || isLockedChild;
+  const nameRef = useRef(null);
+  const menuRef = useRef(null);
+  const bodyRef = useRef(null);
+  useDisableInert(nameRef, isLockedChild);
+  useDisableInert(menuRef, isLockedChild);
+  useDisableInert(bodyRef, isLockedChild);
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
@@ -482,6 +493,7 @@ export const Inspector = ({
   }
 
   const handleInspectorHeaderActions = (value) => {
+    if (isLockedChild && ['delete', 'duplicate', 'rename', 'permission'].includes(value)) return;
     if (value === 'inspect') {
       setComponentToInspect(component.component.name);
     }
@@ -577,7 +589,7 @@ export const Inspector = ({
         allComponents={allComponents}
         widthSectionTitle={t('widget.flexChild.widthAndHeight', 'Width')}
       >
-        <div className={`${shouldFreeze && 'disabled'}`}>
+        <div className={`${lookOnly && 'disabled'}`}>
           <GetAccordion
             tabsPropertiesPanelKey={tabsPropertiesPanelKey}
             componentName={componentMeta.component}
@@ -605,7 +617,7 @@ export const Inspector = ({
       darkMode={darkMode}
       resetKeys={[selectedComponentId]}
     >
-      <div style={{ marginBottom: '6rem' }} className={`${shouldFreeze && 'disabled'}`}>
+      <div style={{ marginBottom: '6rem' }} className={`${lookOnly && 'disabled'}`}>
         <div style={{ ...(!isRevampedComponent && { padding: '1rem' }) }}>
           <Inspector.RenderStyleOptions
             componentMeta={componentMeta}
@@ -672,12 +684,18 @@ export const Inspector = ({
   return (
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
       <div>
-        <div className={`panel-header ${shouldFreeze && 'disabled'}`}>
-          <div className={`panel-header-name ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
+        <div className={`panel-header ${lookOnly && 'disabled'}`}>
+          <div ref={nameRef} className={`panel-header-name ${lookOnly && 'disabled'}`}>
+            {renderAppNameInput()}
+          </div>
           <div className="panel-header-actions">
             {!isModuleContainer && (
               <>
-                <div data-cy={'component-inspector-options'}>
+                <div
+                  ref={menuRef}
+                  className={lookOnly ? 'disabled' : undefined}
+                  data-cy={'component-inspector-options'}
+                >
                   <OverlayTrigger
                     trigger={'click'}
                     placement={'bottom-end'}
@@ -777,7 +795,7 @@ export const Inspector = ({
           </div>
         </div>
 
-        <div className={`${shouldFreeze && 'disabled'}`} key={selectedComponentId}>
+        <div ref={bodyRef} className={lookOnly ? 'disabled' : undefined} key={selectedComponentId}>
           {renderTabs()}
         </div>
       </div>
