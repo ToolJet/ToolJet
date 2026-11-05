@@ -20,6 +20,10 @@ import {
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { cn } from '@/lib/utils';
 import cx from 'classnames';
+import { placeCaretAtEnd } from '@/AppBuilder/Shared/DataTypes/utils';
+
+// Keeps the label tooltip inside the canvas so it can't cover the query panel; a null container would drop the overlay.
+const getCanvas = () => document.getElementById('real-canvas') ?? document.body;
 
 /**
  * KeyValueRow - Renders a single key-value pair row
@@ -68,12 +72,23 @@ const KeyValueRow = ({
   }, []);
 
   const handleEditClick = () => {
-    if (isEditable) {
+    // Only the click entering edit mode should force the caret to the end; a later click while
+    // already editing must reposition it normally, like Table's string column.
+    if (isEditable && !isEditing) {
       setIsEditing(true);
       setTimeout(() => {
-        document.getElementById(`${componentId}-${fieldKey}`)?.focus();
+        const node = document.getElementById(`${componentId}-${fieldKey}`);
+        if (!node) return;
+        node.focus();
+        placeCaretAtEnd(node);
       }, 0);
     }
+  };
+
+  // Fired on press, not click: focusing a markdown/html field swaps its rendered markup for raw text before
+  // mouseup, detaching the pressed element so the browser never dispatches the click.
+  const handleRowMouseDown = (e) => {
+    if (e.button === 0) onFieldClick?.();
   };
 
   const handleBlur = () => {
@@ -99,6 +114,7 @@ const KeyValueRow = ({
       textColor,
       accentColor,
       darkMode,
+      containerWidth: valueRef.current?.offsetWidth,
       // Pass edit state
       isEditable,
       autoFocus: true, // Auto focus when switching to edit mode
@@ -158,13 +174,13 @@ const KeyValueRow = ({
   // Get error offset based on label width for alignment
   const getErrorOffset = () => {
     if (isTopAlignment) return {};
-    if (autoLabelWidth) return {};
     if (isRightDirection) return {};
+    if (autoLabelWidth) return maxLabelWidth > 0 ? { paddingLeft: `${maxLabelWidth}px` } : {};
     return { paddingLeft: `${labelWidth}%` };
   };
 
   return (
-    <div className="kv-row-container" onClick={() => onFieldClick && onFieldClick()}>
+    <div className="kv-row-container" onMouseDown={handleRowMouseDown}>
       <div className={rowClassName}>
         <Label
           label={displayLabel}
@@ -175,6 +191,9 @@ const KeyValueRow = ({
           direction={direction}
           defaultAlignment={alignment}
           inputId={fieldKey}
+          overflowTooltip
+          overlayContainer={getCanvas}
+          overlayClassName={`overlay-cell-table kv-label-overlay ${darkMode ? 'dark-theme' : ''}`}
           style={autoLabelWidth && maxLabelWidth > 0 ? { minWidth: `${maxLabelWidth}px` } : {}}
           classes={{
             labelContainer: cn({
