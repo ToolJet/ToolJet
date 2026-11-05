@@ -5,6 +5,7 @@ import JSONTreeViewerV2 from './JSONTreeViewerV2';
 import useIconList from './useIconList';
 import InspectorHeader from './InspectorHeader';
 import { formatInspectorDataMisc, formatInspectorQueryData, noDataFoundChildDataFormat } from './utils';
+import { isCodePageRoot, useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 
 import './styles.scss';
 
@@ -16,7 +17,22 @@ const LeftSidebarInspector = ({ darkMode, onClose, moduleId, appType }) => {
   const exposedPageVariables = useStore((state) => state.getAllExposedValues().page || {}, shallow);
   const exposedGlobalVariables = useStore((state) => state.getAllExposedValues().globals || {}, shallow);
   const exposedModuleInputs = useStore((state) => state.getAllExposedValues(moduleId).input || {}, shallow);
-  const componentIdNameMapping = useStore((state) => state.getComponentIdNameMapping(), shallow);
+  const allComponentIdNameMapping = useStore((state) => state.getComponentIdNameMapping(), shallow);
+  const getComponentDefinition = useStore((state) => state.getComponentDefinition, shallow);
+  // In Code mode a page's one component is the code page itself (the whole React app), which has nothing to inspect
+  // here: it is left out, and the Components section with it when nothing else is on the page.
+  const codeMode = useCodeMode(moduleId);
+  const componentIdNameMapping = useMemo(
+    () =>
+      codeMode
+        ? Object.fromEntries(
+            Object.entries(allComponentIdNameMapping).filter(
+              ([id]) => !isCodePageRoot(getComponentDefinition(id, moduleId))
+            )
+          )
+        : allComponentIdNameMapping,
+    [codeMode, allComponentIdNameMapping, getComponentDefinition, moduleId]
+  );
   const formatInspectorComponentData = useStore((state) => state.formatInspectorComponentData, shallow);
   const queryNameIdMapping = useStore((state) => state.getQueryNameIdMapping(), shallow);
   const searchablePaths = useRef(new Set(['queries', 'components', 'globals', 'variables', 'page', 'constants']));
@@ -115,6 +131,10 @@ const LeftSidebarInspector = ({ darkMode, onClose, moduleId, appType }) => {
       ],
     };
 
+    if (codeMode && sortedComponents.length === 0) {
+      jsontreeData.children = jsontreeData.children.filter((child) => child.id !== 'components');
+    }
+
     if (appType === 'module') {
       jsontreeData.children.push({
         id: 'input',
@@ -137,6 +157,7 @@ const LeftSidebarInspector = ({ darkMode, onClose, moduleId, appType }) => {
 
     return jsontreeData;
   }, [
+    codeMode,
     sortedComponents,
     sortedQueries,
     sortedVariables,
