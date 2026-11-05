@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -41,6 +41,7 @@ const ListviewSubcontainerComponent = ({
   recordRef,
   resizeHandleProps,
   isResizing = false,
+  isMainHovered = false,
 }) => {
   const parentContext = useSubcontainerContext();
   // The first record of page 1 is the only editable one; a page-relative index cannot tell it from page 2's first.
@@ -83,12 +84,6 @@ const ListviewSubcontainerComponent = ({
   const pendingClickRef = useRef(false);
   // Only record 1 has the handle props, so the drag's outline and grid never reach a copy.
   const isResizeTarget = isResizing && !!resizeHandleProps;
-  const handleRef = useRef(null);
-  const [isHandleHovered, setIsHandleHovered] = useState(false);
-  // A live resize moves the handle from under the pointer, so its mouseleave may never fire.
-  useEffect(() => {
-    if (!isResizing) setIsHandleHovered(!!handleRef.current?.matches(':hover'));
-  }, [isResizing]);
   // The handle sits on the bottom edge, half outside the record, so the record itself must not clip; its children are clipped by the inner box.
   const handleBottom = -(RESIZE_HANDLE_HEIGHT / 2 + recordBorderInset / 2);
 
@@ -96,7 +91,7 @@ const ListviewSubcontainerComponent = ({
     <SubcontainerContext.Provider value={contextValue}>
       <div
         className={cx('list-item', {
-          'listview-record-moving': isMoving || isResizeTarget || (isHandleHovered && !!resizeHandleProps),
+          'listview-record-moving': isMoving || isResizeTarget || (isMainHovered && !!resizeHandleProps),
           'w-100': mode == 'list',
           'listview-legacy-divider': showBorder && mode == 'list',
         })}
@@ -164,7 +159,10 @@ const ListviewSubcontainerComponent = ({
         </div>
         {resizeHandleProps && (
           <div
-            className={cx('resize-handle', 'listview-record-resize-handle', { dragging: isResizing })}
+            className={cx('resize-handle', 'listview-record-resize-handle', {
+              dragging: isResizing,
+              'listview-record-handle-shown': isMainHovered,
+            })}
             data-cy={`${String(dataCy).toLowerCase()}-record-resize-handle`}
             style={{
               position: 'absolute',
@@ -175,9 +173,6 @@ const ListviewSubcontainerComponent = ({
               height: RESIZE_HANDLE_HEIGHT,
             }}
             {...resizeHandleProps}
-            ref={handleRef}
-            onMouseEnter={() => setIsHandleHovered(true)}
-            onMouseLeave={() => setIsHandleHovered(false)}
           />
         )}
       </div>

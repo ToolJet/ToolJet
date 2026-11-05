@@ -5,7 +5,7 @@
  * The pointer is driven the way a browser does it: mousedown on the handle, mousemove and mouseup on `document`.
  * jsdom does no layout (clientHeight is 0), so the start height must come from the saved property, not from the DOM.
  */
-import { fireEvent, waitFor } from '@testing-library/react';
+import { act, fireEvent, waitFor } from '@testing-library/react';
 import {
   createWidgetHarness,
   binding,
@@ -20,6 +20,7 @@ jest.mock('@/_hooks/useDynamicHeight', () => {
   return { ...actual, useDynamicHeight: jest.fn((...args) => actual.useDynamicHeight(...args)) };
 });
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import useStore from '@/AppBuilder/_stores/store';
 
 const ID = 'lv1';
 const INNER = 'lv2';
@@ -447,8 +448,8 @@ describe('Listview record resize: cleanup and rendering', () => {
         .length;
     const before = recordOneRenders();
 
-    fireEvent.mouseEnter(rows()[2]);
-    fireEvent.mouseEnter(rows()[0]);
+    // Selecting a child turns the fade on: the list re-renders, and nothing in record 1's props changes.
+    act(() => useStore.getState().setSelectedComponents(['txt1']));
     await waitFor(() => expect(faded()).toEqual([false, true, true]));
 
     expect(recordOneRenders()).toBe(before);
@@ -514,6 +515,16 @@ describe('Listview record resize: Record height holds an expression', () => {
     properties: { rowHeight: binding('{{components.text2.text}}') },
     extraComponents: { txt2: { ...child('txt2', 'text2', 'Text', { text: binding('120') }, 'canvas') } },
   };
+
+  test('[Listview-RSZ-008] with no handle, the pointer on record 1 shows no outline', async () => {
+    // Break this catches: an outline promising a resize that an expression forbids.
+    await mount(widget, expressionHeight);
+
+    fireEvent.mouseEnter(rows()[0]);
+    await waitFor(() => expect(faded()).toEqual([false, true, true]));
+
+    expect(framed()).toEqual([false, false, false]);
+  });
 
   test('[Listview-RSZ-002] there is no handle, and the expression and the height are unchanged', async () => {
     // Break this catches: a handle on a dynamic height, which would overwrite the expression with a number.
@@ -683,7 +694,8 @@ describe('Listview record resize: the pointer on record 1 shows the handle and t
     await mount(widget);
 
     fireEvent.mouseEnter(rows()[0]);
-    fireEvent.mouseOver(handles()[0]);
+    // jsdom's :hover matches only the last mouseover target, not its parents as a browser does.
+    fireEvent.mouseOver(rows()[0]);
     fireEvent.mouseDown(handles()[0], { clientX: 0, clientY: START_Y, button: 0 });
     fireEvent.mouseUp(document, { clientX: 0, clientY: START_Y });
 

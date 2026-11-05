@@ -247,6 +247,8 @@ export const Listview = function Listview({
     return () => {
       document.body.classList.remove('listview-record-resizing');
       setIsListviewRecordResizing(false);
+      // A live resize moves the record from under the pointer, so its mouseleave may never fire.
+      setMainRecordHovered(!!mainRecordRef.current?.matches(':hover'));
     };
   }, [isResizingRecord, setIsListviewRecordResizing]);
 
@@ -636,6 +638,7 @@ export const Listview = function Listview({
                     recordRef={index === 0 && canResizeRecord ? mainRecordRef : undefined}
                     resizeHandleProps={index === 0 && canResizeRecord ? getRecordResizeHandleProps() : undefined}
                     isResizing={isResizingRecord}
+                    isMainHovered={index === 0 && mainRecordHovered}
                     isMoving={hasMainRecord && isMovingInside && index === 0}
                     onMainHoverChange={setMainRecordHovered}
                   />

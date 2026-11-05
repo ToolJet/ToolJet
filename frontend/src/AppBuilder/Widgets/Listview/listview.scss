@@ -54,7 +54,8 @@
     transition: visibility 0.15s ease-in-out;
 }
 
-.listview-scroll-container .list-item:hover .listview-record-resize-handle,
+// A class, not :hover on the record: Moveable draws a component's controls outside the record's DOM.
+.listview-scroll-container .list-item .listview-record-resize-handle.listview-record-handle-shown,
 .listview-scroll-container .list-item .listview-record-resize-handle.dragging {
     visibility: visible;
 }
