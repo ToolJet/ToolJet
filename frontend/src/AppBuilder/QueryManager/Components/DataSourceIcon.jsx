@@ -1,5 +1,7 @@
 import React from 'react';
 import { getSvgIcon } from '@/_helpers/appUtils';
+import { pluginIconFile } from '@/_helpers/pluginIcon';
+import { resolvePluginKind } from '@/_helpers/pluginKind';
 import RunjsIcon from '@/AppBuilder/QueryManager/Icons/Icons/runjs.svg';
 import RunTooljetDbIcon from '@/AppBuilder/QueryManager/Icons/Icons/tooljetdb.svg';
 import RunpyIcon from '@/AppBuilder/QueryManager/Icons/Icons/runpy.svg';
@@ -9,8 +11,8 @@ import LoopIcon from '@assets/images/icons/loop.svg';
 import AgentNodeIcon from '../../../../assets/images/icons/agent-node.svg';
 
 const DataSourceIcon = ({ source, height = 25, styles }) => {
-  const iconFile = source?.plugin?.iconFile?.data ?? source?.plugin?.icon_file?.data;
-  const Icon = () => getSvgIcon(source?.kind, height, height, iconFile, styles);
+  const iconFile = pluginIconFile(source?.plugin);
+  const Icon = () => getSvgIcon(source?.kind ?? resolvePluginKind(source), height, height, iconFile, styles);
 
   switch (source?.kind) {
     case 'runjs':

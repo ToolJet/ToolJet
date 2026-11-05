@@ -43,6 +43,10 @@ export class Plugin {
   @Column({ name: 'manifest_file_id' })
   manifestFileId: string;
 
+  // Null for a plugin that ships no lib/darkIcon.svg; its icon is then shown in both themes.
+  @Column({ name: 'dark_icon_file_id', type: 'uuid', nullable: true })
+  darkIconFileId: string | null;
+
   @Column({ name: 'spec_files_map', type: 'jsonb', nullable: true })
   specFilesMap: Record<string, string>;
 
@@ -67,4 +71,8 @@ export class Plugin {
   @OneToOne(() => File, (file) => file.id)
   @JoinColumn({ name: 'manifest_file_id' })
   manifestFile?: File;
+
+  @OneToOne(() => File, (file) => file.id)
+  @JoinColumn({ name: 'dark_icon_file_id' })
+  darkIconFile?: File | null;
 }

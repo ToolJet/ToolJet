@@ -2,6 +2,7 @@ import React from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
 import LegacyBanner from '@/_ui/LegacyBanner';
+import { PluginIcon } from '@/_ui/PluginIcon';
 
 const Card = ({
   title,
@@ -10,6 +11,7 @@ const Card = ({
   height = 50,
   width = 50,
   usePluginIcon = false,
+  iconKind = '',
   className,
   cardClassName,
   titleClassName,
@@ -32,7 +34,9 @@ const Card = ({
       const Icon = allSvgs[src];
       return <Icon style={{ height, width }} className="card-icon" />;
     }
-    return <img src={src} width={width} height={height} alt={title} className="card-icon" />;
+    return (
+      <PluginIcon pluginKind={iconKind} src={src} alt={title} height={height} width={width} className="card-icon" />
+    );
   };
 
   return (

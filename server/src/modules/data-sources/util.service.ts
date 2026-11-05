@@ -1048,6 +1048,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         'appVersion.app',
         'plugin',
         'plugin.iconFile',
+        'plugin.darkIconFile',
         'plugin.manifestFile',
         'plugin.operationsFile',
       ],
@@ -1070,6 +1071,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
           'appVersion.app',
           'plugin',
           'plugin.iconFile',
+          'plugin.darkIconFile',
           'plugin.manifestFile',
           'plugin.operationsFile',
         ],
@@ -1092,6 +1094,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
     if (dataSource.pluginId) {
       dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
+      if (dataSource.plugin.darkIconFile) {
+        dataSource.plugin.darkIconFile.data = dataSource.plugin.darkIconFile.data.toString('utf8');
+      }
       dataSource.plugin.manifestFile.data = JSON.parse(decode(dataSource.plugin.manifestFile.data.toString('utf8')));
       dataSource.plugin.operationsFile.data = JSON.parse(
         decode(dataSource.plugin.operationsFile.data.toString('utf8'))

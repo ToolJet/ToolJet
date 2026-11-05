@@ -48,6 +48,7 @@ export class PluginsController implements IPluginsController {
     const plugins = await this.pluginsService.findAll();
     return plugins.map((plugin) => {
       plugin.iconFile.data = plugin.iconFile.data.toString('utf8');
+      if (plugin.darkIconFile) plugin.darkIconFile.data = plugin.darkIconFile.data.toString('utf8');
       plugin.manifestFile.data = JSON.parse(decode(plugin.manifestFile.data.toString('utf8')));
       return plugin;
     });
