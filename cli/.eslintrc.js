@@ -7,7 +7,8 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
   ],
-  ignorePatterns: ['.eslintrc.js', 'dist'],
+  // src/app-template is the app project the CLI scaffolds: its own tsconfig and lint apply there.
+  ignorePatterns: ['.eslintrc.js', 'dist', 'src/app-template'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 12,

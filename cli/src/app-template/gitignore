@@ -1,0 +1,3 @@
+node_modules/
+frontend/dist/
+.tooljet/snapshot.json
