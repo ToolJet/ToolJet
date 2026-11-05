@@ -315,22 +315,52 @@ describe('FeatureAbilityFactory — modules ability', () => {
   describe('CLONE/EXPORT/IMPORT', () => {
     // CLONE/IMPORT create a new module, so they're gated on moduleCreate (like CREATE_MODULE)
     // rather than plain isBuilder — see the CREATE/UPDATE/DELETE_MODULE describe blocks above.
-    it('builder WITHOUT moduleCreate → can EXPORT only, not CLONE/IMPORT', () => {
-      const permissions = makePermissions();
-      const ability = buildAbility(permissions);
+    // EXPORT matches /v2/resources/export: module-create + edit on each requested module.
+    const exportRequest = (body: Record<string, unknown>, moduleIds = ['m1']) =>
+      ({ body, tj_export_module_ids: moduleIds }) as any;
+    const withModules = (overrides: Record<string, unknown>, editableAppsId: string[], isAllEditable = false) =>
+      makePermissions({
+        userPermission: {
+          ...baseUserPermission(),
+          ...overrides,
+          [MODULES.MODULES]: { isAllEditable, editableAppsId },
+        } as any,
+      });
+
+    it('builder WITHOUT moduleCreate → cannot CLONE/EXPORT/IMPORT', () => {
+      const ability = buildAbility(withModules({}, ['m1']), exportRequest({ app: [{ id: 'm1' }] }));
       expect(ability.can(FEATURE_KEY.CLONE_MODULE, App)).toBe(false);
-      expect(ability.can(FEATURE_KEY.EXPORT_MODULE, App)).toBe(true);
+      expect(ability.can(FEATURE_KEY.EXPORT_MODULE, App)).toBe(false);
       expect(ability.can(FEATURE_KEY.IMPORT_MODULE, App)).toBe(false);
     });
 
-    it('builder WITH moduleCreate → can CLONE/EXPORT/IMPORT', () => {
-      const permissions = makePermissions({
-        userPermission: { ...baseUserPermission(), moduleCreate: true } as any,
-      });
-      const ability = buildAbility(permissions);
+    it('builder WITH moduleCreate and edit on the module → can CLONE/EXPORT/IMPORT', () => {
+      const ability = buildAbility(withModules({ moduleCreate: true }, ['m1']), exportRequest({ app: [{ id: 'm1' }] }));
       expect(ability.can(FEATURE_KEY.CLONE_MODULE, App)).toBe(true);
       expect(ability.can(FEATURE_KEY.EXPORT_MODULE, App)).toBe(true);
       expect(ability.can(FEATURE_KEY.IMPORT_MODULE, App)).toBe(true);
+    });
+
+    it('builder WITH moduleCreate → cannot EXPORT a module it cannot edit, or an id that is not a module', () => {
+      const notEditable = buildAbility(
+        withModules({ moduleCreate: true }, ['m1']),
+        exportRequest({ app: [{ id: 'm2' }] }, ['m2'])
+      );
+      expect(notEditable.can(FEATURE_KEY.EXPORT_MODULE, App)).toBe(false);
+
+      const notModule = buildAbility(
+        withModules({ moduleCreate: true }, [], true),
+        exportRequest({ app: [{ id: 'front-end-app' }] }, [])
+      );
+      expect(notModule.can(FEATURE_KEY.EXPORT_MODULE, App)).toBe(false);
+    });
+
+    it('builder WITH moduleCreate but WITHOUT tjdbCRUD → cannot EXPORT a module with its tables', () => {
+      const ability = buildAbility(
+        withModules({ moduleCreate: true }, ['m1']),
+        exportRequest({ app: [{ id: 'm1' }], tooljet_database: [{ table_id: 't1' }] })
+      );
+      expect(ability.can(FEATURE_KEY.EXPORT_MODULE, App)).toBe(false);
     });
 
     it('end-user (isBuilder=false, not admin) → cannot CLONE/EXPORT/IMPORT', () => {
