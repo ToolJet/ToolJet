@@ -219,40 +219,118 @@ const codeDirectives = (css: string | undefined): string[] =>
     .match(CODE_DIRECTIVE)
     ?.map((directive) => directive.replace(/\s+/g, ' ').trim()) ?? [];
 
-/** The relative file a directive or an import names, as a stored path; undefined for a package name. */
-const relativeTarget = (from: string, spec: string): string | undefined => {
-  if (!spec.startsWith('./') && !spec.startsWith('../')) return undefined;
-  const target = path.posix.normalize(path.posix.join(path.posix.dirname(from), spec));
-  return target.startsWith('..') ? undefined : target;
+/** What a stylesheet directive names: its quoted argument, else its first bare word. */
+const directiveSpec = (directive: string): string | undefined =>
+  /["']([^"']+)["']/.exec(directive)?.[1] ??
+  /^@(?:config|plugin|import)\s+(?:url\(\s*)?([^\s;)"']+)/i.exec(directive)?.[1];
+
+/*
+  Every literal module name a file names: require('x'), import('x'), import 'x', and the `from 'x'` of an import or
+  export. Read in comments too; a false alarm only asks for approval.
+*/
+const IMPORT_SPECIFIER = /(?:\brequire\s*\(\s*|\bimport\s*\(\s*|\bfrom\s+|\bimport\s+)(["'])([^"'\r\n]*)\1/g;
+/*
+  Other quoted strings that start like a relative path. PostCSS configs name plugins by path as plain object keys
+  (`plugins: { './plugin.cjs': {} }`), and the build resolves and requires them, so a string that names a project
+  file counts as a load of it. A glob (Tailwind's content list) names no single file.
+*/
+const RELATIVE_STRING = /(["'`])(\.{1,2}\/[^"'`\r\n]*)\1/g;
+const GLOB = /[*?{}[\]!$]/;
+/*
+  Where Node's loaders (and the TypeScript loaders build tools use) look for a relative name: the file itself, the
+  file with each script or data extension, then the folder's index. Every candidate that exists counts, so a pull
+  that removes one cannot hand the load to another unseen.
+*/
+const RESOLVE_SUFFIXES = [
+  '',
+  ...['.js', '.cjs', '.mjs', '.ts', '.cts', '.mts', '.jsx', '.tsx', '.json', '.node'].flatMap((ext) => [
+    ext,
+    `/index${ext}`,
+  ]),
+];
+/** Node parses a .json file it is asked to load; nothing in it runs, or loads anything else. */
+const DATA_FILE = /\.json$/i;
+/** An npm package name, with an optional subpath that never steps out of the package. */
+const PACKAGE_NAME = /^(?:@[a-z0-9~][\w.~-]*\/)?[a-z0-9~][\w.~-]*(?:\/[\w.~@+-]+)*$/i;
+const isPackageName = (spec: string) =>
+  /^node:[\w/]+$/.test(spec) ||
+  (PACKAGE_NAME.test(spec) && !spec.split('/').some((part) => part === '.' || part === '..'));
+
+/** A path from the project root, '/' separated; undefined when it leaves the project. */
+const joinedPath = (from: string, spec: string): string | undefined => {
+  const target = path.posix.normalize(path.posix.join(path.posix.dirname(from), spec)).replace(/\/+$/, '');
+  return target === '.' || target === '..' || target.startsWith('../') || path.posix.isAbsolute(target)
+    ? undefined
+    : target;
 };
 
-const directiveTarget = (from: string, directive: string): string | undefined => {
-  const spec = /["']([^"']+)["']/.exec(directive)?.[1] ?? /^@(?:config|plugin)\s+([^\s;]+)/i.exec(directive)?.[1];
-  return spec ? relativeTarget(from, spec) : undefined;
-};
-
-const CODE_IMPORT = /(?:require\s*\(\s*|import\s*\(\s*|\bfrom\s+|\bimport\s+)["'](\.{1,2}\/[^"']+)["']/g;
-const RESOLVE_SUFFIXES = ['', '.js', '.cjs', '.mjs', '.ts', '.cts', '.mts', '.jsx', '.tsx', '/index.js', '/index.ts'];
+interface BuildInventory {
+  /** The project files a local build may run as code, in the order they were reached. */
+  runs: Set<string>;
+  /** Of those, the ones only a quoted path string names, not a module load: the weakest reason to count one. */
+  namedByString: Set<string>;
+  /**
+   * Set when the walk cannot say which files the build runs: a file in it loads by a computed name, is not a
+   * script (Node's CommonJS loader runs a required file of any other extension as JavaScript), or names a module
+   * this walk cannot resolve. Then every change a pull makes counts.
+   */
+  unbounded?: string;
+}
 
 /**
- * The project files a local build runs as code: what root build configs import, what stylesheet @config and
- * @plugin directives name, and what those files import in turn. Read from both the local copy and the pull.
+ * The project files a local build runs as code: the root build configs, what stylesheet @config, @plugin and script
+ * @import directives name, and everything those files load in turn, whatever their extension. Read from both the
+ * local copy and the pull, so a file either side has is followed.
  */
-function filesTheBuildRuns(root: string, incoming: Map<string, string | undefined>): Set<string> {
+function buildInventory(root: string, incoming: Map<string, string | undefined>): BuildInventory {
   const read = (rel: string): string[] =>
     [incoming.get(rel), localStoredContent(root, rel)].filter((c): c is string => typeof c === 'string');
   const exists = (rel: string) => incoming.has(rel) || localStoredContent(root, rel) !== undefined;
+  // A package naming itself resolves through its own package.json "exports", into the project.
+  const ownNames = read('frontend/package.json')
+    .map((content) => parseJson(content)?.name)
+    .filter((name): name is string => typeof name === 'string' && name.length > 0);
+  const runs = new Set<string>();
+  const namedByString = new Set<string>();
   const queue: string[] = [];
-  const seen = new Set<string>();
-  const add = (rel: string | undefined) => {
-    if (!rel) return;
-    const found = RESOLVE_SUFFIXES.map((suffix) => rel + suffix).find(exists);
-    if (found && !seen.has(found)) {
-      seen.add(found);
-      queue.push(found);
-    }
+  let unbounded: string | undefined;
+  const reach = (rel: string) => {
+    namedByString.delete(rel);
+    if (runs.has(rel)) return;
+    runs.add(rel);
+    queue.push(rel);
   };
-  for (const rel of BUILD_TRUST_FILES.filter((r) => /\.config\./.test(r))) add(rel);
+  const reachNamed = (rel: string) => {
+    if (runs.has(rel)) return;
+    reach(rel);
+    namedByString.add(rel);
+  };
+  /** Reaches every file a load of `target` could pick; false when none exists or a package.json picks it. */
+  const reachPath = (target: string): boolean => {
+    const found = RESOLVE_SUFFIXES.map((suffix) => target + suffix).filter(exists);
+    found.forEach(reach);
+    return found.length > 0 && !exists(`${target}/package.json`);
+  };
+  const unresolved = (from: string, spec: string) =>
+    (unbounded ??= `${from} loads '${spec}', which this check cannot resolve`);
+  /** A module name in `from`, resolved the way the loader would. */
+  const load = (from: string, spec: string, cssPath = false) => {
+    if (spec === '.' || spec === '..' || spec.startsWith('./') || spec.startsWith('../')) {
+      const target = joinedPath(from, spec);
+      if (!target || !reachPath(target)) unresolved(from, spec);
+      return;
+    }
+    // A stylesheet names files relative to itself, with or without './' (Tailwind's @config always does).
+    if (cssPath) {
+      const target = joinedPath(from, spec);
+      if (target && reachPath(target)) return;
+    }
+    if (isPackageName(spec) && !ownNames.some((name) => spec === name || spec.startsWith(`${name}/`))) return;
+    // An absolute path, a URL, a '#' subpath import, a self-reference: any of them can lead into the project.
+    unresolved(from, spec);
+  };
+
+  for (const rel of BUILD_TRUST_FILES.filter((r) => /\.config\./.test(r))) if (exists(rel)) reach(rel);
   const stylesheets = new Set([
     ...[...incoming.keys()].filter((rel) => STYLESHEET.test(rel)),
     ...collectProjectSource(root)
@@ -260,14 +338,28 @@ function filesTheBuildRuns(root: string, incoming: Map<string, string | undefine
       .filter((rel) => STYLESHEET.test(rel)),
   ]);
   for (const sheet of stylesheets)
-    for (const content of read(sheet)) for (const d of codeDirectives(content)) add(directiveTarget(sheet, d));
+    for (const content of read(sheet))
+      for (const directive of codeDirectives(content)) {
+        const spec = directiveSpec(directive);
+        if (spec) load(sheet, spec, true);
+      }
   while (queue.length) {
     const rel = queue.shift() as string;
-    if (!CODE_FILE.test(rel)) continue;
-    for (const content of read(rel))
-      for (const match of content.matchAll(CODE_IMPORT)) add(relativeTarget(rel, match[1]));
+    if (DATA_FILE.test(rel)) continue;
+    if (!CODE_FILE.test(rel)) unbounded ??= `the build runs ${rel} as code`;
+    for (const content of read(rel)) {
+      if (loadsByComputedName(content)) unbounded ??= `${rel} loads files by a computed name`;
+      for (const match of content.matchAll(IMPORT_SPECIFIER)) load(rel, match[2]);
+      for (const match of content.matchAll(RELATIVE_STRING)) {
+        const target = GLOB.test(match[2]) ? undefined : joinedPath(rel, match[2]);
+        if (target)
+          RESOLVE_SUFFIXES.map((suffix) => target + suffix)
+            .filter(exists)
+            .forEach(reachNamed);
+      }
+    }
   }
-  return seen;
+  return { runs, namedByString, unbounded };
 }
 
 /*
@@ -300,24 +392,52 @@ const recordsRenders = (root: string): boolean => {
   return config?.recordRender === true;
 };
 
+/** Whether a stored path is one this project keeps (and so may be written or removed here). */
+const isProjectPath = (rel: string) =>
+  !rel.split('/').some((part) => part === '..' || part === '') &&
+  (ROOT_FILES.includes(rel) || TREES.some((tree) => rel.startsWith(`${tree}/`)));
+
+/** The stored files a pull of `stored` writes. */
+const filesAPullWrites = (stored: StoredSource) =>
+  (stored.files ?? []).filter((f) => isProjectPath(f.path) && typeof f.content === 'string');
+
+/** The project's files a pull of `stored` removes: source files under the trees that it does not write. */
+const filesAPullRemoves = (root: string, stored: StoredSource): string[] => {
+  const keep = new Set(filesAPullWrites(stored).map((f) => f.path));
+  return collectProjectSource(root)
+    .map((local) => local.path)
+    .filter((rel) => !keep.has(rel) && TREES.some((tree) => rel.startsWith(`${tree}/`)));
+};
+
+/** A folder Node and the bundler resolve package names from. This CLI never uploads one, so a pull should not hold one. */
+const PACKAGE_FOLDER = /(?:^|\/)node_modules\//;
+
 /**
  * What a pull of `stored` would change here that a local build runs: the fixed build-trust files, a stylesheet that
- * adds or changes a code-loading directive, a file such a directive or a build config loads, and, when this project
- * renders components in Node (recordRender), any changed component code. When a file the build runs loads by a
- * computed name (loadsByComputedName), in this copy or in the pull, the inventory cannot be trusted, so every changed
- * stored file counts, whatever its extension: such a loader can read a document, plain text, an SVG or a stylesheet
- * and run what it holds (fs.readFileSync and new Function). Compared as stored, so a local SDK path is no change.
+ * adds or changes a code-loading directive, a file such a directive or a build config loads (followed through every
+ * file it loads, whatever the extension), any file under a node_modules folder, and, when this project renders
+ * components in Node (recordRender), any changed component code. A change is a file the pull adds, rewrites or
+ * removes, so a deletion or a rename counts wherever an addition would. When the walk cannot bound what the build
+ * runs (BuildInventory.unbounded: a computed name, a required non-script file, a name it cannot resolve), in this
+ * copy or in the pull, every change counts, whatever its extension: such a loader can read a document, plain text,
+ * an SVG or a stylesheet and run what it holds (fs.readFileSync and new Function). Compared as stored, so a local
+ * SDK path is no change.
  */
 export function trustFileChanges(root: string, stored: StoredSource): string[] {
   const files = new Map((stored.files ?? []).map((f) => [f.path, f.content]));
-  const changes = (rel: string) => files.has(rel) && files.get(rel) !== localStoredContent(root, rel);
+  const removed = new Set(filesAPullRemoves(root, stored));
+  const changes = (rel: string) =>
+    removed.has(rel) || (files.has(rel) && files.get(rel) !== localStoredContent(root, rel));
+  // Before and after together: everything the pull carries, and everything it takes away.
+  const touched = [...new Set([...files.keys(), ...removed])].filter(changes);
+  const entry = (rel: string, why: string) => `${rel} (${removed.has(rel) ? `removed; ${why}` : why})`;
   // Pulling never removes a root file, so a file stored source lacks changes nothing here.
   const changed = BUILD_TRUST_FILES.filter(changes);
   const named = new Set(changed);
-  const note = (entry: string, rel: string) => {
+  const note = (text: string, rel: string) => {
     if (named.has(rel)) return;
     named.add(rel);
-    changed.push(entry);
+    changed.push(text);
   };
   for (const [rel, content] of files) {
     if (!STYLESHEET.test(rel) || !changes(rel)) continue;
@@ -325,29 +445,22 @@ export function trustFileChanges(root: string, stored: StoredSource): string[] {
     const added = codeDirectives(content).filter((directive) => !before.has(directive));
     if (added.length) note(`${rel} (${added.map((d) => d.split(' ')[0]).join(', ')})`, rel);
   }
-  const runs = filesTheBuildRuns(root, files);
-  for (const rel of runs) if (changes(rel)) note(`${rel} (loaded by the build)`, rel);
-  const indirect = [...runs].find(
-    (rel) =>
-      CODE_FILE.test(rel) &&
-      [files.get(rel), localStoredContent(root, rel)].some((c) => typeof c === 'string' && loadsByComputedName(c))
-  );
-  if (indirect) {
+  for (const rel of touched)
+    if (PACKAGE_FOLDER.test(rel)) note(entry(rel, 'a package folder the build resolves packages from'), rel);
+  const { runs, namedByString, unbounded } = buildInventory(root, files);
+  for (const rel of runs) if (!namedByString.has(rel) && changes(rel)) note(entry(rel, 'loaded by the build'), rel);
+  if (unbounded) {
     // No extension is safe here: the loader decides how it reads a file, so a changed .txt, .md or .svg counts too.
-    for (const rel of files.keys()) if (changes(rel)) note(`${rel} (${indirect} loads files by a computed name)`, rel);
+    for (const rel of touched) note(entry(rel, unbounded), rel);
   }
+  for (const rel of namedByString) if (changes(rel)) note(entry(rel, 'loaded by the build'), rel);
   if (recordsRenders(root)) {
-    for (const rel of files.keys())
-      if (CODE_FILE.test(rel) && TREES.some((tree) => rel.startsWith(`${tree}/`)) && changes(rel))
-        note(`${rel} (recordRender runs it)`, rel);
+    for (const rel of touched)
+      if (CODE_FILE.test(rel) && TREES.some((tree) => rel.startsWith(`${tree}/`)))
+        note(entry(rel, 'recordRender runs it'), rel);
   }
   return changed;
 }
-
-/** Whether a stored path is one this project keeps (and so may be written or removed here). */
-const isProjectPath = (rel: string) =>
-  !rel.split('/').some((part) => part === '..' || part === '') &&
-  (ROOT_FILES.includes(rel) || TREES.some((tree) => rel.startsWith(`${tree}/`)));
 
 /** The project's files a pull of `stored` would overwrite with other content or remove. */
 export function filesAPullWouldChange(root: string, stored: StoredSource): string[] {
@@ -370,17 +483,15 @@ export function applyStoredSource(
   stored: StoredSource,
   versionId?: string
 ): { pulled: boolean; written: number; removed: number } {
-  const files = (stored.files ?? []).filter((f) => isProjectPath(f.path) && typeof f.content === 'string');
-  const keep = new Set(files.map((f) => f.path));
+  const files = filesAPullWrites(stored);
   let removed = 0;
   // Every target is checked before anything is written, so a refused pull changes nothing.
   for (const f of files) projectPath(root, f.path);
   projectPath(root, 'frontend/package.json');
-  for (const local of collectProjectSource(root)) {
-    if (!keep.has(local.path) && TREES.some((tree) => local.path.startsWith(`${tree}/`))) {
-      fs.rmSync(projectPath(root, local.path));
-      removed++;
-    }
+  // The same list trustFileChanges counts, so nothing is removed that it did not weigh.
+  for (const rel of filesAPullRemoves(root, stored)) {
+    fs.rmSync(projectPath(root, rel));
+    removed++;
   }
   for (const f of files) {
     const target = projectPath(root, f.path);
