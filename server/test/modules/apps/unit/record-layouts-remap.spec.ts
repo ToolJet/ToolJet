@@ -48,4 +48,12 @@ describe('remapRecordLayoutIds', () => {
 
     expect(result.recordLayouts.value.list).toEqual({});
   });
+
+  it('[Listview-GRID-016] keeps a Layout entry that is not an object as it is', () => {
+    const odd = { recordLayouts: { value: { list: 'abc', grid: { a: box(1) } } } };
+
+    const result = remapRecordLayoutIds(odd, { a: 'A2' });
+
+    expect(result.recordLayouts.value).toEqual({ list: 'abc', grid: { A2: box(1) } });
+  });
 });
