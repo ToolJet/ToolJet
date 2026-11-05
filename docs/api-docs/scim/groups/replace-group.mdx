@@ -14,8 +14,8 @@ Replaces all attributes of a group. Attributes not included in the request body 
 
 <ErrorsTable errors={[
   {"status":"400","description":"Invalid request body or missing required fields."},
-  {"status":"401","description":"Missing or invalid Authorization header."},
-  {"status":"403","description":"SCIM provisioning not enabled or insufficient permissions."},
+  {"status":"401","description":"SCIM isn't enabled (`SCIM_ENABLED` isn't `true`), or the Authorization header is missing or invalid."},
+  {"status":"451","description":"Your license doesn't include SCIM."},
   {"status":"404","description":"Group not found."}
 ]} />
 
@@ -23,7 +23,7 @@ Replaces all attributes of a group. Attributes not included in the request body 
 <ApiRight>
 
 <RequestExample code={`curl -X PUT "https://{your-domain}/api/scim/v2/Groups/{id}" \\
-    -H "Authorization: Basic <access_token>" \\
+    -H "Authorization: Bearer <SCIM_HEADER_AUTH_TOKEN>" \\
     -H "Content-Type: application/json" \\
     -d '{}'`} />
 

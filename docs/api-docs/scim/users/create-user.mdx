@@ -8,13 +8,13 @@ title: "Create User"
 <ApiColumns>
 <ApiLeft>
 
-Creates a new user in the organization.
+Creates an active user in the instance and adds them to the default workspace. The role comes from the ToolJet extension attribute `role` and defaults to `end-user`. Any `groups` must already exist as custom groups. ToolJet generates a random password and doesn't send an invitation email.
 
 <ErrorsTable errors={[
   {"status":"400","description":"Invalid request body or missing required fields (e.g. userName)."},
-  {"status":"401","description":"Missing or invalid Authorization header."},
-  {"status":"403","description":"SCIM provisioning not enabled or insufficient permissions."},
-  {"status":"409","description":"A user with the same userName already exists."}
+  {"status":"401","description":"SCIM isn't enabled (`SCIM_ENABLED` isn't `true`), or the Authorization header is missing or invalid."},
+  {"status":"451","description":"Your license doesn't include SCIM."},
+  {"status":"404","description":"The user couldn't be created, for example because a user with the same email already exists in the instance."}
 ]} />
 
 </ApiLeft>
@@ -26,7 +26,7 @@ Creates a new user in the organization.
 
 
 <RequestExample code={`curl -X POST "https://{your-domain}/api/scim/v2/Users" \\
-    -H "Authorization: Basic <access_token>" \\
+    -H "Authorization: Bearer <SCIM_HEADER_AUTH_TOKEN>" \\
     -H "Content-Type: application/json" \\
     -d '{}'`} />
 

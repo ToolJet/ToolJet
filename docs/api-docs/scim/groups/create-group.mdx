@@ -8,13 +8,13 @@ title: "Create Group"
 <ApiColumns>
 <ApiLeft>
 
-Creates a new group in the organization.
+Creates a custom group in the default workspace, named after `displayName`.
 
 <ErrorsTable errors={[
   {"status":"400","description":"Invalid request body or missing required fields (e.g. displayName)."},
-  {"status":"401","description":"Missing or invalid Authorization header."},
-  {"status":"403","description":"SCIM provisioning not enabled or insufficient permissions."},
-  {"status":"409","description":"A group with the same displayName already exists."}
+  {"status":"401","description":"SCIM isn't enabled (`SCIM_ENABLED` isn't `true`), or the Authorization header is missing or invalid."},
+  {"status":"451","description":"Your license doesn't include SCIM."},
+  {"status":"404","description":"The group couldn't be created, for example because a group with the same name already exists in the default workspace."}
 ]} />
 
 </ApiLeft>
@@ -26,7 +26,7 @@ Creates a new group in the organization.
 
 
 <RequestExample code={`curl -X POST "https://{your-domain}/api/scim/v2/Groups" \\
-    -H "Authorization: Basic <access_token>" \\
+    -H "Authorization: Bearer <SCIM_HEADER_AUTH_TOKEN>" \\
     -H "Content-Type: application/json" \\
     -d '{}'`} />
 

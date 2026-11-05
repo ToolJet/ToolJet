@@ -18,6 +18,10 @@ Microsoft Entra ID can be configured as the Identity Provider for SAML, which is
     <img className="screenshot-full img-full" src="/img/user-management/sso/saml/entra-id/tooljet_saml_configuration.png" alt="Entra ID: ToolJet SAML Configuration"/>
 
 5. Return to the Azure Developer Portal. Go to **Manage > Single sign-on**, edit **Basic SAML Configuration**, and paste the Redirect URL into both **Identifier (Entity ID)** and **Reply URL (Assertion Consumer Service URL)**. Click **Save**.
+
+    :::info
+    Entra ID requires ToolJet's SP entity ID to match **Identifier (Entity ID)**. Set `SAML_SET_ENTITY_ID_REDIRECT_URL=true` in your ToolJet deployment so that ToolJet uses the Redirect URL as its entity ID. Refer to [Setting the Service Provider Entity ID](/docs/user-management/sso/saml/setup#setting-the-service-provider-entity-id).
+    :::
     <img className="screenshot-full img-full" src="/img/user-management/sso/saml/entra-id/azure_saml_configuration.png" alt="Entra ID: Azure SAML Configuration"/>
 
 6. Edit **Attributes & Claims** and rename the **emailaddress** claim to **email**.

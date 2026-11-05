@@ -8,12 +8,12 @@ title: "List Groups"
 <ApiColumns>
 <ApiLeft>
 
-Lists all groups in the organization.
+Lists the groups in the default workspace, including the built-in groups. Supports the filter `displayName eq "<name>"`.
 
 <ErrorsTable errors={[
   {"status":"400","description":"Invalid filter syntax."},
-  {"status":"401","description":"Missing or invalid Authorization header."},
-  {"status":"403","description":"SCIM provisioning not enabled or insufficient permissions."}
+  {"status":"401","description":"SCIM isn't enabled (`SCIM_ENABLED` isn't `true`), or the Authorization header is missing or invalid."},
+  {"status":"451","description":"Your license doesn't include SCIM."}
 ]} />
 
 </ApiLeft>
@@ -25,7 +25,7 @@ Lists all groups in the organization.
 
 
 <RequestExample code={`curl -X GET "https://{your-domain}/api/scim/v2/Groups" \\
-    -H "Authorization: Basic <access_token>"`} />
+    -H "Authorization: Bearer <SCIM_HEADER_AUTH_TOKEN>"`} />
 
 <ResponseExample statusCode="200" body={`{
   "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
