@@ -23,6 +23,7 @@ const currentSessionSubject = new BehaviorSubject({
   folder_group_permissions: null,
   workflow_folder_group_permissions: null,
   module_folder_group_permissions: null,
+  data_source_folder_group_permissions: null,
   role: null,
   organizations: [],
   isUserLoggingIn: false,

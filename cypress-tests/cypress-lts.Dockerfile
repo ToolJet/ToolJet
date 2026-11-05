@@ -24,15 +24,14 @@ RUN git checkout ${BRANCH_NAME}
 
 RUN git submodule update --init --recursive
 
-# Checkout the same branch in submodules if it exists, otherwise KEEP THE PIN.
-# (Falling back to the submodule's main head builds EE code newer than the CE
-# checkout and breaks the server compile whenever EE main drifts.)
+# Follow a same-named submodule branch only when it contains the pinned commit (HEAD after
+# update), else keep the pin: a stale branch builds EE code older than this checkout.
 RUN git submodule foreach " \
-  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-    git checkout ${BRANCH_NAME}; \
+  if git fetch -q origin ${BRANCH_NAME} 2>/dev/null && \
+     git merge-base --is-ancestor HEAD FETCH_HEAD; then \
+    git checkout -B ${BRANCH_NAME} FETCH_HEAD; \
   else \
-    echo 'Branch ${BRANCH_NAME} not found in submodule \$name — keeping pinned commit'; \
+    echo 'Submodule \$name: no ${BRANCH_NAME} branch containing the pinned commit, keeping the pin'; \
   fi"
 
 # Scripts for building

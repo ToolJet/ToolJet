@@ -33,7 +33,7 @@ const LockedBranchBanner = ({
       : isLicenseLock
         ? licenseLockMessage || 'Your plan has expired. Renew your plan or disable git sync to continue.'
         : reason === 'main_config_branch'
-          ? `Master is locked. Create a branch to add or ${pageContextText}.`
+          ? `${branchName || 'Default branch'} is locked. Create a branch to add or ${pageContextText}.`
           : 'This branch has been merged and is now read-only';
 
   return (

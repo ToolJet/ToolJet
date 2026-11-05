@@ -66,6 +66,8 @@ export const getGroupPermissionInput = (isEnterprise, flag) => {
       moduleFolderDelete: flag,
       moduleCreate: flag,
       moduleDelete: flag,
+      dataSourceFolderCreate: flag,
+      dataSourceFolderDelete: flag,
     }
     : {
       appCreate: flag,
@@ -161,7 +163,8 @@ export const verifyEnvironmentTagsInGranularUI = (groupName, environmentTags) =>
 
 export const verifyEnvironmentAccess = (environments, options = {}) => {
   const defaults = {
-    workspaceName: "my-workspace",
+    // Specs that run in their own workspace set workspaceSlug (createSpecWorkspace)
+    workspaceName: Cypress.env("workspaceSlug") || "my-workspace",
     componentName: "text1",
     canEdit: true,
     appId: Cypress.env("appId"),
@@ -246,7 +249,11 @@ export const verifyPreviewAccess = (
   };
 
   if (canEdit) {
-    cy.get(commonWidgetSelector.editorPreviewLink).first().should("have.attr", "href");
+    cy.wait(2000);
+    cy.get(commonWidgetSelector.editorPreviewLink)
+      .first()
+      .should("have.attr", "href")
+      .and("match", /env=.+&version=.+/);
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
   } else {
     if (canAllView === false) return;
