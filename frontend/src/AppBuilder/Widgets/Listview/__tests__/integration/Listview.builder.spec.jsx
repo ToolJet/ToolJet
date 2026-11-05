@@ -334,6 +334,16 @@ describe('ListviewBuilderDrops', () => {
         expect(mockHandleDrop).toHaveBeenCalledTimes(1);
       });
 
+      test('[Listview-REC-008] a point in the list outside every disabled record takes the drop', async () => {
+        // Break this catches: any hit on the list refusing the drop once one record is disabled.
+        await mountDisabled('r0');
+        hitList();
+
+        releaseAt(5, 350);
+
+        expect(mockHandleDrop).toHaveBeenCalledTimes(1);
+      });
+
       test('[Listview-REC-008] a point the scrolling list clips, or the pager covers, is not a disabled record', async () => {
         // Break this catches: the record box alone deciding, so a clipped record refuses a drop outside the list.
         await mountDisabled('r0');

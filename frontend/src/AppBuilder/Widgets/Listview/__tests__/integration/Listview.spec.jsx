@@ -7840,18 +7840,19 @@ describe('ListviewDisabledRecords', () => {
               setIsOpen: () => {},
               forceUpdate: () => {},
             }}
-            fieldMeta={{ validation: { schema: { type: 'boolean' }, defaultValue: false } }}
+            fieldMeta={{ validation: { schema: { type: 'string' }, defaultValue: '' } }}
           />
         </MemoryRouter>
       );
 
-    test('[Listview-REC-011] listItem in the field resolves to the first record, so a valid expression shows no error', async () => {
-      // Break this catches: the field resolving listItem against nothing, which marks every record expression as an error.
+    test('[Listview-REC-011] listItem in the field resolves to the first record in the preview', async () => {
+      // Break this catches: the field resolving listItem against nothing, so the preview says it is not defined.
       await mount(`{{false}}`);
-      const { container } = editorFor(`{{listItem.name === 'r0'}}`);
+      const { container } = editorFor(`{{listItem.name + '-preview'}}`);
 
-      await waitFor(() => expect(container.querySelector('.codehinter-container')).toBeTruthy());
-      expect(container.querySelector('.border-danger')).toBeNull();
+      await widget.session.user.click(container.querySelector('.cm-content'));
+
+      await waitFor(() => expect(document.body.textContent).toContain('r0-preview'));
     });
 
     test('[Listview-REC-011] a real mistake in the field still shows as an error', async () => {

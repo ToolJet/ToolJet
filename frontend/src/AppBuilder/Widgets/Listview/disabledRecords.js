@@ -8,11 +8,6 @@ export const isNeverDisabled = (expression) =>
 
 // Same reading as the boolean schema (trimmed, any-case "true"); an error or anything else leaves the record enabled.
 export const isRecordDisabled = (expression, listItem, moduleId) => {
-  let value;
-  try {
-    value = useStore.getState().getResolvedValue(expression, { listItem }, moduleId);
-  } catch {
-    return false;
-  }
+  const value = useStore.getState().getResolvedValue(expression, { listItem }, moduleId);
   return value === true || (typeof value === 'string' && value.trim().toLowerCase() === 'true');
 };

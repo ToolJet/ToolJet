@@ -778,12 +778,11 @@ export const isPointerOverCanvasArea = (clientX, clientY) => {
  * @param {string} currentTargetId - The ID of the currently dragged element to exclude from search
  * @returns {string|null} - The new parent ID or null if no valid parent is found
  */
-// A disabled record is inert, so the browser's hit test skips it and the first ListView part it finds is the list itself.
-// A pager, header or enabled record found first, or a point the list clips, never reaches the list: not a disabled record.
+// A disabled record is inert, so the browser's hit test skips it and finds the list under it; the record's box is the trace.
+// A pager, header or enabled record found first, or a point the list clips, is no list hit: not a disabled record.
 const isDisabledRecordAtPoint = (hits, clientX, clientY) => {
   const topmost = hits.find((ele) => ele.closest?.('.listview-scroll-container'));
-  if (topmost?.getAttribute?.('role') !== 'list') return false;
-  return [...topmost.children].some((record) => {
+  return [...(topmost?.children ?? [])].some((record) => {
     if (record.getAttribute('aria-disabled') !== 'true') return false;
     const box = record.getBoundingClientRect();
     return clientX >= box.left && clientX <= box.right && clientY >= box.top && clientY <= box.bottom;
