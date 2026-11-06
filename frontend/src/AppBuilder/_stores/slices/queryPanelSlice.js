@@ -728,10 +728,11 @@ export const createQueryPanelSlice = (set, get) => ({
           queryExecutionPromise = dataqueryService.run(
             queryId,
             options,
-            // The server saves the options a run sends. Only a run from the query panel (Run, or its shortcut) sends
-            // them: page-load, event, component and code runs send none, so this editor's copy, which can be older
-            // than the stored query (an AI turn or another tab changed it), never overwrites it.
-            shouldSetPreviewData ? query?.options : undefined,
+            // The server saves the options a run sends. In an app built in code, where an AI turn or the CLI changes
+            // queries under an open editor, only a run from the query panel (Run, or its shortcut) sends them:
+            // page-load, event and code runs send none, so this editor's copy, which can be older than the stored
+            // query, never overwrites it. Visual apps keep sending them, as before.
+            shouldSetPreviewData || get().appStore.modules[moduleId]?.app?.buildMode !== 'code' ? query?.options : undefined,
             versionId,
             (() => {
               // send undefined if Public/Private released app
