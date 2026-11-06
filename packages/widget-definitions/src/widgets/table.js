@@ -857,7 +857,7 @@ export const tableConfig = {
       defaultSelectedRow: { value: '{{{"id":1}}}' },
       showAddNewRowButton: { value: '{{true}}' },
       addNewRowIn: { value: 'table' },
-      allowAddingMultipleRows: { value: '{{false}}' },
+      allowAddingMultipleRows: { value: '{{true}}' },
       showRefreshButton: { value: '{{false}}' },
       allowSelection: { value: '{{true}}' },
       visibility: { value: '{{true}}' },

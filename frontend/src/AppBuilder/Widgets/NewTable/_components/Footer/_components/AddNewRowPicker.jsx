@@ -17,6 +17,7 @@ const rowName = (index, invalid) => `Row ${index + 1}${invalid ? ', has errors' 
 
 const RowChip = ({ index, selected, invalid, disabled, onSelect }) => (
   <Button
+    type="button"
     variant="outline"
     aria-label={rowName(index, invalid)}
     aria-current={selected ? 'true' : undefined}
@@ -39,6 +40,7 @@ const MoreRows = ({ hidden, invalidRows, disabled, darkMode, onSelect }) => {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          type="button"
           variant="outline"
           aria-label={hasInvalid ? 'More rows, has errors' : 'More rows'}
           aria-haspopup="menu"
@@ -113,6 +115,7 @@ export const AddNewRowPicker = ({ count, active, invalidRows, disabled, darkMode
         )
       )}
       <Button
+        type="button"
         variant="primary"
         aria-label="Add another row"
         data-cy="add-another-row-button"
@@ -129,6 +132,7 @@ export const AddNewRowPicker = ({ count, active, invalidRows, disabled, darkMode
       </span>
       {count > 1 && (
         <Button
+          type="button"
           variant="ghost"
           size="small"
           data-cy="remove-row-button"

@@ -64,6 +64,9 @@ export const AddNewRowForm = ({
       })}
       aria-busy={saving || undefined}
       onKeyDown={(event) => {
+        // The table can sit inside a Form widget, whose <form> would take Enter in a text input as "submit" and
+        // reset its fields. Enter in a field does nothing here (a textarea still adds its line).
+        if (event.key === 'Enter' && event.target instanceof HTMLInputElement) event.preventDefault();
         // an open menu or calendar has already used the Escape, and marked it as handled
         if (!isDialog && event.key === 'Escape' && !event.defaultPrevented) onEscape?.();
       }}
@@ -151,6 +154,7 @@ export const AddNewRowForm = ({
 
       <div className="tw-flex tw-h-[70px] tw-shrink-0 tw-items-center tw-justify-end tw-gap-2 tw-border-0 tw-border-t tw-border-solid tw-border-border-default tw-px-4">
         <Button
+          type="button"
           variant="outline"
           className={cn('tw-h-9 tw-text-lg', saving && 'tw-opacity-50')}
           data-cy="discard-button"
@@ -160,6 +164,7 @@ export const AddNewRowForm = ({
           Cancel
         </Button>
         <Button
+          type="button"
           variant="primary"
           className={cn('tw-h-9 tw-text-lg', THEME_PRIMARY_BUTTON_CLASS, saving && 'tw-opacity-60')}
           data-cy="save-button"
