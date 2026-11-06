@@ -1,7 +1,7 @@
 import { Command } from '@oclif/core';
 import * as inquirer from 'inquirer';
 
-import { Auth } from '../lib/library/auth';
+import { Auth, keptDefaultNote } from '../lib/library/auth';
 import { ApiClient } from '../lib/library/api-client';
 import { validateOriginUrl, validateApiToken } from '../lib/library/target-validation';
 import { formatError } from '../lib/log';
@@ -44,9 +44,11 @@ export default class Login extends Command {
       process.exit(1);
     }
 
-    Auth.save(me.organizationId, originUrl, apiToken, me.email);
+    const saved = Auth.save(me.organizationId, originUrl, apiToken, me.email);
 
     this.log(`✓ Authenticated as ${me.email}`);
+    // A mocked save (the command tests) returns nothing.
+    if (saved && !saved.isDefault) this.log(keptDefaultNote(originUrl, saved.defaultUrl));
     // this.log(`✓ Saved credentials for ${workspaceId} workspace on ${originUrl.trim()}`);
   }
 }

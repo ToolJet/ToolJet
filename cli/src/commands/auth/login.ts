@@ -3,7 +3,7 @@ import { spawn } from 'child_process';
 import * as os from 'os';
 import fetch = require('node-fetch');
 
-import { Auth } from '../../lib/library/auth';
+import { Auth, keptDefaultNote } from '../../lib/library/auth';
 import { ApiClient } from '../../lib/library/api-client';
 import { validateOriginUrl } from '../../lib/library/target-validation';
 import { deviceLogin } from '../../lib/app/device-login';
@@ -25,11 +25,19 @@ export default class AuthLogin extends Command {
   static description =
     'Sign in through the browser: approve the code this shows on your ToolJet instance. The token is stored in ~/.tooljet/credentials.json and never printed.';
 
-  static examples = ['$ tooljet auth login --url https://tooljet.example.com'];
+  static examples = [
+    '$ tooljet auth login --url https://tooljet.example.com',
+    '$ tooljet auth login --url https://tooljet.example.com --default   # also make it the default login',
+  ];
 
   static flags = {
     url: Flags.string({ description: 'Your ToolJet instance (its API origin)', required: true }),
     browser: Flags.boolean({ description: 'Open the approve page in the browser', default: true, allowNo: true }),
+    default: Flags.boolean({
+      description:
+        'Make this the default login even when another instance is signed in (projects always use their own instance)',
+      default: false,
+    }),
   };
 
   async run(): Promise<void> {
@@ -50,8 +58,9 @@ export default class AuthLogin extends Command {
       });
       // Check the token before keeping it, as `tooljet login` does.
       const me = await new ApiClient(origin, result.token).login();
-      Auth.save(me.organizationId, origin, result.token, me.email);
-      this.log(formatSuccess(`Signed in as ${me.email}. Credentials saved to ~/.tooljet/credentials.json`));
+      const saved = Auth.save(me.organizationId, origin, result.token, me.email, flags.default ? { makeDefault: true } : {});
+      this.log(formatSuccess(`Signed in to ${origin} as ${me.email}. Credentials saved to ~/.tooljet/credentials.json`));
+      if (!saved.isDefault) this.log(keptDefaultNote(origin, saved.defaultUrl));
     } catch (err) {
       this.log(formatError((err as Error).message));
       process.exit(1);
