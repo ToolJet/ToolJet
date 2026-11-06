@@ -129,14 +129,28 @@ const queryPeriodicTimers = new Map(); // queryId -> { timeoutId, intervalMs, mo
 // Queries explicitly paused via the pausePeriodicRun CSA. Reconcile must not
 // auto-restart these (a manual run / option edit shouldn't override a pause).
 const pausedPeriodicQueries = new Set();
-// Consecutive failed periodic runs per query, for the `pauseAfterFailures` auto-pause.
-const periodicFailureCounts = new Map();
+// The current run chain per query: armed by its first run, ended by clearPeriodicTimer. Holds the
+// consecutive failed periodic runs for the `pauseAfterFailures` auto-pause. A tick keeps a reference
+// to its chain, so a run that settles after its chain ended (teardown, then a re-arm with the same
+// query id) can't count toward, or pause, the new chain.
+const periodicChains = new Map(); // queryId -> { failures }
 // Queries whose tick fell while the tab was hidden; each runs once when the tab is visible again.
 const missedWhileHidden = new Set();
 let visibilityListenerAdded = false;
 // setTimeout stores its delay as a signed 32-bit int (~24.8 days); a larger delay overflows and
 // fires almost immediately, which would re-run the query back to back.
 const MAX_PERIODIC_INTERVAL_MS = 2 ** 31 - 1;
+// Shortest gap between an idle chain's option checks. A chain is idle while its toggle is off or its
+// interval is invalid; it re-checks so a changed fx value can resume polling. Without this floor a
+// 10 ms query would wake the page about 100 times a second while nothing runs.
+// - 250 ms keeps that down to 4 checks a second per idle query (each resolves two options and
+//   schedules a timer), yet resuming via fx still feels close to immediate.
+// - It only applies to intervals shorter than this; slower queries re-check at their own interval.
+// - Editor edits don't wait for it: updateDataQuery calls reconcileQueryPeriodicRun, which
+//   restarts an idle chain right away.
+// TODO: re-check on dependency-graph changes to the toggle/interval references instead of polling,
+// keeping a slow fallback for untracked expressions such as `{{new Date().getHours() < 18}}`.
+const IDLE_RECHECK_MS = 250;
 // Last invalid `pauseAfterFailures` value warned about per query, so each bad value warns once.
 const warnedFailureThresholds = new Map();
 
@@ -175,14 +189,16 @@ function runMissedPeriodicTicks() {
 
 // Track a periodic run's outcome and stop the timer once `pauseAfterFailures` consecutive runs
 // failed. Only ticks are counted; running the query again (manually / event) re-arms it.
-function recordPeriodicRunResult(query, moduleId, store, status) {
+// A result from a chain that has since ended is ignored.
+function recordPeriodicRunResult(query, moduleId, store, status, chain) {
+  if (periodicChains.get(query.id) !== chain) return;
   if (status === 'ok') {
-    periodicFailureCounts.delete(query.id);
+    chain.failures = 0;
     return;
   }
   if (status !== 'failed') return; // aborted / skipped runs don't count either way
-  const failures = (periodicFailureCounts.get(query.id) ?? 0) + 1;
-  periodicFailureCounts.set(query.id, failures);
+  chain.failures += 1;
+  const { failures } = chain;
   const threshold = resolveFailureThreshold(query, moduleId, store);
   if (!threshold || failures < threshold || !queryPeriodicTimers.has(query.id)) return;
   clearPeriodicTimer(query.id);
@@ -198,7 +214,8 @@ function recordPeriodicRunResult(query, moduleId, store, status) {
 
 // Resolve the current desired state from a query's options. `runPeriodically`
 // may be a boolean (fx off) or a `{{…}}` expression (fx on); `queryRunInterval`
-// may be a number, a numeric string, or an expression. Returns the run decision
+// may be a number, a numeric string, or an expression resolving to either; anything else
+// (a boolean, an array, an object, a blank string) is invalid. Returns the run decision
 // plus the capped interval (null when it shouldn't run / is invalid). There is no floor: a tick
 // is skipped while the previous run is in flight, so runs never overlap.
 function resolvePeriodicConfig(query, moduleId, store) {
@@ -206,7 +223,9 @@ function resolvePeriodicConfig(query, moduleId, store) {
   const shouldRun = !!store.getResolvedValue(options.runPeriodically, {}, moduleId);
   if (!shouldRun) return { shouldRun: false, intervalMs: null };
   const rawInterval = store.getResolvedValue(options.queryRunInterval, {}, moduleId);
-  const num = Number(rawInterval);
+  // Number() alone would turn true and [1] into 1 (a 1 ms loop) and ' ' into 0.
+  const isNumeric = typeof rawInterval === 'number' || (typeof rawInterval === 'string' && rawInterval.trim() !== '');
+  const num = isNumeric ? Number(rawInterval) : NaN;
   // shouldRun stays true so the caller can tell "misconfigured interval" apart from
   // "toggle off" and warn once on a real start attempt (not on every reconcile).
   if (!Number.isFinite(num) || num <= 0) {
@@ -222,13 +241,16 @@ function resolvePeriodicConfig(query, moduleId, store) {
 // The tick re-arms itself, so the chain continues; re-resolving config each tick lets a
 // changed fx interval / toggle-off take effect without an explicit reconcile.
 // `idle` marks a chain whose toggle/fx is off or interval invalid: it keeps checking at the last
-// valid interval without running, so re-enabling or fixing it resumes polling with no extra run.
+// valid interval (at least IDLE_RECHECK_MS) without running, so re-enabling or fixing it resumes
+// polling with no extra run.
 function armPeriodicTimer(queryId, moduleId, intervalMs, getStore, { delayMs = intervalMs, idle = false } = {}) {
   // Idempotent: clear any pending timer before scheduling (avoids HMR/re-run dupes and
   // resets the clock when a fresh run re-anchors the next tick).
   if (queryPeriodicTimers.has(queryId)) {
     clearTimeout(queryPeriodicTimers.get(queryId).timeoutId);
   }
+  if (!periodicChains.has(queryId)) periodicChains.set(queryId, { failures: 0 });
+  const chain = periodicChains.get(queryId);
   const timeoutId = setTimeout(() => {
     const store = getStore();
     const query = store.dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === queryId);
@@ -238,7 +260,12 @@ function armPeriodicTimer(queryId, moduleId, intervalMs, getStore, { delayMs = i
     }
     const { shouldRun, intervalMs: nextMs, invalid } = resolvePeriodicConfig(query, moduleId, store);
     if (!shouldRun || invalid) {
-      armPeriodicTimer(queryId, moduleId, intervalMs, getStore, { idle: true });
+      // Go idle: keep the last valid interval for when it resumes, but check no more often than
+      // IDLE_RECHECK_MS.
+      armPeriodicTimer(queryId, moduleId, intervalMs, getStore, {
+        delayMs: Math.max(intervalMs, IDLE_RECHECK_MS),
+        idle: true,
+      });
       return;
     }
     // Re-arm BEFORE running so the chain survives even when this tick skips the run.
@@ -262,8 +289,8 @@ function armPeriodicTimer(queryId, moduleId, intervalMs, getStore, { delayMs = i
     Promise.resolve(
       store.queryPanel.runQuery(queryId, query.name, true, mode, {}, undefined, undefined, false, false, moduleId)
     )
-      .then((result) => recordPeriodicRunResult(query, moduleId, getStore(), result?.status))
-      .catch(() => recordPeriodicRunResult(query, moduleId, getStore(), 'failed'));
+      .then((result) => recordPeriodicRunResult(query, moduleId, getStore(), result?.status, chain))
+      .catch(() => recordPeriodicRunResult(query, moduleId, getStore(), 'failed', chain));
   }, delayMs);
   queryPeriodicTimers.set(queryId, { timeoutId, intervalMs, moduleId, getStore, idle });
   if (!visibilityListenerAdded) {
@@ -283,7 +310,7 @@ export function clearPeriodicTimer(queryId, { forgetPaused = false } = {}) {
     clearTimeout(queryPeriodicTimers.get(queryId).timeoutId);
     queryPeriodicTimers.delete(queryId);
   }
-  periodicFailureCounts.delete(queryId);
+  periodicChains.delete(queryId);
   missedWhileHidden.delete(queryId);
   if (forgetPaused) pausedPeriodicQueries.delete(queryId);
 }
@@ -293,7 +320,7 @@ export function clearAllPeriodicTimers() {
   queryPeriodicTimers.forEach(({ timeoutId }) => clearTimeout(timeoutId));
   queryPeriodicTimers.clear();
   pausedPeriodicQueries.clear();
-  periodicFailureCounts.clear();
+  periodicChains.clear();
   missedWhileHidden.clear();
   warnedFailureThresholds.clear();
 }

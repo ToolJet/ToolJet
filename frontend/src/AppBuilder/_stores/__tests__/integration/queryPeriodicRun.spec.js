@@ -92,6 +92,17 @@ describe('run query periodically', () => {
     expect(didRun()).toBe(true);
   });
 
+  test.each([
+    ['true', true],
+    ['an array', [1]],
+    ['a blank string', ' '],
+  ])('an interval that is %s is invalid and never runs', (_, queryRunInterval) => {
+    seedPeriodicQuery({ queryRunInterval });
+
+    jest.advanceTimersByTime(3000);
+    expect(didRun()).toBe(false);
+  });
+
   test('an option edit never starts a timer for a query that has not run', () => {
     seedApp({});
     state().dataQuery.setQueries(
@@ -142,6 +153,20 @@ describe('run query periodically', () => {
 
       setOptions(query, { queryRunInterval: 1000 });
       jest.advanceTimersByTime(1000);
+      expect(didRun()).toBe(true);
+    });
+
+    test('an idle short-interval chain re-checks its options at most every 250ms', () => {
+      const query = seedPeriodicQuery({ queryRunInterval: 10 });
+
+      setOptions(query, { runPeriodically: false });
+      jest.advanceTimersByTime(10); // this tick idles; the next check is 250ms later, not 10ms
+      // Set directly in the store, as a changed fx value would be; editor edits reconcile at once.
+      setOptions(query, { runPeriodically: true });
+
+      jest.advanceTimersByTime(249);
+      expect(didRun()).toBe(false);
+      jest.advanceTimersByTime(1);
       expect(didRun()).toBe(true);
     });
 
@@ -243,6 +268,32 @@ describe('run query periodically', () => {
       await waitFor(() => expect(runs.length).toBeGreaterThanOrEqual(3), { timeout: 5000 });
       expect(pausedLogs()).toHaveLength(0);
       expect(thresholdWarnings()).toHaveLength(1);
+    }, 10000);
+
+    test('a failure from a run that started before the timers were reset does not pause the new chain', async () => {
+      const runs = [];
+      let releaseFirstRun;
+      const firstRunHeld = new Promise((resolve) => (releaseFirstRun = resolve));
+      server.use(
+        http.post('*/data-queries/:queryId/run', async () => {
+          runs.push(runs.length);
+          if (runs.length === 1) {
+            await firstRunHeld;
+            return HttpResponse.json({ statusCode: 500, message: 'Service unavailable' }, { status: 500 });
+          }
+          return HttpResponse.json({ status: 'ok', data: [] });
+        })
+      );
+      seedPeriodicQuery({ pauseAfterFailures: '1', queryRunInterval: 100 }, 'q-stale-failure');
+      await waitFor(() => expect(runs).toHaveLength(1));
+
+      // Teardown, then a fresh chain for the same query (e.g. a reload that runs it on load).
+      clearAllPeriodicTimers();
+      reconcileQueryPeriodicRun('q-stale-failure', 'canvas', state);
+      releaseFirstRun();
+
+      await waitFor(() => expect(runs.length).toBeGreaterThanOrEqual(3), { timeout: 4000 });
+      expect(pausedLogs()).toHaveLength(0);
     }, 10000);
 
     test('without a threshold, failing runs keep going', async () => {
