@@ -10,7 +10,12 @@ export interface ISessionService {
 
   sign(JWTPayload: any): string;
 
-  validateUserSession(userId: string, sessionId: string, organizationId?: string): Promise<void>;
+  validateUserSession(
+    userId: string,
+    sessionId: string,
+    organizationId?: string,
+    options?: { fixedExpiry?: boolean }
+  ): Promise<void>;
 
   createSession(
     userId: string,

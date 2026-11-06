@@ -1,3 +1,4 @@
+import { lastValueFrom, of } from 'rxjs';
 import { FEATURE_KEY as GROUP_FEATURE } from '@modules/group-permissions/constants';
 import { ForbiddenException } from '@nestjs/common';
 import { MODULES } from '@modules/app/constants/modules';
@@ -270,6 +271,65 @@ describe('PatScopeInterceptor', () => {
       if (feature === GROUP_FEATURE.USER_ROLE_CHANGE) expect(invoke).toThrow(ForbiddenException);
       else expect(invoke()).toBe('HANDLED');
     }
+  });
+
+  describe('AI builder session on the library routes', () => {
+    const WS = 'ws-1';
+    const AI_APP = 'app-ai';
+    // apps: AI_APP in WS, 'app-other-ws' elsewhere; library 'lib-other' is used by 'app-other' in WS.
+    const dataSource = {
+      query: async (sql: string, params: any[]) => {
+        if (sql.includes('FROM apps WHERE id')) {
+          const orgs = { [AI_APP]: WS, 'app-other-ws': 'ws-2' };
+          return orgs[params[0]] ? [{ organization_id: orgs[params[0]] }] : [];
+        }
+        // library-ownership.ts: owners (stored code links) and references (components, pins) answer alike here.
+        return params[1] === 'lib-other' ? [{ appId: 'app-other' }] : params[1] === 'lib-own' ? [{ appId: AI_APP }] : [];
+      },
+    };
+    const libraryInterceptor = (feature: string) =>
+      new PatScopeInterceptor(
+        { get: (key: string) => (key === 'tjModuleId' ? MODULES.CUSTOM_COMPONENT_LIBRARIES : feature) } as any,
+        dataSource as any
+      );
+    const handled = { handle: () => of('HANDLED') } as any;
+    const aiSession = (extra: any = {}) => ({
+      isPATLogin: true,
+      tjApiSource: 'ai_builder',
+      organizationId: WS,
+      aiAppId: AI_APP,
+      ...extra,
+    });
+    const run = (feature: string, user: any, request: any = {}) =>
+      lastValueFrom(libraryInterceptor(feature).intercept(contextFor(user, 'http', request), handled) as any);
+
+    it('lets it create and publish its own app library', async () => {
+      await expect(run('FIND_OR_CREATE_LIBRARY', aiSession(), { body: { correlationId: 'lib-new' } })).resolves.toBe('HANDLED');
+      await expect(run('UPLOAD_DEV_BUNDLE', aiSession(), { params: { correlationId: 'lib-own' } })).resolves.toBe('HANDLED');
+      await expect(run('LIST_LIBRARIES', aiSession())).resolves.toBe('HANDLED');
+    });
+
+    it("refuses another app's library", async () => {
+      await expect(run('PUBLISH_REVISION', aiSession(), { params: { correlationId: 'lib-other' } })).rejects.toThrow(
+        /library of the app it is building/
+      );
+    });
+
+    it('refuses another workspace', async () => {
+      await expect(
+        run('FIND_OR_CREATE_LIBRARY', aiSession(), { headers: { 'tj-workspace-id': 'ws-2' }, body: { correlationId: 'lib-new' } })
+      ).rejects.toThrow(/its own workspace/);
+      await expect(
+        run('FIND_OR_CREATE_LIBRARY', aiSession({ aiAppId: 'app-other-ws' }), { body: { correlationId: 'lib-new' } })
+      ).rejects.toThrow(/not in this workspace/);
+    });
+
+    it('refuses a session with no app, and routes it does not need', async () => {
+      await expect(run('FIND_OR_CREATE_LIBRARY', aiSession({ aiAppId: undefined }), { body: { correlationId: 'lib-new' } })).rejects.toThrow(
+        /not tied to an app/
+      );
+      await expect(run('DELETE_LIBRARY', aiSession())).rejects.toThrow(ForbiddenException);
+    });
   });
 
   it('blocks a workspace PAT on a module outside the allowlist', () => {
