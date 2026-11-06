@@ -123,6 +123,23 @@ const compare = (a: unknown, b: unknown) => {
 // tag, boolean, html: sanitised markup, also columnType 'html'), align, width, sorter
 // and, for tags, colors { value: color }. Numbers are grouped and right-aligned. Events: onRowClick (Ant's
 // onRow onClick), onChange (page or sort), onSelectionChange (rowSelection onChange).
+// Ant draws a row's `children` as nested rows (tree data) and threw on any that is not a list
+// ((data || []).forEach is not a function): a query row with a children field of text crashed the widget (QA item 40).
+// Tree data is kept when every children field is a list of records, at every level; otherwise the rows are drawn flat,
+// as given, with children an ordinary field. Cut off at a depth no real tree reaches (a self-referencing object).
+const NO_TREE = { childrenColumnName: '__tjNoChildRows' };
+const isTree = (list: unknown[], depth = 0): boolean =>
+  depth < 32 &&
+  list.every((row) => {
+    const children = (row as Row | null)?.children;
+    if (children === undefined || children === null) return true;
+    return (
+      Array.isArray(children) &&
+      children.every((c) => !!c && typeof c === 'object' && !Array.isArray(c)) &&
+      isTree(children, depth + 1)
+    );
+  });
+
 export const Table = () => {
   const [rawData] = ToolJet.useStateArray({
     name: 'dataSource',
@@ -229,6 +246,7 @@ export const Table = () => {
   });
 
   const rows = useMemo(() => toRows(rawData), [rawData]);
+  const tree = useMemo(() => isTree(rows), [rows]);
   const columns = useMemo(() => toColumns(rawColumns, rows), [rawColumns, rows]);
   const field = str(rowKey) || 'id';
   const keyed = useMemo(
@@ -370,6 +388,7 @@ export const Table = () => {
     <AntProvider tokens={tokens} fill className="tj-ant-table tj-ant-scroll">
       <AntTable<Row>
         dataSource={rows}
+        expandable={tree ? undefined : NO_TREE}
         columns={antColumns}
         title={title ? () => str(title).replace('{count}', String(rows.length)) : undefined}
         rowKey={(r) => keyOf.get(r) ?? ''}
