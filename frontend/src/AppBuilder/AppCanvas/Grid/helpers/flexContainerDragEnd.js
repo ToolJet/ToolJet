@@ -1,7 +1,8 @@
 import { useGridStore } from '@/_stores/gridStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { NO_OF_GRIDS } from '../../appCanvasConstants';
-import { getDroppableSlotIdOnScreen, getParentFromSlotId } from './dragEnd';
+import { isListviewCopyCanvasAtPoint } from '../gridUtils';
+import { getDroppableSlotIdOnScreen, getParentFromSlotId, DragContext } from './dragEnd';
 import {
   computeFlexInsertIndex,
   getEffectiveFlexDirectionForFlexContainer,
@@ -55,6 +56,12 @@ export function handleFlexContainerDragEnd({
 
   // No actual movement — reset transform and bail
   if (!e.lastEvent) {
+    e.target.style.transform = '';
+    return true;
+  }
+
+  // The drops below bypass Grid's own gate, which refuses a read-only ListView record.
+  if (isListviewCopyCanvasAtPoint(e.clientX, e.clientY, [widgetId])) {
     e.target.style.transform = '';
     return true;
   }
@@ -132,6 +139,18 @@ export function handleFlexContainerDragEnd({
   }
 
   // ── Case 3: dragged out to grid canvas → synthesize absolute layout ─────────
+  // This path bypasses Grid's own drag-end, so it has to apply the same drop gate itself.
+  const dropContext = new DragContext({
+    widgets: boxList,
+    draggedWidgetId: widgetId,
+    sourceSlotId: sourceParentId,
+    targetSlotId,
+  });
+  if (!dropContext.isDroppable) {
+    e.target.style.transform = '';
+    return true;
+  }
+
   const canvasElId = targetSlotId === 'real-canvas' ? 'real-canvas' : `canvas-${targetSlotId}`;
   const canvasEl = document.getElementById(canvasElId);
   const canvasRect = canvasEl?.getBoundingClientRect() ?? { left: 0, top: 0 };

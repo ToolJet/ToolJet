@@ -4,42 +4,63 @@ export const listviewConfig = {
   description: 'List multiple items',
   defaultSize: {
     width: 15,
-    height: 450,
+    // 12 padding + 60 header + 6 x 80 records + 5 x 12 gaps + 12 padding: six records show, the rest scroll.
+    height: 624,
   },
+  // Seeded on drop only: saved ListViews keep their own children, so this is the new look (Figma 238:1379, list and grid).
   defaultChildren: [
     {
       componentName: 'Image',
-      layout: {
-        top: 10,
-        left: 3,
-        height: 80,
-        width: 6,
-      },
+      layout: { top: 20, left: 2, height: 40, width: 4 },
       properties: ['source'],
       accessorKey: 'imageURL',
+      creationValues: { styles: { borderType: 'rounded-circle', imageFit: 'cover' } },
     },
     {
       componentName: 'Text',
-      layout: {
-        top: 30,
-        left: 11,
-        height: 30,
-        width: 12,
-      },
+      layout: { top: 15, left: 7, height: 25, width: 17 },
       properties: ['text'],
-      accessorKey: 'text',
+      accessorKey: 'name',
+      creationValues: { styles: { fontWeight: 'bold' } },
     },
     {
-      componentName: 'Button',
-      layout: {
-        top: 30,
-        left: 25,
-        height: 30,
-        width: 17,
-      },
-      // incrementWidth: 2,
+      componentName: 'Text',
+      layout: { top: 40, left: 7, height: 25, width: 17 },
       properties: ['text'],
-      accessorKey: 'buttonText',
+      accessorKey: 'company',
+      creationValues: { styles: { textColor: 'var(--cc-placeholder-text)' } },
+    },
+    {
+      componentName: 'Tags',
+      layout: { top: 20, left: 26, height: 40, width: 16 },
+      creationValues: {
+        properties: {
+          // Without Dynamic tags the Tags widget shows its static sample options and ignores `data`.
+          advanced: '{{true}}',
+          data: "{{[{ title: listItem.role, color: 'color-mix(in srgb, var(--cc-primary-brand) 10%, transparent)', textColor: 'var(--cc-primary-text)' }]}}",
+        },
+        styles: { size: 'large', borderRadius: '14' },
+      },
+    },
+    // Seeded on drop only, and every drop is a new ListView, so saved ListViews never gain it.
+    {
+      componentName: 'Text',
+      slotName: 'header',
+      layout: {
+        top: 10,
+        left: 1,
+        height: 40,
+        width: 20,
+      },
+      properties: ['text'],
+      styles: ['fontWeight', 'textSize', 'textColor', 'verticalAlignment'],
+      defaultValue: {
+        text: 'List view',
+        fontWeight: 'bold',
+        textSize: 16,
+        textColor: 'var(--cc-primary-text)',
+        verticalAlignment: 'center',
+      },
     },
   ],
   component: 'Listview',
@@ -48,9 +69,15 @@ export const listviewConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    showHeader: {
+      type: 'toggle',
+      displayName: 'Show header',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'header',
+    },
     dataSourceSelector: {
       type: 'dropdownMenu',
-      displayName: 'Data source',
+      displayName: 'Populate data from',
       options: [{ name: 'Raw JSON', value: 'rawJson' }],
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'array' }, { type: 'object' }] } },
       newLine: true,
@@ -62,7 +89,8 @@ export const listviewConfig = {
         schema: {
           type: 'union',
           schemas: [
-            { type: 'array', element: { type: 'object' } },
+            // A null element is tolerated: a query row can be empty without voiding the whole list.
+            { type: 'array', element: { type: 'union', schemas: [{ type: 'object' }, { type: 'null' }] } },
             { type: 'array', element: { type: 'string' } },
           ],
         },
@@ -145,11 +173,11 @@ export const listviewConfig = {
       showLabel: false,
     },
     mode: {
-      type: 'select',
-      displayName: 'Mode',
+      type: 'switch',
+      displayName: 'Layout',
       options: [
-        { name: 'list', value: 'list' },
-        { name: 'grid', value: 'grid' },
+        { displayName: 'List', value: 'list' },
+        { displayName: 'Grid', value: 'grid' },
       ],
       validation: {
         schema: { type: 'string' },
@@ -157,8 +185,8 @@ export const listviewConfig = {
       },
     },
     columns: {
-      type: 'number',
-      displayName: 'Columns',
+      type: 'code',
+      displayName: 'Number of columns',
       validation: {
         schema: { type: 'number' },
         defaultValue: 3,
@@ -170,10 +198,19 @@ export const listviewConfig = {
     },
     rowHeight: {
       type: 'code',
-      displayName: 'Row height',
+      displayName: 'Record height',
       validation: {
         schema: { type: 'number' },
         defaultValue: 100,
+      },
+    },
+    // Resolved per record with `listItem`, so the expression is read from the saved definition, not from the resolved value.
+    disableRecords: {
+      type: 'code',
+      displayName: 'Disable records',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
       },
     },
     showBorder: {
@@ -182,10 +219,6 @@ export const listviewConfig = {
       validation: {
         schema: { type: 'boolean' },
         defaultValue: true,
-      },
-      conditionallyRender: {
-        key: 'mode',
-        value: 'list',
       },
     },
     enablePagination: {
@@ -196,9 +229,29 @@ export const listviewConfig = {
         defaultValue: false,
       },
     },
+    serverSidePagination: {
+      type: 'clientServerSwitch',
+      displayName: 'Type',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      options: [
+        { displayName: 'Client side', value: 'clientSide' },
+        { displayName: 'Server side', value: 'serverSide' },
+      ],
+    },
     rowsPerPage: {
       type: 'code',
-      displayName: 'Rows per page',
+      displayName: 'Number of records per page',
+      validation: {
+        schema: { type: 'number' },
+        defaultValue: 10,
+      },
+    },
+    totalRecords: {
+      type: 'code',
+      displayName: 'Total records',
       validation: {
         schema: { type: 'number' },
         defaultValue: 10,
@@ -208,15 +261,87 @@ export const listviewConfig = {
   events: {
     onRowClicked: { displayName: 'Row clicked (Deprecated)' },
     onRecordClicked: { displayName: 'Record clicked' },
+    onRecordHovered: { displayName: 'Record hovered' },
+    onPageChanged: { displayName: 'On page change' },
   },
   styles: {
+    headerBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: { schema: { type: 'string' }, defaultValue: 'transparent' },
+      accordian: 'Header',
+    },
+    headerDividerColor: {
+      type: 'colorSwatches',
+      displayName: 'Divider',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-weak-border)' },
+      accordian: 'Header',
+    },
+    listStyle: {
+      type: 'select',
+      displayName: 'List style',
+      options: [
+        { name: 'Bordered', value: 'bordered' },
+        { name: 'Container', value: 'container' },
+        { name: 'Plain', value: 'plain' },
+        { name: 'Legacy', value: 'legacy' },
+      ],
+      validation: { schema: { type: 'string' }, defaultValue: 'legacy' },
+      accordian: 'Records',
+    },
+    gap: {
+      type: 'numberInput',
+      displayName: 'Gap',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 12 },
+      conditionallyRender: { key: 'listStyle', value: ['bordered', 'container', 'plain'] },
+      accordian: 'Records',
+    },
+    recordBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
+      conditionallyRender: { key: 'listStyle', value: ['bordered', 'container'] },
+      accordian: 'Records',
+    },
+    recordDividerColor: {
+      type: 'colorSwatches',
+      displayName: 'Divider',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-weak-border)' },
+      conditionallyRender: { key: 'listStyle', value: 'bordered' },
+      accordian: 'Records',
+    },
+    recordBorderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-weak-border)' },
+      conditionallyRender: { key: 'listStyle', value: 'container' },
+      accordian: 'Records',
+    },
+    recordBorderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
+      prefixIcon: 'corners',
+      staticText: '',
+      conditionallyRender: { key: 'listStyle', value: 'container' },
+      accordian: 'Records',
+    },
+    // No default: a missing value means no shadow, since the shadow field cannot parse 'none'.
+    recordBoxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      conditionallyRender: { key: 'listStyle', value: 'container' },
+      accordian: 'Records',
+    },
     backgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Background color',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
       },
+      accordian: 'Container',
     },
     borderColor: {
       type: 'colorSwatches',
@@ -225,24 +350,56 @@ export const listviewConfig = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-weak-border)',
       },
+      accordian: 'Container',
     },
     borderRadius: {
-      type: 'number',
+      type: 'numberInput',
       displayName: 'Border radius',
       validation: {
-        schema: { type: 'number' },
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         defaultValue: 6,
       },
+      accordian: 'Container',
+      prefixIcon: 'corners',
+      staticText: '',
     },
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box shadow',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      accordian: 'Container',
     },
   },
   exposedVariables: {
     data: [{}],
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
+    pageIndex: 1,
+    selectedRecordIndex: undefined,
   },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setPage',
+      displayName: 'Set page',
+      params: [{ handle: 'page', displayName: 'Page', defaultValue: '{{1}}' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -274,6 +431,11 @@ export const listviewConfig = {
       showBorder: { value: '{{true}}' },
       rowsPerPage: { value: '{{10}}' },
       enablePagination: { value: '{{false}}' },
+      // Old look: the server merges these under every saved ListView; no gridRecordHeight, so saved grids keep rowHeight.
+      showHeader: { value: '{{false}}' },
+      serverSidePagination: { value: '{{false}}' },
+      totalRecords: { value: '{{10}}' },
+      disableRecords: { value: '{{false}}' },
     },
     events: [],
     styles: {
@@ -281,6 +443,40 @@ export const listviewConfig = {
       borderColor: { value: 'var(--cc-weak-border)' },
       borderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      // No record colour/border/shadow defaults: the legacy style renders from the widget's own styles.
+      listStyle: { value: 'legacy' },
+      gap: { value: '{{0}}' },
+      recordBorderRadius: { value: '{{0}}' },
+      headerBackgroundColor: { value: 'transparent' },
+      headerDividerColor: { value: 'var(--cc-weak-border)' },
+    },
+  },
+  // New look, merged over `definition` only on drop so saved ListViews keep the old one.
+  creationDefinition: {
+    properties: {
+      data: {
+        value: `{{[
+    { imageURL: 'https://randomuser.me/api/portraits/men/32.jpg', name: 'Henry, Arthur', company: 'Big Kahuna Burger Ltd.', role: 'Project manager' },
+    { imageURL: 'https://randomuser.me/api/portraits/women/44.jpg', name: 'Cooper, Kristin', company: 'Barone LLC.', role: 'Chief executive officer' },
+    { imageURL: 'https://randomuser.me/api/portraits/men/75.jpg', name: 'Black, Marvin', company: 'Abstergo Ltd.', role: 'Systems analyst' },
+    { imageURL: 'https://randomuser.me/api/portraits/women/12.jpg', name: 'Nguyen, Shane', company: 'Binford Ltd.', role: 'Marketing director' },
+    { imageURL: 'https://randomuser.me/api/portraits/women/65.jpg', name: 'Flores, Juanita', company: 'Acme Co.', role: 'Sociologist' },
+    { imageURL: 'https://randomuser.me/api/portraits/women/26.jpg', name: 'Miles, Esther', company: 'Biffco Enterprises Ltd.', role: 'Photographer' },
+    { imageURL: 'https://randomuser.me/api/portraits/women/33.jpg', name: 'Flores, Juanita', company: 'Barone LLC.', role: 'Waitress' },
+    { imageURL: 'https://randomuser.me/api/portraits/women/90.jpg', name: 'Miles, Esther', company: 'Binford Ltd.', role: 'Flight engineer' },
+  ]}}`,
+      },
+      showHeader: { value: '{{true}}' },
+      rowHeight: { value: '80' },
+      gridRecordHeight: { value: '170' },
+    },
+    styles: {
+      listStyle: { value: 'bordered' },
+      gap: { value: '{{12}}' },
+      recordBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      recordDividerColor: { value: 'var(--cc-weak-border)' },
+      recordBorderColor: { value: 'var(--cc-weak-border)' },
+      recordBorderRadius: { value: '{{6}}' },
     },
   },
 };

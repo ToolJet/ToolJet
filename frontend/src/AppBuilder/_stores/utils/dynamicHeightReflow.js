@@ -9,6 +9,17 @@ import {
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { isProperNumber } from '../utils';
 import { resolveFlexContainerHeight } from './dynamicHeightReflowFlexContainer';
+import {
+  getListviewMode,
+  getRowsPerPage,
+  HEADER_HEIGHT,
+  PAGER_FOOTER_HEIGHT,
+  LEGACY_PADDING,
+  NEW_STYLE_PADDING,
+  getListStyle,
+  getRecordGap,
+  getRecordHeight,
+} from '@/AppBuilder/Widgets/Listview/listStyleLayout';
 
 // Tabs tab-strip rendered height (49.5 ul + 0.5 border in Tabs.jsx).
 const TABS_TAB_BAR_HEIGHT = 50;
@@ -416,15 +427,22 @@ const getExtraContainerHeight = ({
 
 // Rendered row count in a Listview, respecting pagination.
 const getListviewRenderedRowCount = (componentProperties = {}) => {
-  const { dataSourceSelector, data, enablePagination = false, rowsPerPage = 10 } = componentProperties;
+  const {
+    dataSourceSelector,
+    data,
+    enablePagination = false,
+    serverSidePagination = false,
+    rowsPerPage = 10,
+  } = componentProperties;
   const resolvedData = dataSourceSelector === 'rawJson' ? data : dataSourceSelector;
   const totalRows = Array.isArray(resolvedData) ? resolvedData.length : 0;
 
-  if (!enablePagination) {
+  // Server side renders the whole of `data`: the query already returned one page.
+  if (!enablePagination || serverSidePagination) {
     return totalRows;
   }
 
-  return Math.min(Number(rowsPerPage) || 10, totalRows);
+  return Math.min(getRowsPerPage(rowsPerPage), totalRows);
 };
 
 // Real height one Listview row occupies = max bottom of its template children
@@ -477,13 +495,15 @@ export const resolveListviewHeightFromRows = ({
     temporaryLayouts,
     context,
   });
+  const mode = getListviewMode(componentProperties.mode);
   const baseRowHeight =
     templateRowHeight ||
-    componentProperties.rowHeight ||
+    getRecordHeight(mode, componentProperties.rowHeight, componentProperties.gridRecordHeight) ||
     getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ||
     0;
-  const mode = componentProperties.mode ?? 'list';
   const positiveColumns = Math.max(Number(componentProperties.columns) || 1, 1);
+  const listStyle = getListStyle(component?.styles?.listStyle);
+  const isLegacy = listStyle === 'legacy';
   const rowHeights = Array.from({ length: rowCount }, (_, rowIndex) => {
     const rowContext = [...(context || []), rowIndex];
     const rowLayout = temporaryLayouts?.[getDynamicLayoutKey(componentId, rowContext, '', moduleId)];
@@ -504,14 +524,22 @@ export const resolveListviewHeightFromRows = ({
         }, 0)
       : rowHeights.reduce((totalHeight, rowHeight) => totalHeight + rowHeight, 0);
 
-  // Fixed allowances: per-row bottom border (list mode only), pagination bar,
-  // outer chrome (7px padding × 2 = 14 + 1px outer border × 2 = 2 + 2 safety
-  // for `.real-canvas` `calc(100% + 1px)` extension and rounding drift).
-  const borderAllowance = componentProperties.showBorder && mode === 'list' ? rowCount : 0;
-  const paginationAllowance = componentProperties.enablePagination ? 61 : 0;
-  const outerPaddingAllowance = 18;
+  // Fixed allowances: Legacy per-row bottom border (list mode only), pagination bar,
+  // outer chrome (padding × 2: 7px Legacy, 12px other styles; + 1px outer border × 2
+  // + 2 safety for `.real-canvas` `calc(100% + 1px)` extension and rounding drift).
+  const borderAllowance = isLegacy && componentProperties.showBorder && mode === 'list' ? rowCount : 0;
+  const paginationAllowance = componentProperties.enablePagination ? PAGER_FOOTER_HEIGHT : 0;
+  const outerPaddingAllowance = 18 + (isLegacy ? 0 : 2 * (NEW_STYLE_PADDING - LEGACY_PADDING));
+  // New styles space record lines by the gap (Bordered's line sits inside it); Legacy has no gap.
+  const recordLines = mode === 'grid' ? Math.ceil(rowCount / positiveColumns) : rowCount;
+  const gapAllowance = Math.max(0, recordLines - 1) * getRecordGap(listStyle, component?.styles?.gap);
 
-  return stackedRowsHeight + borderAllowance + paginationAllowance + outerPaddingAllowance;
+  // A shown header replaces the top padding with itself and a padding-sized gap, so only its height adds.
+  const headerAllowance = componentProperties.showHeader ? HEADER_HEIGHT : 0;
+
+  return (
+    stackedRowsHeight + borderAllowance + paginationAllowance + outerPaddingAllowance + gapAllowance + headerAllowance
+  );
 };
 
 // Compute a container widget's target height from its children. Called on the
@@ -551,7 +579,12 @@ export const resolveContainerHeight = ({
   // Listview row with no queryable DOM (e.g. mobile): size it from its children instead of guessing rowHeight; fall back to rowHeight only when there are no children.
   if (componentType === 'Listview' && context && !isScopedContextRenderable) {
     const component = getResolvedComponent(componentId, context);
-    const rowHeightFallback = component?.properties?.rowHeight ?? containerHeight;
+    const rowHeightFallback =
+      getRecordHeight(
+        component?.properties?.mode,
+        component?.properties?.rowHeight,
+        component?.properties?.gridRecordHeight
+      ) ?? containerHeight;
     const childrenBottom = getListviewTemplateHeight({
       componentId,
       currentLayout,

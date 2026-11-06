@@ -29,7 +29,14 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection, computeAutoMobileLayout } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
-import { ROW_SCOPED_WIDGET_TYPES, NESTING_LEVEL_LIMITS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import {
+  ROW_SCOPED_WIDGET_TYPES,
+  NESTING_LEVEL_LIMITS,
+  NO_OF_GRIDS,
+  DEFAULT_CANVAS_WIDTH,
+  isListviewHeaderSlot,
+  isRowScopedCanvas,
+} from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
   calculateInputCanvasHeight,
   resolveInputCanvasAlignment,
@@ -37,7 +44,32 @@ import {
 } from './componentsSliceUtils';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import {
+  arrangeRecordChildren,
+  restoreRecordChildren,
+  snapshotRecordLayouts,
+} from '@/AppBuilder/Widgets/Listview/arrangeRecordChildren';
+import { getListviewMode, getRecordHeight, getRecordColumnPx } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
+import { useGridStore } from '@/_stores/gridStore';
 import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
+
+// Every `<id>-` prefix of every mapping key. getRowScopedDescendants runs per record, and the store replaces the
+// mapping object on each change, so the index is rebuilt only then.
+const slotKeyIndexes = new WeakMap();
+const getSlotKeysByOwner = (containerChildrenMapping) => {
+  let index = slotKeyIndexes.get(containerChildrenMapping);
+  if (index) return index;
+  index = new Map();
+  Object.keys(containerChildrenMapping).forEach((key) => {
+    for (let dash = key.indexOf('-'); dash !== -1; dash = key.indexOf('-', dash + 1)) {
+      const owner = key.slice(0, dash);
+      if (!index.has(owner)) index.set(owner, []);
+      index.get(owner).push(key);
+    }
+  });
+  slotKeyIndexes.set(containerChildrenMapping, index);
+  return index;
+};
 
 // calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
 const INPUT_COMPONENTS_FOR_FORM_SET = new Set(INPUT_COMPONENTS_FOR_FORM);
@@ -337,6 +369,28 @@ export const createComponentsSlice = (set, get) => ({
 
     saveComponentChanges(diff, 'components', 'update', moduleId);
     renameComponentNameIdMapping(oldName, newName, moduleId);
+
+    // A List View publishes its rows keyed by child name, so a rename must re-key every row.
+    const {
+      getComponentDefinition,
+      findNearestSubcontainerAncestor,
+      getComponentTypeFromId,
+      deriveListviewExposedData,
+    } = get();
+    const parentId = getComponentDefinition(componentId, moduleId)?.component?.parent;
+    const listviewId = parentId ? findNearestSubcontainerAncestor(parentId, moduleId) : null;
+    const listviewRows = listviewId && get().resolvedStore.modules[moduleId]?.exposedValues?.components?.[listviewId];
+    if (!listviewId || getComponentTypeFromId(listviewId, moduleId) !== 'Listview' || !listviewRows) return;
+    const rederive = (node, outerIndices) => {
+      if (Array.isArray(node)) {
+        node.forEach((entry, outerIndex) => rederive(entry, [...outerIndices, outerIndex]));
+        return;
+      }
+      Object.keys(node?.children ?? {}).forEach((rowIndex) =>
+        deriveListviewExposedData(listviewId, Number(rowIndex), outerIndices, moduleId)
+      );
+    };
+    rederive(listviewRows, []);
   },
 
   setQueryMapping: (moduleId = 'canvas') => {
@@ -441,7 +495,7 @@ export const createComponentsSlice = (set, get) => ({
       getCustomResolvables,
       setAllValueToComponent,
       getComponentDefinition,
-      getBaseParentId,
+      getRowScopedAncestorIds,
     } = get();
     let customResolvables = {};
     const parentId = component?.parent;
@@ -453,24 +507,8 @@ export const createComponentsSlice = (set, get) => ({
       // For components nested inside row-scoped ancestors, build parentIndices by walking up the ancestor chain.
       // Row-scoped parent IDs don't contain row indices — the row info is only available at render time.
       // At drop time, we use index 0 for each row-scoped ancestor as a default for initial resolution.
-      const parentIndices = [];
-
-      // Walk up the ancestor chain starting from the nearest row-scoped ancestor's parent
       const nearestDef = getComponentDefinition(nearestRowScopedAncestorId, moduleId);
-      let ancestorId = nearestDef?.component?.parent;
-      const ancestorVisited = new Set();
-      while (ancestorId) {
-        const baseAncestorId = getBaseParentId(ancestorId) || ancestorId;
-        if (ancestorVisited.has(baseAncestorId)) break;
-        ancestorVisited.add(baseAncestorId);
-        const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
-        const ancestorType = ancestorDef?.component?.component;
-        if (ROW_SCOPED_WIDGET_TYPES.includes(ancestorType)) {
-          // Add 0 at the beginning for each row-scoped ancestor (outer-most first)
-          parentIndices.unshift(0);
-        }
-        ancestorId = ancestorDef?.component?.parent;
-      }
+      const parentIndices = getRowScopedAncestorIds(nearestDef?.component?.parent, moduleId).map(() => 0);
 
       customResolvables = getCustomResolvables(nearestRowScopedAncestorId, null, moduleId, parentIndices);
     }
@@ -589,6 +627,9 @@ export const createComponentsSlice = (set, get) => ({
 
       if (index !== null) {
         updateResolvedValueForNonNullIndex(resolvedValue, index);
+      } else if (Array.isArray(componentResolvedValues[componentId]) && componentResolvedValues[componentId].length) {
+        // A skip-resolve value arrives without a row, but a component in a row is already stored per row.
+        componentResolvedValues[componentId].forEach((_row, i) => updateResolvedValueForNonNullIndex(resolvedValue, i));
       } else {
         if (!componentResolvedValues[componentId] || Object.keys(componentResolvedValues[componentId]).length === 0) {
           componentResolvedValues[componentId] = deepClone(DEFAULT_COMPONENT_STRUCTURE);
@@ -656,8 +697,7 @@ export const createComponentsSlice = (set, get) => ({
       getCustomResolvables,
       getCustomResolvableReference,
       findNearestSubcontainerAncestor,
-      getComponentDefinition,
-      getBaseParentId,
+      getRowScopedAncestorIds,
       updateRowScope,
     } = get();
 
@@ -684,20 +724,7 @@ export const createComponentsSlice = (set, get) => ({
 
     // Component is inside a ListView - need to handle N-level nesting
     // Build the parent hierarchy to find all ListView ancestors
-    const listviewAncestors = [];
-    let currentParentId = parentId;
-    const listviewAncestorVisited = new Set();
-    while (currentParentId) {
-      const baseId = getBaseParentId?.(currentParentId) || currentParentId;
-      if (listviewAncestorVisited.has(baseId)) break;
-      listviewAncestorVisited.add(baseId);
-      const parentDef = getComponentDefinition(baseId, moduleId);
-      const parentType = parentDef?.component?.component;
-      if (ROW_SCOPED_WIDGET_TYPES.includes(parentType)) {
-        listviewAncestors.unshift(baseId); // Add to front to maintain order from outer to inner
-      }
-      currentParentId = parentDef?.component?.parent;
-    }
+    const listviewAncestors = getRowScopedAncestorIds(parentId, moduleId);
 
     if (listviewAncestors.length === 0) {
       // Fallback - shouldn't happen but handle gracefully
@@ -761,7 +788,7 @@ export const createComponentsSlice = (set, get) => ({
         for (const i of indicesToResolve) {
           if (i >= resolvables.length) continue;
           const fullIndices = [...currentIndices, i];
-          if (scopeCtx) updateRowScope(scopeCtx, i);
+          if (scopeCtx) updateRowScope(scopeCtx, fullIndices);
           const resolvedValue = shouldResolve
             ? resolveDynamicValues(unResolvedValue, scopedState, resolvables[i] || {}, false, [])
             : value;
@@ -1489,7 +1516,7 @@ export const createComponentsSlice = (set, get) => ({
       }, {});
       const flexChildOrderUpdates = {};
 
-      newComponents.forEach((newComponent) => {
+      newComponents.forEach((newComponent, componentIndex) => {
         // Have added this condition to delete the oldName from the mapping if it exists due to cut pasting multiple times
         const oldName = getComponentNameFromId(newComponent.id, moduleId);
         if (oldName) {
@@ -1500,27 +1527,12 @@ export const createComponentsSlice = (set, get) => ({
         // For ListView, initialize customResolvables immediately after processing
         // so that child components processed later can access them
         if (newComponent.component.component === 'Listview') {
-          const { getResolvedComponent, updateCustomResolvables, getBaseParentId, getComponentDefinition } = get();
+          const { getResolvedComponent, updateCustomResolvables, getRowScopedAncestorIds } = get();
           const resolvedComponent = getResolvedComponent(newComponent.id, null, moduleId);
           const data = resolvedComponent?.properties?.data;
           if (Array.isArray(data) && data.length > 0) {
             // Build parentIndices for each row-scoped ancestor (outer-most first)
-            const parentIndices = [];
-            const componentParentId = newComponent.component.parent;
-            if (componentParentId) {
-              let ancestorId = componentParentId;
-              const ancestorVisited = new Set();
-              while (ancestorId) {
-                const baseAncestorId = getBaseParentId(ancestorId);
-                if (ancestorVisited.has(baseAncestorId)) break;
-                ancestorVisited.add(baseAncestorId);
-                const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
-                if (ROW_SCOPED_WIDGET_TYPES.includes(ancestorDef?.component?.component)) {
-                  parentIndices.unshift(0);
-                }
-                ancestorId = ancestorDef?.component?.parent;
-              }
-            }
+            const parentIndices = getRowScopedAncestorIds(newComponent.component.parent, moduleId).map(() => 0);
             const listItems = data.map((listItem) => ({ listItem }));
             updateCustomResolvables(newComponent.id, listItems, 'listItem', moduleId, parentIndices);
           }
@@ -1530,23 +1542,27 @@ export const createComponentsSlice = (set, get) => ({
         // Check if parent is a Form and add the component to form fields if needed
         !skipFormUpdate && checkIfParentIsFormAndAddField(newComponent.id, newComponent, parentId, moduleId);
         set(
-          withUndoRedo((state) => {
-            if (!state.containerChildrenMapping[parentId]) {
-              state.containerChildrenMapping[parentId] = [];
-            }
-            if (!state.containerChildrenMapping[parentId].includes(newComponent.id)) {
-              state.containerChildrenMapping[parentId].push(newComponent.id);
-            }
-            const page = state.modules[moduleId].pages.find((page) => page.id === currentPageId);
-            page.components[newComponent.id] = newComponent;
-            get().addFlexContainerChildOrderToDraft({
-              state,
-              page,
-              parentId,
-              childId: newComponent.id,
-              flexChildOrderUpdates,
-            });
-          }, skipUndoRedo),
+          withUndoRedo(
+            (state) => {
+              if (!state.containerChildrenMapping[parentId]) {
+                state.containerChildrenMapping[parentId] = [];
+              }
+              if (!state.containerChildrenMapping[parentId].includes(newComponent.id)) {
+                state.containerChildrenMapping[parentId].push(newComponent.id);
+              }
+              const page = state.modules[moduleId].pages.find((page) => page.id === currentPageId);
+              page.components[newComponent.id] = newComponent;
+              get().addFlexContainerChildOrderToDraft({
+                state,
+                page,
+                parentId,
+                childId: newComponent.id,
+                flexChildOrderUpdates,
+              });
+            },
+            skipUndoRedo,
+            { mergeWithPrevious: componentIndex > 0 }
+          ),
           false,
           'addComponentToCurrentPage'
         );
@@ -1877,11 +1893,11 @@ export const createComponentsSlice = (set, get) => ({
     componentLayouts,
     newParentId,
     moduleId = 'canvas',
-    { skipUndoRedo = false, updateParent = false, saveAfterAction = true, targetLayout } = {}
+    { skipUndoRedo = false, updateParent = false, saveAfterAction = true, targetLayout, mergeWithPrevious = false } = {}
   ) => {
     const {
       saveComponentChanges,
-      withUndoRedo,
+      withUndoRedo: baseWithUndoRedo,
       getComponentTypeFromId,
       setResolvedComponent,
       getComponentDefinition,
@@ -1894,6 +1910,8 @@ export const createComponentsSlice = (set, get) => ({
       addToDependencyGraph,
       removeNode,
     } = get();
+    // One user action spread over several writes undoes as one step.
+    const withUndoRedo = (fn, skip) => baseWithUndoRedo(fn, skip, { mergeWithPrevious });
     // Undo/redo replays a patch captured in another layout, so the caller can name the target.
     const layoutKey = targetLayout || currentLayout;
     const currentPageIndex = getCurrentPageIndex(moduleId);
@@ -2062,38 +2080,43 @@ export const createComponentsSlice = (set, get) => ({
       'setComponentLayout'
     );
 
-    Object.keys(componentLayouts).forEach((componentId) => {
+    Object.keys(componentLayouts).forEach((draggedId) => {
       const newParentComponentType = getComponentTypeFromId(newParentId, moduleId);
       const oldParentComponentType = getComponentTypeFromId(oldParentId, moduleId);
-      const { component } = getComponentDefinition(componentId, moduleId);
 
       if (
         ROW_SCOPED_WIDGET_TYPES.includes(newParentComponentType) ||
         ROW_SCOPED_WIDGET_TYPES.includes(oldParentComponentType)
       ) {
-        // Add the component to the resolved store
-        let resolvedComponentValues = { [componentId]: {} };
+        // A dragged wrapper carries its children, and their scope changed with it, not just its own.
+        const pageComponents = get().getCurrentPageComponents(moduleId);
+        const movedIds = [draggedId, ...getAllChildComponents(pageComponents, draggedId).map((child) => child.id)];
+        movedIds.forEach((componentId) => {
+          const { component } = getComponentDefinition(componentId, moduleId);
+          // Add the component to the resolved store
+          let resolvedComponentValues = { [componentId]: {} };
 
-        // Update resolved values and dependency graph for each object in the component
-        const objectsToUpdate = ['properties', 'general', 'generalStyles', 'others', 'styles', 'validation'];
+          // Update resolved values and dependency graph for each object in the component
+          const objectsToUpdate = ['properties', 'general', 'generalStyles', 'others', 'styles', 'validation'];
 
-        objectsToUpdate.forEach((paramType) => {
-          if (component.definition[paramType]) {
-            Object.entries(component.definition[paramType]).forEach(([property, value]) => {
-              checkValueAndResolve(
-                componentId,
-                paramType,
-                property,
-                value.value,
-                component,
-                resolvedComponentValues,
-                true,
-                moduleId
-              );
-            });
-          }
+          objectsToUpdate.forEach((paramType) => {
+            if (component.definition[paramType]) {
+              Object.entries(component.definition[paramType]).forEach(([property, value]) => {
+                checkValueAndResolve(
+                  componentId,
+                  paramType,
+                  property,
+                  value.value,
+                  component,
+                  resolvedComponentValues,
+                  true,
+                  moduleId
+                );
+              });
+            }
+          });
+          setResolvedComponent(componentId, resolvedComponentValues[componentId], moduleId);
         });
-        setResolvedComponent(componentId, resolvedComponentValues[componentId], moduleId);
 
         // // Clean up old dependency graph edges, rebuild deps, and re-resolve for the moved component
         // const rebuildComponentDeps = (cId, comp) => {
@@ -2267,6 +2290,91 @@ export const createComponentsSlice = (set, get) => ({
     get().multiplayer.broadcastUpdates({ componentId, updates }, 'components', 'update');
   },
 
+  arrangeListviewRecordChildren: (
+    listviewId,
+    previousMode,
+    nextMode,
+    moduleId = 'canvas',
+    { saveAfterAction = true } = {}
+  ) => {
+    const { getResolvedValue, getCurrentPageComponents, setComponentLayout, currentLayout } = get();
+    const toMode = getListviewMode(getResolvedValue(nextMode));
+    const fromMode = getListviewMode(getResolvedValue(previousMode));
+    if (toMode === fromMode || !['list', 'grid'].includes(toMode)) return;
+
+    const pageComponents = getCurrentPageComponents(moduleId);
+    const { properties = {} } = pageComponents[listviewId]?.component?.definition ?? {};
+    const recordHeight =
+      Number(
+        getResolvedValue(getRecordHeight(toMode, properties.rowHeight?.value, properties.gridRecordHeight?.value))
+      ) || 100;
+    const listview = pageComponents[listviewId];
+    const parentId = listview?.component?.parent;
+
+    const arrangeIn = (layoutKey, remembers) => {
+      const children = (get().containerChildrenMapping?.[listviewId] ?? [])
+        .map((id) => ({
+          id,
+          componentName: pageComponents[id]?.component?.component,
+          layout: pageComponents[id]?.layouts?.[layoutKey],
+        }))
+        .filter((child) => child.layout && !isNaN(child.layout.top) && !isNaN(child.layout.left));
+      // Both Layouts' column widths come from the same ListView width, so a child can keep its pixels.
+      // The canvas measured is the one on screen, so another view's width falls back to the default canvas.
+      const parentColumnPx =
+        (layoutKey === currentLayout &&
+          (useGridStore.getState().subContainerWidths[parentId || 'canvas'] ||
+            useGridStore.getState().subContainerWidths.canvas)) ||
+        DEFAULT_CANVAS_WIDTH / NO_OF_GRIDS;
+      const widthPx = (listview?.layouts?.[layoutKey]?.width ?? NO_OF_GRIDS) * parentColumnPx;
+      const listStyle = getResolvedValue(listview?.component?.definition?.styles?.listStyle?.value);
+      const sizing = {
+        listStyle,
+        width: widthPx,
+        gap: getResolvedValue(listview?.component?.definition?.styles?.gap?.value),
+        columns: getResolvedValue(properties.columns?.value),
+      };
+      const arrangeOptions = {
+        toMode,
+        fromMode,
+        recordHeight,
+        fromColumnPx: getRecordColumnPx({ ...sizing, mode: fromMode }),
+        toColumnPx: getRecordColumnPx({ ...sizing, mode: toMode }),
+      };
+      const memory = remembers ? (properties.recordLayouts?.value ?? {}) : {};
+      const remembered = remembers && Object.keys(memory[toMode] ?? {}).length > 0 ? memory[toMode] : null;
+      const layouts = remembered
+        ? restoreRecordChildren(children, remembered, arrangeOptions)
+        : arrangeRecordChildren(children, arrangeOptions);
+      if (Object.keys(layouts).length === 0) return;
+      if (remembers) {
+        // Only the children that exist now: a deleted child's saved box is dropped here.
+        const recordLayouts = { ...memory, [fromMode]: snapshotRecordLayouts(children) };
+        const pageIndex = get().getCurrentPageIndex(moduleId);
+        // Not an undo patch: a first write adds a key, and the undo replay reads an added or removed key as a component.
+        // Undo leaves the memory as it is, so an undone edit can come back on the next switch (Parth's call).
+        set(
+          (state) => {
+            const definition = state.modules[moduleId].pages[pageIndex].components[listviewId].component.definition;
+            definition.properties.recordLayouts = { value: recordLayouts };
+          },
+          false,
+          'arrangeListviewRecordChildren'
+        );
+      }
+      setComponentLayout(layouts, undefined, moduleId, {
+        saveAfterAction,
+        mergeWithPrevious: true,
+        targetLayout: layoutKey,
+      });
+    };
+
+    // Each Layout remembers its own last desktop layout, whichever view made the switch, so the desktop children
+    // always follow the mode. The mobile layouts are never remembered: they are arranged as before.
+    arrangeIn('desktop', true);
+    if (currentLayout !== 'desktop') arrangeIn(currentLayout, false);
+  },
+
   setComponentProperty: (
     componentId,
     property,
@@ -2380,6 +2488,16 @@ export const createComponentsSlice = (set, get) => ({
       'setComponentProperty'
     );
 
+    // A changed Layout re-arranges the record's children in the same undo step; an undo replay restores them itself.
+    const isListviewModeChange =
+      componentDef.component.component === 'Listview' &&
+      property === 'mode' &&
+      paramType === 'properties' &&
+      attr === 'value';
+    if (!skipUndoRedo && isListviewModeChange) {
+      get().arrangeListviewRecordChildren(componentId, oldValue?.value, updatedValue, moduleId, { saveAfterAction });
+    }
+
     if (attr !== 'fxActive') {
       setValueToComponent(
         componentId,
@@ -2394,7 +2512,24 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     if (saveAfterAction) {
-      saveComponentPropertyChanges(componentId, property, updatedValue, paramType, attr, moduleId);
+      // A peer needs the memory the switch just wrote, or its next switch saves its own over it.
+      const recordLayouts =
+        !skipUndoRedo && isListviewModeChange
+          ? get().modules[moduleId].pages[currentPageIndex].components[componentId]?.component?.definition?.properties
+              ?.recordLayouts
+          : null;
+      if (recordLayouts) {
+        get().saveComponentPropertyChangesBatch(
+          componentId,
+          [
+            { property: 'recordLayouts', value: recordLayouts.value, paramType: 'properties', attr: 'value' },
+            { property, value: updatedValue, paramType, attr },
+          ],
+          moduleId
+        );
+      } else {
+        saveComponentPropertyChanges(componentId, property, updatedValue, paramType, attr, moduleId);
+      }
     }
 
     if (attr !== 'value' || skipResolve) return;
@@ -2414,7 +2549,6 @@ export const createComponentsSlice = (set, get) => ({
     { skipUndoRedo = false, saveAfterAction = true } = {}
   ) => {
     const {
-      currentPageIndex,
       saveComponentChanges,
       checkValueAndResolve,
       getComponentDefinition,
@@ -2422,7 +2556,10 @@ export const createComponentsSlice = (set, get) => ({
       setResolvedComponent,
       withUndoRedo,
       getBaseParentId,
+      getCurrentPageIndex,
     } = get();
+    // The page index is per module, so reading it off the store root yielded undefined.
+    const currentPageIndex = getCurrentPageIndex(moduleId);
 
     // Reject self-parenting or descendant-as-new-parent. Covers multiplayer
     // remote parent events and undo/redo replays that bypass the drag UX's
@@ -2844,6 +2981,32 @@ export const createComponentsSlice = (set, get) => ({
     const { containerChildrenMapping } = get();
     return containerChildrenMapping[id] || [];
   },
+  // Reaches a child behind a wrapper, but stops at a nested list, which expands its own rows.
+  getRowScopedDescendants: (parentId, moduleId = 'canvas') => {
+    const { getContainerChildrenMapping, getComponentDefinition, containerChildrenMapping } = get();
+    const collected = [];
+    const seen = new Set();
+    const slotKeysByOwner = getSlotKeysByOwner(containerChildrenMapping);
+    // Slot children (a Container's header or footer, a Tab) are filed under `<id>-<slot>`, not `<id>`.
+    const slotIdsOf = (id) => {
+      const type = getComponentDefinition(id, moduleId)?.component?.component;
+      return (slotKeysByOwner.get(id) ?? []).filter((key) => !isListviewHeaderSlot(key, type));
+    };
+    const walk = (id) => {
+      [id, ...slotIdsOf(id)]
+        .flatMap((key) => getContainerChildrenMapping(key, moduleId))
+        .forEach((childId) => {
+          if (seen.has(childId)) return;
+          seen.add(childId);
+          collected.push(childId);
+          const type = getComponentDefinition(childId, moduleId)?.component?.component;
+          if (!ROW_SCOPED_WIDGET_TYPES.includes(type)) walk(childId);
+        });
+    };
+    walk(parentId);
+    return collected;
+  },
+
   getChildComponents: (parentId, moduleId = 'canvas') => {
     const { getCurrentPageComponents } = get();
     const allComponents = getCurrentPageComponents(moduleId);
@@ -3043,6 +3206,15 @@ export const createComponentsSlice = (set, get) => ({
     return component?.component?.parent;
   },
 
+  // A nested list files its records per outer row; a flat one stores an array and yields no paths.
+  enumerateOuterRowPaths: function walk(stored) {
+    if (!stored || Array.isArray(stored) || typeof stored !== 'object') return [];
+    return Object.keys(stored).flatMap((key) => {
+      const deeper = walk(stored[key]);
+      return deeper.length > 0 ? deeper.map((rest) => [Number(key), ...rest]) : [[Number(key)]];
+    });
+  },
+
   updateChildComponentResolvedValues: (dependency, path, length, moduleId = 'canvas', parentIndices = []) => {
     const {
       getCustomResolvables,
@@ -3063,6 +3235,15 @@ export const createComponentsSlice = (set, get) => ({
     const resolvableParentId = nearestListviewId || parentId;
     const unResolvedValue = getNodeData(dependency, moduleId);
     const shouldValidate = entityType === 'components' && entityId;
+
+    // A variable or query has no row position, so expand it; else a nested row reads a group, not a record.
+    if (parentIndices.length === 0) {
+      const outerPaths = get().enumerateOuterRowPaths(getCustomResolvables(resolvableParentId, null, moduleId, []));
+      if (outerPaths.length > 0) {
+        outerPaths.forEach((p) => get().updateChildComponentResolvedValues(dependency, path, length, moduleId, p));
+        return;
+      }
+    }
 
     // Collect all resolved values first, then apply in a single batched store update.
     //
@@ -3095,7 +3276,7 @@ export const createComponentsSlice = (set, get) => ({
     const updates = [];
     for (const i of indicesToResolve) {
       const rowCustomResolvables = getCustomResolvables(resolvableParentId, i, moduleId, parentIndices);
-      if (scopeCtx) updateRowScope(scopeCtx, i);
+      if (scopeCtx) updateRowScope(scopeCtx, [...(parentIndices ?? []), i]);
       const resolvedValue = resolveDynamicValues(unResolvedValue, scopedState, rowCustomResolvables, false, []);
       const validatedValue = shouldValidate
         ? get().debugger.validateProperty(entityId, type, key, resolvedValue, moduleId)
@@ -3288,6 +3469,23 @@ export const createComponentsSlice = (set, get) => ({
 
   // Walk up from startParentId through component.parent links to find the nearest row-scoped ancestor whose widget type is included in ROW_SCOPED_WIDGET_TYPES.
   // Returns the base UUID of that ancestor, or null if none found.
+  // Row-scoped ancestors of a canvas, outermost first.
+  getRowScopedAncestorIds: (startParentId, moduleId = 'canvas') => {
+    const { getBaseParentId, getComponentDefinition } = get();
+    const ancestorIds = [];
+    const visited = new Set();
+    let currentId = startParentId;
+    while (currentId) {
+      const baseId = getBaseParentId(currentId) || currentId;
+      if (visited.has(baseId)) break;
+      visited.add(baseId);
+      const definition = getComponentDefinition(baseId, moduleId);
+      if (isRowScopedCanvas(currentId, definition?.component?.component)) ancestorIds.unshift(baseId);
+      currentId = definition?.component?.parent;
+    }
+    return ancestorIds;
+  },
+
   findNearestSubcontainerAncestor: (startParentId, moduleId) => {
     const { getBaseParentId, getComponentDefinition } = get();
     const visited = new Set();
@@ -3298,10 +3496,26 @@ export const createComponentsSlice = (set, get) => ({
       visited.add(baseId);
       const def = getComponentDefinition(baseId, moduleId);
       if (!def) return null;
-      if (ROW_SCOPED_WIDGET_TYPES.includes(def.component?.component)) return baseId;
+      if (isRowScopedCanvas(currentId, def.component?.component)) return baseId;
       currentId = def.component?.parent;
     }
     return null;
+  },
+
+  // An action fired inside a row reads `components.<sibling>` from that row, not from the per-row array (D-12).
+  getRowScopedResolver: (sourceComponentId, rowPath, moduleId = 'canvas') => {
+    const { getComponentDefinition, findNearestSubcontainerAncestor, getResolvedValue } = get();
+    const parentId = getComponentDefinition(sourceComponentId, moduleId)?.component?.parent;
+    const nearestListviewId = parentId ? findNearestSubcontainerAncestor(parentId, moduleId) : null;
+    if (!nearestListviewId || rowPath === null || rowPath === undefined) return getResolvedValue;
+    return (value, customVariables = {}) =>
+      buildRowScopedResolver({
+        get,
+        nearestListviewId,
+        rowIndex: rowPath,
+        moduleId,
+        customResolveObjects: customVariables,
+      })(value);
   },
 
   replaceIdsWithName: (input, moduleId = 'canvas') => {
@@ -3746,7 +3960,8 @@ export const createComponentsSlice = (set, get) => ({
     const lastIndex = Array.isArray(indices) ? indices[indices.length - 1] : indices;
 
     if (parentType === 'Listview') {
-      let parentComponent = getExposedValueOfComponent(baseParentId, moduleId);
+      // Raw value: getExposedValueOfComponent would already step into outer row 0 before the walk below.
+      let parentComponent = get().resolvedStore.modules[moduleId]?.exposedValues?.components?.[baseParentId];
       if (lastIndex == null) {
         return undefined;
       }
@@ -3770,11 +3985,12 @@ export const createComponentsSlice = (set, get) => ({
       const subcontainerParentComponent = parentComponent?.children?.[lastIndex];
       return subcontainerParentComponent?.[componentName]?.[property];
     } else if (parentType === 'Form') {
-      const parentComponent = getExposedValueOfComponent(baseParentId, moduleId);
+      // Inside a row the Form, like any other child, is stored per row.
+      const parentComponent = getExposedValueOfComponent(baseParentId, moduleId, indices ?? null);
       const subcontainerParentComponent = parentComponent?.children?.[componentName];
       return subcontainerParentComponent?.[property];
     } else {
-      const componentExposedProperty = getExposedValueOfComponent(componentId, moduleId)?.[property];
+      const componentExposedProperty = getExposedValueOfComponent(componentId, moduleId, indices ?? null)?.[property];
       return componentExposedProperty;
     }
   },

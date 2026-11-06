@@ -592,6 +592,10 @@
             "componentNameExistsError": "Component name already exists",
             "invalidWidgetName": "Invalid widget name. Should be unique and only include letters, numbers and underscore."
         },
+        "listview": {
+            "noDataTitle": "No data found",
+            "noDataSubtitle": "Connect your database or use sample data to see results"
+        },
         "commonProperties": {
             "visibility": "Visibility",
             "disable": "Disable",

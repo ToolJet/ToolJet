@@ -21,8 +21,11 @@ export const ExpandedRowContainer = ({
   const contextValue = useMemo(
     () => ({
       contextPath: [...parentContext.contextPath, { containerId: tableId, index: rowIndex }],
+      // A Table inside a ListView copy record stays read-only.
+      listviewCopy: parentContext.listviewCopy,
+      listviewCopyOutline: parentContext.listviewCopyOutline,
     }),
-    [parentContext.contextPath, tableId, rowIndex]
+    [parentContext.contextPath, parentContext.listviewCopy, parentContext.listviewCopyOutline, tableId, rowIndex]
   );
 
   // Computed styles

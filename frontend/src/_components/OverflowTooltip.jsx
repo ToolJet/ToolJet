@@ -18,20 +18,28 @@ export default function OverflowTooltip({
   placement = 'bottom',
   boxWidth,
   maxLetters,
-  tooltipClassName,
+  tooltipClassName = '',
   childrenClassName,
   style,
   width,
+  lines,
+  contentKey,
   ...domProps
 }) {
   const [isOverflowed, setIsOverflowed] = useState(false);
+  const [renderedText, setRenderedText] = useState('');
   const textContentRef = useRef(null);
+  // Rich children (markdown, HTML) change identity every render; `contentKey` says when the content really changed.
+  const watched = contentKey ?? children;
 
   const checkOverflow = useCallback(() => {
-    if (textContentRef.current) {
-      setIsOverflowed(isTextOverflowing(textContentRef.current, maxLetters, children));
+    const element = textContentRef.current;
+    if (element) {
+      const overflowing = isTextOverflowing(element, maxLetters, watched);
+      setIsOverflowed(overflowing);
+      if (overflowing) setRenderedText(element.textContent ?? '');
     }
-  }, [children, maxLetters]);
+  }, [watched, maxLetters]);
 
   useEffect(() => {
     const currentTextElement = textContentRef.current;
@@ -51,7 +59,7 @@ export default function OverflowTooltip({
       observer.unobserve(currentTextElement);
       observer.disconnect();
     };
-  }, [children, checkOverflow, maxLetters]);
+  }, [watched, checkOverflow, maxLetters]);
 
   const isPrimitiveChildren = typeof children === 'string' || typeof children === 'number';
 
@@ -60,9 +68,16 @@ export default function OverflowTooltip({
       ? `${children.substring(0, maxLetters)}...`
       : children;
 
-  // The tooltip message must be a plain string; non-primitive children (e.g. an unresolved fx binding
-  // or a React node like a highlighter) have no safe text representation, so fall back to empty.
-  const tooltipMessage = isPrimitiveChildren ? children : '';
+  // The tooltip message must be a plain string. Rich content (markdown, HTML) has none, so it uses the rendered
+  // text, which is read only once it overflows; other non-primitive children (e.g. an unresolved fx binding) show none.
+  const hasRichContent = lines !== undefined || !!domProps.dangerouslySetInnerHTML;
+  const tooltipMessage = isPrimitiveChildren ? children : hasRichContent ? renderedText : '';
+
+  // A line clamp wraps like normal text and cuts the last visible line with an ellipsis.
+  const clampStyle =
+    lines === undefined
+      ? {}
+      : { display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: lines, whiteSpace: 'normal' };
 
   useEffect(() => {
     checkOverflow();
@@ -75,7 +90,7 @@ export default function OverflowTooltip({
       tooltipClassName={`overflow-tooltip ${tooltipClassName}`}
       placement={placement}
       message={tooltipMessage}
-      show={!!isOverflowed}
+      show={!!isOverflowed && !!tooltipMessage}
       width={width}
     >
       <div
@@ -85,6 +100,7 @@ export default function OverflowTooltip({
           whiteSpace,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
+          ...clampStyle,
           ...style,
         }}
         {...domProps}

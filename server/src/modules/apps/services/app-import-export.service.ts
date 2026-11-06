@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { remapRecordLayoutIds } from '@helpers/record_layouts.helper';
 import { isEmpty, set } from 'lodash';
 import { isUUID } from 'class-validator';
 import { App } from 'src/entities/app.entity';
@@ -261,6 +262,12 @@ const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
   DaterangePicker: 'Select Date Range',
 };
 
+// Components that turned dynamicHeight on by default AFTER shipping without it. An export that
+// predates the property has no key, so without this pin it would take the new default on import and
+// resize the app. Mirrors the matching backfill migration, which only reaches components already in
+// this database. A component born with the default on never needs listing here.
+const DYNAMIC_HEIGHT_ON_BY_DEFAULT_COMPONENT_TYPES = ['Checkbox'];
+
 const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'Accordion',
   'Button',
@@ -370,6 +377,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'TextInput',
   'TimePicker',
   'Timeline',
+  'Timer',
   'ToggleSwitchV2',
   'TreeSelect',
   'VerticalDivider',
@@ -2717,7 +2725,7 @@ export class AppImportExportService {
                 }
               }
             }
-            newComponent.properties = properties || {};
+            newComponent.properties = remapRecordLayoutIds(properties || {}, newComponentIdsMap);
 
             newComponent.page = pageCreated;
 
@@ -4620,7 +4628,7 @@ export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
  * @param {NewRevampedComponent[]} componentTypes - An array of component types for which to perform property migration.
  * @returns {object} An object containing the modified properties, styles, and general information.
  */
-function migrateProperties(
+export function migrateProperties(
   componentType: NewRevampedComponent | PartialRevampedComponent | 'ModuleViewer',
   component: Component,
   componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
@@ -4640,8 +4648,32 @@ function migrateProperties(
     properties.collapseWhenHidden = { value: '{{false}}' };
   }
 
+  if (DYNAMIC_HEIGHT_ON_BY_DEFAULT_COMPONENT_TYPES.includes(componentType) && properties.dynamicHeight === undefined) {
+    properties.dynamicHeight = { value: '{{false}}' };
+  }
+
   if (MAX_LIMIT_COMPONENT_TYPES.includes(componentType) && properties.maxLimit === undefined) {
     properties.maxLimit = { value: '' };
+  }
+
+  // Timer: these keys moved into properties (server/data-migrations/
+  // 1792200000000-MoveTimerVisibilityDisabledTooltipToProperties.ts). Older exports carry them in the
+  // old place, with or without a version, so relocate before the unversioned early return.
+  if (['Timer'].includes(componentType)) {
+    for (const key of ['visibility', 'disabledState']) {
+      if (styles[key] !== undefined) {
+        if (properties[key] === undefined) {
+          properties[key] = styles[key];
+        }
+        delete styles[key];
+      }
+    }
+    if (general?.tooltip !== undefined) {
+      if (properties.tooltip === undefined) {
+        properties.tooltip = general.tooltip;
+      }
+      delete general.tooltip;
+    }
   }
 
   if (TOOLTIP_FORMAT_COMPONENT_TYPES.includes(componentType) && properties.tooltipFormat === undefined) {
@@ -5158,7 +5190,7 @@ function migrateProperties(
   return { properties, styles, general, generalStyles, validation };
 }
 
-function transformComponentData(
+export function transformComponentData(
   data: object,
   componentEvents: any[],
   componentsMapping: Record<string, string>,
@@ -5261,6 +5293,11 @@ function transformComponentData(
       componentsMapping[componentId] = transformedComponent.id;
     }
   }
+
+  // After the walk: the mapping fills as it goes, so a ListView can come before its children.
+  transformedComponents.forEach((transformed) => {
+    transformed.properties = remapRecordLayoutIds(transformed.properties, componentsMapping);
+  });
 
   return transformedComponents;
 }

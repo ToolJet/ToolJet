@@ -28,6 +28,9 @@ import {
   updateDashedBordersOnDragResize,
   getCanvasBottomBound,
   findNewParentIdFromMousePosition,
+  wrapDropIntoListviewRow,
+  getMinWidthPx,
+  getMinColumns,
 } from './gridUtils';
 import {
   dragContextBuilder,
@@ -59,7 +62,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
 import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
 import ConfigHandleButton from '@/_components/ConfigHandleButton';
-import { getDropTargetLabel } from '../appCanvasUtils';
+import { getDropTargetLabel, getParentWidgetFromId } from '../appCanvasUtils';
 import {
   RESTRICTED_WIDGETS_CONFIG,
   RESTRICTED_WIDGET_SLOTS_CONFIG,
@@ -226,6 +229,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         y = Math.round(y / GRID_HEIGHT) * GRID_HEIGHT;
 
         gw = gw ? gw : gridWidth;
+        // Any resize path (edge, group) ends here, so a listed minimum cannot be bypassed.
+        newWidth = Math.max(newWidth, getMinColumns(getComponentTypeFromId(id), gw));
 
         const parent = boxList.find((box) => box.id === id)?.component?.parent;
         if (y < 0) {
@@ -260,7 +265,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         setComponentLayout(batchedLayouts);
       }
     },
-    [canvasWidth, gridWidth, setComponentLayout]
+    [canvasWidth, gridWidth, setComponentLayout, getComponentTypeFromId]
   );
 
   const configHandleWhenMultipleComponentSelected = (id) => {
@@ -478,8 +483,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             y = 0;
           }
 
-          if (componentType === 'Listview' && y > parentHeight) {
-            y = y % parentHeight;
+          if (componentType === 'Listview') {
+            y = wrapDropIntoListviewRow(y, parentHeight);
           }
         }
         newParent = parent ? parent : null;
@@ -588,7 +593,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
       let restrictedWidgetsTobeDropped =
         [
-          ...(RESTRICTED_WIDGETS_CONFIG?.[parentWidgetType] || []),
+          // Same translation the single-widget path uses: a Kanban's drop area is keyed `Kanban_card`.
+          ...(RESTRICTED_WIDGETS_CONFIG?.[getParentWidgetFromId(parentWidgetType, targetSlotId)] || []),
           ...(['header', 'footer'].includes(parentSlotType) ? RESTRICTED_WIDGET_SLOTS_CONFIG : []),
         ].filter((widgetType) => widgetsTypeToBeDropped.includes(widgetType)) || [];
 
@@ -601,7 +607,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         }
       }
 
-      const isParentChangeAllowed = restrictedWidgetsTobeDropped?.length === 0 && !nestingDepthExceeded;
+      const isParentChangeAllowed =
+        restrictedWidgetsTobeDropped?.length === 0 && !nestingDepthExceeded && !dragContext.targetIsListviewCopy;
 
       const isParentModuleContainer = isTargetModuleContainer(targetSlotId, isModuleEditor);
 
@@ -640,7 +647,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           setSelectedComponents([]);
         } else if (isParentModuleContainer) {
           toast.error('Modules cannot be edited inside an app');
-        } else if (!isParentChangeAllowed) {
+        } else if (!isParentChangeAllowed && !dragContext.targetIsListviewCopy) {
           toast.error(
             `${restrictedWidgetsTobeDropped} is not compatible as a child component of ${getDropTargetLabel(
               parentWidgetType,
@@ -780,7 +787,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           }
           handleActivateNonDraggingComponents();
           updateDashedBordersOnDragResize(e.target.id, e?.moveable?.controlBox?.classList);
-          e.setMin([gridWidth, GRID_HEIGHT]);
+          const resizingWidget = boxList.find(({ id }) => id === e.target.id);
+          const parentGridWidth = useGridStore.getState().subContainerWidths[resizingWidget?.component?.parent];
+          e.setMin([
+            getMinWidthPx(resizingWidget?.component?.component, parentGridWidth || gridWidth, gridWidth),
+            GRID_HEIGHT,
+          ]);
         }}
         onResizeEnd={(e) => {
           try {
@@ -878,6 +890,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           showGridLines();
           handleActivateNonDraggingComponents();
           events.forEach((ev) => {
+            const resizingWidget = boxList.find(({ id }) => id === ev.target.id);
+            const parentGridWidth = useGridStore.getState().subContainerWidths[resizingWidget?.component?.parent];
+            ev.setMin([
+              getMinWidthPx(resizingWidget?.component?.component, parentGridWidth || gridWidth, gridWidth),
+              GRID_HEIGHT,
+            ]);
             ev.target.classList.add('show-ghost-group-dragging-resizing');
             const moveableControlBox = document.getElementsByClassName(`sc-${ev.target.id}`)[0];
             if (moveableControlBox) {
@@ -930,7 +948,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               });
               let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
               let width = Math.round(ev.width / _gridWidth) * _gridWidth;
-              width = width < _gridWidth ? _gridWidth : width;
+              width = Math.max(width, getMinWidthPx(currentWidget.component?.component, _gridWidth, _gridWidth));
               const alignment = getComponentAlignment(currentWidget.id, moduleId);
               let posX = Math.round(ev.drag.translate[0] / _gridWidth) * _gridWidth;
               let posY = Math.round(ev.drag.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
@@ -1180,7 +1198,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
               if (isParentModuleContainer) {
                 toast.error('Modules cannot be edited inside an app');
-              } else if (!isModalToCanvas) {
+              } else if (!isModalToCanvas && !dragContext.targetIsListviewCopy) {
                 toast.error(
                   `${dragged.widgetType} is not compatible as a child component of ${getDropTargetLabel(
                     target.widgetType,

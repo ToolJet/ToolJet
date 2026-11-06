@@ -61,6 +61,24 @@ export function valueSchemaOf(type: string, section: SettingSection, key: string
 // `padding` was a free number before the default/custom switch; templates ship "0", "1", "2".
 const LEGACY_OPTION_SETTINGS = new Set(['padding']);
 
+// The widget lower-cases these, so a saved "List" renders and must not be refused.
+const CASE_INSENSITIVE_OPTION_SETTINGS = new Set(['Listview.properties.mode']);
+
+export function isAllowedOptionValue(
+  type: string,
+  section: SettingSection,
+  key: string,
+  allowed: unknown[],
+  value: unknown
+): boolean {
+  if (allowed.includes(value)) return true;
+  return (
+    CASE_INSENSITIVE_OPTION_SETTINGS.has(`${type}.${section}.${key}`) &&
+    typeof value === 'string' &&
+    allowed.includes(value.toLowerCase())
+  );
+}
+
 // Undefined when the setting takes free input.
 export function allowedOptionValues(type: string, section: SettingSection, key: string): unknown[] | undefined {
   if (LEGACY_OPTION_SETTINGS.has(key)) return undefined;

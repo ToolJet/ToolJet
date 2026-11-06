@@ -49,7 +49,7 @@
  * - Prevents invalid drops (e.g., putting a button inside a Table component).
  * - Enables **modular and flexible** widget movement across different UI sections.
  */
-import { getMouseDistanceFromParentDiv } from '../gridUtils';
+import { getMouseDistanceFromParentDiv, isListviewCopyCanvasAtPoint } from '../gridUtils';
 
 import { DROPPABLE_PARENTS, NESTING_LEVEL_LIMITS } from '../../appCanvasConstants';
 import { isDroppingRestrictedWidget } from '../gridUtils';
@@ -154,6 +154,7 @@ export class DragContext {
     this.dragged = new DragEntity(draggedWidget);
     this.widgets = widgets;
     this.isModuleEditor = isModuleEditor;
+    this.targetIsListviewCopy = false;
   }
 
   /**
@@ -167,6 +168,10 @@ export class DragContext {
 
   get isDroppable() {
     const { dragged, target, isModuleEditor, widgets } = this;
+
+    if (this.targetIsListviewCopy) {
+      return false;
+    }
 
     // If the target is the canvas and we are in module editor,
     // then we don't want to drop the widget outside the module
@@ -214,6 +219,10 @@ export function dragContextBuilder({ event, widgets, isModuleEditor = false, exc
   // Determine the potential drop target (exclude all selected widgets in multi-select)
   const targetSlotId = getDroppableSlotIdOnScreen(event, widgets, excludeWidgetIds);
   context.updateTarget(targetSlotId);
+  context.targetIsListviewCopy = isListviewCopyCanvasAtPoint(event.clientX, event.clientY, [
+    event.target.id,
+    ...excludeWidgetIds,
+  ]);
 
   return context;
 }

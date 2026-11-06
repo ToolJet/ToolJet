@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
+import { isInLockedRecord } from '@/AppBuilder/Widgets/Listview/isMovingInListview';
 import { Table } from './Components/Table/Table.jsx';
 import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
@@ -17,6 +19,7 @@ import { LibraryComponentProperties } from './Components/LibraryComponent';
 import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
+import { getListStyle, getListviewMode } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
@@ -152,6 +155,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'FlexContainer',
   'Pagination',
   'Timeline',
+  'Listview',
 ];
 
 export const Inspector = ({
@@ -166,6 +170,15 @@ export const Inspector = ({
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const setComponentName = useStore((state) => state.setComponentName, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  // A child of a locked ListView record can be inspected from the sidebar but not changed, as in a frozen version.
+  const isLockedChild = useStore((state) => isInLockedRecord(state, [selectedComponentId]));
+  const lookOnly = shouldFreeze || isLockedChild;
+  const nameRef = useRef(null);
+  const menuRef = useRef(null);
+  const bodyRef = useRef(null);
+  useDisableInert(nameRef, isLockedChild);
+  useDisableInert(menuRef, isLockedChild);
+  useDisableInert(bodyRef, isLockedChild);
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
@@ -480,6 +493,7 @@ export const Inspector = ({
   }
 
   const handleInspectorHeaderActions = (value) => {
+    if (isLockedChild && ['delete', 'duplicate', 'rename', 'permission'].includes(value)) return;
     if (value === 'inspect') {
       setComponentToInspect(component.component.name);
     }
@@ -575,7 +589,7 @@ export const Inspector = ({
         allComponents={allComponents}
         widthSectionTitle={t('widget.flexChild.widthAndHeight', 'Width')}
       >
-        <div className={`${shouldFreeze && 'disabled'}`}>
+        <div className={`${lookOnly && 'disabled'}`}>
           <GetAccordion
             tabsPropertiesPanelKey={tabsPropertiesPanelKey}
             componentName={componentMeta.component}
@@ -603,7 +617,7 @@ export const Inspector = ({
       darkMode={darkMode}
       resetKeys={[selectedComponentId]}
     >
-      <div style={{ marginBottom: '6rem' }} className={`${shouldFreeze && 'disabled'}`}>
+      <div style={{ marginBottom: '6rem' }} className={`${lookOnly && 'disabled'}`}>
         <div style={{ ...(!isRevampedComponent && { padding: '1rem' }) }}>
           <Inspector.RenderStyleOptions
             componentMeta={componentMeta}
@@ -670,12 +684,18 @@ export const Inspector = ({
   return (
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
       <div>
-        <div className={`panel-header ${shouldFreeze && 'disabled'}`}>
-          <div className={`panel-header-name ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
+        <div className={`panel-header ${lookOnly && 'disabled'}`}>
+          <div ref={nameRef} className={`panel-header-name ${lookOnly && 'disabled'}`}>
+            {renderAppNameInput()}
+          </div>
           <div className="panel-header-actions">
             {!isModuleContainer && (
               <>
-                <div data-cy={'component-inspector-options'}>
+                <div
+                  ref={menuRef}
+                  className={lookOnly ? 'disabled' : undefined}
+                  data-cy={'component-inspector-options'}
+                >
                   <OverlayTrigger
                     trigger={'click'}
                     placement={'bottom-end'}
@@ -775,7 +795,7 @@ export const Inspector = ({
           </div>
         </div>
 
-        <div className={`${shouldFreeze && 'disabled'}`} key={selectedComponentId}>
+        <div ref={bodyRef} className={lookOnly ? 'disabled' : undefined} key={selectedComponentId}>
           {renderTabs()}
         </div>
       </div>
@@ -804,6 +824,15 @@ const widgetsWithStyleConditions = {
       },
     ],
   },
+};
+
+// "Show bottom border" acts only on a Legacy list; the widget lower-cases the layout, so this does too.
+const shouldShowListviewBottomBorder = (component) => {
+  if (component.component.component !== 'Listview') return false;
+  const { getResolvedValue } = useStore.getState();
+  const { properties, styles } = component.component.definition;
+  const mode = getListviewMode(getResolvedValue(properties?.mode?.value));
+  return mode === 'list' && getListStyle(getResolvedValue(styles?.listStyle?.value)) === 'legacy';
 };
 
 const RenderStyleOptions = ({
@@ -874,9 +903,8 @@ const RenderStyleOptions = ({
     const items = [];
 
     if (NEW_REVAMPED_COMPONENTS.includes(component.component.component)) {
-      items.push({
-        title: `${style}`,
-        children: Object.entries(groupedProperties[style]).map(([key, value]) => ({
+      const children = Object.entries(groupedProperties[style]).flatMap(([key, value]) => {
+        const field = {
           ...renderCustomStyles(
             component,
             componentMeta,
@@ -888,8 +916,32 @@ const RenderStyleOptions = ({
             allComponents,
             value.accordian
           ),
-        })),
+        };
+        // The saved value stays at `properties.showBorder`; only the place it is shown moves.
+        if (key === 'listStyle' && shouldShowListviewBottomBorder(component)) {
+          return [
+            field,
+            {
+              ...renderCustomStyles(
+                component,
+                componentMeta,
+                paramUpdated,
+                dataQueries,
+                'showBorder',
+                'properties',
+                currentState,
+                allComponents,
+                value.accordian,
+                false,
+                '',
+                componentMeta.properties.showBorder
+              ),
+            },
+          ];
+        }
+        return [field];
       });
+      items.push({ title: `${style}`, children });
       return <Accordion key={style} items={items} />;
     } else {
       return renderElement(

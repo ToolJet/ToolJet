@@ -42,6 +42,13 @@ export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 
 // Subcontainer widget types that use per-row resolution (customResolvables)
 export const ROW_SCOPED_WIDGET_TYPES = ['Listview', 'Kanban', 'Table'];
 
+// A ListView's own header is shared by its records, so it is not a row; other slots inside a record stay row-scoped.
+export const isListviewHeaderSlot = (canvasId, widgetType) =>
+  widgetType === 'Listview' && typeof canvasId === 'string' && canvasId.endsWith('-header');
+
+export const isRowScopedCanvas = (canvasId, widgetType) =>
+  ROW_SCOPED_WIDGET_TYPES.includes(widgetType) && !isListviewHeaderSlot(canvasId, widgetType);
+
 // Maps per-row subcontainer type → custom resolvable key used inside {{ }} expressions
 export const ROW_SCOPED_RESOLVABLE_KEY_MAP = { Listview: 'listItem', Kanban: 'cardData', Table: 'rowData' };
 

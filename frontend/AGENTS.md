@@ -90,10 +90,12 @@ No change may break existing saved applications. Always ask: would an app saved 
 ### Subcontainers
 
 - `SubcontainerContext` carries a `contextPath` array: `[{ containerId, index }, ...]`
-- Row-scoped resolution uses prototype overlay (`prepareRowScope` / `updateRowScope`)
+- Row-scoped resolution uses prototype overlay (`prepareRowScope` / `updateRowScope`). The overlay covers the outermost list's subtree and `updateRowScope` takes the full row path (`[outer, inner]`); passing only the inner index reads a whole outer row
+- Row events resolve their fields through `getRowScopedResolver` with the firing row; additional actions (`getExposedPropertyForAdditionalActions`) take the row path in every branch
 - Child-to-parent: `setExposedValuesPerRow` → `_deriveListviewChain`, not callback chains
-- ListView nesting is limited to **2 levels**. Only row 0 is editable; the rest are read-only mirrors
+- ListView nesting is limited to **2 levels**. Only a canvas whose every `contextPath` index is 0 is editable; the rest are read-only mirrors
 - `findNearestSubcontainerAncestor` is load-bearing for dependency resolution — verify it is used when walking the component tree
+- A ListView's own header slot (`<listviewId>-header`) is not a row: shared by every record, never in `data`/`children`, editable on every page. Row walks use `isRowScopedCanvas` / `isListviewHeaderSlot` (`AppCanvas/appCanvasConstants.js`). Every other slot inside a record (a Container's header, a Tab) stays row-scoped
 - `listItem` is ListView, `cardData` is Kanban. Don't mix them up
 
 ### Events and queries
@@ -139,6 +141,10 @@ Widget configs live in the shared `packages/widget-definitions` package (`src/wi
 ### Key changes require migrations
 
 Moving, renaming, or removing a config key (e.g. moving `loadingState` from `styles` to `properties`) breaks existing apps. Write a migration in `server/data-migrations/`.
+
+### New look without a migration
+
+The server merges `definition` under every saved component on every load, so a new key's `definition` default is what every saved instance renders. To give only NEW instances a different value, keep the old value in `definition` and put the new one in `creationDefinition`: `addNewWidgetToTheEditor` (`AppCanvas/appCanvasUtils.js`) merges it over `definition` on drop and never saves the block itself. Precedent: `listview.js` (ListView 2.0).
 
 ## Glossary
 
