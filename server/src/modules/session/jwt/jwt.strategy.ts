@@ -192,6 +192,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.organizationIds = payload.organizationIds;
         user.isPasswordLogin = payload.isPasswordLogin;
         user.isSSOLogin = payload.isSSOLogin;
+        user.ssoOrganizationId = payload.ssoOrganizationId;
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
         // Resolve the active Git branch once per request: explicit `branch_id` query

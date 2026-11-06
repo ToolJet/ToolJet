@@ -12,6 +12,7 @@ export type JWTPayload = {
   organizationIds?: Array<string>;
   isPasswordLogin: boolean;
   isSSOLogin: boolean;
+  ssoOrganizationId?: string;
   invitedOrganizationId?: string;
   isPATLogin?: boolean;
   token?: string;

@@ -231,6 +231,8 @@ export class User extends BaseEntity {
   organizationIds?: Array<string>;
   isPasswordLogin: boolean;
   isSSOLogin: boolean;
+  /** Workspace whose own identity provider signed this session in. */
+  ssoOrganizationId?: string;
   sessionId: string;
   roleGroup: USER_ROLE;
   workspaceAuthentication?: WorkspaceAuthentication;

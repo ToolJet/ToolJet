@@ -50,6 +50,8 @@ recorded in `User.source` (`SOURCE` enum, `@modules/users/constants/lifecycle.ts
 - Password-domain allow/restrict lists validated on every form login (workspace overrides instance); skipped for super admins.
 - `forgotPassword` silently succeeds for unknown emails (username-enumeration protection).
 - OIDC PKCE: code verifier rides the `oidc_code_verifier` cookie; token-exchange `redirect_uri` host must match the authorization request (custom-domain aware).
+- Workspace SSO through a provider the workspace admin chooses (OIDC, SAML, LDAP, GitHub with a custom host) signs in an existing account only when it is an active member of that workspace and not a super admin (`AuthUtilService.checkSsoWorkspaceMembership`). Such sessions carry `ssoOrganizationId` (a later password sign-in starts a fresh session without it) and stay in that workspace (`checkSsoSessionWorkspace`). `SSO_WORKSPACE_ISOLATION=report|enforce` (default: `enforce` on Cloud, `report` elsewhere) — `report` logs `would have refused` and lets the request through.
+- `findOrCreateUser` never rewrites an existing account (password, default workspace, profile); it only adds the membership.
 - Registering with `isMainImport=false` yields providers but no controllers — prevents duplicate route mounting when other modules import AuthModule.
 
 ## Related modules

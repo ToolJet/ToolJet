@@ -452,7 +452,7 @@ export class OnboardingService implements IOnboardingService {
         /* User already signed up thorugh instance signup page. but now needs to signup through workspace signup page */
         /* Activate the personal workspace */
         const organizationUser = await manager.findOne(OrganizationUser, {
-          where: { organizationId: user.defaultOrganizationId },
+          where: { userId: user.id, organizationId: user.defaultOrganizationId },
           relations: ['user', 'organization'],
         });
         await this.organizationUsersUtilService.activateOrganization(organizationUser, manager);

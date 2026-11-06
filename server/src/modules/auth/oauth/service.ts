@@ -44,6 +44,7 @@ import { OnboardingUtilService } from '@modules/onboarding/util.service';
 import { SessionUtilService } from '@modules/session/util.service';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import * as uuid from 'uuid';
+import { isWorkspaceChosenIdentityProvider, refuseOutsideSsoWorkspace } from '@helpers/sso-workspace-isolation.helper';
 
 @Injectable()
 export class OauthService implements IOAuthService {
@@ -125,6 +126,7 @@ export class OauthService implements IOAuthService {
     // value, so there's no case where falling back to `true` is correct.
     const enableSignUp = !!organization?.enableSignUp;
     const { sso, configs } = ssoConfigs;
+    const ssoOrganizationId = configId && isWorkspaceChosenIdentityProvider(sso, configs) ? organization.id : null;
     const { token } = ssoResponse;
 
     let userResponse: UserResponse;
@@ -258,6 +260,14 @@ export class OauthService implements IOAuthService {
         }
       } else {
         // workspace login
+        if (ssoOrganizationId) {
+          await this.authUtilService.checkSsoWorkspaceMembership(
+            userResponse.email,
+            ssoOrganizationId,
+            configId,
+            manager
+          );
+        }
         userDetails = await this.userRepository.findByEmail(userResponse.email, organization.id, [
           WORKSPACE_USER_STATUS.ACTIVE,
           WORKSPACE_USER_STATUS.INVITED,
@@ -307,9 +317,14 @@ export class OauthService implements IOAuthService {
             signupOrganizationId !== defaultOrganizationId;
           let personalWorkspace: Organization;
           if (shouldActivatePersonalWorkspace) {
-            const defaultOrganizationUser =
-              await this.organizationUsersRepository.getOrganizationUser(defaultOrganizationId);
-            await this.organizationUsersUtilService.activateOrganization(defaultOrganizationUser, manager);
+            const defaultOrganizationUser = await this.organizationUsersRepository.getOrganizationUser(
+              userDetails.id,
+              defaultOrganizationId,
+              manager
+            );
+            if (defaultOrganizationUser) {
+              await this.organizationUsersUtilService.activateOrganization(defaultOrganizationUser, manager);
+            }
           }
 
           if (defaultOrganizationId) {
@@ -357,6 +372,14 @@ export class OauthService implements IOAuthService {
         await this.userRepository.updateOne(userDetails.id, { forgotPasswordToken: null }, manager);
       }
 
+      if (ssoOrganizationId && organizationDetails?.id !== ssoOrganizationId) {
+        refuseOutsideSsoWorkspace('session would open another workspace', {
+          userId: userDetails.id,
+          organizationId: organizationDetails?.id,
+          ssoOrganizationId,
+        });
+      }
+
       return await this.sessionUtilService.generateLoginResultPayload(
         response,
         userDetails,
@@ -367,8 +390,8 @@ export class OauthService implements IOAuthService {
         manager,
         isInviteRedirect ? loginOrganiaztionId : null,
         isInviteRedirect
-          ? { oauthAuthenticationReset: true }
-          : { oauthAuthenticationMethod: sso, oauthAuthenticationProviderId: configId || null }
+          ? { oauthAuthenticationReset: true, ssoOrganizationId }
+          : { oauthAuthenticationMethod: sso, oauthAuthenticationProviderId: configId || null, ssoOrganizationId }
       );
     });
   }

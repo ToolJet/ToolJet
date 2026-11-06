@@ -1,3 +1,4 @@
+import { SAML } from '@node-saml/node-saml';
 import { Injectable } from '@nestjs/common';
 import { ISamlService } from '../interfaces/ISamlService';
 import UserResponse from '../models/user_response';
@@ -16,7 +17,7 @@ export class SamlService implements ISamlService {
     throw new Error('Method not implemented');
   }
 
-  async getSAMLAssert(SAMLResponse: string): Promise<any> {
+  async getSAMLAssert(SAMLResponse: string, saml: SAML): Promise<any> {
     throw new Error('Method not implemented');
   }
 
