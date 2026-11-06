@@ -12,7 +12,8 @@ jest.mock('@helpers/database.helper', () => ({
 }));
 
 import { HttpException } from '@nestjs/common';
-import type { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { dbTransactionWrap } from '@helpers/database.helper';
 
 describe('GitSyncConfigsUtilService (CE)', () => {
   let svc: GitSyncConfigsUtilService;
@@ -105,6 +106,39 @@ describe('GitSyncConfigsUtilService (CE)', () => {
       manager.findOne.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
       manager.save.mockRejectedValue({ code: '42P01', message: 'boom' });
       await expect(svc.getDetails('org1')).rejects.toMatchObject({ code: '42P01' });
+    });
+  });
+
+  // A caller that already holds a pooled connection (AppsSubscriber.afterLoad) passes its manager
+  // so getDetails reads on it instead of taking a second connection from the pool.
+  describe('getDetails — with a caller-supplied manager', () => {
+    let callerManager: { findOne: jest.Mock };
+
+    beforeEach(() => {
+      jest.mocked(dbTransactionWrap).mockClear();
+      callerManager = { findOne: jest.fn().mockResolvedValue({ id: 'b-caller', name: 'main' }) };
+    });
+
+    it('reads the default branch on the caller manager without opening a transaction', async () => {
+      const res = await svc.getDetails('org1', undefined, { manager: callerManager as never });
+
+      expect(dbTransactionWrap).toHaveBeenCalledTimes(1);
+      expect(dbTransactionWrap).toHaveBeenCalledWith(expect.any(Function), callerManager);
+      expect(callerManager.findOne).toHaveBeenCalled();
+      expect(manager.findOne).not.toHaveBeenCalled();
+      expect(res.options.defaultBranch).toEqual({ id: 'b-caller', name: 'main' });
+    });
+
+    it('creates a missing default branch in its own transaction, not on the caller manager', async () => {
+      callerManager.findOne.mockResolvedValue(null); // no default branch on the caller's view
+      manager.findOne.mockResolvedValue(null); // own-tx: no branch named main → insert
+      manager.save.mockResolvedValue({ id: 'new-main' });
+
+      const res = await svc.getDetails('org1', undefined, { manager: callerManager as never });
+
+      expect(dbTransactionWrap).toHaveBeenLastCalledWith(expect.any(Function));
+      expect(manager.save).toHaveBeenCalled();
+      expect(res.options.defaultBranch).toEqual({ id: 'new-main', name: 'main' });
     });
   });
 
