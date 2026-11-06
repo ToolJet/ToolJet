@@ -53,6 +53,7 @@ describe('Auth', () => {
       expect(stored).to.deep.equal({
         workspaces: { 'ws-1': { url: 'https://app.tooljet.ai', apiToken: 'token-abc', email: 'me@example.com' } },
         default: 'ws-1',
+        instances: { 'https://app.tooljet.ai': 'ws-1' },
       });
 
       const mode = fs.statSync(filePath).mode & 0o777;
@@ -71,7 +72,7 @@ describe('Auth', () => {
       expect(mode).to.equal(0o600);
     });
 
-    it('merges multiple workspaces and updates the default to the most recently saved one', () => {
+    it('merges multiple workspaces; a login on another instance does not become the default unless asked', () => {
       const Auth = loadIsolatedAuth(homeDir);
 
       Auth.save('ws-1', 'https://app.tooljet.ai', 'token-1', 'a@example.com');
@@ -79,29 +80,58 @@ describe('Auth', () => {
 
       const stored = JSON.parse(fs.readFileSync(credentialsPath(homeDir), 'utf8'));
       expect(Object.keys(stored.workspaces)).to.have.members(['ws-1', 'ws-2']);
-      expect(stored.default).to.equal('ws-2');
+      expect(stored.default).to.equal('ws-1');
+
+      Auth.save('ws-2', 'https://other.tooljet.ai', 'token-2', 'b@example.com', { makeDefault: true });
+      expect(JSON.parse(fs.readFileSync(credentialsPath(homeDir), 'utf8')).default).to.equal('ws-2');
     });
 
-    it('overwrites the stored url/token/email when the same workspace is saved again', () => {
+    it('a second workspace on the default instance becomes the default', () => {
+      const Auth = loadIsolatedAuth(homeDir);
+
+      Auth.save('ws-1', 'https://app.tooljet.ai', 'token-1', 'a@example.com');
+      Auth.save('ws-2', 'https://app.tooljet.ai', 'token-2', 'b@example.com');
+
+      expect(JSON.parse(fs.readFileSync(credentialsPath(homeDir), 'utf8')).default).to.equal('ws-2');
+    });
+
+    it('overwrites the stored token/email when the same workspace is saved again on its instance', () => {
+      const Auth = loadIsolatedAuth(homeDir);
+
+      Auth.save('ws-1', 'https://app.tooljet.ai', 'token-old', 'old@example.com');
+      Auth.save('ws-1', 'https://app.tooljet.ai', 'token-new', 'new@example.com');
+
+      const stored = JSON.parse(fs.readFileSync(credentialsPath(homeDir), 'utf8'));
+      expect(Object.keys(stored.workspaces)).to.deep.equal(['ws-1']);
+      expect(stored.workspaces['ws-1']).to.deep.equal({
+        url: 'https://app.tooljet.ai',
+        apiToken: 'token-new',
+        email: 'new@example.com',
+      });
+    });
+
+    it('keeps the same workspace id from another instance apart instead of overwriting it', () => {
       const Auth = loadIsolatedAuth(homeDir);
 
       Auth.save('ws-1', 'https://app.tooljet.ai', 'token-old', 'old@example.com');
       Auth.save('ws-1', 'https://new.tooljet.ai', 'token-new', 'new@example.com');
 
       const stored = JSON.parse(fs.readFileSync(credentialsPath(homeDir), 'utf8'));
-      expect(Object.keys(stored.workspaces)).to.deep.equal(['ws-1']);
-      expect(stored.workspaces['ws-1']).to.deep.equal({
+      expect(stored.default).to.equal('ws-1');
+      expect(stored.workspaces['ws-1'].apiToken).to.equal('token-old');
+      expect(stored.workspaces['ws-1@https://new.tooljet.ai']).to.deep.equal({
         url: 'https://new.tooljet.ai',
         apiToken: 'token-new',
         email: 'new@example.com',
+        workspaceId: 'ws-1',
       });
     });
 
-    it('re-saving a non-default workspace makes it the new default', () => {
+    it('re-saving a non-default workspace on the default instance makes it the new default', () => {
       const Auth = loadIsolatedAuth(homeDir);
 
       Auth.save('ws-1', 'https://app.tooljet.ai', 'token-1', 'a@example.com');
-      Auth.save('ws-2', 'https://other.tooljet.ai', 'token-2', 'b@example.com');
+      Auth.save('ws-2', 'https://app.tooljet.ai', 'token-2', 'b@example.com');
       Auth.save('ws-1', 'https://app.tooljet.ai', 'token-1', 'a@example.com');
 
       const stored = JSON.parse(fs.readFileSync(credentialsPath(homeDir), 'utf8'));
@@ -137,7 +167,7 @@ describe('Auth', () => {
     it('resolves a specific stored workspaceId rather than the default', () => {
       const Auth = loadIsolatedAuth(homeDir);
       Auth.save('ws-1', 'https://app.tooljet.ai', 'token-1', 'a@example.com');
-      Auth.save('ws-2', 'https://other.tooljet.ai', 'token-2', 'b@example.com');
+      Auth.save('ws-2', 'https://other.tooljet.ai', 'token-2', 'b@example.com', { makeDefault: true });
 
       // ws-2 is the default after the second save, so asking for ws-1 proves the
       // workspaceId flag is honoured instead of silently falling back.
