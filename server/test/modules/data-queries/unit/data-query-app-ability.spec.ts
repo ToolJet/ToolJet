@@ -100,3 +100,115 @@ describe('defineDataQueryAppAbility — module apps', () => {
     expect(ability.can(FEATURE_KEY.DELETE, App)).toBe(true);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Viewer runs (POST /data-queries/:id/run): an end user may run a query only through an app
+// they can open. Role alone must never grant it — a blanket `isEndUser` grant used to let an end
+// user run (and keep polling) queries of apps they had no access to, or had lost access to.
+// ---------------------------------------------------------------------------
+
+function frontEndAppInstance(id: string, overrides: Partial<App> = {}): App {
+  return Object.assign(new App(), { id, type: APP_TYPES.FRONT_END, ...overrides });
+}
+
+function appBucket(overrides: Record<string, unknown> = {}) {
+  return { isAllEditable: false, editableAppsId: [], isAllViewable: false, viewableAppsId: [], ...overrides };
+}
+
+function endUserPermissions(appPermissions = appBucket(), resourceType = MODULES.APP): UserAllPermissions {
+  return makePermissions({
+    isBuilder: false,
+    isEndUser: true,
+    resource: [{ resourceType }],
+    userPermission: {
+      ...baseUserPermission(),
+      isBuilder: false,
+      isEndUser: true,
+      [MODULES.APP]: appPermissions,
+      [MODULES.MODULES]: appBucket(),
+    } as any,
+  });
+}
+
+const VIEWER_RUN = [FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR];
+
+describe('defineDataQueryAppAbility — end-user viewer runs', () => {
+  describe('front-end app', () => {
+    it('denies running queries of an app the end user has not been granted', () => {
+      const ability = buildAbility(
+        endUserPermissions(appBucket({ viewableAppsId: ['other-app'] })),
+        frontEndAppInstance('app-1')
+      );
+      VIEWER_RUN.forEach((feature) => expect(ability.can(feature, App)).toBe(false));
+    });
+
+    it('denies an end user with no app grants at all (e.g. after the grant was removed)', () => {
+      const ability = buildAbility(endUserPermissions(), frontEndAppInstance('app-1'));
+      expect(ability.can(FEATURE_KEY.RUN_VIEWER, App)).toBe(false);
+    });
+
+    it('allows running queries of an app in the end user viewable apps', () => {
+      const ability = buildAbility(
+        endUserPermissions(appBucket({ viewableAppsId: ['app-1'] })),
+        frontEndAppInstance('app-1')
+      );
+      VIEWER_RUN.forEach((feature) => expect(ability.can(feature, App)).toBe(true));
+    });
+
+    it('allows running queries when the end user can view all apps', () => {
+      const ability = buildAbility(
+        endUserPermissions(appBucket({ isAllViewable: true })),
+        frontEndAppInstance('app-1')
+      );
+      expect(ability.can(FEATURE_KEY.RUN_VIEWER, App)).toBe(true);
+    });
+
+    it('allows a viewer run of a public app without any grant, but nothing more', () => {
+      const ability = buildAbility(endUserPermissions(), frontEndAppInstance('app-1', { isPublic: true }));
+      expect(ability.can(FEATURE_KEY.RUN_VIEWER, App)).toBe(true);
+      expect(ability.can(FEATURE_KEY.RUN_EDITOR, App)).toBe(false);
+    });
+  });
+
+  describe('module embedded in an app', () => {
+    const run = (appPermissions: ReturnType<typeof appBucket>, parents: { id: string; isPublic: boolean }[]) => {
+      const { can, build } = new AbilityBuilder<FeatureAbility>(Ability as any);
+      defineDataQueryAppAbility(
+        can as any,
+        endUserPermissions(appPermissions, MODULES.MODULES),
+        moduleAppInstance('mod-1'),
+        parents
+      );
+      return build();
+    };
+
+    it('allows running a module query through a parent app the end user can view', () => {
+      const ability = run(appBucket({ viewableAppsId: ['parent-1'] }), [
+        { id: 'parent-1', isPublic: false },
+        { id: 'parent-2', isPublic: false },
+      ]);
+      VIEWER_RUN.forEach((feature) => expect(ability.can(feature, App)).toBe(true));
+    });
+
+    it('allows running a module query through a public parent app', () => {
+      const ability = run(appBucket(), [{ id: 'parent-1', isPublic: true }]);
+      expect(ability.can(FEATURE_KEY.RUN_VIEWER, App)).toBe(true);
+    });
+
+    it('denies a module query when no parent app embedding it is viewable', () => {
+      const ability = run(appBucket({ viewableAppsId: ['unrelated-app'] }), [{ id: 'parent-1', isPublic: false }]);
+      VIEWER_RUN.forEach((feature) => expect(ability.can(feature, App)).toBe(false));
+    });
+
+    it('denies a module query when the module is not embedded in any released app', () => {
+      const ability = run(appBucket({ isAllViewable: true }), []);
+      expect(ability.can(FEATURE_KEY.RUN_VIEWER, App)).toBe(false);
+    });
+
+    it('never grants editing a module query through a parent app', () => {
+      const ability = run(appBucket({ editableAppsId: ['parent-1'] }), [{ id: 'parent-1', isPublic: false }]);
+      expect(ability.can(FEATURE_KEY.UPDATE, App)).toBe(false);
+      expect(ability.can(FEATURE_KEY.CREATE, App)).toBe(false);
+    });
+  });
+});

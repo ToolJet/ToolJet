@@ -21,6 +21,7 @@ import { FEATURE_KEY } from './constants';
 import { FeatureAbilityGuard as AppFeatureAbilityGuard } from './ability/app/guard';
 import { FeatureAbilityGuard as DataSourceFeatureAbilityGuard } from './ability/data-source/guard';
 import { ValidateQuerySourceGuard } from './guards/validate-query-source.guard';
+import { ValidateTargetDataSourceGuard } from './guards/validate-target-data-source.guard';
 import { ValidateAppVersionGuard } from '@modules/versions/guards/validate-app-version.guard';
 import { AbilityDecorator as Ability } from '@modules/app/decorators/ability.decorator';
 import { AppAbility } from '@modules/casl/casl-ability.factory';
@@ -209,7 +210,8 @@ export class DataQueriesController implements IDataQueriesController {
     ValidateQueryAppGuard,
     AppFeatureAbilityGuard,
     ValidateQuerySourceGuard,
-    DataSourceFeatureAbilityGuard
+    DataSourceFeatureAbilityGuard,
+    ValidateTargetDataSourceGuard
   )
   @Put(':id/versions/:versionId/data-source')
   async changeQueryDataSource(

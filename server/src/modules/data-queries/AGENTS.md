@@ -59,6 +59,20 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
 - `runQueryOnBuilder` saves the sent `options` back (editor convenience) but skips the write when the
   git-sync edit rule forbids it (e.g. synced draft on the default branch under branching) — the run itself
   still executes. Update/create/delete enforce the same rule as a 403 via `GitSyncQueryEditGuard`.
+- `QueryAuthGuard` lets an unauthenticated `POST :id/run` through only for a query in a public
+  front-end app's **released** version (`apps.current_version_id`); a draft query falls through to JWT auth.
+- Viewer runs are authorized per app, never by role: `defineDataQueryAppAbility` grants `RUN_VIEWER` /
+  `RUN_EDITOR` only for a public app or an app in the user's app bucket (all-viewable / viewable / editable).
+  An End User with no grant on the app gets 403, including after a grant is revoked mid-session.
+- Modules have no end-user permissions. A module query runs for a non-module-permitted user only through a
+  released app embedding it (`DataQueryRepository.findParentAppsForModuleQuery`): `QueryAuthGuard` attaches
+  `tj_module_parent_apps`, and the ability grants viewer runs if any parent is public or in the user's app
+  bucket. The app ability guard therefore also resolves `MODULES.APP` for module queries. Never mark the
+  module itself public for a signed-in user — EE's query-level check keys off `app.isPublic`.
+- `PUT :id/versions/:versionId/data-source` authorizes the **target** source (`body.data_source_id`) with
+  the same data-source ability check as query creation (`FEATURE_KEY.CREATE`) in
+  `ValidateTargetDataSourceGuard`; a target outside the workspace is 404. The route's other guards only
+  see the query's current source.
 - Delete removes query events first (`deleteDataQueryEvents`) inside the same transaction.
 - `after*` history hooks are fire-and-forget — never await them in request flow.
 - Never abbreviate `data_source` as `ds`.

@@ -8,7 +8,12 @@ import moment from 'moment';
 import axios from 'axios';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { convertMapSet, getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
-import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAbort';
+import {
+  queryAbortControllers,
+  isAbortError,
+  getQueryRunContext,
+  isStaleQueryRun,
+} from '@/AppBuilder/_utils/queryAbort';
 import { ABORT_UNSUPPORTED_KINDS, defaultSources, TJ_QUERY_ERROR_TYPE } from '@/AppBuilder/QueryManager/constants';
 import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
@@ -684,6 +689,7 @@ export const createQueryPanelSlice = (set, get) => ({
         if (abortController) {
           queryAbortControllers.set(queryId, abortController);
         }
+        const runContext = getQueryRunContext();
 
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
@@ -735,6 +741,8 @@ export const createQueryPanelSlice = (set, get) => ({
 
         queryExecutionPromise
           .then(async (data) => {
+            // The app reloaded into another environment/version meanwhile: drop the old result.
+            if (isStaleQueryRun(runContext)) return resolve({ status: 'aborted' });
             if (data.status === 'needs_oauth') {
               localStorage.setItem('currentAppEnvironmentIdForOauth', selectedEnvironment?.id);
               const url = data.data.auth_url; // Backend generates and return sthe auth url
@@ -854,6 +862,7 @@ export const createQueryPanelSlice = (set, get) => ({
             }
           })
           .catch((e) => {
+            if (isStaleQueryRun(runContext)) return resolve({ status: 'aborted' });
             // User-initiated abort — clear loading silently, log to debugger, do not fire failure events
             if (isAbortError(e)) {
               setResolvedQuery(queryId, { isLoading: false }, moduleId);
@@ -983,6 +992,7 @@ export const createQueryPanelSlice = (set, get) => ({
         if (abortController) {
           queryAbortControllers.set(query?.id, abortController);
         }
+        const runContext = getQueryRunContext();
 
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
@@ -1013,6 +1023,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
         queryExecutionPromise
           .then(async (data) => {
+            if (isStaleQueryRun(runContext)) return resolve({ status: 'aborted' });
             // Asynchronous query execution
             // Currently async query resolution is applicable only to workflows
             // Change this conditional to async query type check for other
@@ -1224,6 +1235,7 @@ export const createQueryPanelSlice = (set, get) => ({
             resolve({ status: data.status, data: finalData });
           })
           .catch((err) => {
+            if (isStaleQueryRun(runContext)) return resolve({ status: 'aborted' });
             // User-initiated abort — silent unwind, log to debugger, do not toast
             if (isAbortError(err)) {
               setPreviewLoading(false);

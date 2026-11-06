@@ -112,7 +112,7 @@ describe('DataQueryRepository.findPublicParentAppForModuleQuery', () => {
     } as any);
     const dataQuery = await createDataQuery(nestApp, { dataSource, appVersion: moduleVersion, options: {} } as any);
 
-    return { moduleApp, dataQuery };
+    return { moduleApp, dataQuery, parentApp };
   }
 
   it('finds the public parent app when the canonical version row is public, ignoring a later-touched stub row', async () => {
@@ -137,5 +137,41 @@ describe('DataQueryRepository.findPublicParentAppForModuleQuery', () => {
     const result = await repository.findPublicParentAppForModuleQuery(moduleApp.id, dataQuery.id);
 
     expect(result).toBeNull();
+  });
+
+  describe('findParentAppsForModuleQuery', () => {
+    it('returns the released parent app embedding the module, with its canonical is_public', async () => {
+      const { user } = await createUser(nestApp, { email: 'module-parents-private@tooljet.io' });
+      const { moduleApp, dataQuery, parentApp } = await setUpParentAndModule(user, {
+        canonicalVersionIsPublic: false,
+        addLaterTouchedStub: true,
+      });
+
+      await expect(repository.findParentAppsForModuleQuery(moduleApp.id, dataQuery.id)).resolves.toEqual([
+        { id: parentApp.id, isPublic: false },
+      ]);
+    });
+
+    it('flags a public parent app as public', async () => {
+      const { user } = await createUser(nestApp, { email: 'module-parents-public@tooljet.io' });
+      const { moduleApp, dataQuery, parentApp } = await setUpParentAndModule(user, {
+        canonicalVersionIsPublic: true,
+        addLaterTouchedStub: false,
+      });
+
+      await expect(repository.findParentAppsForModuleQuery(moduleApp.id, dataQuery.id)).resolves.toEqual([
+        { id: parentApp.id, isPublic: true },
+      ]);
+    });
+
+    it('returns no parent apps when the query does not belong to the given module', async () => {
+      const { user } = await createUser(nestApp, { email: 'module-parents-mismatch@tooljet.io' });
+      const { dataQuery, parentApp } = await setUpParentAndModule(user, {
+        canonicalVersionIsPublic: false,
+        addLaterTouchedStub: false,
+      });
+
+      await expect(repository.findParentAppsForModuleQuery(parentApp.id, dataQuery.id)).resolves.toEqual([]);
+    });
   });
 });
