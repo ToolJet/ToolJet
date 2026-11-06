@@ -170,3 +170,27 @@ describe('BN-01: a shadcn Dialog keeps the draft in its body across close and re
     expect(dialogContent().querySelector('[data-tj-slot]')).toBeFalsy();
   });
 });
+
+// QA item 21: a Dialog whose body is taller than the screen ran off it with no way to reach its end. The dialog is now
+// capped at the visible canvas and scrolls; its body keeps its own height in it, not squeezed to fit (jsdom lays nothing
+// out, so the rules that do it are checked: the browser check is in the PR).
+describe('a Rocket Dialog with a body taller than the screen', () => {
+  const css = require('fs').readFileSync(
+    require('path').resolve(__dirname, '../../../../../../packs/shadcn/src/styles/ui.css'),
+    'utf8'
+  );
+  const rule = (selector) => css.match(new RegExp(`\\n${selector.replace(/[.*]/g, '\\$&')} \\{([^}]*)\\}`))?.[1] ?? '';
+
+  it('is capped at the visible canvas and scrolls', () => {
+    expect(rule('.ui-dialog')).toContain('max-height: calc(100% - 32px)');
+    expect(rule('.ui-dialog')).toContain('overflow-y: auto');
+  });
+
+  it('keeps its body at its own height', async () => {
+    const { open } = await setup({ ...PROPS, bodyHeight: 900 });
+    await open();
+    const body = slotOf(draftInput()).parentElement;
+    expect(body.style.height).toBe('900px');
+    expect(body.style.flexShrink).toBe('0');
+  });
+});

@@ -173,7 +173,8 @@ export const Dialog = () => {
   // and a close action, as in the Ant and MUI packs (BN-01). Clearing them stays explicit (clearForm, an action).
   const [bodyKeeper, bodyPlace] = useKeptPopupSlot('body', {
     enabled: !!showBody,
-    style: { height: Math.min(2000, Math.max(40, Number(bodyHeight) || 240)) },
+    // At its own height when the dialog is capped at the screen: the dialog scrolls rather than squeeze the body.
+    style: { height: Math.min(2000, Math.max(40, Number(bodyHeight) || 240)), flexShrink: 0 },
   });
   ToolJet.useComponentSettings({
     role: 'dialog',
