@@ -30,6 +30,8 @@ sign-in, permissions, environments, data sources and queries; the code calls que
 2. Routes: the paths in `app.json` and the `<Route path>`s in the code are the same list. Link with
    `navigate(routePath('order', { id }))`. `ToolJet.useNavigation().routes` says which routes the user may open;
    access per route is set on the route's hidden page (`<home page handle>-<route id>`) in ToolJet.
+   A route limit hides the screen; it does not hide its code. Everyone who can open the app downloads every screen's
+   code, constants and query names, so nothing secret goes in a screen's code: limit the queries it uses instead.
 3. User and environment: `ToolJet.useGlobals()` (`currentUser.name`, `currentUser.groups`, `environment.name`).
 4. UI: the kit in `frontend/src/components/ui/*` and Tailwind classes (`bg-primary`, `bg-primary/10`,
    `text-muted-foreground`, `bg-page`). Colours come from the ToolJet theme picked in the app's settings:
