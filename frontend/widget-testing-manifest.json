@@ -324,7 +324,7 @@
     },
     {
       "componentType": "ColorPicker",
-      "status": "partial",
+      "status": "verified",
       "contract": "ee/test/app-builder/widgets/ColorPicker/TESTING.md"
     },
     {
