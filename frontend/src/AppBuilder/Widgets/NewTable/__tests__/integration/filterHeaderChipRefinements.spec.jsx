@@ -188,3 +188,21 @@ describe('Table-FILTERUI-085 the and / or list of the filters panel', () => {
     expect(option.className).not.toMatch(/font-medium|font-bold|font-semibold/);
   });
 });
+
+describe('Table-FILTERUI-086 scrollbars show on hover only', () => {
+  const HOVER_ONLY = 'tw-scrollbar-on-hover';
+
+  test('Table-FILTERUI-086 the filters panel body and its column list draw their scrollbar on hover', async () => {
+    // Break this catches: a scrollbar that is always drawn in the filters panel and in its dropdowns.
+    await renderTable();
+    await widget.act('setFilters', [{ column: 'Email', condition: 'contains', value: 'a' }]);
+    await widget.session.user.click(q('table1-filter-button'));
+    await waitFor(() => expect(q('table1-filter-panel')).not.toBeNull());
+
+    expect(q('table1-filter-panel').querySelector('.card-body')).toHaveClass(HOVER_ONLY);
+
+    await widget.session.user.click(within(q('select-column-dropdown-0')).getByRole('combobox'));
+    await waitFor(() => expect(document.querySelector('.react-select__menu-list')).not.toBeNull());
+    expect(document.querySelector('.react-select__menu-list')).toHaveClass(HOVER_ONLY);
+  });
+});
