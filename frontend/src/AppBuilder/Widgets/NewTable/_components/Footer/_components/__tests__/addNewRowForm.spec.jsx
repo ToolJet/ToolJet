@@ -223,8 +223,9 @@ describe('Table-ADDROWFORM-014 fixed header and footer, scrolling body', () => {
 });
 
 describe('Table-ADDROWFORM-015 payload and test hooks', () => {
-  test('Table-ADDROWFORM-015 Add row sends the typed row once, holding only the included columns', async () => {
-    // Break this catches: the submit not firing the event, firing twice, or sending left-out columns.
+  test('Table-ADDROWFORM-015 Add row sends the typed row once, with a key for every column (left-out ones empty)', async () => {
+    // Break this catches: the submit not firing the event, firing twice, or dropping the keys of left-out columns
+    // (the popup always sent every column, so apps reading newRows rely on them).
     const { user, fireEvent, hide } = renderForm({ properties: { addNewRowColumns: ['name', 'email'] } });
 
     await user.type(within(field('Name')).getByRole('textbox'), 'Ada');
@@ -233,7 +234,7 @@ describe('Table-ADDROWFORM-015 payload and test hooks', () => {
     expect(fireEvent).toHaveBeenCalledTimes(1);
     expect(fireEvent).toHaveBeenCalledWith('onNewRowsAdded');
     expect(hide).toHaveBeenCalledTimes(1);
-    expect(draft()).toEqual({ name: 'Ada', email: '' });
+    expect(draft()).toEqual({ name: 'Ada', email: '', role: '', photo: '', qty: '', open: '' });
   });
 
   test('Table-ADDROWFORM-015 Cancel closes the form, fires the cancelled event once and clears what was typed', async () => {
@@ -329,12 +330,15 @@ describe('Table-ADDROWFORM-018 multiselect and tags fields', () => {
     await user.click(tags.getByRole('combobox'));
     await user.click(await screen.findByRole('checkbox', { name: 'Figma' }));
     await user.click(screen.getByRole('checkbox', { name: 'SQL' }));
-    expect(draft().tags).toEqual(['figma', 'sql']);
+    expect(draft().tags).toEqual([
+      { label: 'Figma', value: 'figma' },
+      { label: 'SQL', value: 'sql' },
+    ]);
     await user.keyboard('{Escape}');
 
     expect(tags.getByText('Figma')).toBeInTheDocument();
     await user.click(tags.getByRole('button', { name: 'Remove Figma' }));
-    expect(draft().tags).toEqual(['sql']);
+    expect(draft().tags).toEqual([{ label: 'SQL', value: 'sql' }]);
   });
 
   test('Table-ADDROWFORM-018 the clear button empties the selection', async () => {
@@ -359,11 +363,15 @@ describe('Table-ADDROWFORM-018 multiselect and tags fields', () => {
     await user.click(skills.getByRole('combobox'));
     await user.click(await screen.findByRole('checkbox', { name: 'SQL' }));
 
-    expect(draft().skills).toEqual(['react', 'sql']);
+    expect(draft().skills).toEqual([
+      { label: 'React', value: 'react' },
+      { label: 'SQL', value: 'sql' },
+    ]);
   });
 
   test('Table-ADDROWFORM-018 tags without multiple selection behave as a single select', async () => {
-    // Break this catches: a single-choice tags column offering several choices, or storing an array.
+    // Break this catches: a single-choice tags column offering several choices, or storing an array
+    // (the table's tags cell stores one { label, value }).
     const { user } = renderForm({ columns: [{ ...OPTION_COLUMNS[2], allowMultipleSelection: '{{false}}' }] });
     const trigger = within(field('Tags')).getByRole('combobox');
     expect(trigger).toHaveTextContent('Select');
@@ -371,7 +379,7 @@ describe('Table-ADDROWFORM-018 multiselect and tags fields', () => {
     await user.click(trigger);
     await user.click(await screen.findByRole('option', { name: 'SQL' }));
 
-    expect(draft().tags).toBe('sql');
+    expect(draft().tags).toEqual({ label: 'SQL', value: 'sql' });
   });
 });
 
@@ -501,8 +509,8 @@ describe('Table-ADDROWFORM-022 typography follows the table', () => {
 });
 
 describe('Table-ADDROWFORM-023 JSON field', () => {
-  test('Table-ADDROWFORM-023 is editable, and valid JSON is stored as a compact JSON string once it loses focus', async () => {
-    // Break this catches: a JSON field that cannot be typed into, or one that stores pretty-printed text.
+  test('Table-ADDROWFORM-023 is editable, and valid JSON is stored as the object it describes', async () => {
+    // Break this catches: a JSON field that cannot be typed into, or one that sends text instead of an object.
     const { user } = renderForm({ columns: RICH_COLUMNS });
     const meta = within(field('Meta')).getByRole('textbox');
 
@@ -510,7 +518,7 @@ describe('Table-ADDROWFORM-023 JSON field', () => {
     await user.paste('{ "a": 1,\n  "b": [2, 3] }');
     await user.click(within(field('Bio')).getByRole('textbox'));
 
-    expect(draft().meta).toBe('{"a":1,"b":[2,3]}');
+    expect(draft().meta).toEqual({ a: 1, b: [2, 3] });
   });
 
   test('Table-ADDROWFORM-023 invalid JSON stays in the draft as typed, for validation to flag later', async () => {
@@ -1211,7 +1219,7 @@ describe('Table-ADDROWFORM-035 a JSON column does not add fields for its keys', 
     await user.click(within(field('name')).getByRole('textbox'));
 
     expect(Object.keys(draft())).toEqual(['name', 'metadata']);
-    expect(draft().metadata).toBe('{"team":"a","level":3}');
+    expect(draft().metadata).toEqual({ team: 'a', level: 3 });
   });
 });
 

@@ -1,4 +1,10 @@
-import { resolveAddNewRowIn, getAddNewRowColumns, hasColumnValidation } from '../addNewRowConfig';
+import {
+  resolveAddNewRowIn,
+  getAddNewRowColumns,
+  getNewRowPayloadColumns,
+  hasColumnValidation,
+  toNewRowSelectValue,
+} from '../addNewRowConfig';
 
 const columns = [
   { name: 'Name', columnType: 'string' },
@@ -153,5 +159,72 @@ describe('Table-ADDROWFORM-035 nested columns whose parent column exists', () =>
     ];
 
     expect(keysOf(getAddNewRowColumns(columns, undefined))).toEqual(['details']);
+  });
+});
+
+describe('Table-ADDROWFORM-054 a selection that leaves nothing', () => {
+  test('Table-ADDROWFORM-054 an empty list, or one matching no column, means every eligible column', () => {
+    // Break this catches: a form with no fields.
+    expect(keysOf(getAddNewRowColumns(columns, []))).toEqual(['Name', 'email', 'Photo', 'Role']);
+    expect(keysOf(getAddNewRowColumns(columns, ['gone']))).toEqual(['Name', 'email', 'Photo', 'Role']);
+    expect(keysOf(getAddNewRowColumns(columns, ['Open']))).toEqual(['Name', 'email', 'Photo', 'Role']);
+  });
+});
+
+describe('Table-ADDROWFORM-056 columns every row carries a key for', () => {
+  const tableColumn = (accessorKey, meta = {}) => ({ columnDef: { accessorKey, meta } });
+
+  test('Table-ADDROWFORM-056 all table columns, including button columns, as the popup sent them', () => {
+    // Break this catches: keys of left-out or action columns vanishing from newRows.
+    const keys = getNewRowPayloadColumns([
+      tableColumn('name'),
+      tableColumn('open', { columnType: 'button' }),
+      tableColumn('email'),
+    ]).map((column) => column.columnDef.accessorKey);
+
+    expect(keys).toEqual(['name', 'open', 'email']);
+  });
+
+  test('Table-ADDROWFORM-056 not the selection or expansion columns, nor nested columns under an existing parent', () => {
+    // Break this catches: internal columns leaking into the rows, or a nested value overwriting its parent.
+    const keys = getNewRowPayloadColumns([
+      tableColumn('selection', { skipAddNewRow: true }),
+      tableColumn('metadata', { columnType: 'json' }),
+      tableColumn('metadata.team'),
+      tableColumn('other.team'),
+    ]).map((column) => column.columnDef.accessorKey);
+
+    expect(keys).toEqual(['metadata', 'other.team']);
+  });
+});
+
+describe('Table-ADDROWFORM-059 what select-like fields store', () => {
+  const options = [
+    { label: 'North', value: 'north', optionColor: '#fff' },
+    { label: 'South', value: 'south' },
+  ];
+
+  test('Table-ADDROWFORM-059 a multiselect stores the chosen option objects, in the order picked', () => {
+    // Break this catches: bare values reaching apps that read .label and .value.
+    expect(toNewRowSelectValue({ columnType: 'newMultiSelect', options }, ['south', 'north'])).toEqual([
+      options[1],
+      options[0],
+    ]);
+    expect(toNewRowSelectValue({ columnType: 'newMultiSelect', options }, [])).toEqual([]);
+  });
+
+  test('Table-ADDROWFORM-059 tags store { label, value } strings: one object, or an array when several are allowed', () => {
+    // Break this catches: tags arriving as bare values, or a single tag arriving as an array.
+    expect(toNewRowSelectValue({ columnType: 'tagsV2', options }, 'north')).toEqual({ label: 'North', value: 'north' });
+    expect(toNewRowSelectValue({ columnType: 'tagsV2', options }, '')).toEqual([]);
+    expect(toNewRowSelectValue({ columnType: 'tagsV2', allowMultiple: true, options }, ['north', 'south'])).toEqual([
+      { label: 'North', value: 'north' },
+      { label: 'South', value: 'south' },
+    ]);
+  });
+
+  test('Table-ADDROWFORM-059 a single select keeps the bare value', () => {
+    // Break this catches: a select changing shape, which the table cell never did.
+    expect(toNewRowSelectValue({ columnType: 'select', options }, 'north')).toBe('north');
   });
 });
