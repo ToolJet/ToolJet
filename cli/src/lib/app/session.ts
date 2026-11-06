@@ -138,7 +138,9 @@ export async function openSession(target: Target): Promise<Session> {
       res.status === 401
         ? `The ToolJet token was rejected by ${
             target.url
-          }: check it is a current personal access token for this instance.${envOverrideNote(target.url)}`
+          }: it may have expired (a sign-in lasts 30 days), so run tooljet auth login again, or check it is a current personal access token for this instance.${envOverrideNote(
+            target.url
+          )}`
         : `Could not open a ToolJet session on ${target.url} (HTTP ${res.status}).${envOverrideNote(target.url)}`,
       res.status,
       text
