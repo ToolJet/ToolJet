@@ -79,6 +79,8 @@ export class ConfigService implements IConfigService {
       'ENABLE_OTEL_FRONTEND',
       'OTEL_FRONTEND_FLUSH_INTERVAL_SECONDS',
       'TOOLJET_DB_DISABLE_BUILDER_EDIT',
+      // ESM CDN the editor's in-browser build fetches packages from (default esm.sh); set a mirror when offline.
+      'CODE_MODE_CDN_URL',
     ];
   }
 
