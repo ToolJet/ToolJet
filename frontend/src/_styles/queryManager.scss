@@ -1132,6 +1132,18 @@ $border-radius: 4px;
       }
     }
 
+    // "Ran with empty parameters", between the Preview bar and its result.
+    .preview-parameters-note {
+      width: 100%;
+      flex-shrink: 0;
+      padding: 4px 8px;
+      background-color: var(--base);
+      color: var(--slate11);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 16px;
+    }
+
     .preview-toggle {
       padding: 4px 6px;
       background-color: var(--base);
