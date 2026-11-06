@@ -38,11 +38,44 @@ If your instance runs behind a firewall, proxy, or restricted egress policy, all
 
 If your instance uses an [HTTP proxy](/docs/setup/http-proxy), make sure these domains are reachable through it.
 
+## Closed or Private Networks
+
+If your ToolJet instance can't be reached from the internet (for example, it runs on a private network or behind a firewall that allows outbound HTTPS but blocks inbound traffic), ToolJet Managed AI Server can't connect back to your instance to create and update the apps it builds.
+
+To use the AI builder in this setup, add the following environment variable to your ToolJet server and restart it:
+
+```bash
+ENABLE_MCP_SOCKET_RELAY=true
+```
+
+With this variable set, ToolJet runs the MCP server the AI builder uses inside its own container. The AI server sends its requests over the outbound connection your instance has already opened, and the MCP server applies them by calling ToolJet locally. Your instance needs no inbound access, and the session the MCP server uses stays on your host.
+
+If ToolJet logs `MCP socket relay is enabled but no bundle at /app/mcp/index.js; staying off.`, your image doesn't include the MCP server and the relay stays turned off. Use the ToolJet Enterprise Edition image.
+
+### Point the MCP Server at ToolJet Inside the Container
+
+Use `TOOLJET_MCP_API_URL` to set the address the MCP server uses to call ToolJet. On some versions, the MCP server calls ToolJet at your `TOOLJET_HOST` URL. On a closed network, that address often can't be reached from inside the container. When that happens, AI chat responds but every page, theme, and component save fails with `fetch failed`, and nothing appears in the server logs.
+
+To have the MCP server call ToolJet directly inside the container:
+
+1. Find the port the ToolJet server listens on inside the container:
+   ```bash
+   docker compose exec tooljet printenv PORT
+   ```
+   If the output is empty, the port is `3000`. With the standard ToolJet Docker Compose setup, it's `80`.
+2. Add the variable to your ToolJet `.env` file, replacing `<PORT>` with the port from step 1:
+   ```bash
+   TOOLJET_MCP_API_URL=http://127.0.0.1:<PORT>
+   ```
+   For the standard Docker Compose setup, this is `TOOLJET_MCP_API_URL=http://127.0.0.1:80`. If you set `SUB_PATH`, add it to the end of the URL, for example `http://127.0.0.1:80/tooljet/`.
+3. Restart the ToolJet container.
+
 ## Setup
 
 1. Confirm your license includes AI credits. If you need to purchase more, follow the **Self-Hosted Deployment** steps under [Buy Add-on Credits](/docs/build-with-ai/ai-credits#buy-add-on-credits).
 2. Whitelist the domains listed above in your firewall, proxy, or network egress rules.
-3. No further configuration is needed. AI features become available in your workspace automatically, billed against your instance's pooled AI credits.
+3. If your instance can't be reached from the internet, set `ENABLE_MCP_SOCKET_RELAY=true` as described in [Closed or Private Networks](#closed-or-private-networks).
+4. No further configuration is needed. AI features become available in your workspace automatically, billed against your instance's pooled AI credits.
 
 ## Billing
 
