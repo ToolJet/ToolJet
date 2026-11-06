@@ -397,49 +397,87 @@ export class AppsRepository extends Repository<App> {
   ): Promise<{ id: string; name: string; co_relation_id: string }[]> {
     if (workflowIds && !workflowIds.length) return [];
 
-    const defaultBranchId = await this.getDefaultBranchId(this.manager, organizationId);
-    const qb = this.createQueryBuilder('app')
-      .select(['app.id AS id'])
-      .addSelect(
-        activeBranchId
-          ? 'COALESCE(av_branch.app_name, av_meta.app_name, app.name) AS name'
-          : 'COALESCE(av_meta.app_name, app.name) AS name'
-      )
-      .addSelect('app.co_relation_id AS co_relation_id')
-      .where('app.organizationId = :organizationId', { organizationId })
-      .andWhere('app.type = :type', { type: APP_TYPES.WORKFLOW });
+    const qb = await this.canonicalAppNamesQuery(organizationId);
+    if (activeBranchId) {
+      // On a feature branch the branch's own name wins over the default branch's.
+      qb.select(['app.id AS id'])
+        .addSelect('COALESCE(av_branch.app_name, av_meta.app_name, app.name) AS name')
+        .innerJoin(
+          'app_versions',
+          'av_branch',
+          `av_branch.app_id = app.id AND av_branch.branch_id = :activeBranchId
+             AND av_branch.id = (
+               SELECT av_pick.id FROM app_versions av_pick
+               WHERE av_pick.app_id = app.id AND av_pick.branch_id = :activeBranchId
+               ORDER BY av_pick.is_stub ASC, av_pick.updated_at DESC
+               LIMIT 1
+             )`,
+          { activeBranchId }
+        );
+    }
+    qb.addSelect('app.co_relation_id AS co_relation_id').andWhere('app.type = :type', { type: APP_TYPES.WORKFLOW });
     if (workflowIds) {
       qb.andWhere('app.id IN (:...workflowIds)', { workflowIds });
     }
-    qb.leftJoin(
-      'app_versions',
-      'av_meta',
-      `av_meta.app_id = app.id AND av_meta.branch_id = :defaultBranchId
-         AND av_meta.version_type = 'version' AND av_meta.is_stub = false
-         AND av_meta.id = (
-           SELECT av_inner.id FROM app_versions av_inner
-           WHERE av_inner.app_id = app.id AND av_inner.branch_id = :defaultBranchId
-             AND av_inner.version_type = 'version' AND av_inner.is_stub = false
-           ORDER BY av_inner.is_synced DESC, av_inner.updated_at DESC
-           LIMIT 1
-         )`,
-      { defaultBranchId }
-    );
-    if (activeBranchId) {
-      qb.innerJoin(
+    return await qb.orderBy('app.created_at', 'ASC').getRawMany();
+  }
+
+  async findOrganizationAppNames(
+    organizationId: string,
+    appIds: string[]
+  ): Promise<{ id: string; name: string; type: string }[]> {
+    if (!appIds.length) return [];
+
+    const qb = await this.canonicalAppNamesQuery(organizationId);
+    return await qb.addSelect('app.type AS type').andWhere('app.id IN (:...appIds)', { appIds }).getRawMany();
+  }
+
+  // Apps, modules and workflows with a Workflow query calling this workflow, in any version.
+  async findWorkflowConsumers(
+    organizationId: string,
+    workflowId: string
+  ): Promise<{ id: string; name: string; type: string }[]> {
+    const qb = await this.canonicalAppNamesQuery(organizationId);
+    return await qb
+      .addSelect('app.type AS type')
+      .andWhere('app.id != :workflowId', { workflowId })
+      .andWhere(
+        `EXISTS (
+          SELECT 1 FROM data_queries dq
+          JOIN data_sources ds ON ds.id = dq.data_source_id
+          JOIN app_versions av ON av.id = dq.app_version_id
+          WHERE av.app_id = app.id
+            AND ds.kind = 'workflows'
+            AND dq.options::jsonb ->> 'workflowId' = :workflowIdText
+        )`,
+        // Separate binding: a shared one is typed uuid and fails against JSON text.
+        { workflowIdText: workflowId }
+      )
+      .orderBy('COALESCE(av_meta.app_name, app.name)', 'ASC')
+      .getRawMany();
+  }
+
+  // apps.name is NULL; the name lives on app_versions.app_name.
+  private async canonicalAppNamesQuery(organizationId: string) {
+    const defaultBranchId = await this.getDefaultBranchId(this.manager, organizationId);
+    return this.createQueryBuilder('app')
+      .select(['app.id AS id'])
+      .addSelect('COALESCE(av_meta.app_name, app.name) AS name')
+      .where('app.organizationId = :organizationId', { organizationId })
+      .leftJoin(
         'app_versions',
-        'av_branch',
-        `av_branch.app_id = app.id AND av_branch.branch_id = :activeBranchId
-           AND av_branch.id = (
-             SELECT av_pick.id FROM app_versions av_pick
-             WHERE av_pick.app_id = app.id AND av_pick.branch_id = :activeBranchId
-             ORDER BY av_pick.is_stub ASC, av_pick.updated_at DESC
+        'av_meta',
+        `av_meta.app_id = app.id AND av_meta.branch_id = :defaultBranchId
+           AND av_meta.version_type = 'version' AND av_meta.is_stub = false
+           AND av_meta.id = (
+             SELECT av_inner.id FROM app_versions av_inner
+             WHERE av_inner.app_id = app.id AND av_inner.branch_id = :defaultBranchId
+               AND av_inner.version_type = 'version' AND av_inner.is_stub = false
+             ORDER BY av_inner.is_synced DESC, av_inner.updated_at DESC
              LIMIT 1
            )`,
-        { activeBranchId }
+        { defaultBranchId }
       );
-    }
-    return await qb.orderBy('app.created_at', 'ASC').getRawMany();
   }
 
   /**

@@ -59,6 +59,7 @@ interface Features {
   [FEATURE_KEY.HUMAN_IN_THE_LOOP]: FeatureConfig;
   [FEATURE_KEY.LIST_APPROVAL_REQUESTS]: FeatureConfig;
   [FEATURE_KEY.LIST_WORKSPACE_EXECUTIONS]: FeatureConfig;
+  [FEATURE_KEY.LIST_WORKFLOW_CONSUMERS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

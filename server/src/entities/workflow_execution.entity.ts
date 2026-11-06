@@ -58,6 +58,9 @@ export class WorkflowExecution {
   @Column({ name: 'trigger_type', type: 'varchar', nullable: true })
   triggerType: string | null;
 
+  @Column({ name: 'trigger_source_app_id', type: 'uuid', nullable: true })
+  triggerSourceAppId: string | null;
+
   @Column({ name: 'started_at', type: 'timestamptz', nullable: true })
   startedAt: Date | null;
 
