@@ -280,3 +280,41 @@ describe('[Table-COLTYPE-DATEPICKER-006] typed unparseable date', () => {
     expect(onChange).toHaveBeenCalledWith('01/16/2024');
   });
 });
+
+describe('non-date values parsed as a unix timestamp in seconds', () => {
+  test.each([
+    ['a blank string', ' '],
+    ['a boolean', true],
+    ['an empty array', []],
+    ['a non-numeric string', 'abc'],
+  ])('%s shows "Invalid date" instead of the 1970 epoch', (_label, value) => {
+    render(
+      <DatePickerRenderer
+        {...baseProps}
+        isEditable={false}
+        value={value}
+        parseInUnixTimestamp
+        unixTimestamp="seconds"
+        onChange={jest.fn()}
+      />
+    );
+
+    expect(screen.getAllByText('Invalid date').length).toBeGreaterThan(0);
+  });
+
+  test('a numeric seconds value still renders as a date', () => {
+    render(
+      <DatePickerRenderer
+        {...baseProps}
+        isEditable={false}
+        value={1700000000}
+        parseInUnixTimestamp
+        unixTimestamp="seconds"
+        onChange={jest.fn()}
+      />
+    );
+
+    expect(screen.queryByText('Invalid date')).not.toBeInTheDocument();
+    expect(screen.getAllByText('11/15/2023').length).toBeGreaterThan(0);
+  });
+});
