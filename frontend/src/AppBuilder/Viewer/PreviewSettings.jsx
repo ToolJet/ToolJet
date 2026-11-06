@@ -34,6 +34,24 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
   const isSubBranch = selectedVersion?.versionType === 'branch';
 
   const [previewNavbar, togglePreviewNavbar] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // rootClose hears clicks on this document only. A code page's app runs in a frame, so a click in it never arrives
+  // and the settings stayed over the app: losing focus to a frame closes them too, as any outside click does.
+  useEffect(() => {
+    if (!settingsOpen) return undefined;
+    let timer = 0;
+    const onBlur = () => {
+      timer = window.setTimeout(() => {
+        if (document.activeElement?.tagName === 'IFRAME') setSettingsOpen(false);
+      }, 0);
+    };
+    window.addEventListener('blur', onBlur);
+    return () => {
+      window.removeEventListener('blur', onBlur);
+      window.clearTimeout(timer);
+    };
+  }, [settingsOpen]);
 
   useEffect(() => {
     setShowUndoRedoBtn(false);
@@ -141,7 +159,14 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
       <span className="preview-chip" style={{ color: 'var(--slate12)' }} data-cy="preview-chip">
         Preview
       </span>
-      <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={renderOverlay()}>
+      <OverlayTrigger
+        rootClose
+        trigger="click"
+        placement="bottom"
+        overlay={renderOverlay()}
+        show={settingsOpen}
+        onToggle={setSettingsOpen}
+      >
         <span style={{ marginLeft: '12px', cursor: 'pointer' }} data-cy="preview-settings">
           <Icon name="settings" height={12} width={12} fill="var(--icon-weak)" />
         </span>
