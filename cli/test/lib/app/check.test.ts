@@ -96,6 +96,96 @@ describe('tooljet app check', () => {
       .and.to.contain('page "billing" does not exist');
   });
 
+  it('reports a cast of a query hook run() that hides an undeclared parameter (the 2026-11-05 build)', () => {
+    // The exact code that built with `category` reaching a query that does not declare it.
+    const src = withSources({
+      'App/Approvals.tsx': [
+        "import { useAppQuery, QaExpensesRow } from '../tooljet.gen';",
+        'export const Approvals: React.FC = () => {',
+        "  const pending = useAppQuery('updateStatus');",
+        "  const count = useAppQuery('revenue');",
+        "  const categoryParameter = categoryFilter === 'all' ? '' : categoryFilter;",
+        '  const runPage = pending.run as unknown as (params: { offset: number; category: string } & ReturnType<typeof monthBounds>) => Promise<QaExpensesRow[]>;',
+        '  const runCount = count.run as unknown as (params: { category: string } & ReturnType<typeof monthBounds>) => Promise<QaExpensesRow[]>;',
+        '  useEffect(() => {',
+        '    const bounds = monthBounds(month);',
+        '    void Promise.all([',
+        '      runPage({ offset: (page - 1) * PAGE_SIZE, ...bounds, category: categoryParameter }),',
+        '      runCount({ ...bounds, category: categoryParameter }),',
+        '    ]);',
+        '  }, [page, month, categoryParameter]);',
+        '  return null;',
+        '};',
+      ].join('\n'),
+    });
+    const findings = checkSources(src, app, snapshot);
+    expect(findings.map((f) => f.line)).to.deep.equal([6, 7]);
+    expect(findings[0].file).to.equal('src/App/Approvals.tsx');
+    expect(findings[0].message)
+      .to.contain('pending.run is cast (as unknown as (params:')
+      .and.to.contain('do not cast run() of query "updateStatus"')
+      .and.to.contain('Declare a new parameter in the query and read it there');
+    expect(findings[1].message).to.contain('count.run is cast').and.to.contain('query "revenue"');
+  });
+
+  it('reports every way of casting a query hook, its run or its parameters', () => {
+    const src = withSources({
+      'lib/queries.ts': [
+        "import { useAppQuery } from '../tooljet.gen';",
+        "const a = useAppQuery('updateStatus');",
+        "void (a.run as any)({ id: 1, month: 'x' });", // 3: run as any
+        'const b = <(p: object) => Promise<unknown>><unknown>a.run;', // 4: angle-bracket double cast
+        "void (a['run'] as unknown);", // 5: element access
+        "const { run: go } = useAppQuery('revenue');",
+        'const goLoose = go as (p: Record<string, unknown>) => Promise<unknown>;', // 7: destructured run, single cast
+        'const again = go;',
+        'void (again! as any);', // 9: alias of a destructured run
+        "const q = useAppQuery('orders') as unknown as { run: (p?: Record<string, unknown>) => Promise<unknown> };", // 10
+        'export const useWrite = (name: string) => useAppQuery(name as never) as any;', // 11: the hook call itself
+        'void (a as any).run({ month: 1 });', // 12: the hook object
+        "void a.run({ id: 1, month: 'x' } as { id: number });", // 13: parameters cast in place
+        "void a.run({ id: 1, ...({ month: 'x' } as unknown as object) });", // 14: spread of a cast
+        "const extra = { month: 'x' } as unknown as Record<string, never>;",
+        'void a.run(extra);', // 16: a variable made by a cast
+        'const r: any = a.run;', // 17: loosened by annotation
+        'void b; void goLoose; void q; void r;',
+      ].join('\n'),
+    });
+    const findings = checkSources(src, app, snapshot);
+    expect(findings.map((f) => f.line)).to.deep.equal([3, 4, 5, 7, 9, 10, 11, 12, 13, 14, 16, 17]);
+    const at = (line: number) => findings.find((f) => f.line === line)!.message;
+    expect(at(3)).to.contain('a.run is cast (as any)');
+    expect(at(4)).to.contain('a.run is cast (as unknown as (p: object) => Promise<unknown>)');
+    expect(at(7)).to.contain('go is cast').and.to.contain('query "revenue"');
+    expect(at(10)).to.contain('do not cast the useAppQuery hook of query "orders"');
+    expect(at(13)).to.contain('the parameters passed to a.run() are cast');
+    expect(at(17)).to.contain('r is typed any');
+  });
+
+  it('leaves other casts alone: results, .data, rows, values inside the parameters, as const', () => {
+    const src = withSources({
+      'App/index.tsx': [
+        "import { useAppQuery } from '../tooljet.gen';",
+        'export const X = () => {',
+        "  const orders = useAppQuery('orders');",
+        "  const update = useAppQuery('updateStatus');",
+        '  const runUpdate = update.run;',
+        '  const rows = (orders.data ?? []) as unknown as { id: number }[];',
+        '  const user = currentUser as unknown as { name?: string };',
+        '  const save = async (v: unknown) => {',
+        '    const refreshed = (await orders.run()) as unknown as { data?: unknown[] };',
+        '    const done = (await update.run({ id: v as number, status: String(v) })) as any;',
+        "    await runUpdate({ id: 1, status: 'x' } as const);",
+        '    const other = { run: (p: unknown) => p };',
+        '    return [refreshed, done, (other.run as any)(1), (job.run as unknown as () => void)()];',
+        '  };',
+        '  return <div>{rows.length}{user.name}{String(save)}</div>;',
+        '};',
+      ].join('\n'),
+    });
+    expect(checkSources(src, app, snapshot)).to.deep.equal([]);
+  });
+
   it('skips the generated file and node_modules', () => {
     const src = withSources({
       'tooljet.gen.ts': "useAppQuery('nope')",
