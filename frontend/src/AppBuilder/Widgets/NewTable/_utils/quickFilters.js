@@ -79,6 +79,7 @@ export const getUserFilters = (defaultFilters, columnFilters, columns) => {
         column: column.header,
         condition,
         ...describeCondition(condition, column),
+        user: true,
         applied: true,
         appliedIndex: index,
         value: applied.value?.value ?? '',

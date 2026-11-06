@@ -79,6 +79,9 @@ export const Header = memo(
       return column ? getColumnSelectOptions(column, (value) => resolveReferences(value)) : [];
     };
 
+    // the column's own configuration (date format, rating icons ...), for the chips that are entered with a control
+    const getChipColumn = (chip) => columnProperties?.find(({ id: columnId }) => columnId === chip.columnId);
+
     const [showFilter, setShowFilter] = useState(false);
 
     // Hide header if the properties are not enabled
@@ -181,7 +184,9 @@ export const Header = memo(
                 <FilterChips
                   chips={headerChips}
                   componentName={componentName}
+                  tableId={id}
                   getOptions={getChipOptions}
+                  getColumn={getChipColumn}
                   onValueChange={changeChip}
                   onClear={(chip) => changeChip(chip, chip.needsValue ? '' : false)}
                   darkMode={darkMode}

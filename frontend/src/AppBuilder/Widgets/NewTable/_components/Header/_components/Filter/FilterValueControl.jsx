@@ -14,7 +14,8 @@ const PICKER_TYPES = ['datepicker', 'rating'];
 export const hasValuePicker = (columnType, options) => Boolean(options) || PICKER_TYPES.includes(columnType);
 
 // The calendar, set up the way the column's cells are (format, time, timezone, unix timestamps)
-const DateValue = ({ column, value, onChange, darkMode, dataCy, label }) => {
+// `chip` is the compact box of a header chip: no border, the calendar icon is the chip's own
+export const DateValue = ({ column, value, onChange, darkMode, dataCy, label, chip = false }) => {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const resolve = useStore.getState().getResolvedValue;
   const isTimeChecked = resolve(column.isTimeChecked) ?? false;
@@ -23,7 +24,12 @@ const DateValue = ({ column, value, onChange, darkMode, dataCy, label }) => {
 
   return (
     // `table-add-new-row-field-control` (table-component.scss) restyles the table's date input to the 36px field
-    <div data-cy={dataCy} aria-label={label} className="table-add-new-row-field-control tw-flex tw-w-full">
+    <div
+      data-cy={dataCy}
+      aria-label={label}
+      className={chip ? 'table-filter-chip-date tw-flex' : 'table-add-new-row-field-control tw-flex tw-w-full'}
+      data-with-time={chip && isTimeChecked ? 'true' : undefined}
+    >
       <DatePickerRenderer
         isEditable
         value={value}
@@ -54,8 +60,8 @@ const DateValue = ({ column, value, onChange, darkMode, dataCy, label }) => {
 
 // The column's own rating icons (how many, stars or hearts, half steps, colours). A rating the column gives new
 // rows is not a filter, so nothing is filled until one is picked.
-const RatingValue = ({ id, column, value, onChange, dataCy }) => (
-  <div data-cy={dataCy} className={FIELD_CLASS}>
+export const RatingValue = ({ id, column, value, onChange, dataCy, chip = false }) => (
+  <div data-cy={dataCy} className={chip ? 'tw-flex tw-items-center' : FIELD_CLASS}>
     <RatingColumn
       isEditable
       id={id}

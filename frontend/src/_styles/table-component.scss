@@ -904,6 +904,45 @@
   }
 }
 
+// The calendar of a date chip in the table header: the chip's own box, no border, the chip draws the icon
+.table-filter-chip-date {
+  .invalid-feedback-date,
+  .invalid-feedback,
+  .cell-icon-display {
+    display: none !important;
+  }
+
+  .react-datepicker-wrapper,
+  .react-datepicker__input-container,
+  .table-column-datepicker-input-container {
+    display: block;
+  }
+
+  .table-column-datepicker-input {
+    width: 96px;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-default);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 20px;
+
+    &:focus {
+      outline: none;
+    }
+
+    &::placeholder {
+      color: var(--text-placeholder);
+    }
+  }
+
+  &[data-with-time='true'] .table-column-datepicker-input {
+    width: 150px;
+  }
+}
+
 /*
     table footer
 */

@@ -1,10 +1,11 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { Check, ChevronDown, X } from 'lucide-react';
+import { CalendarDays, Check, ChevronDown, X } from 'lucide-react';
 import { debounce } from 'lodash';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Rocket/Popover/Popover';
 import { showTitleWhenClipped } from '../../../_utils/overflowTitle';
 import { isMultiPick, toValueList } from '../../../_utils/multiValue';
+import { DateValue, RatingValue } from './Filter/FilterValueControl';
 
 // Same 500ms the filters panel waits before applying what is typed
 const APPLY_DELAY_MS = 500;
@@ -213,51 +214,88 @@ export const MultiOptionValue = ({ chip, label, options, onChange, darkMode, dat
  * `fill` stretches it to its container (the "+N more" menu). The cross clears the value and keeps the chip. A chip whose operator takes no value (is empty ...) is switched
  * on and off by clicking it.
  */
-export const FilterChip = memo(({ chip, dataCy, options, onValueChange, onClear, darkMode, fill = false }) => {
-  const label = `${chip.column} ${chip.operator}`;
-  const hasValue = chip.applied && (!chip.needsValue || chip.value !== '');
-  const ValuePicker = isMultiPick(chip.columnType, chip.condition) ? MultiOptionValue : OptionValue;
+export const FilterChip = memo(
+  ({ chip, dataCy, options, column, tableId, onValueChange, onClear, darkMode, fill = false }) => {
+    const label = `${chip.column} ${chip.operator}`;
+    const hasValue = chip.applied && (!chip.needsValue || chip.value !== '');
+    const ValuePicker = isMultiPick(chip.columnType, chip.condition) ? MultiOptionValue : OptionValue;
 
-  return (
-    <div data-cy={dataCy} data-chip-id={chip.id} className={cn(CHIP_CLASS, fill && 'tw-w-full')}>
-      {chip.needsValue ? (
-        <>
-          <span data-chip-part="column" className="tw-font-medium tw-text-text-default">
-            {chip.column}
-          </span>
-          <span data-chip-part="operator" className="tw-text-text-placeholder">
-            {chip.operator}
-          </span>
-          <Divider />
-          {options ? (
-            <ValuePicker
-              chip={chip}
-              label={label}
-              options={options}
-              onChange={(value) => onValueChange(chip, value)}
-              darkMode={darkMode}
-            />
-          ) : (
-            <TextValue chip={chip} label={label} onChange={(value) => onValueChange(chip, value)} />
-          )}
-        </>
-      ) : (
-        <button
-          type="button"
-          aria-label={label}
-          aria-pressed={chip.applied}
-          onClick={() => onValueChange(chip, !chip.applied)}
-          className="tw-flex tw-items-center tw-gap-1.5 tw-border-0 tw-bg-transparent tw-p-0 tw-text-lg [font-family:inherit]"
-        >
-          <span data-chip-part="column" className="tw-font-medium tw-text-text-default">
-            {chip.column}
-          </span>
-          <span data-chip-part="operator" className="tw-text-text-placeholder">
-            {chip.operator}
-          </span>
-        </button>
-      )}
-      {hasValue && <ClearButton chip={chip} onClear={onClear} />}
-    </div>
-  );
-});
+    const isDate = chip.columnType === 'datepicker';
+    const isRating = chip.columnType === 'rating';
+
+    return (
+      <div
+        data-cy={dataCy}
+        data-chip-id={chip.id}
+        // a filter the user added is a shade darker than one the builder saved
+        className={cn(CHIP_CLASS, chip.user && 'tw-bg-background-surface-layer-02', fill && 'tw-w-full')}
+      >
+        {chip.needsValue ? (
+          <>
+            <span data-chip-part="column" className="tw-font-medium tw-text-text-default">
+              {chip.column}
+            </span>
+            <span data-chip-part="operator" className="tw-text-text-placeholder">
+              {chip.operator}
+            </span>
+            <Divider />
+            {isDate ? (
+              <DateValue
+                chip
+                column={column ?? {}}
+                value={chip.value}
+                onChange={(value) => onValueChange(chip, value)}
+                darkMode={darkMode}
+                label={label}
+                dataCy="filter-chip-value"
+              />
+            ) : isRating ? (
+              <RatingValue
+                chip
+                id={tableId}
+                column={column ?? {}}
+                value={chip.value}
+                onChange={(value) => onValueChange(chip, value)}
+                dataCy="filter-chip-value"
+              />
+            ) : options ? (
+              <ValuePicker
+                chip={chip}
+                label={label}
+                options={options}
+                onChange={(value) => onValueChange(chip, value)}
+                darkMode={darkMode}
+              />
+            ) : (
+              <TextValue chip={chip} label={label} onChange={(value) => onValueChange(chip, value)} />
+            )}
+          </>
+        ) : (
+          <button
+            type="button"
+            aria-label={label}
+            aria-pressed={chip.applied}
+            onClick={() => onValueChange(chip, !chip.applied)}
+            className="tw-flex tw-items-center tw-gap-1.5 tw-border-0 tw-bg-transparent tw-p-0 tw-text-lg [font-family:inherit]"
+          >
+            <span data-chip-part="column" className="tw-font-medium tw-text-text-default">
+              {chip.column}
+            </span>
+            <span data-chip-part="operator" className="tw-text-text-placeholder">
+              {chip.operator}
+            </span>
+          </button>
+        )}
+        {hasValue && <ClearButton chip={chip} onClear={onClear} />}
+        {isDate && chip.needsValue && (
+          <CalendarDays
+            size={14}
+            data-chip-part="date-icon"
+            className="tw-shrink-0 tw-text-icon-default"
+            aria-hidden="true"
+          />
+        )}
+      </div>
+    );
+  }
+);

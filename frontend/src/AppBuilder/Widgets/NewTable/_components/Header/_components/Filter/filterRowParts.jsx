@@ -59,7 +59,7 @@ export const RowConnector = ({ label, dataCy, onChange, darkMode }) => {
                 onChange(connector);
                 setOpen(false);
               }}
-              className="tw-flex tw-h-8 tw-w-full tw-items-center tw-rounded-md tw-border-0 tw-bg-transparent tw-px-2 tw-text-left tw-text-lg tw-text-text-default [font-family:inherit] hover:tw-bg-interactive-hover aria-selected:tw-font-medium"
+              className="tw-flex tw-h-8 tw-w-full tw-items-center tw-rounded-md tw-border-0 tw-bg-transparent tw-px-2 tw-text-left tw-text-lg tw-text-text-default [font-family:inherit] hover:tw-bg-interactive-hover"
             >
               {connector}
             </button>
