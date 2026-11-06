@@ -75,6 +75,8 @@ const selectCustomStyles = (width) => {
       paddingLeft: '0px',
       color: 'var(--slate12)',
     }),
+    // The menu is portaled to <body>; above a popover (1060) so a select opened inside one is not hidden behind it.
+    menuPortal: (base) => ({ ...base, zIndex: 2000, pointerEvents: 'auto' }),
   };
 };
 

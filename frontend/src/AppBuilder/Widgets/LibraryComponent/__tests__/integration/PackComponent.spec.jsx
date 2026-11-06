@@ -38,6 +38,12 @@ const Echo = () => {
   );
 };
 
+// A pack component that reads a prop the host owns (Collapse when hidden), to see whether the host passes it on.
+const Flag = () => {
+  const [collapse] = ToolJet.useStateBoolean({ name: 'collapseWhenHidden', initialValue: false });
+  return <span data-testid="echo">{String(collapse)}</span>;
+};
+
 // A pack component with a drop area (ToolJet.Slot), as a Tabs container or Card has.
 const SlotCard = () => (
   <div>
@@ -50,6 +56,7 @@ const manifest = {
   components: {
     SlotCard: { displayName: 'Slot card', props: [], slots: [{ name: 'body', kind: 'slot' }] },
     Echo: { displayName: 'Echo', props: [{ name: 'label', type: 'string' }], actions: [{ name: 'ping' }] },
+    Flag: { displayName: 'Flag', props: [], actions: [] },
   },
 };
 
@@ -110,7 +117,7 @@ describe('PackComponent integration', () => {
 
   beforeEach(async () => {
     await widget.setup();
-    loadLibraryModule.mockResolvedValue({ Echo, SlotCard });
+    loadLibraryModule.mockResolvedValue({ Echo, SlotCard, Flag });
     act(() => useStore.setState({ license: { featureAccess: { customComponentLibraries: false } } }));
   });
   afterEach(() => {
@@ -137,6 +144,14 @@ describe('PackComponent integration', () => {
     renderPack();
 
     await waitFor(() => expect(shadowText()).toBe('Hello|'));
+  });
+
+  test('[PackComponent-HOSTKEY-001] keeps Collapse when hidden, which the host owns, out of the component props', async () => {
+    // Break this catches: the host's collapseWhenHidden toggle reaching the pack component as its own prop.
+    renderPack({ properties: { componentName: binding('Flag'), collapseWhenHidden: binding('{{true}}') } });
+
+    await waitFor(() => expect(shadowText()).toBeDefined());
+    await waitFor(() => expect(shadowText()).toBe('false'));
   });
 
   test('[PackComponent-LICENCE-001] draws in a released app without a custom-component licence', async () => {
