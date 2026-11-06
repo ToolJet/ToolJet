@@ -18,6 +18,8 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
   const [promotingEnvironment, setPromotingEnvironment] = useState(false);
   // An app built in code: its security result holds the promotion (ReleaseScanGate), checked before anything moves.
   const [scanLocked, setScanLocked] = useState(false);
+  // A review still waiting on this version holds the promotion (PromoteConfirmationExtras says why).
+  const [promoteLocked, setPromoteLocked] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true' || false;
   const currentVersionId = useStore((state) => state.currentVersionId);
   const [showModal, setShow] = useState(data);
@@ -210,6 +212,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
           versionId={versionIdToPromote}
           targetEnvironment={data?.target}
           releasedVersionId={releasedVersionId}
+          onLockedChange={setPromoteLocked}
         />
         {showModal && (
           <ReleaseScanGate
@@ -228,7 +231,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
           variant="primary"
           onClick={handleConfirm}
           isLoading={promotingEnvironment}
-          disabled={scanLocked}
+          disabled={scanLocked || promoteLocked}
           data-cy="promote-button"
         >
           Promote
