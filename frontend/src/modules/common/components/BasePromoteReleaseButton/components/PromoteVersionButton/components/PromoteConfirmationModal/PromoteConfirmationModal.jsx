@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { gitSyncService, authenticationService, tooljetDatabaseService, appVersionService } from '@/_services';
 import { getPrivateRoute } from '@/_helpers/routes';
-import { missingTablesFrom, promoteTablesOneUp } from './missingTables';
+import { missingTablesFrom, promoteErrorMessage, promoteTablesOneUp } from './missingTables';
 import { toast } from 'react-hot-toast';
 import ArrowRight from '@/_ui/Icon/solidIcons/ArrowRight';
 import '@/_styles/versions.scss';
@@ -21,6 +21,10 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
   const [promoteLocked, setPromoteLocked] = useState(false);
   const [missingTables, setMissingTables] = useState(null);
   const [tablePromoteError, setTablePromoteError] = useState(null);
+  // Tables this dialog already promoted, so a failed app step says they are in the target without the app.
+  const [promotedTables, setPromotedTables] = useState(null);
+  // Why the app step failed, kept in the dialog: a toast is gone before it is read.
+  const [promoteError, setPromoteError] = useState(null);
   const darkMode = localStorage.getItem('darkMode') === 'true' || false;
   const currentVersionId = useStore((state) => state.currentVersionId);
   const [showModal, setShow] = useState(data);
@@ -76,6 +80,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
 
   const handleConfirm = () => {
     setPromotingEnvironment(true);
+    setPromoteError(null);
 
     promoteAppVersionAction(
       versionIdToPromote,
@@ -137,13 +142,12 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
           setPromotingEnvironment(false);
           return;
         }
-        const rawError = error?.error || error?.message;
-        const errorMessage =
-          typeof rawError === 'object'
-            ? rawError.error
-            : rawError || `${versionToPromote.name} could not be promoted to ${data.target.name}. Please try again!`;
-        const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
+        const { message: errorMessage, details: errorDetails } = promoteErrorMessage(
+          error,
+          `${versionToPromote.name} could not be promoted to ${data.target.name}. Please try again!`
+        );
         toast.error(errorMessage);
+        setPromoteError(errorMessage);
         useStore.getState().debugger.log({
           logLevel: 'error',
           type: 'component',
@@ -174,6 +178,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
       setPromotingEnvironment(false);
       return;
     }
+    setPromotedTables(missingTables.map((table) => table.name));
     setMissingTables(null);
     handleConfirm();
   };
@@ -268,8 +273,8 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
               {missingTables.map((table) => table.name).join(', ')}
             </div>
             <div className="promote-missing-tables__help">
-              The app reads them there. Promoting the tables copies their structure to{' '}
-              {capitalize(data?.target?.name)}, without any rows, and then promotes the app.{' '}
+              The app reads them there. Promoting the tables copies their structure to {capitalize(data?.target?.name)},
+              without any rows, and then promotes the app.{' '}
               <a href={getPrivateRoute('database')} target="_blank" rel="noreferrer" data-cy="open-tooljet-database">
                 Open ToolJet Database
               </a>
@@ -279,6 +284,21 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
                 Couldn't promote {tablePromoteError.name}: {tablePromoteError.reason}
               </div>
             )}
+          </div>
+        )}
+        {promoteError && (
+          <div className="promote-missing-tables" role="alert" data-cy="promote-app-error">
+            <div className="promote-missing-tables__title">
+              {promotedTables?.length
+                ? `The tables are in ${capitalize(data?.target?.name)}, but the app wasn't promoted`
+                : `${versionToPromote.name} wasn't promoted`}
+            </div>
+            {promotedTables?.length > 0 && (
+              <div className="promote-missing-tables__names" data-cy="promote-promoted-tables">
+                Promoted: {promotedTables.join(', ')}
+              </div>
+            )}
+            <div className="promote-missing-tables__error">{promoteError}</div>
           </div>
         )}
       </Modal.Body>
@@ -293,7 +313,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
           disabled={promoteLocked}
           data-cy="promote-button"
         >
-          {missingTables?.length ? 'Promote tables and app' : 'Promote'}
+          {missingTables?.length ? 'Promote tables and app' : promoteError ? 'Try again' : 'Promote'}
           <span style={{ marginTop: '2px' }}>
             <ArrowRight fill="#FDFDFE" width="22" />
           </span>

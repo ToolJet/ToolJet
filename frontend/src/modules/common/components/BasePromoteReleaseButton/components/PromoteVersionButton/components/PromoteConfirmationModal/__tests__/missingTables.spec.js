@@ -1,4 +1,4 @@
-import { missingTablesFrom, promoteTablesOneUp } from '../missingTables';
+import { missingTablesFrom, promoteErrorMessage, promoteTablesOneUp } from '../missingTables';
 
 describe('promote blocked on tables the target environment does not have', () => {
   const blocked = {
@@ -40,5 +40,16 @@ describe('promote blocked on tables the target environment does not have', () =>
       name: 'activity',
       reason: 'no access to staging',
     });
+  });
+});
+
+describe('promoteErrorMessage', () => {
+  it('reads a string error, an { error, details } error, and falls back when there is neither', () => {
+    expect(promoteErrorMessage({ error: 'Nope' }, 'fallback')).toEqual({ message: 'Nope', details: 'Nope' });
+    expect(promoteErrorMessage({ error: { error: 'Blocked', details: 'vendors' } }, 'fallback')).toEqual({
+      message: 'Blocked',
+      details: 'vendors',
+    });
+    expect(promoteErrorMessage({}, 'fallback')).toEqual({ message: 'fallback', details: 'fallback' });
   });
 });
