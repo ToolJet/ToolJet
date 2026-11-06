@@ -909,6 +909,73 @@ describe('KeyValuePair: fieldType adapter wiring', () => {
     await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).toBeInTheDocument());
   });
 
+  test('[KeyValuePair-BUG-DATE-008] datepicker: a date picked from the calendar is validated as that date when Date format differs from Parse format', async () => {
+    // Break this catches: the emitted display-format value ("2026/12/11") being re-parsed with Parse format
+    // ("MM/DD/YYYY") by validateDates, so every in-range edit fails with "Minimum date is ...".
+    renderField(
+      {
+        fieldType: 'datepicker',
+        isEditable: true,
+        dateFormat: 'YYYY/MM/DD',
+        parseDateFormat: 'MM/DD/YYYY',
+        minDate: '11/01/2026',
+      },
+      { v: '12/10/2026' }
+    );
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    expect(document.querySelector('.kv-row-validation-error')).not.toBeInTheDocument();
+
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => {
+      const el = document.querySelector('.react-datepicker__input-container input');
+      expect(el).toBeInTheDocument();
+      return el;
+    });
+    await widget.session.user.click(input);
+    await widget.session.user.click(
+      await waitFor(() => {
+        const day = document.querySelector('.react-datepicker__day--011:not(.react-datepicker__day--outside-month)');
+        expect(day).toBeInTheDocument();
+        return day;
+      })
+    );
+
+    await waitFor(() => expect(exposed('changeSet')).toEqual({ v: '2026/12/11' }));
+    expect(document.querySelector('.kv-row-validation-error')).not.toBeInTheDocument();
+    expect(exposed('isValid')).toBe(true);
+  });
+
+  test('[KeyValuePair-BUG-DATE-009] datepicker: a picked date that really is before minDate still surfaces the error when formats differ', async () => {
+    // Break this catches: the fix dropping the min-date check for display-format values instead of validating the real date.
+    renderField(
+      {
+        fieldType: 'datepicker',
+        isEditable: true,
+        dateFormat: 'YYYY/MM/DD',
+        parseDateFormat: 'MM/DD/YYYY',
+        minDate: '12/15/2026',
+      },
+      { v: '12/20/2026' }
+    );
+
+    await waitFor(() => expect(rows()).toHaveLength(1));
+    await widget.session.user.click(valueContainer(rows()[0]));
+    const input = await waitFor(() => document.querySelector('.react-datepicker__input-container input'));
+    await widget.session.user.click(input);
+    await widget.session.user.click(
+      await waitFor(() => {
+        const day = document.querySelector('.react-datepicker__day--011:not(.react-datepicker__day--outside-month)');
+        expect(day).toBeInTheDocument();
+        return day;
+      })
+    );
+
+    await waitFor(() => expect(exposed('changeSet')).toEqual({ v: '2026/12/11' }));
+    await waitFor(() => expect(document.querySelector('.kv-row-validation-error')).toBeInTheDocument());
+    expect(exposed('isValid')).toBe(false);
+  });
+
   test.each([
     ['datepicker', { parseDateFormat: 'YYYY-MM-DD' }, '2024-01-15', "{{cellValue === '2024-01-15' ? 'Bad date' : ''}}"],
     ['string', {}, 'abc', "{{cellValue === 'abc' ? 'Bad string' : ''}}"],
@@ -1184,6 +1251,37 @@ describe('KeyValuePair: label overflow tooltip', () => {
     } finally {
       scrollSpy.mockRestore();
       clientSpy.mockRestore();
+    }
+  });
+
+  test('[KeyValuePair-BUG-LABEL-TOOLTIP-004] inside a modal the label tooltip is portaled into the modal, not behind it', async () => {
+    // Break this catches: the tooltip is portaled into #real-canvas, a transformed stacking context that
+    // paints under the modal, so a truncated label's tooltip opens behind the modal.
+    const scrollSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(300);
+    const clientSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(100);
+    try {
+      // Mount the widget inside a react-bootstrap-style `.modal` host.
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      document.body.appendChild(modal);
+      const mount = widget.session.render.bind(widget.session);
+      jest
+        .spyOn(widget.session, 'render')
+        .mockImplementation((ui) => mount(ui, { container: modal.appendChild(document.createElement('div')) }));
+      renderWithLongLabel();
+      await waitFor(() => expect(labelText()).toBeInTheDocument());
+      await widget.session.user.hover(labelText());
+
+      const tooltip = await waitFor(() => {
+        const el = document.querySelector('.overlay-cell-table');
+        expect(el).toBeInTheDocument();
+        return el;
+      });
+      expect(tooltip.closest('.modal')).toBe(modal);
+    } finally {
+      scrollSpy.mockRestore();
+      clientSpy.mockRestore();
+      document.querySelector('.modal')?.remove();
     }
   });
 

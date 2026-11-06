@@ -62,6 +62,27 @@ export const getDateTimeFormat = (
   return isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
 };
 
+// The renderer emits edits in the display format (see computeDateString), so a value it handed out
+// can't be read back with the parse format. Returns null when the value isn't in the display format.
+export const parseDisplayedDate = ({
+  value,
+  dateDisplayFormat = 'MM/DD/YYYY',
+  isTimeChecked,
+  isTwentyFourHrFormatEnabled,
+  isDateSelectionEnabled = true,
+  timeZoneDisplay,
+}) => {
+  const format = getDateTimeFormat(
+    dateDisplayFormat,
+    isTimeChecked,
+    isTwentyFourHrFormatEnabled,
+    isDateSelectionEnabled
+  );
+  const momentObj =
+    isTimeChecked && timeZoneDisplay ? moment.tz(value, format, true, timeZoneDisplay) : moment(value, format, true);
+  return momentObj.isValid() ? momentObj.toDate() : null;
+};
+
 export const parseDate = ({
   value,
   parseDateFormat,

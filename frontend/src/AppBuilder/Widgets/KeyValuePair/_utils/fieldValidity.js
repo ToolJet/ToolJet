@@ -1,4 +1,5 @@
 import useStore from '@/AppBuilder/_stores/store';
+import { toValidatableDateValue } from './datepickerValue';
 
 // Mirrors the validation each field adapter already runs on its own render
 // (StringFieldAdapter, TextFieldAdapter, NumberFieldAdapter, SelectFieldAdapter,
@@ -57,7 +58,8 @@ export function isFieldValueValid(field, value) {
         parseDateFormat: { value: field.parseDateFormat },
         customRule: { value: field.customRule },
       },
-      widgetValue: value,
+      // Values reaching here come from the changeSet, i.e. the renderer's display-format output.
+      widgetValue: toValidatableDateValue(field, value, true),
       customResolveObjects: { cellValue: value },
     }).isValid;
   }

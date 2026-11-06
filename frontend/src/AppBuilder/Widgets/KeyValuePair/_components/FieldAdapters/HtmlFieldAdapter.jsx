@@ -1,14 +1,12 @@
 import React from 'react';
 import { HTMLRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/HTMLRenderer';
+import { getOverlayContainer } from '../../_utils/overlayContainer';
 
 /**
  * HtmlFieldAdapter - KeyValuePair adapter for HTML display
  *
  * Uses HTMLRenderer for consistent HTML rendering across the app.
  */
-// Keeps the overflow tooltip inside the canvas so its clipping applies and it can't cover the query panel.
-const getCanvas = () => document.getElementById('real-canvas');
-
 export const HtmlField = ({
   value = '',
   isEditable = false,
@@ -19,6 +17,7 @@ export const HtmlField = ({
   isEditing,
   id,
   field,
+  overlayContainer = getOverlayContainer,
 }) => {
   return (
     <HTMLRenderer
@@ -33,7 +32,7 @@ export const HtmlField = ({
       setIsEditing={setIsEditing}
       isEditing={isEditing}
       id={id}
-      overlayContainer={getCanvas}
+      overlayContainer={overlayContainer}
     />
   );
 };

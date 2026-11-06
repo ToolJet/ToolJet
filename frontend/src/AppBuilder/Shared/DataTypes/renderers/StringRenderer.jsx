@@ -131,6 +131,9 @@ export const StringRenderer = ({
     return String(text);
   };
 
+  // A raw object child throws and a boolean child renders nothing, so the editor always gets a string.
+  const editableText = value == null ? '' : String(value);
+
   const renderEditableContent = () => (
     <div className="h-100 d-flex flex-column justify-content-center position-relative">
       <div
@@ -164,7 +167,7 @@ export const StringRenderer = ({
             onBlur={(e) => {
               setIsEditing(false);
               setDraftValidation(null);
-              if (value !== e.target.textContent) {
+              if (editableText !== e.target.textContent) {
                 onChange?.(e.target.textContent);
               }
             }}
@@ -179,7 +182,7 @@ export const StringRenderer = ({
             }}
             suppressContentEditableWarning={true}
           >
-            {value}
+            {editableText}
           </div>
         ) : (
           <div

@@ -1258,7 +1258,8 @@
 
 .table-column-popover#popover-basic-2,
 .table-column-popover#table-column-popover-basic {
-  z-index: 11 !important;
+  // Above the query pane (51/52) and widget tooltips (tw-z-50); below the datepicker popper (1000)
+  z-index: 60 !important;
   min-width: 280px;
   background-color: var(--cc-surface1-surface);
 

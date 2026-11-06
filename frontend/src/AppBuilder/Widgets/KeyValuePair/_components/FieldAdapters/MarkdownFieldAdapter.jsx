@@ -1,14 +1,12 @@
 import React from 'react';
 import { MarkdownRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/MarkdownRenderer';
+import { getOverlayContainer } from '../../_utils/overlayContainer';
 
 /**
  * MarkdownFieldAdapter - KeyValuePair adapter for Markdown display
  *
  * Uses MarkdownRenderer for consistent Markdown rendering across the app.
  */
-// Keeps the overflow tooltip inside the canvas so its clipping applies and it can't cover the query panel.
-const getCanvas = () => document.getElementById('real-canvas');
-
 export const MarkdownField = ({
   value = '',
   isEditable = false,
@@ -19,6 +17,7 @@ export const MarkdownField = ({
   setIsEditing,
   id,
   field,
+  overlayContainer = getOverlayContainer,
 }) => {
   return (
     <MarkdownRenderer
@@ -33,7 +32,7 @@ export const MarkdownField = ({
       isEditing={isEditing}
       setIsEditing={setIsEditing}
       id={id}
-      overlayContainer={getCanvas}
+      overlayContainer={overlayContainer}
     />
   );
 };
