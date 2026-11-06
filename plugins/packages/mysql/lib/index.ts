@@ -99,12 +99,16 @@ export default class MysqlQueryService implements QueryService {
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
     let checkCache, knexInstance;
+    
+    //Cloning the source optionn to prevent mutating of global refernce
+    sourceOptions = {...sourceOptions }
+    
     if (sourceOptions['allow_dynamic_connection_parameters']) {
       if (sourceOptions.connection_type === 'hostname') {
-        sourceOptions['host'] = queryOptions['host'] ? queryOptions['host'] : sourceOptions['host'];
-        sourceOptions['database'] = queryOptions['database'] ? queryOptions['database'] : sourceOptions['database'];
+        sourceOptions['host'] = queryOptions['host'] !== undefined ? queryOptions['host'] : sourceOptions['host'];
+        sourceOptions['database'] = queryOptions['database'] !== undefined ? queryOptions['database'] : sourceOptions['database'];
       } else if (sourceOptions.connection_type === 'socket_path') {
-        sourceOptions['database'] = queryOptions['database'] ? queryOptions['database'] : sourceOptions['database'];
+        sourceOptions['database'] = queryOptions['database'] !== undefined ? queryOptions['database'] : sourceOptions['database'];
       }
     }
 
