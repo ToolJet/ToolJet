@@ -124,14 +124,15 @@ describe('Table-ADDROWFORM-009 columns to include', () => {
     expect(onChange).toHaveBeenCalledWith('addNewRowColumns', null);
   });
 
-  test('Table-ADDROWFORM-009 unticking Select all while everything is selected stores an empty list', async () => {
-    // Break this catches: Select all being a one-way action.
+  test('Table-ADDROWFORM-009 unticking Select all while everything is selected is refused, with a message', async () => {
+    // Break this catches: an empty list being stored, which leaves the form with nothing to fill in.
     const { onChange, user } = setup({ selectedColumns: null });
     await openPopover(user);
 
     await user.click(screen.getByRole('checkbox', { name: 'Select all' }));
 
-    expect(onChange).toHaveBeenCalledWith('addNewRowColumns', []);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent('Select at least one column');
   });
 
   test('Table-ADDROWFORM-009 searching narrows the visible columns, case-insensitively, without changing the selection', async () => {
@@ -222,5 +223,40 @@ describe('Table-ADDROWFORM-049 cog icon', () => {
     expect(icon).toHaveAttribute('height', '16');
     expect(cog).toHaveClass('fx-button');
     expect(cog.className).toContain('tw-text-[var(--slate9)]');
+  });
+});
+
+describe('Table-ADDROWFORM-058 at least one column stays selected', () => {
+  test('Table-ADDROWFORM-058 unticking the last ticked column is refused, with a message', async () => {
+    // Break this catches: an empty list being stored, which left the form with nothing to fill in.
+    const { onChange, user } = setup({ selectedColumns: ['email'] });
+    await openPopover(user);
+
+    await user.click(screen.getByRole('checkbox', { name: 'Email' }));
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByRole('checkbox', { name: 'Email' })).toBeChecked();
+    expect(screen.getByRole('alert')).toHaveTextContent('Select at least one column');
+  });
+
+  test('Table-ADDROWFORM-058 the message goes away once a valid change is made', async () => {
+    // Break this catches: the message staying up after the selection is fine again.
+    const { onChange, user } = setup({ selectedColumns: ['email'] });
+    await openPopover(user);
+    await user.click(screen.getByRole('checkbox', { name: 'Email' }));
+
+    await user.click(screen.getByRole('checkbox', { name: 'Role' }));
+
+    expect(onChange).toHaveBeenCalledWith('addNewRowColumns', ['email', 'Role']);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  test('Table-ADDROWFORM-058 a saved list that matches no column shows everything ticked, like the form does', async () => {
+    // Break this catches: the list showing nothing ticked while the form shows every field.
+    const { user } = setup({ selectedColumns: ['gone'] });
+    await openPopover(user);
+
+    expect(screen.getByRole('checkbox', { name: 'Select all' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Name' })).toBeChecked();
   });
 });

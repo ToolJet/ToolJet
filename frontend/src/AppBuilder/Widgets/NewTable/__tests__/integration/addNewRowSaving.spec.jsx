@@ -17,6 +17,8 @@ const widget = createWidgetHarness({
       value: [{ id: 'c1', name: 'name', key: 'name', columnType: 'string', isEditable: '{{true}}' }],
     },
     showAddNewRowButton: binding('{{true}}'),
+    // these scenarios are about the single-row form; a new Table allows several rows by default
+    allowAddingMultipleRows: binding('{{false}}'),
   },
 });
 
