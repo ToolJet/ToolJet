@@ -20,7 +20,8 @@ const key = (name: string) => (IDENT.test(name) ? name : JSON.stringify(name));
 export const tsType = (column: SnapshotColumn): string => {
   const t = column.type.toLowerCase();
   let base = 'unknown';
-  if (/^(integer|int|int4|int8|bigint|smallint|serial|bigserial|double precision|real|numeric|decimal|float)/.test(t)) base = 'number';
+  if (/^(integer|int|int4|int8|bigint|smallint|serial|bigserial|double precision|real|numeric|decimal|float)/.test(t))
+    base = 'number';
   else if (/^(boolean|bool)/.test(t)) base = 'boolean';
   else if (/^(character varying|varchar|text|char|uuid|timestamp|date|time)/.test(t)) base = 'string';
   else if (/json/.test(t)) base = 'unknown';
@@ -45,17 +46,21 @@ export function generateTypes(app: AppJson, snapshot: Snapshot): string {
     "import { ToolJet } from '@tooljet/custom-component-sdk';",
     '',
   ];
-  const usedTables = [...new Set(snapshot.queries.map((q) => q.table).filter((t): t is string => !!t && !!snapshot.tables[t]))].sort();
+  const usedTables = [
+    ...new Set(snapshot.queries.map((q) => q.table).filter((t): t is string => !!t && !!snapshot.tables[t])),
+  ].sort();
   for (const table of usedTables) {
     lines.push(`/** A row of the ToolJet DB table "${table}". */`);
     lines.push(`export interface ${rowTypeName(table)} {`);
     for (const column of snapshot.tables[table]) lines.push(`  ${key(column.name)}: ${tsType(column)};`);
     lines.push('}', '');
   }
-  lines.push('/** The app\'s queries: what each returns and the query parameters it takes ({{parameters.name}}). */');
+  lines.push("/** The app's queries: what each returns and the query parameters it takes ({{parameters.name}}). */");
   lines.push('export interface AppQueries {');
   for (const query of [...snapshot.queries].sort((a, b) => a.name.localeCompare(b.name))) {
-    const params = query.params.length ? `{ ${query.params.map((p) => `${key(p)}?: unknown`).join('; ')} }` : 'Record<string, never>';
+    const params = query.params.length
+      ? `{ ${query.params.map((p) => `${key(p)}?: unknown`).join('; ')} }`
+      : 'Record<string, never>';
     lines.push(`  ${key(query.name)}: { data: ${dataType(query, snapshot.tables)}; params: ${params} };`);
   }
   lines.push('}', '');
@@ -69,24 +74,28 @@ export function generateTypes(app: AppJson, snapshot: Snapshot): string {
   lines.push(
     '  : { [X in Exclude<keyof A, keyof P>]: `${X & string} is not a parameter of this query: declare it in the query and read it there` };'
   );
-  lines.push('/** ToolJet.useQuery with the query\'s data and parameter types. */');
-  lines.push("export type AppQuery<K extends QueryName> = Omit<ReturnType<typeof ToolJet.useQuery>, 'data' | 'run'> & {");
+  lines.push("/** ToolJet.useQuery with the query's data and parameter types. */");
+  lines.push(
+    "export type AppQuery<K extends QueryName> = Omit<ReturnType<typeof ToolJet.useQuery>, 'data' | 'run'> & {"
+  );
   lines.push("  data: AppQueries[K]['data'] | undefined;");
   lines.push("  run: <A extends Params<K>>(params?: A & Undeclared<Params<K>, A>) => Promise<AppQueries[K]['data']>;");
   lines.push('};');
   lines.push('export const useAppQuery = <K extends QueryName>(name: K): AppQuery<K> =>');
   lines.push("  ToolJet.useQuery<AppQueries[K]['data'], Params<K>>(name) as unknown as AppQuery<K>;");
   lines.push('');
-  lines.push('/** The app\'s routes (app.json), by id. */');
+  lines.push("/** The app's routes (app.json), by id. */");
   lines.push('export const ROUTES = {');
   for (const route of app.routes) lines.push(`  ${key(route.id)}: ${JSON.stringify(route.path)},`);
   lines.push('} as const;', '');
   lines.push('export type RouteId = keyof typeof ROUTES;', '');
-  lines.push('/** A route\'s path with its params filled in: routePath(\'order\', { id: 36 }) is \'/orders/36\'. */');
+  lines.push("/** A route's path with its params filled in: routePath('order', { id: 36 }) is '/orders/36'. */");
   lines.push('export const routePath = (id: RouteId, params: Record<string, string | number> = {}): string =>');
-  lines.push("  ROUTES[id].replace(/:([A-Za-z0-9_]+)/g, (_, name: string) => encodeURIComponent(String(params[name] ?? '')));");
+  lines.push(
+    "  ROUTES[id].replace(/:([A-Za-z0-9_]+)/g, (_, name: string) => encodeURIComponent(String(params[name] ?? '')));"
+  );
   lines.push('');
-  lines.push('/** The app\'s other ToolJet pages, by handle (for useNavigation().goToPage). */');
+  lines.push("/** The app's other ToolJet pages, by handle (for useNavigation().goToPage). */");
   const pages = snapshot.pages.filter((p) => !p.hidden && p.handle !== app.codePage.handle);
   lines.push(`export const PAGES = ${JSON.stringify(pages.map((p) => p.handle))} as const;`);
   lines.push('');
