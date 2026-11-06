@@ -9,6 +9,9 @@ import { decamelizeKeys } from 'humps';
 import * as semver from 'semver';
 import { BadRequestException } from '@nestjs/common';
 import { INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
+import { EntityManager } from 'typeorm';
+import { AppEnvironment } from '@entities/app_environments.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 const PASSWORD_REGEX = /^(?=.{12,24}$)[A-Za-z0-9!@#$%^&*()_+\-={}[\]:;"',.?/\\|]+$/;
 
@@ -181,6 +184,29 @@ export const defaultAppEnvironments = [
 ];
 
 export const ceAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
+
+/**
+ * Every organization needs the 3 app_environments rows and a default workspace branch to have
+ * anything to key an internal_table_relations row against. Idempotent so
+ * it's safe to call from every organization-creation path and from a backfill migration alike —
+ * no license check here, gating happens at read time, not at creation.
+ */
+export async function seedOrgEnvironmentsAndDefaultBranch(
+  organizationId: string,
+  manager: EntityManager
+): Promise<void> {
+  const environmentCount = await manager.count(AppEnvironment, { where: { organizationId } });
+  if (!environmentCount) {
+    for (const env of defaultAppEnvironments) {
+      await manager.save(manager.create(AppEnvironment, { organizationId, ...env }));
+    }
+  }
+
+  const defaultBranchCount = await manager.count(WorkspaceBranch, { where: { organizationId, isDefault: true } });
+  if (!defaultBranchCount) {
+    await manager.save(manager.create(WorkspaceBranch, { organizationId, name: 'main', isDefault: true }));
+  }
+}
 
 export const isSuperAdmin = (user) => {
   return !!(user?.userType === USER_TYPE.INSTANCE);
@@ -674,6 +700,12 @@ export function decamelizeKeysExcept(obj: any, ignoreKeys: string[]): any {
   if (Array.isArray(obj)) {
     return obj.map((item) => decamelizeKeysExcept(item, ignoreKeys));
   }
+
+  // A Date has no own enumerable properties, so the `for...in` below would silently turn it into
+  // `{}` — humps' decamelizeKeys (used elsewhere in this file) already guards against exactly this
+  // for Date/RegExp/Boolean/Function; this hand-rolled variant needs the same guard for the one
+  // type that actually reaches it (entity timestamp columns).
+  if (obj instanceof Date) return obj;
 
   if (obj !== null && typeof obj === 'object') {
     const result: Record<string, any> = {};

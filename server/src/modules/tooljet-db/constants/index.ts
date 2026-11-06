@@ -13,4 +13,13 @@ export enum FEATURE_KEY {
   ADD_FOREIGN_KEY = 'add_foreign_key',
   UPDATE_FOREIGN_KEY = 'update_foreign_key',
   DELETE_FOREIGN_KEY = 'delete_foreign_key',
+  PROMOTE_TABLE = 'promote_table',
+  PROMOTE_TABLE_PREVIEW = 'promote_table_preview',
+  REPAIR_BASELINE = 'repair_baseline',
+  BASELINE_REPORT = 'baseline_report',
+  TABLE_MIGRATIONS = 'table_migrations',
+  TABLE_DEPENDENTS = 'table_dependents',
+  ADD_RAW_SQL_MIGRATION = 'add_raw_sql_migration',
+  REVERT_MIGRATION = 'revert_migration',
+  SQL_EXECUTION = 'sql_execution',
 }

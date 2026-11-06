@@ -1,7 +1,7 @@
 /**
  * Regression: creating an app in a git-configured-but-unlicensed workspace must be BLOCKED
  * (assertNotGitLicenseLocked → ForbiddenException "Turn off git sync to continue"). Mirror of the
- * delete guard; workflows are exempt (not git-synced).
+ * delete guard; every app type is covered, including workflows (Phase 2 removed their exemption).
  *
  * create() runs the guard and then `dbTransactionWrap(...)` — nothing else on `this` in between. We
  * mock dbTransactionWrap to reject with a sentinel so we can tell "guard threw" (never reaches the
@@ -53,11 +53,13 @@ describe('AppsService.create — git license lock', () => {
     expect(dbTransactionWrap).toHaveBeenCalled();
   });
 
-  it('skips the lock check for workflows (not git-synced)', async () => {
+  it('runs the same lock check for a workflow create (Phase 2: workflows are no longer exempt)', async () => {
     const isGitEditLocked = jest.fn().mockResolvedValue(true);
     const svc = makeSvc(isGitEditLocked);
 
-    await expect(svc.create(user, dto(APP_TYPES.WORKFLOW))).rejects.toThrow('db-reached');
-    expect(isGitEditLocked).not.toHaveBeenCalled();
+    await expect(svc.create(user, dto(APP_TYPES.WORKFLOW))).rejects.toThrow(
+      'Your plan has expired. Turn off git sync to continue.'
+    );
+    expect(isGitEditLocked).toHaveBeenCalledWith('org-1');
   });
 });

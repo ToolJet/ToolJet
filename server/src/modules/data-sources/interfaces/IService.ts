@@ -17,7 +17,7 @@ export interface IDataSourcesService {
     query: GetQueryVariables,
     user: User,
     userPermissions: UserPermissions
-  ): Promise<{ data_sources: object[] }>;
+  ): Promise<{ data_sources: object[]; data_source_folders: object[] }>;
 
   getAll(query: GetQueryVariables, user: User, userPermissions: UserPermissions): Promise<{ data_sources: object[] }>;
 
