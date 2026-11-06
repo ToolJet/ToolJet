@@ -44,9 +44,13 @@ jest.mock('@/AppBuilder/_helpers/codeModeHooks', () => {
   };
 });
 
+jest.mock('@/_helpers/routes', () => ({ getPrivateRoute: () => '/database' }));
 jest.mock('@/_services', () => ({
   gitSyncService: {},
   authenticationService: { currentSessionValue: { current_organization_id: 'org-1' } },
+  // No ToolJet Database tables are missing in the target, so only the security result and the review decide.
+  tooljetDatabaseService: { promoteTable: jest.fn() },
+  appVersionService: { getMissingTablesForPromote: () => Promise.resolve({ tables: [] }) },
 }));
 
 const mockState = {
