@@ -312,6 +312,41 @@ const isTextField = (node: EventTarget | undefined): boolean =>
 const PRESS_EVENTS = ['mousedown', 'touchstart'] as const;
 const KEY_EVENTS = ['keydown', 'keyup', 'keypress'] as const;
 
+// The single-line fields whose Enter submits their form (HTML's implicit submission); a textarea's makes a new line.
+const SUBMITTING_INPUTS = new Set([
+  'text',
+  'search',
+  'url',
+  'tel',
+  'email',
+  'password',
+  'number',
+  'date',
+  'datetime-local',
+  'month',
+  'time',
+  'week',
+]);
+
+// Enter in a field of a <form> clicks the form's default button, its first submit button: a ToolJet Form's Submit
+// Button, whose click submits the Form. A pack's field is in the widget's shadow root, which the <form> does not reach,
+// so the browser never did that for it and Enter in a pack input inside a Form submitted nothing. The host does it as
+// the browser does: for a single-line field, not mid-composition (IME), when the component left the Enter alone. A
+// field whose list is open (aria-expanded) takes Enter as picking from it: Ant's AutoComplete picks without marking it.
+const submitOnEnter = (host: HTMLElement, origin: EventTarget | undefined, e: KeyboardEvent) => {
+  if (e.key !== 'Enter' || e.isComposing || e.defaultPrevented) return;
+  if (!(origin instanceof HTMLInputElement) || !SUBMITTING_INPUTS.has(origin.type)) return;
+  if (origin.getAttribute('aria-expanded') === 'true') return;
+  const form = host.closest('form');
+  const submit = form
+    ? Array.from(form.elements).find(
+        (el): el is HTMLButtonElement | HTMLInputElement =>
+          (el instanceof HTMLButtonElement || el instanceof HTMLInputElement) && el.type === 'submit'
+      )
+    : undefined;
+  if (submit && !submit.disabled) submit.click();
+};
+
 export const isolateInteractiveEvents = (host: HTMLElement): (() => void) => {
   const fromShadow = (origin: EventTarget | undefined) => !(origin instanceof Node && host.contains(origin));
   const onPress = (e: Event) => {
@@ -323,6 +358,7 @@ export const isolateInteractiveEvents = (host: HTMLElement): (() => void) => {
     const origin = e.composedPath()[0];
     if (!fromShadow(origin)) return;
     if (isTextField(origin) || (e as KeyboardEvent).key !== 'Escape') e.stopPropagation();
+    if (e.type === 'keydown') submitOnEnter(host, origin, e as KeyboardEvent);
   };
   PRESS_EVENTS.forEach((type) => host.addEventListener(type, onPress));
   KEY_EVENTS.forEach((type) => host.addEventListener(type, onKey));
