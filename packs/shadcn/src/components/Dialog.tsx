@@ -108,12 +108,40 @@ export const Dialog = () => {
   // The body's components are not inside the dialog in React's tree (the host renders them in the popup layer's light
   // DOM, projected through the body's <slot>) and their popups portal beside it, so Radix took a press on any of them
   // for one outside and cancelled the dialog: a DatePicker's trigger in the body dismissed it and lost the typed draft
-  // (SP-28; a text field survived only because the host stops its mousedown). A modal dialog leaves the page no
-  // pointer events, so a press outside its content reaches either its own backdrop or a popup opened from its body:
-  // only the backdrop dismisses.
+  // (SP-28; a text field survived only because the host stops its mousedown). Only a press on its own backdrop
+  // dismisses it.
+  // It is not a Radix modal: that set pointer-events: none on the page's body and pulled focus back into itself, so
+  // what opens above it from elsewhere (a ToolJet Dropdown's menu, a ToolJet Modal, another pack's dialog) took no
+  // click and kept no focus (PKB-04, -05, -06). Its backdrop, drawn here, blocks what is under it instead.
   // Radix decides on the click that ends the press, when the pointerdown's composedPath() is already empty, so the
   // overlay notes the press it took and the check compares the event itself.
   const backdropPress = React.useRef<Event | null>(null);
+  // An Escape pressed in a dialog above this one (another pack's popup layer, a ToolJet Modal) closes that one only:
+  // Radix listens on the document and took it for this dialog's too, leaving the one above open alone (PKB-06).
+  // Radix marks every Escape it handles with preventDefault, and the dialog above may skip a marked one (a ToolJet
+  // Modal does, taking it for a nested popup's), so the event is left unmarked: its preventDefault does nothing for this
+  // event, and the close Radix then asks for is ignored.
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const escapeAbove = React.useRef<Event | null>(null);
+  const leaveEscapeToAbove = (event: KeyboardEvent) => {
+    escapeAbove.current = event;
+    Object.defineProperty(event, 'preventDefault', { value: () => {}, configurable: true });
+    setTimeout(() => {
+      if (escapeAbove.current === event) escapeAbove.current = null;
+    }, 0);
+  };
+  const escapeFromAbove = (event: KeyboardEvent) => {
+    const root = contentRef.current?.getRootNode();
+    const ownLayer = root instanceof ShadowRoot ? root.host : null;
+    return event
+      .composedPath()
+      .some(
+        (node) =>
+          node instanceof HTMLElement &&
+          node !== ownLayer &&
+          (node.classList.contains('tj-cc-popup-host') || node.classList.contains('modal'))
+      );
+  };
   const keepUnlessBackdrop = (event: { detail: { originalEvent: Event }; preventDefault: () => void }) => {
     const press = event.detail.originalEvent;
     const overlay = overlayRef.current;
@@ -166,9 +194,11 @@ export const Dialog = () => {
         style={{ display: 'flex', alignItems: 'center', ...themeVars({ buttonColor, buttonText }) }}
       >
         <DialogPrimitive.Root
+          modal={false}
           open={open}
           onOpenChange={(next) => {
             if (next) show();
+            else if (escapeAbove.current) escapeAbove.current = null;
             else close(false);
           }}
         >
@@ -179,8 +209,10 @@ export const Dialog = () => {
           </DialogPrimitive.Trigger>
           {container ? (
             <DialogPrimitive.Portal container={container}>
-              <DialogPrimitive.Overlay
+              {/* Radix draws its overlay only for a modal dialog. */}
+              <div
                 ref={overlayRef}
+                data-state={open ? 'open' : 'closed'}
                 onPointerDown={(e) => {
                   backdropPress.current = e.nativeEvent;
                 }}
@@ -188,6 +220,7 @@ export const Dialog = () => {
                 style={base === undefined ? undefined : { zIndex: layer }}
               />
               <DialogPrimitive.Content
+                ref={contentRef}
                 className="ui-popup ui-dialog"
                 style={{
                   ...themeVars({ bg: background }),
@@ -196,6 +229,11 @@ export const Dialog = () => {
                   [POPUP_LAYER as string]: layer + 2,
                 }}
                 onPointerDownOutside={keepUnlessBackdrop}
+                // Focus moving to a field above it (a ToolJet Modal's, another pack's dialog's) is not a dismissal.
+                onFocusOutside={(e) => e.preventDefault()}
+                onEscapeKeyDown={(e) => {
+                  if (escapeFromAbove(e)) leaveEscapeToAbove(e);
+                }}
               >
                 <div>
                   <DialogPrimitive.Title className="ui-dialog-title">{title}</DialogPrimitive.Title>

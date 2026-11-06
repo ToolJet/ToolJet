@@ -132,8 +132,8 @@ const sheetsFor = (key: string): Sheets => {
   return sheets;
 };
 
-// One popup layer per library revision on the page (select lists, menus, dialogs), shared by its instances. It sits
-// on document.body: WidgetWrapper positions every widget with a transform, which would make it the containing block
+// One popup layer per library revision and level (select lists, menus, dialogs), shared by its instances there. It sits
+// outside every widget: WidgetWrapper positions each widget with a transform, which would make it the containing block
 // of position:fixed popups.
 // The store writes a pack component makes as it mounts (each ToolJet.useStateX publishes its value, useValidation its
 // isValid and isMandatory) are held in the store's exposed-value batch and applied together, in one store update, once
@@ -153,21 +153,60 @@ export const holdStoreWrites = (): (() => void) => {
   };
 };
 
+// Where a layer is drawn and how it stacks. Every pack drew into one layer on document.body, above the whole app, so the
+// packs' own z-indexes decided between packs (Rocket 50, Ant 1000-1050, MUI 1300): an Ant Select in an MUI Dialog opened
+// behind it, and a ToolJet Modal, drawn in the canvas (its own stacking context), could never open above a pack dialog.
+// A layer now sits in the canvas as the ToolJet Modal does (ModalV2's container), at an explicit level: canvas-level
+// widgets just under a ToolJet Modal (1060), and a widget drawn inside a dialog (another layer, or a ToolJet Modal) in a
+// layer of its own one level above that dialog. Each layer is its own stacking context, so a pack's z-indexes only order
+// its popups within it. It covers the canvas without taking clicks; its popups take them, whatever a modal library set on
+// the page's body.
+const CANVAS_LAYER_Z = 1055;
+const TOOLJET_MODAL_Z = 1060;
+const LAYER_HOST = 'tj-cc-popup-host';
+const canvasArea = (): HTMLElement => document.querySelector<HTMLElement>('.tj-canvas-area') ?? document.body;
+/** The dialog a widget is drawn in: a pack's popup layer (a dialog body's components are its light-DOM children) or a
+ *  ToolJet Modal; null on the canvas. */
+const dialogOf = (widgetHost: HTMLElement): HTMLElement | null =>
+  widgetHost.parentElement?.closest<HTMLElement>(`.${LAYER_HOST}, .modal`) ?? null;
+const levelOf = (dialog: HTMLElement | null): number => {
+  if (!dialog) return CANVAS_LAYER_Z;
+  const z = Number.parseInt(dialog.style.zIndex || getComputedStyle(dialog).zIndex, 10);
+  return (Number.isFinite(z) ? z : dialog.classList.contains(LAYER_HOST) ? CANVAS_LAYER_Z : TOOLJET_MODAL_Z) + 1;
+};
+const elementIds = new WeakMap<Element, number>();
+let lastElementId = 0;
+const idOf = (el: Element | null): number => {
+  if (!el) return 0;
+  if (!elementIds.has(el)) elementIds.set(el, (lastElementId += 1));
+  return elementIds.get(el) as number;
+};
+
 const layers = new Map<string, { overlay: HTMLElement; host: HTMLElement; count: number; release: () => void }>();
-const acquireLayer = (key: string, sheets: Sheets) => {
+const acquireLayer = (library: string, sheets: Sheets, widgetHost: HTMLElement) => {
+  const container = canvasArea();
+  const dialog = dialogOf(widgetHost);
+  const key = `${library}|${idOf(container)}|${idOf(dialog)}`;
   const known = layers.get(key);
   if (known) {
     known.count += 1;
-    return known;
+    return { key, layer: known };
   }
   const host = document.createElement('div');
-  host.className = 'tj-cc-popup-host';
+  host.className = LAYER_HOST;
+  Object.assign(host.style, {
+    position: 'absolute',
+    inset: '0',
+    pointerEvents: 'none',
+    zIndex: String(levelOf(dialog)),
+  });
   const root = host.attachShadow({ mode: 'open' });
   sheets.adopt(root);
   const overlay = document.createElement('div');
   overlay.className = 'tj-cc-overlay';
+  overlay.style.pointerEvents = 'auto';
   root.appendChild(overlay);
-  document.body.appendChild(host);
+  container.appendChild(host);
   const release = isolateInteractiveEvents(host);
   const layer = {
     overlay,
@@ -183,7 +222,7 @@ const acquireLayer = (key: string, sheets: Sheets) => {
     },
   };
   layers.set(key, layer);
-  return layer;
+  return { key, layer };
 };
 const releaseLayer = (key: string) => {
   const layer = layers.get(key);
@@ -331,13 +370,13 @@ const InlineLibraryComponent = ({
     mount.className = 'tj-cc-root';
     root.appendChild(mount);
     // The bundle portals its popups into `shadowRoot.tjOverlay` (the library's shared popup layer).
-    const layer = acquireLayer(sheetKey, sheets);
+    const { key: layerKey, layer } = acquireLayer(sheetKey, sheets, el);
     Object.defineProperty(root, 'tjOverlay', { value: layer.overlay, configurable: true });
     const releaseHost = isolateInteractiveEvents(el);
     setShadow({ mount, popupHost: layer.host });
     return () => {
       releaseHost();
-      releaseLayer(sheetKey);
+      releaseLayer(layerKey);
       sheets.release(root);
       // A pack may keep the root after the unmount (Ant's icons register every shadow root in rc-util's style
       // container cache): empty it, so it no longer reaches the mount, its listeners or the popup layer.
