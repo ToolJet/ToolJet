@@ -347,7 +347,7 @@ export const toolJetSdk = {
       [instance, name]
     );
   },
-  useQuery: (name: string) => useCodeAppQuery(name),
+  useQuery: (name: string, options?: { enabled?: boolean }) => useCodeAppQuery(name, options),
   useGlobals: () => useCodeAppGlobals(),
   useTheme: () => useCodeAppTheme(),
   useWorkspaceUsers: (options?: { search?: string; limit?: number; offset?: number }) =>
