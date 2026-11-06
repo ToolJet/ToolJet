@@ -436,6 +436,9 @@ export const BaseLeftSidebar = ({
             ].includes(selectedSidebarItem)
           )
             return;
+          // Code mode's App history stays open while its entries are compared or the inspector applies a change; its
+          // own close button closes it.
+          if (codeMode && selectedSidebarItem === 'apphistory') return;
           const isWithinSidebar = e.target.closest('.left-sidebar');
           const isClickOnInspect = e.target.closest('.config-handle-inspect');
           if (pinned || isWithinSidebar || isClickOnInspect) return;
