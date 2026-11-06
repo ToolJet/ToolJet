@@ -362,6 +362,33 @@ By default, only embedding of public apps is permitted. By setting this variable
 The option is only available starting from ToolJet Enterprise Edition `2.8.0` or higher, and `2.10.0` for the Community edition and cloud version.
 :::
 
+## Code apps (Enterprise, optional)
+
+Code apps are built as React projects and checked by an app scanner on the server. The Docker images ship the CLI, the SDK and the scanner, so none of these need to be set. Set them for an offline install, a mirror, or a non-Docker deployment.
+
+| Variable | Description | Default |
+| -------- | ----------- | ------- |
+| CODE_MODE_CDN_URL | ESM CDN the editor's in-browser build fetches npm packages from. Set a mirror when the instance has no internet access. | `https://esm.sh` |
+| TOOLJET_APP_SCANNER_BIN | Path to the app scanner's `tj-app-scan.js`. | `server/ee/packages/app-scanner`, found from the server folder |
+| TOOLJET_APP_SCAN_OFFLINE | `true` skips the scanner's network checks (OSV, npm registry, retire.js, Socket). They then report "not run", never "passed". | `false` |
+| TOOLJET_APP_SCAN_OSV_URL | OSV API mirror for the vulnerability check. | `https://api.osv.dev` |
+| TOOLJET_APP_SCAN_REGISTRY_URL | npm registry mirror for the package checks. | `https://registry.npmjs.org` |
+| TOOLJET_APP_SCAN_RETIRE_URL | retire.js repository file for the vendored library check. | the retire.js file on GitHub |
+| TOOLJET_APP_SCAN_SOCKET_TOKEN | Socket API token. Setting it turns on Socket alerts. | unset (off) |
+| TOOLJET_APP_SCAN_AUTO_DELAY_MS | How long the check after a save waits for the version to stop changing, in milliseconds. | `3000` |
+| TOOLJET_APP_SCAN_RECHECK_MINUTES | Re-runs the dependency checks on released versions every n minutes (at least 5). One instance runs it at a time. | unset (off) |
+| TOOLJET_CLI_TARBALL | CLI tarball served at `/api/code-mode/cli/tooljet-cli.tgz`. Without one the route answers 404. | `server/code-mode-cli/tooljet-cli.tgz`, written by `server/scripts/pack-cli.sh` |
+| TOOLJET_SDK_TARBALL | SDK tarball served at `/api/code-mode/cli/custom-component-sdk.tgz`. | `server/code-mode-cli/custom-component-sdk.tgz` |
+| MCP_OAUTH_TRUSTED_PROXIES | Comma-separated proxy addresses or CIDRs whose `X-Forwarded-For` the MCP sign-in and CLI device login rate limits trust. Behind a load balancer, name it here, or every caller shares one limit. | unset (the connecting address) |
+
+The bundled MCP server, and the CLI it runs, read three more. The enterprise images set them.
+
+| Variable | Description | Default | Images |
+| -------- | ----------- | ------- | ------ |
+| TOOLJET_SDK_SPEC | The SDK that app projects install. | the SDK this server serves | `file:/app/code-mode/custom-component-sdk` |
+| TOOLJET_CODE_APP_ROOT | Where the MCP server keeps app projects. | `~/tooljet-code-apps` | `/app/code-mode/apps` |
+| MCP_RENDER_AUDIT_ENABLED | `false` turns the render check off. | on when Playwright and Chrome are found | `false`, since the images have no browser |
+
 ## Configuring the Default Language
 To change the default language, set the LANGUAGE variable to your desired language code. 
 
