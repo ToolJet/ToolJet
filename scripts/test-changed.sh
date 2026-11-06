@@ -2,6 +2,7 @@
 # Detects changed server modules and runs their Jest tests (unit + e2e).
 # Usage: scripts/test-changed.sh
 # PRE_PUSH=true (set by .husky/pre-push): lint + typecheck only, in parallel — no tests.
+# SKIP_STATIC=true (set by ci.yml): skip lint + typecheck; the build-server job already ran both.
 #
 # Fallback: cross-cutting changes (helpers/entities/dto/lib, jest config/setup) → run
 # all tests. Tooling-only changes (scripts, package.json) don't affect test selection
@@ -25,6 +26,21 @@ else
   ALL_CHANGED=$(git diff --name-only "$MERGE_BASE" HEAD)
   # docs-only edits (*.md) don't need tests — mirrors detect-changes in ci.yml
   SERVER_FILES=$(echo "$ALL_CHANGED" | grep "^server/" | grep -v '\.md$' || true)
+fi
+
+# server/ee is a submodule: the root diff only shows its moved pointer. Diff the pointer
+# range inside the submodule (three-dot, so release commits already on the base are
+# excluded) and feed the real EE file paths through the same classifier below.
+if echo "$SERVER_FILES" | grep -qx "server/ee"; then
+  OLD_SHA=$(git ls-tree "origin/${BASE_BRANCH}" server/ee | awk '{print $3}')
+  NEW_SHA=$(git ls-tree HEAD server/ee | awk '{print $3}')
+  if [[ -n "$OLD_SHA" && -n "$NEW_SHA" ]] && EE_FILES=$(git -C "$ROOT/server/ee" diff --name-only "${OLD_SHA}...${NEW_SHA}" 2>/dev/null); then
+    EE_FILES=$(echo "$EE_FILES" | grep -v '\.md$' | sed 's|^|server/ee/|' || true)
+    SERVER_FILES=$(printf '%s\n%s\n' "$(echo "$SERVER_FILES" | grep -vx 'server/ee' || true)" "$EE_FILES")
+  else
+    echo "warn: could not diff server/ee ${OLD_SHA:-?}...${NEW_SHA:-?} — running all server tests"
+    RUN_ALL=true
+  fi
 fi
 
 RUN_ALL="${RUN_ALL:-false}"
@@ -70,9 +86,19 @@ while IFS= read -r file; do
       mod=$(echo "$file" | sed 's|server/test/modules/\([^/]*\)/.*|\1|')
       MODULES+=("$mod")
       ;;
-    server/ee/*)
-      mod=$(echo "$file" | sed 's|server/ee/\([^/]*\)/.*|\1|')
+    server/ee/test/modules/*)
+      mod=$(echo "$file" | sed 's|server/ee/test/modules/\([^/]*\)/.*|\1|')
       MODULES+=("$mod")
+      ;;
+    server/ee/*/*)
+      mod=$(echo "$file" | sed 's|server/ee/\([^/]*\)/.*|\1|')
+      # a top-level EE dir that isn't a module (helpers, entities, ...) is cross-cutting
+      if [[ -d "$SERVER_DIR/src/modules/$mod" || -d "$SERVER_DIR/test/modules/$mod" || -d "$SERVER_DIR/ee/test/modules/$mod" ]]; then
+        MODULES+=("$mod")
+      else
+        echo "Cross-cutting EE change in: $file"
+        RUN_ALL=true
+      fi
       ;;
     server/src/helpers/*|server/src/entities/*|server/src/dto/*|server/lib/*)
       echo "Cross-cutting change in: $file"
@@ -126,11 +152,13 @@ if [[ "${CI:-}" == "true" ]]; then
 fi
 
 # ${arr[@]+...} guard: empty-array expansion breaks under set -u on bash 3.2 (macOS)
-echo "--- Lint ---"
-npm run lint
+if [[ "${SKIP_STATIC:-}" != "true" ]]; then
+  echo "--- Lint ---"
+  npm run lint
 
-echo "--- Typecheck ---"
-npx tsc --noEmit -p tsconfig.build.json
+  echo "--- Typecheck ---"
+  npx tsc --noEmit -p tsconfig.build.json
+fi
 
 echo "--- Unit tests ---"
 npm run test -- ${unit_args[@]+"${unit_args[@]}"}
