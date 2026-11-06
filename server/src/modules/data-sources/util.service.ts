@@ -3,6 +3,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotAcceptableException,
   NotFoundException,
   NotImplementedException,
@@ -21,7 +22,13 @@ import { CredentialsService } from '@modules/encryption/services/credentials.ser
 import { DataSourcesRepository } from './repository';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
-import { cleanObject, resolveOptionsArrayForOAuth, resolveSourceOptionsForOAuth } from '@helpers/utils.helper';
+import {
+  cleanObject,
+  getTooljetEdition,
+  resolveOptionsArrayForOAuth,
+  resolveSourceOptionsForOAuth,
+} from '@helpers/utils.helper';
+import { getSSRFConfig, getSSRFProtectionOptions, validateUrlForSSRF } from '@tooljet/plugins/dist/packages/common/lib';
 import { decode } from 'js-base64';
 import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationConstantType } from '@modules/organization-constants/constants';
@@ -36,8 +43,31 @@ import { DatasourceUserTokenData } from '@entities/data_source_user_token.entity
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { CustomDomainCacheService } from '@modules/custom-domains/cache.service';
 
+// Kinds whose ToolJet managed OAuth token exchange runs in fetchOAuthToken; plugin kinds handle their own.
+const GOOGLE_MANAGED_OAUTH_APP = {
+  clientIdEnv: 'GOOGLE_CLIENT_ID',
+  clientSecretEnv: 'GOOGLE_CLIENT_SECRET',
+  tokenUrl: 'https://oauth2.googleapis.com/token',
+};
+const TOOLJET_MANAGED_OAUTH_APPS: Record<string, typeof GOOGLE_MANAGED_OAUTH_APP> = {
+  gmail: GOOGLE_MANAGED_OAUTH_APP,
+  googlesheetsv2: GOOGLE_MANAGED_OAUTH_APP,
+};
+
+// RFC 6749 section 5.2 error codes.
+const OAUTH_TOKEN_ERROR_CODES = new Set([
+  'invalid_request',
+  'invalid_client',
+  'invalid_grant',
+  'unauthorized_client',
+  'unsupported_grant_type',
+  'invalid_scope',
+]);
+
 @Injectable()
 export class DataSourcesUtilService implements IDataSourcesUtilService {
+  private readonly logger = new Logger(DataSourcesUtilService.name);
+
   constructor(
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly credentialService: CredentialsService,
@@ -1451,18 +1481,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return params;
   }
 
-  private fetchEnvVariables(pluginKind: string, keyAppend: string): string {
-    const dataSourcePrefix = {
-      googlecalendar: 'GOOGLE',
-      gmail: 'GOOGLE',
-      snowflake: 'SNOWFLAKE',
-      microsoft_graph: 'MICROSFT',
-      hubspot: 'HUBSPOT',
-    };
-    const key = dataSourcePrefix[pluginKind] + '_' + keyAppend;
-    return key;
-  }
-
   /* This function fetches the access token from the token url set in REST API (oauth) datasource */
   async fetchOAuthToken(
     sourceOptions: any,
@@ -1476,12 +1494,15 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     const tooljetHost = isTooljetManagedApp
       ? (process.env.TOOLJET_HOST as string)
       : await this.resolveOAuthRedirectHost(organizationId);
-    const accessTokenUrl = sourceOptions['access_token_url'];
+    let accessTokenUrl = sourceOptions['access_token_url'];
     if (isTooljetManagedApp) {
-      const clientIdKey = this.fetchEnvVariables(dataSource.kind, 'CLIENT_ID');
-      const clientSecretKey = this.fetchEnvVariables(dataSource.kind, 'CLIENT_SECRET');
-      sourceOptions['client_id'] = process.env[sourceOptions[clientIdKey]];
-      sourceOptions['client_secret'] = process.env[sourceOptions[clientSecretKey]];
+      const managedApp = TOOLJET_MANAGED_OAUTH_APPS[dataSource.kind];
+      if (!managedApp) {
+        throw new BadRequestException(`ToolJet managed OAuth is not available for ${dataSource.kind}`);
+      }
+      sourceOptions['client_id'] = process.env[managedApp.clientIdEnv];
+      sourceOptions['client_secret'] = process.env[managedApp.clientSecretEnv];
+      accessTokenUrl = managedApp.tokenUrl;
     }
 
     if (!accessTokenUrl) {
@@ -1490,6 +1511,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     if (!sourceOptions['client_id']) {
       throw new BadRequestException('Missing client_id');
     }
+    const tokenUrlCheck = await this.checkOAuthTokenUrl(accessTokenUrl, dataSource);
+
     const customParams = this.sanitizeCustomParams(sourceOptions['custom_auth_params']);
     const customAccessTokenHeaders = this.sanitizeCustomParams(sourceOptions['access_token_custom_headers']);
 
@@ -1521,11 +1544,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
 
     try {
-      const response = await got(accessTokenUrl, {
-        method: 'post',
-        headers,
-        form: bodyData,
-      });
+      const response = await got(
+        accessTokenUrl,
+        getSSRFProtectionOptions(tokenUrlCheck, { method: 'post', headers, form: bodyData })
+      );
 
       const result = JSON.parse(response.body);
 
@@ -1539,16 +1561,38 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
   }
 
-  protected parseErrorResponse(error = 'unknown error', statusCode?: number): any {
-    let errorObj = {};
+  // Remote body stays in the server log; the caller gets only a standard OAuth error code.
+  protected parseErrorResponse(error = 'unknown error', statusCode?: number): string {
+    this.logger.warn(`OAuth token request failed (status ${statusCode}): ${String(error).slice(0, 1000)}`);
+    let code: unknown;
     try {
-      errorObj = JSON.parse(error);
-    } catch (error) {
-      errorObj['error_details'] = error;
+      code = JSON.parse(error)?.error;
+    } catch {
+      code = undefined;
     }
+    return JSON.stringify({
+      error: OAUTH_TOKEN_ERROR_CODES.has(code as string) ? code : 'token_request_failed',
+      status_code: statusCode,
+    });
+  }
 
-    errorObj['status_code'] = statusCode;
-    return JSON.stringify(errorObj);
+  // Cloud: always checked and refused. Self-hosted: checked when SSRF_PROTECTION_ENABLED, refused only with OAUTH_TOKEN_URL_CHECK_MODE=enforce.
+  // Returns the config for checking redirects: live when refusing, disabled when only logging.
+  private async checkOAuthTokenUrl(
+    accessTokenUrl: string,
+    dataSource: DataSource
+  ): Promise<ReturnType<typeof getSSRFConfig>> {
+    const isCloud = getTooljetEdition() === 'cloud';
+    const config = isCloud ? { ...getSSRFConfig(), enabled: true } : getSSRFConfig();
+    const enforce = isCloud || process.env.OAUTH_TOKEN_URL_CHECK_MODE === 'enforce';
+    try {
+      await validateUrlForSSRF(accessTokenUrl, config);
+    } catch (error) {
+      const reason = (error as Error).message;
+      if (enforce) throw new BadRequestException(reason);
+      this.logger.warn(`OAuth token URL for data source ${dataSource.id} would have been refused: ${reason}`);
+    }
+    return enforce ? config : { ...config, enabled: false };
   }
 
   /* This function fetches auth token only for OAuth plugins */

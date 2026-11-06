@@ -1,4 +1,7 @@
 import * as request from 'supertest';
+import * as http from 'http';
+import { AddressInfo } from 'net';
+import { In } from 'typeorm';
 import { INestApplication } from '@nestjs/common';
 import {
   createUser,
@@ -9,8 +12,12 @@ import {
   createAppWithDependencies,
   login,
   updateEntity,
+  findEntities,
 } from 'test-helper';
 import { DataSource } from 'src/entities/data_source.entity';
+import { DataSourceVersion } from 'src/entities/data_source_version.entity';
+import { DataSourceVersionOptions } from 'src/entities/data_source_version_options.entity';
+import { DatasourceUserTokenData } from 'src/entities/data_source_user_token.entity';
 
 /** @group platform */
 describe('DataSourcesController', () => {
@@ -326,6 +333,103 @@ describe('DataSourcesController', () => {
       // Cross-org access is rejected with a clean 404 (data source not found for
       // this org) — previously an uncaught EntityNotFoundError crashed with a 500.
       expect(response.statusCode).toBe(404);
+    });
+
+    describe('token exchange', () => {
+      let tokenServer: http.Server;
+      let tokenHits: number;
+      let tokenUrl: string;
+      const savedEnv = { ...process.env };
+
+      beforeAll(async () => {
+        tokenServer = http.createServer((req, res) => {
+          tokenHits++;
+          req.resume();
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ access_token: 'access-1', refresh_token: 'refresh-1' }));
+        });
+        await new Promise<void>((resolve) => tokenServer.listen(0, '127.0.0.1', resolve));
+        tokenUrl = `http://127.0.0.1:${(tokenServer.address() as AddressInfo).port}/token`;
+      });
+
+      afterAll(() => new Promise<void>((resolve) => tokenServer.close(() => resolve())));
+
+      beforeEach(() => {
+        tokenHits = 0;
+      });
+
+      afterEach(() => {
+        process.env = { ...savedEnv };
+      });
+
+      const authorizeRestApiSource = async (email: string, oauthType: string) => {
+        const admin = await createUser(nestApp, { email, groups: ['all_users', 'admin'] });
+        const [environment] = await ensureAppEnvironments(nestApp, admin.organization.id);
+        const session = await login(nestApp, admin.user.email);
+        const option = (key: string, value: string, encrypted = false) => ({ key, value, encrypted });
+
+        const created = await request(nestApp.getHttpServer())
+          .post('/api/data-sources')
+          .set('tj-workspace-id', admin.organization.id)
+          .set('Cookie', session.tokenCookie)
+          .send({
+            name: `oauth_source_${oauthType}`,
+            kind: 'restapi',
+            options: [
+              option('auth_type', 'oauth2'),
+              option('grant_type', 'authorization_code'),
+              option('oauth_type', oauthType),
+              option('access_token_url', tokenUrl),
+              option('client_id', 'client-a'),
+              option('client_secret', 'secret-a', true),
+            ],
+          })
+          .expect(201);
+
+        const response = await request(nestApp.getHttpServer())
+          .post(`/api/data-sources/${created.body.id}/authorize_oauth2?environment_id=${environment.id}`)
+          .set('tj-workspace-id', admin.organization.id)
+          .set('Cookie', session.tokenCookie)
+          .send({ code: 'oauth-auth-code' });
+
+        return { response, dataSourceId: created.body.id as string, environmentId: environment.id };
+      };
+
+      it('should store the token for a custom OAuth app', async () => {
+        const { response, dataSourceId, environmentId } = await authorizeRestApiSource(
+          'custom-oauth@tooljet.io',
+          'custom_app'
+        );
+
+        expect(response.statusCode).toBe(201);
+        expect(tokenHits).toBe(1);
+        const versions = await findEntities(DataSourceVersion, { where: { dataSourceId } });
+        const options = await findEntities(DataSourceVersionOptions, {
+          where: { dataSourceVersionId: In(versions.map((version) => version.id)), environmentId },
+        });
+        const tokens = await findEntities(DatasourceUserTokenData, {
+          where: { dataSourceVersionOptionId: In(options.map((option) => option.id)) },
+        });
+        expect(versions.length).toBeGreaterThan(0);
+        expect(tokens).toEqual([expect.objectContaining({ userId: null, refreshToken: expect.any(String) })]);
+      });
+
+      it('should refuse a ToolJet managed app on REST API without calling the token URL', async () => {
+        const { response } = await authorizeRestApiSource('managed-oauth@tooljet.io', 'tooljet_app');
+
+        expect(response.statusCode).toBe(400);
+        expect(tokenHits).toBe(0);
+      });
+
+      it('should refuse a loopback token URL when the address check enforces', async () => {
+        process.env.SSRF_PROTECTION_ENABLED = 'true';
+        process.env.OAUTH_TOKEN_URL_CHECK_MODE = 'enforce';
+
+        const { response } = await authorizeRestApiSource('enforced-oauth@tooljet.io', 'custom_app');
+
+        expect(response.statusCode).toBe(400);
+        expect(tokenHits).toBe(0);
+      });
     });
   });
 
