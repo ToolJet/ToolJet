@@ -39,11 +39,12 @@ export const AddNewRowConfig = ({
 }) => {
   const [search, setSearch] = useState('');
 
+  const [selectionError, setSelectionError] = useState(false);
+
   const eligibleColumns = getAddNewRowColumns(columns, null);
   const allKeys = eligibleColumns.map(getColumnKey);
-  const selectedKeys = Array.isArray(selectedColumns)
-    ? allKeys.filter((key) => selectedColumns.includes(key))
-    : allKeys;
+  // the columns the form really shows: a saved list that matches no column counts as all of them
+  const selectedKeys = getAddNewRowColumns(columns, selectedColumns).map(getColumnKey);
   const allSelected = selectedKeys.length === allKeys.length;
   const visibleColumns = eligibleColumns.filter((column) =>
     String(column.name ?? '')
@@ -52,7 +53,15 @@ export const AddNewRowConfig = ({
   );
 
   // Every column ticked is stored as "unset", so columns added later are included without re-ticking.
-  const changeSelection = (keys) => onChange('addNewRowColumns', keys.length === allKeys.length ? null : keys);
+  // The form needs a field to show, so the last ticked column stays ticked.
+  const changeSelection = (keys) => {
+    if (keys.length === 0) {
+      setSelectionError(true);
+      return;
+    }
+    setSelectionError(false);
+    onChange('addNewRowColumns', keys.length === allKeys.length ? null : keys);
+  };
 
   const toggleColumn = (key) =>
     changeSelection(
@@ -148,6 +157,12 @@ export const AddNewRowConfig = ({
               className="tw-h-8 tw-w-full tw-rounded-md tw-border tw-border-solid tw-border-border-default tw-bg-background-surface-layer-01 tw-pl-8 tw-pr-2.5 tw-font-body-default tw-text-text-default placeholder:tw-text-text-placeholder"
             />
           </div>
+
+          {selectionError && (
+            <p role="alert" className="tw-m-0 tw-font-body-default tw-text-text-danger">
+              Select at least one column.
+            </p>
+          )}
 
           <div className="tw-flex tw-max-h-[300px] tw-flex-col tw-gap-3 tw-overflow-y-auto">
             <div className="tw-sticky tw-top-0 tw-z-[1] tw-flex tw-flex-col tw-gap-3 tw-bg-background-surface-layer-01 tw-pb-3">
