@@ -8,6 +8,8 @@ import { replaceQueryOptionsEntityReferencesWithIds } from '@/AppBuilder/_stores
 import { normalizeQueryTransformationOptions } from '@/AppBuilder/_stores/utils/appDataCaseConversion';
 import { clearQueryRerunTimer } from '@/AppBuilder/_stores/slices/componentsSlice';
 import { queriesBelongToVersion, waitForVersionQueries } from '@/AppBuilder/_helpers/queriesForVersion';
+import { codeAppReadsResultFrom } from '@/AppBuilder/_helpers/codeAppReaders';
+import { getQueryUsage } from '@/AppBuilder/_utils/entityUsage/queryUsage';
 
 const initialState = {
   sortBy: 'custom',
@@ -573,11 +575,26 @@ export const createDataQuerySlice = (set, get) => ({
         if (!queries) return Promise.resolve();
       }
 
+      // A code app's screens run the page-load queries they read when they open (codeAppHooks.ts). Here: the ones a
+      // component reads, and the results an open screen shows from before this call (an AI turn, an environment switch).
+      const startedAt = Date.now();
+      const codeApp = get().appStore?.modules?.[moduleId]?.app?.buildMode === 'code';
+      const readByComponents = (query) => {
+        try {
+          return getQueryUsage(get(), query.id, moduleId).usedBy.length > 0;
+        } catch {
+          return true;
+        }
+      };
+      const runsHere = (query) =>
+        !codeApp || codeAppReadsResultFrom(moduleId, query.id, startedAt) || readByComponents(query);
+
       try {
         for (const query of queries) {
           if (
             (query.options?.runOnPageLoad || query.options?.run_on_page_load) &&
-            (query.restricted || isQueryRunnable(query))
+            (query.restricted || isQueryRunnable(query)) &&
+            runsHere(query)
           ) {
             await get().queryPanel.runQuery(
               query.id,
