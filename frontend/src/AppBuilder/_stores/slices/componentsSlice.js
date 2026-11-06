@@ -29,7 +29,11 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection, computeAutoMobileLayout } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
-import { ROW_SCOPED_WIDGET_TYPES, NESTING_LEVEL_LIMITS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import {
+  ROW_SCOPED_WIDGET_TYPES,
+  NESTING_LEVEL_LIMITS,
+  isRowScopedParent,
+} from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
   calculateInputCanvasHeight,
   resolveInputCanvasAlignment,
@@ -39,6 +43,7 @@ import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
+import { isCompareFrame, withoutCompareNavigation } from '@/AppBuilder/_utils/compareFrame';
 
 // calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
 const INPUT_COMPONENTS_FOR_FORM_SET = new Set(INPUT_COMPONENTS_FOR_FORM);
@@ -212,7 +217,7 @@ export const createComponentsSlice = (set, get) => ({
   setPageSettings: (pageSettings = {}, moduleId) => {
     set(
       (state) => {
-        state.pageSettings = pageSettings;
+        state.pageSettings = isCompareFrame() ? withoutCompareNavigation(pageSettings) : pageSettings;
       },
       false,
       'setPageSettings'
@@ -466,7 +471,7 @@ export const createComponentsSlice = (set, get) => ({
         ancestorVisited.add(baseAncestorId);
         const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
         const ancestorType = ancestorDef?.component?.component;
-        if (ROW_SCOPED_WIDGET_TYPES.includes(ancestorType)) {
+        if (isRowScopedParent(ancestorType, ancestorId, baseAncestorId)) {
           // Add 0 at the beginning for each row-scoped ancestor (outer-most first)
           parentIndices.unshift(0);
         }
@@ -694,7 +699,7 @@ export const createComponentsSlice = (set, get) => ({
       listviewAncestorVisited.add(baseId);
       const parentDef = getComponentDefinition(baseId, moduleId);
       const parentType = parentDef?.component?.component;
-      if (ROW_SCOPED_WIDGET_TYPES.includes(parentType)) {
+      if (isRowScopedParent(parentType, currentParentId, baseId)) {
         listviewAncestors.unshift(baseId); // Add to front to maintain order from outer to inner
       }
       currentParentId = parentDef?.component?.parent;
@@ -1516,7 +1521,7 @@ export const createComponentsSlice = (set, get) => ({
                 if (ancestorVisited.has(baseAncestorId)) break;
                 ancestorVisited.add(baseAncestorId);
                 const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
-                if (ROW_SCOPED_WIDGET_TYPES.includes(ancestorDef?.component?.component)) {
+                if (isRowScopedParent(ancestorDef?.component?.component, ancestorId, baseAncestorId)) {
                   parentIndices.unshift(0);
                 }
                 ancestorId = ancestorDef?.component?.parent;
@@ -3300,7 +3305,7 @@ export const createComponentsSlice = (set, get) => ({
       visited.add(baseId);
       const def = getComponentDefinition(baseId, moduleId);
       if (!def) return null;
-      if (ROW_SCOPED_WIDGET_TYPES.includes(def.component?.component)) return baseId;
+      if (isRowScopedParent(def.component?.component, currentId, baseId)) return baseId;
       currentId = def.component?.parent;
     }
     return null;
