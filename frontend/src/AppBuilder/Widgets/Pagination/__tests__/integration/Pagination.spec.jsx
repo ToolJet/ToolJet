@@ -60,6 +60,9 @@ const widget = createWidgetHarness({ ...harnessArgs, widgetWidth: 600 });
 const narrow = createWidgetHarness({ ...harnessArgs, widgetWidth: 400 });
 // (200 - 4 * 28) / 32 = 2 slots for three-digit pages: the window is just "... 100".
 const tight = createWidgetHarness({ ...harnessArgs, widgetWidth: 200 });
+// RenderWidget pads the widget 2px per side, so 276px is left: (276 - 4 * 28) / 28 = 5 slots.
+// The full 280px would fit exactly 6, which overflows the padded box by 4px.
+const flush = createWidgetHarness({ ...harnessArgs, widgetWidth: 280 });
 
 const root = (container, handle = HANDLE) => container.querySelector(`[data-cy="${handle}"]`);
 const canvasNode = (container, handle = HANDLE) => container.querySelector(`[data-cy="draggable-widget-${handle}"]`);
@@ -747,6 +750,20 @@ describe('Pagination widget', () => {
       await waitFor(() => expect(within(pageList(container)).getByText('...')).toBeInTheDocument());
       expect(pageList(container).style.minWidth).toBe('0');
       expect(pageList(container)).toHaveStyle({ overflowX: 'clip' });
+    });
+  });
+
+  describe('flush layout', () => {
+    beforeEach(() => flush.setup());
+    afterEach(() => flush.teardown());
+
+    test('[Pagination-PGL-003] the window budgets inside the widget padding so the right edge keeps its gap', async () => {
+      // Break this catches: sizing the window to the full widget width, which ignores the
+      // RenderWidget padding and clips ">>" flush against the right edge at some widths.
+      const { container } = flush.render({ properties: { numberOfPages: binding('{{20}}') } });
+
+      await waitFor(() => expect(within(pageList(container)).getByText('...')).toBeInTheDocument());
+      expect(pageNumbers(container)).toEqual(['1', '2', '3', '...', '20']);
     });
   });
 

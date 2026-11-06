@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 export const Pagination = ({
   id,
@@ -191,7 +192,7 @@ export const Pagination = ({
             totalPages={properties.numberOfPages}
             callback={gotoPage}
             darkMode={darkMode}
-            containerWidth={width}
+            containerWidth={width - 2 * BOX_PADDING} // RenderWidget pads the box on both sides
             listRef={listRef}
           />
           <Pagination.Operator
