@@ -779,9 +779,10 @@ export const isPointerOverCanvasArea = (clientX, clientY) => {
  * @returns {string|null} - The new parent ID or null if no valid parent is found
  */
 // A disabled record is inert, so the browser's hit test skips it and finds the list under it; the record's box is the trace.
-// A pager, header or enabled record found first, or a point the list clips, is no list hit: not a disabled record.
-const isDisabledRecordAtPoint = (hits, clientX, clientY) => {
+// A pager, header or enabled record found first, a canvas above the list (an open Modal), or a point the list clips, is no list hit.
+const isDisabledRecordAtPoint = (hits, canvas, clientX, clientY) => {
   const topmost = hits.find((ele) => ele.closest?.('.listview-scroll-container'));
+  if (canvas && hits.indexOf(canvas) < hits.indexOf(topmost)) return false;
   return [...(topmost?.children ?? [])].some((record) => {
     if (record.getAttribute('aria-disabled') !== 'true') return false;
     const box = record.getBoundingClientRect();
@@ -795,7 +796,9 @@ export const isListviewCopyCanvasAtPoint = (clientX, clientY, excludeIds = []) =
   const canvas = hits.find(
     (ele) => ele.classList.contains('real-canvas') && !excludeIds.includes(ele.id.replace('canvas-', '').slice(0, 36))
   );
-  return canvas?.getAttribute('data-listview-copy') === 'true' || isDisabledRecordAtPoint(hits, clientX, clientY);
+  return (
+    canvas?.getAttribute('data-listview-copy') === 'true' || isDisabledRecordAtPoint(hits, canvas, clientX, clientY)
+  );
 };
 
 export const findNewParentIdFromMousePosition = (clientX, clientY, currentTargetId) => {

@@ -114,14 +114,14 @@ describe('gridMinWidth', () => {
       session.render(
         <>
           <div id="real-canvas" className="real-canvas" data-rect="canvas" style={{ width: 1000, height: 1000 }}>
-            {entries.map(([id]) => (
+            {entries.map(([id, , width = RECT.width]) => (
               <div
                 key={id}
                 id={id}
                 widgetid={id}
                 className={`moveable-box target ele-${id}`}
                 data-rect="box"
-                style={{ width: `${RECT.width}px`, height: `${RECT.height}px`, transform: 'translate(100px, 100px)' }}
+                style={{ width: `${width}px`, height: `${RECT.height}px`, transform: 'translate(100px, 100px)' }}
               />
             ))}
           </div>
@@ -183,6 +183,21 @@ describe('gridMinWidth', () => {
         ).toBeGreaterThanOrEqual(7)
       );
       expect(parseFloat(box.style.width)).toBeGreaterThanOrEqual(140);
+    }, 20000);
+
+    test('[Listview-SIZE-006] a group of other widgets still shrinks past its narrowest member', async () => {
+      // Break this catches: a live minimum on every group member, which stops the whole group at the narrowest one.
+      await mountSelectedAll([
+        ['btn1', 'Button'],
+        ['btn2', 'Button', GRID_WIDTH],
+      ]);
+
+      dragEastEdge(200);
+      await waitFor(() =>
+        expect(
+          session.store.read((state) => state.getCurrentPageComponents('canvas').btn1.layouts.desktop.width)
+        ).toBeLessThan(13)
+      );
     }, 20000);
   });
 });

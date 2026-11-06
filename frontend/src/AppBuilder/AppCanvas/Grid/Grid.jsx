@@ -892,10 +892,9 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           events.forEach((ev) => {
             const resizingWidget = boxList.find(({ id }) => id === ev.target.id);
             const parentGridWidth = useGridStore.getState().subContainerWidths[resizingWidget?.component?.parent];
-            ev.setMin([
-              getMinWidthPx(resizingWidget?.component?.component, parentGridWidth || gridWidth, gridWidth),
-              GRID_HEIGHT,
-            ]);
+            // Moveable scales one member's minimum onto the whole group, so only a listed widget may set one.
+            const minWidth = getMinWidthPx(resizingWidget?.component?.component, parentGridWidth || gridWidth, 0);
+            if (minWidth) ev.setMin([minWidth, 0]);
             ev.target.classList.add('show-ghost-group-dragging-resizing');
             const moveableControlBox = document.getElementsByClassName(`sc-${ev.target.id}`)[0];
             if (moveableControlBox) {

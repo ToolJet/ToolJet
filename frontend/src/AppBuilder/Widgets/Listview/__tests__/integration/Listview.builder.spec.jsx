@@ -369,6 +369,19 @@ describe('ListviewBuilderDrops', () => {
         expect(mockHandleDrop).toHaveBeenCalledTimes(1);
       });
 
+      test('[Listview-REC-008] a canvas above a disabled record, like an open Modal, takes the drop', async () => {
+        // Break this catches: the record box deciding alone, so every drop into a Modal over a disabled record is refused.
+        await mountDisabled('r0');
+        const modalCanvas = document.createElement('div');
+        modalCanvas.className = 'real-canvas';
+        modalCanvas.id = 'canvas-modal';
+        hitList(modalCanvas, null);
+
+        expect(mockDropSpec.drop({}, { getClientOffset: () => ({ x: 5, y: 50 }) })?.refused ?? false).toBe(false);
+        releaseAt(5, 50);
+        expect(mockHandleDrop).toHaveBeenCalledTimes(1);
+      });
+
       test('[Listview-REC-008] a point the scrolling list clips, or the pager covers, is not a disabled record', async () => {
         // Break this catches: the record box alone deciding, so a clipped record refuses a drop outside the list.
         await mountDisabled('r0');
@@ -1335,6 +1348,9 @@ describe('ListviewBuilderRules', () => {
           expect(node.inert).toBe(true);
         });
         expect(header.classList.contains('disabled')).toBe(true);
+        // A second `disabled` inside the greyed header would stack the opacity to 25%.
+        expect(menu.classList.contains('disabled')).toBe(false);
+        expect(menu.closest('.panel-header.disabled')).toBeTruthy();
         expect(body.classList.contains('disabled')).toBe(true);
       });
 

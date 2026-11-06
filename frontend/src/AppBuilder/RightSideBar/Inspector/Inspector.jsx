@@ -691,11 +691,7 @@ export const Inspector = ({
           <div className="panel-header-actions">
             {!isModuleContainer && (
               <>
-                <div
-                  ref={menuRef}
-                  className={lookOnly ? 'disabled' : undefined}
-                  data-cy={'component-inspector-options'}
-                >
+                <div ref={menuRef} data-cy={'component-inspector-options'}>
                   <OverlayTrigger
                     trigger={'click'}
                     placement={'bottom-end'}
