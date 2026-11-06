@@ -163,12 +163,16 @@ describe('AppsRepository — workflow metadata overlay (post-migration)', () => 
       type: 'workflow',
     });
     const featureVersion = await createApplicationVersion(app, workflowOnFeatureBranch as any);
-    await updateEntity(AppVersion, featureVersion.id, { branchId: featureBranch.id });
+    await updateEntity(AppVersion, featureVersion.id, { branchId: featureBranch.id, appName: 'Feature branch name' });
 
     const results = await appsRepository.findAllOrganizationWorkflows(admin.workspace.id, undefined, featureBranch.id);
     const resultIds = results.map((result) => result.id);
 
     expect(resultIds).toContain(workflowOnFeatureBranch.id);
     expect(resultIds).not.toContain(workflowOnDefaultBranch.id);
+    expect(results.find((result) => result.id === workflowOnFeatureBranch.id)).toMatchObject({
+      name: 'Feature branch name',
+      co_relation_id: expect.any(String),
+    });
   });
 });
