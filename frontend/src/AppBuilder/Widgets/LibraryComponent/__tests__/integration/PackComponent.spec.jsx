@@ -46,6 +46,13 @@ const Counter = () => {
   return <span data-testid="echo">{value === null ? 'empty' : String(value)}</span>;
 };
 
+// What types its text and number props reached it as.
+const Kinds = () => {
+  const [label] = ToolJet.useStateString({ name: 'label', initialValue: '' });
+  const [count] = ToolJet.useStateNumber({ name: 'count', initialValue: 0 });
+  return <span data-testid="echo">{`${typeof label}:${label}/${typeof count}:${count}`}</span>;
+};
+
 // A pack component with a drop area (ToolJet.Slot), as a Tabs container or Card has.
 const SlotCard = () => (
   <div>
@@ -58,6 +65,13 @@ const manifest = {
   components: {
     SlotCard: { displayName: 'Slot card', props: [], slots: [{ name: 'body', kind: 'slot' }] },
     Echo: { displayName: 'Echo', props: [{ name: 'label', type: 'string' }], actions: [{ name: 'ping' }] },
+    Kinds: {
+      displayName: 'Kinds',
+      props: [
+        { name: 'label', type: 'string', default: '' },
+        { name: 'count', type: 'number', default: 0 },
+      ],
+    },
     Counter: {
       displayName: 'Counter',
       props: [
@@ -125,7 +139,7 @@ describe('PackComponent integration', () => {
 
   beforeEach(async () => {
     await widget.setup();
-    loadLibraryModule.mockResolvedValue({ Echo, SlotCard, Counter });
+    loadLibraryModule.mockResolvedValue({ Echo, SlotCard, Counter, Kinds });
     act(() => useStore.setState({ license: { featureAccess: { customComponentLibraries: false } } }));
   });
   afterEach(() => {
@@ -172,6 +186,33 @@ describe('PackComponent integration', () => {
     });
 
     await waitFor(() => expect(shadowText()).toBe('5'));
+  });
+
+  // QA items 14-16: a pack property got whatever its binding resolved to, so a query row bound to a text property
+  // crashed the widget or showed [object Object].
+  test('[PackComponent-TYPES-001] hands each property the type its manifest declares', async () => {
+    // Break this catches: the host passing a bound value through without its manifest type.
+    renderPack({
+      properties: { componentName: binding('Kinds'), label: binding('{{42}}'), count: binding('{{"1,200"}}') },
+    });
+
+    await waitFor(() => expect(shadowText()).toBe('string:42/number:1200'));
+  });
+
+  test('[PackComponent-TYPES-002] empties a value a property cannot take, and says why in the debugger', async () => {
+    // Break this catches: an object reaching a text property (React cannot draw it), or the error going unreported.
+    renderPack({ properties: { label: binding('{{ {id: 7} }}') } });
+
+    await waitFor(() => expect(shadowText()).toBe('|'));
+    await waitFor(() =>
+      expect(store().debugger.logs).toContainEqual(
+        expect.objectContaining({
+          componentId: ID,
+          message: 'Expected a value of type string, but received {"id":7}',
+          errorTarget: 'Component Property',
+        })
+      )
+    );
   });
 
   test('[PackComponent-LICENCE-001] draws in a released app without a custom-component licence', async () => {

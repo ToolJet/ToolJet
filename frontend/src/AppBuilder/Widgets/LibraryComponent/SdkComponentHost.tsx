@@ -10,6 +10,7 @@ import type { LibraryManifest } from '@/AppBuilder/types/libraryComponent.types'
 import InlineLibraryComponent, { holdStoreWrites } from './InlineLibraryComponent';
 import LibrarySlotCanvas from './LibrarySlotCanvas';
 import { usePackHost, useRowTemplates } from './usePackHost';
+import { typedPackProps } from './packPropertyTypes';
 import type { LibraryRuntime } from './inlineRuntime';
 import useThemeAccess from '@/AppBuilder/_hooks/useThemeAccess';
 import { baseTheme } from '@/AppBuilder/_stores/utils';
@@ -55,6 +56,8 @@ interface SdkComponentHostProps {
   blocked?: boolean;
   /** Drawn under the box in the editor (the dev-preview badge). */
   badge?: React.ReactNode;
+  /** The built-in pack drawn (PackComponent): its props reach the component as the types its manifest declares. */
+  pack?: string;
   [hostProp: string]: any;
 }
 
@@ -81,6 +84,7 @@ const SdkComponentHost = ({
   metaKeys,
   blocked = false,
   badge = null,
+  pack,
   ...hostProps
 }: SdkComponentHostProps) => {
   const safeHeight = Math.max(height ?? 0, 0);
@@ -219,15 +223,50 @@ const SdkComponentHost = ({
     }
   };
 
-  // The component's own props = everything the Inspector sets minus the host's keys.
-  const componentProps = useMemo(() => {
+  // The component's own props = everything the Inspector sets minus the host's keys. A built-in pack's props are each
+  // the type its manifest declares (packPropertyTypes.ts), as a native widget's are; row templates stay templates.
+  const { componentProps, propertyErrors } = useMemo(() => {
     const hostKeys = new Set([...metaKeys, ...HOST_PROPERTY_KEYS]);
-    return {
-      ...Object.fromEntries(Object.entries(properties).filter(([k, v]) => !hostKeys.has(k) && !isHiddenSample(k, v))),
-      ...rowTemplates,
-    };
+    const own = Object.fromEntries(
+      Object.entries(properties).filter(([k, v]) => !hostKeys.has(k) && !isHiddenSample(k, v))
+    );
+    const typed =
+      pack && componentName
+        ? typedPackProps(pack, componentName, manifestComponent?.props, own, new Set(Object.keys(rowTemplates ?? {})))
+        : { props: own, errors: [] as ReturnType<typeof typedPackProps>['errors'] };
+    return { componentProps: { ...typed.props, ...rowTemplates }, propertyErrors: typed.errors };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties, rowTemplates, hiddenSamples, metaKeys.join('|')]);
+  }, [properties, rowTemplates, hiddenSamples, pack, componentName, manifestComponent, metaKeys.join('|')]);
+
+  // A value a property could not take is reported in the debugger, as a native widget's is; once per value.
+  const loggedErrors = useRef('');
+  useEffect(() => {
+    const signature = JSON.stringify(propertyErrors.map((e) => [e.property, e.message]));
+    if (signature === loggedErrors.current) return;
+    loggedErrors.current = signature;
+    if (!propertyErrors.length) return;
+    const state = useStore.getState() as any;
+    const name = state.getComponentDefinition?.(id, hostProps.moduleId ?? 'canvas')?.component?.name ?? id;
+    propertyErrors.forEach((error) =>
+      state.debugger?.log?.({
+        type: 'component',
+        kind: 'component',
+        key: `${name} - ${error.label}`,
+        componentId: id,
+        strace: 'page_level',
+        message: error.message,
+        status: true,
+        error: {
+          resolvedProperty: { [error.property]: error.value },
+          effectiveProperty: { [error.property]: error.effective },
+          componentId: id,
+        },
+        errorTarget: 'Component Property',
+        logLevel: 'error',
+        timestamp: new Date().toISOString(),
+      })
+    );
+  }, [propertyErrors, id, hostProps.moduleId]);
 
   // Inspector Styles-tab values for the bundle — passed as styles, never set as exposed variables.
   const componentStyles = useMemo(

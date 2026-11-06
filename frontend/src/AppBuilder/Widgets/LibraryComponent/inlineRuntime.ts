@@ -122,26 +122,10 @@ const sameContent = (a: unknown, b: unknown): boolean => {
   }
 };
 
-const isPlainObject = (value: unknown): boolean => {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-  const proto = Object.getPrototypeOf(value);
-  return proto === Object.prototype || proto === null;
-};
-
-// What a binding hands a hook that its component cannot take as that type: a query row or rows bound to a text
-// property by mistake, which React cannot draw (the widget crashed) or that showed as [object Object], and an empty
-// binding ({{''}}) to a number, which is empty there, as the hook's cleared value is. Only those are changed: text
-// properties also take arrays (a range's two dates, a Cascader's path, a multi-select's values) and Dates, and number
-// properties a range's [from, to], so the rest reaches the component as bound.
-const asText = (value: unknown): unknown =>
-  isPlainObject(value) || (Array.isArray(value) && value.some(isPlainObject)) ? '' : value;
-const asNumber = (value: unknown): unknown => (typeof value === 'string' && !value.trim() ? null : value);
-
-const makeStateHook = (hookName: string, cleared?: () => unknown, normalize?: (value: unknown) => unknown) =>
+const makeStateHook = (hookName: string, cleared?: () => unknown) =>
   function useTjState({ name, initialValue }: { name: string; initialValue?: unknown }) {
     const instance = useLibraryInstance(hookName);
-    const raw = instance.props[name];
-    const external = normalize && raw !== undefined ? normalize(raw) : raw;
+    const external = instance.props[name];
     // A property the app sets whose binding resolves to undefined (a query that has not run or failed) starts empty,
     // as a native widget's does; only a property the app never set falls back to initialValue, so a component's
     // sample data never stands in for a missing result.
@@ -336,8 +320,8 @@ const v2Hooks = {
 // The `ToolJet` object a bundle's `import { ToolJet } from '@tooljet/custom-component-sdk'` resolves to.
 export const toolJetSdk = {
   ...v2Hooks,
-  useStateString: makeStateHook('useStateString', () => '', asText),
-  useStateNumber: makeStateHook('useStateNumber', () => null, asNumber),
+  useStateString: makeStateHook('useStateString', () => ''),
+  useStateNumber: makeStateHook('useStateNumber', () => null),
   useStateBoolean: makeStateHook('useStateBoolean', () => false),
   useStateObject: makeStateHook('useStateObject', () => ({})),
   useStateArray: makeStateHook('useStateArray', () => []),

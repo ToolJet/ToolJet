@@ -3,20 +3,29 @@ import { render, waitFor } from '@testing-library/react';
 import InlineLibraryComponent from '@/AppBuilder/Widgets/LibraryComponent/InlineLibraryComponent';
 import { loadLibraryModule } from '@/AppBuilder/Widgets/LibraryComponent/inlineRuntime';
 import { installBrowserStubs, makeHost } from './fuzz/packTestEnv';
+import { typedPackProps } from '@/AppBuilder/Widgets/LibraryComponent/packPropertyTypes';
 
 installBrowserStubs();
 
 // A pack property can be bound to anything a query returns, so a binding can hand it a value of the wrong type: a
 // query row bound to a text property, a number to a label, an empty binding ({{null}}, {{''}}, a query that has not
 // run) to a number (QA items 14-17). A text property given an object crashed the widget (React cannot render an
-// object) or showed [object Object]; a Number Input bound to nothing showed and submitted its sample value 1. Each
-// state hook now hands its component a value of its own type, as a native widget's property does. The pack
-// components, the inline SDK and the host renderer are the real ones; only module and CSS loading is replaced.
+// object) or showed [object Object]. The pack host now hands each property a value of the type its manifest declares
+// (packPropertyTypes.ts), as it does here; the pack components, the inline SDK and the host renderer are the real
+// ones, and only module and CSS loading is replaced.
 jest.mock('@/AppBuilder/Widgets/LibraryComponent/inlineRuntime', () => ({
   ...jest.requireActual('@/AppBuilder/Widgets/LibraryComponent/inlineRuntime'),
   loadLibraryModule: jest.fn(),
   loadLibraryCss: jest.fn(() => Promise.resolve(null)),
 }));
+
+// The types the properties used here declare, as the packs' manifests list them.
+const PROP_TYPES = [
+  { name: 'label', type: 'string' },
+  { name: 'defaultValue', type: 'number' },
+  { name: 'value', type: 'number' },
+];
+const ARRAY_VALUE = [{ name: 'value', type: 'array' }];
 
 const packs = {
   antd: require('../../../../../../packs/antd/src/index.ts'),
@@ -25,8 +34,9 @@ const packs = {
 };
 
 let mounts = 0;
-const mount = async (pack, name, props) => {
+const mount = async (pack, name, bound, manifestProps = PROP_TYPES) => {
   loadLibraryModule.mockResolvedValue(packs[pack]);
+  const { props } = typedPackProps(pack, name, manifestProps, bound);
   mounts += 1;
   const exposed = {};
   const view = render(
@@ -101,7 +111,7 @@ describe('a number property bound to nothing', () => {
   });
 });
 
-// Text and number properties that take more than one value on purpose keep taking them.
+// Properties that take more than one type on purpose (packPropertyTypes' list) keep taking them.
 describe('a property that takes an array on purpose', () => {
   it("keeps a Rocket Slider range's two numbers", async () => {
     const { exposed } = await mount('shadcn', 'Slider', { defaultValue: [20, 80] });
@@ -109,12 +119,25 @@ describe('a property that takes an array on purpose', () => {
   });
 
   it("keeps an Ant Range Picker's two dates", async () => {
-    const { exposed } = await mount('antd', 'RangePicker', { value: ['2026-01-05', '2026-01-09'] });
+    const { exposed } = await mount('antd', 'RangePicker', { value: ['2026-01-05', '2026-01-09'] }, ARRAY_VALUE);
     await waitFor(() => expect(exposed.value).toEqual(['2026-01-05', '2026-01-09']));
   });
 
+  it("keeps a multiple Ant Select's values", async () => {
+    const options = [
+      { label: 'A', value: 'a' },
+      { label: 'B', value: 'b' },
+    ];
+    const { exposed } = await mount('antd', 'Select', { mode: 'multiple', options, value: ['a', 'b'] }, [
+      { name: 'mode', type: 'enumeration' },
+      { name: 'options', type: 'array' },
+      { name: 'value', type: 'string' },
+    ]);
+    await waitFor(() => expect(exposed.value).toEqual(['a', 'b']));
+  });
+
   it("keeps an Ant Cascader's path", async () => {
-    const { exposed } = await mount('antd', 'Cascader', { value: ['asia', 'india'] });
+    const { exposed } = await mount('antd', 'Cascader', { value: ['asia', 'india'] }, ARRAY_VALUE);
     await waitFor(() => expect(exposed.value).toEqual(['asia', 'india']));
   });
 });
