@@ -28,6 +28,8 @@ export const codeSaveRefusal = ee.codeSaveRefusal ?? Nothing;
 export const saveErrorMessage =
   ee.saveErrorMessage ?? ((error) => error?.message || error?.error || 'Error while creating version. Please try again.');
 export const saveVersionWithBuild = ee.saveVersionWithBuild ?? ((save) => save());
+export const useSaveVersionCodeCheck = ee.useSaveVersionCodeCheck ?? (() => ({ checking: false, error: null }));
+export const blocksSave = ee.blocksSave ?? (() => false);
 export const CodeDiffHost = ee.CodeDiffHost ?? Nothing;
 export const ReleaseCodeChanges = ee.ReleaseCodeChanges ?? Nothing;
 export const compareBundleFor = ee.compareBundleFor ?? Nothing;
