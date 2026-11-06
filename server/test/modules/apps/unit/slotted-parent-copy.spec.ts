@@ -43,6 +43,8 @@ import {
 const SHAD_TABS = '11111111-1111-4111-8111-111111111111';
 const TABS = '22222222-2222-4222-8222-222222222222';
 const CONTAINER = '33333333-3333-4333-8333-333333333333';
+const PACK = '88888888-8888-4888-8888-888888888888';
+const LIBRARY = '99999999-9999-4999-8999-999999999990';
 const component = (id: string, name: string, type: string, parent: string | null = null) => ({
   id,
   name,
@@ -72,6 +74,11 @@ describe('copying the children of a tab', () => {
       component('66666666-6666-4666-8666-666666666666', 'nativeFirst', 'ShadInput', `${TABS}-t0`),
       component(CONTAINER, 'cont', 'Container'),
       component('77777777-7777-4777-8777-777777777777', 'inCont', 'ShadButton', CONTAINER),
+      // A pack or library component's ToolJet.Slot drop areas are `{id}-{slotName}` canvases.
+      component(PACK, 'card1', 'PackComponent'),
+      component('aaaaaaaa-0000-4000-8000-000000000001', 'inCardBody', 'TextInput', `${PACK}-body`),
+      component(LIBRARY, 'lib1', 'LibraryComponent'),
+      component('aaaaaaaa-0000-4000-8000-000000000002', 'inLibSlot', 'Text', `${LIBRARY}-actions`),
     ];
   });
 
@@ -83,6 +90,21 @@ describe('copying the children of a tab', () => {
     expect(byName.nativeFirst.parent).toBe(`${byName.ntabs.id}-t0`);
     expect(byName.inCont.parent).toBe(byName.cont.id);
     expect(byName.stabs.id).not.toBe(SHAD_TABS);
+  });
+
+  it('page duplicate keeps a pack or library component slot child in its slot', async () => {
+    await makeService().clonePageEventsAndComponents('page-1', 'page-2');
+    const byName = Object.fromEntries(saved.filter((c) => c.pageId === 'page-2').map((c) => [c.name, c]));
+    expect(byName.inCardBody.parent).toBe(`${byName.card1.id}-body`);
+    expect(byName.inLibSlot.parent).toBe(`${byName.lib1.id}-actions`);
+  });
+
+  it('import and clone treat a pack or library component slot as a slot, in either definition shape', () => {
+    expect(isChildOfSlottedParent(`${PACK}-body`, pageComponents)).toBe(true);
+    expect(isChildOfSlottedParent(`${LIBRARY}-actions`, pageComponents)).toBe(true);
+    // Older exports keep the widget type at `component.component`.
+    const legacy = [{ id: PACK, component: { component: 'PackComponent' } }];
+    expect(isChildOfSlottedParent(`${PACK}-header`, legacy)).toBe(true);
   });
 
   it('import, clone and version copy treat a ShadTabs tab as a slot', () => {
