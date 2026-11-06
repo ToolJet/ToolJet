@@ -136,6 +136,19 @@ export const createResolvedSlice = (set, get) => {
 
     isExposedValueBatching: () => _exposedValueBatch.isBatching(),
 
+    // A short hold on the explicit batch: exposed-value writes until the returned release() are buffered and applied
+    // in one store update. Ref-counted like the batch itself, so holds nest in each other and in an open page-switch
+    // batch; release() is idempotent. RenderWidget holds one per widget across its mount commit.
+    holdExposedValueWrites: () => {
+      _exposedValueBatch.startBatch();
+      let open = true;
+      return () => {
+        if (!open) return;
+        open = false;
+        _exposedValueBatch.flush('exposedValueHold');
+      };
+    },
+
     bufferExposedValueMutation: (mutation, moduleId, depPaths) => {
       _exposedValueBatch.bufferMutation(mutation, moduleId, depPaths);
     },
