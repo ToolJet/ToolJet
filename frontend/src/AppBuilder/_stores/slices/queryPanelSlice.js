@@ -728,7 +728,10 @@ export const createQueryPanelSlice = (set, get) => ({
           queryExecutionPromise = dataqueryService.run(
             queryId,
             options,
-            query?.options,
+            // The server saves the options a run sends. Only a run from the query panel (Run, or its shortcut) sends
+            // them: page-load, event, component and code runs send none, so this editor's copy, which can be older
+            // than the stored query (an AI turn or another tab changed it), never overwrites it.
+            shouldSetPreviewData ? query?.options : undefined,
             versionId,
             (() => {
               // send undefined if Public/Private released app
