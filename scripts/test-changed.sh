@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Detects changed server modules and runs their Jest tests (unit + e2e).
 # Usage: scripts/test-changed.sh
+# PRE_PUSH=true (set by .husky/pre-push): lint + typecheck only, in parallel — no tests.
 #
 # Fallback: cross-cutting changes (helpers/entities/dto/lib, jest config/setup) → run
 # all tests. Tooling-only changes (scripts, package.json) don't affect test selection
@@ -30,6 +31,29 @@ RUN_ALL="${RUN_ALL:-false}"
 
 if [[ -z "${SERVER_FILES:-}" && "$RUN_ALL" != "true" ]]; then
   echo "No server files changed — skipping."
+  exit 0
+fi
+
+# Local pre-push: lint + typecheck only (CI hard-fails on them), in parallel. Tests are CI's job.
+# Runs before module scoping so server changes that select no tests (scripts, package.json) still get checked.
+# Output is buffered per job so the two logs don't interleave.
+if [[ "${PRE_PUSH:-}" == "true" ]]; then
+  cd "$SERVER_DIR"
+  lint_log=$(mktemp)
+  tsc_log=$(mktemp)
+  trap 'rm -f "$lint_log" "$tsc_log"' EXIT
+  npm run lint >"$lint_log" 2>&1 &
+  lint_pid=$!
+  npx tsc --noEmit -p tsconfig.build.json >"$tsc_log" 2>&1 &
+  tsc_pid=$!
+  failed=false
+  wait "$lint_pid" || failed=true
+  echo "--- Lint ---"
+  cat "$lint_log"
+  wait "$tsc_pid" || failed=true
+  echo "--- Typecheck ---"
+  cat "$tsc_log"
+  [[ "$failed" == "false" ]] || exit 1
   exit 0
 fi
 
