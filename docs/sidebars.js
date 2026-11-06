@@ -168,6 +168,7 @@ const sidebars = {
                     "setup/migration/upgrade-to-v3.16",
                     "setup/migration/upgrade-to-v3.21",
                     "setup/migration/workflow-temporal-to-bullmq-migration",
+                    "setup/migration/gitsync-migration",
                     "setup/migration/infra-level-rollback"
                   ]
                 }
