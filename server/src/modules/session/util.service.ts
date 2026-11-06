@@ -12,6 +12,7 @@ import { Organization } from '@entities/organization.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { WORKSPACE_STATUS, USER_STATUS, WORKSPACE_USER_STATUS, USER_TYPE } from '@modules/users/constants/lifecycle';
 import { applyCustomDomainCookieOptions, isHttpsEnabled, isSuperAdmin } from '@helpers/utils.helper';
+import { checkSsoSessionWorkspace } from '@helpers/sso-workspace-isolation.helper';
 import { CookieOptions } from 'express';
 import { decamelizeKeys } from 'humps';
 import { JWTPayload } from '@modules/session/interfaces/IService';
@@ -123,8 +124,16 @@ export class SessionUtilService {
         oauthAuthenticationProviderId,
         oauthAuthenticationMcpVerified,
         oauthAuthenticationReset: explicitReset,
+        ssoOrganizationId: loginSsoOrganizationId,
         ...publicExtraData
       } = extraData || {};
+      // Each SSO login sets or clears it; re-issues keep the session's value.
+      const ssoOrganizationId =
+        extraData && 'ssoOrganizationId' in extraData
+          ? loginSsoOrganizationId
+          : loggedInUser?.id === user.id
+            ? loggedInUser.ssoOrganizationId
+            : undefined;
       // Legacy OIDC may use a configured verifier; its browser login cannot authorize MCP consent.
       const oauthAuthenticationReset =
         explicitReset || (oauthAuthenticationMethod === 'openid' && oauthAuthenticationMcpVerified !== true);
@@ -151,6 +160,7 @@ export class SessionUtilService {
         sub: user.email,
         organizationIds: [...organizationIds],
         isSSOLogin: isPatLogin ? false : loggedInUser?.isSSOLogin || isInstanceSSO,
+        ...(!isPatLogin && ssoOrganizationId ? { ssoOrganizationId } : {}),
         isPasswordLogin: isPatLogin ? false : loggedInUser?.isPasswordLogin || isPasswordLogin,
         ...(invitedOrganizationId ? { invitedOrganizationId } : {}),
         ...(isPatLogin ? { isPATLogin: true } : {}),
@@ -528,6 +538,8 @@ export class SessionUtilService {
       throw new UnauthorizedException("User doesn't have access to this workspace");
     }
     newUser.organizationId = newOrganizationId;
+
+    if (!isNewOrganization) checkSsoSessionWorkspace(user, newOrganizationId);
 
     const organization: Organization = await this.organizationRepository.get(newUser.organizationId);
 

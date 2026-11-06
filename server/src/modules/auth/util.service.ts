@@ -38,6 +38,8 @@ import { ProfileUtilService } from '@modules/profile/util.service';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
 import { SessionUtilService } from '@modules/session/util.service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
+import { isSuperAdmin } from '@helpers/utils.helper';
+import { refuseOutsideSsoWorkspace } from '@helpers/sso-workspace-isolation.helper';
 import { IAuthUtilService } from './interfaces/IUtilService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
@@ -141,6 +143,23 @@ export class AuthUtilService implements IAuthUtilService {
     }
   }
 
+  /** A workspace-chosen identity provider signs in existing accounts only when they are active members there. */
+  async checkSsoWorkspaceMembership(
+    email: string,
+    organizationId: string,
+    configId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    const user = await manager.findOne(User, { where: { email: email.toLowerCase() } });
+    if (!user || user.invitationToken) return;
+    const context = { userId: user.id, organizationId, configId };
+    if (isSuperAdmin(user)) return refuseOutsideSsoWorkspace('super admin', context);
+    const isActiveMember = await manager.exists(OrganizationUser, {
+      where: { userId: user.id, organizationId, status: WORKSPACE_USER_STATUS.ACTIVE },
+    });
+    if (!isActiveMember) refuseOutsideSsoWorkspace('not an active member', context);
+  }
+
   async findOrCreateUser(
     { firstName, lastName, email, sso, groups: ssoGroups, profilePhoto }: any,
     organization: DeepPartial<Organization>,
@@ -162,26 +181,27 @@ export class AuthUtilService implements IAuthUtilService {
       throw new UnauthorizedException('This account has been suspended by ToolJet. Contact ToolJet support for help.');
     }
 
-    const { source, status } = getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso);
-    /* Default password for sso-signed workspace user */
-
-    const password = uuid.v4();
-    user = await this.userRepository.createOrUpdate(
-      {
-        firstName,
-        lastName,
-        email,
-        source: source,
-        status: status,
-        password,
-        role: USER_ROLE.END_USER,
-        defaultOrganizationId: organization.id,
-      },
-      manager
-    );
+    const isNewUser = !user;
+    if (isNewUser) {
+      const { source, status } = getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso);
+      user = await this.userRepository.createOrUpdate(
+        {
+          firstName,
+          lastName,
+          email,
+          source,
+          status,
+          /* Default password for sso-signed workspace user */
+          password: uuid.v4(),
+          role: USER_ROLE.END_USER,
+          defaultOrganizationId: organization.id,
+        },
+        manager
+      );
+    }
 
     /* Create avatar if profilePhoto available */
-    if (profilePhoto) {
+    if (isNewUser && profilePhoto) {
       try {
         await this.profileUtilService.addAvatar(user.id, profilePhoto, `${email}.jpeg`);
       } catch (error) {

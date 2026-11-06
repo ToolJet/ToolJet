@@ -189,9 +189,9 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
     }, manager || this.manager);
   }
 
-  async getOrganizationUser(organizationId: string, manager?: EntityManager) {
+  async getOrganizationUser(userId: string, organizationId: string, manager?: EntityManager) {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.findOne(OrganizationUser, { where: { organizationId } });
+      return await manager.findOne(OrganizationUser, { where: { userId, organizationId } });
     }, manager || this.manager);
   }
 

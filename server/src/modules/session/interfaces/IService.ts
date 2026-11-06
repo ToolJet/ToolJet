@@ -36,6 +36,7 @@ export interface JWTPayload {
   sub: string;
   organizationIds: Array<string>;
   isSSOLogin: boolean;
+  ssoOrganizationId?: string;
   isPasswordLogin: boolean;
   invitedOrganizationId?: string;
   workspaceAuthentication?: WorkspaceAuthentication;
