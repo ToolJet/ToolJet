@@ -11,6 +11,7 @@ import * as zlib from 'zlib';
 import { TooljetDbBulkUploadService } from '@modules/tooljet-db/services/tooljet-db-bulk-upload.service';
 import { User } from '@entities/user.entity';
 import { AppsRepository } from '@modules/apps/repository';
+import { AppBase } from '@entities/app_base.entity';
 import { Like } from 'typeorm';
 import { ImportExportResourcesService } from '@modules/import-export-resources/service';
 import { PluginsService } from '@modules/plugins/service';
@@ -77,7 +78,7 @@ export class TemplatesService {
 
   async createSampleApp(currentUser: User) {
     const name = 'Sample app ';
-    const allSampleApps = await this.appsRepository.find({
+    const allSampleApps = await this.appsRepository.manager.find(AppBase, {
       where: {
         organizationId: currentUser.organizationId,
         name: Like(`${name}%`),
