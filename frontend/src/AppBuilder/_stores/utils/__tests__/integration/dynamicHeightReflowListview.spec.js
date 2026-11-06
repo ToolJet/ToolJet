@@ -48,7 +48,7 @@ const resolve = ({
     contextIndices: context,
     visibility: true,
     getResolvedComponent: (id) =>
-      id === 'lv' ? { properties: lvProperties } : children.find((c) => c.id === id)?.resolved ?? { properties: {} },
+      id === 'lv' ? { properties: lvProperties } : (children.find((c) => c.id === id)?.resolved ?? { properties: {} }),
     getResolvedValue: (v) => v,
     getComponentDefinition: (id) => components[id],
     getContainerChildrenMapping: () => children.map((c) => c.id),
@@ -183,9 +183,9 @@ describe('Listview row reflow in the store (pinned)', () => {
     expect(temps['lv-1'].height).toBe(10 + 300);
     // No sibling temps under the row context: the row pass writes the row and hands over to the widget.
     expect(temps['below-1']).toBeUndefined();
-    // Rows 0 and 2 fit their text (50). The rows sum to 431 with a pixel of border each and the outer chrome, but the
-    // widget pass keeps the drawn 400 here, so nothing below moves.
-    expect(temps.lv.height).toBe(400);
-    expect(temps.below.top).toBe(420);
+    // Rows 0 and 2 fit their text (50). With the registered defaults (rawJson data, a border) the widget pass sums the
+    // rows: 50 + 310 + 50 plus a pixel of border each and the outer chrome is 431, and what is below moves by the 31.
+    expect(temps.lv.height).toBe(431);
+    expect(temps.below.top).toBe(451);
   });
 });

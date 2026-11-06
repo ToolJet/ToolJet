@@ -131,15 +131,18 @@ describe.each([
     expect(isEmpty(c.exposed.selectedItem)).toBe(true);
   });
 
-  it(toggles ? 'unselects the selected item when clicked again' : 'selects again on a second click (no highlight)', async () => {
-    const c = await mount(pack, name, props, selector);
-    fireEvent.click(rows(c)[0]);
-    fireEvent.click(rows(c)[0]);
-    if (toggles) {
-      expect(isEmpty(c.exposed.selectedItemId)).toBe(true);
-      expect(c.events.filter((e) => e === event)).toHaveLength(1);
-    } else expect(String(c.exposed.selectedItemId)).toBe('1');
-  });
+  it(
+    toggles ? 'unselects the selected item when clicked again' : 'selects again on a second click (no highlight)',
+    async () => {
+      const c = await mount(pack, name, props, selector);
+      fireEvent.click(rows(c)[0]);
+      fireEvent.click(rows(c)[0]);
+      if (toggles) {
+        expect(isEmpty(c.exposed.selectedItemId)).toBe(true);
+        expect(c.events.filter((e) => e === event)).toHaveLength(1);
+      } else expect(String(c.exposed.selectedItemId)).toBe('1');
+    }
+  );
 });
 
 describe.each([

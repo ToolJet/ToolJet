@@ -44,8 +44,14 @@ describe('figures with an invalid currency code', () => {
     for (const pack of ['shadcn', 'antd']) {
       const { summaryFigures } = lib(pack, 'ui2/display/summary.ts');
       const { popupLines } = lib(pack, 'ui2/charts/mapModel.ts');
-      expect(JSON.stringify(summaryFigures([{ label: 'Revenue', value: 1200 }], { valueFormat: 'currency', currency: 'US Dollar' }))).not.toContain('$');
-      expect(JSON.stringify(popupLines({ total: 1200 }, 'total|currency', { currency: 'US Dollar' }))).not.toContain('$');
+      expect(
+        JSON.stringify(
+          summaryFigures([{ label: 'Revenue', value: 1200 }], { valueFormat: 'currency', currency: 'US Dollar' })
+        )
+      ).not.toContain('$');
+      expect(JSON.stringify(popupLines({ total: 1200 }, 'total|currency', { currency: 'US Dollar' }))).not.toContain(
+        '$'
+      );
     }
     expect(warned('US Dollar')).toBe(true);
   });

@@ -222,10 +222,10 @@ export const ConfigHandle = ({
           componentType === 'Modal' && isModalOpen
             ? '0px'
             : position === 'top'
-            ? '-26px'
-            : insideFlex
-            ? 'auto'
-            : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+              ? '-26px'
+              : insideFlex
+                ? 'auto'
+                : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
         // In a flex container the handle anchors to the widget's bottom edge: placed from the height it hung 3px below
         // it (the handle is 24px, not 20), and the flex canvas scrolled by that much under the pointer on hover.
         ...(insideFlex && position !== 'top' && !(componentType === 'Modal' && isModalOpen)

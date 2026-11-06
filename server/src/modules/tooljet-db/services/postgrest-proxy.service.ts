@@ -135,7 +135,12 @@ export class PostgrestProxyService {
 
       if (['PATCH', 'POST'].includes(method)) {
         const { path: resolvedTableId } = extractTableRefs(rewrittenPath);
-        body = await this.validateJSONBInputs(headers['tj-workspace-id'], tableInfo[resolvedTableId], body, environmentId);
+        body = await this.validateJSONBInputs(
+          headers['tj-workspace-id'],
+          tableInfo[resolvedTableId],
+          body,
+          environmentId
+        );
       }
 
       const reqHeaders = {

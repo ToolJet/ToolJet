@@ -26,6 +26,8 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
   const [promoteError, setPromoteError] = useState(null);
   // A Code mode app's security result holds the promotion (ReleaseScanGate): checked before anything moves.
   const [scanLocked, setScanLocked] = useState(false);
+  // A review still waiting on this version holds the promotion (PromoteConfirmationExtras says why).
+  const [promoteLocked, setPromoteLocked] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true' || false;
   const currentVersionId = useStore((state) => state.currentVersionId);
   const [showModal, setShow] = useState(data);
@@ -261,6 +263,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
           versionId={versionIdToPromote}
           targetEnvironment={data?.target}
           releasedVersionId={releasedVersionId}
+          onLockedChange={setPromoteLocked}
         />
         {missingTables?.length > 0 && (
           <div className="promote-missing-tables" role="alert" data-cy="promote-missing-tables">
@@ -318,7 +321,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
           variant="primary"
           onClick={missingTables?.length ? handlePromoteTablesAndApp : handleConfirm}
           isLoading={promotingEnvironment}
-          disabled={scanLocked}
+          disabled={scanLocked || promoteLocked}
           data-cy="promote-button"
         >
           {missingTables?.length ? 'Promote tables and app' : promoteError ? 'Try again' : 'Promote'}

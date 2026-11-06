@@ -52,7 +52,6 @@ export class ComponentLayoutDto {
   @IsNumber()
   @IsOptional()
   minWidthPx?: number;
-
 }
 
 export class LayoutData {

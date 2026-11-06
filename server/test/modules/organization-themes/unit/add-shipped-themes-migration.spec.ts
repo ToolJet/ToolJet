@@ -6,7 +6,10 @@ import { AddShippedThemesToOrganizations1791950000000 as Migration } from '../..
 import { shippedThemes } from '../../../../src/modules/organization-themes/constants/shipped-themes';
 
 function makeQueryRunner(organizationCount: number) {
-  const ids = Array.from({ length: organizationCount }, (_, i) => `00000000-0000-0000-0000-${String(i).padStart(12, '0')}`);
+  const ids = Array.from(
+    { length: organizationCount },
+    (_, i) => `00000000-0000-0000-0000-${String(i).padStart(12, '0')}`
+  );
   const inserts: Array<{ organizationIds: string[]; themes: Array<{ name: string; definition: unknown }> }> = [];
   const query = jest.fn(async (sql: string, params: any[] = []) => {
     if (/SELECT COUNT\(\*\)/.test(sql)) return [{ count: organizationCount }];

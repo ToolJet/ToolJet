@@ -194,8 +194,8 @@ export const resolveFlexContainerHeight = ({
         const childWidth = layoutV2
           ? Math.min(flexChildLineWidth({ ...child, width: rawChildWidth }), availableWidth)
           : child.fillWidth
-          ? availableWidth
-          : rawChildWidth;
+            ? availableWidth
+            : rawChildWidth;
         const nextWidth = currentLine.items === 0 ? childWidth : currentLine.width + gap + childWidth;
 
         if (currentLine.items > 0 && nextWidth > availableWidth) {

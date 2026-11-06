@@ -9,4 +9,4 @@ export const LEGACY_ITEMS = [
 ];
 
 // PackComponent is dropped from its pack's cards (pre-filled with which component it draws), never bare.
-export const IGNORED_ITEMS = ['ModuleContainer', 'ModuleViewer', 'PackComponent'];
+export const IGNORED_ITEMS = ['ModuleContainer', 'ModuleViewer', 'LibraryComponent', 'PackComponent'];

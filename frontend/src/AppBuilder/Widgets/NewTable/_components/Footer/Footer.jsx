@@ -111,8 +111,8 @@ export const Footer = memo(
               {editedRows.size > 0 && showBulkUpdateActions
                 ? renderChangeSetUI()
                 : plan === 'noPager'
-                ? null
-                : renderRowCount()}
+                  ? null
+                  : renderRowCount()}
             </div>
             <div className="tw-flex-1 d-flex justify-content-end align-items-center h-100">
               <ControlButtons

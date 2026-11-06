@@ -47,7 +47,10 @@ import {
   resolveLegacyPageTargetSlugs,
   resolvePageTargetCorelationId,
 } from 'src/helpers/go_to_app_link.helper';
-import { remapFlexContainerChildOrder } from '@modules/versions/helpers/version-copy-parent.helper';
+import {
+  isChildOfSlottedParent,
+  remapFlexContainerChildOrder,
+} from '@modules/versions/helpers/version-copy-parent.helper';
 import { DataSourceScopes, DataSourceTypes } from '@modules/data-sources/constants';
 import { LayoutDimensionUnits } from '../constants';
 import { convertAppDefinitionFromSinglePageToMultiPage } from 'src/../lib/single-page-to-and-from-multipage-definition-conversion';
@@ -2657,11 +2660,11 @@ export class AppImportExportService {
           // Preserve virtual container parents (canvas-header, canvas-footer) as-is
           // These are not UUID-based and should not be remapped
           if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
-            const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
+            const isParentSlotted = isSlotChild(component, pageComponents, parentId);
             const isParentHeaderOrFooter =
               component?.parent && (component?.parent.includes('header') || component?.parent.includes('footer'));
 
-            if (isParentTabOrCalendar) {
+            if (isParentSlotted) {
               const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
 
               const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
@@ -5215,14 +5218,9 @@ function transformComponentData(
     // Preserve virtual container parents (canvas-header, canvas-footer) as-is
     // These are not UUID-based and should not be remapped
     if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
-      const isParentTabOrCalendar = isChildOfTabsOrCalendar(
-        component,
-        allComponents,
-        parentId,
-        isNormalizedAppDefinitionSchema
-      );
+      const isParentSlotted = isSlotChild(component, allComponents, parentId);
 
-      if (isParentTabOrCalendar) {
+      if (isParentSlotted) {
         const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
         const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
         const mappedParentId = componentsMapping[_parentId];
@@ -5291,28 +5289,10 @@ function transformComponentData(
   return transformedComponents;
 }
 
-const isChildOfTabsOrCalendar = (
-  component,
-  allComponents = [],
-  componentParentId = undefined,
-  isNormalizedAppDefinitionSchema: boolean
-) => {
-  if (componentParentId) {
-    const parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
-
-    const parentComponent = allComponents.find((comp) => comp.id === parentId);
-
-    if (parentComponent) {
-      if (!isNormalizedAppDefinitionSchema) {
-        return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
-      }
-
-      return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
-    }
-  }
-
-  return false;
-};
+// A child of a slotted parent (a tab, a Calendar popover, a pack or library component's ToolJet.Slot): its parent is
+// `{parentId}-{slotId}`, remapped on the base id with the slot kept.
+const isSlotChild = (component, allComponents = [], componentParentId = undefined) =>
+  !!componentParentId && !!component?.parent && isChildOfSlottedParent(component.parent, allComponents);
 
 const isChildOfKanbanModal = (
   component,

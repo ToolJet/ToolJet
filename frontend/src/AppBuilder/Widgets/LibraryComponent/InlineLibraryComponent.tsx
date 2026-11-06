@@ -207,16 +207,22 @@ const isTextField = (node: EventTarget | undefined): boolean =>
 // field?" checks never see the bundle's inputs: a press starts a widget drag (preventDefault, no focus)
 // and keys go to hotkeys. Stop those events at the host when they start in a text field — or, for
 // presses, inside a `[data-tj-no-drag]` region (sliders etc.), like Grid's per-widget inner-element rule.
+// Native components in a ToolJet.Slot are the host's light-DOM children: nothing retargets their events, so the canvas
+// and hotkeys see them as usual, and they need theirs to reach React (a Text Input's Enter fires on keyup). Only events
+// from inside the shadow root are stopped; `contains` does not cross into it.
 const PRESS_EVENTS = ['mousedown', 'touchstart'] as const;
 const KEY_EVENTS = ['keydown', 'keyup', 'keypress'] as const;
 
 export const isolateInteractiveEvents = (host: HTMLElement): (() => void) => {
+  const fromShadow = (origin: EventTarget | undefined) => !(origin instanceof Node && host.contains(origin));
   const onPress = (e: Event) => {
     const origin = e.composedPath()[0];
+    if (!fromShadow(origin)) return;
     if (isTextField(origin) || (origin instanceof Element && origin.closest('[data-tj-no-drag]'))) e.stopPropagation();
   };
   const onKey = (e: Event) => {
-    if (isTextField(e.composedPath()[0])) e.stopPropagation();
+    const origin = e.composedPath()[0];
+    if (fromShadow(origin) && isTextField(origin)) e.stopPropagation();
   };
   PRESS_EVENTS.forEach((type) => host.addEventListener(type, onPress));
   KEY_EVENTS.forEach((type) => host.addEventListener(type, onKey));
