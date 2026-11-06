@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, waitFor } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import InlineLibraryComponent from '@/AppBuilder/Widgets/LibraryComponent/InlineLibraryComponent';
 import { loadLibraryModule } from '@/AppBuilder/Widgets/LibraryComponent/inlineRuntime';
 
@@ -116,6 +116,51 @@ describe('pack popup layers', () => {
     const layer = layerOf(await mountIn(modal, 'mui'));
     expect(layer.parentElement).toBe(canvasArea);
     expect(Number(layer.style.zIndex)).toBeGreaterThan(1060);
+  });
+
+  // A page taller than the window scrolls the whole canvas inside the app's scroller, so a layer the canvas's size drew
+  // a centred dialog half a page down and a drawer past the window's bottom. The layer covers what is visible of the
+  // canvas, and is the box its dialogs and drawers fill.
+  describe('on a page taller than the window', () => {
+    let scroller;
+    const rect = (top, height) => () => ({
+      top,
+      bottom: top + height,
+      height,
+      left: 0,
+      right: 1600,
+      width: 1600,
+      x: 0,
+      y: top,
+    });
+    beforeEach(() => {
+      scroller = document.createElement('div');
+      scroller.style.overflowY = 'auto';
+      document.body.appendChild(scroller);
+      scroller.appendChild(canvasArea);
+      // The app's scroller starts under a 33px bar and shows 967px; the canvas is 1640px tall.
+      window.innerHeight = 1000;
+      scroller.getBoundingClientRect = rect(33, 967);
+      canvasArea.getBoundingClientRect = rect(33, 1640);
+    });
+    afterEach(() => scroller.remove());
+
+    it('covers the visible part of the canvas, and holds its dialogs and drawers', async () => {
+      const layer = layerOf(await mountIn(canvasArea, 'antd'));
+      expect(layer.style.top).toBe('0px');
+      expect(layer.style.height).toBe('967px');
+      expect(layer.style.transform).toBe('translateZ(0)');
+    });
+
+    it('follows the canvas as the page scrolls', async () => {
+      const layer = layerOf(await mountIn(canvasArea, 'antd'));
+      canvasArea.getBoundingClientRect = rect(33 - 300, 1640);
+      act(() => {
+        scroller.dispatchEvent(new Event('scroll'));
+      });
+      await waitFor(() => expect(layer.style.top).toBe('300px'));
+      expect(layer.style.height).toBe('967px');
+    });
   });
 
   it('falls back to the page body outside a canvas', async () => {

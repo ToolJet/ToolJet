@@ -182,7 +182,59 @@ const idOf = (el: Element | null): number => {
   return elementIds.get(el) as number;
 };
 
-const layers = new Map<string, { overlay: HTMLElement; host: HTMLElement; count: number; release: () => void }>();
+// A page taller than the window scrolls the whole canvas inside the app's scroller, so a layer the canvas's size drew a
+// centred dialog half a page down and a drawer past the window's bottom. A canvas layer covers only what is visible of
+// the canvas (within its scroller and the window), follows it as the page scrolls or the canvas resizes, and is the
+// containing block its dialogs and drawers fill (the transform).
+const scrollerOf = (el: HTMLElement): HTMLElement | null => {
+  for (let node = el.parentElement; node && node !== document.body; node = node.parentElement) {
+    if (/(auto|scroll)/.test(getComputedStyle(node).overflowY)) return node;
+  }
+  return null;
+};
+const fitToView = (host: HTMLElement, container: HTMLElement) => {
+  const area = container.getBoundingClientRect();
+  const view = scrollerOf(container)?.getBoundingClientRect();
+  const top = Math.max(area.top, view?.top ?? 0, 0);
+  const bottom = Math.min(area.bottom, view?.bottom ?? Infinity, window.innerHeight);
+  host.style.top = `${top - area.top}px`;
+  host.style.height = `${Math.max(0, bottom - top)}px`;
+};
+
+type Layer = { overlay: HTMLElement; host: HTMLElement; container: HTMLElement; count: number; release: () => void };
+const layers = new Map<string, Layer>();
+// One watch per canvas while it has layers: a scroll anywhere (capture), a window resize or the canvas resizing refits
+// them once per frame.
+const views = new Map<HTMLElement, () => void>();
+const watchView = (container: HTMLElement) => {
+  if (views.has(container)) return;
+  let frame = 0;
+  const fit = () => {
+    frame = 0;
+    layers.forEach((layer) => {
+      if (layer.container === container) fitToView(layer.host, container);
+    });
+  };
+  const schedule = () => {
+    if (!frame) frame = requestAnimationFrame(fit);
+  };
+  document.addEventListener('scroll', schedule, true);
+  window.addEventListener('resize', schedule);
+  const resized = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
+  resized?.observe(container);
+  views.set(container, () => {
+    cancelAnimationFrame(frame);
+    document.removeEventListener('scroll', schedule, true);
+    window.removeEventListener('resize', schedule);
+    resized?.disconnect();
+  });
+};
+const unwatchView = (container: HTMLElement) => {
+  if ([...layers.values()].some((layer) => layer.container === container)) return;
+  views.get(container)?.();
+  views.delete(container);
+};
+
 const acquireLayer = (library: string, sheets: Sheets, widgetHost: HTMLElement) => {
   const container = canvasArea();
   const dialog = dialogOf(widgetHost);
@@ -194,9 +246,10 @@ const acquireLayer = (library: string, sheets: Sheets, widgetHost: HTMLElement) 
   }
   const host = document.createElement('div');
   host.className = LAYER_HOST;
+  const inCanvas = container !== document.body;
   Object.assign(host.style, {
     position: 'absolute',
-    inset: '0',
+    ...(inCanvas ? { left: '0', width: '100%', transform: 'translateZ(0)' } : { inset: '0' }),
     pointerEvents: 'none',
     zIndex: String(levelOf(dialog)),
   });
@@ -208,9 +261,10 @@ const acquireLayer = (library: string, sheets: Sheets, widgetHost: HTMLElement) 
   root.appendChild(overlay);
   container.appendChild(host);
   const release = isolateInteractiveEvents(host);
-  const layer = {
+  const layer: Layer = {
     overlay,
     host,
+    container,
     count: 1,
     release: () => {
       release();
@@ -222,6 +276,10 @@ const acquireLayer = (library: string, sheets: Sheets, widgetHost: HTMLElement) 
     },
   };
   layers.set(key, layer);
+  if (inCanvas) {
+    fitToView(host, container);
+    watchView(container);
+  }
   return { key, layer };
 };
 const releaseLayer = (key: string) => {
@@ -231,6 +289,7 @@ const releaseLayer = (key: string) => {
   if (layer.count <= 0) {
     layer.release();
     layers.delete(key);
+    unwatchView(layer.container);
   }
 };
 
