@@ -1,8 +1,10 @@
 # tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827). Same as ee-production,
-# but follows BRANCH_NAME like the submodules do, falling back to main.
+# but follows BRANCH_NAME like the submodules do, falling back to the pinned TOOLJET_MCP_REF (never a moving branch).
+# A release bumps TOOLJET_MCP_REF deliberately, to the tooljet-mcp commit it ships.
 FROM node:22.23.4 AS mcp-builder
 WORKDIR /mcp
 ARG BRANCH_NAME
+ARG TOOLJET_MCP_REF=df9e1db43eddfe881066bf883a530cd4f2b2248b
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
@@ -10,15 +12,19 @@ RUN --mount=type=secret,id=github_token \
     if [ -n "${BRANCH_NAME}" ] && git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then \
       git checkout "${BRANCH_NAME}"; \
     else \
-      echo "Branch ${BRANCH_NAME} not found in tooljet-mcp, falling back to main"; \
+      echo "Branch ${BRANCH_NAME} not found in tooljet-mcp, using ${TOOLJET_MCP_REF}" && \
+      git checkout --detach "${TOOLJET_MCP_REF}"; \
     fi
 RUN npm ci && npm run build:plugin
 
 # Custom component SDK (private), packed for app projects (TOOLJET_SDK_SPEC below) and served to a teammate's
-# `tooljet app install` at /api/code-mode/cli/custom-component-sdk.tgz: npm's published SDK is older. Follows BRANCH_NAME like tooljet-mcp, falling back to main.
+# `tooljet app install` at /api/code-mode/cli/custom-component-sdk.tgz: npm's published SDK is older. Follows BRANCH_NAME
+# like tooljet-mcp, falling back to the pinned CUSTOM_COMPONENT_SDK_REF (never a moving branch). A release bumps it
+# deliberately, to the SDK commit it ships.
 FROM node:22.23.4 AS sdk-builder
 WORKDIR /sdk
 ARG BRANCH_NAME
+ARG CUSTOM_COMPONENT_SDK_REF=c6b5454a2a8b4bc17ada01459f80e78fb463237d
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
@@ -26,7 +32,8 @@ RUN --mount=type=secret,id=github_token \
     if [ -n "${BRANCH_NAME}" ] && git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then \
       git checkout "${BRANCH_NAME}"; \
     else \
-      echo "Branch ${BRANCH_NAME} not found in custom-component-sdk, falling back to main"; \
+      echo "Branch ${BRANCH_NAME} not found in custom-component-sdk, using ${CUSTOM_COMPONENT_SDK_REF}" && \
+      git checkout --detach "${CUSTOM_COMPONENT_SDK_REF}"; \
     fi
 RUN npm ci && npm run build && mkdir -p /out && \
     mv "/out/$(npm pack --ignore-scripts --silent --pack-destination /out | tail -n 1)" /out/custom-component-sdk.tgz

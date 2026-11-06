@@ -1,10 +1,14 @@
 # tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827).
+# Pinned to a reviewed commit, never a branch: a release bumps TOOLJET_MCP_REF deliberately, to the tooljet-mcp commit
+# it ships. The GitHub token is a BuildKit secret (github_token), so it stays out of the layers and the build cache.
 FROM node:22.23.4 AS mcp-builder
 WORKDIR /mcp
-ARG CUSTOM_GITHUB_TOKEN
-ARG TOOLJET_MCP_REF=main
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-RUN git clone https://github.com/ToolJet/tooljet-mcp.git . && git checkout ${TOOLJET_MCP_REF}
+ARG TOOLJET_MCP_REF=df9e1db43eddfe881066bf883a530cd4f2b2248b
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    git clone https://github.com/ToolJet/tooljet-mcp.git . && \
+    git checkout --detach "${TOOLJET_MCP_REF}"
 RUN npm ci && npm run build:plugin
 
 
