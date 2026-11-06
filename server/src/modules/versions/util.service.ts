@@ -87,6 +87,23 @@ export class VersionUtilService implements IVersionUtilService {
       editableParams['description'] = appVersionUpdateDto.description;
     }
 
+    // The released version (App.currentVersionId) is frozen: a non-UI client (MCP/PAT) can call
+    // this directly, so reject content edits (settings, home page, viewer navigation) to it.
+    // Releasing only repoints currentVersionId — the status doesn't change — so the pointer is the
+    // check. Metadata-only edits (name, status, description) stay allowed.
+    const hasContentEdit = ['globalSettings', 'pageSettings', 'homePageId', 'showViewerNavigation'].some(
+      (field) => field in editableParams
+    );
+    if (hasContentEdit) {
+      const app = await this.versionRepository.manager.findOne(App, {
+        where: { id: appVersion.appId },
+        select: ['id', 'currentVersionId'],
+      });
+      if (app?.currentVersionId === appVersion.id) {
+        throw new BadRequestException('You cannot update a released version');
+      }
+    }
+
     await this.versionRepository.update(appVersion.id, editableParams);
     return;
   }
