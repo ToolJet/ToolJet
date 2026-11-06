@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { isServerMode } from '../server-mode';
+import { assertRegistryOnlyProject, linksOutOfProject } from './dependency-specs';
 
 /*
   Installing an app project's dependencies never runs package lifecycle scripts (preinstall, install, postinstall,
@@ -156,9 +157,18 @@ export function installDependencies(
   const cmd =
     options.command ?? installCommand(detectPackageManager(frontend), !!options.frozen && !!findLockfile(frontend));
   const run = () => (options.run ?? defaultRunner)(cmd.command, cmd.args, { cwd: frontend, env: installEnv(cmd) });
+  // In server mode the project is anyone's with edit access: registry packages only (dependency-specs.ts).
+  if (isServerMode()) assertRegistryOnlyProject(frontend);
   const result = isServerMode() ? withoutProjectNpmrc(frontend, run) : run();
   if (result.error) throw new Error(`Could not run ${cmd.command}: ${result.error.message}`);
   if (result.status !== 0) throw new Error(`${formatCommand(cmd)} failed (exit ${result.status}).`);
+  if (isServerMode()) {
+    const links = linksOutOfProject(frontend);
+    if (links.length) {
+      fs.rmSync(path.join(frontend, 'node_modules'), { recursive: true, force: true });
+      throw new Error(`The install linked ${links.slice(0, 3).join(', ')} outside the project, so node_modules was removed.`);
+    }
+  }
   return cmd;
 }
 

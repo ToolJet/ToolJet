@@ -2,6 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { confinementDenial, projectConfinement } from '../library/confinement';
+import { isServerMode } from '../server-mode';
+import { assertRegistryOnly } from './dependency-specs';
 import { lockWithPublishedSdk, manifestWithPublishedSdk, repairSdk } from './sdk';
 import { Session } from './session';
 
@@ -106,10 +108,14 @@ export async function uploadSource(
   target: { appId: string; versionId: string; root: string },
   options: { owner: SourceOwner; replace?: boolean; baseRevision?: number; builtBundle?: boolean }
 ): Promise<SourceUploadResult> {
+  const files = collectProjectSource(target.root);
+  // ToolJet refuses the same; saying so here names the file before anything is sent. The registry's host is the
+  // server's to check, since it may allow a mirror this machine does not use.
+  assertRegistryOnly(files, null);
   return session.api(`/code-mode-source/${target.appId}/versions/${target.versionId}/import`, {
     method: 'POST',
     body: {
-      files: collectProjectSource(target.root),
+      files,
       owner: options.owner,
       replace: !!options.replace,
       ...(options.baseRevision !== undefined ? { baseRevision: options.baseRevision } : {}),
@@ -484,6 +490,9 @@ export function applyStoredSource(
   versionId?: string
 ): { pulled: boolean; written: number; removed: number } {
   const files = filesAPullWrites(stored);
+  // Code stored before ToolJet refused non-registry dependencies never reaches a server-mode install (which also checks
+  // the registry host against this host's registries).
+  if (isServerMode()) assertRegistryOnly(files as { path: string; content: string }[], null);
   let removed = 0;
   // Every target is checked before anything is written, so a refused pull changes nothing.
   for (const f of files) projectPath(root, f.path);
