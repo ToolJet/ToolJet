@@ -19,7 +19,6 @@ export function isWorkspaceChosenIdentityProvider(sso: string, configs?: unknown
   return sso === SSOType.GIT && !!(configs as { hostName?: string } | undefined)?.hostName;
 }
 
-/** Throws 401 in enforce mode; logs and lets the request through in report mode. */
 export function refuseOutsideSsoWorkspace(reason: string, context: Record<string, string | null | undefined>): void {
   if (ssoWorkspaceIsolationMode() === 'enforce') {
     throw new UnauthorizedException(
@@ -29,12 +28,11 @@ export function refuseOutsideSsoWorkspace(reason: string, context: Record<string
   logger.warn(`would have refused: ${reason} ${JSON.stringify(context)}`);
 }
 
-/** A session signed in by a workspace's own identity provider stays in that workspace. */
 export function checkSsoSessionWorkspace(
-  session: { id: string; ssoOrganizationId?: string; isPasswordLogin?: boolean },
+  session: { id: string; ssoOrganizationId?: string },
   organizationId: string
 ): void {
-  if (!session.ssoOrganizationId || session.isPasswordLogin || session.ssoOrganizationId === organizationId) return;
+  if (!session.ssoOrganizationId || session.ssoOrganizationId === organizationId) return;
   refuseOutsideSsoWorkspace('session from another workspace identity provider', {
     userId: session.id,
     organizationId,

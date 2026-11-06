@@ -74,6 +74,27 @@ describe('OAuthController | workspace GitHub sign-in with a custom host', () => 
     expect(response.body).toMatchObject({ email, current_organization_id: workspaceA.id });
   });
 
+  it('should let the session switch workspaces after a password sign-in on top of it', async () => {
+    const email = 'sso-then-password@a.example.test';
+    await createUser(app, { email, organization: workspaceA, groups: ['end-user'] });
+    const existingUser = await userRepository.findOneOrFail({ where: { email } });
+    await createUser(app, { email, organization: workspaceB, groups: ['end-user'] }, existingUser);
+    const sso = await signIn(email);
+    const password = await request(app.getHttpServer())
+      .post(`/api/authenticate/${workspaceA.id}`)
+      .set('tj-workspace-id', workspaceA.id)
+      .set('Cookie', sso.headers['set-cookie'])
+      .send({ email, password: 'password' });
+    expect(password.statusCode).toBe(201);
+
+    const switched = await request(app.getHttpServer())
+      .get(`/api/switch/${workspaceB.id}`)
+      .set('tj-workspace-id', workspaceA.id)
+      .set('Cookie', password.headers['set-cookie']);
+
+    expect(switched.statusCode).toBe(200);
+  });
+
   it('should create a new account when sign-up is on', async () => {
     const response = await signIn('brand-new@a.example.test');
 
