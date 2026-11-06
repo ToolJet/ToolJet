@@ -141,7 +141,10 @@ For detailed workflow configuration and deployment examples, refer to the [Workf
 #### AI Builder on Closed Networks
 
 - `ENABLE_MCP_SOCKET_RELAY`: Set to `true` if your instance can't be reached from the internet (for example, on a private network or behind a firewall that blocks inbound traffic) and you use ToolJet Managed AI Server. ToolJet then runs the MCP server the AI builder uses inside its own container and relays its requests over the outbound connection to the AI server, so the AI builder can create and update apps without inbound access. Default: `false`. To learn more, refer to [Closed or Private Networks](/docs/setup/tooljet-ai/managed-with-self-hosted#closed-or-private-networks).
-- `TOOLJET_MCP_API_URL`: The address the MCP server started by `ENABLE_MCP_SOCKET_RELAY` uses to call ToolJet. Optional. Set it to `http://127.0.0.1:<PORT>`, where `<PORT>` is the port the ToolJet server listens on inside the container (`3000` by default, `80` with the standard Docker Compose setup), if AI builder saves fail with `fetch failed` because your `TOOLJET_HOST` URL can't be reached from inside the container. To learn more, refer to [Point the MCP Server at ToolJet Inside the Container](/docs/setup/tooljet-ai/managed-with-self-hosted#point-the-mcp-server-at-tooljet-inside-the-container).
+
+:::note
+If AI builder saves fail with `fetch failed` because your `TOOLJET_HOST` URL can't be reached from inside the container, set `TOOLJET_MCP_API_URL=http://127.0.0.1:<PORT>`, where `<PORT>` is the port the ToolJet server listens on inside the container (`3000` by default, `80` with the standard Docker Compose setup). To learn more, refer to [Point the MCP Server at ToolJet Inside the Container](/docs/setup/tooljet-ai/managed-with-self-hosted#point-the-mcp-server-at-tooljet-inside-the-container).
+:::
 
 #### User Session Expiry
 
