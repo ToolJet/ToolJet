@@ -8,10 +8,9 @@ export class SSOResponseRepository extends Repository<SSOResponse> {
     super(SSOResponse, dataSource.createEntityManager());
   }
 
-  async findById(id: string): Promise<SSOResponse> {
-    return await this.findOneOrFail({
-      where: { id },
-    });
+  async findByIdForConfig(id: string, configId: string): Promise<SSOResponse | null> {
+    if (!id || !configId) return null;
+    return await this.findOne({ where: { id, configId } });
   }
 
   async createSSOResponse(configId: string, response: string, sso: string): Promise<SSOResponse> {
