@@ -10,6 +10,7 @@ import { findCodeRoot, parseRegistry } from './existing';
 import { generateTypes } from './typegen';
 import { applyStoredSource, fetchStoredSource, type SourceOwner } from './source-upload';
 import { workingApp } from './branch';
+import { writeProjectInstance } from './instance';
 
 /*
   What `tooljet app clone`, `pull` and `checkout` do to a project folder, apart from the command line, so tests can
@@ -37,6 +38,8 @@ export interface CloneResult {
   hasCodePage: boolean;
   /** The code ToolJet stores for the cloned version, written into the project; null when none is stored. */
   source: { revision: number; owner: SourceOwner; written: number } | null;
+  /** The instance the project now belongs to (.tooljet/instance.json). */
+  instance: string;
 }
 
 /** A new project folder linked to an existing app: app.json from its code page and routes, then a pull. */
@@ -60,9 +63,10 @@ export async function cloneApp(session: Session, appId: string, dir?: string): P
     }
   }
   project.writeApp({ ...app, name: remote.name, appId: remote.id });
+  writeProjectInstance(project.root, session.url);
   const snapshot = await pullProject(session, project);
   const source = code ? await pullStoredSource(session, project, remote.id, snapshot.versionId) : null;
-  return { dir: target, project, name: remote.name, snapshot, hasCodePage: !!code, source };
+  return { dir: target, project, name: remote.name, snapshot, hasCodePage: !!code, source, instance: new URL(session.url).origin };
 }
 
 /** Writes the version's stored code over the starter template (and records it in .tooljet/source.json). */

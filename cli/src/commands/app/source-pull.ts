@@ -1,7 +1,8 @@
 import { Command, Flags } from '@oclif/core';
 
 import { Project } from '../../lib/app/project';
-import { openSession, resolveTarget } from '../../lib/app/session';
+import { openSession } from '../../lib/app/session';
+import { resolveAppTarget } from '../../lib/app/instance';
 import { pullSnapshot } from '../../lib/app/remote';
 import { targetFlags } from '../../lib/app/flags';
 import { pullStoredCode } from '../../lib/app/source-sync';
@@ -30,7 +31,7 @@ export default class AppSourcePull extends Command {
       const app = project.readApp();
       if (!app.appId)
         throw new Error('app.json has no appId: create the app (tooljet app init --create) or clone one.');
-      const session = await openSession(resolveTarget(flags));
+      const session = await openSession(resolveAppTarget(flags, project.root));
       const { version } = (await workingApp(session, project.root, app)).app;
       const snapshot = await pullSnapshot(session, app.appId, version?.id);
       const where = { appId: app.appId, versionId: snapshot.versionId };

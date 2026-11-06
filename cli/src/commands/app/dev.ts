@@ -3,7 +3,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { Project, GEN_FILE } from '../../lib/app/project';
-import { openSession, resolveTarget } from '../../lib/app/session';
+import { openSession } from '../../lib/app/session';
+import { resolveAppTarget } from '../../lib/app/instance';
 import { appLibrary, appLibraryLine, devBundleOwnerId, pullSnapshot, syncApp } from '../../lib/app/remote';
 import { generateTypes } from '../../lib/app/typegen';
 import { checkSources } from '../../lib/app/check';
@@ -73,7 +74,7 @@ export default class AppDev extends Command {
       const app = project.readApp();
       if (!app.appId)
         throw new Error('app.json has no appId: create the app (tooljet app init --create) or clone one.');
-      const target = resolveTarget(flags);
+      const target = resolveAppTarget(flags, project.root);
       // First run in a fresh clone: install without running any package's install scripts.
       const deps = await prepareDependencies(project.frontend, { server: target.url });
       for (const line of deps.success) this.log(formatSuccess(line));

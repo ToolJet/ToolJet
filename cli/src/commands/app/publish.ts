@@ -2,7 +2,8 @@ import { Command, Flags } from '@oclif/core';
 import * as path from 'path';
 
 import { Project } from '../../lib/app/project';
-import { openSession, resolveTarget } from '../../lib/app/session';
+import { openSession } from '../../lib/app/session';
+import { resolveAppTarget } from '../../lib/app/instance';
 import { appLibrary, appLibraryLine, devBundleOwnerId, pullSnapshot, syncApp } from '../../lib/app/remote';
 import { checkSources } from '../../lib/app/check';
 import { targetFlags } from '../../lib/app/flags';
@@ -60,7 +61,7 @@ export default class AppPublish extends Command {
         this.log(formatWarning('-v is ignored: the version is named with --name (default: the draft name).'));
       // The saved build uses exactly the tested dependency versions, installed without install scripts.
       requireLockfile(project.frontend);
-      const target = resolveTarget(flags);
+      const target = resolveAppTarget(flags, project.root);
       const deps = await prepareDependencies(project.frontend, { frozen: true, server: target.url });
       for (const line of deps.success) this.log(formatSuccess(line));
       for (const line of deps.warnings) this.log(formatWarning(line));

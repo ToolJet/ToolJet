@@ -1,7 +1,8 @@
 import { Command } from '@oclif/core';
 
 import { Project, GEN_FILE } from '../../lib/app/project';
-import { openSession, resolveTarget } from '../../lib/app/session';
+import { openSession } from '../../lib/app/session';
+import { resolveAppTarget } from '../../lib/app/instance';
 import { pullProject } from '../../lib/app/workspace';
 import { targetFlags } from '../../lib/app/flags';
 import { formatError, formatSuccess } from '../../lib/log';
@@ -18,7 +19,7 @@ export default class AppPull extends Command {
     const { flags } = await this.parse(AppPull);
     try {
       const project = Project.find();
-      const snapshot = await pullProject(await openSession(resolveTarget(flags)), project);
+      const snapshot = await pullProject(await openSession(resolveAppTarget(flags, project.root)), project);
       const typed = snapshot.queries.filter((q) => q.table && snapshot.tables[q.table]).length;
       const version = snapshot.versionName ? ` (version ${snapshot.versionName})` : '';
       this.log(

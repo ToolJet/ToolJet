@@ -1,6 +1,7 @@
 import { Command } from '@oclif/core';
 
-import { openSession, resolveTarget } from '../../lib/app/session';
+import { openSession } from '../../lib/app/session';
+import { resolveAppTarget } from '../../lib/app/instance';
 import { cloneApp } from '../../lib/app/workspace';
 import { targetFlags } from '../../lib/app/flags';
 import { formatError, formatSuccess } from '../../lib/log';
@@ -20,7 +21,7 @@ export default class AppClone extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(AppClone);
     try {
-      const result = await cloneApp(await openSession(resolveTarget(flags)), args.appId, args.dir);
+      const result = await cloneApp(await openSession(resolveAppTarget(flags)), args.appId, args.dir);
       const routes = result.project.readApp().routes.length;
       this.log(
         formatSuccess(
@@ -33,6 +34,7 @@ export default class AppClone extends Command {
       } else if (result.hasCodePage) {
         this.log("This app's code isn't saved in ToolJet. Copy it from your repository into frontend/.");
       }
+      this.log(`Linked to ${result.instance}: app commands in this folder use your login there.`);
       this.log(`Next: cd ${result.dir} && tooljet app install && tooljet app dev`);
     } catch (err) {
       this.log(formatError((err as Error).message));

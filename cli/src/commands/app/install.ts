@@ -2,7 +2,7 @@ import { Command, Flags } from '@oclif/core';
 
 import { Project } from '../../lib/app/project';
 import { prepareDependencies } from '../../lib/app/sdk';
-import { signedInServer } from '../../lib/app/session';
+import { projectServer } from '../../lib/app/instance';
 import { formatError, formatSuccess, formatWarning } from '../../lib/log';
 
 export default class AppInstall extends Command {
@@ -28,7 +28,7 @@ export default class AppInstall extends Command {
       const { success, warnings } = await prepareDependencies(project.frontend, {
         always: true,
         frozen: flags.frozen,
-        server: signedInServer(),
+        server: projectServer(project.root),
       });
       for (const line of success) this.log(formatSuccess(line));
       for (const line of warnings) this.log(formatWarning(line));
