@@ -104,14 +104,14 @@ RUN if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
 # Handle submodules - try normal submodule update first, if it fails clone directly from base repo
 RUN if git submodule update --init --recursive; then \
   echo "Submodules initialized successfully"; \
-  # Checkout the same branch in submodules if it exists, otherwise fallback to lts-3.16
+  # Follow a same-named submodule branch only when it contains the pinned commit (HEAD after
+  # update), else keep the pin: a stale branch builds EE code older than this checkout.
   git submodule foreach " \
-    if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-       git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-      git checkout ${BRANCH_NAME}; \
+    if git fetch -q origin ${BRANCH_NAME} 2>/dev/null && \
+       git merge-base --is-ancestor HEAD FETCH_HEAD; then \
+      git checkout -B ${BRANCH_NAME} FETCH_HEAD; \
     else \
-      echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to lts-3.16'; \
-      git checkout lts-3.16; \
+      echo 'Submodule \$name: no ${BRANCH_NAME} branch containing the pinned commit, keeping the pin'; \
     fi"; \
 else \
   echo "Submodule update failed, likely a forked repo. Cloning EE submodules directly from base repo."; \
