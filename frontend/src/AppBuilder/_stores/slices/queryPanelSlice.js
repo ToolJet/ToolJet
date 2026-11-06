@@ -25,34 +25,6 @@ const toastIfQueryRunRestricted = (errorData) => {
   if (errorData?.data?.type === TJ_QUERY_ERROR_TYPE.FORBIDDEN) toast.error(errorData.data.responseObject.responseBody);
 };
 
-// The failed attempt's request/response/metadata, under the names a successful result uses.
-// A failure keeps the previous result on the query, so these go on `error` instead.
-const failedAttemptDetails = (errorData, kind) => {
-  if (errorData?.data?.type === TJ_QUERY_ERROR_TYPE.UNAUTHORIZED) {
-    return { metadata: errorData?.metadata, response: errorData?.data?.responseObject };
-  }
-  if (kind === 'restapi') {
-    return {
-      metadata: errorData?.metadata,
-      request: errorData?.data?.requestObject,
-      response: errorData?.data?.responseObject,
-      responseHeaders: errorData?.data?.responseHeaders,
-    };
-  }
-  if (kind === 'workflows') return { metadata: errorData?.metadata, response: errorData?.metadata?.response };
-  return {};
-};
-
-// `error` as exposed on the query: the failure as before, plus the failed attempt's details
-// for any of those names it doesn't already carry. Existing error fields are never replaced.
-const queryErrorWithFailedAttempt = (errorData, kind) => {
-  if (!errorData || typeof errorData !== 'object' || Array.isArray(errorData)) return errorData;
-  const additions = Object.entries(failedAttemptDetails(errorData, kind)).filter(
-    ([key, value]) => value !== undefined && !(key in errorData)
-  );
-  return additions.length ? { ...errorData, ...Object.fromEntries(additions) } : errorData;
-};
-
 const initialState = {
   isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
   isDraggingQueryPane: false,
@@ -664,12 +636,34 @@ export const createQueryPanelSlice = (set, get) => ({
           isQuerySuccessLog: false,
         });
 
-        // The previous result stays; the failed attempt is reported on `error` only.
         setResolvedQuery(
           queryId,
           {
             isLoading: false,
-            error: queryErrorWithFailedAttempt(errorData, query.kind),
+            ...(errorData?.data?.type === TJ_QUERY_ERROR_TYPE.UNAUTHORIZED
+              ? {
+                  metadata: errorData?.metadata,
+                  response: errorData?.data?.responseObject,
+                }
+              : query.kind === 'restapi'
+                ? {
+                    metadata: errorData?.metadata,
+                    request: errorData?.data?.requestObject,
+                    response: errorData?.data?.responseObject,
+                    responseHeaders: errorData?.data?.responseHeaders,
+                  }
+                : query.kind === 'workflows'
+                  ? { metadata: errorData?.metadata, response: errorData?.metadata?.response }
+                  : {}),
+          },
+          moduleId
+        );
+
+        setResolvedQuery(
+          queryId,
+          {
+            isLoading: false,
+            error: errorData,
           },
           moduleId
         );
@@ -686,20 +680,9 @@ export const createQueryPanelSlice = (set, get) => ({
           queryPreviewData && setPreviewData('');
         }
 
-        // Keep the previous result visible while the query reruns, so bound components don't go
-        // blank; `isLoading` is the loading signal. Success replaces the whole result, failure and
-        // abort leave it. A query without a result yet starts from the initial empty state.
-        const hasResult = !!get().resolvedStore.modules[moduleId]?.exposedValues?.queries?.[queryId];
-        setResolvedQuery(
-          queryId,
-          {
-            isLoading: true,
-            id: queryId,
-            error: undefined,
-            ...(hasResult ? {} : { data: [], rawData: [] }),
-          },
-          moduleId
-        );
+        // Only flag the run as loading: the previous result (and error) stays until this run
+        // settles, so bound components don't go blank. `isLoading` is the loading signal.
+        setResolvedQuery(queryId, { isLoading: true }, moduleId);
 
         // Create AbortController only for fetch-based kinds. For runjs/runpy/workflows,
         // controller.abort() has no effect on the underlying execution, so registering one
