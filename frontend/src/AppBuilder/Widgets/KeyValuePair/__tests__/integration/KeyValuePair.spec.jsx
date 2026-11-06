@@ -1187,6 +1187,37 @@ describe('KeyValuePair: label overflow tooltip', () => {
     }
   });
 
+  test('[KeyValuePair-BUG-LABEL-TOOLTIP-004] inside a modal the label tooltip is portaled into the modal, not behind it', async () => {
+    // Break this catches: the tooltip is portaled into #real-canvas, a transformed stacking context that
+    // paints under the modal, so a truncated label's tooltip opens behind the modal.
+    const scrollSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(300);
+    const clientSpy = jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(100);
+    try {
+      // Mount the widget inside a react-bootstrap-style `.modal` host.
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      document.body.appendChild(modal);
+      const mount = widget.session.render.bind(widget.session);
+      jest
+        .spyOn(widget.session, 'render')
+        .mockImplementation((ui) => mount(ui, { container: modal.appendChild(document.createElement('div')) }));
+      renderWithLongLabel();
+      await waitFor(() => expect(labelText()).toBeInTheDocument());
+      await widget.session.user.hover(labelText());
+
+      const tooltip = await waitFor(() => {
+        const el = document.querySelector('.overlay-cell-table');
+        expect(el).toBeInTheDocument();
+        return el;
+      });
+      expect(tooltip.closest('.modal')).toBe(modal);
+    } finally {
+      scrollSpy.mockRestore();
+      clientSpy.mockRestore();
+      document.querySelector('.modal')?.remove();
+    }
+  });
+
   test('[KeyValuePair-BUG-LABEL-TOOLTIP-003] the label tooltip content is capped to the label width', async () => {
     const offsetSpy = jest.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(120);
     const scrollSpy = jest.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(300);
