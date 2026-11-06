@@ -21,7 +21,15 @@ jest.mock('@/_ui/AppButton/AppButton', () => ({
     </button>
   ),
 }));
-jest.mock('../PromoteConfirmationExtras', () => () => null);
+const mockExtras = { locked: false };
+jest.mock('../PromoteConfirmationExtras', () => {
+  const ReactActual = jest.requireActual('react');
+  // eslint-disable-next-line react/prop-types
+  return ({ onLockedChange }) => {
+    ReactActual.useEffect(() => onLockedChange?.(mockExtras.locked), [onLockedChange]);
+    return null;
+  };
+});
 jest.mock('@/AppBuilder/_contexts/ModuleContext', () => ({ useModuleContext: () => ({ moduleId: 'canvas' }) }));
 
 const mockGate = { locked: false };
@@ -65,6 +73,7 @@ const data = { current: { id: 'env-dev', name: 'development' }, target: { id: 'e
 beforeEach(() => {
   jest.clearAllMocks();
   mockGate.locked = false;
+  mockExtras.locked = false;
 });
 
 it('holds Promote while the security result blocks it', async () => {
@@ -80,4 +89,13 @@ it('promotes when the security result allows it', async () => {
   render(<PromoteConfirmationModal data={data} onClose={jest.fn()} />);
   await userEvent.click(screen.getByRole('button', { name: /Promote/ }));
   expect(mockState.promoteAppVersionAction).toHaveBeenCalled();
+});
+
+it('holds Promote while a review still waits, even when the security result allows it', async () => {
+  mockExtras.locked = true;
+  render(<PromoteConfirmationModal data={data} onClose={jest.fn()} />);
+  const button = screen.getByRole('button', { name: /Promote/ });
+  await waitFor(() => expect(button).toBeDisabled());
+  await userEvent.click(button);
+  expect(mockState.promoteAppVersionAction).not.toHaveBeenCalled();
 });
