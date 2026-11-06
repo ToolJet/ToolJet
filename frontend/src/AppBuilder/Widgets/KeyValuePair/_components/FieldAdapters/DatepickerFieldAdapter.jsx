@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { DatePickerRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/DatePickerRenderer';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { toValidatableDateValue } from '../../_utils/datepickerValue';
 
 /**
  * DatepickerFieldAdapter - KeyValuePair adapter for Date display/editing
@@ -32,6 +33,17 @@ export const DatepickerField = ({
   // Same validateDates store action the Table widget's Datepicker column uses, keeping
   // minDate/maxDate/minTime/maxTime behavior identical across both widgets.
   const validateDates = useStore((state) => state.validateDates, shallow);
+
+  // The renderer emits display-format strings; remember the last one so validation doesn't read it as parse format.
+  const lastEmittedRef = useRef();
+  const handleChange = useCallback(
+    (next) => {
+      lastEmittedRef.current = next;
+      onChange?.(next);
+    },
+    [onChange]
+  );
+  const validationValue = toValidatableDateValue(field, value, value === lastEmittedRef.current);
   const { isValid, validationError } = validateDates({
     validationObject: {
       minDate: { value: field?.minDate },
@@ -41,7 +53,7 @@ export const DatepickerField = ({
       parseDateFormat: { value: field?.parseDateFormat },
       customRule: { value: field?.customRule },
     },
-    widgetValue: value,
+    widgetValue: validationValue,
     customResolveObjects: { cellValue: value },
   });
 
@@ -54,7 +66,7 @@ export const DatepickerField = ({
     <DatePickerRenderer
       id={id}
       value={value}
-      onChange={onChange}
+      onChange={handleChange}
       isEditable={isEditable}
       dateDisplayFormat={dateDisplayFormat}
       parseDateFormat={field?.parseDateFormat}
