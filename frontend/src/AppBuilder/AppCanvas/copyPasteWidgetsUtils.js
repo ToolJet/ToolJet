@@ -10,6 +10,9 @@ import { NO_OF_GRIDS, isTabsType, isModalType } from './appCanvasConstants';
 import { computeComponentName, getAllChildComponents } from './appCanvasUtils';
 import { utilityFuncForNameSeed } from '@/_helpers/utils';
 import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
+import * as pageRoots from '@ee/modules/CodeMode/AppBuilder/_hooks/codePageRoot';
+
+const withoutCodePageRoots = pageRoots.withoutCodePageRoots ?? ((ids) => ids || []);
 
 const getSelectedText = () => {
   let selectedText = '';
@@ -100,11 +103,11 @@ export const copyComponents = ({ isCut = false, isCloning = false }) => {
     toast.success('Component cloned successfully');
   } else if (isCut) {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
-    useStore.getState().deleteComponents(
+    const cutIds = withoutCodePageRoots(
       selectedComponents.map((component) => component.id),
-      'canvas',
-      { isCut }
+      useStore.getState().getCurrentPageComponents?.() ?? {}
     );
+    if (cutIds.length) useStore.getState().deleteComponents(cutIds, 'canvas', { isCut });
   } else {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
     const successMessage =

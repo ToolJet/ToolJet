@@ -82,4 +82,5 @@ export interface LibraryManifest {
   manifestVersion?: number;
   pack?: string;
   components?: Record<string, ManifestComponent>;
+  source?: { files: Record<string, string>; skipped?: string[] };
 }

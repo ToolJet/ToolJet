@@ -34,6 +34,8 @@ export function AppModal({
   dependentPluginsDetail = [],
   dependentPlugins = [],
   modalType,
+  // Edition-specific fields under the name (the enterprise build mode choice on "Create app").
+  extraContent = null,
   // isAutoCommit = false,
 }) {
   if (!selectedAppName && templateDetails) {
@@ -249,6 +251,7 @@ export function AppModal({
                     </div>
                   </div>
                 )} */}
+              {extraContent}
             </div>
             {dependentPlugins && dependentPlugins.length >= 1 && (
               <div onClick={(e) => e.stopPropagation()}>

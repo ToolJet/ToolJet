@@ -15,6 +15,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
 import { IconArrowBarToDown } from '@tabler/icons-react';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const VersionDropdownItem = ({
   version,
@@ -149,7 +150,8 @@ const VersionDropdownItem = ({
     }).length;
   }, [customComponentLibraries]);
 
-  const isSaveVersionBlockedByDevPin = canCreateVersion && devPinnedLibrariesCount > 0;
+  const isCodeApp = useCodeMode();
+  const isSaveVersionBlockedByDevPin = canCreateVersion && devPinnedLibrariesCount > 0 && !isCodeApp;
 
   const renderMenu = (
     <Popover

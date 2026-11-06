@@ -30,6 +30,8 @@ import useCanvasMinWidth from './Hooks/useCanvasMinWidth';
 import useEnableMainCanvasScroll from './Hooks/useEnableMainCanvasScroll';
 
 import useCanvasResizing from './Hooks/useCanvasResizing';
+import { CodeCanvasViewport, useCodePage, useRoutePageRedirect } from '@/AppBuilder/_helpers/codeModeHooks';
+import { useIsAppPreview } from '@/AppBuilder/_hooks/useIsAppPreview';
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
@@ -65,8 +67,13 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const pageKey = useStore((state) => state.pageKey);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
+  const { isCodePage } = useCodePage(moduleId);
+  useRoutePageRedirect(moduleId);
+  const isAppPreview = useIsAppPreview();
 
   const isMobileLayout = currentLayout === 'mobile';
+  const isCodeCanvas =
+    isCodePage && (currentMode === 'edit' || isAppPreview) && moduleId === 'canvas' && !isMobileLayout;
   const pageLoader = useStore((state) => state.pageLoader, shallow);
   const isCanvasReloading = useStore((state) => state.loaderStore.modules[moduleId].isCanvasReloading, shallow);
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
@@ -85,16 +92,20 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { position } = properties ?? {};
   const showCanvasHeader = useStore(
     (state) =>
-      state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.[
+      !isCodePage &&
+      (state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.[
         currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'
-      ] ?? false,
+      ] ??
+        false),
     shallow
   );
   const showCanvasFooter = useStore(
     (state) =>
-      state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter?.[
+      !isCodePage &&
+      (state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageFooter?.[
         currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'
-      ] ?? false,
+      ] ??
+        false),
     shallow
   );
   const canvasHeaderHeight = useStore(
@@ -257,10 +268,11 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               id="app-canvas-container"
               className={cx('tw-h-full tw-flex tw-flex-col tw-relative', {
                 'tw-w-full tw-mx-auto': isMobileLayout,
+                'tj-code-page': isCodePage,
               })}
               style={{
                 // minCanvasWidth is desktop-only; on mobile it forces a scrollbar that shifts the frame.
-                minWidth: isMobileLayout ? undefined : minCanvasWidth,
+                minWidth: isMobileLayout || isCodePage ? undefined : minCanvasWidth,
                 // Reserve room below the phone frame for the toolbar gutter
                 ...(isMobileLayout && currentMode === 'edit' ? { paddingBottom: '76px' } : {}),
               }}
@@ -295,7 +307,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
                 <HotkeyProvider
                   mode={currentMode}
-                  canvasMaxWidth={canvasMaxWidth}
+                  canvasMaxWidth={isCodeCanvas ? '100%' : canvasMaxWidth}
                   currentLayout={currentLayout}
                   isModuleMode={isModuleMode}
                 >
@@ -329,31 +341,33 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           pageLoader={pageLoader}
                         />
                       ) : (
-                        <DesktopLayout
-                          pageKey={pageKey}
-                          isModuleMode={isModuleMode}
-                          isMobileLayout={isMobileLayout}
-                          showCanvasHeader={showCanvasHeader}
-                          showCanvasFooter={showCanvasFooter}
-                          position={position}
-                          isPagesSidebarHidden={isPagesSidebarHidden}
-                          appType={appType}
-                          sideBarVisibleHeight={sideBarVisibleHeight}
-                          currentPageId={currentPageId}
-                          homePageId={homePageId}
-                          switchDarkMode={switchDarkMode}
-                          isViewerSidebarPinned={isViewerSidebarPinned}
-                          setIsSidebarPinned={setIsSidebarPinned}
-                          darkMode={darkMode}
-                          canvasMaxWidth={canvasMaxWidth}
-                          canvasContentRef={canvasContentRef}
-                          currentMode={currentMode}
-                          isAppDarkMode={isAppDarkMode}
-                          mainCanvasContainer={mainCanvasContainer}
-                          gridContent={gridContent}
-                          canvasHeaderHeight={canvasHeaderHeight}
-                          pageLoader={pageLoader}
-                        />
+                        <CodeCanvasViewport enabled={isCodeCanvas} appId={appId}>
+                          <DesktopLayout
+                            pageKey={pageKey}
+                            isModuleMode={isModuleMode}
+                            isMobileLayout={isMobileLayout}
+                            showCanvasHeader={showCanvasHeader}
+                            showCanvasFooter={showCanvasFooter}
+                            position={position}
+                            isPagesSidebarHidden={isPagesSidebarHidden}
+                            appType={appType}
+                            sideBarVisibleHeight={sideBarVisibleHeight}
+                            currentPageId={currentPageId}
+                            homePageId={homePageId}
+                            switchDarkMode={switchDarkMode}
+                            isViewerSidebarPinned={isViewerSidebarPinned}
+                            setIsSidebarPinned={setIsSidebarPinned}
+                            darkMode={darkMode}
+                            canvasMaxWidth={canvasMaxWidth}
+                            canvasContentRef={canvasContentRef}
+                            currentMode={currentMode}
+                            isAppDarkMode={isAppDarkMode}
+                            mainCanvasContainer={mainCanvasContainer}
+                            gridContent={gridContent}
+                            canvasHeaderHeight={canvasHeaderHeight}
+                            pageLoader={pageLoader}
+                          />
+                        </CodeCanvasViewport>
                       )}
                     </SuspenseCountProvider>
                   )}

@@ -11,10 +11,13 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import PromoteConfirmationExtras from './PromoteConfirmationExtras';
+import { ReleaseScanGate } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) => {
   const { moduleId } = useModuleContext();
   const [promotingEnvironment, setPromotingEnvironment] = useState(false);
+  // An app built in code: its security result holds the promotion (ReleaseScanGate), checked before anything moves.
+  const [scanLocked, setScanLocked] = useState(false);
   // A review still waiting on this version holds the promotion (PromoteConfirmationExtras says why).
   const [promoteLocked, setPromoteLocked] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true' || false;
@@ -211,6 +214,14 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
           releasedVersionId={releasedVersionId}
           onLockedChange={setPromoteLocked}
         />
+        {showModal && (
+          <ReleaseScanGate
+            appId={appId}
+            versionId={versionIdToPromote}
+            action="promote"
+            onLockedChange={setScanLocked}
+          />
+        )}
       </Modal.Body>
       <Modal.Footer className="mt-3 env-modal-footer">
         <ButtonSolid variant="tertiary" onClick={handleClose} data-cy="cancel-button">
@@ -220,7 +231,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
           variant="primary"
           onClick={handleConfirm}
           isLoading={promotingEnvironment}
-          disabled={promoteLocked}
+          disabled={scanLocked || promoteLocked}
           data-cy="promote-button"
         >
           Promote

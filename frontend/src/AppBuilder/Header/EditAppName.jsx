@@ -8,10 +8,11 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { AppModal } from '@/_components/AppModal';
 import { PenLine, TriangleAlert } from 'lucide-react';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { BuildModeBadge } from '@/AppBuilder/_helpers/codeModeHooks';
 
 function EditAppName() {
   const { moduleId, appType } = useModuleContext();
-  const [appId, appName, setAppName, appCreationMode, selectedVersion, orgGit] = useStore(
+  const [appId, appName, setAppName, appCreationMode, selectedVersion, orgGit, buildMode] = useStore(
     (state) => [
       state.appStore.modules[moduleId].app.appId,
       state.appStore.modules[moduleId].app.appName,
@@ -19,6 +20,7 @@ function EditAppName() {
       state.appStore.modules[moduleId].app.creationMode,
       state.selectedVersion,
       state.orgGit,
+      state.appStore.modules[moduleId].app.buildMode,
     ],
     shallow
   );
@@ -112,6 +114,7 @@ function EditAppName() {
             )}
           </button>
         </ToolTip>
+        {appType !== 'module' && <BuildModeBadge buildMode={buildMode} />}
       </div>
 
       {showRenameModal && (

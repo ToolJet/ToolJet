@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^11.7.3",
+    "@babel/parser": "^7.29.0",
     "@base-ui/react": "^1.3.0",
     "@codemirror/autocomplete": "^6.12.0",
     "@codemirror/commands": "^6.3.3",
@@ -78,6 +79,7 @@
     "driver.js": "^0.9.8",
     "emoji-mart": "^5.5.2",
     "es-module-lexer": "^1.7.0",
+    "esbuild-wasm": "0.25.9",
     "file-loader": "^6.2.0",
     "flatted": "^3.3.1",
     "focus-trap-react": "^10.0.2",
@@ -183,7 +185,6 @@
     "zustand": "^4.3.6"
   },
   "devDependencies": {
-    "chokidar": "^3.6.0",
     "@babel/core": "^7.20.12",
     "@babel/eslint-parser": "^7.28.6",
     "@babel/plugin-transform-runtime": "^7.19.6",
@@ -215,6 +216,7 @@
     "babel-plugin-console-source": "^2.0.5",
     "babel-plugin-import": "^1.13.6",
     "babel-plugin-istanbul": "^6.1.1",
+    "chokidar": "^3.6.0",
     "compression-webpack-plugin": "^10.0.0",
     "css-loader": "^7.1.4",
     "css-minimizer-webpack-plugin": "^7.0.2",

@@ -34,6 +34,10 @@ export const AI_CHAT_WIDTH = 400;
 
 export const LEFT_SIDEBAR_WIDTH = {
   tooljetai: AI_CHAT_WIDTH,
+  // Wider than the default: see `.PopoverContent.security`. The canvas has to clear it or it covers the app.
+  security: 520,
+  // `.PopoverContent.access` is 420 wide: at the default the panel covered the app's left edge and the locked banner.
+  access: 420,
   default: 350,
 };
 

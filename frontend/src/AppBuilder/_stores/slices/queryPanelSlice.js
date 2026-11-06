@@ -12,6 +12,11 @@ import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAb
 import { ABORT_UNSUPPORTED_KINDS, defaultSources, TJ_QUERY_ERROR_TYPE } from '@/AppBuilder/QueryManager/constants';
 import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { emptyPreviewParameters } from '@/AppBuilder/QueryManager/Components/previewParameters';
+import * as compareGuard from '@ee/modules/CodeMode/AppBuilder/CodeDiff/compareGuard';
+
+const BLOCKED_WRITE_MESSAGE = compareGuard.BLOCKED_WRITE_MESSAGE ?? '';
+const writeBlockedInCompare = compareGuard.writeBlockedInCompare ?? (() => false);
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
@@ -31,6 +36,8 @@ const initialState = {
   queryToBeRun: null,
   previewLoading: false,
   queryPreviewData: '',
+  // The parameters the last Preview ran with no value, which Preview names under its result.
+  previewEmptyParameters: [],
   showCreateQuery: false,
   nameInputFocused: false,
   previewPanelExpanded: false,
@@ -457,6 +464,11 @@ export const createQueryPanelSlice = (set, get) => ({
         throw new Error('No query selected');
       }
 
+      if (writeBlockedInCompare(dataQuery)) {
+        setResolvedQuery(queryId, { isLoading: false }, moduleId);
+        return Promise.resolve({ status: 'failed', message: BLOCKED_WRITE_MESSAGE });
+      }
+
       if (_.isEmpty(parameters)) {
         parameters = dataQuery.options?.parameters?.reduce(
           (parameters, parameter) => ({
@@ -716,7 +728,11 @@ export const createQueryPanelSlice = (set, get) => ({
           queryExecutionPromise = dataqueryService.run(
             queryId,
             options,
-            query?.options,
+            // The server saves the options a run sends. In an app built in code, where an AI turn or the CLI changes
+            // queries under an open editor, only a run from the query panel (Run, or its shortcut) sends them:
+            // page-load, event and code runs send none, so this editor's copy, which can be older than the stored
+            // query, never overwrites it. Visual apps keep sending them, as before.
+            shouldSetPreviewData || get().appStore.modules[moduleId]?.app?.buildMode !== 'code' ? query?.options : undefined,
             versionId,
             (() => {
               // send undefined if Public/Private released app
@@ -967,6 +983,13 @@ export const createQueryPanelSlice = (set, get) => ({
           }),
           {}
         );
+      }
+
+      if (!calledFromQuery) {
+        const emptyParameters = emptyPreviewParameters(query.options?.parameters, parameters);
+        set((state) => {
+          state.queryPanel.previewEmptyParameters = emptyParameters;
+        });
       }
 
       // const queryState = { ...getCurrentState(), parameters };
@@ -1942,14 +1965,18 @@ export const createQueryPanelSlice = (set, get) => ({
         queryPanelHeight: 100,
       };
 
-      // If query pane is not expanded, expand it
-      if (!queryManagerPreferences.isExpanded) {
-        const newPreferences = {
-          ...queryManagerPreferences,
-          isExpanded: true,
-          queryPanelHeight: 70, // Default expanded height
-        };
-        localStorage.setItem('queryManagerPreferences', JSON.stringify(newPreferences));
+      // If query pane is not expanded, expand it. The store can be folded while the remembered preference is open
+      // (a blank app folds an empty panel for one visit), so either being closed means it needs expanding.
+      if (!queryManagerPreferences.isExpanded || !get().queryPanel.isQueryPaneExpanded) {
+        // Only a remembered-closed panel takes the default height; a remembered-open one keeps its own.
+        if (!queryManagerPreferences.isExpanded) {
+          const newPreferences = {
+            ...queryManagerPreferences,
+            isExpanded: true,
+            queryPanelHeight: 70, // Default expanded height
+          };
+          localStorage.setItem('queryManagerPreferences', JSON.stringify(newPreferences));
+        }
 
         // Update the store state
         set((state) => {

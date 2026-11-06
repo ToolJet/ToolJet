@@ -5,6 +5,16 @@ import * as ReactJSXRuntime from 'react/jsx-runtime';
 import { init as initLexer, parse as parseImports } from 'es-module-lexer';
 
 import FormSignalContext from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import {
+  compareText,
+  debugApi,
+  devRuntime,
+  useCodeAppGlobals,
+  useCodeAppNavigation,
+  useCodeAppQuery,
+  useCodeAppTheme,
+  useCodeAppWorkspaceUsers,
+} from './runtimeExtensions';
 
 /* POC: run a published custom-component bundle in the host page instead of the sandboxed shell iframe.
 
@@ -328,7 +338,23 @@ export const toolJetSdk = {
   useStateEnumeration: makeStateHook('useStateEnumeration', () => ''),
   useEventCallback: function useTjEvent({ name }: { name: string }) {
     const instance = useLibraryInstance('useEventCallback');
-    return React.useCallback(() => instance.fireEvent(name), [instance, name]);
+    return React.useCallback(
+      (payload?: unknown) => {
+        const isDomEvent = !!payload && typeof payload === 'object' && 'nativeEvent' in (payload as object);
+        if (payload !== undefined && !isDomEvent) instance.setExposedVariable('lastEvent', { name, payload });
+        instance.fireEvent(name);
+      },
+      [instance, name]
+    );
+  },
+  useQuery: (name: string, options?: { enabled?: boolean }) => useCodeAppQuery(name, options),
+  useGlobals: () => useCodeAppGlobals(),
+  useTheme: () => useCodeAppTheme(),
+  useWorkspaceUsers: (options?: { search?: string; limit?: number; offset?: number }) =>
+    useCodeAppWorkspaceUsers(options),
+  useNavigation: function useTjNavigation() {
+    const instance = React.useContext(LibraryInstanceContext);
+    return useCodeAppNavigation(instance?.props);
   },
   useAction: function useTjAction({ name }: { name: string }, handler: ActionHandler) {
     const instance = useLibraryInstance('useAction');
@@ -359,6 +385,7 @@ const HOST_MODULES: Record<string, Record<string, unknown>> = {
   'react-dom': ReactDOM,
   'react-dom/client': ReactDOMClient,
   'react/jsx-runtime': ReactJSXRuntime,
+  'react/jsx-dev-runtime': devRuntime,
 };
 
 const installGlobals = () => {
@@ -370,6 +397,7 @@ const installGlobals = () => {
   w.__tj_React = React;
   w.__tj_ReactDOM = ReactDOMClient;
   w.__tj_ReactJSXRuntime = ReactJSXRuntime;
+  w.__tjDebug = debugApi;
 };
 
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
@@ -401,7 +429,7 @@ const rewriteBareImports = async (source: string): Promise<string> => {
     if (imp.n === undefined || imp.n === null) continue;
     if (!HOST_MODULES[imp.n]) {
       if (!imp.n.startsWith('blob:') && !/^(https?:|\.{0,2}\/)/.test(imp.n)) {
-        throw new Error(`bundle imports "${imp.n}", which the host does not provide`);
+        throw new Error(`the code imports "${imp.n}", which ToolJet does not provide`);
       }
       continue;
     }
@@ -411,6 +439,64 @@ const rewriteBareImports = async (source: string): Promise<string> => {
     last = imp.e;
   }
   return out + source.slice(last);
+};
+
+export const installGlobalsOn = (win: Window) => {
+  installGlobals();
+  const w = win as any;
+  w.__tj_hostModules = HOST_MODULES;
+  w.__tj_ToolJet = toolJetSdk;
+  w.__tj_React = React;
+  w.__tj_ReactDOM = ReactDOMClient;
+  w.__tj_ReactJSXRuntime = ReactJSXRuntime;
+  w.__tjDebug = debugApi;
+};
+
+const fetchBundleText = async (bundleUrl: string, options: LoadOptions): Promise<string> => {
+  const preloaded = compareText(bundleUrl);
+  if (preloaded !== null) return preloaded;
+  const res = await fetch(bundleUrl, fetchInit(options));
+  // The status lets a host tell a missing bundle from any other failure, and say what that means where it is shown.
+  if (!res.ok) throw Object.assign(new Error(`couldn't fetch this code (HTTP ${res.status})`), { status: res.status });
+  return res.text();
+};
+
+export const loadLibraryModuleIn = async (
+  win: Window,
+  bundleUrl: string,
+  options: LoadOptions = {}
+): Promise<Record<string, unknown>> => {
+  installGlobalsOn(win);
+  const source = await rewriteBareImports(await fetchBundleText(bundleUrl, options));
+  const url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
+  const w = win as any;
+  const loads = (w.__tjModuleLoads ??= {}) as Record<
+    string,
+    { resolve: (m: any) => void; reject: (e: unknown) => void }
+  >;
+  const id = `m${Math.random().toString(36).slice(2)}`;
+  const slot = `window.__tjModuleLoads[${JSON.stringify(id)}]`;
+  const loader = URL.createObjectURL(
+    new Blob([`import(${JSON.stringify(url)}).then((m) => ${slot}.resolve(m), (e) => ${slot}.reject(e));`], {
+      type: 'text/javascript',
+    })
+  );
+  const script = win.document.createElement('script');
+  try {
+    return await new Promise<Record<string, unknown>>((resolve, reject) => {
+      loads[id] = { resolve, reject };
+      script.type = 'module';
+      script.src = loader;
+      script.onerror = () =>
+        reject(new Error("the app's code could not be started (a blocked request in the Debugger may say why)"));
+      win.document.head.appendChild(script);
+    });
+  } finally {
+    delete loads[id];
+    script.remove();
+    URL.revokeObjectURL(loader);
+    URL.revokeObjectURL(url);
+  }
 };
 
 const moduleCache = new Map<string, Promise<Record<string, unknown>>>();
@@ -438,11 +524,7 @@ export const loadLibraryModule = (
   let pending = moduleCache.get(cacheKey);
   if (!pending) {
     pending = (async () => {
-      const res = await fetch(bundleUrl, fetchInit(options));
-      // The status lets a host tell a missing bundle from any other failure, and say what that means where it is shown.
-      if (!res.ok)
-        throw Object.assign(new Error(`couldn't fetch this code (HTTP ${res.status})`), { status: res.status });
-      const source = await rewriteBareImports(await res.text());
+      const source = await rewriteBareImports(await fetchBundleText(bundleUrl, options));
       const url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
       try {
         return await import(/* webpackIgnore: true */ url);
@@ -459,9 +541,13 @@ export const loadLibraryModule = (
 export const loadLibraryCss = (cssUrl: string, cacheKey: string, options: LoadOptions = {}): Promise<string | null> => {
   let pending = cssCache.get(cacheKey);
   if (!pending) {
-    pending = fetch(cssUrl, fetchInit(options))
-      .then((r) => (r.ok ? r.text() : null))
-      .catch(() => null);
+    const preloaded = compareText(cssUrl);
+    pending =
+      preloaded !== null
+        ? Promise.resolve(preloaded)
+        : fetch(cssUrl, fetchInit(options))
+            .then((r) => (r.ok ? r.text() : null))
+            .catch(() => null);
     cssCache.set(cacheKey, pending);
   }
   return pending;
