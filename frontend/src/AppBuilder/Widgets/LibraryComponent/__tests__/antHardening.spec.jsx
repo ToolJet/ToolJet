@@ -934,6 +934,30 @@ describe('T7/T41: colour styles default to the theme colour they draw, and draw 
     expect(style.getPropertyValue('--tj-ant-border-radius')).toBe('10px');
   });
 
+  // QA item 31: Border color did nothing on a Card, Statistic or Summary Strip, whose border antd draws with
+  // colorBorderSecondary (antd.css: --ant-color-border-secondary reads --tj-ant-color-border-secondary first).
+  test.each(['Card', 'Statistic', 'SummaryStrip'])(
+    "%s: Border color sets the secondary border its card's border is drawn with",
+    async (name) => {
+      const v = await mount(name, {}, { formField: false, styles: { colorBorder: '#e11d48' } });
+      const style = v.root().querySelector('.tj-ant-root').style;
+      expect(style.getPropertyValue('--tj-ant-color-border')).toBe('#e11d48');
+      expect(style.getPropertyValue('--tj-ant-color-border-secondary')).toBe('#e11d48');
+    }
+  );
+
+  // QA item 29: the Map's Border color and Border radius set --lk-border and --lk-radius, which only a .ui.ui-map rule
+  // (the shadcn pack's root) read; the Ant Map's root is .tj-ant.ui-map, so they did nothing.
+  test("the Map's frame reads its Border color and Border radius, as before when unset", () => {
+    const css = require('fs').readFileSync(
+      require('path').resolve(__dirname, '../../../../../../packs/antd/src/styles/map.css'),
+      'utf8'
+    );
+    const frame = css.match(/\n\.ui-map \{([^}]*)\}/)?.[1] ?? '';
+    expect(frame).toContain('border: 1px solid var(--lk-border, var(--ant-color-border-secondary))');
+    expect(frame).toContain('border-radius: var(--lk-radius, 0)');
+  });
+
   test('another theme swatch than the default is kept as a theme value', async () => {
     const v = await mount(
       'Button',
