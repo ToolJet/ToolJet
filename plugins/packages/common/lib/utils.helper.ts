@@ -262,10 +262,22 @@ const headersToRedact = [
   'authentication-info', // Provides additional authentication details
 ];
 
-export const redactHeaders = (headers) => {
+// Custom OAuth token header name (if configured) so it can be redacted from query metadata.
+export const getOAuthTokenHeaderName = (sourceOptions: any): string | undefined => {
+  const isOAuth = sourceOptions?.auth_type === 'oauth2' || sourceOptions?.auth_type === 'oauth';
+  return isOAuth && typeof sourceOptions?.access_token_header_key === 'string'
+    ? sourceOptions.access_token_header_key
+    : undefined;
+};
+
+export const redactHeaders = (headers, extraHeaderName?: string) => {
   const redactedHeaders = { ...headers };
-  headersToRedact.forEach((key) => {
-    if (Object.prototype.hasOwnProperty.call(redactedHeaders, key)) {
+  const names = new Set(headersToRedact.map((h) => h.toLowerCase()));
+  if (typeof extraHeaderName === 'string' && extraHeaderName.trim()) {
+    names.add(extraHeaderName.trim().toLowerCase());
+  }
+  Object.keys(redactedHeaders).forEach((key) => {
+    if (names.has(key.toLowerCase())) {
       redactedHeaders[key] = '[REDACTED]';
     }
   });
