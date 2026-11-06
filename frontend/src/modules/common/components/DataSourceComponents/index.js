@@ -141,6 +141,11 @@ export const SourceComponents = Object.keys(allManifests).reduce((accumulator, c
 export const SourceComponent = (props) => {
   const schema = props.dataSourceSchema;
 
+  // Built-in kinds (runjs, tooljetdb) have no plugin manifest, so a stray `default`-type row of one has no schema.
+  if (!schema) {
+    return <div className="tw-p-4 tw-text-default">No configuration available for this data source.</div>;
+  }
+
   if (schema['tj:version']) {
     return <DynamicFormV2 schema={schema} isGDS={true} {...props} />;
   }
