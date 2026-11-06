@@ -18,6 +18,7 @@ export default function ActionDialog({
   classes = null,
   modality = true,
   hasFooter = true,
+  footerStart = null,
   showCloseButton = false,
   showCancelButton = true,
   ...dialogBodyProps
@@ -40,9 +41,15 @@ export default function ActionDialog({
         )}
       >
         {title && (
-          <DialogHeader className="tw-border-b tw-border-border-weak tw-px-6 tw-py-4 tw-justify-between">
+          <DialogHeader
+            className={cn(
+              'tw-border-b tw-border-border-weak tw-px-6 tw-py-4 tw-justify-between',
+              classes?.dialogHeader
+            )}
+          >
             <DialogTitle
-              className="tw-font-title-x-large tw-text-text-default"
+              // tailwind-merge can't dedupe the custom font-title tokens, so a custom title font replaces the default one
+              className={cn('tw-text-text-default', classes?.dialogTitle ?? 'tw-font-title-x-large')}
               data-cy={`${generateCypressDataCy(title)}-title`}
             >
               {titleIcon} {title}
@@ -70,6 +77,9 @@ export default function ActionDialog({
           <DialogFooter
             className={cn('tw-p-6 tw-border-0 sm:tw-justify-between sm:tw-items-center', classes?.dialogFooter)}
           >
+            {/* Pair with showCancelButton={false} and pass Cancel as a submit action to keep it beside the primary action. */}
+            {footerStart}
+
             {showCancelButton && (
               <Button variant="outline" size="default" {...cancelBtnPropsRest}>
                 {cancelBtnLabel ?? 'Cancel'}
