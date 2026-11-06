@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
-import { StringRenderer } from '../StringRenderer';
+import { StringRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/StringRenderer';
 
 /**
  * [KeyValuePair-BUG-HTML-001] An editable string renderer must treat its value as plain text, never HTML.
