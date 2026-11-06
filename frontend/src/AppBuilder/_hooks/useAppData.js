@@ -457,6 +457,8 @@ const useAppData = (
               {},
               {
                 ...(hasTaggedResources ? { taggedResources } : {}),
+                // The version store still holds the previously opened app's version at this point.
+                ...(appData.editing_version?.id ? { versionId: appData.editing_version.id } : {}),
                 attachments: state.attachments,
                 restoreDraftOnFailure: true,
                 onAccepted: clearKickoffDraft,
@@ -800,16 +802,17 @@ const useAppData = (
   }, [darkMode, appMode, selectedTheme, !!themeAccess]);
 
   useEffect(() => {
-    if (moduleMode) return;
+    // A hot reload runs this same pipeline but swaps only the canvas, so the editor chrome
+    // (and the AI chat mid-conversation) stays mounted and we stay on the current page.
+    const isHotReload = hotReloadTimestamp != previousHotReloadTimestamp;
+    // The standalone module editor ('canvas') hot-reloads too; embedded module instances never do.
+    if (moduleMode && !(isHotReload && moduleId === 'canvas')) return;
     const exposedTheme =
       appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
     const isEnvChanged =
       selectedEnvironment?.id && previousEnvironmentId && previousEnvironmentId != selectedEnvironment?.id;
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
     const isForceRefreshTriggered = restoreTimestamp != previousRestoreTimestamp;
-    // A hot reload runs this same pipeline but swaps only the canvas, so the editor chrome
-    // (and the AI chat mid-conversation) stays mounted and we stay on the current page.
-    const isHotReload = hotReloadTimestamp != previousHotReloadTimestamp;
 
     if (isEnvChanged || isVersionChanged || isForceRefreshTriggered || isHotReload) {
       if (isHotReload) {
