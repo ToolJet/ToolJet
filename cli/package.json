@@ -82,7 +82,9 @@
   "overrides": {
     "js-yaml": "^3.15.2",
     "mocha": {
-      "js-yaml": "^4.3.2"
-    }
+      "js-yaml": "^4.3.2",
+      "serialize-javascript": "^7.1.4"
+    },
+    "tmp": "^0.2.7"
   }
 }
