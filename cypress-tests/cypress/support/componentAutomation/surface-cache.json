@@ -104,7 +104,94 @@
           "note": "isValid is set via setExposedVariables(...) at mount (Checkbox.jsx:159) and again via setExposedVariable at runtime (lines 110, 186); exposed from first frame but is NOT listed in checkbox.js config exposedVariables (line 169-176); runtime-only"
         }
       ],
-      "fxFormatNote": "RUNTIME-CONFIRMED 2026-09-01: Boolean toggle fx defaults render WITH {{}} wrapper in .cm-line (e.g. '{{false}}' not 'false'). Use the config default verbatim in verifyAndModifyToggleFx \u2014 pass '{{false}}' or '{{true}}' per the source config, NOT the unwrapped raw value."
+      "fxFormatNote": "RUNTIME-CONFIRMED 2026-09-01: Boolean toggle fx defaults render WITH {{}} wrapper in .cm-line (e.g. '{{false}}' not 'false'). Use the config default verbatim in verifyAndModifyToggleFx \u2014 pass '{{false}}' or '{{true}}' per the source config, NOT the unwrapped raw value.",
+      "facetsNote": "RUNTIME-GREEN 2026-09-02 \u2014 all 11 facets pass in Cypress (golden exemplar). See references/checkbox-reference.md.",
+      "facets": {
+        "basics": {
+          "status": "gates_pass"
+        },
+        "properties": {
+          "status": "gates_pass"
+        },
+        "propertiesFx": {
+          "status": "gates_pass"
+        },
+        "styles": {
+          "status": "gates_pass"
+        },
+        "stylesFx": {
+          "status": "gates_pass"
+        },
+        "events": {
+          "status": "gates_pass"
+        },
+        "csa": {
+          "status": "gates_pass"
+        },
+        "inspector": {
+          "status": "gates_pass"
+        },
+        "canvas": {
+          "status": "gates_pass"
+        },
+        "contexts": {
+          "status": "gates_pass"
+        },
+        "userflow": {
+          "status": "gates_pass"
+        },
+        "customerIssues": {
+          "status": "not_generated"
+        }
+      },
+      "helperOverrides": {},
+      "notAutomatable": []
+    },
+    "numberInput": {
+      "runtimeName": "numberinput1",
+      "configHash": "2219781d",
+      "facetsNote": "SEEDED 2026-09-02 \u2014 basics/inspector/canvas/contexts generated + green; happyPath is a legacy single-spec kept alongside; remaining facets not yet generated.",
+      "facets": {
+        "basics": {
+          "status": "gates_pass"
+        },
+        "inspector": {
+          "status": "gates_pass"
+        },
+        "canvas": {
+          "status": "gates_pass"
+        },
+        "contexts": {
+          "status": "gates_pass"
+        },
+        "properties": {
+          "status": "not_generated"
+        },
+        "propertiesFx": {
+          "status": "not_generated"
+        },
+        "styles": {
+          "status": "not_generated"
+        },
+        "stylesFx": {
+          "status": "not_generated"
+        },
+        "events": {
+          "status": "not_generated"
+        },
+        "csa": {
+          "status": "not_generated"
+        },
+        "userflow": {
+          "status": "not_generated"
+        },
+        "customerIssues": {
+          "status": "not_generated"
+        }
+      },
+      "exposedVarDrift": [],
+      "helperOverrides": {},
+      "notAutomatable": []
     },
     "toggleswitchv2": {
       "configHash": "2808f427",
