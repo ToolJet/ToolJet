@@ -15,31 +15,42 @@ const hasParentColumn = (column, columnKeys) => {
   return parts.slice(1).some((_, index) => columnKeys.has(parts.slice(0, index + 1).join('.')));
 };
 
+// A saved list that matches none of the table's columns (an empty list, or keys of columns since deleted or
+// renamed) is treated as "every column", so the form never opens with nothing to fill in.
 export const getAddNewRowColumns = (columns, selectedKeys) => {
-  const isSelected = Array.isArray(selectedKeys) ? (column) => selectedKeys.includes(getColumnKey(column)) : () => true;
   const columnKeys = new Set((columns ?? []).filter(Boolean).map(getColumnKey));
-
-  return (columns ?? []).filter(
-    (column) =>
-      column &&
-      !NON_ADDABLE_COLUMN_TYPES.includes(column.columnType) &&
-      !hasParentColumn(column, columnKeys) &&
-      isSelected(column)
+  const addable = (columns ?? []).filter(
+    (column) => column && !NON_ADDABLE_COLUMN_TYPES.includes(column.columnType) && !hasParentColumn(column, columnKeys)
   );
+  if (!Array.isArray(selectedKeys)) return addable;
+
+  const selected = addable.filter((column) => selectedKeys.includes(getColumnKey(column)));
+  return selected.length > 0 ? selected : addable;
 };
 
-// The table's own columns (not the Inspector's column settings): only the ones the form includes.
-export const getIncludedTableColumns = (tableColumns, selectedKeys) => {
-  const included = new Set(
-    getAddNewRowColumns(
-      (tableColumns ?? []).map((column) => ({
-        key: column.columnDef?.accessorKey,
-        columnType: column.columnDef?.meta?.columnType,
-      })),
-      selectedKeys
-    ).map(getColumnKey)
-  );
-  return (tableColumns ?? []).filter((column) => included.has(column.columnDef?.accessorKey));
+// The columns every added row carries a key for, as the popup always sent them: all of the table's columns (an
+// unticked one goes out empty), except the selection and expansion columns and nested columns whose parent
+// column holds them. Which of these the form shows is getAddNewRowColumns' job.
+export const getNewRowPayloadColumns = (tableColumns) => {
+  const columns = (tableColumns ?? []).filter((column) => !column.columnDef?.meta?.skipAddNewRow);
+  const columnKeys = new Set(columns.map((column) => column.columnDef?.accessorKey));
+  return columns.filter((column) => !hasParentColumn({ key: column.columnDef?.accessorKey }, columnKeys));
+};
+
+// What a select-like field stores, as the table cell it replaces did: a multiselect holds the chosen option
+// objects, tags hold { label, value } (an array when several are allowed), a single select holds the bare value.
+// `picked` is the bare value, or the array of bare values, that the form control works with.
+export const toNewRowSelectValue = ({ columnType, allowMultiple = false, options = [] }, picked) => {
+  const optionOf = (value) => options.find((option) => option.value === value);
+  if (columnType === 'newMultiSelect') {
+    return (picked ?? []).map((value) => optionOf(value) ?? { label: value, value });
+  }
+  if (columnType === 'tagsV2') {
+    const tagOf = (value) => ({ label: String(optionOf(value)?.label ?? value), value: String(value) });
+    if (allowMultiple) return (picked ?? []).map(tagOf);
+    return picked === undefined || picked === null || picked === '' ? [] : tagOf(picked);
+  }
+  return picked;
 };
 
 // Empty date input hint, taken from the column's own format: "DD/MM/YYYY" shows as "dd/mm/yyyy".

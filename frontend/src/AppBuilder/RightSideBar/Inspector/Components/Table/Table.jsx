@@ -26,6 +26,7 @@ import { useColumnManager, useActionButtonManager, usePopoverState } from './hoo
 import { AddNewRowConfig } from './AddNewRowConfig/AddNewRowConfig';
 import { resolveAddNewRowIn } from '@/AppBuilder/Widgets/NewTable/_utils/addNewRowConfig';
 import useStore from '@/AppBuilder/_stores/store';
+import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 
 // Helper function to get display text for column type
@@ -375,6 +376,10 @@ export const Table = (props) => {
     [component.component.definition.properties.showFilterButton?.value]
   );
 
+  // The columns the table really has, as the Add new row popup always listed them: this includes dynamic columns,
+  // which are not in the saved `columns` property. Before the table has rendered, fall back to the saved ones.
+  const liveColumns = useTableStore((state) => state.getColumnProperties(component.id), shallow);
+  const addNewRowColumnOptions = liveColumns.length > 0 ? liveColumns : columns;
   const addNewRowProperties = component.component.definition.properties;
   const showAddNewRowButton = resolveReferences(addNewRowProperties.showAddNewRowButton?.value ?? '{{true}}');
   const addNewRowIn = resolveAddNewRowIn(resolveReferences(addNewRowProperties.addNewRowIn?.value));
@@ -775,7 +780,7 @@ export const Table = (props) => {
               <AddNewRowConfig
                 addNewRowIn={addNewRowIn}
                 allowAddingMultipleRows={allowAddingMultipleRows}
-                columns={columns}
+                columns={addNewRowColumnOptions}
                 selectedColumns={addNewRowColumns}
                 darkMode={darkMode}
                 onChange={handleAddNewRowConfigChange}
@@ -850,6 +855,7 @@ export const Table = (props) => {
       layoutPropertyChanged,
       additionalActions,
       showAddNewRowButton,
+      addNewRowColumnOptions,
       addNewRowIn,
       allowAddingMultipleRows,
       addNewRowColumns,

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { isEqual } from 'lodash';
 import { ChevronDown, ChevronUp, CircleX, Link, Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Checkbox, Input, Popover, PopoverContent, PopoverTrigger, Switch, Textarea } from '@/components/ui/Rocket';
@@ -250,7 +251,9 @@ export const SelectControl = ({
   errorId,
 }) => {
   const [open, setOpen] = useState(false);
-  const current = isBlank(value) ? defaultValue : value;
+  // a single tags column holds { label, value } (or [] when cleared), a select holds the bare value
+  const chosen = Array.isArray(value) ? value[0] : value;
+  const current = isBlank(chosen) ? defaultValue : rawValue(chosen);
   const selected = options.find((option) => option.value === current);
 
   return (
@@ -401,8 +404,19 @@ const prettyJson = (value) => {
   }
 };
 
-// JSON column: typed as text, stored as a compact JSON string like the table cell does. Text that is not valid
-// JSON stays in the draft exactly as typed, so validation can flag it instead of it vanishing.
+// Text typed into a JSON field becomes the object or array it describes. Anything else (unfinished or invalid
+// JSON, a bare number or string) stays as the text typed, so validation can flag it instead of it vanishing.
+const parseJsonText = (text) => {
+  if (text.trim() === '') return '';
+  try {
+    const parsed = JSON.parse(text);
+    return parsed !== null && typeof parsed === 'object' ? parsed : text;
+  } catch {
+    return text;
+  }
+};
+
+// JSON column: typed as text, stored as the parsed object, so the app gets an object rather than a string.
 export const JsonControl = ({ labelId, value, onChange, invalid, errorId }) => {
   const [text, setText] = useState(() => prettyJson(value));
   const lastEmitted = useRef(value);
@@ -411,9 +425,10 @@ export const JsonControl = ({ labelId, value, onChange, invalid, errorId }) => {
     onChange(next);
   };
 
-  // the draft changed from outside (cleared, reset): show it
+  // the draft changed from outside (cleared, reset): show it. The store hands back a copy of what was emitted,
+  // so compare by content, or typing would be reformatted under the cursor.
   useEffect(() => {
-    if (value !== lastEmitted.current) {
+    if (!isEqual(value, lastEmitted.current)) {
       lastEmitted.current = value;
       setText(prettyJson(value));
     }
@@ -429,16 +444,11 @@ export const JsonControl = ({ labelId, value, onChange, invalid, errorId }) => {
       spellCheck={false}
       onChange={(event) => {
         setText(event.target.value);
-        emit(event.target.value);
+        emit(parseJsonText(event.target.value));
       }}
       onBlur={() => {
-        try {
-          const parsed = JSON.parse(text);
-          setText(JSON.stringify(parsed, null, 2));
-          emit(JSON.stringify(parsed));
-        } catch {
-          // not valid JSON yet: keep what was typed
-        }
+        const parsed = parseJsonText(text);
+        if (typeof parsed === 'object') setText(JSON.stringify(parsed, null, 2));
       }}
       className={`tw-min-h-14 ${TEXT_SIZE_CLASS} ${FONT_INHERIT_CLASS}`}
     />

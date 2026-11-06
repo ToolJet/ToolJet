@@ -2,13 +2,15 @@ import React, { useEffect, useMemo, useCallback, useId, useRef, useState } from 
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
 import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
+import { cloneDeep, get, set } from 'lodash';
 import generateColumnsData from '../../../_utils/generateColumnsData';
 import {
   getAddNewRowColumns,
   getColumnSelectOptions,
-  getIncludedTableColumns,
+  getNewRowPayloadColumns,
   hasColumnValidation,
   resolveAddNewRowIn,
+  toNewRowSelectValue,
 } from '../../../_utils/addNewRowConfig';
 import useStore from '@/AppBuilder/_stores/store';
 import { cn } from '@/lib/utils';
@@ -57,10 +59,8 @@ export function AddNewRow({
   const addNewRowColumns = useTableStore((state) => state.getTableProperties(id)?.addNewRowColumns, shallow);
   const placement = resolveAddNewRowIn(useTableStore((state) => state.getTableProperties(id)?.addNewRowIn, shallow));
   const multiRow = !!useTableStore((state) => state.getTableProperties(id)?.allowAddingMultipleRows, shallow);
-  const allColumns = useMemo(
-    () => getIncludedTableColumns(allTableColumns, addNewRowColumns),
-    [allTableColumns, addNewRowColumns]
-  );
+  // every row carries a key for each of the table's columns, whether or not the form shows it
+  const allColumns = useMemo(() => getNewRowPayloadColumns(allTableColumns), [allTableColumns]);
   const baseId = useId();
   // the date calendar renders inside the dialog (see DatePickerRenderer's portalId), here
   const datePortalId = `${baseId}-date-portal`;
@@ -68,8 +68,9 @@ export function AddNewRow({
   // trigger, and this one has none, so the dialog puts it back here when it closes.
   const openerRef = useRef(null);
   if (openerRef.current === null && typeof document !== 'undefined') openerRef.current = document.activeElement;
-  // errors stay hidden until Add row is clicked once; after that they follow the edits
-  const [submitAttempted, setSubmitAttempted] = useState(false);
+  // A row's errors stay hidden until Add row has been clicked while the row was in the form; after that they follow
+  // the edits. A row added later starts clean. Keyed by row index, so removing a row shifts the ones after it.
+  const [attemptedRows, setAttemptedRows] = useState(() => new Set());
   // saving: the event is with the app. closing: fading out. busyRef is set by the first Add row or Cancel click,
   // synchronously, so a second click, Enter or Escape in the same instant cannot start a second send or cancel.
   const [activeRow, setActiveRow] = useState(0);
@@ -120,8 +121,10 @@ export function AddNewRow({
 
   const handleCellValueChange = useCallback(
     (index, name, value, row) => {
-      const rowDetails = addNewRowDetails.get(index) ?? row;
-      updateAddNewRowDetails(id, index, { ...rowDetails, [name]: value });
+      // a nested column ("metadata.team") lives at that path inside the row, not under a key with a dot in it
+      const rowDetails = cloneDeep(addNewRowDetails.get(index) ?? row);
+      set(rowDetails, name, value);
+      updateAddNewRowDetails(id, index, rowDetails);
     },
     [addNewRowDetails, id, updateAddNewRowDetails]
   );
@@ -187,7 +190,7 @@ export function AddNewRow({
   const validateCell = (cell, rowIndex) => {
     const { columnDef } = cell.column;
     const { validateWidget, validateDates } = useStore.getState();
-    return validateNewRowField(columnDef.meta, addNewRowDetails.get(rowIndex)?.[columnDef.accessorKey], {
+    return validateNewRowField(columnDef.meta, get(addNewRowDetails.get(rowIndex), columnDef.accessorKey), {
       validateWidget,
       validateDates,
       moduleId,
@@ -198,7 +201,9 @@ export function AddNewRow({
 
   // rows that failed the last Add rows click, and that still fail after the edits since
   const invalidRows = new Set(
-    submitAttempted ? tableRows.filter((tableRow) => firstInvalidCell(tableRow)).map((tableRow) => tableRow.index) : []
+    tableRows
+      .filter((tableRow) => attemptedRows.has(tableRow.index) && firstInvalidCell(tableRow))
+      .map((tableRow) => tableRow.index)
   );
 
   const fields = (row?.getVisibleCells() ?? []).map((cell, index) => {
@@ -207,10 +212,11 @@ export function AddNewRow({
     const columnType = columnDef.meta?.columnType;
     const label = labelOf(cell);
     const labelId = `${baseId}-label-${index}`;
-    const value = addNewRowDetails.get(row.index)?.[key];
+    const value = get(addNewRowDetails.get(row.index), key);
     const onChange = (newValue) => handleCellValueChange(row.index, key, newValue, row.original);
     const validation = validateCell(cell, row.index);
-    const error = submitAttempted && !validation.isValid ? (validation.validationError ?? 'Invalid value') : null;
+    const error =
+      attemptedRows.has(row.index) && !validation.isValid ? (validation.validationError ?? 'Invalid value') : null;
     const errorId = `${baseId}-error-${index}`;
     const invalid = !!error;
     const columnConfig = columnDef.meta ?? {};
@@ -218,6 +224,14 @@ export function AddNewRow({
       useStore.getState().getResolvedValue(resolvable, { cellValue: value, rowData: row.original }, moduleId);
     const kind = getFieldKind(columnType, { allowMultipleTags: !!resolve(columnConfig.allowMultipleSelection) });
     const options = kind === 'select' || kind === 'chips' ? getColumnSelectOptions(columnConfig, resolve) : [];
+    // what the table's own select cells stored: option objects, {label, value} for tags, the bare value for a select
+    const onPick = (picked) =>
+      onChange(
+        toNewRowSelectValue(
+          { columnType, allowMultiple: !!resolve(columnConfig.allowMultipleSelection), options },
+          picked
+        )
+      );
     const defaultOptions =
       columnConfig.useDynamicOptions && resolve(columnConfig.useDynamicOptions)
         ? []
@@ -266,7 +280,7 @@ export function AddNewRow({
           value={value}
           defaultValue={defaultOptions.slice(-1)[0]?.value}
           placeholder={columnConfig.placeholder}
-          onChange={onChange}
+          onChange={onPick}
           darkMode={darkMode}
           invalid={invalid}
           errorId={errorId}
@@ -280,7 +294,7 @@ export function AddNewRow({
           value={value}
           defaultValues={defaultOptions.map((option) => option.value)}
           placeholder={columnConfig.placeholder}
-          onChange={onChange}
+          onChange={onPick}
           darkMode={darkMode}
           invalid={invalid}
           errorId={errorId}
@@ -330,7 +344,10 @@ export function AddNewRow({
     if (busyRef.current) return;
     busyRef.current = true;
     fireEvent('onAddNewRowCancelled');
-    closeWithFade(() => clearAddNewRowDetails(id));
+    closeWithFade(() => {
+      clearAddNewRowDetails(id);
+      setAttemptedRows(new Set());
+    });
   };
 
   const handleSubmit = async () => {
@@ -338,7 +355,7 @@ export function AddNewRow({
     // every row is checked before anything is sent: all rows are added, or none
     const invalidRow = tableRows.find((tableRow) => firstInvalidCell(tableRow));
     if (invalidRow) {
-      setSubmitAttempted(true);
+      setAttemptedRows(new Set(tableRows.map((tableRow) => tableRow.index)));
       setActiveRow(invalidRow.index);
       setFocusRequest({ dataCy: dataCyOf(firstInvalidCell(invalidRow), invalidRow.index) });
       return;
@@ -362,6 +379,10 @@ export function AddNewRow({
 
   const removeRow = () => {
     removeAddNewRowDetail(id, activeIndex);
+    setAttemptedRows(
+      (attempted) =>
+        new Set([...attempted].filter((rowIndex) => rowIndex !== activeIndex).map((i) => (i > activeIndex ? i - 1 : i)))
+    );
     setActiveRow(Math.min(activeIndex, addNewRowDetailsLength - 2));
   };
 
