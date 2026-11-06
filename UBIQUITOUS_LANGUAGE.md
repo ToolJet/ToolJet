@@ -38,7 +38,7 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 
 | Term | Definition | Also appears as |
 |------|-----------|-----------------|
-| **App** | A ToolJet application; types: `FRONT_END` (visual app), `WORKFLOW` (automation), `MODULE` (reusable building block) | — |
+| **App** | A ToolJet application; types: `FRONT_END` (visual app), `WORKFLOW` (automation), `MODULE` (reusable building block), `QUERY_LIBRARY` (reusable queries) | — |
 | **App-Builder** | The visual IDE/editor where apps are constructed | Editor (frontend code term; ambiguous with the Builder role) |
 | **Page** | A view/screen within an app; one page is designated the Home Page | — |
 | **Page Handle** | The unique URL slug for a page within an app | — |
@@ -51,6 +51,13 @@ The "Also appears as" column maps only names that genuinely occur in code, docs,
 | **Toolbar** | The top bar of the App-Builder with version management, undo/redo, preview, and release | — |
 | **Module** | A reusable app-level building block shared across apps (EE feature; app type `MODULE`) | "module" also means a NestJS backend module — always qualify |
 | **Module Pin** | A ModuleViewer component pinning a specific module version via `moduleReferenceId` (stable UUID per version row, survives git/zip round-trips); publishing blocks on draft/orphan/unpinned modules | — |
+| **Query Library** | Workspace-owned reusable query identities (`LibraryQuery`, `library_queries`), folders, independent named drafts and immutable saved versions, edited in the dashboard Query library tab; no backing app or app version | — |
+| **Library query draft** | An independent named editable snapshot (`LibraryQueryDraft`, `library_query_drafts`), edited and run in Development. Saving inserts an immutable saved snapshot with the same UUID and soft-deletes the draft. | — |
+| **Version lifecycle adapter** | `useAppVersionLifecycle` or `useLibraryVersionLifecycle`, which supplies normalized rows, selection, capabilities and async resource actions to `VersionLifecycleContext` and the shared lifecycle dialogs. Library adapters disable Git. | — |
+| **Library Query** | A query of kind `library` in any app that runs a query from the Query Library, pinned to an explicit live draft or saved UUID (`options.libraryQueryId`, `options.libraryQueryVersionId`, inputs in `options.inputs`); saving preserves the UUID | — |
+| **Library query version** | An immutable named snapshot (content, name and description) of one library query (`library_query_versions`) that starts in Development and is promoted through environments; numbers are never reused, deleting one is a soft delete and is blocked while it is Released or an app or module pins it | — |
+| **Released version (library query)** | The one library query version marked Released (`library_query_states.released_version_id`); an app can release only when each direct pin is that version. Distinct from an app's released version | — |
+| **Draft pin** | A Library Query whose `options.libraryQueryVersionId` is the exact UUID of a live `LibraryQueryDraft`, for Development testing; the literal `'draft'` sentinel is invalid; it blocks releasing or promoting the app or module until it is pinned to a saved (and for release, Released) version | — |
 | **Template** | A pre-built app sample that users can clone as a starting point (60+ across 10 categories) | — |
 | **Conditional Styling** | Dynamic styles applied to components based on runtime conditions | — |
 | **Custom CSS** | User-defined free-form CSS applied at component or app level | Custom Styling (related but different — see Flagged Ambiguities) |

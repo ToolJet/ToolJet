@@ -1,3 +1,4 @@
+import { FEATURES as QUERY_LIBRARY_FEATURES } from '@modules/query-library/features';
 import { FEATURES as USER_FEATURES } from '@modules/users/constants/features';
 import { FEATURES as ROOT_FEATURES } from '../constants/features';
 import { FEATURES as GROUP_PERMISSIONS_FEATURES_CE } from '@modules/group-permissions/constants/features';
@@ -80,6 +81,7 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...PROFILE_FEATURES,
   ...FILE_FEATURES,
   ...DATA_QUERY_FEATURES,
+  ...QUERY_LIBRARY_FEATURES,
   ...LOGIN_CONFIGS,
   ...CONFIGS_FEATURES,
   ...ONBOARDING_FEATURES,

@@ -7,6 +7,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AppsRoute, SwitchWorkspaceRoute, MarketplaceRoute, SuperAdminRoute } from '@/Routes';
 import { DesktopOnlyPrivateRoute, DesktopOnlyAdminRoute } from '@/Routes/ComposedGuards';
 import { HomePage } from '@/HomePage';
+import { isQueryLibraryEditionSupported } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
 import './lazyPageStyles';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
@@ -439,6 +440,24 @@ class AppComponent extends React.Component {
                     </DesktopOnlyRoute>
                   }
                 />
+                {isQueryLibraryEditionSupported() && (
+                  <Route
+                    exact
+                    path="/:workspaceId/query-library"
+                    element={
+                      <DesktopOnlyRoute darkMode={darkMode}>
+                        <PrivateRoute darkMode={darkMode}>
+                          <HomePage
+                            key="query-library"
+                            appType="query_library"
+                            darkMode={darkMode}
+                            switchDarkMode={this.switchDarkMode}
+                          />
+                        </PrivateRoute>
+                      </DesktopOnlyRoute>
+                    }
+                  />
+                )}
 
                 {getDataSourcesRoutes({ ...mergedProps, darkMode })}
                 {/* DUPLICATE VIEWER ROUTES REMOVED - handled by ViewerApp.jsx */}

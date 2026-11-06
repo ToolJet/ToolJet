@@ -12,6 +12,9 @@ const ParameterList = ({
   handleParameterRemove,
   darkMode,
   containerRef,
+  label = 'Parameters',
+  idPrefix = '',
+  noun,
 }) => {
   const [showMore, setShowMore] = useState(false);
   const [selectedParameter, setSelectedParameter] = useState();
@@ -38,7 +41,7 @@ const ParameterList = ({
   }, [JSON.stringify(parameters), containerWidth]);
 
   const handleClickOutside = (event) => {
-    if (showMore && event.target.closest('#parameter-more-popover') === null) {
+    if (showMore && event.target.closest(`#${idPrefix}parameter-more-popover`) === null) {
       setShowMore(false);
     }
   };
@@ -61,7 +64,7 @@ const ParameterList = ({
         style={{ marginRight: '16px', marginBottom: '0px', width: '100px' }}
         data-cy="query-parameter-label"
       >
-        Parameters
+        {label}
       </p>
       {formattedParameters
         .filter((param) => param.isVisible)
@@ -69,6 +72,8 @@ const ParameterList = ({
           return (
             <ParameterDetails
               isEdit
+              idPrefix={idPrefix}
+              noun={noun}
               key={parameter.name}
               onSubmit={(param) => handleParameterChange(parameter.index, param)}
               onRemove={() => handleParameterRemove(parameter.index)}
@@ -96,7 +101,7 @@ const ParameterList = ({
         show={showMore}
         overlay={
           <Popover
-            id="parameter-more-popover"
+            id={`${idPrefix}parameter-more-popover`}
             className={`query-manager-sort-filter-popup  ${darkMode && 'popover-dark-themed theme-dark dark-theme'}`}
             style={{ minWidth: '270px', maxWidth: 'fit-content' }}
           >
@@ -104,6 +109,7 @@ const ParameterList = ({
               <ParameterForm
                 darkMode={darkMode}
                 isEdit={true}
+                noun={noun}
                 name={selectedParameter.name}
                 defaultValue={selectedParameter.defaultValue}
                 onSubmit={(param) => {
@@ -129,6 +135,7 @@ const ParameterList = ({
                       <span key={parameter.name} data-list-item-id={parameter.name}>
                         <PillButton
                           name={parameter.name}
+                          idPrefix={idPrefix}
                           onRemove={() => handleParameterRemove(parameter.index)}
                           marginBottom
                           onClick={() => setSelectedParameter(parameter)}
@@ -151,7 +158,13 @@ const ParameterList = ({
           )}
         </span>
       </OverlayTrigger>
-      <ParameterDetails onSubmit={handleAddParameter} darkMode={darkMode} otherParams={formattedParameters} />
+      <ParameterDetails
+        onSubmit={handleAddParameter}
+        darkMode={darkMode}
+        otherParams={formattedParameters}
+        idPrefix={idPrefix}
+        noun={noun}
+      />
     </div>
   );
 };

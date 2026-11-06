@@ -1,7 +1,13 @@
 import { Response } from 'express';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
-import { CreateDataQueryDto, IUpdatingReferencesOptions, UpdateDataQueryDto } from '../dto';
+import {
+  AddToLibraryDto,
+  CreateDataQueryDto,
+  IUpdatingReferencesOptions,
+  RunLibraryQueryDto,
+  UpdateDataQueryDto,
+} from '../dto';
 import { DataQuery } from '@entities/data_query.entity';
 import { App } from '@entities/app.entity';
 
@@ -37,6 +43,18 @@ export interface IDataQueriesService {
 
   delete(dataQueryId: string, versionId: string): Promise<void>;
 
+  addToLibrary(
+    user: User,
+    app: App,
+    dataQueryId: string,
+    versionId: string,
+    dto: AddToLibraryDto
+  ): Promise<{
+    query: { id: string; name: string; kind: 'library'; data_source_id: string; options: Record<string, unknown> };
+    libraryQueryId: string;
+    libraryVersionId: string;
+  }>;
+
   bulkUpdateQueryOptions(user: User, dataQueriesOptions: IUpdatingReferencesOptions[]): Promise<object[]>;
 
   runQueryOnBuilder(
@@ -55,6 +73,17 @@ export interface IDataQueriesService {
     dataQueryId: string,
     updateDataQueryDto: UpdateDataQueryDto,
     response: Response
+  ): Promise<object>;
+
+  getLibraryDefinition(consumerQueryId: string, app: App, user?: User): Promise<object>;
+
+  runLibraryQuery(
+    user: User,
+    consumerQueryId: string,
+    dto: RunLibraryQueryDto,
+    response: Response,
+    app: App,
+    environmentId?: string
   ): Promise<object>;
 
   preview(

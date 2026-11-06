@@ -50,3 +50,5 @@ Owns Data Source connections: creating/configuring connectors (Postgres, REST AP
 - `organization-constants` — workspace constants/secrets resolved into options at runtime.
 - `group-permissions` / `ability` — granular usable/configurable data-source permissions feeding `allGlobalDS` and CASL.
 - `plugins` — plugin manifests/operations; `PluginsRepository` + marketplace plugin services.
+
+- App source lists must retain workspace-authorized static sources even without `data_source_versions` or environment options, on both branch and no-branch paths. Ordinary connections still require selected-environment options; static-source inclusion must not bypass workspace/permission filters.

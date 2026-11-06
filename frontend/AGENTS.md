@@ -183,3 +183,21 @@ Widget-level CSS class (shipped 2026-06):
 - Legacy non-revamped widgets (~24, mostly deprecated V1 duplicates) render the field as a top-level control rather than grouped — accepted, no wiring on the sunsetting path
 - v1 is static + `{{}}`-bound class only; imperative runtime control (CSA `setCustomClass`) deferred to v2
 - Gated behind the `customStyling` license flag (same flag as app/workspace Custom CSS, which it depends on), read via `useStore((s) => s.license.featureAccess?.customStyling)`. Two gates: the Inspector hides the control, and `RenderWidget.jsx` skips appending the class. **The saved value is never erased** — re-enabling the license restores the classes, no migration or cleanup
+
+## Shared version lifecycle
+
+Modules is the lifecycle reference. `Header/VersionManager/VersionLifecycleContext` supplies normalized `DRAFT`/`PUBLISHED` rows, selected version/environment, Released pointer, capabilities, notices and async actions. `useAppVersionLifecycle` preserves app/module permissions and Git behavior; `QueryLibrary/useLibraryVersionLifecycle` adapts workspace query APIs and disables Git. Adapters do not render dialogs or invent app identities.
+
+Query Library uses the same version picker and Save/Create draft/Edit details/Promote/Release/dependency dialogs as Modules. Multiple named drafts are independent and editable only in Development. Saving freezes content and metadata while preserving the draft UUID; saved metadata is never editable. Names use the existing shared form validation (required, at most 25 characters), descriptions at most 500 characters. Explicit IDs determine draft/saved status; labels never do. Dismissing the dependency warning preserves the current selection.
+
+Browser verification: `cypress-tests/cypress/e2e/happyPath/platform/eeTestcases/queryLibrary/versionLifecycle.cy.js`; shared renderer regressions: `VersionManager/__tests__/integration/lifecycleParity.spec.jsx` and `moduleLifecycle.spec.jsx`. Consumer credentials/authorization remain unchanged; Query Library has no Git integration.
+
+Query Library consumer creation keeps query/snapshot selection local in the existing Library editor until Create query sends both UUIDs. Draft autosave overlays cover only unsent, in-flight or failed revisions; successful revisions yield to fresh server data. Session exit clears retry/display state but retains transport tails by workspace/query/draft until settled, so a new session cannot overtake old writes. Creating a draft selects its UUID together with the configured Development environment only while the request still owns selection.
+
+- Library promotion follows the selected saved UUID into its returned environment atomically. Delayed promotion must not steal a different query, session, version or environment selection.
+
+## Query Library license and edition composition
+
+Public QueryLibrary entry components are edition-selected facades, and the public state slice keeps an inert shape for ordinary panels. EE supplies editor components, lifecycle adapter, feature state, browser execution and draft transport through existing module/slice registries. Pure input, snapshot-selection and environment helpers remain shared. Cloud selects the EE implementation.
+
+Discovery and local execution require explicit server-computed queryLibraryEnabled === true; absence/loading/failure denies access. Routes register by edition, then the selected page loads the workspace license before any management request. Workspace access loads clear prior flags and ignore late responses from a different workspace/request. Released/public consumers request access for the consumer app workspace. Runtime uses selected nested queryPanel/dataQuery actions, preserving autosave queues, cancellation and session checks.

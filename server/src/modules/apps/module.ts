@@ -1,3 +1,4 @@
+import { QueryLibraryModule } from '@modules/query-library/module';
 import { DynamicModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { App } from '@entities/app.entity';
@@ -63,6 +64,7 @@ export class AppsModule extends SubModule {
     return this.cacheModule(cacheKey, {
       module: AppsModule,
       imports: [
+        await QueryLibraryModule.register(configs),
         TypeOrmModule.forFeature([App, Page, EventHandler, Organization, Component]),
         await FolderAppsModule.register(configs),
         await ThemesModule.register(configs),

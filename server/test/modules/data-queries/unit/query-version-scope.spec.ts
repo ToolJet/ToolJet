@@ -15,10 +15,11 @@ import { NotFoundException } from '@nestjs/common';
 import { DataQuery } from '@entities/data_query.entity';
 
 const findOne = jest.fn();
+const query = jest.fn();
 
 jest.mock('../../../../src/helpers/database.helper', () => ({
   dbTransactionWrap: jest.fn().mockImplementation(async (cb: (manager: any) => Promise<any>) => {
-    return cb({ findOne, query: jest.fn() });
+    return cb({ findOne, query });
   }),
 }));
 
@@ -29,6 +30,10 @@ describe('DataQueriesService version scoping', () => {
     updateOne: jest.fn(),
     deleteOne: jest.fn(),
     deleteDataQueryEvents: jest.fn(),
+    // Not a library query: the library guards skip without touching the database.
+    getOneById: jest.fn().mockResolvedValue(null),
+    findLibraryConsumers: jest.fn().mockResolvedValue([]),
+    manager: { query },
   };
   const dataQueryUtilService = { validateQueryActionsAgainstEnvironment: jest.fn().mockResolvedValue(undefined) };
   const appValidationService = { check: jest.fn().mockResolvedValue({ errors: [], warnings: [] }) };
@@ -39,10 +44,20 @@ describe('DataQueriesService version scoping', () => {
     dataQueryUtilService as any,
     null as any,
     appValidationService as any,
+    null as any,
+    null as any,
+    null as any,
     null as any
   );
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // clearAllMocks keeps queued once-values; drop them so tests don't leak into each other.
+    findOne.mockReset();
+    query.mockReset();
+    dataQueryRepository.getOneById.mockResolvedValue(null);
+    dataQueryRepository.findLibraryConsumers.mockResolvedValue([]);
+  });
 
   describe('delete', () => {
     it("rejects a query id that is not in the URL's version with 404, writing nothing", async () => {

@@ -1,6 +1,7 @@
 import { LICENSE_TYPE } from '../constants';
 
 export interface Terms {
+  queryLibrary?: { enabled: boolean };
   expiry: string; // YYYY-MM-DD
   apps?: number | string;
   workspaces?: number | string;

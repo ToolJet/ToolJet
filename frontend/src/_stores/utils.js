@@ -354,7 +354,7 @@ function toRemoveExposedvariablesFromComponentDiff(object) {
 }
 
 export function createReferencesLookup(refState, forQueryParams = false, initalLoad = false) {
-  if (forQueryParams && _.isEmpty(refState['parameters'])) {
+  if (forQueryParams && _.isEmpty(refState['parameters']) && _.isEmpty(refState['input'])) {
     return { suggestionList: [] };
   }
 

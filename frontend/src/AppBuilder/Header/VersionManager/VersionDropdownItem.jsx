@@ -1,4 +1,6 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { useVersionLifecycle } from './VersionLifecycleContext';
+import { withAppVersionLifecycle } from './AppVersionLifecycleProvider';
+import React, { useRef, useState, useEffect } from 'react';
 import cx from 'classnames';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -6,22 +8,15 @@ import {
   PromoteVersionButton,
   ReleaseVersionButton,
 } from '@/modules/common/components/BasePromoteReleaseButton/components';
-import useStore from '@/AppBuilder/_stores/store';
-import { useVersionManagerStore } from '@/_stores/versionManagerStore';
-import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
-import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
-import { normalizePin } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
 import { IconArrowBarToDown } from '@tabler/icons-react';
-import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const VersionDropdownItem = ({
   version,
   isSelected,
   isViewingCurrentEnvironment = true, // Default to true for backward compatibility
   onSelect,
-  onRelease,
   onDelete,
   onEdit,
   onCreateVersion,
@@ -35,15 +30,14 @@ const VersionDropdownItem = ({
   onPull,
   isPulling = false,
 }) => {
-  const releasedVersionId = useStore((state) => state.releasedVersionId);
-  const versions = useVersionManagerStore((state) => state.versions);
-  const developmentVersions = useStore((state) => state.developmentVersions);
-  const featureAccess = useStore((state) => state.license.featureAccess);
-  const isEditorReadOnly = useStore((state) => state.isEditorReadOnly);
-  const { appType } = useModuleContext();
-  const { isGitSyncEnabled, defaultBranch } = useGitSyncConfig();
-  const customComponentLibraries = useStore((state) => state.globalSettings?.customComponentLibraries);
-
+  const { releasedVersionId, versions, resourceType, capabilities = {} } = useVersionLifecycle();
+  const developmentVersions = capabilities.developmentVersionIds
+    ? versions.filter((v) => capabilities.developmentVersionIds.includes(v.id))
+    : versions;
+  const featureAccess = { multiEnvironment: capabilities.multiEnvironment };
+  const isEditorReadOnly = capabilities.readOnly;
+  const appType = resourceType;
+  const { enabled: isGitSyncEnabled = false, defaultBranch, branches: workspaceBranches = [] } = capabilities.git || {};
   const isDraft = version.status === 'DRAFT';
   const isPublished = version.status === 'PUBLISHED';
   // Unsynced apps (never pushed to git) behave like a non-git workspace — show the real
@@ -61,7 +55,7 @@ const VersionDropdownItem = ({
   const effectiveDescription = isGitSyncDraft ? 'Latest commit to main will appear here' : version.description;
   // A version is released when it matches the releasedVersionId
   const isReleased = version.id === releasedVersionId;
-  const isEditDisabled = appType === 'module' && !isDraft;
+  const isEditDisabled = ['module', 'query-library'].includes(appType) && !isDraft;
 
   // Get parent version name - search in both current environment versions and development versions
   // This ensures we can find the parent even if it's in a different environment
@@ -76,7 +70,6 @@ const VersionDropdownItem = ({
   // UUID, not a human name — the real branch name lives on WorkspaceBranch. Surface
   // that as a tag instead of the generic "created from <uuid>" line.
   const parentIsBranchVersion = parentVersion?.versionType === 'branch' || parentVersion?.version_type === 'branch';
-  const workspaceBranches = useWorkspaceBranchesStore((state) => state.branches);
   const sourceBranchId = parentVersion?.branchId || parentVersion?.branch_id;
   const sourceBranchName = parentIsBranchVersion
     ? (workspaceBranches.find((b) => b.id === sourceBranchId)?.name ?? 'feature-branch')
@@ -138,16 +131,7 @@ const VersionDropdownItem = ({
   const canCreateVersion = isDraft; // Show create version button for drafts
   const canOpenMoreMenu = !isEditorReadOnly; // Build-with: no-op edit/delete actions, hide entirely
 
-  const devPinnedLibrariesCount = useMemo(() => {
-    const pins = customComponentLibraries ?? {};
-    // normalizePin handles legacy pins stored as { revisionId: 'dev:...' } — without it,
-    // an imported/older object-shaped dev pin slips past this check and can be saved
-    // into an app version, defeating the dev-build guard below.
-    return Object.values(pins).filter((value) => {
-      const pin = normalizePin(value);
-      return typeof pin === 'string' && pin.startsWith('dev:');
-    }).length;
-  }, [customComponentLibraries]);
+  const devPinnedLibrariesCount = capabilities.devPinnedLibrariesCount || 0;
 
   const isSaveVersionBlockedByDevPin = canCreateVersion && devPinnedLibrariesCount > 0;
 
@@ -538,4 +522,4 @@ const VersionDropdownItem = ({
   return versionItem;
 };
 
-export default VersionDropdownItem;
+export default withAppVersionLifecycle(VersionDropdownItem);

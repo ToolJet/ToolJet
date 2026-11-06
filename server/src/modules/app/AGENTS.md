@@ -27,6 +27,7 @@ The base module every other backend module builds on. Owns: the `SubModule` base
 | `validators/feature-guard.validator.ts` | `GuardValidator` — boot-time scan asserting every route has an `AbilityGuard` |
 | `interceptors/response.interceptor.ts` | Emits audit-log events after responses, driven by `MODULE_INFO` feature config |
 | `types.ts` | `FeatureConfig`, `ResourceDetails`, `UserAllPermissions` |
+| `filters/all-exceptions-filter.ts` | Global error → HTTP mapping. Database errors are 422, except a Postgres deadlock (`40P01`), which is a retryable 409 |
 | `ability/` | The app module's own `FeatureAbilityFactory`/`FeatureAbilityGuard` (health/root endpoints) — smallest real example of the pattern |
 
 ## How other modules use it

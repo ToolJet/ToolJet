@@ -14,6 +14,7 @@ enum PostgresErrorCode {
   CheckViolation = '23514',
   NotNullViolation = '23502',
   ForeignKeyViolation = '23503',
+  DeadlockDetected = '40P01',
 }
 
 @Catch()
@@ -77,8 +78,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
   }
 
   private handleQueryExceptions(exception: any): ErrorResponse {
-    const status = HttpStatus.UNPROCESSABLE_ENTITY;
     const code = (exception as any).code;
+    // Postgres aborted this request to break a lock cycle with a concurrent one; nothing was written, so a retry works.
+    if (code === PostgresErrorCode.DeadlockDetected)
+      return { status: HttpStatus.CONFLICT, message: 'This was changed by someone else at the same time. Try again.' };
+    const status = HttpStatus.UNPROCESSABLE_ENTITY;
     let message: string = (exception as QueryFailedError).message;
 
     switch (code) {

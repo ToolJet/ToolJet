@@ -8,6 +8,7 @@ import { Runjs } from './Runjs';
 import { Runpy } from './Runpy';
 import { Openapi } from './Openapi';
 import { Workflows } from './Workflows';
+import { Library } from './Library';
 import Grpc from './GRPC';
 import Grpcv2 from './GRPCv2';
 import tooljetDbOperations from './TooljetDatabase/operations.json';
@@ -41,6 +42,7 @@ export const allSources = {
   Grpc,
   Grpcv2,
   Workflows,
+  Library,
 };
 
 export const source = (props) => (

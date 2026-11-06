@@ -23,7 +23,7 @@ Owns the AppVersion lifecycle: named development snapshots of an App. Create/clo
 | `workflow-ref.util.ts` | Resolves **workflow query** pins (`resolveWorkflowRef`, `resolveAllWorkflowRefsForVersion`, `reconcileWorkflowQueryPinsFromDefault`, `pinIsDraftSentinel`). Split out of `module-ref.util.ts`; the two halves shared only the sentinels |
 | `ref-sentinels.ts` | `DRAFT_SENTINEL` / `WORKFLOW_CURRENT_BRANCH_SENTINEL`. **Persisted** pin values — they sit in component properties and query options and travel through git, so changing a string orphans every ref holding it. Mirrored in `frontend/src/_helpers/versionLabels.js` |
 | `helpers/version-copy-parent.helper.ts` | Parent-id remapping during clone (composite ids, ghost parents) |
-| `controller.ts` | `/apps/:id/versions` GET/POST/DELETE, `/apps/:id/draft-versions` POST |
+| `controller.ts` | `/apps/:id/versions` GET/POST/DELETE, `/apps/:id/versions/:versionId/library-pins` GET (read-only, `GET_ONE` ability), `/apps/:id/draft-versions` POST |
 | `controller.v2.ts` | v2: get one, PUT update, PUT global/page settings, PUT promote, GET `module/by-correlation/:coRelationId/version` |
 | `controllers/{components,events,pages}.controller.ts` | Version-scoped component/event/page CRUD (delegates to apps-module services) |
 | `guards/`, `ability/` | `validate-app-version.guard`, `valid-module-by-correlation.guard`; CASL abilities for app + workflow versions |
@@ -61,3 +61,5 @@ Owns the AppVersion lifecycle: named development snapshots of an App. Create/clo
 - `git-sync` — branching flags (`isBranchingEnabled`), `version-rename-commit` event, EE git tags/freeze
 - `app-history` (EE) — before/after hooks queue deltas via `AppHistoryUtilService`
 - `licensing` — gates multi-environment, JS libraries, page/query/component permissions
+
+- CE and EE version-copy paths batch-lock all source library-query parents in sorted ID order before copying consumers. They resolve live draft/saved pins with the same manager used for the cloned rows, so a concurrent library delete either sees the committed copy or makes the copy fail.

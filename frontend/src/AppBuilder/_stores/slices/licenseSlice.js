@@ -13,27 +13,30 @@ const initialState = {
 
 export const createLicenseSlice = (set, get) => ({
   ...initialState,
-  updateFeatureAccess: () => {
+  updateFeatureAccess: async () => {
+    const workspaceId = get().appStore.modules.canvas?.app?.organizationId;
+    const requestId = (get().licenseAccessRequestId ?? 0) + 1;
     set((state) => {
+      state.license = {};
       state.isLicenseFetched = false;
+      state.licenseAccessRequestId = requestId;
     });
-    licenseService
-      .getFeatureAccess()
-      .then((data) => {
+    const current = () =>
+      get().licenseAccessRequestId === requestId && get().appStore.modules.canvas?.app?.organizationId === workspaceId;
+    try {
+      const data = await licenseService.getFeatureAccess({ workspaceId });
+      if (current())
         set((state) => {
-          state.license = {
-            featureAccess: data,
-          };
+          state.license = { featureAccess: data };
           state.isLicenseFetched = true;
         });
-      })
-      .catch(() => {
-        // For public/unauthenticated apps the license API may be inaccessible.
-        // Still mark as fetched so loadLibrariesAndRun is not blocked indefinitely.
+    } catch {
+      if (current())
         set((state) => {
+          state.license = {};
           state.isLicenseFetched = true;
         });
-      });
+    }
   },
   isLicenseValid: () => {
     const featureAccess = get().license.featureAccess;

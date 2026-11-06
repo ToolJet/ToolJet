@@ -35,7 +35,16 @@ import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/t
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { IAppsUtilService } from './interfaces/IUtilService';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
-import { APP_TYPES, APPS_PAGE_SIZE } from './constants';
+import { APP_TYPES, APPS_PAGE_SIZE, isModuleLikeAppType } from './constants';
+import {
+  consumerOptionUuidSql,
+  LIBRARY_KIND,
+  LibraryPin,
+  LibraryPinRow,
+  libraryReleaseBlock,
+  libraryPromoteBlock,
+  toLibraryPins,
+} from '@modules/data-queries/library/library-query.util';
 import { Component } from 'src/entities/component.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Layout } from 'src/entities/layout.entity';
@@ -942,7 +951,7 @@ export class AppsUtilService implements IAppsUtilService {
       organizationId: user.organizationId,
     });
     // INNER JOIN enforces branch scope; skip EE NOT EXISTS predicate (~600x subplan cost)
-    const willInnerJoinOnBranch = !!branchId;
+    const willInnerJoinOnBranch = !!branchId && (isModuleLikeAppType(type) || type === APP_TYPES.FRONT_END);
     const qb = this.viewableAppsQueryUsingPermissions(
       user,
       userPermission[resourceType],
@@ -972,7 +981,8 @@ export class AppsUtilService implements IAppsUtilService {
       ORDER BY av_pick.is_stub ASC, av_pick.updated_at DESC
       LIMIT 1
     )`;
-    if (type === APP_TYPES.MODULE) {
+    // Module pickers need their versions.
+    if (isModuleLikeAppType(type)) {
       if (branchId) {
         qb.innerJoinAndSelect('apps.appVersions', 'appVersions', branchPick, { branchId });
       } else {
@@ -1002,7 +1012,7 @@ export class AppsUtilService implements IAppsUtilService {
       .addSelect(['user.firstName', 'user.lastName'])
       .where('apps.organizationId = :organizationId', { organizationId: user.organizationId });
 
-    if (type === APP_TYPES.MODULE) {
+    if (isModuleLikeAppType(type)) {
       // Exclude stub versions: same rationale as the outer `all()` query — stubs
       // carry UUID names that must not be surfaced as selectable module versions.
       viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'versions', 'versions.isStub = false');
@@ -1830,6 +1840,67 @@ export class AppsUtilService implements IAppsUtilService {
       console.error('Failed to check module release state', error?.stack || error);
       throw new BadRequestException('Failed to validate module versions for release');
     }
+  }
+
+  // The gates and the library-pins endpoint read the same rows, so the dialog warns about exactly what the gates block.
+  async getLibraryPinsForAppVersion(
+    versionId: string,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<LibraryPin[]> {
+    // A malformed pin id matches nothing (consumerOptionUuidSql). Another workspace's library queries read as gone.
+    const rows: LibraryPinRow[] = await manager.query(
+      `SELECT dq.name AS "consumerQueryName",
+              lq.name AS "libraryQueryName",
+              lv.name AS "pinnedVersionName",
+              lv.id AS "pinnedVersionId",
+              ld.id AS "draftId", ld.name AS "draftName",
+              rv.name AS "releasedVersionName", rv.id AS "releasedVersionId",
+              pe.name AS "pinnedEnvironmentName",
+              pe.priority AS "pinnedEnvironmentPriority"
+         FROM data_queries dq
+         JOIN data_sources ds ON ds.id = dq.data_source_id AND ds.kind = $3
+         LEFT JOIN library_queries lq ON lq.id = ${consumerOptionUuidSql('libraryQueryId')} AND lq.organization_id = $2
+         LEFT JOIN library_query_versions lv ON lv.id = ${consumerOptionUuidSql('libraryQueryVersionId')}
+                                            AND lv.library_query_id = lq.id AND lv.deleted_at IS NULL
+         LEFT JOIN library_query_drafts ld ON ld.id = ${consumerOptionUuidSql('libraryQueryVersionId')}
+                                          AND ld.library_query_id = lq.id AND ld.deleted_at IS NULL
+         LEFT JOIN app_environments pe ON pe.id = lv.current_environment_id
+         LEFT JOIN library_query_states st ON st.library_query_id = lq.id
+         LEFT JOIN library_query_versions rv ON rv.id = st.released_version_id AND rv.deleted_at IS NULL
+        WHERE dq.app_version_id = $1
+        ORDER BY dq.name`,
+      [versionId, organizationId, LIBRARY_KIND]
+    );
+    return toLibraryPins(rows);
+  }
+
+  async checkLibraryQueriesReleasedInApp(
+    versionId: string,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    // Every pin must be its query's Released version. Modules go through the same gate. A failed read is a server
+    // error, not a block.
+    const block = libraryReleaseBlock(await this.getLibraryPinsForAppVersion(versionId, organizationId, manager));
+    if (block) throw new BadRequestException({ message: block });
+  }
+
+  // Promote gate for apps and modules (direct pins only): every pinned library version must already be in the target
+  // environment. Mirrors VersionUtilService.checkModulesPromotableToEnvironment.
+  async checkLibraryQueriesPromotableToEnvironment(
+    versionId: string,
+    targetEnvironmentName: string,
+    targetPriority: number,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    const block = libraryPromoteBlock(
+      await this.getLibraryPinsForAppVersion(versionId, organizationId, manager),
+      targetEnvironmentName,
+      targetPriority
+    );
+    if (block) throw new BadRequestException({ message: block });
   }
 
   /**

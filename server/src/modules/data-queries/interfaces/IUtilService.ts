@@ -12,6 +12,9 @@ export interface WorkflowExecutionOptions {
 
 export interface DataQueryExecutionOptions {
   workflow?: WorkflowExecutionOptions;
+  library?: {
+    standalone?: { organizationId: string; name: string; id?: never; isPublic?: false };
+  };
 }
 
 export interface IDataQueriesUtilService {

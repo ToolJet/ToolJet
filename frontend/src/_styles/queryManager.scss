@@ -58,7 +58,7 @@ $border-radius: 4px;
             }
           }
 
-          button#runjs-param-add-btn {
+          button[id$='runjs-param-add-btn'] {
             padding: 0;
             height: inherit;
             border: none !important;
@@ -349,9 +349,14 @@ $border-radius: 4px;
         display: flex
       }
 
+      // Never wrap or overflow the name/tabs column under the run controls; clip it instead.
+      flex-wrap: nowrap;
+
       &>div:first-child {
         gap: 10px;
         padding: 0.25rem 1rem;
+        min-width: 0;
+        overflow-x: clip;
       }
 
       .query-header-buttons {

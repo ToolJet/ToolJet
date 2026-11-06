@@ -1,27 +1,45 @@
-import React from 'react';
+import { useVersionLifecycle } from '@/AppBuilder/Header/VersionManager/VersionLifecycleContext';
+import { withAppVersionLifecycle } from '@/AppBuilder/Header/VersionManager/AppVersionLifecycleProvider';
+import React, { useEffect, useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '@/_styles/versions.scss';
-import { shallow } from 'zustand/shallow';
-import useStore from '@/AppBuilder/_stores/store';
 
-export default function ReleaseConfirmation(props) {
-  const { onClose, onConfirm, show } = props;
+function ReleaseConfirmation(props) {
+  const { onClose, onConfirm, show, appId, versionId } = props;
+  const [notices, setNotices] = useState([]);
   const { t } = useTranslation();
   const darkMode = props.darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
-  const { name, releasedVersionId, versionsPromotedToEnvironment, developmentVersions } = useStore(
-    (state) => ({
-      name: state?.selectedVersion?.name,
-      releasedVersionId: state.releasedVersionId,
-      versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
-      developmentVersions: state.developmentVersions,
-    }),
-    shallow
-  );
-  const releasedVersionName =
-    versionsPromotedToEnvironment.find((v) => v.id === releasedVersionId)?.name ||
-    developmentVersions.find((v) => v.id === releasedVersionId)?.name;
+  const {
+    versions,
+    selectedVersionId,
+    releasedVersionId,
+    notices: suppliedNotices = [],
+    actions,
+  } = useVersionLifecycle();
+  const name = versions.find((v) => v.id === (versionId || selectedVersionId))?.name;
+  const releasedVersionName = versions.find((v) => v.id === releasedVersionId)?.name;
+  const loadNotices = React.useRef(actions.loadReleaseNotices);
+  loadNotices.current = actions.loadReleaseNotices;
+  useEffect(() => {
+    setNotices([]);
+    if (!show || !loadNotices.current || !versionId) return;
+    let cancelled = false;
+    loadNotices
+      .current(versionId, appId)
+      .then((result) => !cancelled && setNotices(result))
+      .catch(() => !cancelled && setNotices([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [show, appId, versionId]);
+  const releaseNotices = actions.loadReleaseNotices
+    ? notices
+    : Array.isArray(suppliedNotices)
+      ? suppliedNotices
+      : suppliedNotices.release || [];
+
   return (
     <Modal
       show={show}
@@ -58,6 +76,16 @@ export default function ReleaseConfirmation(props) {
             ? `Are you sure you want to release version ${name}?`
             : `Releasing version ${name} will override ${releasedVersionName}. Are you sure you want to continue?`}
         </div>
+        {releaseNotices.length > 0 && (
+          <ul
+            className="tw-mt-3 tw-mb-0 tw-p-0 tw-list-none tw-font-body-small tw-text-text-placeholder"
+            data-testid="library-release-notices"
+          >
+            {releaseNotices.map((notice) => (
+              <li key={notice}>{notice}</li>
+            ))}
+          </ul>
+        )}
       </Modal.Body>
       <Modal.Footer className="env-modal-footer">
         <ButtonSolid variant="tertiary" onClick={onClose} data-cy="cancel-button">
@@ -70,3 +98,5 @@ export default function ReleaseConfirmation(props) {
     </Modal>
   );
 }
+
+export default withAppVersionLifecycle(ReleaseConfirmation);

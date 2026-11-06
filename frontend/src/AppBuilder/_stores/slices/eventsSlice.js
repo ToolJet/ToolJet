@@ -7,6 +7,7 @@ import urlJoin from 'url-join';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
 import { logoutAction } from '@/AppBuilder/_utils/auth';
+import { runArgNames } from '@/AppBuilder/_utils/libraryQuery';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
@@ -1144,11 +1145,7 @@ export const createEventsSlice = (set, get) => ({
           return;
         }
 
-        if (!_.isEmpty(query?.options?.parameters)) {
-          query.options.parameters?.forEach(
-            (param) => parameters && (processedParams[param.name] = parameters?.[param.name])
-          );
-        }
+        runArgNames(query).forEach((name) => parameters && (processedParams[name] = parameters?.[name]));
 
         if (isPreview) {
           return previewQuery(query, true, processedParams, moduleId, callbackFns);

@@ -198,7 +198,11 @@ export class AbilityUtilService {
   ): Promise<UserAppsPermissions> {
     const appsOwnedByUser = await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.find(AppBase, {
-        where: { userId: user.id, organizationId: user.organizationId, type: appType },
+        where: {
+          userId: user.id,
+          organizationId: user.organizationId,
+          type: appType,
+        },
       });
     }, manager);
 

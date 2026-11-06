@@ -84,6 +84,31 @@ describe('OAuth delegated scope enforcement', () => {
       )
     ).toThrow();
   });
+  test('keeps standalone Query Library management outside delegated scopes', () => {
+    expect(() =>
+      interceptor.intercept(context({ user: { ...user, oauthScopes: ['apps', 'data'] } }, MODULES.QUERY_LIBRARY), next)
+    ).toThrow();
+  });
+  test('viewer denies library conversion and execution POSTs while allowing app-scoped pin reads', () => {
+    const appId = '00000000-0000-4000-8000-000000000001';
+    const request: any = { user: { ...user, oauthAppId: appId }, tj_app: { id: appId, organizationId: 'garden' } };
+    for (const path of [
+      '/api/data-queries/q/versions/v/add-to-library',
+      '/api/data-queries/q/library-definition',
+      '/api/data-queries/q/run-library',
+    ]) {
+      request.method = 'POST';
+      request.originalUrl = path;
+      expect(() => interceptor.intercept(context(request, MODULES.DATA_QUERY), next)).toThrow();
+    }
+    request.method = 'GET';
+    request.originalUrl = `/api/apps/${appId}/versions/v/library-pins`;
+    const ctx = context(request, MODULES.VERSION);
+    Reflect.defineMetadata('tjFeatureId', 'GET_ONE', action);
+    interceptor.intercept(ctx, next);
+    request.tj_app.id = 'another-app';
+    expect(() => interceptor.intercept(ctx, next)).toThrow();
+  });
   test('viewer shares the PAT app pin, boot features and write ceiling', () => {
     const appId = '00000000-0000-4000-8000-000000000001';
     const request: any = {

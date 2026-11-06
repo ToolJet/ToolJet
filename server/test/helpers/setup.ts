@@ -308,11 +308,20 @@ export async function rollbackTestTransaction() {
  * Currently used by: tooljet-db-import-export.service.spec.ts (bulk import rollback test).
  */
 export async function withRealTransactions(fn: () => Promise<void>) {
+  // rollbackSuiteTransaction drops the current test's SAVEPOINT and resets the counter;
+  // restore both so afterEach can still roll back to it.
+  const savepoint = _testSavepoint;
+  const savepointId = _testSavepointId;
   await rollbackSuiteTransaction();
   try {
     await fn();
   } finally {
     await beginSuiteTransaction();
+    _testSavepointId = savepointId;
+    if (savepoint && _suiteQR) {
+      await createTestSavepoint(savepoint);
+      _lastGoodSavepoint = savepoint;
+    }
   }
 }
 
@@ -403,6 +412,8 @@ async function configureApp(app: INestApplication, moduleRef: { get: <T>(token: 
 }
 
 export interface InitTestAppOptions {
+  /** Local browser harness origin; applied before Nest installs its routes. */
+  browserOrigin?: string;
   /** Edition to simulate. Default: 'ce'. Each edition loads different modules — gets its own cache slot. */
   edition?: 'ce' | 'ee' | 'cloud';
   /**
@@ -468,7 +479,9 @@ export async function initTestApp(options?: InitTestAppOptions): Promise<InitTes
   moduleBuilder.overrideProvider(LicenseTermsService).useValue(createResilientLicenseTermsMock(plan));
 
   const moduleRef = await moduleBuilder.compile();
-  const app = moduleRef.createNestApplication();
+  const app = moduleRef.createNestApplication(
+    options?.browserOrigin ? { cors: { origin: options.browserOrigin, credentials: true } } : {}
+  );
 
   await configureApp(app, moduleRef);
   await app.init();

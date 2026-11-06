@@ -27,6 +27,8 @@ const iconNames = Object.keys(lucide.icons || {});
 const DynamicIcon = React.forwardRef(({ name, fallback: Fallback, ...props }, ref) => {
   const iconNode = (lucide.icons || {})[toPascalCase(name)];
   if (!iconNode) return Fallback ? React.createElement(Fallback) : null;
+  // lucide-react >= 0.5xx: `icons` maps to ready-made components, not raw icon nodes.
+  if (!Array.isArray(iconNode)) return React.createElement(iconNode, { ref, ...props, 'data-lucide-name': name });
   // Tag the rendered icon so a test can assert on WHICH icon was requested.
   return React.createElement(lucide.Icon, { ref, ...props, 'data-lucide-name': name, iconNode });
 });

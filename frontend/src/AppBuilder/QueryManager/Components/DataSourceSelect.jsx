@@ -2,18 +2,21 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
 import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
-import { defaultSources, workflowDefaultSources } from '../constants';
+import { defaultSources, workflowDefaultSources, LIBRARY_UNSUPPORTED_KINDS } from '../constants';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
 import { Virtuoso } from 'react-virtuoso';
 import { canCreateDataSource } from '@/_helpers';
+import { isQueryLibraryEnabled } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
 import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import useStore from '@/AppBuilder/_stores/store';
+import { isQueryLibraryMode } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 import { ToolTip } from '@/_components';
 import { buildDataSourceFolderGroups } from './dataSourceFolderGrouping';
+import { stageLibrarySource } from './DataSourcePicker';
 
 const ITEM_HEIGHTS = {
   'defaults-header': 40,
@@ -51,6 +54,7 @@ function DataSourceSelect({
     (gds) => gds.type === DATA_SOURCE_TYPE.STATIC
   );
   const sampleDataSource = useStore((state) => state.sampleDataSource);
+  const isQueryLibrary = useStore((state) => isQueryLibraryMode(state));
   const storeDataSourceFolders = useStore((state) => state.dataSourceFolders);
   const dataSourceFolders = dataSourceFoldersProp ?? storeDataSourceFolders;
   const createFolder = useStore((state) => state.queryFolders?.createFolder);
@@ -76,7 +80,17 @@ function DataSourceSelect({
     }
   }, [selectRef]);
 
+  const queryLibraryAccess = useStore((state) => state.license.featureAccess);
+  const hasCreateCallback = !!onQueryCreate;
   const handleChangeDataSource = (source) => {
+    if (source.kind === 'library') {
+      // A library consumer needs a query and version first: open the body card's staged picker instead of creating.
+      stageLibrarySource(source);
+      useStore.getState().queryPanel.setSelectedQuery(null);
+      setPreviewData(null);
+      if (!skipClosePopup) closePopup();
+      return;
+    }
     const extraProps = { callbackFunction: onQueryCreate };
     if (folderId) extraProps.folderId = folderId;
     createDataQuery(source, false, {}, 'canvas', null, extraProps);
@@ -135,7 +149,14 @@ function DataSourceSelect({
 
     // Defaults section
     const staticSources = dataSources?.filter((gds) => gds.type === DATA_SOURCE_TYPE.STATIC) || [];
-    const defaultsList = workflowDataSources ? defaultDataSources || [] : staticSources;
+    // Workflows have no runner for library queries; a query library can't hold library/runpy/workflows queries.
+    // Callback-driven menus (component Add query, folder Add query) can't wait for the staged library picker.
+    const defaultsList = (workflowDataSources ? defaultDataSources || [] : staticSources).filter(
+      (ds) =>
+        !((workflowDataSources || hasCreateCallback) && ds.kind === 'library') &&
+        (ds.kind !== 'library' || isQueryLibraryEnabled(queryLibraryAccess)) &&
+        (!isQueryLibrary || !LIBRARY_UNSUPPORTED_KINDS.includes(ds.kind))
+    );
     const filteredDefaults = searchTerm
       ? defaultsList.filter((ds) => {
           const displayName = workflowDataSources
@@ -207,9 +228,11 @@ function DataSourceSelect({
     dataSources,
     defaultDataSources,
     workflowDataSources,
+    hasCreateCallback,
     defaultsCollapsed,
     allowNewFolder,
     createFolder,
+    isQueryLibrary,
     dataSourceFolders,
     expandedFolders,
   ]);

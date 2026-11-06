@@ -28,4 +28,11 @@ export enum DataSourceScopes {
   GLOBAL = 'global',
 }
 
-export const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
+export const DefaultDataSourceKinds: DefaultDataSourceKind[] = [
+  'restapi',
+  'runjs',
+  'runpy',
+  'tooljetdb',
+  'workflows',
+  'library',
+];

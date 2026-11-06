@@ -38,8 +38,8 @@ async function updateEnvSetting(body) {
   return fetch(`${config.apiUrl}/license/env-setting`, requestOptions).then(handleResponse);
 }
 
-function getFeatureAccess() {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+function getFeatureAccess({ workspaceId } = {}) {
+  const requestOptions = { method: 'GET', headers: authHeader(false, workspaceId), credentials: 'include' };
   return fetch(`${config.apiUrl}/license/access`, requestOptions).then(handleResponse);
 }
 

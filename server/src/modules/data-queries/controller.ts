@@ -9,8 +9,10 @@ import { Response } from 'express';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import {
+  AddToLibraryDto,
   CreateDataQueryDto,
   ListTablesDto,
+  RunLibraryQueryDto,
   UpdateDataQueryDto,
   UpdateSourceDto,
   UpdatingReferencesOptionsDto,
@@ -88,6 +90,26 @@ export class DataQueriesController implements IDataQueriesController {
     return;
   }
 
+  @InitFeature(FEATURE_KEY.UPDATE_ONE)
+  @UseGuards(
+    JwtAuthGuard,
+    ValidateQueryAppGuard,
+    AppFeatureAbilityGuard,
+    ValidateQuerySourceGuard,
+    DataSourceFeatureAbilityGuard,
+    GitSyncQueryEditGuard
+  )
+  @Post(':id/versions/:versionId/add-to-library')
+  addToLibrary(
+    @User() user: UserEntity,
+    @AppDecorator() app: App,
+    @Param('id') dataQueryId: string,
+    @Param('versionId') versionId: string,
+    @Body() dto: AddToLibraryDto
+  ) {
+    return this.dataQueriesService.addToLibrary(user, app, dataQueryId, versionId, dto);
+  }
+
   @InitFeature(FEATURE_KEY.UPDATE)
   //* On Updating references, need update the options of multiple queries
   @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
@@ -156,6 +178,26 @@ export class DataQueriesController implements IDataQueriesController {
     @Res({ passthrough: true }) response: Response
   ) {
     return this.dataQueriesService.runQueryForApp(user, dataQueryId, updateDataQueryDto, response, app);
+  }
+
+  @InitFeature(FEATURE_KEY.RUN_VIEWER)
+  @UseGuards(QueryAuthGuard, AppFeatureAbilityGuard, AppScopedThrottlerGuard)
+  @Post(':id/library-definition')
+  getLibraryDefinition(@User() user: UserEntity, @AppDecorator() app: App, @Param('id') dataQueryId: string) {
+    return this.dataQueriesService.getLibraryDefinition(dataQueryId, app, user);
+  }
+
+  @InitFeature(FEATURE_KEY.RUN_VIEWER)
+  @UseGuards(QueryAuthGuard, AppFeatureAbilityGuard, AppScopedThrottlerGuard)
+  @Post(':id/run-library')
+  runLibraryQuery(
+    @User() user: UserEntity,
+    @AppDecorator() app: App,
+    @Param('id') dataQueryId: string,
+    @Body() dto: RunLibraryQueryDto,
+    @Res({ passthrough: true }) response: Response
+  ) {
+    return this.dataQueriesService.runLibraryQuery(user, dataQueryId, dto, response, app);
   }
 
   @InitFeature(FEATURE_KEY.LIST_TABLES)

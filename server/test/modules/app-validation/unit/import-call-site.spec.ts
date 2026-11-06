@@ -19,7 +19,8 @@ describe('AppImportExportService.checkImportedAppData', () => {
     null as any,
     null as any,
     null as any,
-    new AppValidationService(logger)
+    new AppValidationService(logger),
+    null as any
   );
   const check = (appParams: any) => (service as any).checkImportedAppData(appParams, 'front-end', 'import');
 

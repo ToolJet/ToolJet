@@ -6,6 +6,7 @@ import { Component } from '@entities/component.entity';
 import { Page } from '@entities/page.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { cleanObject } from '@helpers/utils.helper';
+import { queryLibraryConsumers } from './library/library-query.util';
 import { DataSourceScopes } from '@modules/data-sources/constants';
 import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, FindOptionsRelations, FindOptionsWhere, Repository } from 'typeorm';
@@ -32,6 +33,15 @@ export class DataQueryRepository extends Repository<DataQuery> {
       where: { id: dataQueryId },
       relations: relations || {},
     });
+  }
+
+  findLibraryConsumers(
+    organizationId: string,
+    libraryQueryId?: string,
+    libraryVersionId?: string,
+    manager: EntityManager = this.manager
+  ) {
+    return queryLibraryConsumers(manager, organizationId, libraryQueryId, libraryVersionId);
   }
 
   async findPublicParentAppForModuleQuery(moduleAppId: string, dataQueryId: string): Promise<App | null> {

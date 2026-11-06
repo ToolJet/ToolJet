@@ -48,6 +48,7 @@ import { PersonalAccessTokensModule } from '@modules/personal-access-tokens/modu
 import { AppsModule } from '@modules/apps/module';
 import { AppValidationModule } from '@modules/app-validation/module';
 import { VersionModule } from '@modules/versions/module';
+import { QueryLibraryModule } from '@modules/query-library/module';
 import { DataQueriesModule } from '@modules/data-queries/module';
 import { PluginsModule } from '@modules/plugins/module';
 import { TemplatesModule } from '@modules/templates/module';
@@ -158,6 +159,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await AppsModule.register(configs, true),
       await VersionModule.register(configs, true),
       await DataQueriesModule.register(configs, true),
+      await QueryLibraryModule.register(configs, true),
       await PluginsModule.register(configs, true),
       await ImportExportResourcesModule.register(configs, true),
       await TemplatesModule.register(configs, true),

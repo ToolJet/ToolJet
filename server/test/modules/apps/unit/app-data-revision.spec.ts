@@ -126,3 +126,7 @@ describe('getAppDataRevision', () => {
     await expect(getAppDataRevision(makeManager(query), app, scope)).resolves.toBeNull();
   });
 });
+
+it('includes effective Query Library access in viewer revision inputs', () => {
+  expect(VIEWER_LICENSE_FIELDS).toContain(LICENSE_FIELD.QUERY_LIBRARY);
+});

@@ -26,10 +26,17 @@ import { getSubpath } from '@/_helpers/routes';
 import { appendBranchName } from '@/_helpers/active-branch';
 import { SquarePen } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
+import {
+  isQueryLibraryMode,
+  isLibraryQueryLocked,
+  viewedLibraryVersionId,
+  withViewedLibraryVersion,
+} from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import NotificationBanner from '@/_components/NotificationBanner';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import { shallow } from 'zustand/shallow';
 
 export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null }) => {
   const { t } = useTranslation();
@@ -41,8 +48,14 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   const sampleDataSource = useStore((state) => state.sampleDataSource);
   const currentEnvironment = useStore((state) => state.selectedEnvironment);
   const paramListContainerRef = useRef(null);
-  const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
-  const selectedDataSource = useStore((state) => state.queryPanel.selectedDataSource);
+  // In the library editor a saved version picked in the version dropdown is shown (read-only) in place of the draft.
+  const selectedQuery = useStore((state) => withViewedLibraryVersion(state, state.queryPanel.selectedQuery), shallow);
+  const viewedLibraryVersion = useStore((state) => viewedLibraryVersionId(state, state.queryPanel.selectedQuery?.id));
+  const selectedDataSource = useStore((state) =>
+    isQueryLibraryMode(state)
+      ? state.queryPanel.resolveDataSourceForQuery(withViewedLibraryVersion(state, state.queryPanel.selectedQuery))
+      : state.queryPanel.selectedDataSource
+  );
   const changeDataQuery = useStore((state) => state.dataQuery.changeDataQuery);
   const updateDataQuery = useStore((state) => state.dataQuery.updateDataQuery);
   const [showLocalDataSourceDeprecationBanner, setshowLocalDataSourceDeprecationBanner] = useState(false);
@@ -54,6 +67,8 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
        - Ref PR #6763
     */
   const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
+  const librarySessionId = useStore((state) => state.queryLibrary.sessionId);
+  const libraryWorkspaceId = useStore((state) => state.queryLibrary.workspaceId);
   const queryName = selectedQuery?.name ?? '';
 
   const editor = resolveQueryEditor({ selectedDataSource, selectedQuery });
@@ -62,7 +77,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
 
   const defaultOptions = useRef({});
 
-  const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const isFreezed = useStore(
+    (state) =>
+      state.getShouldFreeze(false, isModuleEditor) || isLibraryQueryLocked(state, state.queryPanel.selectedQuery?.id)
+  );
+  const isQueryLibrary = useStore((state) => isQueryLibraryMode(state));
 
   useEffect(() => {
     setDataSourceMeta(
@@ -94,8 +113,26 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     // Without this check, the old query's options would be written onto the newly selected query.
     const currentStoreQueryId = useStore.getState().queryPanel.selectedQuery?.id;
     if (currentStoreQueryId !== selectedQuery?.id) return;
+    if (
+      isQueryLibrary &&
+      (viewedLibraryVersion !== viewedLibraryVersionId(useStore.getState(), currentStoreQueryId) ||
+        librarySessionId !== useStore.getState().queryLibrary.sessionId ||
+        libraryWorkspaceId !== useStore.getState().queryLibrary.workspaceId)
+    )
+      return;
     const updatedOptions = cleanFocusedFields(newOptions);
-    updateDataQuery(deepClone({ ...options, ...updatedOptions }));
+    updateDataQuery(
+      deepClone({ ...options, ...updatedOptions }),
+      moduleId,
+      isQueryLibrary
+        ? {
+            sessionId: librarySessionId,
+            workspaceId: libraryWorkspaceId,
+            queryId: selectedQuery?.id,
+            versionId: viewedLibraryVersion,
+          }
+        : undefined
+    );
   };
 
   const optionchanged = (option, value) => {
@@ -112,35 +149,76 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     optionchanged(option, !currentValue);
   };
   const optionsChangedforParams = (newOptions) => {
-    updateDataQuery(deepClone(newOptions));
+    updateDataQuery(
+      deepClone(newOptions),
+      moduleId,
+      isQueryLibrary
+        ? {
+            sessionId: librarySessionId,
+            workspaceId: libraryWorkspaceId,
+            queryId: selectedQuery?.id,
+            versionId: viewedLibraryVersion,
+          }
+        : undefined
+    );
   };
 
-  const handleAddParameter = (newParameter) => {
-    const prevOptions = { ...options };
-    //check if paramname already used
-    if (!prevOptions?.parameters?.some((param) => param.name === newParameter.name)) {
-      const newOptions = {
-        ...prevOptions,
-        parameters: [...(prevOptions?.parameters ?? []), newParameter],
-      };
-      optionsChangedforParams(newOptions);
+  // Add/change/remove handlers for one named list in the query options: `inputs` in the library editor,
+  // `parameters` everywhere else.
+  const listHandlers = (key) => ({
+    handleAdd: (newItem) => {
+      const prevOptions = { ...options };
+      //check if name already used
+      if (!prevOptions[key]?.some((item) => item.name === newItem.name)) {
+        optionsChangedforParams({ ...prevOptions, [key]: [...(prevOptions[key] ?? []), newItem] });
+      }
+    },
+    handleChange: (index, updatedItem) => {
+      const prevOptions = { ...options };
+      //check if name already used
+      if (!prevOptions[key]?.some((item, idx) => item.name === updatedItem.name && index !== idx)) {
+        const updatedItems = [...prevOptions[key]];
+        updatedItems[index] = updatedItem;
+        optionsChangedforParams({ ...prevOptions, [key]: updatedItems });
+      }
+    },
+    handleRemove: (index) => {
+      const prevOptions = { ...options };
+      optionsChangedforParams({ ...prevOptions, [key]: prevOptions[key].filter((item, i) => index !== i) });
+    },
+  });
+  // A library query takes inputs instead of parameters; a library consumer fills its inputs in the Library editor.
+  const renderParameterLists = () => {
+    if (selectedQuery?.kind === 'library') return null;
+    if (isQueryLibrary) {
+      const inputHandlers = listHandlers('inputs');
+      return (
+        <div className="tw-mb-2" data-cy="query-inputs-list">
+          <ParameterList
+            label="Inputs"
+            idPrefix="inputs-"
+            noun="input"
+            parameters={options?.inputs}
+            handleAddParameter={inputHandlers.handleAdd}
+            handleParameterChange={inputHandlers.handleChange}
+            handleParameterRemove={inputHandlers.handleRemove}
+            darkMode={darkMode}
+            containerRef={paramListContainerRef}
+          />
+        </div>
+      );
     }
-  };
-
-  const handleParameterChange = (index, updatedParameter) => {
-    const prevOptions = { ...options };
-    //check if paramname already used
-    if (!prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
-      const updatedParameters = [...prevOptions.parameters];
-      updatedParameters[index] = updatedParameter;
-      optionsChangedforParams({ ...prevOptions, parameters: updatedParameters });
-    }
-  };
-
-  const handleParameterRemove = (index) => {
-    const prevOptions = { ...options };
-    const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
-    optionsChangedforParams({ ...prevOptions, parameters: updatedParameters });
+    const parameterHandlers = listHandlers('parameters');
+    return (
+      <ParameterList
+        parameters={options.parameters}
+        handleAddParameter={parameterHandlers.handleAdd}
+        handleParameterChange={parameterHandlers.handleChange}
+        handleParameterRemove={parameterHandlers.handleRemove}
+        darkMode={darkMode}
+        containerRef={paramListContainerRef}
+      />
+    );
   };
   const [previewHeight, setPreviewHeight] = useState(40);
 
@@ -151,7 +229,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     return (
       <div
         className={cx(`datasource-picker p-0`, {
-          'disabled ': isFreezed,
+          'disabled ': !isQueryLibrary && isFreezed,
         })}
       >
         <DataSourcePicker darkMode={darkMode} />
@@ -214,37 +292,32 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
               selectedDataSource?.kind === 'tooljetdb' ||
               (selectedDataSource?.kind === 'restapi' && selectedDataSource?.type !== 'default')) && (
               <>
-                <div style={{ marginBottom: '2px' }}>
-                  {`To know more about querying ${selectedDataSource?.kind} data,`}
-                  &nbsp;
-                  <a
-                    href={docLinkStatic}
-                    target="_blank"
-                    style={{
-                      marginLeft: '0px !important',
-                      color: 'hsl(226, 70.0%, 55.5%)',
-                      textDecoration: 'underline',
-                    }}
-                    rel="noreferrer"
-                  >
-                    {t('globals.readDocumentation', 'read documentation').toLowerCase()}
-                  </a>
-                </div>
-                <ParameterList
-                  parameters={options.parameters}
-                  handleAddParameter={handleAddParameter}
-                  handleParameterChange={handleParameterChange}
-                  handleParameterRemove={handleParameterRemove}
-                  darkMode={darkMode}
-                  containerRef={paramListContainerRef}
-                />
+                {docLinkStatic && (
+                  <div style={{ marginBottom: '2px' }}>
+                    {`To know more about querying ${selectedDataSource?.kind} data,`}
+                    &nbsp;
+                    <a
+                      href={docLinkStatic}
+                      target="_blank"
+                      style={{
+                        marginLeft: '0px !important',
+                        color: 'hsl(226, 70.0%, 55.5%)',
+                        textDecoration: 'underline',
+                      }}
+                      rel="noreferrer"
+                    >
+                      {t('globals.readDocumentation', 'read documentation').toLowerCase()}
+                    </a>
+                  </div>
+                )}
+                {renderParameterLists()}
               </>
             )}
         </div>
         {ElementToRender && (
           <ElementToRender
             renderCopilot={(props) => renderCopilot?.({ ...props, selectedDataSource })}
-            key={selectedQuery?.id}
+            key={`${selectedQuery?.id}:${viewedLibraryVersion ?? ''}`}
             pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
             selectedDataSource={selectedDataSource}
             options={selectedQuery?.options}
@@ -487,16 +560,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
     return (
       <>
         <div className={cx({ 'disabled ': isFreezed })} ref={paramListContainerRef}>
-          {selectedQuery && !showLocalDataSourceDeprecationBanner && (
-            <ParameterList
-              parameters={options.parameters}
-              handleAddParameter={handleAddParameter}
-              handleParameterChange={handleParameterChange}
-              handleParameterRemove={handleParameterRemove}
-              darkMode={darkMode}
-              containerRef={paramListContainerRef}
-            />
-          )}
+          {selectedQuery && !showLocalDataSourceDeprecationBanner && renderParameterLists()}
         </div>
         <div className="d-flex" style={{ marginBottom: '16px', marginTop: '12px' }}>
           <div
@@ -619,7 +683,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
             renderChangeDataSource()}
           {activeTab === 1 && renderQueryElement()}
           {activeTab === 2 && renderTransformation()}
-          {activeTab === 3 && renderQueryOptions()}
+          {activeTab === 3 && !isQueryLibrary && renderQueryOptions()}
           <Preview darkMode={darkMode} calculatePreviewHeight={calculatePreviewHeight} />
         </>
       )}

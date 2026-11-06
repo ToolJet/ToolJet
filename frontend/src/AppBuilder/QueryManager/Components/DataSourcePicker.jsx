@@ -1,10 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import { useNavigate } from 'react-router-dom';
 import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox as SearchBox2 } from '@/_components/SearchBox';
 import DataSourceIcon from './DataSourceIcon';
+import { Library } from '../QueryEditors/Library';
+import { globalDatasourceService } from '@/_services';
 import { isEmpty } from 'lodash';
 import { Tooltip } from 'react-tooltip';
 import { Virtuoso } from 'react-virtuoso';
@@ -13,9 +15,17 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 import '../queryManager.theme.scss';
 import useStore from '@/AppBuilder/_stores/store';
-import { staticDataSources } from '../constants';
+import { isQueryLibraryMode } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
+import { staticDataSources, LIBRARY_UNSUPPORTED_KINDS } from '../constants';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import { isQueryLibraryEnabled } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
 import { buildDataSourceFolderGroups } from './dataSourceFolderGrouping';
+import { create } from 'zustand';
+
+// The Query library choice is staged here until a query and version are picked; the query panel's Plus menu
+// stages into the same place (stageLibrarySource), so both entry points share one selection flow.
+const useStagedLibrarySource = create(() => ({ source: null }));
+export const stageLibrarySource = (source) => useStagedLibrarySource.setState({ source });
 
 function DataSourcePicker({ darkMode }) {
   const dataSources = useStore((state) => state.dataSources);
@@ -24,10 +34,18 @@ function DataSourcePicker({ darkMode }) {
   const sampleDataSource = useStore((state) => state.sampleDataSource);
   const createFolder = useStore((state) => state.queryFolders?.createFolder);
   const currentVersionId = useStore((state) => state.currentVersionId);
+  const isQueryLibrary = useStore((state) => isQueryLibraryMode(state));
+
   const allUserDefinedSources = useMemo(
     () => [...dataSources, ...globalDataSources].filter((ds) => ds.type !== DATA_SOURCE_TYPE.STATIC && !ds.is_dummy),
     [dataSources, globalDataSources]
   );
+  const librarySource = useStagedLibrarySource((state) => state.source);
+  const setLibrarySource = stageLibrarySource;
+  const [libraryOptions, setLibraryOptions] = useState({});
+  const [resolvedLibrarySource, setResolvedLibrarySource] = useState(null);
+  const [librarySourceError, setLibrarySourceError] = useState(null);
+  const [creatingLibraryQuery, setCreatingLibraryQuery] = useState(false);
   const [searchTerm, setSearchTerm] = useState();
   // Data-source folders start collapsed; a folder is shown expanded while searching so matches surface.
   const [expandedFolders, setExpandedFolders] = useState(new Set());
@@ -35,10 +53,13 @@ function DataSourcePicker({ darkMode }) {
   const createDataQuery = useStore((state) => state.dataQuery.createDataQuery);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
 
+  const queryLibraryAccess = useStore((state) => state.license.featureAccess);
   const staticDataSourcesFullObject = useStore((state) => state.globalDataSources)?.filter(
     (gds) => gds.type === DATA_SOURCE_TYPE.STATIC
   );
   const updatedStaticDataSources = staticDataSources
+    .filter((source) => source.kind !== 'library' || isQueryLibraryEnabled(queryLibraryAccess))
+    .filter((source) => !isQueryLibrary || !LIBRARY_UNSUPPORTED_KINDS.includes(source.kind))
     .filter((source) => {
       if (source.kind === 'workflows') {
         return staticDataSourcesFullObject?.some((gds) => gds.kind === 'workflows');
@@ -54,9 +75,47 @@ function DataSourcePicker({ darkMode }) {
     });
 
   const handleChangeDataSource = (source) => {
+    if (source.kind === 'library') {
+      setLibraryOptions({});
+      setResolvedLibrarySource(null);
+      setLibrarySourceError(null);
+      setLibrarySource(source);
+      return;
+    }
     createDataQuery(source);
     setPreviewData(null);
   };
+
+  const resolveLibrarySource = async () => {
+    const state = useStore.getState();
+    const { data_sources: sources } = await globalDatasourceService.getForApp(
+      state.appStore.modules.canvas.app.organizationId ?? getWorkspaceId(),
+      state.currentVersionId,
+      state.selectedEnvironment?.id
+    );
+    const source = sources.find((item) => item.kind === 'library' && item.id && item.id !== 'null');
+    if (!source) throw new Error('The Query Library data source is unavailable. Reopen the picker to try again.');
+    return { ...librarySource, ...source };
+  };
+
+  // A staged choice belongs to this picker; drop it once the picker goes away (a query got selected).
+  useEffect(() => () => setLibrarySource(null), []);
+
+  useEffect(() => {
+    if (!librarySource) return;
+    let active = true;
+    resolveLibrarySource()
+      .then((source) => active && setResolvedLibrarySource(source))
+      .catch(
+        () =>
+          active &&
+          setLibrarySourceError('The Query Library data source is unavailable. Reopen the picker to try again.')
+      );
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [librarySource]);
 
   const handleAddClick = () => {
     const workspaceId = getWorkspaceId();
@@ -134,6 +193,45 @@ function DataSourcePicker({ darkMode }) {
       </div>
     );
   };
+
+  if (librarySource) {
+    return (
+      <div className="tw-flex tw-flex-col tw-gap-3" data-cy="library-consumer-picker">
+        <Library options={libraryOptions} optionsChanged={setLibraryOptions} darkMode={darkMode} />
+        {librarySourceError && <div role="alert">{librarySourceError}</div>}
+        <div className="tw-flex tw-justify-end tw-gap-2">
+          <ButtonSolid variant="tertiary" disabled={creatingLibraryQuery} onClick={() => setLibrarySource(null)}>
+            Cancel
+          </ButtonSolid>
+          <ButtonSolid
+            disabled={
+              !resolvedLibrarySource ||
+              !libraryOptions.libraryQueryId ||
+              !libraryOptions.libraryQueryVersionId ||
+              creatingLibraryQuery
+            }
+            onClick={async () => {
+              setCreatingLibraryQuery(true);
+              try {
+                const source = await resolveLibrarySource();
+                await createDataQuery(source, false, libraryOptions);
+                setPreviewData(null);
+                setLibrarySource(null);
+              } catch (error) {
+                setResolvedLibrarySource(null);
+                setLibrarySourceError(error.message || 'Unable to create the Query Library query.');
+              } finally {
+                setCreatingLibraryQuery(false);
+              }
+            }}
+            data-cy="create-library-consumer"
+          >
+            Create query
+          </ButtonSolid>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

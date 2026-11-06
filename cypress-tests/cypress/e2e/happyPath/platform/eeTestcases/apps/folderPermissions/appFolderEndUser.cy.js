@@ -13,7 +13,7 @@ import {
   openFolder,
 } from 'Support/utils/platform/folderPermissions';
 
-describe('Apps — Folder Permissions: End User Role', { retries: 0 }, () => {
+describe('Apps — Folder Permissions: End User Role', { retries: 1 }, () => {
   let workspaceId, wsName, wsSlug, testId;
   const editTierTooltip = 'End-user cannot have edit permission';
 

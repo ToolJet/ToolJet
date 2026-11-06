@@ -3,6 +3,7 @@ import { User } from '@entities/user.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { PromoteVersionDto, VersionCreateDto } from '../dto';
+import { LibraryPin } from '@modules/data-queries/library/library-query.util';
 
 /**
  * Context interfaces for history capture hooks
@@ -35,6 +36,8 @@ export interface IVersionService {
 
   getViewerLicenseTerms(organizationId: string): Promise<unknown>;
   getVersion(app: App, user: User, mode?: string): Promise<any>;
+
+  getLibraryPins(app: App, versionId: string, user: User): Promise<{ pins: LibraryPin[] }>;
 
   getVersionByStableIds(
     coRelationId: string,

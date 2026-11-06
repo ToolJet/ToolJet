@@ -1022,6 +1022,7 @@ jobs:
       && needs.detect-changes.outputs.mode == 'full'
       && needs.detect-changes.outputs.migrations == 'true'
       && needs.build-plugins.result == 'success'
+    # Must match server/package.json engines + other CI jobs (npm ci enforces exact node/npm).
     container: node:22.23.4-bookworm
     services:
       postgres:

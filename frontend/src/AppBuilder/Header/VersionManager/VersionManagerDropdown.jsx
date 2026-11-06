@@ -1,9 +1,14 @@
+import { useVersionLifecycle, useOptionalVersionLifecycle } from './VersionLifecycleContext';
+import { AppVersionLifecycleProvider } from './AppVersionLifecycleProvider';
+import { useLocation, useNavigate, useInRouterContext } from 'react-router-dom';
+import EnvironmentSwitcherContent from './EnvironmentSwitcherContent';
+import CreateVersionModal from '../CreateVersionModal';
+import CreateDraftVersionModal from '../CreateDraftVersionModal';
+import EditVersionModal from './EditVersionModal';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import ReactDOM from 'react-dom';
+import DependencyWarningDialog from '@/_components/DependencyWarningDialog/DependencyWarningDialog';
 import { Overlay, Popover } from 'react-bootstrap';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { shallow } from 'zustand/shallow';
 import { toast } from 'react-hot-toast';
 import cx from 'classnames';
 import VersionSwitcherButton from './VersionSwitcherButton';
@@ -11,84 +16,47 @@ import VersionSearchField from './VersionSearchField';
 import VersionDropdownItem from './VersionDropdownItem';
 import CreateDraftButton from './CreateDraftButton';
 import VersionItemSkeleton from './VersionItemSkeleton';
-import { CreateVersionModal, CreateDraftVersionModal, EditVersionModal } from '.';
 import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
-import { workspaceBranchesService } from '@/_services/workspace_branches.service';
-import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
-import { useVersionManagerStore } from '@/_stores/versionManagerStore';
-import useStore from '@/AppBuilder/_stores/store';
-import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { EnvironmentSwitcher } from '@/modules/Appbuilder/components';
 import './style.scss';
 
-const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
-  const { moduleId } = useModuleContext();
-
+export const VersionManagerDropdownContent = ({ darkMode = false, ...props }) => {
   const {
-    appId,
-    currentVersionId,
-    currentEnvironment,
-    environments,
-    changeEditorVersionAction,
-    setCurrentVersionId,
-    deleteVersionAction,
-    environmentChangedAction,
-    releasedVersionId,
-    selectedVersion,
-    developmentVersions,
-    setSelectedVersion,
-    fetchDevelopmentVersions,
-  } = useStore(
-    (state) => ({
-      appId: state.appId ?? state.appStore.modules[moduleId]?.app?.appId,
-      currentVersionId: state.currentVersionId,
-      currentEnvironment: state.selectedEnvironment,
-      environments: state.environments || [],
-      changeEditorVersionAction: state.changeEditorVersionAction,
-      setCurrentVersionId: state.setCurrentVersionId,
-      deleteVersionAction: state.deleteVersionAction,
-      environmentChangedAction: state.environmentChangedAction,
-      releasedVersionId: state.releasedVersionId,
-      selectedVersion: state.selectedVersion,
-      developmentVersions: state.developmentVersions,
-      fetchDevelopmentVersions: state.fetchDevelopmentVersions,
-      setSelectedVersion: state.setSelectedVersion,
-    }),
-    shallow
-  );
-
-  const {
+    resourceType,
     versions,
-    filteredVersions,
-    isDropdownOpen,
-    searchQuery,
-    selectedEnvironmentFilter,
+    selectedVersionId: currentVersionId,
+    selectedEnvironment: currentEnvironment,
+    environments,
+    releasedVersionId,
     loading,
-    draftVersion,
-    setDropdownOpen,
-    setSearchQuery,
-    setSelectedEnvironmentFilter,
-    fetchVersionsForEnvironment,
-    refreshVersions,
-  } = useVersionManagerStore();
-
-  const { currentBranch, pullApp: pullAppAction } = useWorkspaceBranchesStore(
-    (state) => ({ currentBranch: state.currentBranch, pullApp: state.actions.pullApp }),
-    shallow
+    error,
+    capabilities = {},
+    notices,
+    actions,
+  } = useVersionLifecycle();
+  const currentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const developmentVersions = capabilities.developmentVersionIds
+    ? versions.filter((v) => capabilities.developmentVersionIds.includes(v.id))
+    : versions;
+  const currentVersion = versions.find((v) => v.id === currentVersionId);
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedEnvironmentFilter, setSelectedEnvironmentFilter] = useState(currentEnvironment);
+  const {
+    enabled: isGitSyncEnabled = false,
+    isMultiBranchingEnabled = false,
+    status: gitVersionStatus = new Map(),
+    isRefreshing = false,
+    isPullingVersion = null,
+  } = capabilities.git || {};
+  const filteredVersions = versions.filter(
+    (v) =>
+      (!capabilities.visibleVersionIds || capabilities.visibleVersionIds.includes(v.id)) &&
+      (v.versionType || v.version_type) !== 'branch' &&
+      (!searchQuery || v.name?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
-  const isMultiBranchingEnabled = useWorkspaceBranchesStore((state) => state.isMultiBranchingEnabled);
-
-  // Same shape as appId above — the workflow editor renders outside ModuleProvider, so the
-  // module read is undefined there.
-  const appCoRelationId = useStore(
-    (state) => state.appCoRelationId ?? state.appStore.modules[moduleId]?.app?.co_relation_id,
-    shallow
-  );
-
-  const { isGitSyncEnabled } = useGitSyncConfig();
   const [showCreateDraftModal, setShowCreateDraftModal] = useState(false);
   const [showPromoteModal, setShowPromoteModal] = useState(false);
   const [showEditVersionModal, setShowEditVersionModal] = useState(false);
@@ -97,60 +65,18 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const [openMenuVersionId, setOpenMenuVersionId] = useState(null);
   const buttonRef = useRef(null);
   const popoverRef = useRef(null);
-  const [gitVersionStatus, setGitVersionStatus] = useState(new Map());
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isPullingVersion, setIsPullingVersion] = useState(null);
-
-  // Sync selectedEnvironmentFilter with global currentEnvironment whenever it changes.
-  // Also refresh the version list immediately so VersionActionButtons reflect the new
-  // environment state without waiting for the dropdown to open (e.g. after promote).
   useEffect(() => {
-    if (!currentEnvironment) return;
     setSelectedEnvironmentFilter(currentEnvironment);
-    if (appId && currentEnvironment.id) {
-      fetchVersionsForEnvironment(appId, currentEnvironment.id);
-    }
-  }, [currentEnvironment?.id, appId, setSelectedEnvironmentFilter, fetchVersionsForEnvironment]);
-
-  // Fetch development versions on mount to check for draft status
-  useEffect(() => {
-    if (appId) {
-      fetchDevelopmentVersions(appId);
-    }
-  }, [appId, fetchDevelopmentVersions]);
-
-  // Lazy load versions when dropdown opens
-  useEffect(() => {
-    if (currentEnvironment && isDropdownOpen) {
-      if (appId && currentEnvironment.id) {
-        // Use a small delay to ensure state is ready
-        const timer = setTimeout(() => {
-          fetchVersionsForEnvironment(appId, currentEnvironment.id);
-        }, 0);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [isDropdownOpen, currentEnvironment, appId, fetchVersionsForEnvironment]);
-
-  // Current version data - use selectedVersion from global store as source of truth
-  // Also check developmentVersions to ensure we have the status field for draft versions
-  let currentVersion = selectedVersion || developmentVersions.find((v) => v.id === currentVersionId);
-
-  // If currentVersion doesn't have status field, try to get it from developmentVersions
-  if (currentVersion && !currentVersion.status && developmentVersions.length > 0) {
-    const versionWithStatus = developmentVersions.find((v) => v.id === currentVersion.id);
-    if (versionWithStatus) {
-      currentVersion = { ...currentVersion, status: versionWithStatus.status };
-    }
-  }
+  }, [currentEnvironment]);
 
   // Check if there's a draft in development environment (global check across all environments)
   // Drafts only exist in Development environment
-  const hasDraft = developmentVersions.some((v) => v.status === 'DRAFT');
 
   // Check if there's only one draft and no other saved versions
   // draftVersions are versions of type 'version' (not branches)
-  const draftVersions = developmentVersions.filter((v) => v.versionType === 'version' && v.status === 'DRAFT');
+  const draftVersions = developmentVersions.filter(
+    (v) => (v.versionType || 'version') === 'version' && v.status === 'DRAFT'
+  );
   const savedVersions = developmentVersions.filter((v) => v.status !== 'DRAFT');
 
   // A draft is always created FROM a saved version — so hide the button entirely when there are
@@ -203,6 +129,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       // Reset environment filter to global currentEnvironment when opening
       // This ensures the dropdown always starts at the current global environment
       setSelectedEnvironmentFilter(currentEnvironment);
+      if (actions.openDropdown) actions.openDropdown();
+      else actions.refresh();
       setTimeout(() => setDropdownOpen(true), 0);
     } else {
       closeDropdown();
@@ -214,113 +142,15 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     setOpenMenuVersionId(null);
     // Update local filter and lazy load versions for the selected environment
     setSelectedEnvironmentFilter(env);
-    if (appId && env.id) {
-      fetchVersionsForEnvironment(appId, env.id);
-    }
+    actions.selectEnvironment(env.id);
   };
 
   const handleSearchChange = (query) => {
     setSearchQuery(query);
   };
 
-  const handleRefreshFromGit = async () => {
-    if (isRefreshing) return;
-    if (!appCoRelationId || !isGitSyncEnabled) return;
-    setIsRefreshing(true);
-    try {
-      const tags = await workspaceBranchesService.getEntityTags(appCoRelationId);
-      const newStatus = new Map();
-      tags.forEach((tag) => {
-        const versionName = tag.name.split('/').slice(1).join('/');
-        if (!versionName) return;
-        // NOTE: `versions` is scoped to the current environment. A version pulled in another
-        // environment may incorrectly appear as git-only here.
-        const isLocal = versions.some(
-          (v) => v.name === versionName && (v.versionType || v.version_type) === 'version' && v.status !== 'DRAFT'
-        );
-        newStatus.set(versionName, {
-          isInGit: true,
-          isLocal,
-          tagSha: tag.commit?.sha,
-          tagName: tag.name,
-          tagDescription: tag.message?.trim() || undefined,
-        });
-      });
-      setGitVersionStatus(newStatus);
-
-      // Remove local versions that no longer exist as remote git tags
-      const remoteVersionNames = new Set(newStatus.keys());
-      const staleVersions = versions.filter(
-        (v) =>
-          (v.versionType || v.version_type) === 'version' &&
-          v.status !== 'DRAFT' &&
-          v.id !== releasedVersionId &&
-          !remoteVersionNames.has(v.name)
-      );
-
-      for (const staleVersion of staleVersions) {
-        await new Promise((resolve) => {
-          deleteVersionAction(
-            appId,
-            staleVersion.id,
-            () => resolve(),
-            (error) => {
-              toast.error(error?.error || error?.message || `Failed to remove version "${staleVersion.name}"`);
-              resolve();
-            }
-          );
-        });
-      }
-
-      if (staleVersions.length > 0) {
-        const environmentToRefresh = selectedEnvironmentFilter || currentEnvironment;
-        await refreshVersions(appId, environmentToRefresh?.id);
-      }
-    } catch {
-      toast.error('Failed to refresh versions from git');
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  const handlePullVersion = async (version, gitStatus) => {
-    if (!gitStatus?.tagSha) return;
-    if (!appId || isPullingVersion) return;
-    setIsPullingVersion(version.name);
-    try {
-      const result = await pullAppAction(appId, gitStatus.tagSha, version.name, gitStatus.tagDescription);
-      if (!result || !result.success) {
-        toast.error(result?.message || `Failed to pull version "${version.name}"`);
-        return;
-      }
-      const draftVersionId = result?.draftVersionId;
-      const environmentToRefresh = selectedEnvironmentFilter || currentEnvironment;
-      await refreshVersions(appId, environmentToRefresh?.id);
-      toast.success(`Version "${version.name}" pulled successfully`);
-      if (draftVersionId) {
-        changeEditorVersionAction(
-          appId,
-          draftVersionId,
-          () => {
-            setCurrentVersionId(draftVersionId);
-          },
-          (error) => {
-            toast.error(error?.message || 'Failed to switch to pulled version');
-          },
-          moduleId
-        );
-      }
-      setGitVersionStatus((prev) => {
-        const updated = new Map(prev);
-        updated.set(version.name, { ...gitStatus, isLocal: true });
-        return updated;
-      });
-    } catch (error) {
-      toast.error(error?.message || `Failed to pull ${version.name}`);
-    } finally {
-      setIsPullingVersion(null);
-    }
-  };
+  const handleRefreshFromGit = () => actions.refreshFromGit?.();
+  const handlePullVersion = (version, gitStatus) => actions.pullVersion?.(version, gitStatus);
 
   const handleCreateDraft = () => {
     // Close the version dropdown before opening the modal, otherwise both stay open at once.
@@ -340,40 +170,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     }
     closeDropdown();
 
-    if (isDifferentEnvironment) {
-      environmentChangedAction(
-        selectedEnvironmentFilter,
-        () => {
-          changeEditorVersionAction(
-            appId,
-            version.id,
-            () => {
-              setCurrentVersionId(version.id);
-              setSelectedVersion(version);
-            },
-            (error) => {
-              toast.error(error.message || 'Failed to switch version');
-            },
-            moduleId
-          );
-        },
-        undefined,
-        moduleId
-      );
-    } else {
-      changeEditorVersionAction(
-        appId,
-        version.id,
-        () => {
-          setCurrentVersionId(version.id);
-          setSelectedVersion(version);
-        },
-        (error) => {
-          toast.error(error.message || 'Failed to switch version');
-        },
-        moduleId
-      );
-    }
+    actions.selectVersion(version.id).catch((error) => toast.error(error?.message || 'Failed to switch version'));
   };
 
   const handlePromoteDraft = (version) => {
@@ -469,33 +266,37 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const confirmDeleteVersion = () => {
     if (!deleteVersion.versionId) return;
     const deletingToast = toast.loading('Deleting version...');
-    deleteVersionAction(
-      appId,
-      deleteVersion.versionId,
-      (_newVersionDef) => {
+    actions
+      .deleteVersion(deleteVersion.versionId)
+      .then(() => {
         toast.dismiss(deletingToast);
         toast.success(`Version - ${deleteVersion.versionName} Deleted`);
         resetDeleteModal();
         closeDropdown();
-        // Refresh versions for the currently filtered environment, not the global currentEnvironment
-        const environmentToRefresh = selectedEnvironmentFilter || currentEnvironment;
-        refreshVersions(appId, environmentToRefresh?.id);
-      },
-      (error) => {
+        actions.refresh();
+      })
+      .catch((error) => {
         toast.dismiss(deletingToast);
-        if (error?.error?.startsWith('Cannot delete this version.')) {
+        if (
+          resourceType === 'query-library'
+            ? error?.code === 'LIBRARY_QUERY_IN_USE'
+            : error?.error?.startsWith('Cannot delete this version.') || error?.code === 'VERSION_IN_USE'
+        ) {
           setInUseWarning({ show: true, versionName: deleteVersion.versionName });
           resetDeleteModal();
           return;
         }
         toast.error(error?.error || error?.message || 'Failed to delete version');
         resetDeleteModal();
-      }
-    );
+      });
   };
 
   // Count only actual versions, not sub-branches
-  const versionOnlyCount = versions.filter((v) => v.versionType === 'version').length;
+  const versionOnlyCount = versions.filter(
+    (v) =>
+      (!capabilities.visibleVersionIds || capabilities.visibleVersionIds.includes(v.id)) &&
+      (v.versionType || 'version') === 'version'
+  ).length;
 
   const renderPopover = (overlayProps) => (
     <Popover
@@ -553,8 +354,17 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
 
         {/* Environment Toggle */}
         <div>
-          <EnvironmentSwitcher
-            environments={environments}
+          <EnvironmentSwitcherContent
+            environmentsWithMeta={
+              capabilities.environmentOptions ||
+              environments.map((environment) => ({
+                environment,
+                disabled: environment.enabled === false,
+                tooltipMessage: '',
+                showTooltip: false,
+                showEnterpriseIcon: false,
+              }))
+            }
             selectedEnvironment={selectedEnvironmentFilter || currentEnvironment}
             onEnvironmentChange={handleEnvironmentChange}
             darkMode={darkMode}
@@ -584,6 +394,10 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
               <VersionItemSkeleton />
               <VersionItemSkeleton />
             </>
+          ) : error ? (
+            <div role="alert" className="tw-px-3 tw-py-6 tw-font-body-default tw-text-text-default">
+              {typeof error === 'string' ? error : error?.message || 'Could not load versions'}
+            </div>
           ) : mergedVersions.length === 0 ? (
             <div
               className="d-flex align-items-center justify-content-center tj-text-sm"
@@ -616,7 +430,6 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
                   onCreateVersion={() => handleCreateVersion(version)}
                   onEdit={(v) => handleEditVersion(v)}
                   onDelete={(v) => openDeleteModal(v)}
-                  appId={appId}
                   darkMode={darkMode}
                   openMenuVersionId={openMenuVersionId}
                   setOpenMenuVersionId={setOpenMenuVersionId}
@@ -647,8 +460,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   // Feature branches have no version lifecycle. Guarded here rather than in EditorHeader so
   // the workflow header is covered too.
   const isOnFeatureBranch =
-    selectedVersion?.versionType === 'branch' ||
-    selectedVersion?.version_type === 'branch' ||
+    currentVersion?.versionType === 'branch' ||
+    currentVersion?.version_type === 'branch' ||
     !!(currentBranch && !currentBranch.is_default && !currentBranch.isDefault);
   if (isOnFeatureBranch) return null;
 
@@ -729,8 +542,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         onVersionCreated={() => {
           // Refresh versions for the currently filtered environment, not the global currentEnvironment
           // This ensures the dropdown shows the correct versions after creating a version
-          const environmentToRefresh = selectedEnvironmentFilter || currentEnvironment;
-          refreshVersions(appId, environmentToRefresh?.id);
+          actions.refresh();
           setVersionToPromote(null);
         }}
         {...props}
@@ -763,75 +575,49 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         staticBackdrop={isGitTrackedDelete}
       />
 
-      {/* In-use warning modal — portalled to body to escape stacking contexts */}
-      {inUseWarning.show &&
-        ReactDOM.createPortal(
-          <div
-            className={darkMode ? 'dark-theme' : ''}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0,0,0,0.5)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 99999,
-            }}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setInUseWarning({ show: false, versionName: '' });
-            }}
-          >
-            <div
-              style={{
-                width: 360,
-                background: 'var(--background-surface-layer-01)',
-                borderRadius: 8,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <div style={{ padding: '20px 24px 0' }}>
-                <div
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 48,
-                    height: 48,
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--background-error-weak)',
-                  }}
-                >
-                  <SolidIcon name="warning" width="24" fill="var(--icon-danger)" />
-                </div>
-              </div>
-              <div style={{ padding: '16px 24px 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <h3 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-default)', margin: 0 }}>
-                  Dependent apps found!
-                </h3>
-                <p style={{ fontSize: 14, color: 'var(--text-medium)', lineHeight: 1.6, margin: 0 }}>
-                  {`Cannot delete ${inUseWarning.versionName} version of module as it is being used in one or more apps.`}
-                </p>
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  padding: '16px 24px',
-                  borderTop: '1px solid var(--border-default)',
-                }}
-              >
-                <ButtonSolid variant="tertiary" onClick={() => setInUseWarning({ show: false, versionName: '' })}>
-                  I understand
-                </ButtonSolid>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
+      <DependencyWarningDialog
+        open={inUseWarning.show}
+        title={resourceType === 'query-library' ? 'Dependent apps or modules found!' : 'Dependent apps found!'}
+        message={
+          notices?.dependencyMessage?.(inUseWarning.versionName) ||
+          `Cannot delete ${inUseWarning.versionName} version of module as it is being used in one or more apps.`
+        }
+        darkMode={darkMode}
+        onClose={() => setInUseWarning({ show: false, versionName: '' })}
+      />
     </>
   );
 };
 
-export default VersionManagerDropdown;
+function RoutedAppDropdown(props) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const onBrowseEnvironment = (environment) => {
+    const query = new URLSearchParams(location.search || '');
+    if (query.has('env')) {
+      query.set('env', environment.name);
+      navigate(`${location.pathname}?${query.toString()}`);
+    }
+  };
+  return (
+    <AppVersionLifecycleProvider loadVersions onBrowseEnvironment={onBrowseEnvironment} {...props}>
+      <VersionManagerDropdownContent {...props} />
+    </AppVersionLifecycleProvider>
+  );
+}
+
+function AppDropdown(props) {
+  const inRouter = useInRouterContext();
+  return inRouter ? (
+    <RoutedAppDropdown {...props} />
+  ) : (
+    <AppVersionLifecycleProvider loadVersions {...props}>
+      <VersionManagerDropdownContent {...props} />
+    </AppVersionLifecycleProvider>
+  );
+}
+
+export default function VersionManagerDropdown(props) {
+  const lifecycle = useOptionalVersionLifecycle();
+  return lifecycle ? <VersionManagerDropdownContent {...props} /> : <AppDropdown {...props} />;
+}

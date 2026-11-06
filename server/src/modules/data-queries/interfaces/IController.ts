@@ -1,6 +1,6 @@
 import { UserEntity } from '@modules/app/decorators/user.decorator';
 import { DataSourceEntity } from '@modules/app/decorators/data-source.decorator';
-import { CreateDataQueryDto, UpdateDataQueryDto } from '../dto';
+import { AddToLibraryDto, CreateDataQueryDto, RunLibraryQueryDto, UpdateDataQueryDto } from '../dto';
 import { UpdatingReferencesOptionsDto } from '../dto';
 import { AppAbility } from '@modules/casl/casl-ability.factory';
 import { App } from '@entities/app.entity';
@@ -24,6 +24,18 @@ export interface IDataQueriesController {
     updateDataQueryDto: UpdateDataQueryDto
   ): Promise<void>;
 
+  addToLibrary(
+    user: UserEntity,
+    app: App,
+    dataQueryId: string,
+    versionId: string,
+    dto: AddToLibraryDto
+  ): Promise<{
+    query: { id: string; name: string; kind: 'library'; data_source_id: string; options: Record<string, unknown> };
+    libraryQueryId: string;
+    libraryVersionId: string;
+  }>;
+
   bulkUpdate(user: UserEntity, updatingReferencesOptions: UpdatingReferencesOptionsDto): Promise<object>;
 
   delete(dataQueryId: string, versionId: string): Promise<void>;
@@ -45,6 +57,16 @@ export interface IDataQueriesController {
     app: App,
     dataQueryId: string,
     updateDataQueryDto: UpdateDataQueryDto,
+    response: Response
+  ): Promise<object>;
+
+  getLibraryDefinition(user: UserEntity, app: App, dataQueryId: string): Promise<object>;
+
+  runLibraryQuery(
+    user: UserEntity,
+    app: App,
+    dataQueryId: string,
+    dto: RunLibraryQueryDto,
     response: Response
   ): Promise<object>;
 

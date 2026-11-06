@@ -201,8 +201,10 @@ export class DataSourcesRepository extends Repository<DataSource> {
       query.andWhere('data_source.type IN (:...types)', { types });
     }
     if (environmentId && !useBranchPath && !branchId) {
-      // Filter: DS must have options in version table for this env
-      query.andWhere('dsvo.id IS NOT NULL');
+      // Static sources have no version options; ordinary connections still require this environment.
+      query.andWhere('(dsvo.id IS NOT NULL OR data_source.type = :staticType)', {
+        staticType: DataSourceTypes.STATIC,
+      });
     }
     if (useBranchPath || branchId) {
       // Filter: DS must have at least a DSV (branch-specific or default fallback)

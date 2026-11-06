@@ -2,6 +2,7 @@ import { LICENSE_LIMIT, LICENSE_FIELD } from '@modules/licensing/constants';
 import { Terms } from '@modules/licensing/interfaces/terms';
 
 export const BASIC_PLAN_TERMS: Partial<Terms> = {
+  queryLibrary: { enabled: false },
   apps: LICENSE_LIMIT.UNLIMITED,
   workspaces: LICENSE_LIMIT.UNLIMITED,
   users: {

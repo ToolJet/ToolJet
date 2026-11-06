@@ -1,3 +1,4 @@
+import { isQueryLibraryEnabled } from '@/AppBuilder/QueryLibrary/queryLibraryApp';
 import React, { useState, forwardRef, useRef, useEffect, useCallback } from 'react';
 import RenameIcon from '../Icons/RenameIcon';
 import cx from 'classnames';
@@ -15,6 +16,11 @@ import { Button } from 'react-bootstrap';
 import { decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
+import {
+  isQueryLibraryMode,
+  viewedLibraryDraft,
+  isLibraryQueryLocked,
+} from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import { useContainerWidth } from '@/_hooks/useContainerWidth';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
@@ -24,6 +30,8 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
 import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 import { useWriteQueryEntry } from '@/AppBuilder/QueryManager/_hooks/useWriteQueryEntry';
+import SaveIndicator from '@/AppBuilder/Header/SaveIndicator';
+import LibraryVersionDropdown from '@/AppBuilder/QueryLibrary/LibraryVersionDropdown';
 
 const ICON_ONLY_BUTTON_BREAKPOINT = 700;
 
@@ -39,7 +47,20 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
   const setShowCreateQuery = useStore((state) => state.queryPanel.setShowCreateQuery);
   const queryName = selectedQuery?.name ?? '';
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const isQueryLibrary = useStore((state) => isQueryLibraryMode(state));
+  // Only a library query's draft can be renamed; the server refuses it while a saved version is shown.
+  const isLibraryLocked = useStore((state) => isLibraryQueryLocked(state, state.queryPanel.selectedQuery?.id));
 
+  const librarySave = useStore(
+    (state) => ({
+      isSaving: state.queryLibrary.isSaving,
+      saveError: state.queryLibrary.saveError,
+    }),
+    shallow
+  );
+  const draftId = useStore((state) => viewedLibraryDraft(state, state.queryPanel.selectedQuery?.id)?.id);
+  const retryDraftSave = useStore((state) => state.dataQuery.retryLibraryDraftSave);
+  const retryLibrarySaves = () => retryDraftSave(selectedQuery?.id, draftId);
   const headerRef = useRef(null);
   const headerWidth = useContainerWidth(headerRef);
 
@@ -113,7 +134,8 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
       label: 'Transformation',
       condition: !TRANSFORMATION_DISABLED_KINDS.has(selectedQuery?.kind),
     },
-    { id: 3, key: 'settings', label: 'Settings' },
+    // Library queries have no triggers, notifications or events of their own.
+    { id: 3, key: 'settings', label: 'Settings', condition: !isQueryLibrary },
   ];
 
   const iconOnly = headerWidth > 0 && headerWidth < ICON_ONLY_BUTTON_BREAKPOINT;
@@ -127,7 +149,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
             selectedQuery={selectedQuery}
             value={queryName}
             darkMode={darkMode}
-            isDiabled={shouldFreeze}
+            isDiabled={shouldFreeze || isLibraryLocked}
           />
         )}
         {selectedQuery && (
@@ -157,6 +179,12 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
         )}
       </div>
       <div className="query-header-buttons">
+        {selectedQuery && isQueryLibrary && (
+          <div className="tw-flex tw-items-center tw-gap-3 tw-mr-2">
+            <LibraryVersionDropdown queryId={selectedQuery.id} darkMode={darkMode} />
+            <SaveIndicator {...librarySave} showLabel onRetry={retryLibrarySaves} />
+          </div>
+        )}
         {!(selectedQuery === null || showCreateQuery) && (
           <>
             {INLINE_AI_FEATURES_ENABLED && <GenerateQueryButton iconOnly={iconOnly} />}
@@ -271,6 +299,8 @@ const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
 };
 
 const RunButton = ({ buttonLoadingState, iconOnly }) => {
+  const libraryEnabled = useStore((state) => isQueryLibraryEnabled(state.license.featureAccess));
+  const isQueryLibrary = useStore(isQueryLibraryMode);
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const runQuery = useStore((state) => state.queryPanel.runQuery);
   const isInDraft = selectedQuery?.status === 'draft';
@@ -291,7 +321,7 @@ const RunButton = ({ buttonLoadingState, iconOnly }) => {
           variant="secondary"
           onClick={() => runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true, undefined, true)}
           leadingIcon="play"
-          disabled={isInDraft || isActive}
+          disabled={isInDraft || isActive || ((isQueryLibrary || selectedQuery?.kind === 'library') && !libraryEnabled)}
           isLoading={isLoading}
           iconOnly={iconOnly}
           className={iconOnly ? '' : isMac ? '!tw-w-[88px]' : '!tw-w-[120px]'}
@@ -360,9 +390,7 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   const selectedDataSource = useStore((state) => state.queryPanel.selectedDataSource);
   const hasPermissions =
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
-      ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-        canReadDataSource(selectedQuery?.data_source_id) ||
-        canDeleteDataSource()
+      ? canUpdateDataSource(selectedDataSource.id) || canReadDataSource(selectedDataSource.id) || canDeleteDataSource()
       : true;
   const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
   const isLoading = useStore(

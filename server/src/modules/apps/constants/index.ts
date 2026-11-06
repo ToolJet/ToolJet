@@ -23,6 +23,8 @@ export enum APP_TYPES {
 
 export const APPS_PAGE_SIZE = 9;
 
+export const isModuleLikeAppType = (type?: string): boolean => type === APP_TYPES.MODULE;
+
 export enum LayoutDimensionUnits {
   COUNT = 'count',
   PERCENT = 'percent',

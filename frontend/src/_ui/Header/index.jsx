@@ -1,7 +1,8 @@
 import React from 'react';
 import cx from 'classnames';
 import { Breadcrumbs } from '../Breadcrumbs';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
@@ -65,6 +66,8 @@ function Header({
         return 'Workspace constants';
       case 'modules':
         return 'Modules';
+      case 'query-library':
+        return 'Query library';
       default:
         return 'Applications';
     }
@@ -169,6 +172,15 @@ function Header({
               className="app-header-label tw-flex tw-items-center "
               data-cy={generateCypressDataCy(`breadcrumb-header-${pathname}`)}
             >
+              {pathname === 'Query library' && (
+                <Link
+                  to={location.pathname.replace(/\/query-library\/?$/, '')}
+                  aria-label="Back to dashboard"
+                  className="tw-mr-3 tw-flex tw-items-center tw-text-default"
+                >
+                  <ArrowLeft size={16} aria-hidden="true" />
+                </Link>
+              )}
               <Breadcrumbs darkMode={darkMode} />
             </div>
             <div

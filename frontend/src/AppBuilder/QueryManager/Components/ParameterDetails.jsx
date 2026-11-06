@@ -8,15 +8,28 @@ import Remove from '@/_ui/Icon/bulkIcons/Remove';
 import ParameterForm from './ParameterForm';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 
-const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, otherParams }) => {
+// idPrefix keeps two lists on one screen (library Inputs + Parameters) from sharing element ids; noun is the popover title word.
+const ParameterDetails = ({
+  darkMode,
+  onSubmit,
+  isEdit,
+  name,
+  defaultValue,
+  onRemove,
+  otherParams,
+  idPrefix = '',
+  noun,
+}) => {
   const [showModal, setShowModal] = useState(false);
   const closeMenu = () => setShowModal(false);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      const isClickedOnAddButton = !!event.target.closest('#runjs-param-add-btn');
+      const isClickedOnAddButton = !!event.target.closest(`#${idPrefix}runjs-param-add-btn`);
       const parameterItemPillButton = event.target.closest('.parameterItemPillButton');
-      const isClickedOnPillButton = !!(parameterItemPillButton?.id === `query-param-${String(name).toLowerCase()}`);
+      const isClickedOnPillButton = !!(
+        parameterItemPillButton?.id === `${idPrefix}query-param-${String(name).toLowerCase()}`
+      );
       if (isClickedOnAddButton && !isEdit) {
         return;
       }
@@ -25,7 +38,7 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
       }
       if (
         showModal &&
-        event.target.closest('#parameter-form-popover') === null &&
+        event.target.closest(`#${idPrefix}parameter-form-popover`) === null &&
         event.target.closest('.cm-completionListIncompleteBottom') === null
       ) {
         closeMenu();
@@ -53,9 +66,9 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
   usePopoverObserver(
     document.getElementsByClassName('query-details')[0],
     isEdit
-      ? document.getElementById(`query-param-${String(name).toLowerCase()}`)
-      : document.getElementById('runjs-param-add-btn'),
-    document.getElementById('parameter-form-popover'),
+      ? document.getElementById(`${idPrefix}query-param-${String(name).toLowerCase()}`)
+      : document.getElementById(`${idPrefix}runjs-param-add-btn`),
+    document.getElementById(`${idPrefix}parameter-form-popover`),
     showModal,
     () => setShowModal(true),
     closeMenu
@@ -69,13 +82,14 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
       show={showModal}
       overlay={
         <Popover
-          id="parameter-form-popover"
+          id={`${idPrefix}parameter-form-popover`}
           className={`query-manager-sort-filter-popup p-0 ${darkMode && 'popover-dark-themed dark-theme theme-dark'}`}
           style={{ width: '268px' }}
         >
           <ParameterForm
             darkMode={darkMode}
             isEdit={isEdit}
+            noun={noun}
             otherParams={otherParams}
             name={name}
             defaultValue={defaultValue}
@@ -89,7 +103,8 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
         {isEdit ? (
           <PillButton
             className="parameterItemPillButton"
-            id={`query-param-${String(name).toLowerCase()}`}
+            idPrefix={idPrefix}
+            id={`${idPrefix}query-param-${String(name).toLowerCase()}`}
             name={name}
             onClick={() => setShowModal(true)}
             onRemove={onRemove}
@@ -100,8 +115,8 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
             size="medium"
             variant="outline"
             leadingIcon="plus"
-            id="runjs-param-add-btn"
-            data-cy="query-param-add-button"
+            id={`${idPrefix}runjs-param-add-btn`}
+            data-cy={`${idPrefix}query-param-add-button`}
             onClick={() => setShowModal((show) => !show)}
           >
             Add
@@ -112,7 +127,7 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
   );
 };
 
-export const PillButton = ({ name, onClick, onRemove, marginBottom, className, size, id }) => (
+export const PillButton = ({ name, onClick, onRemove, marginBottom, className, size, id, idPrefix = '' }) => (
   <ButtonGroup
     aria-label="Parameter"
     className={cx({ 'mb-2': marginBottom, ...(className && { [className]: true }) })}
@@ -131,13 +146,13 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom, className, s
         ...(!onRemove && { borderRadius: '6px' }),
       }}
     >
-      <span data-cy={`query-param-${String(name).toLowerCase()}`} className="text-truncate query-param-text">
+      <span data-cy={`${idPrefix}query-param-${String(name).toLowerCase()}`} className="text-truncate query-param-text">
         {name}
       </span>
     </Button>
     {onRemove && (
       <Button
-        data-cy={`query-param-${String(name).toLowerCase()}-remove-button`}
+        data-cy={`${idPrefix}query-param-${String(name).toLowerCase()}-remove-button`}
         onClick={onRemove}
         size="sm"
         className={cx('bg-transparent color-slate12', { 'p-0': size === 'sm' })}

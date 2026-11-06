@@ -8815,6 +8815,11 @@ tbody {
   align-items: center;
   // justify-content: center;
 
+  &[data-name='Query library'] {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
   &[data-name="Audit logs"],
   &[data-name="Workspace constants"],
   &[data-name="Profile settings"] {

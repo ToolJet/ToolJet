@@ -6,6 +6,9 @@ export const dataqueryService = {
   create,
   getAll,
   run,
+  runLibrary,
+  getLibraryDefinition,
+  addToLibrary,
   update,
   del,
   preview,
@@ -55,14 +58,19 @@ function createWorkflowQuery(app_id, app_version_id, name, kind, options, data_s
   return fetch(`${config.apiUrl}/data-queries/workflow-node`, requestOptions).then(handleResponse);
 }
 
-function update(id, versionId, name, options, dataSourceId) {
+function update(id, versionId, name, options, dataSourceId, context = {}) {
   const body = {
     options,
     name,
     data_source_id: dataSourceId,
   };
 
-  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(false, context.workspaceId),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
   return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
@@ -114,6 +122,45 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode, 
     signal,
   };
   return fetch(url, requestOptions).then(handleResponse);
+}
+
+// The editor runs in the selected environment (with its access check); public/released apps use the viewer route.
+function runLibrary(queryId, { inputs } = {}, versionId, environmentId, signal) {
+  const url =
+    versionId && environmentId && environmentId !== 'undefined'
+      ? `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/run-library/${environmentId}`
+      : `${config.apiUrl}/data-queries/${queryId}/run-library`;
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ inputs: inputs ?? {} }),
+    signal,
+  };
+  return fetch(url, requestOptions).then(handleResponse);
+}
+
+function getLibraryDefinition(queryId, signal) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({}),
+    signal,
+  };
+  return fetch(`${config.apiUrl}/data-queries/${queryId}/library-definition`, requestOptions).then(handleResponse);
+}
+
+function addToLibrary(queryId, versionId, { name, sourceOptions, libraryOptions, inputs }) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ name, sourceOptions, libraryOptions, inputs }),
+  };
+  return fetch(`${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/add-to-library`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function preview(query, options, versionId, environmentId, signal) {

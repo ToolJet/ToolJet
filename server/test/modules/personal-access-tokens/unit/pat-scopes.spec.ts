@@ -32,6 +32,11 @@ import { FEATURE_KEY as DATA_QUERY_FOLDER_FEATURE } from '@modules/data-query-fo
 const allBundledModules = () => Object.values(PAT_BUNDLE_MODULES).flat();
 
 describe('PAT scope definition', () => {
+  it('keeps standalone Query Library management unassigned for workspace and viewer tokens', () => {
+    expect(PAT_UNASSIGNED_MODULES).toContain(MODULES.QUERY_LIBRARY);
+    expect(patCanAccess(MODULES.QUERY_LIBRARY)).toBe(false);
+    expect(patAppViewerCanAccess(MODULES.QUERY_LIBRARY)).toBe(false);
+  });
   it('never places the credential surface in a grantable bundle', () => {
     // If PERSONAL_ACCESS_TOKENS were ever grantable, a token could mint further tokens — a
     // persistence mechanism that survives revoking the original.
@@ -456,6 +461,18 @@ describe('PatScopeInterceptor — app-pinned render session', () => {
     expect(() => run(MODULES.DATA_QUERY, undefined, { method: 'POST', originalUrl: '/api/data-queries' })).toThrow(
       ForbiddenException
     );
+  });
+
+  it('denies library conversion and library execution endpoints to app-pinned sessions', () => {
+    for (const path of [
+      '/api/data-queries/q/versions/v/add-to-library',
+      '/api/data-queries/q/library-definition',
+      '/api/data-queries/q/run-library',
+    ]) {
+      expect(() => run(MODULES.DATA_QUERY, undefined, { method: 'POST', originalUrl: path })).toThrow(
+        ForbiddenException
+      );
+    }
   });
 
   it('fails closed on a route with no module metadata', () => {

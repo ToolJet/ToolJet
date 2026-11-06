@@ -84,6 +84,7 @@ export const createAppVersionSlice = (set, get) => ({
   setAppVersionPromoted: (value) => set(() => ({ isAppVersionPromoted: value }), false, 'setAppVersionPromoted'),
 
   getShouldFreeze: (skipIsEditorFreezedCheck = false, _isModuleEditor = false) => {
+    if (get().queryLibrary?.isLibraryMode) return false;
     const isVersionReleased = get().isVersionReleased;
     const selectedVersionId = get().selectedVersion?.id;
     const releasedVersionId = get().releasedVersionId;
