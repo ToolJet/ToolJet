@@ -357,6 +357,17 @@
     }
   }
 
+  // A thin scrollbar that is only drawn while the pointer is over the scrolling area. The track keeps its room, so
+  // nothing shifts when it appears.
+  .tw-scrollbar-on-hover {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+
+    &:hover {
+      scrollbar-color: var(--interactive-overlays-border-hover) transparent;
+    }
+  }
+
   .tw-hide-scrollbar {
     scrollbar-width: none;
 
@@ -15450,6 +15461,11 @@ textarea.tj-text-input-widget {
 
 .wrapper-div-code-editor:hover .fx-button-container {
   opacity: 1;
+}
+
+// space between the field actions (e.g. a cog) and the fx button beside them
+.fx-button-container.show-on-focus-within {
+  margin-right: 4px;
 }
 
 // keeps the field actions (e.g. a cog) visible while their popover or keyboard focus is inside

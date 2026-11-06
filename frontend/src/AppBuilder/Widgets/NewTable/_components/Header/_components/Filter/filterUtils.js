@@ -1,12 +1,22 @@
 // eslint-disable-next-line import/no-unresolved
 import { diff as deepDiff } from 'deep-object-diff';
 
+const lower = (value) => String(value ?? '').toLowerCase();
+
+// Picked options: a row passes when its value, or one of its items when it holds a list, is one of them
+const hasAnyOf = (cell, picked) => {
+  const items = (Array.isArray(cell) ? cell : [cell]).map(lower);
+  return picked.some((option) => items.includes(lower(option)));
+};
+
 export const filterFunctions = {
   contains: (row, columnId, filterValue) => {
+    if (Array.isArray(filterValue.value)) return hasAnyOf(row.getValue(columnId), filterValue.value);
     const value = String(row.getValue(columnId) || '').toLowerCase();
     return value.includes(String(filterValue.value || '').toLowerCase());
   },
   doesNotContains: (row, columnId, filterValue) => {
+    if (Array.isArray(filterValue.value)) return !hasAnyOf(row.getValue(columnId), filterValue.value);
     const value = String(row.getValue(columnId) || '').toLowerCase();
     return !value.includes(String(filterValue.value || '').toLowerCase());
   },
@@ -29,10 +39,12 @@ export const filterFunctions = {
     }
   },
   equals: (row, columnId, filterValue) => {
+    if (Array.isArray(filterValue.value)) return hasAnyOf(row.getValue(columnId), filterValue.value);
     const value = String(row.getValue(columnId) || '');
     return value === String(filterValue.value || '');
   },
   ne: (row, columnId, filterValue) => {
+    if (Array.isArray(filterValue.value)) return !hasAnyOf(row.getValue(columnId), filterValue.value);
     const value = String(row.getValue(columnId) || '');
     return value !== String(filterValue.value || '');
   },
@@ -101,6 +113,10 @@ const shouldFireEvent = (diff, filter) => {
   }
 };
 
+// Match any: the row passes when one filter, on any column, matches
+export const applyAnyFilter = (row, columnFilters) =>
+  columnFilters.some(({ id, value: { condition, value } }) => filterFunctions[condition](row, id, { value }));
+
 export const applyFilters = (row, columnId, columnFilters) =>
   columnFilters.every((filter) => {
     const { value, condition } = filter.value;
@@ -108,3 +124,15 @@ export const applyFilters = (row, columnId, columnFilters) =>
     const result = filterFn(row, columnId, { value });
     return result;
   });
+
+// A filter is applied only once it is complete; the panel and the builder's default filters share this rule.
+export const isFilterComplete = (filter) => {
+  if (!filter.id) return false;
+  if (!filter.value?.condition) return false;
+  // For isEmpty/isNotEmpty operations, we don't need a value
+  if (['isEmpty', 'isNotEmpty'].includes(filter.value.condition)) return true;
+  // For other operations, we need a value
+  const { value } = filter.value ?? {};
+  if (Array.isArray(value)) return value.length > 0;
+  return value !== undefined && value !== '';
+};

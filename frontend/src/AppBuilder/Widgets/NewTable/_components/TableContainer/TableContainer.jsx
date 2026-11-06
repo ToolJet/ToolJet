@@ -1,10 +1,12 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import useTableStore from '../../_stores/tableStore';
+import useStore from '@/AppBuilder/_stores/store';
 import TableExposedVariables from '../TableExposedVariables';
 import Header from '../Header';
 import Footer from '../Footer';
 import { buildTableColumn } from '../../_utils/buildTableColumn';
 import { useTable } from '../../_hooks/useTable';
+import { getDefaultColumnFilters } from '../../_utils/defaultFilters';
 import { shallow } from 'zustand/shallow';
 import TableData from '../TableData';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +39,13 @@ export const TableContainer = ({
   const serverSidePagination = useTableStore((state) => state.getTableProperties(id)?.serverSidePagination, shallow);
   const serverSideSort = useTableStore((state) => state.getTableProperties(id)?.serverSideSort, shallow);
   const serverSideFilter = useTableStore((state) => state.getTableProperties(id)?.serverSideFilter, shallow);
+  const defaultFilters = useTableStore((state) => state.getTableProperties(id)?.defaultFilters, shallow);
+  const savedFilterMatch = useTableStore((state) => state.getTableProperties(id)?.filterMatch, shallow);
+  // The user can switch and/or in the filters panel; that is theirs for this session and never saved. The builder
+  // changing the setting takes it back.
+  const [filterMatchChoice, setFilterMatchChoice] = useState(null);
+  useEffect(() => setFilterMatchChoice(null), [savedFilterMatch]);
+  const filterMatch = filterMatchChoice ?? savedFilterMatch;
   const serverSideSearch = useTableStore((state) => state.getTableProperties(id)?.serverSideSearch, shallow);
   const rowsPerPage = useTableStore((state) => state.getTableProperties(id)?.rowsPerPage, shallow);
   const serverSideRowsPerPage = useTableStore((state) => state.getTableProperties(id)?.serverSideRowsPerPage, shallow);
@@ -110,21 +119,53 @@ export const TableContainer = ({
     moduleId,
   ]);
 
-  const { table, pagination, setPagination, columnVisibility, setColumnFilters, columnOrder, setColumnOrder } =
-    useTable({
-      data,
-      columns,
-      enableSorting,
-      enablePagination,
-      showBulkSelector,
-      serverSidePagination,
-      serverSideSort,
-      serverSideFilter,
-      rowsPerPage: effectiveRowsPerPage,
-      globalFilter,
-      setGlobalFilter,
-      expandedRows,
-    });
+  // A default value bound to code (fx, or any value with server-side filtering) is resolved like the table's other
+  // bindings. Selecting the resolved values keeps the filters current when what they read changes.
+  const defaultFilterValues = useStore(
+    (state) =>
+      Array.isArray(defaultFilters)
+        ? defaultFilters.map(({ fx, value }) =>
+            fx || serverSideFilter ? state.getResolvedValue(value, {}, moduleId) : value
+          )
+        : [],
+    shallow
+  );
+  const defaultColumnFilters = useMemo(
+    () =>
+      getDefaultColumnFilters(
+        Array.isArray(defaultFilters)
+          ? defaultFilters.map((filter, index) => ({ ...filter, value: defaultFilterValues[index] }))
+          : defaultFilters,
+        columns
+      ),
+    [defaultFilters, defaultFilterValues, columns]
+  );
+
+  const {
+    table,
+    pagination,
+    setPagination,
+    columnVisibility,
+    setColumnFilters,
+    seededFilters,
+    columnOrder,
+    setColumnOrder,
+  } = useTable({
+    data,
+    columns,
+    defaultColumnFilters,
+    filterMatch,
+    enableSorting,
+    enablePagination,
+    showBulkSelector,
+    serverSidePagination,
+    serverSideSort,
+    serverSideFilter,
+    rowsPerPage: effectiveRowsPerPage,
+    globalFilter,
+    setGlobalFilter,
+    expandedRows,
+  });
 
   // Collapse all expanded rows when sort, filter, search or page changes
   useEffect(() => {
@@ -187,6 +228,7 @@ export const TableContainer = ({
         pageIndex={pagination.pageIndex + 1}
         lastClickedRowRef={lastClickedRowRef}
         hasDataChanged={hasDataChanged}
+        seededFilters={seededFilters}
         paginationBtnClicked={paginationBtnClicked}
       />
       <Header
@@ -199,7 +241,10 @@ export const TableContainer = ({
         table={table}
         setFilters={handleFilterChange}
         appliedFiltersLength={table.getState().columnFilters.length}
+        appliedFilters={table.getState().columnFilters}
         componentName={componentName}
+        filterMatch={filterMatch}
+        onFilterMatchChange={serverSideFilter ? undefined : setFilterMatchChoice}
       />
       <TableData
         id={id}

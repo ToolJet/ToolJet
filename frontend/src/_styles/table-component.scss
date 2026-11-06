@@ -15,7 +15,8 @@
   }
 
   .table-filters {
-    border: 1px solid var(--slate3, #F1F3F5) !important;
+    // no outline: the panel is told apart by its shadow and the dimmed table behind it
+    border: 0 !important;
 
     .card-body {
       overflow-y: auto;
@@ -32,7 +33,7 @@
     background-color: var(--cc-surface1-surface);
   }
 
-  .card {
+  .card:not(.table-filters) {
     border: 1px solid var(--cc-default-border) !important;
   }
 
@@ -829,7 +830,11 @@
 // input with the calendar icon on the left (frame 2628:86086).
 .table-add-new-row {
   color: var(--slate12);
+}
 
+// the filters panel enters a date filter with the same field
+.table-add-new-row,
+.table-filters {
   .table-add-new-row-field-control {
     // The date renderer draws its own error line under the field; the form shows one error line for every field
     // type instead, so hide it, and tint the input when the form flags the field.
@@ -896,6 +901,45 @@
       position: static;
       transform: none;
     }
+  }
+}
+
+// The calendar of a date chip in the table header: the chip's own box, no border, the chip draws the icon
+.table-filter-chip-date {
+  .invalid-feedback-date,
+  .invalid-feedback,
+  .cell-icon-display {
+    display: none !important;
+  }
+
+  .react-datepicker-wrapper,
+  .react-datepicker__input-container,
+  .table-column-datepicker-input-container {
+    display: block;
+  }
+
+  .table-column-datepicker-input {
+    width: 96px;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-default);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 20px;
+
+    &:focus {
+      outline: none;
+    }
+
+    &::placeholder {
+      color: var(--text-placeholder);
+    }
+  }
+
+  &[data-with-time='true'] .table-column-datepicker-input {
+    width: 150px;
   }
 }
 

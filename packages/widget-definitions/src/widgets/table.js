@@ -220,6 +220,16 @@ export const tableConfig = {
         defaultValue: true,
       },
     },
+    defaultFilters: {
+      type: 'code',
+      displayName: 'Default filters',
+      validation: { schema: { type: 'array', element: { type: 'object' } } },
+    },
+    filterMatch: {
+      type: 'code',
+      displayName: 'Match filters',
+      validation: { schema: { type: 'string' } },
+    },
     showBulkUpdateActions: {
       type: 'toggle',
       displayName: 'Show update buttons',
@@ -730,6 +740,8 @@ export const tableConfig = {
       displaySearchBox: { value: '{{true}}' },
       showDownloadButton: { value: '{{true}}' },
       showFilterButton: { value: '{{true}}' },
+      defaultFilters: { value: [] },
+      filterMatch: { value: 'and' },
       autogenerateColumns: { value: true, generateNestedColumns: true },
       isAllColumnsEditable: { value: '{{false}}' },
       columns: {
