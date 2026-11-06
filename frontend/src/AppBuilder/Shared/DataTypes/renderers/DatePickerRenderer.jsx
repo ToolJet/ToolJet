@@ -80,9 +80,15 @@ export const parseDate = ({
     return timeZone ? moment.tz(input, moment.ISO_8601, true, timeZone) : moment(input, moment.ISO_8601, true);
   };
 
+  // moment.unix() coerces ' ', true and [] to 0/1 (a valid 1970 date); only real numbers should parse
+  const toUnixSeconds = (input) => {
+    if (typeof input === 'number') return input;
+    return typeof input === 'string' && input.trim() !== '' ? Number(input) : NaN;
+  };
+
   let momentObj;
   if (parseInUnixTimestamp && unixTimestamp) {
-    momentObj = unixTimestamp === 'seconds' ? moment.unix(value) : moment(parseInt(value));
+    momentObj = unixTimestamp === 'seconds' ? moment.unix(toUnixSeconds(value)) : moment(parseInt(value));
   } else if (isTimeChecked && timeZoneValue && timeZoneDisplay) {
     momentObj = moment.tz(value, parseDateFormat, true, timeZoneValue);
     if (!momentObj.isValid()) momentObj = parseAsIso(value, timeZoneValue);
