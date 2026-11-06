@@ -134,8 +134,6 @@ const periodicFailureCounts = new Map();
 // Queries whose tick fell while the tab was hidden; each runs once when the tab is visible again.
 const missedWhileHidden = new Set();
 let visibilityListenerAdded = false;
-// Floor for the interval to protect the backend from runaway polling.
-const MIN_PERIODIC_INTERVAL_MS = 1000;
 // setTimeout stores its delay as a signed 32-bit int (~24.8 days); a larger delay overflows and
 // fires almost immediately, which would re-run the query back to back.
 const MAX_PERIODIC_INTERVAL_MS = 2 ** 31 - 1;
@@ -201,7 +199,8 @@ function recordPeriodicRunResult(query, moduleId, store, status) {
 // Resolve the current desired state from a query's options. `runPeriodically`
 // may be a boolean (fx off) or a `{{…}}` expression (fx on); `queryRunInterval`
 // may be a number, a numeric string, or an expression. Returns the run decision
-// plus the clamped interval (null when it shouldn't run / is invalid).
+// plus the capped interval (null when it shouldn't run / is invalid). There is no floor: a tick
+// is skipped while the previous run is in flight, so runs never overlap.
 function resolvePeriodicConfig(query, moduleId, store) {
   const options = query?.options || {};
   const shouldRun = !!store.getResolvedValue(options.runPeriodically, {}, moduleId);
@@ -215,7 +214,7 @@ function resolvePeriodicConfig(query, moduleId, store) {
   }
   return {
     shouldRun: true,
-    intervalMs: Math.min(Math.max(num, MIN_PERIODIC_INTERVAL_MS), MAX_PERIODIC_INTERVAL_MS),
+    intervalMs: Math.min(num, MAX_PERIODIC_INTERVAL_MS),
   };
 }
 

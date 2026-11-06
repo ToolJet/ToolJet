@@ -6,7 +6,7 @@ import { CustomToggleSwitch } from './CustomToggleSwitch';
 // Revealed directly under the "Run this query periodically" toggle.
 // When fx is active, shows the expression editor for the toggle value itself
 // (stored as a string in options.runPeriodically). The time interval is in
-// milliseconds and supports fx (resolved + clamped to a safe minimum at runtime).
+// milliseconds and supports fx (resolved at runtime).
 export default function PeriodicRunInputs({ options, darkMode, optionchanged }) {
   const { t } = useTranslation();
   const fxMode = !!options?.runPeriodicallyFx;

@@ -72,10 +72,10 @@ describe('run query periodically', () => {
     expect(skippedLogs()).toHaveLength(0);
   });
 
-  test('an interval below 1000ms is clamped to 1000ms', () => {
+  test('a short interval is used as set, with no minimum', () => {
     seedPeriodicQuery({ queryRunInterval: 10 });
 
-    jest.advanceTimersByTime(999);
+    jest.advanceTimersByTime(9);
     expect(didRun()).toBe(false);
 
     jest.advanceTimersByTime(1);
