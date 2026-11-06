@@ -41,6 +41,7 @@ export const SecurityPanel = ee.SecurityPanel ?? Nothing;
 export const SecurityStatusChip = ee.SecurityStatusChip ?? Nothing;
 export const AccessPanel = ee.AccessPanel ?? Nothing;
 export const useCodeModePin = ee.useCodeModePin ?? (() => false);
+export const useStyleInspectorRail = ee.useStyleInspectorRail ?? (() => null);
 export const FrameLibraryComponent = ee.FrameLibraryComponent ?? Nothing;
 export const useCodeMode = ee.useCodeMode ?? (() => false);
 export const useCodePage = ee.useCodePage ?? (() => ({ isCodePage: false, rootId: undefined }));
