@@ -7,20 +7,22 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
 import { toast } from 'react-hot-toast';
 
-function Logs({ logProps, idx }) {
-  const [open, setOpen] = React.useState(false);
-  let titleLogType = logProps?.type !== 'event' ? logProps?.type : '';
-  if (titleLogType === 'transformations') {
-    titleLogType = 'Transformation';
-  }
-  const title = logProps?.key;
-  const message =
-    logProps?.type === 'navToDisablePage'
-      ? logProps?.message
-      : logProps?.isQuerySuccessLog
-        ? 'Completed'
+// A sentence that already ends in a full stop (or ! or ?) gets no second one.
+const withFullStop = (text) => (/[.!?]$/.test(String(text ?? '').trim()) ? String(text).trim() : `${text}.`);
+
+/*
+  The line under a log's title. A version lifecycle log (save, promote, release: errorTarget "Version") carries a
+  sentence of its own, shown as it is; "Invalid property detected" is for components.
+*/
+export const logMessage = (logProps) =>
+  logProps?.type === 'navToDisablePage'
+    ? logProps?.message
+    : logProps?.isQuerySuccessLog
+      ? 'Completed'
+      : logProps?.errorTarget === 'Version' && logProps?.message
+        ? withFullStop(logProps.message)
         : logProps?.type === 'component'
-          ? `Invalid property detected: ${logProps?.message}.`
+          ? `Invalid property detected: ${withFullStop(logProps?.message)}`
           : logProps?.type === 'Custom Log'
             ? logProps?.description
             : `${startCase(logProps?.type)} failed: ${
@@ -29,6 +31,15 @@ function Logs({ logProps, idx }) {
                 (isString(logProps?.error?.description) && logProps?.error?.description) || //added string check since description can be an object. eg: runpy
                 logProps?.error?.message
               }`;
+
+function Logs({ logProps, idx }) {
+  const [open, setOpen] = React.useState(false);
+  let titleLogType = logProps?.type !== 'event' ? logProps?.type : '';
+  if (titleLogType === 'transformations') {
+    titleLogType = 'Transformation';
+  }
+  const title = logProps?.key;
+  const message = logMessage(logProps);
 
   const defaultStyles = {
     transform: open ? 'rotate(-90deg)' : 'rotate(0deg)',
