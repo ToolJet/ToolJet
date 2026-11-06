@@ -25,6 +25,19 @@ const toastIfQueryRunRestricted = (errorData) => {
   if (errorData?.data?.type === TJ_QUERY_ERROR_TYPE.FORBIDDEN) toast.error(errorData.data.responseObject.responseBody);
 };
 
+// The result fields a failed or aborted run leaves on the query. A run start no longer blanks the
+// query (bound components keep the previous result while it loads), so a run that settles without
+// a result writes this blank itself: the query ends up exactly as it did when the start blanked it.
+const clearedQueryResult = () => ({
+  data: [],
+  rawData: [],
+  metadata: undefined,
+  request: undefined,
+  response: undefined,
+  responseHeaders: undefined,
+  error: undefined,
+});
+
 const initialState = {
   isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
   isDraggingQueryPane: false,
@@ -640,6 +653,7 @@ export const createQueryPanelSlice = (set, get) => ({
           queryId,
           {
             isLoading: false,
+            ...clearedQueryResult(),
             ...(errorData?.data?.type === TJ_QUERY_ERROR_TYPE.UNAUTHORIZED
               ? {
                   metadata: errorData?.metadata,
@@ -681,7 +695,8 @@ export const createQueryPanelSlice = (set, get) => ({
         }
 
         // Only flag the run as loading: the previous result (and error) stays until this run
-        // settles, so bound components don't go blank. `isLoading` is the loading signal.
+        // settles, so bound components don't go blank. `isLoading` is the loading signal. Failure
+        // and abort write clearedQueryResult() when they settle, so the end state is unchanged.
         setResolvedQuery(queryId, { isLoading: true }, moduleId);
 
         // Create AbortController only for fetch-based kinds. For runjs/runpy/workflows,
@@ -864,7 +879,7 @@ export const createQueryPanelSlice = (set, get) => ({
           .catch((e) => {
             // User-initiated abort — clear loading silently, log to debugger, do not fire failure events
             if (isAbortError(e)) {
-              setResolvedQuery(queryId, { isLoading: false }, moduleId);
+              setResolvedQuery(queryId, { isLoading: false, ...clearedQueryResult() }, moduleId);
               get().debugger.log({
                 logLevel: 'warning',
                 type: 'query',

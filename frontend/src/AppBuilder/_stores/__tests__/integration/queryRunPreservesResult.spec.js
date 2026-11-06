@@ -1,12 +1,13 @@
 /**
  * Starting a run only sets `isLoading: true`. It no longer clears data, rawData, request,
  * response, responseHeaders, metadata or error first, so bound components keep the previous
- * result until the run settles. How a run settles is unchanged:
+ * result until the run settles. Once it settles, the query holds exactly what it held before
+ * this change, when the run start blanked it first:
  *
  *   success → every result field replaced together (empty data and absent metadata included)
- *   failure → error set; REST API failures still report their request/response/metadata at the
- *             top level as before, and data/rawData are untouched
- *   abort   → isLoading false, nothing else touched, no failure event
+ *   failure → the blank result plus the failure: error set, and REST API failures still report
+ *             their request/response/metadata at the top level
+ *   abort   → the blank result, isLoading false, no failure event
  *   reset   → result cleared
  *
  * NO MOCKS: the real store and runQuery, with the run endpoint answered through MSW. The
@@ -210,9 +211,20 @@ describe('a query re-run keeps its previous result', () => {
     );
   });
 
-  test('QR-6 failure: data stays, and the failure reports as it did before', async () => {
-    // Break this catches: a failure clearing the data (the blank state the run start used to
-    // cause), or a change to how a REST API failure reports its request/response and error.
+  // What a run left on the query before it settled, back when the run start blanked it.
+  const blankResult = {
+    data: [],
+    rawData: [],
+    metadata: undefined,
+    request: undefined,
+    response: undefined,
+    responseHeaders: undefined,
+  };
+
+  test('QR-6 failure: the query ends as it did before, with the previous data cleared', async () => {
+    // Break this catches: a failure leaving the previous run's data in place, so a binding
+    // shows the old rows as if they were the result of the failed run, or a change to how a
+    // REST API failure reports its request/response and error.
     serveRuns(FIRST, FAILED);
     seedQuery();
     await run();
@@ -222,8 +234,8 @@ describe('a query re-run keeps its previous result', () => {
     expect(exposed()).toEqual(
       expect.objectContaining({
         isLoading: false,
-        data: FIRST.data,
-        rawData: FIRST.data,
+        data: [],
+        rawData: [],
         metadata: FAILED.metadata,
         request: { url: 'https://example.test/failed' },
         response: { statusCode: 503 },
@@ -233,7 +245,22 @@ describe('a query re-run keeps its previous result', () => {
     );
   });
 
-  test('QR-7 transformation failure: data stays and error is populated', async () => {
+  test("QR-6b failure of a non-REST query: the previous run's metadata is cleared too", async () => {
+    // Break this catches: a JavaScript/SQL/etc. failure keeping the previous run's
+    // request/response/metadata, which only REST API failures overwrite.
+    serveRuns(FIRST, { status: 'failed', message: 'Query could not be completed', data: {} });
+    seedQuery();
+    s().dataQuery.setQueries([{ ...query(), kind: 'postgresql' }], 'canvas');
+    await run();
+    expect(exposed()).toEqual(expect.objectContaining(firstResult));
+
+    await run();
+
+    expect(exposed()).toEqual(expect.objectContaining({ isLoading: false, ...blankResult }));
+    expect(exposed().error).toEqual(expect.objectContaining({ status: 'failed' }));
+  });
+
+  test('QR-7 transformation failure: the previous data is cleared and error is populated', async () => {
     serveRuns(FIRST, { status: 'ok', data: { broken: true } });
     seedQuery({
       enableTransformation: true,
@@ -244,15 +271,16 @@ describe('a query re-run keeps its previous result', () => {
 
     await run();
 
-    expect(exposed()).toEqual(expect.objectContaining({ isLoading: false, data: FIRST.data, rawData: FIRST.data }));
+    expect(exposed()).toEqual(expect.objectContaining({ isLoading: false, ...blankResult }));
     // A transformation failure keeps its existing error shape: the message sits under `data`.
     expect(exposed().error).toEqual(
       expect.objectContaining({ status: 'failed', data: expect.objectContaining({ message: 'bad shape' }) })
     );
   });
 
-  test('QR-8 abort: the previous result stays, loading ends and no failure event fires', async () => {
-    // Break this catches: an abort blanking the data, or being reported as a query failure.
+  test('QR-8 abort: the query ends blank as before, loading ends and no failure event fires', async () => {
+    // Break this catches: an abort leaving the previous result in place, or being reported as a
+    // query failure.
     const pending = heldResponse();
     serveRuns(FIRST, pending);
     seedQuery();
@@ -263,7 +291,7 @@ describe('a query re-run keeps its previous result', () => {
     s().queryPanel.abortQuery('q1', 'canvas');
 
     await expect(finished).resolves.toEqual({ status: 'aborted' });
-    expect(exposed()).toEqual(expect.objectContaining({ isLoading: false, ...firstResult }));
+    expect(exposed()).toEqual(expect.objectContaining({ isLoading: false, ...blankResult, error: undefined }));
     expect(variables().failed).toBeUndefined();
     pending.release(FIRST);
   });
