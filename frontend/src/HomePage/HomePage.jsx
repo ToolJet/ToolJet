@@ -419,7 +419,8 @@ class HomePageComponent extends React.Component {
     return 'app';
   };
 
-  createApp = async (appName, type, prompt, taggedResources) => {
+  // buildMode comes from the enterprise "Create app" dialog (Visual or Code mode); without it the server builds visually.
+  createApp = async (appName, type, prompt, taggedResources, buildMode) => {
     const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
     if (currentBranch && this.props.appType !== 'workflow') {
       try {
@@ -444,7 +445,12 @@ class HomePageComponent extends React.Component {
         name: appName,
         type: this.props.appType,
         prompt,
+        ...(buildMode && { buildMode }),
       });
+      // Never a silent downgrade: an app asked for in Code mode that the server stored as visual says so.
+      if (buildMode === 'code' && (data?.buildMode ?? data?.build_mode) !== 'code') {
+        toast.error('This server created the app in Visual mode. Ask an admin to update ToolJet to use Code mode.');
+      }
       /* Posthog Event */
       posthogHelper.captureEvent('click_new_app', {
         workspace_id:
@@ -1844,7 +1850,7 @@ class HomePageComponent extends React.Component {
       create: {
         modalType: 'create',
         closeModal: this.closeCreateAppModal,
-        processApp: (name) => this.createApp(name),
+        processApp: (name, buildMode) => this.createApp(name, undefined, undefined, undefined, buildMode),
         show: this.openCreateAppModal,
         title: `Create ${this.getAppType().toLocaleLowerCase()}`,
         actionButton: `+ Create ${this.getAppType().toLocaleLowerCase()}`,
