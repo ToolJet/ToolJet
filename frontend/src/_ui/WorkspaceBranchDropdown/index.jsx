@@ -3,6 +3,7 @@ import cx from 'classnames';
 import moment from 'moment';
 import { Overlay, Popover } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { cn } from '@/lib/utils';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
 import { WorkspaceCreateBranchModal } from './CreateBranchModal';
@@ -10,6 +11,7 @@ import { WorkspaceSwitchBranchModal } from './SwitchBranchModal';
 import { toast } from 'react-hot-toast';
 import { AlertTriangle, Info, ExternalLink } from 'lucide-react';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { Button } from '@/components/ui/Button/Button';
 import { authenticationService } from '@/_services';
 import { getSubpath } from '@/_helpers/routes';
 import { buildGitPrUrl } from '@/_helpers/gitPrUrl';
@@ -576,8 +578,8 @@ export function WorkspaceBranchDropdown() {
   return (
     <>
       <div
-        className={cx('branch-dropdown-container', {
-          selected: showDropdown,
+        className={cn(`branch-dropdown-container !tw-mx-0`, {
+          'tw-bg-button-outline-pressed': showDropdown,
           'dark-theme': darkMode,
           // Single-branch: flat/label-like at rest, normal bordered button on hover/open.
           'single-branch': !isMultiBranchingEnabled,
@@ -585,16 +587,15 @@ export function WorkspaceBranchDropdown() {
         ref={buttonRef}
         data-cy="workspace-branch-dropdown-container"
       >
-        <button
-          className="branch-dropdown-button"
-          onClick={() => setShowDropdown(!showDropdown)}
+        <Button
+          size="medium"
+          variant="ghost"
+          leadingIcon="gitbranch"
           data-cy="workspace-branch-dropdown-header"
+          onClick={() => setShowDropdown(!showDropdown)}
         >
-          <SolidIcon name="gitbranch" width="16" fill="var(--slate12)" />
-          <span className="branch-name" data-cy="workspace-current-branch-name">
-            {displayBranchName}
-          </span>
-        </button>
+          {displayBranchName}
+        </Button>
       </div>
 
       <Overlay
