@@ -280,6 +280,8 @@ export const listviewConfig = {
     listStyle: {
       type: 'select',
       displayName: 'List style',
+      // Legacy is how every saved ListView keeps its look, so Star Rating's 'legacy' warning must not show here.
+      hideDeprecatedStyleWarning: true,
       options: [
         { name: 'Bordered', value: 'bordered' },
         { name: 'Container', value: 'container' },

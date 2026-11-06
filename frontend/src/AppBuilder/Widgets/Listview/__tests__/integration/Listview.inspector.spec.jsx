@@ -1,10 +1,11 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
-import { listviewConfig, textConfig, tableConfig } from '@tooljet/widget-definitions';
+import { render, fireEvent, screen } from '@testing-library/react';
+import { listviewConfig, starratingConfig, textConfig, tableConfig } from '@tooljet/widget-definitions';
 import useStore from '@/AppBuilder/_stores/store';
 import { seedApp } from '@/test/app-builder';
 import { DefaultComponent } from '@/AppBuilder/RightSideBar/Inspector/Components/DefaultComponent';
 import { Inspector } from '@/AppBuilder/RightSideBar/Inspector/Inspector';
+import { Select } from '@/AppBuilder/CodeBuilder/Elements/Select';
 
 const editors = [];
 // The fx editor is a stub unless a describe turns it off; the Styles panel describe needs the real one.
@@ -539,5 +540,24 @@ describe('ListviewStylesPanel', () => {
 
       expect(paramUpdated).toHaveBeenCalledWith(expect.objectContaining({ name: 'gap' }), 'value', '20', 'styles');
     });
+  });
+});
+
+describe('ListviewLegacyStyleWarning', () => {
+  // Star Rating's check matches any option valued 'legacy', so ListView's Legacy style has its own opt-out.
+  const legacyOption = (meta) => {
+    const { container } = render(<Select value="" onChange={jest.fn()} meta={meta} />);
+    fireEvent.keyDown(container.querySelector('input'), { key: 'ArrowDown', keyCode: 40 });
+    return screen.getByText('Legacy').closest('.d-flex');
+  };
+
+  test('[Listview-INSP-012] the Legacy list style shows no deprecated warning', () => {
+    // Break this catches: the Star Rating warning showing on the style every saved ListView keeps.
+    expect(legacyOption(listviewConfig.styles.listStyle).querySelector('svg')).toBeNull();
+  });
+
+  test('[Listview-INSP-012] Star Rating keeps the warning on its Legacy label style', () => {
+    // Break this catches: the opt-out removing the warning Star Rating relies on.
+    expect(legacyOption(starratingConfig.styles.labelStyle).querySelector('svg')).not.toBeNull();
   });
 });
