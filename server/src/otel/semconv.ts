@@ -13,6 +13,8 @@ export const METRIC = {
 
   ORGANIZATION_SEATS: 'tooljet.organization.seats',
   APP_ACTIVE_USERS: 'tooljet.app.active_users',
+
+  USER_SIGNUPS: 'tooljet.user.signups',
 } as const;
 
 // SDK defaults top out at 10s; real lcp/fcp and app loads overflow it and pin every quantile.
@@ -58,6 +60,10 @@ export const ATTR = {
   // Beacon classification. Separate key so ERROR_TYPE stays event class on both signals.
   ERROR_KIND: 'tooljet.error.kind',
   WIDGET_TYPE: 'tooljet.widget.type',
+
+  // Both bounded enums (SignupMethod, SignupOutcome). The email domain is unbounded: logs only.
+  SIGNUP_METHOD: 'tooljet.signup.method',
+  SIGNUP_OUTCOME: 'tooljet.signup.outcome',
 
   // Log records only — unbounded detail, never metric labels.
   EXCEPTION_TYPE: 'exception.type',
