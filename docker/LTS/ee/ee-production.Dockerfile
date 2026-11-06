@@ -30,7 +30,7 @@ RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools 
 # it ships. The GitHub token is a BuildKit secret (github_token), so it stays out of the layers and the build cache.
 FROM node:22.23.4 AS mcp-builder
 WORKDIR /mcp
-ARG TOOLJET_MCP_REF=e90ed149dacab312fec93ac23cd03db42f097863
+ARG TOOLJET_MCP_REF=bbc13e3f4e2c04936dc5ec00703e055c75e33b47
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
