@@ -196,15 +196,38 @@ const SdkComponentHost = ({
   // Row-scoped props (ToolJet.useRowResolver) keep their {{rowData...}} / {{cellValue}} templates for the component.
   const { overrides: rowTemplates, markRowScoped } = useRowTemplates({ id, properties, manifestComponent });
 
+  // A hidden prop (no Inspector field) still at its manifest sample was saved by a drop that stamped every prop, not
+  // set by the app: leaving it unset lets the component start from its own value. A Rocket Number Input, Slider or
+  // Rating otherwise kept its sample (1, 50, 4) over an emptied Default value after a reload. An app that set the
+  // prop to anything else (a pack's earlier name for it) still sets it.
+  const hiddenSamples = useMemo(
+    () =>
+      new Map(
+        (manifestComponent?.props ?? [])
+          .filter((prop) => prop.inspector === 'hidden' && prop.default !== undefined)
+          .map((prop) => [prop.name, JSON.stringify(prop.default)])
+      ),
+    [manifestComponent]
+  );
+  const isHiddenSample = (key: string, value: unknown) => {
+    const sample = hiddenSamples.get(key);
+    if (sample === undefined) return false;
+    try {
+      return JSON.stringify(value) === sample;
+    } catch {
+      return false;
+    }
+  };
+
   // The component's own props = everything the Inspector sets minus the host's keys.
   const componentProps = useMemo(() => {
     const hostKeys = new Set([...metaKeys, ...HOST_PROPERTY_KEYS]);
     return {
-      ...Object.fromEntries(Object.entries(properties).filter(([k]) => !hostKeys.has(k))),
+      ...Object.fromEntries(Object.entries(properties).filter(([k, v]) => !hostKeys.has(k) && !isHiddenSample(k, v))),
       ...rowTemplates,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties, rowTemplates, metaKeys.join('|')]);
+  }, [properties, rowTemplates, hiddenSamples, metaKeys.join('|')]);
 
   // Inspector Styles-tab values for the bundle — passed as styles, never set as exposed variables.
   const componentStyles = useMemo(

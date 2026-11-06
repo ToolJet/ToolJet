@@ -38,6 +38,14 @@ const Echo = () => {
   );
 };
 
+// A field whose value starts from its Default value, with a hidden `value` prop (its own state, and the name an
+// earlier release of it was set by), as the Rocket Number Input has.
+const Counter = () => {
+  const [defaultValue] = ToolJet.useStateNumber({ name: 'defaultValue', initialValue: 1 });
+  const [value] = ToolJet.useStateNumber({ name: 'value', initialValue: defaultValue, inspector: 'hidden' });
+  return <span data-testid="echo">{value === null ? 'empty' : String(value)}</span>;
+};
+
 // A pack component with a drop area (ToolJet.Slot), as a Tabs container or Card has.
 const SlotCard = () => (
   <div>
@@ -50,6 +58,13 @@ const manifest = {
   components: {
     SlotCard: { displayName: 'Slot card', props: [], slots: [{ name: 'body', kind: 'slot' }] },
     Echo: { displayName: 'Echo', props: [{ name: 'label', type: 'string' }], actions: [{ name: 'ping' }] },
+    Counter: {
+      displayName: 'Counter',
+      props: [
+        { name: 'defaultValue', type: 'number', default: 1 },
+        { name: 'value', type: 'number', default: 1, inspector: 'hidden' },
+      ],
+    },
   },
 };
 
@@ -110,7 +125,7 @@ describe('PackComponent integration', () => {
 
   beforeEach(async () => {
     await widget.setup();
-    loadLibraryModule.mockResolvedValue({ Echo, SlotCard });
+    loadLibraryModule.mockResolvedValue({ Echo, SlotCard, Counter });
     act(() => useStore.setState({ license: { featureAccess: { customComponentLibraries: false } } }));
   });
   afterEach(() => {
@@ -137,6 +152,26 @@ describe('PackComponent integration', () => {
     renderPack();
 
     await waitFor(() => expect(shadowText()).toBe('Hello|'));
+  });
+
+  // QA item 17: a drop saved every prop's sample, hidden ones too, so the saved hidden `value` 1 set the field on every
+  // load and an emptied Default value never showed.
+  test('[PackComponent-HIDDEN-001] starts from an emptied Default value over a hidden prop saved at its sample', async () => {
+    // Break this catches: a hidden prop at its manifest sample reaching the component as set by the app.
+    renderPack({
+      properties: { componentName: binding('Counter'), defaultValue: binding('{{null}}'), value: binding('{{1}}') },
+    });
+
+    await waitFor(() => expect(shadowText()).toBe('empty'));
+  });
+
+  test('[PackComponent-HIDDEN-002] still takes a hidden prop an app set to something else', async () => {
+    // Break this catches: every hidden prop being dropped, which loses a value an earlier release's app set by name.
+    renderPack({
+      properties: { componentName: binding('Counter'), defaultValue: binding('{{null}}'), value: binding('{{5}}') },
+    });
+
+    await waitFor(() => expect(shadowText()).toBe('5'));
   });
 
   test('[PackComponent-LICENCE-001] draws in a released app without a custom-component licence', async () => {

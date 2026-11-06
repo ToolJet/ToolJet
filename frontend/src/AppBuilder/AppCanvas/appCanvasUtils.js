@@ -74,7 +74,11 @@ export const addNewWidgetToTheEditor = (
     componentData.definition.properties.componentName = { value: libraryComponentInfo.componentName };
     // Manifest prop defaults land as instance values so the Inspector's fields arrive
     // pre-filled (module input_items precedent below).
+    // A hidden prop has no Inspector field: it is the component's own state (a field's value) or an earlier name it
+    // still honours when an app sets it. Saving its sample would set it, so a Number Input whose Default value is
+    // later emptied kept showing the sample 1 after a reload.
     for (const prop of libraryComponentInfo.props ?? []) {
+      if (prop.inspector === 'hidden') continue;
       componentData.definition.properties[prop.name] = { value: manifestDefaultToDefinitionValue(prop) };
     }
     for (const style of libraryComponentInfo.styles ?? []) {

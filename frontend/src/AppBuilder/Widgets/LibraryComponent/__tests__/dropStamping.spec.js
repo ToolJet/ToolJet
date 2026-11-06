@@ -88,6 +88,23 @@ describe('LibraryComponent drop-time identity stamping', () => {
     expect(unsized.layouts.desktop).toMatchObject({ width: 12, height: 200 });
   });
 
+  it('[LibraryComponent-DROP-003] does not save a hidden prop, which has no Inspector field', () => {
+    // Break this catches: a drop saving a hidden prop's sample (a Rocket Number Input's value 1), which then sets the
+    // field on every load over the Default value the builder set (QA item 17).
+    const dropped = addNewWidgetToTheEditor('PackComponent', 'desktop', realCanvas, 'canvas', undefined, {
+      pack: 'shadcn',
+      componentName: 'NumberInput',
+      props: [
+        { name: 'defaultValue', type: 'number', default: 1 },
+        { name: 'value', type: 'number', default: 1, inspector: 'hidden' },
+      ],
+    });
+
+    const { properties } = dropped.component.definition;
+    expect(properties.defaultValue.value).toBe('{{1}}');
+    expect(properties.value).toBeUndefined();
+  });
+
   it('[LibraryComponent-DROP-002] stamps manifest style defaults into definition.styles, not properties', () => {
     // Break this catches: dropping the styles loop (the Styles tab opens empty and the bundle falls back to
     // its own initialValue), or stamping styles into properties (they'd surface as component props).
