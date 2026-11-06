@@ -78,3 +78,36 @@ describe("a tab's branch", () => {
     expect(await resolveBranch(loadPage().store)).toBe('feat-branch-1');
   });
 });
+
+describe('initialize when git sync is off', () => {
+  it('stops after the status call', async () => {
+    const hits = [];
+    server.use(
+      http.get('*/git-sync/:id/status', () =>
+        HttpResponse.json({ message: 'No Git Provider is enabled for the workspace' }, { status: 400 })
+      ),
+      http.get('*/git-sync/:id', () => {
+        hits.push('config');
+        return HttpResponse.json({ organization_git: null });
+      }),
+      http.get('*/workspace-branches', () => {
+        hits.push('branches');
+        return HttpResponse.json({ branches: [MAIN] });
+      })
+    );
+    openUrl('/workspace-1');
+    const { store } = loadPage();
+    store.setState({ isGitSyncConfigured: false });
+
+    await store.getState().actions.initialize('workspace-1');
+    await store.getState().actions.fetchBranches();
+
+    expect(hits).toEqual([]);
+    expect(store.getState()).toMatchObject({
+      isInitialized: true,
+      isGitSyncConfigured: false,
+      isMultiBranchingEnabled: false,
+      orgGitConfig: null,
+    });
+  });
+});

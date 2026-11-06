@@ -1,0 +1,31 @@
+// Folder rows live in their own scroll box, so `sticky` would dock them to that box instead of the list.
+// They follow the list's horizontal scroll through its scroll timeline, which moves them in the same frame
+// as the scroll; setting a transform from onScroll would trail sticky rows by a frame.
+.items-list-scroller {
+  scroll-timeline: --items-list-x x;
+}
+
+// Fallback for browsers without scroll-driven animations: ItemsList writes --list-scroll-left on scroll.
+.items-list-offset-docked {
+  transform: translateX(var(--list-scroll-left, 0px));
+}
+
+@supports (animation-timeline: scroll()) {
+  .items-list-offset-docked {
+    transform: none;
+    // The shorthand resets animation-timeline, so the timeline must be declared after it.
+    animation: items-list-dock-x linear both;
+    animation-timeline: --items-list-x;
+  }
+}
+
+// Progress 0→1 across the list's scroll range maps to 0→max scroll, i.e. the current scrollLeft.
+@keyframes items-list-dock-x {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(var(--list-max-scroll-left, 0px));
+  }
+}
