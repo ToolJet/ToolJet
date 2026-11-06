@@ -21,9 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 import cx from 'classnames';
 import { placeCaretAtEnd } from '@/AppBuilder/Shared/DataTypes/utils';
-
-// Keeps the label tooltip inside the canvas so it can't cover the query panel; a null container would drop the overlay.
-const getCanvas = () => document.getElementById('real-canvas') ?? document.body;
+import { getOverlayContainer } from '../_utils/overlayContainer';
 
 /**
  * KeyValueRow - Renders a single key-value pair row
@@ -57,6 +55,10 @@ const KeyValueRow = ({
   // Validation state from adapter
   const [validation, setValidation] = useState({ isValid: true, validationError: null });
   const valueRef = useRef(null);
+  // State, not a ref: react-bootstrap resolves `container` at first render, before the row is attached, and only
+  // re-resolves when the function's identity changes.
+  const [rowEl, setRowEl] = useState(null);
+  const overlayContainer = useCallback(() => getOverlayContainer(rowEl), [rowEl]);
   const displayLabel = name || label || fieldKey;
   // Field is editable if configured AND not disabled
   const canEdit = isEditable && !isDisabled;
@@ -115,6 +117,7 @@ const KeyValueRow = ({
       accentColor,
       darkMode,
       containerWidth: valueRef.current?.offsetWidth,
+      overlayContainer,
       // Pass edit state
       isEditable,
       autoFocus: true, // Auto focus when switching to edit mode
@@ -180,7 +183,7 @@ const KeyValueRow = ({
   };
 
   return (
-    <div className="kv-row-container" onMouseDown={handleRowMouseDown}>
+    <div className="kv-row-container" ref={setRowEl} onMouseDown={handleRowMouseDown}>
       <div className={rowClassName}>
         <Label
           label={displayLabel}
@@ -192,7 +195,7 @@ const KeyValueRow = ({
           defaultAlignment={alignment}
           inputId={fieldKey}
           overflowTooltip
-          overlayContainer={getCanvas}
+          overlayContainer={overlayContainer}
           overlayClassName={`overlay-cell-table kv-label-overlay ${darkMode ? 'dark-theme' : ''}`}
           style={autoLabelWidth && maxLabelWidth > 0 ? { minWidth: `${maxLabelWidth}px` } : {}}
           classes={{
