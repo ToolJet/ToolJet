@@ -8,7 +8,7 @@ import { Plus, PencilRuler, BookOpen } from 'lucide-react';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { SidebarItem } from './SidebarItem';
-import { useCodeMode } from '@/AppBuilder/_helpers/codeModeHooks';
+import { useCodeMode, useStyleInspectorRail } from '@/AppBuilder/_helpers/codeModeHooks';
 
 const RightSidebarToggle = ({ darkMode = false }) => {
   const [isRightSidebarOpen, setRightSidebarOpen] = useStore(
@@ -23,6 +23,9 @@ const RightSidebarToggle = ({ darkMode = false }) => {
   const isCanvasHeaderSelected = useStore((state) => state.isCanvasHeaderSelected, shallow);
   const isCanvasFooterSelected = useStore((state) => state.isCanvasFooterSelected, shallow);
   const codeMode = useCodeMode();
+  // Code mode: the item is the style inspector's (open, pick, close), not Component properties.
+  const styleInspectorRail = useStyleInspectorRail();
+  const styleInspector = codeMode ? styleInspectorRail : null;
 
   const handleToggle = (item) => {
     setActiveRightSideBarTab(item);
@@ -63,9 +66,12 @@ const RightSidebarToggle = ({ darkMode = false }) => {
       )}
 
       <SidebarItem
-        selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION}
+        selectedSidebarItem={
+          styleInspector ? styleInspector.active : activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION
+        }
         onClick={() => {
-          handleToggle(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+          if (styleInspector) styleInspector.toggle();
+          else handleToggle(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
         }}
         darkMode={darkMode}
         icon="propertiesstyles"
@@ -73,18 +79,26 @@ const RightSidebarToggle = ({ darkMode = false }) => {
         iconWidth="14"
         tip={
           codeMode
-            ? 'Style inspector'
+            ? (styleInspector?.tip ?? 'Style inspector')
             : isAnyComponentSelected || isCanvasHeaderSelected || isCanvasFooterSelected
               ? 'Component properties'
               : 'No component selected'
         }
         disabled={!codeMode && !isAnyComponentSelected && !isCanvasHeaderSelected}
+        {...(styleInspector && {
+          'aria-label': 'Style inspector',
+          'aria-pressed': styleInspector.active,
+          'aria-disabled': styleInspector.waiting || undefined,
+          'aria-keyshortcuts': styleInspector.shortcut,
+        })}
       >
         <PencilRuler
           width="16"
           height="16"
           className={`${
-            activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION ? 'tw-text-icon-accent' : 'tw-text-icon-strong'
+            (styleInspector ? styleInspector.active : activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION)
+              ? 'tw-text-icon-accent'
+              : 'tw-text-icon-strong'
           }`}
           style={{
             opacity:
