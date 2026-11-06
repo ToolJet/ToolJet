@@ -7,6 +7,7 @@ import {
   store,
   MODULE_ID,
   setVariableOn,
+  drain,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
 
 // Engineering scenarios for AudioRecorder (react-media-recorder). Sibling of Camera.
@@ -14,12 +15,16 @@ import {
 // Characterization specs: each is GREEN against current production and proven
 // RED by the fault named in its `// Break this catches:` note.
 //
-// Boundary stubs (D-01), all browser APIs jsdom lacks and scoped to this spec:
-//  - AudioContext + a canvas getContext no-op (beforeEach; restored in afterEach)
-//    so the Waveform (rendered at status !== idle) does not crash the recording state.
+// Boundary stubs (D-01, D-11), all browser APIs jsdom lacks and scoped to this spec:
+//  - AudioContext + a recording canvas getContext stub (beforeEach; restored in
+//    afterEach) so the Waveform (rendered at status !== idle) does not crash the
+//    recording state; the ctx records every fillRect's fillStyle so STYLE-008 can
+//    assert the painted bar color.
+//  - getUserMedia returning a stream with a stoppable audio track (micTracks)
+//    so the interruption scenarios can observe the mic being released.
 //  - The react-media-recorder stub, the Node-Blob FileReader shim (setupGlobals),
-//    getUserMedia (setupGlobals), and the @tabler/icons-react/dist/esm/icons/* mapper
-//    are ambient. dataURL is asserted shape-only (D-02).
+//    and the @tabler/icons-react/dist/esm/icons/* mapper are ambient. dataURL is
+//    asserted shape-only (D-02).
 
 const ID = 'audiorecorder1';
 
@@ -70,8 +75,33 @@ const startCounter = () =>
 const saveCounter = () =>
   setVariableOn(ID, 'onRecordingSave', { key: 'saveCount', value: '{{(variables.saveCount ?? 0) + 1}}' });
 
+/** Clicks the idle recorder and waits until the recording state is on screen. */
+const startRecorder = async () => {
+  await waitFor(() => expect(document.querySelector('[aria-label="Start recording"]')).toBeTruthy());
+  await widget.session.store.act(async () => {
+    fireEvent.click(document.querySelector('[aria-label="Start recording"]'));
+  });
+  await waitFor(() => expect(document.querySelector('[aria-label="Pause recording"]')).toBeTruthy());
+};
+
 describe('AudioRecorder widget', () => {
   let origGetContext;
+  let origGetUserMedia;
+  let ctx2d;
+  let micTracks;
+  const makeMicTrack = () => ({
+    kind: 'audio',
+    readyState: 'live',
+    enabled: true,
+    stopped: false,
+    stop() {
+      this.stopped = true;
+      this.readyState = 'ended';
+    },
+    clone() {
+      return makeMicTrack();
+    },
+  });
   beforeEach(() => {
     // Browser boundaries jsdom lacks; scoped so no other canvas widget is affected.
     global.AudioContext = class {
@@ -84,11 +114,36 @@ describe('AudioRecorder widget', () => {
       close() {}
     };
     origGetContext = HTMLCanvasElement.prototype.getContext;
-    HTMLCanvasElement.prototype.getContext = () => ({ clearRect() {}, fillRect() {}, fillStyle: '' });
+    // Records every fillRect's fillStyle so STYLE-008 can assert bar colors.
+    ctx2d = {
+      fillStyle: '',
+      fills: [],
+      clearRect() {},
+      fillRect() {
+        this.fills.push(this.fillStyle);
+      },
+    };
+    HTMLCanvasElement.prototype.getContext = () => ctx2d;
+    // getUserMedia returning a stoppable track so the interruption scenarios can
+    // observe the widget releasing the microphone (setupGlobals' ambient stub
+    // returns a track-less stream).
+    micTracks = [];
+    origGetUserMedia = navigator.mediaDevices.getUserMedia;
+    navigator.mediaDevices.getUserMedia = () => {
+      const track = makeMicTrack();
+      micTracks.push(track);
+      return Promise.resolve({
+        active: true,
+        getTracks: () => [track],
+        getAudioTracks: () => [track],
+        getVideoTracks: () => [],
+      });
+    };
     widget.setup();
   });
   afterEach(() => {
     HTMLCanvasElement.prototype.getContext = origGetContext;
+    navigator.mediaDevices.getUserMedia = origGetUserMedia;
     delete global.AudioContext;
     widget.teardown();
   });
@@ -286,5 +341,123 @@ describe('AudioRecorder widget', () => {
     });
 
     expect(exposed().isDisabled).toBe(true);
+  });
+
+  test('[AudioRecorder-INT-001] unmounting mid-recording discards: no onRecordingSave, dataURL stays null, mic released', async () => {
+    // Break this catches: the unmount cleanup save-stopping instead of discarding
+    // (AudioRecorder.jsx onStop discard flag + discardRecording in the mount cleanup):
+    // stopRecording's onStop used to publish dataURL and fire onRecordingSave after
+    // the widget was gone (hidden page / navigation).
+    const root = widget.render({ events: saveCounter() });
+    await waitMounted();
+    await startRecorder();
+
+    root.unmount();
+    await drain();
+    await drain();
+
+    expect(widget.variables().saveCount).toBeUndefined();
+    expect(exposed().dataURL).toBeNull();
+    expect(micTracks.length).toBeGreaterThan(0);
+    expect(micTracks.every((track) => track.stopped)).toBe(true);
+  });
+
+  test('[AudioRecorder-INT-002] setVisibility(false) mid-recording discards the in-flight recording silently', async () => {
+    // Break this catches: the interruption watcher not discarding when the widget
+    // is hidden while recording — the mic stayed hot behind display:none and no
+    // state was reset.
+    widget.render({ events: saveCounter() });
+    await waitMounted();
+    await startRecorder();
+
+    await widget.act('setVisibility', false);
+    await drain();
+    await drain();
+
+    expect(micTracks.length).toBeGreaterThan(0);
+    expect(micTracks.every((track) => track.stopped)).toBe(true);
+    expect(widget.variables().saveCount).toBeUndefined();
+    expect(exposed().dataURL).toBeNull();
+    await waitFor(() => expect(document.querySelector('[aria-label="Start recording"]')).toBeTruthy());
+  });
+
+  test('[AudioRecorder-INT-003] setDisable(true) mid-recording discards the in-flight recording silently', async () => {
+    // Break this catches: the interruption watcher not discarding when the widget
+    // is disabled while recording — the recording continued although the control
+    // was disabled.
+    widget.render({ events: saveCounter() });
+    await waitMounted();
+    await startRecorder();
+
+    await widget.act('setDisable', true);
+    await drain();
+    await drain();
+
+    expect(micTracks.length).toBeGreaterThan(0);
+    expect(micTracks.every((track) => track.stopped)).toBe(true);
+    expect(widget.variables().saveCount).toBeUndefined();
+    expect(exposed().dataURL).toBeNull();
+    await waitFor(() => expect(document.querySelector('[aria-label="Start recording"]')).toBeTruthy());
+  });
+
+  test('[AudioRecorder-INT-004] loadingState=true mid-recording discards and swaps in the Loader', async () => {
+    // Break this catches: the interruption watcher not discarding when the widget
+    // enters loading while recording — the Loader replaced the UI but the mic kept
+    // recording underneath.
+    widget.render({ events: saveCounter() });
+    await waitMounted();
+    await startRecorder();
+
+    await widget.session.store.act(async () => {
+      widget.setComponentProperty(ID, 'loadingState', '{{true}}', 'properties');
+    });
+    await drain();
+    await drain();
+
+    await waitFor(() => expect(document.querySelector('.audio-recorder-loader-container')).toBeTruthy());
+    expect(micTracks.length).toBeGreaterThan(0);
+    expect(micTracks.every((track) => track.stopped)).toBe(true);
+    expect(widget.variables().saveCount).toBeUndefined();
+    expect(exposed().dataURL).toBeNull();
+  });
+
+  test('[AudioRecorder-INT-005] a disabled recorder does not start recording on activation', async () => {
+    // Break this catches: onClick missing the isDisabled/isLoading guard — jsdom
+    // ignores the RenderWidget wrapper's pointer-events CSS, which models the real
+    // keyboard-activation path past the disabled overlay.
+    widget.render({ properties: { disabledState: binding('{{true}}') }, events: startCounter() });
+    await waitMounted();
+    await waitFor(() => expect(exposed().isDisabled).toBe(true));
+
+    await widget.session.store.act(async () => {
+      fireEvent.click(document.querySelector('[aria-label="Start recording"]'));
+    });
+    await drain();
+
+    expect(widget.variables().startCount).toBeUndefined();
+    expect(document.querySelector('[aria-label="Pause recording"]')).toBeNull();
+    expect(micTracks).toHaveLength(0);
+  });
+
+  test('[AudioRecorder-STYLE-008] waveform bars paint with the accent color while recording and paused', async () => {
+    // Break this catches: Waveform.jsx hard-coding #D0D5DD for the bars instead of
+    // resolving the accentColor style (recording draw loop and the paused static line).
+    widget.render({ styles: { accentColor: binding('rgb(255, 87, 34)') } });
+    await waitMounted();
+    await startRecorder();
+
+    await waitFor(() => expect(ctx2d.fills.length).toBeGreaterThan(0));
+    expect(ctx2d.fills).toContain('rgb(255, 87, 34)');
+    expect(ctx2d.fills).not.toContain('#D0D5DD');
+
+    // The paused static line keeps the accent.
+    ctx2d.fills.length = 0;
+    await widget.session.store.act(async () => {
+      fireEvent.click(document.querySelector('[aria-label="Pause recording"]'));
+    });
+    await waitFor(() => expect(document.querySelector('[aria-label="Resume recording"]')).toBeTruthy());
+    await waitFor(() => expect(ctx2d.fills.length).toBeGreaterThan(0));
+    expect(ctx2d.fills).toContain('rgb(255, 87, 34)');
+    expect(ctx2d.fills).not.toContain('#D0D5DD');
   });
 });

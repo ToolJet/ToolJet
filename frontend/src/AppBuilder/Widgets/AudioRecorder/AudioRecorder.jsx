@@ -49,12 +49,25 @@ export const AudioRecorder = ({
   const audioRef = useRef(null);
   const endedListenerRef = useRef(null);
   const mediaStreamRef = useRef(null);
+  // Mirrors `status` for callbacks that outlive a render (unmount cleanup, onStop).
+  const statusRef = useRef('idle');
+  // When true, the next recorder onStop is an interruption (hide/disable/loading/
+  // unmount/reset): discard the blob instead of publishing dataURL + onRecordingSave.
+  const discardStopRef = useRef(false);
+  // onStop is handed to useReactMediaRecorder before clearBlobUrl exists; reach it via a ref.
+  const clearBlobUrlRef = useRef(() => {});
 
   // Media recorder setup
   const { status, startRecording, stopRecording, pauseRecording, resumeRecording, mediaBlobUrl, clearBlobUrl } =
     useReactMediaRecorder({
       audio: true,
       onStop: async (blobURL, blob) => {
+        if (discardStopRef.current) {
+          discardStopRef.current = false;
+          URL.revokeObjectURL(blobURL);
+          clearBlobUrlRef.current();
+          return;
+        }
         const dataURL = await blobToDataURL(blob);
         setExposedVariables({
           dataURL,
@@ -62,6 +75,14 @@ export const AudioRecorder = ({
         fireEvent('onRecordingSave');
       },
     });
+
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
+
+  useEffect(() => {
+    clearBlobUrlRef.current = clearBlobUrl;
+  }, [clearBlobUrl]);
 
   // Helpers
   const updateExposedVariablesState = (key, value) => {
@@ -84,8 +105,22 @@ export const AudioRecorder = ({
     }
   };
 
+  // Stops an in-flight recording WITHOUT saving it: flags the recorder's pending
+  // onStop as a discard, stops the recorder, and releases the microphone. Safe to
+  // call at any status — an inactive recorder makes stopRecording a no-op.
+  const discardRecording = () => {
+    if (['recording', 'paused'].includes(statusRef.current)) {
+      discardStopRef.current = true;
+    }
+    stopRecording();
+    stopMediaStream(mediaStreamRef.current);
+    mediaStreamRef.current = null;
+    setMediaStream(null);
+  };
+
   // Event handlers
   const onClick = async () => {
+    if (exposedVariablesTemporaryState.isDisabled || exposedVariablesTemporaryState.isLoading) return;
     switch (status) {
       case 'idle':
         try {
@@ -165,15 +200,13 @@ export const AudioRecorder = ({
   };
 
   const onReset = () => {
+    // Discard any in-flight recording first (also stops the recorder a paused
+    // discard would otherwise leave running) and release the microphone.
+    discardRecording();
     clearBlobUrl();
     setExposedVariables({
       dataURL: null,
     });
-
-    // Stop media stream tracks
-    stopMediaStream(mediaStreamRef.current);
-    mediaStreamRef.current = null;
-    setMediaStream(null);
 
     if (audioRef.current) {
       // stop and reset playback
@@ -237,13 +270,24 @@ export const AudioRecorder = ({
       },
     });
     return () => {
-      stopRecording();
-      stopMediaStream(mediaStreamRef.current);
+      // Unmounting (page navigation, widget removal) discards an in-flight
+      // recording — it must not publish dataURL or fire onRecordingSave.
+      discardRecording();
       if (audioRef.current && endedListenerRef.current) {
         audioRef.current.removeEventListener('ended', endedListenerRef.current);
       }
     };
   }, []);
+
+  // An interruption while recording/paused — hidden, disabled, or loading —
+  // discards the in-flight recording silently (covers both the property and the
+  // CSA writers, which all funnel into exposedVariablesTemporaryState).
+  const { isVisible, isDisabled, isLoading } = exposedVariablesTemporaryState;
+  useEffect(() => {
+    if ((!isVisible || isDisabled || isLoading) && ['recording', 'paused'].includes(status)) {
+      discardRecording();
+    }
+  }, [isVisible, isDisabled, isLoading, status]);
 
   // Icons - dynamically loaded
   useEffect(() => {
@@ -335,6 +379,7 @@ export const AudioRecorder = ({
                 blobUrl={mediaBlobUrl}
                 isPlaying={isPlaying}
                 audioRef={audioRef}
+                accentColor={accentColor}
               />
             </div>
           )}

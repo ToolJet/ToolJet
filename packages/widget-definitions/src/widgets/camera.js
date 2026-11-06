@@ -115,6 +115,9 @@ export const cameraConfig = {
     isDisabled: false,
     imageDataURL: null,
     videoDataURL: null,
+    // The last SAVED capture (image or video dataURL). Exposed under `value` so
+    // Form collects it into formData (bug-fix batch 2026-10-26, option B).
+    value: null,
   },
   actions: [
     {

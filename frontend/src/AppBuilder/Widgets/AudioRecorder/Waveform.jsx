@@ -1,11 +1,25 @@
 import React, { useEffect, useRef } from 'react';
 
-function Waveform({ status, mediaStream }) {
+const FALLBACK_BAR_COLOR = '#D0D5DD';
+
+// Canvas fillStyle cannot take a `var(--token)` reference, which is what the
+// accentColor style holds by default — resolve it against the canvas (the
+// wrapper defines/inherits the design tokens) and fall back to the legacy gray.
+const resolveBarColor = (canvas, color) => {
+  if (!color) return FALLBACK_BAR_COLOR;
+  const value = String(color).trim();
+  const varMatch = value.match(/^var\(\s*(--[\w-]+)\s*(?:,\s*([^)]+))?\)$/);
+  if (!varMatch) return value;
+  const resolved = getComputedStyle(canvas).getPropertyValue(varMatch[1]).trim();
+  return resolved || (varMatch[2] ? varMatch[2].trim() : FALLBACK_BAR_COLOR);
+};
+
+function Waveform({ status, mediaStream, accentColor }) {
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
 
   // Helper function to draw static line
-  const drawStaticLine = (ctx, width, height, barW, gap, bufLen) => {
+  const drawStaticLine = (ctx, width, height, barW, gap, bufLen, barColor) => {
     ctx.clearRect(0, 0, width, height);
     const centerY = height / 2;
     const staticBarHeight = 1; // Small static bar height
@@ -15,7 +29,7 @@ function Waveform({ status, mediaStream }) {
       const yTop = centerY - staticBarHeight;
       const yBottom = centerY;
 
-      ctx.fillStyle = '#D0D5DD';
+      ctx.fillStyle = barColor;
       ctx.fillRect(x, yTop, barW, staticBarHeight);
       ctx.fillRect(x, yBottom, barW, staticBarHeight);
 
@@ -34,7 +48,15 @@ function Waveform({ status, mediaStream }) {
         const bufferLength = 32; // 32 for fftSize=64
         const totalWidth = bufferLength * (barWidth + barGap);
         canvas.width = totalWidth;
-        drawStaticLine(canvasCtx, canvas.width, canvas.height, barWidth, barGap, bufferLength);
+        drawStaticLine(
+          canvasCtx,
+          canvas.width,
+          canvas.height,
+          barWidth,
+          barGap,
+          bufferLength,
+          resolveBarColor(canvas, accentColor)
+        );
       }
       return;
     }
@@ -56,9 +78,11 @@ function Waveform({ status, mediaStream }) {
     const totalWidth = bufferLength * (barWidth + barGap);
     canvas.width = totalWidth;
 
+    const barColor = resolveBarColor(canvas, accentColor);
+
     // Draw static line when paused
     if (status === 'paused') {
-      drawStaticLine(canvasCtx, canvas.width, canvas.height, barWidth, barGap, bufferLength);
+      drawStaticLine(canvasCtx, canvas.width, canvas.height, barWidth, barGap, bufferLength, barColor);
       return () => {
         audioContext.close();
       };
@@ -81,7 +105,7 @@ function Waveform({ status, mediaStream }) {
         const yTop = centerY - barHeight;
         const yBottom = centerY;
 
-        canvasCtx.fillStyle = '#D0D5DD';
+        canvasCtx.fillStyle = barColor;
         canvasCtx.fillRect(x, yTop, barWidth, barHeight);
         canvasCtx.fillRect(x, yBottom, barWidth, barHeight);
 
@@ -99,7 +123,7 @@ function Waveform({ status, mediaStream }) {
       cancelAnimationFrame(animationRef.current);
       audioContext.close();
     };
-  }, [status, mediaStream]);
+  }, [status, mediaStream, accentColor]);
 
   if (['recording', 'paused'].includes(status)) {
     return (

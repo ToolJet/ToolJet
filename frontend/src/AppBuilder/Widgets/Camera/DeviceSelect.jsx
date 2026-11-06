@@ -24,6 +24,28 @@ export const DeviceSelect = ({
     onSelect?.(device.value);
   };
 
+  // Keyboard support for the option list: the options are custom listbox items,
+  // so Enter/Space must select and Arrow keys must move focus — without this a
+  // keyboard user can open the menu but never choose a device.
+  const handleOptionKeyDown = (event, device) => {
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault();
+      handleDeviceSelect(device);
+      setOpen(false);
+      return;
+    }
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const options = Array.from(
+        event.currentTarget.closest('[role="listbox"]')?.querySelectorAll('[role="option"]') ?? []
+      );
+      const index = options.indexOf(event.currentTarget);
+      if (index === -1) return;
+      const next = event.key === 'ArrowDown' ? Math.min(index + 1, options.length - 1) : Math.max(index - 1, 0);
+      options[next]?.focus();
+    }
+  };
+
   useEffect(() => {
     if (isTriggerDisabled && open) {
       setOpen(false);
@@ -63,6 +85,7 @@ export const DeviceSelect = ({
                       handleDeviceSelect(device);
                       setOpen(false);
                     }}
+                    onKeyDown={(event) => handleOptionKeyDown(event, device)}
                     style={{
                       '--camera-accent-color': accentColor,
                     }}
