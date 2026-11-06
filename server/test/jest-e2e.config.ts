@@ -30,8 +30,9 @@ const shared: Config.InitialProjectOptions = {
   testPathIgnorePatterns: ['/node_modules/', 'modules/workflows/e2e/workflow-lifecycle\\.spec\\.ts$'],
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   runner: 'groups',
+  // sanitize-html >= 2.18 depends on ESM-only htmlparser2 v12 and its dom* / entities deps (nested under sanitize-html).
   transformIgnorePatterns: [
-    'node_modules/(?!(lib0|y-protocols|@octokit|before-after-hook|universal-user-agent|universal-github-app-jwt|cookie-parser)/)(?!(thrift/node_modules/)?uuid/dist-node/)',
+    'node_modules/(?!(lib0|y-protocols|@octokit|before-after-hook|universal-user-agent|universal-github-app-jwt|cookie-parser|(sanitize-html/node_modules/)?(htmlparser2|domhandler|domutils|domelementtype|dom-serializer|entities))/)(?!(thrift/node_modules/)?uuid/dist-node/)',
   ],
   transform: {
     '^.+\\.(t|j)s$': [
