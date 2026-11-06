@@ -1,6 +1,7 @@
 import { immer } from 'zustand/middleware/immer';
 import { create } from '@/_stores/utils';
 import { orgConstantsV2Service } from '@/_services/organization_constants_v2.service';
+import { insertPins, movePinnedId } from '../helpers/pinOrder';
 
 export const ITEMS_PER_PAGE = 50;
 
@@ -11,6 +12,9 @@ const initialState = {
   root: { items: [], meta: null, status: 'idle' },
   // TanStack RowSelectionState keyed by constant id.
   rowSelection: {},
+  // Ordered constant ids per tab type. In memory only, so pins are lost on reload; keep every read and write behind
+  // the pin actions so storage can back them later.
+  pins: { Secret: [], Global: [] },
 };
 
 // Kept outside the store because immer freezes state and an AbortController must stay mutable.
@@ -61,6 +65,32 @@ export const useConstantsListStore = create(
           state.root.items = state.root.items.filter((item) => !removed.has(item.id));
           if (state.root.meta) state.root.meta.total -= before - state.root.items.length;
           ids.forEach((id) => delete state.rowSelection[id]);
+          Object.keys(state.pins).forEach((type) => {
+            state.pins[type] = state.pins[type].filter((id) => !removed.has(id));
+          });
+        });
+      },
+
+      // Pins only what is on the loaded page (a pin needs its row to find its slot), so ordering is per page.
+      pinConstants: (type, ids, sort) => {
+        const { items } = get().root;
+        set((state) => {
+          state.pins[type] = insertPins(state.pins[type], items, ids, sort);
+        });
+      },
+
+      unpinConstants: (type, ids) => {
+        const removed = new Set(ids);
+        set((state) => {
+          state.pins[type] = state.pins[type].filter((id) => !removed.has(id));
+        });
+      },
+
+      // `toIndex` counts among the pins on the loaded page.
+      movePin: (type, id, toIndex) => {
+        const loadedIds = get().root.items.map((item) => item.id);
+        set((state) => {
+          state.pins[type] = movePinnedId(state.pins[type], loadedIds, id, toIndex);
         });
       },
 

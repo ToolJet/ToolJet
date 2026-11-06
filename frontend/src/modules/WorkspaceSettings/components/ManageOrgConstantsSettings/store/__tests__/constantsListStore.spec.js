@@ -134,6 +134,71 @@ describe('constantsListStore', () => {
     expect(store().root.meta.total).toBe(2);
   });
 
+  describe('pins', () => {
+    const named = (id, name, extra = {}) => ({ ...item(id), name, ...extra });
+    const ITEMS = [named('a', 'Alpha'), named('b', 'Bravo'), named('c', 'Charlie'), named('d', 'Delta')];
+
+    // Seeds the loaded page the pin actions compare against.
+    const load = (items = ITEMS) => useConstantsListStore.setState({ root: { items, meta: null, status: 'success' } });
+
+    test('starts with no pins for either tab', () => {
+      expect(store().pins).toEqual({ Secret: [], Global: [] });
+    });
+
+    test('pinConstants inserts each id at the slot the current sort gives it', () => {
+      load();
+      store().pinConstants('Global', ['c', 'a'], 'name_asc');
+      expect(store().pins.Global).toEqual(['a', 'c']);
+
+      store().pinConstants('Global', ['b'], 'name_asc');
+      expect(store().pins.Global).toEqual(['a', 'b', 'c']);
+
+      store().pinConstants('Global', ['d'], 'name_desc');
+      expect(store().pins.Global).toEqual(['d', 'a', 'b', 'c']);
+    });
+
+    test('pinConstants keeps each tab separate', () => {
+      load();
+      store().pinConstants('Secret', ['a'], 'name_asc');
+      expect(store().pins).toEqual({ Secret: ['a'], Global: [] });
+    });
+
+    test('pinConstants is idempotent', () => {
+      load();
+      store().pinConstants('Global', ['b'], 'name_asc');
+      store().pinConstants('Global', ['b', 'b'], 'name_asc');
+      expect(store().pins.Global).toEqual(['b']);
+    });
+
+    test('pinConstants skips environment constants and ids that are not on the page', () => {
+      load([...ITEMS, named('env:Global:X', 'X', { source: 'env' })]);
+      store().pinConstants('Global', ['env:Global:X', 'missing', 'a'], 'name_asc');
+      expect(store().pins.Global).toEqual(['a']);
+    });
+
+    test('unpinConstants removes the ids and ignores unknown ones', () => {
+      load();
+      store().pinConstants('Global', ['a', 'b', 'c'], 'name_asc');
+      store().unpinConstants('Global', ['b', 'nope']);
+      expect(store().pins.Global).toEqual(['a', 'c']);
+    });
+
+    test('movePin reorders among the loaded pins', () => {
+      load();
+      store().pinConstants('Global', ['a', 'b', 'c'], 'name_asc');
+      store().movePin('Global', 'a', 2);
+      expect(store().pins.Global).toEqual(['b', 'c', 'a']);
+    });
+
+    test('removeItems prunes the removed ids from every tab', () => {
+      useConstantsListStore.setState({ pins: { Secret: ['a', 's'], Global: ['a', 'b'] } });
+
+      store().removeItems(['a']);
+
+      expect(store().pins).toEqual({ Secret: ['s'], Global: ['b'] });
+    });
+  });
+
   describe('mutations', () => {
     const detail = { id: 'new', name: 'NEW', type: 'Global', values: [] };
 
