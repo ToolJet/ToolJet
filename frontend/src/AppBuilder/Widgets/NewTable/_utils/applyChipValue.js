@@ -1,7 +1,9 @@
+import { isBlankValue } from './multiValue';
+
 /**
  * The table's column filters after a chip's value changes. `chip` is a quick filter from `getQuickFilters`
  * (`appliedIndex` is where its applied filter sits, -1 if none). For a chip with a value box `value` is the text
- * (empty takes the filter off); for one without (is empty / is not empty) it is whether the filter is applied.
+ * (empty, or an empty list of picked options, takes the filter off); for one without (is empty / is not empty) it is whether the filter is applied.
  * The given list is not changed.
  */
 export const applyChipValue = (columnFilters, chip, value) => {
@@ -15,7 +17,7 @@ export const applyChipValue = (columnFilters, chip, value) => {
       : remove();
   }
 
-  if (value === '') return isApplied ? remove() : columnFilters;
+  if (isBlankValue(value)) return isApplied ? remove() : columnFilters;
   if (isApplied) {
     return columnFilters.map((filter, index) =>
       index === chip.appliedIndex ? { ...filter, value: { ...filter.value, value } } : filter

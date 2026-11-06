@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { cn } from '@/lib/utils';
-import { OptionValue } from '../FilterChip';
+import { showTitleWhenClipped } from '../../../../_utils/overflowTitle';
+import { FilterValueControl, hasValuePicker } from './FilterValueControl';
 import { FIELD_CLASS, ROW_CLASS, RowConnector, RowCloseButton } from './filterRowParts';
 
 const READ_ONLY_CLASS = cn(FIELD_CLASS, 'tw-truncate tw-bg-background-surface-layer-02');
@@ -31,7 +32,7 @@ const Switch = ({ checked, label, dataCy, onChange }) => (
  * A filter the builder saved, as a row of the filters panel: column and operator are plain text, only the value
  * can be edited. The cross clears the value and keeps the row; a filter with no value box is a switch.
  */
-export const FilterQuickRow = memo(({ chip, index, connector, options, darkMode, onChange }) => {
+export const FilterQuickRow = memo(({ id, chip, index, connector, options, columnConfig, darkMode, onChange }) => {
   const label = `${chip.column} ${chip.operator}`;
   // something to clear: a value, or a filter that is switched on
   const canClear = chip.needsValue ? chip.value !== '' : chip.applied;
@@ -39,10 +40,10 @@ export const FilterQuickRow = memo(({ chip, index, connector, options, darkMode,
   return (
     <div className={ROW_CLASS} data-cy={`quick-filter-row-${index}`}>
       <RowConnector label={connector} dataCy={`quick-filter-connector-${index}`} />
-      <div data-cy={`quick-filter-column-${index}`} className={READ_ONLY_CLASS}>
+      <div data-cy={`quick-filter-column-${index}`} className={READ_ONLY_CLASS} onMouseEnter={showTitleWhenClipped}>
         {chip.column}
       </div>
-      <div data-cy={`quick-filter-operator-${index}`} className={READ_ONLY_CLASS}>
+      <div data-cy={`quick-filter-operator-${index}`} className={READ_ONLY_CLASS} onMouseEnter={showTitleWhenClipped}>
         {chip.operator}
       </div>
       <div>
@@ -53,17 +54,19 @@ export const FilterQuickRow = memo(({ chip, index, connector, options, darkMode,
             dataCy={`quick-filter-switch-${index}`}
             onChange={(applied) => onChange(chip, applied)}
           />
-        ) : options ? (
-          <div className={FIELD_CLASS}>
-            <OptionValue
-              chip={chip}
-              label={label}
-              options={options}
-              darkMode={darkMode}
-              dataCy={`quick-filter-value-${index}`}
-              onChange={(value) => onChange(chip, value)}
-            />
-          </div>
+        ) : hasValuePicker(chip.columnType, options) ? (
+          <FilterValueControl
+            id={id}
+            columnType={chip.columnType}
+            condition={chip.condition}
+            column={columnConfig}
+            options={options}
+            value={chip.value}
+            darkMode={darkMode}
+            dataCy={`quick-filter-value-${index}`}
+            label={label}
+            onChange={(value) => onChange(chip, value)}
+          />
         ) : (
           <div className={FIELD_CLASS}>
             <input

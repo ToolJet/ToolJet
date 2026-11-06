@@ -10,7 +10,7 @@ import Loader from '../Loader';
 import { Filter } from './_components/Filter/Filter';
 import { FilterChips } from './_components/FilterChips';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
-import { getQuickFilters } from '../../_utils/quickFilters';
+import { getQuickFilters, getUserFilters } from '../../_utils/quickFilters';
 import { applyChipValue } from '../../_utils/applyChipValue';
 import { getColumnSelectOptions } from '../../_utils/addNewRowConfig';
 import { resolveReferences } from '@/_helpers/utils';
@@ -48,8 +48,12 @@ export const Header = memo(
     }));
     // what the table has applied is read from the table itself, not from a prop that can be missing or stale
     const appliedFilters = table.getState().columnFilters;
-    const quickFilters = useMemo(
-      () => getQuickFilters(defaultFilters, appliedFilters, filterColumns),
+    // the builder's filters first, then the ones the user added
+    const headerChips = useMemo(
+      () => [
+        ...getQuickFilters(defaultFilters, appliedFilters, filterColumns),
+        ...getUserFilters(defaultFilters, appliedFilters, filterColumns),
+      ],
       // eslint-disable-next-line react-hooks/exhaustive-deps
       [defaultFilters, appliedFilters, filterColumns.length]
     );
@@ -57,9 +61,10 @@ export const Header = memo(
     // The current state of a chip, read when it changes rather than when it was drawn
     const changeChip = (chip, change) => {
       const columnFilters = table.getState().columnFilters;
-      const current = getQuickFilters(defaultFilters, columnFilters, filterColumns).find(
-        ({ id: chipId }) => chipId === chip.id
-      );
+      const current = [
+        ...getQuickFilters(defaultFilters, columnFilters, filterColumns),
+        ...getUserFilters(defaultFilters, columnFilters, filterColumns),
+      ].find(({ id: chipId }) => chipId === chip.id);
       if (current) setFilters(applyChipValue(columnFilters, current, change));
     };
     const getChipOptions = (chip) => {
@@ -174,7 +179,7 @@ export const Header = memo(
                 darkMode={darkMode}
               >
                 <FilterChips
-                  chips={quickFilters}
+                  chips={headerChips}
                   componentName={componentName}
                   getOptions={getChipOptions}
                   onValueChange={changeChip}

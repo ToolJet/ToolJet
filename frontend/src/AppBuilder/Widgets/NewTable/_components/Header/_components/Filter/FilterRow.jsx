@@ -6,6 +6,8 @@ import defaultStyles from '@/_ui/Select/styles';
 import { FILTER_OPTIONS } from './filterConstants';
 import { Search } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
+import { showTitleOfClippedChild } from '../../../../_utils/overflowTitle';
+import { FilterValueControl, hasValuePicker } from './FilterValueControl';
 import { FIELD_CLASS, ROW_CLASS, RowConnector, RowCloseButton } from './filterRowParts';
 
 export const FilterRow = memo(
@@ -21,6 +23,8 @@ export const FilterRow = memo(
     onOperationChange,
     onValueChange,
     onRemove,
+    // how the value is entered: the column's type and configuration, and its options when it has some
+    valueColumn = {},
   }) => {
     const { t } = useTranslation();
     // "column" for the first row, then how the rows are joined; the panel says which when it knows
@@ -31,6 +35,8 @@ export const FilterRow = memo(
     const selectStyles = (width) => {
       return {
         ...defaultStyles(darkMode, width, 36, { fontSize: '14px', border: '1px solid var(--border-default)' }, '6px'),
+        // the shared Select leaves a 4px bottom margin and stretches its children, which lifts the placeholder
+        valueContainer: (base) => ({ ...base, alignItems: 'center', marginBottom: 0 }),
         placeholder: (base) => ({ ...base, fontSize: '14px', color: 'var(--text-placeholder)' }),
         menuPortal: (provided) => ({ ...provided, zIndex: 999 }),
         menuList: (base) => ({
@@ -77,27 +83,41 @@ export const FilterRow = memo(
           />
         </div>
         <div>
-          {!['isEmpty', 'isNotEmpty'].includes(filter.value.condition) && (
-            <div className={FIELD_CLASS}>
-              <Search size={16} className="tw-shrink-0 tw-text-icon-default" />
-              <input
-                data-cy={`filter-value-input-${index}`}
-                type="text"
+          {!['isEmpty', 'isNotEmpty'].includes(filter.value.condition) &&
+            (hasValuePicker(valueColumn.columnType, valueColumn.options) ? (
+              <FilterValueControl
+                id={id}
+                {...valueColumn}
+                condition={filter.value.condition}
                 value={filter.value.value}
-                placeholder="Enter text"
-                // the global `input[type="text"]` rule paints any outline that is not "none"; the field border shows the focus
-                style={{ outline: 'none' }}
-                className="tw-min-w-0 tw-flex-1 tw-border-0 tw-bg-transparent tw-p-0 tw-text-lg tw-text-text-default [font-family:inherit] placeholder:tw-text-text-placeholder"
-                onChange={(e) => onValueChange(index, e.target.value)}
+                onChange={(value) => onValueChange(index, value)}
+                darkMode={darkMode}
+                dataCy={`filter-value-input-${index}`}
+                label={`${filter.value.column ?? ''} value`}
               />
-            </div>
-          )}
+            ) : (
+              <div className={FIELD_CLASS}>
+                <Search size={16} className="tw-shrink-0 tw-text-icon-default" />
+                <input
+                  data-cy={`filter-value-input-${index}`}
+                  type="text"
+                  value={filter.value.value}
+                  placeholder="Enter text"
+                  // the global `input[type="text"]` rule paints any outline that is not "none"; the field border shows the focus
+                  style={{ outline: 'none' }}
+                  className="tw-min-w-0 tw-flex-1 tw-border-0 tw-bg-transparent tw-p-0 tw-text-lg tw-text-text-default [font-family:inherit] placeholder:tw-text-text-placeholder"
+                  onChange={(e) => onValueChange(index, e.target.value)}
+                />
+              </div>
+            ))}
         </div>
         <RowCloseButton dataCy={`close-filter-button-${index}`} label="Remove filter" onClick={() => onRemove(index)} />
       </div>
     );
   }
 );
+
+const showValueTitle = showTitleOfClippedChild('.react-select__single-value');
 
 const CustomValueContainer = (props) => {
   const handleClick = (e) => {
@@ -108,5 +128,11 @@ const CustomValueContainer = (props) => {
       props.innerProps.onMouseDown(e);
     }
   };
-  return <components.ValueContainer {...props} innerProps={{ ...props.innerProps, onMouseDown: handleClick }} />;
+  return (
+    <components.ValueContainer
+      {...props}
+      // the chosen value ends in an ellipsis when it is too long; hovering shows all of it
+      innerProps={{ ...props.innerProps, onMouseDown: handleClick, onMouseEnter: showValueTitle }}
+    />
+  );
 };

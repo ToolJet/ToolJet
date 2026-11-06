@@ -830,7 +830,11 @@
 // input with the calendar icon on the left (frame 2628:86086).
 .table-add-new-row {
   color: var(--slate12);
+}
 
+// the filters panel enters a date filter with the same field
+.table-add-new-row,
+.table-filters {
   .table-add-new-row-field-control {
     // The date renderer draws its own error line under the field; the form shows one error line for every field
     // type instead, so hide it, and tint the input when the form flags the field.

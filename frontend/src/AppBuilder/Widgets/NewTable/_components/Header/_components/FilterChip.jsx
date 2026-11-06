@@ -1,8 +1,10 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, X } from 'lucide-react';
+import { Check, ChevronDown, X } from 'lucide-react';
 import { debounce } from 'lodash';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Rocket/Popover/Popover';
+import { showTitleWhenClipped } from '../../../_utils/overflowTitle';
+import { isMultiPick, toValueList } from '../../../_utils/multiValue';
 
 // Same 500ms the filters panel waits before applying what is typed
 const APPLY_DELAY_MS = 500;
@@ -64,6 +66,7 @@ const TextValue = ({ chip, label, onChange }) => {
         apply(event.target.value);
       }}
       onBlur={() => apply.flush()}
+      onMouseEnter={showTitleWhenClipped}
       // the global `input[type="text"]` rule paints any outline that is not "none"; the chip border shows the focus
       style={{ width: `${Math.max(6, String(draft).length + 1)}ch`, maxWidth: '160px', outline: 'none' }}
       className="tw-min-w-0 tw-border-0 tw-bg-transparent tw-p-0 tw-text-lg tw-text-text-default [font-family:inherit] placeholder:tw-text-text-placeholder"
@@ -92,7 +95,9 @@ export const OptionValue = ({ chip, label, options, onChange, darkMode, dataCy =
             chip.value === '' ? 'tw-text-text-placeholder' : 'tw-text-text-default'
           )}
         >
-          <span className="tw-max-w-[160px] tw-truncate">{shown}</span>
+          <span className="tw-max-w-[160px] tw-truncate" onMouseEnter={showTitleWhenClipped}>
+            {shown}
+          </span>
           <ChevronDown size={12} className="tw-shrink-0 tw-text-icon-default" />
         </button>
       </PopoverTrigger>
@@ -127,6 +132,82 @@ export const OptionValue = ({ chip, label, options, onChange, darkMode, dataCy =
   );
 };
 
+// Several values picked from a list of options: the first one, "+N" for the rest, and a list that stays open to
+// tick and untick (the filter has the options as a list, empty takes it off)
+export const MultiOptionValue = ({ chip, label, options, onChange, darkMode, dataCy = 'filter-chip-value' }) => {
+  const [open, setOpen] = useState(false);
+  const picked = toValueList(chip.value);
+  const labelOf = (value) => options.find((option) => option.value === value)?.label ?? value;
+
+  const toggle = (value) =>
+    onChange(picked.includes(value) ? picked.filter((item) => item !== value) : [...picked, value]);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          data-chip-part="value"
+          data-cy={dataCy}
+          data-empty={picked.length === 0 ? 'true' : 'false'}
+          aria-label={`${label} value`}
+          aria-haspopup="listbox"
+          className={cn(
+            'tw-flex tw-min-w-0 tw-flex-1 tw-items-center tw-justify-between tw-gap-1 tw-border-0 tw-bg-transparent tw-p-0 tw-text-lg [font-family:inherit]',
+            picked.length === 0 ? 'tw-text-text-placeholder' : 'tw-text-text-default'
+          )}
+        >
+          <span className="tw-max-w-[160px] tw-truncate" onMouseEnter={showTitleWhenClipped}>
+            {picked.length === 0 ? chip.placeholder : labelOf(picked[0])}
+          </span>
+          {picked.length > 1 && (
+            <>
+              {' '}
+              <span className="tw-shrink-0 tw-text-text-placeholder">+{picked.length - 1}</span>
+            </>
+          )}
+          <ChevronDown size={12} className="tw-shrink-0 tw-text-icon-default" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        sideOffset={6}
+        // above the table and the dialogs the builder lifts to 1050
+        className={cn(
+          'tw-z-[1060] tw-w-max tw-min-w-[196px] tw-max-w-[280px] tw-gap-0 tw-p-2',
+          darkMode && 'dark-theme'
+        )}
+      >
+        <div
+          role="listbox"
+          aria-multiselectable="true"
+          aria-label={label}
+          className="tw-flex tw-max-h-60 tw-flex-col tw-overflow-y-auto"
+        >
+          {options.map((option) => {
+            const selected = picked.includes(option.value);
+            return (
+              <button
+                key={String(option.value)}
+                type="button"
+                role="option"
+                aria-selected={selected}
+                onClick={() => toggle(option.value)}
+                className="tw-flex tw-h-8 tw-w-full tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-md tw-border-0 tw-bg-transparent tw-px-2 tw-text-left tw-text-lg tw-text-text-default [font-family:inherit] hover:tw-bg-interactive-hover aria-selected:tw-font-medium"
+              >
+                <span className="tw-flex tw-h-4 tw-w-4 tw-shrink-0 tw-items-center tw-justify-center tw-rounded tw-border tw-border-solid tw-border-border-default">
+                  {selected && <Check size={12} />}
+                </span>
+                <span className="tw-truncate">{option.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
 /**
  * One quick filter, editable in place: column and operator, then a value box (typed, or picked from `options`).
  * `fill` stretches it to its container (the "+N more" menu). The cross clears the value and keeps the chip. A chip whose operator takes no value (is empty ...) is switched
@@ -135,6 +216,7 @@ export const OptionValue = ({ chip, label, options, onChange, darkMode, dataCy =
 export const FilterChip = memo(({ chip, dataCy, options, onValueChange, onClear, darkMode, fill = false }) => {
   const label = `${chip.column} ${chip.operator}`;
   const hasValue = chip.applied && (!chip.needsValue || chip.value !== '');
+  const ValuePicker = isMultiPick(chip.columnType, chip.condition) ? MultiOptionValue : OptionValue;
 
   return (
     <div data-cy={dataCy} data-chip-id={chip.id} className={cn(CHIP_CLASS, fill && 'tw-w-full')}>
@@ -148,7 +230,7 @@ export const FilterChip = memo(({ chip, dataCy, options, onValueChange, onClear,
           </span>
           <Divider />
           {options ? (
-            <OptionValue
+            <ValuePicker
               chip={chip}
               label={label}
               options={options}

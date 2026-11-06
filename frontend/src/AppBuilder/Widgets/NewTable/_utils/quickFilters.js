@@ -14,6 +14,14 @@ const PICKED_COLUMN_TYPES = [
   'datepicker',
 ];
 
+// What a chip shows of a condition on a column: its operator, and whether and how a value is asked for
+const describeCondition = (condition, column) => ({
+  operator: FILTER_OPTIONS.find(({ value }) => value === condition)?.name ?? condition,
+  needsValue: !NO_VALUE_CONDITIONS.includes(condition),
+  placeholder: PICKED_COLUMN_TYPES.includes(column.columnType) ? 'Select' : 'value',
+  columnType: column.columnType,
+});
+
 /**
  * The builder's saved filters as the chips shown in the table header. `columns` are `{ id, header, columnType }`
  * and `columnFilters` the filters the table has applied. A chip shows the value of the applied filter that
@@ -40,13 +48,40 @@ export const getQuickFilters = (defaultFilters, columnFilters, columns) => {
         columnId,
         column: column.header,
         condition,
-        operator: FILTER_OPTIONS.find(({ value }) => value === condition)?.name ?? condition,
-        needsValue: !NO_VALUE_CONDITIONS.includes(condition),
-        placeholder: PICKED_COLUMN_TYPES.includes(column.columnType) ? 'Select' : 'value',
-        columnType: column.columnType,
+        ...describeCondition(condition, column),
         applied: appliedIndex >= 0,
         appliedIndex,
         value: appliedIndex >= 0 ? (appliedFilters[appliedIndex].value.value ?? '') : '',
+      },
+    ];
+  });
+};
+
+/**
+ * The filters the user added, as chips for the header: every applied filter that no builder chip shows. They
+ * are always applied (a filter with no value is not applied), so unlike a builder chip they go when cleared.
+ */
+export const getUserFilters = (defaultFilters, columnFilters, columns) => {
+  const appliedFilters = Array.isArray(columnFilters) ? columnFilters : [];
+  const claimed = new Set(
+    getQuickFilters(defaultFilters, appliedFilters, columns).map(({ appliedIndex }) => appliedIndex)
+  );
+
+  return appliedFilters.flatMap((applied, index) => {
+    const column = columns.find((candidate) => candidate.id === applied?.id);
+    if (!column || claimed.has(index)) return [];
+
+    const condition = applied.value?.condition;
+    return [
+      {
+        id: `user-${index}`,
+        columnId: column.id,
+        column: column.header,
+        condition,
+        ...describeCondition(condition, column),
+        applied: true,
+        appliedIndex: index,
+        value: applied.value?.value ?? '',
       },
     ];
   });

@@ -10,6 +10,8 @@ import { isFilterComplete } from './filterUtils';
 import { getQuickFilters } from '../../../../_utils/quickFilters';
 import { applyChipValue } from '../../../../_utils/applyChipValue';
 import { debounce, isEqual } from 'lodash';
+import useTableStore from '../../../../_stores/tableStore';
+import { shallow } from 'zustand/shallow';
 
 const SectionTitle = ({ dataCy, className, children }) => (
   <div data-cy={dataCy} className={cn('tw-mb-2 tw-text-base tw-leading-4 tw-text-text-placeholder', className)}>
@@ -53,6 +55,13 @@ export const Filter = memo(
       );
       return applied.map((filter, index) => ({ ...filter, source: quick.has(index) ? 'quick' : 'user' }));
     });
+    // each column's configuration (formats, rating icons ...), for the control its filter value is entered with
+    const columnProperties = useTableStore((state) => state.getColumnProperties(id), shallow);
+    const columnConfigOf = (columnId) => columnProperties?.find((column) => column.id === columnId);
+    const columnTypes = useMemo(
+      () => Object.fromEntries(quickColumns.map(({ id: columnId, columnType }) => [columnId, columnType])),
+      [quickColumns]
+    );
     const connector = filterMatch === 'or' ? 'or' : 'and';
 
     // A row the user is making is never taken for a builder filter, even when it is the same column and operator
@@ -235,7 +244,9 @@ export const Filter = memo(
                     chip={chip}
                     index={index}
                     connector={index === 0 ? 'where' : connector}
+                    id={id}
                     options={getOptions?.(chip) ?? null}
+                    columnConfig={columnConfigOf(chip.columnId)}
                     darkMode={darkMode}
                     onChange={changeQuickFilter}
                   />
@@ -260,6 +271,15 @@ export const Filter = memo(
                 onOperationChange={(_, value) => filterOperationChanged(rowIndex, value)}
                 onValueChange={(_, value) => filterValueChanged(rowIndex, value)}
                 onRemove={() => removeFilter(rowIndex)}
+                valueColumn={{
+                  columnType: columnTypes[localFilters[rowIndex].id],
+                  column: columnConfigOf(localFilters[rowIndex].id),
+                  options:
+                    getOptions?.({
+                      columnId: localFilters[rowIndex].id,
+                      columnType: columnTypes[localFilters[rowIndex].id],
+                    }) ?? null,
+                }}
               />
             ))}
             {userRowIndexes.length === 0 && (
