@@ -56,8 +56,6 @@ If ToolJet logs `MCP socket relay is enabled but no bundle at /app/mcp/index.js;
 
 Use `TOOLJET_MCP_API_URL` to set the address the MCP server uses to call ToolJet. On some versions, the MCP server calls ToolJet at your `TOOLJET_HOST` URL. On a closed network, that address often can't be reached from inside the container. When that happens, AI chat responds but every page, theme, and component save fails with `fetch failed`, and nothing appears in the server logs.
 
-<!-- TODO verify: name the release that ships ToolJet/ee-server#1072, after which the MCP server calls ToolJet over loopback by default and this variable is only an override. -->
-
 To have the MCP server call ToolJet directly inside the container:
 
 1. Find the port the ToolJet server listens on inside the container:
