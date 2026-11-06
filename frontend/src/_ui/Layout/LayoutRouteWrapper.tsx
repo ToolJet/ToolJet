@@ -13,8 +13,12 @@ type LayoutRouteWrapperProps = {
   guard: Guard;
 };
 
+// Pages (matched on the end of the URL path) that render the redesigned header.
+const NEW_HEADER_PATHS = ['/workspace-constants'];
+
 const LayoutRouteWrapper = ({ darkMode, switchDarkMode, guard: Guard }: LayoutRouteWrapperProps) => {
   const location = useLocation();
+  const showNewHeader = NEW_HEADER_PATHS.some((path) => location.pathname.endsWith(path));
 
   const { updateSidebarNAV } = useContext(BreadCrumbContext) as { updateSidebarNAV: (value: string) => void };
 
@@ -53,6 +57,7 @@ const LayoutRouteWrapper = ({ darkMode, switchDarkMode, guard: Guard }: LayoutRo
         enableCollapsibleSidebar={enableCollapsibleSidebar}
         collapseSidebar={collapseSidebar}
         toggleCollapsibleSidebar={() => setCollapseSidebar((prev) => !prev)}
+        showNewHeader={showNewHeader}
       >
         <Suspense fallback={<TJLoader />}>
           <Outlet context={{ collapseSidebar, setCollapseSidebar, setEnableCollapsibleSidebar }} />
