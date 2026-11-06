@@ -54,7 +54,7 @@ const TOOLJET_MANAGED_OAUTH_APPS: Record<string, typeof GOOGLE_MANAGED_OAUTH_APP
   googlesheetsv2: GOOGLE_MANAGED_OAUTH_APP,
 };
 
-// RFC 6749 section 5.2 error codes.
+// RFC 6749 section 5.2 error codes, plus Google's redirect mismatch.
 const OAUTH_TOKEN_ERROR_CODES = new Set([
   'invalid_request',
   'invalid_client',
@@ -62,6 +62,7 @@ const OAUTH_TOKEN_ERROR_CODES = new Set([
   'unauthorized_client',
   'unsupported_grant_type',
   'invalid_scope',
+  'redirect_uri_mismatch',
 ]);
 
 @Injectable()
@@ -1557,7 +1558,9 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         refresh_token: result['refresh_token'],
       };
     } catch (err) {
-      throw new BadRequestException(this.parseErrorResponse(err?.response?.body, err?.response?.statusCode));
+      throw new BadRequestException(
+        this.parseErrorResponse(err?.response?.body ?? err?.message, err?.response?.statusCode)
+      );
     }
   }
 
@@ -1576,8 +1579,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     });
   }
 
-  // Cloud: always checked and refused. Self-hosted: checked when SSRF_PROTECTION_ENABLED, refused only with OAUTH_TOKEN_URL_CHECK_MODE=enforce.
-  // Returns the config for checking redirects: live when refusing, disabled when only logging.
+  // Self-hosted only logs unless enforce, so internal token servers keep working; returned config checks redirects.
   private async checkOAuthTokenUrl(
     accessTokenUrl: string,
     dataSource: DataSource
