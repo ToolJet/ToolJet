@@ -18,6 +18,8 @@ import Layout from '@/_ui/Layout';
 import WorkspaceLockedBanner from '@/_ui/WorkspaceLockedBanner';
 
 import { NoAppsExist } from './components/EmptyStates';
+import { useIsMobileView } from './MobileView/hooks/useIsMobileView';
+import MobileAppsDashboard from './MobileView/MobileAppsDashboard';
 import AddNewMenu from './components/AddNewMenu';
 import BuildWithAIButton from './components/BuildWithAIButton';
 import MoreActionsMenu from './components/MoreActionsMenu';
@@ -37,7 +39,21 @@ import type { ILicenseStore } from '@/_stores/types/licenseStore';
 
 const classes = { contentContainer: 'tw-h-dvh tw-flex tw-flex-col', contentBody: 'tw-pt-0' };
 
-export default function AppsDashboard({
+interface AppsDashboardProps {
+  appType: TAppType;
+  darkMode: boolean;
+  switchDarkMode: () => void;
+}
+
+// Only the front-end apps dashboard has a mobile layout; modules and workflows stay on the desktop one.
+export default function AppsDashboard(props: AppsDashboardProps) {
+  const isMobileView = useIsMobileView();
+
+  if (props.appType === 'front-end' && isMobileView) return <MobileAppsDashboard />;
+  return <DesktopAppsDashboard {...props} />;
+}
+
+function DesktopAppsDashboard({
   appType,
   darkMode,
   switchDarkMode,

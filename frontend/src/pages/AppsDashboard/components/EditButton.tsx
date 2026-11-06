@@ -52,6 +52,12 @@ export default function EditButton({ appDetails, className }: EditButtonProps) {
       navigate(
         appendBranchName(getPrivateRoute('editor', { slug: isValidSlug(slug) ? slug : id }), wsCurrentBranch?.name)
       );
+    } else {
+      navigate(
+        getPrivateRoute('editor', {
+          slug: isValidSlug(slug) ? slug : id,
+        })
+      );
     }
 
     posthogHelper.captureEvent('click_edit_button_on_card', {

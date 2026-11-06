@@ -14,13 +14,14 @@ import {
 } from '@/components/ui/Rocket/Combobox/Combobox';
 import { Input } from '@/components/ui/Rocket/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
-import { getAvatar, decodeEntities } from '@/_helpers/utils';
+import { decodeEntities } from '@/_helpers/utils';
 import { authenticationService } from '@/_services/authentication.service';
 import TruncatedText from '@/components/ui/Rocket/Tooltip/TruncatedText';
 import TooltipComp from '@/components/ui/Rocket/Tooltip';
 import LicenseBadge from '@ee/modules/Dashboard/components/OrganizationList/LicenseBadge';
 import ManageWorkspacesBtn from '@ee/modules/Dashboard/components/OrganizationList/ManageWorkspaceBtn';
 
+import Avatar from './Avatar';
 import CreateWorkspaceBtn from './CreateWorkspaceBtn';
 
 export default function WorkspaceSelectorV2({
@@ -95,7 +96,7 @@ export default function WorkspaceSelectorV2({
             {Boolean(currentWorkspaceDetails) && (
               <div className="tw-space-y-1.5">
                 <div className="tw-flex tw-justify-between tw-items-center gap-1">
-                  <Avatar workspaceName={currentWorkspaceDetails.name} className="tw-size-8" />
+                  <Avatar workspaceName={currentWorkspaceDetails.name} classes={{ avatarContainer: 'tw-size-8' }} />
 
                   <div className="tw-flex tw-items-center has-[+*]:tw-self-end">
                     {isAdmin && (
@@ -176,19 +177,5 @@ export default function WorkspaceSelectorV2({
         </ComboboxContent>
       </Combobox>
     </>
-  );
-}
-
-function Avatar({ workspaceName, className }) {
-  return (
-    <div
-      data-cy={`${String(workspaceName).toLowerCase().replace(/\s+/g, '-')}-avatar`}
-      className={cn(
-        'tw-flex tw-justify-center tw-items-center tw-uppercase tw-bg-interactive-hover tw-rounded tw-size-6',
-        className
-      )}
-    >
-      <span className="tw-font-body-small tw-text-text-placeholder">{getAvatar(workspaceName)}</span>
-    </div>
   );
 }

@@ -5,42 +5,12 @@ import { useTranslation } from 'react-i18next';
 
 import { cn } from '@/lib/utils';
 import DropdownMenu from '@/components/ui/Rocket/DropdownMenu';
-import { authenticationService, appService, sessionService } from '@/_services';
-import { teardownFrontendMetrics } from '@/_services/frontend-metrics.service';
+import { authenticationService } from '@/_services';
 import { getPrivateRoute } from '@/_helpers/routes';
+import { handleLogout } from './handleLogout';
 
 const avatarClassName =
   'tw-flex tw-shrink-0 tw-items-center tw-justify-center tw-rounded-lg tw-bg-interactive-default tw-font-body-default tw-text-text-placeholder';
-
-const isValidUrl = (url) => {
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-async function handleLogout() {
-  teardownFrontendMetrics();
-  // Get latest config first to ensure we have the most up-to-date custom logout url
-  await appService
-    .getConfig()
-    .then((config) => {
-      window.public_config = config;
-      const customLogoutUrl = window.public_config?.CUSTOM_LOGOUT_URL;
-      if (customLogoutUrl && isValidUrl(customLogoutUrl)) {
-        sessionService.logout().then(() => {
-          window.location.href = customLogoutUrl;
-        });
-        return;
-      }
-      sessionService.logout();
-    })
-    .catch(() => {
-      sessionService.logout();
-    });
-}
 
 function ProfileMenu({ checkForUnsavedChanges }) {
   const { t } = useTranslation();

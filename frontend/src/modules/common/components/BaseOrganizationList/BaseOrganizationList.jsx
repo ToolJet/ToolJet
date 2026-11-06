@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { authenticationService } from '@/_services';
-import { getAvatar, decodeEntities, stripTrailingSlash } from '@/_helpers/utils';
-import { appendWorkspaceId, getWorkspaceIdOrSlugFromURL, getTargetDomainURL, isCustomDomain } from '@/_helpers/routes';
-import { useSessionTransferRedirect } from '@/_helpers/useSessionTransferRedirect';
+import { getAvatar, decodeEntities } from '@/_helpers/utils';
 import { ToolTip } from '@/_components';
 import { useCurrentSessionStore } from '@/_stores/currentSessionStore';
 import { shallow } from 'zustand/shallow';
@@ -11,6 +9,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { WorkspaceDropDown } from '@/modules/dashboard/components';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 
+import { useSwitchOrganization } from './useSwitchOrganization';
 import WorkspaceSelectorV2 from '@/modules/dashboard/components/OrganizationList/WorkspaceSelectorV2';
 
 /* TODO: 
@@ -39,29 +38,14 @@ const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => nul
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const newTabRef = useRef(false);
-  const redirectWithSessionTransfer = useSessionTransferRedirect('switchOrganization');
+  const switchToOrganization = useSwitchOrganization();
 
   const switchOrganization = (id, newTab = false) => {
     newTabRef.current = newTab;
-    const organization = organizationList.find((org) => org.id === id);
-    if (![id, organization.slug].includes(getWorkspaceIdOrSlugFromURL())) {
-      const newPath = appendWorkspaceId(organization.slug || id, location.pathname, true);
-      const targetDomain = getTargetDomainURL(organization);
-      const currentOrigin = window.location.origin;
-
-      if (targetDomain && targetDomain !== currentOrigin) {
-        redirectWithSessionTransfer(targetDomain, newPath, id, newTab);
-      } else if (!targetDomain && isCustomDomain()) {
-        const mainHost = window.public_config?.TOOLJET_HOST;
-        if (!mainHost) {
-          console.error('[switchOrganization] TOOLJET_HOST not configured, cannot redirect from custom domain');
-          return;
-        }
-        redirectWithSessionTransfer(stripTrailingSlash(mainHost), newPath, id, newTab);
-      } else {
-        newTab ? window.open(newPath, '_blank') : (window.location = newPath);
-      }
-    }
+    switchToOrganization(
+      organizationList.find((org) => org.id === id),
+      newTab
+    );
   };
   const handleOnChange = (id) => {
     if (!newTabRef.current) {
