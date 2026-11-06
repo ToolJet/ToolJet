@@ -23,9 +23,9 @@ describe('Table-ADDROWFORM-001 allow adding multiple rows default', () => {
     expect(propertiesFor({ allowAddingMultipleRows: false }).allowAddingMultipleRows).toBe(false);
   });
 
-  test('Table-ADDROWFORM-001 a newly created Table is defined with multi-row adding off', () => {
-    // Break this catches: new tables defaulting to multi-row, contrary to the approved default.
-    expect(tableConfig.definition.properties.allowAddingMultipleRows.value).toBe('{{false}}');
+  test('Table-ADDROWFORM-001 a newly created Table is defined with multi-row adding on, like a saved app', () => {
+    // Break this catches: new tables defaulting to off, so a table and a saved app behave differently.
+    expect(tableConfig.definition.properties.allowAddingMultipleRows.value).toBe('{{true}}');
   });
 });
 

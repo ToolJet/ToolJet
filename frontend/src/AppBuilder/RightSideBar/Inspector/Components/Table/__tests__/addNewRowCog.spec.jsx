@@ -13,6 +13,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { tableConfig } from '@tooljet/widget-definitions';
 import { Table } from '../Table';
+import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
 
 const COG = { name: 'Configure add new row' };
 
@@ -93,5 +94,34 @@ describe('Table-ADDROWFORM-010 switching the toggle off closes the popover', () 
 
     expect(screen.queryByRole('radio', { name: 'Dialog' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', COG)).not.toBeInTheDocument();
+  });
+});
+
+describe('Table-ADDROWFORM-055 the cog lists the columns the table really has', () => {
+  test('Table-ADDROWFORM-055 dynamic columns, which are not in the saved columns, can be ticked', async () => {
+    // Break this catches: the list built from the saved `columns` only, so dynamic columns could never be ticked
+    // and a saved selection silently left them out of the form.
+    const user = userEvent.setup();
+    useTableStore.getState().initializeComponent('t1');
+    useTableStore.getState().setColumnDetails(
+      't1',
+      [],
+      true,
+      [
+        { name: 'sku', key: 'sku', columnType: 'string' },
+        { name: 'stock', key: 'stock', columnType: 'number' },
+      ],
+      {},
+      true,
+      [],
+      true
+    );
+    render(inspector('{{true}}'));
+
+    await user.click(screen.getByRole('button', COG));
+
+    expect(screen.getByRole('checkbox', { name: 'sku' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'stock' })).toBeChecked();
+    expect(screen.queryByRole('checkbox', { name: 'Name' })).not.toBeInTheDocument();
   });
 });
