@@ -24,7 +24,7 @@ RUN npm ci && npm run build:plugin
 FROM node:22.23.4 AS sdk-builder
 WORKDIR /sdk
 ARG BRANCH_NAME
-ARG CUSTOM_COMPONENT_SDK_REF=c6b5454a2a8b4bc17ada01459f80e78fb463237d
+ARG CUSTOM_COMPONENT_SDK_REF=f03662cd1396760249af8cd7b72ebca6af7ff040
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
