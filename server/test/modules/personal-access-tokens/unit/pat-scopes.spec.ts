@@ -330,6 +330,23 @@ describe('PatScopeInterceptor', () => {
       );
       await expect(run('DELETE_LIBRARY', aiSession())).rejects.toThrow(ForbiddenException);
     });
+
+    it('holds every other workspace token to the library features a token may use (the routes check the owning app)', () => {
+      for (const feature of ['CREATE_LIBRARY', 'FIND_OR_CREATE_LIBRARY', 'GET_LIBRARY', 'UPLOAD_DEV_BUNDLE', 'PUBLISH_REVISION']) {
+        expect(libraryInterceptor(feature).intercept(contextFor({ isPATLogin: true }), handled)).toBeDefined();
+      }
+      for (const feature of ['DELETE_LIBRARY', 'STREAM_DEV_BUNDLE']) {
+        expect(() => libraryInterceptor(feature).intercept(contextFor({ isPATLogin: true }), handled)).toThrow(
+          ForbiddenException
+        );
+        expect(() =>
+          libraryInterceptor(feature).intercept(
+            contextFor({ isPATLogin: true, tjApiSource: 'pat', aiAppId: AI_APP, organizationId: WS }),
+            handled
+          )
+        ).toThrow(ForbiddenException);
+      }
+    });
   });
 
   it('blocks a workspace PAT on a module outside the allowlist', () => {

@@ -422,8 +422,11 @@ interface LoadOptions {
   isDevBuild?: boolean;
 }
 
-const fetchInit = ({ isDevBuild = false }: LoadOptions): RequestInit | undefined =>
-  isDevBuild ? { cache: 'no-store' } : undefined;
+// credentials: a private app's bundle needs the session, also when the API is on another origin.
+const fetchInit = ({ isDevBuild = false }: LoadOptions): RequestInit => ({
+  credentials: 'include',
+  ...(isDevBuild ? { cache: 'no-store' } : {}),
+});
 
 // cacheKey: published revisions are immutable; a dev slot appends its push nonce so a push re-imports.
 export const loadLibraryModule = (
@@ -436,7 +439,9 @@ export const loadLibraryModule = (
   if (!pending) {
     pending = (async () => {
       const res = await fetch(bundleUrl, fetchInit(options));
-      if (!res.ok) throw new Error(`failed to fetch bundle (${res.status})`);
+      // The status lets a host tell a missing bundle from any other failure, and say what that means where it is shown.
+      if (!res.ok)
+        throw Object.assign(new Error(`couldn't fetch this code (HTTP ${res.status})`), { status: res.status });
       const source = await rewriteBareImports(await res.text());
       const url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
       try {

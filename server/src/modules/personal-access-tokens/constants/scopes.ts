@@ -256,6 +256,20 @@ export function patBundleOf(module: MODULES): PAT_BUNDLE | undefined {
  * Fails CLOSED: a route whose controller carries no @InitModule is denied rather than exempt, so a
  * new endpoint is locked down by default instead of silently escaping the allowlist.
  */
+/**
+ * The library routes a workspace token reaches, raw or exchanged: what the CLI needs (`tooljet app dev|publish` upload
+ * the app's build to its library, `tooljet library` publishes a visual library). The routes themselves hold a Code mode
+ * app's library to people who can edit that app (ee/custom-component-libraries/controller.ts), and CASL to builders.
+ * Deleting a library and its live stream stay out of tokens.
+ */
+export const PAT_LIBRARY_FEATURES: ReadonlySet<string> = new Set([
+  LIBRARY_FEATURE.CREATE_LIBRARY,
+  LIBRARY_FEATURE.FIND_OR_CREATE_LIBRARY,
+  LIBRARY_FEATURE.GET_LIBRARY,
+  LIBRARY_FEATURE.UPLOAD_DEV_BUNDLE,
+  LIBRARY_FEATURE.PUBLISH_REVISION,
+]);
+
 export function patCanAccess(module: MODULES | undefined, feature?: string): boolean {
   if (!module) return false;
   // Installed API specs are read-only datasource metadata. Keep plugin administration in its
@@ -264,9 +278,13 @@ export function patCanAccess(module: MODULES | undefined, feature?: string): boo
     return PAT_ALLOWED_BUNDLES.includes(PAT_BUNDLE.DATA);
   }
   // The workspace's installed component packs (their manifests) are read-only component metadata the MCP builds its
-  // catalogue from. Publishing and dev uploads stay out: they put code that runs in every app that uses it.
-  if (module === MODULES.CUSTOM_COMPONENT_LIBRARIES && feature === LIBRARY_FEATURE.LIST_LIBRARIES) {
-    return PAT_ALLOWED_BUNDLES.includes(PAT_BUNDLE.APPS);
+  // catalogue from. The library authoring a token may do is PAT_LIBRARY_FEATURES, the same whether the token is sent
+  // itself or exchanged for a session. An app's own library is also published through code-mode-source (APPS bundle).
+  if (module === MODULES.CUSTOM_COMPONENT_LIBRARIES) {
+    return (
+      (feature === LIBRARY_FEATURE.LIST_LIBRARIES || PAT_LIBRARY_FEATURES.has(feature)) &&
+      PAT_ALLOWED_BUNDLES.includes(PAT_BUNDLE.APPS)
+    );
   }
   if (!ALLOWED_MODULES.has(module)) return false;
   const allowedFeatures = PAT_ALLOWED_FEATURES[module];
