@@ -12,6 +12,7 @@ Owns personal access tokens (PATs) and their exchange for workspace sessions.
 ## Invariants
 
 - Workspace PATs can reach Apps, Data, Workflows, and the explicitly allowed Workspace Users features.
+- `PAT_DENIED_FEATURES` keeps browser-only decisions out of tokens inside allowed modules: releasing past a failed security gate, approving a review, and releasing without one. It is a deny set, so the rest of each module stays reachable.
 - Workflow creation, execution, status, and node routes use the existing module metadata; do not add controller-specific PAT checks.
 - Scope access never overrides owner permissions or edition/license gates.
 - OAuth delegated and viewer requests share these scope bundles and ceilings through `../mcp-oauth/scope.interceptor.ts`; changing `constants/scopes.ts` changes PAT and OAuth access together.

@@ -29,6 +29,7 @@
   "apps | AppPermissions | delete_component_permissions | DELETE | /app-permissions/:appId/components/:componentId | version=(default) | src/modules/app-permissions/controller.ts | AppPermissionsController.deleteComponentPermissions",
   "apps | AppPermissions | delete_page_permissions | DELETE | /app-permissions/:appId/pages/:pageId | version=(default) | src/modules/app-permissions/controller.ts | AppPermissionsController.deletePagePermissions",
   "apps | AppPermissions | delete_query_permissions | DELETE | /app-permissions/:appId/queries/:queryId | version=(default) | src/modules/app-permissions/controller.ts | AppPermissionsController.deleteQueryPermissions",
+  "apps | AppPermissions | fetch_app_members | GET | /app-permissions/:appId/members | version=(default) | src/modules/app-permissions/controller.ts | AppPermissionsController.fetchAppMembers",
   "apps | AppPermissions | fetch_component_permissions | GET | /app-permissions/:appId/components/:componentId | version=(default) | src/modules/app-permissions/controller.ts | AppPermissionsController.fetchComponentPermissions",
   "apps | AppPermissions | fetch_page_permissions | GET | /app-permissions/:appId/pages/:pageId | version=(default) | src/modules/app-permissions/controller.ts | AppPermissionsController.fetchPagePermissions",
   "apps | AppPermissions | fetch_query_permissions | GET | /app-permissions/:appId/queries/:queryId | version=(default) | src/modules/app-permissions/controller.ts | AppPermissionsController.fetchQueryPermissions",

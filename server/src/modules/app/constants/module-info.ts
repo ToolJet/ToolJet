@@ -9,6 +9,8 @@ import { FEATURES as FOLDER_APPS_FEATURES } from '@modules/folder-apps/constants
 import { FEATURES as FOLDER_DATA_SOURCES_FEATURES } from '@modules/folder-data-sources/constants/feature';
 import { FEATURES as CUSTOM_STYLES_FEATURES } from '@modules/custom-styles/constants/feature';
 import { FEATURES as CUSTOM_COMPONENT_LIBRARIES_FEATURES } from '@modules/custom-component-libraries/constants/feature';
+import { FEATURES as CODE_PAGE_SECURITY_FEATURES } from '@modules/code-page-security/constants/feature';
+import { FEATURES as APP_SECURITY_FEATURES } from '@modules/app-security/constants/feature';
 import { FEATURES as CODE_MODE_SOURCE_FEATURES } from '@modules/code-mode-source/constants/feature';
 import { FEATURES as VERSION_FEATURES } from '@modules/versions/constants/features';
 import { FEATURES as SMTP_FEATURES } from '@modules/smtp/constants/features';
@@ -75,6 +77,8 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...FOLDER_DATA_SOURCES_FEATURES,
   ...CUSTOM_STYLES_FEATURES,
   ...CUSTOM_COMPONENT_LIBRARIES_FEATURES,
+  ...CODE_PAGE_SECURITY_FEATURES,
+  ...APP_SECURITY_FEATURES,
   ...CODE_MODE_SOURCE_FEATURES,
   ...VERSION_FEATURES,
   ...SMTP_FEATURES,

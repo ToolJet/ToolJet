@@ -2,6 +2,7 @@ import { DynamicModule } from '@nestjs/common';
 import { SubModule } from '@modules/app/sub-module';
 import { AppsRepository } from '@modules/apps/repository';
 import { StorageService } from '@modules/custom-component-libraries/storage.service';
+import { AppSecurityModule } from '@modules/app-security/module';
 import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { FeatureAbilityFactory } from './ability';
 import { DEV_TRACK_UPLOADER, GIT_SYNC_DETAILS } from './constants';
@@ -25,7 +26,7 @@ export class CodeModeSourceModule extends SubModule {
     const { GitSyncConfigsUtilService } = await this.getProviders(configs, 'git-sync-configs', ['util.service']);
     return this.cacheModule(cacheKey, {
       module: CodeModeSourceModule,
-      imports: [await GitSyncConfigsModule.register(configs)],
+      imports: [await AppSecurityModule.register(configs), await GitSyncConfigsModule.register(configs)],
       providers: [
         // The edition's service, under the public class as its token.
         { provide: CodeModeSourceServiceBase, useClass: CodeModeSourceService },
