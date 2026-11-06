@@ -204,6 +204,10 @@ const isTextField = (node: EventTarget | undefined): boolean =>
 // field?" checks never see the bundle's inputs: a press starts a widget drag (preventDefault, no focus)
 // and keys go to hotkeys. Stop those events at the host when they start in a text field — or, for
 // presses, inside a `[data-tj-no-drag]` region (sliders etc.), like Grid's per-widget inner-element rule.
+// Keys are stopped from any control inside the shadow root, not only text fields: a slider thumb, an open select list or
+// a calendar day holds focus too, and the hotkeys took its keys (ArrowRight moved the selected widget, Backspace asked
+// to delete it, Cmd+C copied it, Cmd+A selected the canvas). The pack's own handlers have run by then. Escape from a
+// control that is not a text field still goes out, so a ToolJet Modal around the pack closes on it.
 // Native components in a ToolJet.Slot are the host's light-DOM children: nothing retargets their events, so the canvas
 // and hotkeys see them as usual, and they need theirs to reach React (a Text Input's Enter fires on keyup). Only events
 // from inside the shadow root are stopped; `contains` does not cross into it.
@@ -219,7 +223,8 @@ export const isolateInteractiveEvents = (host: HTMLElement): (() => void) => {
   };
   const onKey = (e: Event) => {
     const origin = e.composedPath()[0];
-    if (fromShadow(origin) && isTextField(origin)) e.stopPropagation();
+    if (!fromShadow(origin)) return;
+    if (isTextField(origin) || (e as KeyboardEvent).key !== 'Escape') e.stopPropagation();
   };
   PRESS_EVENTS.forEach((type) => host.addEventListener(type, onPress));
   KEY_EVENTS.forEach((type) => host.addEventListener(type, onKey));
