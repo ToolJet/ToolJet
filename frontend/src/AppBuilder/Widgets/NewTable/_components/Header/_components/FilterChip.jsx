@@ -111,7 +111,11 @@ export const OptionValue = ({ chip, label, options, onChange, darkMode, dataCy =
           darkMode && 'dark-theme'
         )}
       >
-        <div role="listbox" aria-label={label} className="tw-flex tw-max-h-60 tw-flex-col tw-overflow-y-auto">
+        <div
+          role="listbox"
+          aria-label={label}
+          className="tw-scrollbar-on-hover tw-flex tw-max-h-60 tw-flex-col tw-overflow-y-auto"
+        >
           {options.map((option) => (
             <button
               key={String(option.value)}
@@ -183,7 +187,7 @@ export const MultiOptionValue = ({ chip, label, options, onChange, darkMode, dat
           role="listbox"
           aria-multiselectable="true"
           aria-label={label}
-          className="tw-flex tw-max-h-60 tw-flex-col tw-overflow-y-auto"
+          className="tw-scrollbar-on-hover tw-flex tw-max-h-60 tw-flex-col tw-overflow-y-auto"
         >
           {options.map((option) => {
             const selected = picked.includes(option.value);

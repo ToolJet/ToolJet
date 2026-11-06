@@ -357,6 +357,17 @@
     }
   }
 
+  // A thin scrollbar that is only drawn while the pointer is over the scrolling area. The track keeps its room, so
+  // nothing shifts when it appears.
+  .tw-scrollbar-on-hover {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+
+    &:hover {
+      scrollbar-color: var(--interactive-overlays-border-hover) transparent;
+    }
+  }
+
   .tw-hide-scrollbar {
     scrollbar-width: none;
 

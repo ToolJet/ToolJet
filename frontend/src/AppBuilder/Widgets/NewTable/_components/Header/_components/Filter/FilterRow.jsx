@@ -5,6 +5,7 @@ import { components } from 'react-select';
 import defaultStyles from '@/_ui/Select/styles';
 import { FILTER_OPTIONS } from './filterConstants';
 import { Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { showTitleOfClippedChild } from '../../../../_utils/overflowTitle';
 import { FilterValueControl, hasValuePicker } from './FilterValueControl';
@@ -58,7 +59,7 @@ export const FilterRow = memo(
             value={filter.id}
             search={true}
             onChange={(value) => onColumnChange(index, value)}
-            components={{ ValueContainer: CustomValueContainer }}
+            components={{ ValueContainer: CustomValueContainer, MenuList: HoverScrollMenuList }}
             placeholder={t('globals.select', 'Select') + '...'}
             className={`${darkMode ? 'select-search-dark' : 'select-search'} mb-0`}
             styles={selectStyles('100%')}
@@ -73,7 +74,7 @@ export const FilterRow = memo(
             value={filter.value.condition}
             search={true}
             onChange={(value) => onOperationChange(index, value)}
-            components={{ ValueContainer: CustomValueContainer }}
+            components={{ ValueContainer: CustomValueContainer, MenuList: HoverScrollMenuList }}
             className={`${darkMode ? 'select-search-dark' : 'select-search'} mb-0`}
             placeholder={t('globals.select', 'Select') + '...'}
             styles={selectStyles('100%')}
@@ -115,6 +116,11 @@ export const FilterRow = memo(
       </div>
     );
   }
+);
+
+// the options list draws its scrollbar only while the pointer is over it
+const HoverScrollMenuList = (props) => (
+  <components.MenuList {...props} className={cn(props.className, 'tw-scrollbar-on-hover')} />
 );
 
 const showValueTitle = showTitleOfClippedChild('.react-select__single-value');

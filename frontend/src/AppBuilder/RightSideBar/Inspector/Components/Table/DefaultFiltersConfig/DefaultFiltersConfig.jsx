@@ -107,7 +107,11 @@ const FilterSelect = ({ label, prefix, value, options, onChange, darkMode }) => 
           darkMode && 'dark-theme'
         )}
       >
-        <div role="listbox" aria-label={label} className="tw-flex tw-max-h-60 tw-flex-col tw-overflow-y-auto">
+        <div
+          role="listbox"
+          aria-label={label}
+          className="tw-scrollbar-on-hover tw-flex tw-max-h-60 tw-flex-col tw-overflow-y-auto"
+        >
           {options.map((option) => (
             <button
               key={String(option.value)}
@@ -271,7 +275,7 @@ export const DefaultFiltersConfig = ({
           </PopoverPrimitive.Close>
         </div>
 
-        <div className="tw-flex tw-max-h-[min(70vh,560px)] tw-flex-col tw-gap-3 tw-overflow-y-auto tw-p-4">
+        <div className="tw-scrollbar-on-hover tw-flex tw-max-h-[min(70vh,560px)] tw-flex-col tw-gap-3 tw-overflow-y-auto tw-p-4">
           <div className="tw-flex tw-h-8 tw-items-center tw-justify-between">
             <span className="tw-font-body-default tw-text-text-default">Type</span>
             <Segmented

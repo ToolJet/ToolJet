@@ -234,7 +234,7 @@ export const Filter = memo(
           }}
         >
           <FilterHeader setShowFilter={setShowFilter} />
-          <div className="card-body" style={{ padding: '16px' }}>
+          <div className="card-body tw-scrollbar-on-hover" style={{ padding: '16px' }}>
             {quickChips.length > 0 && (
               <>
                 <SectionTitle dataCy="filter-section-quick">Quick filters</SectionTitle>
