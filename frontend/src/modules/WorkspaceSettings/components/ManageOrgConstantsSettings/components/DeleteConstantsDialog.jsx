@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash } from 'lucide-react';
 import { InlineInfo } from '@/components/ui/Rocket';
 import ActionDialog from '@/components/ui/Rocket/Dialog/ActionDialog';
 import { DialogDescription, DialogTitle } from '@/components/ui/Rocket/Dialog/Dialog';
@@ -48,7 +48,7 @@ export default function DeleteConstantsDialog({ constants, open, onOpenChange, o
       ]}
     >
       <div className="tw-flex tw-flex-col tw-gap-2">
-        <Trash2 size={40} className="tw-text-icon-danger" />
+        <Trash size={40} className="tw-text-icon-danger" />
         <div className="tw-flex tw-flex-col tw-gap-0.5">
           <DialogTitle className="tw-font-title-x-large tw-text-text-default">
             {isBulk ? `Delete ${constants.length} constants?` : 'Delete workspace constant?'}

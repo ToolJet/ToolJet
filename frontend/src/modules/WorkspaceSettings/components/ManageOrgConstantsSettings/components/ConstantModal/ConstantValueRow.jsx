@@ -1,73 +1,96 @@
-import React from 'react';
-import { LockKeyhole, Trash2 } from 'lucide-react';
-import { Button, FieldError, Textarea } from '@/components/ui/Rocket';
-import Tooltip from '@/components/ui/Rocket/Tooltip';
+import React, { useState } from 'react';
+import { CircleAlert, LockKeyhole, Trash } from 'lucide-react';
+import { Button, FieldError, Popover, PopoverContent, PopoverTrigger, Textarea } from '@/components/ui/Rocket';
 import { cn } from '@/lib/utils';
 
-const MASKED_PLACEHOLDER = '••••••••••••••••';
+const MASKED_PLACEHOLDER = '***************';
 
-// Assumption, not confirmed with product: the last remaining value cannot be removed, so its
-// trash button is disabled with this explanation rather than offering to delete the constant.
-const LAST_VALUE_TOOLTIP = 'A constant needs at least one value';
+const listFormat = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' });
 
-export default function ConstantValueRow({ row, canRemove, onChange, onRemove, onUndo }) {
-  const { environmentName, value, removed, locked, masked, error } = row;
+function RemoveValuePopover({ environmentName, otherEnvironmentNames, canRemove, onConfirm, onCancel }) {
+  const othersStay =
+    otherEnvironmentNames.length > 0
+      ? `The ${listFormat.format(otherEnvironmentNames)} ${otherEnvironmentNames.length > 1 ? 'values stay' : 'value stays'}.`
+      : 'This is the only value.';
+
+  return (
+    <PopoverContent align="end" className="tw-gap-3 tw-border-0">
+      <div className="tw-flex tw-flex-col tw-gap-1">
+        <span className="tw-font-body-default tw-text-text-default">Remove {environmentName} value?</span>
+        <span className="tw-font-body-small tw-text-text-placeholder">
+          {canRemove ? othersStay : "This is the only value. The constant can't be used without one."}
+        </span>
+      </div>
+      {!canRemove && (
+        // The server rejects a constant with no values, so deleting the last one is a job for Delete on the list.
+        <div className="tw-flex tw-items-start tw-gap-1.5 tw-rounded-md tw-border tw-border-solid tw-border-border-weak tw-bg-background-surface-layer-02 tw-px-2 tw-py-1.5">
+          <CircleAlert aria-hidden className="tw-size-3.5 tw-shrink-0 tw-text-icon-weak" />
+          <span className="tw-font-body-small tw-text-text-placeholder">
+            To delete the whole constant, use Delete from the constants list.
+          </span>
+        </div>
+      )}
+      <div className="tw-flex tw-justify-end tw-gap-2">
+        <Button variant="outline" size="medium" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button variant="primary" danger size="medium" disabled={!canRemove} onClick={onConfirm}>
+          Remove
+        </Button>
+      </div>
+    </PopoverContent>
+  );
+}
+
+export default function ConstantValueRow({ row, canRemove, otherEnvironmentNames, onChange, onRemove }) {
+  const { environmentName, value, locked, masked, error } = row;
   const label = `${environmentName} value`;
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
 
   return (
     <div className="tw-flex tw-flex-col tw-gap-0.5">
       <div className="tw-flex tw-items-center tw-justify-between tw-pl-0.5">
         <div className="tw-flex tw-items-center tw-gap-1">
-          <span className={cn('tw-font-title-default', removed ? 'tw-text-text-placeholder' : 'tw-text-text-default')}>
-            {environmentName}
-          </span>
-          {!removed && (
-            <LockKeyhole
-              aria-hidden
-              className={cn('tw-size-3', locked ? 'tw-text-icon-disabled' : 'tw-text-icon-success')}
-            />
-          )}
-          {removed && (
-            <span className="tw-rounded tw-bg-background-error-weak tw-px-1.5 tw-font-body-small tw-text-text-danger">
-              Removed on save
-            </span>
-          )}
+          <span className="tw-font-title-default tw-text-text-default">{environmentName}</span>
+          <LockKeyhole
+            aria-hidden
+            className={cn('tw-size-3', locked ? 'tw-text-icon-disabled' : 'tw-text-icon-success')}
+          />
           {locked && <span className="tw-font-body-small tw-text-text-placeholder">Not accessible</span>}
         </div>
 
-        {removed && (
-          <button
-            type="button"
-            className="tw-border-0 tw-bg-transparent tw-p-0 tw-font-body-small tw-text-text-brand tw-underline"
-            onClick={onUndo}
-          >
-            Undo
-          </button>
-        )}
-        {!removed && !locked && (
-          <Tooltip content={canRemove ? undefined : LAST_VALUE_TOOLTIP} isTooltipForInteractiveDisabledElement>
-            <Button
-              variant="ghost"
-              size="medium"
-              iconOnly
-              disabled={!canRemove}
-              aria-label={`Remove ${environmentName} value`}
-              onClick={onRemove}
-            >
-              <Trash2 size={14} />
-            </Button>
-          </Tooltip>
+        {!locked && (
+          <Popover open={confirmingRemove} onOpenChange={setConfirmingRemove}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="medium" iconOnly aria-label={`Remove ${environmentName} value`}>
+                <Trash size={14} className="!tw-size-3.5" />
+              </Button>
+            </PopoverTrigger>
+            <RemoveValuePopover
+              environmentName={environmentName}
+              otherEnvironmentNames={otherEnvironmentNames}
+              canRemove={canRemove}
+              onCancel={() => setConfirmingRemove(false)}
+              onConfirm={() => {
+                setConfirmingRemove(false);
+                onRemove();
+              }}
+            />
+          </Popover>
         )}
       </div>
 
       <Textarea
         aria-label={label}
-        rows={3}
+        rows={4}
         value={locked ? '' : value}
         placeholder={masked || locked ? MASKED_PLACEHOLDER : 'Enter value'}
-        disabled={removed || locked}
+        disabled={locked}
         aria-invalid={Boolean(error)}
-        className={cn('tw-min-h-[76px] tw-resize-y tw-px-2 tw-py-[7px]', removed && 'tw-line-through')}
+        className={cn(
+          'tw-h-[86px] tw-min-h-[86px] tw-resize-y tw-px-2 tw-py-[7px]',
+          masked && 'placeholder:tw-text-text-default'
+        )}
         onChange={(e) => onChange(e.target.value)}
       />
       {error && <FieldError>{error}</FieldError>}

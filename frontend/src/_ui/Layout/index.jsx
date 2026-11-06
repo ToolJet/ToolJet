@@ -191,7 +191,12 @@ function Layout({
           showNewHeader={showNewHeader}
         />
 
-        {shouldWrapContentBody ? <div className={cn('tw-pt-12', classes?.contentBody)}>{children}</div> : children}
+        {shouldWrapContentBody ? (
+          // The old header is fixed and needs this padding to clear it; the new header sits in normal flow.
+          <div className={cn(!showNewHeader && 'tw-pt-12', classes?.contentBody)}>{children}</div>
+        ) : (
+          children
+        )}
       </div>
 
       <UnsavedChangesDialog />

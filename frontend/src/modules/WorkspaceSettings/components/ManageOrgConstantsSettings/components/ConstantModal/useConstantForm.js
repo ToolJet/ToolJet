@@ -73,14 +73,22 @@ export function useConstantForm({ mode, constant, environments, multiEnvironment
     return valueCountAfterSave >= 2;
   };
 
-  const canAddEnvironment = multiEnvironment || rows.length === 0;
+  // A removed row stays in `rows` until save (it sends the delete) but no longer counts as a value.
+  const canAddEnvironment = multiEnvironment || rows.every((r) => r.removed);
 
-  const availableEnvironments = environments.filter((e) => !rowMap[e.id]);
-  const allEnvironmentsAdded = environments.filter((e) => e.enabled).every((e) => rowMap[e.id]);
+  const availableEnvironments = environments.filter((e) => !rowMap[e.id] || rowMap[e.id].removed);
+  const allEnvironmentsAdded = environments
+    .filter((e) => e.enabled)
+    .every((e) => rowMap[e.id] && !rowMap[e.id].removed);
 
   const addEnvironment = (envId) => {
     const env = environments.find((e) => e.id === envId);
-    if (!env || !env.enabled || rowMap[envId] || !canAddEnvironment) return;
+    if (!env || !env.enabled || !canAddEnvironment) return;
+    // Adding back an environment whose stored value was removed restores that value.
+    if (rowMap[envId]) {
+      if (rowMap[envId].removed) updateRow(envId, { removed: false });
+      return;
+    }
     setRowMap((prev) => ({
       ...prev,
       [envId]: { stored: false, initial: '', value: '', removed: false, locked: false },
@@ -96,8 +104,6 @@ export function useConstantForm({ mode, constant, environments, multiEnvironment
     }
     if (canRemove(envId)) updateRow(envId, { removed: true });
   };
-
-  const undoRemove = (envId) => updateRow(envId, { removed: false });
 
   const setValue = (envId, value) => {
     const row = rowMap[envId];
@@ -145,7 +151,6 @@ export function useConstantForm({ mode, constant, environments, multiEnvironment
     canAddEnvironment,
     addEnvironment,
     removeRow,
-    undoRemove,
     setValue,
     canRemove,
     isDirty,

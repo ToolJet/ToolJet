@@ -81,7 +81,7 @@ function AddEnvironmentMenu({ form, lockedPlanName }) {
         <Button
           variant="outline"
           size="medium"
-          leadingVisual={<Plus size={14} />}
+          leadingVisual={<Plus size={14} className="!tw-size-3.5" />}
           disabled={!form.canAddEnvironment}
           data-cy="add-environment-button"
         >
@@ -97,8 +97,8 @@ function AddEnvironmentMenu({ form, lockedPlanName }) {
 function ValuesEmptyState({ form }) {
   const quickAdd = form.availableEnvironments.filter((env) => env.enabled);
   return (
-    <div className="tw-flex tw-min-h-[250px] tw-flex-col tw-items-center tw-justify-center tw-rounded-[10px] tw-border tw-border-dashed tw-border-border-weak tw-py-10">
-      <div className="tw-flex tw-w-[259px] tw-flex-col tw-gap-3 tw-text-center">
+    <div className="-tw-mt-0.5 tw-flex tw-min-h-[250px] tw-flex-col tw-items-center tw-justify-center tw-rounded-[10px] tw-border tw-border-dashed tw-border-border-weak tw-py-10">
+      <div className="tw-flex tw-w-max tw-min-w-[259px] tw-flex-col tw-gap-3 tw-text-center">
         <div className="tw-flex tw-flex-col">
           <span className="tw-font-title-default tw-text-text-default">No values added yet</span>
           <span className="tw-font-body-small tw-text-text-placeholder">
@@ -106,14 +106,14 @@ function ValuesEmptyState({ form }) {
             value for this constant.
           </span>
         </div>
-        <div className="tw-flex tw-flex-wrap tw-justify-center tw-gap-2">
+        <div className="tw-flex tw-justify-center tw-gap-2">
           {quickAdd.map((env) => (
             <Button
               key={env.id}
               variant="outline"
               size="small"
               className="tw-gap-0.5 tw-rounded-full tw-px-2 tw-font-title-small"
-              trailingVisual={<Plus size={12} />}
+              trailingVisual={<Plus size={12} className="!tw-size-3" />}
               onClick={() => form.addEnvironment(env.id)}
             >
               {env.name}
@@ -142,6 +142,8 @@ function ConstantModalDialog({
   const [serverError, setServerError] = useState(null);
 
   const nameError = duplicateName ? DUPLICATE_NAME_ERROR : form.nameError;
+  // A removed value keeps its row in the form until save (that is what sends the delete) but is no longer shown.
+  const visibleRows = form.rows.filter((row) => !row.removed);
 
   const close = () => {
     if (!pending) onOpenChange(false);
@@ -187,12 +189,10 @@ function ConstantModalDialog({
       }}
       cancelBtnProps={{ onClick: close }}
       footerStart={
-        isEdit ? null : (
-          <div className="tw-flex tw-items-center tw-gap-1.5 tw-font-body-default tw-text-text-medium">
-            <Info aria-hidden size={16} className="tw-text-icon-accent" />
-            Name and type cannot be edited post-creation
-          </div>
-        )
+        <div className="tw-flex tw-items-center tw-gap-1.5 tw-font-body-default tw-text-text-medium">
+          <Info aria-hidden size={16} className="tw-text-icon-accent" />
+          Name and type cannot be edited post-creation
+        </div>
       }
       submitActions={[
         { label: 'Cancel', variant: 'outline', disabled: pending, onClick: close, 'data-cy': 'cancel-button' },
@@ -229,7 +229,7 @@ function ConstantModalDialog({
         </Field>
 
         <div className="tw-flex tw-flex-col tw-gap-2">
-          <span className="tw-font-title-default tw-text-text-default">Type</span>
+          <span className="tw-flex tw-h-5 tw-items-center tw-font-title-default tw-text-text-default">Type</span>
           <RadioGroup value={form.type} onValueChange={handleTypeChange} disabled={isEdit} className="tw-gap-3">
             {TYPE_OPTIONS.map((option) => (
               <TypeOption key={option.value} {...option} />
@@ -255,17 +255,19 @@ function ConstantModalDialog({
             )}
           </div>
 
-          {form.rows.length === 0 ? (
+          {visibleRows.length === 0 ? (
             <ValuesEmptyState form={form} />
           ) : (
-            form.rows.map((row) => (
+            visibleRows.map((row) => (
               <ConstantValueRow
                 key={row.environmentId}
                 row={row}
                 canRemove={form.canRemove(row.environmentId)}
+                otherEnvironmentNames={visibleRows
+                  .filter((other) => other.environmentId !== row.environmentId)
+                  .map((other) => other.environmentName)}
                 onChange={(value) => form.setValue(row.environmentId, value)}
                 onRemove={() => form.removeRow(row.environmentId)}
-                onUndo={() => form.undoRemove(row.environmentId)}
               />
             ))
           )}

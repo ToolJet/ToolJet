@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Rocket';
 import ConstantModal from './components/ConstantModal';
 import DeleteConstantsDialog from './components/DeleteConstantsDialog';
 import ConstantsEmptyState from './components/ConstantsEmptyState';
+import ConstantsPageHeader from './components/ConstantsPageHeader';
 
 const ENVS = [
   { id: 'dev', name: 'Development', enabled: true },
@@ -32,7 +33,9 @@ export default function ConstantsPreview() {
   const close = (open) => !open && setWhich(null);
   return (
     <div style={{ padding: 24 }}>
-      <div style={{ marginBottom: 8, fontWeight: 600 }}>Workspace constants: preview (not wired to the API)</div>
+      <div style={{ marginBottom: 16 }}>
+        <ConstantsPageHeader onCreate={() => setWhich('create')} />
+      </div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         {[
           ['create', 'Create modal'],

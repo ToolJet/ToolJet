@@ -241,19 +241,21 @@ describe('useConstantForm — edit', () => {
     const { result } = setup({ mode: 'edit', constant: globalConstant() });
     act(() => result.current.removeRow('stg'));
     expect(result.current.rows.find((r) => r.environmentId === 'stg')).toMatchObject({ removed: true });
-    expect(result.current.availableEnvironments.map((e) => e.id)).not.toContain('stg');
     expect(result.current.toApiBody()).toEqual({ values: [{ environment_id: 'stg', value: null }] });
     expect(result.current.canSubmit).toBe(true);
   });
 
-  it('restores a marked value on undo', () => {
+  it('offers a removed environment in the Add menu again, and adding it restores the stored value', () => {
     const { result } = setup({ mode: 'edit', constant: globalConstant() });
     act(() => result.current.removeRow('stg'));
-    act(() => result.current.undoRemove('stg'));
+    expect(result.current.availableEnvironments.map((e) => e.id)).toContain('stg');
+    expect(result.current.allEnvironmentsAdded).toBe(false);
+    act(() => result.current.addEnvironment('stg'));
     expect(result.current.rows.find((r) => r.environmentId === 'stg')).toMatchObject({
       removed: false,
       value: 'http://stg',
     });
+    expect(result.current.availableEnvironments.map((e) => e.id)).not.toContain('stg');
     expect(result.current.isDirty).toBe(false);
   });
 
@@ -272,7 +274,7 @@ describe('useConstantForm — edit', () => {
     expect(result.current.canRemove('dev')).toBe(false);
     act(() => result.current.removeRow('dev'));
     expect(result.current.rows.find((r) => r.environmentId === 'dev').removed).toBe(false);
-    act(() => result.current.undoRemove('stg'));
+    act(() => result.current.addEnvironment('stg'));
     expect(result.current.canRemove('dev')).toBe(true);
   });
 

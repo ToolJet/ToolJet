@@ -145,6 +145,7 @@ describe('ConstantModal — create', () => {
     const { user } = setup();
     await user.click(screen.getByRole('button', { name: /Development/ }));
     await user.click(screen.getByRole('button', { name: 'Remove Development value' }));
+    await user.click(await screen.findByRole('button', { name: 'Remove' }));
     expect(screen.queryByRole('textbox', { name: 'Development value' })).not.toBeInTheDocument();
     expect(screen.getByText('No values added yet')).toBeInTheDocument();
   });
@@ -246,11 +247,6 @@ describe('ConstantModal — edit', () => {
     expect(screen.queryByText('Name must be unique and max 50 characters')).not.toBeInTheDocument();
   });
 
-  it('does not repeat the create-only creation note', () => {
-    setup({ mode: 'edit', constant: globalConstant() });
-    expect(screen.queryByText('Name and type cannot be edited post-creation')).not.toBeInTheDocument();
-  });
-
   it('keeps Save changes disabled until something changes, then submits only the change', async () => {
     const { user, onSubmit } = setup({ mode: 'edit', constant: globalConstant() });
     expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
@@ -270,34 +266,64 @@ describe('ConstantModal — edit', () => {
   it('keeps Secret rows write-only: empty, masked placeholder, and untouched rows are not sent', async () => {
     const { user, onSubmit } = setup({ mode: 'edit', constant: secretConstant() });
     expect(valueBox('Development')).toHaveValue('');
-    expect(valueBox('Development')).toHaveAttribute('placeholder', '••••••••••••••••');
+    expect(valueBox('Development')).toHaveAttribute('placeholder', '***************');
     await user.type(valueBox('Staging'), 'new-secret');
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(onSubmit).toHaveBeenCalledWith({ values: [{ environment_id: 'stg', value: 'new-secret' }] });
   });
 
-  it('marks a value for removal, offers Undo, and sends null on save', async () => {
+  it('uses the lucide trash icon on the remove button, as in the design', () => {
+    setup({ mode: 'edit', constant: globalConstant() });
+    const icon = screen.getByRole('button', { name: 'Remove Staging value' }).querySelector('svg');
+    expect(icon).toHaveClass('lucide-trash');
+    expect(icon).not.toHaveClass('lucide-trash-2');
+  });
+
+  it('asks before removing a value, names the values that stay, and keeps the row on Cancel', async () => {
+    const { user } = setup({ mode: 'edit', constant: globalConstant() });
+    await user.click(screen.getByRole('button', { name: 'Remove Staging value' }));
+    expect(await screen.findByText('Remove Staging value?')).toBeInTheDocument();
+    expect(screen.getByText('The Development value stays.')).toBeInTheDocument();
+    const popover = screen.getByText('Remove Staging value?').closest('[data-slot=popover-content]');
+    await user.click(within(popover).getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByText('Remove Staging value?')).not.toBeInTheDocument();
+    expect(valueBox('Staging')).toBeInTheDocument();
+  });
+
+  it('drops a confirmed removal from the form and sends null on save', async () => {
     const { user, onSubmit } = setup({ mode: 'edit', constant: globalConstant() });
     await user.click(screen.getByRole('button', { name: 'Remove Staging value' }));
-    expect(screen.getByText('Removed on save')).toBeInTheDocument();
-    expect(valueBox('Staging')).toBeDisabled();
+    await user.click(await screen.findByRole('button', { name: 'Remove' }));
+    expect(screen.queryByRole('textbox', { name: 'Staging value' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Removed on save')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(onSubmit).toHaveBeenCalledWith({ values: [{ environment_id: 'stg', value: null }] });
   });
 
-  it('restores a marked value with Undo', async () => {
+  it('brings a removed environment back from the Add menu with its stored value', async () => {
     const { user } = setup({ mode: 'edit', constant: globalConstant() });
     await user.click(screen.getByRole('button', { name: 'Remove Staging value' }));
-    await user.click(screen.getByRole('button', { name: 'Undo' }));
-    expect(screen.queryByText('Removed on save')).not.toBeInTheDocument();
-    expect(valueBox('Staging')).toBeEnabled();
+    await user.click(await screen.findByRole('button', { name: 'Remove' }));
+    await user.click(screen.getByRole('button', { name: /Add environment/ }));
+    await user.click(await screen.findByRole('menuitem', { name: /Staging/ }));
+    expect(valueBox('Staging')).toHaveValue('http://stg');
     expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
   });
 
-  it('disables the trash button on the last remaining value', async () => {
+  it('explains the last remaining value and does not let it be removed', async () => {
     const { user } = setup({ mode: 'edit', constant: globalConstant() });
     await user.click(screen.getByRole('button', { name: 'Remove Staging value' }));
-    expect(screen.getByRole('button', { name: 'Remove Development value' })).toBeDisabled();
+    await user.click(await screen.findByRole('button', { name: 'Remove' }));
+    await user.click(screen.getByRole('button', { name: 'Remove Development value' }));
+    expect(await screen.findByText('Remove Development value?')).toBeInTheDocument();
+    expect(screen.getByText("This is the only value. The constant can't be used without one.")).toBeInTheDocument();
+    expect(screen.getByText('To delete the whole constant, use Delete from the constants list.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remove' })).toBeDisabled();
+  });
+
+  it('keeps the name-and-type notice in the footer while editing', () => {
+    setup({ mode: 'edit', constant: globalConstant() });
+    expect(screen.getByText('Name and type cannot be edited post-creation')).toBeInTheDocument();
   });
 
   it('shows a value the plan no longer covers as not accessible and never sends it', async () => {
