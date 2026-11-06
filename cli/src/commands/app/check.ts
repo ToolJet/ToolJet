@@ -4,7 +4,8 @@ import * as path from 'path';
 import { Project } from '../../lib/app/project';
 import { checkSources } from '../../lib/app/check';
 import { lintAccessibility } from '../../lib/app/a11y';
-import { openSession, resolveTarget } from '../../lib/app/session';
+import { openSession } from '../../lib/app/session';
+import { resolveAppTarget } from '../../lib/app/instance';
 import { pullSnapshot } from '../../lib/app/remote';
 import { targetFlags } from '../../lib/app/flags';
 import { formatError, formatSuccess, formatWarning } from '../../lib/log';
@@ -42,7 +43,7 @@ export default class AppCheck extends Command {
       let snapshot = project.readSnapshot();
       if (!flags.offline) {
         if (!app.appId) throw new Error('app.json has no appId: create the app or clone one, or pass --offline.');
-        const session = await openSession(resolveTarget(flags));
+        const session = await openSession(resolveAppTarget(flags, project.root));
         const { app: working } = await workingApp(session, project.root, app);
         snapshot = await pullSnapshot(session, app.appId, working.version?.id);
         project.writeSnapshot(snapshot);

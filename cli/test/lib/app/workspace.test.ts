@@ -129,6 +129,15 @@ describe('tooljet app clone, pull and checkout', () => {
     expect(session.calls.every((c) => c.startsWith('GET '))).to.equal(true);
   });
 
+  it('clone records the instance the app came from, which the project then uses', async () => {
+    const result = await cloneApp(fakeSession(), 'app-1');
+    expect(result.instance).to.equal('http://tooljet.test');
+    expect(JSON.parse(fs.readFileSync(path.join(tmp, 'orders-desk', '.tooljet', 'instance.json'), 'utf8'))).to.deep.equal({
+      url: 'http://tooljet.test',
+    });
+    expect(fs.readFileSync(path.join(tmp, 'orders-desk', '.gitignore'), 'utf8')).to.contain('.tooljet/instance.json');
+  });
+
   it('clone keeps an app name with quotes, a backslash and a $ as it is', async () => {
     const name = 'ToolJet app called "Talent \\ Pipeline" $&';
     const session = fakeSession();

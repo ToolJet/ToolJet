@@ -1,7 +1,8 @@
 import { Command, Flags } from '@oclif/core';
 
 import { Project } from '../../lib/app/project';
-import { openSession, resolveTarget } from '../../lib/app/session';
+import { openSession } from '../../lib/app/session';
+import { resolveAppTarget } from '../../lib/app/instance';
 import { listVersions } from '../../lib/app/remote';
 import { checkoutVersion } from '../../lib/app/workspace';
 import { targetFlags } from '../../lib/app/flags';
@@ -27,7 +28,7 @@ export default class AppCheckout extends Command {
       const project = Project.find();
       const app = project.readApp();
       if (!app.appId) throw new Error('app.json has no appId: create the app (tooljet app init --create) or clone one.');
-      const session = await openSession(resolveTarget(flags));
+      const session = await openSession(resolveAppTarget(flags, project.root));
       if (flags.list || (!args.version && !flags.editing)) {
         for (const v of await listVersions(session, app.appId)) {
           const mark = app.version?.id === v.id ? '*' : ' ';
