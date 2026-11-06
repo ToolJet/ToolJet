@@ -5,9 +5,9 @@ import {
   changeQueryToggles,
   query,
   selectQueryFromLandingPage,
-} from "Support/utils/queries";
-import { resizeQueryPanel } from "Support/utils/dataSource";
-import { openNode } from "Support/utils/inspector";
+} from "Support/utils/appBuilder/querymanager/queries";
+import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
+import { openNode, openSubNode } from "Support/utils/appBuilder/inspectorTree";
 
 // Selectors for the "Run this query periodically" query setting.
 // Toggle dataCy is `run-query-periodically`; CustomToggleSwitch/FxButton/CodeHinter
@@ -54,6 +54,7 @@ describe("Query - Run this query periodically", () => {
     cy.get(sel.intervalLabel).should("be.visible");
     cy.get(sel.intervalField)
       .should("be.visible")
+      .find(".cm-content")
       .clearAndTypeOnCodeMirror("2000");
     cy.waitForAutoSave();
 
@@ -63,7 +64,10 @@ describe("Query - Run this query periodically", () => {
     cy.get('[data-cy="list-query-runjs1"]').click();
     cy.get(sel.settingsTab).click();
     cy.get(sel.toggleSwitch).should("be.checked");
-    cy.get(sel.intervalField).should("be.visible").and("contain", "2000");
+    cy.get(sel.intervalField)
+      .find(".cm-content")
+      .should("be.visible")
+      .and("have.text", "2000");
 
     cy.apiDeleteApp();
   });
@@ -86,17 +90,17 @@ describe("Query - Run this query periodically", () => {
     createRunjs("return Date.now()");
     cy.get(sel.settingsTab).click();
     changeQueryToggles("run-query-periodically");
-    cy.get(sel.intervalField).clearAndTypeOnCodeMirror("2000");
+    cy.get(sel.intervalField).find(".cm-content").clearAndTypeOnCodeMirror("2000");
     cy.waitForAutoSave();
 
     // The first manual run is what starts the periodic timer.
     query("run");
 
-    // Watch the exposed query data advance on the next tick via the inspector.
+    // Watch the exposed query data advance on the next tick via the inspector's
+    // query detail panel (rows are `inspector-<key>-value`).
     cy.get(commonWidgetSelector.sidebarinspector).click();
-    cy.get(".tooltip-inner").invoke("hide");
     openNode("queries");
-    openNode("runjs1");
+    openSubNode("runjs1");
 
     let firstValue;
     cy.get(sel.queryDataValue)
