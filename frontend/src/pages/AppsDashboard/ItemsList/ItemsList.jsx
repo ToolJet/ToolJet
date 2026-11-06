@@ -47,8 +47,20 @@ const EMPTY_ITEMS = [];
 export default function ItemsList({ appType }) {
   // Same params as `index.tsx` and the grid, so this reads their cache entry rather than sending another request.
   const { data, isLoading } = useRootAppsQuery(appType);
-  const items = data?.items ?? EMPTY_ITEMS;
   const searchQuery = useSearchStore((state) => state.debouncedSearchQuery);
+  const isSearching = searchQuery.trim() !== '';
+  const responseItems = data?.items ?? EMPTY_ITEMS;
+  // Search has no Pinned group: every matching app (stray and nested) comes first, folders last.
+  const items = useMemo(
+    () =>
+      isSearching
+        ? [
+            ...responseItems.filter((item) => item.kind === 'app'),
+            ...responseItems.filter((item) => item.kind === 'folder'),
+          ]
+        : responseItems,
+    [isSearching, responseItems]
+  );
   const currentPage = useAppsStore((state) => state.currentPage);
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
   const expanded = useAppsStore((state) => state.expanded);
@@ -199,7 +211,8 @@ export default function ItemsList({ appType }) {
                       {/* After the folder's open children, since that's where a drop below the folder lands. */}
                       <DropIndicator rowId={row.id} side="after" />
                       {/* Pinned rows come first, so the divider goes after the last one (and its open folder children). */}
-                      {isInPinnedSection(row.original) &&
+                      {!isSearching &&
+                        isInPinnedSection(row.original) &&
                         rows[index + 1] &&
                         !isInPinnedSection(rows[index + 1].original) && <Separator decorative className="tw-my-2" />}
                     </Fragment>

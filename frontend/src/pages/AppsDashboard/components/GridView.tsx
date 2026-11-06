@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { capitalize } from 'lodash';
 import { ChevronLeft } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -130,6 +131,11 @@ const renderFolder = (appType: TAppType) => (folder: FolderItem) => (
 
 const renderApp = (appType: TAppType) => (app: AppItem) => <AppCard appDetails={app} appType={appType} />;
 
+// Search lists nested apps at the top level, so each card names its folder.
+const renderSearchedApp = (appType: TAppType) => (app: AppItem) => (
+  <AppCard appDetails={app} appType={appType} showFolderTag />
+);
+
 // The Pinned section mixes both kinds, so entries carry their kind.
 type PinnedEntry = { kind: 'folder'; folder: FolderItem } | { kind: 'app'; app: AppItem };
 
@@ -157,7 +163,9 @@ function GridViewData({ appType }: { appType: TAppType }) {
   const otherApps = apps.filter((app) => !isInPinnedSection(app));
 
   // An empty workspace never reaches here: `index.tsx` shows its empty state instead.
-  const hasNoMatches = !isLoading && (data?.total ?? 0) === 0 && searchQuery.trim() !== '';
+  const isSearching = searchQuery.trim() !== '';
+  const hasNoMatches = !isLoading && (data?.total ?? 0) === 0 && isSearching;
+  const displayName = appTypeToDisplayNameMapping[appType];
 
   return (
     <PagedGrid isFooterLoading={isLoading} meta={data} pageSize={ROOT_PAGE_SIZE} singularItemLabel="item">
@@ -165,6 +173,17 @@ function GridViewData({ appType }: { appType: TAppType }) {
         <GridViewLoading classes={{ gridContainer: GRID_CLASS }} />
       ) : hasNoMatches ? (
         <NoMatchesFound />
+      ) : isSearching ? (
+        // Two sections only: every matching app (stray and nested, pinned or not) and every matching folder.
+        <>
+          <GridSection
+            title={`${capitalize(displayName)}s`}
+            items={apps}
+            getKey={getId}
+            renderItem={renderSearchedApp(appType)}
+          />
+          <GridSection title="Folders" items={folders} getKey={getId} renderItem={renderFolder(appType)} />
+        </>
       ) : (
         <>
           <GridSection
@@ -175,7 +194,7 @@ function GridViewData({ appType }: { appType: TAppType }) {
           />
           <GridSection title="Folders" items={otherFolders} getKey={getId} renderItem={renderFolder(appType)} />
           <GridSection
-            title={`Stray ${appTypeToDisplayNameMapping[appType]}s`}
+            title={`Stray ${displayName}s`}
             items={otherApps}
             getKey={getId}
             renderItem={renderApp(appType)}

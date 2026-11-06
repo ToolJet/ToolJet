@@ -13,6 +13,8 @@ interface DashboardCardBaseProps {
   endAction: ReactNode;
   appType: TAppType;
   pinned?: boolean;
+  /** Folder the app sits in, shown as a tag after its name. */
+  folderName?: string;
   isUnsynced?: boolean;
 }
 

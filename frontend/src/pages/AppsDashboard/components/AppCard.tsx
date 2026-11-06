@@ -14,10 +14,12 @@ const AppIcon = RawAppIcon as React.ComponentType<{ icon?: string; color?: strin
 interface AppCardProps {
   appDetails: AppItem;
   appType: TAppType;
+  /** Tags the card with its folder's name; used where nested apps are listed beside stray ones. */
+  showFolderTag?: boolean;
   onMoreClick?: () => void;
 }
 
-export default function AppCard({ appDetails, appType }: AppCardProps) {
+export default function AppCard({ appDetails, appType, showFolderTag = false }: AppCardProps) {
   const { icon, pinned } = appDetails;
 
   return (
@@ -26,6 +28,7 @@ export default function AppCard({ appDetails, appType }: AppCardProps) {
       appType={appType}
       icon={<AppIcon icon={icon} color="blue" size={20} />}
       pinned={pinned}
+      folderName={showFolderTag ? appDetails.folder?.name : undefined}
       startAction={<LaunchButton appDetails={appDetails} />}
       endAction={<EditButton appDetails={appDetails} />}
       itemKind="app"

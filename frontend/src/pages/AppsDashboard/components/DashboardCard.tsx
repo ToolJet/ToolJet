@@ -3,6 +3,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import TruncatedText from '@/components/ui/Rocket/Tooltip/TruncatedText';
 
+import FolderTag from './FolderTag';
 import PinUnpinButton from './PinUnpinButton';
 import ItemActionsMenu from './ItemActionsMenu';
 import UnsyncedAppButton from './UnsyncedAppButton';
@@ -17,7 +18,15 @@ const HIDDEN_UNTIL_ACTIVE_CLASS =
   'tw-pointer-events-none tw-absolute tw-opacity-0 group-focus-within:tw-pointer-events-auto group-focus-within:tw-static group-focus-within:tw-opacity-100 group-hover:tw-pointer-events-auto group-hover:tw-static group-hover:tw-opacity-100 group-has-[[data-state=open]]:tw-pointer-events-auto group-has-[[data-state=open]]:tw-static group-has-[[data-state=open]]:tw-opacity-100';
 
 // `item` keeps `itemKind` and `itemDetails` together, so each stays paired when passed on.
-export default function DashboardCard({ icon, startAction, endAction, appType, pinned, ...item }: DashboardCardProps) {
+export default function DashboardCard({
+  icon,
+  startAction,
+  endAction,
+  appType,
+  pinned,
+  folderName,
+  ...item
+}: DashboardCardProps) {
   const { name } = item.itemDetails;
   const description = getItemDescription(item.itemDetails, appType);
 
@@ -34,9 +43,13 @@ export default function DashboardCard({ icon, startAction, endAction, appType, p
 
       <div className="tw-flex tw-items-start tw-justify-between">
         <div className="tw-flex tw-min-w-0 tw-flex-col tw-gap-0.5">
-          <TruncatedText arrow as="h6" className="tw-m-0 tw-font-title-large tw-text-text-default" content={name}>
-            {name}
-          </TruncatedText>
+          <div className="tw-flex tw-min-w-0 tw-items-center tw-gap-1">
+            <TruncatedText arrow as="h6" className="tw-m-0 tw-font-title-large tw-text-text-default" content={name}>
+              {name}
+            </TruncatedText>
+
+            {folderName && <FolderTag folderName={folderName} />}
+          </div>
 
           <TruncatedText arrow className="tw-m-0 tw-font-body-default tw-text-text-placeholder" content={description}>
             {description}
