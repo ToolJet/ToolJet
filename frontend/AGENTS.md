@@ -100,6 +100,13 @@ No change may break existing saved applications. Always ask: would an app saved 
 
 - Events: `fireEvent → handleEvent → executeActionsForEventId → executeAction`. Events support `runOnlyIf` and `debounce`
 - Queries: `runQuery` → resolve options → API call → update `exposedValues.queries[name]` → trigger dependency updates
+- Query result lifecycle (`queries.<name>`, shared by every query kind, editor and viewer). `isLoading` is the only loading signal; an empty `data` is never one:
+  - **Start:** the previous result (`data`, `rawData`, `request`, `response`, `responseHeaders`, `metadata`) stays visible, `isLoading` turns true and `error` is cleared. A query with no result entry yet gets the initial `data: []`.
+  - **Success:** every result field is replaced together, including empty `data` and absent `metadata`, and `error` is cleared.
+  - **Failure** (including a failed transformation): the previous result stays and `error` is set. The failed attempt's `request`/`response`/`responseHeaders`/`metadata` are on `error`, added only where the error doesn't already carry that field.
+  - **Abort:** the previous result stays, `isLoading` turns false, and no failure event fires.
+  - **Reset** (`resetQuery`) clears the result.
+  - Specs: `_stores/__tests__/integration/queryRunPreservesResult.spec.js`
 - Event definitions live in `eventsSlice`, not in component definitions
 
 ### Grouped error notifications

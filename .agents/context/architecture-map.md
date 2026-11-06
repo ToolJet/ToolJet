@@ -94,7 +94,7 @@ sequenceDiagram
 4. `AppEnvironmentUtilService.getOptions` selects environment- and branch-specific source options.
 5. `parseSourceOptions` decrypts credentials; `parseQueryOptions` resolves constants, secrets, and server globals.
 6. `PluginsServiceSelector.getService` chooses ToolJet DB, REST API, workflow, or a built-in/marketplace connector and executes it with a timeout.
-7. The result becomes `queries.<name>.data` in frontend state; dependency resolution updates bound components and query success/failure events run.
+7. The result becomes `queries.<name>.data` in frontend state; dependency resolution updates bound components and query success/failure events run. A rerun keeps the previous result until it settles: success replaces it, failure and abort keep it (`queryPanelSlice.runQuery`; see `frontend/AGENTS.md` § Events and queries).
 
 ### 4. Operate on ToolJet Database
 
