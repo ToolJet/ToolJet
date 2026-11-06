@@ -22,7 +22,7 @@ const pageQuery = {
 
 beforeEach(() => {
   seedApp({});
-  state().setApp({ appId: 'app-1', appName: 'Test app', homePageId: 'page-1' });
+  state().setApp({ appId: 'app-1', appName: 'Test app', homePageId: 'page-1', buildMode: 'code' });
   useStore.setState((s) => {
     s.currentVersionId = 'version-1';
   });
@@ -36,7 +36,7 @@ afterEach(() => jest.restoreAllMocks());
 const sentOptions = () => dataqueryService.run.mock.calls[0][2];
 const sentResolved = () => dataqueryService.run.mock.calls[0][1];
 
-test('a page-load, event or code run sends no options, so the stored query is left as it is', async () => {
+test('in an app built in code, a page-load, event or code run sends no options, so the stored query is left as it is', async () => {
   await state().queryPanel.runQuery(pageQuery.id, pageQuery.name, undefined, 'edit', { status: 'open' });
   expect(dataqueryService.run).toHaveBeenCalledTimes(1);
   expect(sentOptions()).toBeUndefined();
@@ -45,6 +45,13 @@ test('a page-load, event or code run sends no options, so the stored query is le
 
 test('a run from the query panel still sends the options it shows', async () => {
   await state().queryPanel.runQuery(pageQuery.id, pageQuery.name, undefined, 'edit', {}, true, undefined, true);
+  expect(dataqueryService.run).toHaveBeenCalledTimes(1);
+  expect(sentOptions()).toEqual(pageQuery.options);
+});
+
+test('a visual app keeps sending its options on every run, as before', async () => {
+  state().setApp({ appId: 'app-1', appName: 'Test app', homePageId: 'page-1', buildMode: 'visual' });
+  await state().queryPanel.runQuery(pageQuery.id, pageQuery.name, undefined, 'edit', { status: 'open' });
   expect(dataqueryService.run).toHaveBeenCalledTimes(1);
   expect(sentOptions()).toEqual(pageQuery.options);
 });
