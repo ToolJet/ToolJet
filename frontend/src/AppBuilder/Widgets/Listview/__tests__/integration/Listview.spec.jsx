@@ -2686,8 +2686,8 @@ describe('Listview', () => {
       expect(exposed('selectedRecord')).toBeUndefined();
     });
 
-    test('[Listview-BUG-033] a selection is cleared when the data shrinks but still holds its record', async () => {
-      // Break this catches: keeping an index that now points into a different data value, which Table clears.
+    test('[Listview-BUG-033] a selection stays when the data shrinks but still holds its record', async () => {
+      // Break this catches: dropping a selection whose record is still at its position.
       await mount({ properties: { data: THREE } });
       await waitFor(() => expect(rows()).toHaveLength(3));
       await user().click(rows()[0]);
@@ -2703,8 +2703,8 @@ describe('Listview', () => {
       });
 
       await waitFor(() => expect(rows()).toHaveLength(2));
-      expect(exposed('selectedRecordId')).toBeUndefined();
-      expect(exposed('selectedRecord')).toBeUndefined();
+      expect(exposed('selectedRecordId')).toBe(0);
+      expect(exposed('selectedRecord')).toBeDefined();
     });
   });
 
@@ -7307,6 +7307,8 @@ describe('ListviewVariablesCsaEvents', () => {
   const previousPage = () => user().click(document.querySelector('[data-cy="pagination-button-to-previous"]'));
   const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 80)));
   const recordsEqualTo10 = () => `{{${records(10).slice(2, -2)}.map((record) => ({ ...record }))}}`;
+  const recordsWithOtherRowChanged = () =>
+    `{{${records(10).slice(2, -2)}.map((record, index) => (index === 7 ? { ...record, name: 'changed' } : record))}}`;
   const fired = (key) => store().getVariable(key, MODULE_ID) ?? 0;
   const setData = (value) =>
     widget.session.store.act(() => {
@@ -7372,20 +7374,35 @@ describe('ListviewVariablesCsaEvents', () => {
       expect(exposed('selectedRecordIndex')).toBe(5);
     });
 
-    test('[Listview-SEL-005] new data with equal content clears index, id and record together', async () => {
-      // Break this catches: keeping the selection when a new data value has equal content, which Table clears.
+    test('[Listview-SEL-005] new data with equal content keeps index, id and record', async () => {
+      // Break this catches: a query refresh returning the same rows blanking a panel bound to selectedRecord.
+      await onPageTwo();
+      await user().click(rows()[0]);
+      await waitFor(() => expect(exposed('selectedRecordIndex')).toBe(5));
+      const selected = exposed('selectedRecord');
+
+      await setData(recordsEqualTo10());
+      await settle();
+
+      expect(exposed('selectedRecordIndex')).toBe(5);
+      expect(exposed('selectedRecordId')).toBe(0);
+      expect(exposed('selectedRecord')).toEqual(selected);
+    });
+
+    test('[Listview-SEL-005] new data that changes only another record keeps the selection', async () => {
+      // Break this catches: comparing the whole data, so an edit to another row drops a selection that is still right.
       await onPageTwo();
       await user().click(rows()[0]);
       await waitFor(() => expect(exposed('selectedRecordIndex')).toBe(5));
 
-      await setData(recordsEqualTo10());
+      await setData(recordsWithOtherRowChanged());
+      await settle();
 
-      await waitFor(() => expect(exposed('selectedRecordIndex')).toBeUndefined());
-      expect(exposed('selectedRecordId')).toBeUndefined();
-      expect(exposed('selectedRecord')).toBeUndefined();
+      expect(exposed('selectedRecordIndex')).toBe(5);
+      expect(exposed('selectedRecordId')).toBe(0);
     });
 
-    test('[Listview-SEL-005] new data with changed content clears the selection even when its position is in range', async () => {
+    test('[Listview-SEL-005] a changed selected record clears the selection even when its position is in range', async () => {
       // Break this catches: a past-the-end rule that keeps an index pointing at a different record.
       await onPageTwo();
       await user().click(rows()[0]);

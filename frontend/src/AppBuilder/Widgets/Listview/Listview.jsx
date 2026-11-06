@@ -391,11 +391,16 @@ export const Listview = function Listview({
   }, []);
   const prevDataRef = useRef(data);
   const prevIsServerSideRef = useRef(isServerSide);
-  // Like Table, any new data value drops the selection; so does a server/client switch, as the index changes meaning.
-  const dataChanged = prevDataRef.current !== data || prevIsServerSideRef.current !== isServerSide;
+  // Rows have no id, so a client side selection stays while its position holds an equal record; a server page or a Type switch changes what the index means.
+  const recordAt = (records) => (_.isArray(records) ? records[selectedRowIndex] : undefined);
+  const dataChanged = prevDataRef.current !== data;
+  const selectionLost =
+    selectedRowIndex !== undefined &&
+    (prevIsServerSideRef.current !== isServerSide ||
+      (dataChanged && (isServerSide || !_.isEqual(recordAt(prevDataRef.current), recordAt(data)))));
   prevDataRef.current = data;
   prevIsServerSideRef.current = isServerSide;
-  if (dataChanged && selectedRowIndex !== undefined) {
+  if (selectionLost) {
     setSelectedRowIndex(undefined);
     setExposedVariables({
       selectedRecordId: undefined,
