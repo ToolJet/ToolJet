@@ -3,6 +3,7 @@ import { Avatar, Badge, Button, Card, Empty, List, Progress, Space, Statistic, T
 import { ArrowDownOutlined, ArrowUpOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
+import { safeUrl } from '../lib/ui2/display/chat/values';
 import { PackTag } from '../lib/PackTag';
 import { SpinOver, TextBone } from '../lib/Loading';
 import { MAX_SLOT_ITEMS, rowIdOf, str, toArray, type Row } from '../lib/data';
@@ -955,13 +956,15 @@ export const Link = () => {
     (v) => setChildren(str(v))
   );
   const Ext = antIcon('ExportOutlined');
+  // A javascript: or data: href would run script on click; only web, mail and phone links are kept.
+  const link = safeUrl(href);
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-start">
       <SpinOver loading={loading}>
         <Typography.Link
           ref={ref}
-          href={href || undefined}
-          target={href ? target : undefined}
+          href={link || undefined}
+          target={link ? target : undefined}
           strong={strong}
           className={`tj-ant-link is-${underline}`}
           onClick={() => onClick()}

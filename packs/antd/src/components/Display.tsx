@@ -25,6 +25,7 @@ import { str, toArray, type Row } from '../lib/data';
 import { formatCell, formatFigure, formatNumber, parseFormat, toNumber, type NumberFormat } from '../lib/format';
 import { LOCALE_HINT } from '../lib/locale';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
+import { safeUrl } from '../lib/ui2/display/chat/values';
 import { useFitLayout, useFitSquare, useFitText } from '../lib/fitText';
 import { useValueSetter } from '../lib/sameValue';
 
@@ -861,7 +862,7 @@ export const Descriptions = () => {
       );
     else if (f.format === 'link' && text)
       children = (
-        <Typography.Link href={str(r.href ?? v)} target="_blank">
+        <Typography.Link href={safeUrl(r.href ?? v) || undefined} target="_blank">
           {str(r.linkText) || text}
         </Typography.Link>
       );

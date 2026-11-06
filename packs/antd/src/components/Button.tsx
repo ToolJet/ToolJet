@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { Button as AntButton } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
+import { safeUrl } from '../lib/ui2/display/chat/values';
 
 // Ant's Button (5.21+ API): its text is its children; color (primary, default, danger) and variant (solid, outlined,
 // dashed, filled, text, link) together make the look; size, shape, block, href / target; event onClick.
@@ -37,12 +38,14 @@ export const Button = () => {
     description: 'Fill the width of the box.',
     initialValue: true,
   });
-  const [href] = ToolJet.useStateString({
+  const [rawHref] = ToolJet.useStateString({
     name: 'href',
     label: 'Href',
     description: 'Makes the button a link.',
     initialValue: '',
   });
+  // A javascript: or data: href would run script on click; only web, mail and phone links are kept.
+  const href = safeUrl(rawHref);
   const [target] = ToolJet.useStateEnumeration({
     name: 'target',
     label: 'Target',
