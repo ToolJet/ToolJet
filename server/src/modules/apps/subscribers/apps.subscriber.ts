@@ -1,13 +1,13 @@
 import { DataSource, EntitySubscriberInterface, EventSubscriber, InsertEvent, Not, UpdateEvent } from 'typeorm';
-import { AsyncLocalStorage } from 'async_hooks';
 import { App } from 'src/entities/app.entity';
 import { AppVersionType } from 'src/entities/app_version.entity';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
+import { skipAppEditingVersionHydration } from './hydration-context';
 
-// List endpoints opt out of the per-entity afterLoad hydration and run a single bulk query instead.
-export const skipAppEditingVersionHydration = new AsyncLocalStorage<boolean>();
+// Re-exported so existing importers keep working.
+export { skipAppEditingVersionHydration };
 
 @EventSubscriber()
 export class AppsSubscriber implements EntitySubscriberInterface {
