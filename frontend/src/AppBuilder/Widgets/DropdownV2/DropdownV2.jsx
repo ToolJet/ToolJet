@@ -214,12 +214,15 @@ export const DropdownV2 = ({
 
   const handleClickOutsideSelect = (event) => {
     const menu = document.querySelector(`._tooljet-${componentName}`);
+    // The open menu is portalled to the body, outside the widget; a press in it is not outside.
+    const menuList = document.getElementById(`dropdown-multiselect-widget-custom-menu-list-${id}`);
     if (
       isMenuOpen &&
       menu &&
       dropdownRef.current &&
       !dropdownRef.current.contains(event.target) &&
-      !menu.contains(event.target)
+      !menu.contains(event.target) &&
+      !menuList?.contains(event.target)
     ) {
       setIsMenuOpen(false);
       fireEvent('onBlur');
@@ -227,12 +230,14 @@ export const DropdownV2 = ({
     }
   };
 
+  // Capture phase, as MultiselectV2 and TagsInput listen: a press another widget stops on its way up (a pack widget's
+  // text field, stopped at its host so the canvas drag leaves it alone) still closes the menu.
   useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutsideSelect);
+    document.addEventListener('mousedown', handleClickOutsideSelect, { capture: true });
     return () => {
-      document.removeEventListener('mousedown', handleClickOutsideSelect);
+      document.removeEventListener('mousedown', handleClickOutsideSelect, { capture: true });
     };
-  }, [isMenuOpen, componentName]);
+  }, [isMenuOpen, componentName, id]);
 
   useEffect(() => {
     setInputValue(findDefaultItem(advanced ? schema : options));
@@ -572,6 +577,7 @@ export const DropdownV2 = ({
         >
           <Select
             ref={selectRef}
+            menuId={id}
             menuIsOpen={isMenuOpen}
             isDisabled={isDropdownDisabled}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
