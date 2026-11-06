@@ -32,11 +32,21 @@ function remove(id) {
 
 export const cliDeviceLoginService = {
   lookup(userCode) {
-    const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify({ userCode }) };
+    const requestOptions = {
+      method: 'POST',
+      headers: authHeader(),
+      credentials: 'include',
+      body: JSON.stringify({ userCode }),
+    };
     return fetch(`${config.apiUrl}/personal-access-tokens/device/lookup`, requestOptions).then(handleResponse);
   },
   approve(userCode) {
-    const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify({ userCode }) };
+    const requestOptions = {
+      method: 'POST',
+      headers: authHeader(),
+      credentials: 'include',
+      body: JSON.stringify({ userCode }),
+    };
     return fetch(`${config.apiUrl}/personal-access-tokens/device/approve`, requestOptions).then(handleResponse);
   },
 };

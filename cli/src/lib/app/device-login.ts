@@ -21,7 +21,10 @@ export interface DeviceLoginResult {
   organizationId: string;
 }
 
-type FetchLike = (url: string, init: { method: string; headers: Record<string, string>; body: string }) => Promise<{
+type FetchLike = (
+  url: string,
+  init: { method: string; headers: Record<string, string>; body: string }
+) => Promise<{
   ok: boolean;
   status: number;
   json: () => Promise<any>;
@@ -54,7 +57,10 @@ export async function deviceLogin(options: DeviceLoginOptions): Promise<DeviceLo
   const base = `${options.url.replace(/\/+$/, '')}/api/personal-access-tokens/device`;
   const res = await post(options.fetch, base, { clientName: options.clientName });
   if (!res.ok) {
-    if (res.status === 404) throw new Error('This ToolJet instance does not support browser sign-in yet: use tooljet login with a personal access token.');
+    if (res.status === 404)
+      throw new Error(
+        'This ToolJet instance does not support browser sign-in yet: use tooljet login with a personal access token.'
+      );
     throw new Error(`Could not start the sign-in (HTTP ${res.status}).`);
   }
   const start = (await res.json()) as DeviceStart;
@@ -67,7 +73,8 @@ export async function deviceLogin(options: DeviceLoginOptions): Promise<DeviceLo
     if (poll.status === 404) throw new Error('The sign-in request is gone; run tooljet auth login again.');
     if (!poll.ok) throw new Error(`Sign-in check failed (HTTP ${poll.status}).`);
     const result = await poll.json();
-    if (result.status === 'approved') return { token: result.token, email: result.email, organizationId: result.organizationId };
+    if (result.status === 'approved')
+      return { token: result.token, email: result.email, organizationId: result.organizationId };
     if (result.status === 'expired') break;
     if (result.status === 'slow_down') interval += 2000;
   }

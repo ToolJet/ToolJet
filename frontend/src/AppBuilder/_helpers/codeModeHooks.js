@@ -7,7 +7,8 @@ const noop = () => {};
 
 export const CodeModeHeaderTools = ee.CodeModeHeaderTools ?? Nothing;
 export const BuildModeBadge = ee.BuildModeBadge ?? Nothing;
-export const CodeCanvasViewport = ee.CodeCanvasViewport ?? Nothing;
+// Without the enterprise module the canvas renders as it is.
+export const CodeCanvasViewport = ee.CodeCanvasViewport ?? (({ children }) => children ?? null);
 export const CodeCanvasWidthControl = ee.CodeCanvasWidthControl ?? Nothing;
 export const LocalBehindNote = ee.LocalBehindNote ?? Nothing;
 export const LocalChangesNote = ee.LocalChangesNote ?? Nothing;

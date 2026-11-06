@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { noop } from 'lodash';
+import DOMPurify from 'dompurify';
+import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
 import { isCellContentOverflowing, placeCaretAtEnd } from '../utils';
 
 /**
@@ -143,7 +145,7 @@ export const StringRenderer = ({
               e.stopPropagation();
             }}
             suppressContentEditableWarning={true}
-            dangerouslySetInnerHTML={{ __html: value }}
+            dangerouslySetInnerHTML={{ __html: strictMode.isStrict?.() ? DOMPurify.sanitize(value) : value }}
           />
         ) : (
           <div

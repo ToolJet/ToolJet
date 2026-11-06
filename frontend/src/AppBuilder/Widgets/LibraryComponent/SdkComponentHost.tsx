@@ -182,7 +182,8 @@ const SdkComponentHost = ({
   }, [sourceKey, resetExposedVariables, setExposedVariables, setExposedVariable]);
 
   const configured = !!source;
-  const isInline = source?.runtime !== 'iframe';
+  // A code page has its own frame, whichever runtime the instance's other library components use.
+  const isInline = source?.runtime !== 'iframe' || isCodePage;
   // Inline mode: ToolJet.useAction handlers register here directly, no postMessage round trip.
   const [inlineActions] = useState(() => new Map<string, (...args: unknown[]) => unknown>());
 
@@ -451,6 +452,7 @@ const SdkComponentHost = ({
           host={host}
           darkMode={darkMode}
           dataCy={dataCy}
+          eventNames={manifestComponent?.events?.map((event) => event.name)}
         />
       ) : isInline ? (
         <InlineLibraryComponent
