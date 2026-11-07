@@ -118,12 +118,11 @@ DTO, missing `ClassSerializerInterceptor`, missing `toMatchObject` shape test, d
 consumer grep across `frontend/src` and `frontend/ee`. Anything under `external-apis/` is the public
 contract; a removed field needs a deprecation path.
 
-## Merge impact and evidence
+## Impact and evidence
 
-- **Honest reversible verdict.** A PR that drops or rewrites data, changes a public API or
-  contract, or triggers a release or other external side effect is not reversible, whatever its
-  description says. A "🟢 reversible" on such a change, or a folded block on an irreversible one,
-  is a finding.
+- **Honest verdicts** (create-pr's Impact rules). A 🟢 Merge on a change that overwrites or deletes
+  data, breaks a public contract after revert, or triggers a release or external side effect is a
+  finding; so is a 🟢 Regression when existing setups change unasked, or a 🔴 fold left folded.
 - **Stated Reach vs the diff:** editions, tenants, modules, contract consumers, existing saved apps.
 - **Irreversible PR with no Rollback plan or no Evidence section** (before → after proof) is a
   finding.

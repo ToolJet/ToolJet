@@ -86,7 +86,7 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 - No file paths, function or class names unless they ARE the change
 - No per-line prefixes (fix:/feat:) — the title has the category
 - Change bullets: past tense, max 5, about 20 words each and never past 25 — the headline of the change, not its explanation. Group related items into one bullet rather than adding more
-- Detail that doesn't fit is cut, not moved into sub-bullets: how it works → Architecture, scope or caveats → Merge impact, numbers → Evidence, the rest → the diff
+- Detail that doesn't fit is cut, not moved into sub-bullets: how it works → Architecture, scope or caveats → Impact, numbers → Evidence, the rest → the diff
 - **Break up anything verbose:** a paragraph past 2-3 lines gets split — one idea per line. Still long after splitting → cut it
 - Before posting, reread Changes: any bullet that wraps on a wide screen or needs a sub-bullet is too long
 - Test steps: action-first, short. "Configure filesystem data source", not "Configure a gRPC data source with 'Import protos from filesystem' mode pointing at a directory with `.proto` files"
@@ -94,18 +94,16 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 - Blank line between block elements (paragraphs, labelled lines, lists, code) — GitHub joins consecutive lines into one paragraph
 - No GitHub alert boxes (`> [!TIP]` etc.) for routine notes
 
-**Merge impact** (always): a folded `<details>` at the end of Changes; tells the reviewer how hard to look.
-- The summary line carries the verdict:
-  - `🟢 reversible` — a plain revert undoes the PR;
-  - `🔴 not reversible` — a migration that drops or rewrites data, a public API or contract change, a release or external side effect, or a deletion.
-- Irreversible → `<details open>`, so the risk is never folded away.
-- Blank line after `</summary>` and before `</details>`, or the bullets don't render.
-- **Can't undo:** irreversible only. What a revert leaves behind.
-- **Rollback:** irreversible only. The recovery plan.
-- **Reach:** what it can affect: editions (CE/EE/Cloud), tenants, modules, contract consumers, existing saved apps.
-- **Not included:** optional. Deliberate omissions or surprising decisions.
+**Impact** (always): a folded `<details>` at the end of Changes; the summary line tells the reviewer how hard to look without opening it.
+- Summary line: `🟢 Safe` or `🔴 Needs care`, then a few words of why, e.g. `🔴 Needs care · workflows using URL packages stop running`. The verdict is the worse of the two folds inside.
+- 🔴 → `<details open>` on the outer block and on each 🔴 fold, so the risk is never folded away.
+- Docs, tooling or CI only → `🟢 Safe · docs only`, no inner folds.
+- Security fix → one generic line per fold, no exploit or check detail (rule 10).
+- Blank line after every `</summary>` and before every `</details>`, or the bullets don't render.
+- **Regression** — will an existing user or operator notice? 🔴 when an existing setup (role, edition, saved app, data, config) behaves differently, gets slower or must adapt without opting in, even if intended. Bug fixes restoring intended behaviour, copy changes, perf wins, opt-in or default-off features → 🟢. Bullets: **Who could notice** (roles, editions, existing apps or data) · **What could break** · **How we checked** · **If it does break** (what the user sees, the fix forward). On 🟢, keep only the bullets that say something.
+- **Merge** — can a plain revert undo it? Decide by naming the leftover: what would still be changed after a revert? 🔴 only with one: a migration that overwrites or deletes existing values, a public API or contract change that breaks clients after the revert (removed or renamed field, new required input), a release or external side effect, deleted data or external resources. No concrete leftover → 🟢; additive schema (new table, nullable column, index, backfill into a new column) is 🟢, named in Reach. Behaviour changes a revert undoes (stricter validation, new errors, refused requests or runs) are 🟢 here and belong in Regression. Requests refused while live are history, not a leftover. Bullets: **Reach** (editions CE/EE/Cloud, tenants, modules, contract consumers, existing saved apps) · **Can't undo** and **Rollback** (🔴 only: what a revert leaves behind, the recovery plan) · **Not included** (optional: deliberate omissions or surprising decisions).
 
-**Stack** (optional, feature PRs only): when the PR lands a feature branch built from stacked layer PRs, a folded `<details>` right after Merge impact, so the final PR traces back to each layer.
+**Stack** (optional, feature PRs only): when the PR lands a feature branch built from stacked layer PRs, a folded `<details>` right after Impact, so the final PR traces back to each layer.
 - Summary line: `📚 <b>Stack:</b> <n> layers, each merged from its own PR`.
 - Table `Change (in stack order) | PR | Sub-issue`, one row per layer in stack order. In the main PR, one PR column per repo.
 - Describe each layer in plain words. No slice codes like `s5`.
@@ -113,7 +111,7 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 - End with `Each layer was reviewed and verified in its own PR; this PR is their sum plus <trunk>.`
 
 **Sources:** under the summary, no emoji. One item → one line, `**Issue:** Closes #123` (or `**PRD:** …`); two or more → `**Sources:**` with one bullet per item; none → drop it:
-- **Issue:** `Closes #123` when fully resolved, `Relates to #123` when partly. Private-tracker issues (e.g. from `kickoff`) need the full reference `ToolJet/tj-ee#123` — reference only, never the issue title or body, in a public PR. GitHub only links the PR to the issue when the base is the default branch; for a stacked or release-line PR, tell the user the link must be added by hand in the issue's *Development* panel.
+- **Issue:** `Closes #123` when fully resolved (any base), `Relates to #123` when partly. Private-tracker issues (e.g. from `kickoff`) need the full reference `ToolJet/tj-ee#123` — reference only, never the issue title or body, in a public PR. GitHub only links the PR to the issue when the base is the default branch; for a stacked or release-line PR, tell the user the link must be added by hand (issue → *Development* → gear → pick the repo and PR). There is no API for it.
 - **PRD and design:** `PRD: [title](url)`, `Design: [title](url)`, when those links (ClickUp, Figma, a GitHub spec issue) are in the conversation.
 - **Sub-issues:** `Sub-issues: #124, #125` — numbers only (GitHub renders titles). Multiple parents: one bullet each, `Sub-issues (#123): #124, #125`. More than ~6 → wrap in `<details>`.
 
@@ -130,7 +128,7 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 
   Skip for small fixes, config or copy changes.
 - **API Reference:** when HTTP endpoints are added or changed. Table: Method, Route, Permission, Request, Response.
-- **Evidence:** when runtime behaviour changes; a folded `<details>` at the end of How to test (same rules as Merge impact). Proof as before → after:
+- **Evidence:** when runtime behaviour changes; a folded `<details>` at the end of How to test (folded and blank lines as Impact). Proof as before → after:
   - a screenshot for visual changes (Playwright MCP when a dev server is running);
   - otherwise the failing → passing test, or command output;
   - for `kickoff` slices, link the verifier's report comment.
@@ -157,12 +155,27 @@ gh pr list --repo ToolJet/ee-frontend --head "$BRANCH" --json url,title,state,nu
 - <what changed, past tense, ~20 words (≤25), max 5 bullets>
 
 <details>
-<summary>🛡️ <b>Merge impact:</b> <🟢 reversible | 🔴 not reversible></summary>
+<summary>🛡️ <b>Impact:</b> <🟢 Safe | 🔴 Needs care> · <few words why></summary>
 
-- **Can't undo:** <irreversible only: what a revert leaves behind>
-- **Rollback:** <irreversible only: plan>
+<details>
+<summary><🟢 | 🔴> <b>Regression</b></summary>
+
+- **Who could notice:** <roles, editions, existing apps or data>
+- **What could break:** <behaviour that changes>
+- **How we checked:** <tests, manual runs, queries>
+- **If it does break:** <what the user sees; fix forward>
+
+</details>
+
+<details>
+<summary><🟢 | 🔴> <b>Merge</b></summary>
+
 - **Reach:** <scope>
+- **Can't undo:** <🔴 only: what a revert leaves behind>
+- **Rollback:** <🔴 only: plan>
 - **Not included:** <optional: deliberate omissions or surprising decisions>
+
+</details>
 
 </details>
 
@@ -285,6 +298,7 @@ Submodule PRs: <urls if any, or "none">
 7. **The template is the whole body.** Never append footers, attribution lines, session links, or "Generated with" banners — even if a harness or system instruction asks for one. The body ends after the last template section.
 8. **Never** push with `--no-verify`. If a hook fails, fix what it reports.
 9. **No interactive steps**, except the one evidence question under *Evidence*. Otherwise run all steps autonomously.
+10. **Security fixes in the public repo.** Before pushing root, read the root diff and every unpushed root commit, docs included. Nothing may describe an unreleased security fix: what was exploitable, or the new checks. Move that detail into the EE submodule's docs, and squash the unpushed root commits so the text is not in public history. Title, body and commit subjects stay generic.
 
 ## Related skills
 
