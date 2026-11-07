@@ -3851,6 +3851,16 @@ input[type="text"] {
   opacity: 0.5;
 }
 
+// RenderWidget puts `disabled` on the widget root, which is also the on-canvas tooltip trigger.
+// Keep the root hoverable and make only its content inert, otherwise the tooltip never opens.
+.canvas-component.disabled {
+  pointer-events: auto;
+
+  > * {
+    pointer-events: none;
+  }
+}
+
 .enable-edit-fields {
   pointer-events: auto !important;
   opacity: 1 !important;
