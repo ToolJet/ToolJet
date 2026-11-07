@@ -26,14 +26,30 @@ RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools 
 
 
 # tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827).
+# Pinned to a reviewed commit, never a branch: a release bumps TOOLJET_MCP_REF deliberately, to the tooljet-mcp commit
+# it ships. The GitHub token is a BuildKit secret (github_token), so it stays out of the layers and the build cache.
 FROM node:22.23.4 AS mcp-builder
 WORKDIR /mcp
-ARG CUSTOM_GITHUB_TOKEN
-ARG TOOLJET_MCP_REF=main
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-RUN git clone https://github.com/ToolJet/tooljet-mcp.git . && git checkout ${TOOLJET_MCP_REF}
+ARG TOOLJET_MCP_REF=6aa56dd1481777a345390f6a5869863a0a66a090
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    git clone https://github.com/ToolJet/tooljet-mcp.git . && \
+    git checkout --detach "${TOOLJET_MCP_REF}"
 RUN npm ci && npm run build:plugin
 
+
+# Custom component SDK (private), packed for app projects (TOOLJET_SDK_SPEC below) and served to a teammate's
+# `tooljet app install` at /api/code-mode/cli/custom-component-sdk.tgz: npm's published SDK is older. Same as
+# ee-preview, pinned by CUSTOM_COMPONENT_SDK_REF the way TOOLJET_MCP_REF pins tooljet-mcp.
+FROM node:22.23.4 AS sdk-builder
+WORKDIR /sdk
+ARG CUSTOM_GITHUB_TOKEN
+ARG CUSTOM_COMPONENT_SDK_REF=main
+RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+RUN git clone https://github.com/ToolJet/custom-component-sdk.git . && git checkout ${CUSTOM_COMPONENT_SDK_REF}
+RUN npm ci && npm run build && mkdir -p /out && \
+    mv "/out/$(npm pack --ignore-scripts --silent --pack-destination /out | tail -n 1)" /out/custom-component-sdk.tgz
 
 FROM node:22.23.4 AS builder
 
@@ -130,6 +146,11 @@ RUN npm --prefix server run build && npm prune --production --prefix server
 COPY ./cli/ ./cli/
 COPY ./packs/ ./packs/
 RUN npm --prefix cli ci --include=dev && npm --prefix cli run build && node packs/build-builtin.mjs --install
+# The same CLI, packed for GET /api/code-mode/cli/tooljet-cli.tgz: `npm i -g` from the instance installs the CLI
+# that matches this server (server/scripts/pack-cli.sh).
+RUN server/scripts/pack-cli.sh
+# The security scanner for code apps (ee/app-security runs it in a child process).
+RUN npm --prefix server/ee/packages/app-scanner ci --omit=dev
 
 # Install dependencies for PostgREST, curl, tar, etc.
 RUN apt-get update && apt-get install -y \
@@ -264,14 +285,32 @@ COPY --from=builder --chown=appuser:0 /app/server/templates ./app/server/templat
 COPY --from=builder --chown=appuser:0 /app/server/scripts ./app/server/scripts
 COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
 COPY --from=builder --chown=appuser:0 /app/server/builtin-packs ./app/server/builtin-packs
+COPY --from=builder --chown=appuser:0 /app/server/code-mode-cli ./app/server/code-mode-cli
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
 # tooljet-mcp bundle for the socket relay (ee-server#827). data/ must sit next to mcp/,
-# not inside it — bundle resolves it as ../data. package.json ships for its "type":"module".
-COPY --from=mcp-builder --chown=appuser:0 /mcp/bundle/index.js ./app/mcp/index.js
+# not inside it — bundle resolves it as ../data. package.json ships for its "type":"module". The whole
+# bundle/ folder: index.js imports the chunk files next to it.
+COPY --from=mcp-builder --chown=appuser:0 /mcp/bundle/ ./app/mcp/
 COPY --from=mcp-builder --chown=appuser:0 /mcp/package.json ./app/mcp/package.json
 COPY --from=mcp-builder --chown=appuser:0 /mcp/data ./app/data
+# The MCP's code app tools run the `tooljet` CLI, install the SDK into each project and keep projects under
+# TOOLJET_CODE_APP_ROOT; the server scans code apps with the app scanner. Same as ee-preview. The render check stays
+# off (no browser in this image).
+COPY --from=builder --chown=appuser:0 /app/server/ee/packages/app-scanner ./app/server/ee/packages/app-scanner
+# The SDK as a folder, not the tarball: npm links a folder, and the app scanner skips links, while a tarball entry
+# resolves outside the registry and fails its lockfile host check (the SDK has no dependencies of its own).
+COPY --from=sdk-builder /out/custom-component-sdk.tgz /tmp/custom-component-sdk.tgz
+RUN mkdir -p /app/code-mode/custom-component-sdk /app/code-mode/apps && \
+    tar -xzf /tmp/custom-component-sdk.tgz -C /app/code-mode/custom-component-sdk --strip-components=1 && \
+    mv /tmp/custom-component-sdk.tgz ./app/server/code-mode-cli/custom-component-sdk.tgz && \
+    npm install -g ./app/server/code-mode-cli/tooljet-cli.tgz && tooljet --version && \
+    chown -R appuser:0 /app/code-mode ./app/server/code-mode-cli && chmod -R g=u /app/code-mode
+ENV TOOLJET_SDK_SPEC=file:/app/code-mode/custom-component-sdk \
+    TOOLJET_CODE_APP_ROOT=/app/code-mode/apps \
+    TOOLJET_APP_SCANNER_BIN=/app/server/ee/packages/app-scanner/bin/tj-app-scan.js \
+    MCP_RENDER_AUDIT_ENABLED=false
 
 # Set group write permissions for frontend build files to support RedHat arbitrary user assignment
 RUN chmod -R g+w /app/frontend/build

@@ -1,3 +1,15 @@
+# Custom component SDK (private), served to a teammate's `tooljet app install` at
+# /api/code-mode/cli/custom-component-sdk.tgz: npm's published SDK is older. Same as the ee images, pinned by
+# CUSTOM_COMPONENT_SDK_REF.
+FROM node:22.23.4 AS sdk-builder
+WORKDIR /sdk
+ARG CUSTOM_GITHUB_TOKEN
+ARG CUSTOM_COMPONENT_SDK_REF=main
+RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+RUN git clone https://github.com/ToolJet/custom-component-sdk.git . && git checkout ${CUSTOM_COMPONENT_SDK_REF}
+RUN npm ci && npm run build && mkdir -p /out && \
+    mv "/out/$(npm pack --ignore-scripts --silent --pack-destination /out | tail -n 1)" /out/custom-component-sdk.tgz
+
 FROM node:22.23.4 AS builder
 
 # Fix for JS heap limit allocation issue
@@ -75,6 +87,11 @@ RUN npm --prefix server run build
 COPY ./cli/ ./cli/
 COPY ./packs/ ./packs/
 RUN npm --prefix cli ci --include=dev && npm --prefix cli run build && node packs/build-builtin.mjs --install
+# The same CLI, packed for GET /api/code-mode/cli/tooljet-cli.tgz: `npm i -g` from the instance installs the CLI
+# that matches this server (server/scripts/pack-cli.sh).
+RUN server/scripts/pack-cli.sh
+# The security scanner for code apps (ee/app-security runs it in a child process).
+RUN npm --prefix server/ee/packages/app-scanner ci --omit=dev
 
 FROM debian:12
 
@@ -144,6 +161,11 @@ COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 COPY --from=builder /app/server/builtin-packs ./app/server/builtin-packs
+COPY --from=builder /app/server/code-mode-cli ./app/server/code-mode-cli
+COPY --from=sdk-builder /out/custom-component-sdk.tgz ./app/server/code-mode-cli/custom-component-sdk.tgz
+# The app scanner, which the server runs on code apps when they are saved and published.
+COPY --from=builder /app/server/ee/packages/app-scanner ./app/server/ee/packages/app-scanner
+ENV TOOLJET_APP_SCANNER_BIN=/app/server/ee/packages/app-scanner/bin/tj-app-scan.js
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 
 COPY ./docker/LTS/cloud/cloud-entrypoint.sh ./app/server/cloud-entrypoint.sh
