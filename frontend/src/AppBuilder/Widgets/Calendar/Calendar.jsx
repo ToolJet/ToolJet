@@ -38,6 +38,7 @@ export default function Calendar({
   containerProps,
   removeComponent,
   setExposedVariable,
+  setExposedVariables,
   dataCy,
 }) {
   const style = { height, borderRadius: `${styles.borderRadius}px`, overflow: 'hidden' };
@@ -56,6 +57,28 @@ export default function Calendar({
   const [currentDate, setCurrentDate] = useState(defaultDate);
   const [eventPopoverOptions, setEventPopoverOptions] = useState({ show: false });
   const isInitialRender = useRef(true);
+  const [isVisible, setVisibility] = useState(properties?.visibility ?? true);
+
+  useEffect(() => {
+    if (isVisible !== properties?.visibility) setVisibility(properties?.visibility ?? true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties?.visibility]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', isVisible);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible]);
+
+  useEffect(() => {
+    setExposedVariables({
+      setVisibility: async function (value) {
+        setExposedVariable('isVisible', !!value);
+        setVisibility(!!value);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const eventPropGetter = (event) => {
     const backgroundColor = event.color ?? 'var(--cc-primary-brand)';
@@ -130,7 +153,7 @@ export default function Calendar({
     <div
       id={id}
       style={{
-        display: styles.visibility ? 'block' : 'none',
+        display: isVisible ? 'block' : 'none',
         boxShadow: styles.boxShadow,
         border: `1px solid ${styles.borderColor}`,
         borderRadius: `${styles.borderRadius}px`,

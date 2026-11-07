@@ -24,8 +24,10 @@ const OTHER_RGB = 'rgb(0, 0, 255)';
 const SHADOW = '1px 2px 3px 4px rgba(0, 0, 0, 0.5)';
 const LAYOUT_HEIGHT = 30;
 
-const defaultStyles = {
+const defaultProperties = {
   visibility: binding('{{true}}'),
+};
+const defaultStyles = {
   size: binding('sm'),
   colour: binding(DEFAULT_COLOUR),
 };
@@ -35,6 +37,7 @@ const widget = createWidgetHarness({
   handle: HANDLE,
   id: ID,
   widgetHeight: LAYOUT_HEIGHT,
+  defaultProperties,
   defaultStyles,
 });
 
@@ -42,10 +45,14 @@ const root = (container, handle = HANDLE) => container.querySelector(`[data-cy="
 const status = (container, handle = HANDLE) => root(container, handle)?.querySelector('[role="status"]');
 const resolvedStyle = (key, id = ID) => store().getResolvedComponent(id, null, MODULE_ID)?.styles?.[key];
 
-function spinnerDefinition(id, handle, styles = {}) {
-  const definition = componentDefinition(id, handle, 'Spinner');
+function spinnerDefinition(id, handle, properties = {}, styles = {}) {
+  const definition = componentDefinition(id, handle, 'Spinner', { ...defaultProperties, ...properties });
   definition.component.definition.styles = { ...defaultStyles, ...styles };
   return definition;
+}
+
+async function setProperty(property, value, componentId = ID) {
+  await widget.session.store.act(() => widget.setComponentProperty(componentId, property, value, 'properties'));
 }
 
 async function setStyle(property, value, componentId = ID) {
@@ -145,11 +152,11 @@ describe('Spinner widget', () => {
       expect(indicator.style.color).toBe(RGB_COLOUR);
       expect(containerNode).toHaveStyle({ boxShadow: SHADOW });
 
-      await setStyle('visibility', false);
+      await setProperty('visibility', false);
       await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
       expect(within(container).getByRole('status', { hidden: true })).toBe(indicator);
 
-      await setStyle('visibility', true);
+      await setProperty('visibility', true);
       await waitFor(() => expect(root(container).style.display).toBe(''));
       expect(within(container).getByRole('status')).toBe(indicator);
       expect(status(container)).toHaveClass('spinner-border-lg');
@@ -173,11 +180,11 @@ describe('Spinner widget', () => {
     await waitFor(() => expect(status(container)).toHaveClass('spinner-border-lg'));
     expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
 
-    await setStyle('visibility', false);
+    await setProperty('visibility', false);
     await waitFor(() => expect(root(container)).toHaveStyle({ display: 'none' }));
     expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
 
-    await setStyle('visibility', true);
+    await setProperty('visibility', true);
     await waitFor(() => expect(root(container).style.display).toBe(''));
     expect(root(container)).toHaveStyle({ boxShadow: SHADOW });
   });
@@ -188,11 +195,14 @@ describe('Spinner widget', () => {
     expect(frontendConfig).toMatchObject({
       name: 'Spinner',
       defaultSize: { width: 4, height: 30 },
-      properties: {},
+      properties: {
+        visibility: { type: 'toggle', validation: { defaultValue: true } },
+        tooltipFormat: { type: 'switch', defaultValue: { value: 'plainText' } },
+        tooltip: { type: 'code' },
+      },
       events: {},
       exposedVariables: {},
       styles: {
-        visibility: { validation: { defaultValue: true } },
         colour: { type: 'colorSwatches', validation: { defaultValue: 'var(--cc-primary-brand)' } },
         size: {
           options: [
@@ -203,28 +213,34 @@ describe('Spinner widget', () => {
         },
       },
       definition: {
-        properties: {},
+        properties: {
+          visibility: { value: '{{true}}' },
+          tooltipFormat: { value: 'plainText' },
+          tooltip: { value: '' },
+        },
         events: [],
         styles: {
-          visibility: { value: '{{true}}' },
           size: { value: 'sm' },
           colour: { value: 'var(--cc-primary-brand)' },
         },
       },
     });
-    expect(frontendConfig.actions ?? []).toEqual([]);
+    expect(frontendConfig.styles.visibility).toBeUndefined();
+    expect(frontendConfig.actions.map(({ handle }) => handle)).toEqual(['setVisibility']);
   });
 
   test('[Spinner-ISO-001] Instances isolate colour, size, and visibility', async () => {
     // Break this catches: shared module state restyling or hiding every Spinner when one instance updates.
     const { container } = widget.render({
-      styles: { colour: binding(RGB_COLOUR), size: binding('lg'), visibility: binding('{{true}}') },
+      styles: { colour: binding(RGB_COLOUR), size: binding('lg') },
+      properties: { visibility: binding('{{true}}') },
       extraComponents: {
-        [ID2]: spinnerDefinition(ID2, HANDLE2, {
-          colour: binding(OTHER_RGB),
-          size: binding('sm'),
-          visibility: binding('{{false}}'),
-        }),
+        [ID2]: spinnerDefinition(
+          ID2,
+          HANDLE2,
+          { visibility: binding('{{false}}') },
+          { colour: binding(OTHER_RGB), size: binding('sm') }
+        ),
       },
       also: [{ id: ID2, componentType: 'Spinner', widgetHeight: LAYOUT_HEIGHT }],
     });
@@ -240,7 +256,7 @@ describe('Spinner widget', () => {
 
     await setStyle('colour', RGBA_COLOUR, ID);
     await setStyle('size', 'sm', ID);
-    await setStyle('visibility', false, ID);
+    await setProperty('visibility', false, ID);
     await waitFor(() => expect(root(container, HANDLE)).toHaveStyle({ display: 'none' }));
     expect(status(container, HANDLE).style.color).toBe(RGBA_COLOUR);
     expect(status(container, HANDLE)).toHaveClass('spinner-border-sm');
@@ -248,7 +264,7 @@ describe('Spinner widget', () => {
     expect(status(container, HANDLE2)).toHaveClass('spinner-border-sm');
     expect(root(container, HANDLE2)).toHaveStyle({ display: 'none' });
 
-    await setStyle('visibility', true, ID2);
+    await setProperty('visibility', true, ID2);
     await waitFor(() => expect(root(container, HANDLE2).style.display).toBe(''));
     expect(root(container, HANDLE)).toHaveStyle({ display: 'none' });
     expect(status(container, HANDLE2).style.color).toBe(OTHER_RGB);

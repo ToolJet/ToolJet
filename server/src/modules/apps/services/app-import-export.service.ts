@@ -145,7 +145,21 @@ type NewRevampedComponent =
   | 'ModalV2'
   | 'PopoverMenu'
   | 'Pagination'
-  | 'Timeline';
+  | 'Timeline'
+  | 'Map'
+  | 'Chart'
+  | 'BoundedBox'
+  | 'Calendar'
+  | 'PDF'
+  | 'QrScanner'
+  | 'RichTextEditor'
+  | 'SvgImage'
+  | 'Spinner'
+  | 'Timer'
+  | 'Kanban'
+  | 'CodeEditor'
+  | 'CustomComponent'
+  | 'Navigation';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -200,6 +214,20 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'PopoverMenu',
   'Pagination',
   'Timeline',
+  'Map',
+  'Chart',
+  'BoundedBox',
+  'Calendar',
+  'PDF',
+  'QrScanner',
+  'RichTextEditor',
+  'SvgImage',
+  'Spinner',
+  'Timer',
+  'Kanban',
+  'CodeEditor',
+  'CustomComponent',
+  'Navigation',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -321,15 +349,21 @@ const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
 const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'Accordion',
   'AudioRecorder',
+  'BoundedBox',
   'Button',
   'ButtonGroupV2',
+  'Calendar',
   'Camera',
   'Cascader',
+  'Chart',
+  'Chat',
   'Checkbox',
   'CircularProgressBar',
+  'CodeEditor',
   'ColorPicker',
   'Container',
   'CurrencyInput',
+  'CustomComponent',
   'DatePickerV2',
   'DaterangePicker',
   'DatetimePickerV2',
@@ -339,6 +373,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'FileButton',
   'FileInput',
   'FilePicker',
+  'FlexContainer',
   'Form',
   'Html',
   'Icon',
@@ -350,18 +385,28 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'KeyValuePair',
   'Link',
   'Listview',
+  'Map',
   'ModalV2',
   'MultiselectV2',
+  'Navigation',
   'NumberInput',
+  'Pagination',
   'PasswordInput',
+  'PDF',
   'PhoneInput',
   'PopoverMenu',
   'ProgressBar',
+  'QrScanner',
   'RadioButtonV2',
   'RangeSliderV2',
   'ReorderableList',
+  'RichTextEditor',
+  'Spinner',
   'StarRating',
   'Statistics',
+  'Steps',
+  'SvgImage',
+  'Table',
   'Tabs',
   'Tags',
   'TagsInput',
@@ -370,6 +415,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'TextInput',
   'TimePicker',
   'Timeline',
+  'Timer',
   'ToggleSwitchV2',
   'TreeSelect',
   'VerticalDivider',
@@ -5123,17 +5169,6 @@ function migrateProperties(
   if (INPUT_WIDGET_TYPES.includes(componentType)) {
     if (!styles.widthType) {
       styles.widthType = { value: 'ofField' };
-    }
-  }
-
-  // TODO: Once the Kanban component is revamped, remove this logic and add 'Kanban' to the NewRevampedComponent array.
-  // The migration for Kanban will then be handled automatically along with other revamped components.
-  if (['Kanban'].includes(componentType)) {
-    if (general?.tooltip) {
-      if (properties.tooltip === undefined) {
-        properties.tooltip = general?.tooltip;
-      }
-      delete general?.tooltip;
     }
   }
 

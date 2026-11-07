@@ -584,6 +584,8 @@ describe('Steps widget', () => {
         'stepsSelectable',
         'disabledState',
         'visibility',
+        'tooltipFormat',
+        'tooltip',
         'advanced',
         'currentStep',
       ],

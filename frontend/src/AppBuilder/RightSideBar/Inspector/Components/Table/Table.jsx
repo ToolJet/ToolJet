@@ -467,6 +467,8 @@ export const Table = (props) => {
     'collapseWhenHidden',
     'disabledState',
     'dynamicHeight',
+    'tooltipFormat',
+    'tooltip',
   ];
 
   // Accordion items
