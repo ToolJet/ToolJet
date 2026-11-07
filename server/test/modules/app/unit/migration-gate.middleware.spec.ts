@@ -193,6 +193,18 @@ describe('MigrationGateMiddleware', () => {
       expect(next).toHaveBeenCalled();
     });
 
+    it("should still refuse writes during a migration when DISABLE_MIGRATION_TRAFFIC_GATE is 'false'", async () => {
+      process.env.DISABLE_MIGRATION_TRAFFIC_GATE = 'false';
+      const { middleware } = buildMiddleware('running');
+      const res = buildResponse();
+      const next = jest.fn() as NextFunction;
+
+      await middleware.use(buildRequest('/api/apps', 'POST'), res, next);
+
+      expect(res.status).toHaveBeenCalledWith(503);
+      expect(next).not.toHaveBeenCalled();
+    });
+
     it('should not read the status for a path it would never gate', async () => {
       const { middleware, status } = buildMiddleware('running');
 

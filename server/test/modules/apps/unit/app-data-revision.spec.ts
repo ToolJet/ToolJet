@@ -12,7 +12,7 @@ describe('getAppDataRevision', () => {
   const scope = { versionId: 'ver-1', userId: 'user-1', licenseTerms: { valid: true } };
   const makeManager = (query: jest.Mock) => ({ query }) as unknown as EntityManager;
   // Answers the change-stamp read with `stamp`.
-  const queryReturning = (stamp: string | null = null) => jest.fn(() => Promise.resolve([{ stamp }]));
+  const queryReturning = (stamp: string | null = null) => jest.fn(() => Promise.resolve([{ stamp, epoch: '520' }]));
 
   let serverVersion: unknown;
   beforeEach(() => {
@@ -50,6 +50,22 @@ describe('getAppDataRevision', () => {
   it("changes when the app's change stamp moves", async () => {
     const before = await getAppDataRevision(makeManager(queryReturning()), app, scope);
     const after = await getAppDataRevision(makeManager(queryReturning('2026-10-19 10:05:00+00')), app, scope);
+
+    expect(after).not.toBe(before);
+  });
+
+  it('changes after a migration commits, such as a data migration that rewrites components while the server runs', async () => {
+    // `epoch` is the newest recorded migration.
+    const before = await getAppDataRevision(
+      makeManager(jest.fn(() => Promise.resolve([{ stamp: null, epoch: '520' }]))),
+      app,
+      scope
+    );
+    const after = await getAppDataRevision(
+      makeManager(jest.fn(() => Promise.resolve([{ stamp: null, epoch: '521' }]))),
+      app,
+      scope
+    );
 
     expect(after).not.toBe(before);
   });

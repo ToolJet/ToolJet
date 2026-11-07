@@ -4,7 +4,7 @@
  * GATE 8, Step 8.4b (phase-8-implementation.md "## Verification — GATE 8", Step 8.4 Tests
  * section): "The data migration (8.4b): seed rows with apps.workflow_enabled = true for a
  * workflow and a non-workflow, run it, assert only workflow versions were written." Direct
- * coverage of `BackfillWorkflowEnabledOnAppVersions1793250000900` (`data-migrations/
+ * coverage of `BackfillWorkflowEnabledOnAppVersions1793250000900` (`migrations/data/
  * 1793250000900-BackfillWorkflowEnabledOnAppVersions.ts`), invoked here the same way the CLI
  * invokes it — `up(queryRunner)` — since a data migration otherwise only runs once, on
  * deployment, with no natural hook to exercise from an HTTP or repository test.
@@ -27,8 +27,8 @@ import {
 import { INestApplication } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
-import { BackfillWorkflowEnabledOnAppVersions1793250000900 } from '../../../../data-migrations/1793250000900-BackfillWorkflowEnabledOnAppVersions';
-import { AddWorkflowEnabledToAppVersions1793250000500 } from '../../../../migrations/1793250000500-AddWorkflowEnabledToAppVersions';
+import { BackfillWorkflowEnabledOnAppVersions1793250000900 } from '@migrations/data/1793250000900-BackfillWorkflowEnabledOnAppVersions';
+import { AddWorkflowEnabledToAppVersions1793250000500 } from '@migrations/schema/1793250000500-AddWorkflowEnabledToAppVersions';
 
 jest.setTimeout(60_000);
 
