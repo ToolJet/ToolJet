@@ -31,8 +31,13 @@ export class VersionRepository extends Repository<AppVersion> {
     metadata?: { appName?: string | null; slug?: string | null; icon?: string | null; isPublic?: boolean }
   ): Promise<AppVersion> {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      // moduleReferenceId is module-only; look up parent app type once and gate.
-      const parentApp = await manager.findOne(App, { where: { id: appId }, select: ['id', 'type'] });
+      // Read only the type: hydrating a partial App invokes editor-state subscribers
+      // without the workspace context they require.
+      const parentApp = await manager
+        .createQueryBuilder(App, 'app')
+        .select('app.type', 'type')
+        .where('app.id = :appId', { appId })
+        .getRawOne<Pick<App, 'type'>>();
       const isModule = parentApp?.type === APP_TYPES.MODULE;
       return catchDbException(() => {
         return manager.save(
@@ -357,10 +362,8 @@ export class VersionRepository extends Repository<AppVersion> {
    * surface the correct branch's `name / slug / icon / is_public` instead of the
    * stale `apps.*` columns.
    *
-   * Resolution order (workflows are skipped — they keep metadata on apps.*):
-   *   - branchId supplied (header / param) → that branch's app_versions row.
-   *   - branchId absent, git enabled       → default branch's app_versions row.
-   *   - branchId absent, git off           → any slug-bearing row (most recent).
+   * overlayMetadata() runs unconditionally for every app type, including workflows —
+   * metadata is always sourced from the resolved AppVersion row.
    */
   async getAppVersionById(versionId: string, branchId?: string) {
     const version = await this.manager.findOneOrFail(AppVersion, {

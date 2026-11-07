@@ -51,6 +51,7 @@ export const TreeSelectItem = ({
         className={`treeselect-option-item ${darkMode ? 'dark-theme theme-dark' : ''} ${
           isEditing ? 'is-selected' : ''
         } ${hasChildren ? 'has-children' : ''}`}
+        data-list-item-id={String(item?.value ?? '')}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();

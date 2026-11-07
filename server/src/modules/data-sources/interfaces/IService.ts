@@ -17,7 +17,7 @@ export interface IDataSourcesService {
     query: GetQueryVariables,
     user: User,
     userPermissions: UserPermissions
-  ): Promise<{ data_sources: object[] }>;
+  ): Promise<{ data_sources: object[]; data_source_folders: object[] }>;
 
   getAll(query: GetQueryVariables, user: User, userPermissions: UserPermissions): Promise<{ data_sources: object[] }>;
 
@@ -45,18 +45,20 @@ export interface IDataSourcesService {
     testDataSourceDto: TestDataSourceDto,
     organization_id: string,
     dataSourceId?: string,
-    branchId?: string
+    branchId?: string,
+    context?: { dataSource?: DataSource; canEditDataSource?: boolean }
   ): Promise<object>;
 
   testSampleDBConnection(testDataSourceDto: TestSampleDataSourceDto, user: User): Promise<object>;
 
-  getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }>;
+  getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto, user: User): Promise<{ url: string }>;
 
   authorizeOauth2(
     dataSourceId: string,
     environmentId: string,
     authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto,
-    user: User
+    user: User,
+    canConfigureDataSource: boolean
   ): Promise<void>;
 
   invokeMethod(

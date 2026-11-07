@@ -10,6 +10,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { Confirm } from '@/AppBuilder/Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 import { ToolTip } from '@/_components';
+import { resolveColumnDisplayName, columnIdOf } from '../util';
+
+// group_by entries are either a bare column-name string (legacy, no id) or { column, columnId }.
+const groupByEntryName = (entry) => (typeof entry === 'string' ? entry : entry?.column);
+const groupByEntryColumnId = (entry) => (typeof entry === 'string' ? undefined : entry?.columnId);
 export const AggregateFilter = ({ darkMode, operation = '' }) => {
   const {
     columns,
@@ -85,6 +90,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
       ...currentAggregates[key],
       [optionToUpdate]: value,
       ...(tableIdExist && { table_id: selectedValue.tableId }),
+      ...(optionToUpdate === 'column' && { columnId: columnIdOf(selectedValue) }),
     };
     const updatedAggregates = {
       ...currentAggregates,
@@ -188,11 +194,10 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
   const handleGroupByChange = (selectedTableId, value) => {
     const currentGroupBy = { ...(operationDetails?.group_by || {}) };
     const validValueData = value?.reduce((acc, val) => {
-      if (typeof val === 'object' && !acc.some((option) => option === val.value)) {
-        acc.push(val.value);
-      } else if (typeof val !== 'object' && !acc.some((option) => option === val.value)) {
-        acc.push(val);
-      }
+      const name = typeof val === 'object' ? val.value : val;
+      if (acc.some((entry) => groupByEntryName(entry) === name)) return acc;
+      const columnId = typeof val === 'object' ? columnIdOf(val) : undefined;
+      acc.push(columnId ? { column: name, columnId } : name);
       return acc;
     }, []);
     const updatedGroupBy = {
@@ -207,6 +212,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
       return {
         label: column.accessor,
         value: column.accessor,
+        columnId: column.column_id,
       };
     });
   }, [columns]);
@@ -260,6 +266,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
               value: columns.Header + '-' + tableId,
               tableId: tableId,
               tableName: tableDetails?.table_name,
+              columnId: columns?.column_id,
             })) || [],
         };
         tableList.push(tableDetailsForDropDown);
@@ -273,6 +280,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
     return tableInfo?.[tableDetails?.table_name]?.map((columns) => ({
       label: columns.Header,
       value: columns.Header,
+      columnId: columns.column_id,
     }));
   };
 
@@ -289,8 +297,10 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
     },
   ];
 
-  const getJoinTableOption = (value, tableId) => {
-    const valueToFilter = `${value}-${tableId}`;
+  const getJoinTableOption = (value, tableId, columnId) => {
+    const tableDetails = findTableDetails(tableId);
+    const resolvedValue = resolveColumnDisplayName(tableInfo[tableDetails?.table_name], value, columnId, 'Header');
+    const valueToFilter = `${resolvedValue}-${tableId}`;
     let foundOption = null; // Use a variable to store the found option
 
     tableListOptions?.forEach((singleOption) => {
@@ -311,31 +321,37 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
     return foundOption || {};
   };
 
-  const getListRowsOption = (value) => {
-    const option = columnAccessorsOptions?.find((option) => option?.value === value);
+  const getListRowsOption = (value, columnId) => {
+    const resolvedValue = resolveColumnDisplayName(columns, value, columnId);
+    const option = columnAccessorsOptions?.find((option) => option?.value === resolvedValue);
     return option || {};
   };
 
-  const constructAggregateValue = (value, operation, option, tableId = '') => {
+  const constructAggregateValue = (value, operation, option, tableId = '', columnId) => {
     if (option === 'aggFx') {
       const option = aggFxOptions.find((option) => option?.value === value);
       return option || {};
     }
     if (option === 'column') {
       if (operation === 'joinTable') {
-        return getJoinTableOption(value, tableId);
+        return getJoinTableOption(value, tableId, columnId);
       } else if (operation === 'listRows') {
-        return getListRowsOption(value);
+        return getListRowsOption(value, columnId);
       }
     }
   };
 
-  const constructGroupByValue = (value) => {
+  const constructGroupByValue = (value, tableColumns) => {
     return (
-      value?.map((val) => {
+      value?.map((entry) => {
+        const resolvedName = resolveColumnDisplayName(
+          tableColumns,
+          groupByEntryName(entry),
+          groupByEntryColumnId(entry)
+        );
         return {
-          label: val,
-          value: val,
+          label: resolvedName,
+          value: resolvedName,
         };
       }) || []
     );
@@ -395,9 +411,16 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
                               aggregateDetails.column,
                               'joinTable',
                               'column',
-                              aggregateDetails?.table_id
+                              aggregateDetails?.table_id,
+                              aggregateDetails?.columnId
                             )
-                          : constructAggregateValue(aggregateDetails.column, 'listRows', 'column')
+                          : constructAggregateValue(
+                              aggregateDetails.column,
+                              'listRows',
+                              'column',
+                              '',
+                              aggregateDetails?.columnId
+                            )
                       }
                       options={operation === 'joinTable' ? tableListOptions : columnAccessorsOptions}
                       handleChange={(value) => handleAggregateOptionChange(aggregateKey, value, 'column')}
@@ -463,7 +486,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
               <SelectBox
                 width="100%"
                 height="32"
-                value={constructGroupByValue(operationDetails?.group_by?.[selectedTableId])}
+                value={constructGroupByValue(operationDetails?.group_by?.[selectedTableId], columns)}
                 options={columnAccessorsOptions}
                 placeholder={`Select column(s) to group by`}
                 isMulti={true}
@@ -494,7 +517,10 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
                   <SelectBox
                     width="100%"
                     height="32"
-                    value={constructGroupByValue(operationDetails?.group_by?.[selectedTableId])}
+                    value={constructGroupByValue(
+                      operationDetails?.group_by?.[selectedTableId],
+                      tableInfo[findTableDetails(selectedTableId)?.table_name]
+                    )}
                     options={getColumnsDetails(selectedTableId)}
                     placeholder={`Select column(s) to group by`}
                     isMulti={true}
@@ -531,7 +557,10 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
                         <SelectBox
                           width="100%"
                           height="32"
-                          value={constructGroupByValue(operationDetails?.group_by?.[table.table])}
+                          value={constructGroupByValue(
+                            operationDetails?.group_by?.[table.table],
+                            tableInfo[findTableDetails(table.table)?.table_name]
+                          )}
                           options={getColumnsDetails(table.table)}
                           placeholder={`Select column(s) to group by`}
                           isMulti={true}

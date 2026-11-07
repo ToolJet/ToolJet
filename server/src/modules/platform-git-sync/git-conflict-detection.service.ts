@@ -7,7 +7,7 @@ export class GitConflictDetectionService {
     _branchId: string,
     _repoPath: string,
     _appCoRelationId?: string,
-    _scope?: 'app' | 'module' | 'datasource' | 'all'
+    _scope?: 'app' | 'module' | 'workflow' | 'datasource' | 'all'
   ): Promise<void> {
     // CE no-op
   }
@@ -28,6 +28,7 @@ export class GitConflictDetectionService {
     _appCoRelationId: string,
     _gitRepoPath: string,
     _referencedModuleCoRelIds: Set<string>,
+    _referencedWorkflowCoRelIds: Set<string>,
     _dataSources: Array<{ id: string; name: string }>
   ): Promise<void> {
     // CE no-op
