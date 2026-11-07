@@ -15,6 +15,7 @@ import { summaryFigures } from '../lib/ui2/display/summary';
 import { progressEntries, progressItem, progressMax } from '../lib/ui2/charts/progressModel';
 import { useValueSetter } from '../lib/sameValue';
 import { LOCALE_HINT } from '../lib/locale';
+import { onPointerIn } from '../lib/pointerEnter';
 
 // The tone a status word reads as (lists/model chipTone) -> Ant's Tag status colour.
 const TONE_TAG: Record<string, string> = {
@@ -969,7 +970,7 @@ export const Link = () => {
           strong={strong}
           className={`tj-ant-link is-${underline}`}
           onClick={() => onClick()}
-          onMouseEnter={() => onHover()}
+          onMouseOver={onPointerIn(onHover)}
         >
           {children}
           {showIcon && Ext ? (
@@ -1061,7 +1062,7 @@ export const Icon = () => {
               : {}),
           }}
           onClick={() => onClick()}
-          onMouseEnter={() => onHover()}
+          onMouseOver={onPointerIn(onHover)}
         >
           {Glyph ? <Glyph /> : null}
         </span>
