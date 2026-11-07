@@ -16,7 +16,7 @@
  * changes between two identical renders.
  */
 import React, { Profiler } from 'react';
-import { screen, waitFor, within } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 import {
   createWidgetHarness,
@@ -45,6 +45,8 @@ const widget = createWidgetHarness({
     // Locked schema: keeps the configured columns and avoids an autogenerate save round-trip.
     autogenerateColumns: binding(false),
     showAddNewRowButton: binding('{{true}}'),
+    // A new Table defaults to one row at a time; the "+" this spec clicks only exists with multiple rows on.
+    allowAddingMultipleRows: binding('{{true}}'),
   },
 });
 
@@ -68,8 +70,8 @@ function renderTable() {
 }
 
 const addNewRowButton = () => document.querySelector(`[data-cy="${NAME}-add-new-row-button"]`);
-/** The editable rows in the Add new rows popup (its <tbody>, so the header row is not counted). */
-const popupRows = () => within(document.querySelector('[data-cy="add-new-row-table"] tbody')).queryAllByRole('row');
+/** The rows in the Add new rows form: one chip per row in its row picker. */
+const popupRows = () => document.querySelectorAll('[data-cy^="add-new-row-chip-"]');
 
 /** Gives any work still queued by the last interaction a few macrotask turns to finish. */
 async function settle(turns = 10) {
@@ -85,7 +87,7 @@ describe('Table add new rows popup', () => {
     await user.click(addNewRowButton());
     await waitFor(() => expect(popupRows()).toHaveLength(1));
 
-    await user.click(screen.getByRole('button', { name: '+' }));
+    await user.click(screen.getByRole('button', { name: 'Add another row' }));
     await waitFor(() => expect(popupRows()).toHaveLength(2));
 
     await settle();

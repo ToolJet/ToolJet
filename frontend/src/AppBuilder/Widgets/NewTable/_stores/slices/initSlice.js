@@ -2,6 +2,7 @@ import { has } from 'lodash';
 import { utilityForNestedNewRow } from '../helper';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { DEFAULT_EXPANSION_HEIGHT } from '../../_utils/helper';
+import { resolveAddNewRowIn } from '../../_utils/addNewRowConfig';
 
 export const createInitSlice = (set, get) => ({
   initializeComponent: (id) => {
@@ -49,6 +50,10 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.displaySearchBox = properties?.displaySearchBox ?? true;
         state.components[id].properties.showFilterButton = properties?.showFilterButton ?? true;
         state.components[id].properties.showAddNewRowButton = properties?.showAddNewRowButton ?? true;
+        state.components[id].properties.addNewRowIn = resolveAddNewRowIn(properties?.addNewRowIn);
+        // missing on apps saved before the property existed, which always allowed several rows
+        state.components[id].properties.allowAddingMultipleRows = properties?.allowAddingMultipleRows ?? true;
+        state.components[id].properties.addNewRowColumns = properties?.addNewRowColumns;
         state.components[id].properties.showDownloadButton = properties?.showDownloadButton ?? true;
         state.components[id].properties.showRefreshButton = properties?.showRefreshButton ?? false;
         state.components[id].properties.showBulkUpdateActions = properties?.showBulkUpdateActions ?? true;
@@ -274,6 +279,20 @@ export const createInitSlice = (set, get) => ({
       },
       false,
       { type: 'updateAddNewRowDetails', payload: { id, index, newRow } }
+    ),
+  // Rows after the removed one move up, in one update, so the indexes stay 0..n-1 in order and the store is never
+  // seen empty part-way (the form would add a blank row).
+  removeAddNewRowDetail: (id, index) =>
+    set(
+      (state) => {
+        const newRows = state.components[id].addNewRow;
+        if (!newRows.has(index)) return;
+        const remaining = [...newRows.entries()].filter(([rowIndex]) => rowIndex !== index).map(([, row]) => row);
+        newRows.clear();
+        remaining.forEach((row, rowIndex) => newRows.set(rowIndex, row));
+      },
+      false,
+      { type: 'removeAddNewRowDetail', payload: { id, index } }
     ),
   clearAddNewRowDetails: (id) =>
     set(

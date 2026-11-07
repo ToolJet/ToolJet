@@ -24,6 +24,7 @@ export const Code = ({
   setCodeEditorView,
   customMeta,
   canRefresh = true,
+  fieldActions = null,
 }) => {
   const currentState = useCurrentState();
 
@@ -82,6 +83,7 @@ export const Code = ({
         cyLabel={paramMeta?.showLabel === false ? param.name?.toLowerCase() : ''}
         setCodeEditorView={setCodeEditorView}
         canRefresh={canRefresh}
+        fieldActions={fieldActions}
       />
     </div>
   );
