@@ -38,10 +38,32 @@ const Echo = () => {
   );
 };
 
+// A field whose value starts from its Default value, with a hidden `value` prop (its own state, and the name an
+// earlier release of it was set by), as the Rocket Number Input has.
+const Counter = () => {
+  const [defaultValue] = ToolJet.useStateNumber({ name: 'defaultValue', initialValue: 1 });
+  const [value] = ToolJet.useStateNumber({ name: 'value', initialValue: defaultValue, inspector: 'hidden' });
+  return <span data-testid="echo">{value === null ? 'empty' : String(value)}</span>;
+};
+
+// What types its text and number props reached it as.
+const Kinds = () => {
+  const [label] = ToolJet.useStateString({ name: 'label', initialValue: '' });
+  const [count] = ToolJet.useStateNumber({ name: 'count', initialValue: 0 });
+  return <span data-testid="echo">{`${typeof label}:${label}/${typeof count}:${count}`}</span>;
+};
+
 // A pack component that reads a prop the host owns (Collapse when hidden), to see whether the host passes it on.
 const Flag = () => {
   const [collapse] = ToolJet.useStateBoolean({ name: 'collapseWhenHidden', initialValue: false });
   return <span data-testid="echo">{String(collapse)}</span>;
+};
+
+// Records when its action runs.
+const actionRuns = [];
+const Recorder = () => {
+  ToolJet.useAction({ name: 'record', displayName: 'Record' }, (value) => actionRuns.push(value));
+  return <span data-testid="echo">recorder</span>;
 };
 
 // A pack component with a drop area (ToolJet.Slot), as a Tabs container or Card has.
@@ -55,8 +77,28 @@ const manifest = {
   manifestVersion: 2,
   components: {
     SlotCard: { displayName: 'Slot card', props: [], slots: [{ name: 'body', kind: 'slot' }] },
-    Echo: { displayName: 'Echo', props: [{ name: 'label', type: 'string' }], actions: [{ name: 'ping' }] },
+    Echo: {
+      displayName: 'Echo',
+      props: [{ name: 'label', type: 'string' }],
+      // `never`: listed, but the component registers no handler for it.
+      actions: [{ name: 'ping' }, { name: 'never' }],
+    },
+    Kinds: {
+      displayName: 'Kinds',
+      props: [
+        { name: 'label', type: 'string', default: '' },
+        { name: 'count', type: 'number', default: 0 },
+      ],
+    },
+    Counter: {
+      displayName: 'Counter',
+      props: [
+        { name: 'defaultValue', type: 'number', default: 1 },
+        { name: 'value', type: 'number', default: 1, inspector: 'hidden' },
+      ],
+    },
     Flag: { displayName: 'Flag', props: [], actions: [] },
+    Recorder: { displayName: 'Recorder', props: [], actions: [{ name: 'record' }] },
   },
 };
 
@@ -117,7 +159,7 @@ describe('PackComponent integration', () => {
 
   beforeEach(async () => {
     await widget.setup();
-    loadLibraryModule.mockResolvedValue({ Echo, SlotCard, Flag });
+    loadLibraryModule.mockResolvedValue({ Echo, SlotCard, Counter, Kinds, Flag, Recorder });
     act(() => useStore.setState({ license: { featureAccess: { customComponentLibraries: false } } }));
   });
   afterEach(() => {
@@ -144,6 +186,53 @@ describe('PackComponent integration', () => {
     renderPack();
 
     await waitFor(() => expect(shadowText()).toBe('Hello|'));
+  });
+
+  // QA item 17: a drop saved every prop's sample, hidden ones too, so the saved hidden `value` 1 set the field on every
+  // load and an emptied Default value never showed.
+  test('[PackComponent-HIDDEN-001] starts from an emptied Default value over a hidden prop saved at its sample', async () => {
+    // Break this catches: a hidden prop at its manifest sample reaching the component as set by the app.
+    renderPack({
+      properties: { componentName: binding('Counter'), defaultValue: binding('{{null}}'), value: binding('{{1}}') },
+    });
+
+    await waitFor(() => expect(shadowText()).toBe('empty'));
+  });
+
+  test('[PackComponent-HIDDEN-002] still takes a hidden prop an app set to something else', async () => {
+    // Break this catches: every hidden prop being dropped, which loses a value an earlier release's app set by name.
+    renderPack({
+      properties: { componentName: binding('Counter'), defaultValue: binding('{{null}}'), value: binding('{{5}}') },
+    });
+
+    await waitFor(() => expect(shadowText()).toBe('5'));
+  });
+
+  // QA items 14-16: a pack property got whatever its binding resolved to, so a query row bound to a text property
+  // crashed the widget or showed [object Object].
+  test('[PackComponent-TYPES-001] hands each property the type its manifest declares', async () => {
+    // Break this catches: the host passing a bound value through without its manifest type.
+    renderPack({
+      properties: { componentName: binding('Kinds'), label: binding('{{42}}'), count: binding('{{"1,200"}}') },
+    });
+
+    await waitFor(() => expect(shadowText()).toBe('string:42/number:1200'));
+  });
+
+  test('[PackComponent-TYPES-002] empties a value a property cannot take, and says why in the debugger', async () => {
+    // Break this catches: an object reaching a text property (React cannot draw it), or the error going unreported.
+    renderPack({ properties: { label: binding('{{ {id: 7} }}') } });
+
+    await waitFor(() => expect(shadowText()).toBe('|'));
+    await waitFor(() =>
+      expect(store().debugger.logs).toContainEqual(
+        expect.objectContaining({
+          componentId: ID,
+          message: 'Expected a value of type string, but received {"id":7}',
+          errorTarget: 'Component Property',
+        })
+      )
+    );
   });
 
   test('[PackComponent-HOSTKEY-001] keeps Collapse when hidden, which the host owns, out of the component props', async () => {
@@ -177,6 +266,49 @@ describe('PackComponent integration', () => {
     await waitFor(() => expect(typeof store().getExposedValueOfComponent(ID, MODULE_ID)?.ping).toBe('function'));
     await waitFor(() => expect(shadowText()).toBe('Hello|'));
     await expect(store().getExposedValueOfComponent(ID, MODULE_ID).ping()).resolves.toBe('pong');
+  });
+
+  // QA item 33: the actions are exposed once the manifest is read, before the bundle has loaded, so an action called
+  // in between (a page's On page load opening a pack Dialog) found no handler and did nothing.
+  test('[PackComponent-ACTION-002] runs an action called before the component has loaded once it has', async () => {
+    // Break this catches: an early call dropped ("no handler registered") instead of waiting for the handler.
+    let loadBundle;
+    loadLibraryModule.mockReturnValue(
+      new Promise((resolve) => {
+        loadBundle = () => resolve({ Echo, SlotCard, Counter, Kinds, Flag, Recorder });
+      })
+    );
+    renderPack();
+
+    await waitFor(() => expect(typeof store().getExposedValueOfComponent(ID, MODULE_ID)?.ping).toBe('function'));
+    const result = store().getExposedValueOfComponent(ID, MODULE_ID).ping();
+    await act(async () => loadBundle());
+
+    await expect(result).resolves.toBe('pong');
+  });
+
+  test('[PackComponent-ACTION-003] ends an action the drawn component has no handler for at once', async () => {
+    // Break this catches: a call to an action with no handler waiting the whole time limit (15 s) after the component
+    // has drawn, holding the event's next actions.
+    renderPack();
+    await waitFor(() => expect(shadowText()).toBe('Hello|'));
+    const started = Date.now();
+
+    await expect(store().getExposedValueOfComponent(ID, MODULE_ID).never()).resolves.toBeUndefined();
+    expect(Date.now() - started).toBeLessThan(1000);
+  });
+
+  test('[PackComponent-ACTION-004] runs an action on a loaded component on the next microtask, as it always has', async () => {
+    // Break this catches: the wait for a handler delaying a call to a component that has already loaded.
+    actionRuns.length = 0;
+    renderPack({ properties: { componentName: binding('Recorder') } });
+    await waitFor(() => expect(shadowText()).toBe('recorder'));
+
+    const result = store().getExposedValueOfComponent(ID, MODULE_ID).record('first');
+    expect(actionRuns).toEqual([]);
+    await Promise.resolve();
+    expect(actionRuns).toEqual(['first']);
+    await result;
   });
 
   test('[PackComponent-SLOT-002] a component dropped into its drop area can be selected again', async () => {

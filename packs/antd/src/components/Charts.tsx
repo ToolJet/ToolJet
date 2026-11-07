@@ -7,7 +7,7 @@ import { ChartLoader } from '../lib/Loading';
 import { str, toArray, toRows, type Row } from '../lib/data';
 import { formatNumber, toNumber } from '../lib/format';
 import { LOCALE_HINT } from '../lib/locale';
-import { useClickHighlight } from '../lib/chartHighlight';
+import { useClickHighlight, useElementClick } from '../lib/chartHighlight';
 import { mixRgb, tooltipInteraction, useChartTheme, useTooltipLayer, type Theme } from '../lib/chartTheme';
 import { useNarrow } from '../lib/fitText';
 
@@ -108,7 +108,11 @@ const useClicked = () => {
   const onElementClick = ToolJet.useEventCallback({ name: 'onElementClick' });
   ToolJet.useAction({ name: 'clearClickedPoint', displayName: 'Clear clicked point' }, () => setSelectedDatum({}));
   const highlight = useClickHighlight(highlightClicked, selectedDatum);
-  return { highlight, highlightOn: highlightClicked === true, setSelectedDatum, onElementClick };
+  const onChartReady = useElementClick((datum) => {
+    setSelectedDatum(datum);
+    onElementClick();
+  });
+  return { highlight, highlightOn: highlightClicked === true, setSelectedDatum, onElementClick, onChartReady };
 };
 
 // data is the sample a fresh drop shows, keyed by the default fields.
@@ -163,7 +167,7 @@ const useChartProps = (defaults: { x?: string; y?: string; ys?: string[]; data?:
     description: LOCALE_HINT,
     initialValue: '',
   });
-  const { highlight, highlightOn, setSelectedDatum, onElementClick } = useClicked();
+  const { highlight, highlightOn, setSelectedDatum, onElementClick, onChartReady } = useClicked();
   const { loading } = ToolJet.useControlState();
   return {
     loading,
@@ -179,6 +183,7 @@ const useChartProps = (defaults: { x?: string; y?: string; ys?: string[]; data?:
     locale,
     setSelectedDatum,
     onElementClick,
+    onChartReady,
     highlight,
     highlightOn,
   };
@@ -272,14 +277,9 @@ const useCommon = (
       interaction: tooltipInteraction(tips),
       label: p.label ? { text: (d: Row) => fmt(d[series.y]), fill: theme.text, position: 'inside' } : undefined,
       viewStyle: { viewFill: 'transparent' },
-      onEvent: (_chart: unknown, event: { type?: string; data?: { data?: Row } }) => {
-        if (event?.type === 'element:click') {
-          p.setSelectedDatum(event.data?.data ?? {});
-          p.onElementClick();
-        }
-      },
+      onReady: p.onChartReady,
     };
-  }, [p.yFormatter, p.currency, p.locale, p.legend, p.label, theme, series.color, series.y, tips]);
+  }, [p.yFormatter, p.currency, p.locale, p.legend, p.label, p.onChartReady, theme, series.color, series.y, tips]);
   // A fresh scale on every render: Ant's charts write into the scale they are given (a Line of all zeros sets
   // y.domainMax 1), and a memoised one kept that limit once the real data came, drawing the lines off the plot.
   // Ant compares configs by content, so a new object with the same content does not redraw the chart.
@@ -520,7 +520,7 @@ export const Pie = () => {
     description: LOCALE_HINT,
     initialValue: '',
   });
-  const { highlight, setSelectedDatum, onElementClick } = useClicked();
+  const { highlight, onChartReady } = useClicked();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
     role: 'piechart',
@@ -584,12 +584,7 @@ export const Pie = () => {
             lineWidth: 2,
             ...(highlight ? { fillOpacity: highlight.opacity({ keys: [colorField] }) } : {}),
           }}
-          onEvent={(_chart: unknown, event: { type?: string; data?: { data?: Row } }) => {
-            if (event?.type === 'element:click') {
-              setSelectedDatum(event.data?.data ?? {});
-              onElementClick();
-            }
-          }}
+          onReady={onChartReady}
         />
       </Frame>
     </AntProvider>
@@ -746,7 +741,7 @@ export const DualAxes = () => {
           // their colours only through style, so the left series' marker was G2's default blue next to brand bars.
           scale={{ color: { range: [theme.brand, dualSecond(theme)] } }}
           interaction={tooltipInteraction(tips)}
-          onEvent={(common as { onEvent: unknown }).onEvent as never}
+          onReady={(common as { onReady: unknown }).onReady as never}
           children={
             [
               layer(left, kinds[0] || 'column', theme.brand, 'left'),
@@ -803,12 +798,7 @@ export const Funnel = () => {
           tooltip={{ items: [{ field: y, valueFormatter: fmt }] }}
           interaction={tooltipInteraction(tips)}
           style={p.highlight ? { fillOpacity: p.highlight.opacity({ keys: [p.xField] }) } : undefined}
-          onEvent={(_c: unknown, e: { type?: string; data?: { data?: Row } }) => {
-            if (e?.type === 'element:click') {
-              p.setSelectedDatum(e.data?.data ?? {});
-              p.onElementClick();
-            }
-          }}
+          onReady={p.onChartReady}
         />
       </Frame>
     </AntProvider>
@@ -1053,7 +1043,7 @@ export const Heatmap = () => {
   });
   const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: '' });
   const [label] = ToolJet.useStateBoolean({ name: 'label', label: 'Label', initialValue: false });
-  const { highlight, setSelectedDatum, onElementClick } = useClicked();
+  const { highlight, onChartReady } = useClicked();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
     role: 'heatmapchart',
@@ -1095,12 +1085,7 @@ export const Heatmap = () => {
           legend={{ color: { itemLabelFill: theme.text } }}
           interaction={tooltipInteraction(tips)}
           label={label ? { text: colorField, fill: theme.text, position: 'inside' } : undefined}
-          onEvent={(_c: unknown, e: { type?: string; data?: { data?: Row } }) => {
-            if (e?.type === 'element:click') {
-              setSelectedDatum(e.data?.data ?? {});
-              onElementClick();
-            }
-          }}
+          onReady={onChartReady}
         />
       </Frame>
     </AntProvider>

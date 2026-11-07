@@ -10,6 +10,9 @@ import type { LibraryManifest } from '@/AppBuilder/types/libraryComponent.types'
 import InlineLibraryComponent, { holdStoreWrites } from './InlineLibraryComponent';
 import LibrarySlotCanvas from './LibrarySlotCanvas';
 import { usePackHost, useRowTemplates } from './usePackHost';
+import { typedPackProps } from './packPropertyTypes';
+import { createActionRegistry, isActionRegistrySettled, whenActionRegistered } from './actionRegistry';
+import { setSdkActionReadiness } from '@/AppBuilder/_utils/sdkActionReadiness';
 import type { LibraryRuntime } from './inlineRuntime';
 import useThemeAccess from '@/AppBuilder/_hooks/useThemeAccess';
 import { baseTheme } from '@/AppBuilder/_stores/utils';
@@ -21,6 +24,9 @@ const Loader = LoaderJs as React.ComponentType<any>;
 const HOST_STYLE_KEYS = new Set(['boxShadow']);
 // The host's standard properties: the component reads them through ToolJet.useControlState, never as its own props.
 const HOST_PROPERTY_KEYS = ['visibility', 'collapseWhenHidden', 'loadingState', 'disabledState', 'dynamicHeight'];
+
+// How long an action called before the component registers it waits for it: a slow network's bundle load, not forever.
+const ACTION_WAIT_MS = 15000;
 
 /** What a host widget (LibraryComponent, PackComponent) resolved its instance to draw. */
 export interface SdkComponentSource {
@@ -55,6 +61,10 @@ interface SdkComponentHostProps {
   blocked?: boolean;
   /** Drawn under the box in the editor (the dev-preview badge). */
   badge?: React.ReactNode;
+  /** The built-in pack drawn (PackComponent): its props reach the component as the types its manifest declares. */
+  pack?: string;
+  /** It can never be drawn (a pack this release doesn't ship): an action called on it does not wait for it. */
+  unavailable?: boolean;
   [hostProp: string]: any;
 }
 
@@ -81,6 +91,8 @@ const SdkComponentHost = ({
   metaKeys,
   blocked = false,
   badge = null,
+  pack,
+  unavailable = false,
   ...hostProps
 }: SdkComponentHostProps) => {
   const safeHeight = Math.max(height ?? 0, 0);
@@ -181,7 +193,7 @@ const SdkComponentHost = ({
   const configured = !!source;
   const isInline = source?.runtime !== 'iframe';
   // Inline mode: ToolJet.useAction handlers register here directly, no postMessage round trip.
-  const [inlineActions] = useState(() => new Map<string, (...args: unknown[]) => unknown>());
+  const [inlineActions] = useState(createActionRegistry);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [shellReady, setShellReady] = useState(false);
@@ -196,15 +208,73 @@ const SdkComponentHost = ({
   // Row-scoped props (ToolJet.useRowResolver) keep their {{rowData...}} / {{cellValue}} templates for the component.
   const { overrides: rowTemplates, markRowScoped } = useRowTemplates({ id, properties, manifestComponent });
 
-  // The component's own props = everything the Inspector sets minus the host's keys.
-  const componentProps = useMemo(() => {
+  // A hidden prop (no Inspector field) still at its manifest sample was saved by a drop that stamped every prop, not
+  // set by the app: leaving it unset lets the component start from its own value. A Rocket Number Input, Slider or
+  // Rating otherwise kept its sample (1, 50, 4) over an emptied Default value after a reload. An app that set the
+  // prop to anything else (a pack's earlier name for it) still sets it.
+  const hiddenSamples = useMemo(
+    () =>
+      new Map(
+        (manifestComponent?.props ?? [])
+          .filter((prop) => prop.inspector === 'hidden' && prop.default !== undefined)
+          .map((prop) => [prop.name, JSON.stringify(prop.default)])
+      ),
+    [manifestComponent]
+  );
+  const isHiddenSample = (key: string, value: unknown) => {
+    const sample = hiddenSamples.get(key);
+    if (sample === undefined) return false;
+    try {
+      return JSON.stringify(value) === sample;
+    } catch {
+      return false;
+    }
+  };
+
+  // The component's own props = everything the Inspector sets minus the host's keys. A built-in pack's props are each
+  // the type its manifest declares (packPropertyTypes.ts), as a native widget's are; row templates stay templates.
+  const { componentProps, propertyErrors } = useMemo(() => {
     const hostKeys = new Set([...metaKeys, ...HOST_PROPERTY_KEYS]);
-    return {
-      ...Object.fromEntries(Object.entries(properties).filter(([k]) => !hostKeys.has(k))),
-      ...rowTemplates,
-    };
+    const own = Object.fromEntries(
+      Object.entries(properties).filter(([k, v]) => !hostKeys.has(k) && !isHiddenSample(k, v))
+    );
+    const typed =
+      pack && componentName
+        ? typedPackProps(pack, componentName, manifestComponent?.props, own, new Set(Object.keys(rowTemplates ?? {})))
+        : { props: own, errors: [] as ReturnType<typeof typedPackProps>['errors'] };
+    return { componentProps: { ...typed.props, ...rowTemplates }, propertyErrors: typed.errors };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties, rowTemplates, metaKeys.join('|')]);
+  }, [properties, rowTemplates, hiddenSamples, pack, componentName, manifestComponent, metaKeys.join('|')]);
+
+  // A value a property could not take is reported in the debugger, as a native widget's is; once per value.
+  const loggedErrors = useRef('');
+  useEffect(() => {
+    const signature = JSON.stringify(propertyErrors.map((e) => [e.property, e.message]));
+    if (signature === loggedErrors.current) return;
+    loggedErrors.current = signature;
+    if (!propertyErrors.length) return;
+    const state = useStore.getState() as any;
+    const name = state.getComponentDefinition?.(id, hostProps.moduleId ?? 'canvas')?.component?.name ?? id;
+    propertyErrors.forEach((error) =>
+      state.debugger?.log?.({
+        type: 'component',
+        kind: 'component',
+        key: `${name} - ${error.label}`,
+        componentId: id,
+        strace: 'page_level',
+        message: error.message,
+        status: true,
+        error: {
+          resolvedProperty: { [error.property]: error.value },
+          effectiveProperty: { [error.property]: error.effective },
+          componentId: id,
+        },
+        errorTarget: 'Component Property',
+        logLevel: 'error',
+        timestamp: new Date().toISOString(),
+      })
+    );
+  }, [propertyErrors, id, hostProps.moduleId]);
 
   // Inspector Styles-tab values for the bundle — passed as styles, never set as exposed variables.
   const componentStyles = useMemo(
@@ -215,10 +285,17 @@ const SdkComponentHost = ({
   // Sends a message from this parent widget down into the widget's iframe.
   const postToShell = (msg: Record<string, unknown>) => iframeRef.current?.contentWindow?.postMessage(msg, '*');
 
+  const runInline = (name: string, handler: ((...args: unknown[]) => unknown) | undefined, args: unknown[]) => {
+    if (!handler) console.warn(`[invokeAction] no handler registered for action "${name}".`);
+    return handler?.(...(args ?? []));
+  };
+  // An action called before the component has registered it (its bundle still loading, as on a page's On page load)
+  // runs once it does, rather than doing nothing. Any other call runs as it always has: on the next microtask.
   const invokeInline = (name: string, args: unknown[]) => {
     const handler = inlineActions.get(name);
-    if (!handler) console.warn(`[invokeAction] no handler registered for action "${name}".`);
-    return Promise.resolve().then(() => handler?.(...(args ?? [])));
+    if (handler || isActionRegistrySettled(inlineActions))
+      return Promise.resolve().then(() => runInline(name, handler, args));
+    return whenActionRegistered(inlineActions, name, ACTION_WAIT_MS).then((found) => runInline(name, found, args));
   };
 
   const invokeInShell = (msg: Record<string, unknown>) => {
@@ -313,6 +390,27 @@ const SdkComponentHost = ({
     actionsHold.current = null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [configured, manifestActions, setExposedVariables]);
+
+  // Whether an action called on it can run yet (sdkActionReadiness): loading until its manifest is read, then the
+  // actions it exposes (above, in an earlier effect of the same commit); cleared when it unmounts.
+  // Each mounted instance reports on its own (a List view row is one).
+  const readinessModuleId = hostProps.moduleId ?? 'canvas';
+  const [readinessOwner] = useState(() => ({}));
+  const manifestRead = configured && !!manifest;
+  useEffect(() => {
+    setSdkActionReadiness(
+      readinessModuleId,
+      id,
+      manifestRead || unavailable
+        ? { status: 'ready', actions: new Set(manifestRead ? (manifestActions ?? []).map((a) => a.name) : []) }
+        : { status: 'loading' },
+      readinessOwner
+    );
+  }, [readinessModuleId, id, manifestRead, manifestActions, unavailable, readinessOwner]);
+  useEffect(
+    () => () => setSdkActionReadiness(readinessModuleId, id, null, readinessOwner),
+    [readinessModuleId, id, readinessOwner]
+  );
 
   useEffect(
     () => () => {

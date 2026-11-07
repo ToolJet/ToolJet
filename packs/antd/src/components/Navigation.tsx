@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   Breadcrumb as AntBreadcrumb,
   Button,
@@ -1089,6 +1089,23 @@ export const Carousel = () => {
 };
 
 // Ant's QRCode: value (the text or URL), size, color, bgColor, errorLevel (L, M, Q, H), icon (image URL), bordered.
+// The most a QR code holds (version 40), by error level, in the mode its encoder picks for the whole value: digits only,
+// the uppercase alphanumeric set, or bytes (UTF-8). A longer value made Ant's QRCode throw (RangeError: Data too long)
+// and the widget show "Something went wrong" (QA item 40).
+const QR_CAPACITY = {
+  numeric: { L: 7089, M: 5596, Q: 3993, H: 3057 },
+  alphanumeric: { L: 4296, M: 3391, Q: 2420, H: 1852 },
+  byte: { L: 2953, M: 2331, Q: 1663, H: 1273 },
+} as const;
+const fitsQrCode = (value: string, level: string): boolean => {
+  const at = (['L', 'M', 'Q', 'H'].includes(level) ? level : 'M') as 'M';
+  if (/^\d*$/.test(value)) return value.length <= QR_CAPACITY.numeric[at];
+  if (/^[0-9A-Z $%*+\-./:]*$/.test(value)) return value.length <= QR_CAPACITY.alphanumeric[at];
+  // Only a value near the limit is measured in bytes (UTF-8 is at most 4 bytes a character).
+  if (value.length * 4 <= QR_CAPACITY.byte[at]) return true;
+  return new TextEncoder().encode(value).length <= QR_CAPACITY.byte[at];
+};
+
 export const QRCode = () => {
   const [value] = ToolJet.useStateString({ name: 'value', label: 'Value', initialValue: 'https://tooljet.com' });
   const [size] = ToolJet.useStateNumber({ name: 'size', label: 'Size (px)', initialValue: 160, min: 48, max: 600 });
@@ -1118,9 +1135,19 @@ export const QRCode = () => {
     defaultHeight: 18,
   });
   const px = Math.max(48, Math.min(600, toNumber(size) ?? 160));
+  const fits = useMemo(() => !value || fitsQrCode(value, String(errorLevel)), [value, errorLevel]);
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center">
-      {value ? (
+      {value && !fits ? (
+        <AntQRCode
+          value="-"
+          size={px}
+          status="expired"
+          bordered={bordered}
+          statusRender={() => <span>Too long for a QR code</span>}
+          type="svg"
+        />
+      ) : value ? (
         <AntQRCode
           value={value}
           size={px}

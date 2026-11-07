@@ -4,6 +4,7 @@ import { Empty, Progress, Typography } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useIsDark, useTokenStyles } from '../lib/AntProvider';
 import { ChartVeil, SpinOver } from '../lib/Loading';
+import { useElementClick } from '../lib/chartHighlight';
 import { tooltipInteraction, useChartTheme, useTooltipLayer } from '../lib/chartTheme';
 import { str, toArray, type Row } from '../lib/data';
 import { formatNumber, toNumber } from '../lib/format';
@@ -291,6 +292,7 @@ const RadialCategories = ({
   onPick: (d: Row) => void;
 }) => {
   const dark = useIsDark();
+  const onChartReady = useElementClick(onPick);
   // A legend at the right of a narrow box left the rings a sliver; under them, the rings keep the width (as the Pie's).
   const ref = useRef<HTMLDivElement>(null);
   const narrow = useNarrow(ref, 320);
@@ -313,9 +315,7 @@ const RadialCategories = ({
           scale={{ color: { range: palette } }}
           legend={showLegend ? { color: { position: narrow ? 'bottom' : 'right' } } : false}
           style={{ radius: 26 }}
-          onEvent={(_c: unknown, e: { type?: string; data?: { data?: Row } }) => {
-            if (e?.type === 'element:click') onPick(e.data?.data ?? {});
-          }}
+          onReady={onChartReady}
         />
       )}
     </div>

@@ -72,7 +72,12 @@ export const useTokenStyles = () => {
       vars['--tj-ant-color-bg-container'] = String(colorBgContainer);
       vars['--tj-ant-color-bg-elevated'] = String(colorBgContainer);
     }
-    if (isSet(colorBorder)) vars['--tj-ant-color-border'] = String(colorBorder);
+    // A card's, a stat's or a strip's border is antd's colorBorderSecondary, not colorBorder: the style sets both, so
+    // Border color changes the widget's own border and not only its fields'.
+    if (isSet(colorBorder)) {
+      vars['--tj-ant-color-border'] = String(colorBorder);
+      vars['--tj-ant-color-border-secondary'] = String(colorBorder);
+    }
     if (isSet(borderRadius) && !Number.isNaN(Number(borderRadius))) {
       const r = Number(borderRadius);
       vars['--tj-ant-border-radius'] = `${r}px`;

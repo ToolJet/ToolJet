@@ -1002,6 +1002,8 @@
 .tj-ant-cardgrid {
   display: grid;
   gap: 16px;
+  /* The selected card's ring, outside its border, isn't cut by the scrolling box. */
+  padding: 1px;
 }
 .tj-ant-gridcard.is-selected {
   border-color: var(--ant-color-primary);

@@ -3,6 +3,7 @@ import { Avatar, Badge, Button, Card, Empty, List, Progress, Space, Statistic, T
 import { ArrowDownOutlined, ArrowUpOutlined, CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
+import { safeUrl } from '../lib/ui2/display/chat/values';
 import { PackTag } from '../lib/PackTag';
 import { SpinOver, TextBone } from '../lib/Loading';
 import { MAX_SLOT_ITEMS, rowIdOf, str, toArray, type Row } from '../lib/data';
@@ -14,6 +15,7 @@ import { summaryFigures } from '../lib/ui2/display/summary';
 import { progressEntries, progressItem, progressMax } from '../lib/ui2/charts/progressModel';
 import { useValueSetter } from '../lib/sameValue';
 import { LOCALE_HINT } from '../lib/locale';
+import { onPointerIn } from '../lib/pointerEnter';
 
 // The tone a status word reads as (lists/model chipTone) -> Ant's Tag status colour.
 const TONE_TAG: Record<string, string> = {
@@ -632,7 +634,8 @@ export const CardGrid = () => {
       </AntProvider>
     );
   return (
-    <AntProvider tokens={tokens}>
+    // Fills its box and scrolls the cards that don't fit, as the Record list does: they were cut at the box (QA item 18).
+    <AntProvider tokens={tokens} fill className="tj-ant-scroll">
       <div className="tj-ant-cardgrid" style={{ gridTemplateColumns: cols }}>
         {loading
           ? // A loaded card's two lines (title, subtitle), not Ant's four-paragraph skeleton, which is taller than the
@@ -955,17 +958,19 @@ export const Link = () => {
     (v) => setChildren(str(v))
   );
   const Ext = antIcon('ExportOutlined');
+  // A javascript: or data: href would run script on click; only web, mail and phone links are kept.
+  const link = safeUrl(href);
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-start">
       <SpinOver loading={loading}>
         <Typography.Link
           ref={ref}
-          href={href || undefined}
-          target={href ? target : undefined}
+          href={link || undefined}
+          target={link ? target : undefined}
           strong={strong}
           className={`tj-ant-link is-${underline}`}
           onClick={() => onClick()}
-          onMouseEnter={() => onHover()}
+          onMouseOver={onPointerIn(onHover)}
         >
           {children}
           {showIcon && Ext ? (
@@ -1057,7 +1062,7 @@ export const Icon = () => {
               : {}),
           }}
           onClick={() => onClick()}
-          onMouseEnter={() => onHover()}
+          onMouseOver={onPointerIn(onHover)}
         >
           {Glyph ? <Glyph /> : null}
         </span>

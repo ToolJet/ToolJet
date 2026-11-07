@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { cn } from '@/lib/utils';
 
 import {
   LibraryInstance,
@@ -9,6 +10,7 @@ import {
   loadLibraryModule,
   slotAttributeName,
 } from './inlineRuntime';
+import { setActionRegistrySettled } from './actionRegistry';
 import useStore from '@/AppBuilder/_stores/store';
 
 // Shadow-root baseline. ToolJet's global CSS stays out, while inherited properties and theme custom
@@ -132,8 +134,8 @@ const sheetsFor = (key: string): Sheets => {
   return sheets;
 };
 
-// One popup layer per library revision on the page (select lists, menus, dialogs), shared by its instances. It sits
-// on document.body: WidgetWrapper positions every widget with a transform, which would make it the containing block
+// One popup layer per library revision and level (select lists, menus, dialogs), shared by its instances there. It sits
+// outside every widget: WidgetWrapper positions each widget with a transform, which would make it the containing block
 // of position:fixed popups.
 // The store writes a pack component makes as it mounts (each ToolJet.useStateX publishes its value, useValidation its
 // isValid and isMandatory) are held in the store's exposed-value batch and applied together, in one store update, once
@@ -153,25 +155,118 @@ export const holdStoreWrites = (): (() => void) => {
   };
 };
 
-const layers = new Map<string, { overlay: HTMLElement; host: HTMLElement; count: number; release: () => void }>();
-const acquireLayer = (key: string, sheets: Sheets) => {
+// Where a layer is drawn and how it stacks. Every pack drew into one layer on document.body, above the whole app, so the
+// packs' own z-indexes decided between packs (Rocket 50, Ant 1000-1050, MUI 1300): an Ant Select in an MUI Dialog opened
+// behind it, and a ToolJet Modal, drawn in the canvas (its own stacking context), could never open above a pack dialog.
+// A layer now sits in the canvas as the ToolJet Modal does (ModalV2's container), at an explicit level: canvas-level
+// widgets just under a ToolJet Modal (1060), and a widget drawn inside a dialog (another layer, or a ToolJet Modal) in a
+// layer of its own one level above that dialog. Each layer is its own stacking context, so a pack's z-indexes only order
+// its popups within it. It covers the canvas without taking clicks; its popups take them, whatever a modal library set on
+// the page's body.
+const CANVAS_LAYER_Z = 1055;
+const TOOLJET_MODAL_Z = 1060;
+const LAYER_HOST = 'tj-cc-popup-host';
+const canvasArea = (): HTMLElement => document.querySelector<HTMLElement>('.tj-canvas-area') ?? document.body;
+/** The dialog a widget is drawn in: a pack's popup layer (a dialog body's components are its light-DOM children) or a
+ *  ToolJet Modal; null on the canvas. */
+const dialogOf = (widgetHost: HTMLElement): HTMLElement | null =>
+  widgetHost.parentElement?.closest<HTMLElement>(`.${LAYER_HOST}, .modal`) ?? null;
+const levelOf = (dialog: HTMLElement | null): number => {
+  if (!dialog) return CANVAS_LAYER_Z;
+  const z = Number.parseInt(dialog.style.zIndex || getComputedStyle(dialog).zIndex, 10);
+  return (Number.isFinite(z) ? z : dialog.classList.contains(LAYER_HOST) ? CANVAS_LAYER_Z : TOOLJET_MODAL_Z) + 1;
+};
+const elementIds = new WeakMap<Element, number>();
+let lastElementId = 0;
+const idOf = (el: Element | null): number => {
+  if (!el) return 0;
+  if (!elementIds.has(el)) elementIds.set(el, (lastElementId += 1));
+  return elementIds.get(el) as number;
+};
+
+// A page taller than the window scrolls the whole canvas inside the app's scroller, so a layer the canvas's size drew a
+// centred dialog half a page down and a drawer past the window's bottom. A canvas layer covers only what is visible of
+// the canvas (within its scroller and the window), follows it as the page scrolls or the canvas resizes, and is the
+// containing block its dialogs and drawers fill (the transform).
+const scrollerOf = (el: HTMLElement): HTMLElement | null => {
+  for (let node = el.parentElement; node && node !== document.body; node = node.parentElement) {
+    if (/(auto|scroll)/.test(getComputedStyle(node).overflowY)) return node;
+  }
+  return null;
+};
+const fitToView = (host: HTMLElement, container: HTMLElement) => {
+  const area = container.getBoundingClientRect();
+  const view = scrollerOf(container)?.getBoundingClientRect();
+  const top = Math.max(area.top, view?.top ?? 0, 0);
+  const bottom = Math.min(area.bottom, view?.bottom ?? Infinity, window.innerHeight);
+  host.style.top = `${top - area.top}px`;
+  host.style.height = `${Math.max(0, bottom - top)}px`;
+};
+
+type Layer = { overlay: HTMLElement; host: HTMLElement; container: HTMLElement; count: number; release: () => void };
+const layers = new Map<string, Layer>();
+// One watch per canvas while it has layers: a scroll anywhere (capture), a window resize or the canvas resizing refits
+// them once per frame.
+const views = new Map<HTMLElement, () => void>();
+const watchView = (container: HTMLElement) => {
+  if (views.has(container)) return;
+  let frame = 0;
+  const fit = () => {
+    frame = 0;
+    layers.forEach((layer) => {
+      if (layer.container === container) fitToView(layer.host, container);
+    });
+  };
+  const schedule = () => {
+    if (!frame) frame = requestAnimationFrame(fit);
+  };
+  document.addEventListener('scroll', schedule, true);
+  window.addEventListener('resize', schedule);
+  const resized = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
+  resized?.observe(container);
+  views.set(container, () => {
+    cancelAnimationFrame(frame);
+    document.removeEventListener('scroll', schedule, true);
+    window.removeEventListener('resize', schedule);
+    resized?.disconnect();
+  });
+};
+const unwatchView = (container: HTMLElement) => {
+  if ([...layers.values()].some((layer) => layer.container === container)) return;
+  views.get(container)?.();
+  views.delete(container);
+};
+
+const acquireLayer = (library: string, sheets: Sheets, widgetHost: HTMLElement) => {
+  const container = canvasArea();
+  const dialog = dialogOf(widgetHost);
+  const key = `${library}|${idOf(container)}|${idOf(dialog)}`;
   const known = layers.get(key);
   if (known) {
     known.count += 1;
-    return known;
+    return { key, layer: known };
   }
   const host = document.createElement('div');
-  host.className = 'tj-cc-popup-host';
+  host.className = LAYER_HOST;
+  const inCanvas = container !== document.body;
+  Object.assign(host.style, {
+    position: 'absolute',
+    ...(inCanvas ? { left: '0', width: '100%', transform: 'translateZ(0)' } : { inset: '0' }),
+    pointerEvents: 'none',
+    zIndex: String(levelOf(dialog)),
+  });
   const root = host.attachShadow({ mode: 'open' });
   sheets.adopt(root);
   const overlay = document.createElement('div');
   overlay.className = 'tj-cc-overlay';
+  overlay.style.pointerEvents = 'auto';
   root.appendChild(overlay);
-  document.body.appendChild(host);
+  container.appendChild(host);
   const release = isolateInteractiveEvents(host);
-  const layer = {
+  const layer: Layer = {
     overlay,
     host,
+    container,
     count: 1,
     release: () => {
       release();
@@ -183,7 +278,11 @@ const acquireLayer = (key: string, sheets: Sheets) => {
     },
   };
   layers.set(key, layer);
-  return layer;
+  if (inCanvas) {
+    fitToView(host, container);
+    watchView(container);
+  }
+  return { key, layer };
 };
 const releaseLayer = (key: string) => {
   const layer = layers.get(key);
@@ -192,6 +291,7 @@ const releaseLayer = (key: string) => {
   if (layer.count <= 0) {
     layer.release();
     layers.delete(key);
+    unwatchView(layer.container);
   }
 };
 
@@ -204,11 +304,50 @@ const isTextField = (node: EventTarget | undefined): boolean =>
 // field?" checks never see the bundle's inputs: a press starts a widget drag (preventDefault, no focus)
 // and keys go to hotkeys. Stop those events at the host when they start in a text field — or, for
 // presses, inside a `[data-tj-no-drag]` region (sliders etc.), like Grid's per-widget inner-element rule.
+// Keys are stopped from any control inside the shadow root, not only text fields: a slider thumb, an open select list or
+// a calendar day holds focus too, and the hotkeys took its keys (ArrowRight moved the selected widget, Backspace asked
+// to delete it, Cmd+C copied it, Cmd+A selected the canvas). The pack's own handlers have run by then. Escape from a
+// control that is not a text field still goes out, so a ToolJet Modal around the pack closes on it.
 // Native components in a ToolJet.Slot are the host's light-DOM children: nothing retargets their events, so the canvas
 // and hotkeys see them as usual, and they need theirs to reach React (a Text Input's Enter fires on keyup). Only events
 // from inside the shadow root are stopped; `contains` does not cross into it.
 const PRESS_EVENTS = ['mousedown', 'touchstart'] as const;
 const KEY_EVENTS = ['keydown', 'keyup', 'keypress'] as const;
+
+// The single-line fields whose Enter submits their form (HTML's implicit submission); a textarea's makes a new line.
+const SUBMITTING_INPUTS = new Set([
+  'text',
+  'search',
+  'url',
+  'tel',
+  'email',
+  'password',
+  'number',
+  'date',
+  'datetime-local',
+  'month',
+  'time',
+  'week',
+]);
+
+// Enter in a field of a <form> clicks the form's default button, its first submit button: a ToolJet Form's Submit
+// Button, whose click submits the Form. A pack's field is in the widget's shadow root, which the <form> does not reach,
+// so the browser never did that for it and Enter in a pack input inside a Form submitted nothing. The host does it as
+// the browser does: for a single-line field, not mid-composition (IME), when the component left the Enter alone. A
+// field whose list is open (aria-expanded) takes Enter as picking from it: Ant's AutoComplete picks without marking it.
+const submitOnEnter = (host: HTMLElement, origin: EventTarget | undefined, e: KeyboardEvent) => {
+  if (e.key !== 'Enter' || e.isComposing || e.defaultPrevented) return;
+  if (!(origin instanceof HTMLInputElement) || !SUBMITTING_INPUTS.has(origin.type)) return;
+  if (origin.getAttribute('aria-expanded') === 'true') return;
+  const form = host.closest('form');
+  const submit = form
+    ? Array.from(form.elements).find(
+        (el): el is HTMLButtonElement | HTMLInputElement =>
+          (el instanceof HTMLButtonElement || el instanceof HTMLInputElement) && el.type === 'submit'
+      )
+    : undefined;
+  if (submit && !submit.disabled) submit.click();
+};
 
 export const isolateInteractiveEvents = (host: HTMLElement): (() => void) => {
   const fromShadow = (origin: EventTarget | undefined) => !(origin instanceof Node && host.contains(origin));
@@ -219,7 +358,9 @@ export const isolateInteractiveEvents = (host: HTMLElement): (() => void) => {
   };
   const onKey = (e: Event) => {
     const origin = e.composedPath()[0];
-    if (fromShadow(origin) && isTextField(origin)) e.stopPropagation();
+    if (!fromShadow(origin)) return;
+    if (isTextField(origin) || (e as KeyboardEvent).key !== 'Escape') e.stopPropagation();
+    if (e.type === 'keydown') submitOnEnter(host, origin, e as KeyboardEvent);
   };
   PRESS_EVENTS.forEach((type) => host.addEventListener(type, onPress));
   KEY_EVENTS.forEach((type) => host.addEventListener(type, onKey));
@@ -326,13 +467,13 @@ const InlineLibraryComponent = ({
     mount.className = 'tj-cc-root';
     root.appendChild(mount);
     // The bundle portals its popups into `shadowRoot.tjOverlay` (the library's shared popup layer).
-    const layer = acquireLayer(sheetKey, sheets);
+    const { key: layerKey, layer } = acquireLayer(sheetKey, sheets, el);
     Object.defineProperty(root, 'tjOverlay', { value: layer.overlay, configurable: true });
     const releaseHost = isolateInteractiveEvents(el);
     setShadow({ mount, popupHost: layer.host });
     return () => {
       releaseHost();
-      releaseLayer(sheetKey);
+      releaseLayer(layerKey);
       sheets.release(root);
       // A pack may keep the root after the unmount (Ant's icons register every shadow root in rc-util's style
       // container cache): empty it, so it no longer reaches the mount, its listeners or the popup layer.
@@ -366,6 +507,8 @@ const InlineLibraryComponent = ({
   // The host already dims a disabled widget's box. It marks the root too, so a component whose controls dim
   // themselves when disabled can keep them at full opacity (the pack's CSS reads the mark) instead of dimming twice.
   const hostDisabled = !!host?.disabled;
+  const popupBlocked = hostDisabled || !!host?.loading;
+  const popupDisabled = hostDisabled && !host?.loading;
   useLayoutEffect(() => {
     shadow?.mount.toggleAttribute('data-tj-host-disabled', hostDisabled);
   }, [shadow, hostDisabled]);
@@ -446,6 +589,11 @@ const InlineLibraryComponent = ({
 
   let content: React.ReactNode = null;
   const drawn = !!loadError || (!!Component && cssReady);
+  // Once the component has drawn, its ToolJet.useAction handlers are registered (its effects run before this one), and
+  // once its bundle has failed none will be: an action still waiting for a handler it has not registered stops waiting.
+  useEffect(() => {
+    setActionRegistrySettled(actions, drawn);
+  }, [actions, drawn]);
   if (loadError) content = <div className="tj-cc-error">{loadError}</div>;
   else if (Component && cssReady)
     content = (
@@ -475,11 +623,19 @@ const InlineLibraryComponent = ({
         </div>
       ))}
       {light}
-      {/* Drop areas inside popups: children of the popup layer's host, projected into the popup's <slot>. */}
+      {/* Drop areas inside popups: children of the popup layer's host, projected into the popup's <slot>. They draw
+          outside the widget, so the widget's inert (disabled or loading, it takes no input) never reached them: a
+          disabled Dialog's body stayed usable (QA item 34). They take no input as the widget does, and are
+          aria-disabled and dimmed while disabled, as ModalV2's body (a pack's popup refuses a choice there). */}
       {shadow && renderPopupSlot && host
         ? popupSlotNames.map((name) =>
             createPortal(
-              <div slot={host.popupSlotAttr(name)} className="tw-block tw-w-full tw-h-full">
+              <div
+                slot={host.popupSlotAttr(name)}
+                className={cn('tw-block tw-w-full tw-h-full', { 'tw-opacity-50': popupDisabled })}
+                aria-disabled={popupDisabled ? 'true' : undefined}
+                {...(popupBlocked ? { inert: '' } : {})}
+              >
                 {renderPopupSlot(name)}
               </div>,
               shadow.popupHost,
