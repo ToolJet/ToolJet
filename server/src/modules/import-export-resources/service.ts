@@ -136,13 +136,17 @@ export class ImportExportResourcesService {
       app?: Array<Record<string, unknown>>;
     } = {};
 
+    if (exportResourcesDto.organization_id && exportResourcesDto.organization_id !== user.organizationId) {
+      throw new ForbiddenException();
+    }
+
     const coRelationIdByTableId: Record<string, string> = {};
     if (exportResourcesDto.tooljet_database?.length) {
       const exportedDbs: ImportTooljetDatabaseDto[] = [];
       // export() appends the tables foreign keys reference, so this loop visits those too
       for (const tjdb of exportResourcesDto.tooljet_database) {
         const exportedDb = await this.tooljetDbImportExportService.export(
-          exportResourcesDto.organization_id,
+          user.organizationId,
           tjdb,
           exportResourcesDto.tooljet_database
         );
