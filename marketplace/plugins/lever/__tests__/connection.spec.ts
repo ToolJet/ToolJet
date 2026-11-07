@@ -33,7 +33,9 @@ describe('Lever', () => {
       const plugin = new Lever();
       jest
         .spyOn(plugin, 'getConnection')
-        .mockResolvedValue(clientFailing(401, '{"error":{"code":"Unauthorized","message":"Invalid credentials"}}') as any);
+        .mockResolvedValue(
+          clientFailing(401, '{"error":{"code":"Unauthorized","message":"Invalid credentials"}}') as any
+        );
 
       await expect(plugin.testConnection(sourceOptions)).rejects.toBeInstanceOf(QueryError);
     });
@@ -85,7 +87,13 @@ describe('Lever', () => {
 
 describe('buildRequest', () => {
   it('builds stage changes as PUT /opportunities/:id/stage', () => {
-    expect(buildRequest(Operation.UpdateOpportunityStage, { opportunity_id: 'abc', stage_id: 's1' })).toEqual({
+    expect(
+      buildRequest(Operation.UpdateOpportunityStage, {
+        operation: Operation.UpdateOpportunityStage,
+        opportunity_id: 'abc',
+        stage_id: 's1',
+      })
+    ).toEqual({
       method: 'put',
       path: 'opportunities/abc/stage',
       searchParams: {},
@@ -95,6 +103,7 @@ describe('buildRequest', () => {
 
   it('splits archiving and unarchiving through the reason field', () => {
     const archive = buildRequest(Operation.ArchiveOpportunity, {
+      operation: Operation.ArchiveOpportunity,
       opportunity_id: 'abc',
       archive_reason_id: 'r1',
       clean_interviews: 'true',
@@ -106,12 +115,16 @@ describe('buildRequest', () => {
       json: { reason: 'r1', cleanInterviews: true },
     });
 
-    const unarchive = buildRequest(Operation.UnarchiveOpportunity, { opportunity_id: 'abc' });
+    const unarchive = buildRequest(Operation.UnarchiveOpportunity, {
+      operation: Operation.UnarchiveOpportunity,
+      opportunity_id: 'abc',
+    });
     expect(unarchive.json).toEqual({ reason: null });
   });
 
   it('drops empty list filters but keeps a false archive filter', () => {
     const request = buildRequest(Operation.ListOpportunities, {
+      operation: Operation.ListOpportunities,
       archived: 'false',
       stage_id: '  ',
       limit: '50',
@@ -122,12 +135,17 @@ describe('buildRequest', () => {
   });
 
   it('treats "any" as no filter', () => {
-    const request = buildRequest(Operation.ListPostings, { state: 'any', confidentiality: 'any' });
+    const request = buildRequest(Operation.ListPostings, {
+      operation: Operation.ListPostings,
+      state: 'any',
+      confidentiality: 'any',
+    });
     expect(request.searchParams).toEqual({});
   });
 
   it('turns comma-separated fields into the arrays Lever expects', () => {
     const request = buildRequest(Operation.CreateOpportunity, {
+      operation: Operation.CreateOpportunity,
       name: 'Ada',
       emails: 'ada@example.com, lovelace@example.com',
       tags: 'backend, remote',
@@ -143,6 +161,7 @@ describe('buildRequest', () => {
 
   it('assembles the posting content object from individual fields', () => {
     const request = buildRequest(Operation.CreatePosting, {
+      operation: Operation.CreatePosting,
       text: 'Engineer',
       perform_as: 'u1',
       category_team: 'Platform',
@@ -167,7 +186,11 @@ describe('buildRequest', () => {
   });
 
   it('adds tags as an array body', () => {
-    const request = buildRequest(Operation.AddOpportunityTags, { opportunity_id: 'abc', tags: 'a, b' });
+    const request = buildRequest(Operation.AddOpportunityTags, {
+      operation: Operation.AddOpportunityTags,
+      opportunity_id: 'abc',
+      tags: 'a, b',
+    });
     expect(request).toEqual({
       method: 'post',
       path: 'opportunities/abc/addTags',
@@ -177,6 +200,6 @@ describe('buildRequest', () => {
   });
 
   it('rejects unknown operations', () => {
-    expect(() => buildRequest('nope' as Operation, {})).toThrow('Invalid operation');
+    expect(() => buildRequest('nope' as Operation, { operation: 'nope' as Operation })).toThrow('Invalid operation');
   });
 });
