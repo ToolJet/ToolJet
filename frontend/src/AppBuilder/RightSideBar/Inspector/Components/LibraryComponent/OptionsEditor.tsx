@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { ListEditor, moveItem, useRowIds } from './ListEditor';
-import { Field, IconField, SwitchField, TextField } from './fields';
+import { Dropdown, Field, IconField, SwitchField, TextField } from './fields';
 
 // An options list (inspector: 'options'): plain values or { label, value, disabled, description, icon } objects, as
 // the pack's Select, MultiSelect, Combobox, RadioGroup, ToggleGroup, ButtonGroup and DropdownMenu read them. Keys the
@@ -25,6 +25,11 @@ const VALUE_TYPES: [string, string][] = [
   ['string', 'Text'],
   ['number', 'Number'],
   ['boolean', 'True / false'],
+];
+
+const BOOLEANS: [string, string][] = [
+  ['true', 'true'],
+  ['false', 'false'],
 ];
 
 const valueType = (v: unknown) => (typeof v === 'number' ? 'number' : typeof v === 'boolean' ? 'boolean' : 'string');
@@ -66,9 +71,11 @@ export interface OptionsEditorProps {
   onChange: (next: unknown[]) => void;
   darkMode: boolean;
   cyLabel: string;
+  /** Each option gets a Default switch: the options marked start selected. */
+  defaultToggle?: boolean;
 }
 
-export const OptionsEditor = ({ value, onChange, darkMode, cyLabel }: OptionsEditorProps) => {
+export const OptionsEditor = ({ value, onChange, darkMode, cyLabel, defaultToggle = false }: OptionsEditorProps) => {
   const rows = useRowIds(value.length);
   const update = (index: number, key: string, v: unknown) =>
     onChange(value.map((entry, i) => (i === index ? withField(entry, key, v) : entry)));
@@ -79,6 +86,7 @@ export const OptionsEditor = ({ value, onChange, darkMode, cyLabel }: OptionsEdi
     const notes = [
       isFilled(v) && String(v) !== label && String(v),
       isObject(entry) && entry.disabled === true && 'disabled',
+      defaultToggle && isObject(entry) && entry.default === true && 'default',
     ].filter(Boolean);
     return (
       <span data-cy={`${cyLabel}-option-${index}`}>
@@ -106,17 +114,14 @@ export const OptionsEditor = ({ value, onChange, darkMode, cyLabel }: OptionsEdi
         />
         <Field label="Value">
           <div className="d-flex" style={{ gap: 8 }}>
-            <div className="flex-grow-1">
+            <div className="flex-grow-1" style={{ minWidth: 0 }}>
               {type === 'boolean' ? (
-                <select
-                  className="form-control text-field"
-                  aria-label="Value"
+                <Dropdown
                   value={String(v === true)}
-                  onChange={(e) => update(index, 'value', e.target.value === 'true')}
-                >
-                  <option value="true">true</option>
-                  <option value="false">false</option>
-                </select>
+                  options={BOOLEANS}
+                  cy={`${cyLabel}-option-value`}
+                  onChange={(next) => update(index, 'value', next === 'true')}
+                />
               ) : (
                 <ValueText
                   value={v}
@@ -126,19 +131,14 @@ export const OptionsEditor = ({ value, onChange, darkMode, cyLabel }: OptionsEdi
                 />
               )}
             </div>
-            <select
-              className="form-control text-field"
-              style={{ width: 104 }}
-              aria-label="Value type"
-              value={type}
-              onChange={(e) => update(index, 'value', coerce(String(v ?? ''), e.target.value))}
-            >
-              {VALUE_TYPES.map(([t, l]) => (
-                <option key={t} value={t}>
-                  {l}
-                </option>
-              ))}
-            </select>
+            <div style={{ width: 120 }}>
+              <Dropdown
+                value={type}
+                options={VALUE_TYPES}
+                cy={`${cyLabel}-option-value-type`}
+                onChange={(next) => update(index, 'value', coerce(String(v ?? ''), next))}
+              />
+            </div>
           </div>
         </Field>
         <TextField
@@ -161,6 +161,14 @@ export const OptionsEditor = ({ value, onChange, darkMode, cyLabel }: OptionsEdi
           cy={`${cyLabel}-option-disabled`}
           onChange={(on) => update(index, 'disabled', on)}
         />
+        {defaultToggle && (
+          <SwitchField
+            label="Default"
+            checked={obj.default === true}
+            cy={`${cyLabel}-option-default`}
+            onChange={(on) => update(index, 'default', on)}
+          />
+        )}
       </div>
     );
   };

@@ -29,6 +29,8 @@ export interface FieldMeta {
   type?: string;
   checkboxLabel?: string;
   showLabel?: boolean;
+  // Draws the control under its label instead of beside it (read by SingleLineCodeEditor).
+  newLine?: boolean;
   // Label tooltip (ToolTip.jsx reads meta.tip): the only helper-note channel native field meta has.
   tip?: string;
   placeholder?: string;

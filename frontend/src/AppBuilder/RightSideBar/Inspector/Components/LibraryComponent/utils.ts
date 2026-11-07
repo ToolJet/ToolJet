@@ -48,13 +48,20 @@ export const formatRevisionLabel = (revision: string | undefined): string | unde
 // manifest-driven Properties list so dynamic CCL props never crowd these out.
 // disabledState is offered only to a component whose manifest declares controlState: anything else never reads
 // it, so the toggle would do nothing. It is listed even when the host config lacks it (the panel then renders
-// it from DISABLED_STATE_META, appended last).
+// it from DISABLED_STATE_META, appended last). dynamicHeight likewise only for a component that can size to its
+// content (manifest fit: true); the host ignores it for any other.
 export const additionalActionProps = (
   componentMeta: { properties?: Record<string, { section?: string }> },
-  controlState = false
+  controlState = false,
+  fit = false
 ): string[] => {
   const keys = Object.entries(componentMeta.properties ?? {})
-    .filter(([key, prop]) => prop.section === 'additionalActions' && (controlState || key !== 'disabledState'))
+    .filter(
+      ([key, prop]) =>
+        prop.section === 'additionalActions' &&
+        (controlState || key !== 'disabledState') &&
+        (fit || key !== 'dynamicHeight')
+    )
     .map(([key]) => key);
   return controlState && !keys.includes('disabledState') ? [...keys, 'disabledState'] : keys;
 };
@@ -131,6 +138,11 @@ const NATIVE_FIELD_TYPES: Record<string, string[]> = {
   string: ['code', 'color', 'boxShadow', 'icon'],
   number: ['code', 'number', 'numberInput', 'slider'],
 };
+
+// The pack components whose options can be marked default, one by one, and that read the mark.
+const OPTION_DEFAULT_COMPONENTS: Record<string, string[]> = { shadcn: ['ButtonGroup'] };
+export const hasOptionDefault = (pack: unknown, componentName: unknown): boolean =>
+  OPTION_DEFAULT_COMPONENTS[String(pack)]?.includes(String(componentName)) === true;
 
 const inspectorFieldType = (prop: ManifestProp): string => {
   const { inspector } = prop;
@@ -220,10 +232,15 @@ export const DISABLED_STATE_META: FieldMeta = textinputConfig.properties.disable
 export const groupStylesBySection = (styles: ManifestProp[]): PropSection[] =>
   groupPropsBySection(styles, DEFAULT_STYLES_SECTION);
 
-// Same mapping as props, except a color style gets the theme-aware swatch picker native widgets use.
+// A label longer than this wraps beside its control and pushes the control out of the panel.
+const INLINE_LABEL_LIMIT = 18;
+
+// Same mapping as props, except a color style gets the theme-aware swatch picker native widgets use, and a long
+// label puts its control on the line below.
 export const styleFieldMeta = (style: ManifestProp): FieldMeta => {
   const meta = fieldMeta(style);
-  return meta.type === 'color' ? { ...meta, type: 'colorSwatches' } : meta;
+  const field = meta.type === 'color' ? { ...meta, type: 'colorSwatches' } : meta;
+  return (field.displayName ?? '').length > INLINE_LABEL_LIMIT ? { ...field, newLine: true } : field;
 };
 
 // Static widget-config styles (e.g. boxShadow) — rendered after the manifest's own styles.

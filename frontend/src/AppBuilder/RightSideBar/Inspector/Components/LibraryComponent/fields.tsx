@@ -6,9 +6,11 @@ import type { LucideIcon } from 'lucide-react';
 
 import ColorSwatches from '@/modules/Appbuilder/components/ColorSwatches';
 import { SearchBox } from '@/_components/SearchBox';
+import { Select as InspectorSelect } from '@/AppBuilder/CodeBuilder/Elements/Select';
 
 const ColorSwatchesComponent = ColorSwatches as React.ComponentType<any>;
 const SearchBoxComponent = SearchBox as React.ComponentType<any>;
+const InspectorSelectComponent = InspectorSelect as React.ComponentType<any>;
 
 // Small inspector fields for the list editors' popovers, drawn with the native inspector's classes. Text commits on
 // blur and Enter rather than per keystroke, so typing a label saves once.
@@ -82,6 +84,28 @@ export const NumberField = ({
   />
 );
 
+/** The inspector's own dropdown (as every native inspector select draws it), not the browser's <select>. */
+export const Dropdown = ({
+  value,
+  options,
+  onChange,
+  cy,
+  width = '100%',
+}: {
+  value: string;
+  options: [string, string][];
+  onChange: (value: string) => void;
+  cy?: string;
+  width?: string;
+}) => (
+  <InspectorSelectComponent
+    value={value}
+    width={width}
+    meta={{ displayName: cy, options: options.map(([v, l]) => ({ value: v, label: l })) }}
+    onChange={onChange}
+  />
+);
+
 export const SelectField = ({
   label,
   value,
@@ -96,19 +120,7 @@ export const SelectField = ({
   cy?: string;
 }) => (
   <Field label={label}>
-    <select
-      className="form-control text-field"
-      aria-label={label}
-      data-cy={cy}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    >
-      {options.map(([v, l]) => (
-        <option key={v} value={v}>
-          {l}
-        </option>
-      ))}
-    </select>
+    <Dropdown value={value} options={options} onChange={onChange} cy={cy ?? label} />
   </Field>
 );
 

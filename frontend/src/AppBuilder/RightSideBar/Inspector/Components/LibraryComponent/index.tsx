@@ -70,7 +70,11 @@ const ManifestPropertiesPanel = ({
 
   // Static widget-config properties (e.g. visibility) — never come from the manifest, so
   // they must be rendered on top of it here, not folded into visibleProps.
-  const staticProps = additionalActionProps(componentMeta, componentManifest?.controlState === true);
+  const staticProps = additionalActionProps(
+    componentMeta,
+    componentManifest?.controlState === true,
+    componentManifest?.fit === true
+  );
   const hostProperties = (componentMeta.properties ?? {}) as Record<string, { placeholder?: string }>;
 
   const validation = validationFields(componentManifest?.validation);

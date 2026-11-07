@@ -93,7 +93,7 @@ export const Button = () => {
     },
     labelCase: 'upper',
     defaultWidth: 6,
-    defaultHeight: 4,
+    defaultHeight: 5,
   });
 
   ToolJet.useAction({ name: 'click', displayName: 'Click' }, () => {
@@ -126,7 +126,7 @@ export const Button = () => {
       {tooltip ? (
         <Tooltip title={tooltip} arrow>
           {/* A disabled button fires no events: the span keeps the tooltip working. */}
-          <span className={fullWidth ? 'tj-mui-block' : undefined}>{button}</span>
+          <span className={fullWidth ? 'tj-mui-fit tj-mui-fit--full' : 'tj-mui-fit'}>{button}</span>
         </Tooltip>
       ) : (
         button

@@ -44,6 +44,7 @@ import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer
 import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
 import { replaceIdsWithName as replaceIdsWithNameUsing } from '@/AppBuilder/_stores/utils/replaceIdsWithName';
 import { isCompareFrame, withoutCompareNavigation } from '@/AppBuilder/_utils/compareFrame';
+import { utilityFuncForNameSeed } from '@/_helpers/utils';
 
 // calculateMoveableBoxHeightWithId runs per component per reflow pass, so keep the membership test O(1).
 const INPUT_COMPONENTS_FOR_FORM_SET = new Set(INPUT_COMPONENTS_FOR_FORM);
@@ -3495,7 +3496,9 @@ export const createComponentsSlice = (set, get) => ({
       // If name is valid then use the same name but if not then fallback to old flow and compute component name
       const componentName = !isExistingName
         ? initialComponentName
-        : computeComponentName(componentDefinition.component.component, currentComponents);
+        : computeComponentName(utilityFuncForNameSeed(componentDefinition), currentComponents, undefined, {
+            skipRegistry: isSdkComponentType(componentDefinition.component.component),
+          });
 
       const getComponentProperties = (componentDefinition) => {
         const properties = componentDefinition.component.definition?.properties;
