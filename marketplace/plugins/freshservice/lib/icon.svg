@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Freshservice logo: green circle with white "F" letterform -->
+  <circle cx="24" cy="24" r="24" fill="#25C16F"/>
+  <text x="24" y="32" font-family="Arial, sans-serif" font-size="26" font-weight="bold"
+        fill="#FFFFFF" text-anchor="middle">fs</text>
+</svg>
