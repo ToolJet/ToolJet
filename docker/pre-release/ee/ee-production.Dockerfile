@@ -3,7 +3,7 @@
 # it ships. The GitHub token is a BuildKit secret (github_token), so it stays out of the layers and the build cache.
 FROM node:22.23.4 AS mcp-builder
 WORKDIR /mcp
-ARG TOOLJET_MCP_REF=bbc13e3f4e2c04936dc5ec00703e055c75e33b47
+ARG TOOLJET_MCP_REF=6aa56dd1481777a345390f6a5869863a0a66a090
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
