@@ -102,6 +102,7 @@ import {
   RESTRICTED_WIDGET_SLOTS_CONFIG,
 } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
+import { packSlotRestrictionType, restrictedTypeOf } from '@/AppBuilder/_helpers/packDropRestrictions';
 
 export function correctBounds(layout, bounds) {
   layout = scaleLayouts(layout);
@@ -856,13 +857,15 @@ export const updateDashedBordersOnDragResize = (targetId, moveableControlBoxClas
 };
 
 export const isDroppingRestrictedWidget = (target, dragged) => {
-  const restrictedWidgetsOnTarget = RESTRICTED_WIDGETS_CONFIG?.[target.widgetType] || [];
+  // A component pack's widget is checked as the ToolJet widget it stands for (its manifest role).
+  const targetType = packSlotRestrictionType(target.widget?.component) ?? target.widgetType;
+  const restrictedWidgetsOnTarget = RESTRICTED_WIDGETS_CONFIG?.[targetType] || [];
   const restrictedWidgetsOnTargetSlot = ['header', 'footer'].includes(target.slotType)
     ? RESTRICTED_WIDGET_SLOTS_CONFIG
     : [];
 
   const restrictedWidgets = [...restrictedWidgetsOnTarget, ...restrictedWidgetsOnTargetSlot];
-  return restrictedWidgets.includes(dragged.widgetType);
+  return restrictedWidgets.includes(restrictedTypeOf(dragged.widget?.component) ?? dragged.widgetType);
 };
 
 export function getCanvasBottomBound() {
