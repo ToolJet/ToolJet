@@ -349,12 +349,32 @@ const submitOnEnter = (host: HTMLElement, origin: EventTarget | undefined, e: Ke
   if (submit && !submit.disabled) submit.click();
 };
 
-export const isolateInteractiveEvents = (host: HTMLElement): (() => void) => {
+// A part that drags itself (a Kanban card, marked [data-tj-inner-drag]) needs the press from the first one: the canvas
+// cannot see the mark inside the shadow root and took the press as a widget drag, so the card never moved (QA item 24).
+// The canvas selects a widget on that same press, so the host, stopping it, selects the widget in its place
+// (`onInnerPress`, given only in the editor). A press with a modifier (adding to a selection) or another button (the
+// widget's menu) is the editor's, as before.
+const isPlainPress = (e: Event) =>
+  !(e instanceof MouseEvent) || (e.button === 0 && !e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey);
+
+// `options` is read at each press, so a host can change it (the editor's mode) without adding its listeners again.
+export const isolateInteractiveEvents = (
+  host: HTMLElement,
+  options: { onInnerPress?: () => void } = {}
+): (() => void) => {
   const fromShadow = (origin: EventTarget | undefined) => !(origin instanceof Node && host.contains(origin));
   const onPress = (e: Event) => {
     const origin = e.composedPath()[0];
     if (!fromShadow(origin)) return;
-    if (isTextField(origin) || (origin instanceof Element && origin.closest('[data-tj-no-drag]'))) e.stopPropagation();
+    if (isTextField(origin) || (origin instanceof Element && origin.closest('[data-tj-no-drag]'))) {
+      e.stopPropagation();
+      return;
+    }
+    const { onInnerPress } = options;
+    if (onInnerPress && origin instanceof Element && origin.closest('[data-tj-inner-drag]') && isPlainPress(e)) {
+      e.stopPropagation();
+      onInnerPress();
+    }
   };
   const onKey = (e: Event) => {
     const origin = e.composedPath()[0];
@@ -403,6 +423,8 @@ interface InlineLibraryComponentProps {
   light?: React.ReactNode;
   popupSlotNames?: string[];
   renderPopupSlot?: (name: string) => React.ReactNode;
+  /** In the editor: a press on a part that drags itself (a Kanban card) selects the widget (isolateInteractiveEvents). */
+  onInnerPress?: () => void;
 }
 
 const InlineLibraryComponent = ({
@@ -429,8 +451,12 @@ const InlineLibraryComponent = ({
   light,
   popupSlotNames = [],
   renderPopupSlot,
+  onInnerPress,
 }: InlineLibraryComponentProps) => {
   const hostRef = useRef<HTMLDivElement | null>(null);
+  // Read at each press: the host's listeners are added once per shadow root.
+  const pressOptions = useRef<{ onInnerPress?: () => void }>({});
+  pressOptions.current.onInnerPress = onInnerPress;
   const [shadow, setShadow] = useState<{ mount: HTMLElement; popupHost: HTMLElement } | null>(null);
   const [Component, setComponent] = useState<React.ComponentType<any> | null>(null);
   // Drawn once the library's CSS is applied (at once when another instance already loaded it), not unstyled first.
@@ -469,7 +495,7 @@ const InlineLibraryComponent = ({
     // The bundle portals its popups into `shadowRoot.tjOverlay` (the library's shared popup layer).
     const { key: layerKey, layer } = acquireLayer(sheetKey, sheets, el);
     Object.defineProperty(root, 'tjOverlay', { value: layer.overlay, configurable: true });
-    const releaseHost = isolateInteractiveEvents(el);
+    const releaseHost = isolateInteractiveEvents(el, pressOptions.current);
     setShadow({ mount, popupHost: layer.host });
     return () => {
       releaseHost();

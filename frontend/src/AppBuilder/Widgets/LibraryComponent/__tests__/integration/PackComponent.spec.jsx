@@ -67,6 +67,16 @@ const Recorder = () => {
 };
 
 // A pack component with a drop area (ToolJet.Slot), as a Tabs container or Card has.
+// A Kanban-like board: a card that drags itself, and a header that does not.
+const Board = () => (
+  <div>
+    <div data-testid="header">To do</div>
+    <div data-tj-inner-drag="" data-testid="card">
+      <p data-testid="card-title">Card</p>
+    </div>
+  </div>
+);
+
 const SlotCard = () => (
   <div>
     <ToolJet.Slot name="body" />
@@ -99,6 +109,7 @@ const manifest = {
     },
     Flag: { displayName: 'Flag', props: [], actions: [] },
     Recorder: { displayName: 'Recorder', props: [], actions: [{ name: 'record' }] },
+    Board: { displayName: 'Board', role: 'kanban', props: [] },
   },
 };
 
@@ -159,7 +170,7 @@ describe('PackComponent integration', () => {
 
   beforeEach(async () => {
     await widget.setup();
-    loadLibraryModule.mockResolvedValue({ Echo, SlotCard, Counter, Kinds, Flag, Recorder });
+    loadLibraryModule.mockResolvedValue({ Echo, SlotCard, Counter, Kinds, Flag, Recorder, Board });
     act(() => useStore.setState({ license: { featureAccess: { customComponentLibraries: false } } }));
   });
   afterEach(() => {
@@ -323,5 +334,44 @@ describe('PackComponent integration', () => {
     await waitFor(() => expect(document.querySelector('.ele-child1')).toBeTruthy());
     expect(document.querySelector('.ele-child1').classList).toContain('moveable-box');
     clientWidth.mockRestore();
+  });
+  // QA item 24: a drag on a pack Kanban card moved the whole widget in the editor, so a card could not be moved to
+  // another column. The canvas cannot see the card's mark inside the shadow root.
+  const shadowPart = (testId) =>
+    document.querySelector('[data-cy="packcomponent1"]')?.shadowRoot?.querySelector(`[data-testid="${testId}"]`);
+  const pressReachesCanvas = (el) => {
+    const canvas = jest.fn();
+    document.addEventListener('mousedown', canvas);
+    el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, composed: true, button: 0 }));
+    document.removeEventListener('mousedown', canvas);
+    return canvas.mock.calls.length > 0;
+  };
+
+  test('[PackComponent-PRESS-001] in the editor, a press on a card selects the widget and is kept from the canvas drag', async () => {
+    // Break this catches: the host leaving the card's press to the canvas, which drags the whole widget.
+    renderPack({ properties: { componentName: binding('Board') } });
+    await waitFor(() => expect(shadowPart('card-title')).toBeTruthy());
+    act(() => store().setSelectedComponents([]));
+
+    let reached;
+    act(() => {
+      reached = pressReachesCanvas(shadowPart('card-title'));
+    });
+    expect(reached).toBe(false);
+    expect(useStore.getState().selectedComponents).toEqual([ID]);
+  });
+
+  test('[PackComponent-PRESS-002] in the editor, a press elsewhere on the widget still goes to the canvas', async () => {
+    renderPack({ properties: { componentName: binding('Board') } });
+    await waitFor(() => expect(shadowPart('header')).toBeTruthy());
+    expect(pressReachesCanvas(shadowPart('header'))).toBe(true);
+  });
+
+  test('[PackComponent-PRESS-003] in a released app, a press on a card is not stopped and selects nothing', async () => {
+    renderPack({ properties: { componentName: binding('Board') }, currentMode: 'view' });
+    await waitFor(() => expect(shadowPart('card-title')).toBeTruthy());
+    act(() => store().setSelectedComponents([]));
+    expect(pressReachesCanvas(shadowPart('card-title'))).toBe(true);
+    expect(useStore.getState().selectedComponents).toEqual([]);
   });
 });

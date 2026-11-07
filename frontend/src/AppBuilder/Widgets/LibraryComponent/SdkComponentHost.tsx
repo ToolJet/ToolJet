@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import useStore from '@/AppBuilder/_stores/store';
 import LoaderJs from '@/ToolJetUI/Loader/Loader';
@@ -17,6 +17,7 @@ import type { LibraryRuntime } from './inlineRuntime';
 import useThemeAccess from '@/AppBuilder/_hooks/useThemeAccess';
 import { baseTheme } from '@/AppBuilder/_stores/utils';
 import { canUseTheme } from '@/AppBuilder/_utils/themeAccess';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const Loader = LoaderJs as React.ComponentType<any>;
 
@@ -170,6 +171,14 @@ const SdkComponentHost = ({
   ]);
 
   const currentMode = useStore((state: any) => state.modeStore?.modules?.canvas?.currentMode ?? 'view');
+  // In the editor a press on a part that drags itself (a Kanban card) is kept from the canvas so it moves the card, not
+  // the widget; it selects the widget as the canvas would have, and opens its Inspector as a click does (QA item 24).
+  const selectOnInnerPress = useCallback(() => {
+    const state = useStore.getState() as any;
+    if (state.selectedComponents?.length !== 1 || state.selectedComponents[0] !== id) state.setSelectedComponents([id]);
+    state.setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+    state.setRightSidebarOpen(true);
+  }, [id]);
 
   // A dev-bundle push, or switching to a different bundle or component export, can remove/rename a `useStateX`
   // variable or an action; setExposedVariable is additive-only (nothing else ever deletes a key from currentState),
@@ -555,6 +564,7 @@ const SdkComponentHost = ({
           light={light}
           popupSlotNames={popupSlotNames}
           renderPopupSlot={renderSlot}
+          onInnerPress={currentMode === 'edit' ? selectOnInnerPress : undefined}
         />
       ) : (
         <iframe
