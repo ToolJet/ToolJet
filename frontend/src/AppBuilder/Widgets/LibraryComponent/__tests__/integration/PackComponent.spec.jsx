@@ -59,6 +59,13 @@ const Flag = () => {
   return <span data-testid="echo">{String(collapse)}</span>;
 };
 
+// Records when its action runs.
+const actionRuns = [];
+const Recorder = () => {
+  ToolJet.useAction({ name: 'record', displayName: 'Record' }, (value) => actionRuns.push(value));
+  return <span data-testid="echo">recorder</span>;
+};
+
 // A pack component with a drop area (ToolJet.Slot), as a Tabs container or Card has.
 const SlotCard = () => (
   <div>
@@ -70,7 +77,12 @@ const manifest = {
   manifestVersion: 2,
   components: {
     SlotCard: { displayName: 'Slot card', props: [], slots: [{ name: 'body', kind: 'slot' }] },
-    Echo: { displayName: 'Echo', props: [{ name: 'label', type: 'string' }], actions: [{ name: 'ping' }] },
+    Echo: {
+      displayName: 'Echo',
+      props: [{ name: 'label', type: 'string' }],
+      // `never`: listed, but the component registers no handler for it.
+      actions: [{ name: 'ping' }, { name: 'never' }],
+    },
     Kinds: {
       displayName: 'Kinds',
       props: [
@@ -86,6 +98,7 @@ const manifest = {
       ],
     },
     Flag: { displayName: 'Flag', props: [], actions: [] },
+    Recorder: { displayName: 'Recorder', props: [], actions: [{ name: 'record' }] },
   },
 };
 
@@ -146,7 +159,7 @@ describe('PackComponent integration', () => {
 
   beforeEach(async () => {
     await widget.setup();
-    loadLibraryModule.mockResolvedValue({ Echo, SlotCard, Counter, Kinds, Flag });
+    loadLibraryModule.mockResolvedValue({ Echo, SlotCard, Counter, Kinds, Flag, Recorder });
     act(() => useStore.setState({ license: { featureAccess: { customComponentLibraries: false } } }));
   });
   afterEach(() => {
@@ -253,6 +266,49 @@ describe('PackComponent integration', () => {
     await waitFor(() => expect(typeof store().getExposedValueOfComponent(ID, MODULE_ID)?.ping).toBe('function'));
     await waitFor(() => expect(shadowText()).toBe('Hello|'));
     await expect(store().getExposedValueOfComponent(ID, MODULE_ID).ping()).resolves.toBe('pong');
+  });
+
+  // QA item 33: the actions are exposed once the manifest is read, before the bundle has loaded, so an action called
+  // in between (a page's On page load opening a pack Dialog) found no handler and did nothing.
+  test('[PackComponent-ACTION-002] runs an action called before the component has loaded once it has', async () => {
+    // Break this catches: an early call dropped ("no handler registered") instead of waiting for the handler.
+    let loadBundle;
+    loadLibraryModule.mockReturnValue(
+      new Promise((resolve) => {
+        loadBundle = () => resolve({ Echo, SlotCard, Counter, Kinds, Flag, Recorder });
+      })
+    );
+    renderPack();
+
+    await waitFor(() => expect(typeof store().getExposedValueOfComponent(ID, MODULE_ID)?.ping).toBe('function'));
+    const result = store().getExposedValueOfComponent(ID, MODULE_ID).ping();
+    await act(async () => loadBundle());
+
+    await expect(result).resolves.toBe('pong');
+  });
+
+  test('[PackComponent-ACTION-003] ends an action the drawn component has no handler for at once', async () => {
+    // Break this catches: a call to an action with no handler waiting the whole time limit (15 s) after the component
+    // has drawn, holding the event's next actions.
+    renderPack();
+    await waitFor(() => expect(shadowText()).toBe('Hello|'));
+    const started = Date.now();
+
+    await expect(store().getExposedValueOfComponent(ID, MODULE_ID).never()).resolves.toBeUndefined();
+    expect(Date.now() - started).toBeLessThan(1000);
+  });
+
+  test('[PackComponent-ACTION-004] runs an action on a loaded component on the next microtask, as it always has', async () => {
+    // Break this catches: the wait for a handler delaying a call to a component that has already loaded.
+    actionRuns.length = 0;
+    renderPack({ properties: { componentName: binding('Recorder') } });
+    await waitFor(() => expect(shadowText()).toBe('recorder'));
+
+    const result = store().getExposedValueOfComponent(ID, MODULE_ID).record('first');
+    expect(actionRuns).toEqual([]);
+    await Promise.resolve();
+    expect(actionRuns).toEqual(['first']);
+    await result;
   });
 
   test('[PackComponent-SLOT-002] a component dropped into its drop area can be selected again', async () => {

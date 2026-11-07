@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { packFileUrl } from '@/_helpers/builtinPacks';
-import { useBuiltinPack, usePackManifest } from '@/_stores/builtinPacksStore';
+import { useBuiltinPack, useBuiltinPacksStore, usePackManifest } from '@/_stores/builtinPacksStore';
 import SdkComponentHost from './LibraryComponent/SdkComponentHost';
 
 const META_KEYS = ['pack', 'componentName'];
@@ -13,6 +13,9 @@ const PackComponent = ({ properties = {}, ...props }: { properties?: Record<stri
   const { pack: packId, componentName } = properties;
   const pack = useBuiltinPack(packId);
   const manifest = usePackManifest(packId);
+  // The packs are listed and this one is not among them (a pack this release doesn't ship): it never draws.
+  const packsListed = useBuiltinPacksStore((state: { packs: unknown }) => state.packs !== null);
+  const unavailable = packsListed && (!pack || !componentName);
 
   const source =
     pack && componentName
@@ -34,6 +37,7 @@ const PackComponent = ({ properties = {}, ...props }: { properties?: Record<stri
       source={source}
       metaKeys={META_KEYS}
       pack={pack?.pack}
+      unavailable={unavailable}
     />
   );
 };

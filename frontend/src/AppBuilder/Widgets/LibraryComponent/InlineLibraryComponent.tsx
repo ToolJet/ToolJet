@@ -9,6 +9,7 @@ import {
   loadLibraryModule,
   slotAttributeName,
 } from './inlineRuntime';
+import { setActionRegistrySettled } from './actionRegistry';
 import useStore from '@/AppBuilder/_stores/store';
 
 // Shadow-root baseline. ToolJet's global CSS stays out, while inherited properties and theme custom
@@ -585,6 +586,11 @@ const InlineLibraryComponent = ({
 
   let content: React.ReactNode = null;
   const drawn = !!loadError || (!!Component && cssReady);
+  // Once the component has drawn, its ToolJet.useAction handlers are registered (its effects run before this one), and
+  // once its bundle has failed none will be: an action still waiting for a handler it has not registered stops waiting.
+  useEffect(() => {
+    setActionRegistrySettled(actions, drawn);
+  }, [actions, drawn]);
   if (loadError) content = <div className="tj-cc-error">{loadError}</div>;
   else if (Component && cssReady)
     content = (
