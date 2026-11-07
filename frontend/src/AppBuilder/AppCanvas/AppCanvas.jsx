@@ -178,7 +178,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     }
 
     return {
-      borderLeft: currentMode === 'edit' && editorMarginLeft + 'px solid',
+      borderLeft: currentMode === 'edit' && `${editorMarginLeft}px solid ${canvasBgColor}`,
       height: currentMode === 'edit' ? canvasContainerHeight : '100%',
       background: canvasBgColor,
       width: currentMode === 'edit' ? `calc(100% - 96px)` : '100%',

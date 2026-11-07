@@ -22,6 +22,7 @@ import CodeSearch from './CodeSearch/CodeSearch';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import SupportButton from './SupportButton';
 import AvatarGroup from '@/_ui/AvatarGroup';
+import { onePerPerson } from './presenceAvatars';
 // eslint-disable-next-line import/no-unresolved
 import { useOthers, useSelf } from '@y-presence/react';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
@@ -388,10 +389,10 @@ const AvatarGroupWrapper = ({ darkMode, maxDisplay }) => {
   const mergedAvatars = [self, ...othersOnSameVersionAndPage];
 
   const transformedAvatars = useMemo(() => {
-    return mergedAvatars.map((other) => ({
-      ...other.presence,
-      text: getAvatarText(other.presence),
-      title: getAvatarTitle(other.presence),
+    return onePerPerson(mergedAvatars.map((other) => other.presence)).map((presence) => ({
+      ...presence,
+      text: getAvatarText(presence),
+      title: getAvatarTitle(presence),
     }));
   }, [JSON.stringify(mergedAvatars)]);
 

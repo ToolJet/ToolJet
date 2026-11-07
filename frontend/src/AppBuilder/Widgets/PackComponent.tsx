@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { packFileUrl } from '@/_helpers/builtinPacks';
-import { useBuiltinPack, usePackManifest } from '@/_stores/builtinPacksStore';
+import { useBuiltinPack, useBuiltinPacksStore, usePackManifest } from '@/_stores/builtinPacksStore';
 import SdkComponentHost from './LibraryComponent/SdkComponentHost';
 
 const META_KEYS = ['pack', 'componentName'];
@@ -13,6 +13,34 @@ const PackComponent = ({ properties = {}, ...props }: { properties?: Record<stri
   const { pack: packId, componentName } = properties;
   const pack = useBuiltinPack(packId);
   const manifest = usePackManifest(packId);
+  const packsListed = useBuiltinPacksStore((state: { packs: unknown[] | null }) => state.packs !== null);
+  const missingComponent = !!pack && !!manifest?.components && !!componentName && !manifest.components[componentName];
+  if (packsListed && (!pack || missingComponent)) {
+    const message = !packId
+      ? 'This component names no pack.'
+      : !pack
+        ? `This component's pack ("${packId}") isn't installed on this ToolJet.`
+        : `The pack "${packId}" has no component "${componentName}".`;
+    return (
+      <div
+        role="alert"
+        data-cy="pack-component-error"
+        style={{
+          width: '100%',
+          height: '100%',
+          padding: 12,
+          overflow: 'auto',
+          font: '12px/1.4 monospace',
+          color: 'var(--text-danger, #d72d39)',
+          border: '1px dashed var(--text-danger, #d72d39)',
+          borderRadius: 6,
+          background: 'var(--surfaces-surface-01, transparent)',
+        }}
+      >
+        {message}
+      </div>
+    );
+  }
 
   const source =
     pack && componentName

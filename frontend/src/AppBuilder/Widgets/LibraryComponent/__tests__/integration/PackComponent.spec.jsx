@@ -161,12 +161,13 @@ describe('PackComponent integration', () => {
     await waitFor(() => expect(shadowText()).toBe('Hello|'));
   });
 
-  test("[PackComponent-SLOT-001] shows the placeholder for a pack this release doesn't ship", async () => {
-    // Break this catches: loading a bundle under an undefined pack or hash.
+  test("[PackComponent-SLOT-001] names a pack this release doesn't ship instead of drawing it", async () => {
     renderPack({ properties: { pack: binding('retired') } });
 
     await waitFor(() => expect(useBuiltinPacksStore.getState().packs).not.toBeNull());
-    expect(document.querySelector('[data-cy="packcomponent1"]')?.textContent).toBe('Slot');
+    await waitFor(() =>
+      expect(document.querySelector('[data-cy="pack-component-error"]')?.textContent).toContain("pack (\"retired\") isn't installed")
+    );
     expect(loadLibraryModule).not.toHaveBeenCalled();
   });
 
