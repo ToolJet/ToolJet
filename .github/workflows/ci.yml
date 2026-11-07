@@ -303,8 +303,21 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
-          cache-dependency-path: 'frontend/package-lock.json'
+          cache-dependency-path: |
+            frontend/package-lock.json
+            cli/package-lock.json
+            packs/*/package-lock.json
       - run: npm ci
+      # Pack specs render a component pack's own source (packs/*), which resolves its
+      # dependencies (antd, @mui/material, @radix-ui/*, dayjs, ...) from that pack's
+      # node_modules, and read the built packs/*/dist/manifest.json. Same steps as the
+      # Docker builds: build the custom component CLI, then install and build each pack.
+      - name: Build component packs
+        working-directory: .
+        run: |
+          npm --prefix cli ci --include=dev --no-audit --no-fund
+          npm --prefix cli run build
+          node packs/build-builtin.mjs --install
       # Layout first: a misfiled or *.test.* spec silently never runs, so this
       # must fail the build before the suite reports a misleading green.
       - name: Validate test layout

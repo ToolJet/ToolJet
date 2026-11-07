@@ -15,7 +15,10 @@ export const Icon = ({
   component,
   isVisibilityEnabled = true,
   iconVisibility,
+  meta,
 }) => {
+  // A field whose meta says `visibility: false` (a library component's icon prop) has no show/hide toggle.
+  const showVisibilityToggle = isVisibilityEnabled && meta?.visibility !== false;
   const [searchText, setSearchText] = useState('');
   const [showPopOver, setPopOverVisibility] = useState(false);
   const iconList = useRef(Object.keys(Icons));
@@ -120,7 +123,7 @@ export const Icon = ({
                   >
                     {String(value)}
                   </div>
-                  {isVisibilityEnabled && (
+                  {showVisibilityToggle && (
                     <Visibility
                       value={value}
                       onChange={onChange}

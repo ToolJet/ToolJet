@@ -8,7 +8,8 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.THEMES_CREATE]: { license: LICENSE_FIELD.CUSTOM_THEMES },
     [FEATURE_KEY.THEMES_DELETE]: { license: LICENSE_FIELD.CUSTOM_THEMES },
     [FEATURE_KEY.THEMES_GET_ALL]: {},
-    [FEATURE_KEY.THEMES_UPDATE_DEFAULT]: { license: LICENSE_FIELD.CUSTOM_THEMES },
+    // Every plan can make the basic or a shipped theme the default; the service keeps custom themes licensed.
+    [FEATURE_KEY.THEMES_UPDATE_DEFAULT]: {},
     [FEATURE_KEY.THEMES_UPDATE_DEFINITION]: { license: LICENSE_FIELD.CUSTOM_THEMES },
     [FEATURE_KEY.THEMES_UPDATE_NAME]: { license: LICENSE_FIELD.CUSTOM_THEMES },
   },

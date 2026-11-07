@@ -6,9 +6,13 @@ import { toast } from 'react-hot-toast';
 import _, { debounce } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
-import { NO_OF_GRIDS } from './appCanvasConstants';
+import { NO_OF_GRIDS, isTabsType, isModalType } from './appCanvasConstants';
 import { computeComponentName, getAllChildComponents } from './appCanvasUtils';
 import { utilityFuncForNameSeed } from '@/_helpers/utils';
+import { isSdkComponentType } from '@/AppBuilder/_helpers/sdkComponentTypes';
+import * as pageRoots from '@ee/modules/CodeMode/AppBuilder/_hooks/codePageRoot';
+
+const withoutCodePageRoots = pageRoots.withoutCodePageRoots ?? ((ids) => ids || []);
 
 const getSelectedText = () => {
   let selectedText = '';
@@ -99,11 +103,11 @@ export const copyComponents = ({ isCut = false, isCloning = false }) => {
     toast.success('Component cloned successfully');
   } else if (isCut) {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
-    useStore.getState().deleteComponents(
+    const cutIds = withoutCodePageRoots(
       selectedComponents.map((component) => component.id),
-      'canvas',
-      { isCut }
+      useStore.getState().getCurrentPageComponents?.() ?? {}
     );
+    if (cutIds.length) useStore.getState().deleteComponents(cutIds, 'canvas', { isCut });
   } else {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
     const successMessage =
@@ -117,12 +121,13 @@ const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentI
   const parentComponent = allComponents?.[parentId];
   if (parentComponent) {
     return (
-      parentComponent.component.component === 'Tabs' ||
+      isTabsType(parentComponent.component.component) ||
       parentComponent.component.component === 'Calendar' ||
       parentComponent.component.component === 'Container' ||
       parentComponent.component.component === 'Accordion' ||
       parentComponent.component.component === 'Form' ||
-      parentComponent.component.component === 'ModalV2'
+      isModalType(parentComponent.component.component) ||
+      isSdkComponentType(parentComponent.component.component)
     );
   }
 
@@ -309,9 +314,10 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     !Object.keys(components).find(
       (key) =>
         targetParentId === key ||
-        (components?.[key]?.component.component === 'Tabs' &&
+        ((isTabsType(components?.[key]?.component.component) ||
+          isSdkComponentType(components?.[key]?.component.component)) &&
           targetParentId?.split('-')?.slice(0, -1)?.join('-') === key) ||
-        (['Container', 'Form', 'ModalV2', 'Accordion'].includes(components?.[key]?.component.component) &&
+        (['Container', 'Form', 'ModalV2', 'ShadDialog', 'Accordion'].includes(components?.[key]?.component.component) &&
           ['header', 'footer'].some((section) => targetParentId.includes(section)))
     )
   ) {

@@ -23,6 +23,24 @@ export function parseParentIdAndSuffix(parentId: string) {
   return match ? { baseId: match[1], suffix: match[2] } : { baseId: parentId || null, suffix: null };
 }
 
+/**
+ * Widget types that keep their children in a named slot, stored on the child as `{parentId}-{slotId}`: a tab of
+ * Tabs or of the shadcn pack's ShadTabs, a Calendar's popover, a ToolJet.Slot of a pack or library component.
+ * Copies remap the base id and keep the slot.
+ */
+export const SLOTTED_PARENT_TYPES = ['Tabs', 'ShadTabs', 'Calendar', 'LibraryComponent', 'PackComponent'];
+
+/** A component as the copy paths hold it: normalized (`type`), or an older export's (`component.component`). */
+type SlotParentCandidate = { id: string; type?: string; component?: { component?: string } };
+
+/** Whether `parentId` names a slot (`{id}-{slotId}`) of a slotted parent among `components`. */
+export function isChildOfSlottedParent(parentId: string, components: SlotParentCandidate[]) {
+  const { baseId, suffix } = parseParentIdAndSuffix(parentId);
+  if (!baseId || !suffix) return false;
+  const parent = components.find((component) => component.id === baseId);
+  return !!parent && SLOTTED_PARENT_TYPES.includes(parent.type ?? parent.component?.component);
+}
+
 /** Skip components with corrupt parents (e.g. `undefined-t0`). */
 export function shouldSkipComponentOnVersionCopy(component: { parent?: string | null }) {
   return !!component.parent?.startsWith('undefined');

@@ -3,6 +3,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 import { appendBranchParam } from '@/_helpers/active-branch';
 
 export const appVersionService = {
+  getSnapshotDefinition,
   getAll,
   getOne,
   getAppVersionData,
@@ -11,6 +12,7 @@ export const appVersionService = {
   del,
   save,
   promoteEnvironment,
+  getMissingTablesForPromote,
   autoSaveApp,
   saveAppVersionEventHandlers,
   createAppVersionEventHandler,
@@ -52,6 +54,23 @@ function promoteEnvironment(appId, versionId, currentEnvironmentId) {
   };
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/promote`, requestOptions).then(handleResponse);
 }
+// The ToolJet Database tables the version uses that the next environment does not have yet.
+function getMissingTablesForPromote(appId, versionId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/promote/missing-tables`, requestOptions).then(
+    handleResponse
+  );
+}
+// The definition of a version as of a point in app history (before an AI turn), shaped like
+// getAppVersionData's, for rendering it read-only in the compare view.
+function getSnapshotDefinition(appId, versionId, snapshotId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/snapshots/${snapshotId}/definition`,
+    requestOptions
+  ).then(handleResponse);
+}
+
 function getAppVersionData(appId, versionId, mode) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(

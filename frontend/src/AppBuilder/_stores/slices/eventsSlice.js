@@ -6,7 +6,9 @@ import { getHostURL, getSubpath } from '@/_helpers/routes';
 import urlJoin from 'url-join';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
+import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
 import { logoutAction } from '@/AppBuilder/_utils/auth';
+import { isCompareMuted } from '@/AppBuilder/_utils/compareFrame';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
@@ -98,6 +100,8 @@ export const createEventsSlice = (set, get) => ({
       // stale value. Resolve every pending write that isn't part of an explicit mount-time
       // bracket (ListView/Form/page-switch) — never touches bracket-protected writes.
       get().flushImplicitBatchEntries();
+      // A dialog the compare view opened in its read-only frame runs none of its own actions.
+      if (isCompareMuted(id)) return;
       const events = get().eventsSlice.module[moduleId].events;
       const componentEvents = events.filter((event) => event.sourceId === id);
       const mode = getCurrentMode(moduleId);
@@ -301,7 +305,7 @@ export const createEventsSlice = (set, get) => ({
       // names are safe here. Return: prevents double-execution for names that ALSO
       // appear in the standard list.
       if (options?.isCustomComponentEvent) {
-        return executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
+        return executeActionsForEventId(eventName, events, mode, customVariables, moduleId, sourceSubContainerIndex);
       }
 
       if (eventName === 'onPageLoad') {
@@ -697,6 +701,7 @@ export const createEventsSlice = (set, get) => ({
               //! if resolvecode default value should be the value itself not empty string ... Ask KAVIN
               const resolvedValue = getResolvedValue(event.url, customVariables, moduleId);
               // const url = resolveReferences(event.url, undefined, customVariables);
+              if (strictMode.strictUrlAllowed && !strictMode.strictUrlAllowed(resolvedValue)) return Promise.resolve();
               window.open(resolvedValue, event?.windowTarget === 'currentTab' ? '_self' : '_blank');
               return Promise.resolve();
             }
@@ -785,6 +790,7 @@ export const createEventsSlice = (set, get) => ({
             case 'set-localstorage-value': {
               const key = getResolvedValue(event.key, customVariables, moduleId);
               const value = getResolvedValue(event.value, customVariables, moduleId);
+              if (strictMode.isStrict?.()) return Promise.resolve();
               localStorage.setItem(key, value);
 
               return Promise.resolve();
@@ -1080,7 +1086,8 @@ export const createEventsSlice = (set, get) => ({
                   });
                   const currentUrlParams = new URLSearchParams(window.location.search);
                   currentUrlParams.forEach((value, key) => {
-                    if (key === 'version' || key === 'env') {
+                    // snapshot: a stored snapshot is being rendered; switching page must keep it.
+                    if (key === 'version' || key === 'env' || key === 'snapshot') {
                       // if version or env is in current url query param but not in resolved params then add it to resolvedQueryParams
                       const exists = resolvedQueryParams.some(([resolvedKey]) => resolvedKey === key);
                       if (!exists) {

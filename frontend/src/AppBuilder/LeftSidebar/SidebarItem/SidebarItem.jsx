@@ -1,5 +1,5 @@
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useState } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,9 @@ export const SidebarItem = forwardRef(
   (
     {
       tip = '',
+      // The button's accessible name when the tip is not plain text (a heading and a line): otherwise its name read
+      // "[object Object]".
+      label,
       selectedSidebarItem,
       className,
       icon,
@@ -24,13 +27,17 @@ export const SidebarItem = forwardRef(
       children,
       keepTooltipOpen,
       classes,
-      trigger = ['click', 'hover', 'focus'],
+      trigger = ['hover', 'focus'],
       show = undefined,
       ...rest
     },
     ref
   ) => {
     const { t } = useTranslation();
+    // Shown on hover and focus, and put away on click: the panel the click opens sits under it, and the tip stayed
+    // over the AI chat's header until the pointer moved (QA 2026-11-05).
+    const [tipOpen, setTipOpen] = useState(false);
+    const accessibleName = typeof tip === 'string' && tip ? tip : label;
     let displayIcon = icon;
     if (icon == 'page') displayIcon = 'file01';
     const content = (
@@ -39,10 +46,13 @@ export const SidebarItem = forwardRef(
         className={`${className} ${
           selectedSidebarItem === icon && selectedSidebarItem !== 'comments' && 'sidebar-item--active'
         } ${icon}-icon`}
-        onClick={onClick && onClick}
+        onClick={(event) => {
+          setTipOpen(false);
+          onClick?.(event);
+        }}
         ref={ref}
         type="button"
-        aria-label={tip}
+        aria-label={accessibleName || undefined}
         variant="ghost"
         size="default"
         iconOnly
@@ -70,7 +80,8 @@ export const SidebarItem = forwardRef(
             {typeof tip === 'string' ? t(`leftSidebar.${tip}.tip`, tip) : tip}
           </Tooltip>
         }
-        show={show}
+        show={show ?? tipOpen}
+        onToggle={(next) => setTipOpen(next)}
       >
         {content}
       </OverlayTrigger>

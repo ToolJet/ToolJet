@@ -8,6 +8,27 @@ export const FEATURES: FeaturesConfig = {
     // Public-app skip covers reads only; mutations keep the permission check.
     [FEATURE_KEY.GET]: {},
     [FEATURE_KEY.GET_ONE]: {},
+    // Compare, reviews and AI-turn snapshots are on trial and Pro and above.
+    [FEATURE_KEY.COMPARE]: {
+      license: LICENSE_FIELD.VERSION_REVIEW,
+      shouldNotSkipPublicApp: true,
+    },
+    [FEATURE_KEY.REVIEW_APPROVE]: {
+      license: LICENSE_FIELD.VERSION_REVIEW,
+      shouldNotSkipPublicApp: true,
+      auditLogsKey: 'APP_UPDATE',
+    },
+    [FEATURE_KEY.REVIEW_OVERRIDE]: {
+      license: LICENSE_FIELD.VERSION_REVIEW,
+      shouldNotSkipPublicApp: true,
+      auditLogsKey: 'APP_UPDATE',
+    },
+    // Undo an AI turn. A public app must not widen who can rewrite its draft.
+    [FEATURE_KEY.SNAPSHOT_RESTORE]: {
+      license: LICENSE_FIELD.VERSION_REVIEW,
+      shouldNotSkipPublicApp: true,
+      auditLogsKey: 'APP_UPDATE',
+    },
     [FEATURE_KEY.CREATE]: {
       auditLogsKey: 'APP_UPDATE',
       shouldNotSkipPublicApp: true,
@@ -24,6 +45,7 @@ export const FEATURES: FeaturesConfig = {
       auditLogsKey: 'APP_UPDATE',
       shouldNotSkipPublicApp: true,
     },
+    // Promoting, and reading what a promote would need (missing tables): a public app must not widen who may do either.
     [FEATURE_KEY.PROMOTE]: {
       license: LICENSE_FIELD.VALID,
       auditLogsKey: 'APP_PROMOTE',

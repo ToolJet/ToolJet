@@ -40,6 +40,12 @@ RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
+# Built-in component packs: each pack in packs/builtin.json is built with the custom component CLI (cli/) into
+# server/builtin-packs, which the server serves to every workspace like native widgets.
+COPY ./cli/ ./cli/
+COPY ./packs/ ./packs/
+RUN npm --prefix cli ci --include=dev && npm --prefix cli run build && node packs/build-builtin.mjs --install
+
 FROM debian:12
 
 RUN apt-get update -yq \
@@ -111,6 +117,7 @@ COPY --from=builder /app/server/node_modules ./app/server/node_modules
 COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
+COPY --from=builder /app/server/builtin-packs ./app/server/builtin-packs
 
 COPY ./docker/ce-entrypoint.sh ./app/server/entrypoint.sh
 

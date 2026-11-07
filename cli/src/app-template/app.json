@@ -1,0 +1,8 @@
+{
+  "name": "__DISPLAY_NAME__",
+  "codePage": { "handle": "home", "name": "Home" },
+  "routes": [
+    { "id": "home", "path": "/", "title": "Home" },
+    { "id": "about", "path": "/about", "title": "About" }
+  ]
+}

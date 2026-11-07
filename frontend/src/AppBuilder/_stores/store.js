@@ -37,12 +37,16 @@ import { createCodeSearchSlice } from './slices/codeSearchSlice';
 import { createModuleSlice } from './slices/moduleSlice';
 import { createLibrarySlice } from './slices/librarySlice';
 import { createDataQueryFolderSlice } from './slices/dataQueryFolderSlice';
+import { createEditorOverlaySlice } from './slices/editorOverlaySlice';
 import { listViewComponentSlice } from './slices/componentSlices/listViewComponentSlice';
 import { tableComponentSlice } from './slices/componentSlices/tableComponentSlice';
 import { createBranchSlice } from './slices/branchSlice';
+import * as compareGuard from '@ee/modules/CodeMode/AppBuilder/CodeDiff/compareGuard';
+
+const exposeCompareProbe = compareGuard.exposeCompareProbe ?? (() => {});
 enableMapSet();
 
-export default create(
+const useStore = create(
   zustandDevTools(
     immer((...state) => ({
       ...createUserSlice(...state),
@@ -79,6 +83,7 @@ export default create(
       ...createModuleSlice(...state),
       ...createLibrarySlice(...state),
       ...createDataQueryFolderSlice(...state),
+      ...createEditorOverlaySlice(...state),
       // component slices
       ...createFormComponentSlice(...state),
       ...listViewComponentSlice(...state),
@@ -88,3 +93,7 @@ export default create(
     { name: 'App Builder Store', anonymousActionType: 'unknown' }
   )
 );
+
+exposeCompareProbe(() => useStore.getState());
+
+export default useStore;

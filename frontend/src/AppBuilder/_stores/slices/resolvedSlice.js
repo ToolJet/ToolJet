@@ -3,6 +3,7 @@ import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast'
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { createBatchManager } from '@/AppBuilder/_stores/batchManager';
 import { ROW_SCOPED_WIDGET_TYPES } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { sealForStore, sealValuesForStore } from '@/AppBuilder/_stores/utils/sealForStore';
 import _ from 'lodash';
 
 const initialState = {
@@ -50,12 +51,15 @@ export const DEFAULT_COMPONENT_STRUCTURE = {
 
 // Builds the Immer mutation for writing a single exposed-value property.
 // Handles the case where a component moved from ListView (array structure) to canvas (plain object).
-const buildExposedValueMutation = (componentId, property, value, moduleId) => (state) => {
-  const components = state.resolvedStore.modules[moduleId].exposedValues.components;
-  if (components[componentId] === undefined || Array.isArray(components[componentId])) {
-    components[componentId] = { [property]: value };
-  }
-  components[componentId][property] = value;
+const buildExposedValueMutation = (componentId, property, value, moduleId) => {
+  sealForStore(value);
+  return (state) => {
+    const components = state.resolvedStore.modules[moduleId].exposedValues.components;
+    if (components[componentId] === undefined || Array.isArray(components[componentId])) {
+      components[componentId] = { [property]: value };
+    }
+    components[componentId][property] = value;
+  };
 };
 
 export const createResolvedSlice = (set, get) => {
@@ -135,6 +139,19 @@ export const createResolvedSlice = (set, get) => {
     },
 
     isExposedValueBatching: () => _exposedValueBatch.isBatching(),
+
+    // A short hold on the explicit batch: exposed-value writes until the returned release() are buffered and applied
+    // in one store update. Ref-counted like the batch itself, so holds nest in each other and in an open page-switch
+    // batch; release() is idempotent. RenderWidget holds one per widget across its mount commit.
+    holdExposedValueWrites: () => {
+      _exposedValueBatch.startBatch();
+      let open = true;
+      return () => {
+        if (!open) return;
+        open = false;
+        _exposedValueBatch.flush('exposedValueHold');
+      };
+    },
 
     bufferExposedValueMutation: (mutation, moduleId, depPaths) => {
       _exposedValueBatch.bufferMutation(mutation, moduleId, depPaths);
@@ -312,6 +329,7 @@ export const createResolvedSlice = (set, get) => {
     },
 
     setResolvedQuery: (queryId, details, moduleId = 'canvas', replaceObject = false) => {
+      sealValuesForStore(details);
       set(
         (state) => {
           state.resolvedStore.modules[moduleId].exposedValues.queries[queryId] = {
@@ -347,6 +365,7 @@ export const createResolvedSlice = (set, get) => {
       });
     },
     setResolvedComponent: (componentId, data, moduleId = 'canvas') => {
+      sealForStore(data);
       set(
         (state) => {
           state.resolvedStore.modules[moduleId].components[componentId] = data;
@@ -361,7 +380,7 @@ export const createResolvedSlice = (set, get) => {
     setResolvedComponents: (components, moduleId = 'canvas') => {
       const validateComponents = get().debugger.validateComponents;
 
-      const validatedComponents = validateComponents(components, moduleId);
+      const validatedComponents = sealValuesForStore(validateComponents(components, moduleId));
 
       set(
         (state) => {
@@ -392,7 +411,7 @@ export const createResolvedSlice = (set, get) => {
           }
   */
     setResolvedComponentByProperty: (componentId, type, property, value, index = null, moduleId = 'canvas') => {
-      value = get().debugger.validateProperty(componentId, type, property, value, moduleId);
+      value = sealForStore(get().debugger.validateProperty(componentId, type, property, value, moduleId));
 
       set(
         (state) => {
@@ -518,6 +537,7 @@ export const createResolvedSlice = (set, get) => {
     },
 
     setExposedValues: (id, type, values, moduleId = 'canvas') => {
+      sealValuesForStore(values);
       if (_exposedValueBatch.isBatching()) {
         const depPaths = [];
         Object.entries(values).forEach(([key, value]) => {
@@ -540,10 +560,22 @@ export const createResolvedSlice = (set, get) => {
         return;
       }
 
+      // Compared against the committed state, outside the recipe: _.isEqual on a draft makes Immer create a proxy and a
+      // shallow copy for every nested object it reads, so an unchanged 10k-row value cost a whole proxy tree per write.
+      // An array here is a ListView row store about to be replaced, so nothing in it counts as unchanged.
+      const current = get().resolvedStore.modules[moduleId].exposedValues[type][id];
       const skipKeys = new Set();
+      if (current !== undefined && !Array.isArray(current)) {
+        Object.entries(values).forEach(([key, value]) => {
+          if (_.isEqual(value, current[key])) skipKeys.add(key);
+        });
+      }
+      if (skipKeys.size === Object.keys(values).length) return;
+
       set(
         (state) => {
           Object.entries(values).forEach(([key, value]) => {
+            if (skipKeys.has(key)) return;
             const existing = state.resolvedStore.modules[moduleId].exposedValues[type][id];
             if (existing === undefined || Array.isArray(existing)) {
               // Initialize as plain object. The Array.isArray check handles the case where a
@@ -554,13 +586,7 @@ export const createResolvedSlice = (set, get) => {
               state.resolvedStore.modules[moduleId].exposedValues[type][id] = {
                 [key]: value,
               };
-            } else {
-              // _.isEqual on an Immer proxy is safe here: Immer's proxy traps are synchronous
-              // and lodash's deep comparison works correctly against them.
-              if (_.isEqual(value, existing[key])) {
-                skipKeys.add(key);
-              } else existing[key] = value;
-            }
+            } else existing[key] = value;
           });
         },
         false,
@@ -573,9 +599,7 @@ export const createResolvedSlice = (set, get) => {
         if (typeof value !== 'function' && !skipKeys.has(key))
           scheduleDependencyUpdate(`components.${id}.${key}`, moduleId);
       });
-      // Nothing written when every value already matched, so hints cannot have gone stale.
-      if (type === 'components' && skipKeys.size !== Object.keys(values).length)
-        get().refreshComponentHintsIfShapeChanged(id, moduleId);
+      if (type === 'components') get().refreshComponentHintsIfShapeChanged(id, moduleId);
     },
 
     // Clears every exposed variable for a component except id

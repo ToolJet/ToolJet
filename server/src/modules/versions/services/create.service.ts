@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { AppVersion } from '@entities/app_version.entity';
 import { DataQuery } from '@entities/data_query.entity';
@@ -29,8 +29,10 @@ import { APP_TYPES } from '@modules/apps/constants';
 import { IVersionsCreateService } from '../interfaces/services/ICreateService';
 import { DatasourceUserTokenData } from '@entities/data_source_user_token.entity';
 import { EncryptionService } from '@modules/encryption/service';
+import { CodeModeSourceService } from '@modules/code-mode-source/service';
 import {
   parseParentIdAndSuffix,
+  SLOTTED_PARENT_TYPES,
   remapFlexContainerChildOrder,
   remapParentIdForVersionCopy,
   shouldSkipComponentOnVersionCopy,
@@ -38,6 +40,9 @@ import {
 
 @Injectable()
 export class VersionsCreateService implements IVersionsCreateService {
+  // Property injection, so the edition subclass keeps its constructor.
+  @Optional() @Inject(CodeModeSourceService) protected readonly codeModeSourceService?: CodeModeSourceService;
+
   constructor(
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly dataSourceUtilService: DataSourcesUtilService,
@@ -99,6 +104,12 @@ export class VersionsCreateService implements IVersionsCreateService {
       if (app?.type === APP_TYPES.WORKFLOW) {
         await this.copyWorkflowBundlesForVersion(manager, appVersion.id, versionFrom.id);
       }
+      await this.codeModeSourceService?.afterVersionCopied(
+        manager,
+        versionFrom.id,
+        appVersion.id,
+        oldPageToNewPageMapping ?? {}
+      );
     }, manager);
   }
 
@@ -445,7 +456,7 @@ export class VersionsCreateService implements IVersionsCreateService {
         const parentComponent = allComponents.find((comp) => comp.id === baseId);
 
         if (parentComponent) {
-          return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
+          return SLOTTED_PARENT_TYPES.includes(parentComponent.type);
         }
       }
       return false;
@@ -608,6 +619,8 @@ export class VersionsCreateService implements IVersionsCreateService {
           newLayout.height = layout.height;
           if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
           if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
+          if (layout.grow != null) newLayout.grow = layout.grow;
+          if (layout.minWidthPx != null) newLayout.minWidthPx = layout.minWidthPx;
           newLayout.componentId = newComponent.id;
           newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 

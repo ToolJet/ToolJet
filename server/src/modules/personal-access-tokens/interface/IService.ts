@@ -23,6 +23,7 @@ export interface PatSession {
   organizationSlug: string | null;
   organizationName: string | null;
   expiresAt: Date; // session expiry, NOT the token's — re-exchange when it lapses
+  appId?: string; // an app-pinned render session's app
 }
 
 // Options for a PAT minted FOR a backend service that is acting as the signed-in user, rather than
@@ -39,7 +40,15 @@ export interface IPersonalAccessTokensService {
   createPat(user: User, organizationId: string, name: string, expiresAt: Date): Promise<PatView & { token: string }>;
   listPats(userId: string): Promise<PatView[]>;
   deletePat(userId: string, id: string): Promise<void>;
-  createSessionFromPat(pat: UserPersonalAccessToken, response: Response, appId?: string): Promise<PatSession>;
+  createSessionFromPat(
+    pat: UserPersonalAccessToken,
+    response: Response,
+    appId?: string,
+    apiSource?: string,
+    aiAppId?: string,
+    options?: { expiryMinutes?: number }
+  ): Promise<PatSession>;
+  createAiRenderSession?(user: User, response: Response, requestedAppId?: string): Promise<PatSession>;
   /* Find-or-create the single service token for (user, workspace, name). Returns the ENTITY, with
      `user` populated, because the caller mints a session from it in-process via createSessionFromPat
      — no raw token is produced and none is needed. */

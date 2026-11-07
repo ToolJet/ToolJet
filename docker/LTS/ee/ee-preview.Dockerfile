@@ -1,8 +1,10 @@
 # tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827). Same as ee-production,
-# but follows BRANCH_NAME like the submodules do, falling back to main.
+# but follows BRANCH_NAME like the submodules do, falling back to the pinned TOOLJET_MCP_REF (never a moving branch).
+# A release bumps TOOLJET_MCP_REF deliberately, to the tooljet-mcp commit it ships.
 FROM node:22.23.4 AS mcp-builder
 WORKDIR /mcp
 ARG BRANCH_NAME
+ARG TOOLJET_MCP_REF=c0d48324b8212f697ef728f07ec2d3869214f74e
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
@@ -10,7 +12,8 @@ RUN --mount=type=secret,id=github_token \
     if [ -n "${BRANCH_NAME}" ] && git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then \
       git checkout "${BRANCH_NAME}"; \
     else \
-      echo "Branch ${BRANCH_NAME} not found in tooljet-mcp, falling back to main"; \
+      echo "Branch ${BRANCH_NAME} not found in tooljet-mcp, using ${TOOLJET_MCP_REF}" && \
+      git checkout --detach "${TOOLJET_MCP_REF}"; \
     fi
 RUN npm ci && npm run build:plugin
 
@@ -168,6 +171,15 @@ RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
+# Built-in component packs: each pack in packs/builtin.json is built with the custom component CLI (cli/) into
+# server/builtin-packs, which the server serves to every workspace like native widgets.
+COPY ./cli/ ./cli/
+COPY ./packs/ ./packs/
+RUN npm --prefix cli ci --include=dev && npm --prefix cli run build && node packs/build-builtin.mjs --install
+# The same CLI, packed for GET /api/code-mode/cli/tooljet-cli.tgz: `npm i -g` from the instance installs the CLI
+# that matches this server (server/scripts/pack-cli.sh).
+RUN server/scripts/pack-cli.sh
+
 # ---------------------------------------------------------------------------
 # Runtime stage
 # Moved from node:22.15.1-bullseye to bookworm. Debian 11 reached end-of-life on
@@ -245,6 +257,8 @@ COPY --from=builder /app/server/node_modules ./app/server/node_modules
 COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
+COPY --from=builder /app/server/builtin-packs ./app/server/builtin-packs
+COPY --from=builder /app/server/code-mode-cli ./app/server/code-mode-cli
 # Copy nsjail configuration for Python sandboxing
 COPY --from=builder /app/server/ee/workflows/nsjail/python-execution.cfg /etc/nsjail/python-execution.cfg
 # tooljet-mcp bundle for the socket relay. data/ must sit next to mcp/, not inside it (bundle

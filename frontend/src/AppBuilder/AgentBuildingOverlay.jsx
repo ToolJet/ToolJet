@@ -3,6 +3,10 @@ import React, { useEffect } from 'react';
 import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 
 import useStore from '@/AppBuilder/_stores/store';
+import { selectAgentBuilding } from '@/AppBuilder/_helpers/agentBuilding';
+import { AI_CHAT_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+// The redesigned canvas views ship with the AI builder (ee); without it the plain card below stays.
+import { CanvasBuildOverlay } from '@ee/modules/AiBuilder/components/CanvasBuild';
 
 /**
  * "Agent is building" overlay for the editor. While an AI build or modification is in progress
@@ -20,7 +24,7 @@ const TOOLBAR_W = 48; // ToolJet left icon strip width
 const HEADER_H = 48; // editor header height
 
 const AgentBuildingOverlay = () => {
-  const isBuilding = useStore((state) => Boolean(state.ai?.isLoading && state.ai?.currentConversation === 'generate'));
+  const isBuilding = useStore(selectAgentBuilding);
 
   useEffect(() => {
     if (!isBuilding) return undefined;
@@ -59,12 +63,18 @@ const AgentBuildingOverlay = () => {
       });
   }, [isBuilding]);
 
-  if (!isBuilding) return null;
-
   const block = (e) => {
+    // A control on the overlay itself (the build tips) is the one thing on it meant to be used.
+    if (e.target?.closest?.('[data-overlay-interactive]')) return;
     e.preventDefault();
     e.stopPropagation();
   };
+
+  // The ee view also covers a new app that is paused on a question, so it decides when to show.
+  if (typeof CanvasBuildOverlay === 'function') return <CanvasBuildOverlay onBlock={block} />;
+
+  if (!isBuilding) return null;
+
   const dim = {
     position: 'absolute',
     top: HEADER_H,
@@ -87,7 +97,8 @@ const AgentBuildingOverlay = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          paddingLeft: 438,
+          // The AI chat floats over the canvas's left side: centre the card in what it leaves visible.
+          paddingLeft: AI_CHAT_WIDTH - 2,
         }}
         onClickCapture={block}
         onMouseDownCapture={block}

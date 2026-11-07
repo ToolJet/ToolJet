@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>shadcn library demo</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "./vendor/react.js",
+          "react/jsx-runtime": "./vendor/jsx-runtime.js",
+          "react-dom": "./vendor/react-dom.js",
+          "react-dom/client": "./vendor/react-dom-client.js"
+        }
+      }
+    </script>
+    <style>
+      /* Stand-ins for the ToolJet theme variables the library inherits (light theme values). */
+      :root {
+        --cc-primary-brand: #4368e3;
+        --cc-primary-text: #1b1f24;
+        --cc-surface1-surface: #ffffff;
+        --cc-surface2-surface: #f1f3f5;
+        --cc-placeholder-text: #6a727c;
+        --cc-default-border: #d7dbdf;
+        --cc-error-systemStatus: #d72d39;
+        --cc-success-systemStatus: #1e823b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 14px;
+        color: var(--cc-primary-text);
+        background: #f6f7f9;
+      }
+      header {
+        padding: 20px 28px 8px;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 18px;
+      }
+      header p {
+        margin: 4px 0 0;
+        color: var(--cc-placeholder-text);
+      }
+      main {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 20px;
+        padding: 12px 28px 28px;
+      }
+      .canvas {
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
+        gap: 28px 24px;
+      }
+      .item-name {
+        margin-bottom: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--cc-placeholder-text);
+      }
+      .item-name span {
+        font-weight: 400;
+      }
+      /* The dashed outline is the widget box at the manifest's default size. */
+      .widget {
+        outline: 1px dashed #b8c2f5;
+        outline-offset: 2px;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 8px;
+      }
+      .actions button {
+        padding: 2px 8px;
+        border: 1px solid #d7dbdf;
+        border-radius: 4px;
+        background: #fff;
+        font: 12px/18px inherit;
+        cursor: pointer;
+      }
+      aside {
+        position: sticky;
+        top: 12px;
+        align-self: start;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: calc(100vh - 24px);
+      }
+      .panel {
+        border: 1px solid #e2e5e9;
+        border-radius: 8px;
+        background: #fff;
+        overflow: hidden;
+      }
+      .panel h2 {
+        margin: 0;
+        padding: 10px 12px;
+        border-bottom: 1px solid #eceef1;
+        font-size: 13px;
+      }
+      .panel pre {
+        margin: 0;
+        padding: 10px 12px;
+        max-height: 40vh;
+        overflow: auto;
+        font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>shadcn custom component library — demo</h1>
+      <p>10 of the 20 components (add <code>?all</code> for all 20), each hosted the way ToolJet's inline runtime hosts them.</p>
+    </header>
+    <main>
+      <div class="canvas" id="canvas"></div>
+      <aside>
+        <div class="panel">
+          <h2>Exposed values (components.*)</h2>
+          <pre id="state"></pre>
+        </div>
+        <div class="panel">
+          <h2>Events</h2>
+          <pre id="events"></pre>
+        </div>
+      </aside>
+    </main>
+    <script type="module" src="./harness.js"></script>
+  </body>
+</html>

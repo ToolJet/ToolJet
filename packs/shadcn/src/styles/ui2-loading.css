@@ -1,0 +1,492 @@
+/* UI 2.0's loading looks (src/lib/ui2/loading/look.tsx; Ui2/_shared/loadingLook.tsx and Shell.tsx). Sizes are
+   UI 2.0's Tailwind ones in px. */
+
+.ui2-ld-spin {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--ui-muted-fg);
+  border-top-color: transparent;
+  border-radius: 999px;
+  animation: ui2-ld-spin 0.8s linear infinite;
+}
+.ui2-ld-spin.is-large {
+  width: 24px;
+  height: 24px;
+}
+@keyframes ui2-ld-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ui-skeleton.ui2-ld-skel {
+  border-radius: calc(var(--ui-radius) - 2px);
+}
+
+/* ---- The widget's box: a centred spinner, or a skeleton block ---- */
+.ui2-ld-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 24px;
+}
+.ui-skeleton.ui2-ld-block {
+  width: 100%;
+  height: 100%;
+  min-height: 24px;
+  border-radius: var(--ui-radius);
+}
+
+/* ---- The frame: idle it adds no box; loading the content stays mounted, hidden, under the look ---- */
+.ui2-ld-frame,
+.ui2-ld-content {
+  display: contents;
+}
+.ui2-ld-frame.is-loading {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ui2-ld-frame.is-loading > .ui2-ld-content {
+  display: block;
+  height: 100%;
+  visibility: hidden;
+  overflow: hidden;
+}
+.ui2-ld-frame.is-loading.is-visible > .ui2-ld-content {
+  visibility: visible;
+}
+.ui2-ld-look {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* A scrim over content that stays on screen, the spinner on a chip of its own. */
+.ui2-ld-scrim {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border-radius: var(--ui-radius);
+  background: color-mix(in srgb, var(--ui-bg) 65%, transparent);
+}
+.ui2-ld-scrim-chip {
+  display: flex;
+  padding: 8px;
+  border: 1px solid var(--ui-border);
+  border-radius: 999px;
+  background: var(--ui-bg);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+}
+.ui2-ld-spin.is-mid {
+  width: 20px;
+  height: 20px;
+}
+
+/* ---- Text and media in their own shape ---- */
+.ui-skeleton.ui2-ld-heading {
+  width: 50%;
+  height: 32px;
+}
+.ui2-ld-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  padding: 4px 0;
+  overflow: hidden;
+}
+.ui-skeleton.ui2-ld-line {
+  flex-shrink: 0;
+  width: 100%;
+  height: 16px;
+}
+.ui-skeleton.ui2-ld-line.is-short {
+  width: 60%;
+}
+.ui-skeleton.ui2-ld-textline {
+  width: 192px;
+  max-width: 100%;
+  height: 16px;
+}
+.ui-skeleton.ui2-ld-pill {
+  width: 64px;
+  height: 20px;
+  border-radius: 999px;
+}
+.ui2-ld-avatars {
+  display: flex;
+}
+.ui2-ld-avatars > * + * {
+  margin-left: -8px;
+}
+.ui-skeleton.ui2-ld-avatar {
+  flex-shrink: 0;
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px var(--ui-bg);
+}
+.ui2-ld-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ui-skeleton.ui2-ld-bar-label {
+  width: 33%;
+  height: 16px;
+}
+.ui-skeleton.ui2-ld-bar-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+}
+.ui2-ld-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  height: 100%;
+}
+.ui2-ld-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--ui-radius);
+  background: var(--ui-muted);
+  overflow: hidden;
+}
+.ui-skeleton.ui2-ld-column-title {
+  flex-shrink: 0;
+  width: 50%;
+  height: 16px;
+}
+.ui-skeleton.ui2-ld-card {
+  flex-shrink: 0;
+  width: 100%;
+  height: 64px;
+}
+
+/* ---- A field's control under a skeleton block of its shape ---- */
+.ui2-ld-field,
+.ui2-ld-field-control {
+  display: contents;
+}
+.ui2-ld-field.is-loading {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+.ui2-ld-field.is-loading.is-grow {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.ui2-ld-field.is-loading > .ui2-ld-field-control {
+  display: block;
+  visibility: hidden;
+}
+.ui2-ld-field.is-loading.is-grow > .ui2-ld-field-control {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.ui-skeleton.ui2-ld-field-skel {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--lk-radius, calc(var(--ui-radius) - 2px));
+}
+
+/* ---- A control with its spinner beside it ---- */
+.ui2-ld-inline,
+.ui2-ld-inline-control {
+  display: contents;
+}
+.ui2-ld-inline.is-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+}
+.ui2-ld-inline.is-loading.is-inline-top {
+  align-items: flex-start;
+}
+.ui2-ld-inline.is-loading.is-inline-top > .ui2-ld-spin {
+  margin-top: 2px;
+}
+.ui2-ld-inline.is-loading > .ui2-ld-inline-control {
+  display: block;
+  min-width: 0;
+}
+.ui2-ld-inline.is-loading.is-wide {
+  display: flex;
+  width: 100%;
+}
+.ui2-ld-inline.is-loading.is-wide > .ui2-ld-inline-control {
+  flex: 1 1 0;
+}
+
+/* ---- A glyph's look in its own place ---- */
+.ui2-ld-inplace,
+.ui2-ld-inplace-part {
+  display: contents;
+}
+.ui2-ld-inplace.is-loading {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  /* Its part's size, not stretched by a flex parent: a definite height places it as the part was placed. */
+  width: fit-content;
+  height: fit-content;
+}
+.ui2-ld-inplace.is-loading > .ui2-ld-inplace-part {
+  display: inline-flex;
+  visibility: hidden;
+}
+.ui2-ld-inplace-look {
+  position: absolute;
+  inset: 0;
+}
+.ui-skeleton.ui2-ld-inplace-look {
+  border-radius: var(--lk-radius, var(--ui-radius));
+}
+.ui-skeleton.ui2-ld-inplace-look.is-round {
+  border-radius: 999px;
+}
+.ui2-ld-inplace-spin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---- A part of a widget veiled while it loads ---- */
+.ui2-ld-veil {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+}
+.ui2-ld-veil-part {
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  visibility: hidden;
+}
+.ui-skeleton.ui2-ld-veil-skel {
+  position: absolute;
+  inset: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui2-ld-spin {
+    animation-duration: 2.4s;
+  }
+}
+
+/* ---- The widgets' own skeletons (src/lib/ui2/loading/shapes.tsx) ---- */
+.ui2-ld-skel.ui2-ld-h12 {
+  height: 12px;
+}
+.ui2-ld-skel.ui2-ld-h16 {
+  height: 16px;
+}
+.ui2-ld-skel.ui2-ld-h24 {
+  height: 24px;
+}
+.ui2-ld-skel.ui2-ld-h28 {
+  height: 28px;
+}
+.ui2-ld-skel.ui2-ld-h32 {
+  height: 32px;
+}
+.ui2-ld-skel.ui2-ld-round,
+.ui2-ld-skel.ui2-ld-dot {
+  flex-shrink: 0;
+  border-radius: 999px;
+}
+.ui2-ld-skel.ui2-ld-dot {
+  width: 12px;
+  height: 12px;
+}
+.ui2-ld-skel.ui2-ld-rounded {
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+.ui2-ld-skel.is-grow,
+.ui2-ld-stack.is-grow {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.ui2-ld-stack {
+  display: flex;
+  flex-direction: column;
+}
+.ui2-ld-stack.is-gap6 {
+  gap: 6px;
+}
+.ui2-ld-stack.is-gap8 {
+  gap: 8px;
+}
+.ui2-ld-stack.is-gap12 {
+  gap: 12px;
+}
+.ui2-ld-stack.is-gap20 {
+  gap: 20px;
+}
+.ui2-ld-stack.is-pad {
+  padding: 24px;
+}
+.ui2-ld-stack.is-pad16 {
+  padding: 16px;
+}
+.ui2-ld-stack.is-py12 {
+  padding: 12px 0;
+}
+.ui2-ld-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ui2-ld-row.is-top {
+  align-items: flex-start;
+}
+.ui2-ld-row.is-between {
+  justify-content: space-between;
+  gap: 16px;
+}
+.ui2-ld-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ui2-ld-skel.ui2-ld-chip {
+  height: 24px;
+  border-radius: 6px;
+}
+.ui2-ld-skel.ui2-ld-chip.is-round {
+  border-radius: 999px;
+}
+.ui2-ld-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0;
+}
+.ui2-ld-pair.is-inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+.ui2-ld-steps {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.ui2-ld-steps.is-vertical {
+  flex-direction: column;
+  gap: 24px;
+}
+.ui2-ld-step {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.ui2-ld-steps.is-vertical .ui2-ld-step {
+  flex-direction: row;
+}
+.ui2-ld-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ui2-ld-nav.is-vertical {
+  flex-direction: column;
+  align-items: stretch;
+}
+.ui2-ld-cards,
+.ui2-ld-figures {
+  display: grid;
+  gap: 16px;
+}
+.ui2-ld-figures {
+  gap: 0;
+}
+.ui2-ld-cardbox {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+}
+.ui2-ld-cardbox.is-row {
+  flex-direction: row;
+}
+.ui2-ld-skel.ui2-ld-cardimg {
+  width: 100%;
+  border-radius: 0;
+}
+.ui2-ld-rows {
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px;
+}
+.ui2-ld-row.is-listrow {
+  padding: 12px 0;
+}
+.ui2-ld-schedule {
+  overflow: hidden;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius);
+}
+.ui2-ld-row.is-schedhead {
+  gap: 16px;
+  padding: 12px;
+  border-bottom: 1px solid var(--ui-border);
+}
+.ui2-ld-row.is-schedrow {
+  gap: 0;
+  padding: 0 12px;
+}
+.ui2-ld-row.is-schedrow + .ui2-ld-row.is-schedrow {
+  border-top: 1px solid var(--ui-border);
+}
+.ui2-ld-skel.ui2-ld-listrow {
+  width: 100%;
+  border-radius: 8px;
+}
+.ui2-ld-tabstrip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 50px;
+  padding: 0 12px;
+}
+
+/* ---- Stat: its parts veiled at their own size ---- */
+.ui2-ld-veil.ui-stat-veil-fixed {
+  flex-shrink: 0;
+}
+.ui2-ld-veil.ui-stat-veil-words {
+  min-width: 0;
+  max-width: 60%;
+}
+.ui2-ld-veil.ui-stat-veil-value {
+  width: 96px;
+}
+.ui2-ld-veil.ui-stat-veil-spark {
+  display: flex;
+  width: 100%;
+}
+.ui-stat-value-spin {
+  display: flex;
+  align-items: center;
+  height: 32px;
+}

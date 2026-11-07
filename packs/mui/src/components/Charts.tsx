@@ -1,0 +1,568 @@
+import React, { useMemo } from 'react';
+import { BarChart as MuiBarChart } from '@mui/x-charts/BarChart';
+import { LineChart as MuiLineChart } from '@mui/x-charts/LineChart';
+import { PieChart as MuiPieChart } from '@mui/x-charts/PieChart';
+import { ToolJet } from '@tooljet/custom-component-sdk';
+import { useStateText } from '../lib/text';
+import { MuiProvider, useSeriesColors, useThemeStyles } from '../lib/MuiProvider';
+import { BlockSkeleton, Loading } from '../lib/loading';
+import { SAMPLE } from '../lib/samples';
+import { readField, str, toArray, toRows, type Row } from '../lib/data';
+import { formatNumber, toNumber, type NumberFormat } from '../lib/format';
+import { LOCALE_HINT, localeFor, numberFormat } from '../lib/locale';
+import { useHighlightPin } from '../lib/chartHighlight';
+import { pieLegendPlace, useBoxSize } from '../lib/chartLegend';
+
+type Series = { dataKey: string; label?: string; color?: string; stack?: string };
+type Axis = { dataKey: string; label?: string; scaleType?: string };
+
+const humanize = (k: string) =>
+  k
+    .replace(/[_-]+/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/^./, (c) => c.toUpperCase());
+
+// MUI's xAxis is an array of axes; the first one's dataKey is the category field. A bare field name also works.
+const toAxis = (raw: unknown, rows: Row[]): Axis => {
+  const first = Array.isArray(raw) ? raw[0] : raw;
+  if (typeof first === 'string' && first) return { dataKey: first };
+  if (first && typeof first === 'object') {
+    const r = first as Row;
+    const dataKey = str(r.dataKey ?? r.field ?? r.key);
+    if (dataKey) return { dataKey, label: str(r.label) || undefined, scaleType: str(r.scaleType) || undefined };
+  }
+  const sample = rows[0];
+  const key = sample ? Object.keys(sample).find((k) => toNumber(sample[k]) === null) : undefined;
+  return { dataKey: key ?? 'x' };
+};
+
+// MUI's series [{ dataKey, label, color, stack }]; bare field names also work. None: every numeric field but the axis.
+const toSeries = (raw: unknown, rows: Row[], axisKey: string): Series[] => {
+  const given = toArray(raw)
+    .map((s): Series | null => {
+      if (typeof s === 'string') return s ? { dataKey: s } : null;
+      if (!s || typeof s !== 'object') return null;
+      const r = s as Row;
+      const dataKey = str(r.dataKey ?? r.field ?? r.key);
+      return dataKey
+        ? {
+            dataKey,
+            label: str(r.label) || undefined,
+            color: str(r.color) || undefined,
+            stack: str(r.stack) || undefined,
+          }
+        : null;
+    })
+    .filter((s): s is Series => !!s);
+  if (given.length) return given;
+  const sample = rows[0];
+  return sample
+    ? Object.keys(sample)
+        .filter((k) => k !== axisKey && toNumber(sample[k]) !== null)
+        .map((k) => ({ dataKey: k }))
+    : [];
+};
+
+/** The dataset with every series value as a number (null when missing), as MUI's charts need. */
+const numericRows = (rows: Row[], series: Series[]) =>
+  rows.map((r) => {
+    const out: Row = { ...r };
+    for (const s of series) out[s.dataKey] = toNumber(readField(r, s.dataKey));
+    return out;
+  });
+
+const FORMATS = ['auto', 'number', 'currency', 'percent', 'compact'];
+
+/** The props every cartesian chart shares, by MUI's names. */
+const useCartesian = () => {
+  const [dataset] = ToolJet.useStateArray({
+    name: 'dataset',
+    label: 'Dataset',
+    description: 'The rows: [{ month, sales, ... }].',
+    initialValue: SAMPLE.monthly,
+  });
+  const [xAxis] = ToolJet.useStateArray({
+    name: 'xAxis',
+    label: 'X axis',
+    description: "[{ dataKey, label }], or the category field's name.",
+    initialValue: SAMPLE.xAxis,
+  });
+  const [series] = ToolJet.useStateArray({
+    name: 'series',
+    label: 'Series',
+    description: '[{ dataKey, label, color }], or field names; empty: every numeric field.',
+    initialValue: SAMPLE.series,
+  });
+  const [stack] = useStateText({
+    name: 'stack',
+    label: 'Stack',
+    description: "A stack id for every series ('total' stacks them); empty for none.",
+    initialValue: '',
+  });
+  const [valueFormat] = ToolJet.useStateEnumeration({
+    name: 'valueFormat',
+    label: 'Value format',
+    enumDefinition: FORMATS,
+    initialValue: 'auto',
+  });
+  const [currency] = useStateText({
+    name: 'currency',
+    label: 'Currency',
+    initialValue: 'USD',
+    visibleWhen: { key: 'valueFormat', value: 'currency' },
+  });
+  const [locale] = useStateText({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
+  const [colors] = ToolJet.useStateArray({
+    name: 'colors',
+    label: 'Colors',
+    description:
+      "The series palette; empty: led by the brand (the Primary style or the app theme), else MUI X Charts' default palette.",
+    initialValue: [],
+  });
+  const [grid] = ToolJet.useStateBoolean({
+    name: 'grid',
+    label: 'Grid',
+    description: 'Horizontal grid lines.',
+    initialValue: true,
+  });
+  const [hideLegend] = ToolJet.useStateBoolean({ name: 'hideLegend', label: 'Hide legend', initialValue: false });
+  const [, setClickedItem] = ToolJet.useStateObject({ name: 'clickedItem', initialValue: {}, inspector: 'hidden' });
+  const { loading } = ToolJet.useControlState();
+  const rows = useMemo(() => toRows(dataset), [dataset]);
+  const axis = toAxis(xAxis, rows);
+  const list = toSeries(series, rows, axis.dataKey);
+  const data = useMemo(() => numericRows(rows, list), [rows, JSON.stringify(list)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const format = (v: number | null) =>
+    v === null || v === undefined ? '' : formatNumber(v, valueFormat as NumberFormat, currency, null, locale);
+  // Axis ticks have a narrow, fixed width: from 10,000 up they are compact (2M, $1.2K), where the full figure was cut
+  // to "2,000,..."; tooltips keep the full format.
+  const tick = (v: number | null) => {
+    if (v === null || v === undefined || valueFormat === 'percent' || Math.abs(v) < 10000) return format(v);
+    try {
+      const money = valueFormat === 'currency' && /^[a-z]{3}$/i.test(str(currency));
+      return numberFormat(localeFor(str(currency), locale), {
+        notation: 'compact',
+        maximumFractionDigits: 1,
+        ...(money ? { style: 'currency', currency: str(currency) } : {}),
+      }).format(v);
+    } catch {
+      return format(v);
+    }
+  };
+  return {
+    rows,
+    data,
+    axis,
+    list,
+    stack,
+    format,
+    tick,
+    colors: toArray(colors).map(str).filter(Boolean),
+    grid,
+    hideLegend,
+    loading,
+    setClickedItem,
+  };
+};
+
+/** Its children with the chart's series colours, read inside MuiProvider (the brand-led palette when none are set). */
+const SeriesColors = ({
+  given,
+  children,
+}: {
+  given: string[];
+  children: (colors: string[] | undefined) => React.ReactElement;
+}) => children(useSeriesColors(given));
+
+const muiSeries = (c: ReturnType<typeof useCartesian>, extra: Record<string, unknown> = {}) =>
+  c.list.map((s) => ({
+    dataKey: s.dataKey,
+    label: s.label ?? humanize(s.dataKey),
+    color: s.color,
+    stack: s.stack ?? (c.stack || undefined),
+    valueFormatter: c.format,
+    ...extra,
+  }));
+
+// MUI X's BarChart: dataset, xAxis (the category axis: [{ dataKey }]), series [{ dataKey, label, color, stack }],
+// layout (vertical bars, or horizontal), stack, valueFormat, colors, grid, hideLegend, borderRadius. Event onItemClick
+// (a bar), with clickedItem (its row), clickedSeries exposed. Highlight clicked point keeps the clicked bar highlighted
+// (the rest faded) until the clearClickedPoint action or another click.
+export const BarChart = () => {
+  const c = useCartesian();
+  const [layout] = ToolJet.useStateEnumeration({
+    name: 'layout',
+    label: 'Layout',
+    enumDefinition: ['vertical', 'horizontal'],
+    initialValue: 'vertical',
+  });
+  const [, setClickedSeries] = useStateText({ name: 'clickedSeries', initialValue: '', inspector: 'hidden' });
+  const onItemClick = ToolJet.useEventCallback({ name: 'onItemClick' });
+  const highlight = useHighlightPin(() => {
+    c.setClickedItem({});
+    setClickedSeries('');
+  });
+  const overrides = useThemeStyles();
+  ToolJet.useComponentSettings({
+    role: 'barchart',
+    fit: false,
+    loading: 'own',
+    usage:
+      "MUI X BarChart: dataset (rows), xAxis (the category: [{dataKey}] or a field name), series ([{dataKey, label, color}] or field names; empty: every numeric field), layout (vertical, horizontal), stack ('total' stacks), valueFormat, colors, grid, hideLegend; the borderRadius style rounds the bars. onItemClick with clickedItem (the row) and clickedSeries.",
+    roleProps: {
+      data: 'dataset',
+      xField: 'xAxis',
+      yFields: 'series',
+      showLegend: 'hideLegend',
+      showGrid: 'grid',
+      horizontal: 'layout',
+      stack: 'stack',
+    },
+    roleValues: {
+      hideLegend: { true: false, false: true },
+      stack: { true: 'total', false: '' },
+      layout: { true: 'horizontal', false: 'vertical' },
+    },
+    roleEvents: { onClick: 'onItemClick' },
+    defaultWidth: 20,
+    defaultHeight: 30,
+  });
+  const horizontal = layout === 'horizontal';
+  const band = [{ dataKey: c.axis.dataKey, label: c.axis.label, scaleType: 'band' as const }];
+  const values = [{ valueFormatter: (v: number | null) => c.tick(v) }];
+  return (
+    <MuiProvider overrides={overrides} fill>
+      <Loading loading={c.loading} fill look={<BlockSkeleton />}>
+        <SeriesColors given={c.colors}>
+          {(colors) => (
+            <MuiBarChart
+              // Highlight clicked point makes the highlight controlled: a remount when it is turned on or off, as x-charts
+              // keeps whether it is controlled from the first render.
+              key={highlight.on ? 'pinned' : 'free'}
+              {...highlight.props}
+              dataset={c.data}
+              layout={layout as 'vertical'}
+              xAxis={horizontal ? values : band}
+              yAxis={horizontal ? [{ ...band[0], width: 90 }] : [{ ...values[0], width: 56 }]}
+              series={muiSeries(c, highlight.on ? { highlightScope: { highlight: 'item', fade: 'global' } } : {})}
+              colors={colors}
+              // The Border radius style rounds the bars (x-charts' borderRadius); none: MUI's square bars.
+              borderRadius={overrides.borderRadius ?? 0}
+              grid={horizontal ? { vertical: c.grid } : { horizontal: c.grid }}
+              hideLegend={c.hideLegend || c.list.length < 2}
+              onItemClick={(_, item) => {
+                c.setClickedItem(c.rows[item.dataIndex] ?? {});
+                setClickedSeries(String(item.seriesId));
+                highlight.setPin({ seriesId: item.seriesId, dataIndex: item.dataIndex });
+                onItemClick();
+              }}
+            />
+          )}
+        </SeriesColors>
+      </Loading>
+    </MuiProvider>
+  );
+};
+
+const useLineProps = (c: ReturnType<typeof useCartesian>) => {
+  const [curve] = ToolJet.useStateEnumeration({
+    name: 'curve',
+    label: 'Curve',
+    enumDefinition: ['linear', 'monotoneX', 'natural', 'step', 'catmullRom'],
+    initialValue: 'monotoneX',
+  });
+  const [showMark] = ToolJet.useStateBoolean({
+    name: 'showMark',
+    label: 'Show mark',
+    description: 'A dot at every point.',
+    initialValue: false,
+  });
+  const [clickedIndex, setClickedIndex] = ToolJet.useStateNumber({
+    name: 'clickedIndex',
+    initialValue: -1,
+    inspector: 'hidden',
+  });
+  const onAxisClick = ToolJet.useEventCallback({ name: 'onAxisClick' });
+  const highlight = useHighlightPin(() => {
+    c.setClickedItem({});
+    setClickedIndex(-1);
+  });
+  return { curve, showMark, clickedIndex, setClickedIndex, onAxisClick, highlight };
+};
+
+/** Show mark, and with Highlight clicked point the clicked x's marks on every line until cleared. */
+const markAt = (showMark: boolean, on: boolean, index: unknown) => {
+  const at = typeof index === 'number' && index >= 0 ? index : -1;
+  return on && at >= 0 && !showMark ? ({ index: i }: { index: number }) => i === at : showMark;
+};
+
+const LineView = ({
+  c,
+  l,
+  area,
+}: {
+  c: ReturnType<typeof useCartesian>;
+  l: ReturnType<typeof useLineProps>;
+  area: boolean;
+}) => {
+  const colors = useSeriesColors(c.colors);
+  return (
+    <MuiLineChart
+      dataset={c.data}
+      xAxis={[{ dataKey: c.axis.dataKey, label: c.axis.label, scaleType: (c.axis.scaleType as 'point') || 'point' }]}
+      yAxis={[{ valueFormatter: (v: number | null) => c.tick(v), width: 56 }]}
+      series={muiSeries(c, {
+        curve: l.curve,
+        showMark: markAt(l.showMark, l.highlight.on, l.clickedIndex),
+        area,
+        connectNulls: true,
+      })}
+      colors={colors}
+      grid={{ horizontal: c.grid }}
+      hideLegend={c.hideLegend || c.list.length < 2}
+      onAxisClick={(_, data) => {
+        if (!data) return;
+        c.setClickedItem(c.rows[data.dataIndex] ?? {});
+        l.setClickedIndex(data.dataIndex);
+        l.onAxisClick();
+      }}
+    />
+  );
+};
+
+// MUI X's LineChart: dataset, xAxis [{ dataKey, scaleType }], series [{ dataKey, label, color }], curve, showMark,
+// stack, valueFormat, colors, grid, hideLegend. Event onAxisClick (anywhere on the plot: the nearest x), with
+// clickedItem (that row) and clickedIndex exposed. Highlight clicked point marks the clicked x on every line until the
+// clearClicked action or another click.
+export const LineChart = () => {
+  const c = useCartesian();
+  const l = useLineProps(c);
+  const overrides = useThemeStyles();
+  ToolJet.useComponentSettings({
+    role: 'linechart',
+    fit: false,
+    loading: 'own',
+    usage:
+      'MUI X LineChart: dataset, xAxis ([{dataKey, scaleType}] or a field name), series ([{dataKey, label, color}] or field names), curve (linear, monotoneX, natural, step), showMark, valueFormat, colors, grid, hideLegend. onAxisClick (nearest x) with clickedItem and clickedIndex.',
+    roleProps: {
+      data: 'dataset',
+      xField: 'xAxis',
+      yFields: 'series',
+      showLegend: 'hideLegend',
+      showGrid: 'grid',
+      showDots: 'showMark',
+    },
+    roleValues: {
+      hideLegend: { true: false, false: true },
+      stack: { true: 'total', false: '' },
+      curve: { monotone: 'monotoneX', linear: 'linear', step: 'step', natural: 'natural' },
+    },
+    roleEvents: { onClick: 'onAxisClick' },
+    defaultWidth: 20,
+    defaultHeight: 30,
+  });
+  return (
+    <MuiProvider overrides={overrides} fill>
+      <Loading loading={c.loading} fill look={<BlockSkeleton />}>
+        <LineView c={c} l={l} area={false} />
+      </Loading>
+    </MuiProvider>
+  );
+};
+
+// MUI X's LineChart with area series (MUI has no separate area chart): the LineChart's props; stack 'total' stacks the
+// areas. Event onAxisClick.
+export const AreaChart = () => {
+  const c = useCartesian();
+  const l = useLineProps(c);
+  const overrides = useThemeStyles();
+  ToolJet.useComponentSettings({
+    role: 'areachart',
+    fit: false,
+    loading: 'own',
+    usage:
+      "MUI X LineChart with area series (MUI has no separate area chart): the LineChart props; stack 'total' stacks the areas. onAxisClick.",
+    roleProps: {
+      data: 'dataset',
+      xField: 'xAxis',
+      yFields: 'series',
+      showLegend: 'hideLegend',
+      showGrid: 'grid',
+      stack: 'stack',
+      showDots: 'showMark',
+    },
+    roleValues: {
+      hideLegend: { true: false, false: true },
+      stack: { true: 'total', false: '' },
+      curve: { monotone: 'monotoneX', linear: 'linear', step: 'step', natural: 'natural' },
+    },
+    roleEvents: { onClick: 'onAxisClick' },
+    defaultWidth: 20,
+    defaultHeight: 30,
+  });
+  return (
+    <MuiProvider overrides={overrides} fill>
+      <Loading loading={c.loading} fill look={<BlockSkeleton />}>
+        <LineView c={c} l={l} area />
+      </Loading>
+    </MuiProvider>
+  );
+};
+
+// MUI X's PieChart: data (MUI's [{ id, value, label }], or any rows with labelKey / valueKey), innerRadius (0 for a
+// pie, e.g. 60 for a donut), outerRadius, paddingAngle, cornerRadius, arcLabel (none, value, label, percent),
+// valueFormat, colors, hideLegend. Event onItemClick (a slice) with clickedItem exposed. Highlight clicked point keeps
+// the clicked slice highlighted until the clearClickedPoint action or another click.
+export const PieChart = () => {
+  const [rawData] = ToolJet.useStateArray({
+    name: 'data',
+    label: 'Data',
+    description: '[{ id, value, label }], or rows read with labelKey / valueKey.',
+    initialValue: SAMPLE.pie,
+  });
+  const [labelKey] = useStateText({ name: 'labelKey', label: 'Label key', initialValue: 'label' });
+  const [valueKey] = useStateText({ name: 'valueKey', label: 'Value key', initialValue: 'value' });
+  const [innerRadius] = ToolJet.useStateNumber({
+    name: 'innerRadius',
+    label: 'Inner radius',
+    description: '0 for a pie; a donut otherwise.',
+    initialValue: 0,
+    min: 0,
+  });
+  const [outerRadius] = ToolJet.useStateNumber({
+    name: 'outerRadius',
+    label: 'Outer radius',
+    description: '0 to fill the box.',
+    initialValue: 0,
+    min: 0,
+  });
+  const [paddingAngle] = ToolJet.useStateNumber({
+    name: 'paddingAngle',
+    label: 'Padding angle',
+    initialValue: 0,
+    min: 0,
+    max: 20,
+  });
+  const [cornerRadius] = ToolJet.useStateNumber({
+    name: 'cornerRadius',
+    label: 'Corner radius',
+    initialValue: 0,
+    min: 0,
+    max: 30,
+  });
+  const [arcLabel] = ToolJet.useStateEnumeration({
+    name: 'arcLabel',
+    label: 'Arc label',
+    enumDefinition: ['none', 'value', 'label', 'percent'],
+    initialValue: 'none',
+  });
+  const [valueFormat] = ToolJet.useStateEnumeration({
+    name: 'valueFormat',
+    label: 'Value format',
+    enumDefinition: FORMATS,
+    initialValue: 'auto',
+  });
+  const [currency] = useStateText({
+    name: 'currency',
+    label: 'Currency',
+    initialValue: 'USD',
+    visibleWhen: { key: 'valueFormat', value: 'currency' },
+  });
+  const [locale] = useStateText({ name: 'locale', label: 'Locale', description: LOCALE_HINT, initialValue: '' });
+  const [rawColors] = ToolJet.useStateArray({
+    name: 'colors',
+    label: 'Colors',
+    description: 'The slice palette; empty: led by the brand (the Primary style or the app theme).',
+    initialValue: [],
+  });
+  const pieColors = toArray(rawColors).map(str).filter(Boolean);
+  const [hideLegend] = ToolJet.useStateBoolean({ name: 'hideLegend', label: 'Hide legend', initialValue: false });
+  const [, setClickedItem] = ToolJet.useStateObject({ name: 'clickedItem', initialValue: {}, inspector: 'hidden' });
+  const onItemClick = ToolJet.useEventCallback({ name: 'onItemClick' });
+  const highlight = useHighlightPin(() => setClickedItem({}));
+  const { loading } = ToolJet.useControlState();
+  const overrides = useThemeStyles();
+  ToolJet.useComponentSettings({
+    role: 'piechart',
+    fit: false,
+    loading: 'own',
+    usage:
+      "MUI X PieChart: data (MUI's [{id, value, label}], or rows read with labelKey/valueKey), innerRadius (0 pie, e.g. 60 donut), outerRadius, paddingAngle, cornerRadius, arcLabel (none, value, label, percent), valueFormat, colors, hideLegend. onItemClick with clickedItem.",
+    roleProps: { categoryField: 'labelKey', valueField: 'valueKey', donut: 'innerRadius', showLegend: 'hideLegend' },
+    roleValues: { innerRadius: { true: 60, false: 0 }, hideLegend: { true: false, false: true } },
+    roleEvents: { onClick: 'onItemClick' },
+    defaultWidth: 16,
+    defaultHeight: 30,
+  });
+  const rows = toRows(rawData);
+  const lk = str(labelKey) || 'label';
+  const vk = str(valueKey) || 'value';
+  const slices = rows
+    .map((r, i) => ({
+      id: str(r.id) || i,
+      label: str(readField(r, lk) ?? r.label ?? r.name),
+      value: toNumber(readField(r, vk) ?? r.value) ?? 0,
+      row: r,
+    }))
+    .filter((s) => s.value > 0);
+  const total = slices.reduce((sum, s) => sum + s.value, 0);
+  const format = (v: number) => formatNumber(v, valueFormat as NumberFormat, currency, null, locale);
+  // In a narrow box the legend goes under the pie, or away, so the pie keeps a usable size (MUI's side legend kept its
+  // width in a 108px box and left a 16px pie).
+  const [box, room] = useBoxSize<HTMLDivElement>();
+  const place = pieLegendPlace(
+    room.w,
+    room.h,
+    slices.map((s) => s.label)
+  );
+  const arc =
+    arcLabel === 'none'
+      ? undefined
+      : (s: { value: number; label?: string | ((loc: 'tooltip' | 'legend') => string) }) =>
+          arcLabel === 'label'
+            ? str(typeof s.label === 'function' ? s.label('legend') : s.label)
+            : arcLabel === 'percent'
+              ? `${Math.round((s.value / (total || 1)) * 100)}%`
+              : format(s.value);
+  return (
+    <MuiProvider overrides={overrides} fill>
+      <Loading loading={loading} fill look={<BlockSkeleton />}>
+        <div ref={box} className="tj-mui-chart-box">
+          <SeriesColors given={pieColors}>
+            {(colors) => (
+              <MuiPieChart
+                key={highlight.on ? 'pinned' : 'free'}
+                {...highlight.props}
+                colors={colors}
+                hideLegend={hideLegend || place === 'none'}
+                slotProps={
+                  place === 'bottom'
+                    ? { legend: { direction: 'horizontal', position: { vertical: 'bottom', horizontal: 'center' } } }
+                    : undefined
+                }
+                series={[
+                  {
+                    data: slices.map(({ id, label, value }) => ({ id, label, value })),
+                    innerRadius: Number(innerRadius) || 0,
+                    outerRadius: Number(outerRadius) > 0 ? Number(outerRadius) : undefined,
+                    paddingAngle: Number(paddingAngle) || 0,
+                    cornerRadius: Number(cornerRadius) || 0,
+                    arcLabel: arc,
+                    arcLabelMinAngle: 18,
+                    highlightScope: { fade: 'global', highlight: 'item' },
+                    valueFormatter: (v) => format(v.value),
+                  },
+                ]}
+                onItemClick={(_, item) => {
+                  setClickedItem(slices[item.dataIndex]?.row ?? {});
+                  highlight.setPin({ seriesId: item.seriesId, dataIndex: item.dataIndex });
+                  onItemClick();
+                }}
+              />
+            )}
+          </SeriesColors>
+        </div>
+      </Loading>
+    </MuiProvider>
+  );
+};

@@ -9,9 +9,16 @@ import './WidgetTooltip.scss';
 
 export const TOOLTIP_FORMATS = ['plainText', 'markdown', 'html'];
 const DEFAULT_FORMAT = 'plainText';
+// setTimeout's largest delay. A widget with no tooltip keeps its Tooltip (dropping the wrapper would remount the widget
+// when a bound tooltip turns on) but must never open it: an opened Tooltip, even an empty one, closes every other, and a
+// hover over a child reaches its parent's trigger too, so a List view row's or Kanban card's empty tooltip shut the
+// tooltip of the button inside it a moment after it showed.
+const NEVER_OPEN_DELAY = 2 ** 31 - 1;
 const MARKDOWN_REMARK_PLUGINS = [remarkGfm];
 
-// styles for markdown and plain text
+// The tooltip's surface, whatever its format. HTML once drew on no surface at all (transparent, no padding) in the
+// tooltip's white text, so a plain HTML tooltip was barely visible; it now sits on the same surface as text, and its
+// own markup can still colour its parts.
 const THEMED_CLASSES = [
   'tw-rounded-md',
   'tw-p-[6px]',
@@ -19,9 +26,6 @@ const THEMED_CLASSES = [
   'tw-leading-normal',
   'tw-shadow-none',
 ].join(' ');
-
-// styles for html
-const UNSTYLED_CLASSES = ['tw-bg-transparent', 'tw-p-0', 'tw-rounded-none', 'tw-shadow-none'].join(' ');
 
 const TooltipBody = ({ content, format }) => {
   if (format === 'html') {
@@ -54,12 +58,11 @@ const WidgetTooltip = ({
   const shouldShowTooltip = show && !!trimmed;
 
   const resolvedFormat = TOOLTIP_FORMATS.includes(format) ? format : DEFAULT_FORMAT;
-  const isHtml = resolvedFormat === 'html';
 
   const themeClass = darkMode ? 'dark-theme theme-dark' : '';
 
   return (
-    <TooltipProvider delayDuration={delayDuration}>
+    <TooltipProvider delayDuration={shouldShowTooltip ? delayDuration : NEVER_OPEN_DELAY}>
       <Tooltip>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
         {shouldShowTooltip && (
@@ -69,7 +72,7 @@ const WidgetTooltip = ({
             sideOffset={2}
             showArrow={false}
             data-cy="widget-tooltip"
-            className={cx(isHtml ? UNSTYLED_CLASSES : THEMED_CLASSES, themeClass)}
+            className={cx(THEMED_CLASSES, themeClass)}
           >
             <TooltipBody content={trimmed} format={resolvedFormat} />
           </TooltipContent>

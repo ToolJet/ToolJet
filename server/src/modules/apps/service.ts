@@ -8,6 +8,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { assertReleaseBaseline } from './release-baseline';
 import { EntityManager, In } from 'typeorm';
 import {
   AppCreateDto,
@@ -1092,6 +1093,8 @@ export class AppsService implements IAppsService {
       }
 
       await this.appsUtilService.checkModulesReleasedInApp(versionToBeReleased, user.organizationId, manager);
+      await assertReleaseBaseline(manager, appId, versionReleaseDto.expectedReleasedVersionId);
+      await this.beforeVersionRelease(manager, appId, versionToBeReleased);
 
       // Get version details for audit log
       const releasedVersion = await this.versionRepository.findVersion(versionToBeReleased);
@@ -1129,6 +1132,7 @@ export class AppsService implements IAppsService {
       }
 
       await manager.update(App, appId, { currentVersionId: versionToBeReleased });
+      await this.afterVersionRelease(manager, appId, versionToBeReleased, user.id);
 
       //APP_RELEASE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -1191,5 +1195,24 @@ export class AppsService implements IAppsService {
 
       return appFolderIds.some((folderId) => editableFolderIds.includes(folderId));
     });
+  }
+
+  /**
+   * Hook called before a version becomes the released version - override in EE
+   */
+  protected async beforeVersionRelease(manager: EntityManager, appId: string, versionId: string): Promise<void> {
+    // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after a version becomes the released version - override in EE
+   */
+  protected async afterVersionRelease(
+    manager: EntityManager,
+    appId: string,
+    versionId: string,
+    userId?: string
+  ): Promise<void> {
+    // No-op in CE, EE overrides
   }
 }
