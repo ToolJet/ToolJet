@@ -150,8 +150,11 @@ describe('Data Source Folders — Folder Granular Access', () => {
 
       // For now the editor's data source picker is the check: it shows the folder and the granted data source inside it.
       cy.apiCreateApp(`ds-direct-app-${attemptId}`);
-      cy.openApp('', Cypress.env('workspaceId'), Cypress.env('appId'), dsFolder.pickerFolderHeader(folderName));
-      cy.get(dsFolder.pickerFolderHeader(folderName)).should('be.visible').click();
+      cy.then(() => {
+        cy.window({ log: false }).then((win) => win.localStorage.setItem('walkthroughCompleted', 'true'));
+        cy.visit(`/${workspaceId}/apps/${Cypress.env('appId')}`);
+      });
+      cy.get(dsFolder.pickerFolderHeader(folderName), { timeout: 30000 }).should('be.visible').click();
       cy.get(dsFolder.pickerDataSourceCard(dataSourceName)).should('be.visible');
     });
   });
