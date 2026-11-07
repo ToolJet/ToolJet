@@ -21,7 +21,7 @@ import { camelCase, isEmpty, mapKeys, noop } from 'lodash';
 import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
-import { setSuppressQueryRerun } from '@/AppBuilder/_stores/slices/componentsSlice';
+import { setSuppressQueryRerun, clearAllPeriodicTimers } from '@/AppBuilder/_stores/slices/componentsSlice';
 import useRouter from '@/_hooks/use-router';
 import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
@@ -194,6 +194,14 @@ const useAppData = (
     setCurrentAppName(appName || '');
     return () => setCurrentAppName('');
   }, [appName]);
+
+  // Periodic query timers live outside the store and survive page switches; stop them when
+  // leaving the app (and on environment / version / restore reloads, below). Embedded modules
+  // don't own them.
+  useEffect(() => {
+    if (moduleMode && moduleId !== 'canvas') return;
+    return () => clearAllPeriodicTimers();
+  }, [moduleMode, moduleId]);
 
   useEffect(() => {
     setCurrentAppMeta({
@@ -1054,6 +1062,10 @@ const useAppData = (
     const isVersionConsistent = selectedVersion?.id && selectedVersion.id === currentVersionId;
 
     if (isEnvChanged || (isVersionChanged && isVersionConsistent) || isForceRefreshTriggered || isHotReload) {
+      // Environment / version / restore reload the app's data context: stop periodic polling so
+      // nothing keeps running against the new environment unasked. Run-on-page-load queries
+      // restart it. A hot reload only swaps the canvas, so polling carries on.
+      if (!isHotReload) clearAllPeriodicTimers();
       if (isHotReload) {
         setCanvasReloading(true, moduleId);
         // The canvas subtree unmounts while reloading (AppCanvas), but AppCanvas itself stays
