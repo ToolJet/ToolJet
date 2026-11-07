@@ -98,7 +98,7 @@ export const TextRenderer = ({
       return (
         <div
           ref={cellRef}
-          className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+          className={`d-flex align-items-safe-center h-100 w-100 justify-content-${determineJustifyContentValue(
             horizontalAlignment
           )}`}
           style={cellStyle}
@@ -126,7 +126,7 @@ export const TextRenderer = ({
           whiteSpace: 'pre-wrap',
           position: 'static',
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'safe center',
         }}
         onBlur={(e) => {
           setIsEditing(false);
