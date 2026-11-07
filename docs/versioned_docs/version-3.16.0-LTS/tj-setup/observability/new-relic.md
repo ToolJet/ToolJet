@@ -103,7 +103,7 @@ Set up the following environment variables in the **.env** file while running To
 
 ```js
 ENABLE_OTEL=true
-OTEL_SERVICE_NAME=tooljet
+SERVICE_NAME=tooljet
 
 # OTel Collector endpoints
 OTEL_EXPORTER_OTLP_TRACES=http://otel-collector:4318/v1/traces

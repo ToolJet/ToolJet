@@ -10,6 +10,10 @@ ToolJet 3.16 introduces a set of **new features and platform updates**. All chan
 We recommend reviewing this guide and testing in a staging environment to evaluate UI differences. For self-hosted users, ensure `.env` changes are applied for audit log retention.
 :::
 
+:::info Upgrading to 3.20 LTS
+See [Upgrading to 3.20 LTS](#upgrading-to-320-lts) for the changes between 3.16 LTS and 3.20 LTS.
+:::
+
 ## Suggested Updates (Medium Severity)
 
 ### App Builder Changes
@@ -31,7 +35,7 @@ Audit logs are the reports of all the activities done in your ToolJet account. B
 | Deployment  | Notes                                                                                   |
 | :---------- | :-------------------------------------------------------------------------------------- |
 | Cloud       | No change. Audit logs remain fixed to 90 days.                                          |
-| Self-Hosted | Audit logs now default to 90 days. Override via `.env`: `AUDIT_LOG_RETENTION_PERIOD=90` |
+| Self-Hosted | Audit logs now default to 90 days. Override via `.env`: `AUDIT_LOGS_RETENTION_PERIOD=90` |
 
 #### Group Synchronization (Migration Only)
 
@@ -66,6 +70,85 @@ These changes may cause **minor visual shifts** but require no action unless aff
 | Dividers         | Side padding removed on both horizontal and vertical dividers, making them appear slightly larger or more prominent.  |
 | Canvas           | When the page menu expands, the canvas now shrinks more predictably to avoid layout clipping.                         |
 | Page Menu (Icon) | The pin icon has been replaced with a hamburger menu icon to better reflect toggle behaviour in collapsed mode.       |
+
+## Upgrading to 3.20 LTS
+
+The LTS release after 3.16 is 3.20. There are no 3.17, 3.18, or 3.19 LTS releases, so you upgrade from any 3.16 LTS version directly to 3.20 LTS. This section lists the changes between the last 3.16 LTS release (`v3.16.33-lts`) and `v3.20.246-lts` that affect self-hosted deployments. If you're upgrading from a version earlier than 3.16, also review the 3.16 changes above.
+
+:::tip Before upgrading
+Back up your ToolJet and ToolJet Database PostgreSQL databases, and test the upgrade in a staging environment. Keep your existing environment variables in place until the upgrade has finished, because some one-time migrations read them during the upgrade.
+:::
+
+### Required Actions (High Severity)
+
+#### Workflow Scheduling Moves From Temporal to BullMQ
+
+Workflows no longer use Temporal. Workflow jobs, including scheduled runs, are now queued in Redis using BullMQ, and Temporal is no longer included in the ToolJet image.
+
+- Set `WORKER=true` on at least one ToolJet instance. Only instances with `WORKER=true` process queued workflow runs, including scheduled ones. When a worker starts, it loads all active schedules from the database.
+- In 3.16, setting `WORKER` started a worker process without a web server. In 3.20, every instance serves the ToolJet app and API, and `WORKER=true` adds job processing.
+- If you run more than one ToolJet instance, or separate worker instances, connect all of them to the same external Redis instance (v7.x recommended). The Redis bundled in the ToolJet image works only for a single instance.
+- Remove `ENABLE_WORKFLOW_SCHEDULING`, `WORKFLOW_WORKER`, `TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE`, `TEMPORAL_SERVER_ADDRESS`, and any Temporal services from your deployment. They have no effect.
+
+For step-by-step instructions, see [Migrating Workflows from Temporal to BullMQ](/docs/setup/workflow-temporal-to-bullmq-migration).
+
+#### Custom CA Certificates on the Enterprise Image
+
+The Enterprise image's startup script sets `NODE_EXTRA_CA_CERTS` to the AWS RDS certificate bundle included in the image. This replaces any `NODE_EXTRA_CA_CERTS` value you pass as a container environment variable, for example in Docker Compose `environment`, Kubernetes `env`, or Helm values. ToolJet then no longer trusts your [custom CA certificate](/docs/setup/env-vars#custom-ca-certificate), and connections to endpoints signed by it fail with certificate errors.
+
+If you use a custom CA certificate, set `NODE_EXTRA_CA_CERTS` in a `.env` file mounted at `/app/.env` instead. The startup script loads this file after it sets the RDS bundle, so your value is used. If you also connect to Amazon RDS over SSL, point `NODE_EXTRA_CA_CERTS` to a PEM file that contains both your CA certificate and the [RDS certificate bundle](https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem).
+
+### Suggested Updates (Medium Severity)
+
+#### Redis Credentials
+
+ToolJet now passes Redis credentials to the workflow job queue. In 3.16, the job queue used only `REDIS_HOST` and `REDIS_PORT`. Different components read different variable names:
+
+| Component | Variables read |
+| :--- | :--- |
+| Workflow job queue | `REDIS_HOST`, `REDIS_PORT`, `REDIS_USERNAME`, `REDIS_PASSWORD`, `REDIS_DB`, `REDIS_TLS` |
+| Multiplayer editing (Enterprise Edition) | `REDIS_URL`, or `REDIS_HOST`, `REDIS_PORT`, `REDIS_USER`, `REDIS_PASSWORD` |
+
+If your Redis instance requires a username, set both `REDIS_USERNAME` and `REDIS_USER` to it. Set `REDIS_TLS=true` if your Redis instance requires TLS.
+
+#### Server Log Level and Format
+
+- **Quieter default logs:** In production, ToolJet now logs at `warn` level by default, so container logs no longer include a line for every HTTP request. Set `LOG_LEVEL=info` to keep per-request logs. See [Logging](/docs/setup/env-vars#logging).
+- **Log level as text:** The `level` field in JSON logs is now a name, such as `"level":"info"`, instead of a number, such as `"level":30`. Update any log pipelines, filters, or alerts that match on the numeric value.
+
+#### OpenID Connect Custom Scopes
+
+ToolJet no longer reads `OIDC_CUSTOM_SCOPES` at sign-in. During the upgrade, a one-time migration copies its value into every OpenID Connect SSO configuration, so keep the variable set until the upgrade has finished. After that, manage scopes in the **Custom Scopes** field of the OpenID Connect SSO settings, and remove the variable.
+
+ToolJet now always requests the `offline_access` scope, along with `openid`, `email`, and `profile`, so it can refresh OIDC sessions. Make sure your identity provider allows this scope for the ToolJet application. ToolJet no longer requests the `groups` scope from Microsoft Entra ID.
+
+#### Two-Factor Authentication Secret
+
+[Two-factor authentication](/docs/user-management/authentication/2fa) is new in 3.20 and is off by default. Before you turn it on, set `MFA_MASTER_SECRET` to a long random value, for example the output of `openssl rand -hex 32`, and use the same value on every ToolJet instance. If it isn't set, setting up 2FA and signing in with 2FA fail with the error `MFA_MASTER_SECRET is not configured. Set it in the environment before enabling two-factor authentication.`
+
+Don't change `MFA_MASTER_SECRET` after users set up 2FA. Each user's 2FA key is derived from it, so changing it invalidates every authenticator app that's already set up.
+
+#### Custom Component Library Storage
+
+[Custom Component Libraries](/docs/app-builder/custom-component-library/overview) store uploaded bundles on the ToolJet server's local disk, in `/data/custom-components` by default. The ToolJet image doesn't create this directory and doesn't run as root. Before you publish libraries, mount a writable, persistent volume at `/data/custom-components`, or set `CUSTOM_COMPONENT_STORAGE_PATH` to a writable, persistent directory. If you run more than one ToolJet instance, use a volume shared by all of them, so every instance can serve every bundle.
+
+### Optional Changes (Low Severity)
+
+#### SSRF Protection for Outbound Requests
+
+ToolJet can now block requests from data sources to internal network addresses (server-side request forgery, or SSRF, protection). It's off by default in the Enterprise Edition (turn it on with `SSRF_PROTECTION_ENABLED=true`) and on by default in the Community Edition (turn it off with `SSRF_PROTECTION_ENABLED=false`). Private network ranges (`10.0.0.0/8`, `172.16.0.0/12`, and `192.168.0.0/16`) stay reachable. For what's blocked and the related settings, see [SSRF Protection](/docs/setup/env-vars#ssrf-protection).
+
+#### New Optional Settings
+
+| Variable | Description |
+| :--- | :--- |
+| `OTEL_EXPORTER_OTLP_LOGS` | OTLP/HTTP endpoint for logs. When set with `ENABLE_OTEL=true`, ToolJet sends its server logs to this endpoint at the `LOG_LEVEL` level, in addition to container logs. See [Observability](/docs/setup/env-vars#observability). |
+| `TOOLJET_WORKFLOW_SANDBOX_BYPASS` | Python code in workflows runs in an nsjail sandbox. On platforms that don't allow it, such as AWS Fargate or Render, Python nodes fail. Set to `true` to run Python without isolation. |
+
+#### Image Changes
+
+- The Enterprise image no longer includes Neo4j. You can remove `NEO4J_*` variables.
+- The Enterprise image is now based on Debian 13 instead of Debian 12. If you build your own image on top of it, check your package names. For example, `libaio1` is now `libaio1t64`.
 
 ## Need Help?
 
