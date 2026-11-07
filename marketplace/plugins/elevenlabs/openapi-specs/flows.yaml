@@ -1,0 +1,4353 @@
+openapi: 3.1.0
+info:
+  title: ElevenLabs API Documentation
+  description: 'This is the documentation for the ElevenLabs API. You can use this API to use our service programmatically, this is done by using your API key. You can find your API key in the dashboard at https://elevenlabs.io/app/settings/api-keys.'
+  version: '1.0'
+paths:
+  /v1/usage/character-stats:
+    get:
+      summary: Get Characters Usage Metrics (Deprecated)
+      description: '(Deprecated) This endpoint is deprecated. Use /v1/workspace/analytics/query/usage-by-product-over-time instead, which exposes the bucket size as `interval_seconds` (an integer in seconds) rather than `aggregation_interval`. Returns the usage metrics for the current user or the entire workspace they are part of. The response provides a time axis based on the specified aggregation interval (default: day), with usage values for each interval along that axis. Usage is broken down by the selected breakdown type. For example, breakdown type "voice" will return the usage of each voice for each interval along the time axis.'
+      operationId: usage_characters
+      deprecated: true
+      parameters:
+        - name: start_unix
+          in: query
+          required: true
+          schema:
+            type: integer
+            description: 'UTC Unix timestamp for the start of the usage window, in milliseconds. To include the first day of the window, the timestamp should be at 00:00:00 of that day.'
+            examples:
+              - '1685574000'
+            title: Start Unix
+          description: 'UTC Unix timestamp for the start of the usage window, in milliseconds. To include the first day of the window, the timestamp should be at 00:00:00 of that day.'
+        - name: end_unix
+          in: query
+          required: true
+          schema:
+            type: integer
+            description: 'UTC Unix timestamp for the end of the usage window, in milliseconds. To include the last day of the window, the timestamp should be at 23:59:59 of that day.'
+            examples:
+              - '1688165999'
+            title: End Unix
+          description: 'UTC Unix timestamp for the end of the usage window, in milliseconds. To include the last day of the window, the timestamp should be at 23:59:59 of that day.'
+        - name: include_workspace_metrics
+          in: query
+          required: false
+          schema:
+            type: boolean
+            description: Whether or not to include the statistics of the entire workspace.
+            default: false
+            title: Include Workspace Metrics
+          description: Whether or not to include the statistics of the entire workspace.
+        - name: breakdown_type
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/BreakdownTypes'
+            description: How to break down the information. Cannot be "user" if include_workspace_metrics is False.
+            default: none
+          description: How to break down the information. Cannot be "user" if include_workspace_metrics is False.
+        - name: aggregation_interval
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/UsageAggregationInterval'
+            description: 'How to aggregate usage data over time. Can be "hour", "day", "week", "month", or "cumulative".'
+            default: day
+          description: 'How to aggregate usage data over time. Can be "hour", "day", "week", "month", or "cumulative".'
+        - name: aggregation_bucket_size
+          in: query
+          required: false
+          schema:
+            description: Aggregation bucket size in seconds. Overrides the aggregation interval.
+            title: Aggregation Bucket Size
+            type: integer
+          description: Aggregation bucket size in seconds. Overrides the aggregation interval.
+        - name: metric
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/MetricType'
+            description: Which metric to aggregate.
+            default: credits
+          description: Which metric to aggregate.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageCharactersResponseModel'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name: usage
+      x-fern-sdk-method-name: get
+      tags:
+        - other
+  /v1/flows/video:
+    get:
+      tags:
+        - Flows
+        - Video
+      summary: List Video Generations
+      description: 'List the video generations created through this API, newest first.'
+      operationId: list_video_generations
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            description: 'Pagination cursor: the `next_cursor` value of the previous page''s response. Omit it for the first page.'
+            title: Cursor
+            type: string
+          description: 'Pagination cursor: the `next_cursor` value of the previous page''s response. Omit it for the first page.'
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            minimum: 1
+            description: How many generations to return per page.
+            default: 30
+            title: Page Size
+          description: How many generations to return per page.
+        - name: status
+          in: query
+          required: false
+          schema:
+            description: Only return generations with this lifecycle status.
+            title: Status
+            enum:
+              - pending
+              - generating
+              - completed
+              - failed
+            type: string
+          description: Only return generations with this lifecycle status.
+        - name: model_id
+          in: query
+          required: false
+          schema:
+            description: Only return generations of this model.
+            title: Model Id
+            type: string
+          description: Only return generations of this model.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaGenerationListResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - flows
+        - video
+      x-fern-sdk-method-name: list
+    post:
+      tags:
+        - Flows
+        - Video
+      summary: Create Video Generation
+      description: Start a video generation with the selected model.
+      operationId: create_video_generation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VideoGenerationRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaGenerationCreateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - flows
+        - video
+      x-fern-sdk-method-name: create
+  '/v1/flows/video/{generation_id}':
+    get:
+      tags:
+        - Flows
+        - Video
+      summary: Get Video Generation
+      description: 'Retrieve the status of a video generation, and retrieve its output URL once completed.'
+      operationId: get_video_generation
+      parameters:
+        - name: generation_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Generation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaGenerationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - flows
+        - video
+      x-fern-sdk-method-name: get
+  /v1/flows/image:
+    get:
+      tags:
+        - Flows
+        - Image
+      summary: List Image Generations
+      description: 'List the image generations created through this API, newest first.'
+      operationId: list_image_generations
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            description: 'Pagination cursor: the `next_cursor` value of the previous page''s response. Omit it for the first page.'
+            title: Cursor
+            type: string
+          description: 'Pagination cursor: the `next_cursor` value of the previous page''s response. Omit it for the first page.'
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            minimum: 1
+            description: How many generations to return per page.
+            default: 30
+            title: Page Size
+          description: How many generations to return per page.
+        - name: status
+          in: query
+          required: false
+          schema:
+            description: Only return generations with this lifecycle status.
+            title: Status
+            enum:
+              - pending
+              - generating
+              - completed
+              - failed
+            type: string
+          description: Only return generations with this lifecycle status.
+        - name: model_id
+          in: query
+          required: false
+          schema:
+            description: Only return generations of this model.
+            title: Model Id
+            type: string
+          description: Only return generations of this model.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaGenerationListResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - flows
+        - image
+      x-fern-sdk-method-name: list
+    post:
+      tags:
+        - Flows
+        - Image
+      summary: Create Image Generation
+      description: Start an image generation with the selected model.
+      operationId: create_image_generation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImageGenerationRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaGenerationCreateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - flows
+        - image
+      x-fern-sdk-method-name: create
+  '/v1/flows/image/{generation_id}':
+    get:
+      tags:
+        - Flows
+        - Image
+      summary: Get Image Generation
+      description: 'Retrieve the status of an image generation, and retrieve its output URL once completed.'
+      operationId: get_image_generation
+      parameters:
+        - name: generation_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Generation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaGenerationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - flows
+        - image
+      x-fern-sdk-method-name: get
+  /v1/flows/text-to-speech:
+    get:
+      tags:
+        - Flows
+        - Text to Speech
+      summary: List Speech Generations
+      description: 'List the speech generations created through this API, newest first.'
+      operationId: list_text_to_speech_generations
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            description: 'Pagination cursor: the `next_cursor` value of the previous page''s response. Omit it for the first page.'
+            title: Cursor
+            type: string
+          description: 'Pagination cursor: the `next_cursor` value of the previous page''s response. Omit it for the first page.'
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            minimum: 1
+            description: How many generations to return per page.
+            default: 30
+            title: Page Size
+          description: How many generations to return per page.
+        - name: status
+          in: query
+          required: false
+          schema:
+            description: Only return generations with this lifecycle status.
+            title: Status
+            enum:
+              - pending
+              - generating
+              - completed
+              - failed
+            type: string
+          description: Only return generations with this lifecycle status.
+        - name: model_id
+          in: query
+          required: false
+          schema:
+            description: Only return generations of this model.
+            title: Model Id
+            type: string
+          description: Only return generations of this model.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaGenerationListResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - flows
+        - text_to_speech
+      x-fern-sdk-method-name: list
+    post:
+      tags:
+        - Flows
+        - Text to Speech
+      summary: Create Speech Generation
+      description: 'Start a speech generation with the selected model. Charged per character via text-to-speech billing. Use this over `/v1/text-to-speech` for the asynchronous generation lifecycle or for models not offered there; for direct, synchronous speech synthesis, prefer `/v1/text-to-speech`.'
+      operationId: create_text_to_speech_generation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TextToSpeechGenerationRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaGenerationCreateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - flows
+        - text_to_speech
+      x-fern-sdk-method-name: create
+  '/v1/flows/text-to-speech/{generation_id}':
+    get:
+      tags:
+        - Flows
+        - Text to Speech
+      summary: Get Speech Generation
+      description: 'Retrieve the status of a speech generation, and retrieve its output URL once completed.'
+      operationId: get_text_to_speech_generation
+      parameters:
+        - name: generation_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Generation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaGenerationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - flows
+        - text_to_speech
+      x-fern-sdk-method-name: get
+  '/v1/flows/templates/{template_id}/runs':
+    get:
+      tags:
+        - Flows
+        - Templates
+      summary: List Template Runs
+      description: 'List this template''s runs created through this API, newest first.'
+      operationId: list_public_template_runs
+      parameters:
+        - name: template_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'The ID of the template, as shown in the ElevenLabs app or by `GET /v1/flows/templates`.'
+            title: Template Id
+          description: 'The ID of the template, as shown in the ElevenLabs app or by `GET /v1/flows/templates`.'
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            description: 'Pagination cursor: the `next_cursor` value of the previous page''s response. Omit it for the first page.'
+            title: Cursor
+            type: string
+          description: 'Pagination cursor: the `next_cursor` value of the previous page''s response. Omit it for the first page.'
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            minimum: 1
+            description: How many runs to return per page.
+            default: 30
+            title: Page Size
+          description: How many runs to return per page.
+        - name: version_id
+          in: query
+          required: false
+          schema:
+            description: Only return runs of this template version id.
+            title: Version Id
+            type: string
+          description: Only return runs of this template version id.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateRunListResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - flows
+        - templates
+        - runs
+      x-fern-sdk-method-name: list
+    post:
+      tags:
+        - Flows
+        - Templates
+      summary: Create Template Run
+      description: 'Start a run of a flows template. Pass `version_id` to pin a snapshot, or omit it / pass `latest` to run the latest published version. Set input values under `inputs`, keyed by input port id. The response is the run in its initial state, with every output already listed under its port id in `outputs`. Include `webhook` to receive a `flows_template_run` event carrying the finished run once its `status` is `completed` or `failed`; this is the recommended way to wait. Without one, fetch `GET /v1/flows/templates/{template_id}/runs/{run_id}` at a modest interval until the `status` is terminal.'
+      operationId: create_public_template_run
+      parameters:
+        - name: template_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'The ID of the template, as shown in the ElevenLabs app or by `GET /v1/flows/templates`.'
+            title: Template Id
+          description: 'The ID of the template, as shown in the ElevenLabs app or by `GET /v1/flows/templates`.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateRunCreateRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateRunResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - flows
+        - templates
+        - runs
+      x-fern-sdk-method-name: create
+  '/v1/flows/templates/{template_id}/runs/{run_id}':
+    get:
+      tags:
+        - Flows
+        - Templates
+      summary: Get Template Run
+      description: 'Retrieve a template run: its `status`, rolled up from its outputs, and each output''s own status and download URL once completed.'
+      operationId: get_public_template_run
+      parameters:
+        - name: template_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'The ID of the template, as shown in the ElevenLabs app or by `GET /v1/flows/templates`.'
+            title: Template Id
+          description: 'The ID of the template, as shown in the ElevenLabs app or by `GET /v1/flows/templates`.'
+        - name: run_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Run Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateRunResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - flows
+        - templates
+        - runs
+      x-fern-sdk-method-name: get
+  /v1/flows/templates:
+    get:
+      tags:
+        - Flows
+        - Templates
+      summary: List Templates
+      description: 'List the published flows templates in your workspace, together with each runnable version''s inputs and outputs. Use the ids here as `template_id` / `version_id` on `POST /v1/flows/templates/{template_id}/runs`. Versions built on models that are not available to you through the API are left out, so `versions` is empty when none of a template''s published versions is runnable through this API. Templates shared with you by link, or published to Explore from another workspace, are not listed but can still be fetched and run by `template_id`.'
+      operationId: list_public_templates
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            description: 'Pagination cursor: the `next_cursor` value of the previous page''s response. Omit it for the first page.'
+            title: Cursor
+            type: string
+          description: 'Pagination cursor: the `next_cursor` value of the previous page''s response. Omit it for the first page.'
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 25
+            minimum: 1
+            description: How many templates to return per page. Lower than the run list's ceiling because each row expands its versions' input and output schemas.
+            default: 10
+            title: Page Size
+          description: How many templates to return per page. Lower than the run list's ceiling because each row expands its versions' input and output schemas.
+        - name: versions_per_template
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 10
+            minimum: 1
+            description: 'How many of each template''s published versions to return, newest first. `has_more_versions` tells you when a template has more.'
+            default: 3
+            title: Versions Per Template
+          description: 'How many of each template''s published versions to return, newest first. `has_more_versions` tells you when a template has more.'
+        - name: search
+          in: query
+          required: false
+          schema:
+            description: Only return templates whose name or description contains this text.
+            title: Search
+            type: string
+            maxLength: 100
+          description: Only return templates whose name or description contains this text.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateListResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - flows
+        - templates
+      x-fern-sdk-method-name: list
+  '/v1/flows/templates/{template_id}':
+    get:
+      tags:
+        - Flows
+        - Templates
+      summary: Get Template
+      description: 'Retrieve one flows template, together with each runnable version''s inputs and outputs. `versions` is empty when no published version is runnable through this API. Works for any template you can open, including templates shared with you by link or published to Explore from another workspace, which `GET /v1/flows/templates` does not list.'
+      operationId: get_public_template
+      parameters:
+        - name: template_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: 'The ID of the template, as shown in the ElevenLabs app or by `GET /v1/flows/templates`.'
+            title: Template Id
+          description: 'The ID of the template, as shown in the ElevenLabs app or by `GET /v1/flows/templates`.'
+        - name: versions_per_template
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 10
+            minimum: 1
+            description: 'How many of each template''s published versions to return, newest first. `has_more_versions` tells you when a template has more.'
+            default: 10
+            title: Versions Per Template
+          description: 'How many of each template''s published versions to return, newest first. `has_more_versions` tells you when a template has more.'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateSummary'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - flows
+        - templates
+      x-fern-sdk-method-name: get
+  /v1/assets:
+    get:
+      tags:
+        - Assets
+      summary: List Assets
+      description: 'List assets in the workspace, most recently created first.'
+      operationId: list_assets
+      parameters:
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            minimum: 1
+            description: Number of assets to return.
+            default: 30
+            title: Page Size
+          description: Number of assets to return.
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            description: Token from a previous response's `next_cursor`. Omit to fetch the first page.
+            title: Cursor
+            type: string
+          description: Token from a previous response's `next_cursor`. Omit to fetch the first page.
+        - name: search
+          in: query
+          required: false
+          schema:
+            description: Optional free-text search filter over asset names.
+            title: Search
+            type: string
+          description: Optional free-text search filter over asset names.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetListResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - assets
+      x-fern-sdk-method-name: list
+    post:
+      tags:
+        - Assets
+      summary: Upload Asset
+      description: Upload a new asset.
+      operationId: upload_asset
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_Upload_asset_v1_assets_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - assets
+      x-fern-sdk-method-name: create
+  '/v1/assets/{asset_id}':
+    get:
+      tags:
+        - Assets
+      summary: Get Asset
+      description: Retrieve a single asset by ID.
+      operationId: get_asset
+      parameters:
+        - name: asset_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the asset.
+            examples:
+              - 5xM2KqOnZyce22SPZ9d4
+            title: Asset Id
+          description: ID of the asset.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - assets
+      x-fern-sdk-method-name: get
+    delete:
+      tags:
+        - Assets
+      summary: Delete Asset
+      description: Delete an asset by ID.
+      operationId: delete_asset_endpoint
+      parameters:
+        - name: asset_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the asset.
+            examples:
+              - 5xM2KqOnZyce22SPZ9d4
+            title: Asset Id
+          description: ID of the asset.
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      x-fern-sdk-group-name:
+        - assets
+      x-fern-sdk-method-name: delete
+components:
+  schemas:
+    AssetResponse:
+      properties:
+        asset_id:
+          type: string
+          title: Asset Id
+          description: Unique identifier for the asset.
+        name:
+          type: string
+          title: Name
+          description: Display name of the asset.
+        mime_type:
+          type: string
+          title: Mime Type
+          description: MIME type of the uploaded file (e.g. `audio/mpeg`).
+        created_at_unix:
+          type: integer
+          title: Created At Unix
+          description: Unix timestamp (seconds) the asset was created.
+        content_url:
+          title: Content Url
+          description: Signed URL to fetch the asset's content. May be `null` if the asset has not finished processing. Do not rely on it being valid for more than 1 hour; fetch the asset again for a fresh URL.
+          type: string
+      type: object
+      required:
+        - asset_id
+        - name
+        - mime_type
+        - created_at_unix
+        - content_url
+      title: AssetResponse
+      description: The public Asset object.
+      example:
+        asset_id: 5xM2KqOnZyce22SPZ9d4
+        content_url: 'https://.../a1b2c3d4/content?...'
+        created_at_unix: 1721520000
+        mime_type: audio/mpeg
+        name: podcast-intro.mp3
+    Body_Upload_asset_v1_assets_post:
+      properties:
+        asset:
+          type: string
+          title: Asset
+          description: The file to upload.
+          format: binary
+        name:
+          type: string
+          title: Name
+          description: Display name for the asset.
+          examples:
+            - podcast-intro.mp3
+      type: object
+      required:
+        - asset
+        - name
+      title: Body_Upload_asset_v1_assets_post
+    AssetListResponse:
+      properties:
+        assets:
+          items:
+            $ref: '#/components/schemas/AssetResponse'
+          type: array
+          title: Assets
+          description: List of Asset objects.
+        next_cursor:
+          title: Next Cursor
+          description: Pass as `cursor` to fetch the next page. `null` if there are no more results.
+          type: string
+        has_more:
+          type: boolean
+          title: Has More
+          description: Whether there are more results to fetch.
+          readOnly: true
+      type: object
+      required:
+        - assets
+        - next_cursor
+        - has_more
+      title: AssetListResponse
+      description: 'One page of the workspace''s assets, most recently created first.'
+      example:
+        assets:
+          - asset_id: 5xM2KqOnZyce22SPZ9d4
+            content_url: 'https://.../a1b2c3d4/content?...'
+            created_at_unix: 1721520000
+            mime_type: audio/mpeg
+            name: podcast-intro.mp3
+        has_more: true
+        next_cursor: eyJvZmZzZXQiOjEwfQ
+    TemplateSummary:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: 'Pass as `template_id` on `POST /v1/flows/templates/{template_id}/runs`.'
+          examples:
+            - tmpl_abc123
+        name:
+          type: string
+          title: Name
+          description: The template's name.
+          examples:
+            - Product shot
+        description:
+          title: Description
+          description: 'The template''s description, if it has one.'
+          type: string
+        versions:
+          items:
+            $ref: '#/components/schemas/TemplateVersion'
+          type: array
+          title: Versions
+          description: 'The published versions this caller can run, newest first. A version whose graph uses a model that is not available to you through the API is left out, as is one whose stored snapshot is gone; either way the list can be empty while the template still has versions the ElevenLabs app can run.'
+        has_more_versions:
+          type: boolean
+          title: Has More Versions
+          description: 'Whether this template has further published versions beyond the `versions_per_template` returned here. Fetch `GET /v1/flows/templates/{template_id}` with a larger `versions_per_template` to see more of them.'
+      type: object
+      required:
+        - id
+        - name
+        - versions
+        - has_more_versions
+      title: TemplateSummary
+      description: 'A template the caller can run, and its runnable versions.'
+    TemplateVersion:
+      properties:
+        version_id:
+          type: string
+          title: Version Id
+          description: 'Pass as `version_id` on `POST /v1/flows/templates/{template_id}/runs` to pin a run to this snapshot.'
+          examples:
+            - ver_01hxyz
+        published_at_unix:
+          type: integer
+          title: Published At Unix
+          description: 'When this version was published, as a Unix timestamp in seconds.'
+        is_latest:
+          type: boolean
+          title: Is Latest
+          description: Whether this is the version a run gets when `version_id` is omitted or set to `latest`.
+        inputs:
+          items:
+            $ref: '#/components/schemas/TemplatePort'
+          type: array
+          title: Inputs
+          description: 'The inputs this version accepts, in canvas order. Every input is required on a run.'
+        outputs:
+          items:
+            $ref: '#/components/schemas/TemplatePort'
+          type: array
+          title: Outputs
+          description: 'The outputs this version produces, in canvas order.'
+      type: object
+      required:
+        - version_id
+        - published_at_unix
+        - is_latest
+        - inputs
+        - outputs
+      title: TemplateVersion
+      description: 'A published snapshot of a template, and the ports it runs with.'
+    TemplatePort:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: 'The port id. Input ids are the keys of the `inputs` map on `POST /v1/flows/templates/{template_id}/runs`; output ids are the keys of the `outputs` map on the run response.'
+          examples:
+            - prompt
+        content_schema:
+          $ref: '#/components/schemas/ContentSchema'
+          description: 'What this port accepts or produces, as a `ContentSchema`. Its `title` is the port''s display name and its `description` is the help text the template author wrote. For an input, its `type` decides what value is accepted: `string` takes a bare string or a `generation` reference, `voice` takes a `voice` reference, and `image`/`video`/`audio` take an `asset`, `generation` or `inline_base64` reference. `number`, `integer` and `boolean` take a JSON value of that type. An `array` input takes a JSON array with one value per element, each admissible for its `items`. `object` inputs cannot be bound through this API yet. A `string` schema may carry an `enum` of the only values accepted. For an output, its `type` decides which `Template<Kind>Output` shape the run response holds under the port id.'
+      type: object
+      required:
+        - id
+        - content_schema
+      title: TemplatePort
+      description: One input or output port of a published template version.
+    ContentSchema:
+      oneOf:
+        - $ref: '#/components/schemas/StringSchema'
+        - $ref: '#/components/schemas/NumberSchema'
+        - $ref: '#/components/schemas/IntegerSchema'
+        - $ref: '#/components/schemas/BooleanSchema'
+        - $ref: '#/components/schemas/ImageSchema'
+        - $ref: '#/components/schemas/VideoSchema'
+        - $ref: '#/components/schemas/AudioSchema'
+        - $ref: '#/components/schemas/VoiceSchema'
+        - $ref: '#/components/schemas/ObjectSchema'
+        - $ref: '#/components/schemas/ArraySchema'
+      discriminator:
+        propertyName: type
+        mapping:
+          array: '#/components/schemas/ArraySchema'
+          audio: '#/components/schemas/AudioSchema'
+          boolean: '#/components/schemas/BooleanSchema'
+          image: '#/components/schemas/ImageSchema'
+          integer: '#/components/schemas/IntegerSchema'
+          number: '#/components/schemas/NumberSchema'
+          object: '#/components/schemas/ObjectSchema'
+          string: '#/components/schemas/StringSchema'
+          video: '#/components/schemas/VideoSchema'
+          voice: '#/components/schemas/VoiceSchema'
+    ArraySchema:
+      properties:
+        title:
+          title: Title
+          type: string
+        description:
+          title: Description
+          type: string
+          maxLength: 500
+        type:
+          type: string
+          const: array
+          title: Type
+          default: array
+        items:
+          $ref: '#/components/schemas/ContentSchema'
+      additionalProperties: false
+      type: object
+      required:
+        - items
+      title: ArraySchema
+    ObjectSchema:
+      properties:
+        title:
+          title: Title
+          type: string
+        description:
+          title: Description
+          type: string
+          maxLength: 500
+        type:
+          type: string
+          const: object
+          title: Type
+          default: object
+        properties:
+          additionalProperties:
+            $ref: '#/components/schemas/ContentSchema'
+          type: object
+          title: Properties
+        required:
+          items:
+            type: string
+          type: array
+          title: Required
+      additionalProperties: false
+      type: object
+      title: ObjectSchema
+    VoiceSchema:
+      properties:
+        title:
+          title: Title
+          type: string
+        description:
+          title: Description
+          type: string
+          maxLength: 500
+        type:
+          type: string
+          const: voice
+          title: Type
+          default: voice
+      additionalProperties: false
+      type: object
+      title: VoiceSchema
+    AudioSchema:
+      properties:
+        title:
+          title: Title
+          type: string
+        description:
+          title: Description
+          type: string
+          maxLength: 500
+        type:
+          type: string
+          const: audio
+          title: Type
+          default: audio
+      additionalProperties: false
+      type: object
+      title: AudioSchema
+    VideoSchema:
+      properties:
+        title:
+          title: Title
+          type: string
+        description:
+          title: Description
+          type: string
+          maxLength: 500
+        type:
+          type: string
+          const: video
+          title: Type
+          default: video
+      additionalProperties: false
+      type: object
+      title: VideoSchema
+    ImageSchema:
+      properties:
+        title:
+          title: Title
+          type: string
+        description:
+          title: Description
+          type: string
+          maxLength: 500
+        type:
+          type: string
+          const: image
+          title: Type
+          default: image
+      additionalProperties: false
+      type: object
+      title: ImageSchema
+    BooleanSchema:
+      properties:
+        title:
+          title: Title
+          type: string
+        description:
+          title: Description
+          type: string
+          maxLength: 500
+        type:
+          type: string
+          const: boolean
+          title: Type
+          default: boolean
+      additionalProperties: false
+      type: object
+      title: BooleanSchema
+    IntegerSchema:
+      properties:
+        title:
+          title: Title
+          type: string
+        description:
+          title: Description
+          type: string
+          maxLength: 500
+        type:
+          type: string
+          const: integer
+          title: Type
+          default: integer
+      additionalProperties: false
+      type: object
+      title: IntegerSchema
+    NumberSchema:
+      properties:
+        title:
+          title: Title
+          type: string
+        description:
+          title: Description
+          type: string
+          maxLength: 500
+        type:
+          type: string
+          const: number
+          title: Type
+          default: number
+        enum:
+          anyOf:
+            - items:
+                type: number
+              type: array
+            - type: 'null'
+          title: Enum
+      additionalProperties: false
+      type: object
+      title: NumberSchema
+    StringSchema:
+      properties:
+        title:
+          title: Title
+          type: string
+        description:
+          title: Description
+          type: string
+          maxLength: 500
+        type:
+          type: string
+          const: string
+          title: Type
+          default: string
+        enum:
+          anyOf:
+            - items:
+                type: string
+              type: array
+            - type: 'null'
+          title: Enum
+      additionalProperties: false
+      type: object
+      title: StringSchema
+    TemplateListResponse:
+      properties:
+        templates:
+          items:
+            $ref: '#/components/schemas/TemplateSummary'
+          type: array
+          title: Templates
+          description: 'The templates on this page, most recently updated first. A page can hold fewer than `page_size` templates, or none at all, because templates you cannot run are filtered out after the page is read — keep paging while `has_more` is true.'
+        next_cursor:
+          title: Next Cursor
+          description: Pass as `cursor` to fetch the next page. `null` when there is no further page.
+          type: string
+        has_more:
+          type: boolean
+          title: Has More
+          description: Whether more templates exist beyond this page.
+          readOnly: true
+      type: object
+      required:
+        - templates
+        - next_cursor
+        - has_more
+      title: TemplateListResponse
+      description: 'One page of the templates the caller can run, most recently updated first.'
+      example:
+        has_more: true
+        next_cursor: cGFnZXwx
+        templates:
+          - description: 'Drop in a product photo, get a studio shot.'
+            has_more_versions: false
+            id: tmpl_abc123
+            name: Product shot
+            versions:
+              - inputs:
+                  - content_schema:
+                      title: Prompt
+                      type: string
+                    id: prompt
+                  - content_schema:
+                      description: A clean product photo on any background.
+                      title: Product photo
+                      type: image
+                    id: reference
+                is_latest: true
+                outputs:
+                  - content_schema:
+                      title: Final image
+                      type: image
+                    id: product_still
+                published_at_unix: 1739721600
+                version_id: ver_01hxyz
+    TemplateRunResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: The unique identifier of the run.
+          examples:
+            - sess_JWr5N6X9ZTqf8jD2LmQb
+        template_id:
+          type: string
+          title: Template Id
+          description: 'The template this run executed, so a webhook consumer running several templates can tell their runs apart without keeping a run-to-template map.'
+          examples:
+            - tmpl_abc123
+        version_id:
+          type: string
+          title: Version Id
+          description: 'The template version this run executed. Resolved when the run is created, so a run started with `latest` records the concrete version it ran.'
+          examples:
+            - ver_01hxyz
+        status:
+          $ref: '#/components/schemas/TemplateRunStatus'
+          description: 'The run''s status, rolled up from its outputs: `pending` until an output starts, `generating` while any output is unfinished, `completed` once every output has completed, and `failed` once every output has finished and at least one failed. `completed` and `failed` are terminal: the `flows_template_run` webhook fires once the run reaches either.'
+          examples:
+            - completed
+        outputs:
+          additionalProperties:
+            $ref: '#/components/schemas/TemplateOutput'
+          type: object
+          title: Outputs
+          description: 'The run''s outputs, keyed by output port id. Each is a `TemplateOutput` discriminated on `type`, the `type` of its port''s `content_schema`.'
+      type: object
+      required:
+        - id
+        - template_id
+        - version_id
+        - status
+        - outputs
+      title: TemplateRunResponse
+      description: |-
+        A template run and its outputs. Every output exists from the moment the
+        run is created and reports its own `status`; the run's `status` rolls them
+        up, and the run is finished once it is `completed` or `failed`.
+      example:
+        id: sess_JWr5N6X9ZTqf8jD2LmQb
+        outputs:
+          marketing_title:
+            content: Ride the wave.
+            id: Kx2mP7Y4WVrg9kE3NnRc
+            status: completed
+            type: string
+          product_demo:
+            id: QWr5N6X9ZTqf8jD2La3B
+            status: generating
+            type: video
+          product_still:
+            content_mime_type: image/png
+            content_url: 'https://storage.googleapis.com/generations/JWr5N6X9ZTqf8jD2LmQb'
+            id: JWr5N6X9ZTqf8jD2LmQb
+            status: completed
+            type: image
+        status: generating
+        template_id: tmpl_abc123
+        version_id: ver_01hxyz
+    TemplateOutput:
+      oneOf:
+        - $ref: '#/components/schemas/TemplateImageOutput'
+        - $ref: '#/components/schemas/TemplateVideoOutput'
+        - $ref: '#/components/schemas/TemplateAudioOutput'
+        - $ref: '#/components/schemas/TemplateStringOutput'
+        - $ref: '#/components/schemas/TemplateIntegerOutput'
+        - $ref: '#/components/schemas/TemplateNumberOutput'
+        - $ref: '#/components/schemas/TemplateBooleanOutput'
+        - $ref: '#/components/schemas/TemplateArrayOutput'
+        - $ref: '#/components/schemas/TemplateObjectOutput'
+      title: TemplateOutput
+      description: |-
+        One output of a template run, discriminated on `type`: the `type` of the
+        port's `content_schema`. Check `status` for where it is in its lifecycle.
+      discriminator:
+        propertyName: type
+        mapping:
+          array: '#/components/schemas/TemplateArrayOutput'
+          audio: '#/components/schemas/TemplateAudioOutput'
+          boolean: '#/components/schemas/TemplateBooleanOutput'
+          image: '#/components/schemas/TemplateImageOutput'
+          integer: '#/components/schemas/TemplateIntegerOutput'
+          number: '#/components/schemas/TemplateNumberOutput'
+          object: '#/components/schemas/TemplateObjectOutput'
+          string: '#/components/schemas/TemplateStringOutput'
+          video: '#/components/schemas/TemplateVideoOutput'
+    TemplateObjectOutput:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: The id of the generation behind this output. Pass it as a `generation` reference to use the output as an input elsewhere.
+          examples:
+            - JWr5N6X9ZTqf8jD2LmQb
+        status:
+          $ref: '#/components/schemas/TemplateRunStatus'
+          description: 'The lifecycle status of the output. It ends at `completed`, when the output''s content fields are set, or `failed`, when `failure_reason` and `error_message` are set.'
+          examples:
+            - completed
+        failure_reason:
+          title: Failure Reason
+          description: The category of failure. Present only when `status` is `failed`.
+          examples:
+            - timeout
+          type: string
+          enum:
+            - timeout
+            - model_error
+            - moderated
+            - invalid_parameters
+            - dependency_failed
+            - charging_failed
+            - internal_error
+        error_message:
+          title: Error Message
+          description: A human-readable description of the failure. Present only when `status` is `failed`. Failed generations are not charged.
+          type: string
+        type:
+          type: string
+          const: object
+          title: Type
+          description: 'The kind of output: the `type` of the port''s `content_schema`.'
+        content:
+          title: Content
+          description: 'One output per field, keyed by field name, each following the shape of that field''s schema. Present only when `status` is `completed`. Reserved: no template produces this kind of output yet; it is published so that templates which do can be run with the same client.'
+          additionalProperties:
+            $ref: '#/components/schemas/TemplateOutput'
+          type: object
+      type: object
+      required:
+        - id
+        - status
+        - type
+      title: TemplateObjectOutput
+      description: |-
+        An `object` output, delivered as `content` once completed: one output per
+        field of the schema's `properties`, each an output in its own right with
+        its own `status`. There are no dynamic fields.
+    TemplateRunStatus:
+      type: string
+      enum:
+        - pending
+        - generating
+        - completed
+        - failed
+      title: TemplateRunStatus
+      description: |-
+        Where a run, or one of its outputs, is in its lifecycle. The run's is rolled
+        up from its outputs' (``aggregate_output_statuses``). A class rather than a
+        ``Literal`` so it publishes as one named enum instead of being inlined into
+        every kind.
+    TemplateArrayOutput:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: The id of the generation behind this output. Pass it as a `generation` reference to use the output as an input elsewhere.
+          examples:
+            - JWr5N6X9ZTqf8jD2LmQb
+        status:
+          $ref: '#/components/schemas/TemplateRunStatus'
+          description: 'The lifecycle status of the output. It ends at `completed`, when the output''s content fields are set, or `failed`, when `failure_reason` and `error_message` are set.'
+          examples:
+            - completed
+        failure_reason:
+          title: Failure Reason
+          description: The category of failure. Present only when `status` is `failed`.
+          examples:
+            - timeout
+          type: string
+          enum:
+            - timeout
+            - model_error
+            - moderated
+            - invalid_parameters
+            - dependency_failed
+            - charging_failed
+            - internal_error
+        error_message:
+          title: Error Message
+          description: A human-readable description of the failure. Present only when `status` is `failed`. Failed generations are not charged.
+          type: string
+        type:
+          type: string
+          const: array
+          title: Type
+          description: 'The kind of output: the `type` of the port''s `content_schema`.'
+        content:
+          title: Content
+          description: 'The first elements of the list, in order, each following the shape of the schema''s `items`. Present only when `status` is `completed`. When `has_more` is true this is not the whole list. Reserved: no template produces this kind of output yet; it is published so that templates which do can be run with the same client.'
+          items:
+            $ref: '#/components/schemas/TemplateOutput'
+          type: array
+        next_cursor:
+          title: Next Cursor
+          description: 'Pass as `cursor` to a later endpoint to fetch the elements after `content`. `null` when `content` holds the whole list, or before the output completes. Reserved: no template produces this kind of output yet; it is published so that templates which do can be run with the same client.'
+          type: string
+        has_more:
+          type: boolean
+          title: Has More
+          description: Whether the list has elements beyond `content`.
+          readOnly: true
+      type: object
+      required:
+        - id
+        - status
+        - type
+        - has_more
+      title: TemplateArrayOutput
+      description: |-
+        An `array` output, delivered as `content` once completed: one output per
+        element, each an output in its own right with its own `status`. A list can
+        be arbitrarily long, so `content` is its first page; when `has_more` is
+        true, `next_cursor` leads to the rest.
+    TemplateBooleanOutput:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: The id of the generation behind this output. Pass it as a `generation` reference to use the output as an input elsewhere.
+          examples:
+            - JWr5N6X9ZTqf8jD2LmQb
+        status:
+          $ref: '#/components/schemas/TemplateRunStatus'
+          description: 'The lifecycle status of the output. It ends at `completed`, when the output''s content fields are set, or `failed`, when `failure_reason` and `error_message` are set.'
+          examples:
+            - completed
+        failure_reason:
+          title: Failure Reason
+          description: The category of failure. Present only when `status` is `failed`.
+          examples:
+            - timeout
+          type: string
+          enum:
+            - timeout
+            - model_error
+            - moderated
+            - invalid_parameters
+            - dependency_failed
+            - charging_failed
+            - internal_error
+        error_message:
+          title: Error Message
+          description: A human-readable description of the failure. Present only when `status` is `failed`. Failed generations are not charged.
+          type: string
+        type:
+          type: string
+          const: boolean
+          title: Type
+          description: 'The kind of output: the `type` of the port''s `content_schema`.'
+        content:
+          title: Content
+          description: 'The generated boolean. Present only when `status` is `completed`. Reserved: no template produces this kind of output yet; it is published so that templates which do can be run with the same client.'
+          examples:
+            - true
+          type: boolean
+      type: object
+      required:
+        - id
+        - status
+        - type
+      title: TemplateBooleanOutput
+      description: 'A `boolean` output, delivered as `content` once completed.'
+    TemplateNumberOutput:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: The id of the generation behind this output. Pass it as a `generation` reference to use the output as an input elsewhere.
+          examples:
+            - JWr5N6X9ZTqf8jD2LmQb
+        status:
+          $ref: '#/components/schemas/TemplateRunStatus'
+          description: 'The lifecycle status of the output. It ends at `completed`, when the output''s content fields are set, or `failed`, when `failure_reason` and `error_message` are set.'
+          examples:
+            - completed
+        failure_reason:
+          title: Failure Reason
+          description: The category of failure. Present only when `status` is `failed`.
+          examples:
+            - timeout
+          type: string
+          enum:
+            - timeout
+            - model_error
+            - moderated
+            - invalid_parameters
+            - dependency_failed
+            - charging_failed
+            - internal_error
+        error_message:
+          title: Error Message
+          description: A human-readable description of the failure. Present only when `status` is `failed`. Failed generations are not charged.
+          type: string
+        type:
+          type: string
+          const: number
+          title: Type
+          description: 'The kind of output: the `type` of the port''s `content_schema`.'
+        content:
+          title: Content
+          description: 'The generated number. Present only when `status` is `completed`. Reserved: no template produces this kind of output yet; it is published so that templates which do can be run with the same client.'
+          examples:
+            - 0.72
+          type: number
+      type: object
+      required:
+        - id
+        - status
+        - type
+      title: TemplateNumberOutput
+      description: 'A `number` output, delivered as `content` once completed.'
+    TemplateIntegerOutput:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: The id of the generation behind this output. Pass it as a `generation` reference to use the output as an input elsewhere.
+          examples:
+            - JWr5N6X9ZTqf8jD2LmQb
+        status:
+          $ref: '#/components/schemas/TemplateRunStatus'
+          description: 'The lifecycle status of the output. It ends at `completed`, when the output''s content fields are set, or `failed`, when `failure_reason` and `error_message` are set.'
+          examples:
+            - completed
+        failure_reason:
+          title: Failure Reason
+          description: The category of failure. Present only when `status` is `failed`.
+          examples:
+            - timeout
+          type: string
+          enum:
+            - timeout
+            - model_error
+            - moderated
+            - invalid_parameters
+            - dependency_failed
+            - charging_failed
+            - internal_error
+        error_message:
+          title: Error Message
+          description: A human-readable description of the failure. Present only when `status` is `failed`. Failed generations are not charged.
+          type: string
+        type:
+          type: string
+          const: integer
+          title: Type
+          description: 'The kind of output: the `type` of the port''s `content_schema`.'
+        content:
+          title: Content
+          description: 'The generated integer. Present only when `status` is `completed`. Reserved: no template produces this kind of output yet; it is published so that templates which do can be run with the same client.'
+          examples:
+            - 3
+          type: integer
+      type: object
+      required:
+        - id
+        - status
+        - type
+      title: TemplateIntegerOutput
+      description: 'An `integer` output, delivered as `content` once completed.'
+    TemplateStringOutput:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: The id of the generation behind this output. Pass it as a `generation` reference to use the output as an input elsewhere.
+          examples:
+            - JWr5N6X9ZTqf8jD2LmQb
+        status:
+          $ref: '#/components/schemas/TemplateRunStatus'
+          description: 'The lifecycle status of the output. It ends at `completed`, when the output''s content fields are set, or `failed`, when `failure_reason` and `error_message` are set.'
+          examples:
+            - completed
+        failure_reason:
+          title: Failure Reason
+          description: The category of failure. Present only when `status` is `failed`.
+          examples:
+            - timeout
+          type: string
+          enum:
+            - timeout
+            - model_error
+            - moderated
+            - invalid_parameters
+            - dependency_failed
+            - charging_failed
+            - internal_error
+        error_message:
+          title: Error Message
+          description: A human-readable description of the failure. Present only when `status` is `failed`. Failed generations are not charged.
+          type: string
+        type:
+          type: string
+          const: string
+          title: Type
+          description: 'The kind of output: the `type` of the port''s `content_schema`.'
+        content:
+          title: Content
+          description: The generated text. Present only when `status` is `completed`.
+          examples:
+            - A corgi rides a surfboard at golden hour.
+          type: string
+      type: object
+      required:
+        - id
+        - status
+        - type
+      title: TemplateStringOutput
+      description: 'A `string` output, delivered as `content` once completed.'
+    TemplateAudioOutput:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: The id of the generation behind this output. Pass it as a `generation` reference to use the output as an input elsewhere.
+          examples:
+            - JWr5N6X9ZTqf8jD2LmQb
+        status:
+          $ref: '#/components/schemas/TemplateRunStatus'
+          description: 'The lifecycle status of the output. It ends at `completed`, when the output''s content fields are set, or `failed`, when `failure_reason` and `error_message` are set.'
+          examples:
+            - completed
+        failure_reason:
+          title: Failure Reason
+          description: The category of failure. Present only when `status` is `failed`.
+          examples:
+            - timeout
+          type: string
+          enum:
+            - timeout
+            - model_error
+            - moderated
+            - invalid_parameters
+            - dependency_failed
+            - charging_failed
+            - internal_error
+        error_message:
+          title: Error Message
+          description: A human-readable description of the failure. Present only when `status` is `failed`. Failed generations are not charged.
+          type: string
+        content_url:
+          title: Content Url
+          description: A signed URL to download the generated media from. Present only when `status` is `completed`. It expires about an hour after this response is returned; fetch the run again for a fresh URL.
+          examples:
+            - 'https://storage.googleapis.com/generations/JWr5N6X9ZTqf8jD2LmQb'
+          type: string
+        content_mime_type:
+          title: Content Mime Type
+          description: The MIME type of the generated media. Present only when `status` is `completed`.
+          examples:
+            - video/mp4
+            - image/png
+            - audio/mpeg
+          type: string
+        type:
+          type: string
+          const: audio
+          title: Type
+          description: 'The kind of output: the `type` of the port''s `content_schema`.'
+      type: object
+      required:
+        - id
+        - status
+        - type
+      title: TemplateAudioOutput
+      description: 'An `audio` output, downloaded from `content_url` once completed.'
+    TemplateVideoOutput:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: The id of the generation behind this output. Pass it as a `generation` reference to use the output as an input elsewhere.
+          examples:
+            - JWr5N6X9ZTqf8jD2LmQb
+        status:
+          $ref: '#/components/schemas/TemplateRunStatus'
+          description: 'The lifecycle status of the output. It ends at `completed`, when the output''s content fields are set, or `failed`, when `failure_reason` and `error_message` are set.'
+          examples:
+            - completed
+        failure_reason:
+          title: Failure Reason
+          description: The category of failure. Present only when `status` is `failed`.
+          examples:
+            - timeout
+          type: string
+          enum:
+            - timeout
+            - model_error
+            - moderated
+            - invalid_parameters
+            - dependency_failed
+            - charging_failed
+            - internal_error
+        error_message:
+          title: Error Message
+          description: A human-readable description of the failure. Present only when `status` is `failed`. Failed generations are not charged.
+          type: string
+        content_url:
+          title: Content Url
+          description: A signed URL to download the generated media from. Present only when `status` is `completed`. It expires about an hour after this response is returned; fetch the run again for a fresh URL.
+          examples:
+            - 'https://storage.googleapis.com/generations/JWr5N6X9ZTqf8jD2LmQb'
+          type: string
+        content_mime_type:
+          title: Content Mime Type
+          description: The MIME type of the generated media. Present only when `status` is `completed`.
+          examples:
+            - video/mp4
+            - image/png
+            - audio/mpeg
+          type: string
+        type:
+          type: string
+          const: video
+          title: Type
+          description: 'The kind of output: the `type` of the port''s `content_schema`.'
+      type: object
+      required:
+        - id
+        - status
+        - type
+      title: TemplateVideoOutput
+      description: 'A `video` output, downloaded from `content_url` once completed.'
+    TemplateImageOutput:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: The id of the generation behind this output. Pass it as a `generation` reference to use the output as an input elsewhere.
+          examples:
+            - JWr5N6X9ZTqf8jD2LmQb
+        status:
+          $ref: '#/components/schemas/TemplateRunStatus'
+          description: 'The lifecycle status of the output. It ends at `completed`, when the output''s content fields are set, or `failed`, when `failure_reason` and `error_message` are set.'
+          examples:
+            - completed
+        failure_reason:
+          title: Failure Reason
+          description: The category of failure. Present only when `status` is `failed`.
+          examples:
+            - timeout
+          type: string
+          enum:
+            - timeout
+            - model_error
+            - moderated
+            - invalid_parameters
+            - dependency_failed
+            - charging_failed
+            - internal_error
+        error_message:
+          title: Error Message
+          description: A human-readable description of the failure. Present only when `status` is `failed`. Failed generations are not charged.
+          type: string
+        content_url:
+          title: Content Url
+          description: A signed URL to download the generated media from. Present only when `status` is `completed`. It expires about an hour after this response is returned; fetch the run again for a fresh URL.
+          examples:
+            - 'https://storage.googleapis.com/generations/JWr5N6X9ZTqf8jD2LmQb'
+          type: string
+        content_mime_type:
+          title: Content Mime Type
+          description: The MIME type of the generated media. Present only when `status` is `completed`.
+          examples:
+            - video/mp4
+            - image/png
+            - audio/mpeg
+          type: string
+        type:
+          type: string
+          const: image
+          title: Type
+          description: 'The kind of output: the `type` of the port''s `content_schema`.'
+      type: object
+      required:
+        - id
+        - status
+        - type
+      title: TemplateImageOutput
+      description: 'An `image` output, downloaded from `content_url` once completed.'
+    TemplateRunCreateRequest:
+      properties:
+        inputs:
+          additionalProperties:
+            $ref: '#/components/schemas/TemplateRunInput'
+          type: object
+          maxProperties: 64
+          title: Inputs
+          description: 'Input values keyed by input port id. Every input port of the version being run must be given; a missing or unknown id is rejected. Pass `{}` for a template with no inputs.'
+        version_id:
+          title: Version Id
+          description: 'The template snapshot to run. Pass a specific version id to pin that snapshot, or `latest` (the default when omitted) to run the template''s most recently published version. Only published versions can be pinned, except by the template''s owner, who may also pin an unpublished saved snapshot to try it out before publishing. The live draft is never run through this API.'
+          examples:
+            - latest
+            - ver_01hxyz
+          type: string
+          minLength: 1
+        webhook:
+          description: 'Include to send the run''s result to the workspace''s configured flows webhooks once the run''s `status` reaches `completed` or `failed`. One event for the whole run: the `flows_template_run` event''s `data` matches the terminal response of `GET /v1/flows/templates/{template_id}/runs/{run_id}`.'
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+      additionalProperties: false
+      type: object
+      required:
+        - inputs
+      title: TemplateRunCreateRequest
+      description: 'Request body of ``POST /v1/flows/templates/{template_id}/runs``.'
+      example:
+        inputs:
+          prompt: a corgi on a surfboard
+          reference:
+            asset_id: 5xM2KqOnZyce22SPZ9d4
+            type: asset
+        version_id: latest
+        webhook:
+          type: all
+    WebhookTarget:
+      oneOf:
+        - $ref: '#/components/schemas/WebhookTargetAll'
+        - $ref: '#/components/schemas/WebhookTargetIds'
+      discriminator:
+        propertyName: type
+        mapping:
+          all: '#/components/schemas/WebhookTargetAll'
+          ids: '#/components/schemas/WebhookTargetIds'
+    WebhookTargetIds:
+      properties:
+        type:
+          type: string
+          const: ids
+          title: Type
+          description: Send the result to the listed flows webhooks.
+        ids:
+          items:
+            type: string
+          type: array
+          minItems: 1
+          title: Ids
+          description: The IDs of the workspace flows webhooks to deliver the result to. Each must be one of the workspace's configured flows webhooks.
+          examples:
+            - - Q8mVr2LpXcT4nB6yJdKw
+      type: object
+      required:
+        - type
+        - ids
+      title: WebhookTargetIds
+      description: Deliver the result to specific configured flows webhooks.
+    WebhookTargetAll:
+      properties:
+        type:
+          type: string
+          const: all
+          title: Type
+          description: Send the result to all of the workspace's configured flows webhooks.
+      type: object
+      required:
+        - type
+      title: WebhookTargetAll
+      description: Deliver the result to all of the workspace's configured flows webhooks.
+    TemplateRunInput:
+      anyOf:
+        - type: string
+        - type: boolean
+        - type: integer
+        - type: number
+        - $ref: '#/components/schemas/TemplateInputReference'
+        - items:
+            $ref: '#/components/schemas/TemplateRunInput'
+          type: array
+          maxItems: 64
+      title: TemplateRunInput
+      description: |-
+        One value bound to a template input port, in the form its `content_schema`
+        calls for. A `string` port takes the text itself; `number`, `integer` and
+        `boolean` ports take a JSON value of that type. Anything stored elsewhere is
+        a reference discriminated on `type`: a prior `generation`, an uploaded
+        `asset`, a `voice`, or media passed `inline_base64`. An `array` port takes a
+        JSON array with one value per element, admissible for the schema's `items`.
+        `object` ports cannot be bound through this API yet.
+
+        No constraints beyond the wire shape live here: what a port accepts (an
+        `enum`, a length) is stated by its `content_schema`, and the run path
+        validates against that same schema.
+    TemplateInputReference:
+      oneOf:
+        - $ref: '#/components/schemas/GenerationReference'
+        - $ref: '#/components/schemas/StaticAssetReference'
+        - $ref: '#/components/schemas/VoiceReference'
+        - $ref: '#/components/schemas/InlineBase64Reference'
+      discriminator:
+        propertyName: type
+        mapping:
+          asset: '#/components/schemas/StaticAssetReference'
+          generation: '#/components/schemas/GenerationReference'
+          inline_base64: '#/components/schemas/InlineBase64Reference'
+          voice: '#/components/schemas/VoiceReference'
+    InlineBase64Reference:
+      properties:
+        type:
+          type: string
+          const: inline_base64
+          title: Type
+        content_base64:
+          type: string
+          maxLength: 34952536
+          title: Content Base64
+          description: 'The media file''s bytes, base64-encoded (standard alphabet). Up to 25MB decoded.'
+          examples:
+            - iVBORw0KGgoAAAANSUhEUgAA...
+        mime_type:
+          type: string
+          enum:
+            - image/jpeg
+            - image/png
+            - image/webp
+            - image/heic
+            - image/heif
+            - audio/mpeg
+            - audio/wav
+            - video/mp4
+            - video/quicktime
+            - video/webm
+          title: Mime Type
+          description: The MIME type of the encoded media.
+      additionalProperties: false
+      type: object
+      required:
+        - type
+        - content_base64
+        - mime_type
+      title: InlineBase64Reference
+      description: |-
+        Media passed inline as base64. Stored as an ephemeral asset with no
+        guaranteed retention. To keep an input and reuse it, upload via
+        ``POST /v1/assets`` and pass an ``asset`` reference instead.
+    VoiceReference:
+      properties:
+        type:
+          type: string
+          const: voice
+          title: Type
+        voice_id:
+          type: string
+          minLength: 1
+          title: Voice Id
+          description: The ID of a voice in this workspace.
+          examples:
+            - 21m00Tcm4TlvDq8ikWAM
+      additionalProperties: false
+      type: object
+      required:
+        - type
+        - voice_id
+      title: VoiceReference
+      description: A voice this workspace can use.
+    StaticAssetReference:
+      properties:
+        type:
+          type: string
+          const: asset
+          title: Type
+        asset_id:
+          type: string
+          title: Asset Id
+          description: 'The ID of an asset uploaded via the assets API (`POST /v1/assets`), as returned in that response''s `asset_id`.'
+          examples:
+            - 5xM2KqOnZyce22SPZ9d4
+      additionalProperties: false
+      type: object
+      required:
+        - type
+        - asset_id
+      title: StaticAssetReference
+      description: An asset uploaded via the assets API.
+    GenerationReference:
+      properties:
+        type:
+          type: string
+          const: generation
+          title: Type
+        generation_id:
+          type: string
+          title: Generation Id
+          description: 'The ID of the generation whose output to use, as returned when the generation was created.'
+          examples:
+            - JWr5N6X9ZTqf8jD2LmQb
+      additionalProperties: false
+      type: object
+      required:
+        - type
+        - generation_id
+      title: GenerationReference
+      description: The output of a prior generation on this API.
+    TemplateRunListResponse:
+      properties:
+        runs:
+          items:
+            $ref: '#/components/schemas/TemplateRunResponse'
+          type: array
+          title: Runs
+          description: 'The runs on this page, newest first. Each item has the same shape as `GET /v1/flows/templates/{template_id}/runs/{run_id}`.'
+        next_cursor:
+          title: Next Cursor
+          description: Pass as `cursor` to fetch the next page. `null` when there is no further page.
+          type: string
+        has_more:
+          type: boolean
+          title: Has More
+          description: Whether more runs exist beyond this page.
+          readOnly: true
+      type: object
+      required:
+        - runs
+        - next_cursor
+        - has_more
+      title: TemplateRunListResponse
+      description: 'One page of the caller''s public-API template runs, newest first.'
+      example:
+        has_more: true
+        next_cursor: MjAyNi0wNy0xN1QxMjowMDowMHxLeDJtUDdZNFdWcmc5a0UzTm5SYw
+        runs:
+          - id: sess_JWr5N6X9ZTqf8jD2LmQb
+            outputs:
+              marketing_title:
+                content: Ride the wave.
+                id: Kx2mP7Y4WVrg9kE3NnRc
+                status: completed
+                type: string
+              product_demo:
+                id: QWr5N6X9ZTqf8jD2La3B
+                status: generating
+                type: video
+              product_still:
+                content_mime_type: image/png
+                content_url: 'https://storage.googleapis.com/generations/JWr5N6X9ZTqf8jD2LmQb'
+                id: JWr5N6X9ZTqf8jD2LmQb
+                status: completed
+                type: image
+            status: generating
+            template_id: tmpl_abc123
+            version_id: ver_01hxyz
+    TextToSpeechGenerationRequest:
+      oneOf:
+        - $ref: '#/components/schemas/ElevenFlashV2_5Request'
+        - $ref: '#/components/schemas/ElevenMultilingualV2Request'
+        - $ref: '#/components/schemas/ElevenV3Request'
+      discriminator:
+        propertyName: model_id
+        mapping:
+          eleven_flash_v2_5: '#/components/schemas/ElevenFlashV2_5Request'
+          eleven_multilingual_v2: '#/components/schemas/ElevenMultilingualV2Request'
+          eleven_v3: '#/components/schemas/ElevenV3Request'
+    ElevenV3Request:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        text:
+          type: string
+          title: Text
+          description: The text to synthesize into speech.
+          examples:
+            - The first move is what sets everything in motion.
+        voice:
+          type: string
+          title: Voice
+          description: The ID of the voice to speak with.
+          examples:
+            - JBFqnCBsd6RMkjVDRZzb
+        output_format:
+          type: string
+          enum:
+            - mp3_22050_32
+            - mp3_24000_48
+            - mp3_44100_32
+            - mp3_44100_64
+            - mp3_44100_96
+            - mp3_44100_128
+            - mp3_44100_192
+          title: Output Format
+          description: 'The audio encoding of the output, as `codec_sampleRateHz_bitrateKbps`. `mp3_44100_192` requires the Creator tier or above.'
+          default: mp3_44100_128
+        pronunciation_dictionary_locators:
+          items:
+            $ref: '#/components/schemas/PronunciationDictionaryVersionLocator'
+          type: array
+          maxItems: 3
+          title: Pronunciation Dictionary Locators
+          description: 'Pronunciation dictionaries to apply to the text, in order of precedence. Up to 3.'
+        model_id:
+          type: string
+          const: eleven_v3
+          title: Model Id
+          description: The model to use for the generation.
+        language_code:
+          title: Language Code
+          description: ISO 639-1 language code to enforce on the output. Omit to detect the language from the text.
+          examples:
+            - en
+          type: string
+        voice_settings:
+          description: 'Overrides for the voice''s saved settings, applied to this generation only.'
+          $ref: '#/components/schemas/ElevenV3VoiceSettings'
+      additionalProperties: false
+      type: object
+      required:
+        - text
+        - voice
+        - model_id
+      title: ElevenV3Request
+      description: Request body for the Eleven v3 TTS model.
+    ElevenV3VoiceSettings:
+      properties:
+        stability:
+          title: Stability
+          description: 'How consistent the voice stays across generations. Lower values give more expressive, varied speech.'
+          type: number
+          maximum: 1
+          minimum: 0
+      additionalProperties: false
+      type: object
+      title: ElevenV3VoiceSettings
+      description: 'Overrides for the voice''s saved settings, applied to one generation.'
+    PronunciationDictionaryVersionLocator:
+      properties:
+        pronunciation_dictionary_id:
+          type: string
+          title: Pronunciation Dictionary Id
+          description: The ID of a pronunciation dictionary created via `POST /v1/pronunciation-dictionaries/add-from-file` or `POST /v1/pronunciation-dictionaries/add-from-rules`.
+          examples:
+            - 5xM3yVvZQKV0EfqQpLrJ
+        version_id:
+          title: Version Id
+          description: The version of the dictionary to use. Omit to use the latest version.
+          type: string
+      additionalProperties: false
+      type: object
+      required:
+        - pronunciation_dictionary_id
+      title: PronunciationDictionaryVersionLocator
+      description: A pronunciation dictionary to apply during speech synthesis.
+    ElevenMultilingualV2Request:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        text:
+          type: string
+          title: Text
+          description: The text to synthesize into speech.
+          examples:
+            - The first move is what sets everything in motion.
+        voice:
+          type: string
+          title: Voice
+          description: The ID of the voice to speak with.
+          examples:
+            - JBFqnCBsd6RMkjVDRZzb
+        output_format:
+          type: string
+          enum:
+            - mp3_22050_32
+            - mp3_24000_48
+            - mp3_44100_32
+            - mp3_44100_64
+            - mp3_44100_96
+            - mp3_44100_128
+            - mp3_44100_192
+          title: Output Format
+          description: 'The audio encoding of the output, as `codec_sampleRateHz_bitrateKbps`. `mp3_44100_192` requires the Creator tier or above.'
+          default: mp3_44100_128
+        pronunciation_dictionary_locators:
+          items:
+            $ref: '#/components/schemas/PronunciationDictionaryVersionLocator'
+          type: array
+          maxItems: 3
+          title: Pronunciation Dictionary Locators
+          description: 'Pronunciation dictionaries to apply to the text, in order of precedence. Up to 3.'
+        model_id:
+          type: string
+          const: eleven_multilingual_v2
+          title: Model Id
+          description: The model to use for the generation.
+        voice_settings:
+          description: 'Overrides for the voice''s saved settings, applied to this generation only.'
+          $ref: '#/components/schemas/TtsVoiceSettings'
+      additionalProperties: false
+      type: object
+      required:
+        - text
+        - voice
+        - model_id
+      title: ElevenMultilingualV2Request
+      description: Request body for the ElevenLabs Multilingual v2 TTS model.
+    TtsVoiceSettings:
+      properties:
+        stability:
+          title: Stability
+          description: 'How consistent the voice stays across generations. Lower values give more expressive, varied speech.'
+          type: number
+          maximum: 1
+          minimum: 0
+        similarity_boost:
+          title: Similarity Boost
+          description: How closely the output adheres to the original voice.
+          type: number
+          maximum: 1
+          minimum: 0
+        style:
+          title: Style
+          description: How strongly the speaking style is exaggerated.
+          type: number
+          maximum: 1
+          minimum: 0
+        use_speaker_boost:
+          title: Use Speaker Boost
+          description: 'Whether to boost similarity to the original speaker, at some latency cost.'
+          type: boolean
+        speed:
+          title: Speed
+          description: 'The speed of the generated speech, where 1.0 is the voice''s natural pace.'
+          type: number
+          maximum: 1.2
+          minimum: 0.7
+      additionalProperties: false
+      type: object
+      title: TtsVoiceSettings
+      description: 'Overrides for the voice''s saved settings, applied to one generation.'
+    ElevenFlashV2_5Request:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        text:
+          type: string
+          title: Text
+          description: The text to synthesize into speech.
+          examples:
+            - The first move is what sets everything in motion.
+        voice:
+          type: string
+          title: Voice
+          description: The ID of the voice to speak with.
+          examples:
+            - JBFqnCBsd6RMkjVDRZzb
+        output_format:
+          type: string
+          enum:
+            - mp3_22050_32
+            - mp3_24000_48
+            - mp3_44100_32
+            - mp3_44100_64
+            - mp3_44100_96
+            - mp3_44100_128
+            - mp3_44100_192
+          title: Output Format
+          description: 'The audio encoding of the output, as `codec_sampleRateHz_bitrateKbps`. `mp3_44100_192` requires the Creator tier or above.'
+          default: mp3_44100_128
+        pronunciation_dictionary_locators:
+          items:
+            $ref: '#/components/schemas/PronunciationDictionaryVersionLocator'
+          type: array
+          maxItems: 3
+          title: Pronunciation Dictionary Locators
+          description: 'Pronunciation dictionaries to apply to the text, in order of precedence. Up to 3.'
+        model_id:
+          type: string
+          const: eleven_flash_v2_5
+          title: Model Id
+          description: The model to use for the generation.
+        language_code:
+          title: Language Code
+          description: ISO 639-1 language code to enforce on the output. Omit to detect the language from the text.
+          examples:
+            - en
+          type: string
+        voice_settings:
+          description: 'Overrides for the voice''s saved settings, applied to this generation only.'
+          $ref: '#/components/schemas/ElevenFlashV2_5VoiceSettings'
+      additionalProperties: false
+      type: object
+      required:
+        - text
+        - voice
+        - model_id
+      title: ElevenFlashV2_5Request
+      description: Request body for the ElevenLabs Flash v2.5 TTS model.
+    ElevenFlashV2_5VoiceSettings:
+      properties:
+        stability:
+          title: Stability
+          description: 'How consistent the voice stays across generations. Lower values give more expressive, varied speech.'
+          type: number
+          maximum: 1
+          minimum: 0
+        similarity_boost:
+          title: Similarity Boost
+          description: How closely the output adheres to the original voice.
+          type: number
+          maximum: 1
+          minimum: 0
+        speed:
+          title: Speed
+          description: 'The speed of the generated speech, where 1.0 is the voice''s natural pace.'
+          type: number
+          maximum: 1.2
+          minimum: 0.7
+      additionalProperties: false
+      type: object
+      title: ElevenFlashV2_5VoiceSettings
+      description: 'Overrides for the voice''s saved settings, applied to one generation.'
+    ImageGenerationRequest:
+      oneOf:
+        - $ref: '#/components/schemas/GPTImage1Request'
+        - $ref: '#/components/schemas/GPTImage1_5Request'
+        - $ref: '#/components/schemas/GPTImage2Request'
+        - $ref: '#/components/schemas/GPTImage25SunburstRequest'
+        - $ref: '#/components/schemas/GPTImage25FlareRequest'
+        - $ref: '#/components/schemas/Gemini25FlashImageRequest'
+        - $ref: '#/components/schemas/Gemini3ProImageRequest'
+        - $ref: '#/components/schemas/Gemini31FlashImageRequest'
+        - $ref: '#/components/schemas/Gemini31FlashLiteImageRequest'
+        - $ref: '#/components/schemas/BytedanceSeedream5LiteRequest'
+        - $ref: '#/components/schemas/BytedanceSeedream5ProRequest'
+      discriminator:
+        propertyName: model_id
+        mapping:
+          bytedance-seedream-5-lite: '#/components/schemas/BytedanceSeedream5LiteRequest'
+          bytedance-seedream-5-pro: '#/components/schemas/BytedanceSeedream5ProRequest'
+          gemini-2.5-flash-image: '#/components/schemas/Gemini25FlashImageRequest'
+          gemini-3-pro-image: '#/components/schemas/Gemini3ProImageRequest'
+          gemini-3.1-flash-image: '#/components/schemas/Gemini31FlashImageRequest'
+          gemini-3.1-flash-lite-image: '#/components/schemas/Gemini31FlashLiteImageRequest'
+          gpt-image-1: '#/components/schemas/GPTImage1Request'
+          gpt-image-1.5: '#/components/schemas/GPTImage1_5Request'
+          gpt-image-2: '#/components/schemas/GPTImage2Request'
+          gpt-image-2.5-flare: '#/components/schemas/GPTImage25FlareRequest'
+          gpt-image-2.5-sunburst: '#/components/schemas/GPTImage25SunburstRequest'
+    BytedanceSeedream5ProRequest:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the image to generate.
+          examples:
+            - 'A corgi in a tiny lifeguard chair on a sunlit beach at golden hour, photorealistic'
+        images:
+          items:
+            $ref: '#/components/schemas/ImageReference'
+          type: array
+          maxItems: 10
+          title: Images
+          description: Up to 10 reference images to edit or draw from.
+        aspect_ratio:
+          type: string
+          enum:
+            - auto
+            - '1:1'
+            - '3:4'
+            - '16:9'
+            - '4:3'
+            - '9:16'
+          title: Aspect Ratio
+          description: 'The aspect ratio of the output image. With `auto`, the model picks an aspect ratio based on the inputs.'
+          default: '16:9'
+        seed:
+          title: Seed
+          description: 'A seed for reproducible generation: the same seed and inputs give similar output across generations. Omit for random.'
+          type: integer
+        model_id:
+          type: string
+          const: bytedance-seedream-5-pro
+          title: Model Id
+          description: The model to use for the generation.
+        resolution:
+          type: string
+          enum:
+            - 1K
+            - 2K
+          title: Resolution
+          description: The resolution of the output image.
+          default: 2K
+      additionalProperties: false
+      type: object
+      required:
+        - prompt
+        - model_id
+      title: BytedanceSeedream5ProRequest
+      description: |-
+        Request body for the ByteDance Seedream 5.0 Pro image model.
+
+        ByteDance models are disabled by default and require explicit approval
+        before use. Contact support to request access.
+    ImageReference:
+      oneOf:
+        - $ref: '#/components/schemas/GenerationReference'
+        - $ref: '#/components/schemas/StaticAssetReference'
+        - $ref: '#/components/schemas/InlineImageReference'
+      discriminator:
+        propertyName: type
+        mapping:
+          asset: '#/components/schemas/StaticAssetReference'
+          generation: '#/components/schemas/GenerationReference'
+          inline_base64: '#/components/schemas/InlineImageReference'
+    InlineImageReference:
+      properties:
+        type:
+          type: string
+          const: inline_base64
+          title: Type
+        content_base64:
+          type: string
+          maxLength: 34952536
+          title: Content Base64
+          description: 'The media file''s bytes, base64-encoded (standard alphabet). Up to 25MB decoded.'
+          examples:
+            - iVBORw0KGgoAAAANSUhEUgAA...
+        mime_type:
+          type: string
+          enum:
+            - image/jpeg
+            - image/png
+            - image/webp
+            - image/heic
+            - image/heif
+          title: Mime Type
+          description: The MIME type of the encoded image.
+      additionalProperties: false
+      type: object
+      required:
+        - type
+        - content_base64
+        - mime_type
+      title: InlineImageReference
+      description: |-
+        An image passed inline as base64. The image is stored as an ephemeral
+        asset with no guaranteed retention: it may be deleted at any time after
+        the generation completes. To keep an input and reuse it across
+        generations, upload it via the assets API (`POST /v1/assets`) and pass
+        an `asset` reference instead.
+    BytedanceSeedream5LiteRequest:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the image to generate.
+          examples:
+            - 'A corgi in a tiny lifeguard chair on a sunlit beach at golden hour, photorealistic'
+        images:
+          items:
+            $ref: '#/components/schemas/ImageReference'
+          type: array
+          maxItems: 10
+          title: Images
+          description: Up to 10 reference images to edit or draw from.
+        aspect_ratio:
+          type: string
+          enum:
+            - auto
+            - '1:1'
+            - '3:4'
+            - '16:9'
+            - '4:3'
+            - '9:16'
+          title: Aspect Ratio
+          description: 'The aspect ratio of the output image. With `auto`, the model picks an aspect ratio based on the inputs.'
+          default: '16:9'
+        seed:
+          title: Seed
+          description: 'A seed for reproducible generation: the same seed and inputs give similar output across generations. Omit for random.'
+          type: integer
+        model_id:
+          type: string
+          const: bytedance-seedream-5-lite
+          title: Model Id
+          description: The model to use for the generation.
+        resolution:
+          type: string
+          enum:
+            - 2K
+            - 3K
+          title: Resolution
+          description: The resolution of the output image.
+          default: 2K
+      additionalProperties: false
+      type: object
+      required:
+        - prompt
+        - model_id
+      title: BytedanceSeedream5LiteRequest
+      description: |-
+        Request body for the ByteDance Seedream 5.0 Lite image model.
+
+        ByteDance models are disabled by default and require explicit approval
+        before use. Contact support to request access.
+    Gemini31FlashLiteImageRequest:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the image to generate.
+          examples:
+            - 'A corgi in a tiny lifeguard chair on a sunlit beach at golden hour, photorealistic'
+        model_id:
+          type: string
+          const: gemini-3.1-flash-lite-image
+          title: Model Id
+          description: The model to use for the generation.
+        images:
+          items:
+            $ref: '#/components/schemas/ImageReference'
+          type: array
+          maxItems: 14
+          title: Images
+          description: Up to 14 reference images to edit or draw from.
+        aspect_ratio:
+          type: string
+          enum:
+            - auto
+            - '1:1'
+            - '2:3'
+            - '3:2'
+            - '3:4'
+            - '4:3'
+            - '4:5'
+            - '5:4'
+            - '9:16'
+            - '16:9'
+            - '21:9'
+          title: Aspect Ratio
+          description: 'The aspect ratio of the output image. With `auto`, the model picks an aspect ratio based on the inputs.'
+          default: '16:9'
+        resolution:
+          type: string
+          const: 1K
+          title: Resolution
+          description: The resolution of the output image.
+          default: 1K
+      additionalProperties: false
+      type: object
+      required:
+        - prompt
+        - model_id
+      title: Gemini31FlashLiteImageRequest
+      description: Request body for the Google Gemini 3.1 Flash Lite image model.
+    Gemini31FlashImageRequest:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the image to generate.
+          examples:
+            - 'A corgi in a tiny lifeguard chair on a sunlit beach at golden hour, photorealistic'
+        model_id:
+          type: string
+          const: gemini-3.1-flash-image
+          title: Model Id
+          description: The model to use for the generation.
+        images:
+          items:
+            $ref: '#/components/schemas/ImageReference'
+          type: array
+          maxItems: 14
+          title: Images
+          description: Up to 14 reference images to edit or draw from.
+        aspect_ratio:
+          type: string
+          enum:
+            - auto
+            - '1:1'
+            - '2:3'
+            - '3:2'
+            - '3:4'
+            - '4:3'
+            - '4:5'
+            - '5:4'
+            - '9:16'
+            - '16:9'
+            - '21:9'
+            - '1:4'
+            - '4:1'
+            - '1:8'
+            - '8:1'
+          title: Aspect Ratio
+          description: 'The aspect ratio of the output image. With `auto`, the model picks an aspect ratio based on the inputs.'
+          default: '16:9'
+        resolution:
+          type: string
+          enum:
+            - '512'
+            - 1K
+            - 2K
+            - 4K
+          title: Resolution
+          description: The resolution of the output image.
+          default: 1K
+      additionalProperties: false
+      type: object
+      required:
+        - prompt
+        - model_id
+      title: Gemini31FlashImageRequest
+      description: Request body for the Google Gemini 3.1 Flash image model.
+    Gemini3ProImageRequest:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the image to generate.
+          examples:
+            - 'A corgi in a tiny lifeguard chair on a sunlit beach at golden hour, photorealistic'
+        model_id:
+          type: string
+          const: gemini-3-pro-image
+          title: Model Id
+          description: The model to use for the generation.
+        images:
+          items:
+            $ref: '#/components/schemas/ImageReference'
+          type: array
+          maxItems: 10
+          title: Images
+          description: Up to 10 reference images to edit or draw from.
+        aspect_ratio:
+          type: string
+          enum:
+            - auto
+            - '1:1'
+            - '2:3'
+            - '3:2'
+            - '3:4'
+            - '4:3'
+            - '4:5'
+            - '5:4'
+            - '9:16'
+            - '16:9'
+            - '21:9'
+          title: Aspect Ratio
+          description: 'The aspect ratio of the output image. With `auto`, the model picks an aspect ratio based on the inputs.'
+          default: '16:9'
+        resolution:
+          type: string
+          enum:
+            - 1K
+            - 2K
+            - 4K
+          title: Resolution
+          description: The resolution of the output image.
+          default: 1K
+      additionalProperties: false
+      type: object
+      required:
+        - prompt
+        - model_id
+      title: Gemini3ProImageRequest
+      description: Request body for the Google Gemini 3 Pro image model.
+    Gemini25FlashImageRequest:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the image to generate.
+          examples:
+            - 'A corgi in a tiny lifeguard chair on a sunlit beach at golden hour, photorealistic'
+        model_id:
+          type: string
+          const: gemini-2.5-flash-image
+          title: Model Id
+          description: The model to use for the generation.
+        images:
+          items:
+            $ref: '#/components/schemas/ImageReference'
+          type: array
+          maxItems: 5
+          title: Images
+          description: Up to 5 reference images to edit or draw from.
+        aspect_ratio:
+          type: string
+          enum:
+            - auto
+            - '1:1'
+            - '2:3'
+            - '3:2'
+            - '3:4'
+            - '4:3'
+            - '4:5'
+            - '5:4'
+            - '9:16'
+            - '16:9'
+            - '21:9'
+          title: Aspect Ratio
+          description: 'The aspect ratio of the output image. With `auto`, the model picks an aspect ratio based on the inputs.'
+          default: '16:9'
+      additionalProperties: false
+      type: object
+      required:
+        - prompt
+        - model_id
+      title: Gemini25FlashImageRequest
+      description: Request body for the Google Gemini 2.5 Flash image model.
+    GPTImage25FlareRequest:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the image to generate.
+          examples:
+            - 'A corgi in a tiny lifeguard chair on a sunlit beach at golden hour, photorealistic'
+        images:
+          items:
+            $ref: '#/components/schemas/ImageReference'
+          type: array
+          maxItems: 10
+          title: Images
+          description: Up to 10 reference images to edit or draw from.
+        mask:
+          description: An image whose fully transparent areas mark where the first reference image may be edited; requires `images`.
+          $ref: '#/components/schemas/ImageReference'
+        quality:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+            - xhigh
+            - max
+          title: Quality
+          description: The quality of the output image.
+          default: high
+        model_id:
+          type: string
+          const: gpt-image-2.5-flare
+          title: Model Id
+          description: The model to use for the generation.
+        aspect_ratio:
+          type: string
+          enum:
+            - auto
+            - '1:1'
+            - '4:5'
+            - '5:4'
+            - '3:4'
+            - '4:3'
+            - '2:3'
+            - '3:2'
+            - '1:2'
+            - '2:1'
+            - '9:16'
+            - '16:9'
+            - '21:9'
+            - '1:3'
+            - '3:1'
+          title: Aspect Ratio
+          description: 'The aspect ratio of the output image. With `auto`, the model picks an aspect ratio based on the inputs.'
+          default: '16:9'
+        resolution:
+          type: string
+          enum:
+            - 1K
+            - 2K
+            - 4K
+          title: Resolution
+          description: The resolution of the output image.
+          default: 1K
+      additionalProperties: false
+      type: object
+      required:
+        - prompt
+        - model_id
+      title: GPTImage25FlareRequest
+      description: Request body for the OpenAI GPT Image 2.5 Flare model.
+    GPTImage25SunburstRequest:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the image to generate.
+          examples:
+            - 'A corgi in a tiny lifeguard chair on a sunlit beach at golden hour, photorealistic'
+        images:
+          items:
+            $ref: '#/components/schemas/ImageReference'
+          type: array
+          maxItems: 10
+          title: Images
+          description: Up to 10 reference images to edit or draw from.
+        mask:
+          description: An image whose fully transparent areas mark where the first reference image may be edited; requires `images`.
+          $ref: '#/components/schemas/ImageReference'
+        quality:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+            - xhigh
+            - max
+          title: Quality
+          description: The quality of the output image.
+          default: high
+        model_id:
+          type: string
+          const: gpt-image-2.5-sunburst
+          title: Model Id
+          description: The model to use for the generation.
+        aspect_ratio:
+          type: string
+          enum:
+            - auto
+            - '1:1'
+            - '4:5'
+            - '5:4'
+            - '3:4'
+            - '4:3'
+            - '2:3'
+            - '3:2'
+            - '1:2'
+            - '2:1'
+            - '9:16'
+            - '16:9'
+            - '21:9'
+            - '1:3'
+            - '3:1'
+          title: Aspect Ratio
+          description: 'The aspect ratio of the output image. With `auto`, the model picks an aspect ratio based on the inputs.'
+          default: '16:9'
+        resolution:
+          type: string
+          enum:
+            - 1K
+            - 2K
+            - 4K
+          title: Resolution
+          description: The resolution of the output image.
+          default: 1K
+      additionalProperties: false
+      type: object
+      required:
+        - prompt
+        - model_id
+      title: GPTImage25SunburstRequest
+      description: Request body for the OpenAI GPT Image 2.5 Sunburst model.
+    GPTImage2Request:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the image to generate.
+          examples:
+            - 'A corgi in a tiny lifeguard chair on a sunlit beach at golden hour, photorealistic'
+        images:
+          items:
+            $ref: '#/components/schemas/ImageReference'
+          type: array
+          maxItems: 10
+          title: Images
+          description: Up to 10 reference images to edit or draw from.
+        mask:
+          description: An image whose fully transparent areas mark where the first reference image may be edited; requires `images`.
+          $ref: '#/components/schemas/ImageReference'
+        quality:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+          title: Quality
+          description: The quality of the output image.
+          default: medium
+        model_id:
+          type: string
+          const: gpt-image-2
+          title: Model Id
+          description: The model to use for the generation.
+        aspect_ratio:
+          type: string
+          enum:
+            - auto
+            - '1:1'
+            - '4:5'
+            - '5:4'
+            - '3:4'
+            - '4:3'
+            - '2:3'
+            - '3:2'
+            - '1:2'
+            - '2:1'
+            - '9:16'
+            - '16:9'
+            - '21:9'
+            - '1:3'
+            - '3:1'
+          title: Aspect Ratio
+          description: 'The aspect ratio of the output image. With `auto`, the model picks an aspect ratio based on the inputs.'
+          default: '16:9'
+        resolution:
+          type: string
+          enum:
+            - 1K
+            - 2K
+            - 4K
+          title: Resolution
+          description: The resolution of the output image.
+          default: 1K
+      additionalProperties: false
+      type: object
+      required:
+        - prompt
+        - model_id
+      title: GPTImage2Request
+      description: Request body for the OpenAI GPT Image 2 model.
+    GPTImage1_5Request:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the image to generate.
+          examples:
+            - 'A corgi in a tiny lifeguard chair on a sunlit beach at golden hour, photorealistic'
+        images:
+          items:
+            $ref: '#/components/schemas/ImageReference'
+          type: array
+          maxItems: 5
+          title: Images
+          description: Up to 5 reference images to edit or draw from.
+        mask:
+          description: An image whose fully transparent areas mark where the first reference image may be edited; requires `images`.
+          $ref: '#/components/schemas/ImageReference'
+        quality:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+          title: Quality
+          description: The quality of the output image.
+          default: medium
+        background:
+          type: string
+          enum:
+            - transparent
+            - opaque
+            - auto
+          title: Background
+          description: 'The background of the output image. With `auto`, the model picks the background that suits the image.'
+          default: auto
+        aspect_ratio:
+          type: string
+          enum:
+            - '1:1'
+            - '3:2'
+            - '2:3'
+          title: Aspect Ratio
+          description: The aspect ratio of the output image.
+          default: '1:1'
+        model_id:
+          type: string
+          const: gpt-image-1.5
+          title: Model Id
+          description: The model to use for the generation.
+      additionalProperties: false
+      type: object
+      required:
+        - prompt
+        - model_id
+      title: GPTImage1_5Request
+      description: Request body for the OpenAI GPT Image 1.5 model.
+    GPTImage1Request:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the image to generate.
+          examples:
+            - 'A corgi in a tiny lifeguard chair on a sunlit beach at golden hour, photorealistic'
+        images:
+          items:
+            $ref: '#/components/schemas/ImageReference'
+          type: array
+          maxItems: 5
+          title: Images
+          description: Up to 5 reference images to edit or draw from.
+        mask:
+          description: An image whose fully transparent areas mark where the first reference image may be edited; requires `images`.
+          $ref: '#/components/schemas/ImageReference'
+        quality:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+          title: Quality
+          description: The quality of the output image.
+          default: medium
+        background:
+          type: string
+          enum:
+            - transparent
+            - opaque
+            - auto
+          title: Background
+          description: 'The background of the output image. With `auto`, the model picks the background that suits the image.'
+          default: auto
+        aspect_ratio:
+          type: string
+          enum:
+            - '1:1'
+            - '3:2'
+            - '2:3'
+          title: Aspect Ratio
+          description: The aspect ratio of the output image.
+          default: '1:1'
+        model_id:
+          type: string
+          const: gpt-image-1
+          title: Model Id
+          description: The model to use for the generation.
+      additionalProperties: false
+      type: object
+      required:
+        - prompt
+        - model_id
+      title: GPTImage1Request
+      description: Request body for the OpenAI GPT Image 1 model.
+    MediaGenerationResponse:
+      oneOf:
+        - $ref: '#/components/schemas/MediaGenerationInProgressResponse'
+        - $ref: '#/components/schemas/MediaGenerationCompletedResponse'
+        - $ref: '#/components/schemas/MediaGenerationFailedResponse'
+      discriminator:
+        propertyName: status
+        mapping:
+          completed: '#/components/schemas/MediaGenerationCompletedResponse'
+          failed: '#/components/schemas/MediaGenerationFailedResponse'
+          generating: '#/components/schemas/MediaGenerationInProgressResponse'
+          pending: '#/components/schemas/MediaGenerationInProgressResponse'
+    MediaGenerationFailedResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: The unique identifier of the generation.
+          examples:
+            - JWr5N6X9ZTqf8jD2LmQb
+        status:
+          type: string
+          const: failed
+          title: Status
+          description: The lifecycle status of the generation.
+          examples:
+            - failed
+        failure_reason:
+          type: string
+          enum:
+            - timeout
+            - model_error
+            - moderated
+            - invalid_parameters
+            - dependency_failed
+            - charging_failed
+            - internal_error
+          title: Failure Reason
+          description: The category of failure.
+          examples:
+            - timeout
+        error_message:
+          type: string
+          title: Error Message
+          description: A human-readable description of the failure. Failed generations are not charged.
+          examples:
+            - Timed out while processing. You were not charged for this generation.
+      type: object
+      required:
+        - id
+        - status
+        - failure_reason
+        - error_message
+      title: MediaGenerationFailedResponse
+      description: A failed media generation and why it failed.
+      example:
+        error_message: Timed out while processing. You were not charged for this generation.
+        failure_reason: timeout
+        id: JWr5N6X9ZTqf8jD2LmQb
+        status: failed
+    MediaGenerationCompletedResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: The unique identifier of the generation.
+          examples:
+            - JWr5N6X9ZTqf8jD2LmQb
+        status:
+          type: string
+          const: completed
+          title: Status
+          description: The lifecycle status of the generation.
+          examples:
+            - completed
+        content_url:
+          type: string
+          title: Content Url
+          description: A signed URL to download the generated media from. It expires about an hour after this response is returned; fetch the generation again for a fresh URL.
+          examples:
+            - 'https://storage.googleapis.com/generations/JWr5N6X9ZTqf8jD2LmQb'
+        content_mime_type:
+          type: string
+          title: Content Mime Type
+          description: The MIME type of the generated media.
+          examples:
+            - video/mp4
+            - image/png
+            - audio/mpeg
+      type: object
+      required:
+        - id
+        - status
+        - content_url
+        - content_mime_type
+      title: MediaGenerationCompletedResponse
+      description: A completed media generation and its output.
+      example:
+        content_mime_type: video/mp4
+        content_url: 'https://storage.googleapis.com/generations/JWr5N6X9ZTqf8jD2LmQb'
+        id: JWr5N6X9ZTqf8jD2LmQb
+        status: completed
+    MediaGenerationInProgressResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: The unique identifier of the generation.
+          examples:
+            - JWr5N6X9ZTqf8jD2LmQb
+        status:
+          type: string
+          enum:
+            - pending
+            - generating
+          title: Status
+          description: The lifecycle status of the generation. It ends at `completed` or `failed`.
+          examples:
+            - generating
+      type: object
+      required:
+        - id
+        - status
+      title: MediaGenerationInProgressResponse
+      description: A media generation that has not finished yet.
+      example:
+        id: JWr5N6X9ZTqf8jD2LmQb
+        status: generating
+    MediaGenerationCreateResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: The unique identifier of the generation. Pass it to the corresponding GET endpoint to retrieve the output.
+          examples:
+            - JWr5N6X9ZTqf8jD2LmQb
+        status:
+          type: string
+          const: pending
+          title: Status
+          description: A newly created generation is always `pending`.
+          examples:
+            - pending
+      type: object
+      required:
+        - id
+        - status
+      title: MediaGenerationCreateResponse
+      description: A newly queued media generation; fetch the GET endpoint for the output.
+      example:
+        id: JWr5N6X9ZTqf8jD2LmQb
+        status: pending
+    VideoGenerationRequest:
+      oneOf:
+        - $ref: '#/components/schemas/CreatifyAuroraRequest'
+        - $ref: '#/components/schemas/Veo3_1Request'
+        - $ref: '#/components/schemas/Veo3_1FastRequest'
+        - $ref: '#/components/schemas/BytedanceSeedance2Request'
+        - $ref: '#/components/schemas/BytedanceSeedance2FastRequest'
+        - $ref: '#/components/schemas/BytedanceSeedance2MiniRequest'
+        - $ref: '#/components/schemas/BytedanceSeedance25Request'
+      discriminator:
+        propertyName: model_id
+        mapping:
+          bytedance-seedance-v2: '#/components/schemas/BytedanceSeedance2Request'
+          bytedance-seedance-v2-fast: '#/components/schemas/BytedanceSeedance2FastRequest'
+          bytedance-seedance-v2-mini: '#/components/schemas/BytedanceSeedance2MiniRequest'
+          bytedance-seedance-v2.5: '#/components/schemas/BytedanceSeedance25Request'
+          creatify-aurora: '#/components/schemas/CreatifyAuroraRequest'
+          veo-3.1-fast-generate-001: '#/components/schemas/Veo3_1FastRequest'
+          veo-3.1-generate-001: '#/components/schemas/Veo3_1Request'
+    BytedanceSeedance25Request:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        model_id:
+          type: string
+          const: bytedance-seedance-v2.5
+          title: Model Id
+          description: The model to use for the generation.
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the video to generate.
+          examples:
+            - 'A corgi rides a tiny surfboard across a sunlit wave at golden hour, cinematic'
+        aspect_ratio:
+          type: string
+          enum:
+            - auto
+            - '21:9'
+            - '16:9'
+            - '4:3'
+            - '1:1'
+            - '3:4'
+            - '9:16'
+          title: Aspect Ratio
+          description: 'The aspect ratio of the output video. With `auto`, the model picks an aspect ratio based on the inputs. First-frame / first-and-last-frame tasks always use `auto`.'
+          default: '16:9'
+        resolution:
+          type: string
+          enum:
+            - 480p
+            - 720p
+            - 1080p
+          title: Resolution
+          description: The resolution of the output video.
+          default: 720p
+        duration_secs:
+          type: integer
+          maximum: 30
+          minimum: 4
+          title: Duration Secs
+          description: The duration of the output video in seconds.
+          default: 5
+        generate_audio:
+          type: boolean
+          title: Generate Audio
+          description: Whether to generate audio with the video.
+          default: true
+        start_frame:
+          description: The image to use as the video's first frame.
+          $ref: '#/components/schemas/ImageReference'
+        end_frame:
+          description: The image to use as the video's last frame.
+          $ref: '#/components/schemas/ImageReference'
+        images:
+          items:
+            $ref: '#/components/schemas/ImageReference'
+          type: array
+          maxItems: 30
+          title: Images
+          description: Up to 30 reference images to draw subjects from. Cannot be combined with `start_frame`/`end_frame`.
+        videos:
+          items:
+            $ref: '#/components/schemas/VideoReference'
+          type: array
+          maxItems: 10
+          title: Videos
+          description: Up to 10 reference videos to draw subjects or motion from. Cannot be combined with `start_frame`/`end_frame`.
+        audios:
+          items:
+            $ref: '#/components/schemas/AudioReference'
+          type: array
+          maxItems: 10
+          title: Audios
+          description: 'Up to 10 reference audios, e.g. for lipsync. Cannot be combined with `start_frame`/`end_frame`.'
+      additionalProperties: false
+      type: object
+      required:
+        - model_id
+        - prompt
+      title: BytedanceSeedance25Request
+      description: |-
+        Request body for the ByteDance Seedance 2.5 video model.
+
+        Diverges from the Seedance 2.0 public shape: no 4K, durations up to 30s,
+        larger reference caps, audio-only input allowed, and no ``seed`` (Ark
+        tolerates it but does not honour it).
+
+        ByteDance models are disabled by default and require explicit approval
+        before use. Contact support to request access.
+    AudioReference:
+      oneOf:
+        - $ref: '#/components/schemas/GenerationReference'
+        - $ref: '#/components/schemas/StaticAssetReference'
+        - $ref: '#/components/schemas/InlineAudioReference'
+      discriminator:
+        propertyName: type
+        mapping:
+          asset: '#/components/schemas/StaticAssetReference'
+          generation: '#/components/schemas/GenerationReference'
+          inline_base64: '#/components/schemas/InlineAudioReference'
+    InlineAudioReference:
+      properties:
+        type:
+          type: string
+          const: inline_base64
+          title: Type
+        content_base64:
+          type: string
+          maxLength: 34952536
+          title: Content Base64
+          description: 'The media file''s bytes, base64-encoded (standard alphabet). Up to 25MB decoded.'
+          examples:
+            - iVBORw0KGgoAAAANSUhEUgAA...
+        mime_type:
+          type: string
+          enum:
+            - audio/mpeg
+            - audio/wav
+          title: Mime Type
+          description: The MIME type of the encoded audio.
+      additionalProperties: false
+      type: object
+      required:
+        - type
+        - content_base64
+        - mime_type
+      title: InlineAudioReference
+      description: |-
+        Audio passed inline as base64. The audio is stored as an ephemeral
+        asset with no guaranteed retention: it may be deleted at any time after
+        the generation completes. To keep an input and reuse it across
+        generations, upload it via the assets API (`POST /v1/assets`) and pass
+        an `asset` reference instead.
+    VideoReference:
+      oneOf:
+        - $ref: '#/components/schemas/GenerationReference'
+        - $ref: '#/components/schemas/StaticAssetReference'
+        - $ref: '#/components/schemas/InlineVideoReference'
+      discriminator:
+        propertyName: type
+        mapping:
+          asset: '#/components/schemas/StaticAssetReference'
+          generation: '#/components/schemas/GenerationReference'
+          inline_base64: '#/components/schemas/InlineVideoReference'
+    InlineVideoReference:
+      properties:
+        type:
+          type: string
+          const: inline_base64
+          title: Type
+        content_base64:
+          type: string
+          maxLength: 34952536
+          title: Content Base64
+          description: 'The media file''s bytes, base64-encoded (standard alphabet). Up to 25MB decoded.'
+          examples:
+            - iVBORw0KGgoAAAANSUhEUgAA...
+        mime_type:
+          type: string
+          enum:
+            - video/mp4
+            - video/quicktime
+            - video/webm
+          title: Mime Type
+          description: The MIME type of the encoded video.
+      additionalProperties: false
+      type: object
+      required:
+        - type
+        - content_base64
+        - mime_type
+      title: InlineVideoReference
+      description: |-
+        A video passed inline as base64. The video is stored as an ephemeral
+        asset with no guaranteed retention: it may be deleted at any time after
+        the generation completes. To keep an input and reuse it across
+        generations, upload it via the assets API (`POST /v1/assets`) and pass
+        an `asset` reference instead.
+    BytedanceSeedance2MiniRequest:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the video to generate.
+          examples:
+            - 'A corgi rides a tiny surfboard across a sunlit wave at golden hour, cinematic'
+        aspect_ratio:
+          type: string
+          enum:
+            - auto
+            - '21:9'
+            - '16:9'
+            - '4:3'
+            - '1:1'
+            - '3:4'
+            - '9:16'
+          title: Aspect Ratio
+          description: 'The aspect ratio of the output video. With `auto`, the model picks an aspect ratio based on the inputs.'
+          default: '16:9'
+        duration_secs:
+          type: integer
+          maximum: 15
+          minimum: 4
+          title: Duration Secs
+          description: The duration of the output video in seconds.
+          default: 5
+        seed:
+          title: Seed
+          description: 'A seed for reproducible generation: the same seed and inputs give similar output across generations. Omit for random.'
+          type: integer
+        generate_audio:
+          type: boolean
+          title: Generate Audio
+          description: Whether to generate audio with the video.
+          default: true
+        start_frame:
+          description: The image to use as the video's first frame.
+          $ref: '#/components/schemas/ImageReference'
+        end_frame:
+          description: The image to use as the video's last frame.
+          $ref: '#/components/schemas/ImageReference'
+        images:
+          items:
+            $ref: '#/components/schemas/ImageReference'
+          type: array
+          maxItems: 9
+          title: Images
+          description: Up to 9 reference images to draw subjects from. Cannot be combined with `start_frame`/`end_frame`.
+        videos:
+          items:
+            $ref: '#/components/schemas/VideoReference'
+          type: array
+          maxItems: 3
+          title: Videos
+          description: Up to 3 reference videos to draw subjects or motion from. Cannot be combined with `start_frame`/`end_frame`.
+        audios:
+          items:
+            $ref: '#/components/schemas/AudioReference'
+          type: array
+          maxItems: 3
+          title: Audios
+          description: 'Up to 3 reference audios, e.g. for lipsync. Requires at least one of `images` or `videos`, and cannot be combined with `start_frame`/`end_frame`.'
+        model_id:
+          type: string
+          const: bytedance-seedance-v2-mini
+          title: Model Id
+          description: The model to use for the generation.
+        resolution:
+          type: string
+          enum:
+            - 480p
+            - 720p
+          title: Resolution
+          description: The resolution of the output video.
+          default: 720p
+      additionalProperties: false
+      type: object
+      required:
+        - prompt
+        - model_id
+      title: BytedanceSeedance2MiniRequest
+      description: |-
+        Request body for the ByteDance Seedance 2.0 Mini video model.
+
+        ByteDance models are disabled by default and require explicit approval
+        before use. Contact support to request access.
+    BytedanceSeedance2FastRequest:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the video to generate.
+          examples:
+            - 'A corgi rides a tiny surfboard across a sunlit wave at golden hour, cinematic'
+        aspect_ratio:
+          type: string
+          enum:
+            - auto
+            - '21:9'
+            - '16:9'
+            - '4:3'
+            - '1:1'
+            - '3:4'
+            - '9:16'
+          title: Aspect Ratio
+          description: 'The aspect ratio of the output video. With `auto`, the model picks an aspect ratio based on the inputs.'
+          default: '16:9'
+        duration_secs:
+          type: integer
+          maximum: 15
+          minimum: 4
+          title: Duration Secs
+          description: The duration of the output video in seconds.
+          default: 5
+        seed:
+          title: Seed
+          description: 'A seed for reproducible generation: the same seed and inputs give similar output across generations. Omit for random.'
+          type: integer
+        generate_audio:
+          type: boolean
+          title: Generate Audio
+          description: Whether to generate audio with the video.
+          default: true
+        start_frame:
+          description: The image to use as the video's first frame.
+          $ref: '#/components/schemas/ImageReference'
+        end_frame:
+          description: The image to use as the video's last frame.
+          $ref: '#/components/schemas/ImageReference'
+        images:
+          items:
+            $ref: '#/components/schemas/ImageReference'
+          type: array
+          maxItems: 9
+          title: Images
+          description: Up to 9 reference images to draw subjects from. Cannot be combined with `start_frame`/`end_frame`.
+        videos:
+          items:
+            $ref: '#/components/schemas/VideoReference'
+          type: array
+          maxItems: 3
+          title: Videos
+          description: Up to 3 reference videos to draw subjects or motion from. Cannot be combined with `start_frame`/`end_frame`.
+        audios:
+          items:
+            $ref: '#/components/schemas/AudioReference'
+          type: array
+          maxItems: 3
+          title: Audios
+          description: 'Up to 3 reference audios, e.g. for lipsync. Requires at least one of `images` or `videos`, and cannot be combined with `start_frame`/`end_frame`.'
+        model_id:
+          type: string
+          const: bytedance-seedance-v2-fast
+          title: Model Id
+          description: The model to use for the generation.
+        resolution:
+          type: string
+          enum:
+            - 480p
+            - 720p
+          title: Resolution
+          description: The resolution of the output video.
+          default: 720p
+      additionalProperties: false
+      type: object
+      required:
+        - prompt
+        - model_id
+      title: BytedanceSeedance2FastRequest
+      description: |-
+        Request body for the ByteDance Seedance 2.0 Fast video model.
+
+        ByteDance models are disabled by default and require explicit approval
+        before use. Contact support to request access.
+    BytedanceSeedance2Request:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the video to generate.
+          examples:
+            - 'A corgi rides a tiny surfboard across a sunlit wave at golden hour, cinematic'
+        aspect_ratio:
+          type: string
+          enum:
+            - auto
+            - '21:9'
+            - '16:9'
+            - '4:3'
+            - '1:1'
+            - '3:4'
+            - '9:16'
+          title: Aspect Ratio
+          description: 'The aspect ratio of the output video. With `auto`, the model picks an aspect ratio based on the inputs.'
+          default: '16:9'
+        duration_secs:
+          type: integer
+          maximum: 15
+          minimum: 4
+          title: Duration Secs
+          description: The duration of the output video in seconds.
+          default: 5
+        seed:
+          title: Seed
+          description: 'A seed for reproducible generation: the same seed and inputs give similar output across generations. Omit for random.'
+          type: integer
+        generate_audio:
+          type: boolean
+          title: Generate Audio
+          description: Whether to generate audio with the video.
+          default: true
+        start_frame:
+          description: The image to use as the video's first frame.
+          $ref: '#/components/schemas/ImageReference'
+        end_frame:
+          description: The image to use as the video's last frame.
+          $ref: '#/components/schemas/ImageReference'
+        images:
+          items:
+            $ref: '#/components/schemas/ImageReference'
+          type: array
+          maxItems: 9
+          title: Images
+          description: Up to 9 reference images to draw subjects from. Cannot be combined with `start_frame`/`end_frame`.
+        videos:
+          items:
+            $ref: '#/components/schemas/VideoReference'
+          type: array
+          maxItems: 3
+          title: Videos
+          description: Up to 3 reference videos to draw subjects or motion from. Cannot be combined with `start_frame`/`end_frame`.
+        audios:
+          items:
+            $ref: '#/components/schemas/AudioReference'
+          type: array
+          maxItems: 3
+          title: Audios
+          description: 'Up to 3 reference audios, e.g. for lipsync. Requires at least one of `images` or `videos`, and cannot be combined with `start_frame`/`end_frame`.'
+        model_id:
+          type: string
+          const: bytedance-seedance-v2
+          title: Model Id
+          description: The model to use for the generation.
+        resolution:
+          type: string
+          enum:
+            - 480p
+            - 720p
+            - 1080p
+            - 4k
+          title: Resolution
+          description: The resolution of the output video.
+          default: 720p
+      additionalProperties: false
+      type: object
+      required:
+        - prompt
+        - model_id
+      title: BytedanceSeedance2Request
+      description: |-
+        Request body for the ByteDance Seedance 2.0 video model.
+
+        ByteDance models are disabled by default and require explicit approval
+        before use. Contact support to request access.
+    Veo3_1FastRequest:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the video to generate.
+          examples:
+            - 'A corgi rides a tiny surfboard across a sunlit wave at golden hour, cinematic'
+        negative_prompt:
+          title: Negative Prompt
+          description: A text description of what the video should avoid.
+          type: string
+        seed:
+          title: Seed
+          description: 'A seed for reproducible generation: the same seed and inputs give similar output across generations. Omit for random.'
+          type: integer
+        enhance_prompt:
+          type: boolean
+          title: Enhance Prompt
+          description: Whether the model may rewrite the prompt to improve results.
+          default: true
+        duration_secs:
+          type: integer
+          enum:
+            - 4
+            - 6
+            - 8
+          title: Duration Secs
+          description: The duration of the output video in seconds.
+          default: 8
+        aspect_ratio:
+          type: string
+          enum:
+            - '16:9'
+            - '9:16'
+          title: Aspect Ratio
+          description: The aspect ratio of the output video.
+          default: '16:9'
+        resolution:
+          type: string
+          enum:
+            - 720p
+            - 1080p
+            - 4K
+          title: Resolution
+          description: The resolution of the output video.
+          default: 720p
+        generate_audio:
+          type: boolean
+          title: Generate Audio
+          description: Whether to generate audio with the video.
+          default: true
+        start_frame:
+          description: The image to use as the video's first frame.
+          $ref: '#/components/schemas/ImageReference'
+        end_frame:
+          description: The image to use as the video's last frame.
+          $ref: '#/components/schemas/ImageReference'
+        images:
+          items:
+            $ref: '#/components/schemas/VeoImageReference'
+          type: array
+          maxItems: 3
+          title: Images
+          description: 'Up to 3 reference images to draw subjects or style from. Cannot be combined with `start_frame`/`end_frame`, and requires the 8-second duration.'
+        model_id:
+          type: string
+          const: veo-3.1-fast-generate-001
+          title: Model Id
+          description: The model to use for the generation.
+      additionalProperties: false
+      type: object
+      required:
+        - prompt
+        - model_id
+      title: Veo3_1FastRequest
+      description: Request body for the Google Veo 3.1 Fast video model.
+    VeoImageReference:
+      properties:
+        image:
+          $ref: '#/components/schemas/ImageReference'
+          description: The reference image.
+        role:
+          type: string
+          enum:
+            - subject
+            - style
+          title: Role
+          description: 'How the model uses the image: `subject` places its subject or scene elements into the video; `style` transfers its visual style.'
+      additionalProperties: false
+      type: object
+      required:
+        - image
+        - role
+      title: VeoImageReference
+      description: 'A reference image guiding a Veo generation, with its role.'
+    Veo3_1Request:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        prompt:
+          type: string
+          title: Prompt
+          description: A text description of the video to generate.
+          examples:
+            - 'A corgi rides a tiny surfboard across a sunlit wave at golden hour, cinematic'
+        negative_prompt:
+          title: Negative Prompt
+          description: A text description of what the video should avoid.
+          type: string
+        seed:
+          title: Seed
+          description: 'A seed for reproducible generation: the same seed and inputs give similar output across generations. Omit for random.'
+          type: integer
+        enhance_prompt:
+          type: boolean
+          title: Enhance Prompt
+          description: Whether the model may rewrite the prompt to improve results.
+          default: true
+        duration_secs:
+          type: integer
+          enum:
+            - 4
+            - 6
+            - 8
+          title: Duration Secs
+          description: The duration of the output video in seconds.
+          default: 8
+        aspect_ratio:
+          type: string
+          enum:
+            - '16:9'
+            - '9:16'
+          title: Aspect Ratio
+          description: The aspect ratio of the output video.
+          default: '16:9'
+        resolution:
+          type: string
+          enum:
+            - 720p
+            - 1080p
+            - 4K
+          title: Resolution
+          description: The resolution of the output video.
+          default: 720p
+        generate_audio:
+          type: boolean
+          title: Generate Audio
+          description: Whether to generate audio with the video.
+          default: true
+        start_frame:
+          description: The image to use as the video's first frame.
+          $ref: '#/components/schemas/ImageReference'
+        end_frame:
+          description: The image to use as the video's last frame.
+          $ref: '#/components/schemas/ImageReference'
+        images:
+          items:
+            $ref: '#/components/schemas/VeoImageReference'
+          type: array
+          maxItems: 3
+          title: Images
+          description: 'Up to 3 reference images to draw subjects or style from. Cannot be combined with `start_frame`/`end_frame`, and requires the 8-second duration.'
+        model_id:
+          type: string
+          const: veo-3.1-generate-001
+          title: Model Id
+          description: The model to use for the generation.
+      additionalProperties: false
+      type: object
+      required:
+        - prompt
+        - model_id
+      title: Veo3_1Request
+      description: Request body for the Google Veo 3.1 video model.
+    CreatifyAuroraRequest:
+      properties:
+        webhook:
+          description: Include to send the generation's result to the workspace's configured flows webhooks once it completes or fails. The webhook payload matches the terminal response of the corresponding GET endpoint.
+          examples:
+            - type: all
+            - ids:
+                - Q8mVr2LpXcT4nB6yJdKw
+              type: ids
+          $ref: '#/components/schemas/WebhookTarget'
+        model_id:
+          type: string
+          const: creatify-aurora
+          title: Model Id
+          description: The model to use for the generation.
+        image:
+          $ref: '#/components/schemas/ImageReference'
+          description: The image of the character to animate.
+        audio:
+          $ref: '#/components/schemas/AudioReference'
+          description: The speech audio to drive the character's lip movements.
+        resolution:
+          type: string
+          enum:
+            - 480p
+            - 720p
+          title: Resolution
+          description: The resolution of the output video.
+          default: 720p
+        guidance_scale:
+          title: Guidance Scale
+          description: How strongly the generation adheres to the input image. Omit to use the model's default.
+          type: number
+          maximum: 5
+          minimum: 0
+        audio_guidance_scale:
+          title: Audio Guidance Scale
+          description: How strongly the lip movements adhere to the audio. Omit to use the model's default.
+          type: number
+          maximum: 5
+          minimum: 0
+      additionalProperties: false
+      type: object
+      required:
+        - model_id
+        - image
+        - audio
+      title: CreatifyAuroraRequest
+      description: Request body for the Creatify Aurora lipsync video model.
+    MediaGenerationListResponse:
+      properties:
+        generations:
+          items:
+            $ref: '#/components/schemas/MediaGenerationResponse'
+          type: array
+          title: Generations
+          description: 'The generations on this page, newest first. Each item has the same shape as the corresponding GET endpoint''s response.'
+        next_cursor:
+          title: Next Cursor
+          description: Pass as `cursor` to fetch the next page. `null` when there is no further page.
+          type: string
+        has_more:
+          type: boolean
+          title: Has More
+          description: Whether more generations exist beyond this page.
+          readOnly: true
+      type: object
+      required:
+        - generations
+        - next_cursor
+        - has_more
+      title: MediaGenerationListResponse
+      description: 'One page of the caller''s generations, newest first.'
+      example:
+        generations:
+          - content_mime_type: video/mp4
+            content_url: 'https://storage.googleapis.com/generations/JWr5N6X9ZTqf8jD2LmQb'
+            id: JWr5N6X9ZTqf8jD2LmQb
+            status: completed
+          - id: Kx2mP7Y4WVrg9kE3NnRc
+            status: generating
+        has_more: true
+        next_cursor: MjAyNi0wNy0xN1QxMjowMDowMHxLeDJtUDdZNFdWcmc5a0UzTm5SYw
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+        - loc
+        - msg
+        - type
+      title: ValidationError
+    UsageCharactersResponseModel:
+      properties:
+        time:
+          items:
+            type: integer
+          type: array
+          title: Time
+          description: The time axis with unix timestamps for each day.
+        usage:
+          additionalProperties:
+            items:
+              type: number
+            type: array
+          type: object
+          title: Usage
+          description: The usage of each breakdown type along the time axis.
+      type: object
+      required:
+        - time
+        - usage
+      title: UsageCharactersResponseModel
+      example:
+        time:
+          - 1738252091000
+          - 1739404800000
+        usage:
+          All:
+            - 49
+            - 1053
+    MetricType:
+      type: string
+      enum:
+        - credits
+        - tts_characters
+        - minutes_used
+        - request_count
+        - ttfb_avg
+        - ttfb_p95
+        - fiat_units_spent
+        - concurrency
+        - concurrency_average
+      title: MetricType
+    UsageAggregationInterval:
+      type: string
+      enum:
+        - hour
+        - day
+        - week
+        - month
+        - cumulative
+      title: UsageAggregationInterval
+      description: The time interval over which to aggregate the usage data.
+    BreakdownTypes:
+      type: string
+      enum:
+        - none
+        - voice
+        - voice_multiplier
+        - user
+        - groups
+        - api_keys
+        - all_api_keys
+        - product_type
+        - model
+        - resource
+        - request_queue
+        - region
+        - subresource_id
+        - reporting_workspace_id
+        - has_api_key
+        - request_source
+      title: BreakdownTypes
+      description: How to break down the information. Cannot be "user" or "api_key" if include_workspace_metrics is False.
+tags:
+  - name: text-to-speech
+    description: Convert text into lifelike speech using a voice of your choice.
+  - name: speech-to-speech
+    description: Create speech by combining the style and content of an audio file you upload with a voice of your choice.
+  - name: speech-to-text
+    description: Transcribe your audio files with detailed speaker annotations and precise timestamps using our cutting-edge model.
+  - name: forced-alignment
+    description: Force align an audio file to a text transcript to get precise word-level and character level timing information. Response is a list of characters with their start and end times as milliseconds elapsed from the start of the recording.
+  - name: models
+    description: Access the different models of the platform.
+  - name: productions
+    description: Access and manage ElevenProductions orders.
+  - name: voices
+    description: Access to voices created either by you or ElevenLabs.
+  - name: samples
+    description: Access to your samples. A sample is any audio file you attached to a voice. A voice can have one or more samples.
+  - name: speech-history
+    description: Accesses your speech history. Your speech history is a list of all your created audio including its metadata using our text-to-speech and speech-to-speech models.
+  - name: studios
+    description: 'Access, create and convert Studio Projects programmatically, only specifically whitelisted accounts can access the Studio API. If you need access please contact our sales team.'
+  - name: workspace
+    description: Access to workspace related endpoints.
+  - name: text-to-voice
+    description: Design and generate custom voices from a text prompt.
+  - name: text-to-dialogue
+    description: Generate multi-speaker dialogue from a script using different voices.
+  - name: sound-generation
+    description: Generate sound effects and non-speech audio from a text prompt.
+  - name: audio-isolation
+    description: Isolate speech from background noise in an audio file.
+  - name: audio-native
+    description: Embed AI-narrated audio players into your website using Audio Native.
+  - name: music-generation
+    description: Generate music from a text prompt.
+  - name: music-finetunes
+    description: Create and manage music finetunes.
+  - name: video-to-music
+    description: Generate music that matches the content and mood of a video.
+  - name: Speech Engine
+    description: 'Low-latency, real-time speech generation endpoints.'
+  - name: pvc-voices
+    description: Create and manage Professional Voice Clones (PVCs).
+  - name: dubbing
+    description: Dub audio and video content into other languages while preserving the original speaker's voice.
+  - name: resource
+    description: 'Manage dubbing resources, including segments, speakers, and language tracks.'
+  - name: segment
+    description: Manage individual segments within a dubbing resource.
+  - name: studio
+    description: 'Access, create and convert Studio Projects programmatically. Only specifically whitelisted accounts can access the Studio API. If you need access please contact our sales team.'
+  - name: Pronunciation Dictionary
+    description: Manage pronunciation dictionaries that override how specific words are pronounced.
+  - name: Conversational AI
+    description: Build and manage conversational AI agents (legacy tag — see also Agents Platform).
+  - name: Agents Platform
+    description: 'Build, configure and manage Conversational AI agents, knowledge bases, tools, and conversations.'
+  - name: Agents Insights
+    description: Query analytics and insights about agent conversations and performance.
+  - name: Agents Workspace Analytics
+    description: Workspace-level analytics for Conversational AI usage.
+  - name: Single Use Token
+    description: 'Mint short-lived, single-use tokens for client-side use of Conversational AI agents.'
+  - name: api-key
+    description: Manage API keys for your workspace.
+  - name: enterprise
+    description: Endpoints available only to enterprise workspaces.
+  - name: 'access:all'
+    description: Endpoints accessible to all authenticated callers regardless of scope.
