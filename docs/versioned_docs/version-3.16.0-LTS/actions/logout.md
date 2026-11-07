@@ -9,6 +9,7 @@ The **Logout** action logs the current user out of their active ToolJet workspac
 
 | Parameter | Description                                              | Default          |
 | --------- | -------------------------------------------------------- | ---------------- |
+| Run Only If | Optional condition. The action runs only when it resolves to a truthy value, for example `{{components.checkbox1.value}}`. Wrap the condition in `{{ }}`. See [Run Only If](/docs/app-builder/events/event-triggers#run-only-if). | Empty |
 | Debounce  | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
 Set a numeric value in the **Debounce** field to delay the logout. For example, entering `300` will trigger the logout after 300ms.

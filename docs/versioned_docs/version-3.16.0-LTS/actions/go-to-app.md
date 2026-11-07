@@ -9,11 +9,19 @@ The **Go to app** action opens a different released ToolJet application when an 
 
 | Parameter | Description | Default |
 | --- | --- | --- |
-| App | The released app to navigate to | — |
+| App | The released app to navigate to. The current app isn't listed. | — |
 | Query params | Optional key-value pairs appended to the target app's URL | Empty |
+| Run Only If | Optional condition. The action runs only when it resolves to a truthy value, for example `{{components.checkbox1.value}}`. Wrap the condition in `{{ }}`. See [Run Only If](/docs/app-builder/events/event-triggers#run-only-if). | Empty |
 | Debounce | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
 <img className="screenshot-full img-s" src="/img/actions/gotoapp/gotoapp-v4.png" alt="ToolJet - Action reference - Go To App" />
+
+## Behavior
+
+- **In the app builder**, a confirmation asks *The app will be opened in a new tab as the action is triggered from the editor.* If you confirm, the app opens in a new tab.
+- **In the released or previewed app**, the app opens in the same tab.
+
+To add query params, click **Add param** and enter a key and value.
 
 ## Triggering via RunJS
 
