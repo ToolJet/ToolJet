@@ -633,7 +633,8 @@ export const CardGrid = () => {
       </AntProvider>
     );
   return (
-    <AntProvider tokens={tokens}>
+    // Fills its box and scrolls the cards that don't fit, as the Record list does: they were cut at the box (QA item 18).
+    <AntProvider tokens={tokens} fill className="tj-ant-scroll">
       <div className="tj-ant-cardgrid" style={{ gridTemplateColumns: cols }}>
         {loading
           ? // A loaded card's two lines (title, subtitle), not Ant's four-paragraph skeleton, which is taller than the

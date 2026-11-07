@@ -804,6 +804,8 @@ describe('team UI 2.0 report: lists, box-sized layouts and the Statistic trend',
     ['Descriptions', {}],
     ['RecordList', {}],
     ['ProgressList', {}],
+    // QA item 18: a CardGrid taller than its box was cut, with no scroll.
+    ['CardGrid', {}],
     ['List', {}],
     ['Table', { columns: [] }],
     ['Hero', {}],
