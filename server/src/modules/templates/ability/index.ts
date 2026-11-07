@@ -19,7 +19,15 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const isAllAppsCreatable = !!userPermission?.appCreate;
 
     if (isAdmin || superAdmin || isAllAppsCreatable) {
-      can([FEATURE_KEY.CREATE_LIBRARY_APP, FEATURE_KEY.CREATE_SAMPLE_APP, FEATURE_KEY.CREATE_SAMPLE_ONBOARD_APP], App);
+      can(
+        [
+          FEATURE_KEY.CREATE_LIBRARY_APP,
+          FEATURE_KEY.CREATE_SAMPLE_APP,
+          FEATURE_KEY.CREATE_SAMPLE_ONBOARD_APP,
+          FEATURE_KEY.GET_TEMPLATE_DEFAULT_NAME,
+        ],
+        App
+      );
     }
   }
 }
