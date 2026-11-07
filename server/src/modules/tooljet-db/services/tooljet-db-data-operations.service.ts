@@ -340,11 +340,17 @@ export class TooljetDbDataOperationsService implements QueryService {
         return this.updateRows(queryOptions, context);
       case 'delete_rows':
         return this.deleteRows(queryOptions, context);
-      case 'join_tables':
+      // Apps read join rows from `data.result` and SQL rows from `data.results`; keep that shape here.
+      // Internal callers (the TJDB dashboard) call joinTables()/sqlExecution() directly for the raw rows.
+      case 'join_tables': {
         // custom implementation without PostgREST
-        return this.joinTables(queryOptions, context);
-      case 'sql_execution':
-        return this.sqlExecution(queryOptions, context);
+        const response = await this.joinTables(queryOptions, context);
+        return response.status === 'ok' ? { ...response, data: { result: response.data } } : response;
+      }
+      case 'sql_execution': {
+        const response = await this.sqlExecution(queryOptions, context);
+        return response.status === 'ok' ? { ...response, data: { results: response.data } } : response;
+      }
       case 'bulk_update_with_primary_key':
         return this.bulkUpdateWithPrimaryKey(queryOptions, context);
       case 'bulk_upsert_with_primary_key':
