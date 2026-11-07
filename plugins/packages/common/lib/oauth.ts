@@ -110,6 +110,28 @@ function handleBasicAuthentication(sourceOptions: any, requestOptions: any): Que
   };
 }
 
+const HEADER_NAME_REGEX = /^[!#$%&'*+\-.^_|~0-9A-Za-z]+$/;
+
+export function resolveTokenHeader(sourceOptions: any, token: string): { name: string; value: string } {
+  const configuredName =
+    typeof sourceOptions?.access_token_header_key === 'string' ? sourceOptions.access_token_header_key.trim() : '';
+  const name = configuredName || 'Authorization';
+  if (!HEADER_NAME_REGEX.test(name)) {
+    throw new QueryError('Invalid header name for access token', {}, {});
+  }
+  const prefix = sourceOptions?.header_prefix ?? 'Bearer ';
+  return { name, value: `${prefix}${token}` };
+}
+
+function setTokenHeader(headers: any, sourceOptions: any, token: string) {
+  const { name, value } = resolveTokenHeader(sourceOptions, token);
+  // Header keys are case-insensitive: drop any same-named user-defined header so the OAuth value wins.
+  Object.keys(headers).forEach((key) => {
+    if (key.toLowerCase() === name.toLowerCase()) delete headers[key];
+  });
+  headers[name] = value;
+}
+
 async function validateAndMaybeSetOAuthHeaders(
   sourceOptions,
   context,
@@ -140,8 +162,7 @@ async function validateAndMaybeSetOAuthHeaders(
     } else {
       const accessToken = currentToken['access_token'];
       if (sourceOptions['add_token_to'] === 'header') {
-        const headerPrefix = sourceOptions['header_prefix'];
-        headers['Authorization'] = `${headerPrefix}${accessToken}`;
+        setTokenHeader(headers, sourceOptions, accessToken);
       }
     }
   }
@@ -154,10 +175,11 @@ async function handleClientCredentialsGrant(sourceOptions: any, headers: any): P
     const data = await getTokenForClientCredentialsGrant(sourceOptions);
     const accessToken = data['access_token'];
     if (sourceOptions['add_token_to'] === 'header') {
-      headers['Authorization'] = `Bearer ${accessToken}`;
+      setTokenHeader(headers, sourceOptions, accessToken);
     }
     return { status: 'ok', data: headers };
   } catch (error) {
+    if (error instanceof QueryError) throw error;
     throw new QueryError('Failed to fetch access token', {}, {});
   }
 }
@@ -243,7 +265,10 @@ function fetchEnvVariables(pluginKind, keyAppend) {
 export function getAuthUrl(sourceOptions: any, additionalOptions?): string {
   const customQueryParams = sanitizeParams(sourceOptions['custom_query_params']);
   const isTooljetManagedApp = sourceOptions['oauth_type'] === 'tooljet_app';
-  const host = !isTooljetManagedApp && sourceOptions['tj_redirect_host'] ? sourceOptions['tj_redirect_host'] : process.env.TOOLJET_HOST;
+  const host =
+    !isTooljetManagedApp && sourceOptions['tj_redirect_host']
+      ? sourceOptions['tj_redirect_host']
+      : process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
   const fullUrl = `${host}${subpath ? subpath : '/'}`;
   let client_id = sourceOptions['client_id'];

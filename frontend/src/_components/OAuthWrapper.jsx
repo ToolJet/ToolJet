@@ -117,6 +117,7 @@ const OAuthWrapper = ({
           grant_type={options?.grant_type?.value}
           auth_type={options?.auth_type?.value}
           add_token_to={options?.add_token_to?.value}
+          access_token_header_key={options?.access_token_header_key?.value}
           header_prefix={options?.header_prefix?.value}
           access_token_url={options?.access_token_url?.value}
           access_token_custom_headers={options?.access_token_custom_headers?.value}

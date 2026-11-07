@@ -42,6 +42,7 @@ const Authentication = ({
   custom_auth_params,
   custom_query_params,
   add_token_to,
+  access_token_header_key,
   header_prefix,
   grant_type,
   scopes,
@@ -89,6 +90,7 @@ const Authentication = ({
           tokenConfig={{
             access_token_url,
             access_token_custom_headers,
+            access_token_header_key,
             header_prefix,
             add_token_to,
             custom_query_params,
