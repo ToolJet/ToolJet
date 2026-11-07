@@ -4,7 +4,7 @@
 FROM node:22.23.4 AS mcp-builder
 WORKDIR /mcp
 ARG BRANCH_NAME
-ARG TOOLJET_MCP_REF=c0d48324b8212f697ef728f07ec2d3869214f74e
+ARG TOOLJET_MCP_REF=67e5fc28b1766a05559f3cf86e47eda27772fa07
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
