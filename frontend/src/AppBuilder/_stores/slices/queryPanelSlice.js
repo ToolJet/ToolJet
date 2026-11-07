@@ -14,6 +14,7 @@ import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { emptyPreviewParameters } from '@/AppBuilder/QueryManager/Components/previewParameters';
 import * as compareGuard from '@ee/modules/CodeMode/AppBuilder/CodeDiff/compareGuard';
+import * as strictMode from '@ee/modules/CodeMode/AppBuilder/Widgets/LibraryComponent/isolation/strictMode';
 
 const BLOCKED_WRITE_MESSAGE = compareGuard.BLOCKED_WRITE_MESSAGE ?? '';
 const writeBlockedInCompare = compareGuard.writeBlockedInCompare ?? (() => false);
@@ -467,6 +468,22 @@ export const createQueryPanelSlice = (set, get) => ({
       if (writeBlockedInCompare(dataQuery)) {
         setResolvedQuery(queryId, { isLoading: false }, moduleId);
         return Promise.resolve({ status: 'failed', message: BLOCKED_WRITE_MESSAGE });
+      }
+
+      const refusal = strictMode.strictRefusal?.(dataQuery);
+      if (refusal) {
+        setResolvedQuery(queryId, { isLoading: false, error: { status: 'failed', message: refusal } }, moduleId);
+        get().debugger.log({
+          logLevel: 'error',
+          type: 'query',
+          kind: query.kind,
+          key: query.name,
+          message: refusal,
+          errorTarget: 'Queries',
+          error: { message: refusal },
+          isQuerySuccessLog: false,
+        });
+        return Promise.resolve({ status: 'failed', message: refusal });
       }
 
       if (_.isEmpty(parameters)) {
@@ -1417,6 +1434,7 @@ export const createQueryPanelSlice = (set, get) => ({
         getResolvedState,
         getAppType,
       } = get();
+      if (strictMode.isStrict?.()) return { status: 'failed', message: strictMode.STRICT_REFUSAL };
       let result = {};
       const currentState = getResolvedState(moduleId);
       const appType = getAppType(moduleId);
@@ -1661,6 +1679,7 @@ export const createQueryPanelSlice = (set, get) => ({
     },
 
     executeMultilineJS: async (code, queryId, isPreview, mode = '', parameters = {}, moduleId = 'canvas') => {
+      if (strictMode.isStrict?.()) return { status: 'failed', message: strictMode.STRICT_REFUSAL };
       const { queryPanel, dataQuery, getAllExposedValues, eventsSlice } = get();
       const { runQuery } = queryPanel;
       const { generateAppActions } = eventsSlice;

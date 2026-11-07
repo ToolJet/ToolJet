@@ -322,6 +322,32 @@ If a log file path is specified in environment variables, a log file containing 
 | -------- | --------------------------------------------------------------------------- |
 | LOG_FILE_PATH | the path where the log file will be created ( eg: tooljet/log/tooljet-audit.log) |
 
+## Code app isolation (Enterprise)
+
+A code app's own code runs in a frame the browser treats as a separate origin. It reaches ToolJet only through a message channel the page checks, so it can't read the viewer's session, cookies or the ToolJet page, and it can run only its own app's queries, with the viewer's rights. On by default.
+
+| Variable | Description | Default |
+| -------- | ----------- | ------- |
+| CODE_MODE_ISOLATION | `on`: released apps, Preview, the editor canvas and version comparisons all run isolated. `viewer`: released apps and Preview only; the editor and comparisons, where admins and builders open other people's code, run on the ToolJet origin. `off`: no isolation. `viewer` and `off` are for self-hosted installs where every app builder is trusted, and log a warning at startup. Any other value means `on`, with a warning. Cloud always runs `on`: there any other value is ignored and logged as an error. The in-browser build runs in its own sandboxed frame at every value. | `on` |
+| CODE_MODE_SANDBOX_URL | Optional second domain for the app frame. It must be `https`, must not share a site with `TOOLJET_HOST`, and must route to this server. `https://sandbox.example.com` serves the frame from that domain, and every app still runs on the browser's `null` origin. `https://*.example-usercontent.com` gives each app an origin of its own, `a<app id without dashes>.example-usercontent.com`, which needs wildcard DNS and a wildcard certificate. Unset, the frame comes from this server on the `null` origin. A value that fails these checks is ignored, with a warning in the server log. Has no effect while isolation is `off`. | unset |
+| CODE_MODE_STRICT_BINDINGS | Strict mode for isolated code apps: RunJS, RunPy and transformations are refused, `{{ }}` bindings go through a small interpreter instead of being compiled, JS libraries and preloaded scripts don't load, and the Custom component widget and script addresses in an IFrame are refused. `false` turns strict mode off, for a self-hosted pilot with trusted authors only; cloud ignores it. Visual apps are never affected. | on whenever the app is isolated |
+
+The second domain serves only the frame document. Every other path on it returns 404, and it sets and reads no cookies. With a per-app domain and `ENABLE_CUSTOM_DOMAINS=true`, an app's frame accepts code only from `TOOLJET_HOST` and the custom domain of the workspace that owns the app.
+
+The in-browser build fetches packages from `CODE_MODE_CDN_URL` (default `https://esm.sh`) and follows no redirects: point it at the address that answers directly.
+
+:::caution
+Isolation protects the viewer's session, not the data the app is given. App code still sees what its queries return, and it can send that out by opening a popup or by navigating its own frame. It is not data-loss prevention. What an app may read and write is controlled by query permissions on the server. Popups an app opens stay sandboxed; web links in an app open in a normal new tab, with no opener and no referrer.
+:::
+
+Checks still owed before code apps go to customers:
+
+- **DNS and TLS for the app origin:** a separate registrable domain with wildcard DNS and a wildcard certificate, for each app to get its own origin. Without one, apps share the `null` origin, which works but gives them no storage of their own.
+- **Strict mode:** RunJS and transformations are refused in code apps, so apps that use them must move that logic into their code first.
+- **Production and Docker builds:** the frame runtime and the build worker ship in `frontend/build/assets/code-frame/`. They need checking in the released images, and the MCP server must be deployed with the same release, since its render check reads the isolated frame.
+- **Public and embedded apps:** checked in a browser, signed out and inside a customer's page.
+- **Custom domains:** checked with an app opened from a custom domain, which the frame must accept as a parent.
+
 ## ToolJet Apps
 
 ### Enabling embedding of private apps
@@ -335,6 +361,33 @@ By default, only embedding of public apps is permitted. By setting this variable
 :::caution
 The option is only available starting from ToolJet Enterprise Edition `2.8.0` or higher, and `2.10.0` for the Community edition and cloud version.
 :::
+
+## Code apps (Enterprise, optional)
+
+Code apps are built as React projects and checked by an app scanner on the server. The Docker images ship the CLI, the SDK and the scanner, so none of these need to be set. Set them for an offline install, a mirror, or a non-Docker deployment.
+
+| Variable | Description | Default |
+| -------- | ----------- | ------- |
+| CODE_MODE_CDN_URL | ESM CDN the editor's in-browser build fetches npm packages from. Set a mirror when the instance has no internet access. | `https://esm.sh` |
+| TOOLJET_APP_SCANNER_BIN | Path to the app scanner's `tj-app-scan.js`. | `server/ee/packages/app-scanner`, found from the server folder |
+| TOOLJET_APP_SCAN_OFFLINE | `true` skips the scanner's network checks (OSV, npm registry, retire.js, Socket). They then report "not run", never "passed". | `false` |
+| TOOLJET_APP_SCAN_OSV_URL | OSV API mirror for the vulnerability check. | `https://api.osv.dev` |
+| TOOLJET_APP_SCAN_REGISTRY_URL | npm registry mirror for the package checks. | `https://registry.npmjs.org` |
+| TOOLJET_APP_SCAN_RETIRE_URL | retire.js repository file for the vendored library check. | the retire.js file on GitHub |
+| TOOLJET_APP_SCAN_SOCKET_TOKEN | Socket API token. Setting it turns on Socket alerts. | unset (off) |
+| TOOLJET_APP_SCAN_AUTO_DELAY_MS | How long the check after a save waits for the version to stop changing, in milliseconds. | `3000` |
+| TOOLJET_APP_SCAN_RECHECK_MINUTES | Re-runs the dependency checks on released versions every n minutes (at least 5). One instance runs it at a time. | unset (off) |
+| TOOLJET_CLI_TARBALL | CLI tarball served at `/api/code-mode/cli/tooljet-cli.tgz`. Without one the route answers 404. | `server/code-mode-cli/tooljet-cli.tgz`, written by `server/scripts/pack-cli.sh` |
+| TOOLJET_SDK_TARBALL | SDK tarball served at `/api/code-mode/cli/custom-component-sdk.tgz`. | `server/code-mode-cli/custom-component-sdk.tgz` |
+| MCP_OAUTH_TRUSTED_PROXIES | Comma-separated proxy addresses or CIDRs whose `X-Forwarded-For` the MCP sign-in and CLI device login rate limits trust. Behind a load balancer, name it here, or every caller shares one limit. | unset (the connecting address) |
+
+The bundled MCP server, and the CLI it runs, read three more. The enterprise images set them.
+
+| Variable | Description | Default | Images |
+| -------- | ----------- | ------- | ------ |
+| TOOLJET_SDK_SPEC | The SDK that app projects install. | the SDK this server serves | `file:/app/code-mode/custom-component-sdk` |
+| TOOLJET_CODE_APP_ROOT | Where the MCP server keeps app projects. | `~/tooljet-code-apps` | `/app/code-mode/apps` |
+| MCP_RENDER_AUDIT_ENABLED | `false` turns the render check off. | on when Playwright and Chrome are found | `false`, since the images have no browser |
 
 ## Configuring the Default Language
 To change the default language, set the LANGUAGE variable to your desired language code. 

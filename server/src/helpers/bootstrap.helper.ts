@@ -9,6 +9,7 @@ import { LicenseInitService } from '@modules/licensing/interfaces/IService';
 import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 import { ILicenseUtilService } from '@modules/licensing/interfaces/IUtilService';
 import { getTooljetEdition } from '@helpers/utils.helper';
+import { resolveCodeModeIsolation } from '@helpers/code-mode-isolation.helper';
 import * as Sentry from '@sentry/nestjs';
 import { DataSource } from 'typeorm';
 import { Request, Response, NextFunction } from 'express';
@@ -288,6 +289,66 @@ async function fetchCustomDomainOrigins(
     logger.error('Failed to fetch custom domains for CORS — all custom domain origins will be rejected:', error);
     return new Set<string>();
   }
+}
+
+/**
+ * What the enterprise edition serves ahead of every other middleware, on hosts and paths of its own. It has to come before
+ * session handling and helmet, whose headers don't apply there. Nothing happens on an edition without it.
+ */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+/**
+ * The active custom domain of the workspace that owns one app, as origins. Read only; an unknown app has none. Never
+ * another workspace's domain: a per-app frame trusts only its own workspace's pages.
+ */
+export async function fetchAppWorkspaceDomainOrigins(dataSource: DataSource, appId: string, logger: any): Promise<string[]> {
+  if (!UUID.test(appId ?? '')) return [];
+  try {
+    const rows: { domain: string }[] = await dataSource.query(
+      `SELECT cd.domain FROM custom_domains cd JOIN apps a ON a.organization_id = cd.organization_id
+       WHERE a.id = $1 AND cd.status = 'active'`,
+      [appId]
+    );
+    return rows.map((row) => `https://${String(row.domain).toLowerCase()}`);
+  } catch (error) {
+    logger.error?.("Failed to read the app's workspace domain for its frame; only TOOLJET_HOST is trusted:", error);
+    return [];
+  }
+}
+
+/**
+ * What the enterprise edition serves ahead of every other middleware, on hosts and paths of its own. It has to come before
+ * session handling and helmet, whose headers don't apply there. Nothing happens on an edition without it.
+ */
+export async function setupEditionEarlyRoutes(app: NestExpressApplication, configService: ConfigService, logger: any) {
+  let middleware;
+  try {
+    const importPath = await getImportPath();
+    const { codeFrameMiddleware } = await import(`${importPath}/code-page-security/frame-route`);
+    const isolation = resolveCodeModeIsolation(process.env);
+    for (const { level, text } of isolation.messages) {
+      if (level === 'error') logger.error?.(text);
+      else logger.warn?.(text);
+    }
+    middleware = codeFrameMiddleware({
+      isolation: isolation.mode,
+      sandboxUrl: configService.get<string>('CODE_MODE_SANDBOX_URL'),
+      tooljetHost: configService.get<string>('TOOLJET_HOST'),
+      subPath: configService.get<string>('SUB_PATH'),
+      allowedParents: async (appId: string) => {
+        const tooljetHost = configService.get<string>('TOOLJET_HOST')?.replace(/\/+$/, '').toLowerCase();
+        const custom =
+          configService.get<string>('ENABLE_CUSTOM_DOMAINS') === 'true'
+            ? await fetchAppWorkspaceDomainOrigins(app.get<DataSource>(DataSource), appId, logger)
+            : [];
+        return [tooljetHost, ...custom].filter(Boolean);
+      },
+      logger,
+    });
+  } catch {
+    return;
+  }
+  app.use(middleware);
 }
 
 /**
