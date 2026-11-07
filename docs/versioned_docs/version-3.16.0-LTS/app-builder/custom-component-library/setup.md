@@ -51,19 +51,21 @@ Revoking a token takes effect immediately and can't be undone. Any CLI session o
 
 ## Sign In to the CLI
 
-Install the CLI and sign in:
+Custom Component Library commands are only in the beta release of the CLI, `0.0.15-beta.1`. The latest stable release, `0.0.14`, doesn't include `login` or `library`. The beta requires Node.js 18 or later. Install it and sign in:
 
 ```bash
-npm i @tooljet/cli@0.0.15-beta.1
+npm install -g @tooljet/cli@0.0.15-beta.1
 tooljet login
 ```
 
 `tooljet login` asks for two values:
 
-- **ToolJet origin URL**: For example, `https://app.tooljet.ai`. Enter only the protocol and host. Any path is removed.
+- **ToolJet origin URL**: For example, `https://app.tooljet.ai`. Enter only the protocol and host. Any path is removed. Use `https://`. `http://` is accepted only for `localhost` and `127.0.0.1`.
 - **API token**: Your personal access token. The input is masked.
 
 You can run `tooljet login` from any directory.
+
+The CLI checks the token with your ToolJet instance, prints **Authenticated as** followed by your email, and saves the credentials to `~/.tooljet/credentials.json`.
 
 ## Create a Library
 
