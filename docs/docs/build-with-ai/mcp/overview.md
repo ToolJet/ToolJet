@@ -88,13 +88,9 @@ To connect your agent, follow the [Setup](/docs/build-with-ai/mcp/setup) guide.
 
 ## ToolJet MCP Auditability
 
-ToolJet MCP authenticates using a Personal Access Token (PAT). The PAT is created by a ToolJet user, scoped to a specific workspace, and operates within the permissions assigned to its owner. As a result, the MCP agent cannot access workspaces or resources beyond the token’s authorized scope.
+ToolJet MCP supports a user-created Personal Access Token (PAT) on ToolJet Cloud and self-hosted instances, or a user-approved OAuth connection on ToolJet Cloud. Both are bound to one workspace and operate within that user's ToolJet permissions. OAuth requests are also limited to the permissions approved on the consent screen. See [Choose an Authentication Method](/docs/build-with-ai/mcp/setup#choose-an-authentication-method) for setup and revocation.
 
-On ToolJet Cloud, you can also connect with [OAuth](/docs/build-with-ai/mcp/setup#choose-an-authentication-method). The connection is approved by a signed-in ToolJet user for a single workspace and is linked to that user in the same way. The agent operates within the user's current permissions and the permissions approved on the consent screen.
-
-Because MCP requests are authenticated through a user-linked PAT, changes made by the MCP agent are executed within the PAT owner’s ToolJet permission context. ToolJet’s audit-log system records platform activities, including the acting user, action performed, timestamp, location, and relevant application, query, user, group, or permission event.
-
-Accordingly, MCP-driven changes that generate standard ToolJet platform events can be associated with the authenticated PAT owner in the audit trail. This provides accountability and traceability for changes made through ToolJet MCP.
+ToolJet's audit-log system records platform activities, including the acting user, action performed, timestamp, location, and relevant application, query, user, group, or permission event. MCP actions that generate standard ToolJet platform events can be associated with the authenticated user in the audit trail: the PAT owner or the user who approved the OAuth connection.
 
 ## Supported MCP Clients
 
