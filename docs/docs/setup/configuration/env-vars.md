@@ -44,7 +44,7 @@ Replace `username`, `password`, `hostname`, `port`, and `database_name` with you
 
 #### Disabling Automatic Database & Extension Creation (Optional)
 
-- `PG_DB_OWNER=false`: ToolJet by default tries to create database based on `PG_DB` variable set and additionally my try to create postgres extensions. This requires the postgres user to have `CREATEDB` permission. If this cannot be granted you can disable this behaviour by setting `PG_DB_OWNER` as `false` and will have to manually run them.
+- `PG_DB_OWNER=false`: ToolJet by default tries to create database based on `PG_DB` variable set and additionally my try to create postgres extensions. This requires the postgres user to have `CREATEDB` permission. If this cannot be granted you can disable this behaviour by setting `PG_DB_OWNER` as `false` and will have to manually run them. This also skips creating the ToolJet Database (`TOOLJET_DB`), so create that database yourself too.
 
 #### ToolJet Database
 
@@ -53,7 +53,10 @@ Replace `username`, `password`, `hostname`, `port`, and `database_name` with you
 - `TOOLJET_DB_USER`: Database username
 - `TOOLJET_DB_PASS`: Database password
 - `TOOLJET_DB_PORT`: Database port
-- `TOOLJET_DB_BULK_UPLOAD_MAX_ROWS`: Maximum number of rows allowed in bulk upload (default: 5000)
+- `TOOLJET_DB_URL`: Connection URL for the ToolJet Database, in the form `postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB`. Include the username and password in the URL. When set, its values take precedence over `TOOLJET_DB`, `TOOLJET_DB_HOST`, `TOOLJET_DB_PORT`, `TOOLJET_DB_USER`, and `TOOLJET_DB_PASS`, and ToolJet connects over SSL without verifying the server certificate. To verify it, set `CA_CERT`.
+- `TOOLJET_DB_STATEMENT_TIMEOUT`: Maximum time a ToolJet Database statement can run, in milliseconds. Applies to queries from ToolJet and from PostgREST. Default: `60000`.
+- `TJDB_SQL_MODE_DISABLE`: Set to `true` to turn off the [SQL editor](/docs/tooljet-db/querying-tooljet-db#sql-editor) for ToolJet Database queries. SQL mode queries then fail with **SQL execution is disabled**. This setting also changes where tables are stored: in the `public` schema instead of a separate schema for each workspace. Set it before you create any tables. Default: `false`.
+- `TOOLJET_DB_BULK_UPLOAD_MAX_ROWS`: Maximum number of rows allowed in bulk upload (default: 1000)
 - `TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB`: Maximum file size of CSV for bulk upload. Default value is 5 MB
 
 #### Why ToolJet Requires Two Databases
