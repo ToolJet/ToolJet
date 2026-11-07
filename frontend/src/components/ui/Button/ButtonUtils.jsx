@@ -1,4 +1,8 @@
-export const getDefaultIconFillColor = (variant, iconOnly = false) => {
+export const getDefaultIconFillColor = (variant, iconOnly = false, disabled = false) => {
+  if (disabled) {
+    return 'var(--icon-disabled)';
+  }
+
   switch (variant) {
     case 'primary':
     case 'dangerPrimary':
