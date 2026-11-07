@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { cn } from '@/lib/utils';
 
 import {
   LibraryInstance,
@@ -506,6 +507,8 @@ const InlineLibraryComponent = ({
   // The host already dims a disabled widget's box. It marks the root too, so a component whose controls dim
   // themselves when disabled can keep them at full opacity (the pack's CSS reads the mark) instead of dimming twice.
   const hostDisabled = !!host?.disabled;
+  const popupBlocked = hostDisabled || !!host?.loading;
+  const popupDisabled = hostDisabled && !host?.loading;
   useLayoutEffect(() => {
     shadow?.mount.toggleAttribute('data-tj-host-disabled', hostDisabled);
   }, [shadow, hostDisabled]);
@@ -620,11 +623,19 @@ const InlineLibraryComponent = ({
         </div>
       ))}
       {light}
-      {/* Drop areas inside popups: children of the popup layer's host, projected into the popup's <slot>. */}
+      {/* Drop areas inside popups: children of the popup layer's host, projected into the popup's <slot>. They draw
+          outside the widget, so the widget's inert (disabled or loading, it takes no input) never reached them: a
+          disabled Dialog's body stayed usable (QA item 34). They take no input as the widget does, and are
+          aria-disabled and dimmed while disabled, as ModalV2's body (a pack's popup refuses a choice there). */}
       {shadow && renderPopupSlot && host
         ? popupSlotNames.map((name) =>
             createPortal(
-              <div slot={host.popupSlotAttr(name)} className="tw-block tw-w-full tw-h-full">
+              <div
+                slot={host.popupSlotAttr(name)}
+                className={cn('tw-block tw-w-full tw-h-full', { 'tw-opacity-50': popupDisabled })}
+                aria-disabled={popupDisabled ? 'true' : undefined}
+                {...(popupBlocked ? { inert: '' } : {})}
+              >
                 {renderPopupSlot(name)}
               </div>,
               shadow.popupHost,
