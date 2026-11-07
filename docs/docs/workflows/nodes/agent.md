@@ -15,7 +15,7 @@ The **Agent Node** enables AI-powered automation within your workflows. It conne
 |:--------|:------------|
 | **System Prompt** | Instructions that define the agent's behavior, persona, and constraints. |
 | **User Prompt** | The task or question for the agent to process. Supports dynamic values using `{{ }}` syntax. |
-| **Output Format** | Defines the structure of the agent's final response. Use this to specify a JSON schema or format that the agent should follow when returning results. |
+| **Output Format** | An example of the JSON you want back. ToolJet infers the response structure from the example and makes the agent return data in that shape. If the value isn't valid JSON, it's ignored and the agent returns plain text. See [Output Format](#output-format). |
 
 ### AI Model
 
@@ -29,27 +29,29 @@ Supported AI providers:
 
 #### Model Parameters
 
-| Parameter | Description |
-|:----------|:------------|
-| **Temperature** | Controls randomness in responses. Higher values (0-1) produce more creative outputs. |
-| **Max Tokens** | Maximum number of tokens the model can generate in a response. |
-| **Top P** | Alternative to temperature for controlling randomness via nucleus sampling (0-1). |
-| **Max Steps** | Maximum number of reasoning steps/iterations the agent can take. |
-| **Max Retries** | Number of retry attempts for failed API calls. |
-| **Timeout** | Maximum time in milliseconds for the agent to complete execution. |
-| **Stop Sequences** | Sequences that signal the model to stop generating further text. |
+| Parameter | Description | Default |
+|:----------|:------------|:--------|
+| **Temperature** | Controls randomness in responses, from `0` to `2`. Higher values produce more creative outputs. | `0.7` |
+| **Max tokens** | Maximum number of tokens the model can generate in a response (`1`–`100000`). | `2000` |
+| **Top P** | Alternative to temperature for controlling randomness via nucleus sampling (`0`–`1`). | Provider default |
+| **Max steps** | Maximum number of reasoning steps the agent can take (`1`–`20`). | `5` |
+| **Stop sequences** | Comma-separated sequences that make the model stop generating, for example `END, STOP`. | None |
+| **Timeout (seconds)** | Maximum time, in seconds, for the agent to finish. | None (the workflow timeout still applies) |
+| **Max retries** | Number of retry attempts for failed API calls. | `2` |
+
+A parameter left empty uses the default shown above.
 
 ### Tools
 
 Tools allow the agent to interact with your data and perform actions. Each tool is a workflow node that the agent can invoke. The agent autonomously decides which tools to use based on the task and your system prompt instructions.
 
-To add tools, drag nodes from the Agent node's tool handle to connect datasource queries, REST API calls, JavaScript nodes, or any other workflow nodes.
+To add tools, connect query nodes to the Agent node's tool handle. Only nodes backed by a query can be tools: data source queries (including REST API), JavaScript and Python nodes, and workflow nodes.
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/agent/agent-tools.png" alt="Agent Tools Configuration" />
 
 #### Supported Tool Types
 
-You can use any workflow node as a tool, including:
+You can use these query nodes as tools:
 
 - **Datasource Queries**: PostgreSQL, MySQL, MongoDB, and other database queries
 - **REST API**: Connect to external services like Slack, GitHub, Gmail, Twilio, etc.
@@ -60,17 +62,36 @@ You can use any workflow node as a tool, including:
 
 ### Inside Tools
 
-When the agent invokes a tool, it passes parameters that you can access within the tool node. Use the following syntax to retrieve these values:
+A tool's inputs come from the `aiParameters` references you write in the tool node. When the agent calls the tool, it fills in a value for each reference.
+
+In a data source query or REST API node, reference a parameter inside `{{ }}` in any field:
 
 ```js
-aiParameters.<paramName>
+{{aiParameters.user_email}}
 ```
 
-The parameter names are determined by the agent based on your system prompt instructions. For example, if your system prompt instructs the agent to extract `user_email` from the user's message, you can access it in your tool as:
+In a JavaScript or Python node, read it from the `aiParameters` object in your code:
 
 ```js
-aiParameters.user_email
+const email = aiParameters.user_email;
 ```
+
+The parameter names are the ones you write, for example `user_email` above. Nested paths such as `{{aiParameters.user.email}}` and bracket notation such as `{{aiParameters['user-id']}}` also work. Describe the parameters in your system prompt so the agent knows what values to pass.
+
+### Output Format
+
+To get structured data back from the agent, enter an example of the JSON you want in **Output Format**. ToolJet infers the structure from the example: field names and types come from the example values, and for an array the first item defines the type of every item.
+
+```json
+{
+  "ticket_id": "TCK-1042",
+  "priority": "high",
+  "tags": ["billing"],
+  "notify_customer": true
+}
+```
+
+The agent then returns an object with `ticket_id`, `priority`, `tags` and `notify_customer` fields, which you can read in later nodes as `<agentNodeName>.data`.
 
 ### Outside Agent Node
 

@@ -95,9 +95,49 @@ Finally, you'll set up conditions to handle the success or failure of the SMS se
 
 #### Step 5: Executing the Workflow
 
-Click on the **Run** button on the top-right to execute the workflow. The logs panel will expand and provide an overview of all the nodes executed in this workflow.
+Click on the **Run** button on the top-right to execute the workflow. The [Logs panel](#viewing-execution-logs) will expand and provide an overview of all the nodes executed in this workflow.
 
 Congratulations on creating your first workflow! This workflow fetches data, transforms the data, sends SMS notifications, and handles success or failure responses.
 
-As you saw in this example, ToolJet Workflows provides a streamlined way to extend the capabilities of your ToolJet applications and automate complex processes. 
+As you saw in this example, ToolJet Workflows provides a streamlined way to extend the capabilities of your ToolJet applications and automate complex processes.
 
+### Enabling or Disabling a Workflow
+
+Use the **Enable** toggle in the workflow editor header, next to the **Run** button, to turn a workflow on or off. New workflows are enabled by default. The change is saved immediately.
+
+<img className="screenshot-full img-s" src="/img/workflows/editor/enable-toggle.png" alt="Enable toggle in the workflow editor header" />
+
+When a workflow is disabled:
+
+- The **Run** button in the editor is disabled.
+- [Webhook](/docs/workflows/triggers/webhook) requests are rejected with `403` and the message `Workflow is disabled or does not exist`.
+- [Scheduled](/docs/workflows/triggers/scheduler) runs stop. The schedules are kept and start running again when you enable the workflow.
+- **Run Workflow** queries in apps fail with `Workflow is disabled or does not exist`.
+
+### Running From a Node
+
+To run part of a workflow, start the run from a specific node instead of the **Start** node. Hover over a node and click the play icon, or open the node and click **Run Workflow** in its configuration panel. Both show the tooltip **Workflow will execute from this node onwards**. The run executes the selected node and every node after it.
+
+<img className="screenshot-full img-s" src="/img/workflows/editor/run-from-node.png" alt="Play icon on a workflow node" />
+
+Nodes before the selected node don't run again. Their data comes from the last run in the current editor session, or from the node's **Preview**. If an earlier node hasn't run or been previewed in this session, its data isn't available. Parameters come from the **Test JSON parameters** of the start trigger.
+
+The play icon is available on query, Loop, If condition and Agent nodes.
+
+### Viewing Execution Logs
+
+The **Logs** panel at the bottom of the workflow editor shows the run history of the current workflow version. It opens when you click **Run**. You can also open it by clicking **Expand** at the bottom of the editor, and resize it by dragging its top edge.
+
+<img className="screenshot-full img-full" src="/img/workflows/editor/logs-panel.png" alt="Logs panel in the workflow editor" />
+
+The panel has three columns:
+
+- **Logs**: The runs of the workflow version, newest first. Each run shows its status and when it ran, for example *2 minutes ago*. A run in progress shows **In Progress...**.
+- **Nodes**: The nodes of the selected run. Select **All Nodes** to see the logs of the whole run. Failed nodes are marked with a red icon, and nodes that were skipped are marked as skipped.
+- **Input**, **Output** and **Logs** tabs: The data the selected node received, the data it returned, and its log messages with timestamps. Failed log lines can be expanded to show the error details.
+
+#### Terminating a Run
+
+To stop a run that's in progress, click the stop icon (**Terminate run**) next to it in the **Logs** column. The run shows **Terminating...** and stops before the next node starts. A node that's already running isn't interrupted. When the run stops, its status changes to terminated and you'll see the message *Workflow execution terminated*. Runs that have already completed or failed can't be terminated.
+
+To terminate a run started with the `/trigger-async` webhook endpoint, see [Async Workflow Query Execution](/docs/workflows/triggers/webhook#async-workflow-query-execution).
