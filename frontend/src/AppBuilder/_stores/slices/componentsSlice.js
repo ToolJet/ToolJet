@@ -2317,6 +2317,7 @@ export const createComponentsSlice = (set, get) => ({
           id,
           componentName: pageComponents[id]?.component?.component,
           layout: pageComponents[id]?.layouts?.[layoutKey],
+          alignment: pageComponents[id]?.component?.definition?.styles?.alignment?.value,
         }))
         .filter((child) => child.layout && !isNaN(child.layout.top) && !isNaN(child.layout.left));
       // Both Layouts' column widths come from the same ListView width, so a child can keep its pixels.
@@ -2367,6 +2368,17 @@ export const createComponentsSlice = (set, get) => ({
         mergeWithPrevious: true,
         targetLayout: layoutKey,
       });
+      // Each Layout keeps its own Alignment too (a chip right in List, left in Grid); like the memory, not an undo step.
+      if (remembered) {
+        children.forEach(({ id, alignment }) => {
+          const next = remembered[id]?.alignment;
+          if (next === undefined || next === alignment) return;
+          get().setComponentProperty(id, 'alignment', next, 'styles', 'value', false, moduleId, {
+            skipUndoRedo: true,
+            saveAfterAction,
+          });
+        });
+      }
     };
 
     // Each Layout remembers its own last desktop layout, whichever view made the switch, so the desktop children

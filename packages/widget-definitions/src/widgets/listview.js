@@ -11,14 +11,21 @@ export const listviewConfig = {
   defaultChildren: [
     {
       componentName: 'Image',
-      layout: { top: 20, left: 2, height: 40, width: 4 },
+      // As tall as the name and company lines together; the circle takes the box's shorter side.
+      layout: { top: 15, left: 2, height: 50, width: 4 },
+      // Figma grid card (150px): remembered as the Grid layout at drop. Wide enough that the circle uses the height.
+      gridLayout: { top: 8, left: 1, height: 44, width: 20 },
       properties: ['source'],
       accessorKey: 'imageURL',
-      creationValues: { styles: { borderType: 'rounded-circle', imageFit: 'cover' } },
+      creationValues: {
+        styles: { borderType: 'rounded-circle', imageFit: 'cover', keepCircleRound: '{{true}}', alignment: 'left' },
+      },
     },
     {
       componentName: 'Text',
+      // 25px: a shorter Text box clips g, y and p.
       layout: { top: 15, left: 7, height: 25, width: 17 },
+      gridLayout: { top: 58, left: 1, height: 25, width: 41 },
       properties: ['text'],
       accessorKey: 'name',
       creationValues: { styles: { fontWeight: 'bold' } },
@@ -26,6 +33,7 @@ export const listviewConfig = {
     {
       componentName: 'Text',
       layout: { top: 40, left: 7, height: 25, width: 17 },
+      gridLayout: { top: 83, left: 1, height: 25, width: 41 },
       properties: ['text'],
       accessorKey: 'company',
       creationValues: { styles: { textColor: 'var(--cc-placeholder-text)' } },
@@ -33,13 +41,14 @@ export const listviewConfig = {
     {
       componentName: 'Tags',
       layout: { top: 20, left: 26, height: 40, width: 16 },
+      gridLayout: { top: 108, left: 1, height: 40, width: 41, alignment: 'left' },
       creationValues: {
         properties: {
           // Without Dynamic tags the Tags widget shows its static sample options and ignores `data`.
           advanced: '{{true}}',
-          data: "{{[{ title: listItem.role, color: 'color-mix(in srgb, var(--cc-primary-brand) 10%, transparent)', textColor: 'var(--cc-primary-text)' }]}}",
+          data: "{{[{ title: listItem.role, color: 'color-mix(in srgb, #9BD8EE 29%, transparent)', textColor: 'var(--cc-primary-text)' }]}}",
         },
-        styles: { size: 'large', borderRadius: '14' },
+        styles: { size: 'large', borderRadius: '11', alignment: 'right' },
       },
     },
     // Seeded on drop only, and every drop is a new ListView, so saved ListViews never gain it.
@@ -466,11 +475,12 @@ export const listviewConfig = {
     { imageURL: 'https://randomuser.me/api/portraits/women/26.jpg', name: 'Miles, Esther', company: 'Biffco Enterprises Ltd.', role: 'Photographer' },
     { imageURL: 'https://randomuser.me/api/portraits/women/33.jpg', name: 'Flores, Juanita', company: 'Barone LLC.', role: 'Waitress' },
     { imageURL: 'https://randomuser.me/api/portraits/women/90.jpg', name: 'Miles, Esther', company: 'Binford Ltd.', role: 'Flight engineer' },
+    { imageURL: 'https://randomuser.me/api/portraits/men/52.jpg', name: 'Fox, Robert', company: 'Initech', role: 'Data analyst' },
   ]}}`,
       },
       showHeader: { value: '{{true}}' },
       rowHeight: { value: '80' },
-      gridRecordHeight: { value: '170' },
+      gridRecordHeight: { value: '150' },
     },
     styles: {
       listStyle: { value: 'bordered' },

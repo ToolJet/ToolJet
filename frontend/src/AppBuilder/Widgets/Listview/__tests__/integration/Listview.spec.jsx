@@ -11,7 +11,11 @@ import { componentDefinition, AppBuilderTestSession, defineAppBuilderScenario, s
 import React from 'react';
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 import useStore from '@/AppBuilder/_stores/store';
-import { addNewWidgetToTheEditor, addChildrenWidgetsToParent } from '@/AppBuilder/AppCanvas/appCanvasUtils';
+import {
+  addNewWidgetToTheEditor,
+  addChildrenWidgetsToParent,
+  addDefaultRecordLayoutsToListview,
+} from '@/AppBuilder/AppCanvas/appCanvasUtils';
 import { pasteComponents, copyComponents } from '@/AppBuilder/AppCanvas/copyPasteWidgetsUtils';
 import { useGridStore } from '@/_stores/gridStore';
 import i18next from 'i18next';
@@ -3032,6 +3036,8 @@ describe('ListviewCreation', () => {
     async function dropListview() {
       const parent = addNewWidgetToTheEditor('Listview', 'desktop', realCanvas, 'canvas');
       const children = addChildrenWidgetsToParent('Listview', parent.id, 'desktop');
+      // As the canvas drop handler does after building the children.
+      addDefaultRecordLayoutsToListview(parent, children);
       // Not awaited: without a save the returned promise never settles. The page is updated synchronously.
       useStore.getState().addComponentToCurrentPage([parent, ...children], MODULE_ID, { saveAfterAction: false });
       const saved = components()[parent.id];
@@ -3052,7 +3058,7 @@ describe('ListviewCreation', () => {
       expect(properties.totalRecords).toEqual({ value: '{{10}}' });
       expect(properties.disableRecords).toEqual({ value: '{{false}}' });
       expect(properties.rowHeight).toEqual({ value: '80' });
-      expect(properties.gridRecordHeight).toEqual({ value: '170' });
+      expect(properties.gridRecordHeight).toEqual({ value: '150' });
 
       // listStyle bordered is what gives the 12px container padding.
       expect(styles.listStyle).toEqual({ value: 'bordered' });
@@ -3067,23 +3073,23 @@ describe('ListviewCreation', () => {
       expect(styles.headerDividerColor).toEqual({ value: 'var(--cc-weak-border)' });
     });
 
-    test('[Listview-CREATE-001] a dropped ListView holds 8 sample records and is 624px tall, so 6 show', async () => {
+    test('[Listview-CREATE-001] a dropped ListView holds 9 sample records and is 624px tall, so 6 show', async () => {
       // Break this catches: keeping the 3-record sample or the 450px height, so a new ListView
       // does not match Figma (6 records of 80px + 12px gaps + header, the rest scroll).
       const { saved } = await dropListview();
 
       const data = saved.component.definition.properties.data.value;
       const records = new Function(`return ${data.slice(2, -2)}`)();
-      expect(records).toHaveLength(8);
+      expect(records).toHaveLength(9);
       expect(saved.layouts.desktop.height).toBe(624);
     });
 
-    test('[Listview-CREATE-001] a new ListView holds 8 people with a photo, name, company and role', async () => {
+    test('[Listview-CREATE-001] a new ListView holds 9 people with a photo, name, company and role', async () => {
       // Break this catches: the old text/buttonText sample, or a record missing a field the children bind.
       const { saved } = await dropListview();
 
       const records = new Function(`return ${saved.component.definition.properties.data.value.slice(2, -2)}`)();
-      expect(records).toHaveLength(8);
+      expect(records).toHaveLength(9);
       records.forEach((record) => {
         expect(Object.keys(record).sort()).toEqual(['company', 'imageURL', 'name', 'role']);
         expect(record.imageURL).toMatch(/^https:\/\/randomuser\.me\/api\/portraits\/(men|women)\/\d+\.jpg$/);
@@ -3105,17 +3111,17 @@ describe('ListviewCreation', () => {
       expect(avatar.component.definition.properties.source).toEqual({ value: '{{listItem.imageURL}}' });
       expect(avatar.component.definition.styles.borderType).toEqual({ value: 'rounded-circle' });
       expect(avatar.component.definition.styles.imageFit).toEqual({ value: 'cover' });
-      expect(avatar.layouts.desktop.height).toBe(40);
+      // As tall as the name and company lines together (D-31).
+      expect(avatar.layouts.desktop.height).toBe(50);
       expect(name.component.definition.properties.text).toEqual({ value: '{{listItem.name}}' });
       expect(name.component.definition.styles.fontWeight).toEqual({ value: 'bold' });
       expect(company.component.definition.properties.text).toEqual({ value: '{{listItem.company}}' });
       expect(company.component.definition.styles.textColor).toEqual({ value: 'var(--cc-placeholder-text)' });
       const chips = role.component.definition.properties.data.value;
       expect(chips).toContain('listItem.role');
-      expect(chips).not.toMatch(/#[0-9a-fA-F]{3,8}/);
       // Without Dynamic tags the Tags widget ignores `data` and shows its sample options.
       expect(role.component.definition.properties.advanced).toEqual({ value: '{{true}}' });
-      expect(chips).toContain('color-mix(in srgb, var(--cc-primary-brand)');
+      expect(chips).toContain('color-mix(in srgb, #9BD8EE 29%, transparent)');
       expect(chips).not.toContain('surface3');
     });
 
@@ -3142,11 +3148,123 @@ describe('ListviewCreation', () => {
       expect(role.top + role.height / 2).toBe(40);
     });
 
+    test('[Listview-BUG-057] the seeded role chip sits at the right edge of its box', async () => {
+      // Break this catches: the Tags default left alignment, so the chip floats in the middle of the record.
+      const { saved, savedChildren } = await dropListview();
+      const role = savedChildren.find(
+        (child) => child.component.parent === saved.id && child.component.component === 'Tags'
+      );
+
+      expect(role.component.definition.styles.alignment).toEqual({ value: 'right' });
+    });
+
+    test('[Listview-BUG-061] a new ListView holds 9 records, so a 3-column grid fills three rows', async () => {
+      // Break this catches: 8 records, which leaves the last grid row one card short.
+      const { saved } = await dropListview();
+
+      const records = new Function(`return ${saved.component.definition.properties.data.value.slice(2, -2)}`)();
+      expect(records).toHaveLength(9);
+    });
+
+    test('[Listview-BUG-064] the seeded chip uses the Figma colour #9BD8EE at 29% and radius 11', async () => {
+      // Break this catches: the brand 10% fill and 14px radius, which do not match Figma.
+      const { saved, savedChildren } = await dropListview();
+      const role = savedChildren.find(
+        (child) => child.component.parent === saved.id && child.component.component === 'Tags'
+      );
+
+      expect(role.component.definition.properties.data.value).toContain('color-mix(in srgb, #9BD8EE 29%, transparent)');
+      expect(role.component.definition.styles.borderRadius).toEqual({ value: '11' });
+    });
+
+    test('[Listview-BUG-058] the list avatar is as tall as the name and company lines together', async () => {
+      // Break this catches: an avatar box shorter than the two text lines, so the photo looks small next to them.
+      const { saved, savedChildren } = await dropListview();
+      const [avatar, name, company] = savedChildren
+        .filter((child) => child.component.parent === saved.id)
+        .map((child) => child.layouts.desktop);
+
+      expect(avatar.top).toBe(name.top);
+      expect(avatar.top + avatar.height).toBe(company.top + company.height);
+      expect(name.top + name.height).toBe(company.top);
+      // A Text box under 25px clips g, y and p.
+      expect(name.height).toBeGreaterThanOrEqual(25);
+      expect(company.height).toBeGreaterThanOrEqual(25);
+    });
+
+    test('[Listview-BUG-063] a new ListView seeds a Figma grid card of 150px and remembers its grid layout', async () => {
+      // Break this catches: the generic stack on the first switch to Grid, which spreads name and company apart.
+      const { saved, savedChildren } = await dropListview();
+      const record = savedChildren.filter((child) => child.component.parent === saved.id);
+      const grid = saved.component.definition.properties.recordLayouts?.value?.grid ?? {};
+
+      expect(saved.component.definition.properties.gridRecordHeight).toEqual({ value: '150' });
+      expect(Object.keys(grid).sort()).toEqual(record.map((child) => child.id).sort());
+      const [avatar, name, company, role] = record.map((child) => grid[child.id]);
+      expect(name.top + name.height).toBe(company.top);
+      expect(avatar.top + avatar.height).toBeLessThan(name.top);
+      expect(role.top + role.height).toBeLessThanOrEqual(150);
+      // A grid card is about 120px wide, so 20 of its 43 columns keep the box wider than tall and the circle full size.
+      expect(avatar.width).toBeGreaterThanOrEqual(20);
+      expect(Math.min(name.height, company.height)).toBeGreaterThanOrEqual(25);
+    });
+
+    test('[Listview-BUG-065] the seeded chip is right-aligned in List and left-aligned in Grid', async () => {
+      // Break this catches: one Alignment for both Layouts, so Grid cards show the chip at the right edge.
+      const { saved, savedChildren } = await dropListview();
+      const role = savedChildren.find(
+        (child) => child.component.parent === saved.id && child.component.component === 'Tags'
+      );
+      const alignment = () => components()[role.id].component.definition.styles.alignment?.value;
+      const setMode = (mode) =>
+        act(() =>
+          useStore.getState().setComponentProperty(saved.id, 'mode', mode, 'properties', 'value', false, MODULE_ID)
+        );
+
+      expect(alignment()).toBe('right');
+      await setMode('grid');
+      expect(alignment()).toBe('left');
+      await setMode('list');
+      expect(alignment()).toBe('right');
+    });
+
+    test('[Listview-BUG-065] an Alignment changed in one Layout stays with that Layout', async () => {
+      // Break this catches: the switch writing one value for both, so an edit in Grid leaks into List.
+      const { saved, savedChildren } = await dropListview();
+      const role = savedChildren.find(
+        (child) => child.component.parent === saved.id && child.component.component === 'Tags'
+      );
+      const alignment = () => components()[role.id].component.definition.styles.alignment?.value;
+      const setMode = (mode) =>
+        act(() =>
+          useStore.getState().setComponentProperty(saved.id, 'mode', mode, 'properties', 'value', false, MODULE_ID)
+        );
+
+      await setMode('grid');
+      await act(() =>
+        useStore.getState().setComponentProperty(role.id, 'alignment', 'center', 'styles', 'value', false, MODULE_ID)
+      );
+      await setMode('list');
+      expect(alignment()).toBe('right');
+      await setMode('grid');
+      expect(alignment()).toBe('center');
+    });
+
+    test('[Listview-BUG-062] the seeded avatar keeps a round circle at any width', async () => {
+      // Break this catches: a Circle avatar drawn by rounding its widening box, which turns it into an oval.
+      const { saved, savedChildren } = await dropListview();
+      const avatar = savedChildren.find(
+        (child) => child.component.parent === saved.id && child.component.component === 'Image'
+      );
+
+      expect(avatar.component.definition.styles.keepCircleRound).toEqual({ value: '{{true}}' });
+    });
+
     test('[Listview-CREATE-001] a new ListView gets a grid card tall enough for the stacked children', async () => {
       // Break this catches: a grid record that is too short for avatar, name, company and chip.
       const { saved } = await dropListview();
 
-      expect(saved.component.definition.properties.gridRecordHeight).toEqual({ value: '170' });
+      expect(saved.component.definition.properties.gridRecordHeight).toEqual({ value: '150' });
     });
 
     test('[Listview-HDR-006] a dropped ListView gets one header Text "List view", not bound to a record', async () => {
@@ -3468,7 +3586,8 @@ describe('ListviewHeader', () => {
       expect(texts('hdr1')).toEqual([]);
       expect(container().firstElementChild).toBe(list());
       const { paddingTop, paddingRight, paddingBottom, paddingLeft } = container().style;
-      expect([paddingTop, paddingRight, paddingBottom, paddingLeft]).toEqual(['12px', '12px', '12px', '12px']);
+      // Bordered: half the 12px gap above the first row and below the last (D-31), 12px at the sides.
+      expect([paddingTop, paddingRight, paddingBottom, paddingLeft]).toEqual(['6px', '12px', '6px', '12px']);
     });
   });
 
@@ -3485,7 +3604,7 @@ describe('ListviewHeader', () => {
       widget.setComponentProperty(LV, 'showHeader', '{{false}}', 'properties');
 
       await waitFor(() => expect(headerCanvases()).toHaveLength(0));
-      expect(container().style.paddingTop).toBe('12px');
+      expect(container().style.paddingTop).toBe('6px');
     });
   });
 
@@ -3523,7 +3642,7 @@ describe('ListviewHeader', () => {
       expect(container().style.paddingTop).toBe('0px');
       expect(header.style.marginLeft).toBe('-12px');
       expect(header.style.marginRight).toBe('-12px');
-      expect(header.style.marginBottom).toBe('12px');
+      expect(header.style.marginBottom).toBe('6px');
     });
   });
 
@@ -3697,6 +3816,56 @@ describe('ListviewHeader', () => {
       expect(chip.textContent).not.toContain('success');
     });
 
+    test('[Listview-BUG-064] a chip label in a record has room for letters below the line', async () => {
+      // Break this catches: a label clipped to a 14px line, which cuts the bottom of g, y and p.
+      seedApp({}, { moduleId: MODULE_ID });
+      const seeded = addChildrenWidgetsToParent('Listview', LV, 'desktop');
+      const extraComponents = Object.fromEntries(seeded.map((entry) => [entry.id, entry]));
+      const tags = seeded.find((entry) => entry.component.component === 'Tags');
+
+      await mount(
+        {
+          extraComponents,
+          properties: {
+            data: binding(
+              `{{[{ imageURL: '', name: 'Miles, Esther', company: 'Binford Ltd.', role: 'Flight engineer' }]}}`
+            ),
+          },
+        },
+        1
+      );
+
+      const chip = document.querySelector(`.ele-${tags.id} span[role="text"]`);
+      await waitFor(() => expect(chip.textContent).toContain('Flight engineer'));
+      expect(chip.lastElementChild.style.lineHeight).toBe('normal');
+    });
+
+    test('[Listview-BUG-062] the seeded avatar image is square, so Circle stays round in a wide box', async () => {
+      // Break this catches: the photo sized to the whole box, so a wide box gives an oval.
+      seedApp({}, { moduleId: MODULE_ID });
+      const seeded = addChildrenWidgetsToParent('Listview', LV, 'desktop');
+      const extraComponents = Object.fromEntries(seeded.map((entry) => [entry.id, entry]));
+      const avatar = seeded.find((entry) => entry.component.component === 'Image');
+
+      await mount(
+        {
+          extraComponents,
+          properties: {
+            data: binding(`{{[{ imageURL: 'https://x.test/a.jpg', name: 'A', company: 'B', role: 'C' }]}}`),
+          },
+        },
+        1
+      );
+
+      const img = await waitFor(() => {
+        const node = document.querySelector(`.ele-${avatar.id} img`);
+        expect(node).not.toBeNull();
+        return node;
+      });
+      expect(img.style.width).toBe(img.style.height);
+      expect(img.style.borderRadius).toBe('50%');
+    });
+
     test('[Listview-HDR-006] the header Text of a new ListView uses the Figma text style', async () => {
       // Break this catches: a weight the Text Weight select has no option for (Figma's 500), which leaves
       // the Weight field blank, or a size other than 16px.
@@ -3798,9 +3967,9 @@ describe('ListviewHeader', () => {
       bareWidget.setup();
       const withHeader = await dynamicHeightFor({ showHeader: binding('{{true}}') });
 
-      // 3 x 80 + 2 x 12 gaps + 28 chrome without; the header replaces the top padding with itself + its 12px gap.
-      expect(without).toBe(292);
-      expect(withHeader).toBe(292 + FIGMA_HEADER_HEIGHT);
+      // 3 x 80 + 2 x 12 gaps + 16 chrome (Bordered 6px edges) without; the header replaces the top padding with itself + its gap.
+      expect(without).toBe(280);
+      expect(withHeader).toBe(280 + FIGMA_HEADER_HEIGHT);
     });
   });
 
@@ -4155,6 +4324,8 @@ describe('ListviewLayoutMemory', () => {
   };
 
   const IMG = { top: 10, left: 3, width: 6, height: 60 };
+  // The memory also keeps a child's Alignment (BUG-065); the Image's default is center.
+  const IMG_MEMORY = { ...IMG, alignment: 'center' };
   const TXT = { top: 25, left: 11, width: 12, height: 30 };
   const BTN = { top: 25, left: 25, width: 17, height: 30 };
 
@@ -4395,7 +4566,7 @@ describe('ListviewLayoutMemory', () => {
       expect(layoutOf('img').left).toBe(1);
       expect(layoutOf('txt').width).toBe(41);
       expect(layoutOf('img', 'mobile')).toEqual(mobile);
-      expect(memoryOf().list.img).toEqual(IMG);
+      expect(memoryOf().list.img).toEqual(IMG_MEMORY);
       expect(memoryOf().list.img.mobile).toBeUndefined();
     });
 
@@ -4416,7 +4587,7 @@ describe('ListviewLayoutMemory', () => {
 
         setMode('grid');
 
-        expect(memoryOf().list).toEqual({ img: IMG, txt: TXT, btn: BTN });
+        expect(memoryOf().list).toEqual({ img: IMG_MEMORY, txt: TXT, btn: BTN });
         expect(layoutOf('txt').left).toBe(1);
         expect(layoutOf('txt').width).toBe(41);
         expect(modeOf()).toBe('grid');
@@ -4499,7 +4670,7 @@ describe('ListviewLayoutMemory', () => {
       const [update] = componentUpdates();
       expect(update.diff.componentId).toBe(LV);
       expect(update.diff.updates.map((item) => item.property)).toEqual(['recordLayouts', 'mode']);
-      expect(update.diff.updates[0].value).toEqual({ list: { img: IMG, txt: TXT, btn: BTN } });
+      expect(update.diff.updates[0].value).toEqual({ list: { img: IMG_MEMORY, txt: TXT, btn: BTN } });
       expect(update.diff.updates[1].value).toBe('grid');
     });
 
@@ -4512,7 +4683,9 @@ describe('ListviewLayoutMemory', () => {
 
       seed({ mode: 'list' });
       useStore.getState().multiplayer.processUpdate(update);
-      expect(memoryOf()).toEqual({ list: { img: IMG, txt: { top: 40, left: 20, width: 9, height: 30 }, btn: BTN } });
+      expect(memoryOf()).toEqual({
+        list: { img: IMG_MEMORY, txt: { top: 40, left: 20, width: 9, height: 30 }, btn: BTN },
+      });
       expect(modeOf()).toBe('grid');
 
       setMode('list');
@@ -5110,6 +5283,31 @@ describe('ListviewPager', () => {
       expect(cy('pagination-section')).toBeInTheDocument();
       expect(cy('pagination-button-to-first')).toBeNull();
       expect(footer().style.height).toBe('60px');
+    });
+
+    test('[Listview-BUG-060] the pager sticks over the bottom padding, so no record shows below it', async () => {
+      // Break this catches: a sticky pager at bottom 0, which stops above the scroll padding and leaves a strip of records under it.
+      await mount({ styles: { listStyle: binding('container') } });
+
+      expect(footer().style.bottom).toBe('-12px');
+    });
+
+    test('[Listview-BUG-063] in Bordered, the first and last rows get half the gap, like the rows between', async () => {
+      // Break this catches: 12px above the first row and below the last, against 6px on each side of a divider.
+      await mount({
+        properties: { showHeader: binding('{{true}}') },
+        styles: { listStyle: binding('bordered'), gap: binding('{{12}}') },
+      });
+
+      expect(document.querySelector('.listview-header-wrapper').style.marginBottom).toBe('6px');
+      expect(footer().style.bottom).toBe('-6px');
+    });
+
+    test('[Listview-BUG-060] a Legacy pager covers its 7px padding the same way', async () => {
+      // Break this catches: the offset written for the new styles only, so saved lists keep the strip.
+      await mount({ styles: { listStyle: binding('legacy') } });
+
+      expect(footer().style.bottom).toBe('-7px');
     });
 
     test('[Listview-PAG-014] next, a number and the page list change the page and fire On page change', async () => {
@@ -6303,7 +6501,8 @@ describe('ListviewRecordStyles', () => {
         },
       });
 
-      expect(container().style.padding).toBe('12px');
+      // Bordered: half the gap above the first row and below the last (D-31).
+      expect(container().style.padding).toBe('6px 12px');
       expect(rows()[0].style.height).toBe('80px');
       expect(rows()[0].style.borderRadius).toBe('');
       // Record, half gap, the line (no layout space), half gap: the next record starts 92px on.
@@ -6691,8 +6890,8 @@ describe('ListviewRecordStyles', () => {
       // Break this catches: a dynamic list sized for 7px padding and no gaps, which cuts off its last record.
       const height = await dynamicHeightFor({ styles: { listStyle: binding('bordered'), gap: binding('{{12}}') } });
 
-      // 3 x 100 + 2 x 12 gap (the line takes no space) + 28 chrome (12px padding x 2 + borders + safety).
-      expect(height).toBe(352);
+      // 3 x 100 + 2 x 12 gap (the line takes no space) + 16 chrome (6px Bordered edges x 2 + borders + safety).
+      expect(height).toBe(340);
     });
 
     const GRID_CONTAINER = { listStyle: binding('container'), gap: binding('{{12}}') };

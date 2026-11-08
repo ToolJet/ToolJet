@@ -120,24 +120,38 @@ describe('ListviewBuilderClicks', () => {
     beforeEach(widget.setup);
     afterEach(widget.teardown);
 
-    test('[Listview-BLD-007] a click on a component copy selects neither the copy nor the list', async () => {
-      // Break this catches: the click walking up to the list's box and selecting the whole ListView.
+    test('[Listview-BUG-059] a click on a component copy selects the ListView, not the copy', async () => {
+      // Break this catches: a click in a read-only record doing nothing, so the builder cannot even reach the list.
       await mount();
       await widget.session.store.act(() => store().setSelectedComponents(['txt1']));
 
       click(copy(1));
 
-      expect(store().selectedComponents).toEqual(['txt1']);
+      expect(store().selectedComponents).toEqual([ID]);
     });
 
-    test('[Listview-BLD-007] a click on the record background of a copy changes nothing either', async () => {
-      // Break this catches: only the component being guarded, so the copy's empty canvas still selects the list.
+    test('[Listview-BUG-059] a click on the record background of a copy selects the ListView', async () => {
+      // Break this catches: only the component being handled, so the copy's empty canvas still selects nothing.
       await mount();
-      await widget.session.store.act(() => store().setSelectedComponents(['txt1']));
 
       click(document.querySelectorAll('.list-item')[1].querySelector('.real-canvas'));
 
-      expect(store().selectedComponents).toEqual(['txt1']);
+      expect(store().selectedComponents).toEqual([ID]);
+    });
+
+    test('[Listview-BUG-059] a click in a nested list inside a copy record selects the outer ListView', async () => {
+      // Break this catches: the nearest copy winning, so a nested list in a read-only record gets selected.
+      await mount();
+      const outerCopy = document.querySelectorAll('.list-item')[1].querySelector('.real-canvas');
+      const inner = document.createElement('div');
+      inner.className = 'moveable-box';
+      inner.setAttribute('widgetid', 'inner-list');
+      inner.innerHTML = '<div data-listview-copy="true"><span>child</span></div>';
+      outerCopy.appendChild(inner);
+
+      click(inner.querySelector('span'));
+
+      expect(store().selectedComponents).toEqual([ID]);
     });
 
     test('[Listview-BLD-007] a click on the pager still selects the list', async () => {
@@ -150,7 +164,7 @@ describe('ListviewBuilderClicks', () => {
       expect(store().selectedComponents).toEqual([ID]);
     });
 
-    test('[Listview-REC-008] a click on a component in a disabled record 1 selects nothing, and the ListView stays selectable', async () => {
+    test('[Listview-REC-008] a click in a disabled record 1 selects the ListView, never its component', async () => {
       // Break this catches: the disabled record 1 staying an editable original, so its component is selectable.
       widget.render({ currentMode: 'edit', properties: { disableRecords: binding(`{{listItem.name === 'r0'}}`) } });
       await waitFor(() => expect(document.querySelectorAll('.list-item')).toHaveLength(2));
@@ -160,9 +174,12 @@ describe('ListviewBuilderClicks', () => {
       render(<EditorSelecto />);
       await widget.session.store.act(() => store().setSelectedComponents(['txt1']));
 
+      // A locked record 1 is a read-only copy too, so the click selects the list (D-33).
       click(copy(0));
+      expect(store().selectedComponents).toEqual([ID]);
+      await widget.session.store.act(() => store().setSelectedComponents(['txt1']));
       click(document.querySelector('.list-item .real-canvas'));
-      expect(store().selectedComponents).toEqual(['txt1']);
+      expect(store().selectedComponents).toEqual([ID]);
 
       // A blocked record lets the pointer through to the list, so the author can still reach the expression.
       click(document.querySelector('[role="list"]'));

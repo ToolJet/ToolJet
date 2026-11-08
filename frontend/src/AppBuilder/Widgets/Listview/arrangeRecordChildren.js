@@ -81,9 +81,14 @@ export const arrangeRecordChildren = (
 const pickBox = ({ top, left, width, height }) => ({ top, left, width, height });
 const isBox = (box) => box && [box.top, box.left, box.width, box.height].every((value) => Number.isFinite(value));
 
-/** The saved shape of one Layout's memory: every child's box, keyed by component id. */
+/** The saved shape of one Layout's memory: every child's box, plus its Alignment when it has one, keyed by component id. */
 export const snapshotRecordLayouts = (children) =>
-  Object.fromEntries(children.map((child) => [child.id, pickBox(child.layout)]));
+  Object.fromEntries(
+    children.map((child) => [
+      child.id,
+      { ...pickBox(child.layout), ...(child.alignment !== undefined && { alignment: child.alignment }) },
+    ])
+  );
 
 /**
  * Layouts for the children when a Layout that has a memory is switched to: each remembered child gets its saved box;

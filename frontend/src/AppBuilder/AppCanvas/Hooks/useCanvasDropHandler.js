@@ -2,7 +2,12 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useGridStore } from '@/_stores/gridStore';
 import { shallow } from 'zustand/shallow';
 import { noop } from 'lodash';
-import { addChildrenWidgetsToParent, addNewWidgetToTheEditor, addDefaultButtonIdToForm } from '../appCanvasUtils';
+import {
+  addChildrenWidgetsToParent,
+  addNewWidgetToTheEditor,
+  addDefaultButtonIdToForm,
+  addDefaultRecordLayoutsToListview,
+} from '../appCanvasUtils';
 import { WIDGETS_WITH_DEFAULT_CHILDREN } from '../appCanvasConstants';
 import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
 import { isPDFSupported } from '@/_helpers/appUtils';
@@ -188,6 +193,9 @@ export const useCanvasDropHandler = () => {
         const childComponents = addChildrenWidgetsToParent(draggedComponentType, parentComponent?.id, currentLayout);
         if (draggedComponentType === 'Form') {
           parentComponent = addDefaultButtonIdToForm(parentComponent, childComponents);
+        }
+        if (draggedComponentType === 'Listview') {
+          parentComponent = addDefaultRecordLayoutsToListview(parentComponent, childComponents);
         }
         addedComponent = [parentComponent, ...childComponents];
         await addComponentToCurrentPage(addedComponent);

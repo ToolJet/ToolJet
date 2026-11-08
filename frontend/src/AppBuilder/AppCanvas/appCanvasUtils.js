@@ -343,6 +343,19 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
   return childrenWidgets;
 }
 
+// A seeded ListView remembers its Figma grid card, so the first Layout switch restores it instead of restacking.
+export function addDefaultRecordLayoutsToListview(parentComponent, childComponents) {
+  const meta = componentTypes.find((component) => component.component === 'Listview');
+  const grid = {};
+  (meta?.defaultChildren ?? []).forEach((child, index) => {
+    const component = childComponents[index];
+    if (child.gridLayout && component && !child.slotName) grid[component.id] = { ...child.gridLayout };
+  });
+  if (!Object.keys(grid).length) return parentComponent;
+  _.set(parentComponent, 'component.definition.properties.recordLayouts', { value: { grid } });
+  return parentComponent;
+}
+
 export function computeComponentName(componentType, currentComponents, moduleName) {
   // Fall back to the raw string for non-registry seeds (e.g. Custom-tab drops name
   // instances after the LIBRARY component: 'HelloWorld' → helloworld1)

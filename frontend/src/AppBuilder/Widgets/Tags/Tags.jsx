@@ -287,7 +287,12 @@ export const Tags = function Tags({
         aria-label={`${tagTitle}${hasIcon ? ' with icon' : ''}`}
       >
         {getTagIcon(item, tagDataCy)}
-        {inListviewRecord ? <OverflowTooltip style={{ minWidth: 0 }}>{tagTitle}</OverflowTooltip> : tagTitle}
+        {inListviewRecord ? (
+          // The chip's 14px line clips g, y and p once the ellipsis box hides overflow; a normal line keeps them.
+          <OverflowTooltip style={{ minWidth: 0, lineHeight: 'normal' }}>{tagTitle}</OverflowTooltip>
+        ) : (
+          tagTitle
+        )}
       </span>
     );
   }
