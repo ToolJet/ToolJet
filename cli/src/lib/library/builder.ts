@@ -328,3 +328,35 @@ export async function build(projectRoot: string, options: { env?: BuildEnv } = {
     warnings,
   };
 }
+
+/** A dist folder built elsewhere, read as a build result. Its type check ran where it was built. */
+export function prebuiltResult(distDir: string): BuildResult {
+  const size = (name: string) => {
+    try {
+      return Math.round(fs.statSync(path.join(distDir, name)).size / 1024);
+    } catch {
+      return -1;
+    }
+  };
+  if (size('index.js') < 0 || size('manifest.json') < 0)
+    throw new Error(`${distDir} is not a built bundle (no index.js or manifest.json)`);
+  let componentCount = 0;
+  try {
+    const manifest = JSON.parse(fs.readFileSync(path.join(distDir, 'manifest.json'), 'utf8'));
+    componentCount = Array.isArray(manifest?.components) ? manifest.components.length : 0;
+  } catch {
+    componentCount = 0;
+  }
+  const css = size('index.css');
+  return {
+    distDir,
+    buildMs: 0,
+    bundleSizeKb: size('index.js'),
+    cssSizeKb: Math.max(css, 0),
+    hasCss: css >= 0,
+    tsErrors: 0,
+    tsErrorReport: '',
+    componentCount,
+    warnings: [],
+  };
+}
