@@ -26,6 +26,12 @@ export const getListStyle = (listStyle) => (NEW_LIST_STYLES.includes(listStyle) 
 
 export const getRecordGap = (listStyle, gap) => (listStyle === 'legacy' ? 0 : Math.max(0, Number(gap) || 0));
 
+// Bordered puts half the gap on each side of a divider, so the first and last rows get that half too.
+export const getVerticalEdgePadding = (listStyle, gap) => {
+  if (listStyle === 'legacy') return LEGACY_PADDING;
+  return listStyle === 'bordered' ? getRecordGap(listStyle, gap) / 2 : NEW_STYLE_PADDING;
+};
+
 // Saved grids have no gridRecordHeight and keep their rowHeight.
 export const getRecordHeight = (mode, rowHeight, gridRecordHeight) =>
   getListviewMode(mode) === 'grid' ? (gridRecordHeight ?? rowHeight) : rowHeight;

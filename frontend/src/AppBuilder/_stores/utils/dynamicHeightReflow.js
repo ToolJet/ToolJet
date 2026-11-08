@@ -14,10 +14,9 @@ import {
   getRowsPerPage,
   HEADER_HEIGHT,
   PAGER_FOOTER_HEIGHT,
-  LEGACY_PADDING,
-  NEW_STYLE_PADDING,
   getListStyle,
   getRecordGap,
+  getVerticalEdgePadding,
   getRecordHeight,
 } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
 
@@ -529,7 +528,7 @@ export const resolveListviewHeightFromRows = ({
   // + 2 safety for `.real-canvas` `calc(100% + 1px)` extension and rounding drift).
   const borderAllowance = isLegacy && componentProperties.showBorder && mode === 'list' ? rowCount : 0;
   const paginationAllowance = componentProperties.enablePagination ? PAGER_FOOTER_HEIGHT : 0;
-  const outerPaddingAllowance = 18 + (isLegacy ? 0 : 2 * (NEW_STYLE_PADDING - LEGACY_PADDING));
+  const outerPaddingAllowance = 4 + 2 * getVerticalEdgePadding(listStyle, component?.styles?.gap);
   // New styles space record lines by the gap (Bordered's line sits inside it); Legacy has no gap.
   const recordLines = mode === 'grid' ? Math.ceil(rowCount / positiveColumns) : rowCount;
   const gapAllowance = Math.max(0, recordLines - 1) * getRecordGap(listStyle, component?.styles?.gap);

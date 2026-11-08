@@ -36,6 +36,7 @@ import {
   getRecordHeight,
   getRecordBorderInset,
   getRecordCanvasWidth,
+  getVerticalEdgePadding,
 } from './listStyleLayout';
 
 const HOVER_THROTTLE_MS = 200;
@@ -175,6 +176,7 @@ export const Listview = function Listview({
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
   const recordHeight = getRecordHeight(mode, rowHeight, gridRecordHeight);
   const containerPadding = isLegacy ? LEGACY_PADDING : NEW_STYLE_PADDING;
+  const edgePadding = getVerticalEdgePadding(recordStyle, gap);
   const activeSlot = useActiveSlot(id);
 
   const computedStyles = {
@@ -188,7 +190,11 @@ export const Listview = function Listview({
     borderRadius: Math.max(0, Number.parseFloat(borderRadius) || 0),
     boxShadow,
     // One shorthand: a conditional paddingTop key leaves padding-top cleared after showHeader turns off.
-    padding: showHeader ? `0 ${containerPadding}px ${containerPadding}px` : `${containerPadding}px`,
+    padding: showHeader
+      ? `0 ${containerPadding}px ${edgePadding}px`
+      : edgePadding === containerPadding
+        ? `${containerPadding}px`
+        : `${edgePadding}px ${containerPadding}px`,
     overflowX: 'hidden',
     // Dynamic mode (view-only) hides the listview's own scroll to suppress
     // the one-frame flash while rows grow ahead of the parent reflow. Static
@@ -637,7 +643,7 @@ export const Listview = function Listview({
                 flexShrink: 0,
                 marginLeft: -containerPadding,
                 marginRight: -containerPadding,
-                marginBottom: containerPadding,
+                marginBottom: edgePadding,
                 backgroundColor,
               }}
             >
@@ -747,13 +753,14 @@ export const Listview = function Listview({
               data-cy="container-pagination"
               style={{
                 position: 'sticky',
-                bottom: 0,
+                // Sticky stops at the scroll padding edge; covering the padding stops records showing under the pager.
+                bottom: -edgePadding,
                 zIndex: 2,
                 flexShrink: 0,
                 marginTop: 'auto',
                 marginLeft: -containerPadding,
                 marginRight: -containerPadding,
-                marginBottom: -containerPadding,
+                marginBottom: -edgePadding,
                 height: PAGER_FOOTER_HEIGHT,
                 boxSizing: 'border-box',
                 display: 'flex',
