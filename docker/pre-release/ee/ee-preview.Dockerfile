@@ -97,6 +97,9 @@ RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@githu
 
 RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
+# The branch head, fetched on every build: the clone below is otherwise a cached layer (its command never changes),
+# and a push that only moves the branch rebuilt nothing (2026-11-08, frontend/ee bump 0140d8cf served the old app).
+ADD https://api.github.com/repos/ToolJet/ToolJet/git/refs/heads/${BRANCH_NAME} /tmp/branch-head.json
 RUN git clone ${REPO_URL} .
 
 # The branch name needs to be changed the branch with modularisation in CE repo
