@@ -90,6 +90,8 @@ describe('scaffoldApp starter kit', () => {
     expect(sheet).to.include('h-10 w-10');
     expect(sheet).to.include('aria-label={closeLabel}');
     expect(sheet).not.to.include('<span className="sr-only">Close</span>');
+    // Closing puts focus back on what opened it, also without a SheetTrigger.
+    expect(sheet).to.include('target.focus()');
   });
 
   it('ships the unsaved-work guard in the router, and it compiles', () => {

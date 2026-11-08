@@ -13,6 +13,8 @@ const SheetClose = DialogPrimitive.Close;
 /**
  * A side panel. `container` is the host's popup layer (lib/portal.ts); without it Radix uses document.body.
  * `closeLabel` names the close button for screen readers: pass it in the screen's language.
+ * Closing it (Escape, the close button, Cancel) puts focus back on what opened it, also when it is opened by `open`
+ * state from a plain button rather than a SheetTrigger, so a keyboard user carries on where they were.
  */
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
@@ -21,7 +23,9 @@ const SheetContent = React.forwardRef<
     side?: 'right' | 'left';
     closeLabel?: string;
   }
->(({ className, children, container, side = 'right', closeLabel = 'Close', ...props }, ref) => (
+>(({ className, children, container, side = 'right', closeLabel = 'Close', onOpenAutoFocus, onCloseAutoFocus, ...props }, ref) => {
+  const opener = React.useRef<HTMLElement | null>(null);
+  return (
   <DialogPrimitive.Portal container={container}>
     <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
     <DialogPrimitive.Content
@@ -33,6 +37,19 @@ const SheetContent = React.forwardRef<
           : 'inset-y-0 left-0 border-l-0 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
         className
       )}
+      onOpenAutoFocus={(event) => {
+        const active = document.activeElement;
+        opener.current = active instanceof HTMLElement && active !== document.body ? active : null;
+        onOpenAutoFocus?.(event);
+      }}
+      onCloseAutoFocus={(event) => {
+        onCloseAutoFocus?.(event);
+        const target = opener.current;
+        opener.current = null;
+        if (event.defaultPrevented || !target?.isConnected) return;
+        event.preventDefault();
+        target.focus();
+      }}
       {...props}
     >
       {children}
@@ -45,7 +62,8 @@ const SheetContent = React.forwardRef<
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPrimitive.Portal>
-));
+  );
+});
 SheetContent.displayName = 'SheetContent';
 
 const SheetHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
