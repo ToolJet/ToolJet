@@ -11,7 +11,7 @@ import { checkSources } from '../../lib/app/check';
 import { targetFlags } from '../../lib/app/flags';
 import { ApiClient } from '../../lib/library/api-client';
 import { DevWatcher } from '../../lib/library/dev-watcher';
-import { build } from '../../lib/library/builder';
+import { build, prebuiltResult } from '../../lib/library/builder';
 import { formatError, formatSuccess, formatDuration, formatWarning } from '../../lib/log';
 import { prepareDependencies } from '../../lib/app/sdk';
 import {
@@ -57,6 +57,11 @@ export default class AppDev extends Command {
         'Pull and build code from ToolJet even when it changes what a build runs on this machine: build config, package.json, the lockfile, .npmrc, a stylesheet @config or @plugin and the files they load, components while recordRender is on, or any changed file, of any type, while a build config loads files by a computed name',
       default: false,
     }),
+    prebuilt: Flags.string({
+      description:
+        'With --once: upload this already built dist folder (a build service made it from this project with `tooljet library build --env development`) instead of building here; installs nothing on this machine',
+      dependsOn: ['once'],
+    }),
     scan: Flags.boolean({
       description: 'Scan each build and upload the result to the Security panel (never blocks the build)',
       default: true,
@@ -75,10 +80,12 @@ export default class AppDev extends Command {
       if (!app.appId)
         throw new Error('app.json has no appId: create the app (tooljet app init --create) or clone one.');
       const target = resolveAppTarget(flags, project.root);
-      // First run in a fresh clone: install without running any package's install scripts.
-      const deps = await prepareDependencies(project.frontend, { server: target.url });
-      for (const line of deps.success) this.log(formatSuccess(line));
-      for (const line of deps.warnings) this.log(formatWarning(line));
+      // First run in a fresh clone: install without running any package's install scripts. A prebuilt bundle needs none.
+      if (!flags.prebuilt) {
+        const deps = await prepareDependencies(project.frontend, { server: target.url });
+        for (const line of deps.success) this.log(formatSuccess(line));
+        for (const line of deps.warnings) this.log(formatWarning(line));
+      }
       const session = await openSession(target);
       const working = await workingApp(session, project.root, app);
       const version = working.app.version;
@@ -276,6 +283,15 @@ export default class AppDev extends Command {
       };
 
       const buildOnce = async () => onRebuild(await build(project.frontend).catch((error: Error) => ({ error })));
+      if (flags.once && flags.prebuilt) {
+        const outcome = await onRebuild(prebuiltResult(path.resolve(flags.prebuilt)));
+        // The bundle was built from the code this copy had; ToolJet's newer code needs a build of its own.
+        if (outcome === 'pulled')
+          this.log(
+            `  ${formatWarning("Pulled ToolJet's newer code, so the prebuilt bundle is out of date: build again")}`
+          );
+        process.exit(outcome === true ? 0 : 1);
+      }
       if (flags.once) {
         let outcome = await buildOnce();
         // Pulled newer code: build that instead.
