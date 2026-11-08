@@ -27,9 +27,14 @@ describe('tooljet app dev stores the source by default', () => {
     expect(devSourceOwner({}, undefined, { exists: true, owner: 'platform', revision: 2 })).to.equal('platform');
   });
 
-  it('leaves repository-owned or missing code alone unless --source asks', () => {
+  it('stores it for an app with no code stored yet, which only then owns its library', () => {
+    expect(devSourceOwner({}, undefined, { exists: false })).to.equal('platform');
+    expect(devSourceOwner({ 'no-source': true }, undefined, { exists: false })).to.equal(null);
+  });
+
+  it('leaves repository-owned code, or a ToolJet that stores none, alone unless --source asks', () => {
     expect(devSourceOwner({}, undefined, undefined)).to.equal(null);
-    expect(devSourceOwner({}, undefined, { exists: false })).to.equal(null);
+    expect(devSourceOwner({}, { ...platform, owner: 'repository' }, { exists: false })).to.equal(null);
     expect(devSourceOwner({}, { ...platform, owner: 'repository' }, { exists: true, owner: 'repository' })).to.equal(
       null
     );

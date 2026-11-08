@@ -37,6 +37,8 @@ export const noSourceFlag = {
  * Who `tooljet app dev` stores the source as after each build, or null for not at all. An explicit --source wins and
  * --no-source turns it off; otherwise code the ToolJet editor owns (as this project last synced it, or as ToolJet
  * stores it) follows every build, so the AI, the Code panel and Save version work from the code that is running.
+ * An app with no code stored yet (a new app made in the builder, then cloned) stores it too, as publish does: only the
+ * stored code makes the app its library's owner, and without an owner ToolJet serves the preview to no one.
  */
 export function devSourceOwner(
   flags: { source?: string; 'no-source'?: boolean },
@@ -46,6 +48,8 @@ export function devSourceOwner(
   if (flags['no-source']) return null;
   if (flags.source) return flags.source as SourceOwner;
   if (local?.owner === 'platform' || (stored?.exists && stored.owner === 'platform')) return 'platform';
+  // `stored` is undefined on a ToolJet that stores no source (404): nothing to own there.
+  if (stored && !stored.exists && !local?.owner) return 'platform';
   return null;
 }
 
