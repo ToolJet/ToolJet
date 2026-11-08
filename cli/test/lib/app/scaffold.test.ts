@@ -74,3 +74,33 @@ describe('scaffoldApp with any app name', () => {
     expect(fs.readFileSync(path.join(dir, 'app.json'), 'utf8')).to.include('"name": "The \\"Orders\\" Desk"');
   });
 });
+
+/* External QA report v4 (2026-11-08): a 16 px close button with an English label on every side panel (CAFE_R1-01/02,
+   LOC_R1-02), and typed work lost to a link, Back or reload (PROC-02, HOTEL-05, GRADE-06, LOC-03, CAFE-01). */
+describe('scaffoldApp starter kit', () => {
+  let dir: string;
+  before(() => {
+    dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tooljet-scaffold-')), 'desk');
+    scaffoldApp(dir, 'Desk');
+  });
+  after(() => fs.rmSync(path.dirname(dir), { recursive: true, force: true }));
+
+  it('gives the side panel a 40 px close button whose label the screen passes in its language', () => {
+    const sheet = fs.readFileSync(path.join(dir, 'frontend/src/components/ui/sheet.tsx'), 'utf8');
+    expect(sheet).to.include('h-10 w-10');
+    expect(sheet).to.include('aria-label={closeLabel}');
+    expect(sheet).not.to.include('<span className="sr-only">Close</span>');
+  });
+
+  it('ships the unsaved-work guard in the router, and it compiles', () => {
+    const source = fs.readFileSync(path.join(dir, 'frontend/src/lib/router.tsx'), 'utf8');
+    expect(source).to.match(/export function useUnsavedChanges\(dirty: boolean, message: string\)/);
+    expect(source).to.match(/export function confirmLeave\(/);
+    expect(source).not.to.include('<MemoryRouter');
+    const { diagnostics } = ts.transpileModule(source, {
+      reportDiagnostics: true,
+      compilerOptions: { jsx: ts.JsxEmit.React, target: ts.ScriptTarget.ES2020 },
+    });
+    expect(diagnostics ?? []).to.have.length(0);
+  });
+});

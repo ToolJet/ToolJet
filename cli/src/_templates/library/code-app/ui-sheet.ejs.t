@@ -10,11 +10,18 @@ const Sheet = DialogPrimitive.Root;
 const SheetTrigger = DialogPrimitive.Trigger;
 const SheetClose = DialogPrimitive.Close;
 
-/** A side panel. `container` is the host's popup layer (lib/portal.ts); without it Radix uses document.body. */
+/**
+ * A side panel. `container` is the host's popup layer (lib/portal.ts); without it Radix uses document.body.
+ * `closeLabel` names the close button for screen readers: pass it in the screen's language.
+ */
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { container?: HTMLElement; side?: 'right' | 'left' }
->(({ className, children, container, side = 'right', ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+    container?: HTMLElement;
+    side?: 'right' | 'left';
+    closeLabel?: string;
+  }
+>(({ className, children, container, side = 'right', closeLabel = 'Close', ...props }, ref) => (
   <DialogPrimitive.Portal container={container}>
     <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
     <DialogPrimitive.Content
@@ -29,9 +36,12 @@ const SheetContent = React.forwardRef<
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
+      {/* 40 px, so it can be tapped on a phone; the icon stays 16 px. */}
+      <DialogPrimitive.Close
+        aria-label={closeLabel}
+        className="absolute right-2 top-2 inline-flex h-10 w-10 items-center justify-center rounded-md opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+      >
+        <X className="h-4 w-4" aria-hidden="true" />
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPrimitive.Portal>
