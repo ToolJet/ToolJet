@@ -11,6 +11,12 @@ import ZoomOutImage from '@/AppBuilder/Widgets/Image/icons/zoomout-image.svg';
 import RotateImage from '@/AppBuilder/Widgets/Image/icons/rotate-image.svg';
 import './image.scss';
 
+const ROUND_ALIGNMENT = {
+  left: { marginRight: 'auto' },
+  center: { marginLeft: 'auto', marginRight: 'auto' },
+  right: { marginLeft: 'auto' },
+};
+
 export default function Image({
   setExposedVariable,
   setExposedVariables,
@@ -40,6 +46,7 @@ export default function Image({
     borderRadius,
     borderColor,
     alignment,
+    keepCircleRound,
   } = styles;
 
   const isInitialRender = useRef(true);
@@ -70,6 +77,12 @@ export default function Image({
   // We measure the wrapper (imageRef) — it grows once the image loads at its natural
   // size — and reflow siblings. Enabled only in view mode.
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  // Circle rounds the box, so a wide box gives an oval; opted in, it rounds a square at the shorter side instead.
+  const shorterSide = Math.min(width, height);
+  const roundSide =
+    borderType === 'rounded-circle' && keepCircleRound && !isDynamicHeightEnabled && Number.isFinite(shorterSide)
+      ? shorterSide
+      : undefined;
   const heightChangeValue = useHeightObserver(imageRef, isDynamicHeightEnabled);
 
   useDynamicHeight({
@@ -202,8 +215,9 @@ export default function Image({
         objectFit: imageFit ? imageFit : 'contain',
         cursor: hasOnClickEvent ? 'pointer' : 'inherit',
         pointerEvents: 'auto',
-        width,
-        height: isDynamicHeightEnabled ? 'auto' : height,
+        width: roundSide ?? width,
+        height: roundSide ?? (isDynamicHeightEnabled ? 'auto' : height),
+        ...(roundSide && { display: 'block', ...ROUND_ALIGNMENT[alignment] }),
         transform: `rotate(${rotation}deg)`,
         border: '1px solid',
         borderRadius:
@@ -215,10 +229,10 @@ export default function Image({
         borderColor: borderColor || (borderType === 'img-thumbnail' ? '#e7eaef' : 'transparent'),
         objectPosition: alignment,
       }}
-      height={isDynamicHeightEnabled ? undefined : height}
+      height={roundSide ?? (isDynamicHeightEnabled ? undefined : height)}
       onClick={() => !isDisabled && fireEvent('onClick')}
       alt={alternativeText}
-      width={width}
+      width={roundSide ?? width}
       onError={() => setIsError(true)}
     />
   );
