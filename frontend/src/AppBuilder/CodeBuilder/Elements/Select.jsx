@@ -12,7 +12,8 @@ import { checkIfStarRatingLabelTypeIsDeprecated } from '@/AppBuilder/Widgets/Rat
 
 export const Option = (props) => {
   const isDeprecatedStyle =
-    checkIfInputWidgetTypeIsDeprecated(props.value) || checkIfStarRatingLabelTypeIsDeprecated(props.value);
+    !props.selectProps.hideDeprecatedStyleWarning &&
+    (checkIfInputWidgetTypeIsDeprecated(props.value) || checkIfStarRatingLabelTypeIsDeprecated(props.value));
 
   return (
     <components.Option {...props}>
@@ -97,6 +98,7 @@ export const Select = ({ value, onChange, meta, width = '144px' }) => {
           styles={selectCustomStyles(width)}
           useCustomStyles={true}
           customClassPrefix="inspector-select"
+          hideDeprecatedStyleWarning={meta.hideDeprecatedStyleWarning}
           components={{
             IndicatorSeparator: () => null,
             Option,

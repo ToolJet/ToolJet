@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo } from 'react';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import { shallow } from 'zustand/shallow';
@@ -55,7 +55,12 @@ const WidgetWrapper = memo(
     flexDirection = 'column',
     flexShouldStack = false,
   }) => {
-    const { contextPath } = useSubcontainerContext();
+    const {
+      contextPath,
+      listviewCopy = false,
+      listviewCopyOutline = true,
+      listviewDisabled = false,
+    } = useSubcontainerContext();
     const indices = useMemo(() => {
       const result = contextPath.map((s) => s.index);
       return result.length > 0 ? result : null;
@@ -103,6 +108,17 @@ const WidgetWrapper = memo(
     );
 
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
+    const isListviewCopy = listviewCopy && readOnly && mode === 'edit';
+    // A disabled record has no hover or selection outline: nothing in it can be acted on.
+    const showsCopyOutline = isListviewCopy && !listviewDisabled;
+    const isSelectedElsewhere = useStore(
+      (state) => showsCopyOutline && listviewCopyOutline && state.selectedComponents.includes(id),
+      shallow
+    );
+    const [isCopyHovered, setIsCopyHovered] = useState(false);
+    const isRecordResizing = useStore((state) => isListviewCopy && state.isListviewRecordResizing);
+    // The resize moves the copy from under the pointer, so its mouseleave never comes; drop the hover when a resize starts or ends.
+    useEffect(() => setIsCopyHovered(false), [isRecordResizing]);
     const isDragging = useStore((state) => state.draggingComponentId === id);
     const isResizing = useStore((state) => state.resizingComponentId === id);
     const componentType = useStore(
@@ -210,7 +226,10 @@ const WidgetWrapper = memo(
       display: !visibility && mode === 'view' ? 'none' : 'block',
     };
 
-    const outerStyle = isFlexLayout ? flexLayout.outerStyle : gridOuterStyle;
+    // The grid wrapper's transform anchors List View's fixed pager to the list; a flex wrapper needs its own.
+    const outerStyle = isFlexLayout
+      ? { ...flexLayout.outerStyle, ...(componentType === 'Listview' && { transform: 'translateZ(0)' }) }
+      : gridOuterStyle;
     const renderWidgetWidth = isFlexLayout
       ? isFlexSubcontainer && flexLayout.measuredWidth != null
         ? flexLayout.measuredWidth
@@ -256,6 +275,7 @@ const WidgetWrapper = memo(
             [`widget-${id} nested-target`]: id !== 'canvas' && !readOnly,
             'position-absolute': isGridLayout && readOnly,
             'active-target': isWidgetActive,
+            'listview-copy-outline': showsCopyOutline && (isSelectedElsewhere || isCopyHovered),
             'opacity-0 pointer-events-none': isDragging || isResizing,
             'module-container': isModuleContainer,
             'dynamic-height-target': isDynamicHeightEnabled,
@@ -271,16 +291,24 @@ const WidgetWrapper = memo(
           data-module-id={moduleId || 'canvas'}
           style={outerStyle}
           onClickCapture={isModuleViewerWidget && mode === 'edit' ? handleModuleClickCapture : undefined}
+          // Only the wrapper nearest the pointer counts, so a parent copy drops its outline once a child is hovered.
+          onMouseOver={
+            showsCopyOutline && !isRecordResizing
+              ? (e) => setIsCopyHovered(e.target.closest('[widgetid]') === e.currentTarget)
+              : undefined
+          }
           onMouseEnter={() => {
             if (isDragging || isModuleContainer) return;
             if (isFlexLayout) {
               flexLayout.refreshConfigWidgetTop();
             }
-            setHoveredComponentForGrid(id);
+            // Every copy shares the original's id, so publishing it would open the original's handle.
+            if (!isListviewCopy) setHoveredComponentForGrid(id);
           }}
           onMouseLeave={() => {
+            if (isCopyHovered) setIsCopyHovered(false);
             if (isDragging || isModuleContainer) return;
-            setHoveredComponentForGrid('');
+            if (!isListviewCopy) setHoveredComponentForGrid('');
           }}
         >
           {mode == 'edit' && (

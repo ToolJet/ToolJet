@@ -198,15 +198,8 @@ describe('prepareRowScope / updateRowScope — descendant overlay', () => {
       expect(resolveInRow(LV, 0, binding(TAB_CHILD_BASE))).toBe('base-row-zero');
     });
 
-    // BUG (unfixed): listViewComponentSlice.js:301
-    //   const allChildren = children.length > 0 ? children : slotChildren;
-    // A container holding BOTH base children and slot children silently drops
-    // every slot child, so those components are never row-scoped and their
-    // bindings resolve against the raw per-row array.
-    // Wrong: descendantIds = [TABS, TAB_CHILD_BASE] and the slot child resolves
-    // to undefined. Right: the slot child is a descendant and resolves to
-    // 'slot-row-zero'.
-    test.failing('collects BOTH base and slot children of the same container', () => {
+    // Listview-BUG-047: a container holding both base and slot children keeps both row-scoped.
+    test('collects BOTH base and slot children of the same container', () => {
       seedChildrenMapping({
         [LV]: [TABS],
         [TABS]: [TAB_CHILD_BASE],
@@ -280,5 +273,20 @@ describe('per-row exposed value writes are deferred (asymmetric with the flat pa
     expect(exposedComponents()[LV].data[0]).toEqual({
       textinput1: { value: 'row-later', id: TEXT_INPUT },
     });
+  });
+});
+
+describe('getRowScopedAncestorIds', () => {
+  const INNER_LV = '77777777-7777-4777-8777-777777777777';
+
+  it('lists the row-scoped ancestors outermost first, through a slot canvas', () => {
+    // Break this catches: inner-first order, which reads an outer row with the inner index.
+    seedPage({
+      [LV]: component('outer', 'Listview'),
+      [TABS]: component('tabs1', 'Tabs', LV),
+      [INNER_LV]: component('inner', 'Listview', `${TABS}-tab-1`),
+    });
+
+    expect(useStore.getState().getRowScopedAncestorIds(INNER_LV, 'canvas')).toEqual([LV, INNER_LV]);
   });
 });

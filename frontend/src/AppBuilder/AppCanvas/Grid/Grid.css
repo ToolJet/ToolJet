@@ -235,7 +235,9 @@
   z-index: 999 !important;
 }
 
-.non-dragging-component {
+/* The class is React-owned on ListView copies, so the drag clean-up that strips .non-dragging-component leaves it. */
+.non-dragging-component,
+.listview-copy-outline {
   outline: 1px dotted var(--border-accent-weak) !important;
   outline-offset: 0px;
   /* Creates space between element and outline */

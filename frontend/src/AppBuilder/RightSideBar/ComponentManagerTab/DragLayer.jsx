@@ -13,6 +13,7 @@ import {
   findNewParentIdFromMousePosition,
   handleDeactivateTargets,
   hideGridLines,
+  isListviewCopyCanvasAtPoint,
 } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 
 export const DragLayer = ({ index, component, isModuleTab = false, disabled = false }) => {
@@ -33,6 +34,16 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
         // so the position lookup below would find the canvas underneath and add the component.
         const releasedAt = monitor.getClientOffset();
         if (releasedAt && document.elementFromPoint(releasedAt.x, releasedAt.y)?.closest('.editor-sidebar')) {
+          handleDeactivateTargets();
+          hideGridLines();
+          setShowModuleBorder(false);
+          return;
+        }
+        // Every record shares the ListView's id, so only the pointer position tells a read-only record apart.
+        if (
+          monitor.getDropResult?.()?.refused ||
+          (releasedAt && isListviewCopyCanvasAtPoint(releasedAt.x, releasedAt.y))
+        ) {
           handleDeactivateTargets();
           hideGridLines();
           setShowModuleBorder(false);

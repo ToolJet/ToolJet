@@ -1,6 +1,7 @@
 import { isPlainObject } from 'lodash';
 import {
   allowedOptionValues,
+  isAllowedOptionValue,
   COMPONENT_NAME_PATTERN,
   isKnownComponentType,
   SECTION_TO_COLUMN,
@@ -205,7 +206,12 @@ export const componentValueTypes: Rule<ComponentWrite> = {
           ? undefined
           : allowedOptionValues(type, section, key);
         if (allowed) {
-          if (!allowed.includes(value) && value !== undefined && value !== null && value !== '') {
+          if (
+            !isAllowedOptionValue(type, section, key, allowed, value) &&
+            value !== undefined &&
+            value !== null &&
+            value !== ''
+          ) {
             issues.push({
               code: 'PROPERTY_ENUM_MISMATCH',
               severity: 'high',

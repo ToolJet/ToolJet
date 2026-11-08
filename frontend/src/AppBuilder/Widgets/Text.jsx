@@ -10,12 +10,16 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import OverflowTooltip from '@/_components/OverflowTooltip';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
   center: 'center',
   bottom: 'flex-end',
 };
+
+const TEXT_BORDER = 1;
 
 let count = 0;
 
@@ -35,6 +39,7 @@ export const Text = function Text({
   subContainerIndex,
   componentType,
 }) {
+  const { inListviewRecord } = useSubcontainerContext();
   let {
     textSize,
     textColor,
@@ -65,6 +70,12 @@ export const Text = function Text({
   const [isDisabled, setIsDisabled] = useState(disabledState);
   const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  // ListView overflow rule: text that does not fit its box ends with an ellipsis; Dynamic height grows instead.
+  const clipToBox = inListviewRecord && !properties.dynamicHeight;
+  const visibleLines = Math.max(
+    1,
+    Math.floor((boxHeight - 2 * TEXT_BORDER) / ((textSize || 14) * (lineHeight ?? 1.5)))
+  );
   count = count + 1;
 
   // Create ref for height observation
@@ -196,9 +207,20 @@ export const Text = function Text({
     }),
   };
 
+  const markdownContent = (
+    <Markdown className={'reactMarkdown'} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+      {/* react-markdown accepts only a string. The property path coerces through
+          `text`'s string schema, but setText() bypasses it, so a number or boolean
+          from a CSA reaches here raw and the widget dies in its error boundary. */}
+      {typeof text === 'object' ? JSON.stringify(text) : String(text ?? '')}
+    </Markdown>
+  );
+
   const commonScrollStyle = {
     overflowY: isScrollRequired == 'enabled' ? 'auto' : 'hidden',
   };
+  // A clipped ListView text never scrolls inside: the ellipsis and the tooltip carry the rest.
+  const clippedScrollStyle = { overflowY: 'hidden' };
 
   return (
     <div
@@ -217,27 +239,33 @@ export const Text = function Text({
     >
       {!isLoading && (
         <div style={commonStyles} className="text-widget-section">
-          {textFormat === 'plainText' && (
-            <div style={commonScrollStyle}>{typeof text === 'object' ? JSON.stringify(text) : text}</div>
-          )}
-          {textFormat === 'markdown' && (
-            <div style={commonScrollStyle}>
-              <Markdown className={'reactMarkdown'} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-                {/* react-markdown accepts only a string. The property path coerces through
-                    `text`'s string schema, but setText() bypasses it, so a number or boolean
-                    from a CSA reaches here raw and the widget dies in its error boundary. */}
-                {typeof text === 'object' ? JSON.stringify(text) : String(text ?? '')}
-              </Markdown>
-            </div>
-          )}
-          {(textFormat === 'html' || !textFormat) && (
-            <div
-              style={commonScrollStyle}
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(text || ''),
-              }}
-            />
-          )}
+          {textFormat === 'plainText' &&
+            (clipToBox ? (
+              <OverflowTooltip style={clippedScrollStyle} lines={visibleLines > 1 ? visibleLines : undefined}>
+                {typeof text === 'object' ? JSON.stringify(text) : text}
+              </OverflowTooltip>
+            ) : (
+              <div style={commonScrollStyle}>{typeof text === 'object' ? JSON.stringify(text) : text}</div>
+            ))}
+          {textFormat === 'markdown' &&
+            (clipToBox ? (
+              <OverflowTooltip style={clippedScrollStyle} lines={visibleLines} contentKey={String(text)}>
+                {markdownContent}
+              </OverflowTooltip>
+            ) : (
+              <div style={commonScrollStyle}>{markdownContent}</div>
+            ))}
+          {(textFormat === 'html' || !textFormat) &&
+            (clipToBox ? (
+              <OverflowTooltip
+                style={clippedScrollStyle}
+                lines={visibleLines}
+                contentKey={String(text)}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text || '') }}
+              />
+            ) : (
+              <div style={commonScrollStyle} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text || '') }} />
+            ))}
         </div>
       )}
       {isLoading === true && (

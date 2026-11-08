@@ -9,6 +9,7 @@ import { findHighestLevelofSelection } from './Grid/gridUtils';
 import { NO_OF_GRIDS } from './appCanvasConstants';
 import { computeComponentName, getAllChildComponents } from './appCanvasUtils';
 import { utilityFuncForNameSeed } from '@/_helpers/utils';
+import { getRecordHeight } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
 
 const getSelectedText = () => {
   let selectedText = '';
@@ -191,7 +192,24 @@ function calculateComponentPosition(component, existingComponents, layout, targe
     newLeft = 0;
   }
 
+  // Only a row-scoped parent clips its children; every other parent keeps the position as found.
+  const targetRowHeight = getRowHeightOfParent(targetParentId);
+  if (targetRowHeight) {
+    newTop = clampDuplicateTopToRow(newTop, component.layouts[layout].height, targetRowHeight);
+  }
+
   return { newTop, newLeft };
+}
+
+function getRowHeightOfParent(targetParentId) {
+  if (!targetParentId) return null;
+  const state = useStore.getState();
+  const baseParentId = state.getBaseParentId?.(targetParentId) ?? targetParentId;
+  const parentType = state.getComponentTypeFromId?.(baseParentId);
+  if (parentType !== 'Listview') return null;
+  const properties = state.getResolvedComponent?.(baseParentId, null)?.properties;
+  const rowHeight = Number(getRecordHeight(properties?.mode, properties?.rowHeight, properties?.gridRecordHeight));
+  return rowHeight > 0 ? rowHeight : null;
 }
 
 function calculateGroupPosition(components, existingComponents, layout, targetParentId) {
@@ -291,6 +309,23 @@ export function resolvePastedComponentName({
     }
   }
   return computeComponentName(utilityFuncForNameSeed(componentDef), mergedComponents);
+}
+
+// A ListView's saved layouts are keyed by child id; a copy's children have new ids, and a child that was not copied has none.
+function remapListviewRecordLayouts(component, idMapping) {
+  const memory = component.component.definition?.properties?.recordLayouts?.value;
+  if (component.component.component !== 'Listview' || !memory || idMapping.size === 0) return component;
+  component.component.definition.properties.recordLayouts.value = Object.fromEntries(
+    Object.entries(memory).map(([mode, layouts]) => [
+      mode,
+      Object.fromEntries(
+        Object.entries(layouts ?? {})
+          .filter(([childId]) => idMapping.has(childId))
+          .map(([childId, layout]) => [idMapping.get(childId), layout])
+      ),
+    ])
+  );
+  return component;
 }
 
 export async function pasteComponents(targetParentId, copiedComponentObj) {
@@ -422,9 +457,23 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     finalComponents.push(newComponent);
   });
   const canAddToParent = useStore.getState().canAddToParent;
-  const fc = finalComponents.filter((component) => {
+  let fc = finalComponents.filter((component) => {
     return canAddToParent(component?.component.parent, component?.component.component);
   });
+  // A refused component takes its subtree with it, or the children land on a parent never created.
+  const getBaseParentId = useStore.getState().getBaseParentId;
+  const pastedIds = new Set(finalComponents.map((component) => component.id));
+  for (let dropped = true; dropped;) {
+    const kept = new Set(fc.map((component) => component.id));
+    const survivors = fc.filter((component) => {
+      const parentId = component.component.parent;
+      if (!parentId) return true;
+      const baseParentId = getBaseParentId(parentId);
+      return !pastedIds.has(baseParentId) || kept.has(baseParentId);
+    });
+    dropped = survivors.length !== fc.length;
+    fc = survivors;
+  }
   const filteredFinalComponents = fc.map((component) => {
     if (formComponentIds.has(component.id)) {
       const fields = component.component.definition?.properties?.fields?.value || [];
@@ -432,13 +481,14 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
         field.componentId = componentIdMappingSet.get(field.componentId) || field.componentId;
       });
     }
-    return component;
+    return remapListviewRecordLayouts(component, componentIdMappingSet);
   });
 
   const filteredComponentsCount = filteredFinalComponents.length;
 
   let pasteSucceeded = false;
-  if (filteredComponentsCount < 0) return;
+  // A count can never be negative; nothing survived the filter, so there is nothing to paste.
+  if (filteredComponentsCount === 0) return;
 
   if (currentPageId === pageId) {
     const components = useStore.getState().getCurrentPageComponents();
@@ -513,3 +563,10 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
     !isCloning &&
     toast.success(`Component${filteredComponentsCount > 1 ? 's' : ''} pasted successfully`);
 }
+
+// A row hides whatever runs past its height, so a copy stepped below the original can be filed in
+// the row and drawn outside it.
+export const clampDuplicateTopToRow = (top, height, rowHeight) => {
+  if (!(rowHeight > 0)) return top;
+  return Math.max(0, Math.min(top, rowHeight - height));
+};

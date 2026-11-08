@@ -120,6 +120,18 @@ const EditorSelecto = () => {
         selection.removeAllRanges();
       }
       const target = e.inputEvent.target;
+      // A copy record is not editable, so a click anywhere in it selects its ListView; a nested list's copy defers to the outermost one.
+      let copyRecord = target.closest?.('[data-listview-copy="true"]');
+      if (copyRecord) {
+        let outer = copyRecord.parentElement?.closest('[data-listview-copy="true"]');
+        while (outer) {
+          copyRecord = outer;
+          outer = copyRecord.parentElement?.closest('[data-listview-copy="true"]');
+        }
+        const listviewId = copyRecord.closest('.moveable-box')?.getAttribute('widgetid');
+        if (listviewId) setSelectedComponents([listviewId]);
+        return false;
+      }
       // Condition to allow group selection using drawing of square using cursor in canvas and main subcontainer
       const isAppCanvas = target.getAttribute('component-id') === 'canvas';
       const isSubContainer = target.getAttribute('component-id') !== 'canvas' || target.getAttribute('data-parentId');

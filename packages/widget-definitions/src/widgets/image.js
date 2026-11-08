@@ -307,6 +307,8 @@ export const imageConfig = {
       padding: { value: 'default' },
       customPadding: { value: '{{0}}' },
       alignment: { value: 'center' },
+      // Opt-in, no Inspector field yet: Circle stays round in a non-square box (new ListView avatars).
+      keepCircleRound: { value: '{{false}}' },
     },
   },
 };

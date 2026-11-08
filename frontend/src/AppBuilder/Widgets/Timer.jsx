@@ -33,19 +33,19 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
     ) {
       intervalId && clearInterval(intervalId);
       setState('initial');
+      setExposedVariable('value', time);
       fireEvent('onCountDownFinish');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [time]);
 
   useEffect(() => {
-    setExposedVariable('value', {});
-  }, []);
-
-  useEffect(() => {
     intervalId && clearInterval(intervalId);
     setState('initial');
-    setTime(getTimeObj(getDefaultValue));
+    // Runs on mount too, so this is also the initial publish.
+    const defaultTime = getTimeObj(getDefaultValue);
+    setTime(defaultTime);
+    setExposedVariable('value', defaultTime);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.type, getDefaultValue]);
 
@@ -153,7 +153,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
       className="card"
       style={{
         height,
-        display: styles.visibility ? '' : 'none',
+        display: properties.visibility ? '' : 'none',
         boxShadow: styles.boxShadow,
         backgroundColor: 'var(--cc-surface1-surface)',
       }}
@@ -169,7 +169,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
         <div className="btn-list justify-content-end">
           {state === 'initial' && (
             <a
-              className={`btn btn-primary timer-btn${styles.disabledState || isStartDisabled() ? ' disabled' : ''}`}
+              className={`btn btn-primary timer-btn${properties.disabledState || isStartDisabled() ? ' disabled' : ''}`}
               onClick={() => onStart()}
             >
               Start
@@ -177,7 +177,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
           )}
           {state === 'running' && (
             <a
-              className={`btn btn-outline-primary timer-btn-hover ${styles.disabledState ? ' disabled' : ''}`}
+              className={`btn btn-outline-primary timer-btn-hover ${properties.disabledState ? ' disabled' : ''}`}
               onClick={onPause}
             >
               Pause
@@ -185,14 +185,14 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
           )}
           {state === 'paused' && (
             <a
-              className={`btn btn-outline-primary timer-btn-hover ${styles.disabledState ? ' disabled' : ''}`}
+              className={`btn btn-outline-primary timer-btn-hover ${properties.disabledState ? ' disabled' : ''}`}
               onClick={onResume}
             >
               Resume
             </a>
           )}
           <a
-            className={`btn${styles.disabledState ? ' disabled' : ''}`}
+            className={`btn${properties.disabledState ? ' disabled' : ''}`}
             style={{ color: 'var(--cc-primary-text)' }}
             onClick={onReset}
           >

@@ -5,7 +5,6 @@ import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
 // eslint-disable-next-line import/no-unresolved
 import i18next from 'i18next';
-import { resolveReferences } from '@/_helpers/utils';
 // import { AllComponents } from '@/Editor/Box';
 import { AllComponents } from '@/AppBuilder/_helpers/editorHelpers';
 import useStore from '@/AppBuilder/_stores/store';
@@ -59,6 +58,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'FileButton',
   'FlexContainer',
   'Timeline',
+  'Timer',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -92,6 +92,101 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   FileButton: 'Data',
   FlexContainer: 'Layout',
 };
+import { getListviewMode } from '@/AppBuilder/Widgets/Listview/listStyleLayout';
+
+const LISTVIEW_DATA_PROPERTIES = ['dataSourceSelector', 'data'];
+// Record height is one field: in grid layout `rowHeight` is swapped for `gridRecordHeight` below.
+const LISTVIEW_CONFIGURE_ORDER = [
+  'mode',
+  'rowHeight',
+  'columns',
+  'disableRecords',
+  'enablePagination',
+  'serverSidePagination',
+  'rowsPerPage',
+  'totalRecords',
+];
+
+const buildListviewPropertyItems = (
+  properties,
+  component,
+  componentMeta,
+  paramUpdated,
+  dataQueries,
+  currentState,
+  allComponents,
+  darkMode
+) => {
+  const savedProperties = component.component.definition.properties ?? {};
+  const savedMode = savedProperties.mode;
+  // A hand-written "List" is shown as List; only the display changes, the saved value stays until edited.
+  const isPlainString = typeof savedMode?.value === 'string' && !savedMode.value.includes('{{');
+  // An expression is resolved against the live store, as the widget does.
+  const resolvedMode = isPlainString ? savedMode.value : useStore.getState().getResolvedValue(savedMode?.value);
+  const mode = getListviewMode(resolvedMode);
+  const isGrid = mode === 'grid';
+
+  let viewComponent = component;
+  let viewMeta = componentMeta;
+  if (isPlainString && savedMode.value !== mode) {
+    viewComponent = withProperty(viewComponent, 'mode', { ...savedMode, value: mode });
+  }
+  // The grid reads `gridRecordHeight ?? rowHeight`, so a grid without its own height shows `rowHeight`.
+  if (isGrid) {
+    viewComponent = withProperty(
+      viewComponent,
+      'gridRecordHeight',
+      savedProperties.gridRecordHeight ?? savedProperties.rowHeight
+    );
+    viewMeta = {
+      ...componentMeta,
+      properties: { ...componentMeta.properties, gridRecordHeight: componentMeta.properties.rowHeight },
+    };
+  }
+
+  const render = (property) =>
+    renderElement(
+      viewComponent,
+      viewMeta,
+      paramUpdated,
+      dataQueries,
+      property,
+      'properties',
+      currentState,
+      allComponents,
+      darkMode,
+      ''
+    );
+
+  const present = (names) => names.filter((name) => properties.includes(name));
+  const known = [...LISTVIEW_DATA_PROPERTIES, ...LISTVIEW_CONFIGURE_ORDER];
+  const configure = [
+    ...present(LISTVIEW_CONFIGURE_ORDER),
+    // Shown in the Styles tab, Records group: it only acts on a Legacy list.
+    ...properties.filter((property) => !known.includes(property) && property !== 'showBorder'),
+  ].map((property) => (property === 'rowHeight' && isGrid ? 'gridRecordHeight' : property));
+
+  const items = [];
+  const dataFields = present(LISTVIEW_DATA_PROPERTIES);
+  if (dataFields.length > 0) {
+    items.push({ title: 'Data', isOpen: true, children: dataFields.map(render) });
+  }
+  if (configure.length > 0) {
+    items.push({ title: 'Configure list item', isOpen: true, children: configure.map(render) });
+  }
+  return items;
+};
+
+const withProperty = (component, name, value) => ({
+  ...component,
+  component: {
+    ...component.component,
+    definition: {
+      ...component.component.definition,
+      properties: { ...component.component.definition.properties, [name]: value },
+    },
+  },
+});
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -118,9 +213,12 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   const validations = Object.keys(componentMeta.validation || {});
   let properties = [];
   let additionalActions = [];
+  const headerProperties = [];
   for (const [key] of Object.entries(componentMeta?.properties)) {
     if (componentMeta?.properties[key]?.section === 'additionalActions') {
       additionalActions.push(key);
+    } else if (componentMeta?.properties[key]?.section === 'header') {
+      headerProperties.push(key);
     } else if (componentMeta?.properties[key]?.section !== 'deprecatedStyles') {
       properties.push(key);
     }
@@ -144,6 +242,27 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     additionalActions,
     selectedComponentId
   );
+
+  if (headerProperties.length > 0) {
+    accordionItems.unshift({
+      title: 'Header',
+      isOpen: true,
+      children: headerProperties.map((property) =>
+        renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          property,
+          'properties',
+          currentState,
+          components,
+          darkMode,
+          ''
+        )
+      ),
+    });
+  }
 
   return <Accordion items={accordionItems} />;
 };
@@ -218,16 +337,37 @@ export const baseComponentProperties = (
       'ModalV2',
       'Container',
       'Timeline',
+      'Timer',
     ],
     Layout: [],
   };
   if (component.component.component === 'Listview') {
-    if (!resolveReferences(component.component.definition.properties?.enablePagination?.value)) {
-      properties = properties.filter((property) => property !== 'rowsPerPage');
+    // Resolved against the live store, so a binding to another component is read rather than dropped.
+    const { getResolvedValue } = useStore.getState();
+    const listviewProperties = component.component.definition.properties;
+    if (!getResolvedValue(listviewProperties?.enablePagination?.value)) {
+      properties = properties.filter(
+        (property) => !['rowsPerPage', 'serverSidePagination', 'totalRecords'].includes(property)
+      );
+    } else if (!getResolvedValue(listviewProperties?.serverSidePagination?.value)) {
+      properties = properties.filter((property) => property !== 'totalRecords');
     }
   }
   let items = [];
-  if (properties.length > 0) {
+  if (component.component.component === 'Listview') {
+    items.push(
+      ...buildListviewPropertyItems(
+        properties,
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        currentState,
+        allComponents,
+        darkMode
+      )
+    );
+  } else if (properties.length > 0) {
     items.push({
       title:
         PROPERTIES_VS_ACCORDION_TITLE[component?.component?.component] ??

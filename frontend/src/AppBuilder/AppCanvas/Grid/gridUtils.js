@@ -1,8 +1,8 @@
 import { useGridStore } from '@/_stores/gridStore';
 import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
-import { getTabId, getSubContainerIdWithSlots } from '../appCanvasUtils';
-import { NO_OF_GRIDS } from '../appCanvasConstants';
+import { getTabId, getSubContainerIdWithSlots, getParentWidgetFromId } from '../appCanvasUtils';
+import { NO_OF_GRIDS, HOVER_CLICK_OUTLINE_BORDER } from '../appCanvasConstants';
 
 export const MOBILE_GRID_COLUMNS = NO_OF_GRIDS;
 // Vertical breathing room between stacked mobile items (top/height are in px).
@@ -514,6 +514,10 @@ export function showGridLines() {
     ) {
       return false;
     }
+    // Only record 1 of page 1 is editable, so only it shows the grid.
+    if (element.getAttribute('data-listview-copy') === 'true') {
+      return false;
+    }
     return true;
   });
   elementsArray.forEach(function (element) {
@@ -774,6 +778,29 @@ export const isPointerOverCanvasArea = (clientX, clientY) => {
  * @param {string} currentTargetId - The ID of the currently dragged element to exclude from search
  * @returns {string|null} - The new parent ID or null if no valid parent is found
  */
+// A disabled record is inert, so the browser's hit test skips it and finds the list under it; the record's box is the trace.
+// A pager, header or enabled record found first, a canvas above the list (an open Modal), or a point the list clips, is no list hit.
+const isDisabledRecordAtPoint = (hits, canvas, clientX, clientY) => {
+  const topmost = hits.find((ele) => ele.closest?.('.listview-scroll-container'));
+  if (canvas && hits.indexOf(canvas) < hits.indexOf(topmost)) return false;
+  return [...(topmost?.children ?? [])].some((record) => {
+    if (record.getAttribute('aria-disabled') !== 'true') return false;
+    const box = record.getBoundingClientRect();
+    return clientX >= box.left && clientX <= box.right && clientY >= box.top && clientY <= box.bottom;
+  });
+};
+
+// True when the topmost canvas under the pointer is a read-only ListView record, or the point is a disabled record; a drop there must be refused.
+export const isListviewCopyCanvasAtPoint = (clientX, clientY, excludeIds = []) => {
+  const hits = document.elementsFromPoint?.(clientX, clientY) ?? [];
+  const canvas = hits.find(
+    (ele) => ele.classList.contains('real-canvas') && !excludeIds.includes(ele.id.replace('canvas-', '').slice(0, 36))
+  );
+  return (
+    canvas?.getAttribute('data-listview-copy') === 'true' || isDisabledRecordAtPoint(hits, canvas, clientX, clientY)
+  );
+};
+
 export const findNewParentIdFromMousePosition = (clientX, clientY, currentTargetId) => {
   if (!document.elementFromPoint(clientX, clientY)) {
     return null;
@@ -847,7 +874,9 @@ export const updateDashedBordersOnDragResize = (targetId, moveableControlBoxClas
 };
 
 export const isDroppingRestrictedWidget = (target, dragged) => {
-  const restrictedWidgetsOnTarget = RESTRICTED_WIDGETS_CONFIG?.[target.widgetType] || [];
+  // The config keys a drop area by the name it goes by there — a Kanban's is `Kanban_card`.
+  const restrictedWidgetsOnTarget =
+    RESTRICTED_WIDGETS_CONFIG?.[getParentWidgetFromId(target.widgetType, target.slotId)] || [];
   const restrictedWidgetsOnTargetSlot = ['header', 'footer'].includes(target.slotType)
     ? RESTRICTED_WIDGET_SLOTS_CONFIG
     : [];
@@ -865,3 +894,27 @@ export function getCanvasBottomBound() {
   const realCanvasRect = realCanvas.getBoundingClientRect();
   return footerRect.top - realCanvasRect.top;
 }
+
+// Folds a drop position into the row it landed on. The canvas is drawn a pixel taller than the row
+// to leave space for a hover outline, so the row's own height is what the position wraps against.
+export const wrapDropIntoListviewRow = (y, parentHeight) => {
+  const rowHeight = parentHeight - HOVER_CLICK_OUTLINE_BORDER;
+  if (!(rowHeight > 0)) return y;
+  return y >= rowHeight ? y % rowHeight : y;
+};
+
+// Per-widget minimum width in px; a widget not listed keeps the default (one grid column of the main canvas).
+// ListView: 140px is where its pager still fits as `‹ 1 ›` (Figma 993:21793).
+const MIN_WIDTH_PX_BY_COMPONENT = { Listview: 140 };
+
+// Widths are stored in grid columns, so a listed minimum is rounded up to whole columns of the widget's parent canvas.
+export const getMinWidthPx = (componentType, parentGridWidth, defaultMinWidth) => {
+  const minWidth = MIN_WIDTH_PX_BY_COMPONENT[componentType];
+  return minWidth && parentGridWidth ? Math.ceil(minWidth / parentGridWidth) * parentGridWidth : defaultMinWidth;
+};
+
+// The same minimum in whole columns of a canvas whose column is `gridWidth` px, floored at one column.
+export const getMinColumns = (componentType, gridWidth) => {
+  const minWidth = MIN_WIDTH_PX_BY_COMPONENT[componentType];
+  return minWidth && gridWidth ? Math.ceil(minWidth / gridWidth) : 1;
+};

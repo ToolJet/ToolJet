@@ -17,20 +17,22 @@ Certain components, namely **Calendar** and **Kanban**, are restricted from bein
 
 To dynamically populate List View components, you can use specific data properties.
 
-Consider this data being passed inside a List View component's `List data` property:
+Consider this data being passed inside a List View component's **Populate data from** property:
 
 ```js
 {{[
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 1' },
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 2' },
-    { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 3' },
+    { imageURL: 'https://randomuser.me/api/portraits/men/32.jpg', name: 'Henry, Arthur', company: 'Big Kahuna Burger Ltd.', role: 'Project manager' },
+    { imageURL: 'https://randomuser.me/api/portraits/women/44.jpg', name: 'Cooper, Kristin', company: 'Barone LLC.', role: 'Chief executive officer' },
+    { imageURL: 'https://randomuser.me/api/portraits/men/75.jpg', name: 'Black, Marvin', company: 'Abstergo Ltd.', role: 'Systems analyst' },
 ]}}
 ```
+
+A new List View starts with this kind of data: eight people, each shown as a round avatar, a bold name, a grey company and a role tag.
 
 Based on the above data, you can set the `Data` property of a Text component inside List View using the below code:
 
 ```js
-{{listItem.text}}
+{{listItem.name}}
 ```
 
 Similarly, for an Image component inside List View, you can use the below code to pass the `imageURL` value:
@@ -47,13 +49,16 @@ Similarly, for an Image component inside List View, you can use the below code t
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:---|:---|:---|
-| List data | The data that you want to display in the List View component. This can be an array of objects or data from a query that returns an array of objects. | An array of objects or a query that returns an array of objects. |
-| Mode | The layout of the List View component. You can choose between `List` and `Grid` mode. | `list` or `grid` |
-| Show bottom border | Whether to show or hide the bottom border on a row. This option is only available when the **Mode** is set to `List`. | `true` or `false` |
-| Columns | The number of columns in the List View component. This option is only available when the **Mode** is set to `Grid`. | Any numerical value |
-| Row height | The height of each row in the List View component. | Any number between 1 and 100 |
-| Enable pagination | Whether to enable pagination. If enabled, you can set the number of rows per page. | `true` or `false` |
-| Rows per page | The number of rows per page. This option is only available when **Enable pagination** is enabled. | Any numerical value |
+| Populate data from | The data that you want to display in the List View component. This can be an array of objects or data from a query that returns an array of objects. | An array of objects or a query that returns an array of objects. |
+| Layout | The layout of the List View component. You can choose between `List` and `Grid`. | `list` or `grid` |
+| Show bottom border | Whether to show or hide the bottom border on a row. It is set in the **Styles** tab, under **Records**, and is only available when **List style** is `Legacy` and the **Layout** is set to `List`. | `true` or `false` |
+| Number of columns | The number of columns in the List View component. This option is only available when the **Layout** is set to `Grid`. | Any numerical value |
+| Record height | The height of each record in the List View component. In `Grid` layout it is saved separately from the `List` height. | Any number between 1 and 100 |
+| Disable records | An expression resolved for each record with `listItem`, for example `{{listItem.status === 'archived'}}`. Only `listItem` is per record: `components.*` and `queries.*` give the same value for every record. A disabled record is faded, cannot be clicked, hovered or focused, and fires no **Record clicked**, **Row clicked** or **Record hovered** event. It keeps its place, its position in the data and any selection it already has. The record is disabled when the expression gives `true`, or the text `true` in any case with spaces around it; an error or any other value leaves the record enabled. In the builder a disabled first record locks the record template for all records, on every page with client side pagination (with server side pagination the lock is known only while page 1 shows, because the other pages do not hold the first record): its components cannot be edited, moved, cloned, cut, deleted or pasted into, but you can still select them from the left sidebar to see their settings, and the List View itself stays selectable so you can change the expression. | `{{true}}` or `{{false}}` for each record |
+| Enable pagination | Whether to enable pagination. If enabled, you can set the number of records per page. | `true` or `false` |
+| Type | How pagination works: `Client side` pages the data already loaded, `Server side` expects each page from a query. This option is only available when **Enable pagination** is enabled. | Switch between `Client side` and `Server side` |
+| Number of records per page | The number of records per page. This option is only available when **Enable pagination** is enabled. | Any numerical value |
+| Total records | The number of records across all pages. This option is only available when **Type** is `Server side`. | Any numerical value |
 
 </div>
 

@@ -32,11 +32,52 @@ export const timerConfig = {
         defaultValue: 'countUp',
       },
     },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
     collapseWhenHidden: {
       type: 'toggle',
       displayName: 'Collapse when hidden',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    // The switch's displayName labels the pair; the code field below hides its own label.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   validation: {},
@@ -47,24 +88,7 @@ export const timerConfig = {
     onCountDownFinish: { displayName: 'On Count Down Finish' },
     onReset: { displayName: 'On Reset' },
   },
-  styles: {
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
-    },
-  },
+  styles: {},
   exposedVariables: {
     value: '',
   },
@@ -81,7 +105,11 @@ export const timerConfig = {
       type: {
         value: 'countUp',
       },
+      visibility: { value: '{{true}}' },
       collapseWhenHidden: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
     },
     defaults: [
       {
@@ -96,9 +124,6 @@ export const timerConfig = {
       },
     ],
     events: [],
-    styles: {
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
-    },
+    styles: {},
   },
 };

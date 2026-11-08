@@ -137,9 +137,19 @@ const resolveWorkspaceVariables = (query) => {
   return [valid, error, resolvedStr];
 };
 
+// A nested list stores its row scopes per outer row; the preview shows the first row's scope.
+export const firstRowScope = (rowScopes) => {
+  let scope = rowScopes;
+  while (Array.isArray(scope)) scope = scope[0];
+  return scope && typeof scope === 'object' ? scope : {};
+};
+
+const ROW_SCOPE_KEYS = ['listItem', 'cardData', 'rowData'];
+
 function resolveCode(code, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
   let result = '';
   let error;
+  if (Array.isArray(customObjects)) customObjects = firstRowScope(customObjects);
 
   // dont resolve if code starts with "queries." and ends with "run()"
   if (code.startsWith('queries.') && code.endsWith('run()')) {
@@ -148,11 +158,10 @@ function resolveCode(code, customObjects = {}, withError = false, reservedKeywor
     try {
       const state = useStore.getState().getResolvedState();
 
-      // ListView children have per-row arrays in exposedValues.components.
-      // Flatten to row 0 so the preview can resolve sibling references
-      // like {{components.button1.text}} without hitting an array.
+      // Inside a row, a sibling stored per row previews as row 1; outside, it stays as the canvas sees it (D-14).
       let components = state?.components;
-      if (isJsCode && components) {
+      const isInsideRow = ROW_SCOPE_KEYS.some((key) => key in (customObjects ?? {}));
+      if (isJsCode && components && isInsideRow) {
         const hasArrayEntry = Object.values(components).some(Array.isArray);
         if (hasArrayEntry) {
           components = {};

@@ -38,6 +38,10 @@ const initialState = {
   temporaryLayouts: {},
   draggingComponentId: null,
   resizingComponentId: null,
+  // A ListView record is being drag-resized: its copies move under the pointer, so none may start a hover.
+  isListviewRecordResizing: false,
+  // ListView id -> module id, for each ListView whose disabled record 1 locks its record template.
+  lockedListviews: {},
   isGroupDragging: false,
   isGroupResizing: false,
   reorderContainerChildren: {
@@ -100,6 +104,12 @@ export const createGridSlice = (set, get) => {
     }, 200),
     setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
     setResizingComponentId: (id) => set(() => ({ resizingComponentId: id })),
+    setIsListviewRecordResizing: (isListviewRecordResizing) => set(() => ({ isListviewRecordResizing })),
+    setListviewLocked: (listviewId, locked, moduleId = 'canvas') =>
+      set((state) => {
+        if (locked) state.lockedListviews[listviewId] = moduleId;
+        else delete state.lockedListviews[listviewId];
+      }),
     setIsGroupDragging: (isGroupDragging) => set(() => ({ isGroupDragging: isGroupDragging })),
     setIsGroupResizing: (isGroupResizing) => set(() => ({ isGroupResizing: isGroupResizing })),
     moveComponentPosition: (direction) => {

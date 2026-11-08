@@ -85,7 +85,7 @@ describe("List view widget", { testIsolation: false }, () => {
     cy.get(`[data-cy="${data.widgetName}-row-1"]`).should("exist");
     cy.get(`[data-cy="${data.widgetName}-row-2"]`).should("exist");
 
-    // ---- Row height (displayName "Row height" → row-height-input-field) ----
+    // ---- Record height (displayName "Record height" → record-height-input-field) ----
     openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(listviewText.rowHeight, "99");
     scopedCanvasClick();
@@ -95,6 +95,7 @@ describe("List view widget", { testIsolation: false }, () => {
       .should("be.gte", 98)
       .and("be.lte", 100);
 
+    // NOTE: Show bottom border now lives in Styles > Records, only for Legacy list style + List layout.
     // ---- Show bottom border = false removes the row border ----
     // (showBorder, displayName "Show bottom border" → show-bottom-border-input-field;
     //  ListviewSubcontainer.jsx:69 only sets borderBottom when showBorder && list mode.)
@@ -117,7 +118,7 @@ describe("List view widget", { testIsolation: false }, () => {
     cy.get('[data-cy="enable-pagination-toggle-button"]').click();
     scopedCanvasClick();
     cy.waitForAutoSave();
-    cy.get(`${commonWidgetSelector.draggableWidget(data.widgetName)} .pagination`)
+    cy.get(`${commonWidgetSelector.draggableWidget(data.widgetName)} [data-cy="pagination-section"]`)
       .should("exist");
   });
 
@@ -126,10 +127,9 @@ describe("List view widget", { testIsolation: false }, () => {
     // (listview.js:94-118 — visibility/disabledState are properties with
     // section:'additionalActions'), NOT the Styles tab. border radius + box shadow
     // are the only true Styles entries (listview.js:212-241).
-    // The "Additional Actions" accordion is rendered isOpen by default
-    // (DefaultComponent.jsx:317-319), so Visibility/Disable toggles are already
-    // visible — no openAccordion needed (and its strict text assert would also
-    // need the exact "Additional Actions" capitalisation).
+    // The "Additional actions" accordion (lower-case a for ListView only) is rendered isOpen by
+    // default, so Visibility/Disable toggles are already visible — no openAccordion needed (and its
+    // strict text assert would need the exact "Additional actions" capitalisation).
     openEditorSidebar(listviewText.defaultWidgetName);
 
     // ---- Visibility toggle hides the widget ----

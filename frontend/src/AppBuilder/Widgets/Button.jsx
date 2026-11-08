@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
 const tinycolor = require('tinycolor2');
 import Loader from '@/ToolJetUI/Loader/Loader';
@@ -6,10 +6,13 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 
 import { getModifiedColor, getSafeRenderableValue } from './utils';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
+  const { inListviewRecord } = useSubcontainerContext();
   const {
     backgroundColor,
     hoverBackgroundMode,
@@ -194,10 +197,16 @@ export const Button = function Button(props) {
     }
   }, [hovered]);
 
+  const buttonRef = useRef(null);
+
   const handleClick = () => {
     if (!disable && !loading) {
-      const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id, buttonModuleId: moduleId } });
-      document.dispatchEvent(event1);
+      // Dispatched on the button so it reaches only the Form around it; on `document` every row's Form hears it.
+      const event1 = new CustomEvent('submitForm', {
+        bubbles: true,
+        detail: { buttonComponentId: id, buttonModuleId: moduleId },
+      });
+      (buttonRef.current ?? document).dispatchEvent(event1);
       fireEvent('onClick');
     }
   };
@@ -210,6 +219,7 @@ export const Button = function Button(props) {
       }}
     >
       <button
+        ref={buttonRef}
         className={cx(
           'overflow-hidden jet-btn',
           // accessible keyboard focus — outline (not ring) so it's immune to the inline boxShadow
@@ -253,20 +263,38 @@ export const Button = function Button(props) {
               }}
             >
               <span style={{ maxWidth: ' 100%', minWidth: '0' }}>
-                <p
-                  className="tj-text-sm"
-                  style={{
-                    fontWeight: computedFontWeight,
-                    fontSize: `${computedFontSize}px`,
-                    lineHeight: `${computedLineHeight}px`,
-                    margin: '0px',
-                    padding: '0px',
-                    color: computedTextColor,
-                  }}
-                  data-cy={`${dataCy}-label`}
-                >
-                  {getSafeRenderableValue(label)}
-                </p>
+                {inListviewRecord ? (
+                  // A ListView card keeps one line: a clipped label gets the full text on hover.
+                  <OverflowTooltip
+                    childrenClassName="tj-text-sm"
+                    style={{
+                      fontWeight: computedFontWeight,
+                      fontSize: `${computedFontSize}px`,
+                      lineHeight: `${computedLineHeight}px`,
+                      margin: '0px',
+                      padding: '0px',
+                      color: computedTextColor,
+                    }}
+                    data-cy={`${dataCy}-label`}
+                  >
+                    {getSafeRenderableValue(label)}
+                  </OverflowTooltip>
+                ) : (
+                  <p
+                    className="tj-text-sm"
+                    style={{
+                      fontWeight: computedFontWeight,
+                      fontSize: `${computedFontSize}px`,
+                      lineHeight: `${computedLineHeight}px`,
+                      margin: '0px',
+                      padding: '0px',
+                      color: computedTextColor,
+                    }}
+                    data-cy={`${dataCy}-label`}
+                  >
+                    {getSafeRenderableValue(label)}
+                  </p>
+                )}
               </span>
             </div>
             {iconVisibility && (

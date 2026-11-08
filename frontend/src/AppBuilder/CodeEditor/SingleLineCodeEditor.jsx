@@ -18,7 +18,7 @@ import { keymap, tooltips, EditorView } from '@codemirror/view';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
-import { isInsideParent, resolveReferences } from './utils';
+import { firstRowScope, isInsideParent, resolveReferences } from './utils';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { getAutocompletion, getSuggestionsForMultiLine } from './autocompleteExtensionConfig';
@@ -67,6 +67,9 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
     if (!componentId) return {};
     const componentDef = state.getComponentDefinition(componentId, moduleId);
     const parentId = componentDef?.component?.parent;
+    // Disable records reads the list's own records, so its hints come from the list, not from the list's parent.
+    const ownRecords = componentDef?.component?.component === 'Listview' && paramName === 'disableRecords';
+    if (ownRecords) return firstRowScope(state.resolvedStore.modules[moduleId]?.customResolvables?.[componentId]?.[0]);
     if (!parentId) return {};
     // Walk up the ancestor chain to find the nearest ListView/Kanban, since
     // customResolvables is keyed by the subcontainer's UUID — not by intermediate
@@ -74,7 +77,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
     const nearestAncestorId = state.findNearestSubcontainerAncestor(parentId, moduleId);
     if (!nearestAncestorId) return {};
     const customResolvables = state.resolvedStore.modules[moduleId]?.customResolvables || {};
-    return customResolvables[nearestAncestorId]?.[0] || {};
+    return firstRowScope(customResolvables[nearestAncestorId]?.[0]);
   }, shallow);
 
   // Table column context: inject cellValue/rowData for preview resolution

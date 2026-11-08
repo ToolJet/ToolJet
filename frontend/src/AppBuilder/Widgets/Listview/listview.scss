@@ -2,7 +2,9 @@
     .dynamic-height-target {
         > .canvas-component {
             .list-item  {
-                > .sub-canvas {
+                // The clip box sits between the record and its canvas.
+                > .sub-canvas,
+                > .listview-record-clip > .sub-canvas {
                     overflow-y: hidden !important;
                 }
             }
@@ -11,9 +13,55 @@
 }
 
 .listview-scroll-container {
-    scrollbar-color: var(--interactive-selected) transparent;
+    // Hidden until hover, matching .hide-scrollbar on the Form body.
+    scrollbar-width: none;
+
+    &:hover {
+        scrollbar-color: var(--interactive-selected) transparent;
+        scrollbar-width: auto;
+    }
+}
+
+// Inset so the scroll container's overflow does not clip the ring.
+.listview-scroll-container .list-item:focus-visible {
+    outline: 2px solid var(--interactive-focus-outline);
+    outline-offset: -2px;
 }
 
 .real-canvas.flex-container-canvas .listview-scroll-container {
     scrollbar-color: inherit;
+}
+
+// Legacy separator between list records, toggled by Show bottom border.
+.listview-scroll-container .list-item.listview-legacy-divider {
+    border-bottom: 1px solid var(--cc-default-border);
+}
+
+// Outline, not border, so the record does not shift while a child moves.
+.listview-scroll-container .list-item.listview-record-moving {
+    outline: 1px solid var(--border-accent-weak);
+    outline-offset: -1px;
+}
+
+// Same look as the Form header handle; size and position are inline, centred on the record's bottom edge.
+.listview-scroll-container .list-item .listview-record-resize-handle {
+    border-radius: 4px;
+    background-color: var(--cc-surface1-surface);
+    border: 1px solid var(--background-accent-strong);
+    cursor: ns-resize;
+    z-index: 1;
+    visibility: hidden;
+    transition: visibility 0.15s ease-in-out;
+}
+
+// A class, not :hover on the record: Moveable draws a component's controls outside the record's DOM.
+.listview-scroll-container .list-item .listview-record-resize-handle.listview-record-handle-shown,
+.listview-scroll-container .list-item .listview-record-resize-handle.dragging {
+    visibility: visible;
+}
+
+// The pointer leaves the 8px handle during a drag; the cursor must not fall back.
+body.listview-record-resizing,
+body.listview-record-resizing * {
+    cursor: ns-resize !important;
 }
