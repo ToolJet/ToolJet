@@ -35,6 +35,13 @@ describe('the dev bundle a build was uploaded to', () => {
     expect((error as Error).message).to.include("hasn't picked up your upload");
   });
 
+  it("is the signed-in user's own slot while the list hides the library (a Code mode app whose code is not stored)", async () => {
+    nock(url)
+      .get('/api/custom-component-libraries')
+      .reply(200, [{ id: 'lib-2', devBundles: [{ userId: 'user-1' }] }]);
+    expect(await devBundleOwnerId(await session(), 'lib-1')).to.equal('user-1');
+  });
+
   it('falls back to the email an older server listed, for a token without a user id', async () => {
     nock(url)
       .get('/api/custom-component-libraries')

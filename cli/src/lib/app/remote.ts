@@ -333,6 +333,9 @@ export async function devBundleOwnerId(session: Session, libraryId: string): Pro
     session.userId
       ? d.userId === session.userId
       : String(d.userEmail ?? '').toLowerCase() === session.email.toLowerCase();
+  // A Code mode app's library is listed only to people who may see an app that owns it, so before the app's code is
+  // stored it is missing from the list. The upload just made went to the signed-in user's own slot: that is the pin.
+  if (!library && session.userId) return session.userId;
   const own = (library?.devBundles ?? []).find(mine);
   if (!own?.userId) throw new Error("The live preview hasn't picked up your upload yet; save again.");
   return own.userId;
