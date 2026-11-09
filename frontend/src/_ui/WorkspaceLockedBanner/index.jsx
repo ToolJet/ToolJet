@@ -4,7 +4,7 @@ import { useLicenseStore } from '@/_stores/licenseStore';
 import LockedBranchBanner from '@/AppBuilder/Header/LockedBranchBanner';
 import { isGitSyncLicenseInvalid, getGitSyncLicenseLockMessage } from '@/_helpers/gitSyncLicense';
 
-export function WorkspaceLockedBanner({ showNewBanner = false, pageContext = '', variant = 'inline' }) {
+export function WorkspaceLockedBanner({ pageContext = '', variant = 'inline' }) {
   const { currentBranch, orgGitConfig, isInitialized, isGitSyncConfigured } = useWorkspaceBranchesStore((state) => ({
     currentBranch: state.currentBranch,
     orgGitConfig: state.orgGitConfig,
@@ -26,7 +26,6 @@ export function WorkspaceLockedBanner({ showNewBanner = false, pageContext = '',
         licenseLockMessage={getGitSyncLicenseLockMessage(featureAccess)}
         pageContext={pageContext}
         variant={variant}
-        showNewBanner={showNewBanner}
       />
     );
   }
@@ -42,7 +41,6 @@ export function WorkspaceLockedBanner({ showNewBanner = false, pageContext = '',
       reason="main_config_branch"
       pageContext={pageContext}
       variant={variant}
-      showNewBanner={showNewBanner}
     />
   );
 }

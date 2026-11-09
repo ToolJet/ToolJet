@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
-import { Separator } from '@/components/ui/Rocket/Separator/Separator';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { WorkspaceGitSyncModal } from '@/_ui/WorkspaceGitSyncModal';
@@ -67,56 +66,48 @@ export function WorkspaceGitCTA({ isDataSourcesPage = false }) {
   return (
     <>
       {/* Pull button — always visible */}
-      <Button
-        isLucid
-        size="medium"
-        variant="ghost"
-        leadingIcon="arrow-down-to-line"
-        data-cy="workspace-git-pull-button"
-        disabled={gitLicenseLocked}
-        onClick={() => setShowPullModal(true)}
-      >
-        Pull commit
-      </Button>
+      <div className="lifecycle-cta-button">
+        <Button
+          variant="secondary"
+          onClick={() => setShowPullModal(true)}
+          disabled={gitLicenseLocked}
+          data-cy="workspace-git-pull-button"
+        >
+          <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name="pull-changes" width="16" />
+          <span>Pull</span>
+        </Button>
+      </div>
 
       {/* Commit button — datasource page on single-branch or feature branch */}
       {allowPush && (
-        <>
-          <Separator orientation="vertical" className="tw-h-4" />
-
+        <div className="lifecycle-cta-button">
           <Button
-            isLucid
-            size="medium"
-            variant="ghost"
-            leadingIcon="git-commit-horizontal"
-            data-cy="workspace-git-commit-button"
-            disabled={gitLicenseLocked}
+            variant="secondary"
             onClick={handleOpenCommit}
+            disabled={gitLicenseLocked}
+            data-cy="workspace-git-commit-button"
           >
-            Commit
+            <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name="commit" width="16" />
+            <span>Commit</span>
           </Button>
-        </>
+        </div>
       )}
 
       {showSyncButton && (
-        <>
-          <Separator orientation="vertical" className="tw-h-4" />
-
-          <div className="lifecycle-cta-button">
-            <ToolTip message="There are data source which are not synced in remote git" placement="bottom">
-              <Button
-                variant="secondary"
-                onClick={() => setShowPushModal(true)}
-                disabled={gitLicenseLocked}
-                style={{ borderColor: '#E54D2E' }}
-                data-cy="workspace-git-sync-datasources-button"
-              >
-                <SolidIcon fill="#E54D2E" viewBox="0 0 16 16" name="refresh" width="16" />
-                <span>Sync</span>
-              </Button>
-            </ToolTip>
-          </div>
-        </>
+        <div className="lifecycle-cta-button">
+          <ToolTip message="There are data source which are not synced in remote git" placement="bottom">
+            <Button
+              variant="secondary"
+              onClick={() => setShowPushModal(true)}
+              disabled={gitLicenseLocked}
+              style={{ borderColor: '#E54D2E' }}
+              data-cy="workspace-git-sync-datasources-button"
+            >
+              <SolidIcon fill="#E54D2E" viewBox="0 0 16 16" name="refresh" width="16" />
+              <span>Sync</span>
+            </Button>
+          </ToolTip>
+        </div>
       )}
 
       {!gitLicenseLocked && showPullModal && (

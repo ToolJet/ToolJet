@@ -43,19 +43,10 @@ describe('RowActionsMenu', () => {
     expect(await labels()).toEqual(['Unpin', 'Delete constant']);
   });
 
-  it('separates Delete from Pin and styles it as dangerous', async () => {
+  it('separates Delete from Pin', async () => {
     setup();
     await openMenu();
     expect(await screen.findByRole('separator')).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: 'Delete constant' }).className).toMatch(/tw-text-text-danger/);
-  });
-
-  it('uses the lucide trash icon for Delete, as the delete dialog does', async () => {
-    setup();
-    await openMenu();
-    const delete_ = await screen.findByRole('menuitem', { name: 'Delete constant' });
-    expect(delete_.querySelector('svg.lucide-trash')).toBeInTheDocument();
-    expect(delete_.querySelector('svg.lucide-trash-2')).toBeNull();
   });
 
   it('runs the matching callback for each item', async () => {

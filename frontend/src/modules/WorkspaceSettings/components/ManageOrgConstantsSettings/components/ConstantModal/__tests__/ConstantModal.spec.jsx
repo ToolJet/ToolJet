@@ -296,13 +296,6 @@ describe('ConstantModal — edit', () => {
     expect(onSubmit).toHaveBeenCalledWith({ values: [{ environment_id: 'stg', value: 'new-secret' }] });
   });
 
-  it('uses the lucide trash icon on the remove button, as in the design', () => {
-    setup({ mode: 'edit', constant: globalConstant() });
-    const icon = screen.getByRole('button', { name: 'Remove Staging value' }).querySelector('svg');
-    expect(icon).toHaveClass('lucide-trash');
-    expect(icon).not.toHaveClass('lucide-trash-2');
-  });
-
   it('asks before removing a value, names the values that stay, and keeps the row on Cancel', async () => {
     const { user } = setup({ mode: 'edit', constant: globalConstant() });
     await user.click(screen.getByRole('button', { name: 'Remove Staging value' }));

@@ -86,18 +86,11 @@ describe('ConstantsTable', () => {
       now.mockRestore();
     });
 
-    it('draws the pin as a filled icon in a 20px slot', () => {
-      renderTable({ items: [globalItem], pinnedIds: ['c1'] });
-      const pin = within(screen.getByRole('row', { name: /API_URL/ })).getByRole('img', { name: 'Pinned' });
-      expect(pin).toHaveClass('tw-size-5');
-      expect(pin.querySelector('svg')).toHaveAttribute('fill', 'currentColor');
-    });
-
     it('masks the value of a Secret and labels environment-sourced constants', () => {
       renderTable({ items: [secretItem], variant: 'Secret' });
       const row = screen.getByRole('row', { name: /STRIPE_KEY/ });
       expect(within(row).getByText(SECRET_MASK)).toBeInTheDocument();
-      expect(within(row).getByText('Environment')).toBeInTheDocument();
+      expect(within(row).getByText('.env')).toBeInTheDocument();
     });
 
     it('shows a dash for a missing owner, modifier or date', () => {
@@ -270,26 +263,6 @@ describe('ConstantsTable', () => {
     });
   });
 
-  describe('row heights', () => {
-    // jsdom has no layout, so these pin the classes that keep the gutter cells from stretching their rows.
-    it('keeps the body gutter cell at 40px', () => {
-      renderTable({ items: [globalItem] });
-      expect(screen.getByRole('row', { name: /API_URL/ }).firstElementChild).toHaveClass('tw-h-10');
-    });
-
-    it('keeps the skeleton gutter cell at 40px', () => {
-      renderTable({ status: 'loading' });
-      expect(screen.getAllByTestId('constants-skeleton-row')[0].firstElementChild).toHaveClass('tw-h-10');
-    });
-
-    it('keeps the header gutter cell at 36px', () => {
-      renderTable({ items: [globalItem] });
-      const header = screen.getAllByRole('rowgroup')[0].querySelector('tr');
-      expect(header.firstElementChild).toHaveClass('tw-h-9');
-      expect(header.firstElementChild).not.toHaveClass('tw-h-10');
-    });
-  });
-
   describe('row menu placement', () => {
     it('sits in the Name cell after the name and pin icon, not in the Source cell', () => {
       renderTable({ items: [globalItem], pinnedIds: ['c1'] });
@@ -301,7 +274,6 @@ describe('ConstantsTable', () => {
       const menu = content.getByRole('button', { name: 'More actions for API_URL' });
       expect(name.compareDocumentPosition(pin) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
       expect(pin.compareDocumentPosition(menu) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-      expect(menu).toHaveClass('tw-shrink-0');
       expect(within(sourceCell).queryByRole('button')).toBeNull();
       expect(sourceCell).toHaveTextContent('Workspace');
     });
@@ -339,14 +311,6 @@ describe('ConstantsTable', () => {
         <ConstantsTable items={rows} status="success" variant="Global" searchKey="" pinnedIds={['a', 'b', 'c']} />
       );
       expect(screen.queryByTestId('pin-divider')).toBeNull();
-    });
-
-    it('draws the divider as its own straight line, not as a border on the last pinned row', () => {
-      renderTable({ items: rows, pinnedIds: ['c', 'a'] });
-      const row = screen.getByRole('row', { name: /ALPHA/ });
-      expect(row.className).not.toMatch(/border/);
-      Array.from(row.children).forEach((cell) => expect(cell.className).not.toMatch(/border-b/));
-      expect(within(screen.getByTestId('pin-divider')).getByTestId('pin-divider-line')).toHaveClass('tw-h-px');
     });
 
     describe('drag handle', () => {

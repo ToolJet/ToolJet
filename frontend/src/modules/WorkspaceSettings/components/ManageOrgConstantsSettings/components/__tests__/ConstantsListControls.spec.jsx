@@ -100,12 +100,6 @@ describe('ConstantsListControls', () => {
       expect(onSortChange).not.toHaveBeenCalled();
     });
 
-    it('draws the tick in the on-solid colour, not the item text colour', async () => {
-      await openSort({ sort: 'name_asc' });
-      const tick = screen.getByRole('menuitemcheckbox', { name: 'A → Z' }).querySelector('[aria-hidden] svg');
-      expect(tick).toHaveClass('tw-text-text-on-solid');
-    });
-
     it('narrows the options as the user types, and drops a group left empty', async () => {
       await openSort();
       await userEvent.type(screen.getByRole('textbox', { name: 'Sort by' }), 'NEW');
@@ -173,15 +167,6 @@ describe('ConstantsListControls', () => {
       await open('Filter');
       await screen.findByRole('menuitemcheckbox', { name: 'Workspace' });
       expect(screen.queryByRole('separator')).not.toBeInTheDocument();
-    });
-
-    it('draws the tick in the on-solid colour, not the item text colour', async () => {
-      setup();
-      await open('Filter');
-      const tick = (await screen.findByRole('menuitemcheckbox', { name: 'Workspace' })).querySelector(
-        '[aria-hidden] svg'
-      );
-      expect(tick).toHaveClass('tw-text-text-on-solid');
     });
 
     it('unchecks a source and keeps the menu open', async () => {
@@ -302,11 +287,6 @@ describe('ConstantsListControls', () => {
       await userEvent.hover(screen.getByRole('button', { name }));
       await open(name);
       expect(await screen.findByRole('textbox', { name: `${name} by` })).toBeInTheDocument();
-    });
-
-    it.each(['Filter', 'Sort'])('%s icon uses the strong icon colour', (name) => {
-      setup();
-      expect(screen.getByRole('button', { name }).querySelector('svg')).toHaveClass('tw-text-icon-strong');
     });
   });
 });

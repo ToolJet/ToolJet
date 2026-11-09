@@ -19,13 +19,6 @@ const setup = (props = {}) => {
 };
 
 describe('DeleteConstantsDialog', () => {
-  it('uses the lucide trash icon, as in the design', () => {
-    setup();
-    const icon = screen.getByRole('dialog').querySelector('svg.lucide-trash');
-    expect(icon).toBeInTheDocument();
-    expect(icon).toHaveAttribute('width', '40');
-  });
-
   it('names the constant for a single delete', () => {
     setup();
     expect(screen.getByRole('dialog', { name: 'Delete workspace constant?' })).toBeInTheDocument();

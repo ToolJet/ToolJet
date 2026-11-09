@@ -196,6 +196,37 @@ describe('useConstantForm — create', () => {
 });
 
 describe('useConstantForm — edit', () => {
+  it('lists one row per stored environment, and sends only the changed one', () => {
+    const { result } = setup({ mode: 'edit', constant: globalConstant() });
+    expect(result.current.rows.map((r) => r.environmentId)).toEqual(['dev', 'stg']);
+    act(() => result.current.setValue('stg', 'http://new'));
+    expect(result.current.toApiBody()).toEqual({ values: [{ environment_id: 'stg', value: 'http://new' }] });
+  });
+
+  it('lists a single row when the licence does not cover multiple environments', () => {
+    const { result } = setup({ mode: 'edit', constant: globalConstant(), multiEnvironment: false });
+    expect(result.current.rows.map((r) => [r.environmentId, r.value])).toEqual([['dev', 'http://dev']]);
+  });
+
+  it('sends exactly one value for a single-value edit', () => {
+    const { result } = setup({ mode: 'edit', constant: globalConstant(), multiEnvironment: false });
+    act(() => result.current.setValue('dev', 'http://new'));
+    expect(result.current.toApiBody()).toEqual({ values: [{ environment_id: 'dev', value: 'http://new' }] });
+  });
+
+  it('keeps a locked environment out of the single value', () => {
+    const environments = [{ ...ENVS[0], enabled: false }, ENVS[1], ENVS[2]];
+    const { result } = setup({ mode: 'edit', constant: globalConstant(), environments, multiEnvironment: false });
+    expect(result.current.rows.map((r) => r.environmentId)).toEqual(['stg']);
+  });
+
+  it('cannot remove a stored value when the licence does not cover multiple environments', () => {
+    const multi = setup({ mode: 'edit', constant: globalConstant() });
+    expect(multi.result.current.canRemove('dev')).toBe(true);
+    const single = setup({ mode: 'edit', constant: globalConstant(), multiEnvironment: false });
+    expect(single.result.current.canRemove('dev')).toBe(false);
+  });
+
   it('prefills Global rows with the stored value and skips environments without a value', () => {
     const { result } = setup({ mode: 'edit', constant: globalConstant() });
     expect(result.current.name).toBe('API_URL');

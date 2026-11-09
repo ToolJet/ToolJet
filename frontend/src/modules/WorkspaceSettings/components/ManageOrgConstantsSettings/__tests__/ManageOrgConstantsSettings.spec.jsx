@@ -177,6 +177,105 @@ describe('ManageOrgConstantsSettings', () => {
   });
 });
 
+describe('ManageOrgConstantsSettings without per-environment values', () => {
+  beforeEach(() => fetchEdition.mockReturnValue('ce'));
+
+  it('lets the create modal add one value only', async () => {
+    mockApi(() => HttpResponse.json(page([item('api_url')])));
+    renderPage();
+    await screen.findByText('API_URL');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Create constant' }));
+    const dialog = await screen.findByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: /^Development/ }));
+
+    expect(within(dialog).getByRole('textbox', { name: 'Development value' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: /Add environment/ })).toBeDisabled();
+  });
+
+  const mockStoredInEveryEnvironment = () => {
+    const patches = [];
+    mockApi(() => HttpResponse.json(page([item('api_url')])));
+    server.use(
+      http.get(`${API}/v2/organization-constants/api_url`, () =>
+        HttpResponse.json({
+          id: 'api_url',
+          name: 'API_URL',
+          type: 'Global',
+          values: ENVIRONMENTS.map((env) => ({
+            environment_id: env.id,
+            environment_name: env.name,
+            has_value: true,
+            value: 'same',
+          })),
+        })
+      ),
+      http.patch(`${API}/v2/organization-constants/api_url`, async ({ request }) => {
+        patches.push(await request.json());
+        return HttpResponse.json({ id: 'api_url', name: 'API_URL', type: 'Global', values: [] });
+      })
+    );
+    return patches;
+  };
+  const valueBoxes = (dialog) => within(dialog).queryAllByRole('textbox', { name: /value$/ });
+
+  it('shows one value box when editing a constant stored in every environment', async () => {
+    mockStoredInEveryEnvironment();
+    renderPage();
+    await screen.findByText('API_URL');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Edit API_URL' }));
+    const dialog = await screen.findByRole('dialog');
+
+    expect(valueBoxes(dialog)).toHaveLength(1);
+    expect(valueBoxes(dialog)[0]).toHaveValue('same');
+  });
+
+  it('saves an edit as exactly one value', async () => {
+    const patches = mockStoredInEveryEnvironment();
+    renderPage();
+    await screen.findByText('API_URL');
+    await userEvent.click(screen.getByRole('button', { name: 'Edit API_URL' }));
+    const dialog = await screen.findByRole('dialog');
+
+    await userEvent.type(valueBoxes(dialog)[0], '!');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save changes' }));
+
+    await waitFor(() => expect(patches).toHaveLength(1));
+    expect(patches[0].values).toHaveLength(1);
+    expect(patches[0].values[0]).toMatchObject({ value: 'same!' });
+  });
+});
+
+describe('ManageOrgConstantsSettings with per-environment values', () => {
+  it('shows one value box per environment when editing', async () => {
+    mockApi(() => HttpResponse.json(page([item('api_url')])));
+    server.use(
+      http.get(`${API}/v2/organization-constants/api_url`, () =>
+        HttpResponse.json({
+          id: 'api_url',
+          name: 'API_URL',
+          type: 'Global',
+          values: ENVIRONMENTS.map((env) => ({
+            environment_id: env.id,
+            environment_name: env.name,
+            has_value: true,
+            value: `value-${env.name}`,
+          })),
+        })
+      )
+    );
+    renderPage();
+    await screen.findByText('API_URL');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Edit API_URL' }));
+    const dialog = await screen.findByRole('dialog');
+
+    expect(within(dialog).getByRole('textbox', { name: 'Development value' })).toHaveValue('value-development');
+    expect(within(dialog).getByRole('textbox', { name: 'Production value' })).toHaveValue('value-production');
+  });
+});
+
 describe('ManageOrgConstantsSettings header controls', () => {
   const respond = () => mockApi(() => HttpResponse.json(page([item('api_url')])));
 
@@ -387,10 +486,12 @@ describe('ManageOrgConstantsSettings pagination', () => {
     respond();
     renderPage();
     await screen.findByText('ROW_1');
+    const list = screen.getByTestId('constants-list-scroll');
+    list.scrollTop = 200;
 
     await userEvent.click(screen.getByRole('link', { name: '2' }));
 
-    expect(window.scrollTo).toHaveBeenCalledWith({ top: 0 });
+    expect(list.scrollTop).toBe(0);
   });
 
   it('offers no pages when everything fits on one', async () => {

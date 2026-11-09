@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { capitalize } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { KeyRound, Lock } from 'lucide-react';
@@ -16,6 +16,7 @@ import ConstantsListControls from './components/ConstantsListControls';
 import ConstantsPageHeader from './components/ConstantsPageHeader';
 import ConstantsTable from './components/ConstantsTable';
 import ConstantsTableFooter from './components/ConstantsTableFooter';
+import { ConstantTypes } from './helpers/constantType';
 import SelectionBar from './components/SelectionBar';
 import { CONSTANT_SOURCES, useConstantsListQueryParams } from './hooks/useConstantsListQueryParams';
 import { useConstantsListStore } from './store/constantsListStore';
@@ -54,6 +55,7 @@ const ManageOrgConstantsSettings = () => {
   // The constant being edited, kept after the modal closes so it can finish its exit animation.
   const [editing, setEditing] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
+  const listScrollRef = useRef(null);
 
   const loadEnvironments = useCallback(() => {
     setEnvironmentsFailed(false);
@@ -136,10 +138,10 @@ const ManageOrgConstantsSettings = () => {
     }
   };
 
-  // The document scrolls, not the list, so the new page would otherwise open at the old scroll position.
+  // The list scrolls inside its own box, so the new page would otherwise open at the old scroll position.
   const changePage = (target) => {
     setPage(target);
-    window.scrollTo({ top: 0 });
+    if (listScrollRef.current) listScrollRef.current.scrollTop = 0;
   };
 
   // The list only shows constants that have a value in the viewed environment, so a save that leaves none there
@@ -193,10 +195,10 @@ const ManageOrgConstantsSettings = () => {
           {/* The full-width rule sits on this row, not the list, so the controls can share it */}
           <div className="tw-flex tw-h-10 tw-items-center tw-border-0 tw-border-b tw-border-solid tw-border-border-weak">
             <TabsList className="tw-border-b-0">
-              <TabsTrigger value="Secret" leadingVisual={<Lock size={16} />}>
+              <TabsTrigger value={ConstantTypes.Secret} leadingVisual={<Lock size={16} />}>
                 {tabLabel('Secrets', counts?.secrets)}
               </TabsTrigger>
-              <TabsTrigger value="Global" leadingVisual={<KeyRound size={16} />}>
+              <TabsTrigger value={ConstantTypes.Global} leadingVisual={<KeyRound size={16} />}>
                 {tabLabel('Globals', counts?.globals)}
               </TabsTrigger>
             </TabsList>
@@ -214,7 +216,11 @@ const ManageOrgConstantsSettings = () => {
         </Tabs>
         {/* flex-1 lets an empty or error state centre in the space left above the footer. The row checkbox and drag
             handle sit left of the table, so the scroll box reaches into the page padding to keep them visible. */}
-        <div className="-tw-mx-[70px] tw-mt-2.5 tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-y-auto tw-px-[70px]">
+        <div
+          ref={listScrollRef}
+          data-testid="constants-list-scroll"
+          className="-tw-mx-[70px] tw-mt-2.5 tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-y-auto tw-px-[70px]"
+        >
           <ConstantsTable
             items={items}
             status={status}
@@ -264,6 +270,7 @@ const ManageOrgConstantsSettings = () => {
         open={creating}
         onOpenChange={setCreating}
         environments={modalEnvironments}
+        multiEnvironment={showEnv}
         onSubmit={handleCreate}
       />
       {editing && (
@@ -273,6 +280,7 @@ const ManageOrgConstantsSettings = () => {
           open={editOpen}
           onOpenChange={setEditOpen}
           environments={modalEnvironments}
+          multiEnvironment={showEnv}
           onSubmit={(body) => handleUpdate(editing.id, body)}
         />
       )}
