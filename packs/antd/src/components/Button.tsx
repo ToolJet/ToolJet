@@ -100,9 +100,11 @@ export const Button = () => {
         block={block}
         href={href || undefined}
         target={href ? target : undefined}
-        disabled={disabled}
+        // Disabled only by the host, which dims the widget to half and makes it inert, as a native Button: Ant's own
+        // disabled look dimmed it a second time, its label nearly gone. It keeps its look and says it is disabled.
+        aria-disabled={disabled || undefined}
         loading={loading}
-        onClick={() => onClick()}
+        onClick={() => !disabled && onClick()}
       >
         {children}
       </AntButton>

@@ -17,3 +17,11 @@ export const typeRule = (type: string, value: unknown): string => {
   }
   return '';
 };
+
+/** The message for a number outside min and max; '' when it is inside (or there is no number). */
+export const rangeRule = (n: number | null, lo: number | null, hi: number | null): string => {
+  if (n === null) return '';
+  if (lo !== null && n < lo) return `Minimum value is ${lo}`;
+  if (hi !== null && n > hi) return `Maximum value is ${hi}`;
+  return '';
+};

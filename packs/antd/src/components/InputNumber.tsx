@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { InputNumber as AntInputNumber } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { rangeRule } from '../lib/typeRule';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { toNumber } from '../lib/format';
@@ -48,10 +49,17 @@ export const InputNumber = (props: Record<string, unknown>) => {
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const value = toNumber(rawValue);
+  // No number is null, at load as after the user clears the field (it was '' at load, null after a clear).
+  React.useEffect(() => {
+    if (value === null && rawValue !== null) setValue(null as unknown as number);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value === null, rawValue]);
   const check = ToolJet.useValidation({
     kind: 'text',
     value: value === null ? '' : String(value),
     present: value !== null,
+    // A default or setFieldValue outside Min and Max is not valid (Ant clamps only what is typed).
+    rule: rangeRule(value, toNumber(min), toNumber(max)),
   });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({

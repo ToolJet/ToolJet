@@ -354,6 +354,8 @@ export const Table = () => {
       const hits = keyed.filter((k) => set.has(k.key));
       setSelectedRowKeys(hits.map((k) => k.id));
       setSelectedRows(hits.map((k) => k.row));
+      // Rows that left the data leave the selection, and that is a selection change (it fired nothing).
+      if (hits.length < keys.length) onSelectionChange();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rowsKey, field]);
@@ -362,7 +364,10 @@ export const Table = () => {
     (key) => {
       const hit = keyed.find((k) => k.key === str(key));
       setSelectedRow(hit?.row ?? {});
-      if (selectionType !== 'none') select(hit ? [hit.key] : []);
+      if (selectionType === 'none') return;
+      // Checkbox selection adds the row to those selected (it replaced the whole selection); radio picks only it.
+      const kept = selectionType === 'checkbox' ? toArray(selectedRowKeys).map(str) : [];
+      select(hit ? [...kept.filter((k) => k !== hit.key), hit.key] : kept);
     }
   );
   ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => {
@@ -378,10 +383,11 @@ export const Table = () => {
   );
 
   const size_ = Math.max(1, Math.min(500, Number(pageSize) || 10));
-  // Fewer rows than the page needs: Ant draws the last page, and current says so too.
+  // Fewer rows than the page needs: Ant draws the last page, and current says so too, down to one page (a table whose
+  // data shrank to one page kept current at 3 and went back to page 3 when the data grew again).
   const pages = Math.max(1, Math.ceil(rows.length / size_));
   useEffect(() => {
-    if (pagination && rows.length > size_ && Number(current) > pages) setCurrent(pages);
+    if (pagination && Number(current) > pages) setCurrent(pages);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pages, current, pagination]);
   return (

@@ -383,7 +383,13 @@ export const useKanban = (o: KanbanOptions) => {
     [data, columns, statusField, idField]
   );
   const [board, setBoard] = useState<BoardColumn[]>(fromData);
-  useEffect(() => setBoard(fromData), [fromData]);
+  // updatedCardData is every card on the board from the start, and follows new data: it was [] at load and kept the
+  // last edit's board after the data changed.
+  useEffect(() => {
+    setBoard(fromData);
+    setUpdatedCardData(boardCards(fromData));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromData]);
   const allCards = useMemo(() => board.flatMap((c) => c.cards), [board]);
 
   // Selection, open details and expanded cards are kept by card key and read from the current board.
