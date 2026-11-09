@@ -6,15 +6,16 @@ export const CONSTANT_TABS = ['Global', 'Secret'];
 export const CONSTANT_SORTS = ['name_asc', 'name_desc', 'modified_desc', 'modified_asc'];
 export const CONSTANT_SOURCES = ['workspace', 'env'];
 
-const DEFAULTS = { env: null, tab: 'Global', sort: 'modified_desc', source: CONSTANT_SOURCES };
+const DEFAULTS = { env: null, tab: 'Secret', sort: 'modified_desc', source: CONSTANT_SOURCES };
 export const DEFAULT_SORT = DEFAULTS.sort;
 
 const storageKey = (workspaceId) => `tj:constants-view:${workspaceId}`;
 
+// Per-tab: a new tab or a later visit starts from the defaults, a refresh or a return within the tab restores the view.
 // Storage can be blocked (private mode, disabled site data); the view then lives in the URL only.
 function readSavedView(workspaceId) {
   try {
-    return JSON.parse(localStorage.getItem(storageKey(workspaceId))) ?? {};
+    return JSON.parse(sessionStorage.getItem(storageKey(workspaceId))) ?? {};
   } catch {
     return {};
   }
@@ -22,7 +23,7 @@ function readSavedView(workspaceId) {
 
 function saveView(workspaceId, view) {
   try {
-    localStorage.setItem(storageKey(workspaceId), JSON.stringify(view));
+    sessionStorage.setItem(storageKey(workspaceId), JSON.stringify(view));
   } catch {
     // The URL still holds the view for this session.
   }
@@ -45,11 +46,18 @@ const isDefault = (key, value) =>
 
 const VIEW_KEYS = ['env', 'tab', 'sort', 'source'];
 
+// `env` has no entry: only the caller knows which environments exist.
+const IS_VALID = {
+  tab: (value) => CONSTANT_TABS.includes(value),
+  sort: (value) => CONSTANT_SORTS.includes(value),
+  source: (value) => parseSource(value).length > 0,
+};
+
 // Environment, tab, sort and source live in the URL so they survive refresh and sharing. A plain visit restores the
 // view saved for the workspace by copying it into the URL once, on mount; after that only the URL is read, so a
 // second tab stays independent and choosing a default (which leaves the URL) is not undone by an older saved value.
-// A URL param wins over the saved value. `env` is not validated here: the caller knows the workspace's
-// environments and supplies the default.
+// A URL param wins over the saved value; an unknown one is removed on mount. `env` is not validated here: the
+// caller knows the workspace's environments, supplies the default, and removes an unknown `env` itself.
 export function useConstantsListQueryParams({ workspaceId }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const setPage = useConstantsListStore((state) => state.setPage);
@@ -78,6 +86,8 @@ export function useConstantsListQueryParams({ workspaceId }) {
       (current) => {
         const params = new URLSearchParams(current);
         VIEW_KEYS.forEach((key) => {
+          // An unknown value is dropped so the URL matches the view, and the saved value can take its place.
+          if (IS_VALID[key] && params.has(key) && !IS_VALID[key](params.get(key))) params.delete(key);
           if (!params.has(key) && !isDefault(key, seed[key])) {
             params.set(key, key === 'source' ? seed[key].join(',') : seed[key]);
           }

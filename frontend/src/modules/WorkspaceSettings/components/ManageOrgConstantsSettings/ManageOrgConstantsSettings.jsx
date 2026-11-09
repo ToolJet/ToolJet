@@ -100,6 +100,12 @@ const ManageOrgConstantsSettings = () => {
     environments?.[0];
   const environmentId = environment?.id;
 
+  // Drop an unknown `env` from the URL (and the saved view) so a shared link does not carry it. Only when the
+  // select is shown: otherwise `env` is ignored on purpose and a licensed user's choice should survive.
+  useEffect(() => {
+    if (showEnv && environments && env && !environments.some((e) => e.id === env)) setEnv(null);
+  }, [showEnv, environments, env, setEnv]);
+
   const loadList = useCallback(
     () => fetchList({ environmentId, type: tab, sort, source }),
     [fetchList, environmentId, tab, sort, source]
@@ -136,6 +142,36 @@ const ManageOrgConstantsSettings = () => {
     window.scrollTo({ top: 0 });
   };
 
+  // The list only shows constants that have a value in the viewed environment, so a save that leaves none there
+  // would otherwise look as if nothing happened.
+  const notListedHint = (constant) => {
+    const listed = constant.values?.some((value) => value.environment_id === environmentId && value.has_value);
+    if (!constant.values || listed) return null;
+    const viewed = modalEnvironments.find((e) => e.id === environmentId)?.name;
+    return `It has no value in ${viewed}, so it isn’t listed here.`;
+  };
+
+  const handleCreate = async (body) => {
+    const constant = await createConstant(body);
+    const hint = notListedHint(constant);
+    toast.success(hint ? `${body.type} constant created. ${hint}` : `${body.type} constant created successfully!`);
+    return constant;
+  };
+
+  const handleUpdate = async (id, body) => {
+    const constant = await updateConstant(id, body);
+    const hint = notListedHint(constant);
+    toast.success(hint ? `Constant updated. ${hint}` : 'Constant updated successfully');
+    return constant;
+  };
+
+  const handleDelete = async (ids) => {
+    const result = await bulkDeleteConstants(ids);
+    const count = result.deleted_ids.length;
+    if (count) toast.success(count === 1 ? 'Constant deleted successfully' : `${count} constants deleted successfully`);
+    return result;
+  };
+
   const pin = (ids) => pinConstants(tab, ids, sort);
   const unpin = (ids) => unpinConstants(tab, ids);
 
@@ -147,10 +183,11 @@ const ManageOrgConstantsSettings = () => {
   const allSelectedPinned = selectedIds.length > 0 && selectedIds.every((id) => pinnedIds.includes(id));
 
   return (
-    // Layout leaves the page as tall as its content, so the body background shows below a short list. 3rem is
-    // the header above this node.
-    <div className="tw-flex tw-min-h-[calc(100vh-3rem)] tw-flex-col tw-bg-background-surface-layer-01">
-      <div className="tw-flex tw-flex-1 tw-flex-col tw-px-[70px] tw-pb-10 tw-pt-10">
+    // The app shell is clipped to the viewport, so this node fills the space under the header (3rem) and any banner
+    // above the page (the shell publishes its height as --dynamic-margin-2), and only the table scrolls: title, tabs,
+    // controls and footer stay in view.
+    <div className="tw-flex tw-h-[calc(100vh_-_3rem_-_var(--dynamic-margin-2,0px))] tw-flex-col tw-overflow-hidden tw-bg-background-surface-layer-01">
+      <div className="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-px-[70px] tw-pb-4 tw-pt-10">
         <ConstantsPageHeader onCreate={() => setCreating(true)} />
         <Tabs value={tab} onValueChange={setTab} className="tw-mt-4">
           {/* The full-width rule sits on this row, not the list, so the controls can share it */}
@@ -175,8 +212,9 @@ const ManageOrgConstantsSettings = () => {
             />
           </div>
         </Tabs>
-        {/* flex-1 lets an empty or error state centre in the space left above the footer */}
-        <div className="tw-mt-2.5 tw-flex tw-flex-1 tw-flex-col">
+        {/* flex-1 lets an empty or error state centre in the space left above the footer. The row checkbox and drag
+            handle sit left of the table, so the scroll box reaches into the page padding to keep them visible. */}
+        <div className="-tw-mx-[70px] tw-mt-2.5 tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-y-auto tw-px-[70px]">
           <ConstantsTable
             items={items}
             status={status}
@@ -190,16 +228,16 @@ const ManageOrgConstantsSettings = () => {
             onUnpin={unpin}
             onMovePin={(id, toIndex) => movePin(tab, id, toIndex)}
             onEdit={openEdit}
-            onDelete={bulkDeleteConstants}
+            onDelete={handleDelete}
             onCreate={() => setCreating(true)}
             onRetry={environmentsFailed ? loadEnvironments : loadList}
           />
         </div>
       </div>
       {selectedItems.length > 0 && (
-        // Zero height, so the bar adds nothing to the page; it sticks 16px above the 48px footer while the list scrolls.
-        <div className="tw-sticky tw-bottom-16 tw-z-10 tw-flex tw-h-0 tw-justify-center">
-          <div className="tw-absolute tw-bottom-0">
+        // Zero height, so the bar adds nothing to the layout; it floats 16px above the footer.
+        <div className="tw-relative tw-z-10 tw-flex tw-h-0 tw-justify-center">
+          <div className="tw-absolute tw-bottom-4">
             <SelectionBar
               variant={tab}
               selectedIds={selectedIds}
@@ -215,7 +253,7 @@ const ManageOrgConstantsSettings = () => {
                 unpin(selectedIds);
                 clearSelection();
               }}
-              onDelete={bulkDeleteConstants}
+              onDelete={handleDelete}
             />
           </div>
         </div>
@@ -226,7 +264,7 @@ const ManageOrgConstantsSettings = () => {
         open={creating}
         onOpenChange={setCreating}
         environments={modalEnvironments}
-        onSubmit={createConstant}
+        onSubmit={handleCreate}
       />
       {editing && (
         <ConstantModal
@@ -235,7 +273,7 @@ const ManageOrgConstantsSettings = () => {
           open={editOpen}
           onOpenChange={setEditOpen}
           environments={modalEnvironments}
-          onSubmit={(body) => updateConstant(editing.id, body)}
+          onSubmit={(body) => handleUpdate(editing.id, body)}
         />
       )}
     </div>

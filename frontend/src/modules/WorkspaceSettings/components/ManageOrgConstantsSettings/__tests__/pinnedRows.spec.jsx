@@ -49,7 +49,7 @@ function mockApi(rows = () => ALL) {
   );
 }
 
-const renderPage = (route = '/') =>
+const renderPage = (route = '/?tab=Global') =>
   render(
     <MemoryRouter initialEntries={[route]}>
       <ManageOrgConstantsSettings />
@@ -62,7 +62,7 @@ const order = () =>
     .getAllByRole('row')
     .map((entry) => entry.getAttribute('data-row-id'));
 
-beforeEach(() => localStorage.clear());
+beforeEach(() => sessionStorage.clear());
 
 describe('pinned rows on the constants page', () => {
   it('pins a row from its menu and moves it to the top', async () => {
@@ -166,7 +166,7 @@ describe('pinned rows on the constants page', () => {
 
     it('are not offered under a source filter', async () => {
       mockApi();
-      renderPage('/?source=workspace');
+      renderPage('/?tab=Global&source=workspace');
       await screen.findByText('CHARLIE');
       act(() => store().pinConstants('Global', ['a', 'b'], 'name_asc'));
       expect(screen.getAllByRole('img', { name: 'Pinned' })).toHaveLength(2);

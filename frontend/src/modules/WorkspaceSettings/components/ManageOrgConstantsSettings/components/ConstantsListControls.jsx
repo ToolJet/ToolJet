@@ -1,5 +1,6 @@
 import React, { forwardRef, useRef, useState } from 'react';
 import { ArrowDownWideNarrow, ChevronDown, Funnel, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button, Input } from '@/components/ui/Rocket';
 import DropdownMenu from '@/components/ui/Rocket/DropdownMenu';
 import Tooltip from '@/components/ui/Rocket/Tooltip';
@@ -53,6 +54,52 @@ const SEARCHABLE_MENU_CLASSES = {
   label: 'tw-flex tw-h-[30px] tw-items-center tw-py-0',
 };
 
+const ENV_DOT_COLORS = {
+  development: 'tw-bg-background-accent-strong',
+  staging: 'tw-bg-background-warning-strong',
+  production: 'tw-bg-background-success-strong',
+};
+
+// The design's environment marker: 6px on the trigger, 8px in the menu rows. Names outside the three defaults get a
+// neutral dot.
+function EnvDot({ name, className }) {
+  return (
+    <span
+      aria-hidden
+      className={cn('tw-shrink-0 tw-rounded-full', ENV_DOT_COLORS[name?.toLowerCase()] ?? 'tw-bg-icon-weak', className)}
+    />
+  );
+}
+
+const EnvOption = ({ name }) => (
+  <span className="tw-flex tw-items-center tw-gap-2">
+    <EnvDot name={name} className="tw-size-2" />
+    {name}
+  </span>
+);
+
+// Same hand-off as IconTrigger: the menu's props and ref land on the button, the tooltip adds its own on top.
+const EnvTrigger = forwardRef(function EnvTrigger({ name, ...props }, ref) {
+  return (
+    <Tooltip content="Choose which environment’s values the list shows." arrow classes={ENV_TOOLTIP_CLASSES}>
+      <Button
+        ref={ref}
+        variant="ghost"
+        size="medium"
+        aria-label="Environment"
+        leadingVisual={<EnvDot name={name} className="tw-size-1.5" />}
+        trailingVisual={<ChevronDown size={ICON_SIZE} />}
+        {...props}
+      >
+        {name}
+      </Button>
+    </Tooltip>
+  );
+});
+
+// The design's text wraps at 120px; the bubble adds 12px of padding on each side.
+const ENV_TOOLTIP_CLASSES = { content: 'tw-max-w-[144px] tw-text-center' };
+
 function EnvSelect({ environments, environmentId, onEnvChange }) {
   const current = environments.find((environment) => environment.id === environmentId);
   return (
@@ -66,19 +113,10 @@ function EnvSelect({ environments, environmentId, onEnvChange }) {
           type: 'radio',
           value: environmentId,
           onValueChange: onEnvChange,
-          items: environments.map(({ id, name }) => ({ value: id, label: name })),
+          items: environments.map(({ id, name }) => ({ value: id, label: <EnvOption name={name} /> })),
         },
       ]}
-      trigger={
-        <Button
-          variant="ghost"
-          size="medium"
-          aria-label="Environment"
-          trailingVisual={<ChevronDown size={ICON_SIZE} />}
-        >
-          {current?.name}
-        </Button>
-      }
+      trigger={<EnvTrigger name={current?.name} />}
     />
   );
 }

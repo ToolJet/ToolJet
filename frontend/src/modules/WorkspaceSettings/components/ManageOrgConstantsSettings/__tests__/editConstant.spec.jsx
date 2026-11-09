@@ -62,7 +62,7 @@ const renderPage = () =>
     </MemoryRouter>
   );
 
-beforeEach(() => localStorage.clear());
+beforeEach(() => sessionStorage.clear());
 
 describe('editing a constant from the list', () => {
   it('loads the constant and opens the edit modal with its name and values', async () => {

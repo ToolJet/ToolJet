@@ -1,6 +1,6 @@
 import '@/test/setupMsw';
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
@@ -55,17 +55,20 @@ function mockApi(onList) {
   return requests;
 }
 
-const renderPage = (route = '/') =>
+const LocationProbe = () => <output data-testid="url-search">{useLocation().search}</output>;
+
+const renderPage = (route = '/?tab=Global') =>
   render(
     <MemoryRouter initialEntries={[route]}>
       <ManageOrgConstantsSettings />
+      <LocationProbe />
     </MemoryRouter>
   );
 
 beforeEach(() => {
   fetchEdition.mockReturnValue('ee');
   useLicenseStore.setState({ featureAccess: {} });
-  localStorage.clear();
+  sessionStorage.clear();
   useConstantsListStore.setState({
     query: { page: 1, searchKey: '' },
     root: { items: [], meta: null, status: 'idle' },
@@ -95,7 +98,15 @@ describe('ManageOrgConstantsSettings', () => {
     expect(screen.getByText('Showing 1-2 of 2 items')).toBeInTheDocument();
   });
 
-  it('lists the default environment’s Global constants first', async () => {
+  it('opens on Secrets when the URL names no tab', async () => {
+    const requests = mockApi(() => HttpResponse.json(page([item('api_key', 'Secret')])));
+    renderPage('/');
+    await screen.findByText('API_KEY');
+    expect(requests[0]).toMatchObject({ environment_id: 'env-prod', type: 'Secret' });
+    expect(screen.getByRole('tab', { name: /Secrets/ })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('lists the default environment’s Global constants when the URL asks for them', async () => {
     const requests = mockApi(() => HttpResponse.json(page([item('api_url')])));
     renderPage();
     await screen.findByText('API_URL');
@@ -226,6 +237,23 @@ describe('ManageOrgConstantsSettings header controls', () => {
     expect(screen.queryByRole('button', { name: 'Environment' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Filter' })).toBeInTheDocument();
     expect(requests.every((request) => request.environment_id === 'env-prod')).toBe(true);
+  });
+
+  it('removes an ?env= the workspace does not have from the URL', async () => {
+    const requests = respond();
+    renderPage('/?tab=Global&env=not-a-uuid');
+    await screen.findByText('API_URL');
+
+    await waitFor(() => expect(screen.getByTestId('url-search')).toHaveTextContent(/^\?tab=Global$/));
+    expect(requests.every((request) => request.environment_id === 'env-prod')).toBe(true);
+  });
+
+  it('keeps an ?env= the workspace has', async () => {
+    respond();
+    renderPage('/?tab=Global&env=env-dev');
+    await screen.findByText('API_URL');
+
+    expect(screen.getByTestId('url-search')).toHaveTextContent('env=env-dev');
   });
 });
 

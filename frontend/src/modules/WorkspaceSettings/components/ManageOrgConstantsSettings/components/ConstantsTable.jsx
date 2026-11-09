@@ -95,7 +95,7 @@ function PinDivider() {
 
 function TableHeaderRow({ selectState, onToggleAll, hasSelection, showSelectAll }) {
   return (
-    <TableHeader className="[&_th]:tw-border-b-0">
+    <TableHeader className="tw-sticky tw-top-0 tw-z-10 tw-bg-background-surface-layer-01 [&_th]:tw-border-b-0">
       <TableRow className="tw-group hover:tw-bg-transparent">
         <TableHead className={HEADER_GUTTER_CELL_CLASS}>
           {showSelectAll && (
