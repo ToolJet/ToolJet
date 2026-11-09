@@ -163,7 +163,8 @@ export const verifyEnvironmentTagsInGranularUI = (groupName, environmentTags) =>
 
 export const verifyEnvironmentAccess = (environments, options = {}) => {
   const defaults = {
-    workspaceName: "my-workspace",
+    // Specs that run in their own workspace set workspaceSlug (createSpecWorkspace)
+    workspaceName: Cypress.env("workspaceSlug") || "my-workspace",
     componentName: "text1",
     canEdit: true,
     appId: Cypress.env("appId"),
