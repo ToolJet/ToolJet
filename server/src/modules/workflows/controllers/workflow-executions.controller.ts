@@ -1,5 +1,5 @@
-import { Body, Controller, Get, NotImplementedException, Param, Post, Query, Res, Sse } from '@nestjs/common';
-import { Response } from 'express';
+import { Body, Controller, Get, NotImplementedException, Param, Post, Query, Req, Res, Sse } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { IWorkflowExecutionController } from '../interfaces/IWorkflowExecutionController';
 import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
 import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
@@ -27,7 +27,8 @@ export class WorkflowExecutionsController implements IWorkflowExecutionControlle
   @Get('workspace')
   async listForWorkspace(
     @Query() query: ListExecutionsDto,
-    @User() user?: UserEntity
+    @User() user?: UserEntity,
+    @Req() req?: Request
   ): Promise<{ executions: ExecutionListItem[]; meta: { page: number; perPage: number; total: number } }> {
     throw new NotImplementedException();
   }

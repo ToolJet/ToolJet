@@ -22,6 +22,7 @@ export interface ExecutionListItem {
   createdAt: string | null;
   version: { id: string; name: string } | null;
   environment: { id: string; name: string } | null;
+  canStop?: boolean;
 }
 
 // Omit appVersion: required on the entity, but the decorated row may carry { id, name } or nothing.
