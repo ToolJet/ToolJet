@@ -191,6 +191,7 @@ This example maps any `{{ }}` expression to `'solid'`. A real conversion keeps s
 | File | Covers |
 |---|---|
 | `server/test/modules/migrations/e2e/appbuilder-key-move.spec.ts` | The real runner on a key move: the copy and the trigger in the data phase, the cleanup held back on that upgrade and run on the next, in async and blocking mode, and a fresh install. Edits from an editor tab opened before the upgrade, before and after a rollback, widgets created by either release, other widget types. A format change converted both ways, including a row written with the trigger off. Row locks only in the copy; adding the trigger pauses writes, never reads |
+| `server/test/modules/migrations/e2e/appbuilder-widget-drop-5.spec.ts` | The real RichTextEditor, Calendar and SvgImage moves and the Form and RangeSliderV2 backfills: copies, conversions, edits by either release, the cleanups, and a second run that changes nothing |
 | `server/test/modules/migrations/unit/component-key-moves.spec.ts` | The cleanup drops the trigger and its function in their own transaction, before the batches that remove old keys |
 | `server/test/modules/migrations/unit/legacy-3-21-58-upgrade.spec.ts` | The 3.21.58 branch key swap runs after a later migration's `beforeCommit()`, so the trigger never waits under its lock |
 | `server/test/modules/migrations/unit/migration-lint.spec.ts` | Data migrations that remove JSON keys are rejected, including in helpers `up()` calls; cleanup may remove them |

@@ -16,4 +16,24 @@
  *     { from: ['generalStyles', 'boxShadow'], to: ['styles', 'boxShadow'] },
  *   ],
  */
-export const MOVED_COMPONENT_KEYS = {};
+export const MOVED_COMPONENT_KEYS = {
+  // migrations/data/1794252760836-CopyRichTextEditorAdditionalActions.ts
+  RichTextEditor: [
+    { from: ['styles', 'visibility'], to: ['properties', 'visibility'] },
+    { from: ['styles', 'disabledState'], to: ['properties', 'disabledState'] },
+    { from: ['general', 'tooltip'], to: ['properties', 'tooltip'] },
+    { from: ['generalStyles', 'boxShadow'], to: ['styles', 'boxShadow'] },
+  ],
+  // migrations/data/1794252760837-CopyCalendarAdditionalActions.ts
+  Calendar: [
+    { from: ['styles', 'visibility'], to: ['properties', 'visibility'] },
+    { from: ['general', 'tooltip'], to: ['properties', 'tooltip'] },
+    { from: ['generalStyles', 'boxShadow'], to: ['styles', 'boxShadow'] },
+  ],
+  // migrations/data/1794252760838-CopySvgImageAdditionalActions.ts
+  SvgImage: [
+    { from: ['styles', 'visibility'], to: ['properties', 'visibility'] },
+    { from: ['general', 'tooltip'], to: ['properties', 'tooltip'] },
+    { from: ['generalStyles', 'boxShadow'], to: ['styles', 'boxShadow'] },
+  ],
+};
