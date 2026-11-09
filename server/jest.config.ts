@@ -53,8 +53,9 @@ const shared: Config.InitialProjectOptions = {
   },
   runner: 'groups',
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
+  // sanitize-html >= 2.18 depends on ESM-only htmlparser2 v12 and its dom* / entities deps (nested under sanitize-html).
   transformIgnorePatterns: [
-    'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object)/)(?!(thrift/node_modules/)?uuid/dist-node/)',
+    'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object|(sanitize-html/node_modules/)?(htmlparser2|domhandler|domutils|domelementtype|dom-serializer|entities))/)(?!(thrift/node_modules/)?uuid/dist-node/)',
   ],
 };
 
