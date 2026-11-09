@@ -9,6 +9,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { EntityManager, In } from 'typeorm';
 import { EditUserRoleDto } from './dto';
 import { App } from '@entities/app.entity';
+import { AppBase } from '@entities/app_base.entity';
 import { _ } from 'lodash';
 import { ERROR_HANDLER } from '@modules/group-permissions/constants/error';
 import { RolesRepository } from './repository';
@@ -90,15 +91,14 @@ export class RolesUtilService implements IRolesUtilService {
 
       // Moving from admin/builder to end user
       if (newRole == USER_ROLE.END_USER) {
-        // Check if user has created any apps
-        const userCreatedApps = await manager.find(App, {
+        const ownedAppsCount = await manager.count(AppBase, {
           where: {
             userId: userId,
             organizationId: organizationId,
           },
         });
 
-        if (userCreatedApps?.length > 0) {
+        if (ownedAppsCount > 0) {
           if (updatedAdmin) {
             // Transfer the ownership to session user
             await manager.update(
@@ -116,10 +116,22 @@ export class RolesUtilService implements IRolesUtilService {
                 id: userId,
               },
             });
+            const ownedAppNames = await manager
+              .createQueryBuilder(AppBase, 'app')
+              .select(
+                `COALESCE((SELECT av.app_name FROM app_versions av
+                   WHERE av.app_id = app.id AND av.version_type = 'version'
+                     AND av.is_stub = false AND av.app_name IS NOT NULL
+                   ORDER BY av.is_synced DESC, av.updated_at DESC LIMIT 1), app.name, app.id::text)`,
+                'name'
+              )
+              .where('app.userId = :userId', { userId })
+              .andWhere('app.organizationId = :organizationId', { organizationId })
+              .getRawMany();
             throw new BadRequestException({
               message: {
                 error: ERROR_HANDLER.USER_IS_OWNER_OF_APPS(user.email),
-                data: userCreatedApps.map((app) => app.name),
+                data: ownedAppNames.map((row) => row.name),
                 title: 'Can not change user role',
               },
             });
@@ -198,6 +210,17 @@ export class RolesUtilService implements IRolesUtilService {
           permissions.type === ResourceType.DATA_SOURCE &&
           (permissions.dataSourcesGroupPermission?.canConfigure || permissions.dataSourcesGroupPermission?.canUse)
       );
+      // Data-source folders cascade configure/build-with onto the data sources inside them, so any
+      // Edit folder / Configure / Build with grant is builder-level (same reasoning as the
+      // per-data-source rule above). A restrict-query-run-only row (all three levels false) is
+      // end-user safe — it is exactly what end users are allowed.
+      const isBuilderLevelDataSourceFolderPermissions = allPermission.some(
+        (permissions) =>
+          permissions.type === ResourceType.DATA_SOURCE_FOLDER &&
+          (permissions.foldersGroupPermissions?.canEditFolder ||
+            permissions.foldersGroupPermissions?.canEditApps ||
+            permissions.foldersGroupPermissions?.canViewApps)
+      );
       // Modules are never assignable to end-users, regardless of canView/canEdit - any module permission makes the group builder-level.
       // Same rule for module folders — end-users can't see modules at all, so even a
       // view-only module-folder grant makes the group builder-level (unlike plain/workflow
@@ -205,7 +228,12 @@ export class RolesUtilService implements IRolesUtilService {
       const hasModulePermissions = allPermission.filter(
         (permissions) => permissions.type === ResourceType.MODULE || permissions.type === ResourceType.MODULE_FOLDER
       ).length;
-      return isBuilderLevelAppsPermission || isBuilderLevelDataSourcePermissions || hasModulePermissions;
+      return (
+        isBuilderLevelAppsPermission ||
+        isBuilderLevelDataSourcePermissions ||
+        isBuilderLevelDataSourceFolderPermissions ||
+        hasModulePermissions
+      );
     }, manager);
   }
 

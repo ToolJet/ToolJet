@@ -14,7 +14,7 @@
   "viewer | DATA_SOURCE | GET_FOR_APP | GET | /data-sources/:organizationId/environments/:environmentId/versions/:versionId | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.fetchGlobalDataSourcesForVersion",
   "viewer | DATA_SOURCE | GET_OAUTH2_BASE_URL | POST | /data-sources/fetch-oauth2-base-url | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.getAuthUrl",
   "viewer | DATA_SOURCE | QUERIES_DATASOURCE_LINKED_TO_MARKETPLACE_PLUGIN | GET | /data-sources/dependent-queries/marketplace-plugin/:plugin_id | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.findDatasourcesAndQueriesOfMarketplacePlugin",
-  "viewer | DATA_SOURCE | QUERIES_LINKED_TO_DATASOURCE | GET | /data-sources/dependent-queries/:datasource_id | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.findQueriesLinkedToDatasource",
+  "viewer | DATA_SOURCE | QUERIES_LINKED_TO_DATASOURCE | GET | /data-sources/dependent-queries/:id | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.findQueriesLinkedToDatasource",
   "viewer | DATA_SOURCE | SCOPE_CHANGE | POST | /data-sources/:id/scope | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.changeScope",
   "viewer | DATA_SOURCE | TEST_CONNECTION | POST | /data-sources/:id/invoke | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.invokeDataSourceMethod",
   "viewer | DATA_SOURCE | TEST_CONNECTION | POST | /data-sources/:id/test-connection | version=(default) | src/modules/data-sources/controller.ts | DataSourcesController.testConnection",

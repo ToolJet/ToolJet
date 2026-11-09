@@ -67,7 +67,7 @@ const BaseLeftNavSideBar = ({
           <li className="text-center  cursor-pointer" data-cy="icon-workflows">
             <ToolTip message="Workflows" placement="right">
               <Link
-                to={getPrivateRoute('workflows')}
+                to={appendBranchName(getPrivateRoute('workflows'))}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workflows'), event)}
                 className={`tj-leftsidebar-icon-items  ${
                   router.pathname === getPrivateRoute('workflows') && `current-seleted-route`

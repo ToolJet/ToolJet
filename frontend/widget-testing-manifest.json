@@ -32,7 +32,8 @@
     },
     {
       "componentType": "KeyValuePair",
-      "status": "not-started"
+      "status": "approved",
+      "contract": "ee/test/app-builder/widgets/KeyValuePair/TESTING.md"
     },
     {
       "componentType": "Form",
@@ -148,7 +149,8 @@
     },
     {
       "componentType": "RadioButtonV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/RadioButtonV2/TESTING.md"
     },
     {
       "componentType": "FileInput",
@@ -212,7 +214,8 @@
     },
     {
       "componentType": "Image",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Image/TESTING.md"
     },
     {
       "componentType": "SvgImage",
@@ -294,7 +297,8 @@
     },
     {
       "componentType": "CustomComponent",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/CustomComponent/TESTING.md"
     },
     {
       "componentType": "LibraryComponent",
@@ -322,7 +326,8 @@
     },
     {
       "componentType": "ColorPicker",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/ColorPicker/TESTING.md"
     },
     {
       "componentType": "BoundedBox",

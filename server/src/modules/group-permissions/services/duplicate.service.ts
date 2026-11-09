@@ -91,6 +91,7 @@ export class GroupPermissionsDuplicateService implements IGroupPermissionsDuplic
         case ResourceType.FOLDER:
         case ResourceType.WORKFLOW_FOLDER:
         case ResourceType.MODULE_FOLDER:
+        case ResourceType.DATA_SOURCE_FOLDER:
           await this.duplicationFolderPermissions(
             granularPermissionsToDuplicate.foldersGroupPermissions,
             newGranularPermissionsId,

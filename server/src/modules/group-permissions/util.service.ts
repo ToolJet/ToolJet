@@ -81,6 +81,13 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         const fp = granularPerm.foldersGroupPermissions;
         if (fp?.canEditFolder || fp?.canEditApps) return true;
       }
+      // Data-source folders cascade configure/build-with onto the folder's data sources, so unlike
+      // plain/workflow folders (where view-only stays end-user-safe) even a "Build with" (canViewApps)
+      // grant is builder-level. A restrict-query-run-only row (all three levels false) stays end-user-safe.
+      if (granularPerm.type === ResourceType.DATA_SOURCE_FOLDER) {
+        const fp = granularPerm.foldersGroupPermissions;
+        if (fp?.canEditFolder || fp?.canEditApps || fp?.canViewApps) return true;
+      }
     }
     return false;
   }
