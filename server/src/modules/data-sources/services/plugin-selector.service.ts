@@ -106,11 +106,15 @@ export class PluginsServiceSelector {
       // Performance
       performance: globalThis.performance,
 
-      // Web APIs
+      // Web APIs. Non-enumerable globals are not copied by `...global` and must be listed;
+      // bundled undici 7 (e.g. Qdrant's client) needs MessagePort and DOMException at load.
       Event: globalThis.Event,
       EventTarget: globalThis.EventTarget,
       AbortController: globalThis.AbortController,
       AbortSignal: globalThis.AbortSignal,
+      DOMException: globalThis.DOMException,
+      MessageChannel: globalThis.MessageChannel,
+      MessagePort: globalThis.MessagePort,
 
       // Blob and File APIs
       Blob: globalThis.Blob,

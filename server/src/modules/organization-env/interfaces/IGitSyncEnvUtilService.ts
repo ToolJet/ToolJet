@@ -1,3 +1,4 @@
+import { EntityManager } from 'typeorm';
 import { GITConnectionType } from 'src/entities/organization_git_sync.entity';
 import { EnvProviderState, GitHttpsEnvConfig, GitLabEnvConfig } from '@modules/organization-env/types';
 
@@ -17,6 +18,7 @@ export interface IGitSyncEnvUtilService {
   getProviderState(workspaceId: string, provider: GITConnectionType): EnvProviderState;
   getActiveProvider(workspaceId: string): GITConnectionType;
 
-  ensureResolved(workspaceId: string): Promise<void>;
+  // manager — reuse the caller's connection for the lookup (see GetDetailsOptions.manager).
+  ensureResolved(workspaceId: string, manager?: EntityManager): Promise<void>;
   applyLicenseToResolvedOrgs(): Promise<void>;
 }
