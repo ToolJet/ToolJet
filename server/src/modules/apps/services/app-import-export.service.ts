@@ -891,6 +891,8 @@ export class AppImportExportService {
             .createQueryBuilder(AppBase, 'app')
             .select(['app.id AS id', 'app.co_relation_id AS co_relation_id'])
             .where('app.organizationId = :organizationId', { organizationId: user.organizationId })
+            // A same-named front-end app must never be reused as the module.
+            .andWhere('app.type = :appType', { appType: APP_TYPES.MODULE })
             .andWhere(
               new Brackets((qb: any) => {
                 if (moduleAppNames.length > 0) {
