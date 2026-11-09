@@ -16,8 +16,8 @@ import Tooltip from '@/components/ui/Rocket/Tooltip';
 import ActionDialog from '@/components/ui/Rocket/Dialog/ActionDialog';
 import ConstantValueRow from './ConstantValueRow';
 import { useConstantForm } from './useConstantForm';
+import { FALLBACK_ERROR } from '../../helpers/constants';
 
-const FALLBACK_ERROR = 'Something went wrong. Please try again.';
 const DUPLICATE_NAME_ERROR = 'A constant with this name and type already exists';
 
 const TYPE_OPTIONS = [
@@ -81,7 +81,7 @@ function AddEnvironmentMenu({ form, lockedPlanName }) {
         <Button
           variant="outline"
           size="medium"
-          leadingVisual={<Plus size={14} className="!tw-size-3.5" />}
+          leadingVisual={<Plus size={14} />}
           disabled={!form.canAddEnvironment}
           data-cy="add-environment-button"
         >
@@ -97,7 +97,7 @@ function AddEnvironmentMenu({ form, lockedPlanName }) {
 function ValuesEmptyState({ form }) {
   const quickAdd = form.availableEnvironments.filter((env) => env.enabled);
   return (
-    <div className="-tw-mt-0.5 tw-flex tw-min-h-[250px] tw-flex-col tw-items-center tw-justify-center tw-rounded-[10px] tw-border tw-border-dashed tw-border-border-weak tw-py-10">
+    <div className="-tw-mt-0.5 tw-flex tw-min-h-[250px] tw-flex-col tw-items-center tw-justify-center tw-rounded-large tw-border tw-border-dashed tw-border-border-weak tw-py-10">
       <div className="tw-flex tw-w-max tw-min-w-[259px] tw-flex-col tw-gap-3 tw-text-center">
         <div className="tw-flex tw-flex-col">
           <span className="tw-font-title-default tw-text-text-default">No values added yet</span>

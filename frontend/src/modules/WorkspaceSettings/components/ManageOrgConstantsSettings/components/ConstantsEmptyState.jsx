@@ -57,7 +57,7 @@ export default function ConstantsEmptyState({ variant, query, onCreate, size = '
             variant="outline"
             size="medium"
             className="tw-border-border-accent-weak"
-            leadingVisual={<Plus size={14} className="!tw-size-3.5" />}
+            leadingVisual={<Plus size={14} />}
             onClick={onCreate}
           >
             {createLabel}

@@ -1,5 +1,5 @@
 // ponytail: ported from the apps dashboard; dedupe once that lands on main
-import React, { useMemo, useState } from 'react';
+import React, { Fragment, useMemo, useState } from 'react';
 import { CircleAlert, Copy, Eye, EyeClosed, GripVertical, Pin, SquarePen } from 'lucide-react';
 import {
   Button,
@@ -19,7 +19,10 @@ import {
   TableRow,
 } from '@/components/ui/Rocket';
 import Tooltip from '@/components/ui/Rocket/Tooltip';
+import TruncatedText from '@/components/ui/Rocket/Tooltip/TruncatedText';
 import { cn } from '@/lib/utils';
+import moment from 'moment';
+import { SECRET_MASK } from '../helpers/constants';
 import { copyConstantReference } from '../helpers/constantReference';
 import { canReorderPins, orderRows } from '../helpers/pinOrder';
 import ConstantsEmptyState from './ConstantsEmptyState';
@@ -28,7 +31,6 @@ import { PinReorderProvider, useSortableRow } from './PinReorder';
 import RowActionsMenu from './RowActionsMenu';
 
 const SKELETON_ROW_COUNT = 8;
-const SECRET_MASK = '********';
 const EMPTY_CELL = '-';
 
 const SOURCE_LABELS = { workspace: 'Workspace', env: 'Environment' };
@@ -47,6 +49,9 @@ const formatDate = (value) =>
   value
     ? new Date(value).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
     : EMPTY_CELL;
+
+// Figma shows "2 days ago"; the exact date is the cell's tooltip.
+const formatRelative = (value) => (value ? moment(value).fromNow() : EMPTY_CELL);
 
 // Figma: the name is body/large in text/default; every other cell is body/default in text/placeholder.
 const cellClass = (index) =>
@@ -67,7 +72,6 @@ const REVEAL_ON_HOVER_CLASS =
   'tw-opacity-0 focus-visible:tw-opacity-100 group-hover:tw-opacity-100 group-has-[[data-state=open]]:tw-opacity-100';
 // The dragged row keeps its hover look and its handle while it is moving.
 const REVEAL_WHILE_DRAGGING_CLASS = 'group-data-[dragging=true]:tw-opacity-100';
-const PIN_DIVIDER_CLASS = '[&>td]:tw-border-0 [&>td]:tw-border-b [&>td]:tw-border-solid [&>td]:tw-border-border-weak';
 // 2px accent line on one edge of the row under the drag, drawn as a pseudo-element so no row moves.
 const DROP_LINE_CLASSES = {
   before:
@@ -77,6 +81,18 @@ const DROP_LINE_CLASSES = {
 };
 
 const isSelectable = (item) => item.source !== 'env';
+
+// Figma: a 12px band between the pinned rows and the rest, with a straight 1px line across the content width.
+// It is its own row. As a border on the last pinned row, the line would follow that row's rounded corner.
+function PinDivider() {
+  return (
+    <tr aria-hidden="true" data-testid="pin-divider">
+      <td colSpan={COLUMNS.length + 1} className="tw-h-3 tw-p-0 tw-align-middle">
+        <div data-testid="pin-divider-line" className="tw-h-px tw-bg-border-weak" />
+      </td>
+    </tr>
+  );
+}
 
 function TableHeaderRow({ selectState, onToggleAll, hasSelection, showSelectAll }) {
   return (
@@ -153,9 +169,9 @@ function ValueCell({ item }) {
           onClick={() => setRevealed((current) => !current)}
         >
           {revealed ? (
-            <Eye size={14} className="tw-text-icon-default" />
+            <Eye size={14} className="tw-text-icon-strong" />
           ) : (
-            <EyeClosed size={14} className="tw-text-icon-default" />
+            <EyeClosed size={14} className="tw-text-icon-strong" />
           )}
         </Button>
       )}
@@ -185,10 +201,10 @@ function RowActions({ item, variant, isPinned, onEdit, onTogglePin, onDelete }) 
     <div className={cn('tw-flex tw-shrink-0 tw-items-center tw-gap-[7px]', REVEAL_ACTIONS_CLASS)}>
       <Tooltip content={isEnv ? 'Defined in .env. Edit it there.' : undefined} isTooltipForInteractiveDisabledElement>
         <Button
-          variant="outline"
+          variant="secondary"
           size="medium"
-          className="tw-border-border-accent-weak"
-          leadingVisual={<SquarePen size={14} />}
+          className="tw-text-text-default"
+          leadingVisual={<SquarePen size={14} className="tw-text-icon-brand" />}
           aria-label={`Edit ${item.name}`}
           disabled={isEnv}
           loading={loadingEdit}
@@ -215,7 +231,6 @@ function ConstantRow({
   item,
   variant,
   isPinned,
-  isLastPinned,
   isSelected,
   hasSelection,
   onSelectedChange,
@@ -228,7 +243,7 @@ function ConstantRow({
     item.name,
     // Rendered by ValueCell, which owns the mask.
     null,
-    formatDate(item.last_modified_at),
+    formatRelative(item.last_modified_at),
     item.modified_by?.name ?? EMPTY_CELL,
     item.owner?.name ?? EMPTY_CELL,
     SOURCE_LABELS[item.source] ?? EMPTY_CELL,
@@ -242,10 +257,8 @@ function ConstantRow({
       data-row-id={item.id}
       data-dragging={isDragging || undefined}
       data-drop-side={dropSide}
-      data-pin-divider={isLastPinned || undefined}
       className={cn(
         'tw-group tw-relative tw-transition-colors hover:tw-bg-interactive-hover has-[[data-state=open]]:tw-bg-interactive-hover data-[dragging=true]:tw-bg-interactive-hover',
-        isLastPinned && PIN_DIVIDER_CLASS,
         dropSide && DROP_LINE_CLASSES[dropSide]
       )}
     >
@@ -283,16 +296,28 @@ function ConstantRow({
         const { key } = COLUMNS[index];
         if (key === 'name') {
           return (
-            <TableCell key={key} className={cn(cellClass(index), 'tw-rounded-l-[10px]')}>
-              <div className="tw-flex tw-min-w-0 tw-items-center tw-gap-2 tw-pr-2">
-                <span title={content} className="tw-min-w-0 tw-truncate tw-font-body-large tw-text-text-default">
-                  {content}
-                </span>
-                {isPinned && (
-                  <span role="img" aria-label="Pinned" className="tw-flex tw-shrink-0">
-                    <Pin aria-hidden size={12} className="tw-text-icon-weak" />
-                  </span>
-                )}
+            <TableCell key={key} className={cn(cellClass(index), 'tw-rounded-l-large')}>
+              <div className="tw-flex tw-min-w-0 tw-items-center">
+                {/* Figma: the name block is at least 192px (after the cell's 8px inset) with 28px of space before the
+                    actions, so for a short name Edit sits 224px from the row's content edge. */}
+                <div className="tw-flex tw-min-w-48 tw-items-center tw-gap-2 tw-pr-7">
+                  <TruncatedText
+                    as="span"
+                    content={content}
+                    className="tw-min-w-0 tw-font-body-large tw-text-text-default"
+                  >
+                    {content}
+                  </TruncatedText>
+                  {isPinned && (
+                    <span
+                      role="img"
+                      aria-label="Pinned"
+                      className="tw-flex tw-size-5 tw-shrink-0 tw-items-center tw-justify-center"
+                    >
+                      <Pin aria-hidden size={12} fill="currentColor" className="tw-text-icon-default" />
+                    </span>
+                  )}
+                </div>
                 <RowActions
                   item={item}
                   variant={variant}
@@ -312,8 +337,22 @@ function ConstantRow({
             </TableCell>
           );
         }
+        // People's names have no length limit, so they get the Rocket tooltip when they truncate.
+        if (key === 'modifiedBy' || key === 'owner') {
+          return (
+            <TableCell key={key} className={cellClass(index)}>
+              <TruncatedText as="span" content={content} className="tw-block">
+                {content}
+              </TruncatedText>
+            </TableCell>
+          );
+        }
         return (
-          <TableCell key={key} className={cellClass(index)} title={String(content)}>
+          <TableCell
+            key={key}
+            className={cellClass(index)}
+            title={key === 'lastModified' ? formatDate(item.last_modified_at) : String(content)}
+          >
             {content}
           </TableCell>
         );
@@ -405,20 +444,21 @@ function ConstantsGrid({
               rows.map((item, index) => {
                 const isPinned = index < pinnedCount;
                 return (
-                  <ConstantRow
-                    key={item.id}
-                    item={item}
-                    variant={variant}
-                    isPinned={isPinned}
-                    // A divider only separates pinned rows from the rows that follow them.
-                    isLastPinned={isPinned && index === pinnedCount - 1 && pinnedCount < rows.length}
-                    isSelected={Boolean(rowSelection[item.id])}
-                    hasSelection={hasSelection}
-                    onSelectedChange={(checked) => toggleRow(item.id, checked)}
-                    onEdit={onEdit}
-                    onTogglePin={() => (isPinned ? onUnpin([item.id]) : onPin([item.id]))}
-                    onDelete={() => setDeleteTarget(item)}
-                  />
+                  <Fragment key={item.id}>
+                    <ConstantRow
+                      item={item}
+                      variant={variant}
+                      isPinned={isPinned}
+                      isSelected={Boolean(rowSelection[item.id])}
+                      hasSelection={hasSelection}
+                      onSelectedChange={(checked) => toggleRow(item.id, checked)}
+                      onEdit={onEdit}
+                      onTogglePin={() => (isPinned ? onUnpin([item.id]) : onPin([item.id]))}
+                      onDelete={() => setDeleteTarget(item)}
+                    />
+                    {/* The divider only separates pinned rows from the rows that follow them. */}
+                    {isPinned && index === pinnedCount - 1 && pinnedCount < rows.length && <PinDivider />}
+                  </Fragment>
                 );
               })
             )}

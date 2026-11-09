@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { CircleAlert, LockKeyhole, Trash } from 'lucide-react';
 import { Button, FieldError, Popover, PopoverContent, PopoverTrigger, Textarea } from '@/components/ui/Rocket';
 import { cn } from '@/lib/utils';
-
-const MASKED_PLACEHOLDER = '***************';
+import { SECRET_MASK } from '../../helpers/constants';
 
 const listFormat = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' });
 
@@ -63,7 +62,7 @@ export default function ConstantValueRow({ row, canRemove, otherEnvironmentNames
           <Popover open={confirmingRemove} onOpenChange={setConfirmingRemove}>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="medium" iconOnly aria-label={`Remove ${environmentName} value`}>
-                <Trash size={14} className="!tw-size-3.5" />
+                <Trash size={14} />
               </Button>
             </PopoverTrigger>
             <RemoveValuePopover
@@ -84,7 +83,7 @@ export default function ConstantValueRow({ row, canRemove, otherEnvironmentNames
         aria-label={label}
         rows={4}
         value={locked ? '' : value}
-        placeholder={masked || locked ? MASKED_PLACEHOLDER : 'Enter value'}
+        placeholder={masked || locked ? SECRET_MASK : 'Enter value'}
         disabled={locked}
         aria-invalid={Boolean(error)}
         className={cn(

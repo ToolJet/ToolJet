@@ -114,7 +114,7 @@ export default function DropdownMenuComp({
         align={align}
         className={cn(
           darkMode && 'dark-theme',
-          'tw-p-0 tw-rounded-[10px] tw-border-border-weak tw-shadow-[shadow:var(--elevation-400-box-shadow)]',
+          'tw-p-0 tw-rounded-large tw-border-border-weak tw-shadow-[shadow:var(--elevation-400-box-shadow)]',
           classes?.content
         )}
       >

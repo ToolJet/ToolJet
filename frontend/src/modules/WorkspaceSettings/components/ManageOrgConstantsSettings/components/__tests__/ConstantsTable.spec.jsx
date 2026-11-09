@@ -2,6 +2,7 @@ import React from 'react';
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { copyToClipboard } from '@/_helpers/appUtils';
+import { SECRET_MASK } from '../../helpers/constants';
 import ConstantsTable from '../ConstantsTable';
 
 jest.mock('@/_helpers/appUtils', () => ({ copyToClipboard: jest.fn() }));
@@ -49,20 +50,34 @@ describe('ConstantsTable', () => {
     it('renders a Global constant with people and source, and its value masked until revealed', () => {
       renderTable({ items: [globalItem] });
       const row = screen.getByRole('row', { name: /API_URL/ });
-      expect(within(row).getByText('********')).toBeInTheDocument();
+      expect(within(row).getByText(SECRET_MASK)).toBeInTheDocument();
       expect(within(row).queryByText('https://api.example.com')).toBeNull();
       expect(within(row).getByText('Asha Rao')).toBeInTheDocument();
       expect(within(row).getByText('Dev Patel')).toBeInTheDocument();
       expect(within(row).getByText('Workspace')).toBeInTheDocument();
-      expect(within(row).getByText(/2026/)).toBeInTheDocument();
       expect(screen.getByRole('table')).toHaveAttribute('aria-busy', 'false');
       expect(screen.queryAllByTestId('constants-skeleton-row')).toHaveLength(0);
+    });
+
+    it('shows the last modified time relative to now, with the exact date as its tooltip', () => {
+      const now = jest.spyOn(Date, 'now').mockReturnValue(new Date('2026-11-06T10:00:00.000Z').getTime());
+      renderTable({ items: [globalItem] });
+      const cell = within(screen.getByRole('row', { name: /API_URL/ })).getByText('2 days ago');
+      expect(cell).toHaveAttribute('title', expect.stringMatching(/2026/));
+      now.mockRestore();
+    });
+
+    it('draws the pin as a filled icon in a 20px slot', () => {
+      renderTable({ items: [globalItem], pinnedIds: ['c1'] });
+      const pin = within(screen.getByRole('row', { name: /API_URL/ })).getByRole('img', { name: 'Pinned' });
+      expect(pin).toHaveClass('tw-size-5');
+      expect(pin.querySelector('svg')).toHaveAttribute('fill', 'currentColor');
     });
 
     it('masks the value of a Secret and labels environment-sourced constants', () => {
       renderTable({ items: [secretItem], variant: 'Secret' });
       const row = screen.getByRole('row', { name: /STRIPE_KEY/ });
-      expect(within(row).getByText('********')).toBeInTheDocument();
+      expect(within(row).getByText(SECRET_MASK)).toBeInTheDocument();
       expect(within(row).getByText('Environment')).toBeInTheDocument();
     });
 
@@ -130,7 +145,7 @@ describe('ConstantsTable', () => {
       expect(valueOf()).toBeInTheDocument();
       expect(toggle()).toHaveAttribute('aria-label', 'Hide value of API_URL');
       expect(toggle()).toHaveAttribute('aria-pressed', 'true');
-      expect(screen.queryByText('********')).toBeNull();
+      expect(screen.queryByText(SECRET_MASK)).toBeNull();
 
       await userEvent.click(toggle());
       expect(valueOf()).toBeNull();
@@ -155,7 +170,7 @@ describe('ConstantsTable', () => {
         items: [named('s1', 'STRIPE', { type: 'Secret', value: 'leaked-if-shown' })],
       });
       expect(toggle('STRIPE')).toBeNull();
-      expect(screen.getByText('********')).toBeInTheDocument();
+      expect(screen.getByText(SECRET_MASK)).toBeInTheDocument();
       expect(screen.queryByText('leaked-if-shown')).toBeNull();
     });
 
@@ -287,16 +302,26 @@ describe('ConstantsTable', () => {
       expect(within(screen.getByRole('row', { name: /ALPHA/ })).queryByRole('img', { name: 'Pinned' })).toBeNull();
     });
 
-    it('draws a divider under the last pinned row only while unpinned rows follow', () => {
+    it('puts a divider row between the pinned rows and the rest, only while unpinned rows follow', () => {
       const { rerender } = renderTable({ items: rows, pinnedIds: ['c', 'a'] });
-      expect(screen.getByRole('row', { name: /ALPHA/ })).toHaveAttribute('data-pin-divider');
-      expect(screen.getByRole('row', { name: /CHARLIE/ })).not.toHaveAttribute('data-pin-divider');
-      expect(screen.getByRole('row', { name: /BRAVO/ })).not.toHaveAttribute('data-pin-divider');
+      const divider = screen.getByTestId('pin-divider');
+      expect(screen.getAllByTestId('pin-divider')).toHaveLength(1);
+      expect(divider).toHaveAttribute('aria-hidden', 'true');
+      expect(screen.getByRole('row', { name: /ALPHA/ }).nextElementSibling).toBe(divider);
+      expect(divider.nextElementSibling).toBe(screen.getByRole('row', { name: /BRAVO/ }));
 
       rerender(
         <ConstantsTable items={rows} status="success" variant="Global" searchKey="" pinnedIds={['a', 'b', 'c']} />
       );
-      expect(document.querySelector('[data-pin-divider]')).toBeNull();
+      expect(screen.queryByTestId('pin-divider')).toBeNull();
+    });
+
+    it('draws the divider as its own straight line, not as a border on the last pinned row', () => {
+      renderTable({ items: rows, pinnedIds: ['c', 'a'] });
+      const row = screen.getByRole('row', { name: /ALPHA/ });
+      expect(row.className).not.toMatch(/border/);
+      Array.from(row.children).forEach((cell) => expect(cell.className).not.toMatch(/border-b/));
+      expect(within(screen.getByTestId('pin-divider')).getByTestId('pin-divider-line')).toHaveClass('tw-h-px');
     });
 
     describe('drag handle', () => {

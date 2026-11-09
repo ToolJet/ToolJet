@@ -3,8 +3,7 @@ import { Trash } from 'lucide-react';
 import { InlineInfo } from '@/components/ui/Rocket';
 import ActionDialog from '@/components/ui/Rocket/Dialog/ActionDialog';
 import { DialogDescription, DialogTitle } from '@/components/ui/Rocket/Dialog/Dialog';
-
-const FALLBACK_ERROR = 'Something went wrong. Please try again.';
+import { FALLBACK_ERROR } from '../helpers/constants';
 
 export default function DeleteConstantsDialog({ constants, open, onOpenChange, onConfirm }) {
   const [pending, setPending] = useState(false);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { SECRET_MASK } from '../../../helpers/constants';
 import ConstantModal from '../ConstantModal';
 
 const ENVS = [
@@ -266,7 +267,7 @@ describe('ConstantModal — edit', () => {
   it('keeps Secret rows write-only: empty, masked placeholder, and untouched rows are not sent', async () => {
     const { user, onSubmit } = setup({ mode: 'edit', constant: secretConstant() });
     expect(valueBox('Development')).toHaveValue('');
-    expect(valueBox('Development')).toHaveAttribute('placeholder', '***************');
+    expect(valueBox('Development')).toHaveAttribute('placeholder', SECRET_MASK);
     await user.type(valueBox('Staging'), 'new-secret');
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(onSubmit).toHaveBeenCalledWith({ values: [{ environment_id: 'stg', value: 'new-secret' }] });
