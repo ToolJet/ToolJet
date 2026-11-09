@@ -5,4 +5,13 @@
     overflow: hidden;
     max-width: 100px;
   }
+
+  // rc-slider paints its own root container light grey when `disabled`, which
+  // shows up as a 14px band behind the 4px rail in the widget's configured
+  // colours. The rail, track, handles and dots are all inline-styled by this
+  // widget and so survive; the root is the one element with nothing to beat it.
+  // Enabled, that root is transparent — keep it that way when disabled.
+  .rc-slider-disabled {
+    background-color: transparent;
+  }
 }

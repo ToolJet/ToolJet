@@ -11,7 +11,7 @@ import {
 import classNames from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
-import { useFormClear } from '@/AppBuilder/Widgets/Form/FormSignalContext';
+import { useFormClear, useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormSignalContext';
 
 export const checkIfStarRatingLabelTypeIsDeprecated = (value) => {
   return value === 'legacy';
@@ -26,6 +26,9 @@ export const Rating = ({
   darkMode,
   dataCy,
   id,
+  validation,
+  validate,
+  componentName,
 }) => {
   const {
     iconType = 'stars',
@@ -66,11 +69,30 @@ export const Rating = ({
   );
 
   // Generate unique ID for ARIA labelling
-  const ratingId = React.useMemo(() => `rating-${Math.random().toString(36).substr(2, 9)}`, []);
+  const reactId = React.useId();
   const [announceValue, setAnnounceValue] = React.useState('');
-  const _maxRating = !maxRating || maxRating < 0 ? 0 : maxRating;
+
+  // Validations
+  const isMandatory = validation?.mandatory ?? false;
+  const [userInteracted, setUserInteracted] = React.useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
+  const [validationStatus, setValidationStatus] = React.useState(
+    () => validate?.(defaultSelected) ?? { isValid: true }
+  );
+  const { isValid, validationError } = validationStatus;
+
+  // Whole, finite icons only: a fractional or infinite count cannot size the animation trail
+  // and throws out of render. `{{1/0}}` arrives as Infinity, which is truthy and not < 0.
+  // Coerced first, because the registered definition ships maxRating as the string '5'.
+  const _numericMaxRating = Number(maxRating);
+  const _maxRating = !Number.isFinite(_numericMaxRating) || _numericMaxRating < 0 ? 0 : Math.floor(_numericMaxRating);
 
   const labelColorStyle = labelTextColor === '#333' ? (darkMode ? '#fff' : '#333') : labelTextColor;
+  // The radiogroup is named by whichever label arm renders one; without this it ships anonymous.
+  // Per mounted instance, not per component id: ListView gives every row the same component id,
+  // so `${id}-label` would collide across rows and name them all after the first.
+  const labelElementId = `${reactId}-label`;
+  const hasRenderedLabel = !!label && (labelStyle === 'legacy' || auto || labelWidth > 0);
   const animatedStars = useTrail(_maxRating, {
     config: {
       friction: 22,
@@ -96,11 +118,23 @@ export const Rating = ({
   function handleClick(idx) {
     // +1 cos code is considering index from 0,1,2.....
     const newValue = idx + 1;
+
+    const ratingText = `${newValue} out of ${_maxRating} ${iconType === 'stars' ? 'stars' : 'hearts'}`;
+
+    // On change reports a CHANGE of rating, not the click.
+    // but the activation is still confirmed to a screen reader, since silence there reads as "did that register?".
+    setUserInteracted(true);
+
+    if (newValue === currentRatingIndex + 1) {
+      setAnnounceValue(ratingText);
+      return;
+    }
+
     setExposedVariable('value', newValue);
+    applyValidation(newValue);
     fireEvent('onChange');
 
-    // Announce the new rating value for screen readers
-    const ratingText = `${newValue} out of ${_maxRating} ${iconType === 'stars' ? 'stars' : 'hearts'}`;
+    // Announced after the rating is registered, so the live region never describes a value that was not committed.
     setAnnounceValue(ratingText);
   }
 
@@ -119,10 +153,21 @@ export const Rating = ({
     return '';
   };
 
-  const resetValue = () => {
-    setRatingIndex(defaultSelected - 1);
-    setExposedVariable('value', defaultSelected);
-  };
+  // Only clamp against a real star count. maxRating is usually a binding, and a
+  // degenerate or still-resolving 0 would otherwise wipe a live rating to 0 and
+  // never restore it once the binding resolved.
+  const clampToRange = (v) => (_maxRating > 0 && typeof v === 'number' ? Math.min(Math.max(v, 0), _maxRating) : v);
+
+  // Memoised on the star count as well as the default, so the EXPOSED action never clamps
+  // against a maximum that has since moved. The clamp below is the one ACT-004 already
+  // promises at call time; capturing `_maxRating` at mount would silently restore a rating
+  // above the icons actually rendered.
+  const resetValue = React.useCallback(() => {
+    const clamped = clampToRange(defaultSelected);
+    setRatingIndex(clamped - 1);
+    setExposedVariable('value', clamped);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultSelected, _maxRating, setExposedVariable]);
 
   const setValue = React.useCallback(
     (value) => {
@@ -130,6 +175,9 @@ export const Rating = ({
       let numericValue;
 
       if (typeof value === 'number') {
+        if (!Number.isFinite(value)) {
+          return; // Reject NaN and Infinity, like every other unusable input below
+        }
         numericValue = value;
       } else if (typeof value === 'string') {
         // Check if string represents a valid number
@@ -183,11 +231,51 @@ export const Rating = ({
     setExposedVariable('setValue', setValue);
   }, [setValue, allowHalfStar, _maxRating, label, setExposedVariable]);
 
+  // One writer for validity: every path that changes the rating lands here.
+  const applyValidation = React.useCallback(
+    (value) => {
+      const status = validate?.(value) ?? { isValid: true };
+      setValidationStatus(status);
+      setExposedVariable('isValid', status?.isValid ?? true);
+      return status;
+    },
+    [validate, setExposedVariable]
+  );
+
+  React.useEffect(() => {
+    setExposedVariable('isMandatory', isMandatory);
+  }, [isMandatory, setExposedVariable]);
+
+  // When the star count moves, pull the LIVE rating inside it.
+  // Deliberately not the resetValue effect: re-running that would republish the configured default.
+  React.useEffect(() => {
+    const current = currentRatingIndex + 1;
+    if (!Number.isFinite(current)) return;
+    const clamped = clampToRange(current);
+    if (clamped !== current) {
+      setRatingIndex(clamped - 1);
+      setExposedVariable('value', clamped);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_maxRating]);
+
+  React.useEffect(() => {
+    applyValidation(currentRatingIndex + 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentRatingIndex, isMandatory]);
+
   React.useEffect(() => {
     resetValue();
-    setExposedVariable('resetValue', resetValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultSelected]);
+
+  // Registration is deliberately split from the automatic reset above. The reset must fire
+  // ONLY when the configured default changes — re-running it when the star count moves would
+  // republish the default over a live rating, which is what BIND-003 forbids — but the
+  // exposed action still has to be refreshed whenever the count moves.
+  React.useEffect(() => {
+    setExposedVariable('resetValue', resetValue);
+  }, [resetValue, setExposedVariable]);
 
   useFormClear(() => {
     setRatingIndex(-1);
@@ -205,8 +293,9 @@ export const Rating = ({
         <div
           role="radiogroup"
           id={`component-${id}`}
+          aria-labelledby={hasRenderedLabel ? labelElementId : undefined}
           aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
-          aria-required="false"
+          aria-required={isMandatory}
           aria-disabled={isDisabled}
           aria-hidden={!isVisible}
           className="rating-widget-group"
@@ -261,6 +350,16 @@ export const Rating = ({
     );
   };
 
+  const renderValidationError = () =>
+    !isValid && isVisible && userInteracted ? (
+      <div
+        data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
+        style={{ color: 'var(--cc-error-systemStatus)', fontSize: '11px', fontWeight: '400', lineHeight: '16px' }}
+      >
+        {validationError}
+      </div>
+    ) : null;
+
   if (labelStyle === 'legacy') {
     return (
       <div
@@ -270,18 +369,19 @@ export const Rating = ({
         data-cy={dataCy}
       >
         <span
-          id={`${ratingId}-label`}
+          id={labelElementId}
           className={label && `label form-check-label col-auto`}
           style={{ color: labelColorStyle }}
         >
           {label}
         </span>
         <div className="col px-1 py-0 mt-0">
-          {loadingState ? (
+          {isLoading ? (
             <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
           ) : (
             _renderRatingWidget()
           )}
+          {renderValidationError()}
         </div>
       </div>
     );
@@ -313,11 +413,12 @@ export const Rating = ({
         defaultAlignment={defaultAlignment}
         direction={direction}
         auto={auto}
-        isMandatory={false}
+        isMandatory={isMandatory}
         _width={_width}
         widthType={widthType}
         top={alignment !== 'top' && '1px'}
         inputId={`component-${id}`}
+        id={labelElementId}
         fontSize={labelFontSizeValue}
       />
 
@@ -331,7 +432,10 @@ export const Rating = ({
         {isLoading ? (
           <Loader style={{ right: '50%', zIndex: 3, position: 'absolute', top: 0 }} width="20" />
         ) : (
-          _renderRatingWidget()
+          <>
+            {_renderRatingWidget()}
+            {renderValidationError()}
+          </>
         )}
       </div>
     </div>

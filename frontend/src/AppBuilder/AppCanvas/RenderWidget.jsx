@@ -30,6 +30,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'RadioButtonV2',
   'Icon',
   'Image',
+  'SvgImage',
   'DatetimePickerV2',
   'DaterangePicker',
   'DatePickerV2',
@@ -51,6 +52,8 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'ProgressBar',
   'AudioRecorder',
   'Camera',
+  'RichTextEditor',
+  'Calendar',
   'JSONExplorer',
   'JSONEditor',
   'IFrame',
@@ -314,9 +317,12 @@ const RenderWidget = ({
 
   // Pick the tooltip source — some widgets keep tooltip under `properties`,
   // others under `general`. SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY enumerates
-  // the former group.
+  // the former group. Those fall back to `general` while a widget's data migration is still
+  // pending (async migration mode), so a saved tooltip is not blank for a release.
   const isShadowedWidget = SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component);
-  const userTooltipContent = isShadowedWidget ? resolvedProperties?.tooltip : resolvedGeneralProperties?.tooltip;
+  const userTooltipContent = isShadowedWidget
+    ? resolvedProperties?.tooltip || resolvedGeneralProperties?.tooltip
+    : resolvedGeneralProperties?.tooltip;
   const userTooltipFormat = isShadowedWidget
     ? resolvedProperties?.tooltipFormat
     : resolvedGeneralProperties?.tooltipFormat;
