@@ -313,12 +313,12 @@ describe('ImportExportResourcesController', () => {
       await exportAs(builder, { app: [{ id: workflow.id }], organization_id: orgId }).expect(403);
     });
 
-    it('should allow a builder without app-create to export a ToolJet Database table (201)', async () => {
+    it('should allow a builder with table access but without app-create to export a ToolJet Database table (201)', async () => {
       const admin = await createAdmin(app, 'admin@tooljet.io');
       const orgId = admin.user.defaultOrganizationId;
       const builder = await createBuilder(app, 'builder@tooljet.io', { workspace: admin.workspace });
       const builderGroup = await findEntityOrFail(GroupPermissions, { organizationId: orgId, name: 'builder' } as any);
-      await updateEntity(GroupPermissions, builderGroup.id, { appCreate: false } as any);
+      await updateEntity(GroupPermissions, builderGroup.id, { appCreate: false, tjdbCRUD: true } as any);
       await ensureAppEnvironments(app, orgId);
 
       const table = await saveEntity(InternalTable, {
@@ -335,6 +335,26 @@ describe('ImportExportResourcesController', () => {
         tooljet_database: [{ table_id: table.id }],
       }).expect(201);
       expect(response.body.tooljet_database).toHaveLength(1);
+    });
+
+    it('should deny a builder without ToolJet Database create access exporting a table (403)', async () => {
+      const admin = await createAdmin(app, 'admin@tooljet.io');
+      const orgId = admin.user.defaultOrganizationId;
+      const builder = await createBuilder(app, 'builder@tooljet.io', { workspace: admin.workspace });
+      const builderGroup = await findEntityOrFail(GroupPermissions, { organizationId: orgId, name: 'builder' } as any);
+      await updateEntity(GroupPermissions, builderGroup.id, { tjdbCRUD: false } as any);
+      await ensureAppEnvironments(app, orgId);
+
+      const table = await saveEntity(InternalTable, {
+        id: uuidv4(),
+        organizationId: orgId,
+        tableName: 'own_table',
+      } as any);
+      const tjdb = app.get<DataSource>(getDataSourceToken('tooljetDb'));
+      await tjdb.query(`CREATE SCHEMA IF NOT EXISTS "workspace_${orgId}"`);
+      await tjdb.query(`CREATE TABLE "workspace_${orgId}"."${table.id}" (id integer PRIMARY KEY)`);
+
+      await exportAs(builder, { organization_id: orgId, tooljet_database: [{ table_id: table.id }] }).expect(403);
     });
   });
 

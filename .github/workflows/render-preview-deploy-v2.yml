@@ -536,6 +536,9 @@ jobs:
           platforms: linux/amd64
           cache-from: type=gha,scope=ee-lts-pr-${{ env.PR_NUMBER }}
           cache-to: type=gha,mode=min,scope=ee-lts-pr-${{ env.PR_NUMBER }}
+          # Pass the token both ways: Dockerfiles read either the build arg or the BuildKit secret
+          secrets: |
+            github_token=${{ secrets.CUSTOM_GITHUB_TOKEN }}
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ env.BRANCH_NAME }}
@@ -778,6 +781,9 @@ jobs:
           platforms: linux/amd64
           cache-from: type=gha,scope=ee-lts-pr-${{ env.PR_NUMBER }}
           cache-to: type=gha,mode=min,scope=ee-lts-pr-${{ env.PR_NUMBER }}
+          # Pass the token both ways: Dockerfiles read either the build arg or the BuildKit secret
+          secrets: |
+            github_token=${{ secrets.CUSTOM_GITHUB_TOKEN }}
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ env.BRANCH_NAME }}
@@ -1022,6 +1028,9 @@ jobs:
           platforms: linux/amd64
           cache-from: type=gha,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
           cache-to: type=gha,mode=min,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
+          # Pass the token both ways: Dockerfiles read either the build arg or the BuildKit secret
+          secrets: |
+            github_token=${{ secrets.CUSTOM_GITHUB_TOKEN }}
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ env.BRANCH_NAME }}
@@ -1264,6 +1273,9 @@ jobs:
           platforms: linux/amd64
           cache-from: type=gha,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
           cache-to: type=gha,mode=min,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
+          # Pass the token both ways: Dockerfiles read either the build arg or the BuildKit secret
+          secrets: |
+            github_token=${{ secrets.CUSTOM_GITHUB_TOKEN }}
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ env.BRANCH_NAME }}
