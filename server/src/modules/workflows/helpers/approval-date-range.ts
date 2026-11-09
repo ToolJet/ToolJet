@@ -1,3 +1,6 @@
+// A full calendar date, optionally with a time: `2026-09` would parse as 1 September.
+export const FULL_DATE = /^\d{4}-\d{2}-\d{2}(T.*)?$/;
+
 // Bare YYYY-MM-DD widened to its UTC day edges; timestamps with an offset pass through.
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 

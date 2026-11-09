@@ -1,8 +1,6 @@
 import { IsOptional, IsString, IsUUID, IsDateString, IsInt, Matches, Min, Max } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
-
-// A full calendar date, optionally with a time: `2026-09` would parse as 1 September.
-const FULL_DATE = /^\d{4}-\d{2}-\d{2}(T.*)?$/;
+import { FULL_DATE } from '@modules/workflows/helpers/approval-date-range';
 
 export class ListApprovalsDto {
   @IsOptional()
