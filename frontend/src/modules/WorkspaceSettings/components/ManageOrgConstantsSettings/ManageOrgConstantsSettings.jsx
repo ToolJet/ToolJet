@@ -6,7 +6,11 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Rocket';
 import { appEnvironmentService } from '@/_services';
 import { orgConstantsV2Service } from '@/_services/organization_constants_v2.service';
 import { getWorkspaceId } from '@/_helpers/utils';
+import { isMultiEnvLicenseInvalid } from '@/_helpers/multiEnvLicense';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 import ConstantModal from './components/ConstantModal';
+import ConstantsListControls from './components/ConstantsListControls';
 import ConstantsPageHeader from './components/ConstantsPageHeader';
 import ConstantsTable from './components/ConstantsTable';
 import ConstantsTableFooter from './components/ConstantsTableFooter';
@@ -17,7 +21,9 @@ import { useConstantsListStore } from './store/constantsListStore';
 const tabLabel = (name, count) => (count === undefined ? name : `${name} (${count})`);
 
 const ManageOrgConstantsSettings = () => {
-  const { env, tab, sort, source, setTab } = useConstantsListQueryParams({ workspaceId: getWorkspaceId() });
+  const { env, tab, sort, source, setEnv, setTab, setSort, setSource } = useConstantsListQueryParams({
+    workspaceId: getWorkspaceId(),
+  });
 
   const items = useConstantsListStore((state) => state.root.items);
   const meta = useConstantsListStore((state) => state.root.meta);
@@ -56,9 +62,16 @@ const ManageOrgConstantsSettings = () => {
     loadEnvironments();
   }, [loadEnvironments]);
 
-  // A saved or hand-edited `env` that no longer exists falls back to the default environment.
+  const featureAccess = useLicenseStore((state) => state.featureAccess);
+  // Every workspace has all environment rows, but only licensed EE can switch between them.
+  const showEnv = fetchEdition() !== 'ce' && !isMultiEnvLicenseInvalid(featureAccess);
+
+  // A saved or hand-edited `env` that no longer exists falls back to the default environment, and so does any
+  // `env` when switching is not available.
   const environment =
-    environments?.find((e) => e.id === env) ?? environments?.find((e) => e.is_default) ?? environments?.[0];
+    (showEnv ? environments?.find((e) => e.id === env) : undefined) ??
+    environments?.find((e) => e.is_default) ??
+    environments?.[0];
   const environmentId = environment?.id;
 
   const loadList = useCallback(
@@ -106,7 +119,7 @@ const ManageOrgConstantsSettings = () => {
       <div className="tw-flex tw-flex-1 tw-flex-col tw-px-[70px] tw-pb-10 tw-pt-10">
         <ConstantsPageHeader onCreate={() => setCreating(true)} />
         <Tabs value={tab} onValueChange={setTab} className="tw-mt-4">
-          {/* The full-width rule sits on this row, not the list, so controls can share it later */}
+          {/* The full-width rule sits on this row, not the list, so the controls can share it */}
           <div className="tw-flex tw-h-10 tw-items-center tw-border-0 tw-border-b tw-border-solid tw-border-border-weak">
             <TabsList className="tw-border-b-0">
               <TabsTrigger value="Secret" leadingVisual={<Lock size={16} />}>
@@ -116,6 +129,16 @@ const ManageOrgConstantsSettings = () => {
                 {tabLabel('Globals', counts?.globals)}
               </TabsTrigger>
             </TabsList>
+            <ConstantsListControls
+              showEnv={showEnv}
+              environments={modalEnvironments}
+              environmentId={environmentId}
+              onEnvChange={setEnv}
+              sort={sort}
+              onSortChange={setSort}
+              source={source}
+              onSourceChange={setSource}
+            />
           </div>
         </Tabs>
         {/* flex-1 lets an empty or error state centre in the space left above the footer */}

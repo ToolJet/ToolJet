@@ -3,6 +3,7 @@ import { Check } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { checkboxVariants } from '@/components/ui/Rocket/Checkbox/Checkbox';
+import { radioGroupItemVariants } from '@/components/ui/Rocket/RadioGroup/RadioGroup';
 
 import {
   DropdownMenu,
@@ -26,7 +27,17 @@ const SELECTABLE_ITEM_CLASS = 'tw-gap-1.5 [&>span:first-child]:tw-hidden';
 function CheckboxVisual({ checked }) {
   return (
     <span aria-hidden data-state={checked ? 'checked' : 'unchecked'} className={checkboxVariants()}>
-      {checked && <Check className="tw-size-2.5 tw-stroke-[3]" />}
+      {/* Coloured on the icon: the item's `[&>span]:tw-text-text-default` beats the box's own text colour. */}
+      {checked && <Check className="tw-size-2.5 tw-stroke-[3] tw-text-text-on-solid" />}
+    </span>
+  );
+}
+
+// Single-choice rows get the round radio, so they read differently from the checkbox rows of a multi-select menu.
+function RadioVisual({ checked }) {
+  return (
+    <span aria-hidden data-state={checked ? 'checked' : 'unchecked'} className={radioGroupItemVariants()}>
+      {checked && <span className="tw-size-1.5 tw-rounded-full tw-bg-text-on-solid" />}
     </span>
   );
 }
@@ -41,6 +52,7 @@ export default function DropdownMenuComp({
   align = 'start',
   open,
   onOpenChange,
+  compact = false,
   classes,
 }) {
   // Content is portalled to body, outside the .dark-theme wrapper
@@ -98,7 +110,7 @@ export default function DropdownMenuComp({
           className={cn(ITEM_CLASS, SELECTABLE_ITEM_CLASS, classes?.item)}
           {...itemProps}
         >
-          <CheckboxVisual checked={value === section.value} />
+          <RadioVisual checked={value === section.value} />
           {label}
         </DropdownMenuRadioItem>
       ))}
@@ -114,19 +126,28 @@ export default function DropdownMenuComp({
         align={align}
         className={cn(
           darkMode && 'dark-theme',
-          'tw-p-0 tw-rounded-large tw-border-border-weak tw-shadow-[shadow:var(--elevation-400-box-shadow)]',
+          'tw-p-0 tw-border-border-weak',
+          compact
+            ? 'tw-rounded-lg tw-shadow-[shadow:var(--elevation-300-box-shadow)]'
+            : 'tw-rounded-large tw-shadow-[shadow:var(--elevation-400-box-shadow)]',
           classes?.content
         )}
       >
         {nonEmptySections.map((section, sectionIndex) => (
           <Fragment key={section.id ?? sectionIndex}>
-            {sectionIndex > 0 && <DropdownMenuSeparator className="tw-m-0" />}
+            {/* `separator: false` is for a section that draws its own divider */}
+            {sectionIndex > 0 && section.separator !== false && <DropdownMenuSeparator className="tw-m-0" />}
             {section.content ? (
               section.content
             ) : (
-              <DropdownMenuGroup className={cn('tw-px-2 tw-py-1', classes?.group)}>
+              <DropdownMenuGroup className={cn(compact ? 'tw-p-2' : 'tw-px-2 tw-py-1', classes?.group)}>
                 {section.label && (
-                  <DropdownMenuLabel className="tw-px-2 tw-py-1.5 tw-font-body-small tw-font-normal tw-text-text-placeholder">
+                  <DropdownMenuLabel
+                    className={cn(
+                      'tw-px-2 tw-py-1.5 tw-font-body-small tw-font-normal tw-text-text-placeholder',
+                      classes?.label
+                    )}
+                  >
                     {section.label}
                   </DropdownMenuLabel>
                 )}

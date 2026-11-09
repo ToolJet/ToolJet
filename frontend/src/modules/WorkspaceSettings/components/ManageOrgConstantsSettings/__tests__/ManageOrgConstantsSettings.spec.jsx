@@ -7,6 +7,13 @@ import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import ManageOrgConstantsSettings from '../ManageOrgConstantsSettings';
 import { useConstantsListStore } from '../store/constantsListStore';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { fetchEdition } from '@/modules/common/helpers/utils';
+
+jest.mock('@/modules/common/helpers/utils', () => ({
+  ...jest.requireActual('@/modules/common/helpers/utils'),
+  fetchEdition: jest.fn(),
+}));
 
 const API = 'http://localhost:3000/api';
 const ENVIRONMENTS = [
@@ -47,14 +54,16 @@ function mockApi(onList) {
   return requests;
 }
 
-const renderPage = () =>
+const renderPage = (route = '/') =>
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[route]}>
       <ManageOrgConstantsSettings />
     </MemoryRouter>
   );
 
 beforeEach(() => {
+  fetchEdition.mockReturnValue('ee');
+  useLicenseStore.setState({ featureAccess: {} });
   localStorage.clear();
   useConstantsListStore.setState({
     query: { page: 1, searchKey: '' },
@@ -152,5 +161,60 @@ describe('ManageOrgConstantsSettings', () => {
     expect(within(dialog).getByRole('button', { name: /^Development/ })).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: /^Production/ })).toBeInTheDocument();
     expect(within(dialog).queryByRole('button', { name: /^development/ })).not.toBeInTheDocument();
+  });
+});
+
+describe('ManageOrgConstantsSettings header controls', () => {
+  const respond = () => mockApi(() => HttpResponse.json(page([item('api_url')])));
+
+  it('loads the chosen environment', async () => {
+    const requests = respond();
+    renderPage();
+    await screen.findByText('API_URL');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Environment' }));
+    await userEvent.click(await screen.findByRole('menuitemradio', { name: 'Development' }));
+
+    await waitFor(() => expect(requests.at(-1)).toMatchObject({ environment_id: 'env-dev' }));
+    expect(screen.getByRole('button', { name: 'Environment' })).toHaveTextContent('Development');
+  });
+
+  it('loads the chosen sort', async () => {
+    const requests = respond();
+    renderPage();
+    await screen.findByText('API_URL');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Sort' }));
+    await userEvent.click(await screen.findByRole('menuitemradio', { name: 'Name (Z-A)' }));
+
+    await waitFor(() => expect(requests.at(-1)).toMatchObject({ sort: 'name_desc' }));
+  });
+
+  it('loads only the sources that stay checked', async () => {
+    const requests = respond();
+    renderPage();
+    await screen.findByText('API_URL');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Filter' }));
+    await userEvent.click(await screen.findByRole('menuitemcheckbox', { name: '.env variables' }));
+
+    await waitFor(() => expect(requests.at(-1)).toMatchObject({ source: 'workspace' }));
+  });
+
+  it.each([
+    ['in the community edition', () => fetchEdition.mockReturnValue('ce')],
+    [
+      'when the license has no multi-environment',
+      () => useLicenseStore.setState({ featureAccess: { multiEnvironment: false } }),
+    ],
+  ])('hides the environment select and ignores ?env= %s', async (_, restrict) => {
+    restrict();
+    const requests = respond();
+    renderPage('/?env=env-dev');
+    await screen.findByText('API_URL');
+
+    expect(screen.queryByRole('button', { name: 'Environment' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Filter' })).toBeInTheDocument();
+    expect(requests.every((request) => request.environment_id === 'env-prod')).toBe(true);
   });
 });
