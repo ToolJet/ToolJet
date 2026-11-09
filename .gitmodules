@@ -5,4 +5,4 @@
 [submodule "server/ee"]
 	path = server/ee
 	url = https://github.com/ToolJet/ee-server.git
-    branch = lts-3.16
+    branch = main

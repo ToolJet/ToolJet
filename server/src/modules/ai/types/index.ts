@@ -18,9 +18,14 @@ interface Features {
   [FEATURE_KEY.UPDATE_KEY]: FeatureConfig;
   [FEATURE_KEY.GET_KEY_SETTINGS]: FeatureConfig;
   [FEATURE_KEY.AUTO_SORT_QUERIES]: FeatureConfig;
+  [FEATURE_KEY.FIX_WITH_AI]: FeatureConfig;
+  [FEATURE_KEY.COPILOT]: FeatureConfig;
   [FEATURE_KEY.GET_THREAD_TOKEN_USAGE]: FeatureConfig;
   [FEATURE_KEY.GET_LLM_PREFERENCE]: FeatureConfig;
   [FEATURE_KEY.UPDATE_LLM_PREFERENCE]: FeatureConfig;
+  [FEATURE_KEY.GET_CREDITS_USAGE]: FeatureConfig;
+  [FEATURE_KEY.GET_MY_CREDITS]: FeatureConfig;
+  [FEATURE_KEY.UPDATE_CREDIT_LIMITS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

@@ -29,7 +29,7 @@ export class AiService implements IAiService {
     throw new Error('Method not implemented.');
   }
 
-  async getCreditsBalance(organizationId) {
+  async getCreditsBalance(organizationId: string, signal?: AbortSignal): Promise<unknown> {
     throw new Error('Method not implemented.');
   }
 

@@ -14,7 +14,12 @@ export enum FEATURE_KEY {
   UPDATE_KEY = 'updateKey',
   GET_KEY_SETTINGS = 'getKeySettings',
   AUTO_SORT_QUERIES = 'autoSortQueries',
+  FIX_WITH_AI = 'fixWithAi',
+  COPILOT = 'copilot',
   GET_THREAD_TOKEN_USAGE = 'getThreadTokenUsage',
   GET_LLM_PREFERENCE = 'getLlmPreference',
   UPDATE_LLM_PREFERENCE = 'updateLlmPreference',
+  GET_CREDITS_USAGE = 'getCreditsUsage',
+  GET_MY_CREDITS = 'getMyCredits',
+  UPDATE_CREDIT_LIMITS = 'updateCreditLimits',
 }
