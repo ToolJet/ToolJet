@@ -67,7 +67,8 @@ const config: Config.InitialOptions = {
   rootDir: '..',
   projects: editionProjects(join(__dirname, '..'), isCE, shared),
   // Global-only options: Jest ignores these inside a project.
-  testTimeout: 60000,
+  // Also the hook timeout: initTestApp (Nest bootstrap + entity loading) can pass 60s on a loaded CI runner.
+  testTimeout: 120000,
   verbose: true,
   slowTestThreshold: 0,
   ...coverageConfig(isCE),
