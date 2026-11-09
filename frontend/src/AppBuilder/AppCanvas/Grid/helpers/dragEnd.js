@@ -367,7 +367,9 @@ export const getAdjustedDropPosition = (event, target, isParentChangeAllowed, gr
     );
 
     return {
-      left: Math.round(adjustedLeft / gridWidth) * gridWidth, // Snap to the nearest grid column
+      // Snap to the nearest grid column, never left of the first: a drop near the left edge of a pack slot (whose box
+      // starts inside its card's padding) saved a negative left and the widget was cut off.
+      left: Math.max(0, Math.round(adjustedLeft / gridWidth) * gridWidth),
       top: Math.round(adjustedTop / 10) * 10, // Snap to the nearest 10px
     };
   }
