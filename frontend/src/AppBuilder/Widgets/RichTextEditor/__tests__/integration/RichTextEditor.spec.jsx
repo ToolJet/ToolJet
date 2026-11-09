@@ -1,10 +1,11 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, fireEvent } from '@testing-library/react';
 import {
   createWidgetHarness,
   binding,
   store,
   MODULE_ID,
 } from '@/AppBuilder/Widgets/__tests__/integration/widgetHarness';
+import { componentDefinition } from '@/test/app-builder';
 
 // Engineering scenarios for the RichTextEditor (display name "Text Editor").
 // Contract: frontend/ee/test/app-builder/widgets/RichTextEditor/TESTING.md.
@@ -21,13 +22,15 @@ const widget = createWidgetHarness({
     placeholder: binding('Placeholder text'),
     defaultValue: binding(''),
     loadingState: binding('{{false}}'),
+    // visibility/disabledState moved from styles to properties (Additional
+    // Actions) in the 2026-10-27 bug-fix batch; the data migration moves saved
+    // definitions and the widget keeps a styles fallback for unmigrated ones.
+    visibility: binding('{{true}}'),
+    disabledState: binding('{{false}}'),
     dynamicHeight: binding('{{false}}'),
     collapseWhenHidden: binding('{{false}}'),
   },
-  defaultStyles: {
-    visibility: binding('{{true}}'),
-    disabledState: binding('{{false}}'),
-  },
+  defaultStyles: {},
 });
 
 // The widget's own outer wrapper carries data-cy = component name plus
@@ -35,6 +38,27 @@ const widget = createWidgetHarness({
 // the separate `draggable-widget-<name>` node.
 const outer = () => document.querySelector(`[data-cy="${ID}"]`);
 const exposed = () => store().getExposedValueOfComponent(ID, MODULE_ID);
+const editable = () => outer().querySelector('.public-DraftEditor-content');
+const boldIcon = () => outer().querySelector('img[src*="bold.svg"]');
+const headingTrigger = () => outer().querySelector('.dropdownbtn');
+
+// Stand-in for the editor canvas's drag engine (gesto, via react-moveable) and
+// selection box (Selecto). Both listen for mousedown on ANCESTORS of the widget in
+// the bubble phase, below React's root, and on every press that reaches them
+// gesto blurs the focused editor (gesto 1.19.4 onDragStart) and Selecto clears
+// the browser selection. Neither is mounted by the widget harness, and jsdom has
+// no isContentEditable for real gesto to act on, so this listener reproduces
+// what they do to the press.
+function attachCanvasEngine() {
+  const engine = { presses: 0 };
+  const onPress = () => {
+    engine.presses += 1;
+    document.activeElement?.blur();
+  };
+  outer().addEventListener('mousedown', onPress);
+  engine.detach = () => outer().removeEventListener('mousedown', onPress);
+  return engine;
+}
 
 describe('RichTextEditor widget', () => {
   beforeEach(() => widget.setup());
@@ -192,24 +216,60 @@ describe('RichTextEditor widget', () => {
     await waitFor(() => expect(store().getExposedValueOfComponent(ID, MODULE_ID).value).toBe(''));
   });
 
-  test('[RichTextEditor-STYLE-001] visibility=false sets the outer wrapper display:none', async () => {
-    // Break this catches: dropping the `isVisible ? '' : 'none'` mapping
-    // (RichTextEditor.jsx:79), so a hidden editor stays visible.
-    widget.render({ styles: { visibility: binding('{{false}}') } });
+  test('[RichTextEditor-STYLE-001] visibility=false (properties) sets the outer wrapper display:none', async () => {
+    // Break this catches: dropping the `isVisible ? '' : 'none'` mapping or the
+    // widget not reading the MOVED properties.visibility (bug-fix batch
+    // 2026-10-27: visibility lives in Additional Actions, not the Styles tab).
+    widget.render({ properties: { visibility: binding('{{false}}') } });
 
     await waitFor(() => expect(outer()).toBeInTheDocument());
     expect(outer()).toHaveStyle({ display: 'none' });
   });
 
-  test('[RichTextEditor-STYLE-002] disabledState sets the wrapper disabled attributes', async () => {
+  test('[RichTextEditor-STYLE-002] disabledState (properties) sets the wrapper disabled attributes', async () => {
     // Break this catches: dropping `data-disabled`/`aria-disabled` from the
-    // wrapper (RichTextEditor.jsx:75,87), so the global pointer-events rule
-    // never engages and a disabled editor stays editable.
-    widget.render({ styles: { disabledState: binding('{{true}}') } });
+    // wrapper or not reading the MOVED properties.disabledState (bug-fix batch
+    // 2026-10-27), so the global pointer-events rule never engages.
+    widget.render({ properties: { disabledState: binding('{{true}}') } });
 
     await waitFor(() => expect(outer()).toBeInTheDocument());
     expect(outer()).toHaveAttribute('data-disabled', 'true');
     expect(outer()).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  test('[RichTextEditor-LEGACY-001] unmigrated styles-based visibility/disabledState still apply', async () => {
+    // Break this catches: dropping the styles fallback (properties.visibility ??
+    // styles.visibility) the runtime keeps for definitions the data migration
+    // has not touched — old exports imported after this release would otherwise
+    // ignore their saved hidden/disabled state. The sibling is seeded WITHOUT
+    // registered defaults so the moved keys are truly absent from properties,
+    // exactly like a pre-migration saved definition.
+    const LEGACY = 'rteLegacy';
+    widget.render({
+      extraComponents: {
+        [LEGACY]: componentDefinition(
+          LEGACY,
+          'rtelegacy1',
+          'RichTextEditor',
+          {
+            placeholder: binding('legacy'),
+            defaultValue: binding(''),
+            loadingState: binding('{{false}}'),
+            dynamicHeight: binding('{{false}}'),
+          },
+          {
+            styles: { visibility: binding('{{false}}'), disabledState: binding('{{true}}') },
+            seedFromRegisteredDefinition: false,
+          }
+        ),
+      },
+      also: [{ id: LEGACY, componentType: 'RichTextEditor' }],
+    });
+
+    await waitFor(() => expect(document.querySelector('[data-cy="rtelegacy1"]')).toBeInTheDocument());
+    const legacyOuter = document.querySelector('[data-cy="rtelegacy1"]');
+    expect(legacyOuter).toHaveStyle({ display: 'none' });
+    expect(legacyOuter).toHaveAttribute('data-disabled', 'true');
   });
 
   test('[RichTextEditor-STYLE-003] boxShadow is applied to the outer wrapper', async () => {
@@ -219,5 +279,84 @@ describe('RichTextEditor widget', () => {
 
     await waitFor(() => expect(outer()).toBeInTheDocument());
     expect(outer()).toHaveStyle({ boxShadow: '0px 0px 5px red' });
+  });
+
+  test('[RichTextEditor-TOOL-001] while editing in the canvas, Bold keeps focus and never reaches the canvas engines', async () => {
+    // Break this catches: a toolbar press reaching the canvas's drag/selection
+    // engines (bug-fix 2026-11-02, QA JAM "flicker_issue": in the editor, gesto
+    // blurred the editor and Selecto cleared the selection on every Bold press -
+    // the selection flickered away and the caret vanished until the user clicked
+    // back into the text). A bubble-phase handler cannot stop it: those engines
+    // sit below React's root and see the press first.
+    widget.render({ properties: { defaultValue: binding('<p>Hello</p>') } });
+    await waitFor(() => expect(editable()).toBeInTheDocument());
+    const engine = attachCanvasEngine();
+    await widget.session.store.act(async () => {
+      editable().focus();
+    });
+    expect(document.activeElement).toBe(editable());
+
+    let notPrevented;
+    await widget.session.store.act(async () => {
+      notPrevented = fireEvent.mouseDown(boldIcon());
+    });
+
+    expect(engine.presses).toBe(0);
+    expect(document.activeElement).toBe(editable());
+    expect(notPrevented).toBe(false); // default prevented: the press itself never moves focus
+    await waitFor(() => expect(boldIcon().closest('.RichEditor-styleButton')).toHaveClass('RichEditor-activeButton'));
+    engine.detach();
+  });
+
+  test('[RichTextEditor-TOOL-002] the toolbar keeps a press only while editing in the canvas', async () => {
+    // Break this catches: stopping every toolbar press. Not editing in the canvas,
+    // the press must still reach the canvas so a press on the toolbar selects and
+    // drags the widget as before; in the viewer there are no canvas engines and
+    // page-level outside-click handlers (other widgets' open menus) must still
+    // see it.
+    widget.render({ properties: { defaultValue: binding('<p>Hello</p>') } });
+    await waitFor(() => expect(editable()).toBeInTheDocument());
+    let engine = attachCanvasEngine();
+    await widget.session.store.act(async () => {
+      fireEvent.mouseDown(boldIcon()); // canvas, editor not focused
+    });
+    expect(engine.presses).toBe(1);
+    await waitFor(() => expect(boldIcon().closest('.RichEditor-styleButton')).toHaveClass('RichEditor-activeButton'));
+    engine.detach();
+
+    widget.render({ properties: { defaultValue: binding('<p>Hello</p>') }, currentMode: 'view' });
+    await waitFor(() => expect(editable()).toBeInTheDocument());
+    engine = attachCanvasEngine();
+    await widget.session.store.act(async () => {
+      editable().focus();
+    });
+    await widget.session.store.act(async () => {
+      fireEvent.mouseDown(boldIcon()); // viewer, editing
+    });
+    expect(engine.presses).toBe(1);
+    engine.detach();
+  });
+
+  test('[RichTextEditor-TOOL-003] pressing the Heading menu trigger keeps the editor focused', async () => {
+    // Break this catches: the Heading trigger - a <button> outside StyleButton -
+    // taking focus on press. Live 2026-11-02: pressing it dropped the editor's
+    // focus and selection in BOTH the canvas (gesto) and the viewer (the button
+    // focused itself), so H1-H6 applied to a selection the user could no longer see.
+    widget.render({ properties: { defaultValue: binding('<p>Hello</p>') } });
+    await waitFor(() => expect(editable()).toBeInTheDocument());
+    const engine = attachCanvasEngine();
+    await widget.session.store.act(async () => {
+      editable().focus();
+    });
+
+    let notPrevented;
+    await widget.session.store.act(async () => {
+      notPrevented = fireEvent.mouseDown(headingTrigger());
+    });
+
+    expect(notPrevented).toBe(false);
+    expect(engine.presses).toBe(0);
+    expect(document.activeElement).toBe(editable());
+    engine.detach();
   });
 });

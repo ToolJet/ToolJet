@@ -59,6 +59,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'FileButton',
   'FlexContainer',
   'Timeline',
+  'Calendar',
   'PDF',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
@@ -208,6 +209,8 @@ export const baseComponentProperties = (
       'ProgressBar',
       'AudioRecorder',
       'Camera',
+      'RichTextEditor',
+      'Calendar',
       'JSONExplorer',
       'JSONEditor',
       'IFrame',

@@ -51,6 +51,8 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'ProgressBar',
   'AudioRecorder',
   'Camera',
+  'RichTextEditor',
+  'Calendar',
   'JSONExplorer',
   'JSONEditor',
   'IFrame',
