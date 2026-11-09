@@ -27,7 +27,39 @@ const BASE_CSS = `
 .tj-cc-root.tj-cc-fit.tj-cc-stretch, .tj-cc-root.tj-cc-fit.tj-cc-stretch > * { height: 100%; }
 *, *::before, *::after { box-sizing: border-box; }
 .tj-cc-error { padding: 8px; font: 12px/1.4 monospace; color: var(--text-danger); white-space: pre-wrap; }
+/* The component's code failed to load (QA item 19): a plain note with Retry, and the components inside it below. */
+.tj-cc-load-error { display: flex; flex-direction: column; gap: 8px; width: 100%; height: 100%; padding: 8px;
+  border: 1px dashed var(--borders-default); border-radius: 6px; color: var(--text-placeholder); font-size: 12px;
+  font-family: inherit; white-space: normal; }
+.tj-cc-load-error-note { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tj-cc-load-error-note button { padding: 2px 8px; border: 1px solid var(--borders-default); border-radius: 4px;
+  background: transparent; color: var(--text-default); font: inherit; cursor: pointer; }
+.tj-cc-load-error-slot { position: relative; flex: 1 1 0; min-height: 40px; }
 `;
+
+// When a library's code fails to load, it is tried again on its own after these delays, then Retry is offered.
+export const LOAD_RETRY_DELAYS_MS = [2000, 5000];
+
+// The components whose library's code failed to load, by cacheKey: once one of them loads it (a Retry), the others try
+// again too, so one Retry brings back every component from that library, not only the one it was pressed on.
+const waitingForLibrary = new Map<string, Set<() => void>>();
+const waitForLibrary = (cacheKey: string, retry: () => void) => {
+  const waiting = waitingForLibrary.get(cacheKey) ?? new Set();
+  waiting.add(retry);
+  waitingForLibrary.set(cacheKey, waiting);
+  return () => {
+    waiting.delete(retry);
+    if (!waiting.size && waitingForLibrary.get(cacheKey) === waiting) waitingForLibrary.delete(cacheKey);
+  };
+};
+// Each waiting component is told once and let go (it waits again only if its own try fails), so one that fails for
+// another reason (its export missing from the code) cannot set off a round of retries on every load.
+const libraryLoaded = (cacheKey: string) => {
+  const waiting = waitingForLibrary.get(cacheKey);
+  if (!waiting) return;
+  waitingForLibrary.delete(cacheKey);
+  waiting.forEach((retry) => retry());
+};
 
 // After the library's own CSS: ToolJet's theme tokens that a pack reads through the standard --tj-* names (radius
 // scale, text on the brand colour, status colours, surfaces), so a shipped theme restyles every pack the same way.
@@ -390,6 +422,8 @@ export const isolateInteractiveEvents = (
   };
 };
 
+const NO_SLOTS: string[] = [];
+
 interface InlineLibraryComponentProps {
   bundleUrl: string;
   cssUrl: string;
@@ -425,6 +459,9 @@ interface InlineLibraryComponentProps {
   renderPopupSlot?: (name: string) => React.ReactNode;
   /** In the editor: a press on a part that drags itself (a Kanban card) selects the widget (isolateInteractiveEvents). */
   onInnerPress?: () => void;
+  /** The slots that hold components: drawn under the load failure note, so they stay on the canvas when the code
+   *  that would place them has not loaded. */
+  fallbackSlotNames?: string[];
 }
 
 const InlineLibraryComponent = ({
@@ -452,6 +489,7 @@ const InlineLibraryComponent = ({
   popupSlotNames = [],
   renderPopupSlot,
   onInnerPress,
+  fallbackSlotNames = NO_SLOTS,
 }: InlineLibraryComponentProps) => {
   const hostRef = useRef<HTMLDivElement | null>(null);
   // Read at each press: the host's listeners are added once per shadow root.
@@ -539,25 +577,61 @@ const InlineLibraryComponent = ({
     shadow?.mount.toggleAttribute('data-tj-host-disabled', hostDisabled);
   }, [shadow, hostDisabled]);
 
+  // Each load of the code (and the stylesheet) is one attempt. A failed one is tried again on its own after each of
+  // LOAD_RETRY_DELAYS_MS; once those fail too the component says it couldn't load and offers Retry, and tries again
+  // when the browser comes back online (QA item 19). The loader lets a failed load go, so each attempt fetches anew.
+  const [attempt, setAttempt] = useState(0);
+  const autoRetries = useRef(0);
+  useEffect(() => {
+    autoRetries.current = 0;
+  }, [bundleUrl, cacheKey, componentName]);
+  // Retry and coming back online try once more: one that fails shows the note again at once.
+  const retry = useCallback(() => {
+    autoRetries.current = LOAD_RETRY_DELAYS_MS.length;
+    setAttempt((n) => n + 1);
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
     setComponent(null);
     setLoadError(null);
     loadLibraryModule(bundleUrl, cacheKey, { isDevBuild })
       .then((mod) => {
         const exported = mod[componentName] as React.ComponentType<any> | undefined;
+        // The code loaded: the components from it still showing the note try again (they take it from the cache).
+        libraryLoaded(cacheKey);
         if (!exported) throw new Error(`export "${componentName}" not found in bundle`);
         if (!cancelled) setComponent(() => exported);
       })
       .catch((err) => {
         const message = String(err?.message ?? err);
+        // The cause is for developers: logged here, while the component shows a plain note.
         console.error(`[LibraryComponent] ${message}`);
-        if (!cancelled) setLoadError(message);
+        if (cancelled) return;
+        const delay = LOAD_RETRY_DELAYS_MS[autoRetries.current];
+        if (delay === undefined) {
+          setLoadError(message);
+          return;
+        }
+        autoRetries.current += 1;
+        retryTimer = setTimeout(() => setAttempt((n) => n + 1), delay);
       });
     return () => {
       cancelled = true;
+      clearTimeout(retryTimer);
     };
-  }, [bundleUrl, cacheKey, isDevBuild, componentName]);
+  }, [bundleUrl, cacheKey, isDevBuild, componentName, attempt]);
+
+  useEffect(() => {
+    if (!loadError) return undefined;
+    window.addEventListener('online', retry);
+    const stopWaiting = waitForLibrary(cacheKey, retry);
+    return () => {
+      window.removeEventListener('online', retry);
+      stopWaiting();
+    };
+  }, [loadError, retry, cacheKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -574,7 +648,8 @@ const InlineLibraryComponent = ({
     return () => {
       cancelled = true;
     };
-  }, [cssUrl, cacheKey, isDevBuild, sheetKey]);
+    // attempt: a retry fetches a stylesheet that failed to load too.
+  }, [cssUrl, cacheKey, isDevBuild, sheetKey, attempt]);
 
   // Latest callbacks behind a stable facade, so the context value changes only when props do.
   // The component's first commit: its mount effects' store writes go out as one update (holdStoreWrites). Opened in a
@@ -620,7 +695,26 @@ const InlineLibraryComponent = ({
   useEffect(() => {
     setActionRegistrySettled(actions, drawn);
   }, [actions, drawn]);
-  if (loadError) content = <div className="tj-cc-error">{loadError}</div>;
+  // A failed load draws the slots that hold components itself (the code that would place them never ran).
+  const lightSlotNames = loadError ? [...new Set([...slotNames, ...fallbackSlotNames])] : slotNames;
+  if (loadError)
+    content = (
+      // tj-cc-error: what tells a load failure apart from a drawn component.
+      <div className="tj-cc-error tj-cc-load-error" data-tj-load-error="" role="alert">
+        <div className="tj-cc-load-error-note">
+          <span>This component couldn&apos;t load.</span>
+          {/* data-tj-no-drag: in the editor a press on it is a click, not the start of a widget drag. */}
+          <button type="button" data-tj-no-drag="" onClick={retry}>
+            Retry
+          </button>
+        </div>
+        {fallbackSlotNames.map((name) => (
+          <div key={name} className="tj-cc-load-error-slot">
+            <slot name={slotAttributeName(name)} />
+          </div>
+        ))}
+      </div>
+    );
   else if (Component && cssReady)
     content = (
       <LibraryInstanceContext.Provider value={instance}>
@@ -643,7 +737,7 @@ const InlineLibraryComponent = ({
     >
       {shadow && createPortal(content, shadow.mount)}
       {/* Light-DOM children, projected into the bundle's <slot> elements. */}
-      {slotNames.map((name) => (
+      {lightSlotNames.map((name) => (
         <div key={name} slot={slotAttributeName(name)} className="tw-block tw-w-full tw-h-full">
           {renderSlot(name)}
         </div>

@@ -23,4 +23,36 @@ describe('inline runtime: browser caching of library files', () => {
     await loadLibraryCss('/files/dev/index.css', 'lib|dev:u1|7', { isDevBuild: true });
     expect(fetchSpy.mock.calls[0][1]?.cache).toBe('no-store');
   });
+
+  // QA item 19: a stylesheet that failed to load was kept as "no stylesheet" for the rest of the session, so a component
+  // that loaded on a retry drew unstyled.
+  it('[LibraryComponent-CACHE-003] fetches a stylesheet again after a failed load', async () => {
+    // Break this catches: a failed stylesheet load cached, which no retry can get past.
+    fetchSpy.mockResolvedValueOnce({ ok: false, status: 503, text: async () => '' });
+    expect(await loadLibraryCss('/files/v2/index.css', 'lib|v2|')).toBeNull();
+    expect(await loadLibraryCss('/files/v2/index.css', 'lib|v2|')).toBe('.x{}');
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('[LibraryComponent-CACHE-004] fetches a stylesheet again after a network error', async () => {
+    // Break this catches: a dropped connection cached as "no stylesheet".
+    fetchSpy.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    expect(await loadLibraryCss('/files/v3/index.css', 'lib|v3|')).toBeNull();
+    expect(await loadLibraryCss('/files/v3/index.css', 'lib|v3|')).toBe('.x{}');
+  });
+
+  it('[LibraryComponent-CACHE-005] keeps a loaded stylesheet: it is fetched once', async () => {
+    // Break this catches: the fix dropping every cached stylesheet, so each instance fetches it again.
+    await loadLibraryCss('/files/v4/index.css', 'lib|v4|');
+    await loadLibraryCss('/files/v4/index.css', 'lib|v4|');
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('[LibraryComponent-CACHE-006] keeps a missing stylesheet (404) as none: it is fetched once', async () => {
+    // Break this catches: a library that ships no stylesheet fetching the missing file again for every instance.
+    fetchSpy.mockResolvedValue({ ok: false, status: 404, text: async () => '' });
+    await loadLibraryCss('/files/v5/index.css', 'lib|v5|');
+    expect(await loadLibraryCss('/files/v5/index.css', 'lib|v5|')).toBeNull();
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
 });

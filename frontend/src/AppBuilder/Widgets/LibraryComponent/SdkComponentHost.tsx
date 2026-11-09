@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useSta
 
 import useStore from '@/AppBuilder/_stores/store';
 import LoaderJs from '@/ToolJetUI/Loader/Loader';
+import { shallow } from 'zustand/shallow';
 import { cn } from '@/lib/utils';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -77,6 +78,26 @@ interface SdkComponentHostProps {
    props change → we send props
    shell → stateChange/event → setExposedVariable / fireEvent
 */
+
+// A component's slots that hold components, read from the store (their canvases are `<id>-<slot>`), so they are known
+// without the component's code. A popup's body and a list's rows are left out: the component's code draws those (a
+// closed dialog shows nothing, rows repeat one template).
+export const slotsHoldingComponents = (
+  childrenByParent: Record<string, string[]> | undefined,
+  id: string,
+  slots: { name: string; kind?: string }[] | undefined
+): string[] => {
+  const prefix = `${id}-`;
+  const drawnByCode = new Set(
+    (slots ?? []).filter((slot) => slot.kind === 'popup' || slot.kind === 'rows').map((slot) => slot.name)
+  );
+  const mapping = childrenByParent ?? {};
+  return Object.keys(mapping)
+    .filter((parent) => parent.startsWith(prefix) && mapping[parent]?.length > 0)
+    .map((parent) => parent.slice(prefix.length))
+    .filter((name) => !drawnByCode.has(name));
+};
+
 const SdkComponentHost = ({
   id,
   properties = {},
@@ -213,6 +234,12 @@ const SdkComponentHost = ({
 
   const manifest = source?.manifest ?? null;
   const manifestComponent = componentName ? manifest?.components?.[componentName] : undefined;
+  // The slots that hold components: should the component's code fail to load, they are drawn under its failure note,
+  // so the components in them stay on the canvas (QA item 19).
+  const fallbackSlotNames = useStore(
+    (state: any) => slotsHoldingComponents(state.containerChildrenMapping, id, manifestComponent?.slots),
+    shallow
+  );
 
   // Row-scoped props (ToolJet.useRowResolver) keep their {{rowData...}} / {{cellValue}} templates for the component.
   const { overrides: rowTemplates, markRowScoped } = useRowTemplates({ id, properties, manifestComponent });
@@ -565,6 +592,7 @@ const SdkComponentHost = ({
           popupSlotNames={popupSlotNames}
           renderPopupSlot={renderSlot}
           onInnerPress={currentMode === 'edit' ? selectOnInnerPress : undefined}
+          fallbackSlotNames={fallbackSlotNames}
         />
       ) : (
         <iframe

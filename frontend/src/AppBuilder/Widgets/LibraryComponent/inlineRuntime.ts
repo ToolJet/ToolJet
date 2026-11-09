@@ -454,9 +454,23 @@ export const loadLibraryModule = (
 export const loadLibraryCss = (cssUrl: string, cacheKey: string, options: LoadOptions = {}): Promise<string | null> => {
   let pending = cssCache.get(cacheKey);
   if (!pending) {
+    // A library with no stylesheet answers 404, kept as "no stylesheet". Any other failure (a server error, a dropped
+    // connection) is let go, so the next load (a retry, another instance) fetches it again (QA item 19).
+    let failed = false;
     pending = fetch(cssUrl, fetchInit(options))
-      .then((r) => (r.ok ? r.text() : null))
-      .catch(() => null);
+      .then((r) => {
+        if (r.ok) return r.text();
+        failed = r.status !== 404;
+        return null;
+      })
+      .catch(() => {
+        failed = true;
+        return null;
+      });
+    const settled = pending;
+    settled.then(() => {
+      if (failed && cssCache.get(cacheKey) === settled) cssCache.delete(cacheKey);
+    });
     cssCache.set(cacheKey, pending);
   }
   return pending;
