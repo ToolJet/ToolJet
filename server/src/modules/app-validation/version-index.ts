@@ -1,0 +1,245 @@
+import { EntityManager, FindOptionsWhere, In } from 'typeorm';
+import { App } from '@entities/app.entity';
+import { AppVersion } from '@entities/app_version.entity';
+import { Component } from '@entities/component.entity';
+import { DataQuery } from '@entities/data_query.entity';
+import { DataSource } from '@entities/data_source.entity';
+import { EventHandler } from '@entities/event_handler.entity';
+import { Page } from '@entities/page.entity';
+import { DataSourceScopes } from '@modules/data-sources/constants';
+import { actionEntityRef } from './catalog/actions';
+
+export interface IndexedComponent {
+  id: string;
+  name: string;
+  type: string;
+  parent: string | null;
+  pageId: string;
+}
+
+export interface IndexedPage {
+  id: string;
+  name?: string;
+  handle?: string;
+  isPageGroup?: boolean;
+  pageGroupId?: string | null;
+  disabled?: boolean;
+  hidden?: unknown;
+  type?: string;
+}
+
+export interface IndexedQuery {
+  id: string;
+  name: string;
+  dataSourceId?: string;
+}
+
+export interface IndexedEvent {
+  id: string;
+  sourceId: string;
+  target: string;
+  index?: number;
+  eventId?: string;
+  actionId?: string;
+  // The entity id the action points at (e.g. run-query's queryId), when the action has one.
+  refId?: string;
+}
+
+export interface IndexedDataSource {
+  id: string;
+  kind?: string;
+  scope?: string;
+  organizationId?: string | null;
+}
+
+export interface VersionIndexData {
+  components?: IndexedComponent[];
+  pages?: IndexedPage[];
+  queries?: IndexedQuery[];
+  events?: IndexedEvent[];
+  dataSources?: IndexedDataSource[];
+  homePageId?: string | null;
+}
+
+// Ids, names, types and parents of one app version; never full settings.
+export class VersionIndex {
+  readonly homePageId: string | null;
+  private readonly componentsById = new Map<string, IndexedComponent>();
+  private readonly componentsByPage = new Map<string, IndexedComponent[]>();
+  private readonly pagesById = new Map<string, IndexedPage>();
+  private readonly queriesById = new Map<string, IndexedQuery>();
+  private readonly queriesByName = new Map<string, IndexedQuery[]>();
+  private readonly eventsById = new Map<string, IndexedEvent>();
+  private readonly eventsBySource = new Map<string, IndexedEvent[]>();
+  private readonly dataSourcesById = new Map<string, IndexedDataSource>();
+
+  private constructor(data: VersionIndexData) {
+    this.homePageId = data.homePageId ?? null;
+    for (const component of data.components ?? []) this.addComponent(component);
+    for (const page of data.pages ?? []) this.pagesById.set(page.id, page);
+    for (const query of data.queries ?? []) {
+      this.queriesById.set(query.id, query);
+      const sameName = this.queriesByName.get(query.name) ?? [];
+      sameName.push(query);
+      this.queriesByName.set(query.name, sameName);
+    }
+    for (const event of data.events ?? []) {
+      this.eventsById.set(event.id, event);
+      const onSource = this.eventsBySource.get(event.sourceId) ?? [];
+      onSource.push(event);
+      this.eventsBySource.set(event.sourceId, onSource);
+    }
+    for (const dataSource of data.dataSources ?? []) this.dataSourcesById.set(dataSource.id, dataSource);
+  }
+
+  static fromData(data: VersionIndexData): VersionIndex {
+    return new VersionIndex(data);
+  }
+
+  static async load(manager: EntityManager, appVersionId: string): Promise<VersionIndex> {
+    const components: IndexedComponent[] = await manager
+      .createQueryBuilder(Component, 'component')
+      .innerJoin('component.page', 'page')
+      .where('page.appVersionId = :appVersionId', { appVersionId })
+      .select('component.id', 'id')
+      .addSelect('component.name', 'name')
+      .addSelect('component.type', 'type')
+      .addSelect('component.parent', 'parent')
+      .addSelect('component.pageId', 'pageId')
+      .getRawMany();
+
+    const pages: IndexedPage[] = await manager.find(Page, {
+      where: { appVersionId },
+      select: ['id', 'name', 'handle', 'isPageGroup', 'pageGroupId', 'disabled', 'hidden', 'type'],
+    });
+
+    const queries: IndexedQuery[] = await manager.find(DataQuery, {
+      where: { appVersionId },
+      select: ['id', 'name', 'dataSourceId'],
+    });
+
+    const eventRows = await manager.find(EventHandler, {
+      where: { appVersionId },
+      select: ['id', 'sourceId', 'target', 'index', 'event'],
+    });
+    const events: IndexedEvent[] = eventRows.map((row) => toIndexedEvent(row));
+
+    const version = await manager.findOne(AppVersion, {
+      where: { id: appVersionId },
+      select: ['id', 'homePageId', 'appId'],
+    });
+    const app = version?.appId
+      ? await manager.findOne(App, { where: { id: version.appId }, select: ['id', 'organizationId'] })
+      : null;
+
+    // A query may use a data source local to this version, or any global one of the owning
+    // workspace (statics like runjs/tooljetdb, defaults and samples are all stored global) -
+    // mirrors the reachability check in data-queries changeQueryDataSource. Sources referenced
+    // by existing queries stay included so legacy rows that predate this scoping still resolve.
+    const referencedIds = [...new Set(queries.map((q) => q.dataSourceId).filter(Boolean))];
+    const dataSourceWhere: FindOptionsWhere<DataSource>[] = [{ appVersionId }];
+    if (referencedIds.length) dataSourceWhere.push({ id: In(referencedIds) });
+    if (app?.organizationId) {
+      dataSourceWhere.push({ organizationId: app.organizationId, scope: DataSourceScopes.GLOBAL });
+    }
+    const dataSources: IndexedDataSource[] = await manager.find(DataSource, {
+      where: dataSourceWhere,
+      select: ['id', 'kind', 'scope', 'organizationId'],
+    });
+
+    return new VersionIndex({ components, pages, queries, events, dataSources, homePageId: version?.homePageId });
+  }
+
+  // Adds components created or moved in the same request.
+  withComponents(components: IndexedComponent[]): VersionIndex {
+    const merged = new Map(this.componentsById);
+    for (const component of components) merged.set(component.id, component);
+    return new VersionIndex({
+      components: [...merged.values()],
+      pages: [...this.pagesById.values()],
+      queries: [...this.queriesById.values()],
+      events: [...this.eventsById.values()],
+      dataSources: [...this.dataSourcesById.values()],
+      homePageId: this.homePageId,
+    });
+  }
+
+  component(id: string): IndexedComponent | undefined {
+    return this.componentsById.get(id);
+  }
+
+  componentsOnPage(pageId: string): IndexedComponent[] {
+    return this.componentsByPage.get(pageId) ?? [];
+  }
+
+  // E.g. a version containing a ModuleContainer is a module's version.
+  hasComponentOfType(type: string): boolean {
+    for (const component of this.componentsById.values()) {
+      if (component.type === type) return true;
+    }
+    return false;
+  }
+
+  isComponentNameTaken(pageId: string, name: string, excludeIds: Iterable<string> = []): boolean {
+    const excluded = new Set(excludeIds);
+    return this.componentsOnPage(pageId).some((c) => c.name === name && !excluded.has(c.id));
+  }
+
+  page(id: string): IndexedPage | undefined {
+    return this.pagesById.get(id);
+  }
+
+  pages(): IndexedPage[] {
+    return [...this.pagesById.values()];
+  }
+
+  query(id: string): IndexedQuery | undefined {
+    return this.queriesById.get(id);
+  }
+
+  queriesNamed(name: string): IndexedQuery[] {
+    return this.queriesByName.get(name) ?? [];
+  }
+
+  event(id: string): IndexedEvent | undefined {
+    return this.eventsById.get(id);
+  }
+
+  eventsForSource(sourceId: string): IndexedEvent[] {
+    return this.eventsBySource.get(sourceId) ?? [];
+  }
+
+  events(): IndexedEvent[] {
+    return [...this.eventsById.values()];
+  }
+
+  dataSource(id: string): IndexedDataSource | undefined {
+    return this.dataSourcesById.get(id);
+  }
+
+  private addComponent(component: IndexedComponent) {
+    this.componentsById.set(component.id, component);
+    const onPage = this.componentsByPage.get(component.pageId) ?? [];
+    onPage.push(component);
+    this.componentsByPage.set(component.pageId, onPage);
+  }
+}
+
+export function toIndexedEvent(row: {
+  id: string;
+  sourceId: string;
+  target: string;
+  index?: number;
+  event?: Record<string, any>;
+}): IndexedEvent {
+  const ref = actionEntityRef(row.event);
+  return {
+    id: row.id,
+    sourceId: row.sourceId,
+    target: row.target,
+    index: row.index,
+    eventId: row.event?.eventId,
+    actionId: row.event?.actionId,
+    refId: typeof ref?.value === 'string' ? ref.value : undefined,
+  };
+}

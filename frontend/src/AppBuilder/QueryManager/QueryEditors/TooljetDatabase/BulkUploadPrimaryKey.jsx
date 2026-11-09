@@ -1,5 +1,5 @@
-import React, { useContext, useEffect } from 'react';
-import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
+import React, { useEffect } from 'react';
+import { useToolJetDbOperationsContext } from './ToolJetDbOperationsContext';
 import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
@@ -9,17 +9,16 @@ export const BulkUploadPrimaryKey = () => {
     bulkUpdatePrimaryKey,
     handleBulkUpdateWithPrimaryKeysRowsUpdateOptionChanged,
     handlePrimaryKeyOptionChangedForBulkUpdate,
-  } = useContext(TooljetDatabaseContext);
+  } = useToolJetDbOperationsContext();
 
   useEffect(() => {
-    const primaryKeys = columns.reduce((acc, column) => {
-      if (column?.isPrimaryKey) {
-        acc.push(column?.accessor);
-      }
-      return acc;
-    }, []);
+    const primaryKeyColumns = columns.filter((column) => column?.isPrimaryKey);
+    const primaryKeys = primaryKeyColumns.map((column) => column?.accessor);
 
-    handlePrimaryKeyOptionChangedForBulkUpdate(primaryKeys);
+    handlePrimaryKeyOptionChangedForBulkUpdate(
+      primaryKeys,
+      primaryKeyColumns.map((column) => column?.column_id)
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columns]);
 

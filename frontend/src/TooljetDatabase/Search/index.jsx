@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 import useDebounce from '@/_hooks/useDebounce';
 import { useMounted } from '@/_hooks/use-mount';
-import { TooljetDatabaseContext } from '../index';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 const Search = ({
   width = '248px',
@@ -21,7 +21,7 @@ const Search = ({
   const [searchText, setSearchText] = useState('');
   const debouncedSearchTerm = useDebounce(searchText, debounceDelay);
   const [isFocused, setFocussed] = useState(false);
-  const { setSearchParam } = useContext(TooljetDatabaseContext);
+  const { setSearchParam } = useTooljetDatabaseContext();
 
   const handleChange = (e) => {
     setSearchText(e.target.value.trim().toLowerCase());

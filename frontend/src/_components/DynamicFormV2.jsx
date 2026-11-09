@@ -139,15 +139,54 @@ const DynamicFormV2 = ({
   }, [currentAppEnvironmentId]);
 
   // --- Validation ---
-  React.useEffect(() => {
-    if (!hasUserInteracted) return;
+  const processAllOfConditions = React.useCallback((schema, options, path = []) => {
+    let requiredFields = [];
 
-    const timeout = setTimeout(() => {
-      validateOptions();
-    }, 300);
+    if (schema.allOf) {
+      schema.allOf.forEach((condition) => {
+        if (condition.if && condition.then) {
+          const conditionMatches = Object.entries(condition.if.properties || {}).every(([propName, propCondition]) => {
+            const propertyPath = [...path, propName];
 
-    return () => clearTimeout(timeout);
-  }, [options, hasUserInteracted, validateOptions]);
+            let currentValue = options;
+            for (const segment of propertyPath) {
+              if (!currentValue || typeof currentValue !== 'object') {
+                return false;
+              }
+              currentValue = currentValue[segment]?.value;
+            }
+
+            return propCondition.const === currentValue;
+          });
+
+          if (conditionMatches) {
+            if (condition.then.required) {
+              requiredFields = [...requiredFields, ...condition.then.required];
+            }
+
+            if (condition.then.allOf) {
+              const nestedRequired = processAllOfConditions({ allOf: condition.then.allOf }, options, path);
+              requiredFields = [...requiredFields, ...nestedRequired];
+            }
+
+            if (condition.then.properties) {
+              Object.entries(condition.then.properties).forEach(([propName, propSchema]) => {
+                if (propSchema.allOf) {
+                  const nestedRequired = processAllOfConditions({ allOf: propSchema.allOf }, options, [
+                    ...path,
+                    propName,
+                  ]);
+                  requiredFields = [...requiredFields, ...nestedRequired];
+                }
+              });
+            }
+          }
+        }
+      });
+    }
+
+    return requiredFields;
+  }, []);
 
   const validateOptions = React.useCallback(async () => {
     try {
@@ -221,54 +260,15 @@ const DynamicFormV2 = ({
     autoFillStrategy,
   ]);
 
-  const processAllOfConditions = React.useCallback((schema, options, path = []) => {
-    let requiredFields = [];
+  React.useEffect(() => {
+    if (!hasUserInteracted) return;
 
-    if (schema.allOf) {
-      schema.allOf.forEach((condition) => {
-        if (condition.if && condition.then) {
-          const conditionMatches = Object.entries(condition.if.properties || {}).every(([propName, propCondition]) => {
-            const propertyPath = [...path, propName];
+    const timeout = setTimeout(() => {
+      validateOptions();
+    }, 300);
 
-            let currentValue = options;
-            for (const segment of propertyPath) {
-              if (!currentValue || typeof currentValue !== 'object') {
-                return false;
-              }
-              currentValue = currentValue[segment]?.value;
-            }
-
-            return propCondition.const === currentValue;
-          });
-
-          if (conditionMatches) {
-            if (condition.then.required) {
-              requiredFields = [...requiredFields, ...condition.then.required];
-            }
-
-            if (condition.then.allOf) {
-              const nestedRequired = processAllOfConditions({ allOf: condition.then.allOf }, options, path);
-              requiredFields = [...requiredFields, ...nestedRequired];
-            }
-
-            if (condition.then.properties) {
-              Object.entries(condition.then.properties).forEach(([propName, propSchema]) => {
-                if (propSchema.allOf) {
-                  const nestedRequired = processAllOfConditions({ allOf: propSchema.allOf }, options, [
-                    ...path,
-                    propName,
-                  ]);
-                  requiredFields = [...requiredFields, ...nestedRequired];
-                }
-              });
-            }
-          }
-        }
-      });
-    }
-
-    return requiredFields;
-  }, []);
+    return () => clearTimeout(timeout);
+  }, [options, hasUserInteracted, validateOptions]);
 
   React.useEffect(() => {
     if (showValidationErrors) {

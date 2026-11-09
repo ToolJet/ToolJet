@@ -1,15 +1,13 @@
 # Frontend: manifest.json, operations.json, openapi-specs/
 
-Inputs: `plugin-spec.json`, the PRD, the design reference (or none), the plugin directory.
-Read `manifest-and-operations.md` first; widget names must match it exactly.
-
-On a fix round, change only what the reported error names.
+Inputs: `plugin-spec.json`, PRD, design reference (or none), plugin directory. Read
+`manifest-and-operations.md` first; widget names must match exactly. On a fix round, change only
+what the error names.
 
 ## 1. Design reference
 
-If there is one, open it (Figma through whatever Figma tool the harness has, a screenshot as an
-image) and note field order, labels, grouping, and widgets. Match them. Without one, follow the
-nearest existing plugin of the same auth type.
+If given (Figma via the harness's Figma tool, or a screenshot), match its field order, labels,
+grouping and widgets. Otherwise follow the nearest existing plugin of the same auth type.
 
 ## 2. manifest.json
 
@@ -35,9 +33,8 @@ nearest existing plugin of the same auth type.
   Write the spec files with `scripts/split-spec.mjs` (`intake-openapi.md` section 3), so every
   `@spec/<id>/<name>` has `openapi-specs/<name>.yaml` (or `.json`) in the plugin.
 
-Keep the `$schema` URLs from the templates; editors use them for hints.
+Keep the templates' `$schema` URLs.
 
 ## 4. icon.svg
 
-Leave it if SKILL.md step 3 placed one. Otherwise keep the scaffolded placeholder and tell the
-user to supply the real logo.
+Keep whatever SKILL.md step 3 left; if it is the placeholder, ask the user for the real logo.

@@ -95,6 +95,7 @@ const FormComponent = (props) => {
 
   const activeColor = getModifiedColor(backgroundColor, 'active');
   const computedFormBodyHeight = getBodyHeight(height, showHeader, showFooter, headerHeight, footerHeight);
+  const [canHeight, setCanHeight] = useState('100%');
   const computedBorderRadius = `${borderRadius ? parseFloat(borderRadius) : 0}px`;
 
   const computedStyles = {
@@ -347,6 +348,7 @@ const FormComponent = (props) => {
             if (childData.hasOwnProperty('values')) return childData.values;
             if (childData.hasOwnProperty('file')) return childData.file;
             if (childData.hasOwnProperty('selectedDateRange')) return childData.selectedDateRange;
+            if (childData.hasOwnProperty('selectedColorHex')) return childData.selectedColorHex;
 
             return null;
           })();
@@ -422,7 +424,6 @@ const FormComponent = (props) => {
     setComponentProperty(id, `footerHeight`, _height, 'properties', 'value', false);
   };
 
-  const [canHeight, setCanHeight] = useState('100%');
   useEffect(() => {
     // const newHeight = parseInt(height, 10) - 14;
 

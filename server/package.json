@@ -13,7 +13,7 @@
     "start": "nest start",
     "start:dev": "NODE_ENV=development nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "NODE_ENV=production node dist/src/main",
+    "start:prod": "NODE_ENV=production exec node dist/src/main",
     "test": "NODE_ENV=test NODE_OPTIONS='--max-old-space-size=8192' jest --config jest.config.ts --verbose --maxWorkers=50%",
     "test:cov": "NODE_ENV=test NODE_OPTIONS='--max-old-space-size=8192' jest --config jest.config.ts --verbose --coverage --maxWorkers=50%",
     "test:watch": "NODE_ENV=test jest --watch",
@@ -56,13 +56,14 @@
     "typeorm": "typeorm-ts-node-commonjs",
     "copy-schemas": "copyfiles -u 4 src/dto/validators/schemas/**/*.json dist/src/dto/validators/schemas",
     "worker:dev": "WORKER=true NODE_ENV=development nest start --watch",
-    "worker:prod": "WORKER=true NODE_ENV=production node dist/src/main"
+    "worker:prod": "WORKER=true NODE_ENV=production node dist/src/main",
+    "test:mcp-oauth": "ts-node -r tsconfig-paths/register --transpile-only test/prepare-mcp-oauth-db.ts && jest --config test/mcp-oauth.jest.config.cjs --runInBand"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^1.2.12",
-    "@ai-sdk/google": "^1.2.22",
-    "@ai-sdk/mistral": "^1.2.8",
-    "@ai-sdk/openai": "^1.3.24",
+    "@ai-sdk/anthropic": "^2.0.110",
+    "@ai-sdk/google": "^2.0.106",
+    "@ai-sdk/mistral": "^2.0.53",
+    "@ai-sdk/openai": "^2.0.136",
     "@bull-board/api": "^6.16.2",
     "@bull-board/express": "^6.16.2",
     "@bull-board/nestjs": "^6.16.2",
@@ -74,21 +75,22 @@
     "@keyv/serialize": "^1.1.1",
     "@nestjs/bull": "^11.0.2",
     "@nestjs/bullmq": "^11.0.3",
-    "@nestjs/common": "^11.1.3",
+    "@nestjs/common": "^11.2.8",
     "@nestjs/config": "^4.0.2",
-    "@nestjs/core": "^11.1.3",
+    "@nestjs/core": "^11.2.8",
     "@nestjs/event-emitter": "^3.0.1",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/mapped-types": "^2.1.0",
-    "@nestjs/microservices": "^11.1.3",
+    "@nestjs/microservices": "^11.2.8",
     "@nestjs/passport": "^11.0.5",
-    "@nestjs/platform-express": "^11.1.3",
-    "@nestjs/platform-ws": "^11.1.3",
+    "@nestjs/platform-express": "^11.2.8",
+    "@nestjs/platform-ws": "^11.2.8",
     "@nestjs/schedule": "^6.0.0",
     "@nestjs/serve-static": "^5.0.3",
     "@nestjs/throttler": "^6.2.1",
     "@nestjs/typeorm": "^11.0.0",
-    "@nestjs/websockets": "^11.1.3",
+    "@nestjs/websockets": "^11.2.8",
+    "@node-oauth/oauth2-server": "5.3.0",
     "@node-saml/node-saml": "^5.1.0",
     "@octokit/rest": "^22.0.0",
     "@opentelemetry/api-logs": "^0.218.0",
@@ -113,17 +115,20 @@
     "@temporalio/worker": "^1.11.6",
     "@temporalio/workflow": "^1.11.6",
     "@tooljet/plugins": "../plugins",
+    "@tooljet/widget-definitions": "../packages/widget-definitions",
+    "@types/nodemailer": "^8.0.1",
     "acorn": "^8.13.0",
     "acorn-walk": "^8.3.4",
-    "ai": "^4.3.19",
+    "ai": "^5.0.282",
     "ajv": "^8.14.0",
+    "basic-auth": "2.0.1",
     "bcrypt": "^6.0.0",
     "bufferutil": "^4.1.0",
     "bullmq": "^5.58.9",
     "byte-counter": "^0.1.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
-    "compression": "^1.8.0",
+    "compression": "^1.8.2",
     "cookie-parser": "^1.4.7",
     "cron-validator": "^1.3.1",
     "dotenv": "^16.5.0",
@@ -143,8 +148,9 @@
     "helmet": "^8.1.0",
     "humps": "^2.0.1",
     "ioredis": "^5.0.4",
+    "ipaddr.js": "^1.9.1",
     "isolated-vm": "^5.0.4",
-    "joi": "^17.4.1",
+    "joi": "^17.13.7",
     "js-base64": "^3.7.2",
     "jsonrepair": "^3.12.0",
     "jszip": "^3.10.1",
@@ -155,10 +161,11 @@
     "nestjs-otel": "^8.0.1",
     "nestjs-pino": "^4.4.0",
     "node-sql-parser": "^5.3.1",
-    "nodemailer": "^9.0.1",
+    "nodemailer": "^10.0.6",
     "@types/nodemailer": "^8.0.1",
     "openid-client": "^5.4.0",
     "otpauth": "^9.4.1",
+    "parseurl": "^1.3.3",
     "passport-jwt": "^4.0.0",
     "pg": "^8.7.1",
     "pino-pretty": "^13.1.1",
@@ -166,6 +173,7 @@
     "postcss-parent-selector": "^1.0.0",
     "prom-client": "^15.1.3",
     "protobufjs": "^7.6.5",
+    "proxy-addr": "^2.0.8",
     "request-ip": "^3.3.0",
     "rimraf": "^6.0.1",
     "rxjs": "^7.2.0",
@@ -177,14 +185,14 @@
     "sshpk": "^1.17.0",
     "stripe": "^20.1.2",
     "typeorm": "^0.3.31",
-    "undici": "^7.29.0",
+    "undici": "^7.30.1",
     "utf-8-validate": "^6.0.6",
     "uuid": "^8.3.2",
     "winston": "^3.13.1",
     "winston-daily-rotate-file": "^4.7.1",
     "ws": "^8.21.0",
     "y-websocket": "^1.4.0",
-    "zod": "^3.25.76"
+    "zod": "^4.6.7"
   },
   "peerDependencies": {
     "@nestjs/cli": "^11.0.7"
@@ -200,23 +208,32 @@
       "ws": "$ws"
     },
     "mailparser": {
-      "nodemailer": "^9.0.1"
+      "nodemailer": "^10.0.6",
+      "linkify-it": "^5.0.2"
+    },
+    "preview-email": {
+      "nodemailer": "^10.0.6"
     },
     "jsondiffpatch": "^0.7.6",
     "@opentelemetry/propagator-jaeger": "^2.9.0",
     "@opentelemetry/core": "^2.8.0",
-    "@grpc/grpc-js": "^1.14.4",
-    "brace-expansion": "^1.1.18",
-    "fast-uri": "^3.1.5",
-    "multer": "^2.2.0",
+    "@grpc/grpc-js": "^1.14.5",
+    "brace-expansion": "^1.1.20",
+    "fast-uri": "^3.1.7",
+    "multer": "^2.5.0",
     "nanoid": "^3.3.17",
     "socket.io-parser": "^4.2.7",
-    "js-yaml": "^4.3.1",
-    "proxy-addr": "^2.0.8"
-  },
-  "optionalDependencies": {
-    "html-minifier": "^5.0.0",
-    "mjml": "^4.15.3"
+    "js-yaml": "^4.3.2",
+    "@xmldom/xmldom": "^0.8.15",
+    "proxy-addr": "^2.0.8",
+    "browserslist": "^4.28.7",
+    "form-data": "^4.0.6",
+    "postcss-parent-selector": {
+      "postcss": "^8.5.18"
+    },
+    "@ai-sdk/provider-utils": {
+      "undici": "^7.30.1"
+    }
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
@@ -224,7 +241,7 @@
     "@golevelup/ts-jest": "^0.3.2",
     "@jest/types": "^29.6.3",
     "@nestjs/schematics": "^11.0.5",
-    "@nestjs/testing": "^11.1.3",
+    "@nestjs/testing": "^11.2.8",
     "@pollyjs/adapter-node-http": "^6.0.6",
     "@pollyjs/core": "^6.0.6",
     "@pollyjs/persister-fs": "^6.0.6",
@@ -238,6 +255,7 @@
     "@types/ldapjs": "^3.0.0",
     "@types/multer": "^1.4.7",
     "@types/node": "^24.0.1",
+    "@types/parseurl": "^1.3.3",
     "@types/passport-jwt": "^3.0.6",
     "@types/pg": "^8.11.10",
     "@types/request-ip": "^0.0.37",
@@ -245,6 +263,7 @@
     "@types/setup-polly-jest": "^0.5.5",
     "@types/sshpk": "^1.17.1",
     "@types/supertest": "^6.0.3",
+    "@types/uuid": "^10.0.0",
     "@types/ws": "^8.2.2",
     "@typescript-eslint/eslint-plugin": "^8.34.0",
     "@typescript-eslint/parser": "^8.34.0",
@@ -268,7 +287,7 @@
     "typescript": "^5.8.3"
   },
   "engines": {
-    "node": "22.15.1",
-    "npm": "10.9.2"
+    "node": "22.23.4",
+    "npm": "10.9.9"
   }
 }

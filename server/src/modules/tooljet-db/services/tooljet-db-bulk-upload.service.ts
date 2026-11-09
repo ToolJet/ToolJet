@@ -1,11 +1,18 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
+import { InternalTableRelation } from 'src/entities/internal_table_relation.entity';
 import { TooljetDbTableOperationsService } from './tooljet-db-table-operations.service';
+import { TooljetDbUtilService } from './tooljet-db-util.service';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { isEmpty } from 'lodash';
+import { escapeIdentifier } from 'pg';
 import { findTenantSchema } from 'src/helpers/tooljet_db.helper';
-import { TooljetDbUtilService } from './tooljet-db-util.service';
+
+function columnsMissingFromTable(keys: string[], tableColumns: { column_name: string }[]): string[] {
+  const known = new Set(tableColumns.map((col) => col.column_name));
+  return [...new Set(keys)].filter((key) => !known.has(key));
+}
 
 @Injectable()
 export class TooljetDbBulkUploadService {
@@ -24,7 +31,7 @@ export class TooljetDbBulkUploadService {
         : 1000;
   }
 
-  async perform(organizationId: string, tableName: string, fileBuffer: Buffer) {
+  async perform(organizationId: string, tableName: string, fileBuffer: Buffer, environmentId?: string) {
     const internalTable = await this.manager.findOne(InternalTable, {
       select: ['id'],
       where: { organizationId, tableName },
@@ -39,20 +46,22 @@ export class TooljetDbBulkUploadService {
       throw new HttpException("You've reached your limit of rows in ToolJet database tables. Upgrade for more.", 451);
     }
 
-    return await this.bulkUploadCsv(internalTable.id, fileBuffer, organizationId, remainingRowCapacity);
+    return await this.bulkUploadCsv(internalTable.id, fileBuffer, organizationId, environmentId, remainingRowCapacity);
   }
 
   async bulkUploadCsv(
     internalTableId: string,
     fileBuffer: Buffer,
     organizationId: string,
+    environmentId?: string,
     remainingRowCapacity: number = Infinity
   ): Promise<{ processedRows: number }> {
     return await this.bulkUploadUtilService.bulkUploadCsv(
       internalTableId,
       fileBuffer,
       organizationId,
-      remainingRowCapacity
+      remainingRowCapacity,
+      environmentId
     );
   }
 
@@ -60,7 +69,8 @@ export class TooljetDbBulkUploadService {
     payload: Array<{ [key: string]: any }>,
     tableId: string,
     primaryKeyColumns: string | string[],
-    organizationId: string
+    organizationId: string,
+    environmentId: string | undefined
   ): Promise<{ status: string; updatedRows: number; error?: string; data?: Array<{ [key: string]: any }> }> {
     if (!payload || payload.length === 0) {
       throw new Error('Payload is empty. Nothing to update.');
@@ -74,12 +84,36 @@ export class TooljetDbBulkUploadService {
       throw new NotFoundException(`Table not found`);
     }
 
+    // getRelation's "not found in this environment" throws NotFoundException, same as the tenancy
+    // check above - a real miss, not the structured { status: 'failed' } shape this method returns
+    // from inside the try block below.
+    const { relation } = await this.tableOperationsService.resolveTableById(
+      organizationId,
+      tableId,
+      environmentId,
+      this.manager
+    );
+
     const primaryKeys = Array.isArray(primaryKeyColumns) ? primaryKeyColumns : [primaryKeyColumns];
     const tenantSchema = findTenantSchema(organizationId);
     let updatedRowsCount = 0;
     const updatedRowsData = [];
 
     try {
+      const { columns } = await this.tableOperationsService.perform(
+        organizationId,
+        'view_table',
+        { id: tableId },
+        environmentId
+      );
+      const unknownColumns = columnsMissingFromTable(
+        [...primaryKeys, ...payload.flatMap((row) => Object.keys(row))],
+        columns || []
+      );
+      if (unknownColumns.length > 0) {
+        throw new Error(`Columns not found in table: ${unknownColumns.join(', ')}`);
+      }
+
       for (const row of payload) {
         // Validate primary keys
         const primaryKeyConditions = primaryKeys.map((key) => {
@@ -94,14 +128,16 @@ export class TooljetDbBulkUploadService {
 
         if (columnsToUpdate.length === 0) continue; // No updateable fields
 
-        const setClause = columnsToUpdate.map(([column, _], index) => `"${column}" = $${index + 1}`).join(', ');
+        const setClause = columnsToUpdate
+          .map(([column], index) => `${escapeIdentifier(column)} = $${index + 1}`)
+          .join(', ');
 
         const whereClause = primaryKeyConditions
-          .map(({ key }, index) => `"${key}" = $${columnsToUpdate.length + index + 1}`)
+          .map(({ key }, index) => `${escapeIdentifier(key)} = $${columnsToUpdate.length + index + 1}`)
           .join(' AND ');
 
         const query = `
-          UPDATE "${tenantSchema}"."${tableId}"
+          UPDATE "${tenantSchema}"."${relation.id}"
           SET ${setClause}
           WHERE ${whereClause}
           RETURNING *;
@@ -138,7 +174,8 @@ export class TooljetDbBulkUploadService {
     rows: Record<string, any>[],
     tableId: string,
     primaryKeyColumns: string[],
-    organizationId: string
+    organizationId: string,
+    environmentId: string | undefined
   ): Promise<{ status: string; inserted: number; updated: number; rows: any[]; error?: string }> {
     const rowsToUpsert = [...rows];
     if (isEmpty(rowsToUpsert)) {
@@ -174,6 +211,29 @@ export class TooljetDbBulkUploadService {
       };
     }
 
+    // getRelation's "not found in this environment" throws NotFoundException, but this method's
+    // convention is the structured { status: 'failed' } return, not a throw - convert only that;
+    // a transient failure (e.g. the app-DB call itself failing) should propagate, not be reported
+    // as a business-level failure.
+    let relation: InternalTableRelation;
+    try {
+      ({ relation } = await this.tableOperationsService.resolveTableById(
+        organizationId,
+        tableId,
+        environmentId,
+        this.manager
+      ));
+    } catch (error) {
+      if (!(error instanceof NotFoundException)) throw error;
+      return {
+        status: 'failed',
+        error: error.message,
+        inserted: 0,
+        updated: 0,
+        rows: [],
+      };
+    }
+
     // Conservative: treats every row in the batch as a potential new row, since knowing which
     // primary keys already exist would need an extra query. Safe default for a hard cap.
     const remainingRowCapacity = await this.tableOperationsService.getRemainingRowCapacity(organizationId);
@@ -187,9 +247,14 @@ export class TooljetDbBulkUploadService {
       };
     }
 
-    const result = await this.tableOperationsService.perform(organizationId, 'view_table', {
-      id: tableId,
-    });
+    const result = await this.tableOperationsService.perform(
+      organizationId,
+      'view_table',
+      {
+        id: tableId,
+      },
+      environmentId
+    );
     const tableColumns = result?.columns || [];
 
     // Check if pk columns exist in the table
@@ -212,6 +277,20 @@ export class TooljetDbBulkUploadService {
       return {
         status: 'failed',
         error: `Columns are not primary keys: ${nonPrimaryKeyColumns.join(', ')}`,
+        inserted: 0,
+        updated: 0,
+        rows: [],
+      };
+    }
+
+    const unknownColumns = columnsMissingFromTable(
+      rowsToUpsert.flatMap((row) => Object.keys(row)),
+      tableColumns
+    );
+    if (unknownColumns.length > 0) {
+      return {
+        status: 'failed',
+        error: `Columns not found in table: ${unknownColumns.join(', ')}`,
         inserted: 0,
         updated: 0,
         rows: [],
@@ -261,7 +340,7 @@ export class TooljetDbBulkUploadService {
       for (const [groupKey, groupRows] of rowGroups.entries()) {
         // The provided columns for this group are exactly the keys in the group.
         const providedColumns = groupKey.split(','); // sorted keys
-        const columnsQuoted = providedColumns.map((col) => `"${col}"`);
+        const columnsQuoted = providedColumns.map((col) => escapeIdentifier(col));
 
         // Build the VALUES clause for this group
         let parameterIndex = 1;
@@ -292,18 +371,20 @@ export class TooljetDbBulkUploadService {
         if (omittedSerialPKs.length > 0) {
           // For groups omitting serial PKs, use plain INSERT (so PostgreSQL auto-generates those values)
           queryText = `
-            INSERT INTO "${tenantSchema}"."${tableId}" (${columnsQuoted.join(', ')})
+            INSERT INTO "${tenantSchema}"."${relation.id}" (${columnsQuoted.join(', ')})
             VALUES ${allValueSets.join(', ')}
             RETURNING *, true as inserted;
           `;
         } else {
           // For groups with all primary keys provided, use UPSERT
-          const conflictTarget = primaryKeyColumns.map((col) => `"${col}"`).join(', ');
+          const conflictTarget = primaryKeyColumns.map((col) => escapeIdentifier(col)).join(', ');
           // Update only non-PK columns
           const updateColumns = providedColumns.filter((col) => !primaryKeyColumns.includes(col));
-          const onConflictUpdates = updateColumns.map((col) => `"${col}" = EXCLUDED."${col}"`).join(',\n        ');
+          const onConflictUpdates = updateColumns
+            .map((col) => `${escapeIdentifier(col)} = EXCLUDED.${escapeIdentifier(col)}`)
+            .join(',\n        ');
           queryText = `
-            INSERT INTO "${tenantSchema}"."${tableId}" (${columnsQuoted.join(', ')})
+            INSERT INTO "${tenantSchema}"."${relation.id}" (${columnsQuoted.join(', ')})
             VALUES ${allValueSets.join(', ')}
             ON CONFLICT (${conflictTarget})
             DO UPDATE SET

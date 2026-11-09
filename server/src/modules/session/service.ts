@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  BadRequestException,
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import {
@@ -48,6 +54,27 @@ export class SessionService {
   }
 
   async getSessionDetails(user: User, workspaceSlug: string, appId: string, aiCookies: any): Promise<any> {
+    if (user.oauthGrantId && user.oauthAppId) {
+      // Browser render bootstrap stays pinned and never changes the owner's default workspace.
+      const app = await this.appsRepository.findOne({
+        where: { id: user.oauthAppId, organizationId: user.organizationId },
+      });
+      const organization = await this.organizationRepository.fetchOrganization(user.organizationId);
+      if (
+        !app ||
+        !organization ||
+        app.organizationId !== user.organizationId ||
+        organization.id !== user.organizationId ||
+        (appId && appId !== app.id && appId !== app.slug) ||
+        (workspaceSlug && workspaceSlug !== organization.id && workspaceSlug !== organization.slug)
+      )
+        throw new ForbiddenException('This rendering credential is pinned to one app and workspace');
+      return this.sessionUtilService.generateSessionPayload(user, organization, {
+        organizationId: organization.id,
+        isPublic: app.isPublic,
+        isReleased: !!app.currentVersionId,
+      });
+    }
     let appData: { organizationId: string; isPublic: boolean; isReleased: boolean };
     let currentOrganization: Organization;
     if (appId) {

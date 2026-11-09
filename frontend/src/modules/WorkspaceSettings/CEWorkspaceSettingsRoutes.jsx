@@ -2,7 +2,9 @@ import React from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { AdminRoute } from '@/Routes';
 import WorkspaceSettingsPage from './WorkspaceSettingsPage';
-import { WorkspaceLoginSettings, ManageOrgUsers, ManageGroupPermissionsV2 } from './pages';
+import WorkspaceLoginSettings from './pages/WorkspaceLogin';
+import ManageOrgUsers from './pages/Users';
+import ManageGroupPermissionsV2 from './pages/Groups/ManageGroupPermissionsPage';
 
 export const getCEWorkspaceSettingsRoutes = (props) => [
   <Route index key="index" element={<Navigate to="users" replace />} />,

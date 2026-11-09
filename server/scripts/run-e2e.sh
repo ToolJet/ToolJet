@@ -11,6 +11,7 @@
 #   npm run test:e2e -- --ci                          # parallel per-shard DBs (CI)
 #   npm run test:e2e:cov                              # sequential shards + coverage
 #   npm run test:e2e:cov -- --ci                      # parallel + coverage (CI)
+#   npm run test:e2e:cov -- --only-shard 2            # just shard 2 (one CI machine per shard)
 
 set -o pipefail
 
@@ -38,6 +39,7 @@ fmt_duration() {
 # ---------------------------------------------------------------------------
 mode="sequential"   # sequential | ci
 coverage=false
+only_shard=""
 jest_extra_args=()
 json_output_dir=""
 _args=("$@")
@@ -46,6 +48,7 @@ while [[ $_i -lt ${#_args[@]} ]]; do
   case "${_args[$_i]}" in
     --ci)              mode="ci" ;;
     --coverage)        coverage=true ;;
+    --only-shard)      _i=$((_i + 1)); only_shard="${_args[$_i]}" ;;
     --json-output-dir) _i=$((_i + 1)); json_output_dir="${_args[$_i]}" ;;
     *)                 jest_extra_args+=("${_args[$_i]}") ;;
   esac
@@ -100,6 +103,11 @@ psql_cmd() {
 # ---------------------------------------------------------------------------
 printf "\033[1m━━━ Pre-reset database ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n"
 NODE_ENV=test npx ts-node -r tsconfig-paths/register --transpile-only scripts/truncate-test-db.ts
+# Sequential mode reuses one shared TOOLJET_DB across all shards (unlike --ci,
+# which clones/drops a whole per-shard database) - SKIP_GLOBAL_SETUP=1 below
+# means jest's own globalSetup/globalTeardown snapshot+clean pair never runs,
+# so this brackets the run the same way at the script level instead.
+[ "$mode" = "sequential" ] && NODE_ENV=test npx ts-node -r tsconfig-paths/register --transpile-only scripts/reset-tooljet-db-schemas.ts snapshot
 printf "\n"
 
 # ---------------------------------------------------------------------------
@@ -111,7 +119,10 @@ SHARD_JEST_ARGS=(--runInBand --colors --passWithNoTests --forceExit)
 [ "$coverage" = true ] && SHARD_JEST_ARGS+=(--coverage --coverageReporters=json)
 
 SHARD_LOG_DIR=$(mktemp -d)
-trap 'rm -rf "$SHARD_LOG_DIR"' EXIT
+trap '
+  rm -rf "$SHARD_LOG_DIR"
+  [ "$mode" = "sequential" ] && NODE_ENV=test npx ts-node -r tsconfig-paths/register --transpile-only scripts/reset-tooljet-db-schemas.ts clean
+' EXIT
 
 total_passed=0; total_failed=0; total_suites=0
 tests_passed=0; tests_failed=0
@@ -140,7 +151,7 @@ collect_shard_results() {
 # Sequential mode (default): one shard at a time, shared DB
 # ---------------------------------------------------------------------------
 if [ "$mode" = "sequential" ]; then
-  for s in $(seq 1 $SHARDS); do
+  for s in ${only_shard:-$(seq 1 $SHARDS)}; do
     json_args=()
     [[ -n "$json_output_dir" ]] && json_args=(--json --outputFile "$json_output_dir/shard-$s.json")
 
@@ -238,7 +249,7 @@ if [ "$coverage" = true ]; then
   # skip rendering them twice. Local standalone runs are the audience that actually
   # opens this report, so keep the full set there.
   merge_reporters="json,html,lcovonly,json-summary"
-  [ "$mode" = "ci" ] && merge_reporters="json"
+  [[ "$mode" = "ci" || -n "$only_shard" ]] && merge_reporters="json"
   node scripts/merge-coverage.mjs --out coverage-e2e --reporters "$merge_reporters" .coverage
   rm -rf .coverage
 

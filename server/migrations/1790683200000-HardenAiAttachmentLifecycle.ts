@@ -1,3 +1,4 @@
+// migration-lint: allow-destructive the state check only widens; ai_attachments is new to every release this upgrades async
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 /** Forward-only compatibility for environments that already applied the attachment metadata migration. */

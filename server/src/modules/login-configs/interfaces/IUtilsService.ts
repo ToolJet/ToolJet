@@ -37,7 +37,7 @@ export interface ILoginConfigsUtilService {
 
   buildConfigs(config: any, configId: string): any;
 
-  encryptSecret(configs: any): Promise<any>;
+  encryptSecret(configs: any, previousConfigs?: Record<string, any>): Promise<any>;
 
   decryptSecret(configs: any): Promise<any>;
 

@@ -461,6 +461,18 @@ export const runWorkflowFromEditor = (timeout = 120000) => {
     .its("response.body.result");
 };
 
+// An app's workflow query runs the workflow's released version.
+export const releaseWorkflow = (workflowName) => {
+  cy.then(() => {
+    const workflowId = Cypress.env("workflowId");
+    cy.apiPublishDraftVersion("v1", "", workflowId);
+    cy.apiPromoteAppVersion(Cypress.env("environmentId"), workflowId).then(
+      () => cy.apiPromoteAppVersion(Cypress.env("stagingEnvId"), workflowId)
+    );
+    cy.apiReleaseApp(workflowName);
+  });
+};
+
 // An app's workflow query triggers the run the same synchronous way, so the
 // trigger response carries the workflow's result.
 export const previewWorkflowQueryInApp = (expectedText, timeout = 60000) => {
@@ -551,4 +563,102 @@ export const verifyTextInResponseOutputLimited = (expectedText, limit = 5) => {
       `Expected some value to include "${expectedText}", but got:\n\n${texts.join("\n")}`
     ).to.be.true;
   });
+};
+// Graph builders for cy.apiSaveWorkflowDefinition.
+
+export const wfStartNode = (id = "start") => ({
+  id,
+  type: "input",
+  data: { nodeType: "start", label: "Start trigger" },
+  position: { x: 100, y: 250 },
+  sourcePosition: "right",
+  deletable: false,
+});
+
+// `queryId` is the data query created by cy.apiCreateWorkflowNode.
+export const wfQueryNode = (id, queryId, kind = "runjs", extraData = {}) => ({
+  id,
+  type: "query",
+  data: { idOnDefinition: queryId, kind, options: {}, ...extraData },
+  position: { x: 400, y: 250 },
+  sourcePosition: "right",
+  targetPosition: "left",
+});
+
+// `code` is an expression (no `return`); its truthiness picks the branch.
+export const wfIfNode = (id, code, nodeName = "ifCondition1") => ({
+  id,
+  type: "if-condition",
+  data: { code, label: "If condition", nodeName },
+  position: { x: 400, y: 250 },
+  sourcePosition: "right",
+  targetPosition: "left",
+});
+
+// `code` is a function body (`return ...`). statusCode is used literally.
+export const wfResponseNode = (
+  id,
+  code,
+  statusCode = "200",
+  nodeName = "response1"
+) => ({
+  id,
+  type: "output",
+  data: {
+    nodeType: "response",
+    label: "Response",
+    code,
+    statusCode: { fxActive: false, value: statusCode },
+    nodeName,
+  },
+  position: { x: 800, y: 250 },
+  sourcePosition: "right",
+  targetPosition: "left",
+});
+
+// sourceHandle: null from start, success/failure from query nodes, true/false from if nodes.
+export const wfEdge = (source, target, sourceHandle = null) => ({
+  id: `${source}-${sourceHandle ?? "out"}-${target}`,
+  source,
+  target,
+  sourceHandle,
+  type: "custom",
+});
+
+export const workflowDefinition = ({
+  nodes,
+  edges,
+  queryIds = [],
+  defaultParams = "{}",
+  webhookParams = [],
+  setupScript = { javascript: "" },
+}) => ({
+  nodes,
+  edges,
+  queries: queryIds.map((id) => ({ idOnDefinition: id, id })),
+  webhookParams,
+  defaultParams,
+  dependencies: { javascript: { dependencies: {} } },
+  setupScript,
+});
+
+// Query nodes are named by definition.handle (the query name).
+export const findExecutionNode = (nodes, name) =>
+  nodes.find(
+    (node) =>
+      node.definition?.handle === name || node.definition?.nodeName === name
+  );
+
+// Creates runjs data queries for a graph and resolves with { name: queryId }.
+export const createRunjsQueries = (queries) => {
+  const ids = {};
+  cy.apiGetDataSourceId("runjs");
+  Object.entries(queries).forEach(([name, code]) => {
+    cy.apiCreateWorkflowNode("runjs", name, { code, parameters: [] }).then(
+      () => {
+        ids[name] = Cypress.env(`${name}QueryId`);
+      }
+    );
+  });
+  return cy.wrap(ids);
 };

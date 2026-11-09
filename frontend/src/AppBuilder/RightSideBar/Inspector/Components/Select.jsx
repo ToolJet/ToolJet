@@ -458,7 +458,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                               }
                             }}
                           >
-                            <div key={item?.value}>
+                            <div key={item?.value} data-list-item-id={String(item?.value ?? '')}>
                               <ListGroup.Item
                                 style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
                                 onMouseEnter={() => setHoveredOptionIndex(index)}

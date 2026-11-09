@@ -32,7 +32,8 @@
     },
     {
       "componentType": "KeyValuePair",
-      "status": "not-started"
+      "status": "approved",
+      "contract": "ee/test/app-builder/widgets/KeyValuePair/TESTING.md"
     },
     {
       "componentType": "Form",
@@ -57,7 +58,8 @@
     },
     {
       "componentType": "Tabs",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Tabs/TESTING.md"
     },
     {
       "componentType": "Listview",
@@ -65,7 +67,8 @@
     },
     {
       "componentType": "Calendar",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Calendar/TESTING.md"
     },
     {
       "componentType": "Kanban",
@@ -73,23 +76,28 @@
     },
     {
       "componentType": "TextInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/TextInput/TESTING.md"
     },
     {
       "componentType": "EmailInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/EmailInput/TESTING.md"
     },
     {
       "componentType": "PasswordInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/PasswordInput/TESTING.md"
     },
     {
       "componentType": "TextArea",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/TextArea/TESTING.md"
     },
     {
       "componentType": "RichTextEditor",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/RichTextEditor/TESTING.md"
     },
     {
       "componentType": "NumberInput",
@@ -98,11 +106,13 @@
     },
     {
       "componentType": "PhoneInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/PhoneInput/TESTING.md"
     },
     {
       "componentType": "CurrencyInput",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/CurrencyInput/TESTING.md"
     },
     {
       "componentType": "RangeSliderV2",
@@ -137,7 +147,8 @@
     },
     {
       "componentType": "RadioButtonV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/RadioButtonV2/TESTING.md"
     },
     {
       "componentType": "FileInput",
@@ -156,19 +167,23 @@
     },
     {
       "componentType": "DatePickerV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/DatePickerV2/TESTING.md"
     },
     {
       "componentType": "TimePicker",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/TimePicker/TESTING.md"
     },
     {
       "componentType": "DatetimePickerV2",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/DatetimePickerV2/TESTING.md"
     },
     {
       "componentType": "DaterangePicker",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/DaterangePicker/TESTING.md"
     },
     {
       "componentType": "Navigation",
@@ -197,7 +212,8 @@
     },
     {
       "componentType": "Image",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Image/TESTING.md"
     },
     {
       "componentType": "SvgImage",
@@ -206,23 +222,28 @@
     },
     {
       "componentType": "PDF",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/PDF/TESTING.md"
     },
     {
       "componentType": "Map",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Map/TESTING.md"
     },
     {
       "componentType": "AudioRecorder",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/AudioRecorder/TESTING.md"
     },
     {
       "componentType": "Camera",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/Camera/TESTING.md"
     },
     {
       "componentType": "Text",
-      "status": "not-started"
+      "status": "partial",
+      "contract": "ee/test/app-builder/widgets/Text/TESTING.md"
     },
     {
       "componentType": "Tags",
@@ -269,11 +290,13 @@
     },
     {
       "componentType": "JSONExplorer",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/JSONExplorer/TESTING.md"
     },
     {
       "componentType": "CustomComponent",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/CustomComponent/TESTING.md"
     },
     {
       "componentType": "LibraryComponent",
@@ -296,11 +319,13 @@
     },
     {
       "componentType": "CodeEditor",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/CodeEditor/TESTING.md"
     },
     {
       "componentType": "ColorPicker",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/ColorPicker/TESTING.md"
     },
     {
       "componentType": "BoundedBox",
@@ -309,7 +334,8 @@
     },
     {
       "componentType": "QrScanner",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/QrScanner/TESTING.md"
     },
     {
       "componentType": "Chat",
@@ -321,7 +347,8 @@
     },
     {
       "componentType": "JSONEditor",
-      "status": "not-started"
+      "status": "verified",
+      "contract": "ee/test/app-builder/widgets/JSONEditor/TESTING.md"
     },
     {
       "componentType": "Modal",

@@ -11,8 +11,9 @@
         }
 
         .cm-gutters {
-            width: 42px !important;
-            background-color: var(--interactive-default) !important;
+            width: auto !important;
+            min-width: 42px !important;
+            background-color: var(--cc-surface3-surface) !important;
             color: var(--text-disabled) !important;
             border-right: 1px solid var(--borders-disabled-on-white) !important;
             align-self: stretch !important;
@@ -21,11 +22,9 @@
 
         .cm-scroller {
             overflow-y: auto !important;
-            overflow-x: hidden !important;
+            overflow-x: auto !important;
             overscroll-behavior: contain;
+            overscroll-behavior-x: none;
         }
-    }
-    .cm-diagnostic-error {
-        background-color: var(--cc-surface1-surface);
     }
 }
