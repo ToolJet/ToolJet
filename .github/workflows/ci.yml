@@ -369,7 +369,7 @@ jobs:
             npm run validate:widget-testing-contracts
           fi
 
-  # Each of the 3 unit shards and each of the 3 e2e shards run on their own machine, in
+  # Each of the 3 unit shards and each of the 5 e2e shards run on their own machine, in
   # parallel. Running the shards side by side on one machine (run-e2e.sh --ci) ran
   # it out of memory. test-server-coverage merges their coverage once all pass.
   test-server:
@@ -518,7 +518,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4, 5]
     container: node:22.23.4-bookworm
     services: *server-test-services
     env: *server-test-env
