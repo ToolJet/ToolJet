@@ -1,3 +1,11 @@
+@import "../../../_styles/mixins.scss";
+
+// The viewer canvas hands a permanently visible `scrollbar-color` down to every scroller inside it,
+// while the editor hides it until hover. Reveal on hover in the viewer to match the editor.
+.viewer .radio-button-options {
+  @include hover-reveal-scrollbar;
+}
+
  /* label container */
  .radio-button-container {
     position: relative;
