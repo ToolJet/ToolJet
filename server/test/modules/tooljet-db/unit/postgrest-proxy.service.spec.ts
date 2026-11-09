@@ -105,6 +105,12 @@ describe('PostgREST proxy', () => {
       expect(httpProxy).toHaveBeenCalled();
     });
 
+    it('allows a bulk insert that uses exactly the rows the Workspace has left', async () => {
+      const { proxy, httpProxy } = proxyFor(2);
+      await proxy.proxy(postRequest([{ name: 'a' }, { name: 'b' }]), { set: jest.fn() }, jest.fn());
+      expect(httpProxy).toHaveBeenCalled();
+    });
+
     it('rejects a bulk insert with more rows than the Workspace has left', async () => {
       const { proxy, httpProxy } = proxyFor(1);
       await expect(
