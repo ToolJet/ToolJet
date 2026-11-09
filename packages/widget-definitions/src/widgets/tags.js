@@ -171,6 +171,11 @@ export const tagsConfig = {
       displayName: 'Set loading',
       params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
+    {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [{ handle: 'value', displayName: 'Value', defaultValue: "{{[{ title: 'New tag' }]}}", type: 'code' }],
+    },
   ],
   definition: {
     others: {
