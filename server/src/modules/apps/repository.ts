@@ -437,6 +437,13 @@ export class AppsRepository extends Repository<App> {
     organizationId: string,
     workflowId: string
   ): Promise<{ id: string; name: string; type: string }[]> {
+    // Queries store the workflow's co_relation_id (git identity); older ones its id. Match both, as
+    // resolveWorkflowRef does at run time, under either option key readWorkflowQueryRefs reads.
+    const workflow = await this.manager.findOne(App, {
+      where: { id: workflowId, organizationId },
+      select: ['id', 'co_relation_id'],
+    });
+    const refs = [workflowId, workflow?.co_relation_id].filter(Boolean);
     const qb = await this.canonicalAppNamesQuery(organizationId);
     return await qb
       .addSelect('app.type AS type')
@@ -448,10 +455,10 @@ export class AppsRepository extends Repository<App> {
           JOIN app_versions av ON av.id = dq.app_version_id
           WHERE av.app_id = app.id
             AND ds.kind = 'workflows'
-            AND dq.options::jsonb ->> 'workflowId' = :workflowIdText
+            AND COALESCE(dq.options::jsonb ->> 'workflowId', dq.options::jsonb ->> 'workflow_id') IN (:...workflowRefs)
         )`,
         // Separate binding: a shared one is typed uuid and fails against JSON text.
-        { workflowIdText: workflowId }
+        { workflowRefs: refs }
       )
       .orderBy('COALESCE(av_meta.app_name, app.name)', 'ASC')
       .getRawMany();
