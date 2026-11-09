@@ -5,6 +5,7 @@ import {
   Cascader as AntCascader,
   ColorPicker as AntColorPicker,
   DatePicker,
+  Grid,
   Spin,
   TimePicker as AntTimePicker,
   Transfer as AntTransfer,
@@ -39,6 +40,14 @@ const parseDate = (v: unknown, format?: string): Dayjs | null => {
   if (!s) return null;
   const d = format ? dayjs(`2000-01-01 ${s}`, `YYYY-MM-DD ${format}`) : dayjs(s);
   return d.isValid() ? d : null;
+};
+
+// The panel before the one `end` is in, for each picker: Ant's Range Picker opens the end field there when the range
+// spans panels, so the end shows in its second panel.
+const panelBefore = (picker: string, end: Dayjs, shown: Dayjs) => {
+  if (picker === 'year') return Math.floor(shown.year() / 10) === Math.floor(end.year() / 10) - 1;
+  if (picker === 'month' || picker === 'quarter') return shown.year() === end.year() - 1;
+  return shown.isSame(end.subtract(1, 'month'), 'month');
 };
 
 type FileInfo = { uid: string; name: string; size: number; type: string; base64: string; content: string };
@@ -439,7 +448,9 @@ export const RangePicker = (props: Record<string, unknown>) => {
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const pair = toArray(value).map((v) => parseDate(v));
+  // The same dates while the value is the same: Ant resets the shown panel whenever the value it is given changes, and
+  // the one-panel correction below answers each reset (a new pair each render reset it again, without end).
+  const pair = React.useMemo(() => toArray(value).map((v) => parseDate(v)), [JSON.stringify(value)]); // eslint-disable-line react-hooks/exhaustive-deps
   const check = ToolJet.useValidation({ kind: 'date', value: pair[0] ? str(toArray(value)[0]) : '' });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
@@ -468,6 +479,22 @@ export const RangePicker = (props: Record<string, unknown>) => {
   };
   useFieldActions(change, props.value);
   const panel = useOwnedPopup(disabled, (open) => !open && check.touch());
+  // Ant has no phone layout: its two panels side by side (576px) ran off a phone screen (QA item 22). On Ant's xs
+  // screens (below its sm breakpoint, 576px) one panel shows (controls.css). Ant opens the end field a panel early
+  // when the range spans panels, to show the end in the second one; with one shown, it opens on the end's own panel.
+  const single = Grid.useBreakpoint().xs === true;
+  const [shownPanels, setShownPanels] = useState<[Dayjs, Dayjs] | undefined>();
+  const onePanel = single
+    ? {
+        pickerValue: shownPanels,
+        onPickerValueChange: (next: [Dayjs, Dayjs], info: { source: string; range?: string }) => {
+          const end = pair[1];
+          const early =
+            info.source === 'reset' && info.range === 'end' && end && panelBefore(str(picker), end, next[1]);
+          setShownPanels(early ? [next[0], end as Dayjs] : next);
+        },
+      }
+    : {};
   return (
     <AntProvider tokens={tokens} ownerRef={panel.anchor}>
       <FormField {...field} check={check} htmlFor={fieldId}>
@@ -475,6 +502,7 @@ export const RangePicker = (props: Record<string, unknown>) => {
           <WithPopupTheme>
             {(popup) => (
               <DatePicker.RangePicker
+                {...onePanel}
                 id={fieldId as never}
                 style={{ width: '100%' }}
                 value={pair[0] && pair[1] ? [pair[0], pair[1]] : null}
@@ -487,7 +515,7 @@ export const RangePicker = (props: Record<string, unknown>) => {
                 variant={look.variant}
                 size={look.size}
                 status={check.error ? 'error' : undefined}
-                popupClassName={popup.className}
+                popupClassName={single ? `${popup.className ?? ''} tj-ant-range--single`.trim() : popup.className}
                 popupStyle={popup.style}
                 open={panel.open}
                 onOpenChange={panel.onOpenChange}
