@@ -85,12 +85,7 @@ export class PostgrestProxyService {
 
     if (['PATCH', 'POST'].includes(req.method)) {
       const { path: resolvedTableId } = extractTableRefs(rewrittenUrl);
-      req.body = await this.validateJSONBInputs(
-        organizationId,
-        tableInfo[resolvedTableId],
-        req.body,
-        environmentId
-      );
+      req.body = await this.validateJSONBInputs(organizationId, tableInfo[resolvedTableId], req.body, environmentId);
     }
 
     return this.httpProxy(req, res, next);

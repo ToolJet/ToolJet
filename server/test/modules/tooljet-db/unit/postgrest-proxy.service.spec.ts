@@ -15,7 +15,7 @@ const config = { get: () => 'http://localhost:3002' };
 describe('PostgREST proxy', () => {
   describe('schema cache rejection', () => {
     it('returns a retryable explicit rejection instead of hanging when PostgREST returns an empty error', () => {
-      new PostgrestProxyService({} as never, config as never, {} as never, {} as never);
+      new PostgrestProxyService({} as never, config as never, {} as never, {} as never, {} as never);
       try {
         options.userResDecorator(
           { statusCode: 404 },
@@ -36,14 +36,20 @@ describe('PostgREST proxy', () => {
       const tableOperations = {
         perform: jest.fn().mockResolvedValue({ columns }),
       };
-      const proxy = new PostgrestProxyService({} as never, config as never, {} as never, tableOperations as never);
+      const proxy = new PostgrestProxyService(
+        {} as never,
+        config as never,
+        {} as never,
+        tableOperations as never,
+        {} as never
+      );
       return { proxy, tableOperations };
     };
 
     it('keeps a list of rows a list when the table has no JSONB columns', async () => {
       const { proxy } = service([{ column_name: 'name', data_type: 'text' }]);
       const rows = [{ name: 'a' }, { name: 'b' }];
-      expect(await proxy['validateJSONBInputs']('org', 'garden', rows)).toEqual(rows);
+      expect(await proxy['validateJSONBInputs']('org', 'garden', rows, undefined)).toEqual(rows);
     });
 
     it('parses JSONB values row by row and reads the table once', async () => {
@@ -52,7 +58,7 @@ describe('PostgREST proxy', () => {
         { name: 'a', meta: '{"x":1}' },
         { name: 'b', meta: { y: 2 } },
       ];
-      expect(await proxy['validateJSONBInputs']('org', 'garden', rows)).toEqual([
+      expect(await proxy['validateJSONBInputs']('org', 'garden', rows, undefined)).toEqual([
         { name: 'a', meta: { x: 1 } },
         { name: 'b', meta: { y: 2 } },
       ]);
@@ -62,18 +68,20 @@ describe('PostgREST proxy', () => {
     it('rejects a list with an invalid JSONB value in any row', async () => {
       const { proxy } = service([{ column_name: 'meta', data_type: 'jsonb' }]);
       await expect(
-        proxy['validateJSONBInputs']('org', 'garden', [{ meta: { ok: true } }, { meta: 'not json' }])
+        proxy['validateJSONBInputs']('org', 'garden', [{ meta: { ok: true } }, { meta: 'not json' }], undefined)
       ).rejects.toBeInstanceOf(HttpException);
     });
 
     it('leaves a single row as it was', async () => {
       const { proxy } = service([{ column_name: 'meta', data_type: 'jsonb' }]);
-      expect(await proxy['validateJSONBInputs']('org', 'garden', { name: 'a', meta: '{"x":1}' })).toEqual({
+      expect(await proxy['validateJSONBInputs']('org', 'garden', { name: 'a', meta: '{"x":1}' }, undefined)).toEqual({
         name: 'a',
         meta: { x: 1 },
       });
       const plain = service([{ column_name: 'name', data_type: 'text' }]);
-      expect(await plain.proxy['validateJSONBInputs']('org', 'garden', { name: 'a' })).toEqual({ name: 'a' });
+      expect(await plain.proxy['validateJSONBInputs']('org', 'garden', { name: 'a' }, undefined)).toEqual({
+        name: 'a',
+      });
     });
 
     const proxyFor = (remainingRowCapacity: number) => {
@@ -81,17 +89,23 @@ describe('PostgREST proxy', () => {
         perform: jest.fn().mockResolvedValue({ columns: [{ column_name: 'name', data_type: 'text' }] }),
         getRemainingRowCapacity: jest.fn().mockResolvedValue(remainingRowCapacity),
       };
-      const manager = { findOne: jest.fn().mockResolvedValue({ tableName: 'garden' }) };
-      const proxy = new PostgrestProxyService(manager as never, config as never, {} as never, tableOperations as never);
+      const proxy = new PostgrestProxyService(
+        {} as never,
+        config as never,
+        {} as never,
+        tableOperations as never,
+        {} as never
+      );
       proxy['signJwtPayload'] = () => 'token';
-      proxy.replaceTableNamesAtPlaceholder = async (url: string) => url;
+      proxy['resolveAndRewrite'] = async (url: string) => ({ url, tableInfo: { [tableId]: 'garden' } });
       const httpProxy = jest.fn();
       proxy['httpProxy'] = httpProxy;
       return { proxy, httpProxy };
     };
+    const tableId = '11111111-1111-4111-8111-111111111111';
     const postRequest = (body: unknown) => ({
       method: 'POST',
-      url: '/api/tooljet-db/proxy/table-1',
+      url: `/api/tooljet-db/proxy/${tableId}`,
       headers: { 'tj-workspace-id': 'org' },
       body,
     });
