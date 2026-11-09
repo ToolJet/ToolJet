@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import { McpOAuthThrottleGuard } from '@modules/mcp-oauth/throttle.guard';
+import { McpOAuthAccountGuard } from '@modules/mcp-oauth/account.guard';
 import * as supertest from 'supertest';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { McpOAuthService } from '@modules/mcp-oauth/service';
@@ -41,6 +42,10 @@ test.each([{ edition: 'ce', enabled: 'true' }, { edition: 'ee', enabled: 'true' 
     controllers: [McpOAuthController, McpOAuthMetadataController],
     providers: [{ provide: McpOAuthService, useValue: oauth }],
   }).overrideGuard(McpOAuthThrottleGuard).useValue({ canActivate: () => true })
+    .overrideGuard(McpOAuthAccountGuard).useValue({ canActivate: context => {
+      context.switchToHttp().getRequest().user = { id: 'synthetic-user' };
+      return true;
+    } })
     .overrideGuard(JwtAuthGuard).useValue({ canActivate: context => {
       context.switchToHttp().getRequest().user = { id: 'synthetic-user', organizationId: 'synthetic-workspace' };
       return true;
@@ -51,11 +56,12 @@ test.each([{ edition: 'ce', enabled: 'true' }, { edition: 'ee', enabled: 'true' 
   try {
     const http = supertest(app.getHttpServer());
     for (const path of ['/.well-known/oauth-authorization-server/api/mcp-oauth', '/api/mcp-oauth/authorize',
-      '/api/mcp-oauth/interactions/synthetic', '/api/mcp-oauth/interactions/synthetic/session', '/api/mcp-oauth/connections']) {
+      '/api/mcp-oauth/interactions/synthetic', '/api/mcp-oauth/interactions/synthetic/session',
+      '/api/mcp-oauth/interactions/synthetic/workspaces', '/api/mcp-oauth/connections']) {
       await http.get(path).expect(404);
     }
     for (const path of ['register', 'exchange', 'viewer', 'interactions/synthetic/bootstrap',
-      'interactions/synthetic', 'connections/synthetic/revoke']) {
+      'interactions/synthetic', 'interactions/synthetic/workspace', 'interactions/synthetic/cancel', 'connections/synthetic/revoke']) {
       await http.post('/api/mcp-oauth/' + path).set('Origin', settings.TOOLJET_HOST).set('x-tooljet-oauth', '1')
         .send({ allow: true, ticket: 'synthetic-ticket', nonce: 'synthetic-nonce' }).expect(404);
     }

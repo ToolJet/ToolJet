@@ -95,6 +95,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.organizationIds = payload.organizationIds;
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
+        if (req['isMcpOAuthAccount']) {
+          // Preserve the enterprise strategy's upstream OIDC refresh/revocation
+          // checks on the workspace where this browser actually authenticated.
+          // The OAuth service authorizes the chosen destination separately.
+          user.organizationId = payload.workspaceAuthentication?.organizationId;
+          user.isSSOLogin = payload.isSSOLogin;
+          user.isPasswordLogin = payload.isPasswordLogin;
+          user.workspaceAuthentication = payload.workspaceAuthentication;
+        }
 
         return user;
       }

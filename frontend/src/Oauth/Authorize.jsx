@@ -28,8 +28,8 @@ export function Authorize({ navigate }) {
   const mcpReturn = isMcpOAuthConsentPath(stateRedirect)
     ? stateRedirect
     : !stateRedirect && isMcpOAuthConsentPath(cookieRedirect)
-      ? cookieRedirect
-      : null;
+    ? cookieRedirect
+    : null;
   const redirectUrl = mcpReturn || cookieRedirect || stateRedirect;
   const signupOrganizationSlug = mcpReturn ? null : authenticationService.getSignupOrganizationSlug();
   const inviteFlowIdentifier = mcpReturn ? null : authenticationService.getInviteFlowIndetifier();
@@ -344,10 +344,12 @@ export function Authorize({ navigate }) {
     };
 
     if (mcpContext) {
-      authenticationService
-        .signInViaOAuth(router.query.configId, router.query.origin, authParams, mcpContext)
-        .then(handleAuthResponse)
-        .catch(handleAuthError);
+      // Before workspace selection, retain the platform's general Cloud sign-in endpoint.
+      const login =
+        mcpContext.organizationId === null && fetchEdition() === 'cloud' && !router.query.configId
+          ? aiOnboardingService.signInViaOAuth(router.query.origin, authParams, utmParams)
+          : authenticationService.signInViaOAuth(router.query.configId, router.query.origin, authParams, mcpContext);
+      login.then(handleAuthResponse).catch(handleAuthError);
       return;
     }
 
@@ -388,9 +390,14 @@ export function Authorize({ navigate }) {
 
   const baseRoute = signupOrganizationSlug ? '/signup' : '/login';
   const slug = signupOrganizationSlug ? signupOrganizationSlug : organizationSlug;
-  const errorURL = `${baseRoute}${error && slug ? `/${slug}` : '/'}${
-    !signupOrganizationSlug && redirectUrl ? `?redirectTo=${redirectUrl}` : ''
-  }`;
+  const errorURL = mcpReturn
+    ? `/login${error && slug ? `/${slug}` : ''}?${new URLSearchParams({
+        redirectTo: mcpReturn,
+        oauth_reauthenticate: '1',
+      })}`
+    : `${baseRoute}${error && slug ? `/${slug}` : '/'}${
+        !signupOrganizationSlug && redirectUrl ? `?redirectTo=${redirectUrl}` : ''
+      }`;
   return (
     <div>
       <TJLoader />

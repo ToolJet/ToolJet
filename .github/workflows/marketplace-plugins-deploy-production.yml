@@ -20,81 +20,74 @@ on:
 
 env:
     PR_NUMBER: ${{ github.event.number }}
-    BRANCH_NAME: ${{ (github.event_name == 'release' && 'lts-3.16') || github.event.inputs.branch || github.head_ref || github.ref_name }}
+
+permissions:
+    contents: read
 
 jobs:
-    deploy-marketplace-plugin-production:
+    # 1. Who may deploy (the label path and manual runs). LTS releases skip this.
+    authorize:
         if: |
             github.event_name == 'workflow_dispatch' ||
-            (github.event_name == 'release' && contains(github.event.release.tag_name, '-lts')) ||
-            (github.event.action == 'labeled' && github.event.label.name == 'deploy-marketplace-plugin-prod')
+            (github.event_name == 'pull_request_target' && github.event.action == 'labeled' && github.event.label.name == 'deploy-marketplace-plugin-prod')
         runs-on: ubuntu-latest
+        permissions: {}
         steps:
-            # LTS releases are cut by release-automation.yml (gated on a merged release/* PR);
-            # trust that gate instead of the human allow-list for this trigger.
             - name: ✅ Check user authorization
-              if: github.event_name != 'release'
+              env:
+                  ALLOWED_USER1: ${{ secrets.ALLOWED_USER1_USERNAME }}
+                  ALLOWED_USER2: ${{ secrets.ALLOWED_USER2_USERNAME }}
+                  ALLOWED_USER3: ${{ secrets.ALLOWED_USER3_USERNAME }}
+                  HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+                  PLUGIN_NAME: ${{ github.event.inputs.plugin_name }}
               run: |
-                  allowed_user1="${{ secrets.ALLOWED_USER1_USERNAME }}"
-                  allowed_user2="${{ secrets.ALLOWED_USER2_USERNAME }}"
-                  allowed_user3="${{ secrets.ALLOWED_USER3_USERNAME }}"
-
-                  if [[ "${{ github.actor }}" != "$allowed_user1" && \
-                        "${{ github.actor }}" != "$allowed_user2" && \
-                        "${{ github.actor }}" != "$allowed_user3" ]]; then
-                    echo "❌ User '${{ github.actor }}' is not authorized to trigger this workflow."
+                  if [[ "$GITHUB_ACTOR" != "$ALLOWED_USER1" && \
+                        "$GITHUB_ACTOR" != "$ALLOWED_USER2" && \
+                        "$GITHUB_ACTOR" != "$ALLOWED_USER3" ]]; then
+                    echo "❌ User '$GITHUB_ACTOR' is not authorized to trigger this workflow."
                     echo "Only the following users can deploy to production:"
-                    echo "  - $allowed_user1"
-                    echo "  - $allowed_user2"
-                    echo "  - $allowed_user3"
+                    echo "  - $ALLOWED_USER1"
+                    echo "  - $ALLOWED_USER2"
+                    echo "  - $ALLOWED_USER3"
                     exit 1
-                  else
-                    echo "✅ User '${{ github.actor }}' is authorized to deploy to production."
+                  fi
+                  echo "✅ User '$GITHUB_ACTOR' is authorized to deploy to production."
+
+                  # Production deploys from a PR are only allowed for branches in this repository
+                  if [ "$GITHUB_EVENT_NAME" = "pull_request_target" ] && [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+                    echo "❌ Pull requests from forks cannot deploy to production ($HEAD_REPO)."
+                    echo "Merge the PR first, or push the branch to $GITHUB_REPOSITORY and open the PR from there."
+                    exit 1
                   fi
 
-            - name: Sync repo
-              uses: actions/checkout@v3
+                  if [[ ! "$PLUGIN_NAME" =~ ^[A-Za-z0-9_-]*$ ]]; then
+                    echo "❌ Plugin name may only contain letters, numbers, '-' and '_'."
+                    exit 1
+                  fi
 
-            - name: Check if PR is from the same repo
-              if: github.event_name == 'pull_request_target'
-              id: check_repo
-              run: echo "::set-output name=is_fork::$(if [[ '${{ github.event.pull_request.head.repo.full_name }}' != '${{ github.event.pull_request.base.repo.full_name }}' ]]; then echo true; else echo false; fi)"
-
-            - name: Fetch the remote branch if it's a forked PR
-              if: github.event_name == 'pull_request_target' && steps.check_repo.outputs.is_fork == 'true'
-              run: |
-                  git fetch origin pull/${{ github.event.number }}/head:${{ env.BRANCH_NAME }}
-                  git checkout ${{ env.BRANCH_NAME }}
-
-            - name: Checkout PR branch
-              if: github.event_name == 'pull_request_target' && steps.check_repo.outputs.is_fork == 'false'
-              uses: actions/checkout@v3
-              with:
-                  ref: ${{ github.event.pull_request.head.ref }}
-
-            - name: Checkout lts-3.16 for LTS release
-              if: github.event_name == 'release'
+    # 2. Build the plugins. Runs the code being deployed, so it gets NO secrets.
+    build:
+        needs: authorize
+        if: |
+            !cancelled() && (
+              (github.event_name == 'release' && contains(github.event.release.tag_name, '-lts')) ||
+              needs.authorize.result == 'success'
+            )
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+        steps:
+            # PR: the exact commit that was labelled. Release: lts-3.16. Manual run: the chosen branch.
+            - name: Checkout code to deploy
               uses: actions/checkout@v3
               with:
-                  ref: lts-3.16
-
-            - name: Checkout specified branch
-              if: github.event_name == 'workflow_dispatch'
-              uses: actions/checkout@v3
-              with:
-                  ref: ${{ github.event.inputs.branch }}
+                  ref: ${{ (github.event_name == 'pull_request_target' && github.event.pull_request.head.sha) || (github.event_name == 'release' && 'lts-3.16') || github.event.inputs.branch }}
+                  persist-credentials: false
 
             - name: Setup Node.js
               uses: actions/setup-node@v2
               with:
                   node-version: 22.23.4
-
-            - name: Configure AWS Credentials
-              uses: aws-actions/configure-aws-credentials@v4
-              with:
-                  aws-access-key-id: ${{ secrets.AWS_ACCESS_PROD_KEY_ID }}
-                  aws-secret-access-key: ${{ secrets.AWS_SECRET_PROD_ACCESS_KEY }}
-                  aws-region: us-east-2
 
             - name: Install and build dependencies in order
               run: |
@@ -109,22 +102,115 @@ jobs:
                   PLUGINS=$(ls plugins | grep -v '^common$')
                   for plugin in $PLUGINS; do
                     echo "🔨 Building plugin: $plugin"
-                    npm run build --workspace=plugins/$plugin || exit 1
+                    npm run build --workspace="plugins/$plugin" || exit 1
                   done
 
-            - name: Build marketplace plugins and capture summary
+            # The same plugin files the upload script used to upload, without node_modules
+            - name: Package built plugins
+              working-directory: marketplace
+              run: tar -czf "$RUNNER_TEMP/plugins.tar.gz" --exclude=node_modules plugins
+
+            - name: Hand the built plugins to the deploy job
+              uses: actions/upload-artifact@v4
+              with:
+                  name: marketplace-plugins-production
+                  path: ${{ runner.temp }}/plugins.tar.gz
+                  retention-days: 1
+
+    # 3. Upload to the production bucket with ToolJet's own upload script
+    deploy:
+        needs: build
+        if: ${{ !cancelled() && needs.build.result == 'success' }}
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            issues: write
+            pull-requests: write
+        steps:
+            # Trusted code only: the PR's base branch, the release tag, or the branch the
+            # manual run was started from. Never the PR's code.
+            - name: Checkout upload script
+              uses: actions/checkout@v3
+              with:
+                  persist-credentials: false
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 22.23.4
+
+            - name: Download built plugins
+              uses: actions/download-artifact@v4
+              with:
+                  name: marketplace-plugins-production
+                  path: ${{ runner.temp }}/artifact
+
+            # Treat the built files as untrusted: only normal files and folders, safe names,
+            # nothing outside plugins/. Blocks symlinks (e.g. to /proc/self/environ, which
+            # would upload the AWS keys) and file names that could inject commands.
+            - name: Check the built plugin files
               run: |
-                  cd marketplace
+                  python3 - "$RUNNER_TEMP/artifact/plugins.tar.gz" <<'PY'
+                  import re, sys, tarfile
+                  bad_chars = re.compile(r'[\x00-\x1f\x7f]')  # line breaks and other control characters
+                  safe_plugin = re.compile(r'^[A-Za-z0-9_-]+$')
+                  problems = []
+                  with tarfile.open(sys.argv[1]) as archive:
+                      for item in archive:
+                          name = item.name
+                          parts = name.split('/')
+                          if not (item.isfile() or item.isdir()):
+                              problems.append(f'{name!r}: not a normal file or folder (link or special file)')
+                          elif name.startswith('/') or '..' in parts or bad_chars.search(name):
+                              problems.append(f'{name!r}: unsafe name or path')
+                          elif parts[0] != 'plugins':
+                              problems.append(f'{name!r}: outside plugins/')
+                          elif len(parts) > 1 and not safe_plugin.match(parts[1]):
+                              problems.append(f'{name!r}: plugin folder name may only use letters, numbers, - and _')
+                  if problems:
+                      print('❌ The built plugin files failed the safety check:')
+                      for p in problems[:50]:
+                          print('  -', p)
+                      sys.exit(1)
+                  print('✅ Built plugin files look safe.')
+                  PY
+
+            # Kept outside the repo checkout so nothing from the PR (e.g. a package.json)
+            # is ever installed or run here.
+            - name: Unpack built plugins into a separate folder
+              run: |
+                  STAGING="$RUNNER_TEMP/upload/marketplace"
+                  rm -rf "$RUNNER_TEMP/upload"
+                  mkdir -p "$STAGING"
+                  tar -xzf "$RUNNER_TEMP/artifact/plugins.tar.gz" -C "$STAGING" --no-same-owner --no-same-permissions
+                  echo "STAGING=$STAGING" >> "$GITHUB_ENV"
+
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_PROD_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_PROD_ACCESS_KEY }}
+                  aws-region: us-east-2
+
+            - name: Upload marketplace plugins and capture summary
+              env:
+                  AWS_BUCKET: ${{ secrets.S3_BUCKET_PRODUCTION }}
+                  PLUGIN_NAME: ${{ github.event.inputs.plugin_name }}
+              run: |
                   echo "🚀 Uploading to S3 Production"
-                  AWS_BUCKET=${{ secrets.S3_BUCKET_PRODUCTION }} bash scripts/upload-to-s3.sh ${{ github.event.inputs.plugin_name }} | tee upload_summary.log
+                  cd "$STAGING"
+                  bash "$GITHUB_WORKSPACE/marketplace/scripts/upload-to-s3.sh" "$PLUGIN_NAME" | tee "$RUNNER_TEMP/upload_summary.log"
 
             - name: Extract upload summary
               id: upload_summary
               run: |
-                  SUMMARY=$(awk '/UPLOAD SUMMARY/,0' marketplace/upload_summary.log)
-                  echo "UPLOAD_SUMMARY<<EOF" >> $GITHUB_ENV
-                  echo "$SUMMARY" >> $GITHUB_ENV
-                  echo "EOF" >> $GITHUB_ENV
+                  SUMMARY=$(awk '/UPLOAD SUMMARY/,0' "$RUNNER_TEMP/upload_summary.log")
+                  DELIM="EOF_$(openssl rand -hex 16)"
+                  {
+                    echo "UPLOAD_SUMMARY<<$DELIM"
+                    echo "$SUMMARY"
+                    echo "$DELIM"
+                  } >> "$GITHUB_ENV"
 
             - name: Output summary to logs (manual/release trigger)
               if: success() && github.event_name != 'pull_request_target'
@@ -132,7 +218,7 @@ jobs:
                   echo "========================================="
                   echo "PRODUCTION DEPLOYMENT SUMMARY"
                   echo "========================================="
-                  echo "${{ env.UPLOAD_SUMMARY }}"
+                  echo "$UPLOAD_SUMMARY"
                   echo "========================================="
 
             - name: Comment on success
@@ -176,8 +262,18 @@ jobs:
                         labels: ['plugin-deployed-production']
                       })
 
+    # Any failed step above (authorization, build or upload): comment on the PR, as before
+    comment-on-failure:
+        needs: [authorize, build, deploy]
+        if: |
+            always() && github.event_name == 'pull_request_target' &&
+            contains(needs.*.result, 'failure')
+        runs-on: ubuntu-latest
+        permissions:
+            issues: write
+            pull-requests: write
+        steps:
             - name: Comment on failure
-              if: failure() && github.event_name == 'pull_request_target'
               uses: actions/github-script@v6
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
