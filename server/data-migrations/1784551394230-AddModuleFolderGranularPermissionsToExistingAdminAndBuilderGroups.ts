@@ -1,10 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@modules/app/module';
-import { ResourceType, USER_ROLE } from '@modules/group-permissions/constants';
-import { DEFAULT_GRANULAR_PERMISSIONS_NAME } from '@modules/group-permissions/constants/granular_permissions';
-import { GranularPermissions } from '@entities/granular_permissions.entity';
-import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
 import { LicenseInitService } from '@modules/licensing/interfaces/IService';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
@@ -18,6 +14,8 @@ import { TOOLJET_EDITIONS } from '@modules/app/constants';
  * - Custom groups: never touched, on either plan (queries are scoped to type = 'default').
  * - end_user is never touched either way — there's no default-permission spec for it at all
  *   (modules, and by extension module folders, are never end-user-assignable).
+ *
+ * Writes are raw SQL with literals: entities and constants can change after this migration ships.
  *
  * Plan resolution: data migrations run under migrationsTransactionMode: 'all', so DB work goes
  * through `queryRunner.manager` (the shared batch transaction) to stay on the right side of the
@@ -35,7 +33,7 @@ export class AddModuleFolderGranularPermissionsToExistingAdminAndBuilderGroups17
       const manager = queryRunner.manager;
       const isCloud = getTooljetEdition() === TOOLJET_EDITIONS.Cloud;
 
-      const organizationsCount = await manager.count('organizations');
+      const [{ count: organizationsCount }] = await manager.query('SELECT count(*)::int AS count FROM organizations');
       if (organizationsCount === 0) {
         console.log('No organizations found, skipping migration.');
         return;
@@ -56,60 +54,40 @@ export class AddModuleFolderGranularPermissionsToExistingAdminAndBuilderGroups17
           const plan = await licenseInitService.getPlanForMigrationCloud(manager, organizationId);
           isFreePlan = plan === 'basic' || plan === 'starter';
         }
-        const roleNamesToUpdate = isFreePlan ? [USER_ROLE.ADMIN, USER_ROLE.BUILDER] : [USER_ROLE.ADMIN];
+        const roleNamesToUpdate = isFreePlan ? ['admin', 'builder'] : ['admin'];
 
-        const groups = await manager.query(
+        const [, updatedGroups] = await manager.query(
           `
-            SELECT id
-            FROM permission_groups
+            UPDATE permission_groups
+            SET module_folder_create = true, module_folder_delete = true
             WHERE organization_id = $1 AND name = ANY($2) AND type = 'default'
           `,
           [organizationId, roleNamesToUpdate]
         );
 
-        for (const group of groups) {
-          const { id: groupId } = group;
+        const createdPermissions = await manager.query(
+          `
+            WITH new_granular AS (
+              INSERT INTO granular_permissions (name, type, group_id, is_all)
+              SELECT 'Module folders', 'module_folder', pg.id, true
+              FROM permission_groups pg
+              WHERE pg.organization_id = $1 AND pg.name = ANY($2) AND pg.type = 'default'
+                AND NOT EXISTS (
+                  SELECT 1 FROM granular_permissions gp
+                  WHERE gp.group_id = pg.id AND gp.type = 'module_folder'
+                )
+              RETURNING id
+            )
+            INSERT INTO folders_group_permissions (granular_permission_id, can_edit_folder, can_edit_apps, can_view_apps)
+            SELECT id, true, false, false FROM new_granular
+            RETURNING id
+          `,
+          [organizationId, roleNamesToUpdate]
+        );
 
-          await manager.query(
-            `
-              UPDATE permission_groups
-              SET module_folder_create = true, module_folder_delete = true
-              WHERE id = $1
-            `,
-            [groupId]
-          );
-
-          const existingPermission = await manager.find(GranularPermissions, {
-            where: { groupId, type: ResourceType.MODULE_FOLDER },
-          });
-
-          if (existingPermission.length > 0) {
-            console.log(`Module folder granular permission already exists for group ${groupId}, skipping.`);
-            continue;
-          }
-
-          const granularPermissions = manager.create(GranularPermissions, {
-            name: DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.MODULE_FOLDER],
-            type: ResourceType.MODULE_FOLDER,
-            groupId,
-            isAll: true,
-          });
-
-          const savedGranularPermissions = await manager.save(granularPermissions);
-
-          const foldersGroupPermissions = manager.create(FoldersGroupPermissions, {
-            granularPermissionId: savedGranularPermissions.id,
-            canEditFolder: true,
-            canEditApps: false,
-            canViewApps: false,
-          });
-
-          await manager.save(foldersGroupPermissions);
-
-          console.log(
-            `Created module folder granular permission and folders group permission for group ${groupId} (org ${organizationId}, isFreePlan ${isFreePlan}).`
-          );
-        }
+        console.log(
+          `AddModuleFolderGranularPermissionsToExistingAdminAndBuilderGroups: [PROGRESS] org ${organizationId} (isFreePlan ${isFreePlan}): updated ${updatedGroups} groups, created ${createdPermissions.length} granular permissions.`
+        );
       }
 
       console.log(

@@ -102,6 +102,19 @@ No change may break existing saved applications. Always ask: would an app saved 
 - Queries: `runQuery` → resolve options → API call → update `exposedValues.queries[name]` → trigger dependency updates
 - Event definitions live in `eventsSlice`, not in component definitions
 
+### Grouped error notifications
+
+- App editor and ViewerApp (private, public, published and embedded) enable grouping in
+  `_ui/Toast`. Text errors use a fixed-width collapsed card whose height fits the current message with a persistent Latest error title. Multiple visible errors at the same position show the latest message and count; replacement arrivals replay the entry animation only when another notification was above the error.
+- Editor and viewer groups use View all: a scrollable list inside the latest toast.
+  Older messages are absorbed into it; expansion alone retains the original expiry deadline.
+  New errors at the same position appear first without remounting or replaying entry animation.
+  The expiry is the later of the current deadline and the incoming error deadline, preserving hover pauses. Other notification types never extend the error toast.
+  Outside the panel, each toast keeps its original lifetime and close action.
+- A single text error hides the count and View all but retains the title and content-sized height.
+  Interactive/custom-component/function-rendered messages and other toast types retain the original renderer. No extra debugger logs are created. Dashboard notifications
+  do not enable grouping.
+
 ### Bundles and performance
 
 - Viewer (`/applications/*`) and editor are separate lazy bundles via `RootRouter.jsx`. Never import editor-only code into viewer paths

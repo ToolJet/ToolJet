@@ -27,7 +27,7 @@ export function buildBaseLogger(): pino.Logger {
   const otelOn = process.env.ENABLE_OTEL === 'true' && !!process.env.OTEL_EXPORTER_OTLP_LOGS;
 
   const consoleStream =
-    env !== 'production' && env !== 'test'
+    env !== 'production'
       ? pino.transport({
           target: 'pino-pretty',
           options: { colorize: true, levelFirst: true, translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z' },

@@ -37,7 +37,21 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const dataSourceId = request?.tj_resource_id;
     const toolJetEdition = getTooljetEdition();
     // Oauth end points available to all
-    can(FEATURE_KEY.GET_OAUTH2_BASE_URL, DataSource);
+    // can(FEATURE_KEY.GET_OAUTH2_BASE_URL, DataSource);
+    // OAuth URL generation resolves workspace secrets/constants into the returned URL,
+    // so restrict it to users who can configure data sources — plain viewers/end-users
+    // (who are denied the dedicated secret routes) must not reach secrets through it.
+    const canConfigureDataSource =
+      isAdmin ||
+      superAdmin ||
+      isBuilder ||
+      isCanCreate ||
+      isCanDelete ||
+      isAllEditable ||
+      !!resourcePermissions?.configurableDataSourceId?.length;
+    if (canConfigureDataSource) {
+      can(FEATURE_KEY.GET_OAUTH2_BASE_URL, DataSource);
+    }
     can(FEATURE_KEY.AUTHORIZE, DataSource);
     if ((toolJetEdition === TOOLJET_EDITIONS.EE && superAdmin) || (toolJetEdition !== TOOLJET_EDITIONS.EE && isAdmin)) {
       can(FEATURE_KEY.QUERIES_DATASOURCE_LINKED_TO_MARKETPLACE_PLUGIN, DataSource);
@@ -69,10 +83,11 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       return;
     }
 
-    if (isCanCreate || isCanDelete) {
-      // Can create and can delete has master permissions
+    if (isCanCreate) {
+      // Create grants full management.
       can(
         [
+          FEATURE_KEY.CREATE,
           FEATURE_KEY.GET,
           FEATURE_KEY.UPDATE,
           FEATURE_KEY.GET_BY_ENVIRONMENT,
@@ -82,15 +97,14 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         ],
         DataSource
       );
-
-      if (isCanDelete) {
-        can([FEATURE_KEY.DELETE, FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE], DataSource);
-      }
-      if (isCanCreate) {
-        can(FEATURE_KEY.CREATE, DataSource);
-      }
-      return;
     }
+
+    if (isCanDelete) {
+      // Delete allows removal and its dependency check only — never UPDATE/configuration.
+      can([FEATURE_KEY.GET, FEATURE_KEY.DELETE, FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE], DataSource);
+    }
+
+    // No early return: a user who also has Configure still picks up UPDATE from the branches below.
 
     if (isAllEditable) {
       // All operations are available
