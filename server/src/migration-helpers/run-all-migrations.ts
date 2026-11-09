@@ -1,243 +1,362 @@
 import { DataSource, Migration, MigrationExecutor, QueryRunner } from 'typeorm';
-import schemaDataSource from './db-migrations-datasource';
-import dataDataSource from './data-migrations-datasource';
+import schemaDataSource from './schema-datasource';
+import dataDataSource from './data-datasource';
+import cleanupDataSource from './cleanup-datasource';
 import { extractEnumValueAdditions, EnumValueAddition } from './enum-value-additions';
 import {
+  CLEANUP_ADVISORY_LOCK_KEY,
   getLockWaitOptions,
+  HELD_MIGRATION_LOCKS_SQL,
   LOCK_SENTINEL_MIGRATION_NAMES,
   getSchemaPhaseOptions,
   isLockNotAvailableError,
   LockSession,
+  LockWaitOptions,
   MIGRATION_ACTIVE_LOCK_KEY,
   SchemaPhaseOptions,
   SKIPPED_EXIT_CODE,
   withMigrationConnectionOptions,
   withMigrationAdvisoryLock,
 } from './migration-locks';
-import { blocksAsyncUpgrade, MigrationPhase, parseMigrationPhase } from './migration-mode';
+import { retryOnLockTimeout, retryWhen } from './with-short-lock';
+import {
+  LEGACY_BRANCH_MIGRATION,
+  loosenLegacyRules,
+  restoreLegacyRules,
+  useLegacyVariants,
+} from './legacy-3-21-58-upgrade';
+import {
+  DataMigration,
+  blocksAsyncUpgrade,
+  CleanupMigration,
+  MigrationPhase,
+  migrationTimestamp,
+  parseMigrationPhase,
+  planCleanup,
+  runStrategy,
+} from './migration-mode';
 import { getEnvVars } from '../../scripts/database-config-utils';
 
 /**
- * Runs schema migrations (src/migrations) then data migrations (data-migrations).
- *
- * Why this exists:
- * `typeorm migration:run` was previously invoked twice (schema, then data) as two
- * separate OS processes joined by `&&`. Each opened its own connection and its own
- * transaction, so the schema transaction COMMITTED before the data migrations even
- * started. A failing data migration therefore left the committed schema changes
- * behind while only the data changes rolled back.
- *
- * Default (atomic) mode: PostgreSQL DDL is transactional, so we run both phases
- * through one query runner and one transaction — any failure, schema or data, rolls
- * the whole thing back.
- *
- * The enum exception (why it is not ALWAYS atomic):
- * PostgreSQL forbids USING an enum value in the same transaction that added it via
- * `ALTER TYPE ... ADD VALUE` (SQLSTATE 55P04) — with NO exemption for a type created
- * in that same transaction. So "add an enum value in a schema migration and read/write
- * it in a data migration" cannot live in one transaction. Two cases:
- *   - UPGRADE (the enum TYPE already exists from a prior deploy): we pre-commit the
- *     value on a separate connection BEFORE the shared transaction, then stay atomic.
- *     See `precommitEnumValueAdditions`.
- *   - FRESH INSTALL / brand-new enum TYPE (the type is created in THIS run, so it does
- *     not exist yet and its value cannot be pre-committed): full atomicity is impossible.
- *     We fall back to running schema and data in SEPARATE transactions — the original,
- *     enum-safe ordering (schema commits, so the value is durable before data uses it).
- *     Atomicity is lost only for that run, which is acceptable: a fresh/reset install has
- *     no pre-existing data to protect, and PostgreSQL leaves no atomic alternative.
- *
- * Ordering: we always run ALL schema migrations before ALL data migrations (data
- * backfills assume the final schema shape). We do NOT merge the two migration globs into
- * one data source — TypeORM sorts by the timestamp in the class name and schema/data
- * timestamps interleave, which would reorder them and break that invariant. Instead we
- * drive two MigrationExecutor passes.
+ * Runs schema, data, then cleanup migrations (phases and strategies: `MigrationPhase` in migration-mode.ts).
+ * One executor pass per phase, never one DataSource: TypeORM orders by class-name timestamp, and the phases'
+ * timestamps interleave. A single-transaction run is atomic except for enum values (docs/MIGRATION_FLOW.md).
  */
 
-/**
- * Runs a migration pass inside a transaction the caller already opened. Passing an
- * already-in-transaction queryRunner makes MigrationExecutor run the migrations inside
- * our transaction without starting or committing its own (see typeorm MigrationExecutor:
- * it only starts/commits when no transaction is active — `transactionStartedByUs` stays
- * false here).
- */
-async function runPassInSharedTransaction(
-  label: string,
-  dataSourceWithMigrations: DataSource,
-  queryRunner: QueryRunner
-): Promise<void> {
-  const executor = new MigrationExecutor(dataSourceWithMigrations, queryRunner);
-  executor.transaction = 'all';
-  logExecuted(label, await executor.executePendingMigrations());
+const SCHEMA_LOCK_RETRY_DELAY_MS = 2000;
+const DATA_ATTEMPTS = 3;
+const DATA_RETRY_DELAY_MS = 2000;
+
+/** Deadlock, serialization failure, lock timeout: the whole data rolls back, so running it again is safe. */
+const TRANSIENT_ERROR_CODES = new Set(['40P01', '40001', '55P03']);
+
+export function isTransientError(error: unknown): boolean {
+  const { code, driverError } = (error ?? {}) as { code?: string; driverError?: { code?: string } };
+  return TRANSIENT_ERROR_CODES.has(driverError?.code ?? code ?? '');
 }
 
-/**
- * Runs a migration pass in its own transaction (MigrationExecutor creates the query
- * runner and wraps all pending migrations in one transaction, committing on success and
- * rolling back on failure). Used for the enum fallback, where schema must commit before
- * data runs.
- */
-async function runPassInOwnTransaction(label: string, dataSourceWithMigrations: DataSource): Promise<void> {
-  const executor = new MigrationExecutor(dataSourceWithMigrations);
-  executor.transaction = 'all';
-  logExecuted(label, await executor.executePendingMigrations());
+interface BeforeCommitSteps {
+  run(queryRunner: QueryRunner): Promise<void>;
+  clear(): void;
 }
 
-function logExecuted(label: string, executed: { name: string }[]): void {
-  if (executed.length) {
-    console.log(`[migrations] ${label}: executed ${executed.length} migration(s):`);
-    executed.forEach((migration) => console.log(`  - ${migration.name}`));
-  } else {
-    console.log(`[migrations] ${label}: no pending migrations.`);
+/** Collects the beforeCommit() step of each data whose up() ran in this attempt. */
+function collectBeforeCommitSteps(dataDS: DataSource): BeforeCommitSteps {
+  const beforeCommitSteps: { name: string; beforeCommit: (queryRunner: QueryRunner) => Promise<void> }[] = [];
+  for (const migration of dataDS.migrations as DataMigration[]) {
+    if (!migration.beforeCommit) continue;
+    const name = migration.name || migration.constructor.name;
+    const beforeCommit = migration.beforeCommit.bind(migration);
+    const up = migration.up.bind(migration);
+    migration.up = async (queryRunner: QueryRunner) => {
+      await up(queryRunner);
+      beforeCommitSteps.push({ name, beforeCommit });
+    };
   }
+  return {
+    clear: () => beforeCommitSteps.splice(0),
+    async run(queryRunner) {
+      for (const { name, beforeCommit } of beforeCommitSteps.splice(0)) {
+        console.log(`[migrations] BEFORE COMMIT ${name}`);
+        await beforeCommit(queryRunner);
+      }
+    },
+  };
 }
+
+const ENUM_SEPARATE_TRANSACTIONS_REASON =
+  'A pending ALTER TYPE ADD VALUE targets an enum type created in this run; running schema and data in ' +
+  'separate transactions (PostgreSQL cannot add and use an enum value in one transaction).';
+
+const DATA_PHASE_REASON =
+  'Data phase: running schema (catch-up, normally empty) and data in separate transactions, so a ' +
+  'data failure rolls back the data phase only.';
 
 interface EnumAdditionPlan {
-  /** Pending enum-value additions whose target type ALREADY EXISTS (safe to pre-commit). */
+  /** Their type exists, so they can commit ahead of the shared transaction. */
   precommittable: EnumValueAddition[];
-  /** True if any pending addition targets a type that does NOT exist yet (forces fallback). */
+  /** Some type is created in this run: no single transaction can add and use its values. */
   hasMissingType: boolean;
 }
 
-/**
- * Inspects pending schema migrations for `ALTER TYPE ... ADD VALUE` and checks, on a
- * throwaway connection, whether each target enum type already exists.
- */
-async function planEnumAdditions(dataSource: DataSource): Promise<EnumAdditionPlan> {
-  const pending = await new MigrationExecutor(dataSource).getPendingMigrations();
-  const additions = extractEnumValueAdditions(pending);
-  if (additions.length === 0) return { precommittable: [], hasMissingType: false };
-
-  const queryRunner = dataSource.createQueryRunner();
-  await queryRunner.connect();
-  try {
-    const precommittable: EnumValueAddition[] = [];
-    let hasMissingType = false;
-    for (const addition of additions) {
-      const [{ exists }] = await queryRunner.query(`SELECT EXISTS (SELECT 1 FROM pg_type WHERE typname = $1)`, [
-        addition.typeName,
-      ]);
-      if (exists) precommittable.push(addition);
-      else hasMissingType = true;
-    }
-    return { precommittable, hasMissingType };
-  } finally {
-    await queryRunner.release();
-  }
+function splitByExistingType(additions: EnumValueAddition[], existingTypes: ReadonlySet<string>): EnumAdditionPlan {
+  return {
+    precommittable: additions.filter(({ typeName }) => existingTypes.has(typeName)),
+    hasMissingType: additions.some(({ typeName }) => !existingTypes.has(typeName)),
+  };
 }
 
-/**
- * Commits enum-value additions whose type already exists, on a separate auto-committed
- * connection, BEFORE the shared transaction opens — so a data migration inside that
- * transaction can use the value. `ADD VALUE IF NOT EXISTS` keeps this idempotent and
- * concurrency-safe, and makes the migration's own `ADD VALUE IF NOT EXISTS` statement a
- * no-op when it later runs inside the transaction. Enum-value additions are irreversible
- * in PostgreSQL, so committing them ahead of the atomic block costs nothing.
- */
-async function precommitEnumValueAdditions(additions: EnumValueAddition[], dataSource: DataSource): Promise<void> {
-  if (additions.length === 0) return;
-  const queryRunner = dataSource.createQueryRunner();
-  await queryRunner.connect();
-  try {
-    for (const { typeExpression, typeName, value, migrationName } of additions) {
-      // Identifiers/values come from our own migration source (not user input), so
-      // interpolation is safe here.
-      await queryRunner.query(`ALTER TYPE ${typeExpression} ADD VALUE IF NOT EXISTS '${value}'`);
-      console.log(`[migrations] pre-committed enum value ${typeName}.'${value}' (from ${migrationName}).`);
-    }
-  } finally {
-    await queryRunner.release();
+function logExecuted(label: string, executed: { name: string }[]): void {
+  if (!executed.length) {
+    console.log(`[migrations] ${label}: no pending migrations.`);
+    return;
   }
+  console.log(`[migrations] ${label}: executed ${executed.length} migration(s):`);
+  executed.forEach(({ name }) => console.log(`  - ${name}`));
 }
 
-async function runAtomic(precommittable: EnumValueAddition[], schemaDS: DataSource, dataDS: DataSource): Promise<void> {
-  await precommitEnumValueAdditions(precommittable, schemaDS);
+/** With a transaction already open on `queryRunner`, TypeORM joins it instead of committing its own. */
+async function runPass(
+  label: string,
+  dataSource: DataSource,
+  queryRunner?: QueryRunner,
+  transaction: MigrationExecutor['transaction'] = 'all'
+): Promise<void> {
+  const executor = new MigrationExecutor(dataSource, queryRunner);
+  executor.transaction = transaction;
+  logExecuted(label, await executor.executePendingMigrations());
+}
 
-  const queryRunner = schemaDS.createQueryRunner();
+async function inTransaction(
+  dataSource: DataSource,
+  work: (queryRunner: QueryRunner) => Promise<void>,
+  onRollback: () => void = () => undefined
+): Promise<void> {
+  const queryRunner = dataSource.createQueryRunner();
   await queryRunner.connect();
   await queryRunner.startTransaction();
   try {
-    await runPassInSharedTransaction('schema', schemaDS, queryRunner);
-    await runPassInSharedTransaction('data', dataDS, queryRunner);
+    await work(queryRunner);
     await queryRunner.commitTransaction();
-    console.log('[migrations] Committed schema + data migrations in a single transaction.');
   } catch (error) {
     await queryRunner.rollbackTransaction();
-    console.error('[migrations] Migration failed. Rolled back schema AND data changes.');
+    onRollback();
     throw error;
   } finally {
     await queryRunner.release();
   }
 }
 
-async function runTwoPhase(schemaDS: DataSource, dataDS: DataSource, reason: string): Promise<void> {
+// Single-transaction runs only: async schema commits before the data phase uses a new value.
+async function planEnumAdditions(schemaDS: DataSource): Promise<EnumAdditionPlan> {
+  const additions = extractEnumValueAdditions(await new MigrationExecutor(schemaDS).getPendingMigrations());
+  if (!additions.length) return { precommittable: [], hasMissingType: false };
+  const rows: { typname: string }[] = await schemaDS.query('SELECT typname FROM pg_type WHERE typname = ANY($1)', [
+    additions.map(({ typeName }) => typeName),
+  ]);
+  return splitByExistingType(additions, new Set(rows.map(({ typname }) => typname)));
+}
+
+/** Enum values cannot be removed anyway, so committing them first costs nothing. */
+async function precommitEnumValueAdditions(additions: EnumValueAddition[], dataSource: DataSource): Promise<void> {
+  for (const { typeExpression, typeName, value, migrationName } of additions) {
+    // From our own migration source, not user input.
+    await dataSource.query(`ALTER TYPE ${typeExpression} ADD VALUE IF NOT EXISTS '${value}'`);
+    console.log(`[migrations] pre-committed enum value ${typeName}.'${value}' (from ${migrationName}).`);
+  }
+}
+
+async function runAtomic(
+  precommittable: EnumValueAddition[],
+  schemaDS: DataSource,
+  dataDS: DataSource,
+  cleanupDS: DataSource,
+  beforeCommitSteps: BeforeCommitSteps
+): Promise<void> {
+  await precommitEnumValueAdditions(precommittable, schemaDS);
+  await inTransaction(
+    schemaDS,
+    async (queryRunner) => {
+      await runPass('schema', schemaDS, queryRunner);
+      await runPass('data', dataDS, queryRunner);
+      await beforeCommitSteps.run(queryRunner);
+      // 'all' throws for cleanup classes (transaction = false); 'none' still runs inside this transaction.
+      await runPass('cleanup', cleanupDS, queryRunner, 'none');
+    },
+    () => console.error('[migrations] Migration failed. Rolled back schema AND data changes.')
+  );
+  console.log('[migrations] Committed schema + data migrations in a single transaction.');
+}
+
+/** `cleanupDS` only for a single-transaction run; the data phase leaves cleanup to its own run. */
+async function runInSeparateTransactions(
+  schemaDS: DataSource,
+  [dataDS, beforeCommitSteps]: [DataSource, BeforeCommitSteps],
+  reason: string,
+  cleanupDS?: DataSource
+): Promise<void> {
   console.log(`[migrations] ${reason} Schema commits before data runs.`);
-  await runPassInOwnTransaction('schema', schemaDS);
-  await runPassInOwnTransaction('data', dataDS);
+  await runPass('schema', schemaDS);
+  await retryWhen(
+    isTransientError,
+    () => {
+      beforeCommitSteps.clear();
+      return inTransaction(dataDS, async (queryRunner) => {
+        await runPass('data', dataDS, queryRunner);
+        await beforeCommitSteps.run(queryRunner);
+      });
+    },
+    { attempts: DATA_ATTEMPTS, retryDelayMs: DATA_RETRY_DELAY_MS },
+    (next) =>
+      console.warn(
+        `[migrations] The data phase hit a deadlock or lock timeout and rolled back. Retrying (attempt ${next} of ${DATA_ATTEMPTS}).`
+      )
+  );
+  if (cleanupDS) await runPass('cleanup', cleanupDS, undefined, 'each');
   console.log('[migrations] Committed schema and data migrations in separate transactions.');
 }
 
-const ENUM_TWO_PHASE_REASON =
-  'A pending ALTER TYPE ADD VALUE targets an enum type created in this run; running schema and data in ' +
-  'separate transactions (PostgreSQL cannot add and use an enum value in one transaction).';
+const BASELINES_DDL = `
+  CREATE TABLE IF NOT EXISTS migration_baselines (
+    code_head text PRIMARY KEY,
+    last_migration_id integer NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now()
+  )`;
 
-const DATA_PHASE_REASON =
-  'Data phase: running schema (catch-up, normally empty) and data in separate transactions, so a data ' +
-  'failure rolls back the data only.';
+/** The newest migration this code ships: it changes with every release that adds one. */
+export function codeHead(...dataSources: DataSource[]): string {
+  const names = dataSources.flatMap(({ migrations }) =>
+    migrations.map((migration) => migration.name || migration.constructor.name)
+  );
+  return names.reduce((newest, name) => (migrationTimestamp(name) > migrationTimestamp(newest) ? name : newest), '');
+}
 
-const SCHEMA_LOCK_RETRY_DELAY_MS = 2000;
+/**
+ * The last migration id recorded before this code first ran, saved once by its first runner; 0 on a fresh install.
+ * Call it holding a lock that keeps other runners out, before applying anything.
+ */
+async function upgradeBaseline(dataSource: DataSource, head: string): Promise<number> {
+  await dataSource.query(BASELINES_DDL).catch((error: { code?: string }) => {
+    // Two pods racing CREATE TABLE IF NOT EXISTS: one loses on the type's unique index.
+    if (error.code !== '23505' && error.code !== '42P07') throw error;
+  });
+  const [{ table }] = await dataSource.query(`SELECT to_regclass('migrations') AS table`);
+  await dataSource.query(
+    `INSERT INTO migration_baselines (code_head, last_migration_id)
+     SELECT $1, ${table ? 'COALESCE(max(id), 0) FROM migrations' : '0'} ON CONFLICT (code_head) DO NOTHING`,
+    [head]
+  );
+  const [{ id }] = await dataSource.query(
+    'SELECT last_migration_id AS id FROM migration_baselines WHERE code_head = $1',
+    [head]
+  );
+  return id;
+}
 
-async function runSchemaPhase(schemaDS: DataSource, options: SchemaPhaseOptions): Promise<boolean> {
-  // Most boots (restart, scale-up, a pod booting during a long data phase) end here without the advisory lock.
-  if ((await realPendingMigrationNames(schemaDS)).length === 0) {
+/** Leaves out each cleanup whose `requires` an earlier upgrade has not recorded yet; it runs on a later upgrade. */
+async function holdBackCleanups(cleanupDS: DataSource, baselineId: number): Promise<void> {
+  if (baselineId === 0 || !cleanupDS.migrations.length) return;
+  const recorded: { id: number; name: string }[] = await cleanupDS.query('SELECT id, name FROM migrations');
+  const candidates = (cleanupDS.migrations as unknown as CleanupMigration[]).map((migration) => ({
+    name: migration.name || migration.constructor.name,
+    requires: migration.requires,
+  }));
+  const { run, deferred } = planCleanup(candidates, new Map(recorded.map(({ name, id }) => [name, id])), baselineId);
+  for (const { name, waitingFor } of deferred) {
+    console.log(`[migrations] Holding back ${name} until an earlier upgrade has recorded ${waitingFor}.`);
+  }
+  const kept = cleanupDS.migrations.filter((migration) => run.includes(migration.name || migration.constructor.name));
+  cleanupDS.migrations.splice(0, cleanupDS.migrations.length, ...kept);
+}
+
+class YieldToMigrationRun extends Error {}
+
+/** Cleanup never holds the migration lock, so a run never waits on it; it stops when one starts. */
+function yieldBeforeEachMigration(dataSource: DataSource, session: LockSession): void {
+  for (const migration of dataSource.migrations) {
+    const up = migration.up.bind(migration);
+    migration.up = async (queryRunner: QueryRunner) => {
+      const [{ running }] = (await session.query(HELD_MIGRATION_LOCKS_SQL)) as { running: boolean }[];
+      if (running) throw new YieldToMigrationRun();
+      await up(queryRunner);
+    };
+  }
+}
+
+/** After writes reopen: each step in its own short transaction. A failed step stays pending for the next boot. */
+async function runCleanupPhase(cleanupDS: DataSource, lockWait: LockWaitOptions, head: string): Promise<boolean> {
+  if (!(await pendingNames(cleanupDS)).length) {
+    console.log('[migrations] No cleanup migrations pending.');
+    return true;
+  }
+  const ran = await withMigrationAdvisoryLock(
+    cleanupDS,
+    lockWait,
+    {},
+    async (session) => {
+      await holdBackCleanups(cleanupDS, await upgradeBaseline(cleanupDS, head));
+      announceEachMigration(cleanupDS);
+      yieldBeforeEachMigration(cleanupDS, session);
+      try {
+        await runPass('cleanup', cleanupDS, undefined, 'each');
+      } catch (error) {
+        if (!(error instanceof YieldToMigrationRun)) throw error;
+        console.log('[migrations] A migration run started; the remaining cleanup migrations run on the next boot.');
+      }
+      return true;
+    },
+    { skipIfBusy: true, key: CLEANUP_ADVISORY_LOCK_KEY }
+  );
+  if (!ran) console.log('[migrations] Another server is running the cleanup migrations.');
+  return !!ran;
+}
+
+async function runSchemaPhase(schemaDS: DataSource, options: SchemaPhaseOptions, head: string): Promise<boolean> {
+  // Restarts and scale-ups end here, without waiting on the advisory lock.
+  if (!(await pendingNames(schemaDS)).length) {
     console.log('[migrations] No schema migrations pending before boot.');
     return true;
   }
   await withMigrationAdvisoryLock(schemaDS, options.lockWait, {}, async (session) => {
-    const pending = await realPendingMigrationNames(schemaDS);
-    if (pending.length === 0) {
+    const pending = await pendingNames(schemaDS);
+    if (!pending.length) {
       console.log('[migrations] Another pod applied the schema migrations.');
       return;
     }
     console.log(`[migrations] ${pending.length} schema migration(s) pending: ${pending.join(', ')}`);
+    await upgradeBaseline(schemaDS, head);
     await holdingActiveLock(session, () => applySchemaUnderLockTimeout(schemaDS, options));
   });
   return true;
 }
 
+/** A waiting ALTER queues every reader behind it, so give up early and retry. */
 async function applySchemaUnderLockTimeout(
   schemaDS: DataSource,
   { lockTimeoutMs, lockAttempts }: SchemaPhaseOptions
 ): Promise<void> {
   await precommitEnumValueAdditions((await planEnumAdditions(schemaDS)).precommittable, schemaDS);
   announceEachMigration(schemaDS);
-  for (let attempt = 1; ; attempt++) {
-    const queryRunner = schemaDS.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    try {
+  const applyOnce = () =>
+    inTransaction(schemaDS, async (queryRunner) => {
       await queryRunner.query(`SET LOCAL lock_timeout = ${lockTimeoutMs}`);
-      await runPassInSharedTransaction('schema', schemaDS, queryRunner);
-      await queryRunner.commitTransaction();
-      console.log('[migrations] Committed schema migrations.');
-      return;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      if (!isLockNotAvailableError(error) || attempt >= lockAttempts) {
-        console.error('[migrations] Schema migrations failed. Rolled back the schema changes.');
-        throw error;
-      }
+      await runPass('schema', schemaDS, queryRunner);
+    });
+  try {
+    await retryOnLockTimeout(applyOnce, { attempts: lockAttempts, retryDelayMs: SCHEMA_LOCK_RETRY_DELAY_MS }, (next) =>
       console.warn(
         `[migrations] A schema migration waited over ${lockTimeoutMs}ms for a table lock; rolled back so ` +
-          `readers are not stalled behind it. Retrying (attempt ${attempt + 1} of ${lockAttempts}).`
-      );
-    } finally {
-      await queryRunner.release();
-    }
-    await new Promise((resolve) => setTimeout(resolve, SCHEMA_LOCK_RETRY_DELAY_MS));
+          `readers are not stalled behind it. Retrying (attempt ${next} of ${lockAttempts}).`
+      )
+    );
+  } catch (error) {
+    console.error('[migrations] Schema migrations failed. Rolled back the schema changes.');
+    throw error;
   }
+  console.log('[migrations] Committed schema migrations.');
 }
 
-/** Serving pods refuse writes while this is held; it dies with this session, so a killed pod cannot leave it set. */
+/** Serving pods refuse writes while this is held; it dies with the session, so a killed pod cannot leave it set. */
 async function holdingActiveLock(session: LockSession, work: () => Promise<void>): Promise<void> {
   await session.query('SELECT pg_advisory_lock($1)', [MIGRATION_ACTIVE_LOCK_KEY]);
   try {
@@ -247,40 +366,29 @@ async function holdingActiveLock(session: LockSession, work: () => Promise<void>
   }
 }
 
-async function realPendingMigrations(dataSourceWithMigrations: DataSource): Promise<Migration[]> {
-  const pending = await new MigrationExecutor(dataSourceWithMigrations).getPendingMigrations();
-  return pending.filter(({ name }) => !LOCK_SENTINEL_MIGRATION_NAMES.includes(name));
+/** Pending names, lock sentinels left out: they are pending on every boot. */
+async function pendingNames(...dataSources: DataSource[]): Promise<string[]> {
+  const pending: Migration[] = [];
+  for (const dataSource of dataSources)
+    pending.push(...(await new MigrationExecutor(dataSource).getPendingMigrations()));
+  return pending.map(({ name }) => name).filter((name) => !LOCK_SENTINEL_MIGRATION_NAMES.includes(name));
 }
 
-async function realPendingMigrationNames(dataSourceWithMigrations: DataSource): Promise<string[]> {
-  return (await realPendingMigrations(dataSourceWithMigrations)).map(({ name }) => name);
-}
-
-// ponytail: probe-then-read; a joint run starting between the two can still stall the read.
+// ponytail: probe-then-read; a single-transaction run starting between the two can still stall the read.
 async function migrationsTableLocked(dataSource: DataSource, lockTimeoutMs: number): Promise<boolean> {
-  const queryRunner = dataSource.createQueryRunner();
-  await queryRunner.connect();
-  await queryRunner.startTransaction();
   try {
-    // A role statement_timeout below lockTimeoutMs would cancel with 57014 instead of 55P03.
-    await queryRunner.query(`SET LOCAL statement_timeout = 0`);
-    await queryRunner.query(`SET LOCAL lock_timeout = ${lockTimeoutMs}`);
-    const [{ table }] = await queryRunner.query(`SELECT to_regclass('migrations') AS table`);
-    if (table) await queryRunner.query('LOCK TABLE migrations IN ACCESS SHARE MODE');
+    await inTransaction(dataSource, async (queryRunner) => {
+      // A role statement_timeout below lockTimeoutMs would cancel with 57014 instead of 55P03.
+      await queryRunner.query('SET LOCAL statement_timeout = 0');
+      await queryRunner.query(`SET LOCAL lock_timeout = ${lockTimeoutMs}`);
+      const [{ table }] = await queryRunner.query(`SELECT to_regclass('migrations') AS table`);
+      if (table) await queryRunner.query('LOCK TABLE migrations IN ACCESS SHARE MODE');
+    });
     return false;
   } catch (error) {
     if (isLockNotAvailableError(error)) return true;
     throw error;
-  } finally {
-    await queryRunner.rollbackTransaction().catch(() => undefined);
-    await queryRunner.release();
   }
-}
-
-/** Older migrations may drop, rename or SET NOT NULL, which breaks the release still serving. */
-async function pendingBeforeAuthoringRules(schemaDS: DataSource, dataDS: DataSource): Promise<string[]> {
-  const pending = [...(await realPendingMigrations(schemaDS)), ...(await realPendingMigrations(dataDS))];
-  return pending.map(({ name }) => name).filter(blocksAsyncUpgrade);
 }
 
 /** Split phases are serialised by the advisory lock; the sentinels' LOCK TABLE would stall booting pods. */
@@ -289,83 +397,6 @@ function withoutLockSentinels(dataSource: DataSource): void {
     (migration) => !LOCK_SENTINEL_MIGRATION_NAMES.includes(migration.name || migration.constructor.name)
   );
   dataSource.migrations.splice(0, dataSource.migrations.length, ...kept);
-}
-
-/** False when MIGRATION_SKIP_IF_LOCKED found another server migrating and left the run to it. */
-export async function run(
-  schemaDS: DataSource = schemaDataSource,
-  dataDS: DataSource = dataDataSource
-): Promise<boolean> {
-  // process.env, not getEnvVars(): set by the parent per spawn.
-  let phase = parseMigrationPhase(process.env.MIGRATION_PHASE);
-  // A lost node leaves the migration transaction's row locks for the OS default (~2h) without this.
-  for (const dataSource of [schemaDS, dataDS])
-    if (!dataSource.isInitialized) withMigrationConnectionOptions(dataSource);
-  if (!schemaDS.isInitialized) await schemaDS.initialize();
-  // dataDS is initialized to load its migration classes; queries run through whichever
-  // query runner each pass uses.
-  if (!dataDS.isInitialized) await dataDS.initialize();
-
-  // getEnvVars(), not process.env: this process never boots ConfigModule, so settings that
-  // live only in the env file would otherwise be invisible here.
-  const env = getEnvVars();
-  const schemaOptions = getSchemaPhaseOptions(env);
-  if (phase === 'schema') {
-    // A joint or blocking run holds LOCK TABLE migrations to the end; reading behind it hits statement_timeout.
-    if (await migrationsTableLocked(schemaDS, schemaOptions.lockTimeoutMs)) {
-      console.log('[migrations] Another server is migrating with the migrations table locked; waiting for it.');
-      await withMigrationAdvisoryLock(schemaDS, schemaOptions.lockWait, {}, async () => undefined);
-    }
-    const legacy = await pendingBeforeAuthoringRules(schemaDS, dataDS);
-    if (legacy.length) {
-      console.log(
-        `[migrations] ${legacy[0]} is pending: this database is older than 3.21.58 (${legacy.length} such pending); ` +
-          'running the whole upgrade before boot in one transaction, the blocking way.'
-      );
-      phase = 'joint';
-    }
-  }
-  if (phase !== 'joint') {
-    withoutLockSentinels(schemaDS);
-    withoutLockSentinels(dataDS);
-  }
-
-  if (phase === 'schema') return runSchemaPhase(schemaDS, schemaOptions);
-  const lockWaitOptions = getLockWaitOptions(env);
-
-  // Server-managed modes: another server already migrating owns the run. Waiting would make this one
-  // re-run the same migrations after that run ends, even a failed one.
-  const skipIfBusy = process.env.MIGRATION_SKIP_IF_LOCKED === 'true';
-  const ran = await withMigrationAdvisoryLock(
-    schemaDS,
-    lockWaitOptions,
-    {},
-    async (session) => {
-      await migrateAsSolePod(schemaDS, dataDS, session, phase);
-      return true;
-    },
-    { skipIfBusy }
-  );
-  if (!ran) console.log('[migrations] Another server is running migrations; leaving the run to it.');
-  return !!ran;
-}
-
-async function migrateAsSolePod(
-  schemaDS: DataSource,
-  dataDS: DataSource,
-  session: LockSession,
-  phase: MigrationPhase
-): Promise<void> {
-  const pending = [...(await realPendingMigrationNames(schemaDS)), ...(await realPendingMigrationNames(dataDS))];
-
-  if (pending.length === 0) {
-    console.log('[migrations] No schema or data migrations pending — not cutting API traffic for this boot.');
-    await executeMigrations(schemaDS, dataDS, phase);
-    return;
-  }
-
-  console.log(`[migrations] ${pending.length} migration(s) pending: ${pending.join(', ')}`);
-  await holdingActiveLock(session, () => executeMigrations(schemaDS, dataDS, phase));
 }
 
 /** START/DONE line per migration: the async-mode tracker parses these. */
@@ -382,34 +413,132 @@ function announceEachMigration(dataSource: DataSource): void {
   }
 }
 
-async function executeMigrations(schemaDS: DataSource, dataDS: DataSource, phase: MigrationPhase): Promise<void> {
+async function executeMigrations(
+  schemaDS: DataSource,
+  dataDS: DataSource,
+  cleanupDS: DataSource,
+  phase: MigrationPhase | undefined
+): Promise<void> {
   // Plan before announcing: it scans up() source, which the announcing wrapper hides.
-  const plan = phase === 'data' ? null : await planEnumAdditions(schemaDS);
+  const plan = phase === 'data' ? undefined : await planEnumAdditions(schemaDS);
+  // Variants replace up() and beforeCommit(), so they go in before the wrappers below.
+  const legacy = phase === 'data' && (await pendingNames(dataDS)).includes(LEGACY_BRANCH_MIGRATION);
+  if (legacy) useLegacyVariants(dataDS);
   announceEachMigration(schemaDS);
   announceEachMigration(dataDS);
-  if (!plan) return runTwoPhase(schemaDS, dataDS, DATA_PHASE_REASON);
-  const { precommittable, hasMissingType } = plan;
-
-  if (hasMissingType) {
-    await runTwoPhase(schemaDS, dataDS, ENUM_TWO_PHASE_REASON);
-  } else {
-    await runAtomic(precommittable, schemaDS, dataDS);
+  const data: [DataSource, BeforeCommitSteps] = [dataDS, collectBeforeCommitSteps(dataDS)];
+  if (!plan) {
+    try {
+      // Inside the try: a loosen that stops part way restores the rules it already dropped.
+      if (legacy) await loosenLegacyRules(dataDS);
+      return await runInSeparateTransactions(schemaDS, data, DATA_PHASE_REASON);
+    } catch (error) {
+      // Still holding the migration lock, so no other runner sees the loosened rules.
+      if (legacy) {
+        await restoreLegacyRules(dataDS).catch((restoreError) =>
+          console.error(`[migrations] Legacy upgrade: restore failed: ${(restoreError as Error).message}`)
+        );
+      }
+      throw error;
+    }
   }
+  announceEachMigration(cleanupDS);
+  if (plan.hasMissingType) {
+    return runInSeparateTransactions(schemaDS, data, ENUM_SEPARATE_TRANSACTIONS_REASON, cleanupDS);
+  }
+  await runAtomic(plan.precommittable, schemaDS, dataDS, cleanupDS, data[1]);
 }
 
-// Auto-run only when invoked directly (dev: ts-node this file; prod: node dist/…js).
-// Importing the module (e.g. from a test) does not execute migrations.
+async function migrateAsSolePod(
+  [schemaDS, dataDS, cleanupDS]: [DataSource, DataSource, DataSource],
+  session: LockSession,
+  phase: MigrationPhase | undefined,
+  head: string
+): Promise<void> {
+  const baseline = await upgradeBaseline(schemaDS, head);
+  if (!phase) await holdBackCleanups(cleanupDS, baseline);
+  const pending = await pendingNames(schemaDS, dataDS, ...(phase ? [] : [cleanupDS]));
+  const execute = () => executeMigrations(schemaDS, dataDS, cleanupDS, phase);
+  if (!pending.length) {
+    console.log('[migrations] No schema or data migrations pending — not cutting API traffic for this boot.');
+    return execute();
+  }
+  console.log(`[migrations] ${pending.length} migration(s) pending: ${pending.join(', ')}`);
+  await holdingActiveLock(session, execute);
+}
+
+/** False when MIGRATION_SKIP_IF_LOCKED found another server migrating and left the run to it. */
+export async function run(
+  schemaDS: DataSource = schemaDataSource,
+  dataDS: DataSource = dataDataSource,
+  cleanupDS: DataSource = cleanupDataSource
+): Promise<boolean> {
+  // process.env, not getEnvVars(): the parent sets it per spawn.
+  let phase = parseMigrationPhase(process.env.MIGRATION_PHASE);
+  for (const dataSource of [schemaDS, dataDS, cleanupDS]) {
+    if (dataSource.isInitialized) continue;
+    // A lost node would otherwise hold the transaction's row locks for the OS keepalive (~2h).
+    withMigrationConnectionOptions(dataSource);
+    await dataSource.initialize();
+  }
+
+  // getEnvVars(): this process has no ConfigModule, so settings only in the env file would be missed.
+  const env = getEnvVars();
+  const head = codeHead(schemaDS, dataDS, cleanupDS);
+  if (phase === 'cleanup') return runCleanupPhase(cleanupDS, getLockWaitOptions(env), head);
+  const schemaOptions = getSchemaPhaseOptions(env);
+  if (phase === 'schema') {
+    // A single-transaction run holds LOCK TABLE migrations to the end; reading behind it hits statement_timeout.
+    if (await migrationsTableLocked(schemaDS, schemaOptions.lockTimeoutMs)) {
+      console.log('[migrations] Another server is migrating with the migrations table locked; waiting for it.');
+      await withMigrationAdvisoryLock(schemaDS, schemaOptions.lockWait, {}, async () => undefined);
+    }
+    const legacy = (await pendingNames(schemaDS, dataDS)).filter(blocksAsyncUpgrade);
+    if (legacy.length) {
+      console.log(
+        `[migrations] ${legacy[0]} is pending: this database is older than 3.21.58 (${legacy.length} such pending); ` +
+          'running the whole upgrade before boot in one transaction, the blocking way.'
+      );
+      phase = undefined;
+    }
+  }
+  if (runStrategy(phase) === 'multi-transaction') {
+    withoutLockSentinels(schemaDS);
+    withoutLockSentinels(dataDS);
+  }
+  if (phase === 'schema') return runSchemaPhase(schemaDS, schemaOptions, head);
+
+  // A server already migrating owns the run; waiting would re-run its migrations after it ends, even failed ones.
+  const ran = await withMigrationAdvisoryLock(
+    schemaDS,
+    getLockWaitOptions(env),
+    {},
+    async (session) => {
+      await migrateAsSolePod([schemaDS, dataDS, cleanupDS], session, phase, head);
+      return true;
+    },
+    { skipIfBusy: process.env.MIGRATION_SKIP_IF_LOCKED === 'true' }
+  );
+  if (!ran) console.log('[migrations] Another server is running migrations; leaving the run to it.');
+  return !!ran;
+}
+
+// Runs only when invoked directly, not when a test imports it.
 if (require.main === module) {
+  const destroyAll = () =>
+    Promise.all(
+      [schemaDataSource, dataDataSource, cleanupDataSource].map((dataSource) =>
+        dataSource.destroy().catch(() => undefined)
+      )
+    );
   run()
     .then(async (ran) => {
-      await schemaDataSource.destroy();
-      await dataDataSource.destroy();
+      await destroyAll();
       process.exit(ran ? 0 : SKIPPED_EXIT_CODE);
     })
     .catch(async (error) => {
       console.error(error);
-      await schemaDataSource.destroy().catch(() => undefined);
-      await dataDataSource.destroy().catch(() => undefined);
+      await destroyAll();
       process.exit(1);
     });
 }

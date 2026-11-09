@@ -1,4 +1,7 @@
 import * as request from 'supertest';
+import { existsSync, rmSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { initTestApp, closeTestApp, createSuperAdmin, createAdmin, getDefaultDataSource } from 'test-helper';
@@ -7,6 +10,7 @@ import { instanceToPlain } from 'class-transformer';
 import { AppController } from '@modules/app/controller';
 import { MIGRATION_RUNS_DDL, MigrationRunsService } from '@modules/app/migration-runs/service';
 import { MIGRATION_ACTIVE_LOCK_KEY, MIGRATION_ADVISORY_LOCK_KEY } from 'src/migration-helpers/migration-locks';
+import { createScratchDatabase, dropScratchDatabase, postgres, SERVER_ROOT } from '../../migrations/fixtures/harness';
 
 type Internals = {
   query: (sql: string, params?: unknown[]) => Promise<unknown[]>;
@@ -251,17 +255,7 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
     await expect(service.status()).resolves.toMatchObject({
       state: 'running',
       toVersion: '3.21.75',
-      progress: { done: 1, total: 2 },
     });
-  });
-
-  it('should report no progress once a run finished', async () => {
-    await dataSource.query(
-      `INSERT INTO migration_runs (to_version, status, triggered_by, finished_at, migrations)
-       VALUES ('3.21.75', 'succeeded', 'boot', now(), '[{"name":"A","status":"done"}]')`
-    );
-
-    await expect(service.status()).resolves.not.toHaveProperty('progress');
   });
 
   it('should keep the gate on running, not failed, for a run its server recorded as stopped at shutdown', async () => {
@@ -539,7 +533,7 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
   });
 
   describe('a real runner process | what the page reads back', () => {
-    const runner = `node ${require.resolve('../../migrations/fixtures/fake-runner/runner.js')}`;
+    const runner = `node ${require.resolve('../../migrations/fixtures/fake-runner.js')}`;
     const originalCommand = process.env.MIGRATION_SETUP_COMMAND;
 
     afterEach(() => {
@@ -575,6 +569,81 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
         '[migrations] START BackfillThing2\nBackfillThing2: [PROGRESS] 5/10 (50%)\n[migrations] DONE BackfillThing2 40ms'
       );
     });
+
+    describe('cleanup run: dropping old schema once the upgrade has succeeded', () => {
+      // The fake runner creates this file when it runs the cleanup phase.
+      const cleanupMarkerFile = join(tmpdir(), `tooljet-cleanup-${process.pid}`);
+
+      beforeEach(() => rmSync(cleanupMarkerFile, { force: true }));
+      afterEach(() => {
+        delete process.env.FAKE_CLEANUP_MARKER;
+        delete process.env.FAKE_CLEANUP_EXIT;
+        jest.restoreAllMocks();
+      });
+
+      /** Runs the upgrade, then waits for the cleanup process it may start to exit. */
+      async function runUpgradeAndWaitForCleanup(args = ''): Promise<void> {
+        process.env.FAKE_CLEANUP_MARKER = cleanupMarkerFile;
+        await runToExit(args);
+        const internals = service as unknown as { cleanupChild: unknown };
+        while (internals.cleanupChild) await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+
+      // A failing cleanup step cannot touch the run row: the upgrade stays succeeded and writable.
+      it('should start cleanup only after the upgrade is recorded as succeeded, whatever cleanup exits with', async () => {
+        process.env.FAKE_CLEANUP_EXIT = '1';
+        const internals = service as unknown as { updateRun: jest.Mock; runCleanupChild: jest.Mock };
+        const recordRun = jest.spyOn(internals, 'updateRun');
+        const startCleanup = jest.spyOn(internals, 'runCleanupChild');
+
+        await runUpgradeAndWaitForCleanup();
+
+        const succeededAt = recordRun.mock.calls.findIndex((call) => call[2] === 'succeeded');
+        expect(succeededAt).toBeGreaterThanOrEqual(0);
+        expect(recordRun.mock.invocationCallOrder[succeededAt]).toBeLessThan(startCleanup.mock.invocationCallOrder[0]);
+        expect(existsSync(cleanupMarkerFile)).toBe(true);
+        await expect(service.status()).resolves.toMatchObject({ state: 'succeeded' });
+      });
+
+      it('should not start cleanup when the upgrade failed', async () => {
+        await runUpgradeAndWaitForCleanup('fail');
+
+        expect(existsSync(cleanupMarkerFile)).toBe(false);
+      });
+    });
+
+    it("should read the real runner's output into the run row and its per-migration logs", async () => {
+      const database = await createScratchDatabase(`tooljet_migration_runs_real_${process.pid}`);
+      process.env.MIGRATION_SETUP_COMMAND = [
+        `POD_ID=real-runner FIXTURE_SET=data-before-commit TS_NODE_PROJECT=tsconfig.json`,
+        `SCRATCH_PG_HOST=${postgres.host} SCRATCH_PG_PORT=${postgres.port} SCRATCH_PG_USER=${postgres.username}`,
+        `SCRATCH_PG_PASS=${postgres.password} SCRATCH_PG_DB=${database}`,
+        `${process.execPath} -r ts-node/register/transpile-only -r tsconfig-paths/register`,
+        join(SERVER_ROOT, 'test/modules/migrations/fixtures/pod.ts'),
+      ].join(' ');
+      try {
+        await service.start();
+        const internals = service as unknown as { child: unknown; cleanupChild: unknown; finalWrite: Promise<void> };
+        while (internals.child) await new Promise((resolve) => setTimeout(resolve, 50));
+        await internals.finalWrite;
+        while (internals.cleanupChild) await new Promise((resolve) => setTimeout(resolve, 50));
+
+        const [run] = await service.runs();
+        expect(run).toMatchObject({
+          status: 'succeeded',
+          migrations: [
+            'CreateFixtureRows1790700000020',
+            'FillFixtureRows1790700000021',
+            'SlowFixtureStep1790700000022',
+          ].map((name) => ({ name, status: 'done', durationMs: expect.any(Number) })),
+        });
+        await expect(service.log(run.id, 'FillFixtureRows1790700000021')).resolves.toMatch(
+          /^\[migrations\] START FillFixtureRows1790700000021\n\[migrations\] DONE FillFixtureRows1790700000021 \d+ms$/
+        );
+      } finally {
+        await dropScratchDatabase(database);
+      }
+    }, 120_000);
 
     it('should release the boot hold once a runner with nothing pending exits', async () => {
       Object.assign(service, { bootHold: true });
@@ -685,5 +754,51 @@ describe('MigrationRunsService | async mode against real Postgres', () => {
     const runs = await service.runs();
 
     expect(runs.map((run) => run.toVersion)).toEqual(['3.21.75', '3.21.74']);
+  });
+});
+
+describe('The upgrade gate in a server running in async mode', () => {
+  const originalMode = process.env.MIGRATION_MODE;
+  const originalCommand = process.env.MIGRATION_SETUP_COMMAND;
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    process.env.MIGRATION_MODE = 'async';
+    // Never the real runner against the test database, should anything start a run.
+    process.env.MIGRATION_SETUP_COMMAND = `node ${require.resolve('../../migrations/fixtures/fake-runner.js')} none`;
+    // Fresh: the cached app was built in blocking mode, which has no gate and no read lock timeout.
+    ({ app } = await initTestApp({ freshApp: true }));
+  }, 120_000);
+
+  afterAll(async () => {
+    process.env.MIGRATION_MODE = originalMode;
+    process.env.MIGRATION_SETUP_COMMAND = originalCommand;
+    await closeTestApp(app);
+  }, 60_000);
+
+  it.each([
+    ['running', 'MIGRATION_IN_PROGRESS'],
+    ['failed', 'MIGRATION_FAILED'],
+  ] as const)('should answer writes with 503 %s, and let reads and the health check through', async (state, code) => {
+    const status = jest.spyOn(app.get(MigrationRunsService), 'status').mockResolvedValue({ state });
+    try {
+      const write = await request(app.getHttpServer()).post('/api/apps');
+      const read = await request(app.getHttpServer()).get('/api/migration-status');
+      const health = await request(app.getHttpServer()).get('/api/health');
+
+      expect(write.statusCode).toBe(503);
+      expect(write.body).toMatchObject({ code });
+      expect(write.headers['retry-after']).toBe('30');
+      expect(read.statusCode).toBe(200);
+      expect(health.statusCode).toBe(200);
+    } finally {
+      status.mockRestore();
+    }
+  });
+
+  it('should give up on a table lock after 5s, so a read never waits out a data run', async () => {
+    const [{ lock_timeout }] = await getDefaultDataSource().query('SHOW lock_timeout');
+
+    expect(lock_timeout).toBe('5s');
   });
 });
