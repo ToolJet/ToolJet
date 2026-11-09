@@ -5,20 +5,21 @@ import { FolderApp } from '@entities/folder_app.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { FEATURE_KEY } from '@modules/folder-apps/constants';
 import { APP_TYPES } from '@modules/apps/constants';
+import { In } from 'typeorm';
 import { makeExecutionContext } from 'test-helper';
 
 /** @group platform */
 describe('folder-apps FeatureAbilityGuard', () => {
   let guard: FeatureAbilityGuard;
   let reflector: { get: jest.Mock };
-  let dataSource: { manager: { findOne: jest.Mock } };
+  let dataSource: { manager: { findOne: jest.Mock; find: jest.Mock } };
   let superCanActivate: jest.SpyInstance;
 
   const reflect = (features: string | string[]) => reflector.get.mockReturnValue(features);
 
   beforeEach(() => {
     reflector = { get: jest.fn() };
-    dataSource = { manager: { findOne: jest.fn().mockResolvedValue(null) } };
+    dataSource = { manager: { findOne: jest.fn().mockResolvedValue(null), find: jest.fn().mockResolvedValue([]) } };
     guard = new FeatureAbilityGuard(reflector as any, null as any, null as any, null as any, dataSource as any);
     superCanActivate = jest.spyOn(AbilityGuard.prototype, 'canActivate').mockResolvedValue(true);
     reflect(FEATURE_KEY.CREATE_FOLDER_APP);
@@ -51,7 +52,8 @@ describe('folder-apps FeatureAbilityGuard', () => {
   it('scopes folder and app lookups to the requesting org for the single-app path', async () => {
     const folder = { id: 'f-1', createdBy: 'u1', type: APP_TYPES.FRONT_END };
     const app = { id: 'app-1', userId: 'u1', type: APP_TYPES.FRONT_END };
-    dataSource.manager.findOne.mockResolvedValueOnce(folder).mockResolvedValueOnce(app);
+    dataSource.manager.findOne.mockResolvedValueOnce(folder);
+    dataSource.manager.find.mockResolvedValueOnce([app]);
     const request: any = {
       params: { folderId: 'f-1' },
       body: { app_id: 'app-1' },
@@ -60,12 +62,12 @@ describe('folder-apps FeatureAbilityGuard', () => {
 
     await guard.canActivate(makeExecutionContext({ request }));
 
-    expect(dataSource.manager.findOne).toHaveBeenNthCalledWith(1, expect.anything(), {
+    expect(dataSource.manager.findOne).toHaveBeenCalledWith(expect.anything(), {
       where: { id: 'f-1', organizationId: 'org-1' },
       select: ['id', 'createdBy', 'type'],
     });
-    expect(dataSource.manager.findOne).toHaveBeenNthCalledWith(2, expect.anything(), {
-      where: { id: 'app-1', organizationId: 'org-1' },
+    expect(dataSource.manager.find).toHaveBeenCalledWith(expect.anything(), {
+      where: { id: In(['app-1']), organizationId: 'org-1' },
       select: ['id', 'userId', 'type'],
     });
     expect(request.tj_allow_owner_folder_app_create).toBe(true);
@@ -74,9 +76,8 @@ describe('folder-apps FeatureAbilityGuard', () => {
   });
 
   it('denies create (but allows delete) when the folder is owned by the user but the app is not', async () => {
-    dataSource.manager.findOne
-      .mockResolvedValueOnce({ id: 'f-1', createdBy: 'u1', type: APP_TYPES.FRONT_END })
-      .mockResolvedValueOnce({ id: 'app-1', userId: 'someone-else', type: APP_TYPES.FRONT_END });
+    dataSource.manager.findOne.mockResolvedValueOnce({ id: 'f-1', createdBy: 'u1', type: APP_TYPES.FRONT_END });
+    dataSource.manager.find.mockResolvedValueOnce([{ id: 'app-1', userId: 'someone-else', type: APP_TYPES.FRONT_END }]);
     const request: any = {
       params: { folderId: 'f-1' },
       body: { app_id: 'app-1' },
@@ -90,9 +91,8 @@ describe('folder-apps FeatureAbilityGuard', () => {
   });
 
   it('flags a type mismatch between the folder and the app', async () => {
-    dataSource.manager.findOne
-      .mockResolvedValueOnce({ id: 'f-1', createdBy: 'u1', type: APP_TYPES.FRONT_END })
-      .mockResolvedValueOnce({ id: 'app-1', userId: 'u1', type: APP_TYPES.MODULE });
+    dataSource.manager.findOne.mockResolvedValueOnce({ id: 'f-1', createdBy: 'u1', type: APP_TYPES.FRONT_END });
+    dataSource.manager.find.mockResolvedValueOnce([{ id: 'app-1', userId: 'u1', type: APP_TYPES.MODULE }]);
     const request: any = {
       params: { folderId: 'f-1' },
       body: { app_id: 'app-1' },
@@ -106,6 +106,10 @@ describe('folder-apps FeatureAbilityGuard', () => {
 
   it('does not scope create/delete to a specific app on the bulk app_ids path — folder ownership alone is sufficient', async () => {
     dataSource.manager.findOne.mockResolvedValueOnce({ id: 'f-1', createdBy: 'u1', type: APP_TYPES.MODULE });
+    dataSource.manager.find.mockResolvedValueOnce([
+      { id: 'app-1', userId: 'u2', type: APP_TYPES.MODULE },
+      { id: 'app-2', userId: 'u3', type: APP_TYPES.MODULE },
+    ]);
     const request: any = {
       params: { folderId: 'f-1' },
       body: { app_ids: ['app-1', 'app-2'] },
@@ -115,7 +119,24 @@ describe('folder-apps FeatureAbilityGuard', () => {
     await guard.canActivate(makeExecutionContext({ request }));
 
     expect(dataSource.manager.findOne).toHaveBeenCalledTimes(1);
+    expect(dataSource.manager.find).toHaveBeenCalledTimes(1);
     expect(request.tj_allow_owner_folder_app_create).toBe(true);
+  });
+
+  it('denies when any target app does not resolve in the requesting org (cross-tenant app)', async () => {
+    dataSource.manager.findOne.mockResolvedValueOnce({ id: 'f-1', createdBy: 'u1', type: APP_TYPES.FRONT_END });
+    dataSource.manager.find.mockResolvedValueOnce([{ id: 'app-1', userId: 'u1', type: APP_TYPES.FRONT_END }]);
+    const request: any = {
+      params: { folderId: 'f-1' },
+      body: { app_ids: ['app-1', 'other-org-app'] },
+      user: { id: 'u1', organizationId: 'org-1' },
+    };
+
+    const result = await guard.canActivate(makeExecutionContext({ request }));
+
+    expect(result).toBe(false);
+    expect(superCanActivate).not.toHaveBeenCalled();
+    expect(request.tj_allow_owner_folder_app_create).toBeUndefined();
   });
 
   it('does not flag ownership when the folder is not found in the requesting org (cross-tenant)', async () => {
@@ -126,9 +147,11 @@ describe('folder-apps FeatureAbilityGuard', () => {
       user: { id: 'u1', organizationId: 'org-1' },
     };
 
-    await guard.canActivate(makeExecutionContext({ request }));
+    const result = await guard.canActivate(makeExecutionContext({ request }));
 
-    expect(request.tj_allow_owner_folder_app_create).toBe(false);
+    expect(result).toBe(false);
+    expect(superCanActivate).not.toHaveBeenCalled();
+    expect(request.tj_allow_owner_folder_app_create).toBeUndefined();
   });
 
   it('skips all DB lookups for a non-mutating feature', async () => {

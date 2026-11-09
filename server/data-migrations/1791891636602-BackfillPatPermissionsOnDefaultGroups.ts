@@ -46,5 +46,8 @@ export class BackfillPatPermissionsOnDefaultGroups1791891636602 implements Migra
     console.log(`${MIGRATION_NAME}: [SUCCESS] Backfill finished. Updated: ${totalUpdated}`);
   }
 
-  public async down(_queryRunner: QueryRunner): Promise<void> {}
+  public async down(_queryRunner: QueryRunner): Promise<void> {
+    // Irreversible: the backfill does not record which groups already had the flags, so a
+    // rollback cannot tell backfilled rows from ones an admin enabled. Left as a no-op.
+  }
 }
