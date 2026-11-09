@@ -147,7 +147,8 @@ type NewRevampedComponent =
   | 'Pagination'
   | 'Timeline'
   | 'RichTextEditor'
-  | 'Calendar';
+  | 'Calendar'
+  | 'SvgImage';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -204,6 +205,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Timeline',
   'RichTextEditor',
   'Calendar',
+  'SvgImage',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -368,6 +370,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'RichTextEditor',
   'StarRating',
   'Statistics',
+  'SvgImage',
   'Tabs',
   'Tags',
   'TagsInput',
