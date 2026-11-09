@@ -59,16 +59,21 @@ export const PieChart = () => {
   ToolJet.useComponentSettings({ role: 'piechart', fit: false, loading: 'own', defaultWidth: 12, defaultHeight: 28 });
 
   // The drawn rows as the app gave them (what a click exposes), and each with its slice colour (what recharts draws).
+  const valueKey = isSet(valueField) && typeof valueField !== 'object' ? String(valueField) : 'value';
   const { rows, slices } = useMemo(() => {
-    const drawn = list(data).filter(isRecord).slice(0, MAX_SLICES);
+    // A negative value is no share of a whole: recharts drew it as a slice overlapping the others, so every share was
+    // wrong. It is left out (counted in the hidden-slices note).
+    const drawn = list(data)
+      .filter(isRecord)
+      .filter((r) => !(Number(r[valueKey]) < 0))
+      .slice(0, MAX_SLICES);
     const states = Array.isArray(colors) && colors.length ? null : statusColors(drawn.map((d) => d[categoryField]));
     return {
       rows: drawn,
       slices: drawn.map((d, i) => ({ ...d, fill: states?.[i] ?? seriesColor(colors, chartColor, i) })),
     };
-  }, [data, colors, chartColor, categoryField]);
+  }, [data, colors, chartColor, categoryField, valueKey]);
   const isDonut = donut !== false;
-  const valueKey = isSet(valueField) && typeof valueField !== 'object' ? String(valueField) : 'value';
   const format = affixFormatter({ valuePrefix, valueSuffix }, false);
   const highlighted = click.highlighted;
 
