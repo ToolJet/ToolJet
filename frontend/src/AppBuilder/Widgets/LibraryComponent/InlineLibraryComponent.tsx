@@ -219,20 +219,45 @@ const idOf = (el: Element | null): number => {
 // A page taller than the window scrolls the whole canvas inside the app's scroller, so a layer the canvas's size drew a
 // centred dialog half a page down and a drawer past the window's bottom. A canvas layer covers only what is visible of
 // the canvas (within its scroller and the window), follows it as the page scrolls or the canvas resizes, and is the
-// containing block its dialogs and drawers fill (the transform).
-const scrollerOf = (el: HTMLElement): HTMLElement | null => {
+// containing block its dialogs and drawers fill (the transform). Across too: with the editor's right panel open the
+// canvas scrolls sideways under it (its scroller's right border, which the panel covers), and a right-placed drawer
+// opened under the panel (QA item 46), so the layer ends where the scroller's visible inside does.
+// The ancestors that clip the canvas, each on the axes it clips (a scroller, or overflow hidden).
+const clippersOf = (el: HTMLElement): { node: HTMLElement; x: boolean; y: boolean }[] => {
+  const out: { node: HTMLElement; x: boolean; y: boolean }[] = [];
   for (let node = el.parentElement; node && node !== document.body; node = node.parentElement) {
-    if (/(auto|scroll)/.test(getComputedStyle(node).overflowY)) return node;
+    const style = getComputedStyle(node);
+    const x = style.overflowX !== 'visible' && style.overflowX !== '';
+    const y = style.overflowY !== 'visible' && style.overflowY !== '';
+    if (x || y) out.push({ node, x, y });
   }
-  return null;
+  return out;
 };
 const fitToView = (host: HTMLElement, container: HTMLElement) => {
   const area = container.getBoundingClientRect();
-  const view = scrollerOf(container)?.getBoundingClientRect();
-  const top = Math.max(area.top, view?.top ?? 0, 0);
-  const bottom = Math.min(area.bottom, view?.bottom ?? Infinity, window.innerHeight);
+  let top = Math.max(area.top, 0);
+  let bottom = Math.min(area.bottom, window.innerHeight || Infinity);
+  let left = Math.max(area.left, 0);
+  let right = Math.min(area.right, window.innerWidth || Infinity);
+  // What each clipping ancestor shows: its inside, without its borders (the right panel's) and scrollbars; one with no
+  // layout (client size 0) its box.
+  clippersOf(container).forEach(({ node, x, y }) => {
+    const box = node.getBoundingClientRect();
+    if (y) {
+      const insideTop = box.top + node.clientTop;
+      top = Math.max(top, insideTop);
+      bottom = Math.min(bottom, node.clientHeight > 0 ? insideTop + node.clientHeight : box.bottom);
+    }
+    if (x) {
+      const insideLeft = box.left + node.clientLeft;
+      left = Math.max(left, insideLeft);
+      right = Math.min(right, node.clientWidth > 0 ? insideLeft + node.clientWidth : box.right);
+    }
+  });
   host.style.top = `${top - area.top}px`;
   host.style.height = `${Math.max(0, bottom - top)}px`;
+  host.style.left = `${left - area.left}px`;
+  host.style.width = `${Math.max(0, right - left)}px`;
 };
 
 type Layer = { overlay: HTMLElement; host: HTMLElement; container: HTMLElement; count: number; release: () => void };
@@ -256,6 +281,8 @@ const watchView = (container: HTMLElement) => {
   window.addEventListener('resize', schedule);
   const resized = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
   resized?.observe(container);
+  // The right panel opening or closing resizes a clipping ancestor's inside (its border), not the canvas.
+  clippersOf(container).forEach(({ node }) => resized?.observe(node));
   views.set(container, () => {
     cancelAnimationFrame(frame);
     document.removeEventListener('scroll', schedule, true);

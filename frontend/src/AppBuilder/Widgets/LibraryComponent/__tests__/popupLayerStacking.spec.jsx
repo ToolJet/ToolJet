@@ -163,6 +163,60 @@ describe('pack popup layers', () => {
     });
   });
 
+  // QA item 46: with the editor's right panel open, the canvas scrolls sideways under it (its scroller gets a 300px
+  // right border the panel covers), and the layer, as wide as the canvas, drew a right-placed Ant Drawer under the
+  // panel, cut off. The layer covers only what is visible of the canvas across, too.
+  describe('in the editor with the right panel open', () => {
+    let scroller;
+    const box =
+      (left, width, top = 56, height = 796) =>
+      () => ({
+        top,
+        bottom: top + height,
+        height,
+        left,
+        right: left + width,
+        width,
+        x: left,
+        y: top,
+      });
+    beforeEach(() => {
+      // The editor's canvas scroller: it scrolls across and clips up and down.
+      scroller = document.createElement('div');
+      scroller.style.overflowX = 'auto';
+      scroller.style.overflowY = 'hidden';
+      document.body.appendChild(scroller);
+      scroller.appendChild(canvasArea);
+      window.innerHeight = 900;
+      window.innerWidth = 1440;
+      // The scroller spans 48 to 1392 with the panel's 300px border inside it: its visible inside ends at 1092. The
+      // canvas keeps its full 1328px (56 to 1384), so its right part lies under the panel.
+      scroller.getBoundingClientRect = box(48, 1344, 48, 812);
+      Object.defineProperty(scroller, 'clientLeft', { configurable: true, value: 0 });
+      Object.defineProperty(scroller, 'clientWidth', { configurable: true, value: 1044 });
+      canvasArea.getBoundingClientRect = box(56, 1328);
+    });
+    afterEach(() => scroller.remove());
+
+    it('ends where the panel starts', async () => {
+      // Break this catches: a layer as wide as the canvas, so a right-placed drawer opens under the panel.
+      const layer = layerOf(await mountIn(canvasArea, 'antd'));
+      expect(layer.style.left).toBe('0px');
+      expect(layer.style.width).toBe('1036px');
+    });
+
+    it('follows the canvas as it scrolls sideways under the panel', async () => {
+      // Break this catches: a layer fitted once, left behind when the canvas scrolls across.
+      const layer = layerOf(await mountIn(canvasArea, 'antd'));
+      canvasArea.getBoundingClientRect = box(56 - 200, 1328);
+      act(() => {
+        scroller.dispatchEvent(new Event('scroll'));
+      });
+      await waitFor(() => expect(layer.style.left).toBe('192px'));
+      expect(layer.style.width).toBe('1044px');
+    });
+  });
+
   it('falls back to the page body outside a canvas', async () => {
     canvasArea.remove();
     const view = await mountIn(document.body, 'antd');
