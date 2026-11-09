@@ -1,11 +1,6 @@
 // migration-lint: allow-destructive the foreign keys only cover nullable columns this migration adds
 import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey } from 'typeorm';
 
-const MIGRATION_NAME = 'AddWorkspaceColumnsToWorkflowExecutions1790400000000';
-
-// One transaction (migrationsTransactionMode 'all'): batches bound per-statement work, not lock time.
-const BATCH_SIZE = 5000;
-
 export class AddWorkspaceColumnsToWorkflowExecutions1790400000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumns('workflow_executions', [
@@ -31,43 +26,8 @@ export class AddWorkspaceColumnsToWorkflowExecutions1790400000000 implements Mig
       }),
     ]);
 
-    // Never SET updated_at: historical durations derive from it.
-    const [{ count: eligibleCount }] = await queryRunner.query(
-      `SELECT COUNT(*) FROM workflow_executions WHERE organization_id IS NULL`
-    );
-    const total = parseInt(eligibleCount, 10);
-    console.log(`${MIGRATION_NAME}: [START] Backfilling workflow_executions: ${total}`);
-
-    let totalUpdated = 0;
-    let updated = 0;
-    do {
-      const result = await queryRunner.query(
-        `
-        WITH batch AS (
-          SELECT e.id, a.organization_id AS org_id, a.id AS app_id
-          FROM workflow_executions e
-          JOIN app_versions av ON av.id = e.app_version_id
-          JOIN apps a          ON a.id  = av.app_id
-          WHERE e.organization_id IS NULL
-          LIMIT ${BATCH_SIZE}
-        )
-        UPDATE workflow_executions e
-        SET organization_id = batch.org_id,
-            app_id          = batch.app_id,
-            trigger_type    = CASE WHEN e.schedule_id IS NOT NULL THEN 'schedule' ELSE 'unknown' END,
-            started_at      = e.created_at,
-            finished_at     = CASE WHEN e.executed THEN e.updated_at ELSE NULL END
-        FROM batch
-        WHERE e.id = batch.id
-        `
-      );
-      updated = result?.[1] ?? 0;
-      totalUpdated += updated;
-      const percentage = total > 0 ? ((totalUpdated / total) * 100).toFixed(1) : '0.0';
-      console.log(`${MIGRATION_NAME}: [PROGRESS] ${totalUpdated}/${total} (${percentage}%)`);
-    } while (updated === BATCH_SIZE);
-
-    console.log(`${MIGRATION_NAME}: [SUCCESS] Backfill finished. Updated: ${totalUpdated}/${total}`);
+    // Existing rows are filled by the data migration BackfillWorkspaceColumnsOnWorkflowExecutions1793450000000,
+    // so this transaction only adds columns and indexes and its table lock stays short.
 
     // Supports: WHERE organization_id = $1 ORDER BY created_at DESC LIMIT n
     await queryRunner.query(`
