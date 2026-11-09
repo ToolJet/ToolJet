@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { IconEyeClosed, IconEye } from '@tabler/icons-react';
 
 import { BaseInput } from './BaseComponents/BaseInput';
@@ -6,11 +6,14 @@ import { useInput } from './BaseComponents/hooks/useInput';
 
 export const PasswordInput = (props) => {
   const inputLogic = useInput(props);
+  // Owned here, not by useInput: no other input widget reveals its value, and the
+  // hook never read this. Distinct from `styles.iconVisibility`, the left-icon gate.
+  const [isRevealed, setIsRevealed] = useState(false);
   const toggleVisibility = () => {
-    inputLogic.setIconVisibility(!inputLogic.iconVisibility);
+    setIsRevealed(!isRevealed);
   };
 
-  const TogglePasswordVisibilityIcon = !inputLogic.iconVisibility ? IconEye : IconEyeClosed;
+  const TogglePasswordVisibilityIcon = !isRevealed ? IconEye : IconEyeClosed;
 
   const passwordIcon = (
     <div onClick={toggleVisibility} data-cy={`password-visibility-icon`}>
@@ -22,7 +25,7 @@ export const PasswordInput = (props) => {
     <BaseInput
       {...props}
       {...inputLogic}
-      inputType={inputLogic.iconVisibility ? 'text' : 'password'}
+      inputType={isRevealed ? 'text' : 'password'}
       additionalInputProps={{ autoComplete: 'new-password' }}
       rightIcon={!inputLogic.loading && passwordIcon}
     />

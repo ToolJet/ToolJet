@@ -1,4 +1,3 @@
-import { InternalTable } from '@entities/internal_table.entity';
 import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper';
 import { DataSource, EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 import { tooljetDbOrmconfig } from 'ormconfig';
@@ -8,6 +7,14 @@ import { tooljetDbOrmconfig } from 'ormconfig';
 // that were made do not follow the TypeORM naming strategy and therefore
 // break when tried to modify. Therefore we are removing and recreating
 // them to follow the same naming convention throughout
+//
+// Queries internal_tables via raw SQL, not entityManager.find(): this
+// migration sits earlier in the chain than migrations that add columns to
+// internal_table, so selecting through the live entity would pull in
+// columns that don't exist on the table yet during a fresh migration run.
+// Only affects a fresh replay of the full chain - TypeORM's migrations
+// table marks this one complete on every deployment where it already ran,
+// so it never re-executes there regardless of this change.
 export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const batchSize = 1000;
@@ -18,7 +25,8 @@ export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 impl
     } as any);
     await tooljetDbConnection.initialize();
     const tooljetDbManager = tooljetDbConnection.createEntityManager();
-    const totalTables = await entityManager.count(InternalTable);
+    const [{ count }] = await entityManager.query('SELECT COUNT(*) FROM internal_tables');
+    const totalTables = Number(count);
     console.log(`Tables to migrate: ${totalTables}`);
 
     const migrationProgress = new MigrationProgress(
@@ -31,13 +39,12 @@ export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 impl
         await processDataInBatches(
           entityManager,
           async (entityManager, skip, take) => {
-            return await entityManager.find(InternalTable, {
-              order: { createdAt: 'ASC' },
+            return await entityManager.query('SELECT id FROM internal_tables ORDER BY created_at LIMIT $1 OFFSET $2', [
               take,
               skip,
-            });
+            ]);
           },
-          async (entityManager: EntityManager, internalTables: InternalTable[]) => {
+          async (entityManager: EntityManager, internalTables: { id: string }[]) => {
             await this.recreatePrimaryKeys(tooljetDbManager, internalTables, migrationProgress);
           },
           batchSize
@@ -53,7 +60,7 @@ export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 impl
 
   private async recreatePrimaryKeys(
     tooljetDbManager: EntityManager,
-    internalTables: InternalTable[],
+    internalTables: { id: string }[],
     migrationProgress: MigrationProgress
   ) {
     for (const internalTable of internalTables) {

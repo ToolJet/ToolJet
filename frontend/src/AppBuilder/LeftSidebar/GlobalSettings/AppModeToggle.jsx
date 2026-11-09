@@ -19,7 +19,7 @@ const AppModeToggle = ({ darkMode, isModuleEditor = false }) => {
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals);
 
   return (
-    <div className="canvas-settings-row">
+    <div data-param="appMode" className="canvas-settings-row">
       <span className="canvas-settings-label" data-cy={`label-padding-mode`}>
         {isModuleEditor
           ? t('leftSidebar.Settings.moduleMode', 'Module mode')

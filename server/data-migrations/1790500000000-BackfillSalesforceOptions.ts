@@ -113,5 +113,7 @@ export class BackfillSalesforceOptions1790500000000 implements MigrationInterfac
     `);
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // Irreversible: the filled-in values are the plugin's defaults, so leaving them is harmless.
+  }
 }

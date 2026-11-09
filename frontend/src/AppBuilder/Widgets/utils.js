@@ -65,7 +65,7 @@ export const getFormattedSteps = (steps) => {
     if (steps.trim() === '') return [];
     try {
       const parsed = JSON.parse(steps);
-      return Array.isArray(parsed) ? steps : [];
+      return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
     }

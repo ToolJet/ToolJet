@@ -40,6 +40,7 @@ export const GroupMenuItem = ({
         className={`page-menu-item page-group-item ${highlight ? 'highlight' : ''} ${
           darkMode ? 'dark-theme theme-dark' : ''
         } ${isEditing ? 'is-selected' : ''}`}
+        data-list-item-id={String(item?.id ?? '')}
         onClick={(e) => {
           e.preventDefault();
           setShowEditPopover(!showEditPopover);

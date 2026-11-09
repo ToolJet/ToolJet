@@ -42,6 +42,8 @@ export const DatePickerV2 = ({
     dateInputRef,
     datePickerRef,
     dateFormat,
+    componentName,
+    id,
   };
   const dateTimeLogic = useDatetimeInput(inputProps);
   const dateLogic = useDateInput(inputProps);
@@ -56,6 +58,8 @@ export const DatePickerV2 = ({
   );
   const [showValidationError, setShowValidationError] = useState(false);
   useShowValidationOnFormSubmit(setShowValidationError);
+  // Unparseable typed text — kept on screen with an error instead of reverting.
+  const [textParseError, setTextParseError] = useState(false);
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
   const [displayTimestamp, setDisplayTimestamp] = useState(
@@ -64,6 +68,7 @@ export const DatePickerV2 = ({
   const [datepickerMode, setDatePickerMode] = useState('date');
 
   const setInputValue = (date, format, skipFireEvent = false) => {
+    setTextParseError(false);
     const unixTimestamp = getUnixTime(date, format ? format : dateFormat);
     const selectedTimestamp = getSelectedTimestampFromUnixTimestamp(unixTimestamp);
     setUnixTimestamp(unixTimestamp);
@@ -79,6 +84,7 @@ export const DatePickerV2 = ({
   };
 
   const onDateSelect = (date) => {
+    setTextParseError(false);
     const selectedTime = getUnixTime(date, dateFormat);
     setSelectedTimestamp(selectedTime);
     const unixTimestamp = getUnixTimestampFromSelectedTimestamp(selectedTime);
@@ -110,9 +116,9 @@ export const DatePickerV2 = ({
   }, [defaultValue]);
 
   useEffect(() => {
-    if (isInitialRender.current || textInputFocus) return;
+    if (isInitialRender.current || textInputFocus || textParseError) return;
     setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : '');
-  }, [selectedTimestamp, dateFormat, textInputFocus]);
+  }, [selectedTimestamp, dateFormat, textInputFocus, textParseError]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -170,10 +176,14 @@ export const DatePickerV2 = ({
   }, [selectedTimestamp, unixTimestamp, dateFormat]);
 
   useEffect(() => {
+    if (textParseError) {
+      setValidationStatus({ isValid: false, validationError: 'Invalid date' });
+      return;
+    }
     setValidationStatus(
       isDateValid(selectedTimestamp, { minDate, maxDate, customRule, isMandatory, excludedDates, dateFormat })
     );
-  }, [minDate, maxDate, customRule, isMandatory, selectedTimestamp, excludedDates, dateFormat]);
+  }, [minDate, maxDate, customRule, isMandatory, selectedTimestamp, excludedDates, dateFormat, textParseError]);
 
   useFormClear(() => setInputValue(null, null, true));
 
@@ -194,6 +204,9 @@ export const DatePickerV2 = ({
         updatedDate = modifiedDate.toDate();
       }
       onDateSelect(updatedDate);
+      // A calendar pick supersedes typed text held on screen (parse error or
+      // mid-typing); sync the display immediately rather than waiting for blur.
+      setDisplayTimestamp(getFormattedSelectTimestamp(updatedDate, dateFormat));
       setDatePickerMode('date');
     },
     selected: selectedTimestamp ? moment(selectedTimestamp).toDate() : null,
@@ -227,6 +240,7 @@ export const DatePickerV2 = ({
     setDisplayTimestamp,
     setTextInputFocus,
     setShowValidationError,
+    onTextParse: (parsed) => setTextParseError(parsed.hasError),
     showValidationError,
     isValid,
     validationError,

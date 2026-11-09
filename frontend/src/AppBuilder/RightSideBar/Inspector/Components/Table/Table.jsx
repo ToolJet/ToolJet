@@ -158,7 +158,7 @@ export const Table = (props) => {
         className={`${darkMode && 'dark-theme'} shadow table-column-popover`}
         style={{
           width: '280px',
-          zIndex: 11,
+          zIndex: 60,
         }}
       >
         <ColumnPopoverContent
@@ -561,7 +561,7 @@ export const Table = (props) => {
                                       ],
                                     }}
                                   >
-                                    <div className="table-column-lists">
+                                    <div className="table-column-lists" data-list-item-id={item.id}>
                                       <List.Item
                                         isDraggable
                                         primaryText={resolvedItemName}
