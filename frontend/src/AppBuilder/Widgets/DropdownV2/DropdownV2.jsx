@@ -357,14 +357,17 @@ export const DropdownV2 = ({
       const baseFont = window?.getComputedStyle?.(ref?.current || document.body)?.font || '14px Inter, sans-serif';
       context.font = baseFont;
 
-      const maxLabelWidth = selectOptions.reduce((acc, option) => {
+      // Row = 12px padding each side + 16px check slot + 6px gap; a shown icon adds 16 + 6, an image 30 + 6.
+      const maxRowContentWidth = selectOptions.reduce((acc, option) => {
         const labelText = `${option?.label ?? ''}`;
-        return Math.max(acc, context.measureText(labelText).width || 0);
+        const iconWidth = option?.iconVisibility && option?.icon ? 22 : 0;
+        const imageWidth = option?.imageVisibility && option?.image ? 36 : 0;
+        return Math.max(acc, (context.measureText(labelText).width || 0) + iconWidth + imageWidth);
       }, 0);
 
-      const paddingAllowance = 44; // matches option horizontal padding/spacing
+      const paddingAllowance = 46; // row padding + check slot + gap (see above)
       const measurementBuffer = 24; // buffer so canvas measureText vs actual render don't cause ellipsis
-      const computed = Math.ceil(maxLabelWidth + paddingAllowance + measurementBuffer);
+      const computed = Math.ceil(maxRowContentWidth + paddingAllowance + measurementBuffer);
       const capped = Math.min(computed, 520);
       return Number.isFinite(capped) ? `${capped}px` : null;
     } catch (_e) {
@@ -479,7 +482,7 @@ export const DropdownV2 = ({
         : menuBackgroundColor || 'var(--cc-surface1-surface)',
       color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--cc-primary-text)',
       borderRadius: _state.isFocused && '8px',
-      padding: '8px 6px 8px 38px',
+      padding: '8px 12px',
       opacity: _state.isDisabled ? 0.3 : 1,
       '&:hover': {
         backgroundColor: _state.isDisabled
