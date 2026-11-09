@@ -184,13 +184,17 @@ export const AntProvider = ({
   // alive. Emptied when a widget unmounts; the cache is only a lookup, refilled on the next insert.
   useEffect(() => () => clearContainerCache(), []);
   const popup = useMemo(() => ({ className: dark ? 'tj-ant tj-ant-dark' : 'tj-ant', style: tokens ?? {}, container }), [tokens, container, dark]);
+  const ownBackground = Boolean((tokens as Record<string, unknown> | undefined)?.['--tj-ant-color-bg-container']);
   return (
     <div
       ref={(el) => {
         (anchorRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
         if (ownerRef) ownerRef.current = el;
       }}
-      className={['tj-ant tj-ant-root', dark ? 'tj-ant-dark' : '', fill ? 'tj-ant--fill' : '', className ?? ''].join(' ').trim()}
+      // Container background set: it fills the Filled and Borderless fields too (pack.css .tj-ant-own-bg).
+      className={['tj-ant tj-ant-root', dark ? 'tj-ant-dark' : '', fill ? 'tj-ant--fill' : '', ownBackground ? 'tj-ant-own-bg' : '', className ?? '']
+        .join(' ')
+        .trim()}
       style={{ ...tokens, ...style }}
     >
       <StyleProvider cache={cache} container={sinkElement()}>

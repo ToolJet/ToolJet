@@ -1476,3 +1476,23 @@
   min-width: 0;
   min-height: 0;
 }
+
+/* Container background, once set, fills a field on every variant (QA item 49): Ant draws it on Outlined only, and
+   Filled kept its grey fill and Borderless stayed transparent. Unset, each variant keeps Ant's look. A disabled field
+   and an error or warning one keep Ant's colours; a Filled field darkens a little on hover, as Ant's does. */
+.tj-ant-own-bg .ant-input-filled:not(.ant-input-disabled):not([disabled]):not(.ant-input-status-error):not(.ant-input-status-warning),
+.tj-ant-own-bg .ant-input-borderless:not(.ant-input-disabled):not([disabled]):not(.ant-input-status-error):not(.ant-input-status-warning),
+.tj-ant-own-bg .ant-input-number-filled:not(.ant-input-number-disabled):not([disabled]):not(.ant-input-number-status-error):not(.ant-input-number-status-warning),
+.tj-ant-own-bg .ant-input-number-borderless:not(.ant-input-number-disabled):not([disabled]):not(.ant-input-number-status-error):not(.ant-input-number-status-warning),
+.tj-ant-own-bg .ant-picker-filled:not(.ant-picker-disabled):not([disabled]):not(.ant-picker-status-error):not(.ant-picker-status-warning),
+.tj-ant-own-bg .ant-picker-borderless:not(.ant-picker-disabled):not([disabled]):not(.ant-picker-status-error):not(.ant-picker-status-warning),
+.tj-ant-own-bg .ant-select-filled:not(.ant-select-disabled):not(.ant-select-status-error):not(.ant-select-status-warning) .ant-select-selector,
+.tj-ant-own-bg .ant-select-borderless:not(.ant-select-disabled):not(.ant-select-status-error):not(.ant-select-status-warning) .ant-select-selector {
+  background-color: var(--tj-ant-color-bg-container) !important;
+}
+.tj-ant-own-bg .ant-input-filled:not(.ant-input-disabled):not([disabled]):not(.ant-input-status-error):not(.ant-input-status-warning):not(:focus):not(:focus-within):hover,
+.tj-ant-own-bg .ant-input-number-filled:not(.ant-input-number-disabled):not([disabled]):not(.ant-input-number-status-error):not(.ant-input-number-status-warning):not(:focus):not(:focus-within):hover,
+.tj-ant-own-bg .ant-picker-filled:not(.ant-picker-disabled):not([disabled]):not(.ant-picker-status-error):not(.ant-picker-status-warning):not(:focus):not(:focus-within):hover,
+.tj-ant-own-bg .ant-select-filled:not(.ant-select-disabled):not(.ant-select-focused):not(.ant-select-status-error):not(.ant-select-status-warning):hover .ant-select-selector {
+  background-color: color-mix(in srgb, var(--tj-ant-color-bg-container) 94%, var(--ant-color-text)) !important;
+}
