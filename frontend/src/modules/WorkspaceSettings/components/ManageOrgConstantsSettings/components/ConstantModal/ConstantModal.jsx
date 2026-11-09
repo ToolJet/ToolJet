@@ -277,6 +277,7 @@ function ConstantModalDialog({
                   .filter((other) => other.environmentId !== row.environmentId)
                   .map((other) => other.environmentName)}
                 onChange={(value) => form.setValue(row.environmentId, value)}
+                onBlur={() => form.touchRow(row.environmentId)}
                 onRemove={() => form.removeRow(row.environmentId)}
               />
             ))

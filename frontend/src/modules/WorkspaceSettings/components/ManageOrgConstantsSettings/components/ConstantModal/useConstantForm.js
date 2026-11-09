@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 
 export const NAME_MAX_LENGTH = 50;
 export const VALUE_MAX_LENGTH = 10000;
+export const VALUE_REQUIRED = 'Value is required';
 const NAME_PATTERN = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
 const getNameError = (name) => {
@@ -26,6 +27,7 @@ const buildInitialRows = (constant, environments) => {
       value: constant.type === 'Secret' ? '' : (value ?? ''),
       removed: false,
       locked: env ? !env.enabled : false,
+      touched: false,
     };
   });
   return rows;
@@ -59,6 +61,7 @@ export function useConstantForm({ mode, constant, environments, multiEnvironment
         removed: row.removed,
         locked: row.locked,
         stored: row.stored,
+        touched: row.touched,
         masked: isEdit && isSecretRow && row.stored,
         error: row.value.length > VALUE_MAX_LENGTH ? `Value must be ${VALUE_MAX_LENGTH} characters or fewer` : null,
       }));
@@ -91,7 +94,7 @@ export function useConstantForm({ mode, constant, environments, multiEnvironment
     }
     setRowMap((prev) => ({
       ...prev,
-      [envId]: { stored: false, initial: '', value: '', removed: false, locked: false },
+      [envId]: { stored: false, initial: '', value: '', removed: false, locked: false, touched: false },
     }));
   };
 
@@ -104,6 +107,9 @@ export function useConstantForm({ mode, constant, environments, multiEnvironment
     }
     if (canRemove(envId)) updateRow(envId, { removed: true });
   };
+
+  // A value box that has been left empty is only flagged once the user has been in it.
+  const touchRow = (envId) => updateRow(envId, { touched: true });
 
   const setValue = (envId, value) => {
     const row = rowMap[envId];
@@ -136,6 +142,16 @@ export function useConstantForm({ mode, constant, environments, multiEnvironment
   const isDirty = changedValues.length > 0;
   const canSubmit = nameValid && isDirty && !hasRowError && !hasEmptiedGlobal;
 
+  // Say why Save is off, but only where an empty box is what blocks it: a stored Global value that was cleared, or
+  // a new box the user left empty while there is nothing else to save. A Secret's empty box means "unchanged", and
+  // an empty extra box beside a filled one is ignored on save, so neither is flagged.
+  const requiredError = (row) => {
+    if (row.removed || row.locked || row.value !== '') return null;
+    if (row.stored) return isSecretRow ? null : VALUE_REQUIRED;
+    return row.touched && !isDirty ? VALUE_REQUIRED : null;
+  };
+  const rowsWithErrors = rows.map((row) => ({ ...row, error: row.error ?? requiredError(row) }));
+
   const toApiBody = () => (isEdit ? { values: changedValues } : { name, type, values: changedValues });
 
   return {
@@ -145,12 +161,13 @@ export function useConstantForm({ mode, constant, environments, multiEnvironment
     setType,
     nameValid,
     nameError: isEdit ? null : getNameError(name),
-    rows,
+    rows: rowsWithErrors,
     availableEnvironments,
     allEnvironmentsAdded,
     canAddEnvironment,
     addEnvironment,
     removeRow,
+    touchRow,
     setValue,
     canRemove,
     isDirty,

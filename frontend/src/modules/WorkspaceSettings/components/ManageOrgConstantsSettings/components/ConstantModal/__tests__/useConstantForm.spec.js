@@ -152,6 +152,39 @@ describe('useConstantForm — create', () => {
     expect(result.current.canSubmit).toBe(true);
   });
 
+  it('flags a cleared stored Global value at once, and only that row', () => {
+    const { result } = setup({ mode: 'edit', constant: globalConstant() });
+    act(() => result.current.setValue('stg', ''));
+    expect(result.current.rows.find((r) => r.environmentId === 'stg').error).toBe('Value is required');
+    expect(result.current.rows.find((r) => r.environmentId === 'dev').error).toBeNull();
+    act(() => result.current.setValue('stg', 'http://stg'));
+    expect(result.current.rows.find((r) => r.environmentId === 'stg').error).toBeNull();
+  });
+
+  it('does not flag a new empty row until it has been touched', () => {
+    const { result } = setup();
+    act(() => result.current.addEnvironment('dev'));
+    expect(result.current.rows[0].error).toBeNull();
+    act(() => result.current.touchRow('dev'));
+    expect(result.current.rows[0].error).toBe('Value is required');
+    act(() => result.current.setValue('dev', 'v'));
+    expect(result.current.rows[0].error).toBeNull();
+  });
+
+  it('does not flag a touched empty row that is ignored because another row has a value', () => {
+    const { result } = setup();
+    fill(result, 'KEY', { dev: 'd', stg: '' });
+    act(() => result.current.touchRow('stg'));
+    expect(result.current.rows.find((r) => r.environmentId === 'stg').error).toBeNull();
+    expect(result.current.canSubmit).toBe(true);
+  });
+
+  it('never flags the empty box of a stored Secret, which means "unchanged"', () => {
+    const { result } = setup({ mode: 'edit', constant: secretConstant() });
+    act(() => result.current.touchRow('dev'));
+    expect(result.current.rows.every((r) => r.error === null)).toBe(true);
+  });
+
   it('allows a single row when the licence does not cover multiple environments', () => {
     const { result } = setup({ multiEnvironment: false });
     expect(result.current.canAddEnvironment).toBe(true);

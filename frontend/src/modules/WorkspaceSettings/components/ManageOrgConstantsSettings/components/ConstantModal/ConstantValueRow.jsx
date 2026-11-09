@@ -47,7 +47,7 @@ function RemoveValuePopover({ environmentName, otherEnvironmentNames, canRemove,
   );
 }
 
-export default function ConstantValueRow({ row, canRemove, otherEnvironmentNames, onChange, onRemove }) {
+export default function ConstantValueRow({ row, canRemove, otherEnvironmentNames, onChange, onBlur, onRemove }) {
   const { environmentName, value, locked, masked, error } = row;
   const label = `${environmentName} value`;
   const [confirmingRemove, setConfirmingRemove] = useState(false);
@@ -104,6 +104,7 @@ export default function ConstantValueRow({ row, canRemove, otherEnvironmentNames
           masked && 'placeholder:tw-text-text-default'
         )}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
       />
       {error && <FieldError>{error}</FieldError>}
     </div>

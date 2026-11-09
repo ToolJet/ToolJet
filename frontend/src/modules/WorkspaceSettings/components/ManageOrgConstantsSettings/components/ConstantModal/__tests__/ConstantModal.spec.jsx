@@ -115,6 +115,20 @@ describe('ConstantModal — create', () => {
     expect(valueBox('Production')).toBeInTheDocument();
   });
 
+  it('says a value is required once a new empty box is left, and not before', async () => {
+    const { user } = setup();
+    await user.click(screen.getByRole('button', { name: /Add environment/ }));
+    await user.click(await screen.findByRole('menuitem', { name: /Production/ }));
+    expect(screen.queryByText('Value is required')).not.toBeInTheDocument();
+
+    await user.click(valueBox('Production'));
+    await user.tab();
+
+    expect(screen.getByText('Value is required')).toBeInTheDocument();
+    await user.type(valueBox('Production'), 'v');
+    expect(screen.queryByText('Value is required')).not.toBeInTheDocument();
+  });
+
   it('shows a locked environment as disabled and names the plan in its tooltip', async () => {
     const envs = [ENVS[0], { ...ENVS[1], enabled: false }, ENVS[2]];
     const { user } = setup({ environments: envs, lockedPlanName: 'Business' });
@@ -246,6 +260,15 @@ describe('ConstantModal — edit', () => {
   it('omits the name hint on the read-only name', () => {
     setup({ mode: 'edit', constant: globalConstant() });
     expect(screen.queryByText('Name must be unique and max 50 characters')).not.toBeInTheDocument();
+  });
+
+  it('says a value is required under a stored value that was cleared, and keeps Save disabled', async () => {
+    const { user } = setup({ mode: 'edit', constant: globalConstant() });
+    await user.clear(valueBox('Staging'));
+    expect(screen.getByText('Value is required')).toBeInTheDocument();
+    expect(valueBox('Staging')).toHaveAttribute('aria-invalid', 'true');
+    expect(valueBox('Development')).not.toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
   });
 
   it('keeps Save changes disabled until something changes, then submits only the change', async () => {
