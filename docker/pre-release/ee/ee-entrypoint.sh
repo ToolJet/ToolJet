@@ -3,15 +3,18 @@ set -e
 
 npm cache clean --force
 
-# ================== fetch AWS RDS global cert bundle at runtime ==================
+# ================== fetch AWS RDS global cert bundle at runtime (best-effort) ==================
+# Download only. NODE_EXTRA_CA_CERTS is left to the user so a custom CA is never overridden.
+# AWS RDS over SSL: set NODE_EXTRA_CA_CERTS=/home/appuser/certs/global-bundle.pem
+# (or a PEM that combines this bundle with your own CA).
 mkdir -p /home/appuser/certs
-if wget -q -O /home/appuser/certs/global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem; then
+if wget -q -O /home/appuser/certs/global-bundle.pem.tmp https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem; then
+  mv /home/appuser/certs/global-bundle.pem.tmp /home/appuser/certs/global-bundle.pem
   echo "RDS cert bundle downloaded successfully."
 else
-  echo "Error: Failed to download RDS cert bundle. Check network/internet access for this task."
-  exit 1
+  rm -f /home/appuser/certs/global-bundle.pem.tmp
+  echo "Warning: Failed to download RDS cert bundle (no internet access or unreachable). Only needed for AWS RDS SSL connections."
 fi
-export NODE_EXTRA_CA_CERTS=/home/appuser/certs/global-bundle.pem
 
 # Load environment variables from .env if the file exists
 if [ -f "./.env" ]; then
@@ -20,9 +23,14 @@ fi
 
 # Start Redis server only if REDIS_HOST is localhost or not set
 if [ -z "$REDIS_HOST" ] || [ "$REDIS_HOST" = "localhost" ]; then
+  # Bundled Redis is loopback-only; a random per-boot password stops data sources pointed at localhost from reaching it
+  export REDIS_PASSWORD="${REDIS_PASSWORD:-$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')}"
+  REDIS_AUTH_CONF=$(mktemp)
+  chmod 600 "$REDIS_AUTH_CONF"
+  printf 'include %s\nrequirepass %s\n' "/etc/redis/redis.conf" "$REDIS_PASSWORD" > "$REDIS_AUTH_CONF"
   echo "Starting Redis server locally..."
   # Own session: tini -g signals the server's process group, these stop only with the container.
-  setsid redis-server /etc/redis/redis.conf &
+  setsid redis-server "$REDIS_AUTH_CONF" &
 elif [ -n "$REDIS_URL" ]; then
   echo "REDIS_URL connection is set: $REDIS_URL"
 else
