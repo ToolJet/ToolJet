@@ -133,9 +133,11 @@ const nf = numberFormat;
 const isNumericFigure = (v: unknown): v is number | string =>
   typeof v === 'number' ? Number.isFinite(v) : typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v.trim());
 
-const formatNumber = (n: number, format: string, currency?: unknown, locale?: unknown): string => {
+const formatNumber = (n: number, format: string, currency?: unknown, locale?: unknown, cents = false): string => {
   const where = localeFor(currency, locale);
-  if (format === 'currency') return nf(where, moneyStyle(currencyCode(currency), moneyDigits(n, where))).format(n);
+  // cents: every amount with its cents, so a list does not mix $1,200 and $12.50.
+  const digits = cents && /^en(-|$)/i.test(where) ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : moneyDigits(n, where);
+  if (format === 'currency') return nf(where, moneyStyle(currencyCode(currency), digits)).format(n);
   if (format === 'compact') return nf(where, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
   if (format === 'percent') return `${nf(where, { maximumFractionDigits: 1 }).format(n)}%`;
   return nf(where, { maximumFractionDigits: 2 }).format(n);
@@ -167,7 +169,13 @@ const dateText = (d: Date, withTime: boolean): string => {
 
 /** A value in a format: numbers ('number', 'currency', 'percent', 'compact'), dates ('date', 'datetime'); 'auto' groups a
  *  bare number's digits. Anything not of the format's kind shows as written; objects show nothing. */
-export const formatValue = (value: unknown, format: unknown = 'auto', currency?: unknown, locale?: unknown): string => {
+export const formatValue = (
+  value: unknown,
+  format: unknown = 'auto',
+  currency?: unknown,
+  locale?: unknown,
+  cents = false
+): string => {
   if (value === null || value === undefined || typeof value === 'object') return '';
   if (typeof value === 'number' && !Number.isFinite(value)) return '';
   if (format === 'date' || format === 'datetime') {
@@ -176,7 +184,7 @@ export const formatValue = (value: unknown, format: unknown = 'auto', currency?:
   }
   if (!isNumericFigure(value)) return String(value);
   if (typeof format !== 'string' || !FORMATS.includes(format)) return typeof value === 'number' ? formatNumber(value, 'number', currency, locale) : String(value);
-  return formatNumber(Number(value), format, currency, locale);
+  return formatNumber(Number(value), format, currency, locale, cents);
 };
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -355,6 +363,11 @@ export const recordItems = (data: unknown, f: Record<string, unknown> = {}): Rec
   if (!Array.isArray(data)) return [];
   const metaSpecs = fieldList(f.metaFields);
   const format = typeof f.valueFormat === 'string' && VALUE_FORMATS.includes(f.valueFormat) ? f.valueFormat : 'auto';
+  // Amounts in one list share their decimals: any with cents puts cents on all.
+  const cents =
+    format === 'currency' &&
+    isNonBlankString(f.valueField) &&
+    data.some((row) => isRecord(row) && isNumericFigure(row[f.valueField as string]) && !Number.isInteger(Number(row[f.valueField as string])));
   const items = data.flatMap((row: unknown, index: number) => {
     if (!isRecord(row)) return [];
     const titleKey = isNonBlankString(f.titleField) ? f.titleField : firstTextField(row);
@@ -371,7 +384,7 @@ export const recordItems = (data: unknown, f: Record<string, unknown> = {}): Rec
         avatarName: !image && toText(avatarValue).trim() ? toText(avatarValue).trim() : title,
         meta: metaSpecs.map((spec) => recordMetaPart(row, spec, f.currency, f.locale)).filter(Boolean).join(' · '),
         status: isNonBlankString(f.statusField) ? toText(row[f.statusField]) : '',
-        value: isNonBlankString(f.valueField) ? formatValue(row[f.valueField], format, f.currency, f.locale) : '',
+        value: isNonBlankString(f.valueField) ? formatValue(row[f.valueField], format, f.currency, f.locale, cents) : '',
         progress: isNonBlankString(f.progressField) ? percentOf(row[f.progressField]) : null,
         row,
         index,

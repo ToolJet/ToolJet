@@ -32,8 +32,8 @@ const fmt = (opts: Intl.NumberFormatOptions, locale = 'en-US') => {
 };
 
 /**
- * Formats a number. `auto` keeps integers whole and other numbers to 2 places, with grouping. `percent` reads 0.25 and
- * 25 both as 25% (a fraction when |n| <= 1). precision: fixed decimals, or null for the format's own. locale: the
+ * Formats a number. `auto` keeps integers whole and other numbers to 2 places, with grouping. `percent` reads a
+ * fraction: 0.25 is 25% and 1.2 is 120% (only values up to 1 were fractions, so 1.2 showed 1.2%). precision: fixed decimals, or null for the format's own. locale: the
  * author's (pt-BR), or blank to follow the currency (BRL writes "R$ 8.799,00"), else en-US.
  */
 export const formatNumber = (n: number, format: NumberFormat = 'auto', currency = 'USD', precision: number | null = null, locale?: unknown) => {
@@ -43,7 +43,7 @@ export const formatNumber = (n: number, format: NumberFormat = 'auto', currency 
     case 'currency':
       return fmt(moneyStyle(currencyCode(currency), digits), where).format(n);
     case 'percent':
-      return fmt({ style: 'percent', maximumFractionDigits: precision ?? 1, ...digits }, where).format(Math.abs(n) <= 1 ? n : n / 100);
+      return fmt({ style: 'percent', maximumFractionDigits: precision ?? 1, ...digits }, where).format(n);
     case 'compact':
       return fmt({ notation: 'compact', maximumFractionDigits: precision ?? 1 }, where).format(n);
     case 'number':

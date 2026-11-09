@@ -144,7 +144,12 @@ describe('MUI RecordList', () => {
     expect(rows[0].querySelector('.MuiAvatar-root').textContent).toBe('HB');
     expect(rows[0].querySelector('.MuiListItemText-primary').textContent).toBe('Harbor Bistro');
     expect(rows[0].querySelector('.MuiListItemText-secondary').textContent).toBe('Maya Chen · $1,240');
-    expect(texts(c.root().querySelectorAll('.tj-mui-recordlist__value'))).toEqual(['$1,240', '$386.50', '$2,915']);
+    // One list's amounts share their decimals: one with cents puts cents on all (QA round four).
+    expect(texts(c.root().querySelectorAll('.tj-mui-recordlist__value'))).toEqual([
+      '$1,240.00',
+      '$386.50',
+      '$2,915.00',
+    ]);
     expect(rows[0].querySelector('.MuiChip-colorSuccess').textContent).toBe('Paid');
     expect(rows[1].querySelector('.MuiChip-colorWarning').textContent).toBe('Pending');
     expect(rows[2].querySelector('.MuiChip-colorError').textContent).toBe('Overdue');
@@ -208,7 +213,7 @@ describe('MUI RecordList', () => {
     });
     expect(c.root().querySelector('.tj-mui-recordlist__value').textContent.replace(/\s/g, ' ')).toBe('R$ 1.240,00');
     await c.update({ currency: 'EUR', locale: 'en-IE' });
-    expect(c.root().querySelector('.tj-mui-recordlist__value').textContent).toBe('€1,240');
+    expect(c.root().querySelector('.tj-mui-recordlist__value').textContent).toBe('€1,240.00');
     await c.update({ valueFormat: 'date', valueField: 'due', locale: '' });
     expect(c.root().querySelector('.tj-mui-recordlist__value').textContent).toMatch(/Oct 14|14 Oct/);
   });
