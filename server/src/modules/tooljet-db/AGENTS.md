@@ -65,6 +65,9 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   `resolveAndRewrite()`. Known third path: `server/ee/external-apis/service.ts`'s
   `exportTjdbTableAsCSV` calls PostgREST directly (needs `Accept: text/csv`); it resolves the
   relation id itself via the resolver — keep that if you touch it.
+- **App-facing result shape is a contract:** data queries (`TooljetDbDataOperationsService.run()`) return SQL
+  rows as `data.results` and join rows as `data.result`; apps bind to these. `sqlExecution()`/`joinTables()`
+  return raw rows for internal callers (dashboard). Change the app shape only by adding a key, never by moving one.
 - Fail-closed: a uuid this workspace doesn't own is always 404. An owned-but-unpromoted uuid is 404
   in the URL path (doesn't exist here), 400 in an embedded querystring reference (malformed request).
 - **Five independent resolution seams**, each wireable to `environmentId` — a miss silently resolves

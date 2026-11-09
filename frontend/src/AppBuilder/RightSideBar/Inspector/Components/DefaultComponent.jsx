@@ -60,6 +60,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'FlexContainer',
   'Timeline',
   'SvgImage',
+  'PDF',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
