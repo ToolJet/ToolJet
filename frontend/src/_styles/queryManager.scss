@@ -89,7 +89,8 @@ $border-radius: 4px;
 
 .query-pane {
   scrollbar-width: none;
-  z-index: 3;
+  // Above widget tooltips (tw-z-50), which are portaled to body
+  z-index: 51;
 }
 
 .query-pane {
@@ -108,7 +109,7 @@ $border-radius: 4px;
 
   &.expanded,
   &.collapsed {
-    z-index: 12 !important;
+    z-index: 52 !important;
   }
 
   // Lift above the mobile canvas frame (z-index 1000); toggle bar stays above the content pane.

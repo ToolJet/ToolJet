@@ -3,6 +3,13 @@ import Label from '@/_ui/Label';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import './progressbar.scss';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+
+// Text that is not a number (e.g. setValue('abc')) becomes 0, like an empty or NaN value.
+const clampProgress = (value) => {
+  const number = Number(value);
+  return Number.isNaN(number) ? 0 : Math.min(Math.max(number, 0), 100);
+};
+
 export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExposedVariables, dataCy, height }) => {
   // ===== PROPS DESTRUCTURING =====
   const { labelType, label, progress, visibility, loadingState } = properties;
@@ -35,7 +42,7 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
 
   // ===== STATE MANAGEMENT =====
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
-    value: Math.min(Math.max(progress || 0, 0), 100),
+    value: clampProgress(progress),
     isVisible: visibility,
     isLoading: loadingState,
   });
@@ -60,7 +67,7 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
     {
       dep: progress,
       sideEffect: () => {
-        const clamped = Math.min(Math.max(progress || 0, 0), 100);
+        const clamped = clampProgress(progress);
         updateExposedVariablesState('value', clamped);
         setExposedVariable('value', clamped);
       },
@@ -83,11 +90,11 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
 
   useEffect(() => {
     const exposedVariables = {
-      value: Math.min(Math.max(progress || 0, 0), 100),
+      value: clampProgress(progress),
       isVisible: visibility,
       isLoading: loadingState,
       setValue: async function (value) {
-        const clamped = Math.min(Math.max(value || 0, 0), 100);
+        const clamped = clampProgress(value);
         updateExposedVariablesState('value', clamped);
         setExposedVariable('value', clamped);
       },
