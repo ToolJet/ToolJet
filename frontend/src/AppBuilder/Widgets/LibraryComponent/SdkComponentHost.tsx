@@ -486,6 +486,8 @@ const SdkComponentHost = ({
       // A field (a validation section) takes part in a Form's clearForm.
       formField: !!manifestComponent?.validation,
       markRowScoped,
+      // A pack component's own Required property (PasswordInput, NumberInput) sets isMandatory, as Mandatory does.
+      required: isInline && properties.required === true,
     }
   );
   // In an Equal heights row the box is stretched to the tallest sibling; a fitted component fills it.
