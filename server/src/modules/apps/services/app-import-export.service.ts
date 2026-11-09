@@ -151,7 +151,10 @@ type NewRevampedComponent =
   | 'ModalV2'
   | 'PopoverMenu'
   | 'Pagination'
-  | 'Timeline';
+  | 'Timeline'
+  | 'RichTextEditor'
+  | 'Calendar'
+  | 'SvgImage';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -206,6 +209,9 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'PopoverMenu',
   'Pagination',
   'Timeline',
+  'RichTextEditor',
+  'Calendar',
+  'SvgImage',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -330,6 +336,7 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'AudioRecorder',
   'Button',
   'ButtonGroupV2',
+  'Calendar',
   'Camera',
   'Cascader',
   'Checkbox',
@@ -367,8 +374,10 @@ const TOOLTIP_FORMAT_COMPONENT_TYPES = [
   'RadioButtonV2',
   'RangeSliderV2',
   'ReorderableList',
+  'RichTextEditor',
   'StarRating',
   'Statistics',
+  'SvgImage',
   'Tabs',
   'Tags',
   'TagsInput',
