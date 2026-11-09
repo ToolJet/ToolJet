@@ -242,7 +242,7 @@ export class ImportExportResourcesService {
           // organization_id is already validated == user.organizationId above — no override needed.
           const createdApp = await this.appImportExportService.import(
             user,
-            // Only internal git pull may target an existing app via existingAppId.
+            // Uploaded files cannot target an existing app; only git sync callers pass existingAppId.
             isGitApp ? appImportDto.definition : omit(appImportDto.definition, 'existingAppId'),
             appImportDto.appName,
             {
