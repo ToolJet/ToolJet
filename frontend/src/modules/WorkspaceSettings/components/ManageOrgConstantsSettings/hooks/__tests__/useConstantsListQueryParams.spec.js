@@ -9,11 +9,12 @@ const STORAGE_KEY = `tj:constants-view:${WORKSPACE_ID}`;
 
 function setup(route = '/settings/workspace-constants', workspaceId = WORKSPACE_ID) {
   const wrapper = ({ children }) => <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>;
-  const { result } = renderHook(
+  const { result, rerender } = renderHook(
     () => ({ view: useConstantsListQueryParams({ workspaceId }), location: useLocation() }),
     { wrapper }
   );
   return {
+    rerender,
     view: () => result.current.view,
     params: () => Object.fromEntries(new URLSearchParams(result.current.location.search)),
   };
@@ -30,7 +31,7 @@ describe('useConstantsListQueryParams', () => {
   test('falls back to the defaults with an empty URL and nothing saved', () => {
     const { view } = setup();
 
-    expect(view()).toMatchObject({ env: null, tab: 'Global', sort: 'name_asc', source: ['workspace', 'env'] });
+    expect(view()).toMatchObject({ env: null, tab: 'Global', sort: 'modified_desc', source: ['workspace', 'env'] });
   });
 
   test('reads the view from the URL', () => {
@@ -44,11 +45,11 @@ describe('useConstantsListQueryParams', () => {
 
     act(() => view().setEnv('e2'));
     act(() => view().setTab('Secret'));
-    act(() => view().setSort('modified_desc'));
+    act(() => view().setSort('name_desc'));
     act(() => view().setSource(['workspace']));
 
-    expect(params()).toEqual({ env: 'e2', tab: 'Secret', sort: 'modified_desc', source: 'workspace' });
-    expect(view()).toMatchObject({ env: 'e2', tab: 'Secret', sort: 'modified_desc', source: ['workspace'] });
+    expect(params()).toEqual({ env: 'e2', tab: 'Secret', sort: 'name_desc', source: 'workspace' });
+    expect(view()).toMatchObject({ env: 'e2', tab: 'Secret', sort: 'name_desc', source: ['workspace'] });
   });
 
   test('default values are left out of the URL', () => {
@@ -56,7 +57,7 @@ describe('useConstantsListQueryParams', () => {
 
     act(() => view().setEnv(null));
     act(() => view().setTab('Global'));
-    act(() => view().setSort('name_asc'));
+    act(() => view().setSort('modified_desc'));
     act(() => view().setSource(['env', 'workspace']));
 
     expect(params()).toEqual({});
@@ -71,10 +72,19 @@ describe('useConstantsListQueryParams', () => {
     expect(view().source).toEqual(['workspace', 'env']);
   });
 
+  test('Name A-Z is no longer the default, so it is written to the URL', () => {
+    const { view, params } = setup();
+
+    act(() => view().setSort('name_asc'));
+
+    expect(params()).toEqual({ sort: 'name_asc' });
+    expect(view().sort).toBe('name_asc');
+  });
+
   test('unknown values are dropped', () => {
     const { view } = setup('/c?tab=Bogus&sort=size_desc&source=workspace,bogus');
 
-    expect(view()).toMatchObject({ tab: 'Global', sort: 'name_asc', source: ['workspace'] });
+    expect(view()).toMatchObject({ tab: 'Global', sort: 'modified_desc', source: ['workspace'] });
   });
 
   test('a source param with no known value falls back to both sources', () => {
@@ -116,7 +126,7 @@ describe('useConstantsListQueryParams', () => {
 
       const { view } = setup();
 
-      expect(view()).toMatchObject({ sort: 'name_asc', tab: 'Global', source: ['workspace', 'env'] });
+      expect(view()).toMatchObject({ sort: 'modified_desc', tab: 'Global', source: ['workspace', 'env'] });
     });
 
     test('a saved view is scoped to its workspace', () => {
@@ -124,7 +134,7 @@ describe('useConstantsListQueryParams', () => {
 
       const { view } = setup('/c', 'ws-2');
 
-      expect(view().sort).toBe('name_asc');
+      expect(view().sort).toBe('modified_desc');
     });
 
     test('setters save the whole view, including values that came from the URL', () => {
@@ -144,9 +154,50 @@ describe('useConstantsListQueryParams', () => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ sort: 'name_desc' }));
       const { view } = setup();
 
-      act(() => view().setSort('name_asc'));
+      act(() => view().setSort('modified_desc'));
 
-      expect(view().sort).toBe('name_asc');
+      expect(view().sort).toBe('modified_desc');
+    });
+
+    test('a plain visit seeds the URL with the saved view, so a refresh or shared link keeps it', () => {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ env: 'e9', tab: 'Secret', sort: 'name_asc', source: ['env'] })
+      );
+
+      const { params } = setup();
+
+      expect(params()).toEqual({ env: 'e9', tab: 'Secret', sort: 'name_asc', source: 'env' });
+    });
+
+    test('seeding leaves defaults out and keeps what the URL already says', () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ tab: 'Secret', sort: 'modified_desc', source: ['env'] }));
+
+      const { params } = setup('/c?source=workspace&branch=feature-x');
+
+      expect(params()).toEqual({ tab: 'Secret', source: 'workspace', branch: 'feature-x' });
+    });
+
+    test('a saved view written by another tab later does not change this view', () => {
+      const { view, rerender } = setup();
+      expect(view().sort).toBe('modified_desc');
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ sort: 'name_desc', tab: 'Secret' }));
+      rerender();
+
+      expect(view()).toMatchObject({ sort: 'modified_desc', tab: 'Global' });
+    });
+
+    test('a default chosen after seeding stays chosen on later renders', () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ sort: 'name_desc' }));
+      const { view, params, rerender } = setup();
+      expect(view().sort).toBe('name_desc');
+
+      act(() => view().setSort('modified_desc'));
+      rerender();
+
+      expect(view().sort).toBe('modified_desc');
+      expect(params()).toEqual({});
     });
 
     test('corrupt saved JSON falls back to the defaults', () => {
@@ -154,7 +205,7 @@ describe('useConstantsListQueryParams', () => {
 
       const { view } = setup();
 
-      expect(view().sort).toBe('name_asc');
+      expect(view().sort).toBe('modified_desc');
     });
 
     test('storage that throws does not break reading or writing the URL', () => {

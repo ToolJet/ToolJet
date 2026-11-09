@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useConstantsListStore } from '../store/constantsListStore';
 
@@ -6,7 +6,8 @@ export const CONSTANT_TABS = ['Global', 'Secret'];
 export const CONSTANT_SORTS = ['name_asc', 'name_desc', 'modified_desc', 'modified_asc'];
 export const CONSTANT_SOURCES = ['workspace', 'env'];
 
-const DEFAULTS = { env: null, tab: 'Global', sort: 'name_asc', source: CONSTANT_SOURCES };
+const DEFAULTS = { env: null, tab: 'Global', sort: 'modified_desc', source: CONSTANT_SOURCES };
+export const DEFAULT_SORT = DEFAULTS.sort;
 
 const storageKey = (workspaceId) => `tj:constants-view:${workspaceId}`;
 
@@ -42,20 +43,53 @@ const pickSource = (...candidates) => candidates.map(parseSource).find((sources)
 const isDefault = (key, value) =>
   key === 'source' ? value.length === CONSTANT_SOURCES.length : value === DEFAULTS[key];
 
-// Environment, tab, sort and source live in the URL so they survive refresh and sharing; the last view is also
-// saved per workspace so a plain visit restores it. A URL param wins over the saved value. `env` is not
-// validated here: the caller knows the workspace's environments and supplies the default.
+const VIEW_KEYS = ['env', 'tab', 'sort', 'source'];
+
+// Environment, tab, sort and source live in the URL so they survive refresh and sharing. A plain visit restores the
+// view saved for the workspace by copying it into the URL once, on mount; after that only the URL is read, so a
+// second tab stays independent and choosing a default (which leaves the URL) is not undone by an older saved value.
+// A URL param wins over the saved value. `env` is not validated here: the caller knows the workspace's
+// environments and supplies the default.
 export function useConstantsListQueryParams({ workspaceId }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const setPage = useConstantsListStore((state) => state.setPage);
 
-  const saved = readSavedView(workspaceId);
+  // Until the seeding effect has run, the saved view fills in for params the URL does not have yet, so the very
+  // first render already shows (and fetches) the right view.
+  const [savedAtMount] = useState(() => readSavedView(workspaceId));
+  const [seeded, setSeeded] = useState(false);
+  const saved = seeded ? {} : savedAtMount;
+
   const env = pickEnv(searchParams.get('env'), saved.env);
   const tab = pickTab(searchParams.get('tab'), saved.tab);
   const sort = pickSort(searchParams.get('sort'), saved.sort);
   const sourceKey = pickSource(searchParams.get('source'), saved.source).join(',');
   // Memoized on its contents so consumers can depend on `source` without refetching every render.
   const source = useMemo(() => sourceKey.split(','), [sourceKey]);
+
+  useEffect(() => {
+    const seed = {
+      env: pickEnv(savedAtMount.env),
+      tab: pickTab(savedAtMount.tab),
+      sort: pickSort(savedAtMount.sort),
+      source: pickSource(savedAtMount.source),
+    };
+    setSearchParams(
+      (current) => {
+        const params = new URLSearchParams(current);
+        VIEW_KEYS.forEach((key) => {
+          if (!params.has(key) && !isDefault(key, seed[key])) {
+            params.set(key, key === 'source' ? seed[key].join(',') : seed[key]);
+          }
+        });
+        return params;
+      },
+      { replace: true }
+    );
+    setSeeded(true);
+    // Once per mount: the saved view is a snapshot of the visit's start.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const updateView = useCallback(
     (key, value) => {

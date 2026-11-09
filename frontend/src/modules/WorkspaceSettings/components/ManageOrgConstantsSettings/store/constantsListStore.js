@@ -1,5 +1,4 @@
-import { immer } from 'zustand/middleware/immer';
-import { create } from '@/_stores/utils';
+import { createZustandStoreWithImmer } from '@/_stores/utils';
 import { orgConstantsV2Service } from '@/_services/organization_constants_v2.service';
 import { insertPins, movePinnedId } from '../helpers/pinOrder';
 
@@ -22,8 +21,8 @@ let listRequest = null;
 // The URL-owned filters of the last fetch, so a mutation can refetch the page the user is looking at.
 let lastListParams = null;
 
-export const useConstantsListStore = create(
-  immer((set, get) => {
+export const useConstantsListStore = createZustandStoreWithImmer(
+  (set, get) => {
     const refetch = () => (lastListParams ? get().fetchList(lastListParams) : Promise.resolve());
 
     return {
@@ -112,6 +111,15 @@ export const useConstantsListStore = create(
             { signal: controller.signal }
           );
           if (controller.signal.aborted) return;
+          // Rows can vanish elsewhere (or through our own delete), leaving this page past the end.
+          const lastPage = Math.max(1, Math.ceil(meta.total / meta.page_size));
+          if (page > lastPage) {
+            set((state) => {
+              state.query.page = lastPage;
+              state.rowSelection = {};
+            });
+            return get().fetchList(lastListParams);
+          }
           set((state) => {
             state.root = { items, meta, status: 'success' };
           });
@@ -138,15 +146,11 @@ export const useConstantsListStore = create(
       bulkDeleteConstants: async (ids) => {
         const result = await orgConstantsV2Service.bulkDelete(ids);
         get().removeItems(result.deleted_ids);
+        // fetchList steps back a page when the deletes emptied the one the user was on.
         await refetch();
-        // Deleting every row of the last page would otherwise leave the user on an empty page.
-        const { query, root } = get();
-        if (root.status === 'success' && root.items.length === 0 && query.page > 1) {
-          get().setPage(query.page - 1);
-          await refetch();
-        }
         return result;
       },
     };
-  })
+  },
+  { storeName: 'Constants list store' }
 );

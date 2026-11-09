@@ -317,7 +317,7 @@ describe('ConstantModal — edit', () => {
     await user.click(await screen.findByRole('button', { name: 'Remove' }));
     await user.click(screen.getByRole('button', { name: 'Remove Development value' }));
     expect(await screen.findByText('Remove Development value?')).toBeInTheDocument();
-    expect(screen.getByText("This is the only value. The constant can't be used without one.")).toBeInTheDocument();
+    expect(screen.getByText('This is the only value. The constant can’t be used without one.')).toBeInTheDocument();
     expect(screen.getByText('To delete the whole constant, use Delete from the constants list.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Remove' })).toBeDisabled();
   });

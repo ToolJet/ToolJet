@@ -14,7 +14,8 @@ const setup = (props = {}) => {
     <SelectionBar
       variant="Global"
       selectedIds={['a', 'b']}
-      selectedNames={['ALPHA', 'BRAVO']}
+      deletableIds={['a', 'b']}
+      deletableNames={['ALPHA', 'BRAVO']}
       allPinned={false}
       {...handlers}
       {...props}
@@ -30,7 +31,12 @@ describe('SelectionBar', () => {
     ['Secret', ['a'], '1 secret selected'],
     ['Secret', ['a', 'b'], '2 secrets selected'],
   ])('on the %s tab with %j selected it reads "%s"', (variant, selectedIds, text) => {
-    setup({ variant, selectedIds, selectedNames: selectedIds.map((id) => id.toUpperCase()) });
+    setup({
+      variant,
+      selectedIds,
+      deletableIds: selectedIds,
+      deletableNames: selectedIds.map((id) => id.toUpperCase()),
+    });
     expect(screen.getByText(text)).toBeInTheDocument();
   });
 
@@ -66,7 +72,7 @@ describe('SelectionBar', () => {
   });
 
   it('names the constant when one is selected', async () => {
-    setup({ selectedIds: ['a'], selectedNames: ['ALPHA'] });
+    setup({ selectedIds: ['a'], deletableIds: ['a'], deletableNames: ['ALPHA'] });
     await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(await screen.findByRole('dialog', { name: 'Delete workspace constant?' })).toBeInTheDocument();
   });

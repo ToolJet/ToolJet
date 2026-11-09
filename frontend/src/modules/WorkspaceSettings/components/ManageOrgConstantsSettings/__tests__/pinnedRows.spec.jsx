@@ -109,11 +109,11 @@ describe('pinned rows on the constants page', () => {
     expect(store().pins.Global).toEqual(['b']);
   });
 
-  it('cannot select an .env constant', async () => {
+  it('lets an .env constant be selected, to pin it', async () => {
     mockApi();
     renderPage();
     await screen.findByText('ENVVAR');
-    expect(screen.getByRole('checkbox', { name: 'Select ENVVAR' })).toBeDisabled();
+    expect(screen.getByRole('checkbox', { name: 'Select ENVVAR' })).toBeEnabled();
   });
 
   it('bulk deletes the selected rows after confirmation and drops their pins', async () => {

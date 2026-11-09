@@ -5,3 +5,9 @@
 [data-slot='dialog-content'] {
   z-index: 1050 !important;
 }
+
+// Menus, popovers, selects and tooltips float in their own wrapper (default 50), so inside a lifted dialog they would
+// open underneath it. Radix sets the wrapper's z-index inline, hence the !important.
+[data-radix-popper-content-wrapper] {
+  z-index: 1060 !important;
+}

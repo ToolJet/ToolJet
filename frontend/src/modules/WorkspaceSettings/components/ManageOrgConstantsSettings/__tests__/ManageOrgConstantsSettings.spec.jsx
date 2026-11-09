@@ -1,13 +1,14 @@
 import '@/test/setupMsw';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import ManageOrgConstantsSettings from '../ManageOrgConstantsSettings';
 import { useConstantsListStore } from '../store/constantsListStore';
 import { useLicenseStore } from '@/_stores/licenseStore';
+import { useSearchStore } from '@/_stores/searchStore';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 
 jest.mock('@/modules/common/helpers/utils', () => ({
@@ -70,6 +71,7 @@ beforeEach(() => {
     root: { items: [], meta: null, status: 'idle' },
     rowSelection: {},
   });
+  act(() => useSearchStore.getState().clearSearch());
 });
 
 describe('ManageOrgConstantsSettings', () => {
@@ -179,13 +181,21 @@ describe('ManageOrgConstantsSettings header controls', () => {
     expect(screen.getByRole('button', { name: 'Environment' })).toHaveTextContent('Development');
   });
 
+  it('lists the most recently modified first until another sort is chosen', async () => {
+    const requests = respond();
+    renderPage();
+    await screen.findByText('API_URL');
+    expect(requests[0]).toMatchObject({ sort: 'modified_desc' });
+    expect(requests.every((request) => request.sort === 'modified_desc')).toBe(true);
+  });
+
   it('loads the chosen sort', async () => {
     const requests = respond();
     renderPage();
     await screen.findByText('API_URL');
 
     await userEvent.click(screen.getByRole('button', { name: 'Sort' }));
-    await userEvent.click(await screen.findByRole('menuitemradio', { name: 'Name (Z-A)' }));
+    await userEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'Z → A' }));
 
     await waitFor(() => expect(requests.at(-1)).toMatchObject({ sort: 'name_desc' }));
   });
@@ -216,5 +226,176 @@ describe('ManageOrgConstantsSettings header controls', () => {
     expect(screen.queryByRole('button', { name: 'Environment' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Filter' })).toBeInTheDocument();
     expect(requests.every((request) => request.environment_id === 'env-prod')).toBe(true);
+  });
+});
+
+describe('ManageOrgConstantsSettings header search', () => {
+  // Three pages in total, so a remembered page 2 is a real page.
+  const respond = () => mockApi(() => HttpResponse.json({ ...page([item('api_url')]), total: 120 }));
+  // The header owns the input and debounces it; the page only sees the debounced value.
+  const typeInHeader = (value) =>
+    act(() => useSearchStore.setState({ searchQuery: value, debouncedSearchQuery: value }));
+
+  it('sends the typed term as the search and goes back to page 1', async () => {
+    useConstantsListStore.setState({ query: { page: 2, searchKey: '' } });
+    const requests = respond();
+    renderPage();
+    await screen.findByText('API_URL');
+    expect(requests[0]).toMatchObject({ page: '2' });
+
+    typeInHeader('api');
+
+    await waitFor(() => expect(requests.at(-1)).toMatchObject({ search: 'api', page: '1' }));
+  });
+
+  it('clamps a term longer than the API accepts, so the request still succeeds', async () => {
+    const requests = respond();
+    renderPage();
+    await screen.findByText('API_URL');
+
+    typeInHeader('x'.repeat(51));
+
+    await waitFor(() => expect(requests.at(-1)).toMatchObject({ search: 'x'.repeat(50) }));
+    expect(screen.queryByText("Couldn't load constants")).not.toBeInTheDocument();
+  });
+
+  it('does not refetch or reset the page when the header term already matches', async () => {
+    useConstantsListStore.setState({ query: { page: 2, searchKey: '' } });
+    const requests = respond();
+    renderPage();
+    await screen.findByText('API_URL');
+
+    typeInHeader('');
+
+    expect(useConstantsListStore.getState().query.page).toBe(2);
+    expect(requests).toHaveLength(1);
+  });
+
+  it('keeps the page number when the user leaves and comes back', async () => {
+    useConstantsListStore.setState({ query: { page: 2, searchKey: '' } });
+    const requests = respond();
+    const { unmount } = renderPage();
+    await screen.findByText('API_URL');
+    unmount();
+
+    renderPage();
+    await waitFor(() => expect(requests.at(-1)).toMatchObject({ page: '2' }));
+    expect(useConstantsListStore.getState().query.page).toBe(2);
+  });
+
+  it('clears the search in the header and the list when the page unmounts', async () => {
+    respond();
+    const { unmount } = renderPage();
+    await screen.findByText('API_URL');
+    typeInHeader('api');
+    await waitFor(() => expect(useConstantsListStore.getState().query.searchKey).toBe('api'));
+
+    unmount();
+
+    expect(useConstantsListStore.getState().query.searchKey).toBe('');
+    expect(useSearchStore.getState().searchQuery).toBe('');
+    expect(useSearchStore.getState().debouncedSearchQuery).toBe('');
+  });
+
+  it('asks the header for a constants placeholder, and restores the default on unmount', async () => {
+    respond();
+    const { unmount } = renderPage();
+    await screen.findByText('API_URL');
+    expect(useSearchStore.getState().searchConfig.placeholder).toBe('Search constants');
+
+    unmount();
+    expect(useSearchStore.getState().searchConfig.placeholder).toBe('Search');
+  });
+
+  it('shows the no-results state when the search matches nothing', async () => {
+    mockApi(({ search }) => HttpResponse.json(page(search ? [] : [item('api_url')])));
+    renderPage();
+    await screen.findByText('API_URL');
+
+    typeInHeader('zzz');
+
+    expect(await screen.findByText('No constants found')).toBeInTheDocument();
+  });
+});
+
+describe('ManageOrgConstantsSettings pagination', () => {
+  // 120 rows in total: three pages of 50. The response echoes the requested page.
+  const respond = () =>
+    mockApi(({ page: requested }) =>
+      HttpResponse.json({ ...page([item(`row_${requested}`)]), page: Number(requested), total: 120 })
+    );
+
+  beforeEach(() => {
+    window.scrollTo = jest.fn();
+  });
+
+  it('shows the pages and loads the one that is clicked', async () => {
+    const requests = respond();
+    renderPage();
+    await screen.findByText('ROW_1');
+    expect(screen.getByText('Showing 1-1 of 120 items')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('link', { name: 'Go to next page' }));
+
+    expect(await screen.findByText('ROW_2')).toBeInTheDocument();
+    expect(requests.at(-1)).toMatchObject({ page: '2' });
+    expect(screen.getByRole('link', { name: '2' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('clears the selection when the page changes', async () => {
+    respond();
+    renderPage();
+    await screen.findByText('ROW_1');
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Select ROW_1' }));
+    expect(useConstantsListStore.getState().rowSelection).toEqual({ row_1: true });
+
+    await userEvent.click(screen.getByRole('link', { name: '3' }));
+
+    await screen.findByText('ROW_3');
+    expect(useConstantsListStore.getState().rowSelection).toEqual({});
+  });
+
+  it('scrolls back to the top of the new page', async () => {
+    respond();
+    renderPage();
+    await screen.findByText('ROW_1');
+
+    await userEvent.click(screen.getByRole('link', { name: '2' }));
+
+    expect(window.scrollTo).toHaveBeenCalledWith({ top: 0 });
+  });
+
+  it('offers no pages when everything fits on one', async () => {
+    mockApi(() => HttpResponse.json(page([item('api_url')])));
+    renderPage();
+    await screen.findByText('API_URL');
+    expect(screen.queryByRole('navigation', { name: 'pagination' })).not.toBeInTheDocument();
+  });
+
+  it('stays on the same page while a modal opens and closes, without another request', async () => {
+    useConstantsListStore.setState({ query: { page: 2, searchKey: '' } });
+    const requests = respond();
+    renderPage();
+    await screen.findByText('ROW_2');
+    const requestCount = requests.length;
+
+    await userEvent.click(screen.getByRole('button', { name: 'Create constant' }));
+    await screen.findByRole('dialog');
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    expect(useConstantsListStore.getState().query.page).toBe(2);
+    expect(requests).toHaveLength(requestCount);
+    expect(screen.getByRole('link', { name: '2' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('lands on the last page when the remembered page no longer exists', async () => {
+    useConstantsListStore.setState({ query: { page: 9, searchKey: '' } });
+    const requests = respond();
+    renderPage();
+
+    expect(await screen.findByText('ROW_3')).toBeInTheDocument();
+    expect(useConstantsListStore.getState().query.page).toBe(3);
+    expect(requests.map((request) => request.page)).toContain('9');
   });
 });

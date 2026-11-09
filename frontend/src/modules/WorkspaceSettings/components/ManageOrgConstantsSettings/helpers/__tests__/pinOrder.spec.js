@@ -135,9 +135,9 @@ describe('insertPins', () => {
     expect(insertPins(pins, items, ['a', 'c'], 'name_asc')).toEqual(['c', 'a']);
   });
 
-  test('skips environment constants and ids missing from the page', () => {
+  test('pins environment constants too, and skips ids missing from the page', () => {
     const withEnv = [...items, item('env:Global:X', 'X', null, 'env')];
-    expect(insertPins([], withEnv, ['env:Global:X', 'nope'], 'name_asc')).toEqual([]);
+    expect(insertPins([], withEnv, ['env:Global:X', 'nope'], 'name_asc')).toEqual(['env:Global:X']);
   });
 
   test('does not mutate the pins it was given', () => {

@@ -61,7 +61,7 @@ describe('constantsListStore', () => {
       per_page: String(ITEMS_PER_PAGE),
     });
 
-    pending[0].respond(listPage([item('a')], { page: 3 }));
+    pending[0].respond(listPage([item('a')], { page: 3, total: 101 }));
     await done;
 
     expect(store().root.status).toBe('success');
@@ -69,7 +69,7 @@ describe('constantsListStore', () => {
     expect(store().root.meta).toEqual({
       page: 3,
       page_size: ITEMS_PER_PAGE,
-      total: 1,
+      total: 101,
       counts: { secrets: 0, globals: 1 },
     });
   });
@@ -80,6 +80,58 @@ describe('constantsListStore', () => {
     await store().fetchList(PARAMS);
 
     expect(store().root.status).toBe('error');
+  });
+
+  describe('a page past the end', () => {
+    // Rows can disappear elsewhere between visits, leaving a remembered page number with nothing on it.
+    const serve = (total) => {
+      const requests = [];
+      server.use(
+        http.get(BASE, ({ request }) => {
+          const url = new URL(request.url);
+          requests.push(url);
+          const page = Number(url.searchParams.get('page'));
+          const lastPage = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+          const rows = page <= lastPage && total > 0 ? [item(`p${page}`)] : [];
+          return HttpResponse.json(listPage(rows, { page, total }));
+        })
+      );
+      return requests;
+    };
+
+    test('falls back to the last page that has rows', async () => {
+      const requests = serve(120);
+      store().setPage(5);
+
+      await store().fetchList(PARAMS);
+
+      expect(requests.map((url) => url.searchParams.get('page'))).toEqual(['5', '3']);
+      expect(store().query.page).toBe(3);
+      expect(store().root.items.map(({ id }) => id)).toEqual(['p3']);
+      expect(store().root.status).toBe('success');
+    });
+
+    test('falls back to page 1 when nothing is left', async () => {
+      const requests = serve(0);
+      store().setPage(2);
+
+      await store().fetchList(PARAMS);
+
+      expect(requests.map((url) => url.searchParams.get('page'))).toEqual(['2', '1']);
+      expect(store().query.page).toBe(1);
+      expect(store().root.status).toBe('success');
+      expect(store().root.meta.total).toBe(0);
+    });
+
+    test('leaves a page that exists alone', async () => {
+      const requests = serve(120);
+      store().setPage(3);
+
+      await store().fetchList(PARAMS);
+
+      expect(requests).toHaveLength(1);
+      expect(store().query.page).toBe(3);
+    });
   });
 
   test('an older response never overwrites a newer one', async () => {
@@ -170,10 +222,10 @@ describe('constantsListStore', () => {
       expect(store().pins.Global).toEqual(['b']);
     });
 
-    test('pinConstants skips environment constants and ids that are not on the page', () => {
+    test('pinConstants pins environment constants too, and skips ids that are not on the page', () => {
       load([...ITEMS, named('env:Global:X', 'X', { source: 'env' })]);
       store().pinConstants('Global', ['env:Global:X', 'missing', 'a'], 'name_asc');
-      expect(store().pins.Global).toEqual(['a']);
+      expect(store().pins.Global).toEqual(['a', 'env:Global:X']);
     });
 
     test('unpinConstants removes the ids and ignores unknown ones', () => {
@@ -208,7 +260,8 @@ describe('constantsListStore', () => {
       server.use(
         http.get(BASE, ({ request }) => {
           requests.push(new URL(request.url));
-          return HttpResponse.json(listPage(rows()));
+          // A total that reaches the requested page, so none of these lists is past its end.
+          return HttpResponse.json(listPage(rows(), { total: 3 * ITEMS_PER_PAGE }));
         })
       );
       return requests;
@@ -303,7 +356,8 @@ describe('constantsListStore', () => {
           const page = Number(url.searchParams.get('page'));
           // Page 3 holds one row until it is deleted; page 2 is always full.
           const rows = page === 3 ? (requests.length === 1 ? [item('z')] : []) : [item('y')];
-          return HttpResponse.json(listPage(rows, { page }));
+          // Two full pages once the last row of page 3 is deleted.
+          return HttpResponse.json(listPage(rows, { page, total: page === 3 && rows.length ? 101 : 100 }));
         }),
         http.post(`${BASE}/bulk-delete`, () => HttpResponse.json({ deleted_ids: ['z'], skipped_ids: [] }))
       );

@@ -8,6 +8,8 @@ import { orgConstantsV2Service } from '@/_services/organization_constants_v2.ser
 import { getWorkspaceId } from '@/_helpers/utils';
 import { isMultiEnvLicenseInvalid } from '@/_helpers/multiEnvLicense';
 import { useLicenseStore } from '@/_stores/licenseStore';
+import { useSearchStore } from '@/_stores/searchStore';
+import { useHeaderSearchConfig } from '@/_hooks/useHeaderSearchConfig';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import ConstantModal from './components/ConstantModal';
 import ConstantsListControls from './components/ConstantsListControls';
@@ -17,6 +19,9 @@ import ConstantsTableFooter from './components/ConstantsTableFooter';
 import SelectionBar from './components/SelectionBar';
 import { CONSTANT_SOURCES, useConstantsListQueryParams } from './hooks/useConstantsListQueryParams';
 import { useConstantsListStore } from './store/constantsListStore';
+
+// The list API rejects a longer `search`.
+const MAX_SEARCH_LENGTH = 50;
 
 const tabLabel = (name, count) => (count === undefined ? name : `${name} (${count})`);
 
@@ -62,6 +67,27 @@ const ManageOrgConstantsSettings = () => {
     loadEnvironments();
   }, [loadEnvironments]);
 
+  useHeaderSearchConfig({ placeholder: 'Search constants' });
+  const debouncedSearch = useSearchStore((state) => state.debouncedSearchQuery);
+  const setSearch = useConstantsListStore((state) => state.setSearch);
+  const setPage = useConstantsListStore((state) => state.setPage);
+
+  // `setSearch` always goes back to page 1, so only call it when the term really changed: a remount with an
+  // unchanged term must keep the page.
+  useEffect(() => {
+    const term = debouncedSearch.slice(0, MAX_SEARCH_LENGTH);
+    if (term !== useConstantsListStore.getState().query.searchKey) setSearch(term);
+  }, [debouncedSearch, setSearch]);
+
+  // Both stores outlive the page: reset them together so the header and the list never disagree.
+  useEffect(
+    () => () => {
+      useSearchStore.getState().clearSearch();
+      if (useConstantsListStore.getState().query.searchKey) useConstantsListStore.getState().setSearch('');
+    },
+    []
+  );
+
   const featureAccess = useLicenseStore((state) => state.featureAccess);
   // Every workspace has all environment rows, but only licensed EE can switch between them.
   const showEnv = fetchEdition() !== 'ce' && !isMultiEnvLicenseInvalid(featureAccess);
@@ -104,11 +130,19 @@ const ManageOrgConstantsSettings = () => {
     }
   };
 
+  // The document scrolls, not the list, so the new page would otherwise open at the old scroll position.
+  const changePage = (target) => {
+    setPage(target);
+    window.scrollTo({ top: 0 });
+  };
+
   const pin = (ids) => pinConstants(tab, ids, sort);
   const unpin = (ids) => unpinConstants(tab, ids);
 
   const selectedItems = items.filter((item) => rowSelection[item.id]);
   const selectedIds = selectedItems.map((item) => item.id);
+  // `.env` constants can be selected to pin, but never deleted.
+  const deletableItems = selectedItems.filter((item) => item.source !== 'env');
   // The bar's Pin button turns into Unpin once there is nothing left to pin.
   const allSelectedPinned = selectedIds.length > 0 && selectedIds.every((id) => pinnedIds.includes(id));
 
@@ -169,7 +203,8 @@ const ManageOrgConstantsSettings = () => {
             <SelectionBar
               variant={tab}
               selectedIds={selectedIds}
-              selectedNames={selectedItems.map((item) => item.name)}
+              deletableIds={deletableItems.map((item) => item.id)}
+              deletableNames={deletableItems.map((item) => item.name)}
               allPinned={allSelectedPinned}
               onClear={clearSelection}
               onPin={() => {
@@ -185,7 +220,7 @@ const ManageOrgConstantsSettings = () => {
           </div>
         </div>
       )}
-      <ConstantsTableFooter status={status} meta={meta} itemCount={items.length} />
+      <ConstantsTableFooter status={status} meta={meta} itemCount={items.length} onPageChange={changePage} />
       <ConstantModal
         mode="create"
         open={creating}

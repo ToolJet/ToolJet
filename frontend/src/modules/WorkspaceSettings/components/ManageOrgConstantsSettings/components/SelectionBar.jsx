@@ -3,15 +3,20 @@ import React, { useState } from 'react';
 import { Pin, PinOff, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/Rocket';
 import { Separator } from '@/components/ui/Rocket/Separator/Separator';
+import Tooltip from '@/components/ui/Rocket/Tooltip';
+import { ENV_CONSTANT_TOOLTIP, ENV_CONSTANT_TOOLTIP_CLASSES } from '../helpers/constants';
 import DeleteConstantsDialog from './DeleteConstantsDialog';
 
 const NOUNS = { Secret: 'secret', Global: 'global' };
 
 // Floats above the page footer while rows are selected. The bar owns the delete dialog, its only entry point.
+// `.env` constants can be pinned but not deleted, so Delete takes only the deletable rows of the selection
+// (`deletableIds` / `deletableNames`) and is disabled when there are none.
 export default function SelectionBar({
   variant,
   selectedIds,
-  selectedNames,
+  deletableIds,
+  deletableNames,
   allPinned,
   onClear,
   onPin,
@@ -20,6 +25,7 @@ export default function SelectionBar({
 }) {
   const [deleting, setDeleting] = useState(false);
   const count = selectedIds.length;
+  const canDelete = deletableIds.length > 0;
   const PinIcon = allPinned ? PinOff : Pin;
 
   return (
@@ -39,22 +45,30 @@ export default function SelectionBar({
         <PinIcon size={12} className="tw-text-icon-strong" />
         {allPinned ? 'Unpin' : 'Pin'}
       </Button>
-      <Button
-        variant="outline"
-        size="medium"
-        className="tw-border-border-danger-weak tw-text-text-danger"
-        onClick={() => setDeleting(true)}
+      <Tooltip
+        content={canDelete ? undefined : ENV_CONSTANT_TOOLTIP}
+        arrow
+        classes={ENV_CONSTANT_TOOLTIP_CLASSES}
+        isTooltipForInteractiveDisabledElement
       >
-        <Trash size={12} className="tw-text-icon-danger" />
-        Delete
-      </Button>
+        <Button
+          variant="outline"
+          size="medium"
+          className="tw-border-border-danger-weak tw-text-text-danger"
+          disabled={!canDelete}
+          onClick={() => setDeleting(true)}
+        >
+          <Trash size={12} className="tw-text-icon-danger" />
+          Delete
+        </Button>
+      </Tooltip>
       {/* Mounted per open, so the dialog's pending and error state resets each time. */}
       {deleting && (
         <DeleteConstantsDialog
           open
-          constants={selectedNames}
+          constants={deletableNames}
           onOpenChange={setDeleting}
-          onConfirm={() => onDelete(selectedIds)}
+          onConfirm={() => onDelete(deletableIds)}
         />
       )}
     </div>

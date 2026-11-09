@@ -22,8 +22,9 @@ import Tooltip from '@/components/ui/Rocket/Tooltip';
 import TruncatedText from '@/components/ui/Rocket/Tooltip/TruncatedText';
 import { cn } from '@/lib/utils';
 import moment from 'moment';
-import { SECRET_MASK } from '../helpers/constants';
+import { ENV_CONSTANT_TOOLTIP, ENV_CONSTANT_TOOLTIP_CLASSES, SECRET_MASK } from '../helpers/constants';
 import { copyConstantReference } from '../helpers/constantReference';
+import { highlightMatch } from '../helpers/highlightMatch';
 import { canReorderPins, orderRows } from '../helpers/pinOrder';
 import ConstantsEmptyState from './ConstantsEmptyState';
 import DeleteConstantsDialog from './DeleteConstantsDialog';
@@ -79,8 +80,6 @@ const DROP_LINE_CLASSES = {
   after:
     "after:tw-absolute after:tw-inset-x-0 after:tw-bottom-0 after:tw-z-[2] after:tw-h-0.5 after:tw-bg-border-accent-strong after:tw-content-['']",
 };
-
-const isSelectable = (item) => item.source !== 'env';
 
 // Figma: a 12px band between the pinned rows and the rest, with a straight 1px line across the content width.
 // It is its own row. As a border on the last pinned row, the line would follow that row's rounded corner.
@@ -199,7 +198,12 @@ function RowActions({ item, variant, isPinned, onEdit, onTogglePin, onDelete }) 
 
   return (
     <div className={cn('tw-flex tw-shrink-0 tw-items-center tw-gap-[7px]', REVEAL_ACTIONS_CLASS)}>
-      <Tooltip content={isEnv ? 'Defined in .env. Edit it there.' : undefined} isTooltipForInteractiveDisabledElement>
+      <Tooltip
+        content={isEnv ? ENV_CONSTANT_TOOLTIP : undefined}
+        arrow
+        classes={ENV_CONSTANT_TOOLTIP_CLASSES}
+        isTooltipForInteractiveDisabledElement
+      >
         <Button
           variant="secondary"
           size="medium"
@@ -230,6 +234,7 @@ function RowActions({ item, variant, isPinned, onEdit, onTogglePin, onDelete }) 
 function ConstantRow({
   item,
   variant,
+  searchKey,
   isPinned,
   isSelected,
   hasSelection,
@@ -284,7 +289,6 @@ function ConstantRow({
           <span className="tw-flex tw-size-5 tw-items-center tw-justify-center">
             <Checkbox
               checked={isSelected}
-              disabled={!isSelectable(item)}
               onCheckedChange={(checked) => onSelectedChange(checked === true)}
               aria-label={`Select ${item.name}`}
               className={cn(!hasSelection && REVEAL_ON_HOVER_CLASS)}
@@ -306,7 +310,15 @@ function ConstantRow({
                     content={content}
                     className="tw-min-w-0 tw-font-body-large tw-text-text-default"
                   >
-                    {content}
+                    {highlightMatch(content, searchKey).map((part, partIndex) =>
+                      part.match ? (
+                        <mark key={partIndex} className="tw-rounded-sm tw-bg-background-warning-weak tw-text-inherit">
+                          {part.text}
+                        </mark>
+                      ) : (
+                        part.text
+                      )
+                    )}
                   </TruncatedText>
                   {isPinned && (
                     <span
@@ -408,16 +420,15 @@ function ConstantsGrid({
   );
   const canReorder = canReorderPins({ searchKey, isSourceFiltered, pinnedRowCount: pinnedCount });
 
-  const selectable = rows.filter(isSelectable);
-  const selectedCount = selectable.filter((item) => rowSelection[item.id]).length;
+  const selectedCount = rows.filter((item) => rowSelection[item.id]).length;
   const hasSelection = Object.values(rowSelection).some(Boolean);
   const selectState = {
-    checked: selectedCount === 0 ? false : selectedCount === selectable.length ? true : 'indeterminate',
-    disabled: selectable.length === 0,
+    checked: selectedCount === 0 ? false : selectedCount === rows.length ? true : 'indeterminate',
+    disabled: rows.length === 0,
   };
 
   const toggleAll = (checked) =>
-    onSelectionChange(checked === true ? Object.fromEntries(selectable.map((item) => [item.id, true])) : {});
+    onSelectionChange(checked === true ? Object.fromEntries(rows.map((item) => [item.id, true])) : {});
 
   const toggleRow = (id, checked) => {
     const next = { ...rowSelection };
@@ -448,6 +459,7 @@ function ConstantsGrid({
                     <ConstantRow
                       item={item}
                       variant={variant}
+                      searchKey={searchKey}
                       isPinned={isPinned}
                       isSelected={Boolean(rowSelection[item.id])}
                       hasSelection={hasSelection}

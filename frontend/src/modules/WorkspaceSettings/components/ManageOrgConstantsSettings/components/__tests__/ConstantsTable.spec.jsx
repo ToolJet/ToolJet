@@ -27,6 +27,25 @@ const renderTable = (props) =>
   render(<ConstantsTable items={[]} status="success" variant="Global" searchKey="" {...props} />);
 
 describe('ConstantsTable', () => {
+  describe('search highlight', () => {
+    it('marks the matching part of the name, whatever its case', () => {
+      renderTable({ items: [globalItem], searchKey: 'api' });
+      const mark = screen.getByText('API', { selector: 'mark' });
+      expect(mark).toBeInTheDocument();
+      expect(screen.getByRole('table')).toHaveTextContent('API_URL');
+    });
+
+    it('marks nothing without a search', () => {
+      renderTable({ items: [globalItem] });
+      expect(document.querySelector('mark')).toBeNull();
+    });
+
+    it('marks nothing in the other columns', () => {
+      renderTable({ items: [globalItem], searchKey: 'asha' });
+      expect(document.querySelector('mark')).toBeNull();
+    });
+  });
+
   describe('loading', () => {
     it.each(['idle', 'loading'])('shows the column headers and 8 skeleton rows while status is %s', (status) => {
       renderTable({ status });
@@ -221,7 +240,13 @@ describe('ConstantsTable', () => {
 
       await userEvent.hover(edit.parentElement);
       expect(
-        (await screen.findAllByText('Defined in .env. Edit it there.', {}, { timeout: 3000 })).length
+        (
+          await screen.findAllByText(
+            'Constants created from environment variables cannot be edited or deleted',
+            {},
+            { timeout: 3000 }
+          )
+        ).length
       ).toBeGreaterThan(0);
     });
 
@@ -366,9 +391,9 @@ describe('ConstantsTable', () => {
       expect(box('Select BRAVO')).toHaveAttribute('aria-checked', 'true');
     });
 
-    it('disables the checkbox of an .env constant', () => {
+    it('lets an .env constant be selected, to pin it', () => {
       renderTable({ items: rows });
-      expect(box('Select XENV')).toBeDisabled();
+      expect(box('Select XENV')).toBeEnabled();
       expect(box('Select ALPHA')).toBeEnabled();
     });
 
@@ -392,7 +417,7 @@ describe('ConstantsTable', () => {
       expect(onSelectionChange).toHaveBeenLastCalledWith({ b: true });
     });
 
-    it('header checkbox is unchecked, indeterminate or checked for the selectable rows', () => {
+    it('header checkbox is unchecked, indeterminate or checked', () => {
       const { rerender } = renderTable({ items: rows });
       expect(box('Select all')).toHaveAttribute('aria-checked', 'false');
 
@@ -402,16 +427,17 @@ describe('ConstantsTable', () => {
         );
       withSelection({ a: true });
       expect(box('Select all')).toHaveAttribute('aria-checked', 'mixed');
-      // .env rows can't be selected, so they don't stop the header from reading as fully selected.
       withSelection({ a: true, b: true });
+      expect(box('Select all')).toHaveAttribute('aria-checked', 'mixed');
+      withSelection({ a: true, b: true, 'env:Global:X': true });
       expect(box('Select all')).toHaveAttribute('aria-checked', 'true');
     });
 
-    it('header checkbox selects every selectable row, then clears them', async () => {
+    it('header checkbox selects every row, then clears them', async () => {
       const onSelectionChange = jest.fn();
       const { rerender } = renderTable({ items: rows, onSelectionChange });
       await userEvent.click(box('Select all'));
-      expect(onSelectionChange).toHaveBeenLastCalledWith({ a: true, b: true });
+      expect(onSelectionChange).toHaveBeenLastCalledWith({ a: true, b: true, 'env:Global:X': true });
 
       rerender(
         <ConstantsTable
@@ -419,7 +445,7 @@ describe('ConstantsTable', () => {
           status="success"
           variant="Global"
           searchKey=""
-          rowSelection={{ a: true, b: true }}
+          rowSelection={{ a: true, b: true, 'env:Global:X': true }}
           onSelectionChange={onSelectionChange}
         />
       );

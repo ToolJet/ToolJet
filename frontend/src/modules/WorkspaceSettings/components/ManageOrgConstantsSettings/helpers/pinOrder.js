@@ -51,7 +51,7 @@ export const compareConstants = (sort) => COMPARATORS[sort] ?? COMPARATORS.name_
 
 // Adds `ids` to `pinIds`, each at the slot the current sort gives it: before the first pin that sorts after it.
 // Pins missing from `items` can't be compared and are skipped; with no slot found the id is appended.
-// Already-pinned ids, `.env` constants and ids not on the loaded page are ignored. Each id finds its own slot, so the
+// Already-pinned ids and ids not on the loaded page are ignored. Each id finds its own slot, so the
 // result does not depend on the order of `ids`.
 export function insertPins(pinIds, items, ids, sort) {
   const compare = compareConstants(sort);
@@ -59,7 +59,7 @@ export function insertPins(pinIds, items, ids, sort) {
   const next = [...pinIds];
   [...new Set(ids)]
     .map((id) => byId.get(id))
-    .filter((item) => item && item.source !== 'env' && !next.includes(item.id))
+    .filter((item) => item && !next.includes(item.id))
     .forEach((item) => {
       const slot = next.findIndex((pinId) => {
         const pinned = byId.get(pinId);

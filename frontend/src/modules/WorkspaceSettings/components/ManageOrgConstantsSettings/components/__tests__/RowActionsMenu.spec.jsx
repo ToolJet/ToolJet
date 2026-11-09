@@ -69,8 +69,14 @@ describe('RowActionsMenu', () => {
     expect(onDelete).toHaveBeenCalledTimes(1);
   });
 
-  it('renders no menu for an .env constant, which can be neither pinned nor deleted', () => {
-    setup({ item: { ...item, source: 'env' } });
-    expect(screen.queryByRole('button')).toBeNull();
+  it('lets an .env constant be pinned but shows Delete disabled', async () => {
+    const { onTogglePin, onDelete } = setup({ item: { ...item, source: 'env' } });
+    await openMenu();
+    const del = await screen.findByRole('menuitem', { name: 'Delete constant' });
+    expect(del).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.click(del);
+    expect(onDelete).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Pin' }));
+    expect(onTogglePin).toHaveBeenCalledTimes(1);
   });
 });

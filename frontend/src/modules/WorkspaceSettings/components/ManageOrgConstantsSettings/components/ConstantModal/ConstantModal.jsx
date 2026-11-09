@@ -50,6 +50,10 @@ function TypeOption({ value, label, description }) {
   );
 }
 
+// Design: a 196px menu (180px rows) with 10px corners; `compact` brings the elevation-300 shadow and 8px padding.
+const ENVIRONMENT_MENU_CLASSES = { content: 'tw-w-[196px] tw-rounded-large' };
+const ENVIRONMENT_ICON_CLASS = 'tw-text-icon-default';
+
 function AddEnvironmentMenu({ form, lockedPlanName }) {
   const lockedTooltip = lockedPlanName
     ? `Available on ${lockedPlanName} plan`
@@ -63,7 +67,11 @@ function AddEnvironmentMenu({ form, lockedPlanName }) {
     render: ({ children }) => (
       <span className="tw-flex tw-w-full tw-items-center tw-justify-between">
         {children}
-        {env.enabled ? <Plus size={14} /> : <Lock size={14} />}
+        {env.enabled ? (
+          <Plus size={16} className={ENVIRONMENT_ICON_CLASS} />
+        ) : (
+          <Lock size={16} className={ENVIRONMENT_ICON_CLASS} />
+        )}
       </span>
     ),
     wrapper: env.enabled
@@ -89,6 +97,8 @@ function AddEnvironmentMenu({ form, lockedPlanName }) {
         </Button>
       }
       align="end"
+      compact
+      classes={ENVIRONMENT_MENU_CLASSES}
       sections={[{ id: 'environments', items }]}
     />
   );
