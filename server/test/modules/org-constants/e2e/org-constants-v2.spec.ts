@@ -149,7 +149,10 @@ describe('OrgConstantsControllerV2', () => {
     });
 
     it('should list Global constants of the environment in the documented shape', async () => {
-      const response = await get(`?environment_id=${environments[0].id}&type=Global`, adminCookie).expect(200);
+      // Name order, so the first item is a known row whatever order the rows were created in.
+      const response = await get(`?environment_id=${environments[0].id}&type=Global&sort=name_asc`, adminCookie).expect(
+        200
+      );
 
       expect(response.body).toMatchObject({
         page: 1,

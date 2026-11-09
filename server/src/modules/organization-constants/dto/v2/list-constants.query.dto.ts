@@ -34,7 +34,7 @@ export class ListConstantsQueryDto {
 
   @IsOptional()
   @IsEnum(ConstantListSort)
-  sort: ConstantListSort = ConstantListSort.NAME_ASC;
+  sort: ConstantListSort = ConstantListSort.MODIFIED_DESC;
 
   @IsOptional()
   @Type(() => Number)
