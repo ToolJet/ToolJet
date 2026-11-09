@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { InputNumber as AntInputNumber } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
@@ -6,6 +6,7 @@ import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { toNumber } from '../lib/format';
 import { ControlSkeleton } from '../lib/Loading';
 import { useValueSetter } from '../lib/sameValue';
+import { boundsRule } from '../lib/typeRule';
 
 // Ant's InputNumber: value, min, max, step, precision, prefix, addonBefore/addonAfter, controls, keyboard; events
 // onChange, onStep, onPressEnter, onFocus, onBlur. An empty field is null, as in Ant.
@@ -47,11 +48,17 @@ export const InputNumber = (props: Record<string, unknown>) => {
   const ref = useRef<HTMLInputElement>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const value = toNumber(rawValue);
+  // Precision rounds the value itself, as the ToolJet Number Input's decimal places do, not only what the field shows:
+  // the exposed value and a Form's data matched the screen only once the field was edited (QA item 53).
+  const places = toNumber(precision) === null ? undefined : Math.max(0, Math.min(10, Math.round(Number(precision))));
+  const rounded = (v: number | null) => (v === null || places === undefined ? v : Number(v.toFixed(places)));
+  const value = rounded(toNumber(rawValue));
+  // A value outside Min or Max is invalid, as on the ToolJet Number Input (QA item 52); Ant only stops the arrows.
   const check = ToolJet.useValidation({
     kind: 'text',
     value: value === null ? '' : String(value),
     present: value !== null,
+    rule: boundsRule(value, toNumber(min), toNumber(max)),
   });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
@@ -70,9 +77,14 @@ export const InputNumber = (props: Record<string, unknown>) => {
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (next: number | null) => {
-    if (!valueSetter.set(next as number)) return;
+    if (!valueSetter.set(rounded(next) as number)) return;
     onChange();
   };
+  // A bound value with more digits than Precision is exposed rounded (no event: the app set it).
+  const unrounded = toNumber(rawValue);
+  useEffect(() => {
+    if (unrounded !== null && value !== null && value !== unrounded) setValue(value as never);
+  }, [unrounded, value]); // eslint-disable-line react-hooks/exhaustive-deps
   ToolJet.useAction(
     { name: 'setFieldValue', displayName: 'Set field value', params: [{ handle: 'value', displayName: 'Value' }] },
     (next) => change(toNumber(next))
@@ -96,7 +108,7 @@ export const InputNumber = (props: Record<string, unknown>) => {
             min={n(min)}
             max={n(max)}
             step={n(step) ?? 1}
-            precision={toNumber(precision) === null ? undefined : Math.max(0, Math.min(10, Number(precision)))}
+            precision={places}
             prefix={prefix || undefined}
             addonBefore={addonBefore || undefined}
             addonAfter={addonAfter || undefined}

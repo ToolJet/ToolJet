@@ -21,7 +21,7 @@ import { AntProvider, useTokenStyles, WithPopupTheme } from '../lib/AntProvider'
 import { ControlSkeleton, SpinOver } from '../lib/Loading';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { str, toArray, toOptions, type Row } from '../lib/data';
-import { useOwnedPopup } from '../lib/useOwnerGuard';
+import { closesOnEscape, useOwnedPopup } from '../lib/useOwnerGuard';
 import { useFormValue } from '../lib/formValue';
 import { boundedTree } from '../lib/tree';
 import { useValueSetter } from '../lib/sameValue';
@@ -412,6 +412,7 @@ export const TimePicker = (props: Record<string, unknown>) => {
                 popupStyle={popup.style}
                 open={panel.open}
                 onOpenChange={panel.onOpenChange}
+                panelRender={closesOnEscape(() => panel.onOpenChange(false))}
                 onChange={(d) => panel.available() && change(d as Dayjs | null)}
               />
             )}
@@ -519,6 +520,7 @@ export const RangePicker = (props: Record<string, unknown>) => {
                 popupStyle={popup.style}
                 open={panel.open}
                 onOpenChange={panel.onOpenChange}
+                panelRender={closesOnEscape(() => panel.onOpenChange(false))}
                 onChange={(dates) => panel.available() && change(dates ?? [])}
               />
             )}
