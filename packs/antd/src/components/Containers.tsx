@@ -278,7 +278,7 @@ export const Modal = () => {
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center" ownerRef={owner}>
       {showTrigger ? (
-        <Button type="primary" block disabled={disabled} onClick={() => setOpen(true)}>
+        <Button type="primary" block className="tj-ant-fill" disabled={disabled} onClick={() => setOpen(true)}>
           {triggerText}
         </Button>
       ) : null}

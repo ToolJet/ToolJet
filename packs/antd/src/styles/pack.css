@@ -80,6 +80,13 @@
 .tj-ant-center > .ant-btn-block {
   width: 100%;
 }
+/* A button drawn in its box (Button, the Modal, Drawer and Dropdown triggers) takes the box's height, as a native
+   Button does: its Size sets the text and padding. A split Dropdown's two buttons and their group too (QA item 9). */
+.ant-btn.tj-ant-fill,
+.ant-space-compact.tj-ant-fill,
+.ant-space-compact.tj-ant-fill > .ant-btn {
+  height: 100%;
+}
 .tj-ant-required {
   color: var(--ant-color-error);
 }

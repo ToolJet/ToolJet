@@ -204,7 +204,12 @@ export const Dialog = () => {
           }}
         >
           <DialogPrimitive.Trigger asChild>
-            <button type="button" className={cn('ui-btn', `ui-btn--${triggerVariant}`)} disabled={!!disabled}>
+            <button
+              type="button"
+              // n2-btn-fill: the trigger takes its box's height, as the Button does (QA item 9).
+              className={cn('ui-btn n2-btn-fill', `ui-btn--${triggerVariant}`)}
+              disabled={!!disabled}
+            >
               {triggerText}
             </button>
           </DialogPrimitive.Trigger>

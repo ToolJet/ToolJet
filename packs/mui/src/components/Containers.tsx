@@ -367,6 +367,7 @@ export const Dialog = () => {
     <MuiProvider overrides={overrides} fill className="tj-mui-center" rootRef={rootRef}>
       {showTrigger ? (
         <Button
+          className="tj-mui-fill"
           variant="contained"
           fullWidth
           disabled={disabled}

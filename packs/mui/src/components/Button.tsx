@@ -93,7 +93,7 @@ export const Button = () => {
     },
     labelCase: 'upper',
     defaultWidth: 6,
-    defaultHeight: 5,
+    defaultHeight: 4,
   });
 
   ToolJet.useAction({ name: 'click', displayName: 'Click' }, () => {
@@ -104,6 +104,7 @@ export const Button = () => {
   const button = (
     <MuiButton
       ref={ref}
+      className="tj-mui-fill"
       variant={variant as 'contained'}
       color={color as 'primary'}
       size={size as 'medium'}

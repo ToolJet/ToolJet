@@ -241,6 +241,7 @@ export const Dropdown = () => {
           split ? (
             <AntDropdown.Button
               {...common}
+              className="tj-ant-fill"
               overlayClassName={popup.className}
               overlayStyle={popup.style}
               type={type as 'default'}
@@ -252,7 +253,13 @@ export const Dropdown = () => {
             </AntDropdown.Button>
           ) : (
             <AntDropdown {...common} overlayClassName={popup.className} overlayStyle={popup.style}>
-              <Button type={type as 'default'} loading={loading} disabled={disabled} block={block}>
+              <Button
+                type={type as 'default'}
+                className="tj-ant-fill"
+                loading={loading}
+                disabled={disabled}
+                block={block}
+              >
                 {children} <DownOutlined />
               </Button>
             </AntDropdown>
@@ -546,7 +553,7 @@ export const Drawer = () => {
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center">
       {showTrigger ? (
-        <Button type="primary" block disabled={disabled} onClick={() => setOpen(true)}>
+        <Button type="primary" block className="tj-ant-fill" disabled={disabled} onClick={() => setOpen(true)}>
           {triggerText}
         </Button>
       ) : null}

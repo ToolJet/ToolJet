@@ -28,6 +28,11 @@
 .tj-mui-center > .MuiButton-root {
   max-height: 100%;
 }
+/* A button drawn in its box (Button, the Dialog and Menu triggers) takes the box's height, as a native Button does:
+   its Size sets the text and padding (QA item 9). */
+.MuiButton-root.tj-mui-fill {
+  height: 100%;
+}
 /* The Tooltip's wrapper around a button takes the box's width at most, so the button shrinks to it and its label ends
    in an ellipsis, and the box's height, so the cap above holds. */
 .tj-mui-fit {

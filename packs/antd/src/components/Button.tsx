@@ -92,6 +92,7 @@ export const Button = () => {
     <AntProvider tokens={tokens} fill className="tj-ant-center">
       <AntButton
         ref={ref}
+        className="tj-ant-fill"
         color={color as 'primary'}
         variant={variant as 'solid'}
         size={size as 'middle'}
