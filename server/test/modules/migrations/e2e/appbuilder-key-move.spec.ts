@@ -128,6 +128,15 @@ describe('App Builder key move: copy in the data phase, remove the old key in cl
     return exists;
   }
 
+  /** Whether a sync's trigger and its function are still in the database. */
+  async function syncLeft(sync: string): Promise<{ trigger: boolean; fn: boolean }> {
+    const [row] = await db.query(
+      `SELECT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = $1) AS trigger, to_regproc($2) IS NOT NULL AS fn`,
+      [`trg_components_sync_${sync}`, `public.tj_sync_${sync}`]
+    );
+    return row;
+  }
+
   /** SvgImages still holding an old key, and SvgImages still missing a new one. */
   async function svgCounts() {
     const [counts] = await db.query(`SELECT
@@ -268,6 +277,52 @@ describe('App Builder key move: copy in the data phase, remove the old key in cl
       // Once the cleanup ran, nothing puts an old key back.
       await edit('svg', 'properties', 'visibility', SHOWN);
       expect((await stored('svg')).styles).toEqual(contractedSvg('Edited after a rollback').styles);
+    }, 300_000);
+  });
+
+  describe('A key whose format changes too', () => {
+    const DASHED = { value: '{{true}}' };
+    const NOT_DASHED = { value: '{{false}}' };
+    const divider = (properties: object, styles: object) => ({
+      properties,
+      styles,
+      general_properties: {},
+      general_styles: {},
+    });
+
+    it('should convert each value on its way to the other place, in both directions, until the cleanup', async () => {
+      await save('divider', 'Divider', divider({ dashed: DASHED }, {}));
+      await previousReleaseRecorded();
+      expect(await upgrade('keyformat-1')).toMatchObject({ exitCode: 0, result: { error: null } });
+
+      // The copy wrote the new format; the old place stays for the previous release.
+      expect(await stored('divider')).toEqual(divider({ dashed: DASHED }, { lineStyle: { value: 'dashed' } }));
+
+      // This release makes the line solid at the new place; a rollback reads `dashed` as false.
+      await edit('divider', 'styles', 'lineStyle', { value: 'solid' });
+      expect((await stored('divider')).properties.dashed).toEqual(NOT_DASHED);
+
+      // After a rollback, the previous release turns `dashed` back on; this release reads 'dashed'.
+      await edit('divider', 'properties', 'dashed', DASHED);
+      expect((await stored('divider')).styles.lineStyle).toEqual({ value: 'dashed' });
+
+      // This release creates a divider with only the new place; the old place gets the previous release's format.
+      await save('created-divider', 'Divider', divider({}, { lineStyle: { value: 'solid' } }));
+      expect(await stored('created-divider')).toEqual(
+        divider({ dashed: NOT_DASHED }, { lineStyle: { value: 'solid' } })
+      );
+
+      // Written while the trigger was off, as by a restore with triggers disabled: the cleanup still converts it.
+      await db.query('ALTER TABLE components DISABLE TRIGGER trg_components_sync_divider_line_style');
+      await save('restored-divider', 'Divider', divider({ dashed: DASHED }, {}));
+      await db.query('ALTER TABLE components ENABLE TRIGGER trg_components_sync_divider_line_style');
+
+      await nextRelease();
+      expect(await upgrade('keyformat-2')).toMatchObject({ exitCode: 0, result: { error: null } });
+      expect(await stored('divider')).toEqual(divider({}, { lineStyle: { value: 'dashed' } }));
+      expect(await stored('created-divider')).toEqual(divider({}, { lineStyle: { value: 'solid' } }));
+      expect(await stored('restored-divider')).toEqual(divider({}, { lineStyle: { value: 'dashed' } }));
+      expect(await syncLeft('divider_line_style')).toEqual({ trigger: false, fn: false });
     }, 300_000);
   });
 

@@ -45,7 +45,10 @@ describe('migration-helpers/component-key-moves', () => {
     await contractMovedKeys(queryRunner, 'svg_image', MOVES);
 
     expect(transactions).toEqual([
-      ['DROP TRIGGER IF EXISTS trg_components_sync_svg_image ON components'],
+      [
+        'DROP TRIGGER IF EXISTS trg_components_sync_svg_image ON components; ' +
+          'DROP FUNCTION IF EXISTS public.tj_sync_svg_image()',
+      ],
       [
         expect.stringMatching(/^UPDATE components SET properties = .* WHERE id = ANY\('\{a,b\}'::uuid\[\]\) AND/s),
         expect.stringMatching(/^UPDATE components SET styles = CASE WHEN .* - array_remove\(/s),

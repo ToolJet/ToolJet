@@ -10,13 +10,13 @@ The previous release must keep rendering every saved app after an upgrade. It is
 
 - **gains** keys in a release, through a data migration;
 - **loses** a key only in a cleanup migration, which runs one upgrade after the release that stopped reading it;
-- never changes a key's **meaning or format** in place. The new format gets a new key.
+- never changes a key's **meaning or format** in place. The new format gets a new key: a move with `convert`.
 
 Why it matters: before any widget sees a component, the server fills every key its widget definition expects with that release's default (`buildComponentMetaDefinition` in `src/modules/apps/util.service.ts`). If a migration deletes `styles.visibility`, the previous release quietly renders the default: a hidden widget shows, a disabled editor becomes editable, a tooltip disappears. Nothing errors.
 
 While both places exist, two things keep them honest:
 
-- **A trigger keeps both places equal.** The data migration adds it and the cleanup drops it. Whatever saves a component (this release, an editor tab opened before the upgrade, an old pod, the release a rollback returns to), the trigger copies the value to the other place. No edit is lost, and a rollback shows every edit.
+- **A trigger keeps both places equal.** The data migration adds it and the cleanup drops it. Whatever saves a component (this release, an editor tab opened before the upgrade, an old pod, the release a rollback returns to), the trigger copies the value to the other place, converted to that place's format when the format changes too. No edit is lost, and a rollback shows every edit.
 - **Release code sees only the new place.** The App Builder drops the old place when an app loads (`MOVED_COMPONENT_KEYS` in `packages/widget-definitions`). A reader that still uses the old place breaks in the release that moved the key, not one release later when the cleanup runs.
 
 ## Which change needs what
@@ -25,7 +25,7 @@ While both places exist, two things keep them honest:
 |---|---|---|
 | Add a key with a default (backfill) | Data migration adds it where missing | Nothing |
 | Move or rename a key | Data migration copies it and adds the sync trigger; code reads the new place; the move is registered for the App Builder | The trigger and the old key |
-| Change a value's format | Data migration writes the new format under a new key; code reads it | The old key |
+| Change a value's format | A move to a new key with `convert`: the copy and the trigger convert each value, both ways | The trigger and the old key |
 | Remove a key no code reads | Nothing (the code stopped reading it) | The key |
 | Convert components to another widget type | Ship the new widget first; convert in a later release | — |
 
@@ -36,14 +36,27 @@ While both places exist, two things keep them honest:
 3. **Data migration** in `migrations/data/` (template below). Declare the moves once; `src/migration-helpers/component-key-moves.ts` turns them into the copy, the trigger and the cleanup:
    - `copyMovedKeys()` in `up()` copies each key where its new place is missing (a key already there wins), in batches of 2,000 by `id` with one bulk `UPDATE` each, and logs `[START] … | Total`, `[PROGRESS] i/total`, `[SUCCESS]`.
    - Pass the app versions it returns to `deleteAppHistoryForStructuralMigration`. Restoring an older snapshot would bring back rows without the new key.
-   - `createKeyMoveSync()` in `beforeCommit()` adds the trigger. It pauses writes to `components`, never reads, until the data phase commits.
+   - `createKeyMoveSync()` in `beforeCommit()` adds the trigger, with a function of its own named after the sync. It pauses writes to `components`, never reads, until the data phase commits. A sync name is never reused.
+   - When the format changes too, give the move `convert: { toNew, toOld }`: SQL expressions over `value`, the jsonb being copied. `toNew` makes what this release reads, `toOld` what the previous release reads. They are strings because TypeORM loads every function a migration file exports as a migration. Each must handle every value the place can hold, `{{ }}` expressions included (template below).
    - Never `- 'key'`, `#-`, `delete`, `unset()` or `omit()`; the lint rejects them in data migrations.
    - A current timestamp (`date +%s%3N`), the same one in the file name and at the end of the class name.
-4. **Cleanup migration** in `migrations/cleanup/`, in the same PR (template below): `transaction = false`, `requires = '<the data migration class name>'`, and `contractMovedKeys()` with the same moves and sync name. It drops the trigger in its own short step, then per batch copies anything still missing and removes the old keys.
+4. **Cleanup migration** in `migrations/cleanup/`, in the same PR (template below): `transaction = false`, `requires = '<the data migration class name>'`, and `contractMovedKeys()` with the same moves and sync name. It drops the trigger and its function in their own short step, then per batch copies anything still missing and removes the old keys.
    - The runner holds it back on the upgrade that ships it and runs it on the next upgrade whose release adds a migration. An instance that skips your release waits one more upgrade. A fresh install runs both at once.
 5. **Import of old exports.** Exports keep the old shape forever, and so do templates. Make `migrateProperties()` in `src/modules/apps/services/app-import-export.service.ts` convert them: add the widget to `NewRevampedComponents` for the shared `visibility`, `disabledState`, `tooltip` and `boxShadow` moves, or add a widget-specific block like Navigation's.
 
 **Release N+1 and later:** nothing is required. The cleanup runs by itself. The `MOVED_COMPONENT_KEYS` entry can stay; once the cleanup has run there is nothing left for it to drop.
+
+### The three-release recipe, in one PR
+
+The usual recipe for moving a field spreads over three releases. This one ships in one PR; the trigger and the runner do the later steps.
+
+| Usual recipe | Here |
+|---|---|
+| Release N: a data migration fills the new field | `copyMovedKeys()` in the data migration |
+| Release N: code writes both fields, so a rollback to N-1 works | The trigger writes the other place on every save, whatever code saves: this release, an old tab, an old pod, N-1 after a rollback |
+| Release N: code reads only the new field | Readers switch in the PR; `MOVED_COMPONENT_KEYS` drops the old place on load, so a missed reader fails in N |
+| Release N+1: remove the dual-write code | The cleanup drops the trigger; no code to remove |
+| Release N+2: clean up the old field | The cleanup removes the old keys on the next upgrade after N whose release adds a migration. The trigger keeps the old place current until then, so N-1 stays a safe rollback |
 
 ## Templates
 
@@ -128,6 +141,24 @@ export const MOVED_COMPONENT_KEYS = {
 };
 ```
 
+A format change is a move with `convert`. Here a Divider's boolean `dashed` property becomes the `lineStyle` style. The data and cleanup migrations are the templates above with these moves:
+
+```ts
+export const DIVIDER_MOVES: ComponentKeyMove[] = [
+  {
+    types: ['Divider'],
+    from: ['properties', 'dashed'],
+    to: ['styles', 'lineStyle'],
+    convert: {
+      toNew: `jsonb_build_object('value', CASE WHEN value ->> 'value' = '{{true}}' THEN 'dashed' ELSE 'solid' END)`,
+      toOld: `jsonb_build_object('value', CASE WHEN value ->> 'value' = 'dashed' THEN '{{true}}' ELSE '{{false}}' END)`,
+    },
+  },
+];
+```
+
+This example maps any `{{ }}` expression to `'solid'`. A real conversion keeps such a value working, or the key cannot move this way.
+
 ## What this protects, and what it does not
 
 | Situation | Result |
@@ -139,6 +170,7 @@ export const MOVED_COMPONENT_KEYS = {
 | A reader that still uses the old place | Breaks in this release, in dev and in specs: the App Builder dropped the old place on load |
 | A release skipped, then upgraded | The copy runs; the cleanup waits one more upgrade, so the skipped-from release can still be rolled back to |
 | One save writes both places with different values | The new place wins |
+| A move with `convert` | Each place keeps its own format: the copy, the trigger and the cleanup all convert |
 | Pasting a widget copied from an editor tab of the previous release | The moved key takes this release's default: the copy only carries the old place |
 | Writes with triggers off (`session_replication_role = replica`, `pg_restore --disable-triggers`) | Not synced. The cleanup still copies a missing new key, but such an edit at the old place is lost |
 | Upgrading across migrations older than the cutoff (`MIGRATION_AUTHORING_RULES_CUTOFF`) | Not covered; rolling back needs the pre-upgrade backup |
@@ -148,7 +180,7 @@ export const MOVED_COMPONENT_KEYS = {
 - [ ] Every reader of the key switched to the new place in this PR; no widget-level `??` fallback.
 - [ ] The move is in `MOVED_COMPONENT_KEYS`, and a widget spec covers the moved key.
 - [ ] No data migration removes a key (`- 'key'`, `#-`, `delete`, `unset()`, `omit()`). The lint enforces this.
-- [ ] No key changes format or meaning in place; the new format has a new key.
+- [ ] No key changes format or meaning in place; the new format has a new key, moved with `convert`, both directions.
 - [ ] The data migration declares its moves once, copies with `copyMovedKeys()`, clears app history for the versions it returns and adds the trigger in `beforeCommit()`.
 - [ ] The cleanup `requires` the data migration and calls `contractMovedKeys()` with the same moves and sync name.
 - [ ] `migrateProperties()` converts old exports and templates for this widget.
@@ -158,8 +190,8 @@ export const MOVED_COMPONENT_KEYS = {
 
 | File | Covers |
 |---|---|
-| `server/test/modules/migrations/e2e/appbuilder-key-move.spec.ts` | The real runner on a key move: the copy and the trigger in the data phase, the cleanup held back on that upgrade and run on the next, in async and blocking mode, and a fresh install. Edits from an editor tab opened before the upgrade, before and after a rollback, widgets created by either release, other widget types. Row locks only in the copy; adding the trigger pauses writes, never reads |
-| `server/test/modules/migrations/unit/component-key-moves.spec.ts` | The cleanup drops the trigger in its own transaction, before the batches that remove old keys |
+| `server/test/modules/migrations/e2e/appbuilder-key-move.spec.ts` | The real runner on a key move: the copy and the trigger in the data phase, the cleanup held back on that upgrade and run on the next, in async and blocking mode, and a fresh install. Edits from an editor tab opened before the upgrade, before and after a rollback, widgets created by either release, other widget types. A format change converted both ways, including a row written with the trigger off. Row locks only in the copy; adding the trigger pauses writes, never reads |
+| `server/test/modules/migrations/unit/component-key-moves.spec.ts` | The cleanup drops the trigger and its function in their own transaction, before the batches that remove old keys |
 | `server/test/modules/migrations/unit/legacy-3-21-58-upgrade.spec.ts` | The 3.21.58 branch key swap runs after a later migration's `beforeCommit()`, so the trigger never waits under its lock |
 | `server/test/modules/migrations/unit/migration-lint.spec.ts` | Data migrations that remove JSON keys are rejected, including in helpers `up()` calls; cleanup may remove them |
 | `frontend/src/AppBuilder/_stores/utils/__tests__/dropMovedComponentKeys.spec.ts` | The App Builder drops a moved key's old place on load, per component type, and copies only what it changes |
