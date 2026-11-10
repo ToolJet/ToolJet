@@ -96,4 +96,14 @@ describe('SSRF settings data migration', () => {
     expect(inserted).not.toHaveProperty(SSRF_SETTINGS.PROTECTION_ENABLED);
     expect(query).toHaveBeenCalledWith(expect.stringMatching(/ON CONFLICT \(key\) DO NOTHING/), expect.any(Array));
   });
+
+  it('removes exactly the rows it adds on down()', async () => {
+    const query = jest.fn().mockResolvedValue([]);
+
+    await new AddSsrfProtectionInstanceSettings1790600000000().down({ query } as unknown as QueryRunner);
+
+    expect(query).toHaveBeenCalledWith(expect.stringMatching(/DELETE FROM instance_settings WHERE key = ANY/), [
+      Object.values(SSRF_SETTINGS),
+    ]);
+  });
 });

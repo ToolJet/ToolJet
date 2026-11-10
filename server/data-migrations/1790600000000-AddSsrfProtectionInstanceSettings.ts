@@ -70,5 +70,10 @@ export class AddSsrfProtectionInstanceSettings1790600000000 implements Migration
     console.log(`${MIGRATION_NAME}: [SUCCESS] Adding SSRF instance settings finished. Inserted: ${inserted}`);
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  // Removes the rows up() adds, including any admin choice stored in them; the SSRF code reads missing rows as unset.
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DELETE FROM instance_settings WHERE key = ANY($1)`, [
+      SSRF_INSTANCE_SETTINGS_ROWS.map((row) => row.key),
+    ]);
+  }
 }
