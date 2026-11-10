@@ -14,6 +14,7 @@ import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { useWriteQueryEntry } from '@/AppBuilder/QueryManager/_hooks/useWriteQueryEntry';
 import { AI_QUERY_SUPPORTED_KINDS } from '@/AppBuilder/QueryManager/constants';
 import { INLINE_AI_FEATURES_ENABLED } from '@/_helpers/constants';
+import { getQueryTypographyClassName } from '@/AppBuilder/panelLayout';
 
 const defaultValue = {
   javascript: `// write your code here
@@ -199,7 +200,7 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
             >
               <span
                 style={{ textDecoration: 'underline 2px dotted', textDecorationColor: 'var(--slate8)' }}
-                className="text-default"
+                className={`text-default ${getQueryTypographyClassName('label')}`}
                 data-cy="transformation-label"
               >
                 {t('editor.queryManager.transformation.enableTransformation', 'Enable transformation')}
@@ -208,7 +209,10 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
             {INLINE_AI_FEATURES_ENABLED && <WriteTransformationButton />}
           </div>
 
-          <p className="tw-text-text-placeholder tw-mb-0" data-cy="transformation-info">
+          <p
+            className={`tw-text-text-placeholder tw-mb-0 ${getQueryTypographyClassName('helper')}`}
+            data-cy="transformation-info"
+          >
             Run JavaScript or Python on the query result to reshape, filter, or reformat data.
           </p>
         </div>

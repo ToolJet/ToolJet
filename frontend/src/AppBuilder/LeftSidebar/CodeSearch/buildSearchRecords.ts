@@ -570,7 +570,7 @@ export const buildSearchRecords = ({
     entityType: 'app',
     entityId: 'app',
     entityName: 'App',
-    entitySubtype: 'Global settings',
+    entitySubtype: 'App settings',
     pageId: null,
   };
   const preloaded = globalSettings?.preloadedScript?.javascript;

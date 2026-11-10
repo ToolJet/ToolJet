@@ -13,6 +13,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { QueryRenameInput } from './QueryRenameInput';
 import { isLibraryQueryLocked } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
 import { EllipsisVerticalIcon } from 'lucide-react';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const { isModuleEditor } = useModuleContext();
@@ -26,6 +27,15 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const renameQuery = useStore((state) => state.dataQuery.renameQuery);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
+
+  const openQueryConfiguration = () => {
+    setSelectedQuery(dataQuery?.id);
+    setPreviewData(null);
+    setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.QUERY);
+    setRightSidebarOpen(true);
+  };
 
   const isLibraryLocked = useStore((state) => isLibraryQueryLocked(state, dataQuery.id));
 
@@ -99,7 +109,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         }
         key={dataQuery.id}
         onClick={(e) => {
-          if (isQuerySelected) return;
+          if (isQuerySelected) {
+            openQueryConfiguration();
+            return;
+          }
           if (!shouldFreeze) {
             const menuBtn = document.getElementById(`query-handler-menu-${dataQuery?.id}`);
             if (menuBtn && menuBtn.contains(e.target)) {
@@ -109,8 +122,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
             }
           }
           setTimeout(() => {
-            setSelectedQuery(dataQuery?.id);
-            setPreviewData(null);
+            openQueryConfiguration();
           }, 0);
         }}
         role="button"
@@ -131,7 +143,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                 >
                   <span
                     ref={queryNameEleRef}
-                    className="text-truncate"
+                    // Only the selected query's name reads as editable; elsewhere the row is one click target.
+                    className={`text-truncate${isQuerySelected ? ' query-name-editable' : ''}`}
                     onDoubleClick={(e) => {
                       e.stopPropagation();
                       if (!shouldFreeze && !isLibraryLocked) setRenamingQuery(dataQuery.id);
@@ -174,10 +187,9 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
           >
             <ButtonComponent
               iconOnly
-              onClick={(e) => {
+              onClick={() => {
                 if (!isQuerySelected) {
-                  setSelectedQuery(dataQuery?.id);
-                  setPreviewData(null);
+                  openQueryConfiguration();
                 }
                 toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`);
               }}

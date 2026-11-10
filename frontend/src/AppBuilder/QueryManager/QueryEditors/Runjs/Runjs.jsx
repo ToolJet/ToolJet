@@ -3,6 +3,7 @@ import { defaults } from 'lodash';
 import { Card } from 'react-bootstrap';
 import ParameterList from '../../Components/ParameterList';
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import QueryCodeLabel from '../../Components/QueryCodeLabel';
 
 const Runjs = (props) => {
   const initialOptions = defaults({ ...props.options }, { code: '//Type your JavaScript code here' });
@@ -14,6 +15,7 @@ const Runjs = (props) => {
 
   return (
     <div className="runjs-editor mb-3 !tw-mb-0 ">
+      <QueryCodeLabel />
       <CodeHinter
         renderCopilot={props.renderCopilot}
         type="multiline"
@@ -27,6 +29,8 @@ const Runjs = (props) => {
         }}
         componentName="Runjs"
         cyLabel={`runjs`}
+        // The "Code" label's button opens the code in a new tab instead.
+        usePortalEditor={false}
         delayOnChange={false}
       />
     </div>

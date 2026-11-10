@@ -462,6 +462,27 @@
     }
 }
 
+.page-configuration-panel {
+    height: 100%;
+    overflow-y: auto;
+    background: var(--background-surface-layer-01);
+}
+
+#add-new-page-popup.add-new-page-popup--embedded {
+    position: static;
+    display: block;
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+
+    .popover-arrow {
+        display: none;
+    }
+}
+
 .section-header {
     color: var(--text-placeholder);
     display: flex;

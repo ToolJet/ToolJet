@@ -18,6 +18,7 @@ import type {
   DetailView,
   QueriesById,
 } from './types';
+import '../panelHeader.scss';
 import './styles.scss';
 
 // Untyped JS modules — cast at the import site.

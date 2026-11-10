@@ -88,7 +88,7 @@ describe('QueryManagerHeader in a query library app', () => {
     seed('query_library');
     renderHeader();
 
-    await waitFor(() => expect(screen.getByRole('button', { name: /getCustomer/ })).toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Rename query' })).toBeDisabled());
   });
 
   it('allows renaming the draft', async () => {
@@ -96,7 +96,7 @@ describe('QueryManagerHeader in a query library app', () => {
     renderHeader();
 
     await screen.findByRole('button', { name: /^v1/ });
-    expect(screen.getByRole('button', { name: /getCustomer/ })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Rename query' })).toBeEnabled();
   });
 });
 

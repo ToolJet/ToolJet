@@ -23,8 +23,17 @@ import {
   viewedLibraryDraft,
   viewedLibraryVersionId,
 } from '@/AppBuilder/_stores/slices/queryLibrarySlice';
+import { QUERY_PANEL_RESIZE, parseStoredQueryPanelWidth } from '@/AppBuilder/panelLayout';
 
-const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
+const runtimePanelPreferences = JSON.parse(localStorage.getItem('runtimePanelPreferences')) ?? {};
+
+const readStoredQueryPanelWidth = () => {
+  try {
+    return parseStoredQueryPanelWidth(localStorage.getItem(QUERY_PANEL_RESIZE.storageKey));
+  } catch {
+    return null;
+  }
+};
 
 // tj-403 = data-source query-run permission denied; toast in every mode, unlike ordinary query failures
 const toastIfQueryRunRestricted = (errorData) => {
@@ -50,13 +59,17 @@ const libraryFailure = ({ message, description = message, data }) => ({
 });
 
 const initialState = {
-  isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
+  isQueryPaneExpanded: runtimePanelPreferences?.isExpanded ?? false,
+  // The runtime drawer's tab ('inspect' | 'debugger').
+  runtimePanelTab: 'inspect',
   isDraggingQueryPane: false,
   // eslint-disable-next-line no-constant-binary-expression
-  queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : (95 ?? 70),
+  queryPanelHeight: runtimePanelPreferences?.isExpanded ? 30 : 0,
   selectedQuery: null,
   queryHydrationRevision: 0,
   previewPanelHeight: 0,
+  // Dragged width of the right-side query panel in px; null keeps the default width.
+  queryPanelWidth: readStoredQueryPanelWidth(),
   selectedDataSource: null,
   queryToBeRun: null,
   previewLoading: false,
@@ -74,11 +87,33 @@ const initialState = {
   renamingQueryId: null,
   deletingQueryId: null,
   asyncQueryRuns: [],
+  // Queries whose code editor is open in a separate browser tab (see QueryManager/CodeEditorTab).
+  codeEditorTabQueryIds: [],
 };
 
 export const createQueryPanelSlice = (set, get) => ({
   queryPanel: {
     ...initialState,
+    openCodeEditorTab: (queryId) =>
+      set(
+        (state) => {
+          if (!state.queryPanel.codeEditorTabQueryIds.includes(queryId)) {
+            state.queryPanel.codeEditorTabQueryIds.push(queryId);
+          }
+        },
+        false,
+        'openCodeEditorTab'
+      ),
+    closeCodeEditorTab: (queryId) =>
+      set(
+        (state) => {
+          state.queryPanel.codeEditorTabQueryIds = state.queryPanel.codeEditorTabQueryIds.filter(
+            (id) => id !== queryId
+          );
+        },
+        false,
+        'closeCodeEditorTab'
+      ),
     setQueryPanelSearchTerm: (searchTerm) =>
       set(
         (state) => {
@@ -103,6 +138,26 @@ export const createQueryPanelSlice = (set, get) => ({
         false,
         'setIsQueryPaneExpanded'
       ),
+    setRuntimePanelTab: (runtimePanelTab) =>
+      set(
+        (state) => {
+          state.queryPanel.runtimePanelTab = runtimePanelTab;
+        },
+        false,
+        'setRuntimePanelTab'
+      ),
+    // Every "inspect this" entry point (State inspector, Entity usage links) lands here.
+    openRuntimeInspector: (path) => {
+      get().setSelectedNodePath(path);
+      set(
+        (state) => {
+          state.queryPanel.runtimePanelTab = 'inspect';
+          state.queryPanel.isQueryPaneExpanded = true;
+        },
+        false,
+        'openRuntimeInspector'
+      );
+    },
     setQueryPanelHeight: (queryPanelHeight) => {
       const currentQueryPanelHeight = get().queryPanel.queryPanelHeight;
       if (currentQueryPanelHeight === queryPanelHeight) return;
@@ -189,6 +244,25 @@ export const createQueryPanelSlice = (set, get) => ({
         'setPreviewPanelHeight'
       );
     }, // updatePreviewPanelHeight
+
+    // Called on every drag frame; persist only when the drag ends, so a drag writes storage once.
+    setQueryPanelWidth: (width, { persist = false } = {}) => {
+      if (get().queryPanel.queryPanelWidth !== width) {
+        set(
+          (state) => {
+            state.queryPanel.queryPanelWidth = width;
+          },
+          false,
+          'setQueryPanelWidth'
+        );
+      }
+      if (!persist) return;
+      try {
+        localStorage.setItem(QUERY_PANEL_RESIZE.storageKey, String(width));
+      } catch {
+        // Storage can be unavailable (private mode, quota); the width still holds for this session.
+      }
+    },
     setSelectedDataSource: (dataSource = null) =>
       set(
         (state) => {

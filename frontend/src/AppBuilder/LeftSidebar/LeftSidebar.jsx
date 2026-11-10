@@ -6,42 +6,49 @@ import { shallow } from 'zustand/shallow';
 import { DarkModeToggle } from '@/_components';
 import Popover from '@/_ui/Popover';
 // import { PageMenu } from './PageMenu';
-import LeftSidebarInspector from './LeftSidebarInspector/LeftSidebarInspector';
 import GlobalSettings from './GlobalSettings';
-import '../../_styles/left-sidebar.scss';
-import Debugger from './Debugger/Debugger';
 import DependencyViewer from './Dependencies/DependencyViewer';
+import '../../_styles/left-sidebar.scss';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
-import { SquareDashedMousePointer, Bug, Bolt, History, Waypoints, Search } from 'lucide-react';
+import { Blocks, DatabaseZap, Files, Network, Search, Settings } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { EditorView } from '@codemirror/view';
 import CodeSearch from './CodeSearch/CodeSearch';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import Beta from '@/_ui/Beta';
 import SupportButton from './SupportButton';
 import AvatarGroup from '@/_ui/AvatarGroup';
 // eslint-disable-next-line import/no-unresolved
 import { useOthers, useSelf } from '@y-presence/react';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
+import { PageSettings } from '@/AppBuilder/RightSideBar/PageSettingsTab';
+import ComponentsManagerTab from '@/AppBuilder/RightSideBar/ComponentManagerTab';
+import { QueryDataPane } from '@/AppBuilder/QueryPanel/QueryDataPane';
+import {
+  getLeftPanelHeight,
+  getLeftPanelOverflow,
+  getLeftPanelState,
+  PANEL_MOTION,
+  shouldShowLibraries,
+} from '@/AppBuilder/panelLayout';
 import AppHistoryIcon from './AppHistory/AppHistoryIcon';
 import AppHistory from './AppHistory';
 import AppLibrariesIcon from './AppLibraries/AppLibrariesIcon';
 import AppLibraries from './AppLibraries';
-import Beta from '@/_ui/Beta';
-import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
 // Human names for the error-boundary label/location of each sidebar panel.
 const LEFT_SIDEBAR_PANEL_LABELS = {
-  page: 'Inspector',
-  inspect: 'Inspector',
+  pages: 'Pages',
+  components: 'Components',
+  queries: 'Queries',
   search: 'Code search',
-  tooljetai: 'AI chat',
-  apphistory: 'App history',
   libraries: 'Libraries',
-  debugger: 'Debugger',
-  settings: 'Global settings',
+  dependencies: 'Dependencies',
+  apphistory: 'App history',
+  tooljetai: 'AI chat',
+  settings: 'App settings',
 };
 
 // TODO: remove passing refs to LeftSidebarItem and use state
@@ -55,48 +62,55 @@ export const BaseLeftSidebar = ({
   renderAISideBarTrigger = () => null,
   renderAIChat = () => null,
 }) => {
-  const { moduleId, isModuleEditor, appType } = useModuleContext();
+  const { moduleId, isModuleEditor } = useModuleContext();
   const [
     pinned,
     selectedSidebarItem,
-    setPinned,
     setSelectedSidebarItem,
     currentMode,
     queryPanelHeight,
-    unreadErrorCount,
-    resetUnreadErrorCount,
     toggleLeftSidebar,
     isSidebarOpen,
     isDraggingQueryPane,
+    isQueryPaneExpanded,
   ] = useStore(
     (state) => [
       state.isLeftSideBarPinned,
       state.selectedSidebarItem,
-      state.setIsLeftSideBarPinned,
       state.setSelectedSidebarItem,
       state.modeStore.modules[moduleId].currentMode,
       state.queryPanel.queryPanelHeight,
-      state.debugger.unreadErrorCount,
-      state.debugger.resetUnreadErrorCount,
       state.toggleLeftSidebar,
       state.isSidebarOpen,
       state.queryPanel.isDraggingQueryPane,
+      state.queryPanel.isQueryPaneExpanded,
     ],
     shallow
   );
 
-  const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
+  const [popoverContentHeight, setPopoverContentHeight] = useState(
+    getLeftPanelHeight(isQueryPaneExpanded, queryPanelHeight)
+  );
+  const [isPanelContentMounted, setIsPanelContentMounted] = useState(isSidebarOpen);
+  const [animatePanelSwitch, setAnimatePanelSwitch] = useState(false);
   const sideBarBtnRefs = useRef({});
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
   const returnToSearch = useStore((state) => state.codeSearch.returnToSearch);
   const setCodeSearchReturnToSearch = useStore((state) => state.setCodeSearchReturnToSearch);
   const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled;
+  // Closing clears selectedSidebarItem at once, but the panel keeps showing what it showed until its
+  // exit animation ends (isPanelContentMounted drops PANEL_MOTION.durationMs after it closes).
+  const lastPanelItemRef = useRef(selectedSidebarItem);
+  if (selectedSidebarItem) lastPanelItemRef.current = selectedSidebarItem;
+  const panelItem = selectedSidebarItem ?? (isPanelContentMounted ? lastPanelItemRef.current : null);
+  const { isLeftPanelOpen, shouldMountLeftPanel } = getLeftPanelState(panelItem, isSidebarOpen);
 
   const handleSelectedSidebarItem = (item) => {
-    if (item === 'debugger') resetUnreadErrorCount();
     // Only a search result opens Settings with a way back to the search panel.
     setCodeSearchReturnToSearch(false);
+    // Left-rail clicks never close the right panel; it closes only from its own ×.
+    setAnimatePanelSwitch(!isSidebarOpen || item !== selectedSidebarItem);
     setSelectedSidebarItem(item);
     localStorage.setItem('selectedSidebarItem', item);
     // Only treat a repeat click as "close" when the panel is actually OPEN. Panels that close
@@ -108,27 +122,28 @@ export const BaseLeftSidebar = ({
     if (item === selectedSidebarItem && isSidebarOpen && !pinned) {
       return toggleLeftSidebar(false);
     }
-    if (!isSidebarOpen) toggleLeftSidebar(true);
+    if (!isSidebarOpen) {
+      // Mount the panel body in the same event as the shell opens so the first animated frame is never blank.
+      setIsPanelContentMounted(true);
+      toggleLeftSidebar(true);
+    }
   };
 
-  // Same shortcut builders know from code editors' app-wide search; toggles the panel.
+  // Same shortcut builders know from code editors' app-wide search. It behaves like the Code search
+  // rail icon (opens it, or closes it when it's already showing), except that a word selected in a
+  // code editor seeds the search and always opens the panel.
   useHotkeys(
     'mod+shift+f',
     () => {
-      // Seed the search with the word selected in a code editor, as code editors do.
       const editorElement = document.activeElement?.closest?.('.cm-editor');
       const view = editorElement && EditorView.findFromDOM(editorElement);
       const { from, to } = view?.state.selection.main || {};
       const selected = view && from !== to ? view.state.sliceDoc(from, to) : '';
       if (selected && selected.length <= 100 && !selected.includes('\n')) {
         useStore.getState().setCodeSearchTerm(selected);
-        setSelectedSidebarItem('search');
-        if (!isSidebarOpen) toggleLeftSidebar(true);
-        return;
+        if (selectedSidebarItem === 'search' && isSidebarOpen) return;
       }
-      if (selectedSidebarItem === 'search' && isSidebarOpen) return toggleLeftSidebar(false);
-      setSelectedSidebarItem('search');
-      if (!isSidebarOpen) toggleLeftSidebar(true);
+      handleSelectedSidebarItem('search');
     },
     { enabled: currentMode !== 'view', enableOnFormTags: true, enableOnContentEditable: true, preventDefault: true },
     [selectedSidebarItem, isSidebarOpen, currentMode]
@@ -140,57 +155,75 @@ export const BaseLeftSidebar = ({
 
   useEffect(() => {
     if (!isDraggingQueryPane) {
-      setPopoverContentHeight(
-        ((window.innerHeight - (queryPanelHeight == 0 ? QUERY_PANE_HEIGHT : queryPanelHeight) - APP_HEADER_HEIGHT) /
-          window.innerHeight) *
-          100
-      );
+      setPopoverContentHeight(getLeftPanelHeight(isQueryPaneExpanded, queryPanelHeight));
     } else {
-      setPopoverContentHeight(100);
+      setPopoverContentHeight('calc(100vh - 48px)');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryPanelHeight, isDraggingQueryPane]);
+  }, [queryPanelHeight, isDraggingQueryPane, isQueryPaneExpanded]);
+
+  useEffect(() => {
+    if (isSidebarOpen) {
+      setIsPanelContentMounted(true);
+      return undefined;
+    }
+
+    const exitTimer = window.setTimeout(() => setIsPanelContentMounted(false), PANEL_MOTION.durationMs);
+    return () => window.clearTimeout(exitTimer);
+  }, [isSidebarOpen]);
 
   const renderPopoverContent = () => {
-    if (selectedSidebarItem === null || !isSidebarOpen) return null;
-    const panelLabel = LEFT_SIDEBAR_PANEL_LABELS[selectedSidebarItem] || 'Left sidebar';
+    if (panelItem === null) return null;
+    const panelLabel = LEFT_SIDEBAR_PANEL_LABELS[panelItem] || 'Left sidebar';
     return (
       // Every sidebar panel gets its own labelled boundary; switching panels auto-recovers.
       <FallbackBoundary
         label={panelLabel}
         location={`LeftSideBar ${panelLabel}`}
         darkMode={darkMode}
-        resetKeys={[selectedSidebarItem]}
+        resetKeys={[panelItem]}
       >
-        {renderSelectedPanel()}
+        <div
+          key={panelItem}
+          className={cx('left-sidebar-panel-content', {
+            'left-sidebar-panel-content--switching': animatePanelSwitch,
+          })}
+        >
+          {renderSelectedPanel()}
+        </div>
       </FallbackBoundary>
     );
   };
 
   const renderSelectedPanel = () => {
-    switch (selectedSidebarItem) {
-      case 'page': // this handles cases where user has page pinned in old layout before LTS 3.16 update
-      case 'inspect':
+    switch (panelItem) {
+      case 'tooljetai':
+        return renderAIChat({ darkMode });
+      case 'pages':
+        return <PageSettings surface="navigation" onClose={() => toggleLeftSidebar(false)} />;
+      case 'components':
         return (
-          <LeftSidebarInspector
+          <ComponentsManagerTab
             darkMode={darkMode}
+            isModuleEditor={isModuleEditor}
+            surface="left"
             onClose={() => toggleLeftSidebar(false)}
-            moduleId={moduleId}
-            appType={appType}
           />
+        );
+      case 'queries':
+        return (
+          <div className="left-sidebar-query-list">
+            <QueryDataPane darkMode={darkMode} surface="left" onClose={() => toggleLeftSidebar(false)} />
+          </div>
         );
       case 'search':
         return <CodeSearch darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
-      case 'tooljetai':
-        return renderAIChat({ darkMode });
-      case 'apphistory':
-        return <AppHistory darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
       case 'libraries':
         return <AppLibraries darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
-      case 'debugger':
-        return <Debugger onClose={() => toggleLeftSidebar(false)} darkMode={darkMode} />;
       case 'dependencies':
         return <DependencyViewer darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} moduleId={moduleId} />;
+      case 'apphistory':
+        return <AppHistory darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
       case 'settings':
         return (
           <GlobalSettings
@@ -212,60 +245,95 @@ export const BaseLeftSidebar = ({
   const renderCommonItems = () => {
     return (
       <>
+        {/* The AI chat sits first on the rail and opens in the left panel like every other item. */}
+        {renderAISideBarTrigger({ darkMode, setSideBarBtnRefs, selectedSidebarItem, handleSelectedSidebarItem })}
         <SidebarItem
           selectedSidebarItem={selectedSidebarItem}
-          onClick={() => handleSelectedSidebarItem('inspect')}
+          onClick={() => handleSelectedSidebarItem('pages')}
           darkMode={darkMode}
-          icon="inspect"
-          className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
-          tip="Inspector"
-          ref={setSideBarBtnRefs('inspect')}
+          icon="pages"
+          className="left-sidebar-item left-sidebar-layout"
+          tip="Pages"
+          railLabel="Pages"
+          ref={setSideBarBtnRefs('pages')}
         >
-          <SquareDashedMousePointer width="16" height="16" className="tw-text-icon-strong" />
+          <Files size={16} strokeWidth={1.8} />
         </SidebarItem>
-
         <SidebarItem
-          selectedSidebarItem={selectedSidebarItem}
-          onClick={() => handleSelectedSidebarItem('search')}
-          darkMode={darkMode}
-          icon="search"
-          className={`left-sidebar-item left-sidebar-layout tw-overflow-visible`}
-          tip="Code search"
-          ref={setSideBarBtnRefs('search')}
-        >
-          <Search width="16" height="16" className="tw-text-icon-strong" />
-          <Beta className="code-search-beta-tag tw-py-0.5 tw-px-1.5 tw-border-none" />
-        </SidebarItem>
-
-        <SidebarItem
-          icon="debugger"
+          icon="components"
           selectedSidebarItem={selectedSidebarItem}
           darkMode={darkMode}
-          // eslint-disable-next-line no-unused-vars
-          onClick={(e) => handleSelectedSidebarItem('debugger')}
-          className={`left-sidebar-item  left-sidebar-layout`}
-          badge={true}
-          count={unreadErrorCount}
-          tip="Debugger"
-          ref={setSideBarBtnRefs('debugger')}
+          onClick={() => handleSelectedSidebarItem('components')}
+          className="left-sidebar-item left-sidebar-layout"
+          tip="Components"
+          railLabel="Add"
+          ref={setSideBarBtnRefs('components')}
         >
-          <Bug width="16" height="16" className="tw-text-icon-strong" />
+          <Blocks size={16} strokeWidth={1.8} />
         </SidebarItem>
-
         <SidebarItem
-          icon="dependencies"
+          icon="queries"
           selectedSidebarItem={selectedSidebarItem}
           darkMode={darkMode}
-          onClick={() => handleSelectedSidebarItem('dependencies')}
-          className={`left-sidebar-item left-sidebar-layout`}
-          tip="Dependencies"
-          ref={setSideBarBtnRefs('dependencies')}
+          onClick={() => handleSelectedSidebarItem('queries')}
+          className="left-sidebar-item left-sidebar-layout"
+          tip="Queries"
+          railLabel="Queries"
+          ref={setSideBarBtnRefs('queries')}
         >
-          <Waypoints width="16" height="16" className="tw-text-icon-strong" />
+          <DatabaseZap size={16} strokeWidth={1.8} />
         </SidebarItem>
+        {shouldShowLibraries(isModuleEditor, featureAccess?.appJsLibraries) && (
+          <AppLibrariesIcon
+            darkMode={darkMode}
+            selectedSidebarItem={selectedSidebarItem}
+            handleSelectedSidebarItem={handleSelectedSidebarItem}
+            setSideBarBtnRefs={setSideBarBtnRefs}
+          />
+        )}
       </>
     );
   };
+
+  const renderManageItems = () => (
+    <>
+      <div className="left-sidebar-section-divider" role="separator" aria-label="Manage tools" />
+      <SidebarItem
+        icon="search"
+        selectedSidebarItem={selectedSidebarItem}
+        darkMode={darkMode}
+        onClick={() => handleSelectedSidebarItem('search')}
+        className="left-sidebar-item left-sidebar-layout tw-overflow-visible"
+        tip="Code search"
+        railLabel="Search"
+        ref={setSideBarBtnRefs('search')}
+      >
+        <Search size={16} strokeWidth={1.8} />
+        <Beta className="code-search-beta-tag tw-py-0.5 tw-px-1.5 tw-border-none" />
+      </SidebarItem>
+      <SidebarItem
+        icon="dependencies"
+        selectedSidebarItem={selectedSidebarItem}
+        darkMode={darkMode}
+        onClick={() => handleSelectedSidebarItem('dependencies')}
+        className="left-sidebar-item left-sidebar-layout"
+        tip="Dependencies"
+        railLabel="Deps"
+        ref={setSideBarBtnRefs('dependencies')}
+      >
+        <Network size={16} strokeWidth={1.8} />
+      </SidebarItem>
+      {!isModuleEditor && featureAccess?.appHistory && (
+        <AppHistoryIcon
+          darkMode={darkMode}
+          selectedSidebarItem={selectedSidebarItem}
+          handleSelectedSidebarItem={handleSelectedSidebarItem}
+          setSideBarBtnRefs={setSideBarBtnRefs}
+        />
+      )}
+      {renderSettingsItem(isModuleEditor)}
+    </>
+  );
 
   const renderSettingsItem = (isModuleEditor) => (
     <SidebarItem
@@ -277,99 +345,58 @@ export const BaseLeftSidebar = ({
       className={`left-sidebar-item  left-sidebar-layout`}
       badge={true}
       tip="Settings"
+      railLabel="Settings"
       ref={setSideBarBtnRefs('settings')}
       isModuleEditor={isModuleEditor}
       data-cy="left-sidebar-settings-button"
     >
-      <Bolt width="16" height="16" className="tw-text-icon-strong" />
+      <Settings size={16} strokeWidth={1.8} />
     </SidebarItem>
   );
 
-  const renderLeftSidebarItems = (isModuleEditor) => {
-    if (isModuleEditor) {
-      return (
-        <>
-          {renderAISideBarTrigger({
-            darkMode,
-            setSideBarBtnRefs,
-            selectedSidebarItem,
-            handleSelectedSidebarItem,
-          })}
-          {renderCommonItems()}
-          {renderSettingsItem(isModuleEditor)}
-        </>
-      );
-    }
-    return (
-      <>
-        {renderAISideBarTrigger({
-          darkMode,
-          setSideBarBtnRefs,
-          selectedSidebarItem,
-          handleSelectedSidebarItem,
-        })}
-
-        {renderCommonItems()}
-        {featureAccess?.appHistory && (
-          <AppHistoryIcon
-            darkMode={darkMode}
-            selectedSidebarItem={selectedSidebarItem}
-            handleSelectedSidebarItem={handleSelectedSidebarItem}
-            setSideBarBtnRefs={setSideBarBtnRefs}
-          />
-        )}
-        {featureAccess?.appJsLibraries && (
-          <AppLibrariesIcon
-            darkMode={darkMode}
-            selectedSidebarItem={selectedSidebarItem}
-            handleSelectedSidebarItem={handleSelectedSidebarItem}
-            setSideBarBtnRefs={setSideBarBtnRefs}
-          />
-        )}
-        {renderSettingsItem(isModuleEditor)}
-      </>
-    );
-  };
+  const renderLeftSidebarItems = () => (
+    <>
+      {renderCommonItems()}
+      {renderManageItems()}
+    </>
+  );
 
   return (
-    <div
-      className={cx('left-sidebar !tw-z-10 tw-gap-1.5', { 'dark-theme theme-dark': darkMode })}
-      data-cy="left-sidebar-inspector"
-      style={{ zIndex: 9999, maxWidth: '304px' }}
-    >
-      {renderLeftSidebarItems(isModuleEditor)}
-      <Popover
-        onInteractOutside={(e) => {
-          // if tooljetai is open don't close
-          if (
-            ['tooljetai', 'inspect', 'search', 'debugger', 'settings', 'libraries', 'dependencies'].includes(
-              selectedSidebarItem
-            )
-          )
-            return;
-          const isWithinSidebar = e.target.closest('.left-sidebar');
-          const isClickOnInspect = e.target.closest('.config-handle-inspect');
-          if (pinned || isWithinSidebar || isClickOnInspect) return;
-          toggleLeftSidebar(false);
-        }}
-        open={isSidebarOpen}
-        popoverContentClassName={`p-0 left-sidebar-scrollbar sidebar-h-100-popover ${selectedSidebarItem}`}
-        side="right"
-        popoverContent={renderPopoverContent()}
-        popoverContentHeight={popoverContentHeight}
-        contentProps={{
-          onOpenAutoFocus: (e) => e.preventDefault(),
-        }}
-      />
-      <div className="left-sidebar-stack-bottom">
-        <div className="tw-flex tw-flex-col tw-gap-2">
-          {shouldEnableMultiplayer && <AvatarGroupWrapper darkMode={darkMode} maxDisplay={2} />}
-          {shouldEnableMultiplayer && <UpdatePresenceMultiPlayer />}
-          <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
-          <SupportButton darkMode={darkMode} />
+    <>
+      <div
+        className={cx('left-sidebar !tw-z-10', { 'dark-theme theme-dark': darkMode })}
+        data-cy="left-sidebar-inspector"
+        style={{ zIndex: 9999, maxWidth: '304px' }}
+      >
+        {renderLeftSidebarItems()}
+        {shouldMountLeftPanel && (
+          <Popover
+            forceMount
+            // Left panels close only from their own close button or rail icon — never from an
+            // outside click (canvas, right panel, bottom panel, AI chat).
+            onInteractOutside={(e) => e.preventDefault()}
+            open={isLeftPanelOpen}
+            popoverContentClassName={`p-0 left-sidebar-scrollbar sidebar-h-100-popover ${panelItem} left-sidebar-overflow-${getLeftPanelOverflow(
+              panelItem
+            )}`}
+            side="right"
+            popoverContent={isPanelContentMounted ? renderPopoverContent() : null}
+            popoverContentHeight={popoverContentHeight}
+            contentProps={{
+              onOpenAutoFocus: (e) => e.preventDefault(),
+            }}
+          />
+        )}
+        <div className="left-sidebar-stack-bottom">
+          <div className="tw-flex tw-flex-col tw-gap-2">
+            {shouldEnableMultiplayer && <AvatarGroupWrapper darkMode={darkMode} maxDisplay={2} />}
+            {shouldEnableMultiplayer && <UpdatePresenceMultiPlayer />}
+            <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
+            <SupportButton darkMode={darkMode} />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 const AvatarGroupWrapper = ({ darkMode, maxDisplay }) => {

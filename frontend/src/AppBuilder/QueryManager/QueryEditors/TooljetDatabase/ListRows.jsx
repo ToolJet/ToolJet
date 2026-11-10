@@ -84,7 +84,7 @@ export const ListRows = React.memo(({ darkMode }) => {
   }
 
   return (
-    <div>
+    <div className="tooljetdb-operation-form tooljetdb-list-rows">
       <div className="row my-2 tj-db-field-wrapper">
         <div className="tab-content-wrapper">
           <AggregateFilter darkMode={darkMode} operation="listRows" />
