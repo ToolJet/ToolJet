@@ -33,6 +33,21 @@ jobs:
       digest: ${{ steps.push.outputs.digest }}
 
     steps:
+      # Security: stop before anything else runs if this is a fork PR, or if the
+      # branch name has characters that could be used to inject shell commands.
+      - name: Check PR source and branch name
+        env:
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [ -n "$HEAD_REPO" ] && [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::Cypress runs are not allowed for pull requests from forks ($HEAD_REPO)."
+            exit 1
+          fi
+          if ! printf '%s' "$BRANCH_NAME" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+            echo "::error::Branch name may only contain letters, numbers, '.', '_', '/' and '-'."
+            exit 1
+          fi
+
       - name: Free up disk space
         run: |
           echo "Available disk space before cleanup:"
@@ -75,6 +90,8 @@ jobs:
 
       - name: Build EE Docker image
         id: push
+        env:
+          CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         run: |
           echo "Building EE Docker image..."
           # PR branches cut before the secret change still read the token as a build arg;
@@ -83,7 +100,8 @@ jobs:
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
             --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
-            --build-arg BRANCH_NAME=${{ env.BRANCH_NAME }} \
+            --secret id=github_token,env=CUSTOM_GITHUB_TOKEN \
+            --build-arg BRANCH_NAME="$BRANCH_NAME" \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
             --load \
