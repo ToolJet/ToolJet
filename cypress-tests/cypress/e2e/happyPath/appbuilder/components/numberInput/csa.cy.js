@@ -18,7 +18,6 @@ describe('Number Input — csa facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-NICsa-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget("Number Input", 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the CSA from the number input (On click)', () => {

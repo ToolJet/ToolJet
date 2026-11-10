@@ -19,7 +19,6 @@ describe('Checkbox — userflow facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-Checkbox-Userflow`);
         cy.openApp();
         cy.dragAndDropWidget('Checkbox', 450, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     // Place → observe default (unchecked) → set Default state On → observe

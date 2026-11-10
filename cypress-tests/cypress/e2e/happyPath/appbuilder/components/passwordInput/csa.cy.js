@@ -18,7 +18,6 @@ describe('Password Input — csa facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-PICsa-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget("Password Input", 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the CSA from the password input (On click)', () => {

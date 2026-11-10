@@ -37,7 +37,6 @@ describe('Number Input — canvas facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-NumberInput-Canvas`);
         cy.openApp();
         cy.dragAndDropWidget('Number Input', 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('drag-and-drop places the widget', () => {
@@ -92,10 +91,8 @@ describe('Number Input — canvas facet', { testIsolation: false }, () => {
     });
 
     it('multi-select then select-all', () => {
-        // add a second widget (toggle panel closed so dragAndDrop re-opens it)
-        cy.get('[data-cy="right-sidebar-components-button"]').click();
+        // add a second widget
         cy.dragAndDropWidget('Number Input', 650, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
 
         multiSelectWidgets(['numberinput1', 'numberinput2']);
         verifySelectedWidgetCount(2);

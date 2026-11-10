@@ -13,7 +13,6 @@ describe('Checkbox — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-Checkbox-Contexts`);
         cy.openApp();
         cy.dragAndDropWidget('Checkbox', 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     // Device-visibility context matrix: Show on Desktop / Show on Mobile.

@@ -8,7 +8,6 @@ import {
   waitForDropSettle,
 } from "Support/utils/commonWidget";
 import { selectEvent, configureCSA, selectQueryForEvent } from "Support/utils/appBuilder/events";
-import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 import {
 } from "Support/utils/appBuilder/components/fileButton";
 
@@ -23,7 +22,6 @@ describe(
   () => {
   const widget = fileButtonText.defaultWidgetName;
   const { validFile, validFileName } = fileButtonFixtures;
-  const panelHeight = 50;
   // Fixed name (fresh app per test) — QueryCard.jsx lowercases it for data-cy.
   const queryName = "csarunjs";
 
@@ -47,7 +45,6 @@ describe(
       dsKind: "runjs",
     });
     cy.reload();
-    resizeQueryPanel(panelHeight);
   };
 
   // Button 1 — the Control Component trigger.

@@ -189,14 +189,13 @@ export const renameWidgetFromMenu = (widgetName, newName) => {
 /**
  * @tjBlock  canvas
  * @tjUsage  deleteWidgetFromMenu('button1')
- * @tjDom    ⋮ menu → Delete → confirm modal-component → Yes
+ * @tjDom    ⋮ menu → Delete → entity-delete-confirm
  */
 export const deleteWidgetFromMenu = (widgetName) => {
   selectComponentInspectorMenuOption(widgetName, "delete");
-  // Deleting from the ⋮ menu raises the same confirmation modal as the
+  // Deleting from the ⋮ menu raises the same confirmation dialog as the
   // config-handle trash (deleteComponentAndVerify) — confirm it.
-  cy.get('[data-cy="modal-component"]').should("be.visible");
-  cy.get(commonSelectors.yesButton).click();
+  cy.get('[data-cy="entity-delete-confirm"]').click();
   cy.wait(1000);
 };
 
@@ -377,21 +376,10 @@ export const waitForDropSettle = (widgetName, attemptsLeft = 6) => {
 /**
  * @tjBlock  canvas
  * @tjUsage  dropWidget('Text Input', 'textinput1', 500, 300)
- * @tjDom    right-sidebar-components-button toggle + widget-search-box-search-bar
+ * @tjDom    cy.dragAndDropWidget + waitForDropSettle
  */
-// cy.dragAndDropWidget opens the Components panel by clicking a button that TOGGLES it,
-// so it only works from a CLOSED panel: a drop straight after another drop clicks it
-// shut and then times out on the search box. Collapse first so a drop works from either
-// state. Specs that chain drops without this pass only by accident, because an
-// openEditorSidebar in between happened to swap the sidebar to the Inspector.
-//
 // The instance name is passed, not derived, because callers reference it in bindings.
 export const dropWidget = (widgetName, instanceName, x = 500, y = 300) => {
-  cy.get("body").then(($body) => {
-    if ($body.find('[data-cy="widget-search-box-search-bar"]:visible').length) {
-      cy.get('[data-cy="right-sidebar-components-button"]').click();
-    }
-  });
   cy.dragAndDropWidget(widgetName, x, y);
   waitForDropSettle(instanceName);
 };

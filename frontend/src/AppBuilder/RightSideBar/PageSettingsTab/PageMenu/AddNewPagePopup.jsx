@@ -353,6 +353,7 @@ export const AddEditPagePopup = forwardRef(
               <ToolTip message={`Delete ${type === 'group' ? 'group' : 'page'}`} placement="bottom">
                 <Button
                   key="delete-page-btn"
+                  data-cy="delete-page-button"
                   fill="var(--icon-strong)"
                   leadingIcon="delete01"
                   iconOnly
@@ -373,6 +374,7 @@ export const AddEditPagePopup = forwardRef(
                   size="medium"
                   isLucid
                   aria-label="Close page configuration"
+                  data-cy="close-page-configuration-button"
                   onClick={onClose}
                 />
               )}

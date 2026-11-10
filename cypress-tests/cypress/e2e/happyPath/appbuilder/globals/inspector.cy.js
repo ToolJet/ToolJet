@@ -8,7 +8,7 @@ import {
   verifyNodeData,
   verifyNodes,
   openSubNode,
-  backFromDetail,
+  openInspector,
 } from "Support/utils/appBuilder/inspector";
 import { navigateToCreateNewVersionModal } from "Support/utils/version";
 import testData from "Fixtures/inspectorItems.json";
@@ -31,26 +31,22 @@ describe("Editor- Inspector", { testIsolation: false }, () => {
   // panel opened by clicking the subnode label. Navigation verified against
   // Node.jsx:121,149 / Row.jsx:82,91 / TreeViewHeader.jsx:115.
   it("should verify the values of inspector", () => {
-    cy.get(commonWidgetSelector.sidebarinspector).click();
+    openInspector();
     cy.hideTooltip();
 
     // Expand Globals once, then open each child's detail panel and verify its rows.
     openNode("globals");
     openSubNode("currentUser");
     verifyNodes(testData.currentUserNodes, verifyNodeData);
-    backFromDetail();
 
     openSubNode("theme");
     verifyNodes(testData.themeNodes, verifyNodeData);
-    backFromDetail();
 
     openSubNode("mode");
     verifyNodes(testData.modeNodes, verifyNodeData);
-    backFromDetail();
 
     openSubNode("urlparams");
     verifyNodes(testData.urlparamsNode, verifyNodeData);
-    backFromDetail();
 
     cy.apiDeleteApp();
   });
@@ -78,7 +74,7 @@ describe("Editor- Inspector", { testIsolation: false }, () => {
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.wait(1000);
 
-    cy.get(commonWidgetSelector.sidebarinspector).click();
+    openInspector();
     cy.hideTooltip();
 
     // Variables node: the user-defined global variable appears as a subnode,
@@ -90,7 +86,6 @@ describe("Editor- Inspector", { testIsolation: false }, () => {
     cy.get('[data-cy="inspector--value"]')
       .first()
       .verifyVisibleElement("have.text", `"globalVar"`); // source: variable seeded above
-    backFromDetail();
 
     // Components node: open the button's detail and verify its exposed values.
     openNode("components");
@@ -100,7 +95,6 @@ describe("Editor- Inspector", { testIsolation: false }, () => {
     verifyNodeData("isDisabled", "Boolean", "false");
     verifyNodeData("isLoading", "Boolean", "false");
     verifyNodeData("click", "Function", "function"); // CSA exposed function
-    backFromDetail();
 
     // Globals -> urlparams: verify value and the copy-path action on a detail row.
     // (Headless Chrome denies clipboard.readText, so we assert the copy action's
@@ -120,7 +114,6 @@ describe("Editor- Inspector", { testIsolation: false }, () => {
       commonSelectors.toastMessage,
       "Copied to the clipboard"
     ); // source: utils.js:105 copyToClipboard toast
-    backFromDetail();
 
     cy.apiDeleteApp();
   });

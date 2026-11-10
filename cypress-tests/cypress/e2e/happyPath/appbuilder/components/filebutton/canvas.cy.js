@@ -133,9 +133,6 @@ describe(
   });
 
   it("multi-select then select-all", () => {
-    // The Components panel button is a TOGGLE — click it shut before dragAndDropWidget
-    // re-opens it.
-    cy.get('[data-cy="right-sidebar-components-button"]').click();
     cy.dragAndDropWidget(fileButtonText.defaultWidgetText, 650, 300);
     waitForDropSettle("filebutton2");
     closeQueryPanel();

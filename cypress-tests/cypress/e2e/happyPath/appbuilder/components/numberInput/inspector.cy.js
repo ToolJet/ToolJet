@@ -36,7 +36,6 @@ describe('Number Input — inspector facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-NumberInput-App`);
         cy.openApp();
         cy.dragAndDropWidget("Number Input", 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify exposed values + functions on inspector', () => {

@@ -82,7 +82,6 @@ describe('Checkbox Component Tests', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-Checkbox-App`);
         cy.openApp();
         cy.dragAndDropWidget("Checkbox", 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify exposed values on inspector', () => {

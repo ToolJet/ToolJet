@@ -11,7 +11,6 @@ import {
   selectRunQueryEvent,
 } from "Support/utils/appBuilder/querymanager/queries";
 
-import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 describe("Chaining of queries", () => {
   beforeEach(() => {
@@ -21,7 +20,6 @@ describe("Chaining of queries", () => {
     cy.apiFetchDataSourcesIdFromApp();
     cy.viewport(1800, 1800);
     cy.dragAndDropWidget("Button");
-    resizeQueryPanel("80");
   });
 
   // FIXED & re-enabled. Three fixes, all in-scope (this spec + queries.js):
@@ -134,7 +132,6 @@ describe("Chaining of queries", () => {
       dsKind: "postgresql",
     });
     cy.reload();
-    resizeQueryPanel("80");
     chainQuery("psql", "runjs");
     addSuccessNotification("psql");
     chainQuery("runjs", "runpy");
@@ -201,7 +198,6 @@ describe("Chaining of queries", () => {
     );
 
     cy.reload();
-    resizeQueryPanel("80");
     addSuccessNotification("runpy");
     chainQuery("runjs", "runpy");
     addSuccessNotification("runjs");

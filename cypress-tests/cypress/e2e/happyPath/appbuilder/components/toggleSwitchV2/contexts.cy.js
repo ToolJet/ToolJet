@@ -16,7 +16,6 @@ describe('Toggle Switch — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-ToggleSwitch-Contexts-${Date.now().toString().slice(-6)}`);
         cy.openApp();
         cy.dragAndDropWidget('Toggle Switch', 400, 200); // source: toggleswitchv2.js:3
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     // Device-visibility context: others.showOnDesktop / showOnMobile

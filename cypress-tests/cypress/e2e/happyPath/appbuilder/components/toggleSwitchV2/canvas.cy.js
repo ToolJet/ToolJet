@@ -35,7 +35,6 @@ describe('Toggle Switch — canvas facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-ToggleSwitch-Canvas-${Date.now().toString().slice(-6)}`);
         cy.openApp();
         cy.dragAndDropWidget('Toggle Switch', 400, 200); // source: toggleswitchv2.js:3
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('drag-and-drop places the widget', () => {
@@ -90,10 +89,8 @@ describe('Toggle Switch — canvas facet', { testIsolation: false }, () => {
     });
 
     it('multi-select then select-all', () => {
-        // add a second widget (the components panel is closed, so the drag re-opens it)
-        cy.get('[data-cy="right-sidebar-components-button"]').click();
+        // add a second widget
         cy.dragAndDropWidget('Toggle Switch', 650, 200); // source: toggleswitchv2.js:3
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
 
         multiSelectWidgets(['toggleswitch1', 'toggleswitch2']);
         verifySelectedWidgetCount(2);

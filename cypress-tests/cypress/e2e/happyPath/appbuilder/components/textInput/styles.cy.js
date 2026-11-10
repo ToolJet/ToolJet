@@ -28,7 +28,6 @@ describe('Text Input — styles facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-TIStyles-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget('Text Input', 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     const openStyles = () => {
