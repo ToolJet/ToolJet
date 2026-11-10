@@ -77,7 +77,7 @@ export const radiobuttonV2Config = {
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
-      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
     visibility: {
@@ -97,7 +97,7 @@ export const radiobuttonV2Config = {
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
-      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
     tooltipFormat: {
@@ -298,7 +298,14 @@ export const radiobuttonV2Config = {
     },
   ],
   exposedVariables: {
+    value: null,
     label: 'Select',
+    options: [],
+    isValid: true,
+    isMandatory: false,
+    isLoading: false,
+    isVisible: true,
+    isDisabled: false,
   },
   definition: {
     others: {
