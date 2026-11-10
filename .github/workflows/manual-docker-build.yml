@@ -71,7 +71,11 @@ jobs:
           push: true
           tags: ${{ steps.taggen.outputs.tag }}
           platforms: linux/amd64
-          # Pass the token both ways: Dockerfiles read either the build arg or the BuildKit secret
+          # Transition: branches without the secret change (e.g. lts-3.16) still read the token as a
+          # build arg. The action defaults to provenance mode=max on public repos, which records
+          # build-arg values; mode=min keeps the attestation but leaves them out. Drop the build arg
+          # once every buildable branch uses the secret.
+          provenance: mode=min
           secrets: |
             github_token=${{ secrets.CUSTOM_GITHUB_TOKEN }}
           build-args: |
