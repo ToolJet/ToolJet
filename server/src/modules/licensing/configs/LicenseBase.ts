@@ -586,6 +586,11 @@ export default class LicenseBase {
     return this._type || LICENSE_TYPE.ENTERPRISE;
   }
 
+  // The license's own type, kept after expiry (licenseType reports BASIC by then).
+  public get termsType(): string {
+    return this._type;
+  }
+
   public get features(): object {
     return {
       openid: this.oidc,
