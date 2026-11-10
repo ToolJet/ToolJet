@@ -991,6 +991,23 @@ export const ColorPicker = (props: Record<string, unknown>) => {
                 styles={{ popup: popup.style, popupOverlayInner: popup.style } as never}
                 open={panel.open}
                 onOpenChange={panel.onOpenChange}
+                // Ant's swatch is a plain div, so Tab skipped the picker (a ToolJet Color picker takes it): it takes
+                // Tab, Enter or Space opens the panel, and Tab closes it on the way out. A click focuses it too (the
+                // editor's canvas keeps a press from doing so), or Tab went on with the panel left open.
+                {...({
+                  tabIndex: disabled ? -1 : 0,
+                  role: 'button',
+                  'aria-label': field.label || 'Color',
+                  'aria-haspopup': 'dialog',
+                  'aria-expanded': !!panel.open,
+                  onClick: (e: React.MouseEvent<HTMLElement>) => e.currentTarget.focus(),
+                  onKeyDown: (e: React.KeyboardEvent) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      panel.onOpenChange(!panel.open);
+                    } else if (e.key === 'Tab' && panel.open) panel.onOpenChange(false);
+                  },
+                } as object)}
                 onChange={(c, css) => {
                   if (!panel.available()) return;
                   setValue(c.cleared ? '' : format === 'rgb' ? css : c.toHexString());

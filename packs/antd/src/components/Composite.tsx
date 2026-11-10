@@ -969,6 +969,13 @@ export const Link = () => {
           target={link ? target : undefined}
           strong={strong}
           className={`tj-ant-link is-${underline}`}
+          // Without an href an <a> takes no Tab, and Tab skipped the Link (a ToolJet Link takes it): it takes it, and
+          // Enter clicks it, as Enter on a link does.
+          tabIndex={link ? undefined : 0}
+          role={link ? undefined : 'link'}
+          onKeyDown={(e) => {
+            if (!link && e.key === 'Enter') e.currentTarget.click();
+          }}
           onClick={() => onClick()}
           onMouseOver={onPointerIn(onHover)}
         >

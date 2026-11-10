@@ -201,6 +201,18 @@ export const Select = () => {
                 aria-label={label ? undefined : placeholder || 'Select'}
                 {...fieldAria(fieldId, check.error, check.required, !!description)}
                 {...focus.handlers}
+                // A mouse press opens the list and puts the focus in it; Radix focuses its trigger again on the click
+                // that ends the press, so the focus left the open list and Tab then went on with the list still open.
+                onClick={(e) => {
+                  if (open) e.preventDefault();
+                }}
+                // Backspace or Delete clears the choice, as in a ToolJet Dropdown: the x is no Tab stop.
+                onKeyDown={(e) => {
+                  if ((e.key === 'Backspace' || e.key === 'Delete') && clearable && key && !loading) {
+                    e.preventDefault();
+                    clearChoice();
+                  }
+                }}
               >
                 <span className="uc-truncate">
                   <SelectPrimitive.Value placeholder={placeholder} />

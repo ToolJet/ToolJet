@@ -233,6 +233,8 @@ export const Select = () => {
         title="Clear"
         size="small"
         className="tj-mui-select-clear"
+        // No Tab stop, as a ToolJet Dropdown's clear: Backspace or Delete on the field clears it.
+        tabIndex={-1}
         sx={{ p: `${(CLEAR_SIZE - 20) / 2}px` }}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -295,6 +297,14 @@ export const Select = () => {
             // The picked item's key: its option's own value.
             const k = String(e.target.value ?? '');
             if (available()) change(k === '' ? '' : valueForKey(options, k));
+          }}
+          onKeyDown={(e) => {
+            const onField = (e.target as HTMLElement).getAttribute('role') === 'combobox';
+            if (onField && clearable && (e.key === 'Backspace' || e.key === 'Delete') && available()) {
+              e.preventDefault();
+              change('');
+              check.touch();
+            }
           }}
         >
           {shownOptions(options, selected).map((o) => (

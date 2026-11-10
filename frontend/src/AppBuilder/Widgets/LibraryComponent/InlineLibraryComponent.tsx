@@ -11,6 +11,7 @@ import {
   slotAttributeName,
 } from './inlineRuntime';
 import { setActionRegistrySettled } from './actionRegistry';
+import { POPUP_LAYER_CLASS, keepPopupTabOrder, rememberInnerFocus } from './popupTabOrder';
 import useStore from '@/AppBuilder/_stores/store';
 
 // Shadow-root baseline. ToolJet's global CSS stays out, while inherited properties and theme custom
@@ -220,7 +221,7 @@ export const holdStoreWrites = (): (() => void) => {
 // the page's body.
 const CANVAS_LAYER_Z = 1055;
 const TOOLJET_MODAL_Z = 1060;
-const LAYER_HOST = 'tj-cc-popup-host';
+const LAYER_HOST = POPUP_LAYER_CLASS;
 const canvasArea = (): HTMLElement => document.querySelector<HTMLElement>('.tj-canvas-area') ?? document.body;
 /** The dialog a widget is drawn in: a pack's popup layer (a dialog body's components are its light-DOM children) or a
  *  ToolJet Modal; null on the canvas. */
@@ -345,6 +346,7 @@ const acquireLayer = (library: string, sheets: Sheets, widgetHost: HTMLElement) 
   root.appendChild(overlay);
   container.appendChild(host);
   const release = isolateInteractiveEvents(host);
+  const releaseTabOrder = keepPopupTabOrder(host, overlay);
   const layer: Layer = {
     overlay,
     host,
@@ -352,6 +354,7 @@ const acquireLayer = (library: string, sheets: Sheets, widgetHost: HTMLElement) 
     count: 1,
     release: () => {
       release();
+      releaseTabOrder();
       sheets.release(root);
       // A pack may keep the layer's root after it is gone (Ant's rc-util style cache is keyed by container): empty it,
       // so the popups and the listeners React put on the overlay go with the layer.
@@ -588,9 +591,11 @@ const InlineLibraryComponent = ({
     const { key: layerKey, layer } = acquireLayer(sheetKey, sheets, el);
     Object.defineProperty(root, 'tjOverlay', { value: layer.overlay, configurable: true });
     const releaseHost = isolateInteractiveEvents(el, pressOptions.current);
+    const releaseFocus = rememberInnerFocus(el);
     setShadow({ mount, popupHost: layer.host });
     return () => {
       releaseHost();
+      releaseFocus();
       releaseLayer(layerKey);
       sheets.release(root);
       // A pack may keep the root after the unmount (Ant's icons register every shadow root in rc-util's style

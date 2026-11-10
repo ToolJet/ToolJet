@@ -593,6 +593,8 @@ export const PhoneInput = (props: Record<string, unknown>) => {
                 <Select
                   value={picked.code}
                   disabled={disabled || !allowCountryChange}
+                  // One Tab stop, the number, as a ToolJet Phone input has: the country is picked with the pointer.
+                  tabIndex={-1}
                   showSearch
                   popupMatchSelectWidth={false}
                   optionFilterProp="search"
