@@ -19,7 +19,6 @@ describe('Password Input — events facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-PIEvents-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget('Password Input', 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the events from the password input', () => {

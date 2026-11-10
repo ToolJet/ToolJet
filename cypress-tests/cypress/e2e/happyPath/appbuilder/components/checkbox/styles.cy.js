@@ -28,7 +28,6 @@ describe('Checkbox — styles facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-Checkbox-Styles-App`);
         cy.openApp();
         cy.dragAndDropWidget('Checkbox', 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     // ── Label accordion ────────────────────────────────────────────────────────

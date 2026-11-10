@@ -18,7 +18,6 @@ describe('Password Input — contexts facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-PasswordInput-Contexts`);
         cy.openApp();
         cy.dragAndDropWidget('Password Input', 400, 200);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     // Device-visibility context matrix: Show on Desktop / Show on Mobile.

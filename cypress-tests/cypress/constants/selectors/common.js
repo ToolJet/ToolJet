@@ -299,7 +299,7 @@ export const commonSelectors = {
   workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]',
   confirmationButton: '[data-cy="confirmation-button"]',
   modalConfirmButton: '[data-cy="modal-confirm-button"]',
-  rightSidebarPlusButton: '[data-cy="right-sidebar-components-button"]',
+  rightSidebarPlusButton: '[data-cy="left-sidebar-components-button"]',
 
   textField: (fieldName) => {
     return `[data-cy="${cyParamName(fieldName)}-text-field"]`;
@@ -396,7 +396,7 @@ export const commonWidgetSelector = {
   buttonStylesEditorSideBar: "#inspector .nav-link:eq(1)",
   WidgetNameInputField: "[data-cy=edit-widget-name]",
   constantInspectorIcon: '[data-cy="inspector-constants-expand-button"]',
-  inspectorIcon: '[data-cy="left-sidebar-inspector-button"]',
+  inspectorIcon: '[data-cy="runtime-panel-tab-inspect"]',
   tooltipInputField: "[data-cy='tooltip-input-field']",
   tooltipLabel: "[id=button-tooltip]",
   togglrButton: (value) => `[data-cy="togglr-button-${value}"]`,
@@ -421,7 +421,7 @@ export const commonWidgetSelector = {
   changeLayoutToMobileButton: '[data-cy="button-change-layout-to-mobile"]',
   changeLayoutToDesktopButton: '[data-cy="button-change-layout-to-desktop"]',
 
-   sidebarinspector: "[data-cy='left-sidebar-inspector-button']",
+   sidebarinspector: "[data-cy='runtime-panel-tab-inspect']",
 
   appHistoryButton: "[data-cy='left-sidebar-app-history-button']",
   appHistoryCloseButton: "[data-cy='left-sidebar-close-button']",

@@ -23,7 +23,6 @@ describe('Password Input — propertiesFx facet', { testIsolation: false }, () =
         cy.apiCreateApp(`${fake.companyName}-PIPropsFx-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget('Password Input', 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     // ── FX-capable CODE fields ────────────────────────────────────────────────

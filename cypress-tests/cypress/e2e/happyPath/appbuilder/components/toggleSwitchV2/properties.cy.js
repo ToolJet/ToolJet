@@ -57,7 +57,6 @@ describe('Toggle Switch — properties facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-ToggleSwitch-Properties-App-${Date.now().toString().slice(-6)}`);
         cy.openApp();
         cy.dragAndDropWidget('Toggle Switch', 500, 100); // source: toggleswitchv2.js:3
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     // ── General ───────────────────────────────────────────────────────────────
@@ -122,9 +121,7 @@ describe('Toggle Switch — properties facet', { testIsolation: false }, () => {
         // collapse up into the gap (dynamicHeightReflow.js:45-47, 75-78).
         // Place a Text widget directly below the switch to observe that.
         // source: toggleswitchv2.js:56 (default toggleswitchv2.js:217)
-        cy.get('[data-cy="right-sidebar-components-button"]').click();
         cy.dragAndDropWidget('Text', 500, 300); // source: text.js:3
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
 
         // hide the switch, leaving collapseWhenHidden at its '{{false}}' default
         openEditorSidebar(W);

@@ -26,7 +26,6 @@ describe('Number Input — properties facet', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-NIProps-${Cypress._.uniqueId()}`);
         cy.openApp();
         cy.dragAndDropWidget('Number Input', 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     // ── General ──────────────────────────────────────────────────────────────

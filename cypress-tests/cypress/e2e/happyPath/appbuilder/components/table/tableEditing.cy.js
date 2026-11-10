@@ -13,7 +13,6 @@ import {
 } from "Support/utils/appBuilder/components/table";
 import { openEditorSidebar, openAccordion } from "Support/utils/commonWidget";
 import { addMultiEventsWithAlert } from "Support/utils/appBuilder/events";
-import { resizeQueryPanel } from "Support/utils/appBuilder/querymanager/queryPanel";
 
 // ---------------------------------------------------------------------------
 // Chunk 1 — Table inline editing + add row (NewTable).
@@ -43,12 +42,11 @@ describe("Table — inline editing & add row", { testIsolation: false }, () => {
     cy.apiCreateApp(`${fake.companyName}-table-edit-App`);
     cy.openApp();
     cy.viewport(1400, 2200);
-    cy.dragAndDropWidget("Table", 250, 100);
+    cy.dragAndDropWidget("Table", 350, 100);
     cy.hideTooltip();
     cy.modifyCanvasSize(900, 800);
     cy.get("[data-cy='left-sidebar-settings-button']").click();
     resizeTableWidget(name, 750, 600);
-    resizeQueryPanel("1");
     openEditorSidebar(name);
   });
   afterEach(() => {

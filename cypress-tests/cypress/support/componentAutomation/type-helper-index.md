@@ -44,8 +44,8 @@
 | exposed | `openAndVerifyNode` | appBuilder/inspectorTree.js | inspector | `openAndVerifyNode('textinput1', nodes, verifyNodeData)` |
 | exposed | `verifyNodes` | appBuilder/inspectorTree.js | inspector | `verifyNodes([{ key: 'value', type: 'string', value: 'hello' }], verifyNodeData)` |
 | exposed | `openNode` | appBuilder/inspectorTree.js | inspector | `openNode('components', 0)` |
+| - | `openInspector` | appBuilder/inspectorTree.js | inspector | `openInspector()` |
 | - | `openSubNode` | appBuilder/inspectorTree.js | inspector | `openSubNode('textinput1', 'components')` |
-| - | `backFromDetail` | appBuilder/inspectorTree.js | common | `backFromDetail()` |
 | - | `openSubNodeAndVerify` | appBuilder/inspectorTree.js | inspector | `openSubNodeAndVerify('globals', 'currentUser', nodes, verifyNodeData)` |
 | - | `openStateFromComponent` | appBuilder/inspectorTree.js | inspector | `openStateFromComponent('textinput1')` |
 | exposed | `verifyNodeData` | appBuilder/inspectorTree.js | inspector | `verifyNodeData('value', 'string', 'hello', 0)` |
@@ -120,6 +120,7 @@
 | - | `disableOrEnablePage` | appBuilder/pages.js | pages | `disableOrEnablePage('Reports')` |
 | - | `hideOrUnhidePageMenu` | appBuilder/pages.js | pages | `hideOrUnhidePageMenu()` |
 | - | `selectQueryFromLandingPage` | appBuilder/querymanager/queries.js | common | `selectQueryFromLandingPage('PostgreSQL', 'PostgreSQL')` |
+| - | `openQueriesPanel` | appBuilder/querymanager/queries.js | common | `openQueriesPanel()` |
 | - | `deleteQuery` | appBuilder/querymanager/queries.js | common | `deleteQuery('restapi1')` |
 | - | `query` | appBuilder/querymanager/queries.js | common | `query('create')   // clicks query-create-button` |
 | - | `changeQueryToggles` | appBuilder/querymanager/queries.js | common | `changeQueryToggles('notification-on-success')` |
@@ -138,7 +139,6 @@
 | - | `createDataQuery` | appBuilder/querymanager/queries.js | common | `createDataQuery('MyApp', 'baseUrl', 'apiKey', 'token')` |
 | - | `createRestAPIQuery` | appBuilder/querymanager/queries.js | common | `createRestAPIQuery('getData', 'restDs', '', '', 'https://api.example.com', true)` |
 | - | `verifyPreviewData` | appBuilder/querymanager/queries.js | common | `verifyPreviewData('expected value')` |
-| - | `resizeQueryPanel` | appBuilder/querymanager/queryPanel.js | querymanager | `resizeQueryPanel('90')   // set panel height to 90%` |
 | - | `closeQueryPanel` | appBuilder/querymanager/queryPanel.js | querymanager | `closeQueryPanel()` |
 | - | `addBasicData` | appBuilder/components/button.js | properties | `addBasicData({ widgetName: 'btnClone', tooltipText: 'hi', backgroundColor: ['255','0','0','100'] })` |
 | - | `verifyBasicData` | appBuilder/components/button.js | properties | `verifyBasicData('btnClone', { widgetName: 'btnClone', tooltipText: 'hi', backgroundColor: ['255','0','0','100'] })` |

@@ -35,7 +35,6 @@ describe('Password Input Component Tests', { testIsolation: false }, () => {
         cy.apiCreateApp(`${fake.companyName}-Passwordinput-App`);
         cy.openApp();
         cy.dragAndDropWidget("Password Input", 500, 100);
-        cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
     it('should verify all the exposed values on inspector', () => {

@@ -47,13 +47,6 @@ export const verifyControlComponentAction = (widgetName, value) => {
   // button1's text to the widget's exposed value; typing the widget then
   // reflects onto button1.
   cy.forceClickOnCanvas();
-  // Close the components panel if the caller's drop left it open, so this
-  // Button drag's own components-button click re-opens it (else search hidden).
-  cy.get("body").then(($b) => {
-    if ($b.find('[data-cy="widget-search-box-search-bar"]:visible').length) {
-      cy.get('[data-cy="right-sidebar-components-button"]').click();
-    }
-  });
   cy.dragAndDropWidget("Button", 340, 90);
 
   openEditorSidebar(widgetName);
@@ -134,21 +127,12 @@ export const verifyCSA = (component) => {
  * @tjDom    canvas drag-drop buttons → Control Component events + CSA action values
  */
 export const addCSA = (componentName, actions) => {
-  // The component-under-test drop (in the caller's beforeEach) may leave the
-  // components panel OPEN; addCSA's first button drag would then toggle it shut
-  // (its own components-button click closes an already-open panel → the widget
-  // search box goes missing). Close it once up front so each drag re-opens it.
-  cy.get("body").then(($b) => {
-    if ($b.find('[data-cy="widget-search-box-search-bar"]:visible').length) {
-      cy.get('[data-cy="right-sidebar-components-button"]').click();
-    }
-  });
-
   actions.forEach((action, index) => {
     cy.forceClickOnCanvas();
     cy.wait(200);
-    const xOffset = 100 + (index % 6) * 150;
-    const yOffset = 300 + Math.floor(index / 6) * 100;
+    // Rows of 5 between the open Components panel (left) and the config panel (right).
+    const xOffset = 350 + (index % 5) * 150;
+    const yOffset = 300 + Math.floor(index / 5) * 100;
     cy.dragAndDropWidget(buttonText.defaultWidgetText, xOffset, yOffset);
     // `add-event-handler` only renders once the dropped button's inspector is
     // open (a bare drop no longer auto-opens it). Buttons auto-name button1..N

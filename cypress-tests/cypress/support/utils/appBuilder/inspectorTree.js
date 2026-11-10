@@ -3,8 +3,8 @@
 //   openAndVerifyNode                exposed              → inspector
 //   verifyNodes                      exposed              → inspector
 //   openNode                         exposed              → inspector
+//   openInspector                    -                    → inspector
 //   openSubNode                      -                    → inspector
-//   backFromDetail                   -                    → common
 //   openSubNodeAndVerify             -                    → inspector
 //   openStateFromComponent           -                    → inspector
 //   verifyNodeData                   exposed              → inspector
@@ -21,9 +21,9 @@
 //   verifyExposedValue               -                    → inspector
 // └──────────────────────────────────────────────────────────────────┘
 /**
- * MODULE — appBuilder/inspectorTree: left-sidebar **component-state inspector** tree.
- * FOR AI: read a component's exposed values + functions (CSA) from the left Inspector
- * node tree — the reliable way to assert defaults / exposed values / functions:
+ * MODULE — appBuilder/inspectorTree: bottom-panel **component-state inspector** tree.
+ * FOR AI: read a component's exposed values + functions (CSA) from the runtime panel's
+ * Inspector tab — the reliable way to assert defaults / exposed values / functions:
  *   openNode('components') → openAndVerifyNode(W, exposedValues, verifyNodeData) → verifyNodes(functions, verifyNodeData).
  * NOT here: setting config → properties.js / styles.js · wiring events & CSA → events.js.
  */
@@ -33,7 +33,7 @@ import { commonWidgetSelector, inspectorSelectors } from "Selectors/common";
  * @tjType   exposed
  * @tjBlock  inspector
  * @tjUsage  openAndVerifyNode('textinput1', nodes, verifyNodeData)
- * @tjDom    widget inspect-button → inspector left sidebar → expand node + verify rows
+ * @tjDom    widget inspect-button → runtime panel Inspector → verify detail rows
  */
 export const openAndVerifyNode = (nodeName, nodes, verificationFunction) => {
   openStateFromComponent(nodeName);
@@ -56,28 +56,44 @@ export const verifyNodes = (nodes, verificationFunction) => {
  * @tjType   exposed
  * @tjBlock  inspector
  * @tjUsage  openNode('components', 0)
- * @tjDom    inspector-<node>-expand-button click to expand tree node
+ * @tjDom    inspector-<node>-expand-button, clicked only while aria-expanded="false"
  */
+// Groups start expanded and the header toggles, so click only a collapsed one.
 export const openNode = (node, index = 0, time = 15000) => {
   cy.get(`[data-cy="inspector-${node.toLowerCase()}-expand-button"]`, {
     timeout: time,
   })
     .eq(index)
-    .click();
+    .then(($button) => {
+      if ($button.attr("aria-expanded") === "false") cy.wrap($button).click();
+    });
 };
 
-// --- 2-layer tree+detail inspector navigation helpers ---------------------
-// Current inspector (frontend/src/AppBuilder/LeftSidebar/LeftSidebarInspector):
-//  - Level-1 nodes (Queries/Components/Globals/Variables/Page/Constants) expand
-//    via `inspector-<type>-expand-button` (Node.jsx:121).
-//  - Their children render a clickable subnode label
-//    `inspector-<generateCypressDataCy(name)>-subnode-label` (Node.jsx:149).
-//  - Clicking a subnode whose metadata has a `type` (level !== 1) opens a
-//    separate JSONViewer detail panel (Node.jsx:73-80 onSelect ->
-//    JSONTreeViewerV2.jsx:198 JSONViewer) whose rows expose
-//    `inspector-<generateCypressDataCy(key)>-label` / `-value` (Row.jsx:82,91).
-//  - The detail panel header is exited via the breadcrumb
-//    `inspector-detail-header-back` (TreeViewHeader.jsx:115).
+// The Inspector tab toggles the runtime panel, and the panel's open state persists in
+// localStorage, so click it only when the Inspector is not already showing.
+/**
+ * @tjBlock  inspector
+ * @tjUsage  openInspector()
+ * @tjDom    runtime-panel-tab-inspect, clicked only while runtime-inspector is absent
+ */
+export const openInspector = () => {
+  cy.get("body").then(($body) => {
+    if (!$body.find('[data-cy="runtime-inspector"]').length) {
+      cy.get(commonWidgetSelector.sidebarinspector).click();
+    }
+  });
+};
+
+// --- list + detail inspector navigation helpers ----------------------------
+// Current inspector (frontend/src/AppBuilder/QueryPanel/RuntimeInspector/RuntimeInspector.jsx),
+// the Inspector tab of the bottom runtime panel:
+//  - Category groups (Queries/Components/Globals/Variables/Page/Constants) toggle
+//    via `inspector-<type>-expand-button` and start expanded.
+//  - Their entries render a clickable subnode label
+//    `inspector-<generateCypressDataCy(name)>-subnode-label`.
+//  - Clicking an entry shows its values in the detail pane beside the list, whose
+//    rows expose `inspector-<generateCypressDataCy(key)>-label` / `-value` (Row.jsx:82,91).
+//    The list stays visible, so there is no back step.
 
 // generateCypressDataCy mirror (frontend/src/modules/common/helpers/cypressHelpers.js)
 const cyDataCy = (text) =>
@@ -104,23 +120,13 @@ export const openSubNode = (subNodeName, parentExpandType = null, time = 15000) 
     .click();
 };
 
-// Return from a detail panel back to the tree view.
-/**
- * @tjBlock  common
- * @tjUsage  backFromDetail()
- * @tjDom    inspector-detail-header-back-button click
- */
-export const backFromDetail = () => {
-  cy.get('[data-cy="inspector-detail-header-back-button"]').click();
-};
-
-// Expand a level-1 node, open one of its subnodes' detail panel, verify the
-// detail rows, then go back to the tree. Used for non-component nodes
-// (globals/page/variables) where values live in the detail panel.
+// Expand a level-1 node, open one of its subnodes' detail panel and verify the
+// detail rows. Used for non-component nodes (globals/page/variables) where values
+// live in the detail panel.
 /**
  * @tjBlock  inspector
  * @tjUsage  openSubNodeAndVerify('globals', 'currentUser', nodes, verifyNodeData)
- * @tjDom    inspector level-1 expand → subnode label → detail rows → back button
+ * @tjDom    inspector level-1 expand → subnode label → detail rows
  */
 export const openSubNodeAndVerify = (
   parentExpandType,
@@ -130,13 +136,12 @@ export const openSubNodeAndVerify = (
 ) => {
   openSubNode(subNodeName, parentExpandType);
   verifyNodes(nodes, verificationFunction);
-  backFromDetail();
 };
 
 /**
  * @tjBlock  inspector
  * @tjUsage  openStateFromComponent('textinput1')
- * @tjDom    widget hover → inspect-button realClick → inspector left sidebar
+ * @tjDom    widget hover → inspect-button realClick → runtime panel Inspector
  */
 export const openStateFromComponent = (widgetName) => {
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
@@ -173,32 +178,22 @@ export const verifyNodeData = (node, type, value, index = 0) => {
 /**
  * @tjBlock  inspector
  * @tjUsage  deleteComponentFromInspector('textinput1')
- * @tjDom    inspector-menu-icon → inspector-delete-component-action
+ * @tjDom    components → <node> subnode → inspector-delete-component-action
  */
 export const deleteComponentFromInspector = (node) => {
-  cy.get('[data-cy="inspector-menu-icon"]').click();
-  cy.get(`[data-cy="inspector-delete-component-action"`)
-    .realHover()
-    .parent()
-    .find('[style="height: 13px; width: 13px;"] > img')
-    .last()
-    .click();
+  openSubNode(node, "components");
+  cy.get('[data-cy="inspector-delete-component-action"]').click();
 };
 
 /**
  * @tjBlock  inspector
  * @tjUsage  navigateToInspectorNodes(['globals', 'currentUser', 'email'])
- * @tjDom    inspector sidebar → node expand → subnode click → label visibility
+ * @tjDom    runtime panel Inspector tab → node expand → subnode click → label visibility
  */
 export const navigateToInspectorNodes = ([node, subNode, label]) => {
-  cy.get('[data-cy="left-sidebar-inspector"] [aria-label="Inspector"]')
-    .should("be.visible")
-    .click();
-  cy.get(".tooltip-inner").invoke("hide");
-  cy.get(inspectorSelectors.inspectorNode(node)).should("be.visible");
-  cy.get(inspectorSelectors.inspectorGlobalsExpandButton(node))
-    .should("be.visible")
-    .click();
+  openInspector();
+  cy.hideTooltip();
+  openNode(node);
   cy.get(inspectorSelectors.inspectorSubNode(subNode))
     .should("be.visible")
     .click();
@@ -354,18 +349,18 @@ export const verifyComponentFromInspector = (
   }
 };
 
-// Closes an open detail view AND the Inspector tab, in reverse order, so the next call
-// starts from a known state. Both are toggles whose state persists in the app's own store
-// even after the panel closes, so a helper called more than once in a test must undo both.
+// Closes the runtime panel (clicking the active Inspector tab toggles it shut) so the
+// next call starts from a known state.
 /**
  * @tjBlock  inspector
  * @tjUsage  closeInspectorDetail()
- * @tjDom    back-from-detail, then the components node, then the sidebar inspector button
+ * @tjDom    active runtime-panel-tab-inspect click
  */
 export const closeInspectorDetail = () => {
-  backFromDetail();
-  openNode("components");
   cy.get(commonWidgetSelector.sidebarinspector).click();
+  // The panel content unmounts only after its exit animation; wait it out so the
+  // next openInspector() sees the Inspector as closed.
+  cy.get('[data-cy="runtime-inspector"]').should("not.exist");
 };
 
 
@@ -386,7 +381,7 @@ const inspectorKey = (key) =>
  * @tjDom    components node -> widget subnode -> one label click per hop, parent-scoped
  */
 export const openExposedPath = (widgetName, path) => {
-  cy.get(commonWidgetSelector.sidebarinspector).click();
+  openInspector();
   cy.hideTooltip();
   openNode("components");
   openSubNode(widgetName);
