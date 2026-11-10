@@ -88,6 +88,7 @@ export class WorkflowsModule extends SubModule {
       WorkflowApprovalTimeoutService,
       WorkflowApprovalTimeoutProcessor,
       ApprovalTimeoutBootstrapService,
+      WaitResumeWatchdogService,
     } = await this.getProviders(configs, 'workflows', [
       'services/workflow-executions.service',
       'controllers/workflow-executions.controller',
@@ -120,6 +121,7 @@ export class WorkflowsModule extends SubModule {
       'services/workflow-approval-timeout.service',
       'processors/workflow-approval-timeout.processor',
       'services/approval-timeout-bootstrap.service',
+      'services/wait-resume-watchdog.service',
     ]);
 
     // Get apps related providers
@@ -260,6 +262,7 @@ export class WorkflowsModule extends SubModule {
                     ScheduleBootstrapService,
                     WorkflowApprovalTimeoutProcessor,
                     ApprovalTimeoutBootstrapService,
+                    WaitResumeWatchdogService,
                   ]
                 : []),
             ]
