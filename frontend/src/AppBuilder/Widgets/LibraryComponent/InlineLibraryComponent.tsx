@@ -90,6 +90,26 @@ const TOKEN_CSS = `
   --tj-success: var(--cc-success-systemStatus, #1e823b);
   --tj-warning: var(--cc-warning-systemStatus, #b54708);
 }
+/* A host without tj-themed resets them: custom properties inherit through a drop area, so an Ant or MUI component in a
+   Rocket container (themed) took the container's tokens and drew in ToolJet's colours, font and radius there, and in its
+   stock look on the canvas. initial leaves a token undefined, as on the canvas. */
+:host(:not(.tj-themed)) {
+  --tj-radius: initial;
+  --tj-radius-small: initial;
+  --tj-radius-large: initial;
+  --tj-on-brand: initial;
+  --tj-brand: initial;
+  --tj-brand-strong: initial;
+  --tj-surface: initial;
+  --tj-surface-muted: initial;
+  --tj-text: initial;
+  --tj-text-muted: initial;
+  --tj-border: initial;
+  --tj-border-weak: initial;
+  --tj-danger: initial;
+  --tj-success: initial;
+  --tj-warning: initial;
+}
 `;
 
 // One set of constructable stylesheets per library revision, adopted by every instance and popup layer, instead of

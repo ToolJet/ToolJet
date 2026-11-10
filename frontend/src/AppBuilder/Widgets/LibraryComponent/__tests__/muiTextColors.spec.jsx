@@ -158,6 +158,17 @@ describe('MUI pack muted text', () => {
     expectMuted(leafWith(root, 'No details'), root.querySelector('.tj-mui-keyvalue'));
   });
 
+  test("[MUI-COLOR-010] a Checkbox's label takes the theme's text colour from the root, not the colour around it", async () => {
+    // Break this catches: a label that sets no colour of its own taking the colour around the component, ToolJet's
+    // grey-blue page text on the canvas and the container's text inside a Rocket or Ant container, so the same
+    // Checkbox read differently in a container (QA: Ant Design and MUI components change look inside any Rocket
+    // container).
+    const root = await mount('Checkbox', {});
+
+    expect(colorOf(leafWith(root, 'Checkbox'))).toBe('');
+    expect(colorOf(root.querySelector('.tj-mui-root'))).toBe('rgba(0, 0, 0, 0.87)');
+  });
+
   test('[MUI-COLOR-008] no MUI pack component sets a colour MUI 9 drops', () => {
     // Break this catches: a theme path ("text.secondary", `${tone}.main`) passed as a component's color prop, which
     // MUI 9 drops without a warning; it belongs in sx.

@@ -7,6 +7,16 @@ import { lookVars } from '../lib/ui2/nav/look';
 import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import '../styles/ui2-nav.css';
 
+// The look variables the container sets on its root are for its own sections. Custom properties inherit through a drop
+// area, so a Divider color also drew the borders of a Rocket input or an Ant Schedule dropped in a section: each
+// section's drop area resets them.
+const OWN_LOOKS_RESET = {
+  ['--lk-title' as string]: 'initial',
+  ['--lk-border' as string]: 'initial',
+  ['--ui-border' as string]: 'initial',
+  ['--lk-icon' as string]: 'initial',
+} as React.CSSProperties;
+
 // Container: one drop area per section. Sections come from a property, so the slots are dynamic.
 // forceMount keeps closed sections (and the components in them) mounted; CSS hides them.
 export const AccordionContainer = () => {
@@ -174,7 +184,7 @@ export const AccordionContainer = () => {
         </AccordionPrimitive.Trigger>
       </AccordionPrimitive.Header>
       <AccordionPrimitive.Content forceMount className="ui-accordion-container-panel">
-        <ToolJet.Slot name={slots.get(section.id) as string} style={{ height: panelHeight }} />
+        <ToolJet.Slot name={slots.get(section.id) as string} style={{ height: panelHeight, ...OWN_LOOKS_RESET }} />
       </AccordionPrimitive.Content>
     </AccordionPrimitive.Item>
   ));
