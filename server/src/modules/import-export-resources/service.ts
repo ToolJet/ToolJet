@@ -5,7 +5,7 @@ import { AppImportExportService } from '@modules/apps/services/app-import-export
 import { TooljetDbImportExportService } from '@modules/tooljet-db/services/tooljet-db-import-export.service';
 import { ImportAppDto, ImportResourcesDto, ImportTooljetDatabaseDto } from '@dto/import-resources.dto';
 import { CloneResourcesDto } from '@dto/clone-resources.dto';
-import { isEmpty } from 'lodash';
+import { isEmpty, omit } from 'lodash';
 import { addTablesInJoinOperation, InternalTableRepository } from '@modules/tooljet-db/repository';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
@@ -242,7 +242,8 @@ export class ImportExportResourcesService {
           // organization_id is already validated == user.organizationId above — no override needed.
           const createdApp = await this.appImportExportService.import(
             user,
-            appImportDto.definition,
+            // Uploaded files cannot target an existing app; only git sync callers pass existingAppId.
+            isGitApp ? appImportDto.definition : omit(appImportDto.definition, 'existingAppId'),
             appImportDto.appName,
             {
               tooljet_database: queryTableMapping,
