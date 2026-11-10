@@ -16,6 +16,9 @@ const approverValuesSql = (column: string): string =>
     (key) => `CASE WHEN jsonb_typeof(${column}->'${key}') = 'array' THEN ${column}->'${key}' ELSE '[]'::jsonb END`
   ).join(' || ');
 
+const snapshotArraySql = (column: string, key: string): string =>
+  `jsonb_array_elements_text(CASE WHEN jsonb_typeof(${column}->'${key}') = 'array' THEN ${column}->'${key}' ELSE '[]'::jsonb END)`;
+
 @Injectable()
 export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprovalRequest> {
   constructor(
@@ -101,6 +104,23 @@ export class WorkflowApprovalRequestRepository extends Repository<WorkflowApprov
     }
     if (filters.to) {
       query.andWhere('request.created_at <= :to', { to: filters.to });
+    }
+    if (filters.resolvableBy) {
+      const { userId, email, groupIds } = filters.resolvableBy;
+      const matches = [
+        `EXISTS (SELECT 1 FROM ${snapshotArraySql('request.approvers_snapshot', 'users')} AS approver_user WHERE approver_user = :resolverUserId)`,
+        `EXISTS (SELECT 1 FROM ${snapshotArraySql('request.approvers_snapshot', 'emails')} AS approver_email WHERE lower(trim(approver_email)) = :resolverEmail)`,
+      ];
+      if (groupIds.length) {
+        matches.push(
+          `EXISTS (SELECT 1 FROM ${snapshotArraySql('request.approvers_snapshot', 'groups')} AS approver_group WHERE approver_group IN (:...resolverGroupIds))`
+        );
+      }
+      query.andWhere(`(${matches.join(' OR ')})`, {
+        resolverUserId: userId,
+        resolverEmail: email,
+        resolverGroupIds: groupIds,
+      });
     }
     if (filters.approver) {
       query.andWhere(

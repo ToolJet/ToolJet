@@ -18,6 +18,7 @@ export interface IWorkflowApprovalsService {
     user: User,
     filters: ApprovalListFilters,
     page: number,
-    perPage: number
+    perPage: number,
+    scope?: { onlyResolvable?: boolean }
   ): Promise<{ requests: ApprovalListItem[]; meta: { page: number; perPage: number; total: number } }>;
 }

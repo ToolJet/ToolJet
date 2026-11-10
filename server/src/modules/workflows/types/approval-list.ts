@@ -12,6 +12,7 @@ export interface ApprovalListFilters {
   approver?: string;
   from?: Date;
   to?: Date;
+  resolvableBy?: { userId: string; email: string; groupIds: string[] };
 }
 
 export interface ApprovalListRow extends WorkflowApprovalRequest {
