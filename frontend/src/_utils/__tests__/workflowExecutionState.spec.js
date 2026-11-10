@@ -108,3 +108,18 @@ describe('canTerminateExecution', () => {
     expect(canTerminateExecution({ executed: false, jobState: 'active', terminationRequested: true })).toBe(false);
   });
 });
+
+describe('Terminate in the Logs panel', () => {
+  it.each([
+    ['pending', { executed: false, jobState: 'waiting' }],
+    ['running', { executed: false, jobState: 'active' }],
+    ['waiting on a Human step', { executed: false, status: 'waiting' }],
+    ['waiting on a Wait step', { executed: false, status: 'waiting_for_delay' }],
+    ['terminating', { executed: false, jobState: 'active', terminationRequested: true }],
+    ['completed', { executed: true, status: 'success' }],
+    ['failed', { executed: true, status: 'failure' }],
+    ['terminated', { executed: true, status: 'terminated' }],
+  ])('offers Terminate for a %s run exactly when the run can be stopped', (_state, execution) => {
+    expect(getExecutionDisplayConfig(execution).showCancelButton).toBe(canTerminateExecution(execution));
+  });
+});

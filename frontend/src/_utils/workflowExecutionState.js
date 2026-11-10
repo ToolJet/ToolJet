@@ -153,7 +153,7 @@ export function getExecutionDisplayConfig(execution) {
       state: 'waiting',
       text: execution.status === 'waiting_for_delay' ? 'Waiting' : 'Waiting for input',
       showSpinner: false,
-      showCancelButton: false,
+      showCancelButton: true,
       showTime: false,
       icon: 'waiting',
     },
