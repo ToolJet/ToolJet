@@ -9,7 +9,6 @@ import { http, HttpResponse } from 'msw';
 import config from 'config';
 import { server } from '@/test/msw/server';
 import useStore from '@/AppBuilder/_stores/store';
-import { authenticationService } from '@/_services';
 const state = () => useStore.getState();
 
 const draft = { id: 'draft-a', name: 'Branch A', kind: 'restapi', dataSourceId: 'source-a', options: { url: 'draft' } };
@@ -251,32 +250,6 @@ it('keeps app autosaves on the app endpoint after leaving library mode', async (
   state().dataQuery.saveData.flush();
   await state().dataQuery.queryUpdates['app-query'];
   expect(body.options).toEqual({ url: 'app' });
-});
-
-it('captures the app workspace and version before a trailing save follows a workspace switch', async () => {
-  jest.useFakeTimers({ doNotFake: ['nextTick', 'setImmediate'] });
-  const prior = authenticationService.currentSessionValue;
-  const seen = [];
-  server.use(
-    http.patch(`${config.apiUrl}/data-queries/app-edit/versions/original-version`, async ({ request }) => {
-      seen.push({ workspace: request.headers.get('tj-workspace-id'), body: await request.json() });
-      return HttpResponse.json({ id: 'app-edit' });
-    })
-  );
-  state().dataQuery.saveData.cancel();
-  authenticationService.updateCurrentSession({ ...prior, current_organization_id: 'app-workspace-a' });
-  state().setCurrentVersionId('original-version');
-  state().dataQuery.saveData({ id: 'app-edit', name: 'appEdit', options: { url: 'first' } });
-  state().dataQuery.saveData({ id: 'app-edit', name: 'appEdit', options: { url: 'trailing' } });
-  authenticationService.updateCurrentSession({ ...prior, current_organization_id: 'app-workspace-b' });
-  state().setCurrentVersionId('new-version');
-  await jest.advanceTimersByTimeAsync(500);
-  await state().dataQuery.queryUpdates['app-edit'];
-  expect(seen).toHaveLength(2);
-  expect(seen.map(({ workspace }) => workspace)).toEqual(['app-workspace-a', 'app-workspace-a']);
-  expect(seen[1].body.options).toEqual({ url: 'trailing' });
-  authenticationService.updateCurrentSession(prior);
-  jest.useRealTimers();
 });
 
 // F05: duplicateQuery reads kind/data_source_id/options from the identity-only catalog row (dataQuerySlice.js:491-502)

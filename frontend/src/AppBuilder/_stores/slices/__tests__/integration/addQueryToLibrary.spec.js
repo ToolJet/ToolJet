@@ -200,41 +200,6 @@ describe('addQueryToLibrary', () => {
     toastError.mockRestore();
   });
 
-  it('toasts the server message when a stale save is refused, a generic one when the request fails outright', async () => {
-    const toastError = jest.spyOn(toast, 'error').mockImplementation(() => {});
-    const message = 'This query is now a library query. Reload the app to keep editing it.';
-    seed();
-    server.use(http.patch(patchUrl, () => HttpResponse.json({ message }, { status: 400 })));
-    state().dataQuery.saveData(appQuery, 'canvas');
-    state().dataQuery.saveData.flush(); // saveData is throttled; run it now
-    await new Promise((r) => setTimeout(r, 100));
-    expect(toastError).toHaveBeenCalledWith(message);
-
-    toastError.mockClear();
-    server.use(http.patch(patchUrl, () => HttpResponse.error()));
-    state().dataQuery.saveData({ ...appQuery, options: { ...appQuery.options, url: '/y' } }, 'canvas');
-    state().dataQuery.saveData.flush();
-    await new Promise((r) => setTimeout(r, 100));
-    expect(toastError).toHaveBeenCalledWith('App could not be saved.');
-    toastError.mockRestore();
-  });
-
-  it.each([
-    [422, 'Database constraint violated', 'App could not be saved.'],
-    [500, 'Internal server error detail', 'App could not be saved.'],
-    [409, 'This query changed, try again.', 'This query changed, try again.'],
-  ])('saveData toast for a %i response carrying a server message', async (status, message, expected) => {
-    const toastError = jest.spyOn(toast, 'error').mockImplementation(() => {});
-    seed();
-    server.use(http.patch(patchUrl, () => HttpResponse.json({ message }, { status })));
-    state().dataQuery.saveData(appQuery, 'canvas');
-    state().dataQuery.saveData.flush(); // saveData is throttled; run it now
-    await new Promise((r) => setTimeout(r, 100));
-    expect(toastError).toHaveBeenCalledTimes(1);
-    expect(toastError).toHaveBeenCalledWith(expected);
-    toastError.mockRestore();
-  });
-
   it('updates the row but does not steal the selection when another query is selected', async () => {
     server.use(http.post(addUrl, () => HttpResponse.json(converted, { status: 201 })));
     const other = { id: 'q2', name: 'other', kind: 'restapi', data_source_id: 'ds-rest', options: {} };

@@ -47,15 +47,16 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   const isRestricted = dataQuery.permissions && dataQuery.permissions.length !== 0;
 
-  const updateQueryName = async (dataQuery, newName) => {
+  const updateQueryName = (dataQuery, newName) => {
     const { name } = dataQuery;
     if (name === newName) {
       return setRenamingQuery(null);
     }
     const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
     if (newName && !isNewQueryNameAlreadyExists) {
+      renameQuery(dataQuery?.id, newName);
       setRenamingQuery(null);
-      if (await renameQuery(dataQuery?.id, newName)) updateQuerySuggestions(name, newName);
+      updateQuerySuggestions(name, newName);
     } else {
       if (isNewQueryNameAlreadyExists) {
         toast.error('Query name already exists');

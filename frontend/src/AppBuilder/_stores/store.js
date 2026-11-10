@@ -38,10 +38,20 @@ import { createModuleSlice } from './slices/moduleSlice';
 import { createLibrarySlice } from './slices/librarySlice';
 import { createDataQueryFolderSlice } from './slices/dataQueryFolderSlice';
 import { createQueryLibrarySlice } from './slices/queryLibrarySlice';
+import { getEditionSpecificSlice } from '@/modules/common/helpers/getEditionSpecificSlice';
 import { listViewComponentSlice } from './slices/componentSlices/listViewComponentSlice';
 import { tableComponentSlice } from './slices/componentSlices/tableComponentSlice';
 import { createBranchSlice } from './slices/branchSlice';
 enableMapSet();
+
+// In EE the query library wraps the data query actions for its editor; elsewhere they are the app's own.
+const withQueryLibraryDataQuery = (slice, set, get) => ({
+  ...slice,
+  dataQuery: {
+    ...slice.dataQuery,
+    ...getEditionSpecificSlice('createQueryLibraryDataQuerySlice')(set, get, slice.dataQuery).dataQuery,
+  },
+});
 
 export default create(
   zustandDevTools(
@@ -57,7 +67,7 @@ export default create(
       ...createModeSlice(...state),
       ...createQueryPanelSlice(...state),
       ...createDataSourceSlice(...state),
-      ...createDataQuerySlice(...state),
+      ...withQueryLibraryDataQuery(createDataQuerySlice(...state), ...state),
       ...createUndoRedoSlice(...state),
       ...createResolvedSlice(...state),
       ...createLayoutSlice(...state),
