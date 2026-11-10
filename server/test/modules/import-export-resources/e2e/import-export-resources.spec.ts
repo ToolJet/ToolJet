@@ -23,6 +23,7 @@ import {
   grantAppPermission,
   createApplication,
   createApplicationVersion,
+  ensureAppEnvironments,
   closeTestApp,
   saveEntity,
   updateEntity,
@@ -243,7 +244,7 @@ describe('ImportExportResourcesController', () => {
         .send(body);
     }
 
-    it("should not export another workspace's ToolJet Database table (403)", async () => {
+    it("should not export another workspace's ToolJet Database table", async () => {
       const adminA = await createAdmin(app, 'admin@tooljet.io');
       const adminB = await createAdmin(app, 'admin-b@tooljet.io');
       const orgB = adminB.user.defaultOrganizationId;
@@ -261,7 +262,8 @@ describe('ImportExportResourcesController', () => {
       const response = await exportAs(adminA, {
         organization_id: orgB,
         tooljet_database: [{ table_id: table.id }],
-      }).expect(403);
+      }).expect(201);
+      expect(response.body.tooljet_database).toBeUndefined();
       expect(JSON.stringify(response.body)).not.toContain('workspace_b_table');
     });
 
@@ -276,21 +278,83 @@ describe('ImportExportResourcesController', () => {
       }).expect(403);
     });
 
-    it('should allow export once the user is granted view on the app (201)', async () => {
+    it('should allow export once the user is granted edit on the app, not view (403 then 201)', async () => {
       const admin = await createAdmin(app, 'admin@tooljet.io');
       const orgId = admin.user.defaultOrganizationId;
       const application = await seedApp(admin);
       const builder = await createBuilderWithoutAppAccess(admin, 'builder@tooljet.io');
+      const body = { app: [{ id: application.id }], organization_id: orgId };
 
       const viewers = await createGroupPermission(app, { name: 'export-viewers', organizationId: orgId });
       await grantAppPermission(app, application as any, viewers.id, { read: true });
       await createUserGroupPermissions(app, { ...builder.user, organizationId: orgId } as any, ['export-viewers']);
+      await exportAs(builder, body).expect(403);
+
+      const editors = await createGroupPermission(app, { name: 'export-editors', organizationId: orgId });
+      await grantAppPermission(app, application as any, editors.id, { update: true });
+      await createUserGroupPermissions(app, { ...builder.user, organizationId: orgId } as any, ['export-editors']);
+      const response = await exportAs(builder, body).expect(201);
+      expect(response.body.app).toHaveLength(1);
+    });
+
+    it('should deny export of a workflow the user cannot edit, even with all apps editable (403)', async () => {
+      const admin = await createAdmin(app, 'admin@tooljet.io');
+      const orgId = admin.user.defaultOrganizationId;
+      const workflow = await createApplication(app, { name: 'export-wf', user: admin.user as any, type: 'workflow' });
+      await createApplicationVersion(app, workflow as any);
+      const builder = await createBuilder(app, 'builder@tooljet.io', { workspace: admin.workspace });
+      const builderGroup = await findEntityOrFail(GroupPermissions, { organizationId: orgId, name: 'builder' } as any);
+      const workflowsGranular = await findEntityOrFail(GranularPermissions, {
+        groupId: builderGroup.id,
+        type: ResourceType.WORKFLOWS,
+      } as any);
+      await updateEntity(GranularPermissions, workflowsGranular.id, { isAll: false } as any);
+
+      await exportAs(builder, { app: [{ id: workflow.id }], organization_id: orgId }).expect(403);
+    });
+
+    it('should allow a builder with table access but without app-create to export a ToolJet Database table (201)', async () => {
+      const admin = await createAdmin(app, 'admin@tooljet.io');
+      const orgId = admin.user.defaultOrganizationId;
+      const builder = await createBuilder(app, 'builder@tooljet.io', { workspace: admin.workspace });
+      const builderGroup = await findEntityOrFail(GroupPermissions, { organizationId: orgId, name: 'builder' } as any);
+      await updateEntity(GroupPermissions, builderGroup.id, { appCreate: false, tjdbCRUD: true } as any);
+      await ensureAppEnvironments(app, orgId);
+
+      const table = await saveEntity(InternalTable, {
+        id: uuidv4(),
+        organizationId: orgId,
+        tableName: 'own_table',
+      } as any);
+      const tjdb = app.get<DataSource>(getDataSourceToken('tooljetDb'));
+      await tjdb.query(`CREATE SCHEMA IF NOT EXISTS "workspace_${orgId}"`);
+      await tjdb.query(`CREATE TABLE "workspace_${orgId}"."${table.id}" (id integer PRIMARY KEY)`);
 
       const response = await exportAs(builder, {
-        app: [{ id: application.id }],
         organization_id: orgId,
+        tooljet_database: [{ table_id: table.id }],
       }).expect(201);
-      expect(response.body.app).toHaveLength(1);
+      expect(response.body.tooljet_database).toHaveLength(1);
+    });
+
+    it('should deny a builder without ToolJet Database create access exporting a table (403)', async () => {
+      const admin = await createAdmin(app, 'admin@tooljet.io');
+      const orgId = admin.user.defaultOrganizationId;
+      const builder = await createBuilder(app, 'builder@tooljet.io', { workspace: admin.workspace });
+      const builderGroup = await findEntityOrFail(GroupPermissions, { organizationId: orgId, name: 'builder' } as any);
+      await updateEntity(GroupPermissions, builderGroup.id, { tjdbCRUD: false } as any);
+      await ensureAppEnvironments(app, orgId);
+
+      const table = await saveEntity(InternalTable, {
+        id: uuidv4(),
+        organizationId: orgId,
+        tableName: 'own_table',
+      } as any);
+      const tjdb = app.get<DataSource>(getDataSourceToken('tooljetDb'));
+      await tjdb.query(`CREATE SCHEMA IF NOT EXISTS "workspace_${orgId}"`);
+      await tjdb.query(`CREATE TABLE "workspace_${orgId}"."${table.id}" (id integer PRIMARY KEY)`);
+
+      await exportAs(builder, { organization_id: orgId, tooljet_database: [{ table_id: table.id }] }).expect(403);
     });
   });
 

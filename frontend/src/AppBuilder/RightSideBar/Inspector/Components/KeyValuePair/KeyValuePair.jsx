@@ -13,6 +13,7 @@ import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../inspectorConstants';
 const ADDITIONAL_ACTIONS = [
   'dynamicHeight',
   'showUpdateActions',
+  'disableSaveChanges',
   'loadingState',
   'visibility',
   'collapseWhenHidden',

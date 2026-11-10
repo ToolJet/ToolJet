@@ -27,6 +27,25 @@ describe('DataQueriesController', () => {
     await closeTestApp(app);
   }, 60_000);
 
+  describe('GET /api/data-queries/:versionId | List queries', () => {
+    it("should return 404 for another workspace's app version instead of its query list", async () => {
+      const adminUserData = await createUser(app, { email: 'admin@tooljet.io', groups: ['all_users', 'admin'] });
+      const anotherOrgAdminUserData = await createUser(app, {
+        email: 'another@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const { tokenCookie } = await login(app, anotherOrgAdminUserData.user.email);
+      const { appVersion } = await createAppWithDependencies(app, adminUserData.user, {});
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/data-queries/${appVersion.id}`)
+        .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
+        .set('Cookie', tokenCookie);
+
+      expect(response.statusCode).toBe(404);
+    });
+  });
+
   describe('PATCH /api/data-queries/versions/:versionId | Bulk update query options', () => {
     // The bulk route authorizes the app in the URL but updates the query ids in the body.
     // It must reject any query that does not belong to the URL's version, otherwise edit
@@ -41,9 +60,11 @@ describe('DataQueriesController', () => {
 
       const { appVersion: versionA, dataQuery: queryA } = await createAppWithDependencies(app, adminUserData.user, {
         name: `app-a-${suffix}`,
+        dsName: `ds-a-${suffix}`,
       });
       const { appVersion: versionB, dataQuery: queryB } = await createAppWithDependencies(app, adminUserData.user, {
         name: `app-b-${suffix}`,
+        dsName: `ds-b-${suffix}`,
       });
 
       const { tokenCookie } = await login(app, adminUserData.user.email, 'password', orgId);
