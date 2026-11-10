@@ -134,14 +134,10 @@ export class VersionService implements IVersionService {
     branchId?: string,
     includeDefaultBranchVersions = false
   ): Promise<{ versions: Array<AppVersion> }> {
-    const effectiveBranchId = app.type === APP_TYPES.WORKFLOW ? undefined : branchId;
-    let gitEnabled = false;
-    let defaultBranchId: string | null = null;
-    if (app.type !== APP_TYPES.WORKFLOW) {
-      const details = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
-      gitEnabled = details.isEnabled;
-      defaultBranchId = details.options.defaultBranch?.id ?? null;
-    }
+    const effectiveBranchId = branchId;
+    const details = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
+    const gitEnabled = details.isEnabled;
+    const defaultBranchId = details.options.defaultBranch?.id ?? null;
     let result =
       app.type === APP_TYPES.MODULE
         ? await listModuleVersions(this.versionRepository.manager, app, branchId, defaultBranchId)
