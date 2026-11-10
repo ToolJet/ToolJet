@@ -29,6 +29,8 @@ import { formatCell } from '../lib/format';
 import { slotNames } from '../lib/slots';
 import { useDialogOwner } from '../lib/useOwnerGuard';
 import { useValueSetter } from '../lib/sameValue';
+import VirtualList, { type ListRef } from 'rc-virtual-list';
+import { VIRTUAL_MIN_ROWS, useVirtualBody } from '../lib/virtualRows';
 
 // Ant's Tabs: items [{ key, label }], activeKey, type (line, card), size, centered, tabPosition; each tab is a canvas
 // of ToolJet components (slot tab_<key>); events onChange, onTabClick.
@@ -358,6 +360,9 @@ const occurrenceKeys = (rows: Row[], field: string) => {
   });
 };
 
+const LIST_CHROME = ['.ant-list-header', '.ant-list-footer', '.ant-list-pagination'] as const;
+const ITEM_HEIGHT: Record<string, number> = { small: 40, default: 56, large: 72 };
+
 // Ant's List: dataSource; each item is either a row of ToolJet components (renderItem 'components', reading
 // {{listItem}}, rowHeight) or Ant's List.Item.Meta from fields (titleField, descriptionField, avatarField, extraField);
 // header, footer, bordered, split, size, pageSize (0 for no pagination), locale emptyText. Event onItemClick with
@@ -572,14 +577,69 @@ export const List = () => {
       // selection is invisible (team testing, 2026-10-29).
       select(rows[index], index, false);
       if (size_) setPage(Math.floor(index / size_) + 1);
+      // A long list scrolls the item into view (after the page change renders).
+      const local = size_ ? index % size_ : index;
+      setTimeout(() => vlist.current?.scrollTo({ index: local, align: 'top' }), 0);
     }
   );
   ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => select(null, -1));
 
+  // A long list of field items draws only the items in view (rc-virtual-list, lib/virtualRows), as ToolJet 1.0's
+  // Table does. Rows of ToolJet components draw every row: the host mounts every component row anyway.
+  const rootRef = useRef<HTMLElement | null>(null);
+  const vlist = useRef<ListRef>(null);
+  const body = useVirtualBody(rootRef, LIST_CHROME, !asRows && visible.length > VIRTUAL_MIN_ROWS);
+  const keyByRow = new Map(visible.map((r, i) => [r, keys[i + offset] ?? String(i)]));
+  const metaItem = (row: Row, i: number) => {
+    const key = keys[i + offset];
+    const selected = key === selectedKey;
+    const avatar = avatarField ? str(readField(row, avatarField)) : '';
+    const extraText = extraField ? formatCell(readField(row, extraField)) : '';
+    const badge = badgeField ? str(readField(row, badgeField)) : '';
+    const extra =
+      badge || extraText ? (
+        <Space size={8}>
+          {badge ? (
+            <Tag color={TONE_TAG[chipTone(badge)]} style={{ marginInlineEnd: 0 }}>
+              {chipLabel(badge)}
+            </Tag>
+          ) : null}
+          {extraText ? <span>{extraText}</span> : null}
+        </Space>
+      ) : null;
+    // The title field; the row's first text field only when no title field is set. A named field the row lacks
+    // shows a blank title, as in the Rocket and MUI lists, not another field (team testing, 2026-10-29).
+    const titleValue = str(titleField)
+      ? readField(row, titleField)
+      : Object.values(row).find((v) => typeof v === 'string' && v.trim());
+    return (
+      <AntList.Item
+        key={key}
+        className={selected ? 'tj-ant-item is-selected' : 'tj-ant-item'}
+        onClick={() => select(row, i + offset)}
+        extra={extra || undefined}
+      >
+        <AntList.Item.Meta
+          avatar={
+            avatar ? (
+              /^(https?:|data:)/.test(avatar) ? (
+                <Avatar src={avatar} />
+              ) : (
+                <Avatar>{avatar.slice(0, 1).toUpperCase()}</Avatar>
+              )
+            ) : undefined
+          }
+          title={formatCell(titleValue)}
+          description={descriptionField ? formatCell(readField(row, descriptionField)) || undefined : undefined}
+        />
+      </AntList.Item>
+    );
+  };
+
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-list tj-ant-scroll">
+    <AntProvider tokens={tokens} fill className="tj-ant-list tj-ant-scroll" ownerRef={rootRef}>
       <AntList<Row>
-        dataSource={visible}
+        dataSource={body.on ? [] : visible}
         header={header || undefined}
         footer={footer || undefined}
         bordered={bordered}
@@ -607,48 +667,21 @@ export const List = () => {
                 </div>
               </AntList.Item>
             );
-          const avatar = avatarField ? str(readField(row, avatarField)) : '';
-          const extraText = extraField ? formatCell(readField(row, extraField)) : '';
-          const badge = badgeField ? str(readField(row, badgeField)) : '';
-          const extra =
-            badge || extraText ? (
-              <Space size={8}>
-                {badge ? (
-                  <Tag color={TONE_TAG[chipTone(badge)]} style={{ marginInlineEnd: 0 }}>
-                    {chipLabel(badge)}
-                  </Tag>
-                ) : null}
-                {extraText ? <span>{extraText}</span> : null}
-              </Space>
-            ) : null;
-          // The title field; the row's first text field only when no title field is set. A named field the row lacks
-          // shows a blank title, as in the Rocket and MUI lists, not another field (team testing, 2026-10-29).
-          const titleValue = str(titleField)
-            ? readField(row, titleField)
-            : Object.values(row).find((v) => typeof v === 'string' && v.trim());
-          return (
-            <AntList.Item
-              className={selected ? 'tj-ant-item is-selected' : 'tj-ant-item'}
-              onClick={() => select(row, i + offset)}
-              extra={extra || undefined}
-            >
-              <AntList.Item.Meta
-                avatar={
-                  avatar ? (
-                    /^(https?:|data:)/.test(avatar) ? (
-                      <Avatar src={avatar} />
-                    ) : (
-                      <Avatar>{avatar.slice(0, 1).toUpperCase()}</Avatar>
-                    )
-                  ) : undefined
-                }
-                title={formatCell(titleValue)}
-                description={descriptionField ? formatCell(readField(row, descriptionField)) || undefined : undefined}
-              />
-            </AntList.Item>
-          );
+          return metaItem(row, i);
         }}
-      />
+      >
+        {body.on ? (
+          <VirtualList<Row>
+            ref={vlist}
+            data={visible}
+            height={body.height}
+            itemHeight={ITEM_HEIGHT[String(size)] ?? 56}
+            itemKey={(r) => keyByRow.get(r) ?? ''}
+          >
+            {(row, i) => metaItem(row, i)}
+          </VirtualList>
+        ) : null}
+      </AntList>
     </AntProvider>
   );
 };

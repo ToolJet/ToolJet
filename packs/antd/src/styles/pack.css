@@ -227,6 +227,13 @@
 .tj-ant-table .ant-table-tbody > tr.tj-ant-row-selected > td {
   background: var(--ant-control-item-bg-active);
 }
+/* A long Table drawn virtual (antd's virtual Table, lib/virtualRows) has div rows and cells, not tr and td. */
+.tj-ant-table .ant-table-tbody-virtual .ant-table-row {
+  cursor: pointer;
+}
+.tj-ant-table .ant-table-tbody-virtual .ant-table-row.tj-ant-row-selected .ant-table-cell {
+  background: var(--ant-control-item-bg-active);
+}
 .tj-ant-item {
   cursor: pointer;
   transition: background var(--ant-motion-duration-mid);

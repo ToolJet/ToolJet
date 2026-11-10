@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import DOMPurify from 'dompurify';
 import { Table as AntTable } from 'antd';
 import type { TableColumnsType } from 'antd';
@@ -9,6 +9,7 @@ import { readField, rowIdOf, rowKeyOf, str, toArray, toRows, type Row } from '..
 import { formatCell, isIdField, parseFormat, tagColor, toNumber } from '../lib/format';
 import { LOCALE_HINT } from '../lib/locale';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
+import { VIRTUAL_MIN_ROWS, useVirtualBody } from '../lib/virtualRows';
 
 type Column = {
   /** A date column's pattern (dayjs tokens: DD/MM, MMM D, YYYY), UI 2.0's dateFormat. */
@@ -117,6 +118,8 @@ const compare = (a: unknown, b: unknown) => {
   if (x !== null && y !== null) return x - y;
   return str(a).localeCompare(str(b), undefined, { numeric: true });
 };
+
+const TABLE_CHROME = ['.ant-table-title', '.ant-table-header', '.ant-table-footer', '.ant-table-pagination'] as const;
 
 // Ant's Table: dataSource, columns, title, rowKey, pagination with pageSize, bordered, size, showHeader, rowSelection type,
 // emptyText (locale.emptyText); a column may set format (number, currency or currency:EUR, percent, date, datetime,
@@ -366,8 +369,12 @@ export const Table = () => {
     if (pagination && rows.length > size_ && Number(current) > pages) setCurrent(pages);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pages, current, pagination]);
+  // A long page draws only the rows in view (antd's virtual Table, lib/virtualRows), as ToolJet 1.0's Table does.
+  const rootRef = useRef<HTMLElement | null>(null);
+  const drawn = pagination && rows.length > size_ ? size_ : rows.length;
+  const body = useVirtualBody(rootRef, TABLE_CHROME, drawn > VIRTUAL_MIN_ROWS);
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-table tj-ant-scroll">
+    <AntProvider tokens={tokens} fill className="tj-ant-table tj-ant-scroll" ownerRef={rootRef}>
       <AntTable<Row>
         dataSource={rows}
         columns={antColumns}
@@ -376,6 +383,8 @@ export const Table = () => {
         bordered={bordered}
         size={size as 'middle'}
         showHeader={showHeader}
+        virtual={body.on || undefined}
+        scroll={body.on ? { x: Math.max(1, body.width), y: body.height } : undefined}
         loading={loading}
         locale={{ emptyText: emptyText || 'No data' }}
         pagination={
