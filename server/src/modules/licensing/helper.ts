@@ -107,6 +107,7 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
         isLicenseValid: licenseInstance.isValid,
         isExpired: licenseInstance.isExpired,
         licenseType: licenseInstance.licenseType,
+        termsType: licenseInstance.termsType,
         expiryDate: licenseInstance.expiry,
       };
 
