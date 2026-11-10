@@ -313,7 +313,8 @@ export class DataQueriesService implements IDataQueriesService {
     dataSource: DataSource,
     response: Response,
     mode?: string,
-    app?: App
+    app?: App,
+    appAbility?: AppAbility
   ) {
     const { options, resolvedOptions } = updateDataQueryDto;
 
@@ -327,6 +328,7 @@ export class DataQueriesService implements IDataQueriesService {
     // so the loaded options must NOT be written back.
     if (
       mode !== 'view' &&
+      appAbility?.can(FEATURE_KEY.UPDATE_ONE, App) &&
       ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) &&
       !isEmpty(options) &&
       (await this.isGitSyncEditAllowed(user.organizationId, dataQuery.appVersion))

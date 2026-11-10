@@ -3,9 +3,9 @@ import { Ability, MongoQuery } from '@casl/ability';
 import { cloneDeep } from 'lodash';
 
 export const AbilityDecorator = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext): Ability<[any, any], MongoQuery> => {
+  (key: string | undefined, ctx: ExecutionContext): Ability<[any, any], MongoQuery> => {
     const request = ctx.switchToHttp().getRequest();
-    return cloneDeep(request.tj_ability) as Ability<[any, any], MongoQuery>;
+    return cloneDeep(request[key ?? 'tj_ability']) as Ability<[any, any], MongoQuery>;
   }
 );
 

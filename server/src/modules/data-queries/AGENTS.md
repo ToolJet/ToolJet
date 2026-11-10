@@ -62,6 +62,7 @@ the right plugin, per-Environment credentials, and `{{ }}` templates before invo
 - Delete removes query events first (`deleteDataQueryEvents`) inside the same transaction.
 - `after*` history hooks are fire-and-forget — never await them in request flow.
 - Never abbreviate `data_source` as `ds`.
+- **Builder run saves options only for app editors.** The app guard and the data source guard both write `request.tj_ability`, and the data source guard runs last, so the app guard also keeps its ability in `request.tj_app_ability`. `runQueryOnBuilder` saves options only with app `UPDATE_ONE` and data source `UPDATE_ONE`; `mode=view` can skip the save but never enables it.
 
 ## Related modules
 
