@@ -9,6 +9,7 @@ import { getLibraryComponentIdentity } from '@/AppBuilder/Widgets/libraryCompone
 import { useEffectiveLibraryRevision } from '@/AppBuilder/Widgets/hooks/useEffectiveLibraryRevision';
 import { useLibraryManifest } from '@/AppBuilder/Widgets/hooks/useLibraryManifest';
 import useStore from '@/AppBuilder/_stores/store';
+import { offersDynamicHeight } from '@/AppBuilder/_helpers/sdkComponentTypes';
 import { useBuiltinPack, usePackManifest } from '@/_stores/builtinPacksStore';
 import { packIdentityRows } from './packIdentity';
 import type { ManifestComponent } from '@/AppBuilder/types/libraryComponent.types';
@@ -74,7 +75,7 @@ const ManifestPropertiesPanel = ({
   const staticProps = additionalActionProps(
     componentMeta,
     componentManifest?.controlState === true,
-    componentManifest?.fit === true
+    offersDynamicHeight(componentManifest)
   );
   const hostProperties = (componentMeta.properties ?? {}) as Record<string, { placeholder?: string }>;
 

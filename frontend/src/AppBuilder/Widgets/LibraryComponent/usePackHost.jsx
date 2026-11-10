@@ -284,7 +284,9 @@ const useRowHeight = ({ id, index, moduleId, rowHeight, currentLayout, parentInd
 
 // One row's canvas, as wide as the pack lays the row out: a grid cell or a kanban card, not the whole widget (a
 // 4-column list drew each row's components across the full width, clipped by the cell). A fitted row (fitRows: the
-// pack asked for it, a Kanban card) grows with its components and the pack's card, which wraps the row's slot, follows.
+// pack asked for it, a Kanban card, or the list fits its content with Dynamic height on) grows with its components,
+// never below the row height, and the pack's row, which wraps the row's slot, follows. It is never sized by the native
+// row reflow, which floored each row of a pack list at the whole widget's height (fittedRowHeight).
 const PackRow = ({
   slot,
   id,
@@ -293,7 +295,6 @@ const PackRow = ({
   rowHeight,
   darkMode,
   widgetWidth,
-  fit,
   fitRows,
   parentIndices,
   items,
@@ -318,7 +319,7 @@ const PackRow = ({
         computeCanvasBackgroundColor={() => 'transparent'}
         darkMode={darkMode}
         width={measured ?? widgetWidth}
-        isDynamicHeightEnabled={fit && !fitRows}
+        isDynamicHeightEnabled={false}
         data={items}
         currentLayout={currentLayout}
         visibility={visibility}
@@ -387,8 +388,7 @@ const usePackRows = ({ id, width, height, currentLayout, visibility, fit, darkMo
           rowHeight={rows.rowHeight}
           darkMode={darkMode}
           widgetWidth={width}
-          fit={fit}
-          fitRows={rows.fit}
+          fitRows={rows.fit || fit}
           parentIndices={parentIndices}
           items={rows.items}
           currentLayout={currentLayout}
@@ -402,7 +402,17 @@ const usePackRows = ({ id, width, height, currentLayout, visibility, fit, darkMo
 
 export const usePackHost = (
   props,
-  { disabled, loading, rowsEnabled, rowVariable, fit, visibility, formField = false, markRowScoped }
+  {
+    disabled,
+    loading,
+    rowsEnabled,
+    rowVariable,
+    fit,
+    fitDropAreas = false,
+    visibility,
+    formField = false,
+    markRowScoped,
+  }
 ) => {
   const { id, validate, validation, setExposedVariable, fireEvent, width, height, currentLayout, darkMode } = props;
   const { moduleId } = useModuleContext();
@@ -487,6 +497,7 @@ export const usePackHost = (
       rowSlotAttr: (index) => rowSlotAttr(id, index),
       registerPopupSlot,
       popupSlotAttr: (name) => `tj-slot-${id}-${name}`,
+      fitDropAreas,
       formField,
       markRowScoped,
       resolveRow,
@@ -497,7 +508,7 @@ export const usePackHost = (
           new CustomEvent('submitForm', { detail: { buttonComponentId: id, buttonModuleId: moduleId } })
         ),
     }),
-    [disabled, loading, id, setRows, registerPopupSlot, formField, markRowScoped, resolveRow, moduleId]
+    [disabled, loading, id, setRows, registerPopupSlot, fitDropAreas, formField, markRowScoped, resolveRow, moduleId]
   );
   return { host, light, popupSlotNames, exposeVariable, fireHostEvent };
 };

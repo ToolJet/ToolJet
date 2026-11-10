@@ -25,6 +25,9 @@ const BASE_CSS = `
 .tj-cc-root.tj-cc-fit { height: auto; overflow: visible; }
 .tj-cc-root.tj-cc-fit > * { height: auto; }
 .tj-cc-root.tj-cc-fit.tj-cc-stretch, .tj-cc-root.tj-cc-fit.tj-cc-stretch > * { height: 100%; }
+/* A fitted container never draws shorter than its box (floorHeight, the host's min-height): its root takes that
+   min-height too, so its surface fills the box when its components are short. */
+.tj-cc-root.tj-cc-fit.tj-cc-floor, .tj-cc-root.tj-cc-fit.tj-cc-floor > * { min-height: inherit; }
 *, *::before, *::after { box-sizing: border-box; }
 .tj-cc-error { padding: 8px; font: 12px/1.4 monospace; color: var(--text-danger); white-space: pre-wrap; }
 /* The component's code failed to load (QA item 19): a plain note with Retry, and the components inside it below. */
@@ -476,6 +479,9 @@ interface InlineLibraryComponentProps {
   /** The widget's saved height: a fitted box keeps it until the component draws, so the dynamic height measure does
    *  not read the empty box (the page's widgets collapsed onto each other, then jumped to their heights). */
   reserveHeight?: number;
+  /** A fitted container (a Card with Dynamic height) never draws shorter than this, its box, as a native Container:
+   *  the component's root is held at it too, so its surface fills the box. */
+  floorHeight?: number;
   /** The app theme reaches the pack as --tj-* tokens (TOKEN_CSS). */
   themed?: boolean;
   /** The app is in dark mode: native parts (scrollbars, date inputs) draw dark too. */
@@ -509,6 +515,7 @@ const InlineLibraryComponent = ({
   fit = false,
   stretch = false,
   reserveHeight,
+  floorHeight,
   themed = true,
   darkMode = false,
   hostRef: outerRef,
@@ -583,6 +590,7 @@ const InlineLibraryComponent = ({
   useLayoutEffect(() => {
     shadow?.mount.classList.toggle('tj-cc-fit', fit);
     shadow?.mount.classList.toggle('tj-cc-stretch', stretch);
+    shadow?.mount.classList.toggle('tj-cc-floor', fit && floorHeight !== undefined);
     hostRef.current?.classList.toggle('tj-themed', themed);
     // Popups (menus, pickers, dialogs) draw in the shared popup host, outside the widget: it takes the same theme
     // contract, or every popup fell back to the pack's stock colours, font and radius under an applied theme.
@@ -593,7 +601,7 @@ const InlineLibraryComponent = ({
     const scheme = darkMode ? 'dark' : 'light';
     if (hostRef.current) hostRef.current.style.colorScheme = scheme;
     if (shadow?.popupHost) shadow.popupHost.style.colorScheme = scheme;
-  }, [shadow, fit, stretch, themed, darkMode]);
+  }, [shadow, fit, stretch, floorHeight, themed, darkMode]);
 
   // The host already dims a disabled widget's box. It marks the root too, so a component whose controls dim
   // themselves when disabled can keep them at full opacity (the pack's CSS reads the mark) instead of dimming twice.
@@ -755,12 +763,14 @@ const InlineLibraryComponent = ({
     else if (outerRef) (outerRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
   };
 
+  const fittedMinHeight = fit && !stretch ? (floorHeight ?? (!drawn ? reserveHeight : undefined)) : undefined;
+
   return (
     <div
       ref={setRef}
       data-cy={dataCy}
       className={fit && !stretch ? 'tw-w-full tw-block' : 'tw-w-full tw-h-full tw-block'}
-      style={{ boxShadow, ...(fit && !stretch && !drawn && reserveHeight ? { minHeight: reserveHeight } : {}) }}
+      style={{ boxShadow, ...(fittedMinHeight ? { minHeight: fittedMinHeight } : {}) }}
     >
       {shadow && createPortal(content, shadow.mount)}
       {/* Light-DOM children, projected into the bundle's <slot> elements. */}
