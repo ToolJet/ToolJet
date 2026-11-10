@@ -26,8 +26,8 @@ export interface McpServerOAuthMetadata {
 }
 
 /**
- * An MCP server a workspace admin connected for the AI builder. Secrets (header value, OAuth client
- * secret) are encrypted; per-user OAuth tokens live in `user_mcp_server_tokens`.
+ * An MCP server a workspace admin connected for the AI builder. Secrets (header value, URL query, OAuth
+ * client secret) are encrypted; per-user OAuth tokens live in `user_mcp_server_tokens`.
  */
 @Entity('organization_mcp_servers')
 @Unique('UQ_ORG_MCP_SERVER_NAME', ['organizationId', 'name'])
@@ -45,8 +45,12 @@ export class OrganizationMcpServer extends BaseEntity {
   @Column({ name: 'name', type: 'varchar', length: 50 })
   name: string;
 
+  /** Scheme, host and path only; the query string can carry an API key and lives in `encryptedUrlQuery`. */
   @Column({ name: 'url', type: 'text' })
   url: string;
+
+  @Column({ name: 'encrypted_url_query', type: 'text', nullable: true })
+  encryptedUrlQuery: string | null;
 
   @Column({ name: 'auth_type', type: 'varchar', length: 16, default: 'header' })
   authType: McpServerAuthType;

@@ -7,6 +7,7 @@ export class CreateOrganizationMcpServers1791850000000 implements MigrationInter
       organization_id uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
       name varchar(50) NOT NULL,
       url text NOT NULL,
+      encrypted_url_query text,
       auth_type varchar(16) NOT NULL DEFAULT 'header',
       header_name varchar(100),
       encrypted_header_value text,
