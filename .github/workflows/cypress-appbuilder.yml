@@ -71,13 +71,15 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set SAFE_BRANCH_NAME
-        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+        run: echo "SAFE_BRANCH_NAME=$(printf '%s' "$BRANCH_NAME" | tr '/' '-')" >> "$GITHUB_ENV"
 
       - name: Build EE Docker image
         id: push
         run: |
           echo "Building EE Docker image..."
-          docker buildx build \
+          # PR branches cut before the secret change still read the token as a build arg;
+          # pass both until they've all merged it. The image is --load only, never pushed.
+          CUSTOM_GITHUB_TOKEN="${{ secrets.CUSTOM_GITHUB_TOKEN }}" docker buildx build \
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
             --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
@@ -516,6 +518,21 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'run-cypress-appbuilder-subpath')
 
     steps:
+      # Security: stop before anything else runs if this is a fork PR, or if the
+      # branch name has characters that could be used to inject shell commands.
+      - name: Check PR source and branch name
+        env:
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [ -n "$HEAD_REPO" ] && [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::Cypress runs are not allowed for pull requests from forks ($HEAD_REPO)."
+            exit 1
+          fi
+          if ! printf '%s' "$BRANCH_NAME" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+            echo "::error::Branch name may only contain letters, numbers, '.', '_', '/' and '-'."
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v3
         with:

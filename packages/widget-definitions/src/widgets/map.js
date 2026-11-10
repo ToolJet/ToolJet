@@ -39,7 +39,12 @@ export const mapConfig = {
       validation: {
         schema: {
           type: 'union',
-          schemas: [{ type: 'array', element: { type: 'object' } }, { type: 'object' }],
+          // No per-element schema ON PURPOSE (bug-fix batch 2026-10-26, bug 7):
+          // with `element: {type:'object'}` a single null/garbage entry failed the
+          // WHOLE array and the widget received an empty list — every marker
+          // vanished. The widget now sanitizes entries itself (invalid ones are
+          // skipped, valid ones render).
+          schemas: [{ type: 'array' }, { type: 'object' }],
         },
         defaultValue: `{{ [{"lat": 40.7128, "lng": -73.935242}] }}`,
       },

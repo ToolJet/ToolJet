@@ -34,7 +34,7 @@ export class WorkspaceBranch extends BaseEntity {
 
   // Git-sync change tokens (git-native). last_synced_commit is the branch HEAD we
   // last pulled — equal to the remote HEAD ⇒ skip the whole pull without cloning.
-  // The *_git_tree_sha columns are the tree SHAs of apps/, modules/, data-sources/
+  // The *_git_tree_sha columns are the tree SHAs of apps/, modules/, workflows/, data-sources/
   // — equal ⇒ skip that whole category. Written only after the matching level
   // imports with zero errors, so a failure leaves the old value and forces a retry.
   @Column({ name: 'last_synced_commit', type: 'varchar', length: 64, nullable: true, default: null })
@@ -48,6 +48,9 @@ export class WorkspaceBranch extends BaseEntity {
 
   @Column({ name: 'data_sources_git_tree_sha', type: 'varchar', length: 64, nullable: true, default: null })
   dataSourcesGitTreeSha: string;
+
+  @Column({ name: 'workflows_git_tree_sha', type: 'varchar', length: 64, nullable: true, default: null })
+  workflowsGitTreeSha: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
