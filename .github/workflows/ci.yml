@@ -8,6 +8,10 @@ on:
     types: [labeled, opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: read
+
 concurrency:
   # no-op runs (other labels, non-main pushes) get their own group so they never cancel a real run
   group: >-
@@ -1208,6 +1212,10 @@ jobs:
       && needs.build-cypress-image.result == 'success'
       && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
       && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     uses: ./.github/workflows/cypress-platform.yml
     with:
       edition: 'ee'
@@ -1233,6 +1241,10 @@ jobs:
       && needs.build-server.result == 'success'
       && needs.build-marketplace.result == 'success'
       && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     uses: ./.github/workflows/cypress-marketplace.yml
     with:
       edition: 'ee'
