@@ -1,6 +1,16 @@
-import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
-import { createClient } from '@supabase/supabase-js';
 import {
+  QueryError,
+  QueryResult,
+  QueryService,
+  ConnectionTestResult,
+  cacheConnectionWithConfiguration,
+  generateSourceOptionsHash,
+  getCachedConnection,
+} from '@tooljet-marketplace/common';
+import { createClient } from '@supabase/supabase-js';
+import knex, { Knex } from 'knex';
+import {
+  ConnectionType,
   SourceOptions,
   QueryOptions,
   Column,
@@ -14,9 +24,34 @@ import {
 import { PostgrestFilterBuilder } from '@supabase/postgrest-js';
 
 export default class Supabase implements QueryService {
-  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
-    const supabaseClient = await this.getConnection(sourceOptions);
+  async run(
+    sourceOptions: SourceOptions,
+    queryOptions: QueryOptions,
+    dataSourceId: string,
+    dataSourceUpdatedAt?: string
+  ): Promise<QueryResult> {
     const operation: string = queryOptions.operation;
+
+    if (this.getConnectionType(sourceOptions) === 'connection_string') {
+      if (operation && operation !== 'sql_query') {
+        throw new QueryError(
+          'Query could not be completed',
+          'Row operations need a Secret key or Publishable key connection. Use "Run SQL" with a connection string.',
+          {}
+        );
+      }
+      return await this.runSqlQuery(sourceOptions, queryOptions, dataSourceId, dataSourceUpdatedAt);
+    }
+
+    if (operation === 'sql_query') {
+      throw new QueryError(
+        'Query could not be completed',
+        'Run SQL needs the "Connection string" connection type on the data source.',
+        {}
+      );
+    }
+
+    const supabaseClient = await this.getConnection(sourceOptions);
     let result: SupabaseQueryResult;
     let error: SupabaseQueryError;
     try {
@@ -216,27 +251,151 @@ export default class Supabase implements QueryService {
     return query;
   }
 
+  getConnectionType(sourceOptions: SourceOptions): ConnectionType {
+    return sourceOptions.connection_type || 'secret_key';
+  }
+
+  getApiKey(sourceOptions: SourceOptions): string {
+    return this.getConnectionType(sourceOptions) === 'publishable_key'
+      ? sourceOptions.publishable_key
+      : sourceOptions.service_role_secret;
+  }
+
   async getConnection(sourceOptions: SourceOptions, _options?: object): Promise<SupabaseClientType> {
-    const { project_url, service_role_secret } = sourceOptions;
-    // Create a single supabase client for interacting with your database
-    const supabaseClient = createClient(project_url, service_role_secret);
+    const { project_url } = sourceOptions;
+    const supabaseClient = createClient(project_url, this.getApiKey(sourceOptions));
 
     return supabaseClient;
   }
 
-  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const supabaseClient = await this.getConnection(sourceOptions);
+  async runSqlQuery(
+    sourceOptions: SourceOptions,
+    queryOptions: QueryOptions,
+    dataSourceId: string,
+    dataSourceUpdatedAt?: string
+  ): Promise<QueryResult> {
+    const { query, query_params } = queryOptions;
 
     try {
-      const res = await supabaseClient.from('').select('1');
+      if (!query || !query.trim()) throw new Error('Query is empty');
 
-      if (res.error) {
-        throw new QueryError(`Connection test failed`, res.error, {});
+      const knexInstance = await this.getSqlConnection(sourceOptions, dataSourceId, dataSourceUpdatedAt);
+      const params: Record<string, any> = Object.fromEntries((query_params || []).filter(([key]) => !!key));
+
+      // knex.raw would treat ':' and '?' in the SQL text as bindings, so only use it when parameters are supplied.
+      if (Object.keys(params).length) {
+        const { rows } = await knexInstance.raw(query, params);
+        return { status: 'ok', data: rows };
       }
 
-      return {
-        status: 'ok',
-      };
+      const pool = (knexInstance.client as any).pool;
+      const connection = await pool.acquire().promise;
+      try {
+        const result = await connection.query(query);
+        return { status: 'ok', data: result.rows };
+      } finally {
+        pool.release(connection);
+      }
+    } catch (err) {
+      const { code, detail, hint, routine } = (err || {}) as any;
+      throw new QueryError('Query could not be completed', err?.message || 'An unknown error occurred', {
+        code: code || null,
+        detail: detail || null,
+        hint: hint || null,
+        routine: routine || null,
+      });
+    }
+  }
+
+  async getSqlConnection(
+    sourceOptions: SourceOptions,
+    dataSourceId?: string,
+    dataSourceUpdatedAt?: string
+  ): Promise<Knex> {
+    if (!dataSourceId) return this.buildSqlConnection(sourceOptions);
+
+    const enhancedCacheKey = `${dataSourceId}_${generateSourceOptionsHash(sourceOptions)}`;
+    const cachedConnection = await getCachedConnection(enhancedCacheKey, dataSourceUpdatedAt);
+    if (cachedConnection) return cachedConnection;
+
+    const connection = this.buildSqlConnection(sourceOptions);
+    cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, connection);
+    return connection;
+  }
+
+  buildSqlConnection(sourceOptions: SourceOptions): Knex {
+    const { connection_string, ca_cert } = sourceOptions;
+    if (!connection_string) throw new Error('Connection string is required');
+
+    let url: URL;
+    try {
+      url = new URL(connection_string);
+    } catch (_err) {
+      throw new Error(
+        'Invalid connection string. Expected postgresql://user:password@host:port/database (URL-encode special characters in the password)'
+      );
+    }
+
+    // The sslmode in the URL is applied here instead of by pg: pg would verify the certificate chain for
+    // sslmode=require, which fails against Supabase's private CA unless the CA certificate is supplied.
+    const sslmode = url.searchParams.get('sslmode') || url.searchParams.get('ssl') || '';
+    url.searchParams.delete('sslmode');
+    url.searchParams.delete('ssl');
+    const ssl = ['disable', 'false'].includes(sslmode)
+      ? false
+      : ca_cert
+      ? { rejectUnauthorized: true, ca: ca_cert }
+      : { rejectUnauthorized: false };
+
+    const statementTimeout = Number(process.env?.PLUGINS_SQL_DB_STATEMENT_TIMEOUT);
+
+    return knex({
+      client: 'pg',
+      connection: {
+        connectionString: url.toString(),
+        ssl,
+        statement_timeout: !isNaN(statementTimeout) && statementTimeout > 0 ? statementTimeout : 120000,
+      },
+      pool: { min: 0, max: 5, acquireTimeoutMillis: 10000 },
+      acquireConnectionTimeout: 60000,
+    });
+  }
+
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
+    const connectionType = this.getConnectionType(sourceOptions);
+
+    try {
+      if (connectionType === 'connection_string') {
+        const knexInstance = this.buildSqlConnection(sourceOptions);
+        try {
+          await knexInstance.raw('SELECT 1');
+        } finally {
+          await knexInstance.destroy();
+        }
+        return { status: 'ok' };
+      }
+
+      const { project_url } = sourceOptions;
+      const apiKey = this.getApiKey(sourceOptions);
+      if (!project_url) throw new Error('Project URL is required');
+      if (!apiKey) throw new Error(connectionType === 'publishable_key' ? 'Publishable key is required' : 'Secret key is required');
+
+      // supabase-js rejects an empty table name, so ping the PostgREST root directly.
+      // The key goes in `apikey` only: the new sb_* keys are not JWTs and must not be sent as a Bearer token.
+      const res = await fetch(`${project_url.replace(/\/+$/, '')}/rest/v1/`, { headers: { apikey: apiKey } });
+      if (!res.ok) {
+        const body: any = await res.json().catch(() => ({}));
+        const message: string = body?.message || body?.hint || `Request failed with status ${res.status}`;
+        // The schema root is restricted to secret keys: a publishable key that is recognised but refused there is valid.
+        const keyAccepted =
+          connectionType === 'publishable_key' &&
+          [401, 403].includes(res.status) &&
+          /schema|secret/i.test(message) &&
+          !/invalid|no api key/i.test(message);
+        if (!keyAccepted) throw new Error(message);
+      }
+
+      return { status: 'ok' };
     } catch (error) {
       throw new QueryError('Connection test failed', error.message, {});
     }

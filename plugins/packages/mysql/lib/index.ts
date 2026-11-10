@@ -15,6 +15,11 @@ import { SourceOptions, QueryOptions } from './types';
 import { isEmpty } from '@tooljet-plugins/common';
 import { Client } from 'ssh2';
 
+// Idle sockets are silently dropped by NAT gateways / load balancers (e.g. AWS), which surfaces as ECONNRESET on the
+// next query. Close idle connections before that happens and keep busy ones alive with TCP keepalive probes.
+const POOL_IDLE_TIMEOUT_MS = 60000;
+const KEEP_ALIVE_INITIAL_DELAY_MS = 10000;
+
 function createSSHStream(sourceOptions: SourceOptions): Promise<{ client: Client; stream: NodeJS.ReadWriteStream }> {
   return new Promise((resolve, reject) => {
     const sshClient = new Client();
@@ -706,6 +711,8 @@ export default class MysqlQueryService implements QueryService {
         password: effectiveOptions.password,
         database: effectiveOptions.database,
         multipleStatements: true,
+        enableKeepAlive: true,
+        keepAliveInitialDelay: KEEP_ALIVE_INITIAL_DELAY_MS,
         ...(shouldUseSSL ? { ssl: sslObject } : {}),
       };
 
@@ -720,6 +727,7 @@ export default class MysqlQueryService implements QueryService {
     const config: Knex.Config = {
       client: 'mysql2',
       connection: connectionConfig,
+      pool: { min: 0, idleTimeoutMillis: POOL_IDLE_TIMEOUT_MS },
       ...this.connectionOptions(effectiveOptions),
     };
 

@@ -11,7 +11,7 @@ export interface IOrganizationPaymentService {
 
   getProration(organizationId: string, prorationDto: ProrationDto): Promise<any>;
 
-  getPortalLink(portalDto: PortalDto): Promise<any>;
+  getPortalLink(organizationId: string, portalDto: PortalDto): Promise<any>;
 
   updateSubscription(organizationId: string, updatedSubscription: ProrationDto): Promise<any>;
 

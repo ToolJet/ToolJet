@@ -6,12 +6,10 @@ RUN mkdir -p /app
 
 WORKDIR /app
 
-# Set GitHub token and branch as build arguments
-ARG CUSTOM_GITHUB_TOKEN
+# GitHub token is a BuildKit secret (--secret id=github_token), mounted only for the steps that
+# fetch private repos and passed to git via env, so it never lands in a layer, the image config
+# or the build provenance like a build arg does.
 ARG BRANCH_NAME
-
-# Clone and checkout the frontend repository
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
 RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
@@ -21,7 +19,10 @@ RUN git clone https://github.com/ToolJet/ToolJet.git .
 RUN git checkout ${BRANCH_NAME}
 
 # Handle submodules - try normal submodule update first, if it fails clone directly from base repo
-RUN if git submodule update --init --recursive; then \
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    if git submodule update --init --recursive; then \
   echo "Submodules initialized successfully"; \
   # Follow a same-named submodule branch only when it contains the pinned commit (HEAD after
   # update), else keep the pin: a stale branch builds EE code older than this checkout.
@@ -37,12 +38,12 @@ else \
   # Clone frontend/ee submodule directly
   if [ ! -d "frontend/ee" ]; then \
     mkdir -p frontend/ee; \
-    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-frontend.git frontend/ee; \
+    git clone https://github.com/ToolJet/ee-frontend.git frontend/ee; \
   fi; \
   # Clone server/ee submodule directly  
   if [ ! -d "server/ee" ]; then \
     mkdir -p server/ee; \
-    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-server.git server/ee; \
+    git clone https://github.com/ToolJet/ee-server.git server/ee; \
   fi; \
   # Checkout the same branch in EE submodules if it exists, otherwise fallback to lts-3.16
   cd frontend/ee && \
