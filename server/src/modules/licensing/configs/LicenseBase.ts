@@ -580,8 +580,9 @@ export default class LicenseBase {
   }
 
   /** Per-builder AI credit limits: Enterprise and trial; Team (business) and basic don't. */
+  // Strict opt-in, like mfa: the licence must set `features.aiCreditLimits: true`; a missing key is off.
   public get aiCreditLimits(): boolean {
-    if (!this.aiFeature || this.IsBasicPlan) return false;
+    if (!this.aiFeature || this.IsBasicPlan || (this._features as any)?.aiCreditLimits !== true) return false;
     return this.licenseType === LICENSE_TYPE.ENTERPRISE || this.licenseType === LICENSE_TYPE.TRIAL;
   }
 
