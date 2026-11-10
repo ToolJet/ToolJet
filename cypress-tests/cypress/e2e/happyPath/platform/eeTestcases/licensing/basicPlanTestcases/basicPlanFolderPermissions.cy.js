@@ -101,27 +101,9 @@ describe('Basic Plan — Builder Access to Folders Created by Others', { retries
   });
 
   beforeEach(() => {
-    phase('admin creates one folder of each type (with an item where possible) plus an empty one');
-    loginAsAdmin();
     folders = {};
     emptyFolders = {};
     folderNames = {};
-    FOLDER_KEYS.forEach((key) => {
-      const name = `Admin ${FOLDER_TYPES[key].short} ${Date.now()}`;
-      const emptyName = `Admin empty ${FOLDER_TYPES[key].short} ${Date.now()}`;
-      folderNames[key] = { withItem: name, empty: emptyName };
-      createFolder(key, name).then((id) => {
-        folders[key] = id;
-        if (key === 'dataSource') {
-          cy.apiAddDataSourceToFolder(adminItems.dataSource, id, { failOnStatusCode: true });
-        } else if (ITEM_KEYS.includes(key)) {
-          apiAddItemToFolder(FOLDER_TYPES[key].resource, adminItems[key], id);
-        }
-      });
-      createFolder(key, emptyName).then((id) => {
-        emptyFolders[key] = id;
-      });
-    });
   });
 
   afterEach(() => {
@@ -144,69 +126,71 @@ describe('Basic Plan — Builder Access to Folders Created by Others', { retries
     cleanAllUsers();
   });
 
-  it('should show Edit folder on every folder type for the Builder group', () => {
-    cy.apiGetGroupId('builder').then((groupId) => {
-      apiGetGranularPermissions(groupId).then((body) => {
-        const perms = Array.isArray(body) ? body : body.granularPermissions || [];
-        FOLDER_KEYS.forEach((key) => {
-          const perm = perms.find((p) => p.name === FOLDER_TYPES[key].label);
-          expect(perm, FOLDER_TYPES[key].label).to.exist;
-          expect(perm.foldersGroupPermissions.canEditFolder, `${FOLDER_TYPES[key].label} Edit folder`).to.equal(true);
+  FOLDER_KEYS.forEach((key) => {
+    const { label, short } = FOLDER_TYPES[key];
+    const hasItems = ITEM_KEYS.includes(key);
+
+    it(`should match the current builder access on ${label.toLowerCase()} created by the admin`, () => {
+      phase(`admin creates a ${short} folder${hasItems ? ' with an item' : ''} and an empty one`);
+      loginAsAdmin();
+      folderNames = { withItem: `Admin ${short} ${Date.now()}`, empty: `Admin empty ${short} ${Date.now()}` };
+      createFolder(key, folderNames.withItem).then((id) => {
+        folders.withItem = id;
+        if (key === 'dataSource') {
+          cy.apiAddDataSourceToFolder(adminItems.dataSource, id, { failOnStatusCode: true });
+        } else if (hasItems) {
+          apiAddItemToFolder(FOLDER_TYPES[key].resource, adminItems[key], id);
+        }
+      });
+      createFolder(key, folderNames.empty).then((id) => {
+        emptyFolders.empty = id;
+      });
+
+      phase('Builder group shows Edit folder');
+      cy.apiGetGroupId('builder').then((groupId) => {
+        apiGetGranularPermissions(groupId).then((body) => {
+          const perms = Array.isArray(body) ? body : body.granularPermissions || [];
+          const perm = perms.find((p) => p.name === label);
+          expect(perm, label).to.exist;
+          expect(perm.foldersGroupPermissions.canEditFolder, `${label} Edit folder`).to.equal(true);
         });
       });
-    });
-  });
 
-  it('should let the builder create a folder of every type', () => {
-    loginAsBuilder();
-    FOLDER_KEYS.forEach((key) => {
-      createFolder(key, `Builder own ${FOLDER_TYPES[key].short} ${Date.now()}`).then((id) => {
-        emptyFolders[`own-${key}`] = id;
+      phase('builder creates an own folder');
+      loginAsBuilder();
+      createFolder(key, `Builder own ${short} ${Date.now()}`).then((id) => {
+        emptyFolders.own = id;
       });
-    });
-  });
 
-  it("should return the current responses when the builder adds and removes items in the admin's folders", () => {
-    loginAsBuilder();
-    ITEM_KEYS.forEach((key) => {
-      apiFolderAction('POST', itemPath(key), addBody(key, folders[key], builderItems[key])).then((res) =>
-        expectStatus(res, CURRENT.addItem[key], `add item to admin's ${key} folder`)
-      );
-      apiFolderAction('PUT', `${itemPath(key)}/${folders[key]}`, removeBody(key, adminItems[key])).then((res) =>
-        expectStatus(res, CURRENT.removeItem[key], `remove item from admin's ${key} folder`)
-      );
-    });
-  });
-
-  it("should return the current responses when the builder renames the admin's folders", () => {
-    loginAsBuilder();
-    FOLDER_KEYS.forEach((key) => {
-      apiFolderAction('PUT', `/folders/${folders[key]}`, { name: `Renamed by builder ${key} ${Date.now()}` }).then(
-        (res) => expectStatus(res, CURRENT.rename[key], `rename admin's ${key} folder`)
-      );
-    });
-  });
-
-  it("should return the current responses when the builder deletes the admin's folders", () => {
-    loginAsBuilder();
-    FOLDER_KEYS.forEach((key) => {
-      apiFolderAction('DELETE', `/folders/${folders[key]}`).then((res) =>
-        expectStatus(res, CURRENT.delete[key], `delete admin's ${key} folder`)
-      );
-    });
-  });
-
-  it("should list the admin's folders for the builder as they are today", () => {
-    loginAsBuilder();
-    FOLDER_KEYS.forEach((key) => {
+      phase("builder lists the admin's folders");
       listFolderNames(key).then((list) => {
-        if (ITEM_KEYS.includes(key)) {
-          expect(list.includes(folderNames[key].withItem), `builder sees admin's ${key} folder with an item`).to.equal(
+        if (hasItems) {
+          expect(list.includes(folderNames.withItem), "sees admin's folder with an item").to.equal(
             CURRENT.seesFolderWithItem[key]
           );
         }
-        expect(list.includes(folderNames[key].empty), `builder sees admin's empty ${key} folder`).to.equal(
-          CURRENT.seesEmptyFolder[key]
+        expect(list.includes(folderNames.empty), "sees admin's empty folder").to.equal(CURRENT.seesEmptyFolder[key]);
+      });
+
+      if (hasItems) {
+        phase("builder adds and removes items in the admin's folder");
+        cy.then(() => {
+          apiFolderAction('POST', itemPath(key), addBody(key, folders.withItem, builderItems[key])).then((res) =>
+            expectStatus(res, CURRENT.addItem[key], "add item to admin's folder")
+          );
+          apiFolderAction('PUT', `${itemPath(key)}/${folders.withItem}`, removeBody(key, adminItems[key])).then((res) =>
+            expectStatus(res, CURRENT.removeItem[key], "remove item from admin's folder")
+          );
+        });
+      }
+
+      phase("builder renames and deletes the admin's folder");
+      cy.then(() => {
+        apiFolderAction('PUT', `/folders/${folders.withItem}`, {
+          name: `Renamed by builder ${short} ${Date.now()}`,
+        }).then((res) => expectStatus(res, CURRENT.rename[key], "rename admin's folder"));
+        apiFolderAction('DELETE', `/folders/${folders.withItem}`).then((res) =>
+          expectStatus(res, CURRENT.delete[key], "delete admin's folder")
         );
       });
     });
