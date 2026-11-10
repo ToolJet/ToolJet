@@ -18,7 +18,9 @@ RUN git clone https://github.com/ToolJet/ToolJet.git .
 # The branch name needs to be changed the branch with modularisation in CE repo
 RUN git checkout ${BRANCH_NAME}
 
-# Handle submodules - try normal submodule update first, if it fails clone directly from base repo
+# Handle submodules - try normal submodule update first, if it fails clone directly from base repo.
+# On a fork, where the pinned commit is unreachable, the script takes the same-named branch, else the one .gitmodules tracks
+COPY ./docker/LTS/submodule-checkout.sh /tmp/submodule-checkout.sh
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
@@ -40,29 +42,14 @@ else \
     mkdir -p frontend/ee; \
     git clone https://github.com/ToolJet/ee-frontend.git frontend/ee; \
   fi; \
-  # Clone server/ee submodule directly  
+  # Clone server/ee submodule directly
   if [ ! -d "server/ee" ]; then \
     mkdir -p server/ee; \
     git clone https://github.com/ToolJet/ee-server.git server/ee; \
   fi; \
-  # Checkout the same branch in EE submodules if it exists, otherwise fallback to lts-3.16
-  cd frontend/ee && \
-  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-    git checkout ${BRANCH_NAME}; \
-  else \
-    echo "Branch ${BRANCH_NAME} not found in frontend/ee, falling back to lts-3.16"; \
-    git checkout lts-3.16; \
-  fi && \
-  cd ../../server/ee && \
-  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-    git checkout ${BRANCH_NAME}; \
-  else \
-    echo "Branch ${BRANCH_NAME} not found in server/ee, falling back to lts-3.16"; \
-    git checkout lts-3.16; \
-  fi && \
-  cd ../..; \
+  for sm in frontend/ee server/ee; do \
+    (cd "$sm" && name="$sm" toplevel=/app sha1=$(git -C /app rev-parse "HEAD:$sm") sh /tmp/submodule-checkout.sh) || exit 1; \
+  done; \
 fi
 
 # Scripts for building

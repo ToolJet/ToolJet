@@ -73,16 +73,21 @@ RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
 RUN git clone ${REPO_URL} .
 
-# The branch name needs to be changed the branch with modularisation in CE repo
+# Checkout BRANCH_NAME if it exists, otherwise the LTS branch .gitmodules tracks in the build context
+COPY ./.gitmodules /tmp/context.gitmodules
 RUN if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
        git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
       git checkout ${BRANCH_NAME}; \
     else \
-      echo "Branch ${BRANCH_NAME} not found, falling back to lts-3.16"; \
-      git checkout lts-3.16; \
+      FALLBACK=$(git config -f /tmp/context.gitmodules submodule.server/ee.branch) || \
+        { echo "No branch set for server/ee in .gitmodules"; exit 1; }; \
+      echo "Branch ${BRANCH_NAME} not found, falling back to ${FALLBACK}"; \
+      git checkout "${FALLBACK}"; \
     fi
 
-# Handle submodules - try normal submodule update first, if it fails clone directly from base repo
+# Handle submodules - try normal submodule update first, if it fails clone directly from base repo.
+# On a fork, where the pinned commit is unreachable, the script takes the same-named branch, else the one .gitmodules tracks
+COPY ./docker/LTS/submodule-checkout.sh /tmp/submodule-checkout.sh
 RUN --mount=type=secret,id=github_token \
     TOKEN=$(cat /run/secrets/github_token) && \
     export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
@@ -104,29 +109,14 @@ else \
     mkdir -p frontend/ee; \
     git clone https://github.com/ToolJet/ee-frontend.git frontend/ee; \
   fi; \
-  # Clone server/ee submodule directly  
+  # Clone server/ee submodule directly
   if [ ! -d "server/ee" ]; then \
     mkdir -p server/ee; \
     git clone https://github.com/ToolJet/ee-server.git server/ee; \
   fi; \
-  # Checkout the same branch in EE submodules if it exists, otherwise fallback to lts-3.16
-  cd frontend/ee && \
-  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-    git checkout ${BRANCH_NAME}; \
-  else \
-    echo "Branch ${BRANCH_NAME} not found in frontend/ee, falling back to lts-3.16"; \
-    git checkout lts-3.16; \
-  fi && \
-  cd ../../server/ee && \
-  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-    git checkout ${BRANCH_NAME}; \
-  else \
-    echo "Branch ${BRANCH_NAME} not found in server/ee, falling back to lts-3.16"; \
-    git checkout lts-3.16; \
-  fi && \
-  cd ../..; \
+  for sm in frontend/ee server/ee; do \
+    (cd "$sm" && name="$sm" toplevel=/app sha1=$(git -C /app rev-parse "HEAD:$sm") sh /tmp/submodule-checkout.sh) || exit 1; \
+  done; \
 fi
 
 # Scripts for building

@@ -118,10 +118,12 @@ jobs:
 
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
+        env:
+          CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         run: |
           echo "Building EE Docker image..."
-          # main's Dockerfile reads the token as a build arg, lts-3.16's as a BuildKit
-          # secret; pass both so label runs work for PRs into either branch.
+          # PR branches cut before the secret change still read the token as a build arg;
+          # pass both until they've all merged it. The image is --load only, never pushed.
           CUSTOM_GITHUB_TOKEN="${{ secrets.CUSTOM_GITHUB_TOKEN }}" docker buildx build \
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
