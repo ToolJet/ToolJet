@@ -63,3 +63,14 @@ export function buildSSRFRuntimeConfig(enabled: boolean, entries: string[]): SSR
 
   return { enabled, allowedHostnames, allowedRanges };
 }
+
+/** The stored allowlist is a JSON array of strings; anything else reads as empty. */
+export function parseStoredSSRFAllowlist(raw: unknown): string[] {
+  if (typeof raw !== 'string') return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((e): e is string => typeof e === 'string') : [];
+  } catch {
+    return [];
+  }
+}

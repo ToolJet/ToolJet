@@ -1,10 +1,5 @@
 import { User } from '@entities/user.entity';
-import {
-  CreateInstanceSettingsDto,
-  SsrfSettingsResponseDto,
-  UpdateSsrfSettingsDto,
-  UpdateUserSettingsDto,
-} from '../dto';
+import { CreateInstanceSettingsDto, UpdateUserSettingsDto } from '../dto';
 import { InstanceSettings } from '@entities/instance_settings.entity';
 
 export interface IInstanceSettingsService {
@@ -15,10 +10,4 @@ export interface IInstanceSettingsService {
   update(params: UpdateUserSettingsDto, user: User): Promise<void>;
 
   delete(settings_id: string): Promise<void>;
-
-  getSsrfSettings(): Promise<SsrfSettingsResponseDto>;
-
-  updateSsrfSettings(params: UpdateSsrfSettingsDto): Promise<SsrfSettingsResponseDto>;
-
-  dismissSsrfUpgradeNotice(): Promise<void>;
 }

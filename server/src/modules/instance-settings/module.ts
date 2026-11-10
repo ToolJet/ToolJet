@@ -10,29 +10,14 @@ export class InstanceSettingsModule extends SubModule {
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;
 
-    const {
-      InstanceSettingsService,
-      InstanceSettingsUtilService,
-      InstanceSettingsController,
-      SsrfRuntimeConfigService,
-    } = await this.getProviders(configs, 'instance-settings', [
-      'service',
-      'controller',
-      'util.service',
-      'ssrf-runtime-config.service',
-    ]);
+    const { InstanceSettingsService, InstanceSettingsUtilService, InstanceSettingsController } =
+      await this.getProviders(configs, 'instance-settings', ['service', 'controller', 'util.service']);
 
     return this.cacheModule(cacheKey, {
       module: InstanceSettingsModule,
       imports: [await EncryptionModule.register(configs)],
       controllers: isMainImport ? [InstanceSettingsController] : [],
-      providers: [
-        InstanceSettingsUtilService,
-        InstanceSettingsService,
-        SsrfRuntimeConfigService,
-        FeatureAbilityFactory,
-        OrganizationRepository,
-      ],
+      providers: [InstanceSettingsUtilService, InstanceSettingsService, FeatureAbilityFactory, OrganizationRepository],
       exports: [InstanceSettingsUtilService],
     });
   }

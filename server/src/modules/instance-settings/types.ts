@@ -7,8 +7,6 @@ interface Features {
   [FEATURE_KEY.CREATE]: FeatureConfig;
   [FEATURE_KEY.DELETE]: FeatureConfig;
   [FEATURE_KEY.UPDATE]: FeatureConfig;
-  [FEATURE_KEY.SSRF_GET]: FeatureConfig;
-  [FEATURE_KEY.SSRF_UPDATE]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

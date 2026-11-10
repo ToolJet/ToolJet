@@ -18,17 +18,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const { superAdmin } = UserAllPermissions;
     if (superAdmin) {
       // super admin can do all operations
-      can(
-        [
-          FEATURE_KEY.GET,
-          FEATURE_KEY.CREATE,
-          FEATURE_KEY.DELETE,
-          FEATURE_KEY.UPDATE,
-          FEATURE_KEY.SSRF_GET,
-          FEATURE_KEY.SSRF_UPDATE,
-        ],
-        InstanceSettings
-      );
+      can([FEATURE_KEY.GET, FEATURE_KEY.CREATE, FEATURE_KEY.DELETE, FEATURE_KEY.UPDATE], InstanceSettings);
     }
   }
 }

@@ -1,10 +1,5 @@
 import { User } from '@entities/user.entity';
-import {
-  CreateInstanceSettingsDto,
-  SsrfSettingsResponseDto,
-  UpdateSsrfSettingsDto,
-  UpdateUserSettingsDto,
-} from './dto';
+import { CreateInstanceSettingsDto, UpdateUserSettingsDto } from './dto';
 import { IInstanceSettingsService } from './Interfaces/IService';
 import { InstanceSettings } from '@entities/instance_settings.entity';
 import { Injectable } from '@nestjs/common';
@@ -22,15 +17,6 @@ export class InstanceSettingsService implements IInstanceSettingsService {
     throw new Error('Method not implemented.');
   }
   delete(settings_id: string): Promise<any> {
-    throw new Error('Method not implemented.');
-  }
-  getSsrfSettings(): Promise<SsrfSettingsResponseDto> {
-    throw new Error('Method not implemented.');
-  }
-  updateSsrfSettings(params: UpdateSsrfSettingsDto): Promise<SsrfSettingsResponseDto> {
-    throw new Error('Method not implemented.');
-  }
-  dismissSsrfUpgradeNotice(): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }
