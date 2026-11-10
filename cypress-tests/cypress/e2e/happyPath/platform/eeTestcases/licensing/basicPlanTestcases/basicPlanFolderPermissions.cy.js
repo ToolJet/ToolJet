@@ -9,18 +9,8 @@ import {
   phase,
 } from 'Support/utils/platform/folderPermissions';
 
-// Basic plan (no license / expired): a builder acting on folders created by someone else.
-// Runs in the licensing shard, the only CI machine with no license. Basic allows 2 editors,
-// so the users are the default admin plus one builder.
-//
-// KNOWN BUG: the Builder group shows "Edit folder" on every folder type, but only app folders
-// enforce it. On workflow, module and data-source folders the builder can delete another
-// user's folder but cannot rename it (and cannot add/remove items in workflow folders).
-// CURRENT holds today's responses. Once fixed, switch the assertions to EXPECTED_AFTER_FIX
-// and drop this note.
-//
-// Modules are a paid feature (POST /api/modules returns 451 on Basic), so module folders are
-// covered for create / rename / delete / visibility only, with no module items.
+// Known bug: workflow, module and data source folders don't honour Builder's Edit folder on Basic.
+// CURRENT is today's behaviour; switch to EXPECTED_AFTER_FIX once fixed.
 
 const FOLDER_TYPES = {
   app: { type: 'front-end', label: 'App folders', short: 'app', resource: RESOURCES.app },
@@ -39,7 +29,6 @@ const CURRENT = {
   seesFolderWithItem: { app: true, workflow: true, dataSource: true },
   seesEmptyFolder: { app: true, workflow: false, module: false, dataSource: false },
 };
-// eslint-disable-next-line no-unused-vars
 const EXPECTED_AFTER_FIX = {
   addItem: { app: 201, workflow: 201, dataSource: 201 },
   removeItem: { app: 200, workflow: 200, dataSource: 200 },

@@ -90,8 +90,6 @@ export const apiRemoveItemFromFolder = (resource, itemId, folderId) => {
   return cy.apiRemoveAppFromFolder(itemId, folderId);
 };
 
-// Folder API call as the logged-in user. Returns the response without asserting the status,
-// so a spec can assert an expected 403.
 export const apiFolderAction = (method, path, body) =>
   cy.getAuthHeaders().then((headers) =>
     cy.request({
