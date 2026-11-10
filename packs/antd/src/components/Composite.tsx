@@ -1293,11 +1293,17 @@ export const CircularProgress = () => {
   const pct = Math.max(0, Math.min(100, Number(percent) || 0));
   // The ring is the size set, or the largest square the box has room for under the label: a fixed 120px ring was cut
   // on both sides in a 3-column box.
-  const [ringBox, px] = useFitSquare<HTMLDivElement>(Math.max(32, Math.min(400, Number(size) || 120)));
+  const asked = Math.max(32, Math.min(400, Number(size) || 120));
+  const [ringBox, px] = useFitSquare<HTMLDivElement>(asked);
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-ring">
       <SpinOver loading={loading} as="fill">
-        <div ref={ringBox} className="tj-ant-ring-fit">
+        {/* --tj-ring-size: read by pack.css under Dynamic height */}
+        <div
+          ref={ringBox}
+          className="tj-ant-ring-fit"
+          style={{ '--tj-ring-size': `${asked}px` } as React.CSSProperties}
+        >
           <Progress
             type={type as 'circle'}
             percent={Math.round(pct * 10) / 10}

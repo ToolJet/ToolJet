@@ -1459,6 +1459,13 @@
 .tj-ant-ring-fit > .ant-progress {
   flex-shrink: 0;
 }
+/* Dynamic height (tj-cc-fit): the box has no height to fill, so flex 1 1 0 measured 0 and the widgets below rode up over
+   the ring. Make it the ring's own square. */
+.tj-cc-fit .tj-ant-ring-fit {
+  flex: 0 0 auto;
+  width: min(100%, var(--tj-ring-size, 100%));
+  aspect-ratio: 1;
+}
 
 /* RadialChart's categories: the box measured for its legend's place, filled by the chart. */
 .tj-ant-chart-fill {
