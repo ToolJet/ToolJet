@@ -1,3 +1,4 @@
+/** @group platform */
 /**
  * Unit tests for picker-context module list filtering (H2 — DEV-63).
  *
