@@ -57,6 +57,7 @@ export class WorkflowExecutionRepository extends Repository<WorkflowExecution> {
 
     const decorated = await this.createQueryBuilder('execution')
       .leftJoinAndMapOne('execution.appVersion', AppVersion, 'av', 'av.id = execution.app_version_id')
+      .leftJoinAndSelect('av.branch', 'branch')
       .leftJoinAndMapOne('execution.app', App, 'app', 'app.id = COALESCE(execution.app_id, av.app_id)')
       .leftJoinAndMapOne('execution.environment', AppEnvironment, 'env', 'env.id = execution.environment_id')
       .leftJoinAndMapOne('execution.schedule', WorkflowSchedule, 'sch', 'sch.id = execution.schedule_id')
@@ -74,6 +75,9 @@ export class WorkflowExecutionRepository extends Repository<WorkflowExecution> {
       organizationId,
       rows.map((row) => row.app).filter((app): app is App => !!app)
     );
+    for (const row of rows) {
+      if (row.app && !row.app.name && row.appVersion?.appName) row.app.name = row.appVersion.appName;
+    }
 
     return { rows, total };
   }

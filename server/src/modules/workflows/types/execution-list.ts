@@ -28,7 +28,13 @@ export interface ExecutionListItem {
 // Omit appVersion: required on the entity, but the decorated row may carry { id, name } or nothing.
 export type ExecutionListRow = Omit<WorkflowExecution, 'appVersion'> & {
   app?: { id: string; name: string };
-  appVersion?: { id: string; name: string };
+  appVersion?: {
+    id: string;
+    name: string;
+    appName?: string | null;
+    versionType?: string;
+    branch?: { name: string } | null;
+  };
   environment?: { id: string; name: string };
   schedule?: { id: string; name: string | null; type: string; details: Record<string, unknown> | null };
 };

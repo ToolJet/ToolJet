@@ -1,6 +1,7 @@
 import { ExecutionListItem, ExecutionListRow } from '../types/execution-list';
 import { WORKFLOW_TRIGGER_TYPE } from '../types';
 import { describeCadence } from './schedule-cron';
+import { AppVersionType } from '@entities/app_version.entity';
 
 type ScheduleLike = { name?: string | null; type: string; details?: Record<string, unknown> | null } | null | undefined;
 
@@ -15,6 +16,9 @@ const iso = (value: Date | string | null | undefined): string | null => {
   return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
 };
 
+const versionDisplayName = (version: NonNullable<ExecutionListRow['appVersion']>): string =>
+  version.versionType === AppVersionType.BRANCH && version.branch?.name ? version.branch.name : version.name;
+
 /** Raw DB status plus executed; display state needs live job state, so the browser derives it. */
 export const toExecutionListItem = (row: ExecutionListRow): ExecutionListItem => ({
   id: row.id,
@@ -26,6 +30,6 @@ export const toExecutionListItem = (row: ExecutionListRow): ExecutionListItem =>
   startedAt: iso(row.startedAt),
   finishedAt: iso(row.finishedAt),
   createdAt: iso(row.createdAt),
-  version: row.appVersion ? { id: row.appVersion.id, name: row.appVersion.name } : null,
+  version: row.appVersion ? { id: row.appVersion.id, name: versionDisplayName(row.appVersion) } : null,
   environment: row.environment ? { id: row.environment.id, name: row.environment.name } : null,
 });
