@@ -1,5 +1,6 @@
 import React from 'react';
 import { MarkdownRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/MarkdownRenderer';
+import { getOverlayContainer } from '../../_utils/overlayContainer';
 
 /**
  * MarkdownFieldAdapter - KeyValuePair adapter for Markdown display
@@ -16,6 +17,7 @@ export const MarkdownField = ({
   setIsEditing,
   id,
   field,
+  overlayContainer = getOverlayContainer,
 }) => {
   return (
     <MarkdownRenderer
@@ -30,6 +32,7 @@ export const MarkdownField = ({
       isEditing={isEditing}
       setIsEditing={setIsEditing}
       id={id}
+      overlayContainer={overlayContainer}
     />
   );
 };
