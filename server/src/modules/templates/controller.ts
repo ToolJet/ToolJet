@@ -43,6 +43,7 @@ export class TemplateAppsController {
     return await this.templatesService.createSampleApp(user);
   }
 
+  // Unused: onboarding no longer creates a sample app. Kept until the removal is confirmed.
   @InitFeature(FEATURE_KEY.CREATE_SAMPLE_ONBOARD_APP)
   @Get('sample-onboard-app')
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
