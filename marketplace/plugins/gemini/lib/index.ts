@@ -71,9 +71,13 @@ export default class GeminiService implements QueryService {
 
     if (!response.ok) {
       const body: any = await response.json().catch(() => ({}));
-      throw new QueryError('Connection could not be established', body?.error?.message || response.statusText || 'Unknown error occurred', {
-        statusCode: response.status,
-      });
+      throw new QueryError(
+        'Connection could not be established',
+        body?.error?.message || response.statusText || 'Unknown error occurred',
+        {
+          statusCode: response.status,
+        }
+      );
     }
 
     return {

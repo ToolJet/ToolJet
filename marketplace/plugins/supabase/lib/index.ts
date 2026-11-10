@@ -378,7 +378,10 @@ export default class Supabase implements QueryService {
       const { project_url } = sourceOptions;
       const apiKey = this.getApiKey(sourceOptions);
       if (!project_url) throw new Error('Project URL is required');
-      if (!apiKey) throw new Error(connectionType === 'publishable_key' ? 'Publishable key is required' : 'Secret key is required');
+      if (!apiKey)
+        throw new Error(
+          connectionType === 'publishable_key' ? 'Publishable key is required' : 'Secret key is required'
+        );
 
       // supabase-js rejects an empty table name, so ping the PostgREST root directly.
       // The key goes in `apikey` only: the new sb_* keys are not JWTs and must not be sent as a Bearer token.
