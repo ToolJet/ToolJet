@@ -43,10 +43,10 @@ describe('Library reference checks', () => {
   }, 60000);
 
   describe('lockLibraryPins | writes that may change a reference', () => {
-    it('should accept a new reference to an existing snapshot', async () => {
+    it('should accept a new reference to an existing snapshot and return it', async () => {
       await expect(
         lockLibraryPins(manager(), workspaceId, [pinTo(existing.id, existing.draftId)])
-      ).resolves.toBeUndefined();
+      ).resolves.toMatchObject([{ id: existing.draftId }]);
     });
 
     it('should 404 a new reference to a library query that is not in this workspace', async () => {
@@ -67,7 +67,7 @@ describe('Library reference checks', () => {
       const pin = pinTo(missingQuery, missingVersion);
       await expect(
         lockLibraryPins(manager(), workspaceId, [{ ...pin, options: { ...pin.options, inputs: {} }, previous: pin }])
-      ).resolves.toBeUndefined();
+      ).resolves.toEqual([]);
     });
 
     it('should treat a query newly moved onto the library as a change', async () => {

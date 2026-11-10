@@ -6,6 +6,8 @@ import {
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { LibraryQuery } from '@entities/library_query.entity';
+import { LibraryQueryDraft } from '@entities/library_query_draft.entity';
+import { LibraryQueryVersion } from '@entities/library_query_version.entity';
 import {
   isLibraryUuid,
   parseLibraryReference,
@@ -87,12 +89,12 @@ export const setsLibraryReference = (writes: LibraryPinWrite[]): boolean => writ
 // Locks the parent of every library consumer a user write touches. Only a reference being set or changed is checked
 // (parent and snapshot must exist). An unchanged reference may point at a library query that is not in this
 // workspace (imported, pulled from git, or deleted): it is locked only if it exists, and running it reports the
-// missing query.
+// missing query. Returns the snapshot each set or changed reference points at.
 export async function lockLibraryPins(
   manager: EntityManager,
   organizationId: string,
   writes: LibraryPinWrite[]
-): Promise<void> {
+): Promise<Array<LibraryQueryDraft | LibraryQueryVersion>> {
   const checked = writes.filter(changesReference).map((write) => {
     const options = optionsOf(write);
     if (!isLibraryUuid(options.libraryQueryId)) throw new BadRequestException('A library query ID is required');
@@ -103,7 +105,10 @@ export async function lockLibraryPins(
     .map((write) => referenceOf(write)?.queryId)
     .filter(isLibraryUuid);
   await lockParents(manager, organizationId, new Set(checked.map((pin) => pin.queryId)), carried);
-  for (const pin of checked) await resolveLibraryReference(pin.queryId, pin.versionId, manager);
+  const snapshots: Array<LibraryQueryDraft | LibraryQueryVersion> = [];
+  for (const pin of checked)
+    snapshots.push((await resolveLibraryReference(pin.queryId, pin.versionId, manager)).snapshot);
+  return snapshots;
 }
 
 // For writes that copy references without changing them (version create, import, git pull): nothing is checked,

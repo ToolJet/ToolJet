@@ -18,7 +18,7 @@ import {
   ValidateAppAccessResponseDto,
   VersionReleaseDto,
 } from './dto';
-import { APP_TYPES, APPS_PAGE_SIZE, FEATURE_KEY, isModuleLikeAppType } from './constants';
+import { APP_TYPES, APPS_PAGE_SIZE, FEATURE_KEY } from './constants';
 import { AbilityUtilService } from '@modules/ability/util.service';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { serializeDataQueries } from '@modules/data-queries/serialization.helper';
@@ -105,9 +105,7 @@ export class AppsService implements IAppsService {
     // Git configured but license expired/invalid → workspace is read-only; block creates.
     await assertNotGitLicenseLocked(this.gitSyncConfigsUtilService, user.organizationId);
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      // Workflows always use the workspace default branch, independent of dashboard context.
-      const isDefaultBranchOnly = type === APP_TYPES.WORKFLOW;
-      let branchId = isDefaultBranchOnly ? undefined : appCreateDto.branchId;
+      let branchId = appCreateDto.branchId;
       if (!branchId) {
         const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
         branchId = options.defaultBranch?.id;
@@ -118,7 +116,7 @@ export class AppsService implements IAppsService {
       // directly on main would bypass the git-sync review flow entirely.
       // Single-branch mode (and no-multi-branch-license) is exempt — there are no feature
       // branches, so the default branch IS the working branch.
-      if (!isDefaultBranchOnly && branchId) {
+      if (branchId) {
         const { isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
         if (isMultiBranchingEnabled) {
           const targetBranch = await manager.findOne(WorkspaceBranch, {
@@ -193,7 +191,7 @@ export class AppsService implements IAppsService {
 
     // For preview/viewer access: enforce access type for users without edit permission
     if (!hasEditPermission) {
-      if (isModuleLikeAppType(app.type) && hasViewPermission) {
+      if (app.type === APP_TYPES.MODULE && hasViewPermission) {
         // Build-with: user can open the module builder read-only.
         // If preview params are present we need version resolution — fall through.
         // Only short-circuit when there is nothing to resolve.
@@ -298,7 +296,7 @@ export class AppsService implements IAppsService {
       response['versionId'] = version.id;
       response['environmentId'] = environment.id;
     }
-    if (!hasEditPermission && isModuleLikeAppType(app.type) && hasViewPermission) {
+    if (!hasEditPermission && app.type === APP_TYPES.MODULE && hasViewPermission) {
       response['canEdit'] = false;
     }
     return plainToClass(ValidateAppAccessResponseDto, response);

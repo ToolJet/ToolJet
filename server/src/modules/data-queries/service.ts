@@ -1,5 +1,11 @@
 import { LibraryPinWrite, lockLibraryPins, setsLibraryReference } from '@modules/query-library/locking';
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  NotImplementedException,
+} from '@nestjs/common';
 import { EntityManager, In, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
@@ -154,14 +160,13 @@ export class DataQueriesService implements IDataQueriesService {
   }
 
   // Writing one needs it only when the write sets or changes the library reference: edits that carry the reference
-  // along (rename, other options, moving off the library) keep working without it, like Modules.
-  protected async lockLibraryConsumers(
-    manager: EntityManager,
-    organizationId: string,
-    writes: LibraryPinWrite[]
-  ): Promise<void> {
-    if (setsLibraryReference(writes)) await this.queryLibraryService.assertEnabled(organizationId);
-    await lockLibraryPins(manager, organizationId, writes);
+  // along (rename, other options, moving off the library) keep working without it, like Modules. A set or changed
+  // reference also needs the builder to be able to use the library query's data source, as on the library page.
+  protected async lockLibraryConsumers(manager: EntityManager, user: User, writes: LibraryPinWrite[]): Promise<void> {
+    if (setsLibraryReference(writes)) await this.queryLibraryService.assertEnabled(user.organizationId);
+    for (const snapshot of await lockLibraryPins(manager, user.organizationId, writes)) {
+      await this.queryLibraryService.authorizeDataSource(user, snapshot.dataSourceId, manager);
+    }
   }
 
   async getAll(user: User, app: App, versionId: string, mode?: string) {
@@ -190,7 +195,7 @@ export class DataQueriesService implements IDataQueriesService {
         { appVersionId, organizationId: user.organizationId, manager }
       );
 
-      await this.lockLibraryConsumers(manager, user.organizationId, [{ kind: dataSource.kind, options }]);
+      await this.lockLibraryConsumers(manager, user, [{ kind: dataSource.kind, options }]);
       const dataQuery = await this.dataQueryRepository.createOne(
         {
           name,
@@ -269,7 +274,7 @@ export class DataQueriesService implements IDataQueriesService {
       );
 
       if (options !== undefined)
-        await this.lockLibraryConsumers(manager, user.organizationId, [
+        await this.lockLibraryConsumers(manager, user, [
           { kind: existing.dataSource?.kind, options, previous: existing },
         ]);
       await this.dataQueryRepository.updateOne(dataQueryId, { name, options }, manager);
@@ -295,7 +300,7 @@ export class DataQueriesService implements IDataQueriesService {
     libraryQueryId: string;
     libraryVersionId: string;
   }> {
-    throw new NotFoundException('Query Library is unavailable');
+    throw new NotImplementedException('Query Library is unavailable');
   }
 
   async delete(dataQueryId: string, versionId: string) {
@@ -350,7 +355,7 @@ export class DataQueriesService implements IDataQueriesService {
       );
       await this.lockLibraryConsumers(
         manager,
-        user.organizationId,
+        user,
         stored.map((query, i) => ({
           kind: query.dataSource?.kind,
           options: dataQueriesOptions[i].options,
@@ -430,9 +435,7 @@ export class DataQueriesService implements IDataQueriesService {
           relations: { dataSource: true },
         });
         assertLibraryConsumerOptions(stored.dataSource?.kind, stored.options, options);
-        await this.lockLibraryConsumers(manager, user.organizationId, [
-          { kind: stored.dataSource?.kind, options, previous: stored },
-        ]);
+        await this.lockLibraryConsumers(manager, user, [{ kind: stored.dataSource?.kind, options, previous: stored }]);
         await this.dataQueryRepository.updateOne(dataQueryId, { options }, manager);
       });
       dataQuery['options'] = options;
@@ -480,7 +483,7 @@ export class DataQueriesService implements IDataQueriesService {
   // `user` is used by the EE override to apply query-level permissions on the consumer query.
 
   async getLibraryDefinition(consumerQueryId: string, app: App, user?: User): Promise<object> {
-    throw new NotFoundException('Query Library is unavailable');
+    throw new NotImplementedException('Query Library is unavailable');
   }
 
   async runLibraryQuery(
@@ -491,7 +494,7 @@ export class DataQueriesService implements IDataQueriesService {
     app: App,
     environmentId?: string
   ): Promise<object> {
-    throw new NotFoundException('Query Library is unavailable');
+    throw new NotImplementedException('Query Library is unavailable');
   }
 
   async preview(user: User, dataQuery: DataQuery, environmentId: string, options: any, response: Response, app?: App) {
@@ -612,7 +615,7 @@ export class DataQueriesService implements IDataQueriesService {
       }
 
       if (stored)
-        await this.lockLibraryConsumers(manager, user.organizationId, [
+        await this.lockLibraryConsumers(manager, user, [
           { kind: newDataSource.kind, options: stored.options, previous: stored },
         ]);
       return this.dataQueryRepository.updateOne(queryId, { dataSourceId: newDataSource.id }, manager);

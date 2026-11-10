@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { LibraryQueryDraft } from '@entities/library_query_draft.entity';
 export type LibrarySnapshot = Pick<LibraryQueryDraft, 'kind' | 'dataSourceId' | 'options'>;
@@ -9,9 +9,9 @@ export class LibraryDraftService {
     snapshot: LibrarySnapshot,
     manager: EntityManager
   ): Promise<LibraryQueryDraft> {
-    throw new NotFoundException('Query Library is unavailable');
+    throw new NotImplementedException('Query Library is unavailable');
   }
   async getDraft(queryId: string, draftId: string, manager: EntityManager): Promise<LibraryQueryDraft> {
-    throw new NotFoundException('Query Library is unavailable');
+    throw new NotImplementedException('Query Library is unavailable');
   }
 }

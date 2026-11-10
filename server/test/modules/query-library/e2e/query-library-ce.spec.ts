@@ -22,10 +22,10 @@ describe('QueryLibraryController on CE', () => {
   afterAll(async () => {
     await closeTestApp(app);
   }, 60000);
-  it('refuses feature services even when raw license terms could enable them', async () => {
-    await expect(app.get(QueryLibraryService).assertEnabled('workspace')).rejects.toMatchObject({ status: 404 });
-    await expect(app.get(LibraryDraftService).getDraft('query', 'draft', null)).rejects.toMatchObject({ status: 404 });
-    await expect(app.get(LibraryLifecycleService).getState(null, 'query')).rejects.toMatchObject({ status: 404 });
+  it('refuses feature services with 501 even when raw license terms could enable them', async () => {
+    await expect(app.get(QueryLibraryService).assertEnabled('workspace')).rejects.toMatchObject({ status: 501 });
+    await expect(app.get(LibraryDraftService).getDraft('query', 'draft', null)).rejects.toMatchObject({ status: 501 });
+    await expect(app.get(LibraryLifecycleService).getState(null, 'query')).rejects.toMatchObject({ status: 501 });
   });
   it('should 404 every query-library route on CE', async () => {
     for (const path of ['queries', 'catalog', 'usage', 'static-data-sources'])

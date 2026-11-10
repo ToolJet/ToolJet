@@ -35,7 +35,7 @@ import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/t
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { IAppsUtilService } from './interfaces/IUtilService';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
-import { APP_TYPES, APPS_PAGE_SIZE, isModuleLikeAppType } from './constants';
+import { APP_TYPES, APPS_PAGE_SIZE } from './constants';
 import {
   consumerOptionUuidSql,
   LIBRARY_KIND,
@@ -951,7 +951,7 @@ export class AppsUtilService implements IAppsUtilService {
       organizationId: user.organizationId,
     });
     // INNER JOIN enforces branch scope; skip EE NOT EXISTS predicate (~600x subplan cost)
-    const willInnerJoinOnBranch = !!branchId && (isModuleLikeAppType(type) || type === APP_TYPES.FRONT_END);
+    const willInnerJoinOnBranch = !!branchId;
     const qb = this.viewableAppsQueryUsingPermissions(
       user,
       userPermission[resourceType],
@@ -981,8 +981,7 @@ export class AppsUtilService implements IAppsUtilService {
       ORDER BY av_pick.is_stub ASC, av_pick.updated_at DESC
       LIMIT 1
     )`;
-    // Module pickers need their versions.
-    if (isModuleLikeAppType(type)) {
+    if (type === APP_TYPES.MODULE) {
       if (branchId) {
         qb.innerJoinAndSelect('apps.appVersions', 'appVersions', branchPick, { branchId });
       } else {
@@ -1012,7 +1011,7 @@ export class AppsUtilService implements IAppsUtilService {
       .addSelect(['user.firstName', 'user.lastName'])
       .where('apps.organizationId = :organizationId', { organizationId: user.organizationId });
 
-    if (isModuleLikeAppType(type)) {
+    if (type === APP_TYPES.MODULE) {
       // Exclude stub versions: same rationale as the outer `all()` query — stubs
       // carry UUID names that must not be surfaced as selectable module versions.
       viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'versions', 'versions.isStub = false');

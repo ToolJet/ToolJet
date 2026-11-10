@@ -3,7 +3,7 @@ import { UserAllPermissions } from '@modules/app/types';
 import { FEATURE_KEY } from '../../constants';
 import { App } from '@entities/app.entity';
 import { MODULES } from '@modules/app/constants/modules';
-import { isModuleLikeAppType } from '@modules/apps/constants';
+import { APP_TYPES } from '@modules/apps/constants';
 import { FeatureAbility } from './index';
 
 export function defineDataQueryAppAbility(
@@ -13,7 +13,7 @@ export function defineDataQueryAppAbility(
 ): void {
   const appId = app?.id;
   const { superAdmin, isAdmin, userPermission, isEndUser } = UserAllPermissions;
-  const isModule = isModuleLikeAppType(app?.type);
+  const isModule = app?.type === APP_TYPES.MODULE;
   // Modules resolve via their own MODULES.MODULES bucket (granular module permissions),
   // not the front-end app bucket — same mapping the guard used to fetch it.
   const resourcePermissions = userPermission?.[isModule ? MODULES.MODULES : MODULES.APP];

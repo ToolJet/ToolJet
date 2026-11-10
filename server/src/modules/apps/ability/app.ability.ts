@@ -1,6 +1,6 @@
 import { AbilityBuilder } from '@casl/ability';
 import { UserAllPermissions } from '@modules/app/types';
-import { isModuleLikeAppType, FEATURE_KEY } from '../constants';
+import { APP_TYPES, FEATURE_KEY } from '../constants';
 import { App } from '@entities/app.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { FeatureAbility } from './index';
@@ -20,14 +20,14 @@ export function defineAppAbility(
   const isAllModulesDeletable = !!userPermission?.moduleDelete;
   const isAllAppsViewable = !!userAppPermissions?.isAllViewable;
   const resourceType = UserAllPermissions?.resource[0]?.resourceType;
-  const isCreatingModule = isModuleLikeAppType(request?.body?.type);
+  const isCreatingModule = request?.body?.type === APP_TYPES.MODULE;
 
   // Check if user is the owner of the app
   const app = request?.tj_app;
   const currentUserId = UserAllPermissions?.user?.id;
   const isAppOwner = app && currentUserId && app.userId === currentUserId;
 
-  const isModuleApp = isModuleLikeAppType(app?.type);
+  const isModuleApp = app?.type === APP_TYPES.MODULE;
 
   if ((resourceType === MODULES.MODULES || isModuleApp) && !isAdmin && !superAdmin && !isBuilder) {
     can([FEATURE_KEY.GET, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG, FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS], App);
