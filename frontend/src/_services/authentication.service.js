@@ -321,8 +321,8 @@ function signInViaOAuth(configId, ssoType, ssoResponse, mcpContext) {
       mcpContext?.organizationId === null
         ? { 'Content-Type': 'application/json' }
         : mcpContext
-          ? authHeader(false, organizationId)
-          : authHeader(),
+        ? authHeader(false, organizationId)
+        : authHeader(),
     credentials: 'include',
     body: JSON.stringify({ ...ssoResponse, organizationId, signupOrganizationId, invitationToken, redirectTo }),
   };
