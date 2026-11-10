@@ -66,6 +66,8 @@ export function scheduleToCron(schedule: ScheduleShape): string | null {
 }
 
 /** The cadence in words, for a reader who should not have to parse cron. */
+const isSet = (value: unknown): boolean => value !== undefined && value !== null && value !== '';
+
 export function describeCadence(schedule: ScheduleShape): string {
   const details = (schedule?.details ?? {}) as ScheduleDetails;
 
@@ -77,16 +79,19 @@ export function describeCadence(schedule: ScheduleShape): string {
     case 'minute':
       return 'Every minute';
     case 'hour':
+      if (!isSet(details.minutes)) break;
       return `Hourly at :${String(details.minutes).padStart(2, '0')}`;
     case 'day':
+      if (!isSet(details.hour)) break;
       return `Daily at ${details.hour}`;
     case 'week':
+      if (!isSet(details.day) || !isSet(details.hour)) break;
       return `Weekly on ${details.day} at ${details.hour}`;
     case 'month':
+      if (!isSet(details.date) || !isSet(details.hour)) break;
       return `Monthly on day ${details.date} at ${details.hour}`;
-    default:
-      return 'Unknown schedule';
   }
+  return 'Unknown schedule';
 }
 
 /** Empty for an unusable expression or timezone: BullMQ rejects both, so the schedule never fires. */

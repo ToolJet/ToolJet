@@ -11,7 +11,7 @@ export function toUpcomingRun(row: ScheduleRow, registered: boolean, now: Date, 
     environment: row.environmentId ? { id: row.environmentId, name: row.environmentName } : null,
     cadence: describeCadence({ type: row.type, details: row.details }),
     timezone: row.timezone,
-    nextRuns: nextRuns(cron, row.timezone, count, now).map((date) => date.toISOString()),
+    nextRuns: registered ? nextRuns(cron, row.timezone, count, now).map((date) => date.toISOString()) : [],
     registered,
   };
 }

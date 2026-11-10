@@ -71,6 +71,18 @@ describe('scheduleToCron', () => {
 
 describe('describeCadence', () => {
   it.each([
+    [{ frequency: 'hour' }],
+    [{ frequency: 'day' }],
+    [{ frequency: 'day', hour: '' }],
+    [{ frequency: 'week', hour: '8:00 AM' }],
+    [{ frequency: 'week', day: 'Monday' }],
+    [{ frequency: 'month', hour: '8:00 AM' }],
+    [{ frequency: 'month', date: 14 }],
+  ])('says the schedule is unknown, never "undefined", when %o is missing a setting', (details) => {
+    expect(describeCadence({ type: 'interval', details })).toBe('Unknown schedule');
+  });
+
+  it.each([
     [{ frequency: 'minute' }, 'Every minute'],
     [{ frequency: 'hour', minutes: 15 }, 'Hourly at :15'],
     [{ frequency: 'day', hour: '8:00 AM' }, 'Daily at 8:00 AM'],

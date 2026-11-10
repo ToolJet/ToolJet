@@ -42,6 +42,12 @@ describe('toUpcomingRun', () => {
     expect(toUpcomingRun(row(), false, now, 3).registered).toBe(false);
   });
 
+  it('lists no times for a schedule the queue does not hold, since it will never run', () => {
+    const result = toUpcomingRun(row(), false, now, 3);
+
+    expect(result).toMatchObject({ registered: false, cadence: 'Daily at 8:00 AM', nextRuns: [] });
+  });
+
   it('tolerates a schedule with no environment', () => {
     const result = toUpcomingRun(row({ environmentId: null, environmentName: null }), true, now, 3);
     expect(result.environment).toBeNull();
