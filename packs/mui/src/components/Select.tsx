@@ -152,7 +152,7 @@ export const Select = () => {
     fit: true,
     loading: 'own',
     usage:
-      "MUI's Select (TextField select): label, options [{label, value}], value (the picked value), helperText, displayEmpty with placeholder, variant, size, disableClearable (a clear button shows while a value is picked unless set); selectedOption is exposed; onChange, onOpen, onClose. The menu opens in the popup layer.",
+      "MUI's Select (TextField select): label, options [{label, value}], value (the picked value), helperText, displayEmpty with placeholder, disableClearable (a clear button shows while a value is picked unless set); styles variant, size, color; selectedOption is exposed; onChange, onOpen, onClose. The menu opens in the popup layer.",
     roleProps: { description: 'helperText', showClearBtn: 'disableClearable' },
     roleValues: { disableClearable: { true: false, false: true } },
     roleEvents: { onSelect: 'onChange' },

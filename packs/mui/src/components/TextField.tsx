@@ -45,8 +45,8 @@ const useFocusActions = (ref: React.RefObject<HTMLInputElement | null>) => {
   ToolJet.useAction({ name: 'blur', displayName: 'Blur' }, () => ref.current?.blur());
 };
 
-// MUI's TextField: label, value, placeholder, helperText, type, variant (outlined, filled, standard), size, color,
-// startAdornment / endAdornment (text or an icon name); events onChange, onEnterKeyDown, onFocus, onBlur. MUI has no
+// MUI's TextField: label, value, placeholder, helperText, type, startAdornment / endAdornment (text or an icon name);
+// styles variant (outlined, filled, standard), size, color; events onChange, onEnterKeyDown, onFocus, onBlur. MUI has no
 // form API: actions setValue, clear, focus, blur. The Validation section sets error and required. Type email or url
 // also checks the format, as UI 2.0's Input does; type password gets MUI's show/hide button.
 export const TextField = () => {
@@ -83,7 +83,7 @@ export const TextField = () => {
     fit: true,
     loading: 'own',
     usage:
-      "MUI's TextField: label, value, placeholder, helperText, type, variant (outlined, filled, standard), size (small, medium), startAdornment/endAdornment (text or an icon name); onChange, onEnterKeyDown, onFocus, onBlur; setValue, clear, focus, blur. The Validation section sets error and required.",
+      "MUI's TextField: label, value, placeholder, helperText, type, startAdornment/endAdornment (text or an icon name); styles variant (outlined, filled, standard), size (small, medium), color; onChange, onEnterKeyDown, onFocus, onBlur; setValue, clear, focus, blur. The Validation section sets error and required.",
     roleProps: { description: 'helperText', inputType: 'type' },
     roleEvents: { onEnterPressed: 'onEnterKeyDown' },
     roleActions: { setText: 'setValue', setFocus: 'focus', setBlur: 'blur' },
@@ -179,7 +179,7 @@ export const MultilineTextField = () => {
     fit: true,
     loading: 'own',
     usage:
-      "MUI's TextField multiline: label, value, placeholder, helperText, minRows/maxRows (grows between them), variant, size; onChange; Ctrl/Cmd+Enter fires onEnterKeyDown.",
+      "MUI's TextField multiline: label, value, placeholder, helperText, minRows/maxRows (grows between them); styles variant, size, color; onChange; Ctrl/Cmd+Enter fires onEnterKeyDown.",
     roleProps: { description: 'helperText', rows: 'minRows' },
     roleEvents: { onEnterPressed: 'onEnterKeyDown' },
     roleActions: { setText: 'setValue', setFocus: 'focus', setBlur: 'blur' },
