@@ -1,7 +1,10 @@
+// migration-lint: allow-destructive the foreign keys only cover nullable columns this migration adds
 import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey } from 'typeorm';
 
-export class AddOrganizationAndAppToApprovalRequests1787800000000 implements MigrationInterface {
+export class AddOrganizationAndAppToApprovalRequests1789300000300 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    if (await queryRunner.hasColumn('workflow_approval_requests', 'organization_id')) return;
+
     await queryRunner.addColumns('workflow_approval_requests', [
       new TableColumn({ name: 'organization_id', type: 'uuid', isNullable: true }),
       new TableColumn({ name: 'app_id', type: 'uuid', isNullable: true }),
@@ -21,15 +24,6 @@ export class AddOrganizationAndAppToApprovalRequests1787800000000 implements Mig
         onDelete: 'CASCADE',
       }),
     ]);
-
-    await queryRunner.query(`
-      UPDATE workflow_approval_requests r
-      SET organization_id = a.organization_id, app_id = a.id
-      FROM workflow_executions e
-      JOIN app_versions av ON av.id = e.app_version_id
-      JOIN apps a         ON a.id  = av.app_id
-      WHERE e.id = r.workflow_execution_id
-    `);
 
     // Supports: WHERE organization_id = $1 ORDER BY created_at DESC LIMIT n
     await queryRunner.query(`

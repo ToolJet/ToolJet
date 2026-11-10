@@ -1,7 +1,10 @@
+// migration-lint: allow-destructive the unique indexes and foreign keys are on the table this migration creates and on nullable columns it adds
 import { MigrationInterface, QueryRunner, Table, TableColumn, TableForeignKey, TableIndex } from 'typeorm';
 
-export class CreateWorkflowApprovalRequestsAndExecutionLinkage1787000000001 implements MigrationInterface {
+export class CreateWorkflowApprovalRequestsAndExecutionLinkage1789300000100 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    if (await queryRunner.hasTable('workflow_approval_requests')) return;
+
     await queryRunner.createTable(
       new Table({
         name: 'workflow_approval_requests',

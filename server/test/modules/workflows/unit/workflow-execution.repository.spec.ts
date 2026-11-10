@@ -57,7 +57,9 @@ describe('WorkflowExecutionRepository.applyListFilters', () => {
       to: '2026-01-31T23:59:59.999Z',
     });
     const clauses = calls.map((c) => c.clause).join(' | ');
-    expect(clauses).toContain('execution.app_id = :appId');
+    expect(clauses).toContain(
+      'COALESCE(execution.app_id, (SELECT av_run.app_id FROM app_versions av_run WHERE av_run.id = execution.app_version_id)) = :appId'
+    );
     expect(clauses).toContain('execution.environment_id = :environmentId');
     expect(clauses).toContain('execution.trigger_type IN (:...triggers)');
     expect(clauses).toContain('execution.created_at >= :from');

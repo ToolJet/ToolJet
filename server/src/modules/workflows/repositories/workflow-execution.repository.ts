@@ -18,6 +18,12 @@ export const STATUS_FILTER_TO_PREDICATE: Record<string, string> = {
   terminated: "(execution.status = 'terminated')",
 };
 
+const RUN_APP_ID =
+  'COALESCE(execution.app_id, (SELECT av_run.app_id FROM app_versions av_run WHERE av_run.id = execution.app_version_id))';
+const RUN_IN_ORGANIZATION = `(execution.organization_id = :organizationId OR (execution.organization_id IS NULL AND execution.app_version_id IN (
+  SELECT av_org.id FROM app_versions av_org JOIN apps a_org ON a_org.id = av_org.app_id WHERE a_org.organization_id = :organizationId
+)))`;
+
 @Injectable()
 export class WorkflowExecutionRepository extends Repository<WorkflowExecution> {
   constructor(
@@ -33,9 +39,7 @@ export class WorkflowExecutionRepository extends Repository<WorkflowExecution> {
     page: number,
     perPage: number
   ): Promise<{ rows: ExecutionListRow[]; total: number }> {
-    const idQuery = this.createQueryBuilder('execution').where('execution.organization_id = :organizationId', {
-      organizationId,
-    });
+    const idQuery = this.createQueryBuilder('execution').where(RUN_IN_ORGANIZATION, { organizationId });
     this.applyListFilters(idQuery, filters);
 
     const total = await idQuery.getCount();
@@ -52,8 +56,8 @@ export class WorkflowExecutionRepository extends Repository<WorkflowExecution> {
     if (ids.length === 0) return { rows: [], total };
 
     const decorated = await this.createQueryBuilder('execution')
-      .leftJoinAndMapOne('execution.app', App, 'app', 'app.id = execution.app_id')
       .leftJoinAndMapOne('execution.appVersion', AppVersion, 'av', 'av.id = execution.app_version_id')
+      .leftJoinAndMapOne('execution.app', App, 'app', 'app.id = COALESCE(execution.app_id, av.app_id)')
       .leftJoinAndMapOne('execution.environment', AppEnvironment, 'env', 'env.id = execution.environment_id')
       .leftJoinAndMapOne('execution.schedule', WorkflowSchedule, 'sch', 'sch.id = execution.schedule_id')
       .where('execution.id IN (:...ids)', { ids })
@@ -82,7 +86,7 @@ export class WorkflowExecutionRepository extends Repository<WorkflowExecution> {
       if (predicates.length) query.andWhere(`(${predicates.join(' OR ')})`);
     }
     if (filters.appId) {
-      query.andWhere('execution.app_id = :appId', { appId: filters.appId });
+      query.andWhere(`${RUN_APP_ID} = :appId`, { appId: filters.appId });
     }
     if (filters.environmentId) {
       query.andWhere('execution.environment_id = :environmentId', { environmentId: filters.environmentId });
@@ -93,7 +97,7 @@ export class WorkflowExecutionRepository extends Repository<WorkflowExecution> {
     if (filters.folderId) {
       // Subquery, not join: id query must stay join-free for LIMIT pushdown.
       query.andWhere(
-        'execution.app_id IN (SELECT folder_apps.app_id FROM folder_apps WHERE folder_apps.folder_id = :folderId)',
+        `${RUN_APP_ID} IN (SELECT folder_apps.app_id FROM folder_apps WHERE folder_apps.folder_id = :folderId)`,
         { folderId: filters.folderId }
       );
     }

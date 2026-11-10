@@ -1,7 +1,9 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class AddWorkflowExecutionNodeInputState1787760000000 implements MigrationInterface {
+export class AddWorkflowExecutionNodeInputState1789300000200 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    if (await queryRunner.hasColumn('workflow_execution_nodes', 'input_state')) return;
+
     await queryRunner.addColumn(
       'workflow_execution_nodes',
       new TableColumn({
