@@ -12,6 +12,7 @@ import { DropdownMenu } from '../../../../../../../packs/shadcn/src/components/D
 import { KeyValue } from '../../../../../../../packs/shadcn/src/components/KeyValue';
 import { Questionnaire } from '../../../../../../../packs/shadcn/src/components/Questionnaire';
 import { SplitPane } from '../../../../../../../packs/shadcn/src/components/SplitPane';
+import { ColorPicker } from '../../../../../../../packs/shadcn/src/components/ColorPicker';
 import { installBrowserStubs } from '../fuzz/packTestEnv';
 
 // The shadcn pack's choice, menu and layout components as the inline runtime draws them, inside a shadow root (pack audit
@@ -48,6 +49,7 @@ const COMPONENTS = {
   KeyValue,
   Questionnaire,
   SplitPane,
+  ColorPicker,
 };
 
 // Mounts one pack component; `exposed` holds its exposed values, `events` the events it fired, `actions` its actions.
@@ -410,5 +412,13 @@ describe('a popup opened from inside a Dialog body', () => {
     key(trigger, 'Enter');
     await waitFor(() => expect(popupRoot()?.querySelector('[role="menu"]')).toBeTruthy());
     expect(popupRoot().querySelector('[role="menu"]').style.zIndex).toBe('1010');
+  });
+
+  it('RK-02 ColorPicker: stacks its palette at the layer its owner declares, so swatches take clicks above the dialog', async () => {
+    const { root } = await mount('ColorPicker', {});
+    root().querySelector('.ui').style.setProperty('--ui-popup-layer', '1010');
+    fireEvent.click(root().querySelector('.ui2-color-trigger'));
+    await waitFor(() => expect(popupRoot()?.querySelector('.ui2-color-pop')).toBeTruthy());
+    expect(popupRoot().querySelector('.ui2-color-pop').style.zIndex).toBe('1010');
   });
 });
