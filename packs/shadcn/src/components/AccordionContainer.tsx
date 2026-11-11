@@ -106,6 +106,11 @@ export const AccordionContainer = () => {
     const collapsed = prev.some((id) => !next.includes(id));
     openRef.current = next;
     setOpenSections(next);
+    // openIndexes and isExpanded with the ids, before the events: set only once drawn, the first onChange's handlers
+    // read the previous openIndexes beside the new openSections.
+    const shown = indexes(allowMultiple ? next : next.slice(0, 1));
+    setOpenIndexes(shown);
+    setIsExpanded(shown.length > 0);
     // The sections already open: nothing changes and nothing fires.
     if (!fire || (!expanded && !collapsed)) return;
     if (expanded) onExpand();
@@ -134,10 +139,10 @@ export const AccordionContainer = () => {
       const all = sections.map((s) => s.id);
       const prev = openRef.current;
       const next = allowMultiple ? (one ? [...new Set([...prev, one])] : all) : [one ?? all[0]].filter(Boolean);
-      // Only when a section opens, as the pack's Accordion: one already open fires nothing.
+      // Only when a section opens, as the pack's Accordion: one already open fires nothing. It fires what a click does:
+      // onExpand, onCollapse for a section it closes (a single accordion), and onChange (it fired onExpand only).
       if (!next.some((id) => !prev.includes(id))) return;
-      update(next, false);
-      onExpand();
+      update(next);
     }
   );
   ToolJet.useAction(
@@ -152,8 +157,8 @@ export const AccordionContainer = () => {
       const prev = openRef.current;
       const next = one ? prev.filter((id) => id !== one) : [];
       if (next.length === prev.length) return;
-      update(next, false);
-      onCollapse();
+      // onCollapse and onChange, as a click fires them (it fired onCollapse only).
+      update(next);
     }
   );
 

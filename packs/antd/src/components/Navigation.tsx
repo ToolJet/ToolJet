@@ -580,14 +580,29 @@ export const Drawer = () => {
 
 const DrawerBody = (props: React.ComponentProps<typeof AntDrawer>) => {
   const popup = usePopupTheme();
+  // Kept drawn while closed (forceRender, for the body's components), its focus sentinels stayed in the page's Tab
+  // order: hidden once the close has animated, shown again as it opens.
+  const [shown, setShown] = React.useState(!!props.open);
+  if (props.open && !shown) setShown(true);
   if (!popup.container) return null;
   return (
     <AntDrawer
       {...props}
       getContainer={popup.container}
       rootClassName={popup.className}
-      rootStyle={popup.style}
+      rootStyle={shown ? popup.style : { ...popup.style, visibility: 'hidden' }}
+      afterOpenChange={(next) => {
+        if (!next) setShown(false);
+        props.afterOpenChange?.(next);
+      }}
       forceRender
+      // The host keeps Tab inside an open drawer (packFocus): antd's own trap reads document.activeElement, which a
+      // shadow root hides.
+      drawerRender={(node) => (
+        <div data-tj-modal={props.open ? 'open' : 'closed'} style={{ height: '100%' }}>
+          {node}
+        </div>
+      )}
     >
       <ToolJet.PopupSlot name="body" style={{ height: '100%' }} />
     </AntDrawer>
@@ -841,21 +856,21 @@ export const Calendar = () => {
   });
   const parsed = value ? dayjs(value) : null;
   const shownValue = parsed && parsed.isValid() ? parsed : undefined;
-  // Ant's Calendar keeps its own selection once its value is undefined, so an emptied value (a cleared binding) still
-  // showed the last date picked (SP-27): it starts again instead, on today with nothing picked.
-  const [epoch, setEpoch] = useState(0);
-  const hadValue = useRef(!!shownValue);
+  // The date the grid shows, apart from the value: Ant's Calendar has one value for both, so a month picked in Year
+  // mode or in the header selects changed the value without onSelect. Only a day picked changes the value now; the
+  // header and Year mode move the grid. An emptied value (a cleared binding) starts again on today (SP-27).
+  const [panel, setPanel] = useState(() => shownValue ?? dayjs());
   useEffect(() => {
-    if (hadValue.current && !shownValue) setEpoch((n) => n + 1);
-    hadValue.current = !!shownValue;
+    setPanel(shownValue ?? dayjs());
   }, [shownValue ? shownValue.valueOf() : null]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Nothing looks picked while there is no value (today did), or while the grid shows another day than the value.
+  const unpicked = !shownValue || !panel.isSame(shownValue, 'day');
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-calendar">
+    <AntProvider tokens={tokens} fill className={unpicked ? 'tj-ant-calendar is-unpicked' : 'tj-ant-calendar'}>
       <SpinOver loading={loading} as="fill">
         <AntCalendar
-          key={epoch}
           fullscreen={fullscreen}
-          value={shownValue}
+          value={panel}
           cellRender={(d, info) => {
             if (info.type !== 'date') return info.originNode;
             const list = byDate.get(d.format('YYYY-MM-DD'));
@@ -887,8 +902,10 @@ export const Calendar = () => {
             );
           }}
           onSelect={(d, info) => {
+            setPanel(d);
+            if (info.source !== 'date') return;
             setValue(d.format('YYYY-MM-DD'));
-            if (info.source === 'date') onSelect();
+            onSelect();
           }}
           onPanelChange={(d) => {
             setPanelDate(d.format('YYYY-MM-DD'));
@@ -1041,8 +1058,11 @@ export const Carousel = () => {
     enumDefinition: ['scrollx', 'fade'],
     initialValue: 'scrollx',
   });
-  const [, setCurrent] = ToolJet.useStateNumber({ name: 'current', initialValue: 0, inspector: 'hidden' });
+  const [current, setCurrent] = ToolJet.useStateNumber({ name: 'current', initialValue: 0, inspector: 'hidden' });
   const afterChange = ToolJet.useEventCallback({ name: 'afterChange' });
+  // current, set by the app, is the slide shown (it was only ever exposed): the carousel turns to it.
+  const carousel = useRef<{ goTo: (slide: number, dontAnimate?: boolean) => void } | null>(null);
+  const shownSlide = useRef(0);
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
@@ -1060,17 +1080,26 @@ export const Carousel = () => {
   // background browser tab) it kept turning slides and firing afterChange for nobody (SP-09).
   const owner = useRef<HTMLElement | null>(null);
   const shown = useOwnerShown(owner, !!autoplay);
+  const wanted = Math.max(0, Math.min(slides.length - 1, Math.trunc(Number(current) || 0)));
+  useEffect(() => {
+    if (!slides.length || wanted === shownSlide.current) return;
+    shownSlide.current = wanted;
+    carousel.current?.goTo(wanted);
+  }, [wanted, slides.length]);
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-carousel" ownerRef={owner}>
       <SpinOver loading={loading} as="fill">
         {slides.length ? (
           <AntCarousel
+            ref={carousel as never}
+            initialSlide={wanted}
             autoplay={!!autoplay && shown}
             autoplaySpeed={Math.max(500, Number(autoplaySpeed) || 3000)}
             dots={dots}
             arrows={arrows}
             effect={effect as 'scrollx'}
             afterChange={(i) => {
+              shownSlide.current = i;
               setCurrent(i);
               if (ownerAvailable(owner.current)) afterChange();
             }}

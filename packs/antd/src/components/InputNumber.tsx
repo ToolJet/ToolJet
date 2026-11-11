@@ -53,7 +53,13 @@ export const InputNumber = (props: Record<string, unknown>) => {
   const places = toNumber(precision) === null ? undefined : Math.max(0, Math.min(10, Math.round(Number(precision))));
   const rounded = (v: number | null) => (v === null || places === undefined ? v : Number(v.toFixed(places)));
   const value = rounded(toNumber(rawValue));
-  // A value outside Min or Max is invalid, as on the ToolJet Number Input (QA item 52); Ant only stops the arrows.
+  // No number is null, at load as after the user clears the field (it was '' at load, null after a clear).
+  React.useEffect(() => {
+    if (value === null && rawValue !== null) setValue(null as unknown as number);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value === null, rawValue]);
+  // A value outside Min or Max is invalid, as on the ToolJet Number Input (QA item 52); Ant clamps only what is typed,
+  // so a default or setFieldValue past them counted as valid.
   const check = ToolJet.useValidation({
     kind: 'text',
     value: value === null ? '' : String(value),

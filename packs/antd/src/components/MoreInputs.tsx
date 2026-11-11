@@ -25,6 +25,7 @@ import { closesOnEscape, useOwnedPopup } from '../lib/useOwnerGuard';
 import { useFormValue } from '../lib/formValue';
 import { boundedTree } from '../lib/tree';
 import { useValueSetter } from '../lib/sameValue';
+import { isBlankDate, parseDate as strictDate, parseTime } from '../lib/dates';
 import '../styles/controls.css';
 
 const useFieldActions = (change: (v: unknown) => void, initial: unknown) => {
@@ -35,12 +36,11 @@ const useFieldActions = (change: (v: unknown) => void, initial: unknown) => {
   ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(initial));
 };
 
-const parseDate = (v: unknown, format?: string): Dayjs | null => {
-  const s = str(v).trim();
-  if (!s) return null;
-  const d = format ? dayjs(`2000-01-01 ${s}`, `YYYY-MM-DD ${format}`) : dayjs(s);
-  return d.isValid() ? d : null;
-};
+// Strict: text that names no real date or time (2026-13-45, 25:99) is no value, not a rolled-over one (lib/dates).
+const COLOR_TEXT =
+  /^(#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})|(rgba?|hsla?|hsba?|hsva?)\(\s*[-+\d.%]+(\s*[,\s/]\s*[-+\d.%]+){2,3}\s*\))$/i;
+const parseDate = (v: unknown, format?: string): Dayjs | null =>
+  format ? parseTime(v, [format, format.replace(/^HH/, 'H')]) : strictDate(v);
 
 // The panel before the one `end` is in, for each picker: Ant's Range Picker opens the end field there when the range
 // spans panels, so the end shows in its second panel.
@@ -385,7 +385,11 @@ export const TimePicker = (props: Record<string, unknown>) => {
     if (!valueSetter.set(d ? d.format(valueFormat) : '')) return;
     onChange();
   };
-  useFieldActions((v) => change(parseDate(v, 'HH:mm:ss') ?? parseDate(v, 'HH:mm')), props.value);
+  // Text that names no time is refused (the value stays); an empty one clears.
+  useFieldActions((v) => {
+    const d = parseDate(v, 'HH:mm:ss') ?? parseDate(v, 'HH:mm');
+    if (d || isBlankDate(v)) change(d);
+  }, props.value);
   const current = parseDate(value, valueFormat) ?? parseDate(value, 'HH:mm');
   const panel = useOwnedPopup(disabled, (open) => !open && check.touch());
   return (
@@ -452,7 +456,13 @@ export const RangePicker = (props: Record<string, unknown>) => {
   // The same dates while the value is the same: Ant resets the shown panel whenever the value it is given changes, and
   // the one-panel correction below answers each reset (a new pair each render reset it again, without end).
   const pair = React.useMemo(() => toArray(value).map((v) => parseDate(v)), [JSON.stringify(value)]); // eslint-disable-line react-hooks/exhaustive-deps
-  const check = ToolJet.useValidation({ kind: 'date', value: pair[0] ? str(toArray(value)[0]) : '' });
+  // A range whose start is after its end (a default or setFieldValue; a pick is always in order) is not valid.
+  const reversed = !!pair[0] && !!pair[1] && pair[0].isAfter(pair[1]);
+  const check = ToolJet.useValidation({
+    kind: 'date',
+    value: pair[0] ? str(toArray(value)[0]) : '',
+    rule: reversed ? 'The start date is after the end date' : '',
+  });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
     role: 'daterangepicker',
@@ -735,6 +745,14 @@ export const TreeSelect = (props: Record<string, unknown>) => {
     const arr = Array.isArray(v) ? v.map(str) : v === undefined || v === null || v === '' ? [] : [str(v)];
     if (valueSetter.set(many ? arr : (arr[0] ?? ''))) onChange();
   };
+  // The value takes the shape Multiple asks for: multiple to single kept the whole array while one item showed, single to
+  // multiple kept text. Fires no event.
+  const shaped: unknown = many ? values : (values[0] ?? '');
+  const shapedKey = JSON.stringify(shaped);
+  React.useEffect(() => {
+    if (JSON.stringify(value) !== shapedKey) setValue(shaped as never);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shapedKey, JSON.stringify(value)]);
   // A cleared Form empties a multiple TreeSelect to no values ([]), not to the '' the host clears text values to.
   (ToolJet as { useFormClear?: (f: () => void) => void }).useFormClear?.(
     () => many && setValue([] as unknown as string)
@@ -961,9 +979,18 @@ export const ColorPicker = (props: Record<string, unknown>) => {
   });
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  // A colour the picker can read (hex, rgb(), hsl(), hsb()): anything else showed as #000000 while value kept the text.
+  // A value it cannot read is not kept; setFieldValue refuses it.
+  const readable = (v: unknown) => str(v).trim() === '' || COLOR_TEXT.test(str(v).trim());
   useFieldActions((v) => {
+    if (!readable(v)) return;
     if (valueSetter.set(str(v))) onChange();
   }, props.value);
+  const valueReadable = readable(value);
+  useEffect(() => {
+    if (!valueReadable) setValue('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [valueReadable]);
   const presetList = toArray(presets)
     .map((p) =>
       p && typeof p === 'object' ? { label: str((p as Row).label), colors: toArray((p as Row).colors).map(str) } : null
@@ -1105,6 +1132,8 @@ export const Transfer = (props: Record<string, unknown>) => {
           status={check.error ? 'error' : undefined}
           titles={toArray(titles).map(str).slice(0, 2)}
           showSearch={showSearch}
+          // Ant's own search matches case-sensitively ('rev' missed 'Revenue').
+          filterOption={(input, item) => str(item.title).toLowerCase().includes(str(input).toLowerCase())}
           oneWay={oneWay}
           disabled={disabled}
           render={(item) => item.title}

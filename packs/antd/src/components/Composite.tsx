@@ -216,15 +216,17 @@ export const SummaryStrip = () => {
   const [items] = ToolJet.useStateArray({
     name: 'items',
     label: 'Items',
-    description: "[{ label, value, delta: 0.12, caption: 'vs last month' }]",
+    description: "[{ label, value, delta: 12 (percent points), caption: 'vs last month' }]",
     initialValue: [
-      { label: 'Revenue', value: 48250, format: 'currency', delta: 0.12, caption: 'vs last month' },
-      { label: 'Orders', value: 1284, delta: 0.08, caption: 'vs last month' },
+      // Percents in whole points (2.1 is 2.1%), as UI 2.0's Summary strip takes them: the fractions these were showed
+      // 100 times too small.
+      { label: 'Revenue', value: 48250, format: 'currency', delta: 12, caption: 'vs last month' },
+      { label: 'Orders', value: 1284, delta: 8, caption: 'vs last month' },
       {
         label: 'Refund rate',
-        value: 0.021,
+        value: 2.1,
         format: 'percent',
-        delta: -0.004,
+        delta: -0.4,
         deltaFormat: 'number',
         lowerIsBetter: true,
         caption: 'vs last month',
@@ -295,7 +297,8 @@ export const SummaryStrip = () => {
             <Statistic
               title={f.label ? loading ? <TextBone part="title" /> : f.label : undefined}
               value={f.value}
-              valueRender={loading ? () => <TextBone part="figure" /> : undefined}
+              // A null or missing value showed Ant's 0; it shows a dash, as the Rocket strip does.
+              valueRender={loading ? () => <TextBone part="figure" /> : f.value === '' ? () => '–' : undefined}
               valueStyle={{ fontSize }}
             />
             {f.delta || f.caption ? (
@@ -894,7 +897,16 @@ export const Tags = () => {
                 solid={variant === 'solid'}
                 bordered={variant === 'outlined'}
                 style={{ marginInlineEnd: 0, cursor: 'pointer', borderRadius: round ? 999 : undefined }}
+                // A button to the keyboard and a screen reader, as it is to the pointer.
+                role="button"
+                tabIndex={0}
                 onClick={() => {
+                  setLastClickedTag(t.label);
+                  onTagClicked();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key !== 'Enter' && e.key !== ' ') return;
+                  e.preventDefault();
                   setLastClickedTag(t.label);
                   onTagClicked();
                 }}
@@ -1049,30 +1061,35 @@ export const Icon = () => {
   ToolJet.useAction({ name: 'click', displayName: 'Click' }, () => onClick());
   const Glyph = antIcon(icon);
   const color = TONE_COLOR[type] ?? TONE_COLOR.default;
-  const px = Math.max(8, Math.min(200, Number(size) || 20));
-  const box = Math.max(px + 8, Number(chipSize) || 40);
+  const wantedPx = Math.max(8, Math.min(200, Number(size) || 20));
+  const wantedBox = Math.max(wantedPx + 8, Number(chipSize) || 40);
+  // The chip fits the widget's box: the 40px default chip in the default 4-row box was cut 2px top and bottom.
+  const [fitRef, box] = useFitSquare<HTMLDivElement>(wantedBox);
+  const px = chip === 'none' ? wantedPx : Math.min(wantedPx, Math.max(8, box - 8));
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-start">
-      <SpinOver loading={loading}>
-        <span
-          className={`tj-ant-icon is-${chip}`}
-          style={{
-            color,
-            fontSize: px,
-            ...(chip !== 'none'
-              ? {
-                  width: box,
-                  height: box,
-                  background: `color-mix(in srgb, ${color} 12%, transparent)`,
-                  borderRadius: chip === 'circle' ? '50%' : 'var(--ant-border-radius-lg)',
-                }
-              : {}),
-          }}
-          onClick={() => onClick()}
-          onMouseOver={onPointerIn(onHover)}
-        >
-          {Glyph ? <Glyph /> : null}
-        </span>
+      <SpinOver loading={loading} as="fill">
+        <div ref={fitRef} className="tj-ant-icon-fit">
+          <span
+            className={`tj-ant-icon is-${chip}`}
+            style={{
+              color,
+              fontSize: px,
+              ...(chip !== 'none'
+                ? {
+                    width: box,
+                    height: box,
+                    background: `color-mix(in srgb, ${color} 12%, transparent)`,
+                    borderRadius: chip === 'circle' ? '50%' : 'var(--ant-border-radius-lg)',
+                  }
+                : {}),
+            }}
+            onClick={() => onClick()}
+            onMouseOver={onPointerIn(onHover)}
+          >
+            {Glyph ? <Glyph /> : null}
+          </span>
+        </div>
       </SpinOver>
     </AntProvider>
   );
@@ -1190,9 +1207,32 @@ export const ButtonGroup = (props: Record<string, unknown>) => {
     const values = next.map(rawOf);
     if (valueSetter.set(mode === 'multiple' ? values : (values[0] ?? ''))) onChange();
   };
+  // The value takes the mode's shape and holds only values a button has: single to multiple kept text, multiple to
+  // single kept an array, and actions or none kept the old selection. Not while there are no buttons yet (a query not
+  // yet run). Fires no event.
+  const choosing = mode === 'single' || mode === 'multiple';
+  const kept = list.length ? selected.filter((v) => list.some((b) => b.value === v)) : selected;
+  const shaped: unknown = !choosing ? '' : mode === 'multiple' ? kept.map(rawOf) : kept.length ? rawOf(kept[0]) : '';
+  const shapedKey = JSON.stringify(shaped);
+  useEffect(() => {
+    if (JSON.stringify(value) !== shapedKey) setValue(shaped as string);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shapedKey, JSON.stringify(value)]);
   ToolJet.useAction(
     { name: 'setSelected', displayName: 'Set selected', params: [{ handle: 'value', displayName: 'Value' }] },
-    (v) => set(Array.isArray(v) ? (v as unknown[]).map(str) : v === '' || v === undefined ? [] : [str(v)])
+    (v) => {
+      // Actions mode (and none) holds no selection to set.
+      if (!choosing) return;
+      const wanted = Array.isArray(v)
+        ? (v as unknown[]).map(str)
+        : v === '' || v === undefined || v === null
+          ? []
+          : [str(v)];
+      // A value no button has is not a selection: it is refused, and leaves the selection as it was.
+      const known = list.length ? wanted.filter((w) => list.some((b) => b.value === w)) : wanted;
+      if (wanted.length && !known.length) return;
+      set(known);
+    }
   );
   ToolJet.useAction({ name: 'clear', displayName: 'Clear' }, () => set([]));
   void props;
@@ -1210,13 +1250,21 @@ export const ButtonGroup = (props: Record<string, unknown>) => {
     <AntProvider tokens={tokens}>
       <SpinOver loading={loading}>
         {label ? <div className="tj-ant-field-label">{label}</div> : null}
-        <Space.Compact direction={direction as 'horizontal'} block={block} size={size as 'middle'}>
+        <Space.Compact
+          direction={direction as 'horizontal'}
+          block={block}
+          size={size as 'middle'}
+          // Read as one group, by its label, and each button as pressed or not when it selects.
+          role="group"
+          aria-label={label || undefined}
+        >
           {list.map((b) => {
             const Glyph = antIcon(b.icon);
-            const on = selected.includes(b.value) && (mode === 'single' || mode === 'multiple');
+            const on = selected.includes(b.value) && choosing;
             return (
               <Button
                 key={b.value}
+                aria-pressed={choosing ? on : undefined}
                 type={on ? 'primary' : (type as 'default')}
                 danger={b.danger}
                 icon={Glyph ? <Glyph /> : undefined}

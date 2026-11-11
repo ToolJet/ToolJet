@@ -495,7 +495,11 @@ const DialogBody = (p: {
         if (reason === 'escapeKeyDown' && p.disableEscapeKeyDown) return;
         p.onClose();
       }}
-      slotProps={{ transition: { onEntered: p.onEntered } }}
+      // The host keeps Tab inside the open dialog (packFocus), in place of the trap disabled above.
+      slotProps={{
+        transition: { onEntered: p.onEntered },
+        paper: { 'data-tj-modal': p.open ? 'open' : 'closed' } as React.HTMLAttributes<HTMLDivElement>,
+      }}
     >
       {p.title ? <DialogTitle>{p.title}</DialogTitle> : null}
       <DialogContent ref={contentRef} dividers={p.scroll === 'paper' && p.bodyHeight > 0}>

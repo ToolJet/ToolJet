@@ -9,14 +9,26 @@ import { str } from '../lib/data';
 import { ControlSkeleton } from '../lib/Loading';
 import { closesOnEscape, useOwnedPopup } from '../lib/useOwnerGuard';
 import { useValueSetter } from '../lib/sameValue';
+import { isBlankDate, parseDate } from '../lib/dates';
 
 const VALUE_FORMAT = 'YYYY-MM-DD';
 const VALUE_FORMAT_TIME = 'YYYY-MM-DDTHH:mm:ss';
-const parse = (v: unknown): Dayjs | null => {
-  const s = str(v).trim();
-  if (!s) return null;
-  const d = dayjs(s);
-  return d.isValid() ? d : null;
+const parse = parseDate;
+
+// The week, month, quarter or year a picked date stands for, as its first day: a month picked over a value of the 25th
+// kept the 25th.
+const startOfPeriod = (d: Dayjs, picker: string): Dayjs => {
+  if (picker === 'week') return d.startOf('week');
+  if (picker === 'month') return d.startOf('month');
+  if (picker === 'quarter') return d.month(Math.floor(d.month() / 3) * 3).startOf('month');
+  if (picker === 'year') return d.startOf('year');
+  return d;
+};
+// Ant's own display format for a period picker (2026-10, 2026-Q4, 2026), not the full date.
+const PERIOD_FORMAT: Record<string, string | undefined> = {
+  month: 'YYYY-MM',
+  quarter: 'YYYY-[Q]Q',
+  year: 'YYYY',
 };
 
 /** A date-time bound: a date alone is the start of that day as a minimum and its end as a maximum, so maxDate
@@ -164,7 +176,9 @@ const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
 
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
-  const change = (next: Dayjs | null) => {
+  const period = showTime ? 'date' : str(picker) || 'date';
+  const change = (picked: Dayjs | null) => {
+    const next = picked ? startOfPeriod(picked, period) : null;
     if (!valueSetter.set(next ? next.format(showTime ? VALUE_FORMAT_TIME : VALUE_FORMAT) : '')) return;
     parts.expose(next);
     onChange();
@@ -177,7 +191,11 @@ const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
         { handle: 'value', displayName: dateTime ? 'Date and time (YYYY-MM-DDTHH:mm:ss)' : 'Date (YYYY-MM-DD)' },
       ],
     },
-    (next) => change(parse(next))
+    // Text that names no real date is refused (the value stays); an empty one clears.
+    (next) => {
+      const d = parse(next);
+      if (d || isBlankDate(next)) change(d);
+    }
   );
   ToolJet.useAction({ name: 'resetFields', displayName: 'Reset field' }, () => change(parse(props.value)));
   parts.useClear(() => change(null));
@@ -197,7 +215,10 @@ const usePicker = (props: Record<string, unknown>, dateTime: boolean) => {
               <Picker
                 id={fieldId}
                 value={parse(value)}
-                format={str(format).trim() || (showTime ? `YYYY-MM-DD ${timeFormat}` : VALUE_FORMAT)}
+                format={
+                  str(format).trim() ||
+                  (showTime ? `YYYY-MM-DD ${timeFormat}` : period === 'date' ? VALUE_FORMAT : PERIOD_FORMAT[period])
+                }
                 showTime={
                   showTime
                     ? dateTime

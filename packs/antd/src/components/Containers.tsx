@@ -69,6 +69,7 @@ export const Tabs = () => {
   });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onTabClick = ToolJet.useEventCallback({ name: 'onTabClick' });
+  const [, setClickedTab] = ToolJet.useStateString({ name: 'clickedTab', initialValue: '', inspector: 'hidden' });
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
@@ -117,7 +118,13 @@ export const Tabs = () => {
           centered={centered}
           tabPosition={tabPosition as 'top'}
           onChange={change}
-          onTabClick={() => onTabClick()}
+          // Ant fires its tab click before its change: the click's handlers read the tab clicked (clickedTab) and
+          // activeKey already on it (the first one saw the previous tab). onChange still follows, once.
+          onTabClick={(key) => {
+            setClickedTab(String(key));
+            change(String(key));
+            onTabClick();
+          }}
           items={items.map((t) => ({
             key: t.key,
             label: t.label,
@@ -338,6 +345,9 @@ const ModalBody = ({
       okButtonProps={{ danger: okType === 'danger', disabled: okDisabled }}
       footer={footer ? undefined : null}
       forceRender
+      // The host keeps Tab inside an open dialog (packFocus): antd's own trap reads document.activeElement, which a
+      // shadow root hides.
+      modalRender={(node) => <div data-tj-modal={props.open ? 'open' : 'closed'}>{node}</div>}
     >
       {content ? <p className="tj-ant-modal-content">{content}</p> : null}
       {bodyHeight > 0 ? <ToolJet.PopupSlot name="body" style={{ height: bodyHeight }} /> : null}

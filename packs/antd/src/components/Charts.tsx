@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as Plots from '@ant-design/plots';
 import { Empty, Typography } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
@@ -244,10 +244,20 @@ const Frame = ({
   </div>
 );
 
+// Where a value label sits: inside a bar or slice, or above a point (on the point it hid the marker). Labels that
+// would overlap are dropped, so a dense Column draws a readable row of labels instead of an unreadable band.
+const valueLabel = (text: (d: Row) => string, fill: string, at: 'inside' | 'top') => ({
+  text,
+  fill,
+  position: at,
+  ...(at === 'top' ? { dy: -8 } : {}),
+  transform: [{ type: 'overlapHide' }],
+});
+
 const useCommon = (
   p: ReturnType<typeof useChartProps>,
   theme: Theme,
-  series: { color?: string; y: string },
+  series: { color?: string; y: string; labelAt?: 'inside' | 'top' },
   tips?: HTMLElement
 ) => {
   const common = useMemo(() => {
@@ -275,11 +285,23 @@ const useCommon = (
       // category twice and no value on a Column.
       tooltip: { items: [{ channel: 'y', valueFormatter: fmt }] },
       interaction: tooltipInteraction(tips),
-      label: p.label ? { text: (d: Row) => fmt(d[series.y]), fill: theme.text, position: 'inside' } : undefined,
+      label: p.label ? valueLabel((d: Row) => fmt(d[series.y]), theme.text, series.labelAt ?? 'inside') : undefined,
       viewStyle: { viewFill: 'transparent' },
       onReady: p.onChartReady,
     };
-  }, [p.yFormatter, p.currency, p.locale, p.legend, p.label, p.onChartReady, theme, series.color, series.y, tips]);
+  }, [
+    p.yFormatter,
+    p.currency,
+    p.locale,
+    p.legend,
+    p.label,
+    p.onChartReady,
+    theme,
+    series.color,
+    series.y,
+    series.labelAt,
+    tips,
+  ]);
   // A fresh scale on every render: Ant's charts write into the scale they are given (a Line of all zeros sets
   // y.domainMax 1), and a memoised one kept that limit once the real data came, drawing the lines off the plot.
   // Ant compares configs by content, so a new object with the same content does not redraw the chart.
@@ -323,11 +345,32 @@ export const Column = () => {
   const r = Math.max(0, Number(radius) || 0);
   const Chart = horizontal ? AntBar : AntColumn;
   const marked = p.highlight ? { fillOpacity: p.highlight.opacity({ keys: [s.x, s.color] }) } : {};
+  // With Label on, one category in so many is labelled, so labels get about 28px each along the axis: every bar's label
+  // made an unreadable band on a dense chart (G2's overlap filter keeps labels drawn at different heights).
+  const [span, setSpan] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const measure = () => setSpan(horizontal ? el.clientHeight : el.clientWidth);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [horizontal]);
+  const categories = [...new Set(s.data.map((d) => str((d as Row)[s.x])))];
+  const every = span > 0 ? Math.max(1, Math.ceil((categories.length * 28) / span)) : 1;
+  const place = new Map(categories.map((c, i) => [c, i]));
+  const baseLabel = (common as { label?: { text: (d: Row) => string } }).label;
+  const label =
+    baseLabel && every > 1
+      ? { ...baseLabel, text: (d: Row) => ((place.get(str(d[s.x])) ?? 0) % every === 0 ? baseLabel.text(d) : '') }
+      : baseLabel;
   return (
     <AntProvider tokens={tokens} fill>
       <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>
         <Chart
           {...(common as object)}
+          label={label}
           data={s.data}
           xField={s.x}
           yField={s.y}
@@ -370,7 +413,7 @@ export const Line = () => {
   const tips = useTooltipLayer(ref, theme.dark);
   const rows = toRows(p.rawData);
   const s = toSeries(rows, p.xField, yFields(p.yField), p.colorField);
-  const common = useCommon(p, theme, s, tips);
+  const common = useCommon(p, theme, { ...s, labelAt: 'top' }, tips);
   // Highlighted: the clicked line stays and the others fade; a clicked point is marked. With Point off the points are
   // there to be clicked but drawn only once clicked.
   const h = p.highlight;
@@ -422,9 +465,10 @@ export const Area = () => {
   const tips = useTooltipLayer(ref, theme.dark);
   const rows = toRows(p.rawData);
   const s = toSeries(rows, p.xField, yFields(p.yField), p.colorField);
-  const common = useCommon(p, theme, s, tips);
+  const common = useCommon(p, theme, { ...s, labelAt: 'top' }, tips);
   // Highlighted: the clicked area (its series) stays and the others fade.
   const h = p.highlight;
+  const single = new Set(s.data.map((r) => str((r as Row)[s.x]))).size === 1;
   const bySeries = { keys: [s.color], series: s.color };
   const fillOpacity = s.color && !stack ? 0.25 : 0.4;
   return (
@@ -449,6 +493,12 @@ export const Area = () => {
               ...(h ? { strokeOpacity: h.opacity(bySeries) } : {}),
             },
           }}
+          // An area needs two points; one row drew nothing but a floating value label. It shows as a point.
+          point={
+            single
+              ? { sizeField: 4, style: { fill: s.color ? undefined : theme.brand, stroke: theme.brand, lineWidth: 1 } }
+              : undefined
+          }
         />
       </Frame>
     </AntProvider>
@@ -702,10 +752,14 @@ export const DualAxes = () => {
     sharedAxis ? { independent: false, ...shared } : { independent: side === 'right' };
   const yAxis = (side: 'left' | 'right') =>
     side === 'right' && sharedAxis ? false : { position: side, ...axisStyle, grid: side === 'left' };
+  // Label on draws each series' values, above the line or inside the bars (label was not passed to the layers).
+  const labelOf = (field: string, kind: string) =>
+    p.label ? valueLabel((d: Row) => fmt(d[field]), theme.text, kind === 'line' ? 'top' : 'inside') : undefined;
   const layer = (field: string, kind: string, color: string, side: 'left' | 'right') =>
     kind === 'line'
       ? {
           type: 'line',
+          label: labelOf(field, kind),
           yField: field,
           shapeField: 'smooth',
           style: { stroke: color, lineWidth: 2 },
@@ -714,6 +768,7 @@ export const DualAxes = () => {
         }
       : {
           type: 'interval',
+          label: labelOf(field, kind),
           yField: field,
           style: {
             fill: color,
@@ -794,6 +849,9 @@ export const Funnel = () => {
             text: (d: Row) => `${str(d[p.xField])}  ${fmt(d[y])} (${Math.round(((d[y] as number) / first) * 100)}%)`,
             fill: '#fff',
             position: 'inside',
+            // White text on a stage too narrow to hold it fell on the light background; the colour now turns dark
+            // there (G2 picks the readable one against what is behind the label).
+            transform: [{ type: 'contrastReverse' }],
           }}
           tooltip={{ items: [{ field: y, valueFormatter: fmt }] }}
           interaction={tooltipInteraction(tips)}
@@ -864,7 +922,14 @@ export const Gauge = () => {
         <AntGauge
           autoFit
           theme={theme.dark ? 'classicDark' : 'classic'}
-          data={{ target: t, total: max, name: name || 'value', ...(bands.length ? { thresholds: bands } : {}) }}
+          // The arc and needle stop at the ends of the scale (a target above total wrapped the arc past the end and
+          // pointed the needle near 0); the figure in the middle still shows the real value.
+          data={{
+            target: Math.min(max, Math.max(0, t)),
+            total: max,
+            name: name || 'value',
+            ...(bands.length ? { thresholds: bands } : {}),
+          }}
           scale={{
             color: {
               range:
@@ -980,7 +1045,7 @@ export const Scatter = () => {
     [p.xField]: toNumber(r[p.xField]) ?? r[p.xField],
     [y]: toNumber(r[y]) ?? r[y],
   }));
-  const common = useCommon(p, theme, { color: p.colorField || undefined, y }, tips);
+  const common = useCommon(p, theme, { color: p.colorField || undefined, y, labelAt: 'top' }, tips);
   return (
     <AntProvider tokens={tokens} fill>
       <Frame title={p.title} empty={!rows.length} loading={p.loading} chartRef={ref} ready={theme.ready}>

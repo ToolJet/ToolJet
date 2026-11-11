@@ -11,6 +11,7 @@ import {
   slotAttributeName,
 } from './inlineRuntime';
 import { setActionRegistrySettled } from './actionRegistry';
+import { MODAL_ATTR, installModalFocusTrap, restoreFocusInside } from './packFocus';
 import { POPUP_LAYER_CLASS, keepPopupTabOrder, rememberInnerFocus } from './popupTabOrder';
 import useStore from '@/AppBuilder/_stores/store';
 
@@ -363,12 +364,20 @@ const acquireLayer = (library: string, sheets: Sheets, widgetHost: HTMLElement) 
     },
   };
   layers.set(key, layer);
+  installModalFocusTrap(openPackModals);
   if (inCanvas) {
     fitToView(host, container);
     watchView(container);
   }
   return { key, layer };
 };
+// The open pack dialogs on the page, bottom to top: by layer level, then in drawing order.
+const openPackModals = (): Element[] =>
+  [...layers.values()]
+    .filter((layer) => layer.host.isConnected)
+    .sort((a, b) => (Number(a.host.style.zIndex) || 0) - (Number(b.host.style.zIndex) || 0))
+    .flatMap((layer) => Array.from(layer.overlay.querySelectorAll(`[${MODAL_ATTR}="open"]`)));
+
 const releaseLayer = (key: string) => {
   const layer = layers.get(key);
   if (!layer) return;
@@ -591,11 +600,13 @@ const InlineLibraryComponent = ({
     const { key: layerKey, layer } = acquireLayer(sheetKey, sheets, el);
     Object.defineProperty(root, 'tjOverlay', { value: layer.overlay, configurable: true });
     const releaseHost = isolateInteractiveEvents(el, pressOptions.current);
-    const releaseFocus = rememberInnerFocus(el);
+    const releaseFocus = restoreFocusInside(el, root);
+    const releaseInnerFocus = rememberInnerFocus(el);
     setShadow({ mount, popupHost: layer.host });
     return () => {
       releaseHost();
       releaseFocus();
+      releaseInnerFocus();
       releaseLayer(layerKey);
       sheets.release(root);
       // A pack may keep the root after the unmount (Ant's icons register every shadow root in rc-util's style

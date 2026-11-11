@@ -98,6 +98,12 @@
 .tj-mui-loading--fill > .tj-mui-loading__content {
   height: 100%;
 }
+/* A full-width control (ToggleButtonGroup's Full width): the wrapper takes the box's width, so the control's 100% does
+   too (the wrapper shrank to the buttons, and Full width did nothing). */
+.tj-mui-loading--wide,
+.tj-mui-loading--wide > .tj-mui-loading__content {
+  width: 100%;
+}
 .tj-mui-loading--on > .tj-mui-loading__content {
   visibility: hidden;
   /* Also opacity: x-charts sets visibility: visible on pie arcs, which would show through the Skeleton. */

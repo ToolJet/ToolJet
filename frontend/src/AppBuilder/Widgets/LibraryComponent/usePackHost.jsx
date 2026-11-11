@@ -28,7 +28,7 @@ const filled = (value) =>
 // published, and the error shows once the field was touched. 0 and false are values.
 // `rule` is the component's own check (a format or range message, '' when it passes), checked before the section's.
 export const useHostValidation = (latest, value, present, rule) => {
-  const { validate, validation, setExposedVariable, exposed, judged } = latest.current;
+  const { validate, validation, setExposedVariable, exposed, judged, required } = latest.current;
   // Which exposed variable this is the value of, so an event fired right after the value changes can judge the new
   // value first (see fireHostEvent).
   if (exposed && judged) {
@@ -39,14 +39,18 @@ export const useHostValidation = (latest, value, present, rule) => {
   const status =
     (typeof validate === 'function' ? validate((present ?? filled(value)) ? value : undefined) : null) || {};
   const isValid = status.isValid !== false && !rule;
-  const isMandatory = validation?.mandatory === true;
+  // A pack's own Required property (an earlier name some packs keep) is Mandatory too, as the Validation section's.
+  const isMandatory = validation?.mandatory === true || required === true;
   const [touched, setTouched] = useState(false);
   // A Form around the field shows its message after a failed submit, and clearForm hides it again.
   useShowValidationOnFormSubmit(setTouched);
   useFormClear(() => setTouched(false));
+  // Again for each new value: an event fired as the value changed set isValid from the Validation section alone
+  // (fireHostEvent), so a component's own rule (a minimum length, a date out of range) that still failed left it true.
+  const valueKey = typeof value === 'object' && value !== null ? JSON.stringify(value) : value;
   useEffect(() => {
     setExposedVariable('isValid', isValid);
-  }, [isValid, setExposedVariable]);
+  }, [isValid, rule, valueKey, setExposedVariable]);
   useEffect(() => {
     setExposedVariable('isMandatory', isMandatory);
   }, [isMandatory, setExposedVariable]);
@@ -412,6 +416,7 @@ export const usePackHost = (
     visibility,
     formField = false,
     markRowScoped,
+    required = false,
   }
 ) => {
   const { id, validate, validation, setExposedVariable, fireEvent, width, height, currentLayout, darkMode } = props;
@@ -421,7 +426,7 @@ export const usePackHost = (
   const exposed = useRef(new Map());
   const judged = useRef({ key: null, value: undefined });
   const latest = useRef({ validate, validation, setExposedVariable });
-  latest.current = { validate, validation, setExposedVariable, exposed: exposed.current, judged };
+  latest.current = { validate, validation, setExposedVariable, exposed: exposed.current, judged, required };
   const exposeVariable = useCallback((key, value) => {
     exposed.current.set(key, value);
     latest.current.setExposedVariable(key, value);

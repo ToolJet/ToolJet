@@ -50,7 +50,13 @@ export const TextArea = (props: Record<string, unknown>) => {
   const ref = useRef<InputRef>(null);
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
-  const check = ToolJet.useValidation({ kind: 'text', value });
+  // Text longer than Max length (a default or setFieldValue; typing stops at it) is not valid.
+  const tooLong = Number(maxLength) > 0 && String(value ?? '').length > Number(maxLength);
+  const check = ToolJet.useValidation({
+    kind: 'text',
+    value,
+    rule: tooLong ? `Maximum ${Number(maxLength)} characters is allowed` : '',
+  });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
     role: 'textarea',

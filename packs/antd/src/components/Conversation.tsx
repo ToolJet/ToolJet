@@ -517,7 +517,11 @@ export const Questionnaire = () => {
     { name: 'goTo', displayName: 'Go to', params: [{ handle: 'item', displayName: 'Position or name' }] },
     (arg) => {
       const i = resolveIndex(arg, questions);
-      if (i !== null) go(i, true);
+      if (i === null) return;
+      // After a submit, going to a question opens it again for an edit: the Thank-you screen and isComplete stayed
+      // while currentIndex moved behind them.
+      if (isComplete) setIsComplete(false);
+      go(i, true);
     }
   );
 

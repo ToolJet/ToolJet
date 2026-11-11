@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Input, InputNumber, Progress, Select, Space, Spin } from 'antd';
 import type { InputRef } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { boundsRule } from '../lib/typeRule';
 import { AntProvider, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
 import { ControlSkeleton, SpinOver } from '../lib/Loading';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
@@ -336,7 +337,13 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const n = toNumber(value);
-  const check = ToolJet.useValidation({ kind: 'text', value: n === null ? '' : String(n), present: n !== null });
+  const check = ToolJet.useValidation({
+    kind: 'text',
+    value: n === null ? '' : String(n),
+    present: n !== null,
+    // A default or setFieldValue outside Min and Max is not valid (Ant clamps only what is typed).
+    rule: boundsRule(n, toNumber(min), toNumber(max)),
+  });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
     role: 'currencyinput',
@@ -377,10 +384,18 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
   }, [n, fmt]);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  // Every value has Precision's decimals, as typed ones do: a default or setFieldValue of 12.345 stayed 12.345 while the
+  // field and formattedValue showed 12.35.
+  const toPrecision = (v: number | null) => (v === null ? null : Number(v.toFixed(digits)));
   const change = (v: number | null) => {
-    if (!valueSetter.set(v as number)) return;
+    if (!valueSetter.set(toPrecision(v) as number)) return;
     onChange();
   };
+  const fitted = toPrecision(n);
+  useEffect(() => {
+    if (fitted !== n) setValue(fitted as number);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fitted, n]);
   ToolJet.useAction(
     { name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
     (v) => change(toNumber(v))

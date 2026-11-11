@@ -182,6 +182,20 @@ const gridTextFor = (locale: string): Partial<GridLocaleText> => {
   return GRID_TEXT[tag] ?? GRID_TEXT[tag.split(/[-_]/)[0].toLowerCase()] ?? {};
 };
 
+// A date cell's value as a Date: an epoch timestamp (milliseconds, or seconds below 1e11; new Date('1730...') read
+// none, so the column fell back to plain numbers), a Date, or ISO text, a date alone read in local time (as UTC
+// midnight it showed the day before west of UTC). null for none.
+const toDateValue = (v: unknown): Date | null => {
+  if (v === undefined || v === null || v === '') return null;
+  const d =
+    v instanceof Date
+      ? v
+      : typeof v === 'number'
+        ? new Date(Math.abs(v) < 1e11 ? v * 1000 : v)
+        : dayjs(String(v)).toDate();
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
 const toGridColumn = (c: Column, rows: Row[], locale = ''): GridColDef => {
   const { format, currency, colors, ...col } = c;
   const sample = rows.find((r) => r[c.field] !== undefined && r[c.field] !== null && r[c.field] !== '')?.[c.field];
@@ -196,13 +210,10 @@ const toGridColumn = (c: Column, rows: Row[], locale = ''): GridColDef => {
       return { ...col, valueFormatter: (v: unknown) => str(v) };
   }
   const isoOrTime = (v: unknown) => typeof v === 'number' || v instanceof Date || /^\d{4}-\d{2}-\d{2}/.test(String(v));
-  if (
-    (col.type === 'date' || col.type === 'dateTime') &&
-    filled.some((v) => !isoOrTime(v) || Number.isNaN(new Date(String(v)).getTime()))
-  )
+  if ((col.type === 'date' || col.type === 'dateTime') && filled.some((v) => !isoOrTime(v) || toDateValue(v) === null))
     delete col.type;
   if (col.type === 'date' || col.type === 'dateTime') {
-    col.valueGetter = (v: unknown) => (v ? new Date(String(v)) : null);
+    col.valueGetter = (v: unknown) => toDateValue(v);
     // The column's own pattern (UI 2.0's dateFormat, dayjs tokens), else the locale's date (MUI wrote the viewer's).
     const pattern = str((c as { dateFormat?: unknown }).dateFormat).trim();
     const where = localeFor(currency, locale);
@@ -399,10 +410,20 @@ export const DataGrid = () => {
     const byId = new Map<string, Row>();
     // Each grid id's value as the rows give it: exposed ids keep their type (a number stays a number).
     const rawId = new Map<string, unknown>();
+    // Every grid id is unique: a row with no id is keyed by its place ('~2', which no id 2 can take), and a repeated id
+    // by its occurrence (7, then 7~1). Two rows sharing an id drew one row's data twice, and a row with no id at place 2
+    // took the id of the row whose id is 2 and hid it.
+    const seen = new Map<string, number>();
     const rows = source.map((r, i) => {
-      const id = rowKeyOf(r, field, i);
+      const own = r[field] ?? r.id ?? r.key;
+      const base = own === undefined || own === null || own === '' ? `~${i}` : rowKeyOf(r, field, i);
+      const n = seen.get(base) ?? 0;
+      seen.set(base, n + 1);
+      const id = n === 0 ? base : `${base}~${n}`;
       byId.set(id, r);
-      rawId.set(id, rowIdOf(r, field, i));
+      // A row's own id keeps its type; a row with no id, or a repeat, is exposed by its grid id, so a selection reads
+      // back to the same row.
+      rawId.set(id, id === base && !base.startsWith('~') ? rowIdOf(r, field, i) : id);
       return { ...r, [ID]: id };
     });
     return { rows, byId, rawId };
@@ -523,6 +544,9 @@ export const DataGrid = () => {
         density={density}
         checkboxSelection={checkboxSelection}
         rowSelectionModel={selection}
+        // Rows a filter hides stay selected (MUI dropped them, so a filter lost the selection); rows that leave the data
+        // leave it (the effect above).
+        keepNonExistentRowsSelected
         autoPageSize={autoPageSize}
         paginationModel={page}
         pageSizeOptions={autoPageSize ? undefined : Array.from(new Set([size, 10, 25, 50, 100])).sort((a, b) => a - b)}

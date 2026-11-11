@@ -227,6 +227,8 @@ export const Dialog = () => {
               />
               <DialogPrimitive.Content
                 ref={contentRef}
+                // The host keeps Tab inside the open dialog (packFocus): it is not Radix's modal mode, which traps.
+                data-tj-modal={open ? 'open' : 'closed'}
                 className="ui-popup ui-dialog"
                 style={{
                   ...themeVars({ bg: background }),

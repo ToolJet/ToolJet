@@ -110,7 +110,9 @@ export const addNewWidgetToTheEditor = (
   const gridWidth = subContainerWidths[targetCanvasId] || fallbackGridWidth;
   let [left, top] = snapToGrid(gridWidth * NO_OF_GRIDS, _left, _top + scrollTop);
 
-  left = Math.round(left / gridWidth);
+  // A drop whose pointer sits left of the target's first column (near the left edge of a pack slot, whose box starts
+  // inside its card's padding) starts at column 0: it saved a negative left and the widget was cut off.
+  left = Math.max(0, Math.round(left / gridWidth));
 
   // Adjust widget width based on the dropping canvas width
   const mainCanvasGridWidth = subContainerWidths.canvas || gridWidth;

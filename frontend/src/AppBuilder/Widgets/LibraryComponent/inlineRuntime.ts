@@ -150,9 +150,12 @@ const makeStateHook = (hookName: string, cleared?: () => unknown) =>
     // overwrote what the component had published.
     if (!Object.is(lastExternal.current, external) && !sameContent(lastExternal.current, external)) {
       lastExternal.current = external;
-      if (external !== undefined && !Object.is(external, value)) {
-        valueRef.current = external;
-        setValue(external);
+      // A bound property that goes back to undefined (a query re-run that failed, a ternary that yields nothing)
+      // empties as it would on the first render, instead of keeping the last value shown.
+      const next = external !== undefined ? external : bound && cleared ? cleared() : undefined;
+      if (next !== undefined && !Object.is(next, value) && !sameContent(next, value)) {
+        valueRef.current = next;
+        setValue(next);
       }
     }
 

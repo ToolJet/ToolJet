@@ -146,6 +146,14 @@ export const Select = () => {
   const key = value === '' ? '' : keyForValue(options, value);
   const known = key !== '' && options.some((o) => o.value === key);
   const check = ToolJet.useValidation({ kind: 'choice', value: str(value), present: known });
+  // A value no option offers is not kept while nothing shows picked; not while the options are empty or loading (a
+  // query not yet run), so a default waits for them. Fires no event.
+  const offeredNow = value === '' || value === null || value === undefined || options.some((o) => o.value === key);
+  React.useEffect(() => {
+    if (!offeredNow && options.length > 0 && !loading) setValue('' as never);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offeredNow, options.length, loading]);
+
   const overrides = useThemeStyles();
   ToolJet.useComponentSettings({
     role: 'select',
@@ -614,9 +622,15 @@ export const AutocompleteMultiple = () => {
   const popup = usePopupState(p, disabled, check.touch, onOpen, onClose);
   ToolJet.useAction(
     { name: 'setValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Values' }] },
+    // One value (not a list) picks that option: a string cleared the selection.
     (next) =>
       change(
-        toArray(next)
+        (Array.isArray(next) || (typeof next === 'string' && next.trim().startsWith('['))
+          ? toArray(next)
+          : next === '' || next === null || next === undefined
+            ? []
+            : [next]
+        )
           .map((v) => findOption(p.options, v))
           .filter((o): o is Option => !!o)
       )
