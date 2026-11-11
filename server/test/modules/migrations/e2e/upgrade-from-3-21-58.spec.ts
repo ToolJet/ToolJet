@@ -63,6 +63,7 @@ interface FirstAsyncUpgrade extends FirstUpgrade {
   tablesBeforeData: string[];
   readsAfterSchema: RepositoryReads;
   readsAfterData: RepositoryReads;
+  duplicateSlugMove: string;
 }
 
 describe('Upgrading a 3.21.58 database', () => {
@@ -134,6 +135,10 @@ describe('Upgrading a 3.21.58 database', () => {
   it('should read the same apps, versions, data sources and folder apps through the repositories before and after the data phase', () => {
     expect(Object.keys(async.readsAfterSchema)).toEqual([GITOFF, GITON].sort());
     expect(async.readsAfterData).toEqual(async.readsAfterSchema);
+  });
+
+  it('should refuse moving a version onto the default branch when another app there has its slug, before cleanup', () => {
+    expect(async.duplicateSlugMove).toMatch(/app_versions_default_branch_slug_unique/);
   });
 
   it('should have the same rows as a single-transaction upgrade once the data phase is done, before cleanup', () => {
@@ -320,6 +325,7 @@ async function firstUpgradeInAsyncMode(database: string): Promise<FirstAsyncUpgr
   const readsAfterSchema = await readThroughRepositories(database);
   const dataOutput = await runOk(database, 'data', [join(__dirname, '../fixtures/print-data-phase-locks.js')]);
   const readsAfterData = await readThroughRepositories(database);
+  const duplicateSlugMove = await withScratchConnection(database, moveDuplicateSlugOntoDefaultBranch);
   const output = await runOk(database, 'cleanup');
   return {
     output,
@@ -328,6 +334,7 @@ async function firstUpgradeInAsyncMode(database: string): Promise<FirstAsyncUpgr
     tablesBeforeData,
     readsAfterSchema,
     readsAfterData,
+    duplicateSlugMove,
   };
 }
 
@@ -651,6 +658,37 @@ function difference(blocking: Record<string, string[]>, async: Record<string, st
 const DRAFT_GITON = 'ea3ea783-2dcd-455e-b5f8-4175ac817428';
 const MORTGAGE_GITON_DRAFT = '4241f003-5ce9-4ba2-ace8-d83068d460f2';
 const BUSINESS_ANALYTICS_ON_MAIN = '1f918690-5da5-4f91-aa15-cf3475b6fcd7';
+
+/**
+ * 3.21.58 let two apps share a slug on different branches. Gives a feature-branch version another app's
+ * default-branch slug, then moves it onto the default branch. Rolled back; returns the error, or 'allowed'.
+ */
+async function moveDuplicateSlugOntoDefaultBranch(db: DataSource): Promise<string> {
+  const runner = db.createQueryRunner();
+  await runner.startTransaction();
+  try {
+    const [pair]: { versionId: string; slug: string; defaultBranchId: string }[] = await runner.query(
+      `SELECT feature.id AS "versionId", taken.slug, main.id AS "defaultBranchId"
+       FROM app_versions feature
+       JOIN organization_git_sync_branches branch ON branch.id = feature.branch_id AND NOT branch.is_default
+       JOIN organization_git_sync_branches main ON main.organization_id = branch.organization_id AND main.is_default
+       JOIN app_versions taken ON taken.branch_id = main.id AND taken.app_id <> feature.app_id AND taken.slug IS NOT NULL
+       JOIN apps feature_app ON feature_app.id = feature.app_id
+       JOIN apps taken_app ON taken_app.id = taken.app_id AND taken_app.type = feature_app.type
+       LIMIT 1`
+    );
+    await runner.query('SET LOCAL session_replication_role = replica');
+    await runner.query('UPDATE app_versions SET slug = $1 WHERE id = $2', [pair.slug, pair.versionId]);
+    await runner.query('SET LOCAL session_replication_role = origin');
+    await runner.query('UPDATE app_versions SET branch_id = $1 WHERE id = $2', [pair.defaultBranchId, pair.versionId]);
+    return 'allowed';
+  } catch (error) {
+    return (error as Error).message;
+  } finally {
+    await runner.rollbackTransaction();
+    await runner.release();
+  }
+}
 
 /** A released version that keeps its branch: 3.21.58's chk_app_versions_branched_implies_draft refuses it. */
 function releaseOnTheDefaultBranch(db: DataSource, versionId: string) {

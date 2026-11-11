@@ -72,7 +72,8 @@ export class CleanupLegacyBranchModel1793300000000 implements MigrationInterface
       'DROP TRIGGER IF EXISTS trg_app_versions_workflow_slug_unique ON app_versions',
       'DROP FUNCTION IF EXISTS enforce_app_versions_workflow_slug_unique()',
     ]);
-    // The data phase replaced these bodies; their triggers still fire on 3.21.58's columns.
+    // The data phase replaced these bodies; their triggers still fire on 3.21.58's columns. (It gives the
+    // default-branch slug trigger its final columns itself, in its last statement.)
     await withShortLock(queryRunner, [
       finalTrigger(
         'trg_app_versions_app_name_branch_unique',
@@ -85,13 +86,6 @@ export class CleanupLegacyBranchModel1793300000000 implements MigrationInterface
         'trg_app_versions_slug_branch_unique',
         'slug, branch_id, app_id',
         'enforce_app_versions_slug_branch_unique'
-      ),
-    ]);
-    await withShortLock(queryRunner, [
-      finalTrigger(
-        'trg_app_versions_default_branch_slug_unique',
-        'slug, branch_id, app_id',
-        'enforce_app_versions_default_branch_slug_unique'
       ),
     ]);
     await withShortLock(queryRunner, [
