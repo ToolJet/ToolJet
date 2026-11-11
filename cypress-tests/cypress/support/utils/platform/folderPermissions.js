@@ -282,9 +282,23 @@ const EDITOR_BOOT_TIMEOUT = 120000;
 const visitEditor = (workspaceSlug, resourceId) =>
   cy.visit(`/${workspaceSlug}/apps/${resourceId}`, { failOnStatusCode: false });
 
+// The editor loads the app and, in parallel, the module picker list (GET /api/apps?type=module).
+// When the two reach the server together the app fetch can answer 403 for a builder who has
+// access, so the module list waits until the app fetch has answered.
+export const holdModuleListUntilAppLoads = (appId) => {
+  let appAnswered;
+  const appLoaded = new Promise((resolve) => (appAnswered = resolve));
+  cy.intercept({ method: 'GET', pathname: `/api/apps/${appId}` }, (req) => {
+    req.on('response', () => appAnswered());
+  }).as('editorAppFetch');
+  cy.intercept({ method: 'GET', pathname: '/api/apps', query: { type: 'module' } }, () => appLoaded);
+};
+
 // Apps and modules: the version switcher is empty until versions load.
 export const openAppEditor = (workspaceSlug, appId) => {
+  holdModuleListUntilAppLoads(appId);
   visitEditor(workspaceSlug, appId);
+  cy.wait('@editorAppFetch', { timeout: EDITOR_BOOT_TIMEOUT }).its('response.statusCode').should('eq', 200);
   cy.get(versionSwitcherSelectors.versionSwitcherButton, { timeout: EDITOR_BOOT_TIMEOUT })
     .should('be.visible')
     .and('not.have.text', '');

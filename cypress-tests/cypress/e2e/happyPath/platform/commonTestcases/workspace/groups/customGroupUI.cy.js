@@ -282,8 +282,9 @@ describe("Custom groups UI and Functionality verification", () => {
   let groupId3;
 
   beforeEach(() => {
-    data.workspaceName = fake.firstName;
-    data.workspaceSlug = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    // fake.firstName draws from a small pool and the shard's database is shared, so add a timestamp.
+    data.workspaceName = `${fake.firstName}${Date.now()}`;
+    data.workspaceSlug = data.workspaceName.toLowerCase();
 
     cy.apiLogin();
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug).then((response) => {

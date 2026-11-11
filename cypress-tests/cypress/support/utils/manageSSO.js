@@ -474,9 +474,15 @@ export const oidcSSOPageElements = (pageName) => {
   );
 };
 
-export const ldapSSOPageElements = () => {
-  cy.wait(1000);
+// The LDAP modal re-renders its header toggle when /api/license/access answers; click it after that.
+const openLdapModal = () => {
+  cy.intercept("GET", "/api/license/access").as("ldapLicenseAccess");
   cy.get(ssoSelector.ldap).click();
+  cy.wait("@ldapLicenseAccess");
+};
+
+export const ldapSSOPageElements = () => {
+  openLdapModal();
   cy.get(ssoSelector.ldapTitle).verifyVisibleElement(
     "have.text",
     ssoText.ldapTitle
@@ -494,7 +500,7 @@ export const ldapSSOPageElements = () => {
   cy.clearAndType(ssoSelector.baseDnInput, ssoText.ldapBaseDn);
 
   cy.get(ssoSelector.cancelButton).eq(1).click();
-  cy.get(ssoSelector.ldap).click();
+  openLdapModal();
   cy.get(ssoSelector.ldapEnableToggle).click();
 
   cy.get(ssoSelector.nameInput).should("have.value", "");
