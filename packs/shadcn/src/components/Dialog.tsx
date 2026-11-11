@@ -10,6 +10,7 @@ import { POPUP_LAYER, popupLayerOf } from '../lib/popupLayer';
 import { LoadingBox, LoadingFrame, useLoading } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import { useValueSetter } from '../lib/sameValue';
+import { displayText } from '../lib/displayText';
 import { useKeptPopupSlot } from '../lib/keptPopupSlot';
 
 // The overlay's and the dialog's own levels in ui.css (.ui-dialog-overlay, .ui-dialog); popups opened from the body
@@ -17,7 +18,7 @@ import { useKeptPopupSlot } from '../lib/keptPopupSlot';
 const OVERLAY_Z = 1000;
 
 export const Dialog = () => {
-  const [triggerText] = ToolJet.useStateString({
+  const [rawTriggerText] = ToolJet.useStateString({
     name: 'triggerText',
     label: 'Button label',
     initialValue: 'Delete account',
@@ -29,18 +30,26 @@ export const Dialog = () => {
     initialValue: 'outline',
     section: 'Appearance',
   });
-  const [title] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Are you absolutely sure?' });
-  const [description] = ToolJet.useStateString({
+  const [rawTitle] = ToolJet.useStateString({ name: 'title', label: 'Title', initialValue: 'Are you absolutely sure?' });
+  const [rawDescription] = ToolJet.useStateString({
     name: 'description',
     label: 'Description',
     initialValue: 'This action cannot be undone. This will permanently delete your account and remove your data.',
   });
-  const [confirmText] = ToolJet.useStateString({
+  const [rawConfirmText] = ToolJet.useStateString({
     name: 'confirmText',
     label: 'Confirm label',
     initialValue: 'Continue',
   });
-  const [cancelText] = ToolJet.useStateString({ name: 'cancelText', label: 'Cancel label', initialValue: 'Cancel' });
+  const [rawCancelText] = ToolJet.useStateString({ name: 'cancelText', label: 'Cancel label', initialValue: 'Cancel' });
+  // An object bound to a text property would throw as a React child and replace the whole Dialog.
+  const [triggerText, title, description, confirmText, cancelText] = [
+    rawTriggerText,
+    rawTitle,
+    rawDescription,
+    rawConfirmText,
+    rawCancelText,
+  ].map(displayText);
   const [destructive] = ToolJet.useStateBoolean({
     name: 'destructive',
     label: 'Destructive confirm',

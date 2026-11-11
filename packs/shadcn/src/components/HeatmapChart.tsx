@@ -20,6 +20,8 @@ import {
   isSet,
   list,
   num,
+  percentScale,
+  scaled,
 } from '../lib/ui2/charts/chartModel';
 import { LoadingFrame, blockLook, useLoadingLook } from '../lib/ui2/loading/look';
 import { TOKEN, useThemeColor } from '../lib/styleDefaults';
@@ -142,11 +144,15 @@ export const HeatmapChart = () => {
   );
   const format = useMemo(
     () =>
-      formatter(
-        { format: yAxisFormat, currency, locale, prefix: valuePrefix, suffix: valueSuffix },
-        yAxisFormat === 'compact'
+      // Fractions (0.25) read as 25% on a percent format, as the Line chart does.
+      scaled(
+        formatter(
+          { format: yAxisFormat, currency, locale, prefix: valuePrefix, suffix: valueSuffix },
+          yAxisFormat === 'compact'
+        ),
+        percentScale(yAxisFormat, [grid.min, grid.max])
       ),
-    [yAxisFormat, currency, locale, valuePrefix, valueSuffix]
+    [yAxisFormat, currency, locale, valuePrefix, valueSuffix, grid.min, grid.max]
   );
   const gap = clamp(cellGap, 0, 12, 3);
   const empty = !grid.xs.length || !grid.ys.length;
