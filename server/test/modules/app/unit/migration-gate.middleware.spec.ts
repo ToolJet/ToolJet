@@ -241,6 +241,7 @@ describe('MigrationGateMiddleware', () => {
       ['POST', '/api/sso/saml/c1'],
       ['POST', '/api/workflow_executions'],
       ['POST', '/api/workflow_executions/w1/trigger'],
+      ['POST', '/api/workflow_executions/states?appVersionId=v1'],
       ['POST', '/api/v2/webhooks/workflows/w1/trigger'],
       ['POST', '/api/v2/webhooks/workflows/w1/trigger-async'],
       ['POST', '/api/v2/resources/export'],

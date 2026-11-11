@@ -34,6 +34,8 @@ const ASYNC_MODE_WRITE_ALLOWLIST = [
   /^\/data-queries\/[^/]+\/versions\/[^/]+\/run\/[^/]+$/,
   // Workflow runs only add rows to execution tables no data migration touches.
   /^\/workflow_executions(\/[^/]+\/trigger)?$/,
+  // Read-only: polls job states from the queue.
+  /^\/workflow_executions\/states$/,
   /^\/v2\/webhooks\/workflows\/[^/]+\/trigger(-async)?$/,
   // Read-only; POST only for the body size.
   /^\/v2\/resources\/export$/,
