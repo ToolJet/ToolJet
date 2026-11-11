@@ -49,6 +49,22 @@
 .tj-ant-table.tj-ant--fill > .ant-table-wrapper > .ant-spin-nested-loading > .ant-spin-container > .ant-table {
   flex: 1 0 auto;
 }
+/* A table taller than its box scrolls inside it with its header row at the top of the box and its pager at the bottom,
+   as the ToolJet Table: both scrolled away with the rows. The pager's spacing is padding on the table's surface, so
+   the rows pass under it. */
+.tj-ant-table .ant-table-wrapper .ant-table-thead {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.tj-ant-table .ant-table-wrapper .ant-table-pagination.ant-pagination {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  margin: 0;
+  padding: 16px 0;
+  background: var(--ant-color-bg-container);
+}
 /* Alert: its surface fills the box, and a long description scrolls inside it. */
 .tj-ant-alert .ant-alert {
   height: 100%;
