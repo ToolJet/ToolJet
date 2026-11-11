@@ -124,8 +124,9 @@ logic is in `server/ee/git-sync/`.
   `metadata.diagnostics`; both also log `[pull-diagnostics] {json}`. Type: `PullDiagnostics`
   (`workspace-branches/types`). Collected through an AsyncLocalStorage in
   `ee/platform-git-sync/pull-diagnostics.util.ts`, so deep code records with `phase()` /
-  `recordCategorySkip()` and stays a no-op outside a pull. Phase prefixes: `net_` git provider,
-  `db_` our import, `wait_` Redis queue/lease. `pod` is a hashed hostname — the git mirror cache is per-pod disk.
+  `recordCategorySkip()` and stays a no-op outside a pull. Phase prefixes are listed on
+  `PullDiagnostics.phases`. `pod` is a hashed hostname — the git mirror cache is per-pod disk. Webhook
+  auto-sync pulls call `pullWorkspace` too, so they log `stage: "request"` with no HTTP request behind it.
 
 ## Related modules
 

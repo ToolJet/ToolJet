@@ -38,9 +38,11 @@ export interface PullResourceCounts {
 export interface PullDiagnostics {
   stage: 'request' | 'job';
   pod: string; // hashed hostname: git mirror cache is per-pod disk
-  attempt?: number;
-  totalMs: number;
-  phases: Record<string, number>; // ms; prefix net_ / db_ / code_ / wait_ says where
+  attempt?: number; // job only, 1-based
+  totalMs: number; // job: enqueue → done, retries included
+  // ms. Prefix says where: net_ git provider (clone includes local checkout), db_ our import,
+  // code_ in-process checks, redis_ queue ops, wait_ queue/lease waits (wait_queue on attempt 1 only)
+  phases: Record<string, number>;
   skips: {
     headUnchanged?: boolean;
     categories?: Partial<Record<PullCategory, boolean>>; // true = tree SHA unchanged, skipped
