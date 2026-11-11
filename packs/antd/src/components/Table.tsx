@@ -5,7 +5,7 @@ import type { TableColumnsType } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useTokenStyles } from '../lib/AntProvider';
 import { PackTag } from '../lib/PackTag';
-import { readField, rowIdOf, rowKeyOf, str, toArray, toRows, type Row } from '../lib/data';
+import { occurrenceKeys, readField, rowIdOf, rowIdText, rowKeyOf, str, toArray, toRows, type Row } from '../lib/data';
 import { formatCell, isIdField, parseFormat, tagColor, toNumber } from '../lib/format';
 import { LOCALE_HINT } from '../lib/locale';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
@@ -221,7 +221,11 @@ export const Table = () => {
     initialValue: [],
     inspector: 'hidden',
   });
-  const [, setSelectedRows] = ToolJet.useStateArray({ name: 'selectedRows', initialValue: [], inspector: 'hidden' });
+  const [selectedRows, setSelectedRows] = ToolJet.useStateArray({
+    name: 'selectedRows',
+    initialValue: [],
+    inspector: 'hidden',
+  });
   const [current, setCurrent] = ToolJet.useStateNumber({ name: 'current', initialValue: 1, inspector: 'hidden' });
   const onRowClick = ToolJet.useEventCallback({ name: 'onRowClick' });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
@@ -249,22 +253,52 @@ export const Table = () => {
   const tree = useMemo(() => isTree(rows), [rows]);
   const columns = useMemo(() => toColumns(rawColumns, rows), [rawColumns, rows]);
   const field = str(rowKey) || 'id';
-  const keyed = useMemo(
-    () => rows.map((r, i) => ({ row: r, key: rowKeyOf(r, field, i), id: rowIdOf(r, field, i) })),
-    [rows, field]
-  );
+  // Each row's own key (lib/data occurrenceKeys: a repeated id gets 1, then 1~1); text is its id as text (its place for
+  // a row without one) and id the id as the data has it, for exposing. Two rows that shared an id had one key, so both
+  // were ticked and highlighted together and selectedRows held both (QA AD-30).
+  const keyed = useMemo(() => {
+    const own = occurrenceKeys(rows, field);
+    return rows.map((r, i) => ({ row: r, key: own[i], text: rowKeyOf(r, field, i), id: rowIdOf(r, field, i) }));
+  }, [rows, field]);
   const keyOf = new Map(keyed.map((k) => [k.row, k.key]));
-  // The highlighted row is found by its key first: on a data update the rows are new objects (an edited one also new
+  const holdersOf = useMemo(() => {
+    const byText = new Map<string, typeof keyed>();
+    for (const k of keyed) {
+      const list = byText.get(k.text);
+      if (list) list.push(k);
+      else byText.set(k.text, [k]);
+    }
+    return byText;
+  }, [keyed]);
+  // The row a selected record is now, by its id as text: the one row holding it, so an edited record is followed as it
+  // is now; when more rows hold it, the one that is the record, else the one with its content (two records that share
+  // an id are told apart). A record no row's id names (a row without an id) is found by its content. Rows in `taken`
+  // are already claimed.
+  const locate = (record: unknown, id: string, taken: ReadonlySet<string> = new Set()) => {
+    const holders = holdersOf.get(id) ?? [];
+    if (holders.length === 1) return taken.has(holders[0].key) ? undefined : holders[0];
+    // A record with an id no row holds has no row with its content either.
+    if (!holders.length && record && typeof record === 'object' && rowIdText(record as Row, field) !== '')
+      return undefined;
+    const pool = (holders.length ? holders : keyed).filter((k) => !taken.has(k.key));
+    const same = JSON.stringify(record);
+    return pool.find((k) => k.row === record) ?? pool.find((k) => JSON.stringify(k.row) === same);
+  };
+  // The highlighted row is found by its id first: on a data update the rows are new objects (an edited one also new
   // content) until the effect below re-exposes selectedRow, and the content match alone left that render with no row
-  // highlighted (a flicker under 200 ms updates). A row with no key of its own is found by its content.
-  const selectedKey = (() => {
-    if (!selectedRow || typeof selectedRow !== 'object' || !Object.keys(selectedRow).length) return undefined;
-    const own = (selectedRow as Row)[field] ?? (selectedRow as Row).id ?? (selectedRow as Row).key;
-    const byKey =
-      own === undefined || own === null || own === '' ? undefined : keyed.find((k) => k.key === String(own));
-    if (byKey) return byKey.key;
-    const same = JSON.stringify(selectedRow);
-    return keyed.find((k) => k.row === selectedRow || JSON.stringify(k.row) === same)?.key;
+  // highlighted (a flicker under 200 ms updates).
+  const hasSelectedRow = !!selectedRow && typeof selectedRow === 'object' && Object.keys(selectedRow).length > 0;
+  const selectedKey = hasSelectedRow ? locate(selectedRow, rowKeyOf(selectedRow as Row, field, -1))?.key : undefined;
+  // The rows the selection holds, by their own keys: each exposed id with its record (selectedRowKeys and selectedRows
+  // are set together), in turn.
+  const chosenKeys = (() => {
+    const records = toArray(selectedRows);
+    const taken = new Set<string>();
+    toArray(selectedRowKeys).forEach((id, n) => {
+      const hit = locate(records[n], str(id), taken);
+      if (hit) taken.add(hit.key);
+    });
+    return [...taken];
   })();
   const [, force] = useState(0);
 
@@ -336,37 +370,35 @@ export const Table = () => {
     setSelectedRows(hits.map((k) => k.row));
     onSelectionChange();
   };
-  // The selection follows its records by key across a refresh or a reorder (an edited row is exposed as it is now), and
-  // drops the ones that are gone: the old rows stayed exposed while nothing was drawn selected (SP-31).
+  // The selection follows its records across a refresh or a reorder (an edited row is exposed as it is now, see
+  // locate), and drops the ones that are gone: the old rows stayed exposed while nothing was drawn selected (SP-31).
   const rowsKey = JSON.stringify(rows);
   useEffect(() => {
-    if (selectedRow && typeof selectedRow === 'object' && Object.keys(selectedRow).length) {
-      const was = rowKeyOf(selectedRow as Row, field, -1);
-      // A row with no id is found by its content.
-      const same = JSON.stringify(selectedRow);
-      const hit = keyed.find((k) => k.key === was) ?? keyed.find((k) => JSON.stringify(k.row) === same);
+    if (hasSelectedRow) {
+      const hit = locate(selectedRow, rowKeyOf(selectedRow as Row, field, -1));
       if (!hit) setSelectedRow({});
       else if (JSON.stringify(hit.row) !== JSON.stringify(selectedRow)) setSelectedRow(hit.row);
     }
-    const keys = toArray(selectedRowKeys).map(str);
-    if (keys.length) {
-      const set = new Set(keys);
-      const hits = keyed.filter((k) => set.has(k.key));
+    const was = toArray(selectedRowKeys).length;
+    if (was) {
+      const chosen = new Set(chosenKeys);
+      const hits = keyed.filter((k) => chosen.has(k.key));
       setSelectedRowKeys(hits.map((k) => k.id));
       setSelectedRows(hits.map((k) => k.row));
       // Rows that left the data leave the selection, and that is a selection change (it fired nothing).
-      if (hits.length < keys.length) onSelectionChange();
+      if (hits.length < was) onSelectionChange();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rowsKey, field]);
   ToolJet.useAction(
     { name: 'selectRow', displayName: 'Select row', params: [{ handle: 'key', displayName: 'Row key' }] },
     (key) => {
-      const hit = keyed.find((k) => k.key === str(key));
+      // The first row holding the id.
+      const hit = keyed.find((k) => k.text === str(key));
       setSelectedRow(hit?.row ?? {});
       if (selectionType === 'none') return;
       // Checkbox selection adds the row to those selected (it replaced the whole selection); radio picks only it.
-      const kept = selectionType === 'checkbox' ? toArray(selectedRowKeys).map(str) : [];
+      const kept = selectionType === 'checkbox' ? chosenKeys : [];
       select(hit ? [...kept.filter((k) => k !== hit.key), hit.key] : kept);
     }
   );
@@ -418,7 +450,7 @@ export const Table = () => {
             ? undefined
             : {
                 type: selectionType as 'checkbox',
-                selectedRowKeys: toArray(selectedRowKeys).map(String),
+                selectedRowKeys: chosenKeys,
                 onChange: (keys) => select(keys),
               }
         }

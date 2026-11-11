@@ -16,6 +16,7 @@ import { SpinOver } from '../lib/Loading';
 import {
   followSelection,
   idGroup,
+  occurrenceKeys,
   readField,
   repeatedIds,
   rowIdOf,
@@ -364,19 +365,6 @@ const ModalBody = ({
       ) : null}
     </>
   );
-};
-
-// Each row's own key: its id, a repeated id suffixed by its occurrence (1, then 1~1), so two records that share an id
-// are told apart: both drew selected, and a refresh moved the selection to the first of them.
-const occurrenceKeys = (rows: Row[], field: string) => {
-  const seen = new Set<string>();
-  return rows.map((r, i) => {
-    const base = rowKeyOf(r, field, i);
-    let key = base;
-    for (let n = 1; seen.has(key); n += 1) key = `${base}~${n}`;
-    seen.add(key);
-    return key;
-  });
 };
 
 // Ant's List: dataSource; each item is either a row of ToolJet components (renderItem 'components', reading
