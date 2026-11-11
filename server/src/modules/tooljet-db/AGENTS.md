@@ -65,6 +65,9 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
   `resolveAndRewrite()`. Known third path: `server/ee/external-apis/service.ts`'s
   `exportTjdbTableAsCSV` calls PostgREST directly (needs `Accept: text/csv`); it resolves the
   relation id itself via the resolver — keep that if you touch it.
+- **App-facing result shape is a contract:** data queries (`TooljetDbDataOperationsService.run()`) return SQL
+  rows as `data.results` and join rows as `data.result`; apps bind to these. `sqlExecution()`/`joinTables()`
+  return raw rows for internal callers (dashboard). Change the app shape only by adding a key, never by moving one.
 - Fail-closed: a uuid this workspace doesn't own is always 404. An owned-but-unpromoted uuid is 404
   in the URL path (doesn't exist here), 400 in an embedded querystring reference (malformed request).
 - **Five independent resolution seams**, each wireable to `environmentId` — a miss silently resolves
@@ -169,7 +172,10 @@ Builders as DDL/DML actions and to running apps as a PostgREST-backed data sourc
 - A physical table is owned by `user_<organizationId>`, never the TJDB admin —
   `transferTableOwnershipToTenant` runs after every physical `CREATE TABLE` (`applyCreateTable`,
   migration B's `LIKE`-clone, `replayBaselineMigration`); Postgres requires ownership, not a grant, to
-  run DDL as the tenant role.
+  run DDL as the tenant role. On managed Postgres the admin is not a superuser, and a non-superuser
+  can only hand an object to a role with CREATE on its schema: the helper grants CREATE for the one
+  `ALTER ... OWNER TO` and revokes it in the same transaction. CI runs as a superuser, which skips the
+  check; `tenant-ownership-transfer.spec.ts` reproduces it with `SET ROLE`.
 - `recordRawSql` writes `resultingSchema` and `appliedAt` together (no pending window) — there's no
   shape-based predicate `adjudicatePending` could apply to arbitrary SQL.
 - Revert's destructiveness check has two separate discriminators: `add_column` is read off the

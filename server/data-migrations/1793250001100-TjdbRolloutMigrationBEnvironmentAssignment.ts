@@ -3,7 +3,7 @@ import { DataSource, EntityManager, MigrationInterface, QueryRunner } from 'type
 import { NestFactory } from '@nestjs/core'; // migration-import-allowed: boots the app context to reuse the assignment services
 import { AppModule } from '@modules/app/module'; // migration-import-allowed: boots the app context to reuse the assignment services
 import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants'; // migration-import-allowed: resolves the edition-specific service classes
-import { LicenseTermsService, LicenseInitService } from '@modules/licensing/interfaces/IService'; // migration-import-allowed: multi-environment licence check
+import { LicenseInitService } from '@modules/licensing/interfaces/IService'; // migration-import-allowed: multi-environment licence check
 import { LICENSE_FIELD } from '@modules/licensing/constants'; // migration-import-allowed: multi-environment licence check
 import { getTooljetEdition } from '@helpers/utils.helper'; // migration-import-allowed: multi-environment licence check
 import { MigrationProgress } from '@helpers/migration.helper'; // migration-import-allowed: required progress logging
@@ -21,6 +21,13 @@ const MIGRATION_NAME = 'TjdbRolloutMigrationBEnvironmentAssignment1793250001100'
 // docblock. A real hang here can't be un-stuck from outside (no handle on the blocked query), so
 // this only converts "hangs the deploy forever" into "fails fast with a clear cause".
 const NEST_BOOT_TIMEOUT_MS = 120_000;
+
+// One line per skipped table, not a stack trace: a table whose workspace schema is missing or
+// unreachable is a data problem the run carries past, and hundreds of traces read as a failed deploy.
+const describeTableFailure = (error: unknown): string => {
+  const { message, code } = (error ?? {}) as { message?: string; code?: string };
+  return code ? `${message} (${code})` : String(message ?? error);
+};
 
 /**
  * "Migration B": corrects migration A's unconditional development placement for licensed
@@ -66,13 +73,14 @@ const NEST_BOOT_TIMEOUT_MS = 120_000;
  * lock wait with no indication why.
  *
  * Separately (not a fix for the above - the licence check never touched `internal_table*`): the
- * self-hosted licence check reads via `LicenseInitService.initForMigration(queryRunner.manager)`
- * rather than resolving `LicenseTermsService` and calling its runtime `getLicenseTerms()`, whose
- * `init()` path opens its own connection through `LicenseRepository`'s own transaction wrap -
- * a second connection competing for the same pool while this migration is holding one open for the
- * whole run. Cloud still goes through `LicenseTermsService.getLicenseTerms()` (its licence lives in
- * `organization_license`, fetched over HTTP, not `instance_settings`, and `initForMigration`
- * explicitly doesn't support Cloud).
+ * licence check never goes through the runtime `LicenseTermsService.getLicenseTerms()`. Self-hosted
+ * reads via `LicenseInitService.initForMigration(queryRunner.manager)`; the runtime `init()` path
+ * opens its own connection through `LicenseRepository`'s own transaction wrap - a second connection
+ * competing for the same pool while this migration is holding one open for the whole run. Cloud
+ * reads the workspace's `organization_license` row via `getLicenseInstanceForMigrationCloud`, on the
+ * same shared manager; the runtime Cloud path fetches over HTTP and, on any failure, silently falls
+ * back to the basic plan - which would skip a licensed workspace and leave its production data in
+ * development with the migration already recorded as run.
  */
 export class TjdbRolloutMigrationBEnvironmentAssignment1793250001100 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -100,7 +108,6 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1793250001100 implements 
       const { default: License } = await import(`${importPath}/licensing/configs/License`);
 
       await TjdbRolloutMigrationBEnvironmentAssignment1793250001100.runMigrationB({
-        licenseTermsService: nestApp.get(LicenseTermsService, { strict: false }),
         licenseInitService: nestApp.get(LicenseInitService, { strict: false }),
         License,
         environmentAssignmentService: nestApp.get(EnvironmentAssignmentClass, { strict: false }),
@@ -197,23 +204,26 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1793250001100 implements 
   }
 
   /**
-   * Self-hosted (CE/EE): reads the instance licence through `queryRunner.manager` via
-   * `initForMigration` - no DI, no separate connection competing with this migration's own
-   * transaction for the pool. `initForMigration` checks `TJ_LICENSE` itself (decrypts it inline)
-   * before falling back to the DB-stored `instance_settings.LICENSE_KEY` row, so this is correct
-   * for both env- and DB-licensed self-hosted instances without depending on `onModuleInit` having
-   * run first - see `LicenseInitService.initForMigration`'s own comment. Cloud licences live in
-   * `organization_license`/HTTP, not `instance_settings`, and `initForMigration` explicitly doesn't
-   * support Cloud, so Cloud keeps going through `LicenseTermsService.getLicenseTerms()` (its
-   * existing, unrelated cost - see class docblock).
+   * Both editions read the licence through `queryRunner.manager` - no separate connection competing
+   * with this migration's own transaction for the pool, and no HTTP.
+   * - Cloud: the workspace's `organization_license` row (`getLicenseInstanceForMigrationCloud`), the
+   *   same source `getPlanForMigrationCloud` uses. A workspace without a row resolves to the basic
+   *   plan, as at runtime.
+   * - Self-hosted (CE/EE): `initForMigration` checks `TJ_LICENSE` itself (decrypts it inline) before
+   *   falling back to the DB-stored `instance_settings.LICENSE_KEY` row, so this is correct for both
+   *   env- and DB-licensed instances without depending on `onModuleInit` having run first.
    */
   private static async isMultiEnvironmentLicensed(
     organizationId: string,
-    deps: Pick<MigrationBDeps, 'licenseTermsService' | 'licenseInitService' | 'License' | 'appManager'>
+    deps: Pick<MigrationBDeps, 'licenseInitService' | 'License' | 'appManager'>
   ): Promise<boolean> {
-    const { licenseTermsService, licenseInitService, License, appManager } = deps;
+    const { licenseInitService, License, appManager } = deps;
     if (getTooljetEdition() === TOOLJET_EDITIONS.Cloud) {
-      return licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId);
+      const organizationLicense = await licenseInitService.getLicenseInstanceForMigrationCloud(
+        appManager,
+        organizationId
+      );
+      return licenseInitService.getLicenseFieldValue(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationLicense);
     }
     await licenseInitService.initForMigration(appManager);
     return licenseInitService.getLicenseFieldValue(LICENSE_FIELD.MULTI_ENVIRONMENT, License.Instance());
@@ -228,7 +238,6 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1793250001100 implements 
    */
   public static async runMigrationB(deps: MigrationBDeps): Promise<void> {
     const {
-      licenseTermsService,
       licenseInitService,
       License,
       environmentAssignmentService,
@@ -242,12 +251,13 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1793250001100 implements 
       `${MIGRATION_NAME}: [START] Assigning TJDB data to environments: ${organizations.length} workspace(s).`
     );
     const progress = new MigrationProgress(MIGRATION_NAME, organizations.length || 1);
+    let skippedTables = 0;
 
     for (const { id: organizationId } of organizations) {
       try {
         const licensed = await TjdbRolloutMigrationBEnvironmentAssignment1793250001100.isMultiEnvironmentLicensed(
           organizationId,
-          { licenseTermsService, licenseInitService, License, appManager }
+          { licenseInitService, License, appManager }
         );
         if (!licensed) continue;
 
@@ -274,9 +284,11 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1793250001100 implements 
             // one subtransaction for the rest of the workspace's run.
             await appManager.query(`ROLLBACK TO SAVEPOINT tjdb_env_assignment`);
             await appManager.query(`RELEASE SAVEPOINT tjdb_env_assignment`);
-            console.error(
-              `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} assignment failed; continuing.`,
-              error
+            skippedTables++;
+            console.warn(
+              `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} assignment skipped: ${describeTableFailure(
+                error
+              )}`
             );
           }
         }
@@ -294,9 +306,10 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1793250001100 implements 
           } catch (error) {
             await appManager.query(`ROLLBACK TO SAVEPOINT tjdb_env_fk_replay`);
             await appManager.query(`RELEASE SAVEPOINT tjdb_env_fk_replay`);
-            console.error(
-              `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} foreign-key replay failed; continuing.`,
-              error
+            console.warn(
+              `${MIGRATION_NAME}: workspace=${organizationId} table=${internalTableId} foreign-key replay skipped: ${describeTableFailure(
+                error
+              )}`
             );
           }
         }
@@ -307,12 +320,14 @@ export class TjdbRolloutMigrationBEnvironmentAssignment1793250001100 implements 
       }
     }
 
-    console.log(`${MIGRATION_NAME}: [SUCCESS] Environment assignment finished.`);
+    console.log(
+      `${MIGRATION_NAME}: [SUCCESS] Environment assignment finished.` +
+        (skippedTables ? ` ${skippedTables} table(s) skipped, listed above.` : '')
+    );
   }
 }
 
 interface MigrationBDeps {
-  licenseTermsService: LicenseTermsService;
   licenseInitService: LicenseInitService;
   // Edition-resolved License config class (dynamically imported, same as EnvironmentAssignmentClass
   // below) - only its static Instance() accessor is used, so the generic LicenseBase shape suffices.

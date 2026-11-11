@@ -1258,7 +1258,8 @@
 
 .table-column-popover#popover-basic-2,
 .table-column-popover#table-column-popover-basic {
-  z-index: 11 !important;
+  // Above the query pane (51/52) and widget tooltips (tw-z-50); below the datepicker popper (1000)
+  z-index: 60 !important;
   min-width: 280px;
   background-color: var(--cc-surface1-surface);
 
@@ -1344,8 +1345,11 @@
   }
 }
 
-// Table-only: force popover to full editor viewport height
-.table-column-popover#table-column-popover-basic {
+// Force the column/field editor popover to a bounded viewport height so its
+// .popover-body's overflow-y:auto (above) can actually create a scrollbar
+// instead of letting content overflow the popover silently.
+.table-column-popover#table-column-popover-basic,
+.table-column-popover#popover-basic-2 {
   display: flex !important;
   flex-direction: column !important;
   height: calc(100vh - 88px) !important;

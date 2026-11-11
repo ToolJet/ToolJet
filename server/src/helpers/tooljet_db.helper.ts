@@ -179,26 +179,64 @@ export async function createAndGrantTablePrivilege(
  * Transfers ownership of a just-created physical table to the workspace's own tenant role.
  * Postgres requires table ownership (not a grantable privilege) to run ALTER TABLE DDL, so raw SQL
  * migration steps (which run as the tenant role) need this at every place a table is physically
- * created. Scoped to exactly this one statement — no schema-level grant, no membership change.
- *
- * @param tooljetDbTransactionManager
- * @param dbSchema
- * @param tableId
- * @param dbUser
+ * created. No lasting schema-level grant, no membership change - see `alterOwnerToTenant`.
  */
 export async function transferTableOwnershipToTenant(
-  tooljetDbTransactionManager: EntityManager | QueryRunner,
+  queryRunner: QueryRunner,
   dbSchema: string,
   tableId: string,
   dbUser: string
 ) {
+  await alterOwnerToTenant(
+    queryRunner,
+    dbSchema,
+    `ALTER TABLE "${dbSchema}"."${tableId}" OWNER TO "${dbUser}"`,
+    dbUser
+  );
+}
+
+/**
+ * Same as `transferTableOwnershipToTenant`, for a sequence a tenant-owned table links to.
+ * `sequenceName` is already schema-qualified and quoted.
+ */
+export async function transferSequenceOwnershipToTenant(
+  queryRunner: QueryRunner,
+  dbSchema: string,
+  sequenceName: string,
+  dbUser: string
+) {
+  await alterOwnerToTenant(queryRunner, dbSchema, `ALTER SEQUENCE ${sequenceName} OWNER TO "${dbUser}"`, dbUser);
+}
+
+async function alterOwnerToTenant(queryRunner: QueryRunner, dbSchema: string, alterOwner: string, dbUser: string) {
   // A workspace onboarded before per-tenant roles existed (or while SQL mode was disabled, then
   // later enabled) has no tenant role - `isSQLModeDisabled()` alone doesn't catch that case. Skip
   // rather than hard-fail a create_table/promote/replay that used to succeed for such a workspace.
-  const [role] = await tooljetDbTransactionManager.query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [dbUser]);
+  const [role] = await queryRunner.query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [dbUser]);
   if (!role) return;
 
-  await tooljetDbTransactionManager.query(`ALTER TABLE "${dbSchema}"."${tableId}" OWNER TO "${dbUser}"`);
+  // A non-superuser (every managed Postgres) may only hand an object to a role that has CREATE on
+  // its schema, and tenant roles hold USAGE only. Grant CREATE for this one statement and revoke it
+  // in the same transaction, so the tenant can never create tables of its own. Callers on a
+  // non-transactional runner (migration B) get a transaction here, so a failed ALTER can't leave
+  // the grant behind. The lock serializes concurrent grants on one schema, which Postgres otherwise
+  // rejects with "tuple concurrently updated".
+  const ownTransaction = !queryRunner.isTransactionActive;
+  if (ownTransaction) await queryRunner.startTransaction();
+  try {
+    await queryRunner.query(`SELECT pg_advisory_xact_lock(hashtextextended($1, 0))`, [`tjdb-owner-grant:${dbSchema}`]);
+    const [{ can_create: canCreate }] = await queryRunner.query(
+      `SELECT has_schema_privilege($1, $2, 'CREATE') AS can_create`,
+      [dbUser, dbSchema]
+    );
+    if (!canCreate) await queryRunner.query(`GRANT CREATE ON SCHEMA "${dbSchema}" TO "${dbUser}"`);
+    await queryRunner.query(alterOwner);
+    if (!canCreate) await queryRunner.query(`REVOKE CREATE ON SCHEMA "${dbSchema}" FROM "${dbUser}"`);
+    if (ownTransaction) await queryRunner.commitTransaction();
+  } catch (error) {
+    if (ownTransaction) await queryRunner.rollbackTransaction();
+    throw error;
+  }
 }
 
 export async function updatePasswordToOrganizationTable(

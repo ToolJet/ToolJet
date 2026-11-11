@@ -175,11 +175,12 @@ describe("Chaining of queries", () => {
     cy.forceClickOnCanvas();
     cy.wait(2500);
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, "psql");
-    cy.verifyToastMessage(commonSelectors.toastMessage, "runjs");
-    cy.verifyToastMessage(commonSelectors.toastMessage, "runpy");
-    cy.wait(500);
-    cy.verifyToastMessage(commonSelectors.toastMessage, "restapi");
+    // The chained queries finish almost together, so their success toasts are on
+    // screen at the same time. Don't close toasts between checks — closing the
+    // first toast can dismiss a later query's toast before it is asserted.
+    ["psql", "runjs", "runpy", "restapi"].forEach((message) =>
+      cy.verifyToastMessage(commonSelectors.toastMessage, message, false)
+    );
     // cy.verifyToastMessage(commonSelectors.toastMessage, "Hello World");
   });
 

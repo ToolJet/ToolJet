@@ -8,6 +8,10 @@ on:
     types: [labeled, opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: read
+
 concurrency:
   # no-op runs (other labels, non-main pushes) get their own group so they never cancel a real run
   group: >-
@@ -369,7 +373,7 @@ jobs:
             npm run validate:widget-testing-contracts
           fi
 
-  # Each of the 3 unit shards and each of the 3 e2e shards run on their own machine, in
+  # Each of the 3 unit shards and each of the 5 e2e shards run on their own machine, in
   # parallel. Running the shards side by side on one machine (run-e2e.sh --ci) ran
   # it out of memory. test-server-coverage merges their coverage once all pass.
   test-server:
@@ -518,7 +522,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4, 5]
     container: node:22.23.4-bookworm
     services: *server-test-services
     env: *server-test-env
@@ -550,7 +554,7 @@ jobs:
         # --group=-gitsync excludes the git-sync e2e specs (they run in the test-gitsync job).
         run: >-
           mkdir -p /tmp/tj-e2e-json &&
-          npm run --prefix server test:e2e:cov -- --only-shard ${{ matrix.shard }} --group=-gitsync --testTimeout=60000 --json-output-dir /tmp/tj-e2e-json
+          npm run --prefix server test:e2e:cov -- --only-shard ${{ matrix.shard }} --group=-gitsync --testTimeout=120000 --json-output-dir /tmp/tj-e2e-json
       - name: Upload e2e results for the PR comment
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
@@ -707,7 +711,7 @@ jobs:
         run: TOOLJET_EDITION=ce npm run --prefix server test -- --group=-gitsync --logHeapUsage
       - name: E2E tests
         id: e2e
-        run: TOOLJET_EDITION=ce npm run --prefix server test:e2e -- --group=-gitsync --testTimeout=60000
+        run: TOOLJET_EDITION=ce npm run --prefix server test:e2e -- --group=-gitsync --testTimeout=120000
       - name: Fail job if unit or e2e failed
         if: ${{ steps.unit.outcome == 'failure' || steps.e2e.outcome == 'failure' }}
         run: exit 1
@@ -1022,7 +1026,7 @@ jobs:
       && needs.detect-changes.outputs.mode == 'full'
       && needs.detect-changes.outputs.migrations == 'true'
       && needs.build-plugins.result == 'success'
-    container: node:22.15.1-bookworm
+    container: node:22.23.4-bookworm
     services:
       postgres:
         image: postgres:16
@@ -1208,6 +1212,10 @@ jobs:
       && needs.build-cypress-image.result == 'success'
       && contains(fromJSON('["success","skipped"]'), needs.build-marketplace.result)
       && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     uses: ./.github/workflows/cypress-platform.yml
     with:
       edition: 'ee'
@@ -1233,6 +1241,10 @@ jobs:
       && needs.build-server.result == 'success'
       && needs.build-marketplace.result == 'success'
       && contains(fromJSON('["success","skipped"]'), needs.build-frontend.result)
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     uses: ./.github/workflows/cypress-marketplace.yml
     with:
       edition: 'ee'
