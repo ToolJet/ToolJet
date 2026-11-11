@@ -12,6 +12,23 @@ const logger = new Logger('GitSyncConfigsUtilService');
 // private/protected class member not shared between the two classes would break that
 // structural assignability. The CE class therefore exposes only the public getDetails.
 
+const DEFAULT_BRANCH_MIGRATION = 'EnsureDefaultBranchForAllOrganizations1781740800000';
+
+// Null = caller creates it. While the 3.21.58 data phase holds its uncommitted insert, return a
+// virtual `main` (no id; onBranch reads branchless rows as default) instead of waiting on that row.
+export async function findDefaultBranch(
+  manager: EntityManager,
+  organizationId: string
+): Promise<{ id: string | null; name: string } | null> {
+  const existing = await manager.findOne(WorkspaceBranch, {
+    where: { organizationId, isDefault: true },
+    select: ['id', 'name'],
+  });
+  if (existing) return { id: existing.id, name: existing.name };
+  const [applied] = await manager.query('SELECT 1 FROM migrations WHERE name = $1', [DEFAULT_BRANCH_MIGRATION]);
+  return applied ? null : { id: null, name: 'main' };
+}
+
 // Every org has a default branch (seeded on creation / backfilled by the
 // EnsureDefaultBranchForAllOrganizations migration) and branch_id is now mandatory on
 // version rows. Resolve it; if it's somehow missing, create one named 'main' as a safety
@@ -21,11 +38,8 @@ async function resolveDefaultBranch(
   manager: EntityManager,
   organizationId: string
 ): Promise<{ id: string; name: string }> {
-  const existing = await manager.findOne(WorkspaceBranch, {
-    where: { organizationId, isDefault: true },
-    select: ['id', 'name'],
-  });
-  if (existing) return { id: existing.id, name: existing.name };
+  const existing = await findDefaultBranch(manager, organizationId);
+  if (existing) return existing;
 
   logger.error(`No default branch found for org ${organizationId}; creating one as a fallback`);
   // Own transaction: the caller's manager may be a borrowed connection shared by parallel
