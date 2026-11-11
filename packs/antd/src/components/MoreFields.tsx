@@ -453,7 +453,12 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
                   ? ''
                   : group(String(v))
             }
-            parser={(v) => Number(String(v ?? '').replace(/[^\d.-]/g, '')) as number}
+            parser={(v) => {
+              // An emptied field is no amount (null), as Ant's own parser gives: Number('') read it as 0, so clearing
+              // the field put 0 back in it and Required never caught it (QA AD-03).
+              const digits = String(v ?? '').replace(/[^\d.-]/g, '');
+              return (digits === '' ? '' : Number(digits)) as number;
+            }}
             disabled={disabled}
             variant={look.variant}
             size={look.size}
