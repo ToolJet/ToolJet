@@ -26,6 +26,7 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
     testId = Date.now();
     wsName = `ds-folder-create-${testId}`;
     wsSlug = wsName;
+    cy.viewport(1800, 1400);
 
     cy.apiLogin();
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
@@ -101,6 +102,10 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
       uiEnsureFolderExpanded(folderName, dataSourceName);
       dragDataSourceToStrayList(dataSourceName);
       cy.apiGetDataSourceIdsInFolder(folderId).then((ids) => expect(ids).to.have.length(0));
+
+      // Move the mouse off the sample data source row so its tooltip does not cover the folder menu.
+      cy.get(dsFolder.folderRow(folderName)).realHover();
+      cy.contains('.tooltip', 'Sample data source').should('not.exist');
 
       // Ownership covers delete: the creator can delete their own folder without the delete flag.
       uiOpenFolderMenu(folderId);
