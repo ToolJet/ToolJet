@@ -79,6 +79,7 @@
   "apps | VERSION | UPDATE_PAGES | PUT | /apps/:id/versions/:versionId/pages | version=2 | src/modules/versions/controllers/pages.controller.ts | PagesController.updatePages",
   "apps | VERSION | UPDATE_SETTINGS | PUT | /apps/:id/versions/:versionId/global_settings | version=2 | src/modules/versions/controller.v2.ts | VersionControllerV2.updateGlobalSettings",
   "apps | VERSION | UPDATE_SETTINGS | PUT | /apps/:id/versions/:versionId/page_settings | version=2 | src/modules/versions/controller.v2.ts | VersionControllerV2.updateGlobalSettings",
+  "apps | WorkspaceBranches | LIST_BRANCHES | GET | /workspace-branches | version=(default) | src/modules/workspace-branches/controller.ts | WorkspaceBranchController.list",
   "apps | file | GET | GET | /files/:id | version=(default) | src/modules/files/controller.ts | FilesController.show",
   "apps | organizationThemes | (none) | DELETE | /themes/:id | version=(default) | src/modules/organization-themes/controller.ts | OrganizationThemesController.deleteTheme",
   "apps | organizationThemes | (none) | GET | /themes | version=(default) | src/modules/organization-themes/controller.ts | OrganizationThemesController.findAll",
