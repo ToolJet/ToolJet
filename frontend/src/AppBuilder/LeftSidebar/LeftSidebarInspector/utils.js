@@ -106,9 +106,13 @@ export const copyToClipboard = (data, includeQuotes = true) => {
 };
 
 export const formatPathForCopy = (path) => {
-  const isArray = path.includes('.');
+  // A selected node's path can carry a trailing segment separator
+  // (e.g. `constants.null_value.`) -- copying it verbatim yields an invalid
+  // expression, so drop trailing empty segments before formatting.
+  const trimmedPath = path.replace(/\.+$/, '');
+  const isArray = trimmedPath.includes('.');
   if (isArray) {
-    const pathArray = path.split('.');
+    const pathArray = trimmedPath.split('.');
     const newPath = pathArray.map((item) => {
       if (!isNaN(item) && item !== '') {
         return `[${item}]`;
@@ -117,5 +121,5 @@ export const formatPathForCopy = (path) => {
     });
     return newPath.join('.').replace(/\.\[/g, '[');
   }
-  return path;
+  return trimmedPath;
 };
