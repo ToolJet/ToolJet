@@ -490,6 +490,15 @@ export const usePackHost = (
     setPopupSlotNames((names) => (names.includes(name) ? names : [...names, name]));
     return () => setPopupSlotNames((names) => names.filter((n) => n !== name));
   }, []);
+  // Where this instance is drawn: its module and the row of each List view, pack list or table expanded row around it.
+  // A widget in a row is drawn once per row under one id, and the popup layer is shared, where a body reaches its
+  // dialog by slot name: named by the id alone, every row's body had the same name, a slot takes every element named
+  // for it, and the first row's dialog showed all the rows' bodies while the others' were empty (QA AD-05).
+  const { contextPath } = useSubcontainerContext();
+  const placement = useMemo(
+    () => [...(moduleId && moduleId !== 'canvas' ? [moduleId] : []), ...contextPath.map((s) => s.index)].join('.'),
+    [moduleId, contextPath]
+  );
 
   const host = useMemo(
     () => ({
@@ -501,7 +510,7 @@ export const usePackHost = (
       setRows,
       rowSlotAttr: (index) => rowSlotAttr(id, index),
       registerPopupSlot,
-      popupSlotAttr: (name) => `tj-slot-${id}-${name}`,
+      popupSlotAttr: (name) => (placement ? `tj-slot-${id}-${placement}-${name}` : `tj-slot-${id}-${name}`),
       fitDropAreas,
       formField,
       markRowScoped,
@@ -513,7 +522,19 @@ export const usePackHost = (
           new CustomEvent('submitForm', { detail: { buttonComponentId: id, buttonModuleId: moduleId } })
         ),
     }),
-    [disabled, loading, id, setRows, registerPopupSlot, fitDropAreas, formField, markRowScoped, resolveRow, moduleId]
+    [
+      disabled,
+      loading,
+      id,
+      setRows,
+      registerPopupSlot,
+      placement,
+      fitDropAreas,
+      formField,
+      markRowScoped,
+      resolveRow,
+      moduleId,
+    ]
   );
   return { host, light, popupSlotNames, exposeVariable, fireHostEvent };
 };
