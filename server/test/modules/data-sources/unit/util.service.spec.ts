@@ -1,5 +1,13 @@
 import { DataSourcesUtilService } from '../../../../src/modules/data-sources/util.service';
 
+// These specs cover option and credential binding, not SSRF: their made-up hosts never resolve, which the SSRF check
+// blocks before the plugin runs. test-connection-ssrf.spec.ts covers the SSRF check itself.
+jest.mock('@helpers/ssrf-protection.helper', () => ({
+  ...jest.requireActual('@helpers/ssrf-protection.helper'),
+  validateHostForSSRF: jest.fn().mockResolvedValue(undefined),
+  validateUrlForSSRF: jest.fn().mockResolvedValue(undefined),
+}));
+
 function serviceWith(pluginService: object): DataSourcesUtilService {
   return new DataSourcesUtilService(
     {} as any,
