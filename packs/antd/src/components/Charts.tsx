@@ -1147,7 +1147,12 @@ export const Heatmap = () => {
             x: { labelFill: theme.axis, labelFillOpacity: 1, tick: false, line: false },
             y: { labelFill: theme.axis, labelFillOpacity: 1, tick: false, line: false },
           }}
-          legend={{ color: { itemLabelFill: theme.text } }}
+          // The shade legend is a continuous one, which reads title* and label* styles, not the itemLabelFill a
+          // category legend reads: its title stayed G2's #2C3542 and its numbers near-black, under Text color and on a
+          // dark theme (QA AD-15). Its numbers at full opacity, as the axis labels, or a colour set shows pale.
+          legend={{
+            color: { itemLabelFill: theme.text, titleFill: theme.text, labelFill: theme.text, labelFillOpacity: 1 },
+          }}
           interaction={tooltipInteraction(tips)}
           label={label ? { text: colorField, fill: theme.text, position: 'inside' } : undefined}
           onReady={onChartReady}
