@@ -5,7 +5,7 @@
   "type": "api",
   "defaults": {
     "operation": "text_generation",
-    "model": "command-r-plus"
+    "model": "command-r-plus-08-2024"
   },
   "properties": {
     "operation": {
@@ -14,8 +14,14 @@
       "type": "dropdown-component-flip",
       "description": "Select the operation to perform",
       "list": [
-        { "value": "text_generation", "name": "Text Generation" },
-        { "value": "chat", "name": "Chat" }
+        {
+          "value": "text_generation",
+          "name": "Text Generation"
+        },
+        {
+          "value": "chat",
+          "name": "Chat"
+        }
       ]
     },
     "chat": {
@@ -26,22 +32,37 @@
         "description": "Select the Cohere model",
         "mandatory": true,
         "list": [
-          { "value": "command-r7b-12-2024", "name": "command-r7b-12-2024" },
-          { "value": "command-r-plus-08-2024", "name": "command-r-plus-08-2024" },
-          { "value": "command-r-plus-04-2024", "name": "command-r-plus-04-2024" },
-          { "value": "command-r-plus", "name": "command-r-plus" },
-          { "value": "command-r-08-2024", "name": "command-r-08-2024" },
-          { "value": "command-r-03-2024", "name": "command-r-03-2024" },
-          { "value": "command-r", "name": "command-r" },
-          { "value": "command", "name": "command" },
-          { "value": "command-nightly", "name": "command-nightly" },
-          { "value": "command-light", "name": "command-light" },
-          { "value": "command-light-nightly", "name": "command-light-nightly" },
-          { "value": "c4ai-aya-expanse-8b", "name": "c4ai-aya-expanse-8b" },
-          { "value": "c4ai-aya-expanse-32b", "name": "c4ai-aya-expanse-32b" }
+          {
+            "value": "command-a-03-2025",
+            "name": "command-a-03-2025"
+          },
+          {
+            "value": "command-a-reasoning-08-2025",
+            "name": "command-a-reasoning-08-2025"
+          },
+          {
+            "value": "command-r7b-12-2024",
+            "name": "command-r7b-12-2024"
+          },
+          {
+            "value": "command-r-plus-08-2024",
+            "name": "command-r-plus-08-2024"
+          },
+          {
+            "value": "command-r-08-2024",
+            "name": "command-r-08-2024"
+          },
+          {
+            "value": "c4ai-aya-expanse-8b",
+            "name": "c4ai-aya-expanse-8b"
+          },
+          {
+            "value": "c4ai-aya-expanse-32b",
+            "name": "c4ai-aya-expanse-32b"
+          }
         ]
       },
-      "command-r7b-12-2024":{
+      "command-a-03-2025": {
         "history": {
           "label": "History",
           "key": "history",
@@ -54,7 +75,7 @@
           "label": "Message",
           "key": "message",
           "type": "codehinter",
-          "description": "Input the message for text generation",
+          "description": "Input the message for chat",
           "mandatory": true,
           "placeholder": "Another one about generative AI.",
           "tooltip": "Next user prompt in the chat"
@@ -65,346 +86,172 @@
           "type": "codehinter",
           "description": "Optional advanced parameters",
           "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
+          "placeholder": "{\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
         }
+      },
+      "command-a-reasoning-08-2025": {
+        "history": {
+          "label": "History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Input the conversation history",
+          "mandatory": true,
+          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
+        },
+        "message": {
+          "label": "Message",
+          "key": "message",
+          "type": "codehinter",
+          "description": "Input the message for chat",
+          "mandatory": true,
+          "placeholder": "Another one about generative AI.",
+          "tooltip": "Next user prompt in the chat"
+        },
+        "advanced_parameters": {
+          "label": "Advanced parameters",
+          "key": "advanced_parameters",
+          "type": "codehinter",
+          "description": "Optional advanced parameters",
+          "mandatory": false,
+          "placeholder": "{\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
+        }
+      },
+      "command-r7b-12-2024": {
+        "history": {
+          "label": "History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Input the conversation history",
+          "mandatory": true,
+          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
+        },
+        "message": {
+          "label": "Message",
+          "key": "message",
+          "type": "codehinter",
+          "description": "Input the message for chat",
+          "mandatory": true,
+          "placeholder": "Another one about generative AI.",
+          "tooltip": "Next user prompt in the chat"
+        },
+        "advanced_parameters": {
+          "label": "Advanced parameters",
+          "key": "advanced_parameters",
+          "type": "codehinter",
+          "description": "Optional advanced parameters",
+          "mandatory": false,
+          "placeholder": "{\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
+        }
+      },
+      "command-r-plus-08-2024": {
+        "history": {
+          "label": "History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Input the conversation history",
+          "mandatory": true,
+          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
+        },
+        "message": {
+          "label": "Message",
+          "key": "message",
+          "type": "codehinter",
+          "description": "Input the message for chat",
+          "mandatory": true,
+          "placeholder": "Another one about generative AI.",
+          "tooltip": "Next user prompt in the chat"
+        },
+        "advanced_parameters": {
+          "label": "Advanced parameters",
+          "key": "advanced_parameters",
+          "type": "codehinter",
+          "description": "Optional advanced parameters",
+          "mandatory": false,
+          "placeholder": "{\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
+        }
+      },
+      "command-r-08-2024": {
+        "history": {
+          "label": "History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Input the conversation history",
+          "mandatory": true,
+          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
+        },
+        "message": {
+          "label": "Message",
+          "key": "message",
+          "type": "codehinter",
+          "description": "Input the message for chat",
+          "mandatory": true,
+          "placeholder": "Another one about generative AI.",
+          "tooltip": "Next user prompt in the chat"
+        },
+        "advanced_parameters": {
+          "label": "Advanced parameters",
+          "key": "advanced_parameters",
+          "type": "codehinter",
+          "description": "Optional advanced parameters",
+          "mandatory": false,
+          "placeholder": "{\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
+        }
+      },
+      "c4ai-aya-expanse-8b": {
+        "history": {
+          "label": "History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Input the conversation history",
+          "mandatory": true,
+          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
+        },
+        "message": {
+          "label": "Message",
+          "key": "message",
+          "type": "codehinter",
+          "description": "Input the message for chat",
+          "mandatory": true,
+          "placeholder": "Another one about generative AI.",
+          "tooltip": "Next user prompt in the chat"
+        },
+        "advanced_parameters": {
+          "label": "Advanced parameters",
+          "key": "advanced_parameters",
+          "type": "codehinter",
+          "description": "Optional advanced parameters",
+          "mandatory": false,
+          "placeholder": "{\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
+        }
+      },
+      "c4ai-aya-expanse-32b": {
+        "history": {
+          "label": "History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Input the conversation history",
+          "mandatory": true,
+          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
+        },
+        "message": {
+          "label": "Message",
+          "key": "message",
+          "type": "codehinter",
+          "description": "Input the message for chat",
+          "mandatory": true,
+          "placeholder": "Another one about generative AI.",
+          "tooltip": "Next user prompt in the chat"
+        },
+        "advanced_parameters": {
+          "label": "Advanced parameters",
+          "key": "advanced_parameters",
+          "type": "codehinter",
+          "description": "Optional advanced parameters",
+          "mandatory": false,
+          "placeholder": "{\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
+        }
+      }
     },
-    "command-r-plus-08-2024":{
-        "history": {
-          "label": "History",
-          "key": "history",
-          "type": "codehinter",
-          "description": "Input the conversation history",
-          "mandatory": true,
-          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
-        },
-        "message": {
-          "label": "Message",
-          "key": "message",
-          "type": "codehinter",
-          "description": "Input the message for text generation",
-          "mandatory": true,
-          "placeholder": "Another one about generative AI.",
-          "tooltip": "Next user prompt in the chat"
-        },
-        "advanced_parameters": {
-          "label": "Advanced parameters",
-          "key": "advanced_parameters",
-          "type": "codehinter",
-          "description": "Optional advanced parameters",
-          "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
-        }
-    },
-    "command-r-plus-04-2024":{
-        "history": {
-          "label": "History",
-          "key": "history",
-          "type": "codehinter",
-          "description": "Input the conversation history",
-          "mandatory": true,
-          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
-        },
-        "message": {
-          "label": "Message",
-          "key": "message",
-          "type": "codehinter",
-          "description": "Input the message for text generation",
-          "mandatory": true,
-          "placeholder": "Another one about generative AI.",
-          "tooltip": "Next user prompt in the chat"
-        },
-        "advanced_parameters": {
-          "label": "Advanced parameters",
-          "key": "advanced_parameters",
-          "type": "codehinter",
-          "description": "Optional advanced parameters",
-          "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
-        }
-    },
-    "command-r-plus":{
-        "history": {
-          "label": "History",
-          "key": "history",
-          "type": "codehinter",
-          "description": "Input the conversation history",
-          "mandatory": true,
-          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
-        },
-        "message": {
-          "label": "Message",
-          "key": "message",
-          "type": "codehinter",
-          "description": "Input the message for text generation",
-          "mandatory": true,
-          "placeholder": "Another one about generative AI.",
-          "tooltip": "Next user prompt in the chat"
-        },
-        "advanced_parameters": {
-          "label": "Advanced parameters",
-          "key": "advanced_parameters",
-          "type": "codehinter",
-          "description": "Optional advanced parameters",
-          "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
-        }
-    },
-    "command-r-08-2024":{
-        "history": {
-          "label": "History",
-          "key": "history",
-          "type": "codehinter",
-          "description": "Input the conversation history",
-          "mandatory": true,
-          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
-        },
-        "message": {
-          "label": "Message",
-          "key": "message",
-          "type": "codehinter",
-          "description": "Input the message for text generation",
-          "mandatory": true,
-          "placeholder": "Another one about generative AI.",
-          "tooltip": "Next user prompt in the chat"
-        },
-        "advanced_parameters": {
-          "label": "Advanced parameters",
-          "key": "advanced_parameters",
-          "type": "codehinter",
-          "description": "Optional advanced parameters",
-          "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
-        }
-    },
-    "command-r-03-2024":{
-        "history": {
-          "label": "History",
-          "key": "history",
-          "type": "codehinter",
-          "description": "Input the conversation history",
-          "mandatory": true,
-          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
-        },
-        "message": {
-          "label": "Message",
-          "key": "message",
-          "type": "codehinter",
-          "description": "Input the message for text generation",
-          "mandatory": true,
-          "placeholder": "Another one about generative AI.",
-          "tooltip": "Next user prompt in the chat"
-        },
-        "advanced_parameters": {
-          "label": "Advanced parameters",
-          "key": "advanced_parameters",
-          "type": "codehinter",
-          "description": "Optional advanced parameters",
-          "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"NONE\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
-        }
-    },
-    "command-r":{
-        "history": {
-          "label": "History",
-          "key": "history",
-          "type": "codehinter",
-          "description": "Input the conversation history",
-          "mandatory": true,
-          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
-        },
-        "message": {
-          "label": "Message",
-          "key": "message",
-          "type": "codehinter",
-          "description": "Input the message for text generation",
-          "mandatory": true,
-          "placeholder": "Another one about generative AI.",
-          "tooltip": "Next user prompt in the chat"
-        },
-        "advanced_parameters": {
-          "label": "Advanced parameters",
-          "key": "advanced_parameters",
-          "type": "codehinter",
-          "description": "Optional advanced parameters",
-          "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"NONE\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
-        }
-    },
-    "command":{
-        "history": {
-          "label": "History",
-          "key": "history",
-          "type": "codehinter",
-          "description": "Input the conversation history",
-          "mandatory": true,
-          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
-        },
-        "message": {
-          "label": "Message",
-          "key": "message",
-          "type": "codehinter",
-          "description": "Input the message for text generation",
-          "mandatory": true,
-          "placeholder": "Another one about generative AI.",
-          "tooltip": "Next user prompt in the chat"
-        },
-        "advanced_parameters": {
-          "label": "Advanced parameters",
-          "key": "advanced_parameters",
-          "type": "codehinter",
-          "description": "Optional advanced parameters",
-          "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"NONE\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
-        }
-    },
-    "command-nightly":{
-        "history": {
-          "label": "History",
-          "key": "history",
-          "type": "codehinter",
-          "description": "Input the conversation history",
-          "mandatory": true,
-          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
-        },
-        "message": {
-          "label": "Message",
-          "key": "message",
-          "type": "codehinter",
-          "description": "Input the message for text generation",
-          "mandatory": true,
-          "placeholder": "Another one about generative AI.",
-          "tooltip": "Next user prompt in the chat"
-        },
-        "advanced_parameters": {
-          "label": "Advanced parameters",
-          "key": "advanced_parameters",
-          "type": "codehinter",
-          "description": "Optional advanced parameters",
-          "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
-        }
-    },
-    "command-light":{
-        "history": {
-          "label": "History",
-          "key": "history",
-          "type": "codehinter",
-          "description": "Input the conversation history",
-          "mandatory": true,
-          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
-        },
-        "message": {
-          "label": "Message",
-          "key": "message",
-          "type": "codehinter",
-          "description": "Input the message for text generation",
-          "mandatory": true,
-          "placeholder": "Another one about generative AI.",
-          "tooltip": "Next user prompt in the chat"
-        },
-        "advanced_parameters": {
-          "label": "Advanced parameters",
-          "key": "advanced_parameters",
-          "type": "codehinter",
-          "description": "Optional advanced parameters",
-          "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"NONE\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
-        }
-    },
-    "command-light-nightly":{
-        "history": {
-          "label": "History",
-          "key": "history",
-          "type": "codehinter",
-          "description": "Input the conversation history",
-          "mandatory": true,
-          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
-        },
-        "message": {
-          "label": "Message",
-          "key": "message",
-          "type": "codehinter",
-          "description": "Input the message for text generation",
-          "mandatory": true,
-          "placeholder": "Another one about generative AI.",
-          "tooltip": "Next user prompt in the chat"
-        },
-        "advanced_parameters": {
-          "label": "Advanced parameters",
-          "key": "advanced_parameters",
-          "type": "codehinter",
-          "description": "Optional advanced parameters",
-          "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"NONE\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
-        }
-    },
-    "c4ai-aya-expanse-8b":{
-        "history": {
-          "label": "History",
-          "key": "history",
-          "type": "codehinter",
-          "description": "Input the conversation history",
-          "mandatory": true,
-          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
-        },
-        "message": {
-          "label": "Message",
-          "key": "message",
-          "type": "codehinter",
-          "description": "Input the message for text generation",
-          "mandatory": true,
-          "placeholder": "Another one about generative AI.",
-          "tooltip": "Next user prompt in the chat"
-        },
-        "advanced_parameters": {
-          "label": "Advanced parameters",
-          "key": "advanced_parameters",
-          "type": "codehinter",
-          "description": "Optional advanced parameters",
-          "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"NONE\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
-        }
-    },
-    "c4ai-aya-expanse-32b":{
-        "history": {
-          "label": "History",
-          "key": "history",
-          "type": "codehinter",
-          "description": "Input the conversation history",
-          "mandatory": true,
-          "placeholder": "[{\n  \"role\": \"system\",\n  \"content\": \"You are an SEO specialist content writer\"\n}, {\n  \"role\": \"user\",\n  \"content\": \"Write a title for a blog post about API design. Only output the title text.\"\n}, {\n  \"role\": \"assistant\",\n  \"content\": \"Designing Perfect APIs\"\n}]"
-        },
-        "message": {
-          "label": "Message",
-          "key": "message",
-          "type": "codehinter",
-          "description": "Input the message for text generation",
-          "mandatory": true,
-          "placeholder": "Another one about generative AI.",
-          "tooltip": "Next user prompt in the chat"
-        },
-        "advanced_parameters": {
-          "label": "Advanced parameters",
-          "key": "advanced_parameters",
-          "type": "codehinter",
-          "description": "Optional advanced parameters",
-          "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"NONE\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
-        }
-    }
-  },
     "text_generation": {
       "model": {
         "label": "Model",
@@ -413,20 +260,37 @@
         "description": "Select the Cohere model",
         "mandatory": true,
         "list": [
-          { "value": "command-r-plus-08-2024", "name": "command-r-plus-08-2024" },
-          { "value": "command-r-plus-04-2024", "name": "command-r-plus-04-2024" },
-          { "value": "command-r-plus", "name": "command-r-plus" },
-          { "value": "command-r-08-2024", "name": "command-r-08-2024" },
-          { "value": "command-r-03-2024", "name": "command-r-03-2024" },
-          { "value": "command", "name": "command" },
-          { "value": "command-nightly", "name": "command-nightly" },
-          { "value": "command-light", "name": "command-light" },
-          { "value": "command-light-nightly", "name": "command-light-nightly" },
-          { "value": "c4ai-aya-expanse-8b", "name": "c4ai-aya-expanse-8b" },
-          { "value": "c4ai-aya-expanse-32b", "name": "c4ai-aya-expanse-32b" }
+          {
+            "value": "command-a-03-2025",
+            "name": "command-a-03-2025"
+          },
+          {
+            "value": "command-a-reasoning-08-2025",
+            "name": "command-a-reasoning-08-2025"
+          },
+          {
+            "value": "command-r7b-12-2024",
+            "name": "command-r7b-12-2024"
+          },
+          {
+            "value": "command-r-plus-08-2024",
+            "name": "command-r-plus-08-2024"
+          },
+          {
+            "value": "command-r-08-2024",
+            "name": "command-r-08-2024"
+          },
+          {
+            "value": "c4ai-aya-expanse-8b",
+            "name": "c4ai-aya-expanse-8b"
+          },
+          {
+            "value": "c4ai-aya-expanse-32b",
+            "name": "c4ai-aya-expanse-32b"
+          }
         ]
       },
-    "command-r-plus-08-2024":{
+      "command-a-03-2025": {
         "message": {
           "label": "Message",
           "key": "message",
@@ -442,11 +306,10 @@
           "type": "codehinter",
           "description": "Optional advanced parameters",
           "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
+          "placeholder": "{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
         }
-    },
-    "command-r-plus-04-2024":{
+      },
+      "command-a-reasoning-08-2025": {
         "message": {
           "label": "Message",
           "key": "message",
@@ -462,11 +325,10 @@
           "type": "codehinter",
           "description": "Optional advanced parameters",
           "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
+          "placeholder": "{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
         }
-    },
-    "command-r-plus":{
+      },
+      "command-r7b-12-2024": {
         "message": {
           "label": "Message",
           "key": "message",
@@ -482,11 +344,10 @@
           "type": "codehinter",
           "description": "Optional advanced parameters",
           "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
+          "placeholder": "{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
         }
-    },
-    "command-r-08-2024":{
+      },
+      "command-r-plus-08-2024": {
         "message": {
           "label": "Message",
           "key": "message",
@@ -502,11 +363,10 @@
           "type": "codehinter",
           "description": "Optional advanced parameters",
           "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
+          "placeholder": "{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
         }
-    },
-    "command-r-03-2024":{
+      },
+      "command-r-08-2024": {
         "message": {
           "label": "Message",
           "key": "message",
@@ -522,11 +382,10 @@
           "type": "codehinter",
           "description": "Optional advanced parameters",
           "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
+          "placeholder": "{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
         }
-    },
-    "command":{
+      },
+      "c4ai-aya-expanse-8b": {
         "message": {
           "label": "Message",
           "key": "message",
@@ -542,11 +401,10 @@
           "type": "codehinter",
           "description": "Optional advanced parameters",
           "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
+          "placeholder": "{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
         }
-    },
-    "command-nightly":{
+      },
+      "c4ai-aya-expanse-32b": {
         "message": {
           "label": "Message",
           "key": "message",
@@ -562,90 +420,9 @@
           "type": "codehinter",
           "description": "Optional advanced parameters",
           "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
+          "placeholder": "{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
         }
-    },
-    "command-light":{
-        "message": {
-          "label": "Message",
-          "key": "message",
-          "type": "codehinter",
-          "description": "Input the message for text generation",
-          "mandatory": true,
-          "placeholder": "Another one about generative AI.",
-          "tooltip": "Next user prompt in the chat"
-        },
-        "advanced_parameters": {
-          "label": "Advanced parameters",
-          "key": "advanced_parameters",
-          "type": "codehinter",
-          "description": "Optional advanced parameters",
-          "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
-        }
-    },
-    "command-light-nightly":{
-        "message": {
-          "label": "Message",
-          "key": "message",
-          "type": "codehinter",
-          "description": "Input the message for text generation",
-          "mandatory": true,
-          "placeholder": "Another one about generative AI.",
-          "tooltip": "Next user prompt in the chat"
-        },
-        "advanced_parameters": {
-          "label": "Advanced parameters",
-          "key": "advanced_parameters",
-          "type": "codehinter",
-          "description": "Optional advanced parameters",
-          "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
-        }
-    },
-    "c4ai-aya-expanse-8b":{
-        "message": {
-          "label": "Message",
-          "key": "message",
-          "type": "codehinter",
-          "description": "Input the message for text generation",
-          "mandatory": true,
-          "placeholder": "Another one about generative AI.",
-          "tooltip": "Next user prompt in the chat"
-        },
-        "advanced_parameters": {
-          "label": "Advanced parameters",
-          "key": "advanced_parameters",
-          "type": "codehinter",
-          "description": "Optional advanced parameters",
-          "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
-        }
-    },
-    "c4ai-aya-expanse-32b":{
-        "message": {
-          "label": "Message",
-          "key": "message",
-          "type": "codehinter",
-          "description": "Input the message for text generation",
-          "mandatory": true,
-          "placeholder": "Another one about generative AI.",
-          "tooltip": "Next user prompt in the chat"
-        },
-        "advanced_parameters": {
-          "label": "Advanced parameters",
-          "key": "advanced_parameters",
-          "type": "codehinter",
-          "description": "Optional advanced parameters",
-          "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
-
-        }
-    }
+      }
     }
   }
 }
