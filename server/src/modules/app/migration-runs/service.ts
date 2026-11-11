@@ -432,10 +432,11 @@ export class MigrationRunsService implements OnApplicationShutdown {
         await saveLines();
         // Stopped by shutdown: DEAD_RUN_ERROR lets the dead-run check on another server restart it.
         if (!succeeded) {
+          // Best effort: a failed lookup must not stop the failed status from being written.
           const applied = await this.query<{ name: string }>('SELECT name FROM migrations WHERE name = ANY($1)', [
             run.migrations.map(({ name }) => name),
-          ]);
-          run = markRolledBack(run, new Set(applied.map(({ name }) => name)));
+          ]).catch(() => null);
+          if (applied) run = markRolledBack(run, new Set(applied.map(({ name }) => name)));
           await this.updateRun(runId, run, 'failed', this.shuttingDown ? DEAD_RUN_ERROR : errorSummary(run));
           return;
         }
