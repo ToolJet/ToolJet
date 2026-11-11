@@ -3,6 +3,7 @@ import { MODULES } from './constants/modules';
 import { UserPermissions } from '@modules/ability/types';
 import { User } from '@entities/user.entity';
 import { FEATURE_KEY } from './constants';
+import { AuditRouteSpec } from '@modules/audit-logs/events/types';
 
 export interface UserAllPermissions {
   userPermission: UserPermissions;
@@ -22,6 +23,8 @@ export interface FeatureConfig {
   isSuperAdminFeature?: boolean;
   shouldNotSkipPublicApp?: boolean;
   allowFailedAuditLogs?: boolean;
+  // Audit-event spec for this route (src/modules/audit-logs/events). Separate from the legacy auditLogsKey.
+  audit?: AuditRouteSpec;
 }
 
 export interface ResourceDetails {

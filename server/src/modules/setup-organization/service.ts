@@ -8,12 +8,16 @@ import { OrganizationInputs } from './types/organization-inputs';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
+import { OrganizationsService } from '@modules/organizations/service';
+import { dbTransactionWrap } from '@helpers/database.helper';
+import { CreateWorkspaceV2Dto, WorkspaceV2ResponseDto, toWorkspaceV2Response } from '@modules/organizations/dto/v2';
 
 @Injectable()
 export class SetupOrganizationsService implements ISetupOrganizationsService {
   constructor(
     protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
-    protected readonly userBanListRepository: UserBanListRepository
+    protected readonly userBanListRepository: UserBanListRepository,
+    protected readonly organizationsService: OrganizationsService
   ) {}
 
   async create(organizationInputs: OrganizationInputs, user?: User, manager?: EntityManager): Promise<Organization> {
@@ -25,6 +29,7 @@ export class SetupOrganizationsService implements ISetupOrganizationsService {
     }
 
     const organization = await this.setupOrganizationsUtilService.create(organizationInputs, user, manager);
+    if (!user) return organization;
 
     //WORKSPACE_CREATE audit
     const auditLogsData = {
@@ -42,5 +47,16 @@ export class SetupOrganizationsService implements ISetupOrganizationsService {
     };
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
     return organization;
+  }
+
+  // External API v2. Same setup as a dashboard-created workspace; a PAT caller becomes its admin.
+  // The first workspace on the platform becomes the default.
+  async createWorkspaceV2(dto: CreateWorkspaceV2Dto, user?: User): Promise<WorkspaceV2ResponseDto> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      await this.organizationsService.checkWorkspaceFieldsAvailableV2(dto);
+      const isDefault = (await manager.count(Organization)) === 0;
+      const organization = await this.create({ name: dto.name, slug: dto.slug, isDefault }, user, manager);
+      return toWorkspaceV2Response(organization);
+    });
   }
 }

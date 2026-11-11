@@ -19,6 +19,8 @@ import {
   Max,
   IsNumber,
   IsPositive,
+  ArrayMaxSize,
+  ArrayMinSize,
   registerDecorator,
   ValidationOptions,
   ValidationArguments,
@@ -845,6 +847,255 @@ export class ListWorkspaceUsersV2ResponseDto {
   @Expose()
   @Type(() => WorkspaceUserV2ResponseDto)
   data: WorkspaceUserV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+export class UpdateUserV2Dto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  name?: string;
+
+  @IsOptional()
+  @IsEnum(USER_STATUS)
+  status?: USER_STATUS;
+}
+
+export class ListUsersV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsEnum(USER_STATUS)
+  status?: USER_STATUS;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+export class ListUserWorkspacesV2QueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+@Exclude()
+export class UserV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  email: string;
+
+  @Expose()
+  status: USER_STATUS;
+}
+
+@Exclude()
+export class ListUsersV2ResponseDto {
+  @Expose()
+  @Type(() => UserV2ResponseDto)
+  data: UserV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+@Exclude()
+export class WorkspaceMembershipV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  slug: string;
+
+  @Expose()
+  status: string;
+
+  @Expose()
+  default: boolean;
+}
+
+@Exclude()
+export class ListUserWorkspacesV2ResponseDto {
+  @Expose()
+  @Type(() => WorkspaceMembershipV2ResponseDto)
+  data: WorkspaceMembershipV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+export class CreateWorkspaceUserV2Dto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name: string;
+
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @MinLength(5)
+  @MaxLength(100)
+  password: string;
+
+  @IsEnum(USER_ROLE)
+  role: USER_ROLE;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails?: UserDetailKeyValueDto[];
+}
+
+export class BulkCreateWorkspaceUsersV2Dto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(500)
+  @ValidateNested({ each: true })
+  @Type(() => CreateWorkspaceUserV2Dto)
+  users: CreateWorkspaceUserV2Dto[];
+}
+
+export class BulkUpdateWorkspaceUserEntryV2Dto {
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @IsOptional()
+  @IsEnum(USER_ROLE)
+  role?: USER_ROLE;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails?: UserDetailKeyValueDto[];
+}
+
+export class BulkUpdateWorkspaceUsersV2Dto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(500)
+  @ValidateNested({ each: true })
+  @Type(() => BulkUpdateWorkspaceUserEntryV2Dto)
+  users: BulkUpdateWorkspaceUserEntryV2Dto[];
+}
+
+export class ListWorkspaceUserGroupsV2QueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+@Exclude()
+export class BulkCreateErrorV2ResponseDto {
+  @Expose()
+  index: number;
+
+  @Expose()
+  email: string;
+
+  @Expose()
+  code: string;
+
+  @Expose()
+  message: string;
+}
+
+@Exclude()
+export class BulkUpdateErrorV2ResponseDto {
+  @Expose()
+  index: number;
+
+  @Expose()
+  id: string;
+
+  @Expose()
+  code: string;
+
+  @Expose()
+  message: string;
+}
+
+@Exclude()
+export class BulkCreateWorkspaceUsersV2ResponseDto {
+  @Expose()
+  @Type(() => WorkspaceUserV2ResponseDto)
+  created: WorkspaceUserV2ResponseDto[];
+
+  @Expose()
+  @Type(() => BulkCreateErrorV2ResponseDto)
+  errors: BulkCreateErrorV2ResponseDto[];
+}
+
+@Exclude()
+export class BulkUpdateWorkspaceUsersV2ResponseDto {
+  @Expose()
+  @Type(() => WorkspaceUserV2ResponseDto)
+  updated: WorkspaceUserV2ResponseDto[];
+
+  @Expose()
+  @Type(() => BulkUpdateErrorV2ResponseDto)
+  errors: BulkUpdateErrorV2ResponseDto[];
+}
+
+@Exclude()
+export class WorkspaceUserGroupV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+}
+
+@Exclude()
+export class ListWorkspaceUserGroupsV2ResponseDto {
+  @Expose()
+  @Type(() => WorkspaceUserGroupV2ResponseDto)
+  data: WorkspaceUserGroupV2ResponseDto[];
 
   @Expose()
   @Type(() => PaginationV2ResponseDto)

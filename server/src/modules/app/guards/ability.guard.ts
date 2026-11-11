@@ -13,6 +13,7 @@ import { MODULES } from '../constants/modules';
 import { isSuperAdmin } from '@helpers/utils.helper';
 import { cloneDeep } from 'lodash';
 import { TransactionLogger } from '@modules/logging/service';
+import { IAuditEngine } from '@modules/audit-logs/events/interfaces';
 
 // User should be present or app should be public
 @Injectable()
@@ -41,6 +42,40 @@ export abstract class AbilityGuard implements CanActivate {
     return;
   }
 
+  // External API shared secret (set by ExternalApiAuthGuard): there is no user, so only the instance
+  // licence applies — the behaviour these routes had when their features were isPublic.
+  private async allowSharedSecret(module: MODULES, features: string[] | undefined): Promise<boolean> {
+    if (!features?.length) return false;
+    for (const feature of features) {
+      const featureInfo: FeatureConfig = MODULE_INFO?.[module]?.[feature];
+      if (!featureInfo) {
+        throw new HttpException(`Feature ${feature} not found in module ${module}`, 404);
+      }
+      if (featureInfo.license && !(await this.licenseTermsService.getLicenseTermsInstance(featureInfo.license))) {
+        throw new HttpException(
+          `Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.`,
+          451
+        );
+      }
+    }
+    return true;
+  }
+
+  // Records an audit `denied` event for routes that have an audit spec. Only permission decisions
+  // call this; plan, ban and business-rule rejections are not denials. Never blocks the 403.
+  private async recordDenied(context: ExecutionContext): Promise<void> {
+    try {
+      const engine = this.moduleRef.get(IAuditEngine, { strict: false });
+      await engine.schedule(() =>
+        engine.denied(context).catch((error) => {
+          this.transactionLogger.error(`Audit denied event failed: ${(error as Error)?.message}`);
+        })
+      );
+    } catch (error) {
+      this.transactionLogger.error(`Audit denied event failed: ${(error as Error)?.message}`);
+    }
+  }
+
   private async checkWorkspaceSuspended(orgId: string): Promise<void> {
     const banned = await this.dataSource.getRepository(WorkspaceBanList).findOne({ where: { organizationId: orgId } });
     if (banned) {
@@ -66,6 +101,9 @@ export abstract class AbilityGuard implements CanActivate {
       }
 
       const request = context.switchToHttp().getRequest();
+      if (request.tj_auth === 'api_key') {
+        return await this.allowSharedSecret(module, features);
+      }
       const user = request.user;
       const app: App = request.tj_app;
       // Guard instances are singleton-scoped in Nest's DI container, so `this.resource`
@@ -129,6 +167,7 @@ export abstract class AbilityGuard implements CanActivate {
 
         if (featureInfo.isSuperAdminFeature && !isSuperAdmin(user)) {
           // If the user is not super admin and the feature is a super admin feature
+          await this.recordDenied(context);
           throw new ForbiddenException({
             message: 'You do not have permission to access this resource',
             organizationId: app?.organizationId,
@@ -176,6 +215,7 @@ export abstract class AbilityGuard implements CanActivate {
         );
 
         if (forbiddenFeature) {
+          await this.recordDenied(context);
           const errorMessage = this.getForbiddenMessage(forbiddenFeature, resourceId);
           throw new ForbiddenException({
             message: errorMessage || 'You do not have permission to access this resource',

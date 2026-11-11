@@ -1,5 +1,5 @@
 import { updateSecurityEntity } from '@modules/mcp-oauth/revocation';
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import {
   DataSource,
   EntityManager,
@@ -21,6 +21,16 @@ import { CONSTRAINTS } from './constants';
 import { OrganizationInputs } from '@modules/setup-organization/types/organization-inputs';
 
 const LAST_ACCESSED_AT_UPDATE_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export interface WorkspaceQuery {
+  status?: string;
+  search?: string;
+  isDefault?: boolean;
+  memberUserId?: string;
+  page: number;
+  perPage: number;
+}
 
 @Injectable()
 export class OrganizationRepository extends Repository<Organization> {
@@ -114,6 +124,48 @@ export class OrganizationRepository extends Repository<Organization> {
       throw new BadRequestException('Organization is Archived');
     }
     return organization;
+  }
+
+  // Resolves a workspace by id, then slug, then name.
+  async findByIdentifier(identifier: string, manager?: EntityManager): Promise<Organization> {
+    const m = manager ?? this.manager;
+    const isUuid = UUID_PATTERN.test(identifier);
+    let organization = await m.findOne(Organization, { where: isUuid ? { id: identifier } : { slug: identifier } });
+    if (!organization && !isUuid) {
+      organization = await m.findOne(Organization, { where: { name: identifier } });
+    }
+    if (!organization) throw new NotFoundException('Workspace not found');
+    return organization;
+  }
+
+  async queryWorkspaces(
+    query: WorkspaceQuery,
+    manager?: EntityManager
+  ): Promise<{ organizations: Organization[]; totalCount: number }> {
+    const qb = (manager ?? this.manager).createQueryBuilder(Organization, 'organization');
+    if (query.memberUserId) {
+      qb.innerJoin(
+        'organization.organizationUsers',
+        'membership',
+        'membership.userId = :memberUserId AND membership.status = :membershipStatus',
+        { memberUserId: query.memberUserId, membershipStatus: WORKSPACE_USER_STATUS.ACTIVE }
+      );
+    }
+    if (query.search) {
+      qb.andWhere('(organization.name ILIKE :search OR organization.slug ILIKE :search)', {
+        search: `%${query.search}%`,
+      });
+    }
+    if (query.status) qb.andWhere('organization.status = :status', { status: query.status });
+    if (query.isDefault !== undefined)
+      qb.andWhere('organization.isDefault = :isDefault', { isDefault: query.isDefault });
+
+    const [organizations, totalCount] = await qb
+      .orderBy('organization.createdAt', 'DESC')
+      .skip((query.page - 1) * query.perPage)
+      .take(query.perPage)
+      .getManyAndCount();
+    return { organizations, totalCount };
   }
 
   updateOne(id: string, updatableData: Partial<Organization>, manager?: EntityManager): Promise<any> {

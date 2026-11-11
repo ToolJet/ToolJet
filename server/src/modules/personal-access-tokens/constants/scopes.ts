@@ -111,6 +111,8 @@ export const PAT_NEVER_GRANTABLE: MODULES[] = [
 export const PAT_UNASSIGNED_MODULES: MODULES[] = [
   ...PAT_NEVER_GRANTABLE, // credential surface — see above
   MODULES.AI, // builds apps, but its endpoints spend money on model calls
+  // Not grantable to PAT sessions. The External API's Workspaces v2 routes accept a workspace PAT directly
+  // (ExternalApiAuthGuard), like custom-component-libraries; CASL scopes them, not these bundles.
   MODULES.EXTERNAL_APIS, // authenticated by a separate instance-wide secret, not by a session
   MODULES.ONBOARDING, // signup/invite flow, meaningless for a machine client
   MODULES.METADATA, // instance metadata

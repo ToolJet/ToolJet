@@ -49,6 +49,8 @@ Controller wiring (`src/modules/folders/controller.ts`):
 - CE and EE files loaded via `getProviders` must export identical class names — imports are merged with `Object.assign`, so a renamed EE export silently drops the CE provider override.
 - Every `@InitFeature` key must exist in `MODULE_INFO[module]`, else `AbilityGuard` throws 404 `Feature X not found in module Y` at request time. New feature = add to the module's `constants/features.ts` (wired into `module-info.ts`).
 - Every route must carry an `AbilityGuard` subclass — `GuardValidator` scans all controllers at boot and reports unguarded routes.
+- A controller's `@InitModule` id, not its host Nest module, picks the `MODULE_INFO` entry and ability rules. External API v2 routes declare their domain module so dashboard and v2 rules share one ability file (`external-apis/AGENTS.md` § Where v2 permissions live). The host module must provide that domain's factory (`ModuleRef.resolve` is strict).
+- `AbilityGuard` treats `req.tj_auth === 'api_key'` (External API shared secret, set by `ExternalApiAuthGuard`) as instance-licence-only, with no user and no CASL.
 - `register()` results are cached per subclass + args signature; don't put per-call side effects in `register()`.
 - License gating is declarative: `FeatureConfig.license` in `MODULE_INFO` → guard returns HTTP 451 when the plan lacks the feature.
 - Param decorators (`@User`, `App`, ability, permissions) return `cloneDeep` copies — mutating them never touches the request.

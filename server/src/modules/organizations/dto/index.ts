@@ -11,6 +11,7 @@ import {
   ValidatorConstraintInterface,
   IsEnum,
 } from 'class-validator';
+import { applyDecorators } from '@nestjs/common';
 import { sanitizeInput } from '@helpers/utils.helper';
 
 @ValidatorConstraint({ name: 'AllowedCharactersValidator', async: false })
@@ -39,28 +40,31 @@ export class AllowedCharactersValidator implements ValidatorConstraintInterface 
   }
 }
 
+const SanitizeAndTrim = () => Transform(({ value }) => sanitizeInput(value)?.trim() || '');
+
+// Shared by the dashboard and External API v2, so a workspace name or slug means the same thing on both.
+export const WorkspaceNameField = () =>
+  applyDecorators(
+    IsString(),
+    SanitizeAndTrim(),
+    IsNotEmpty({ message: "Workspace name can't be empty" }),
+    MaxLength(50, { message: 'Maximum length has been reached.' })
+  );
+
+export const WorkspaceSlugField = () =>
+  applyDecorators(
+    IsString(),
+    SanitizeAndTrim(),
+    IsNotEmpty({ message: "Workspace slug can't be empty" }),
+    MaxLength(50, { message: 'Maximum length has been reached.' }),
+    Validate(AllowedCharactersValidator)
+  );
+
 export class OrganizationCreateDto {
-  @IsString()
-  @Transform(({ value }) => {
-    const newValue = sanitizeInput(value);
-    return newValue?.trim() || '';
-  })
-  @IsNotEmpty({
-    message: "Workspace name can't be empty",
-  })
-  @MaxLength(50, { message: 'Maximum length has been reached.' })
+  @WorkspaceNameField()
   name: string;
 
-  @IsString()
-  @Transform(({ value }) => {
-    const newValue = sanitizeInput(value);
-    return newValue?.trim() || '';
-  })
-  @IsNotEmpty({
-    message: "Workspace slug can't be empty",
-  })
-  @MaxLength(50, { message: 'Maximum length has been reached.' })
-  @Validate(AllowedCharactersValidator)
+  @WorkspaceSlugField()
   slug: string;
 }
 

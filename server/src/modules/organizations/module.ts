@@ -12,13 +12,24 @@ export class OrganizationsModule extends SubModule {
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;
 
-    const { OrganizationsService, OrganizationsController, OrganizationsUtilService, FeatureAbilityFactory } =
-      await this.getProviders(configs, 'organizations', ['controller', 'service', 'util.service', 'ability']);
+    const {
+      OrganizationsService,
+      OrganizationsController,
+      OrganizationsWorkspacesControllerV2,
+      OrganizationsUtilService,
+      FeatureAbilityFactory,
+    } = await this.getProviders(configs, 'organizations', [
+      'controller',
+      'workspaces.controller.v2',
+      'service',
+      'util.service',
+      'ability',
+    ]);
 
     return this.cacheModule(cacheKey, {
       module: OrganizationsModule,
       imports: [await InstanceSettingsModule.register(configs), await AppEnvironmentsModule.register(configs)],
-      controllers: isMainImport ? [OrganizationsController] : [],
+      controllers: isMainImport ? [OrganizationsController, OrganizationsWorkspacesControllerV2] : [],
       providers: [
         OrganizationsService,
         OrganizationRepository,
@@ -27,7 +38,7 @@ export class OrganizationsModule extends SubModule {
         FeatureAbilityFactory,
         OrganizationsUtilService,
       ],
-      exports: [OrganizationsUtilService, WorkspaceBanListRepository],
+      exports: [OrganizationsService, OrganizationsUtilService, WorkspaceBanListRepository],
     });
   }
 }

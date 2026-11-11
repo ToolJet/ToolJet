@@ -12,6 +12,7 @@ import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { SubModule } from '@modules/app/sub-module';
+import { OrganizationsModule } from '@modules/organizations/module';
 
 export class SetupOrganizationsModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -19,8 +20,17 @@ export class SetupOrganizationsModule extends SubModule {
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;
 
-    const { SetupOrganizationsService, SetupOrganizationsUtilService, SetupOrganizationsController } =
-      await this.getProviders(configs, 'setup-organization', ['service', 'util.service', 'controller']);
+    const {
+      SetupOrganizationsService,
+      SetupOrganizationsUtilService,
+      SetupOrganizationsController,
+      SetupOrganizationsWorkspacesControllerV2,
+    } = await this.getProviders(configs, 'setup-organization', [
+      'service',
+      'util.service',
+      'controller',
+      'workspaces.controller.v2',
+    ]);
 
     const { FeatureAbilityFactory } = await this.getProviders(configs, 'organizations', ['ability']);
 
@@ -32,11 +42,12 @@ export class SetupOrganizationsModule extends SubModule {
         await AppEnvironmentsModule.register(configs),
         await RolesModule.register(configs),
         await ThemesModule.register(configs),
+        await OrganizationsModule.register(configs),
         await SessionModule.register(configs),
         await InstanceSettingsModule.register(configs),
         await TooljetDbModule.register(configs),
       ],
-      controllers: isMainImport ? [SetupOrganizationsController] : [],
+      controllers: isMainImport ? [SetupOrganizationsController, SetupOrganizationsWorkspacesControllerV2] : [],
       providers: [
         SetupOrganizationsService,
         SetupOrganizationsUtilService,
