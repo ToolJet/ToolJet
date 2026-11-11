@@ -128,7 +128,7 @@ No change may break existing saved applications. Always ask: would an app saved 
 
 ### Released-app cache
 
-- The released-app link reuses the app definition saved in IndexedDB (`_helpers/appDefinitionCache.ts`) while its key matches the `appDataRevision` the server returns. The browser never judges freshness itself; what refreshes it is server-side (`server/src/modules/apps/AGENTS.md` § Released-app viewer cache). Logout wipes it via `clearAllViewerCaches()`.
+- The released-app link reuses the app definition saved in IndexedDB (`_helpers/appDefinitionCache.ts`) while its key matches the `appDataRevision` the server returns. The browser never judges freshness itself; what refreshes it is server-side (the Released-app viewer cache section of `server/src/modules/apps/AGENTS.md`). Logout wipes it via `clearAllViewerCaches()`.
 
 ## Widget config
 
@@ -138,7 +138,7 @@ Widget configs live in the shared `packages/widget-definitions` package (`src/wi
 
 ### Key changes require migrations
 
-Moving, renaming, or removing a config key (e.g. moving `loadingState` from `styles` to `properties`) breaks existing apps. Write a migration in `server/data-migrations/`.
+Moving, renaming, or removing a config key (e.g. moving `loadingState` from `styles` to `properties`) breaks existing apps. Write a data migration in `server/migrations/data/` (rules: the Migrations section of `server/AGENTS.md`).
 
 ## Glossary
 

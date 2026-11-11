@@ -5,9 +5,9 @@ import { DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { AiAttachment } from '@entities/ai_attachment.entity';
 import { AiAttachmentService } from '@modules/ai/services/ai-attachment.service';
-import { CreateAiAttachments1789689600000 } from '../../../../migrations/1789689600000-CreateAiAttachments';
-import { HardenAiAttachmentLifecycle1790683200000 } from '../../../../migrations/1790683200000-HardenAiAttachmentLifecycle';
-import { IndexAiAttachmentReconciliation1790683260000 } from '../../../../migrations/1790683260000-IndexAiAttachmentReconciliation';
+import { CreateAiAttachments1789689600000 } from '@migrations/schema/1789689600000-CreateAiAttachments';
+import { HardenAiAttachmentLifecycle1790683200000 } from '@migrations/schema/1790683200000-HardenAiAttachmentLifecycle';
+import { IndexAiAttachmentReconciliation1790683260000 } from '@migrations/schema/1790683260000-IndexAiAttachmentReconciliation';
 
 const integration = process.env.ATTACHMENT_TEST_DATABASE_URL ? describe : describe.skip;
 integration('attachment lifecycle with PostgreSQL', () => {

@@ -11,9 +11,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { initTestApp, closeTestApp, getDefaultDataSource } from 'test-helper';
 import { Organization } from '@entities/organization.entity';
 import { GroupPermissionsUtilService } from '@modules/group-permissions/util.service';
-import { AddWorkflowFolderGranularPermissionsToExistingAdminGroups1784112436513 } from '../../../../data-migrations/1784112436513-AddWorkflowFolderGranularPermissionsToExistingAdminGroups';
-import { AddModuleFolderGranularPermissionsToExistingAdminAndBuilderGroups1784551394230 } from '../../../../data-migrations/1784551394230-AddModuleFolderGranularPermissionsToExistingAdminAndBuilderGroups';
-import { AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups1793250000600 } from '../../../../data-migrations/1793250000600-AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups';
+import { AddWorkflowFolderGranularPermissionsToExistingAdminGroups1784112436513 } from '@migrations/data/1784112436513-AddWorkflowFolderGranularPermissionsToExistingAdminGroups';
+import { AddModuleFolderGranularPermissionsToExistingAdminAndBuilderGroups1784551394230 } from '@migrations/data/1784551394230-AddModuleFolderGranularPermissionsToExistingAdminAndBuilderGroups';
+import { AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups1793250000600 } from '@migrations/data/1793250000600-AddDataSourceFolderGranularPermissionsToExistingAdminAndBuilderGroups';
 
 const FOLDER_BACKFILLS = [
   AddWorkflowFolderGranularPermissionsToExistingAdminGroups1784112436513,
