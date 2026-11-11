@@ -3,10 +3,8 @@ import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey, TableInd
 
 export class GeneralizeUserPersonalAccessTokens1787724102950 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-
-    await queryRunner.query(`DELETE FROM user_personal_access_tokens WHERE scope = 'workspace'`);
-
-    
+    // 3.21.58 still reads the old workspace PATs: deleting them and validating the workspace check
+    // happen in data migration ValidatePatWorkspaceShape1793100000000, after async mode's schema phase.
     await queryRunner.addColumns('user_personal_access_tokens', [
       new TableColumn({ name: 'organization_id', type: 'uuid', isNullable: true }),
       new TableColumn({ name: 'name', type: 'varchar', isNullable: true }),
@@ -37,7 +35,7 @@ export class GeneralizeUserPersonalAccessTokens1787724102950 implements Migratio
     await queryRunner.query(
       `ALTER TABLE user_personal_access_tokens
          ADD CONSTRAINT check_user_pat_workspace_shape
-         CHECK (scope <> 'workspace' OR organization_id IS NOT NULL)`
+         CHECK (scope <> 'workspace' OR organization_id IS NOT NULL) NOT VALID`
     );
 
    

@@ -73,4 +73,19 @@ export const workflowsText = {
     "cypress/fixtures/templates/workflows/workflow_llm_agent_node-export-1781268843647.json",
   marketplacePluginsToBeInstalled: "Marketplace plugins to be installed",
   agentExecutionFailed: "Agent execution failed",
+
+  // Server gate and engine messages asserted by the API-level specs.
+  workflowDisabledError: "Workflow is disabled or does not exist",
+  webhookDisabledError: "Webhook endpoint disabled or doesn't exists",
+  invalidTokenError: "Invalid authentication token",
+  workflowNotFoundError: "Workflow doesn't exists",
+  noReleasedVersionError: "No released version found for this workflow",
+  invalidEnvironmentError: "Invalid environment",
+  loopNotArrayError: "Loop array did not resolve into an array",
+  releaseNeedsProductionError:
+    "You can only release when the version is promoted to production",
+  invalidScheduleError: "Invalid interval configuration",
+  responseStatusError: (code, reason) =>
+    `Workflow failed due to HTTP status code: ${code} ${reason}`,
+  versionLockedText: "This version is locked",
 };

@@ -54,6 +54,11 @@
     }
 }
 
+// Beat the global dark `.nav-link.active` fill.
+.apps-modules-tabs.dark-mode.nav-tabs .nav-link.active {
+    background-color: inherit;
+}
+
 #homePage-tab-front-end,
 #homePage-tab-module {
     border-radius: 0;

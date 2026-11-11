@@ -41,13 +41,21 @@ import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
+import { getCachedAppDefinition, setCachedAppDefinition } from '@/AppBuilder/_helpers/appDefinitionCache';
 
 const useAppData = (
   appId,
   moduleId,
   darkMode,
   mode = 'edit',
-  { environmentId, environmentName, versionId, componentName } = {},
+  {
+    environmentId,
+    environmentName,
+    versionId,
+    componentName,
+    currentVersionId: releasedVersionIdPointer,
+    appDataRevision,
+  } = {},
   moduleMode = false,
   isModuleEditor = false,
   appSlug
@@ -320,6 +328,7 @@ const useAppData = (
     }
     lastModuleVersionRef.current = versionId;
     let appDataPromise;
+    let appDefinitionCacheHit = false;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
     const hasPreviewParams = !!(queryParams.version || queryParams.env);
 
@@ -384,7 +393,17 @@ const useAppData = (
       }
     } else {
       if (isPublicAccess) {
-        appDataPromise = appService.fetchAppBySlug(slug);
+        // releasedVersionIdPointer is only ever populated for the plain released-app viewer link
+        // (validateReleasedApp) — absent for preview/edit, so this never engages there.
+        appDataPromise = releasedVersionIdPointer
+          ? getCachedAppDefinition(releasedVersionIdPointer, appDataRevision).then((cached) => {
+              if (cached) {
+                appDefinitionCacheHit = true;
+                return cached;
+              }
+              return appService.fetchAppBySlug(slug);
+            })
+          : appService.fetchAppBySlug(slug);
       } else {
         // Gate on branch resolution so the app-load (and its hydration) carries the right
         // branch_id. The branch is resolved async (URL name -> id) by AppsRoute; without this
@@ -499,8 +518,8 @@ const useAppData = (
         if (setConversation && setDocsConversation) {
           setConversation(conversation);
           setDocsConversation(docsConversation);
-          // important to control ai inputs
-          getCreditBalance();
+          // important to control ai inputs — only the editor's AI builder panel reads credit balance
+          mode === 'edit' && getCreditBalance();
         }
 
         // if app was created from propmt, and no earlier messages are present in the conversation, send the prompt message
@@ -606,6 +625,7 @@ const useAppData = (
         }
 
         if (initialLoadRef.current && !isPublicAccess && mode === 'edit') {
+          // Feeds only the editor AI panel (globalDataSourceList) — no viewer consumer.
           getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
         }
 
@@ -820,16 +840,28 @@ const useAppData = (
           moduleId
         );
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
+
+        // Use versionId from URL if available (preview mode), otherwise use editing version
+        const versionIdToInit = versionId || appData.editing_version?.id || appData.current_version_id;
+        // Released-app link only: preview/edit loads have no appDataRevision, so they never cache.
+        const isCacheableView =
+          mode !== 'edit' && appData.editing_version?.status === 'PUBLISHED' && !!versionIdToInit && !!appDataRevision;
+        if (isCacheableView && !appDefinitionCacheHit) {
+          // Fire-and-forget — persisting the raw response must not delay render. Cached under the
+          // authoritative post-fetch versionId, not the pre-fetch currentVersionId prop (same value
+          // for this flow, but this is the one actually confirmed PUBLISHED).
+          setCachedAppDefinition(appId, versionIdToInit, appDataRevision, result);
+        }
+        // Never cache the resolved graph: {{}} values depend on the current visitor, URL and time.
         initDependencyGraph(moduleId);
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
 
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
         if (!isPublicAccess && !moduleMode) {
           const envFromQueryParams = mode === 'view' && new URLSearchParams(location?.search)?.get('env');
-          // Use versionId from URL if available (preview mode), otherwise use editing version
-          const versionIdToInit = versionId || appData.editing_version?.id || appData.current_version_id;
           useStore.getState().init(versionIdToInit, envFromQueryParams);
-          fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
+          // Only the editor Query Manager/DataSourcePicker consume globalDataSources — no viewer path reads it.
+          mode === 'edit' && fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
         } else if (!isPublicAccess && moduleMode && moduleId === 'canvas') {
           // Standalone module editor: load static data sources (RunJS, RestAPI, RunPy) the same
           // way a regular app editor does. Embedded modules skip this — they inherit the parent's.
@@ -837,7 +869,7 @@ const useAppData = (
           // init() populates selectedVersion and selectedEnvironment, which useAppPreviewLink
           // needs to build the preview URL with correct ?version=...&env=... params.
           useStore.getState().init(versionIdToInit);
-          fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
+          mode === 'edit' && fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
         }
         if (!moduleMode || moduleId === 'canvas') {
           useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed

@@ -1,11 +1,14 @@
 import React from 'react';
 import { toast } from 'react-hot-toast';
+import { SearchBox } from '@/_components/SearchBox';
 import { useSearchParams } from 'react-router-dom';
-import { MarketplaceCard } from './MarketplaceCard';
-import { pluginsService, marketplaceService } from '@/_services';
-import { SearchBox } from '@/_components';
 
-export const MarketplacePlugins = () => {
+import { pluginsService } from '@/_services/plugins.service';
+import { marketplaceService } from '@/_services/marketplace.service';
+
+import { MarketplaceCard } from './MarketplaceCard';
+
+const MarketplacePlugins = () => {
   const [installedPlugins, setInstalledPlugins] = React.useState({});
   const [allPlugins, setAllPlugins] = React.useState([]);
   // `?search=HubSpot` lets a link name the plugin it wants — the AI builder sends people here
@@ -94,3 +97,5 @@ export const MarketplacePlugins = () => {
     </div>
   );
 };
+
+export default MarketplacePlugins;

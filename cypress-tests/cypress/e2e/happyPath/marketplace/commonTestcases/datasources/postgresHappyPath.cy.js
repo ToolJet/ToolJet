@@ -189,8 +189,16 @@ describe("PostgreSQL", () => {
         fillDSConnectionForm(postgresQueryFillConfig.selectBulkUpdateOperation);
         verifyConnectionFormUI(postgresQueryConfig.bulkUpdateUsingPrimaryKey);
 
-        // Fill bulk update fields
-        fillDSConnectionForm(postgresQueryFillConfig.bulkUpdateUsingPrimaryKey);
+        // Fill bulk update fields. Write a per-run name so the final assertion can only pass if this
+        // run's bulk update actually landed, not on a value left in the shared DB by an earlier run.
+        const updatedName = `Bob Smith ${Date.now()}`;
+        fillDSConnectionForm(
+            postgresQueryFillConfig.bulkUpdateUsingPrimaryKey.map((field) =>
+                field.fieldName === "Records to update"
+                    ? { ...field, text: field.text.replace("Bob Smith Updated", updatedName) }
+                    : field
+            )
+        );
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get('[data-cy="preview-toggle-button"]').click();
         cy.wait(1000);
@@ -200,7 +208,7 @@ describe("PostgreSQL", () => {
         fillDSConnectionForm(postgresQueryFillConfig.selectWithParams);
         cy.forceClickOnCanvas();
         cy.wait(5000);
-        verifyPreviewData("Bob Smith Updated");
+        verifyPreviewData(updatedName);
 
     });
 });

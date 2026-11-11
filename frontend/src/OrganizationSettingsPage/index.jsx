@@ -4,7 +4,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 
 import Layout from '@/_ui/Layout';
 import { authenticationService } from '@/_services';
-import { BreadCrumbContext } from '../App/App';
+import { BreadCrumbContext } from '@/App/BreadCrumbContext';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '@/modules/dashboard/components';
 import { workspaceSettingsLinks } from './constant';

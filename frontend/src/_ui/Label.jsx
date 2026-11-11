@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 import useStore from '@/AppBuilder/_stores/store';
 import { cn } from '@/lib/utils';
@@ -23,9 +24,59 @@ function Label({
   dataCy,
   style = {},
   fontSize = '12px',
+  overflowTooltip = false,
+  overlayContainer,
+  overlayClassName = '',
 }) {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipWidth, setTooltipWidth] = useState();
   const { moduleId } = useModuleContext();
   const isViewerMode = useStore((state) => state.modeStore.modules[moduleId].currentMode === 'view', shallow);
+  const labelText = (
+    <p
+      onMouseEnter={
+        overflowTooltip
+          ? (e) => {
+              setTooltipWidth(e.currentTarget.offsetWidth);
+              setShowTooltip(e.currentTarget.scrollWidth > e.currentTarget.clientWidth);
+            }
+          : undefined
+      }
+      onMouseLeave={overflowTooltip ? () => setShowTooltip(false) : undefined}
+      style={{
+        position: 'relative',
+        color: !['#1B1F24', '#000', '#11181C', '#000000ff'].includes(color) ? color : 'var(--text-primary)',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        display: 'block',
+        margin: '0px',
+        paddingRight:
+          direction == 'right'
+            ? '6px'
+            : (label?.length > 0 && defaultAlignment === 'side') || defaultAlignment === 'top'
+              ? '12px'
+              : '',
+        paddingLeft: label?.length > 0 && defaultAlignment === 'side' && direction != 'left' ? '12px' : '',
+        ...(top && { top }),
+      }}
+    >
+      {label}
+      {isMandatory && (
+        <span
+          style={{
+            color: 'var(--cc-error-systemStatus)',
+            position: 'absolute',
+            right: direction == 'right' ? '0px' : '4px',
+            top: '0px',
+          }}
+        >
+          *
+        </span>
+      )}
+    </p>
+  );
+
   return (
     <>
       {label && (width > 0 || auto) && (
@@ -46,39 +97,22 @@ function Label({
           id={id}
           data-cy={`${dataCy}-label`}
         >
-          <p
-            style={{
-              position: 'relative',
-              color: !['#1B1F24', '#000', '#11181C', '#000000ff'].includes(color) ? color : 'var(--text-primary)',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              display: 'block',
-              margin: '0px',
-              paddingRight:
-                direction == 'right'
-                  ? '6px'
-                  : (label?.length > 0 && defaultAlignment === 'side') || defaultAlignment === 'top'
-                    ? '12px'
-                    : '',
-              paddingLeft: label?.length > 0 && defaultAlignment === 'side' && direction != 'left' ? '12px' : '',
-              ...(top && { top }),
-            }}
-          >
-            {label}
-            {isMandatory && (
-              <span
-                style={{
-                  color: 'var(--cc-error-systemStatus)',
-                  position: 'absolute',
-                  right: direction == 'right' ? '0px' : '4px',
-                  top: '0px',
-                }}
-              >
-                *
-              </span>
-            )}
-          </p>
+          {overflowTooltip ? (
+            <OverlayTrigger
+              placement="bottom"
+              show={showTooltip}
+              container={overlayContainer}
+              overlay={
+                <div className={overlayClassName} style={{ color: 'var(--text-primary)' }}>
+                  <span style={{ width: tooltipWidth && `${tooltipWidth}px` }}>{label}</span>
+                </div>
+              }
+            >
+              {labelText}
+            </OverlayTrigger>
+          ) : (
+            labelText
+          )}
         </label>
       )}
     </>

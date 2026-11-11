@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/Button/Button';
 import { CustomToggleSwitch } from '@/AppBuilder/QueryManager/Components/CustomToggleSwitch';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import useStore from '@/AppBuilder/_stores/store';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 
 function ControlledTabs({
   options,
@@ -24,6 +26,13 @@ function ControlledTabs({
 }) {
   const [key, setKey] = React.useState('headers');
   const tabs = ['Headers', 'Params', 'Body', 'Cookies'];
+  const queryId = useStore((state) => state.queryPanel.selectedQuery?.id);
+
+  useCodeSearchReveal('restTab', queryId, (tab) => {
+    if (!tabs.some((t) => t.toLowerCase() === tab)) return false;
+    setKey(tab);
+    return true;
+  });
 
   return (
     <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="headers">
@@ -70,7 +79,13 @@ function ControlledTabs({
 
         <div className="col tw-pl-0">
           <Tab.Content bsPrefix="rest-api-tab-content" className="query-manager-border-color rounded">
-            <Tab.Pane eventKey="headers" t bsPrefix="rest-api-tabpanes" transition={false}>
+            <Tab.Pane
+              eventKey="headers"
+              t
+              bsPrefix="rest-api-tabpanes"
+              transition={false}
+              data-reveal-root="restTab:headers"
+            >
               <Headers
                 removeKeyValuePair={removeKeyValuePair}
                 addNewKeyValuePair={addNewKeyValuePair}
@@ -82,7 +97,12 @@ function ControlledTabs({
                 onInputChange={onInputChange}
               />
             </Tab.Pane>
-            <Tab.Pane eventKey="params" bsPrefix="rest-api-tabpanes" transition={false}>
+            <Tab.Pane
+              eventKey="params"
+              bsPrefix="rest-api-tabpanes"
+              transition={false}
+              data-reveal-root="restTab:params"
+            >
               <Params
                 removeKeyValuePair={removeKeyValuePair}
                 addNewKeyValuePair={addNewKeyValuePair}
@@ -99,6 +119,7 @@ function ControlledTabs({
               bsPrefix={`rest-api-tabpanes ${bodyToggle && 'rest-api-tabpanes-body'}`}
               transition={false}
               data-cy="restapi-tab-body-pane"
+              data-reveal-root="restTab:body"
             >
               <Body
                 removeKeyValuePair={removeKeyValuePair}
@@ -115,7 +136,12 @@ function ControlledTabs({
                 onInputChange={onInputChange}
               />
             </Tab.Pane>
-            <Tab.Pane eventKey="cookies" bsPrefix="rest-api-tabpanes" transition={false}>
+            <Tab.Pane
+              eventKey="cookies"
+              bsPrefix="rest-api-tabpanes"
+              transition={false}
+              data-reveal-root="restTab:cookies"
+            >
               <Cookies
                 removeKeyValuePair={removeKeyValuePair}
                 addNewKeyValuePair={addNewKeyValuePair}

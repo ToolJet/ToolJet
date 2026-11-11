@@ -1044,7 +1044,6 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       where: { name, organizationId },
       relations: [
         'apps',
-        'dataSourceOptions',
         'appVersion',
         'appVersion.app',
         'plugin',
@@ -1109,7 +1108,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return dataSource;
   }
 
-  async resolveConstants(str: string, organizationId: string, environmentId: string, user?: User): Promise<string> {
+  // collectedSecretValues, when passed, accumulates resolved SECRET plaintexts so callers can scrub them from metadata.
+  async resolveConstants(
+    str: string,
+    organizationId: string,
+    environmentId: string,
+    user?: User,
+    collectedSecretValues?: string[]
+  ): Promise<string> {
     const regex = /\{\{(constants|secrets)\.(.*?)\}\}/g;
 
     const matches = Array.from(str.matchAll(regex));
@@ -1132,11 +1138,17 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
           if (!constant) return fullMatch;
 
-          return await this.encryptionService.decryptColumnValue(
+          const resolved = await this.encryptionService.decryptColumnValue(
             'org_environment_constant_values',
             organizationId,
             constant.value
           );
+
+          if (type === OrganizationConstantType.SECRET && collectedSecretValues && typeof resolved === 'string') {
+            collectedSecretValues.push(resolved);
+          }
+
+          return resolved;
         } catch (error) {
           console.error(`Error resolving constant ${key}:`, error);
           return fullMatch;
@@ -1179,13 +1191,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     testDataSourceDto: TestDataSourceDto,
     organization_id: string,
     dataSourceId?: string,
-    branchId?: string
+    branchId?: string,
+    context?: { dataSource?: DataSource; canEditDataSource?: boolean }
   ): Promise<object> {
-    const { kind, options, plugin_id, environment_id } = testDataSourceDto;
+    // const { kind, options, plugin_id, environment_id } = testDataSourceDto;
+    const { environment_id } = testDataSourceDto;
+    let { kind, options, plugin_id } = testDataSourceDto;
 
     let result = {};
-
-    const parsedOptions = JSON.parse(JSON.stringify(options));
 
     // A credential_id in the body must belong to the data source being tested (path :id) -
     // otherwise a caller could supply another data source's/tenant's credential_id and have
@@ -1197,13 +1210,24 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         (await this.appEnvironmentUtilService.getOptions(dataSourceId, organization_id, environment_id, branchId))
           ?.options || {};
 
-      for (const key of Object.keys(parsedOptions)) {
-        const credentialId = parsedOptions[key]?.['credential_id'];
-        if (credentialId && storedOptions[key]?.['credential_id'] !== credentialId) {
-          throw new ForbiddenException('credential_id does not belong to this data source');
+      if (context?.dataSource) {
+        kind = context.dataSource.kind;
+        plugin_id = context.dataSource.pluginId;
+      }
+
+      if (context && context.canEditDataSource === false) {
+        options = storedOptions;
+      } else {
+        for (const key of Object.keys(options || {})) {
+          const credentialId = options[key]?.['credential_id'];
+          if (credentialId && storedOptions[key]?.['credential_id'] !== credentialId) {
+            throw new ForbiddenException('credential_id does not belong to this data source');
+          }
         }
       }
     }
+
+    const parsedOptions = JSON.parse(JSON.stringify(options || {}));
 
     // need to match if currentOption is a contant, {{constants.psql_db}
     const constantMatcher = /{{constants|secrets|globals.server\..+?}}/g;
@@ -1575,7 +1599,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     organizationId: string,
     environmentId: string,
     user?: User,
-    dataSourceOptionId?: string
+    dataSourceOptionId?: string,
+    collectedSecretValues?: string[]
   ): Promise<object> {
     // For adhoc queries such as REST API queries, source options will be null
     if (!options) return {};
@@ -1596,7 +1621,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
               constantMatcher.lastIndex = 0;
 
               if (constantMatcher.test(inner)) {
-                const resolved = await this.resolveConstants(inner, organizationId, environmentId, user);
+                const resolved = await this.resolveConstants(
+                  inner,
+                  organizationId,
+                  environmentId,
+                  user,
+                  collectedSecretValues
+                );
                 curr[j] = resolved;
               }
             }
@@ -1607,7 +1638,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
               constantMatcher.lastIndex = 0;
 
               if (constantMatcher.test(objValue)) {
-                const resolved = await this.resolveConstants(objValue, organizationId, environmentId, user);
+                const resolved = await this.resolveConstants(
+                  objValue,
+                  organizationId,
+                  environmentId,
+                  user,
+                  collectedSecretValues
+                );
                 curr[objKey] = resolved;
               }
             }
@@ -1616,7 +1653,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       }
 
       if (constantMatcher.test(currentOption)) {
-        const resolved = await this.resolveConstants(currentOption, organizationId, environmentId, user);
+        const resolved = await this.resolveConstants(
+          currentOption,
+          organizationId,
+          environmentId,
+          user,
+          collectedSecretValues
+        );
         options[key]['value'] = resolved;
       }
     }
@@ -1631,7 +1674,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         const value = await this.credentialService.getValue(credentialId);
 
         if (value.includes('{{constants') || value.includes('{{secrets')) {
-          const resolved = await this.resolveConstants(value, organizationId, environmentId, user);
+          const resolved = await this.resolveConstants(
+            value,
+            organizationId,
+            environmentId,
+            user,
+            collectedSecretValues
+          );
           parsedOptions[key] = resolved;
           continue;
         } else {
