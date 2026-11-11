@@ -4,7 +4,7 @@ Build them by prompting. ToolJet AI turns a description into pages, queries, and
 
 Self-host it, or use ToolJet Cloud.
 
- :star: If you find ToolJet useful, please consider giving us a star on GitHub! Your support helps us continue to innovate and deliver exciting features.
+ :star: If you find ToolJet useful, please do consider giving us a star on GitHub! Your support helps us to continue innovation and delivering  exciting features.
 
 ![Docker Cloud Build Status](https://img.shields.io/docker/automated/tooljet/tooljet-ce)
 ![Number of GitHub contributors](https://img.shields.io/github/contributors/tooljet/tooljet)
