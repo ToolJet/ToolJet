@@ -38,7 +38,7 @@ export async function findDefaultBranch(
 async function resolveDefaultBranch(
   manager: EntityManager,
   organizationId: string
-): Promise<{ id: string; name: string }> {
+): Promise<{ id: string | null; name: string }> {
   const existing = await findDefaultBranch(manager, organizationId);
   if (existing) return existing;
 
