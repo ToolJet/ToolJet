@@ -1096,7 +1096,9 @@ export const Transfer = (props: Record<string, unknown>) => {
   const [oneWay] = ToolJet.useStateBoolean({ name: 'oneWay', label: 'One way', initialValue: false });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const { disabled, loading } = ToolJet.useControlState();
-  const keys = toArray(targetKeys).map(str);
+  const chosen = toArray(targetKeys);
+  // Ant's Transfer holds keys as text.
+  const keys = chosen.map(str);
   const check = ToolJet.useValidation({ kind: 'choice', value: keys.join(','), present: keys.length > 0 });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
@@ -1104,31 +1106,54 @@ export const Transfer = (props: Record<string, unknown>) => {
     fit: false,
     loading: 'own',
     usage:
-      "Ant's Transfer: two lists; dataSource [{key, title}], targetKeys (the chosen keys, exposed), titles, showSearch, oneWay; onChange.",
+      "Ant's Transfer: two lists; dataSource [{key, title, disabled?}], targetKeys (the chosen keys, exposed), titles, showSearch, oneWay; onChange.",
     roleProps: { data: 'dataSource', value: 'targetKeys' },
     roleActions: { setValue: 'setFieldValue' },
     defaultWidth: 24,
     defaultHeight: 30,
   });
+  // Each item's key as the data gives it (1 stays a number), by its text. An item marked disabled cannot be ticked or
+  // moved: the mark was dropped, and it moved like any other (QA AD-33).
+  const given = new Map<string, unknown>();
   const items = toArray(dataSource)
     .map((o) => {
-      if (typeof o === 'string') return { key: o, title: o };
+      if (typeof o === 'string') {
+        given.set(o, o);
+        return { key: o, title: o };
+      }
       const r = (o ?? {}) as Row;
       const key = str(r.key ?? r.value ?? r.id);
-      return key ? { key, title: str(r.title ?? r.label ?? key), description: str(r.description) || undefined } : null;
+      if (!key) return null;
+      given.set(key, r.key ?? r.value ?? r.id);
+      return {
+        key,
+        title: str(r.title ?? r.label ?? key),
+        description: str(r.description) || undefined,
+        ...(r.disabled ? { disabled: true } : {}),
+      };
     })
-    .filter((x): x is { key: string; title: string; description?: string } => !!x);
+    .filter((x): x is { key: string; title: string; description?: string; disabled?: boolean } => !!x);
+  // Keys as the data has them, else as they were given: Ant's text keys were exposed as they were, so the number keys 1
+  // and 2 came back as '2' and '1' after a move (QA AD-34).
+  const asGiven = (k: unknown) => (given.has(str(k)) ? given.get(str(k)) : k);
   // targetKeys and the Form's value published together before onChange; the keys it already has fire nothing.
-  const keysSetter = useValueSetter(keys, (next) => {
+  const keysSetter = useValueSetter<unknown[]>(chosen, (next) => {
     setTargetKeys(next);
     publishValue(next);
   });
-  const change = (next: unknown) => {
-    if (!keysSetter.set(toArray(next).map(str))) return;
+  const change = (next: unknown[]) => {
+    if (!keysSetter.set(next)) return;
     check.touch();
     onChange();
   };
-  useFieldActions(change, props.targetKeys);
+  useFieldActions((v) => change(toArray(v).map(asGiven)), props.targetKeys);
+  // Ant gives the moved keys first: the chosen keys are kept in the data's order, then any no item has, as they were.
+  const move = (next: React.Key[]) => {
+    const picked = new Set(next.map(str));
+    const known = items.filter((i) => picked.has(i.key)).map((i) => asGiven(i.key));
+    const unknown = chosen.filter((k) => picked.has(str(k)) && !given.has(str(k)));
+    change([...known, ...unknown]);
+  };
   // A Form's clearForm moves every item back, and starts Ant's Transfer again: its ticked items and search text are its
   // own state, and the ticks stayed on the items that moved back.
   const [epoch, setEpoch] = useState(0);
@@ -1151,7 +1176,7 @@ export const Transfer = (props: Record<string, unknown>) => {
           oneWay={oneWay}
           disabled={disabled}
           render={(item) => item.title}
-          onChange={(keys) => change(keys)}
+          onChange={(next) => move(next)}
         />
         {check.error ? (
           <div className="tj-ant-transfer-error" role="alert">
