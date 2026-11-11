@@ -2,6 +2,7 @@ import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { useAppsStore } from '@/_stores/appsStore';
+import { useSearchStore } from '@/_stores/searchStore';
 import { Button } from '@/components/ui/Button/Button';
 import DashboardCard from './DashboardCard';
 
@@ -44,10 +45,12 @@ export default function FolderCard({ folderDetails, appType }: FolderCardProps) 
 
   const [, setSearchParams] = useSearchParams();
   const setCurrentPage = useAppsStore((state) => state.setCurrentPage);
+  const clearSearch = useSearchStore((state) => state.clearSearch);
 
   const handleOpenFolder = () => {
     // Root and folder pages share `currentPage`, so a folder always opens on its first page.
     setCurrentPage(1);
+    clearSearch();
     // Functional update keeps unrelated params such as `branch`, sort and filters.
     setSearchParams(
       (current) => {

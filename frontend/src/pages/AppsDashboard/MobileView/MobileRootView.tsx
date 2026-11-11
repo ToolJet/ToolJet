@@ -68,7 +68,13 @@ export function MobileRootView() {
   const hasPinnableItem = pages.some((page) => page.items.some((item) => item.actions.pin));
   const canDrag = canDragPinnedItems({ searchQuery, pinned, pinnedTotal });
 
-  const handleOpenFolder = useCallback((id: string) => setFolderId(id), [setFolderId]);
+  const handleOpenFolder = useCallback(
+    (id: string) => {
+      clearSearch();
+      setFolderId(id);
+    },
+    [clearSearch, setFolderId]
+  );
   const handleOpenApp = useCallback(
     (app: AppItem) => {
       const result = getAppTapResult(app);
