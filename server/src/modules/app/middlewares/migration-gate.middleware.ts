@@ -32,6 +32,9 @@ const ASYNC_MODE_WRITE_ALLOWLIST = [
   /^\/sso\//,
   /^\/data-queries\/[^/]+\/run$/,
   /^\/data-queries\/[^/]+\/versions\/[^/]+\/run\/[^/]+$/,
+  // Workflow runs only add rows to execution tables no data migration touches.
+  /^\/workflow_executions(\/[^/]+\/trigger)?$/,
+  /^\/v2\/webhooks\/workflows\/[^/]+\/trigger(-async)?$/,
 ];
 
 /** How often to repeat the "requests are being rejected" line. */

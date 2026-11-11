@@ -117,7 +117,7 @@ In async mode the server serves while migrations run. The upgrade gate answers u
 
 | Situation | Status | Refused |
 |---|---|---|
-| A migration is running | `running` | Writes (`MIGRATION_IN_PROGRESS`). Sign-in and query runs still pass |
+| A migration is running | `running` | Writes (`MIGRATION_IN_PROGRESS`). Sign-in, query runs and workflow runs still pass |
 | The last migration failed | `failed` | Writes (`MIGRATION_FAILED`), until a server boot reruns it with success |
 
 The client gets `503`, `Retry-After: 30`, body `{ statusCode, code, message, timestamp, path }`.
@@ -197,7 +197,7 @@ Removals wait for the cleanup migration `CleanupLegacyBranchModel`, one upgrade 
 
 ### Serving during a run
 
-- **What passes.** Reads, sign-in, session, OAuth/SSO and query runs (`ASYNC_MODE_WRITE_ALLOWLIST`). Other writes get 503.
+- **What passes.** Reads, sign-in, session, OAuth/SSO, query runs, and workflow runs and webhook triggers (`ASYNC_MODE_WRITE_ALLOWLIST`). Other writes get 503, including changes to a workflow's webhook settings. Async workflow runs (`trigger-async`) are accepted but wait in Redis, because workers pause (below).
 - **New pods wait for their own data phase.** From boot until its data phase takes the active lock, exits or fails to start, a pod reports `running`. So new code never writes before its data migrations ran. On a plain restart this lasts as long as the child takes to start, on that pod only.
 - **Requests that pass can still wait, but not long.** A row a data migration changed stays locked until commit. In async mode the server's pool sets `lock_timeout` to 5s (`ASYNC_MODE_LOCK_TIMEOUT_MS`, `app/loader.ts`), so such a request fails after 5s instead of holding a pool connection. `/api/health` stays free, so the pod is not killed. The limit applies to every main-pool query while async mode is on, not only during a run.
 - **Other runners count too.** A held active lock reads as `running` even without a run row, for example a manual `db:migrate` or a blocking-mode server on the same database.
