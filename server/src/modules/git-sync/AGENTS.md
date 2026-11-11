@@ -119,6 +119,14 @@ logic is in `server/ee/git-sync/`.
   configured branch. Env config keeps it in sync via `reconcileDefaultBranchName` (`ee/git-sync/default-branch.util.ts`)
   on restart hydration and on toggle; renames must also invalidate `RemoteBranchCacheService`.
 - Testing: don't extend the monolithic git-sync lifecycle `it()` block in the e2e suite — write standalone specs instead (see `server/docs/testing.md`, Determinism).
+- **Workspace pull reports where its time went.** `POST /workspace-branches/pull` returns `diagnostics`
+  (stage `request`) and the `git-pull-branch` job puts the same shape (stage `job`) in its notification
+  `metadata.diagnostics`; both also log `[pull-diagnostics] {json}`. Type: `PullDiagnostics`
+  (`workspace-branches/types`). Collected through an AsyncLocalStorage in
+  `ee/platform-git-sync/pull-diagnostics.util.ts`, so deep code records with `phase()` /
+  `recordCategorySkip()` and stays a no-op outside a pull. Phase prefixes are listed on
+  `PullDiagnostics.phases`. `pod` is a hashed hostname — the git mirror cache is per-pod disk. Webhook
+  auto-sync pulls call `pullWorkspace` too, so they log `stage: "request"` with no HTTP request behind it.
 
 ## Related modules
 
