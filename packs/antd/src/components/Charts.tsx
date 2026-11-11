@@ -10,6 +10,7 @@ import { LOCALE_HINT } from '../lib/locale';
 import { useClickHighlight } from '../lib/chartHighlight';
 import { mixRgb, tooltipInteraction, useChartTheme, useTooltipLayer, type Theme } from '../lib/chartTheme';
 import { useNarrow } from '../lib/fitText';
+import { useChartFit } from '../lib/chartFit';
 
 // @ant-design/plots' chart props are too deep for TypeScript to check here (TS2589), so the charts are untyped.
 type Chart = React.ComponentType<Record<string, unknown>>;
@@ -206,7 +207,7 @@ const toSeries = (rows: Row[], xField: string, yFields: string[], colorField: st
 };
 
 // While loading, the chart's own loader covers the chart, which stays mounted.
-const Frame = ({
+export const Frame = ({
   title,
   empty,
   loading,
@@ -221,23 +222,40 @@ const Frame = ({
   /** The chart theme is read (useChartTheme): the plot draws, and animates in, in its final colours. */
   ready?: boolean;
   children: React.ReactNode;
-}) => (
-  <div className="tj-ant-chart" ref={chartRef}>
-    {title ? (
-      <Typography.Title level={5} style={{ margin: 0 }}>
-        {title}
-      </Typography.Title>
-    ) : null}
-    <div className="tj-ant-chart-body">
-      {empty && !loading ? (
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No data" />
-      ) : ready ? (
-        children
+}) => {
+  const fit = useChartFit(chartRef);
+  const own = React.isValidElement<{ onReady?: (c: unknown) => void }>(children) ? children.props.onReady : undefined;
+  // Stable, so the plot does not see a new onReady each render; the chart's own (the shared config's) still runs.
+  const ownRef = useRef(own);
+  ownRef.current = own;
+  const onReady = React.useCallback(
+    (c: unknown) => {
+      fit(c as never);
+      ownRef.current?.(c);
+    },
+    [fit]
+  );
+  const chart = React.isValidElement(children)
+    ? React.cloneElement(children as React.ReactElement, { onReady })
+    : children;
+  return (
+    <div className="tj-ant-chart" ref={chartRef}>
+      {title ? (
+        <Typography.Title level={5} style={{ margin: 0 }}>
+          {title}
+        </Typography.Title>
       ) : null}
-      {loading ? <ChartLoader /> : null}
+      <div className="tj-ant-chart-body">
+        {empty && !loading ? (
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No data" />
+        ) : ready ? (
+          chart
+        ) : null}
+        {loading ? <ChartLoader /> : null}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const useCommon = (
   p: ReturnType<typeof useChartProps>,

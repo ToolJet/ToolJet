@@ -227,6 +227,13 @@
 .tj-ant-table .ant-table-tbody > tr.tj-ant-row-selected > td {
   background: var(--ant-control-item-bg-active);
 }
+/* A long Table drawn virtual (antd's virtual Table, lib/virtualRows) has div rows and cells, not tr and td. */
+.tj-ant-table .ant-table-tbody-virtual .ant-table-row {
+  cursor: pointer;
+}
+.tj-ant-table .ant-table-tbody-virtual .ant-table-row.tj-ant-row-selected .ant-table-cell {
+  background: var(--ant-control-item-bg-active);
+}
 .tj-ant-item {
   cursor: pointer;
   transition: background var(--ant-motion-duration-mid);
@@ -1458,6 +1465,13 @@
 }
 .tj-ant-ring-fit > .ant-progress {
   flex-shrink: 0;
+}
+/* Dynamic height (tj-cc-fit): the box has no height to fill, so flex 1 1 0 measured 0 and the widgets below rode up over
+   the ring. Make it the ring's own square. */
+.tj-cc-fit .tj-ant-ring-fit {
+  flex: 0 0 auto;
+  width: min(100%, var(--tj-ring-size, 100%));
+  aspect-ratio: 1;
 }
 
 /* RadialChart's categories: the box measured for its legend's place, filled by the chart. */

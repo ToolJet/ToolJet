@@ -879,9 +879,10 @@ export const Calendar = () => {
               </div>
             );
           }}
-          onSelect={(d, info) => {
+          // Every source (day, Year-mode month, header dropdowns) writes Value, so every one fires On select (AD-08).
+          onSelect={(d) => {
             setValue(d.format('YYYY-MM-DD'));
-            if (info.source === 'date') onSelect();
+            onSelect();
           }}
           onPanelChange={(d) => {
             setPanelDate(d.format('YYYY-MM-DD'));
