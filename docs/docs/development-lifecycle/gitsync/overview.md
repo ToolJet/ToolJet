@@ -18,6 +18,10 @@ GitSync can be used to facilitate the movement of application across different T
 
 GitSync provides a straightforward solution for creating backups of your applications. By pushing changes to a Git repository, users can ensure a secure and versioned history of their application. This serves as a reliable backup mechanism, safeguarding against accidental application/version deletion or corruption. Refer to **[GitSync Backup](/docs/development-lifecycle/backup/gitsync-backup)** guide for more information.
 
+### Collaborative Development
+
+GitSync allows multiple builders to work on the same applications without overwriting each other's changes. In multi-branch mode, each builder works on their own feature branch, and changes reach the default branch only after a pull request is reviewed and merged. Refer to the **[Branching Overview](./branching-overview.md)** guide for more information.
+
 ## Resources Synced to Git
 
 Applications, modules, datasources, and their folder assignments are synced to Git. Workflows and ToolJet Database tables are not synced yet.
