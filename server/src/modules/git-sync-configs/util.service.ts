@@ -12,6 +12,7 @@ const logger = new Logger('GitSyncConfigsUtilService');
 // private/protected class member not shared between the two classes would break that
 // structural assignability. The CE class therefore exposes only the public getDetails.
 
+// legacy-3.21.58: drop this check (always return null) once 3.21.58 upgrades run blocking-only.
 const DEFAULT_BRANCH_MIGRATION = 'EnsureDefaultBranchForAllOrganizations1781740800000';
 
 // Null = caller creates it. While the 3.21.58 data phase holds its uncommitted insert, return a

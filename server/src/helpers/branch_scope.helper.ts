@@ -1,4 +1,4 @@
-// Legacy 3.21.58 rows have a NULL branch until the data phase; remove when 3.21.58 upgrades are no longer supported.
+// legacy-3.21.58: 3.21.58 rows have a NULL branch until cleanup; delete the legacy arms once 3.21.58 upgrades run blocking-only.
 // SQL: `column` is on the branch bound to `:param`. A NULL-branch row counts as on the default branch, so it
 // matches unless `:param` names a non-default branch (a NULL param still matches it). `legacyRowFilter`
 // narrows which NULL rows qualify.
