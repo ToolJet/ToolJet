@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { appendBranchParam } from '@/_helpers/active-branch';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 export const aiService = {
@@ -168,7 +169,9 @@ export function attachmentStreamFetch(url, options, onProgress) {
 
 async function sendMessage(body, onMessage, isDocs = false) {
   const fullResponse = [];
-  const url = isDocs ? `${config.apiUrl}/ai/conversation/docs-message` : `${config.apiUrl}/ai/conversation/message`;
+  const url = isDocs
+    ? `${config.apiUrl}/ai/conversation/docs-message`
+    : appendBranchParam(`${config.apiUrl}/ai/conversation/message`);
   const { attachments = [], ...payload } = body;
   const files = attachments.filter((file) => file instanceof File);
   const retained = attachments.filter((file) => !(file instanceof File));

@@ -62,11 +62,8 @@ export class GranularPermissionsService implements IGranularPermissionsService {
 
   async getAddableApps(organizationId: string): Promise<AddableResourceItem[]> {
     const manager = getConnectionInstance().manager;
-    // Non-workflow apps carry their display name on app_versions.app_name. For git-sync
-    // workspaces pick any version on the default branch (default rows are VERSION-type,
-    // sub-branches use BRANCH-type — don't filter on version_type). For non-git-sync
-    // workspaces every version row carries the same metadata, so any version row works.
-    // Workflows keep name on apps.*.
+    // Permissions are workspace-wide: prefer default-branch metadata, but include apps
+    // created only on another branch. Pick the newest available version as a fallback.
     const { options } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
     const defaultBranchId = options.defaultBranch?.id;
 
@@ -82,7 +79,13 @@ export class GranularPermissionsService implements IGranularPermissionsService {
             .select('DISTINCT ON (av.app_id) av.app_id', 'app_id')
             .addSelect('av.app_name', 'app_name')
             .from('app_versions', 'av')
-            .where('av.branch_id = :branchId', { branchId: defaultBranchId }),
+            .innerJoin(AppBase, 'metadataApp', 'metadataApp.id = av.app_id')
+            .where('metadataApp.organizationId = :organizationId', { organizationId })
+            .orderBy('av.app_id')
+            .addOrderBy('CASE WHEN av.branch_id = :branchId THEN 0 ELSE 1 END')
+            .addOrderBy('av.updated_at', 'DESC')
+            .addOrderBy('av.id', 'DESC')
+            .setParameter('branchId', defaultBranchId),
         'av',
         'av.app_id = app.id'
       ).addSelect('COALESCE(av.app_name, app.name) AS name');
@@ -166,9 +169,8 @@ export class GranularPermissionsService implements IGranularPermissionsService {
    * single batched query and mirror the values onto each App entity in-place.
    *
    * Source priority (per app):
-   *   - Git-sync workspaces: BRANCH-type version on the workspace's default branch.
-   *     Workflows always resolve here too — their branch_id is pinned to the org's
-   *     default branch (Task 3.5), so they fall into the same default-branch match.
+   *   - Workspaces with a default branch: prefer that branch; if the app exists only
+   *     on feature branches, use the newest available version with an ID tie-break.
    *   - Non-git-sync workspaces: any version row (all rows carry identical metadata).
    */
   private async overlayGranularPermissionAppMetadata(
@@ -191,8 +193,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
 
     let metadataRows: Pick<AppVersion, 'appId' | 'appName' | 'slug' | 'icon' | 'isPublic'>[];
     if (defaultBranchId) {
-      // Git-sync: pick one row per app on the default branch. Default branch rows are
-      // VERSION-type, sub-branches use BRANCH-type — don't filter on version_type here.
+      // Keep the same default-first fallback as workspace-wide resource discovery.
       const rows: {
         app_id: string;
         app_name: string | null;
@@ -208,7 +209,11 @@ export class GranularPermissionsService implements IGranularPermissionsService {
         .addSelect('av.is_public', 'is_public')
         .from('app_versions', 'av')
         .where('av.app_id IN (:...appIds)', { appIds })
-        .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
+        .orderBy('av.app_id')
+        .addOrderBy('CASE WHEN av.branch_id = :branchId THEN 0 ELSE 1 END')
+        .addOrderBy('av.updated_at', 'DESC')
+        .addOrderBy('av.id', 'DESC')
+        .setParameter('branchId', defaultBranchId)
         .getRawMany();
       metadataRows = rows.map((r) => ({
         appId: r.app_id,
