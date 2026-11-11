@@ -156,7 +156,9 @@ export const Chat = () => {
       .filter(Boolean) as NonNullable<ReturnType<typeof toMessageInput>>[];
     if (!list.length) return [] as ChatMessage[];
     const built = list.map((m) => buildMessage(m, people));
-    setHistory([...(Array.isArray(history) ? history : []), ...built]);
+    // Onto the latest history, not the one this render read: one click can run two actions (Send message, then Append
+    // to history) before the chat draws again, and the second then dropped the first's message.
+    setHistory((latest) => [...(Array.isArray(latest) ? latest : []), ...built]);
     const lastResponse = [...built].reverse().find((m) => m.type === 'response');
     if (lastResponse) setLastResponse(lastResponse as unknown as Record<string, unknown>);
     return built;
