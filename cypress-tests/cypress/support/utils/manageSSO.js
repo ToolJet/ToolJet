@@ -474,7 +474,6 @@ export const oidcSSOPageElements = (pageName) => {
   );
 };
 
-// The LDAP modal re-renders its header toggle when /api/license/access answers; click it after that.
 const openLdapModal = () => {
   cy.intercept("GET", "/api/license/access").as("ldapLicenseAccess");
   cy.get(ssoSelector.ldap).click();

@@ -282,7 +282,6 @@ describe("Custom groups UI and Functionality verification", () => {
   let groupId3;
 
   beforeEach(() => {
-    // fake.firstName draws from a small pool and the shard's database is shared, so add a timestamp.
     data.workspaceName = `${fake.firstName}${Date.now()}`;
     data.workspaceSlug = data.workspaceName.toLowerCase();
 

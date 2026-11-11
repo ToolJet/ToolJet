@@ -282,9 +282,7 @@ const EDITOR_BOOT_TIMEOUT = 120000;
 const visitEditor = (workspaceSlug, resourceId) =>
   cy.visit(`/${workspaceSlug}/apps/${resourceId}`, { failOnStatusCode: false });
 
-// The editor loads the app and, in parallel, the module picker list (GET /api/apps?type=module).
-// When the two reach the server together the app fetch can answer 403 for a builder who has
-// access, so the module list waits until the app fetch has answered.
+// Parallel app and module-list fetches can return a 403 for the app, so the list waits.
 export const holdModuleListUntilAppLoads = (appId) => {
   let appAnswered;
   const appLoaded = new Promise((resolve) => (appAnswered = resolve));
