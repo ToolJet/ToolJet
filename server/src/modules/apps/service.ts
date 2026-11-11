@@ -830,7 +830,8 @@ export class AppsService implements IAppsService {
     const version = await this.versionRepository.findOne({
       where: { appId: app.id, branchId: targetBranchId, isStub: false },
       relations: ['branch'],
-      order: { updatedAt: 'DESC' },
+      // Draft first (enum order DRAFT < PUBLISHED): the 3.21.58 upgrade moves the released row onto the branch.
+      order: { status: 'ASC', updatedAt: 'DESC' },
     });
     if (version) {
       if (version.versionType === AppVersionType.BRANCH && version.branch?.name) {
