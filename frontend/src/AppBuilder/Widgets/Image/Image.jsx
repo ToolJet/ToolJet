@@ -55,6 +55,7 @@ export default function Image({
 
   const hasOnClickEvent = false;
   const imageRef = useRef(null);
+  const zoomWrapperRef = useRef(null);
   const [imageOffset, setImageOffset] = useState(0);
   const [rotation, setRotation] = useState(0);
   const [zoomReset, setZoomReset] = useState(false);
@@ -103,8 +104,9 @@ export default function Image({
     if (isInitialRender.current) return;
     if (alternativeText === '') {
       setExposedVariable('alternativeText', null);
+    } else {
+      setExposedVariable('alternativeText', alternativeText);
     }
-    setExposedVariable('alternativeText', alternativeText);
   }, [alternativeText]);
 
   useEffect(() => {
@@ -186,6 +188,12 @@ export default function Image({
     return 0;
   }
 
+  // A quarter-turn swaps the box's footprint, so a box that isn't square would spill out of the widget.
+  // Shrink it by the aspect ratio so the rotated footprint fits. Dynamic height has no fixed box to fit.
+  const isQuarterTurn = rotation === 90 || rotation === 270;
+  const rotationFitScale =
+    isQuarterTurn && !isDynamicHeightEnabled && width > 0 && height > 0 ? Math.min(width / height, height / width) : 1;
+
   const rotateImage = () => setRotation((prevValue) => (prevValue === 270 ? 0 : prevValue + 90));
 
   const renderImage = () => (
@@ -204,7 +212,7 @@ export default function Image({
         pointerEvents: 'auto',
         width,
         height: isDynamicHeightEnabled ? 'auto' : height,
-        transform: `rotate(${rotation}deg)`,
+        transform: `rotate(${rotation}deg)${rotationFitScale === 1 ? '' : ` scale(${rotationFitScale})`}`,
         border: '1px solid',
         borderRadius:
           borderType === 'rounded-circle'
@@ -265,7 +273,6 @@ export default function Image({
   };
 
   const handlePointerDown = (e) => {
-    console.log({ x: e.clientX, y: e.clientY });
     setDragStart({ x: e.clientX, y: e.clientY });
     setIsDragging(false);
   };
@@ -278,7 +285,6 @@ export default function Image({
   };
 
   const handleZoomMode = ({ state }) => {
-    console.log(state);
     if (state.scale === 8) setZoomMode('out');
     if (state.scale === 1) setZoomMode('in');
   };
@@ -290,7 +296,7 @@ export default function Image({
         zoomOut();
       }
       if (zoomMode === 'in') {
-        const targetElement = document.querySelector('.react-transform-component');
+        const targetElement = zoomWrapperRef.current.querySelector('.react-transform-component');
         const dblClickEvent = new MouseEvent('dblclick', e);
         targetElement.dispatchEvent(dblClickEvent);
       }
@@ -309,6 +315,7 @@ export default function Image({
               <>
                 {zoomReset && resetZoom(resetTransform)}
                 <div
+                  ref={zoomWrapperRef}
                   className="transform-component-wrapper"
                   style={{ cursor: isZoomEnabled ? (zoomMode === 'in' ? 'zoom-in' : 'zoom-out') : 'default' }}
                   onPointerDown={handlePointerDown}
@@ -360,7 +367,7 @@ export default function Image({
           style={{ width: '100%' }}
           placeholder={<Placeholder />}
           debounce={500}
-          scrollContainer={'.canvas-container'}
+          scrollContainer={'.canvas-content'}
         >
           {renderImageContainer()}
         </LazyLoad>

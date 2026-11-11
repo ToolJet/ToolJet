@@ -337,7 +337,11 @@ export class AppsService implements IAppsService {
       throw new BadRequestException('Invalid app slug');
     }
 
-    const app = await this.appRepository.findByIdOrSlug(slug);
+    // Only plain app columns are returned, so skip AppsSubscriber.afterLoad: the slug path loads
+    // one App per matching version row, and each afterLoad holds extra pooled connections —
+    // enough to starve the pool for apps with many versions. Scoped to this caller so other
+    // findByIdOrSlug callers keep their hydrated fields.
+    const app = await skipAppEditingVersionHydration.run(true, () => this.appRepository.findByIdOrSlug(slug));
 
     if (!app) {
       throw new NotFoundException('App not found');
@@ -1088,6 +1092,7 @@ export class AppsService implements IAppsService {
       }
 
       await this.appsUtilService.checkModulesReleasedInApp(versionToBeReleased, user.organizationId, manager);
+      await this.appsUtilService.checkWorkflowsReleasedInApp(versionToBeReleased, user.organizationId, manager);
 
       // Get version details for audit log
       const releasedVersion = await this.versionRepository.findVersion(versionToBeReleased);

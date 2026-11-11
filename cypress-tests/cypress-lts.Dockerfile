@@ -8,12 +8,10 @@ RUN npm i -g npm@10.9.9 && npm cache clean --force
 RUN mkdir -p /app
 WORKDIR /app
 
-# Set GitHub token and branch as build arguments
-ARG CUSTOM_GITHUB_TOKEN
+# GitHub token is a BuildKit secret (--secret id=github_token), mounted only for the steps that
+# fetch private repos and passed to git via env, so it never lands in a layer, the image config
+# or the build provenance like a build arg does.
 ARG BRANCH_NAME
-
-# Clone and checkout the frontend repository
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
 RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
@@ -22,11 +20,13 @@ RUN git clone https://github.com/ToolJet/ToolJet.git .
 # The branch name needs to be changed the branch with modularisation in CE repo
 RUN git checkout ${BRANCH_NAME}
 
-RUN git submodule update --init --recursive
-
 # Follow a same-named submodule branch only when it contains the pinned commit (HEAD after
 # update), else keep the pin: a stale branch builds EE code older than this checkout.
-RUN git submodule foreach " \
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    git submodule update --init --recursive && \
+    git submodule foreach " \
   if git fetch -q origin ${BRANCH_NAME} 2>/dev/null && \
      git merge-base --is-ancestor HEAD FETCH_HEAD; then \
     git checkout -B ${BRANCH_NAME} FETCH_HEAD; \
@@ -161,6 +161,6 @@ COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
 WORKDIR /app
 
-RUN npm install --prefix server --no-save dotenv@10.0.0 joi@17.4.1 && npm cache clean --force
+RUN npm install --prefix server --no-save dotenv@10.0.0 joi@17.13.8 && npm cache clean --force
 
 ENTRYPOINT ["./server/ee-entrypoint.sh"]
