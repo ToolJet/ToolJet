@@ -42,6 +42,23 @@ describe(
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-${Date.now()}-Filebutton-App`);
     cy.openApp();
+    // Record the cursor and the canvas rect AT DROP TIME. Starting a drag opens the
+    // right sidebar, which can shift the canvas a few dozen px, so the widget lands
+    // under the cursor relative to the shifted canvas — not at dropX/dropY of the
+    // pre-drag canvas that dragAndDropWidget measured.
+    cy.window().then((win) => {
+      win.__lastDragOver = null;
+      win.document.addEventListener(
+        "dragover",
+        (e) => {
+          const canvas = win.document.getElementById("real-canvas");
+          if (!canvas) return;
+          const r = canvas.getBoundingClientRect();
+          win.__lastDragOver = { x: e.clientX, y: e.clientY, left: r.left, top: r.top };
+        },
+        true
+      );
+    });
     cy.dragAndDropWidget(fileButtonText.defaultWidgetText, dropX, dropY);
     waitForDropSettle(widget);
     closeQueryPanel();
@@ -55,20 +72,26 @@ describe(
     cy.get(fileButtonSelector.draggableWidget(widget)).should("exist");
     verifyWidgetCount(namePrefix, 1);
 
-    // dropX/dropY are canvas-relative top-left; getBoundingClientRect() is
-    // viewport-absolute — measure both sides canvas-relative instead. Tolerance
-    // is the snap-grid half-cell (appCanvasUtils.js snapToGrid): X's grid width
-    // depends on canvas width (read live), Y's is fixed at 10 so drift is <=5.
-    cy.get("#real-canvas").then(($canvas) => {
-      const canvasRect = $canvas[0].getBoundingClientRect();
-      const gridX = canvasRect.width / 43;
-      const maxDriftX = gridX / 2;
-      const maxDriftY = 5; // half of the fixed 10px Y-grid
+    // The widget must land under the cursor: its canvas-relative top-left should
+    // match the cursor's position relative to the canvas at drop time (recorded in
+    // beforeEach). Tolerance is the snap-grid half-cell (appCanvasUtils.js
+    // snapToGrid): X's grid width depends on canvas width (read live), Y's is fixed
+    // at 10 so drift is <=5.
+    cy.window().then((win) => {
+      const drop = win.__lastDragOver;
+      expect(drop, "dragover recorded during the drop").to.not.equal(null);
 
-      cy.get(fileButtonSelector.draggableWidget(widget)).then(($widget) => {
-        const widgetRect = $widget[0].getBoundingClientRect();
-        expect(widgetRect.left - canvasRect.left).to.be.closeTo(dropX, maxDriftX);
-        expect(widgetRect.top - canvasRect.top).to.be.closeTo(dropY, maxDriftY);
+      cy.get("#real-canvas").then(($canvas) => {
+        const canvasRect = $canvas[0].getBoundingClientRect();
+        const gridX = canvasRect.width / 43;
+        const maxDriftX = gridX / 2;
+        const maxDriftY = 5; // half of the fixed 10px Y-grid
+
+        cy.get(fileButtonSelector.draggableWidget(widget)).then(($widget) => {
+          const widgetRect = $widget[0].getBoundingClientRect();
+          expect(widgetRect.left - canvasRect.left).to.be.closeTo(drop.x - drop.left, maxDriftX);
+          expect(widgetRect.top - canvasRect.top).to.be.closeTo(drop.y - drop.top, maxDriftY);
+        });
       });
     });
   });
