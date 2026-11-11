@@ -1,6 +1,7 @@
 ---
 id: run-migrations
 title: Run Migrations in Staging and Production
+sidebar_label: Run in Staging and Production
 ---
 
 <PlanBadge type="team" />
@@ -37,7 +38,7 @@ ToolJet applies migrations one at a time. If one fails, the migrations before it
 
 ## Undo a Migration
 
-ToolJet doesn't roll back migrations automatically. To undo a change, [write a SQL migration](./schema-changes.md#write-a-sql-migration) in development that reverses it, and then run it in staging and production.
+ToolJet doesn't roll back migrations automatically. To undo a change, [write a SQL migration](./overview.md#write-a-sql-migration) in development that reverses it, and then run it in staging and production.
 
 A migration can't bring back deleted data. To restore it, [bulk upload](/docs/tooljet-db/database-editor#bulk-upload-data) the rows from the backup CSV file.
 

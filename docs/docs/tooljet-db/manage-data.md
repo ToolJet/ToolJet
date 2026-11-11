@@ -1,19 +1,13 @@
 ---
 id: manage-data
-title: Manage Data in Each Environment
+title: Manage Data
 ---
 
-<PlanBadge type="team" />
+ToolJet Database tables can be filled with SQL and exported as CSV files. To add or edit rows one at a time, or to bulk upload a CSV file, see [Adding and Modifying Data](/docs/tooljet-db/database-editor#adding-and-modifying-data).
 
-Each environment has its own rows. Data can be added, changed, and exported in any environment without affecting the others. To work with an environment's data, select it in the environment switcher and open the table.
+## Data in Each Environment
 
-## Add Data
-
-Click **Add new data** and choose an option:
-
-- **Add new row**: Add a single row. See [Add New Row](/docs/tooljet-db/database-editor#add-new-row).
-- **Bulk upload data**: Add or update rows from a CSV file. See [Bulk Upload Data](/docs/tooljet-db/database-editor#bulk-upload-data).
-- **Seed data with SQL**: Add or change rows with SQL.
+Each environment keeps its own rows for every table. Seeding, exporting, and other changes to data apply only to the environment selected in the environment switcher, and never affect the other environments. See [ToolJet Database environments](/docs/development-lifecycle/environment/self-hosted/multi-environment#tooljet-database) to learn more.
 
 ## Seed Data With SQL
 
@@ -34,7 +28,7 @@ INSERT INTO "{{self}}" ("name", "email")
 VALUES ('Jane Doe', 'jane@example.com'), ('John Doe', 'john@example.com');
 ```
 
-Only `SELECT`, `INSERT`, `UPDATE`, and `DELETE` statements on this table are allowed. To change the schema, [make a schema change](./schema-changes.md) in development instead.
+Only `SELECT`, `INSERT`, `UPDATE`, and `DELETE` statements on this table are allowed. To change the schema, use the [table operations](/docs/tooljet-db/table-operations) or [write a SQL migration](/docs/tooljet-db/migrations/overview#write-a-sql-migration) in development instead.
 
 **Seed data with SQL** isn't available on ToolJet Cloud, or when `TJDB_SQL_MODE_DISABLE` is set to `true`.
 
@@ -47,19 +41,6 @@ Only `SELECT`, `INSERT`, `UPDATE`, and `DELETE` statements on this table are all
 <img className="screenshot-full" src="/img/tooljet-db/environments/tjdb-env-export-csv.png" alt="Export modal with the environment list highlighted" />
 
 The file downloads as `<table>-<environment>.csv`. Large tables can take a while to export.
-
-## Delete a Table
-
-Deleting a table permanently deletes it, and its data, in **every** environment. Tables can be deleted only in development.
-
-ToolJet blocks the deletion if:
-
-- A query in an application, module, or workflow uses the table, including queries in drafts and older versions.
-- Another table has a foreign key that references it.
-
-When the deletion is blocked, a dialog such as **Dependent queries found** or **Referencing tables found** lists what's blocking it. Remove those references, and then delete the table.
-
-<img className="screenshot-full" src="/img/tooljet-db/environments/tjdb-env-delete-table.png" alt="Delete table modal explaining that the table is used by an application" />
 
 <br/>
 ---

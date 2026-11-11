@@ -878,18 +878,17 @@ const sidebars = {
         "tooljet-db/table-operations",
         {
           "type": "category",
-          "label": "Environments",
+          "label": "Migrations",
           "link": {
             "type": "doc",
-            "id": "tooljet-db/environments/overview"
+            "id": "tooljet-db/migrations/overview"
           },
           "items": [
-            "tooljet-db/environments/overview",
-            "tooljet-db/environments/schema-changes",
-            "tooljet-db/environments/run-migrations",
-            "tooljet-db/environments/manage-data"
+            "tooljet-db/migrations/overview",
+            "tooljet-db/migrations/run-migrations"
           ]
         },
+        "tooljet-db/manage-data",
         "tooljet-db/querying-tooljet-db"
       ]
     },

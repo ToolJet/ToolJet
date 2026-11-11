@@ -11,7 +11,7 @@ Environments make it easier to develop and deploy applications without disruptin
 
 ### What are Environments?
 
-An environment in ToolJet represents a separate configuration space where **applications**, **data** **sources**, and **constants** can be defined and managed.
+An environment in ToolJet represents a separate configuration space where **applications**, **data** **sources**, **constants**, and **ToolJet Database tables** can be defined and managed.
 
 By default, ToolJet provides three environments:
 
@@ -34,6 +34,35 @@ Data sources can be configured separately for each environment, allowing applica
 #### Constants
 
 Constants such as API keys, credentials, or other configuration variables can be defined uniquely for each environment. This helps maintain security and prevents misconfigurations across different deployment stages.
+
+#### ToolJet Database
+
+Every ToolJet Database table has a separate copy in the development, staging, and production environments, and each copy keeps its own rows. Rows added while building or testing never reach production, and production rows stay untouched while the next change is in progress.
+
+Schema changes are made in development and recorded as [migrations](/docs/tooljet-db/migrations/overview). Staging and production pick up a change only when its migration is [run there](/docs/tooljet-db/migrations/run-migrations). Running migrations never copies rows between environments.
+
+| Action | Development | Staging and Production |
+|:-------|:-----------:|:----------------------:|
+| Create or edit a table | ✅ | ❌ |
+| Add, edit, or delete a column | ✅ | ❌ |
+| Add, edit, or remove a foreign key | ✅ | ❌ |
+| Write a SQL migration | ✅ | ❌ |
+| Add, edit, or delete rows | ✅ | ✅ |
+| Bulk upload, seed, or export data | ✅ | ✅ |
+
+Deleting a table deletes it in every environment. See [Delete Table](/docs/tooljet-db/table-operations#delete-table).
+
+The environment switcher is in the header of the **ToolJet Database** page. It appears once the workspace has at least one table. Click it and select an environment to view that environment's copy of the table.
+
+<img className="screenshot-full" src="/img/tooljet-db/environments/tjdb-env-switcher.png" alt="Environment switcher showing Development, Staging and Production with their status dots" />
+
+The dot next to each environment shows the state of the open table there:
+
+- **Blue**: The table is up to date.
+- **Orange**: The table is behind. Some migrations haven't run there yet.
+- **Grey**: The table doesn't exist there yet. It can't be selected until the table's migrations are run in that environment.
+
+Switching environments on the **ToolJet Database** page only changes the data shown there. It doesn't change the environment of any application. In the app builder, queries use the table in the environment selected in the app builder, and released applications use production. Before promoting an application, [run the migrations](/docs/tooljet-db/migrations/run-migrations#promote-applications-that-use-the-table) of the tables it uses in the target environment.
 
 ### Application Life cycle
 
