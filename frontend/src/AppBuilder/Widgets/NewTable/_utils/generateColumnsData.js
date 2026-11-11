@@ -1,7 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
-import { v4 as uuidv4 } from 'uuid';
 import useStore from '@/AppBuilder/_stores/store';
 import {
   StringColumn,
@@ -120,12 +119,19 @@ export default function generateColumnsData({
   if (!columnProperties) return [];
 
   return columnProperties
-    .map((column) => {
+    .map((column, index) => {
       if (!column) return null;
 
+      // Derived once, up front, so the SAME key is used both to look up a
+      // persisted size below and as columnDef.id further down — TanStack's live
+      // columnSizing (and TableExposedVariables' write-back into `columnSizes`)
+      // is keyed by columnDef.id, so a mismatched lookup key here would silently
+      // drop a resized width for any id-less column on the next mount/reload.
+      const fallbackId = column.id || `${column.key || column.name || 'col'}-${index}`;
+
       const columnSize = useDynamicColumn
-        ? column.columnSize || columnSizes[column?.id] || columnSizes[column?.name]
-        : columnSizes[column?.id] ?? columnSizes[column?.name] ?? column.columnSize;
+        ? column.columnSize || columnSizes[fallbackId] || columnSizes[column?.name]
+        : columnSizes[fallbackId] ?? columnSizes[column?.name] ?? column.columnSize;
       const columnType = column?.columnType;
 
       // Process column options for select types
@@ -160,7 +166,14 @@ export default function generateColumnsData({
       if (!isVisible) return null;
 
       const columnDef = {
-        id: column.id || uuidv4(),
+        // Stable across re-renders (never a fresh uuidv4() per render) so column
+        // identity doesn't churn when `id` isn't persisted on legacy/externally-
+        // authored column configs. An unstable id here breaks dnd-kit's
+        // column-order/resize tracking in TableHeader and the Inspector's
+        // column-list drag-and-drop, since both key off this value. See
+        // `fallbackId` above for why `index` is ALWAYS appended (`key`/`name`
+        // are not guaranteed unique) and why it's computed once and reused.
+        id: fallbackId,
         accessorKey: column.key || column.name,
         header: getResolvedValue(column.name) ?? '',
         // enableSorting: !disableSort,
