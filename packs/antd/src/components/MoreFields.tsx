@@ -107,6 +107,8 @@ export const Combobox = (props: Record<string, unknown>) => {
   const options = toOptions(rawOptions, 'Combobox');
   // Ant's control holds option keys; the value keeps its type (lib/data Option), so 1 and '1' are two choices.
   const key = value === '' ? '' : keyForValue(options, value);
+  // A value no option offers shows the placeholder, as in the Select: Ant drew it as bare text (QA AD-35).
+  const known = key !== '' && options.some((o) => o.value === key);
   const expose = (next: unknown) => {
     const k = next === '' ? '' : keyForValue(options, next);
     const opt = k === '' ? undefined : options.find((o) => o.value === k);
@@ -148,7 +150,7 @@ export const Combobox = (props: Record<string, unknown>) => {
               style={{ width: '100%' }}
               showSearch
               options={controlOptions(options)}
-              value={key !== '' ? key : undefined}
+              value={known ? key : undefined}
               placeholder={placeholder || undefined}
               notFoundContent={loading ? <Spin size="small" /> : notFoundContent || undefined}
               allowClear={allowClear}

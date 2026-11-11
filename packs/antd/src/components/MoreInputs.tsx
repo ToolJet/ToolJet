@@ -662,8 +662,9 @@ export const AutoComplete = (props: Record<string, unknown>) => {
   );
 };
 
-type TreeNode = { title: string; value: string; key: string; children?: TreeNode[] };
-// Ant's treeData: [{ title, value, children }]; also { label } for title and { key } for value.
+type TreeNode = { title: string; value: string; key: string; disabled?: boolean; children?: TreeNode[] };
+// Ant's treeData: [{ title, value, disabled, children }]; also { label } for title and { key } for value. A node marked
+// disabled cannot be picked (the mark was dropped, QA AD-36).
 // Bounded by lib/tree (depth, size, cycles), as everything built from it is: TreeSelect, Cascader, Navigation's Tree.
 export const toTree = (raw: unknown): TreeNode[] =>
   boundedTree<TreeNode>(raw, (o, _i, kids) => {
@@ -673,8 +674,23 @@ export const toTree = (raw: unknown): TreeNode[] =>
     const value = str(r.value ?? r.key ?? r.title ?? r.label);
     if (value === '') return null;
     const children = kids();
-    return { title: str(r.title ?? r.label ?? value), value, key: value, ...(children.length ? { children } : {}) };
+    return {
+      title: str(r.title ?? r.label ?? value),
+      value,
+      key: value,
+      ...(r.disabled ? { disabled: true } : {}),
+      ...(children.length ? { children } : {}),
+    };
   });
+
+// Every value a tree offers, at any depth.
+const treeValues = (nodes: TreeNode[], into = new Set<string>()): Set<string> => {
+  nodes.forEach((n) => {
+    into.add(n.value);
+    if (n.children) treeValues(n.children, into);
+  });
+  return into;
+};
 
 // Ant's TreeSelect: treeData, value (an array when multiple or treeCheckable), placeholder, showSearch,
 // treeDefaultExpandAll, allowClear; event onChange.
@@ -773,6 +789,10 @@ export const TreeSelect = (props: Record<string, unknown>) => {
   );
   useFieldActions(change, props.value);
   const list = useOwnedPopup(disabled, (open) => !open && check.touch());
+  const tree = toTree(treeData);
+  // A value no node offers shows the placeholder, as in the Select: Ant drew it as bare text (QA AD-35).
+  const offered = treeValues(tree);
+  const shown = many ? values.filter((v) => offered.has(v)) : offered.has(values[0] ?? '') ? values[0] : undefined;
   return (
     <AntProvider tokens={tokens} ownerRef={list.anchor}>
       <FormField {...field} check={check} htmlFor={fieldId}>
@@ -781,8 +801,8 @@ export const TreeSelect = (props: Record<string, unknown>) => {
             <AntTreeSelect
               id={fieldId}
               style={{ width: '100%' }}
-              treeData={toTree(treeData)}
-              value={many ? values : values[0]}
+              treeData={tree}
+              value={shown}
               multiple={multiple}
               treeCheckable={treeCheckable}
               placeholder={placeholder || undefined}
@@ -900,10 +920,25 @@ export const Cascader = (props: Record<string, unknown>) => {
     defaultWidth: 10,
     defaultHeight: 6,
   });
-  const toCascade = (raw: unknown): { label: string; value: string; children?: unknown[] }[] =>
-    toTree(raw).map(function map(n): { label: string; value: string; children?: unknown[] } {
-      return { label: n.title, value: n.value, ...(n.children ? { children: n.children.map(map) } : {}) };
+  type Cascade = { label: string; value: string; disabled?: boolean; children?: Cascade[] };
+  const toCascade = (raw: unknown): Cascade[] =>
+    toTree(raw).map(function map(n): Cascade {
+      return {
+        label: n.title,
+        value: n.value,
+        ...(n.disabled ? { disabled: true } : {}),
+        ...(n.children ? { children: n.children.map(map) } : {}),
+      };
     });
+  const cascade = toCascade(rawOptions);
+  // A path the options do not hold, step by step, shows the placeholder, as in the Select: Ant drew it as bare text
+  // (nope / x, QA AD-35).
+  const holds = (level: Cascade[], steps: string[]): boolean => {
+    if (!steps.length) return true;
+    const hit = level.find((o) => o.value === steps[0]);
+    return !!hit && holds(hit.children ?? [], steps.slice(1));
+  };
+  const known = path.length > 0 && holds(cascade, path);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
   const change = (v: unknown) => {
@@ -920,8 +955,8 @@ export const Cascader = (props: Record<string, unknown>) => {
             <AntCascader
               id={fieldId}
               style={{ width: '100%' }}
-              options={toCascade(rawOptions) as never}
-              value={path.length ? (path as never) : undefined}
+              options={cascade as never}
+              value={known ? (path as never) : undefined}
               placeholder={placeholder || undefined}
               expandTrigger={expandTrigger as 'click'}
               changeOnSelect={changeOnSelect}
