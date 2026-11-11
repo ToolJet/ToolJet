@@ -90,8 +90,13 @@ export const OtpInput = () => {
   };
   // A new default starts the code again, an empty one included (useReseed already leaves an app's own `value` alone
   // on mount when the default is empty); a new length or kind of character keeps what was typed, cut to fit.
-  useReseed(defaultValue, () => publish(M.otpSanitize(defaultValue, size, kind)));
-  useReseed([size, kind], () => publish(M.otpSanitize(rawValue, size, kind)), { onMount: false });
+  useReseed(defaultValue, () => {
+    const next = M.otpSanitize(defaultValue, size, kind);
+    codeSetter.latest.current = next;
+    publish(next);
+  });
+  // From `latest`, not rawValue: a default that changed in the same render has just been published.
+  useReseed([size, kind], () => publish(M.otpSanitize(codeSetter.latest.current, size, kind)), { onMount: false });
   // A Form's clear empties `value` itself, without publish(), and would leave isComplete true over an empty code.
   ToolJet.useFormClear(() => publish(''));
 

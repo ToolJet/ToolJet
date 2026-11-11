@@ -34,8 +34,9 @@ export const useHostValidation = (latest, value, present, rule) => {
   if (exposed && judged) {
     let key = exposed.has('value') && Object.is(exposed.get('value'), value) ? 'value' : null;
     if (!key) for (const [k, v] of exposed) if (k !== 'isValid' && k !== 'isMandatory' && Object.is(v, value)) key = k;
-    judged.current = { key: key ?? judged.current.key, value };
+    judged.current = { ...judged.current, key: key ?? judged.current.key, value };
   }
+  const published = useRef(undefined);
   const status =
     (typeof validate === 'function' ? validate((present ?? filled(value)) ? value : undefined) : null) || {};
   const isValid = status.isValid !== false && !rule;
@@ -44,9 +45,14 @@ export const useHostValidation = (latest, value, present, rule) => {
   // A Form around the field shows its message after a failed submit, and clearForm hides it again.
   useShowValidationOnFormSubmit(setTouched);
   useFormClear(() => setTouched(false));
+  // Every render, not on a change of isValid: an event-time write (fireHostEvent, section only) can leave a stale true.
   useEffect(() => {
+    const last = judged ? judged.current.published : published.current;
+    if (last === isValid) return;
+    if (judged) judged.current.published = isValid;
+    else published.current = isValid;
     setExposedVariable('isValid', isValid);
-  }, [isValid, setExposedVariable]);
+  });
   useEffect(() => {
     setExposedVariable('isMandatory', isMandatory);
   }, [isMandatory, setExposedVariable]);
@@ -451,6 +457,7 @@ export const usePackHost = (
           // Only the Validation section can judge the new value here: the component's own rule (useValidation's
           // `rule`) is worked out as it renders, so it applies once the component draws the new value.
           const status = judge(filled(now) ? now : undefined) || {};
+          judged.current.published = status.isValid !== false;
           latest.current.setExposedVariable('isValid', status.isValid !== false);
         }
       }
