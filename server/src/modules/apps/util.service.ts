@@ -14,7 +14,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource } from '@entities/data_source.entity';
-import { Brackets, EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
+import { Brackets, EntityManager, In, MoreThan, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
@@ -45,6 +45,12 @@ import { InternalTable } from '@entities/internal_table.entity';
 import { tableNamesInSqlQuery } from '@helpers/tooljet_db.helper';
 import { isUUID } from 'class-validator';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from '@modules/versions/module-ref.util';
+import {
+  pinIsDraftSentinel,
+  resolveAllWorkflowRefsForVersion,
+  resolveWorkflowRef,
+} from '@modules/versions/workflow-ref.util';
+import { readWorkflowQueryRefs } from '@helpers/workflow_query_options.helper';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 
 // Permission resource that gates access to each app type. Workflows have their own
@@ -596,13 +602,15 @@ export class AppsUtilService implements IAppsUtilService {
         // workspaces should never see "branch" in an error they have no context
         // for.
         if (branchId) {
-          const conflictingVersion = await manager.findOne(AppVersion, {
-            where: {
-              slug: versionParams.slug,
-              branchId,
-              appId: Not(appId),
-            },
-          });
+          // Slug namespaces are per apps.type, so an app and a module may share a slug.
+          const conflictingVersion = await manager
+            .createQueryBuilder(AppVersion, 'av')
+            .innerJoin(App, 'a', 'a.id = av.app_id')
+            .where('av.slug = :slug', { slug: versionParams.slug })
+            .andWhere('av.branch_id = :branchId', { branchId })
+            .andWhere('av.app_id <> :appId', { appId })
+            .andWhere('a.type = :appType', { appType: app.type })
+            .getOne();
           if (conflictingVersion) {
             const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
             throw new BadRequestException(
@@ -1830,6 +1838,76 @@ export class AppsUtilService implements IAppsUtilService {
       if (error instanceof BadRequestException) throw error;
       console.error('Failed to check module release state', error?.stack || error);
       throw new BadRequestException('Failed to validate module versions for release');
+    }
+  }
+
+  // A pinned nested workflow must be released at that version. Unpinned queries run whatever is
+  // released, so they pass; a sentinel can't survive the save gate and degrades to unpinned at run time.
+  async checkWorkflowsReleasedInApp(versionId: string, organizationId: string, manager: EntityManager): Promise<void> {
+    try {
+      const defaultBranchId =
+        (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
+      const refs = await resolveAllWorkflowRefsForVersion(manager, versionId, organizationId, defaultBranchId);
+      if (refs.length === 0) return;
+
+      const dataQueries = await manager.find(DataQuery, {
+        where: { id: In(refs.map((r) => r.dataQueryId)) },
+        select: ['id', 'options'],
+      });
+      const optionsByDataQueryId = new Map(dataQueries.map((dq) => [dq.id, dq.options]));
+
+      const offenders = new Map<string, { name: string; versionName: string }>();
+      for (const ref of refs) {
+        const options = optionsByDataQueryId.get(ref.dataQueryId) ?? {};
+        const { workflowVersionId: pin } = readWorkflowQueryRefs(options);
+        if (!pin || pinIsDraftSentinel(pin)) continue;
+
+        const resolved = await resolveWorkflowRef(manager, options, organizationId, defaultBranchId).catch(() => null);
+        const [workflow] = await manager.query(
+          `SELECT a.current_version_id AS "currentVersionId",
+                  COALESCE(a.name, (
+                    SELECT av.app_name FROM app_versions av
+                    WHERE av.app_id = a.id AND av.app_name IS NOT NULL
+                    ORDER BY av.created_at DESC LIMIT 1
+                  )) AS "name"
+           FROM apps a
+           WHERE a.co_relation_id::text = $1 AND a.type = $2 AND a.organization_id = $3
+           ORDER BY a.created_at ASC LIMIT 1`,
+          [ref.workflowCoRel, APP_TYPES.WORKFLOW, organizationId]
+        );
+        if (resolved?.appVersionId && resolved.appVersionId === workflow?.currentVersionId) continue;
+
+        const name = workflow?.name ?? 'unknown workflow';
+        offenders.set(`${ref.workflowCoRel}:${pin}`, { name, versionName: pin });
+      }
+      if (offenders.size === 0) return;
+
+      const workflows = [...offenders.values()];
+      const formatEntry = ({ name, versionName }: { name: string; versionName: string }) =>
+        `Workflow "${name}" version "${versionName}" is not released. Release the workflow first.`;
+      const workflowList = workflows.map(formatEntry).join(' ');
+      const [consumer] = await manager.query(
+        `SELECT a.type FROM apps a JOIN app_versions av ON av.app_id = a.id WHERE av.id = $1`,
+        [versionId]
+      );
+      throw new BadRequestException({
+        message: {
+          error:
+            workflows.length === 1
+              ? `Release blocked - ${formatEntry(workflows[0])}`
+              : `Release blocked - ${workflows.length} workflows need attention. ${workflowList}`,
+          details: workflowList,
+          ...(consumer?.type === APP_TYPES.WORKFLOW && {
+            code: 'NESTED_WORKFLOW_PINS_BLOCKED',
+            action: 'release',
+            workflows,
+          }),
+        },
+      });
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      console.error('Failed to check workflow release state', error?.stack || error);
+      throw new BadRequestException('Failed to validate workflow versions for release');
     }
   }
 

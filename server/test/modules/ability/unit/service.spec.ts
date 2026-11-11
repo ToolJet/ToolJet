@@ -118,4 +118,37 @@ describe('AbilityService (CE)', () => {
       expect(result.editableFoldersId).toEqual([]);
     });
   });
+
+  describe('resourceActionsPermission — PAT flags', () => {
+    const buildService = () => {
+      const abilityUtilService = { isBuilder: jest.fn().mockResolvedValue(true) };
+      const svc = new AbilityService(abilityUtilService as any);
+      jest.spyOn(svc, 'getResourcePermission').mockResolvedValue([
+        { name: 'builder', patCreate: true, patRevoke: false, groupGranularPermissions: [] },
+        { name: 'ops-admins', patCreate: false, patRevoke: true, groupGranularPermissions: [] },
+      ] as any);
+      return svc;
+    };
+
+    it('should OR-merge patCreate and patRevoke across the user groups', async () => {
+      const svc = buildService();
+
+      const result = await svc.resourceActionsPermission({ id: 'u1' } as any, { organizationId: 'org1' }, {} as any);
+
+      expect(result).toMatchObject({ patCreate: true, patRevoke: true });
+    });
+
+    it('should keep patRevoke false when no group grants it', async () => {
+      const svc = buildService();
+      jest
+        .spyOn(svc, 'getResourcePermission')
+        .mockResolvedValue([
+          { name: 'builder', patCreate: true, patRevoke: false, groupGranularPermissions: [] },
+        ] as any);
+
+      const result = await svc.resourceActionsPermission({ id: 'u1' } as any, { organizationId: 'org1' }, {} as any);
+
+      expect(result).toMatchObject({ patCreate: true, patRevoke: false });
+    });
+  });
 });
