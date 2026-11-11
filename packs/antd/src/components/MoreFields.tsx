@@ -8,6 +8,7 @@ import { ControlSkeleton, SpinOver } from '../lib/Loading';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { controlOptions, exposedOption, keyForValue, str, toOptions, valueForKey, type Row } from '../lib/data';
 import { toNumber } from '../lib/format';
+import { parseLocaleNumber } from '../lib/numberText';
 import { useOwnedPopup } from '../lib/useOwnerGuard';
 import {
   countryOf,
@@ -378,6 +379,17 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
       return null;
     }
   }, [locale, cur, currencyDisplay, digits]);
+  // The field shows the amount as formattedValue does, in the locale's separators with Precision's decimals, less the
+  // currency (its sign stands before the field): it showed 1,234.5 for de-DE 1.234,50 € and 1,234,567 for en-IN
+  // ₹12,34,567.00 (QA AD-11). Typed text is read in the same locale.
+  const amountFormat = useMemo(() => {
+    const options = { minimumFractionDigits: digits, maximumFractionDigits: digits };
+    try {
+      return new Intl.NumberFormat(locale || undefined, options);
+    } catch {
+      return new Intl.NumberFormat(undefined, options);
+    }
+  }, [locale, digits]);
   useEffect(() => {
     setFormattedValue(n === null ? '' : fmt ? fmt.format(n) : String(n));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -414,7 +426,6 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
   const choices = (Array.isArray(currencyOptions) ? currencyOptions : [])
     .map((c) => str(c && typeof c === 'object' ? ((c as Row).value ?? (c as Row).label) : c).toUpperCase())
     .filter(Boolean);
-  const group = (s: string) => s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return (
     <AntProvider tokens={tokens}>
       <FormField {...field} check={check} htmlFor={fieldId}>
@@ -449,15 +460,17 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
             formatter={(v, info) =>
               info.userTyping
                 ? info.input
-                : v === undefined || v === null || v === ('' as never)
+                : v === undefined || v === null || v === ('' as never) || !Number.isFinite(Number(v))
                   ? ''
-                  : group(String(v))
+                  : amountFormat.format(Number(v))
             }
             parser={(v) => {
               // An emptied field is no amount (null), as Ant's own parser gives: Number('') read it as 0, so clearing
-              // the field put 0 back in it and Required never caught it (QA AD-03).
-              const digits = String(v ?? '').replace(/[^\d.-]/g, '');
-              return (digits === '' ? '' : Number(digits)) as number;
+              // the field put 0 back in it and Required never caught it (QA AD-03). Text with no number in it yet (a
+              // minus sign) is not an amount either, and leaves the value as it is while typing goes on.
+              const text = String(v ?? '');
+              if (text.trim() === '') return '' as never;
+              return (parseLocaleNumber(text, locale) ?? NaN) as number;
             }}
             disabled={disabled}
             variant={look.variant}
