@@ -1,0 +1,159 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Directus Items API",
+    "version": "1.0.0",
+    "description": "Create, retrieve, update, delete, and search collection items in Directus."
+  },
+  "servers": [
+    {
+      "url": "{instanceUrl}",
+      "variables": {
+        "instanceUrl": {
+          "default": "https://your-instance.directus.app",
+          "description": "Your Directus instance URL"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/items/{collection}": {
+      "get": {
+        "operationId": "listItems",
+        "summary": "List items",
+        "parameters": [
+          {
+            "name": "collection",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "schema": { "type": "object", "additionalProperties": true }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Items retrieved successfully" }
+        }
+      },
+      "post": {
+        "operationId": "createItem",
+        "summary": "Create item",
+        "parameters": [
+          {
+            "name": "collection",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "additionalProperties": true }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Item created successfully" }
+        }
+      }
+    },
+    "/items/{collection}/{id}": {
+      "get": {
+        "operationId": "getItem",
+        "summary": "Get item by ID",
+        "parameters": [
+          {
+            "name": "collection",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Item retrieved successfully" }
+        }
+      },
+      "patch": {
+        "operationId": "updateItem",
+        "summary": "Update item",
+        "parameters": [
+          {
+            "name": "collection",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "additionalProperties": true }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Item updated successfully" }
+        }
+      },
+      "delete": {
+        "operationId": "deleteItem",
+        "summary": "Delete item",
+        "parameters": [
+          {
+            "name": "collection",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Item deleted successfully" }
+        }
+      }
+    }
+  }
+}

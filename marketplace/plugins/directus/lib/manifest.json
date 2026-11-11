@@ -1,0 +1,41 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Directus datasource",
+  "description": "Connect to a Directus instance to manage collections, items, files, and users.",
+  "type": "api",
+  "source": {
+    "name": "Directus",
+    "kind": "directus",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "instanceUrl": {
+        "type": "string"
+      },
+      "accessToken": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "instanceUrl": {
+      "label": "Instance URL",
+      "key": "instanceUrl",
+      "type": "string",
+      "description": "Your Directus cloud or self-hosted instance URL",
+      "hint": "https://your-instance.directus.app"
+    },
+    "accessToken": {
+      "label": "Access token",
+      "key": "accessToken",
+      "type": "password",
+      "description": "A Directus static access token"
+    }
+  },
+  "required": ["instanceUrl", "accessToken"]
+}
