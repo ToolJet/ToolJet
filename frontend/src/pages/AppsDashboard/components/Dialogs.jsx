@@ -76,7 +76,17 @@ export default function Dialogs({
   // }, [dependentPluginsInTemplate, dependentPluginsInTemplateError, templateToCreate]);
 
   const handleOpenCreateAppFromTemplateDialog = (templateToCreate) => {
-    setAppDialogState({ type: 'create-from-template', appDetails: templateToCreate }, appType);
+    const payload = { type: 'create-from-template', appDetails: templateToCreate };
+
+    if (isBranchLocked) {
+      toggleSwitchBranchModal({
+        open: true,
+        postSwitchActionDetails: payload,
+      });
+      return;
+    }
+
+    setAppDialogState(payload);
   };
 
   const handleCloseTemplateDialog = () => {
@@ -144,13 +154,15 @@ export default function Dialogs({
 
       <ImportAppFromGit open={isImportFromGitDialogOpen} handleClose={resetAppDialogState} />
 
-      <TemplateLibraryModal
-        darkMode={darkMode}
-        show={isChooseFromTemplateDialogOpen}
-        onCloseButtonClick={resetAppDialogState}
-        openCreateAppFromTemplateModal={handleOpenCreateAppFromTemplateDialog}
-        appCreationDisabled={!hasCreatePermission}
-      />
+      {isChooseFromTemplateDialogOpen && (
+        <TemplateLibraryModal
+          darkMode={darkMode}
+          show={isChooseFromTemplateDialogOpen}
+          onCloseButtonClick={resetAppDialogState}
+          openCreateAppFromTemplateModal={handleOpenCreateAppFromTemplateDialog}
+          appCreationDisabled={!hasCreatePermission}
+        />
+      )}
     </>
   );
 }
