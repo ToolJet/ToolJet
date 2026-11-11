@@ -176,7 +176,7 @@ So that 3.21.58 can split, old schema steps it cannot run on were changed:
 
 1. **Loosens** the old rules its data migrations break (`LEGACY_LOOSEN_RULES`). Each is saved to `legacy_upgrade_dropped_rules` and dropped in its own `withShortLock` transaction.
 2. Runs **lock-free variants** (`LEGACY_VARIANTS`) in place of the originals. Each reuses its original's statements verbatim: row changes and function bodies in `up()`, index builds and new triggers in `beforeCommit()`. An old trigger function the original drops gets an empty body instead (`CREATE OR REPLACE FUNCTION`: no table lock, invisible to other sessions until commit). The last `beforeCommit()` statement swaps `fk_app_versions_branch` from `SET NULL` to `CASCADE` and adds the `branch_id IS NOT NULL` CHECK, both `NOT VALID`, under a 2s `lock_timeout`. That is the only ACCESS EXCLUSIVE lock, held until the commit right after it. A timeout retries the data phase. Migrations without a variant run as written. Single-transaction runs always use the originals.
-3. **Restores** the saved rules if the data phase fails, still holding the migration lock: CHECKs `NOT VALID`, then `VALIDATE`; indexes rebuilt. A rule that no longer validates stays `NOT VALID` and is logged. `npm run db:legacy-upgrade:restore` does the same after a killed run. It refuses once the data phase committed.
+3. **Restores** the saved rules if the data phase fails, still holding the migration lock: CHECKs `NOT VALID`, then `VALIDATE`; indexes rebuilt. A CHECK that no longer validates stays `NOT VALID`; an index that no longer builds stays missing. Both are logged. `npm run db:legacy-upgrade:restore` does the same after a killed run. It refuses once the data phase committed.
 
 Removals wait for the cleanup migration `CleanupLegacyBranchModel`, one upgrade later. It first reruns the branch fixes (`branchlessRowFixes`) for rows 3.21.58 pods wrote without a branch during the rollout. Then it validates the key, sets the branch columns NOT NULL, drops the dead columns, table, triggers and functions, and recreates three `app_versions` triggers. Until then, reads treat a row with no branch as on the default branch (`branch_scope.helper.ts`). The final schema and rows match a single-transaction run. Once the data phase commits, only the pre-upgrade backup brings 3.21.58 back. Code that exists only for this path is tagged `legacy-3.21.58:`. To retire it: empty `ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS`, so 3.21.58 upgrades run blocking, and run a pending `CleanupLegacyBranchModel` before boot; then grep the tag and delete.
 
@@ -303,7 +303,7 @@ A row means a live connection is migrating. Once that connection ends, the lock 
 
 **Upgrade without refused traffic:** set `DISABLE_MIGRATION_TRAFFIC_GATE=true`.
 
-**Back to 3.21.58 after a killed upgrade:** from the new image, run `npm run db:legacy-upgrade:restore` (`:prod` in the image), then deploy the 3.21.58 image.
+**Back to 3.21.58 after a killed upgrade:** scale the new image to zero first, or its dead-run check starts the data phase again. Then, from the new image, run `npm run db:legacy-upgrade:restore` (`:prod` in the image), then deploy the 3.21.58 image.
 
 **Known limitation:** the gate works from the *next* async upgrade on. During the deploy that first ships it, the old pods have no gate.
 
