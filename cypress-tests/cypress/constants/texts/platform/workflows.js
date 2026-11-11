@@ -63,15 +63,12 @@ export const workflowsText = {
   cloneAppOption: "Clone app",
   cloneWorkflowOption: "Clone workflow",
 
-  // Folder delete confirmation. The workflows dashboard names its own type in
-  // the trailing sentence ("Workflows within the folder ..."); lts-3.16 still
-  // says "Apps", so this is the main/release wording.
+  // lts-3.16 still says "Apps" in this sentence; this is the main/release wording.
   folderDeletePrefix: (folderName) =>
     `Are you sure you want to delete the folder ${folderName}?`,
   folderDeleteMessage: (folderName) =>
     `Are you sure you want to delete the folder ${folderName}? Workflows within the folder will not be deleted.`,
 
-  // Node menu (Copy / Duplicate / Delete)
   nodeDeleteConfirmMessage: "Do you really want to delete this node?",
   duplicatedRunjsNodeName: "runjs1_copy",
 
@@ -96,7 +93,6 @@ export const workflowsText = {
   versionLockedText: "This version is locked",
 };
 
-// Human-in-the-loop (HITL) copy asserted by the specs.
 export const humanText = {
   sidebarNodeLabel: "Human-in-the-loop",
   defaultNodeName: "human1",

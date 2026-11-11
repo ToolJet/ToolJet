@@ -86,7 +86,6 @@ export const deleteAppandWorkflowAfterExecution = (workflowName, appName) => {
 };
 
 export const verifyPreviewOutputText = (expectedOutput) => {
-  // Blur the editor so the query save lands before previewing; the preview runs the saved code.
   cy.focused().blur();
   cy.wait(1500);
   cy.get('[data-cy="preview-button"]').click();
@@ -673,15 +672,6 @@ export const createRunjsQueries = (queries) => {
   return cy.wrap(ids);
 };
 
-// ---------------------------------------------------------------------------
-// Human-in-the-loop (HITL) graphs
-//
-// The Human node is `type: "human"` with its whole configuration on `data`
-// (confirmed by saving one from the editor and reading the version back). Each
-// outcome key is a source handle, so edges leave the node through
-// `sourceHandle: <outcome key>`.
-// ---------------------------------------------------------------------------
-
 export const HUMAN_DEFAULT_OUTCOMES = [
   { key: "approved", label: "Approve", color: "#1E823B" },
   { key: "rejected", label: "Reject", color: "#D72D39" },
@@ -731,8 +721,6 @@ export const wfHumanNode = (id = "human1", config = {}) => {
   };
 };
 
-// A Response node that reports which branch ran and what the Human step
-// handed downstream (`<human>.data.outcome|input|resolvedBy`).
 export const wfOutcomeResponse = (humanName, outcomeKey, index = 0) => {
   const node = wfResponseNode(
     `resp-${outcomeKey}`,
@@ -744,8 +732,6 @@ export const wfOutcomeResponse = (humanName, outcomeKey, index = 0) => {
   return node;
 };
 
-// Start -> Human -> one Response per connected outcome. `connect` lists the
-// outcome keys that get a Response (default: all of them).
 export const humanWorkflowDefinition = ({
   human = {},
   humanName = "human1",

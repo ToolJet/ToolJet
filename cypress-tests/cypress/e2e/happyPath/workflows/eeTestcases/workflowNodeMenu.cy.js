@@ -10,7 +10,6 @@ import {
 
 const data = {};
 
-// Opens the "..." menu of a node on the canvas and picks one of its options.
 const openNodeMenu = (nodeName) => {
   cy.get(workflowSelector.nodeName(nodeName))
     .parents(".react-flow__node")
@@ -70,7 +69,6 @@ describe("Workflows - node menu", () => {
       .should("be.visible")
       .and("contain.text", workflowsText.nodeDeleteConfirmMessage);
 
-    // Cancelling keeps the node and its edges.
     cy.get(commonSelectors.buttonSelector(commonText.cancelButton)).click();
     cy.get(commonSelectors.modalComponent).should("not.exist");
     cy.get(workflowSelector.nodeName(workflowsText.runjs)).should("exist");
@@ -78,7 +76,6 @@ describe("Workflows - node menu", () => {
       cy.get(workflowSelector.canvasEdge).should("have.length", before);
     });
 
-    // Confirming removes the node and the edges attached to it.
     openNodeMenu(workflowsText.runjs);
     cy.get(workflowSelector.nodeMenuDelete).click({ force: true });
     cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();

@@ -605,15 +605,7 @@ Cypress.Commands.add("apiDeleteWorkflowSchedule", (scheduleId) => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Human-in-the-loop (HITL) approvals
-// ---------------------------------------------------------------------------
-
-// Re-runs `read` (a function returning a Cypress chain) until `isDone` accepts
-// its value. Waits between attempts with a promise delay, not cy.wait(<ms>).
 const pollUntil = (read, isDone, description, retries = 120, intervalMs = 500) => {
-  // The accepted value is held in a closure: a value returned through the
-  // nested retry chains is not reliably the one Cypress yields at the end.
   let accepted;
   const attempt = (count) =>
     read().then((value) => {
@@ -638,7 +630,6 @@ const jsonHeaders = (headers) => ({
   "tj-workspace-id": Cypress.env("workspaceId"),
 });
 
-// The editing version's saved graph (what the editor persisted).
 Cypress.Commands.add(
   "apiGetWorkflowDefinition",
   (
@@ -652,13 +643,10 @@ Cypress.Commands.add(
           headers,
           log: false,
         })
-        // Null until the first save, so callers can poll it.
         .then((res) => res.body.editing_version?.definition ?? null)
     )
 );
 
-// GET /api/workflow-approvals. `query` takes the server's names: status,
-// app_id, approver, from, to, page, per_page.
 Cypress.Commands.add("apiListApprovals", (query = {}) =>
   cy.getAuthHeaders().then((headers) =>
     cy
@@ -672,7 +660,6 @@ Cypress.Commands.add("apiListApprovals", (query = {}) =>
   )
 );
 
-// Resolves with the approval request the run raised. Waits for it to exist.
 Cypress.Commands.add(
   "apiWaitForApproval",
   ({
@@ -685,7 +672,6 @@ Cypress.Commands.add(
       () =>
         cy
           .apiListApprovals({ status, app_id: workflowId })
-          // `?? null`: a callback returning undefined would yield the response.
           .then(
             (res) =>
               (res.body.requests || []).find(
@@ -699,7 +685,6 @@ Cypress.Commands.add(
     )
 );
 
-// Resolves with the response so a refused call can be asserted on.
 Cypress.Commands.add(
   "apiResolveApproval",
   (requestId, outcome, input = {}) =>
@@ -725,8 +710,7 @@ Cypress.Commands.add("apiCancelApproval", (requestId) =>
   )
 );
 
-// The bearer token behind the public resolve link. The list API deliberately
-// never returns it, so it is read from the approvals table.
+// The list API never returns the token, so it is read from the approvals table.
 Cypress.Commands.add("apiGetApprovalToken", (requestId) =>
   cy
     .task("dbConnection", {
@@ -736,8 +720,7 @@ Cypress.Commands.add("apiGetApprovalToken", (requestId) =>
     .then((result) => result.rows[0].token)
 );
 
-// Token channel: no session. Cookies are cleared first because cy.request
-// would otherwise send the logged-in session along.
+// Clear cookies first so cy.request does not send the logged-in session.
 Cypress.Commands.add("apiGetApprovalByToken", (token) => {
   cy.clearCookies({ log: false });
   return cy.request({
@@ -756,8 +739,6 @@ Cypress.Commands.add("apiResolveApprovalByToken", (token, body) => {
   });
 });
 
-// Waits until a run reaches `status` (db values: waiting, success, failure,
-// terminated). Resolves with the execution.
 Cypress.Commands.add(
   "apiWaitForExecutionStatus",
   (status, executionId = Cypress.env("executionId")) =>
@@ -768,7 +749,6 @@ Cypress.Commands.add(
     )
 );
 
-// Result of one node of a run, by its node name (`human1`, `response_approved`).
 Cypress.Commands.add(
   "apiGetExecutionNode",
   (nodeName, executionId = Cypress.env("executionId")) =>
@@ -779,8 +759,6 @@ Cypress.Commands.add(
       )
 );
 
-// The editor autosaves, so a UI edit reaches the saved graph a moment later.
-// Resolves with the Human node's `data` once `isDone` accepts it.
 Cypress.Commands.add(
   "apiWaitForHumanNodeData",
   (isDone, nodeId = "human1", description = "the Human node to be saved") =>
@@ -797,8 +775,6 @@ Cypress.Commands.add(
     )
 );
 
-// Runs recorded against one version (what the editor's Logs panel lists),
-// newest first. Waits until `count` of them exist.
 Cypress.Commands.add(
   "apiWaitForVersionExecutions",
   (versionId, count = 1) =>

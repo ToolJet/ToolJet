@@ -66,7 +66,6 @@ export const workflowSelector = {
   confirmYesButton: '[data-cy="yes-button"]',
 };
 
-// Human-in-the-loop (HITL) step: editor settings panel, canvas node and sidebar entry.
 export const humanSelector = {
   nodesSidebarIcon: '[data-cy="icon-nodes"]',
   sidebarHumanNode: '[data-cy="workflow-node-human-in-the-loop"]',
@@ -100,7 +99,7 @@ export const humanSelector = {
   timeoutToggle: '[data-cy="human-timeout-enabled-toggle-input"]',
   timeoutDuration: '[data-cy="human-timeout-duration"]',
   timeoutDurationValue: '[data-cy="human-timeout-duration"] input.duration-value',
-  // The Select renders no data-cy of its own, so it is found through its label.
+  // The Select has no data-cy of its own, so it is found through its label.
   timeoutOutcomeLabel: "Timeout outcome",
   timeoutOutcomeWarning: '[data-cy="human-timeout-outcome-warning"]',
   onExpireBranch: '[data-cy="human-modal"] input[name="onExpire"]',
@@ -109,7 +108,6 @@ export const humanSelector = {
   headerAdd: '[data-cy="human-header-add"]',
   headerKey: (index) => `[data-cy="human-header-key-${index}"]`,
   headerValue: (index) => `[data-cy="human-header-value-${index}"]`,
-  // The node on the canvas: handles are named after the outcome key.
   node: (nodeName) => `[data-cy="${cyParamName(nodeName)}-node"]`,
   outcomeHandle: (nodeName, outcomeKey) =>
     `[data-cy="${cyParamName(nodeName)}-node-handle-right-${outcomeKey}"]`,
@@ -122,7 +120,6 @@ export const humanSelector = {
   nodeColumnItem: (nodeName) => `[data-cy="${cyParamName(nodeName)}-node-name"]`,
 };
 
-// Approvals tab: list, filters and the resolve dialog.
 export const approvalSelector = {
   tab: '[data-cy="approvals-tab"]',
   executionsTab: '[data-cy="executions-tab"]',
@@ -151,7 +148,6 @@ export const approvalSelector = {
   pageIndicator: '[data-cy="approvals-page-indicator"]',
 };
 
-// Executions tab.
 export const executionsSelector = {
   page: '[data-cy="executions-page"]',
   table: '[data-cy="executions-table"]',

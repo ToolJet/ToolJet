@@ -19,7 +19,6 @@ import {
   openWorkflowEditor,
 } from "Support/utils/workflows/workflowApprovals";
 
-// The shared instance is often busy; give API and page responses room.
 const SLOW_API = {
   responseTimeout: 60000,
   requestTimeout: 60000,
@@ -41,8 +40,6 @@ const rowIds = () =>
     .toArray()
     .map((row) => row.getAttribute("data-cy").replace("approvals-row-", ""));
 
-// The Approvals tab as the people who work in it see it: list, filters, the
-// resolve dialog and the final state of closed requests.
 describe("Workflows - Approvals tab", SLOW_API, () => {
   beforeEach(() => {
     cy.apiLogin();
@@ -99,7 +96,6 @@ describe("Workflows - Approvals tab", SLOW_API, () => {
         visitApprovals();
         cy.get(approvalSelector.row(mine.id)).should("be.visible");
 
-        // Workflow
         pickSelectOption(
           `${approvalSelector.filterWorkflow} .react-select__control`,
           data.otherName
@@ -111,8 +107,6 @@ describe("Workflows - Approvals tab", SLOW_API, () => {
         );
         cy.get(approvalSelector.row(mine.id)).should("be.visible");
 
-        // Status: the other workflow's request is resolved, so it only
-        // appears under Resolved.
         pickSelectOption(
           `${approvalSelector.filterStatus} .react-select__control`,
           "All statuses"
@@ -132,7 +126,6 @@ describe("Workflows - Approvals tab", SLOW_API, () => {
           humanText.noApprovalsMatch
         );
 
-        // Approver: only this workflow lists the signed-in user.
         pickSelectOption(
           `${approvalSelector.filterWorkflow} .react-select__control`,
           "All workflows"
@@ -142,7 +135,6 @@ describe("Workflows - Approvals tab", SLOW_API, () => {
         cy.get(approvalSelector.row(other.id)).should("not.exist");
         cy.get(approvalSelector.filterApprover).clear();
 
-        // Date: nothing was raised after today, and today's requests are inside the range.
         cy.get(approvalSelector.filterFrom).type(isoDay(1));
         cy.get(approvalSelector.row(mine.id)).should("not.exist");
         cy.get(approvalSelector.filterFrom).clear().type(isoDay(-1));
@@ -352,7 +344,6 @@ describe("Workflows - waiting runs in Executions and the editor Logs", SLOW_API,
       .first()
       .should("not.contain.text", humanText.waitingRunLabel);
 
-    // Read the workflow id when this step runs, not when the test is queued.
     cy.then(() =>
       cy
         .apiListApprovals({ status: "cancelled", app_id: Cypress.env("workflowId") })
@@ -378,7 +369,6 @@ describe("Workflows - waiting runs in Executions and the editor Logs", SLOW_API,
         })
     );
 
-    // The panel refreshes its run list on a poll, so allow it a few cycles.
     cy.get(humanSelector.waitingBanner, { timeout: 60000 }).should("not.exist");
     cy.get(humanSelector.logRunItem)
       .first()

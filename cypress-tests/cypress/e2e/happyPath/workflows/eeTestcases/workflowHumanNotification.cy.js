@@ -18,7 +18,6 @@ import {
   visitExecutions,
 } from "Support/utils/workflows/workflowApprovals";
 
-// The shared instance is often busy; give API and page responses room.
 const SLOW_API = {
   responseTimeout: 60000,
   requestTimeout: 60000,
@@ -28,11 +27,7 @@ const SLOW_API = {
 
 const data = {};
 
-// The notification webhook has no external receiver in CI, so a second
-// workflow acts as the receiver: its webhook trigger records the body the
-// Human step posts, and the receiver's own run shows what arrived. Only keys a
-// workflow declares as inputs reach it, so every key a body might carry —
-// including the ones that must be absent — is declared.
+// CI has no external receiver, so a second workflow's webhook trigger records the posted body.
 const receiverInputs = [
   "nodeName",
   "description",
@@ -81,7 +76,6 @@ const notificationTo = (extra = {}) => ({
   ...extra,
 });
 
-// What the receiver was sent, as its Response node returned it.
 const receivedBody = () =>
   cy.apiWaitForVersionExecutions(data.receiver.versionId).then((runs) =>
     cy

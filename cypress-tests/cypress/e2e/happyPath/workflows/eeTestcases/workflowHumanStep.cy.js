@@ -20,7 +20,6 @@ import {
   dragSidebarNodeToCanvas,
 } from "Support/utils/workflows/workflowApprovals";
 
-// The shared instance is often busy; give API and page responses room.
 const SLOW_API = {
   responseTimeout: 60000,
   requestTimeout: 60000,
@@ -32,8 +31,6 @@ const data = {};
 
 const outcomeKeysOf = (nodeData) => nodeData.outcomes.map((o) => o.key);
 
-// Authoring the Human step in the editor: adding it, its outcomes and the
-// fields the approver fills in. The graph around it is built over the API.
 describe("Workflows - Human step in the editor", SLOW_API, () => {
   beforeEach(() => {
     cy.apiLogin();
@@ -245,7 +242,6 @@ describe("Workflows - Human step in the editor", SLOW_API, () => {
         ]);
       });
 
-      // The approver meets exactly those fields, defaults filled in.
       runUntilWaiting().then((request) => {
         visitApprovals();
         openApprovalRequest(request.id);

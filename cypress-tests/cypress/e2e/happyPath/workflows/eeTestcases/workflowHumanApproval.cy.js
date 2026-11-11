@@ -31,7 +31,6 @@ import {
   chooseOutcomeInDialog as chooseOutcome,
 } from "Support/utils/workflows/workflowApprovals";
 
-// The shared instance is often busy; give API and page responses room.
 const SLOW_API = {
   responseTimeout: 60000,
   requestTimeout: 60000,
@@ -41,9 +40,6 @@ const SLOW_API = {
 
 const data = {};
 
-// Every case runs a real Start -> Human -> Response graph: the run parks on the
-// Human step, a person decides in the Approvals tab, and the run continues down
-// the chosen outcome.
 describe("Workflows - Human step approvals", SLOW_API, () => {
   beforeEach(() => {
     cy.apiLogin();
@@ -265,8 +261,6 @@ describe("Workflows - Human step approvals", SLOW_API, () => {
   });
 });
 
-// A Human step reached through a webhook or an app must hand the caller a
-// "waiting" answer — the run is parked, not broken — and still raise a request.
 describe("Workflows - Human step reached through a webhook or an app", SLOW_API, () => {
   const draftQuery = () => ({
     version: Cypress.env("editingVersionName"),

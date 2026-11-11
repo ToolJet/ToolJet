@@ -16,7 +16,6 @@ import {
   pickSelectOption,
 } from "Support/utils/workflows/workflowApprovals";
 
-// The shared instance is often busy; give API and page responses room.
 const SLOW_API = {
   responseTimeout: 60000,
   requestTimeout: 60000,
@@ -26,8 +25,7 @@ const SLOW_API = {
 
 const data = {};
 
-// Short deadlines keep these fast. The timer runs on the worker through the
-// approval-timeout queue, so these cases need a worker, like the rest of HITL.
+// The approval-timeout timer runs on the worker, so these cases need one.
 const SHORT_TIMEOUT_SECONDS = 10;
 
 const timeoutOutcomeField = () =>
@@ -87,7 +85,6 @@ describe("Workflows - Human step timeout", SLOW_API, () => {
     timeoutOutcomeField().should("contain.text", "Reject");
     cy.get(humanSelector.timeoutOutcomeWarning).should("not.exist");
 
-    // Removing the chosen outcome leaves the timeout with nothing to branch to.
     cy.get(humanSelector.outcomeRemove(1)).click();
     cy.get(humanSelector.timeoutOutcomeWarning)
       .should("be.visible")

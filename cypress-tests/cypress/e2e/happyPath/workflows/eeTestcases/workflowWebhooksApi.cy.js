@@ -154,7 +154,6 @@ describe("Workflows - webhook endpoint (API)", () => {
         token: data.token,
         qs: { version: "no-such-version", environment: "development" },
       }).then((res) => {
-        // An unknown version falls through the guard to the service's 404 naming it.
         expect(res.status).to.equal(404);
         expect(res.body.message).to.include('Version "no-such-version" not found');
       });

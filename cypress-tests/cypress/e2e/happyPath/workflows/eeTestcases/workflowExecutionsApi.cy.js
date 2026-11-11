@@ -82,7 +82,6 @@ describe("Workflows - execution history (API)", () => {
     });
   });
 
-  // A manual run fills missing params from defaultParams, but never adds undeclared keys.
   it("A run passes exactly the params it was given to the start trigger", () => {
     createRunjsQueries({ echo: "return startTrigger.params" }).then((ids) => {
       cy.apiSaveWorkflowDefinition(

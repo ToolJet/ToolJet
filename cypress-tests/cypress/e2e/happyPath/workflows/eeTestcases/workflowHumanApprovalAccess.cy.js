@@ -17,7 +17,6 @@ import {
   pickSelectOption,
 } from "Support/utils/workflows/workflowApprovals";
 
-// The shared instance is often busy; give API and page responses room.
 const SLOW_API = {
   responseTimeout: 60000,
   requestTimeout: 60000,
@@ -39,7 +38,6 @@ const approversOf = (...userIds) => ({
   tokenBypass: true,
 });
 
-// Who sees the Approvals tab and who may resolve or cancel a request.
 describe("Workflows - approvals access by role", SLOW_API, () => {
   before(() => {
     Object.entries(users).forEach(([key, user]) => {
@@ -50,8 +48,6 @@ describe("Workflows - approvals access by role", SLOW_API, () => {
     });
     cy.apiLogin();
     Object.values(users).forEach((user) => {
-      // Read from the database: the organisation-users list grows with every
-      // run on a shared instance and is slow to page through.
       cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `SELECT id FROM users WHERE email = '${user.email}'`,
@@ -61,7 +57,6 @@ describe("Workflows - approvals access by role", SLOW_API, () => {
     });
   });
 
-  // Cypress clears cookies between tests, so each one starts signed out.
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
@@ -241,7 +236,6 @@ describe("Workflows - approvals access by role", SLOW_API, () => {
   });
 });
 
-// The link a notification carries: authorised by the token alone, no sign-in.
 describe("Workflows - approval resolve link (token API)", SLOW_API, () => {
   const reasonField = {
     name: "reason",
@@ -336,7 +330,6 @@ describe("Workflows - approval resolve link (token API)", SLOW_API, () => {
         expect(res.body.message).to.equal(humanText.notFoundError);
       });
 
-      // None of the refusals touched the request.
       cy.apiLogin();
       visitApprovals();
       cy.get(approvalSelector.row(request.id)).should("contain.text", "pending");
