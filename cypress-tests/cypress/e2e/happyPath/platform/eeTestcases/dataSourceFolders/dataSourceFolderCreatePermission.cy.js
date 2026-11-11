@@ -14,6 +14,7 @@ import {
   uiEnsureFolderExpanded,
   uiOpenFolderMenu,
   uiVerifyDataSourceFolderExists,
+  uiVerifyFolderMenuAbsent,
 } from 'Support/utils/platform/dataSourceFolders';
 import { getGroupPermissionInput } from 'Support/utils/userPermissions';
 import { groupsText } from 'Texts/platform/manageGroups';
@@ -52,6 +53,12 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
     cy.apiLogin();
     const dataSourceName = `ds-create-flag-${testId}`;
     cy.apiCreateGlobalDataSource(dataSourceName);
+    const adminFolderName = `Admin DS Folder ${testId}`;
+    let adminFolderId;
+    cy.apiCreateDataSourceFolder(adminFolderName).then((folder) => {
+      adminFolderId = folder.id;
+      cy.apiCreateGlobalDataSource(`ds-admin-folder-${testId}`).then((id) => cy.apiAddDataSourceToFolder(id, folder.id));
+    });
     apiCreateGroup(groupName).then((groupId) => {
       groupId1 = groupId;
       apiAddUserToGroup(groupId1, userEmail);
@@ -95,11 +102,15 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
       dragDataSourceToStrayList(dataSourceName);
       cy.apiGetDataSourceIdsInFolder(folderId).then((ids) => expect(ids).to.have.length(0));
 
-      // Create alone does NOT imply delete.
+      // Ownership covers delete: the creator can delete their own folder without the delete flag.
       uiOpenFolderMenu(folderId);
       cy.get(dsFolder.folderRenameOption(folderId)).should('exist');
-      cy.get(dsFolder.folderDeleteOption(folderId)).should('not.exist');
+      cy.get(dsFolder.folderDeleteOption(folderId)).should('exist');
       cy.get('body').type('{esc}');
+      uiDeleteDataSourceFolder(folderId);
+      uiVerifyDataSourceFolderExists(folderName, false);
+      uiVerifyDataSourceFolderExists(adminFolderName);
+      uiVerifyFolderMenuAbsent(adminFolderId);
       cy.apiLogout();
 
       cy.apiLogin();
@@ -112,12 +123,8 @@ describe('Data Source Folders — Custom Group Coarse Permission Overrides', () 
 
       cy.apiLogin(userEmail, 'password');
       openDataSourcesList();
-      uiOpenFolderMenu(folderId);
-      cy.get(dsFolder.folderDeleteOption(folderId)).should('exist');
-      cy.get('body').type('{esc}');
-
-      uiDeleteDataSourceFolder(folderId);
-      uiVerifyDataSourceFolderExists(folderName, false);
+      uiDeleteDataSourceFolder(adminFolderId);
+      uiVerifyDataSourceFolderExists(adminFolderName, false);
     });
   });
 });
