@@ -22,6 +22,9 @@ Records who did what to which resource. Two systems live here while routes migra
 | `events/module.ts` | Global module; loads the edition's `events/engine.service` |
 | `events/request-utils.ts` | Reads the route spec, builds the actor |
 | `events/coverage.ts` | `findAuditSpecProblems`, used by the unit test that guards Workspaces v2 coverage |
+| `events/delivery.ts` | Queue name, batch sizes, `auditSinkMode()` (`AUDIT_SINK=queue\|db`), job payload helpers |
+| `ee/audit-logs/events/sinks/queue.sink.ts` | `QueueAuditSink`: `addBulk` of 100-event jobs after the response; writes directly when Redis refuses, is slow (300 ms) or no worker is connected |
+| `ee/audit-logs/events/queue/audit-batch.processor.ts` | `AuditBatchProcessor` (worker pods): buffers jobs, one INSERT at 500 rows or 1 s, isolates a bad job |
 | `ee/audit-logs/events/engine.service.ts` | Real engine, adapters list, DB sink binding |
 | `ee/audit-logs/events/adapters/*.adapter.ts` | One per target type (`workspace` today) |
 | `ee/audit-logs/events/sinks/db.sink.ts` | One multi-row `INSERT … ON CONFLICT DO NOTHING` |
@@ -35,7 +38,9 @@ Records who did what to which resource. Two systems live here while routes migra
 ## Invariants & gotchas
 
 - Audit work never changes a response. Every engine error is logged and swallowed. A handler error writes no event.
-- Writes are synchronous (before the response) through `IAuditSink`. A queue sink can replace it without changing the engine.
+- **Delivery (Enterprise):** `AUDIT_SINK=queue` (default) runs the audit step after the response and queues it to `audit-events`; `AUDIT_SINK=db` (default under `NODE_ENV=test`) writes before the response, as tests expect. `IAuditEngine.schedule` decides, and shutdown waits for in-flight work.
+- The batch processor is registered only where `WORKER=true`, like the other queue processors. A job completes only after its rows commit; stalled jobs return to waiting, and reruns are skipped by `ON CONFLICT DO NOTHING` on `(id, created_at)`, both carried in the job.
+- Retries: 8 attempts, exponential backoff from 2 s with jitter; failed jobs kept 7 days. A data or constraint error (`22xxx`/`23xxx`) fails the job without retries.
 - `audit_events` is append-only: a trigger blocks UPDATE, and blocks DELETE unless `SET LOCAL tooljet.audit_retention = 'on'`. TRUNCATE is allowed because test resets truncate every table.
 - Denied events come only from `AbilityGuard.recordDenied` at the two permission-failure sites. Plan (451), ban and business-rule 403s are not denials.
 - Snapshots must be audit-safe: mask secrets in the adapter (`sensitive` fields become `{ changed: true }`).

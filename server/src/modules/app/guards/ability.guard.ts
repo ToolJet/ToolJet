@@ -66,7 +66,11 @@ export abstract class AbilityGuard implements CanActivate {
   private async recordDenied(context: ExecutionContext): Promise<void> {
     try {
       const engine = this.moduleRef.get(IAuditEngine, { strict: false });
-      await engine.denied(context);
+      await engine.schedule(() =>
+        engine.denied(context).catch((error) => {
+          this.transactionLogger.error(`Audit denied event failed: ${(error as Error)?.message}`);
+        })
+      );
     } catch (error) {
       this.transactionLogger.error(`Audit denied event failed: ${(error as Error)?.message}`);
     }

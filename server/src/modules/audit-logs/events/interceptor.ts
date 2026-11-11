@@ -30,9 +30,11 @@ export class AuditInterceptor implements NestInterceptor {
         next.handle().pipe(
           mergeMap(async (result) => {
             if (pending) {
-              await this.engine.after(pending, context, result).catch((error) => {
-                this.logger.error(`Audit capture after handler failed: ${error?.message}`);
-              });
+              await this.engine.schedule(() =>
+                this.engine.after(pending, context, result).catch((error) => {
+                  this.logger.error(`Audit capture after handler failed: ${error?.message}`);
+                })
+              );
             }
             return result;
           })

@@ -24,6 +24,11 @@ export abstract class IAuditEngine {
   abstract after(pending: PendingAudit, context: ExecutionContext, result: unknown): Promise<void>;
   /** Called by the permission guard when it rejects a request. */
   abstract denied(context: ExecutionContext): Promise<void>;
+  /**
+   * Runs audit work that follows the handler. It is awaited when the sink writes before the
+   * response, and left running in the background when the sink queues after it.
+   */
+  abstract schedule(work: () => Promise<void>): Promise<void>;
 }
 
 /** Knows how to load and describe one kind of audited resource. */
@@ -43,4 +48,8 @@ export const AUDIT_SUBJECT_ADAPTERS = Symbol('AUDIT_SUBJECT_ADAPTERS');
 
 export abstract class IAuditSink {
   abstract write(events: AuditEventRecord[]): Promise<void>;
+  /** True when writes may finish after the response has been sent. */
+  runsAfterResponse(): boolean {
+    return false;
+  }
 }
