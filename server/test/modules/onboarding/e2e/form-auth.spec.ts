@@ -5,7 +5,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { User } from 'src/entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
-import { initTestApp, createUser, login, getEntityRepository, closeTestApp } from 'test-helper';
+import { initTestApp, createUser, login, getEntityRepository, closeTestApp, updateEntity } from 'test-helper';
 import { Repository } from 'typeorm';
 
 /**
@@ -194,6 +194,52 @@ describe('OnboardingController', () => {
       });
       expect(orgUser.status).toBe('active');
     });
+
+    it('should reject accepting a workspace invite when the logged-in caller is not the invitee (GHSA-392x)', async () => {
+      // Create the invited (victim) user
+      await createUser(app, {
+        firstName: 'Other',
+        lastName: 'User',
+        email: 'other@tooljet.com',
+        status: 'active',
+      });
+
+      // Invite the victim
+      await request(app.getHttpServer())
+        .post('/api/organization-users')
+        .send({ email: 'other@tooljet.com', role: 'end-user' })
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', loggedAdmin.tokenCookie)
+        .expect(201);
+
+      const otherUser = await userRepository.findOneOrFail({ where: { email: 'other@tooljet.com' } });
+      const { invitationToken } = await orgUserRepository.findOneOrFail({
+        where: { userId: otherUser.id, organizationId: adminOrg.id },
+      });
+
+      // A different, unrelated logged-in user (the attacker) tries to accept the victim's invite
+      const { user: attacker } = await createUser(app, {
+        firstName: 'Attacker',
+        lastName: 'User',
+        email: 'attacker@tooljet.com',
+        status: 'active',
+      });
+      const loggedAttacker = await login(app, attacker.email);
+
+      const response = await request(app.getHttpServer())
+        .post('/api/onboarding/accept-invite')
+        .send({ token: invitationToken })
+        .set('Cookie', loggedAttacker.tokenCookie);
+
+      expect(response.status).toBe(406);
+      expect(response.headers['set-cookie']).toBeUndefined();
+
+      // No session was minted for the victim, and the invite is untouched
+      const orgUser = await orgUserRepository.findOneOrFail({
+        where: { userId: otherUser.id, organizationId: adminOrg.id },
+      });
+      expect(orgUser.status).toBe('invited');
+    });
   });
 
   describe('Signup and invite interaction', () => {
@@ -220,6 +266,135 @@ describe('OnboardingController', () => {
         .post('/api/onboarding/signup')
         .send({ email: 'invited@tooljet.com', name: 'Invited User', password: 'password' });
       expect(response.statusCode).toBe(406);
+    });
+  });
+
+  describe('POST /api/onboarding/signup | Existing SSO-provisioned user, workspace-level signup (GHSA-7fgx)', () => {
+    it('does not set a password or auto-login when an SSO-provisioned user is impersonated via workspace signup', async () => {
+      // Existing user, active elsewhere, but SSO-provisioned — no local password
+      const { user: victim } = await createUser(app, {
+        firstName: 'Victim',
+        lastName: 'User',
+        email: 'sso-victim@tooljet.com',
+        status: 'active',
+      });
+      await updateEntity(User, victim.id, { password: null });
+
+      // A separate workspace that allows signup
+      const { organization: targetOrg } = await createUser(app, {
+        firstName: 'org-b',
+        lastName: 'owner',
+        email: 'org-b-owner@tooljet.com',
+        status: 'active',
+        enableSignUp: true,
+      });
+
+      const response = await request(app.getHttpServer()).post('/api/onboarding/signup').send({
+        email: 'sso-victim@tooljet.com',
+        name: 'Attacker Chosen Name',
+        password: 'attacker-chosen-password',
+        organizationId: targetOrg.id,
+      });
+
+      expect(response.headers['set-cookie']).toBeUndefined();
+
+      const victimAfter = await userRepository.findOneOrFail({ where: { email: 'sso-victim@tooljet.com' } });
+      expect(victimAfter.password).toBeNull();
+
+      const orgUser = await orgUserRepository.findOne({
+        where: { userId: victimAfter.id, organizationId: targetOrg.id },
+      });
+      expect(orgUser?.status).not.toBe('active');
+    });
+
+    it('still instantly activates + logs in a self-hosted user who proves their existing password', async () => {
+      const { user: existingUser } = await createUser(app, {
+        firstName: 'Real',
+        lastName: 'User',
+        email: 'real-user@tooljet.com',
+        status: 'active',
+      });
+
+      const { organization: targetOrg } = await createUser(app, {
+        firstName: 'org-c',
+        lastName: 'owner',
+        email: 'org-c-owner@tooljet.com',
+        status: 'active',
+        enableSignUp: true,
+      });
+
+      const response = await request(app.getHttpServer()).post('/api/onboarding/signup').send({
+        email: 'real-user@tooljet.com',
+        name: 'Real User',
+        password: 'password', // matches createUser's default seeded password
+        organizationId: targetOrg.id,
+      });
+
+      expect(response.statusCode).toBe(201);
+      expect(response.headers['set-cookie']).toBeDefined();
+
+      const orgUser = await orgUserRepository.findOneOrFail({
+        where: { userId: existingUser.id, organizationId: targetOrg.id },
+      });
+      expect(orgUser.status).toBe('active');
+    });
+  });
+
+  describe('POST /api/onboarding/signup | Invited user, instance-level signup', () => {
+    it('does not set credentials on an invited account, and the invitee can still activate with their own password', async () => {
+      // Oldest workspace = the instance default workspace
+      await createUser(app, { email: 'default-ws-owner@tooljet.com', status: 'active' });
+
+      // The invitee is invited into a different workspace
+      const { user: admin } = await createUser(app, { email: 'invite-admin@tooljet.com', status: 'active' });
+      const loggedAdmin = await login(app, admin.email);
+      await request(app.getHttpServer())
+        .post('/api/organization-users')
+        .send({ email: 'invitee@tooljet.com', firstName: 'Invitee', lastName: 'User', role: 'end-user' })
+        .set('tj-workspace-id', admin.defaultOrganizationId)
+        .set('Cookie', loggedAdmin.tokenCookie)
+        .expect(201);
+
+      // Unauthenticated signup with the invitee's email must not touch the invited account
+      const response = await request(app.getHttpServer()).post('/api/onboarding/signup').send({
+        email: 'invitee@tooljet.com',
+        name: 'Attacker Chosen Name',
+        password: 'attacker-chosen-password',
+      });
+      expect(response.headers['set-cookie']).toBeUndefined();
+
+      const invitee = await userRepository.findOneOrFail({ where: { email: 'invitee@tooljet.com' } });
+      expect(invitee).toMatchObject({
+        password: null,
+        source: 'invite',
+        status: 'invited',
+        firstName: 'Invitee',
+        defaultOrganizationId: admin.defaultOrganizationId,
+      });
+      expect(invitee.invitationToken).not.toBeNull();
+
+      // The invite page still asks the invitee for a password, and their own password is the one that sticks
+      const { invitationToken: organizationToken } = await orgUserRepository.findOneOrFail({
+        where: { userId: invitee.id, organizationId: admin.defaultOrganizationId },
+      });
+      const verify = await request(app.getHttpServer())
+        .get('/api/onboarding/verify-invite-token')
+        .query({ token: invitee.invitationToken, organizationToken });
+      expect(verify.body.onboarding_details.password).toBe(true);
+
+      await request(app.getHttpServer())
+        .post('/api/onboarding/setup-account-from-token')
+        .send({ token: invitee.invitationToken, organizationToken, password: 'invitee-own-password' })
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post('/api/authenticate')
+        .send({ email: 'invitee@tooljet.com', password: 'invitee-own-password' })
+        .expect(201);
+      const attackerLogin = await request(app.getHttpServer())
+        .post('/api/authenticate')
+        .send({ email: 'invitee@tooljet.com', password: 'attacker-chosen-password' });
+      expect(attackerLogin.status).toBe(401);
     });
   });
 

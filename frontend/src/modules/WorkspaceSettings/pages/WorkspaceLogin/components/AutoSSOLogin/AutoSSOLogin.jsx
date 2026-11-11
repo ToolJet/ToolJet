@@ -1,10 +1,11 @@
 // src/modules/OrganizationSettings/OrganizationLogin/AutoSSOLogin.jsx
 
-import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import { pickEditionSpecificComponent } from '@/modules/common/helpers/pickEditionSpecificComponent';
+import EEAutoSSOLogin from '@ee/modules/WorkspaceSettings/components/AutoSSOLogin';
 
-const AutoSSOLogin = () => {
-  return <></>;
-};
+const AutoSSOLogin = pickEditionSpecificComponent({
+  ee: EEAutoSSOLogin,
+  cloudSameAsEE: true,
+});
 
-export default withEditionSpecificComponent(AutoSSOLogin, 'WorkspaceSettings');
+export default AutoSSOLogin;

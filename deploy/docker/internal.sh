@@ -3,6 +3,11 @@
 # Load the .env file
 source .env
 
+# Keep .env private: only the owner can read/write it
+OLD_UMASK=$(umask)
+umask 077
+chmod 600 .env
+
 # Check if LOCKBOX_MASTER_KEY is present or empty
 if [[ -z "$LOCKBOX_MASTER_KEY" ]]; then
   # Generate LOCKBOX_MASTER_KEY
@@ -97,5 +102,8 @@ if [[ -z "$PGRST_DB_URI" ]]; then
 else
   echo "The PGRST DB URI is already configured and in use."
 fi
+
+# Restore the original umask before handing off
+umask "$OLD_UMASK"
 
 exec "$@"

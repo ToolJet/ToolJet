@@ -1,0 +1,21 @@
+{
+  "name": "Construction punch list",
+  "description": "Close out construction projects by tracking punch-list items by trade until every item is signed off.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "construction-punch-list",
+  "category": "construction-and-installation"
+}

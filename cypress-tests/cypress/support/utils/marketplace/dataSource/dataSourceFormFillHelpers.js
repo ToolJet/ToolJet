@@ -172,7 +172,10 @@ export const fillDataOnCodeMirrorInput = (field) => {
   cy.wait(500);
   // Focus the CodeMirror editor directly to bypass covered-element check from .realClick()
   cy.get(selector).find(".cm-content").click({ force: true });
-  cy.get(selector).clearAndTypeOnCodeMirror(field.text);
+  // Type into .cm-content, not the wrapper: clearAndTypeOnCodeMirror realClicks its subject's
+  // centre, which on a tall editor with a one-line doc (e.g. "Records to update") lands on the
+  // empty .cm-scroller, so focus leaves the editor and every keystroke is dropped.
+  cy.get(selector).find(".cm-content").clearAndTypeOnCodeMirror(field.text);
 };
 
 export const fillDynamicSelectorFxMode = (field) => {
@@ -183,9 +186,13 @@ export const fillDynamicSelectorFxMode = (field) => {
 
 export const fillCodeMirrorKeyValuePairs = (field) => {
   field.keyValueData.forEach((pair, index) => {
+    // realClick, not click: Cypress's synthetic click fires the previous editor's blur (which
+    // saves its value) and this click in one task. With React 18 createRoot the re-render lands
+    // after both, so the add handler writes stale options and drops the value just typed.
     cy.get(dsCommonSelector.button(field.addButtonFieldName))
+      .scrollIntoView()
       .should('be.visible')
-      .click();
+      .realClick();
     cy.wait(500);
 
     cy.get(dsCommonSelector.codeMirrorField(`key-${index}`))

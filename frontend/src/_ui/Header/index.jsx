@@ -11,6 +11,7 @@ import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { authenticationService } from '@/_services';
 import { isGitSyncLicenseInvalid } from '@/_helpers/gitSyncLicense';
+import { TJDB_HEADER_SLOT_ID } from '@/TooljetDatabase/HeaderSlotPortal';
 
 function Header({
   featureAccess,
@@ -35,6 +36,8 @@ function Header({
       if (['workspace-settings', 'settings'].includes(parentPath)) {
         return parentPath === 'workspace-settings' ? 'Workspace settings' : 'Settings';
       }
+      // A selected data source's page ends in its id (/:workspaceId/data-sources/:selectedId).
+      if (parentPath === 'data-sources') return 'Data sources';
     }
     switch (pathEnd) {
       case 'workspaceId':
@@ -82,9 +85,10 @@ function Header({
   const pathname = routes(location?.pathname.split('/').pop(), location?.pathname);
   const isWorkspaceGitPage = (pathname) => {
     const parts = pathname.split('/').filter(Boolean);
-    return parts.length === 1 || (parts.length >= 2 && ['data-sources', 'modules'].includes(parts[1]));
+    return parts.length === 1 || (parts.length >= 2 && ['data-sources', 'modules', 'workflows'].includes(parts[1]));
   };
   const isGitSupportedPage = isWorkspaceGitPage(location.pathname);
+  const isDatabasePage = location.pathname.split('/').filter(Boolean).includes('database');
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
@@ -198,6 +202,8 @@ function Header({
               {Object.keys(featureAccess).length > 0 && (
                 <LicenseBanner limits={featureAccess} showNavBarActions={true} />
               )}
+              {/* The TJDB page portals its environment switcher in here: it needs the page's context, which this Header sits above. */}
+              {isDatabasePage && <div id={TJDB_HEADER_SLOT_ID} className="tw-contents" />}
             </div>
           </div>
         </div>

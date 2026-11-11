@@ -1,0 +1,15 @@
+{
+  "name": "Wholesale quote management",
+  "description": "Price, approve and hand off wholesale quotes, and turn open quotes into confirmed orders.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "wholesale-quote-management",
+  "category": "sales-and-bids"
+}

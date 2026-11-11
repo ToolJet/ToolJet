@@ -1,0 +1,6 @@
+id,request_code,room_code,summary,team,priority,status,owner,note
+,REQ-001,201,Air conditioning is not cooling,Maintenance,Urgent,In progress,Rui,Inspect thermostat and filter before 13:00.
+,REQ-002,104,Two extra pillows before 18:00,Housekeeping,Normal,Open,Unassigned,Guest prefers firm pillows.
+,REQ-003,106,Arrange an airport transfer for 07:00,Front desk,Normal,In progress,Clara,Confirm pickup time with the guest.
+,REQ-004,101,Help with the in-room safe,Front desk,Normal,Open,Unassigned,Guest available after lunch.
+,REQ-005,106,Deliver fresh bath towels,Housekeeping,Normal,Resolved,Inês,Delivered at 10:20; guest confirmed receipt.

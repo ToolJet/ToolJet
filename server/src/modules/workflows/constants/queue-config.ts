@@ -114,3 +114,17 @@ export function mapDbStatusToDisplayState(dbStatus: string | undefined | null): 
   }
   return mapped;
 }
+
+const positiveNumberOr = (raw: string | undefined, fallback: number): number => {
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+/**
+ * Webhook rate limit: requests allowed per window (default 100).
+ * Read from process.env on each request, so it follows WEBHOOK_THROTTLE_LIMIT as the process sees it.
+ */
+export const webhookThrottleLimit = (): number => positiveNumberOr(process.env.WEBHOOK_THROTTLE_LIMIT, 100);
+
+/** Webhook rate limit window in milliseconds (default 60000), from WEBHOOK_THROTTLE_TTL. */
+export const webhookThrottleTtl = (): number => positiveNumberOr(process.env.WEBHOOK_THROTTLE_TTL, 60000);

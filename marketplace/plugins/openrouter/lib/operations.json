@@ -1,0 +1,174 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "OpenRouter datasource",
+  "description": "A schema defining OpenRouter datasource",
+  "type": "api",
+  "defaults": {
+    "operation": "chat",
+    "data_collection": "allow",
+    "encoding_format": "float"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select an operation",
+      "list": [
+        {
+          "value": "chat",
+          "name": "Chat"
+        },
+        {
+          "value": "generate_embedding",
+          "name": "Generate embedding"
+        },
+        {
+          "value": "list_models",
+          "name": "List models"
+        }
+      ]
+    },
+    "chat": {
+      "model": {
+        "label": "Model",
+        "key": "model",
+        "type": "codehinter",
+        "description": "Any OpenRouter model id",
+        "placeholder": "anthropic/claude-sonnet-4.5",
+        "height": "36px",
+        "mandatory": true,
+        "tooltip": "OpenRouter carries hundreds of models and the list changes weekly, so this is free text. Use the List models operation to populate a dropdown in your app."
+      },
+      "system_prompt": {
+        "label": "System prompt",
+        "key": "system_prompt",
+        "type": "codehinter",
+        "description": "Role and context for the model",
+        "height": "120px",
+        "mandatory": false,
+        "placeholder": "You are a support agent summarising tickets"
+      },
+      "prompt": {
+        "label": "User prompt",
+        "key": "prompt",
+        "type": "codehinter",
+        "description": "The message to send",
+        "height": "150px",
+        "mandatory": true,
+        "placeholder": "Summarise this ticket: {{components.table1.selectedRow.body}}"
+      },
+      "message_history": {
+        "label": "Message history",
+        "key": "message_history",
+        "type": "codehinter",
+        "description": "Prior turns as [{role, content}]",
+        "height": "100px",
+        "mandatory": false,
+        "placeholder": "{{components.chat1.history}}"
+      },
+      "max_tokens": {
+        "label": "Max tokens",
+        "key": "max_tokens",
+        "type": "codehinter",
+        "height": "36px",
+        "mandatory": false,
+        "placeholder": "1024"
+      },
+      "temperature": {
+        "label": "Temperature",
+        "key": "temperature",
+        "type": "codehinter",
+        "height": "36px",
+        "mandatory": false,
+        "placeholder": "0.7"
+      },
+      "top_p": {
+        "label": "Top P",
+        "key": "top_p",
+        "type": "codehinter",
+        "height": "36px",
+        "mandatory": false,
+        "placeholder": "1"
+      },
+      "stop_sequence": {
+        "label": "Stop sequences",
+        "key": "stop_sequence",
+        "type": "codehinter",
+        "height": "36px",
+        "mandatory": false,
+        "description": "Comma separated",
+        "placeholder": "END, ###"
+      },
+      "json_mode": {
+        "label": "JSON mode",
+        "key": "json_mode",
+        "type": "toggle",
+        "mandatory": false,
+        "description": "Ask the model for a JSON object rather than prose"
+      },
+      "fallback_models": {
+        "label": "Fallback models",
+        "key": "fallback_models",
+        "type": "codehinter",
+        "height": "36px",
+        "mandatory": false,
+        "description": "Comma separated models to try if the first is unavailable",
+        "placeholder": "openai/gpt-5.6-luna, meta-llama/llama-3.3-70b-instruct",
+        "tooltip": "OpenRouter tries these in order when the chosen model is down, rate limited or refuses the request."
+      },
+      "data_collection": {
+        "label": "Provider data policy",
+        "key": "data_collection",
+        "type": "dropdown",
+        "mandatory": false,
+        "description": "Whether providers that train on prompts may serve this query",
+        "list": [
+          {
+            "value": "allow",
+            "name": "Allow any provider"
+          },
+          {
+            "value": "deny",
+            "name": "Only providers that do not train on prompts"
+          }
+        ]
+      }
+    },
+    "generate_embedding": {
+      "model": {
+        "label": "Model",
+        "key": "model",
+        "type": "codehinter",
+        "height": "36px",
+        "mandatory": true,
+        "placeholder": "openai/text-embedding-3-small"
+      },
+      "input": {
+        "label": "Input",
+        "key": "input",
+        "type": "codehinter",
+        "height": "100px",
+        "mandatory": true,
+        "placeholder": "{{components.textinput1.value}}"
+      },
+      "encoding_format": {
+        "label": "Encoding format",
+        "key": "encoding_format",
+        "type": "dropdown",
+        "mandatory": false,
+        "list": [
+          {
+            "value": "float",
+            "name": "float"
+          },
+          {
+            "value": "base64",
+            "name": "base64"
+          }
+        ]
+      }
+    },
+    "list_models": {}
+  }
+}

@@ -1,9 +1,8 @@
 export const dashboardText = {
-  emptyPageHeader: "Welcome to your new ToolJet workspace",
+  emptyPageHeader: "You don't have any apps yet",
   emptyPageDescription:
-    "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
-  createAppButton: "Create new application",
-  importAppButton: "Import an app",
+    "You can start building from a blank canvas, use a pre-built template, or generate an app using AI. Choose the option that best fits your workflow.",
+  createAppButton: "Create an app",
   chooseFromTemplate: "Choose from template",
   darkMode: "#808080",
   lightMode: "#fff",

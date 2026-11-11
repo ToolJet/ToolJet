@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 
 const enforcement = {
-  runtimeCritical: new Date('2026-10-01T00:00:00Z'),
+  critical: new Date('2026-10-01T00:00:00Z'),
   overdueRuntimeHigh: new Date('2026-11-01T00:00:00Z'),
   anyOverdue: new Date('2026-12-31T00:00:00Z'),
 };
@@ -17,11 +17,20 @@ const defaultDeadlineDays = {
   'runtime:high': 7,
   'runtime:moderate': 30,
   'runtime:low': 60,
-  'development:critical': 30,
+  'development:critical': 2,
   'development:high': 30,
   'development:moderate': 30,
   'development:low': 60,
 };
+
+// Manifests outside the shipped product. docs/ is the standalone documentation
+// site (also excluded by npm-audit-branch.yml), so its alerts never block.
+const ignoredManifestPrefixes = ['docs/'];
+
+function isIgnored(alert) {
+  const manifest = alert.dependency?.manifest_path ?? '';
+  return ignoredManifestPrefixes.some((prefix) => manifest.startsWith(prefix));
+}
 
 function parseJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -191,11 +200,14 @@ try {
   };
 
   for (const alert of alerts) {
+    if (isIgnored(alert)) continue;
     const severity = normalizeSeverity(alert.security_advisory?.severity);
     const scope = alert.dependency?.scope;
 
-    if (now >= enforcement.runtimeCritical && severity === 'critical' && scope === 'runtime') {
-      block(alert, describe(alert, 'unresolved runtime Critical vulnerability'));
+    // Critical blocks while open, whatever the scope: dev tooling (build, test,
+    // Storybook) still runs in CI and on developer machines.
+    if (now >= enforcement.critical && severity === 'critical') {
+      block(alert, describe(alert, `unresolved ${scope ?? 'unknown'} Critical vulnerability`));
       continue;
     }
 

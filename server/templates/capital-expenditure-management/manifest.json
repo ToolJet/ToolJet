@@ -1,0 +1,21 @@
+{
+  "name": "Capital expenditure management",
+  "description": "Review capital investment proposals against available budget, and track commitments and actual spending.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "capital-expenditure-management",
+  "category": "finance-and-accounting"
+}

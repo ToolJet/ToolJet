@@ -1,11 +1,12 @@
 import { EncryptionService } from '@modules/encryption/service';
 import { tooljetDbOrmconfig } from 'ormconfig';
 import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
-import { EntityManager, DataSource } from 'typeorm';
+import { EntityManager, DataSource, QueryRunner } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import * as crypto from 'crypto';
+import { Parser as SqlParser } from 'node-sql-parser/build/postgresql';
 
 /**
  * Creates a custom tooljet database connection using a tenant user, for the respective workspace.
@@ -174,6 +175,70 @@ export async function createAndGrantTablePrivilege(
   );
 }
 
+/**
+ * Transfers ownership of a just-created physical table to the workspace's own tenant role.
+ * Postgres requires table ownership (not a grantable privilege) to run ALTER TABLE DDL, so raw SQL
+ * migration steps (which run as the tenant role) need this at every place a table is physically
+ * created. No lasting schema-level grant, no membership change - see `alterOwnerToTenant`.
+ */
+export async function transferTableOwnershipToTenant(
+  queryRunner: QueryRunner,
+  dbSchema: string,
+  tableId: string,
+  dbUser: string
+) {
+  await alterOwnerToTenant(
+    queryRunner,
+    dbSchema,
+    `ALTER TABLE "${dbSchema}"."${tableId}" OWNER TO "${dbUser}"`,
+    dbUser
+  );
+}
+
+/**
+ * Same as `transferTableOwnershipToTenant`, for a sequence a tenant-owned table links to.
+ * `sequenceName` is already schema-qualified and quoted.
+ */
+export async function transferSequenceOwnershipToTenant(
+  queryRunner: QueryRunner,
+  dbSchema: string,
+  sequenceName: string,
+  dbUser: string
+) {
+  await alterOwnerToTenant(queryRunner, dbSchema, `ALTER SEQUENCE ${sequenceName} OWNER TO "${dbUser}"`, dbUser);
+}
+
+async function alterOwnerToTenant(queryRunner: QueryRunner, dbSchema: string, alterOwner: string, dbUser: string) {
+  // A workspace onboarded before per-tenant roles existed (or while SQL mode was disabled, then
+  // later enabled) has no tenant role - `isSQLModeDisabled()` alone doesn't catch that case. Skip
+  // rather than hard-fail a create_table/promote/replay that used to succeed for such a workspace.
+  const [role] = await queryRunner.query(`SELECT 1 FROM pg_roles WHERE rolname = $1`, [dbUser]);
+  if (!role) return;
+
+  // A non-superuser (every managed Postgres) may only hand an object to a role that has CREATE on
+  // its schema, and tenant roles hold USAGE only. Grant CREATE for this one statement and revoke it
+  // in the same transaction, so the tenant can never create tables of its own. Callers on a
+  // non-transactional runner (migration B) get a transaction here, so a failed ALTER can't leave
+  // the grant behind. The lock serializes concurrent grants on one schema, which Postgres otherwise
+  // rejects with "tuple concurrently updated".
+  const ownTransaction = !queryRunner.isTransactionActive;
+  if (ownTransaction) await queryRunner.startTransaction();
+  try {
+    await queryRunner.query(`SELECT pg_advisory_xact_lock(hashtextextended($1, 0))`, [`tjdb-owner-grant:${dbSchema}`]);
+    const [{ can_create: canCreate }] = await queryRunner.query(
+      `SELECT has_schema_privilege($1, $2, 'CREATE') AS can_create`,
+      [dbUser, dbSchema]
+    );
+    if (!canCreate) await queryRunner.query(`GRANT CREATE ON SCHEMA "${dbSchema}" TO "${dbUser}"`);
+    await queryRunner.query(alterOwner);
+    if (!canCreate) await queryRunner.query(`REVOKE CREATE ON SCHEMA "${dbSchema}" FROM "${dbUser}"`);
+    if (ownTransaction) await queryRunner.commitTransaction();
+  } catch (error) {
+    if (ownTransaction) await queryRunner.rollbackTransaction();
+    throw error;
+  }
+}
+
 export async function updatePasswordToOrganizationTable(
   entityManager: EntityManager,
   workspaceId: string,
@@ -300,4 +365,19 @@ export function generateTJDBPasswordForRole(length = 30) {
   }
 
   return passwordArray.join('');
+}
+
+// Table names a SQL-mode ToolJet Database query reads or writes. The saved SQL still holds its
+// {{ }} bindings, so each one becomes a literal before parsing.
+// ponytail: a query whose table name is itself a binding cannot be resolved here and is skipped.
+export function tableNamesInSqlQuery(options: { operation?: string; sql_execution?: { sqlQuery?: string } }): string[] {
+  const sqlQuery = options?.operation === 'sql_execution' ? options.sql_execution?.sqlQuery : undefined;
+  if (!sqlQuery) return [];
+  try {
+    const { tableList } = new SqlParser().parse(sqlQuery.replace(/\{\{[\s\S]*?\}\}/g, '0'));
+    // tableList entries are `<statement>::<schema>::<table>`
+    return tableList.map((entry) => entry.split('::')[2]).filter(Boolean);
+  } catch {
+    return [];
+  }
 }

@@ -8,7 +8,7 @@ export interface IProfileService {
 
   addAvatar(userId: string, imageBuffer: Buffer, filename: string): Promise<File>;
 
-  updateUserPassword(userId: string, password: string): Promise<void>;
+  updateUserPassword(userId: string, password: string, currentSessionId?: string): Promise<void>;
 
   updateUserName(userId: string, updateUserDto: ProfileUpdateDto): Promise<void>;
 

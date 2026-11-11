@@ -1,0 +1,13 @@
+id,room_code,floor,category,status,attendant,note
+,101,1,Courtyard,Occupied,Marta,Guest in residence; service after 14:00.
+,102,1,Courtyard,Inspection,Marta,Final check complete. Fresh linens and amenities.
+,103,1,Studio,Cleaning,Leo,Linen change in progress; expected ready at 13:00.
+,104,1,Studio,Occupied,Leo,Please service after 15:00.
+,105,1,Garden suite,Ready,Inês,Anniversary welcome prepared.
+,106,1,Garden suite,Occupied,Inês,Extra towels delivered this morning.
+,201,2,Terrace,Occupied,Marta,Guest requested a late service.
+,202,2,Terrace,Ready,Marta,Balcony and bathroom inspection complete.
+,203,2,Studio,Cleaning,Leo,Deep clean after departure.
+,204,2,Studio,Inspection,Leo,Cleaning done. Supervisor check needed before arrival.
+,205,2,Corner suite,Ready,Inês,Cot prepared and safety check complete.
+,206,2,Corner suite,Out of service,Rui,Shower pressure repair. Keep unavailable until checked.

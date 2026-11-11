@@ -1,3 +1,4 @@
+/** @group platform */
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { LoginConfigsUtilService } from '../../../../src/modules/login-configs/util.service';

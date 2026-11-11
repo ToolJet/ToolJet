@@ -47,13 +47,18 @@ Checklist when adding a new action:
 2. **`eventsSlice.js`** — confirm the exact field name used at runtime (e.g. `event.componentId`,
    `event.table`, `event.modal`). The option name in `ActionTypes.js` and the runtime field name
    sometimes differ.
-3. **`create.service.ts` → `updateEventActionsForNewVersionWithNewMappingIds`** — add:
+3. **`server/src/modules/app-validation/catalog/events.json`** — add the id to `actionIds`, and
+   when the action stores a plain UUID add it to `actionEntityRefs` with the runtime field name.
+   `frontend/src/AppBuilder/__tests__/validationCatalogParity.spec.js` fails on a missing or
+   extra `actionIds` entry; the `actionEntityRefs` field name is NOT covered by the spec —
+   verify it against `eventsSlice.js` by hand.
+4. **`create.service.ts` → `updateEventActionsForNewVersionWithNewMappingIds`** — add:
    ```ts
    if (eventDefinition?.actionId === '<your-new-action-id>') {
      eventDefinition.<fieldName> = oldComponentToNewComponentMapping[eventDefinition.<fieldName>];
    }
    ```
-4. **`app-import-export.service.ts`** — add the same block (with the existence-guard pattern
+5. **`app-import-export.service.ts`** — add the same block (with the existence-guard pattern
    already used there):
    ```ts
    if (

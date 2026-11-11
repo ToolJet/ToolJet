@@ -9,7 +9,7 @@ export default function SuccessNotificationInputs({ currentState, options, darkM
   }
   return (
     <div className="flex-grow-1" style={{ margin: '16px 0px' }}>
-      <div className="d-flex" style={{ marginBottom: '16px' }}>
+      <div data-param="successMessage" className="d-flex" style={{ marginBottom: '16px' }}>
         <label className="form-label align-items-center" data-cy={'label-success-message-input'} style={{ width: 150 }}>
           {t('editor.queryManager.successMessage', 'Message')}
         </label>
@@ -23,7 +23,7 @@ export default function SuccessNotificationInputs({ currentState, options, darkM
           />
         </div>
       </div>
-      <div className="d-flex">
+      <div data-param="notificationDuration" className="d-flex">
         <label
           className="form-label align-items-center"
           data-cy={'label-notification-duration-input'}

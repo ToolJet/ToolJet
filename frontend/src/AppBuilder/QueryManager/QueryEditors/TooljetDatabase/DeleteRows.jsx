@@ -1,9 +1,9 @@
-import React, { useContext } from 'react';
-import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
+import React from 'react';
+import { useToolJetDbOperationsContext } from './ToolJetDbOperationsContext';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
-import { operators } from '@/TooljetDatabase/constants';
-import { isOperatorOptions } from './util';
+import { operators } from '@/_helpers/constants';
+import { isOperatorOptions, resolveColumnDisplayName, columnIdOf } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import RenderFilterSectionUI from './RenderFilterSectionUI';
@@ -11,7 +11,7 @@ import { NoCondition } from './NoConditionUI';
 
 export const DeleteRows = React.memo(({ darkMode }) => {
   const { columns, deleteOperationLimitOptionChanged, deleteRowsOptions, handleDeleteRowsOptionsChange } =
-    useContext(TooljetDatabaseContext);
+    useToolJetDbOperationsContext();
 
   function handleWhereFiltersChange(filters) {
     handleDeleteRowsOptionsChange('where_filters', filters);
@@ -107,6 +107,7 @@ export const DeleteRows = React.memo(({ darkMode }) => {
 
 const RenderFilterFields = ({
   column,
+  columnId,
   operator,
   value,
   id,
@@ -117,10 +118,12 @@ const RenderFilterFields = ({
   darkMode,
   jsonpath = '',
 }) => {
-  let displayColumns = columns.map(({ accessor, dataType }) => ({
+  const resolvedColumn = resolveColumnDisplayName(columns, column, columnId);
+  let displayColumns = columns.map(({ accessor, dataType, column_id }) => ({
     value: accessor,
     label: accessor,
     icon: dataType,
+    columnId: column_id,
   }));
 
   operator = operators.find((val) => val.value === operator);
@@ -128,7 +131,11 @@ const RenderFilterFields = ({
   const handleColumnChange = (selectedOption) => {
     updateFilterOptionsChanged({
       ...deleteRowsOptions?.where_filters[id],
-      ...{ column: selectedOption.value, columnDataType: selectedOption?.dataType || '' },
+      ...{
+        column: selectedOption.value,
+        columnId: columnIdOf(selectedOption),
+        columnDataType: selectedOption?.dataType || '',
+      },
     });
   };
 
@@ -147,11 +154,11 @@ const RenderFilterFields = ({
     });
   };
 
-  const isSelectedColumnJsonbType = columns.find((col) => col.accessor === column)?.dataType === 'jsonb';
+  const isSelectedColumnJsonbType = columns.find((col) => col.accessor === resolvedColumn)?.dataType === 'jsonb';
 
   return (
     <RenderFilterSectionUI
-      column={column}
+      column={resolvedColumn}
       displayColumns={displayColumns}
       handleColumnChange={handleColumnChange}
       darkMode={darkMode}
