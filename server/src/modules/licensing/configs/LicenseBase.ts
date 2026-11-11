@@ -579,10 +579,16 @@ export default class LicenseBase {
     return this._aiPlan || 'credits';
   }
 
-  /** Per-builder AI credit limits: Enterprise and trial; Team (business) and basic don't. */
+  /** The licence's raw `features.aiCreditLimits` value. */
+  protected get aiCreditLimitsFlag(): unknown {
+    return (this._features as any)?.aiCreditLimits;
+  }
+
+  /** Per-builder AI credit limits, self-hosted: Enterprise and trial; Team (business) and basic don't. */
   // Strict opt-in, like mfa: the licence must set `features.aiCreditLimits: true`; a missing key is off.
+  // Cloud overrides this in OrganizationLicense.
   public get aiCreditLimits(): boolean {
-    if (!this.aiFeature || this.IsBasicPlan || (this._features as any)?.aiCreditLimits !== true) return false;
+    if (!this.aiFeature || this.IsBasicPlan || this.aiCreditLimitsFlag !== true) return false;
     return this.licenseType === LICENSE_TYPE.ENTERPRISE || this.licenseType === LICENSE_TYPE.TRIAL;
   }
 
