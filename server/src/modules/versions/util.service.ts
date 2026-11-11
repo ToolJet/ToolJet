@@ -153,7 +153,15 @@ export class VersionUtilService implements IVersionUtilService {
         // Saved (published/released) versions are immutable — block content edits regardless of git
         // state. A pure status flip (publish/release) is not a content edit and is allowed through.
         assertVersionEditable(appVersion.status);
-        const app = await mgr.findOne(App, { where: { id: appVersion.appId }, select: ['id', 'organizationId'] });
+        const app = await mgr.findOne(App, {
+          where: { id: appVersion.appId },
+          select: ['id', 'organizationId', 'currentVersionId'],
+        });
+        // The released version (App.currentVersionId) is frozen too: releasing only repoints the
+        // pointer and leaves a DRAFT status, so a non-UI client (MCP/PAT) could still edit it.
+        if (app?.currentVersionId === appVersion.id) {
+          throw new BadRequestException('You cannot update a released version');
+        }
         if (app) {
           await assertGitSyncEditAllowedForOrg(
             this.gitSyncConfigsUtilService,
