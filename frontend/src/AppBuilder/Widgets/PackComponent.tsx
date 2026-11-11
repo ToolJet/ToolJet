@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { packFileUrl } from '@/_helpers/builtinPacks';
-import { useBuiltinPack, usePackManifest } from '@/_stores/builtinPacksStore';
+import { useBuiltinPack, useBuiltinPacksStore, usePackManifest } from '@/_stores/builtinPacksStore';
 import SdkComponentHost from './LibraryComponent/SdkComponentHost';
 
 const META_KEYS = ['pack', 'componentName'];
@@ -13,6 +13,8 @@ const PackComponent = ({ properties = {}, ...props }: { properties?: Record<stri
   const { pack: packId, componentName } = properties;
   const pack = useBuiltinPack(packId);
   const manifest = usePackManifest(packId);
+  // Until the pack list arrives (or while it failed) nothing says the pack is missing: a neutral box, not the Slot.
+  const listing = useBuiltinPacksStore((state: { packs: unknown[] | null }) => state.packs === null);
 
   const source =
     pack && componentName
@@ -27,7 +29,15 @@ const PackComponent = ({ properties = {}, ...props }: { properties?: Record<stri
         }
       : null;
 
-  return <SdkComponentHost {...(props as any)} properties={properties} source={source} metaKeys={META_KEYS} />;
+  return (
+    <SdkComponentHost
+      {...(props as any)}
+      properties={properties}
+      source={source}
+      pending={listing}
+      metaKeys={META_KEYS}
+    />
+  );
 };
 
 export default PackComponent;

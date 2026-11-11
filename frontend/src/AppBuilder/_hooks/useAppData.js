@@ -43,6 +43,7 @@ import { appliedThemeDefinition } from '../_utils/themeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
 import { getCachedAppDefinition, setCachedAppDefinition } from '@/AppBuilder/_helpers/appDefinitionCache';
+import { prefetchPacksForPages } from '@/_stores/builtinPacksStore';
 import { setOnBrandColors } from '@/AppBuilder/_helpers/onBrandText';
 
 const useAppData = (
@@ -424,6 +425,8 @@ const useAppData = (
     appDataPromise
       .then(async (result) => {
         if (cancelled) return;
+        // Start the pack list (and the used packs' manifests) now, not when the first pack widget renders.
+        prefetchPacksForPages(result?.pages);
         // Reset the AppBuilder store before populating the new app. The dependency graph and
         // resolvedStore are module-level singletons that are NOT reset between apps; on clone -> open
         // the graph still holds the previous app's edges, so setResolvedGlobals below fires a
