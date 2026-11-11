@@ -221,15 +221,21 @@ export const LEGACY_VARIANTS: ReadonlyMap<string, LegacyVariant> = new Map<strin
         // Last statement before commit, so its ACCESS EXCLUSIVE lock lasts milliseconds; a timeout retries the
         // data. The SET NULL key goes in the same statement that makes branch_id required, so deleting a branch
         // never sets NULL into a required column. The CHECK rides this lock; cleanup validates both and its
-        // setNotNull turns the CHECK into NOT NULL.
+        // setNotNull turns the CHECK into NOT NULL. The default-branch slug trigger also gets its final columns here:
+        // up() emptied the other slug function that fired on a branch move, and 3.21.58's list fires on slug only.
         // Must stay the last beforeCommit() statement: BeforeCommitSteps.run orders this migration's step last.
+        // One query, so the trigger rides the same lock rather than taking it in a statement of its own.
         run(
           "SET LOCAL lock_timeout = '2s'",
           `ALTER TABLE app_versions
              DROP CONSTRAINT IF EXISTS fk_app_versions_branch,
              ADD CONSTRAINT fk_app_versions_branch
                FOREIGN KEY (branch_id) REFERENCES organization_git_sync_branches(id) ON DELETE CASCADE NOT VALID,
-             ADD CONSTRAINT app_versions_branch_id_not_null CHECK (branch_id IS NOT NULL) NOT VALID`
+             ADD CONSTRAINT app_versions_branch_id_not_null CHECK (branch_id IS NOT NULL) NOT VALID;
+           DROP TRIGGER IF EXISTS trg_app_versions_default_branch_slug_unique ON app_versions;
+           CREATE TRIGGER trg_app_versions_default_branch_slug_unique
+             BEFORE INSERT OR UPDATE OF slug, branch_id, app_id ON app_versions
+             FOR EACH ROW EXECUTE FUNCTION enforce_app_versions_default_branch_slug_unique()`
         )
       ),
     },

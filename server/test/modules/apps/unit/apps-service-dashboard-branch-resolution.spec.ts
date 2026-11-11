@@ -19,6 +19,8 @@
 import { AppsService } from '@modules/apps/service';
 import { APP_TYPES } from '@modules/apps/constants';
 import { User } from '@entities/user.entity';
+import { VersionRepository } from '@modules/versions/repository';
+import { AppListDto } from '@modules/apps/dto';
 
 const DEFAULT_BRANCH_ID = 'branch-default';
 
@@ -64,5 +66,47 @@ describe('AppsService | resolveDashboardBranchId', () => {
     const { resolve } = makeSvc(undefined);
 
     await expect(resolve(makeUser())).resolves.toBeUndefined();
+  });
+});
+
+describe('AppsService | getAllApps on a branch', () => {
+  const listOnBranch = async (version: Partial<Record<'appName' | 'slug' | 'icon' | 'isPublic', unknown>>) => {
+    const app = {
+      id: 'app-1',
+      name: 'Workflow on 3.21.58',
+      slug: 'app-1',
+      icon: 'home',
+      isPublic: false,
+      appVersions: [version],
+    };
+    const svc = Object.create(AppsService.prototype) as AppsService;
+    Object.assign(svc, {
+      appRepository: { manager: {} },
+      versionRepository: { overlayMetadata: VersionRepository.prototype.overlayMetadata },
+      fetchDashboardApps: jest.fn().mockResolvedValue({ apps: [app], totalCount: 1, folderCount: 0 }),
+      hydrateEditingVersionInBulk: jest.fn(),
+    });
+    const { apps } = await svc.getAllApps(makeUser(), { branchId: 'branch-1' } as AppListDto, true);
+    return apps[0];
+  };
+
+  it("should keep the app's own name when its branch version has none yet, as a 3.21.58 workflow before the data phase", async () => {
+    await expect(listOnBranch({ appName: null, slug: null, icon: null, isPublic: null })).resolves.toMatchObject({
+      name: 'Workflow on 3.21.58',
+      slug: 'app-1',
+      icon: 'home',
+      is_public: false,
+    });
+  });
+
+  it("should show the branch version's name when it has one", async () => {
+    await expect(
+      listOnBranch({ appName: 'Renamed on branch', slug: 'renamed', icon: 'star', isPublic: true })
+    ).resolves.toMatchObject({
+      name: 'Renamed on branch',
+      slug: 'renamed',
+      icon: 'star',
+      is_public: true,
+    });
   });
 });
