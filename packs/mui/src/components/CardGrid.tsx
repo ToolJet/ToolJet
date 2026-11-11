@@ -338,7 +338,7 @@ export const CardGrid = () => {
                 p: 2,
               }}
             >
-              <Typography variant="body2" color="text.secondary" align="center">
+              <Typography variant="body2" align="center" sx={{ color: 'text.secondary' }}>
                 {emptyText || 'No items'}
               </Typography>
             </Box>
@@ -393,7 +393,10 @@ export const CardGrid = () => {
                           }}
                         >
                           {card.eyebrow ? (
-                            <Typography variant="overline" color="text.secondary" sx={{ lineHeight: 1.4, ...clamp(1) }}>
+                            <Typography
+                              variant="overline"
+                              sx={{ color: 'text.secondary', lineHeight: 1.4, ...clamp(1) }}
+                            >
                               {card.eyebrow}
                             </Typography>
                           ) : null}
@@ -408,7 +411,7 @@ export const CardGrid = () => {
                                 {card.title}
                               </Typography>
                               {card.subtitle ? (
-                                <Typography variant="body2" color="text.secondary" sx={clamp(1)}>
+                                <Typography variant="body2" sx={{ color: 'text.secondary', ...clamp(1) }}>
                                   {card.subtitle}
                                 </Typography>
                               ) : null}
@@ -422,7 +425,7 @@ export const CardGrid = () => {
                             </Box>
                           ) : null}
                           {card.description ? (
-                            <Typography variant="body2" color="text.secondary" sx={clamp(3)}>
+                            <Typography variant="body2" sx={{ color: 'text.secondary', ...clamp(3) }}>
                               {card.description}
                             </Typography>
                           ) : null}
@@ -433,13 +436,13 @@ export const CardGrid = () => {
                                 value={barWidth(card.progress)}
                                 sx={{ flex: 1, height: 6, borderRadius: 3 }}
                               />
-                              <Typography variant="caption" color="text.secondary">
+                              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                                 {percentLabel(card.progress)}
                               </Typography>
                             </Box>
                           ) : null}
                           {card.meta ? (
-                            <Typography variant="caption" color="text.secondary" sx={{ mt: 'auto', ...clamp(2) }}>
+                            <Typography variant="caption" sx={{ color: 'text.secondary', mt: 'auto', ...clamp(2) }}>
                               {card.meta}
                             </Typography>
                           ) : null}

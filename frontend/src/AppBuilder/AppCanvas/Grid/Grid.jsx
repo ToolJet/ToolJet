@@ -63,6 +63,7 @@ import { useElementGuidelines } from './hooks/useElementGuidelines';
 import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
 import ConfigHandleButton from '@/_components/ConfigHandleButton';
 import { getDropTargetLabel } from '../appCanvasUtils';
+import { packSlotRestrictionType, restrictedTypeOf } from '@/AppBuilder/_helpers/packDropRestrictions';
 import {
   RESTRICTED_WIDGETS_CONFIG,
   RESTRICTED_WIDGET_SLOTS_CONFIG,
@@ -586,14 +587,19 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         .map(({ component }) => component.component);
 
       const parentId = targetSlotId?.length > 36 ? targetSlotId.slice(0, 36) : targetSlotId;
-      const parentWidgetType = getComponentTypeFromId(parentId);
       const parentSlotType = targetSlotId ? targetSlotId.split('-').pop() : undefined;
+      // A component pack's widget is checked as the ToolJet widget it stands for (its manifest role).
+      const parentComponent = boxList.find(({ id }) => id === parentId)?.component;
+      const parentWidgetType = packSlotRestrictionType(parentComponent) ?? getComponentTypeFromId(parentId);
+      const restrictedTypesToBeDropped = boxList
+        .filter(({ id }) => events.some((ev) => ev.target.id === id))
+        .map(({ component }) => restrictedTypeOf(component));
 
       let restrictedWidgetsTobeDropped =
         [
           ...(RESTRICTED_WIDGETS_CONFIG?.[parentWidgetType] || []),
           ...(['header', 'footer'].includes(parentSlotType) ? RESTRICTED_WIDGET_SLOTS_CONFIG : []),
-        ].filter((widgetType) => widgetsTypeToBeDropped.includes(widgetType)) || [];
+        ].filter((widgetType) => restrictedTypesToBeDropped.includes(widgetType)) || [];
 
       // Check nesting depth restrictions for all widget types in NESTING_LEVEL_LIMITS
       let nestingDepthExceeded = false;
@@ -646,7 +652,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         } else if (!isParentChangeAllowed) {
           toast.error(
             `${restrictedWidgetsTobeDropped} is not compatible as a child component of ${getDropTargetLabel(
-              parentWidgetType,
+              restrictedTypeOf(parentComponent) ?? parentWidgetType,
               parentSlotType
             )}`
           );
@@ -1157,9 +1163,10 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               if (isParentModuleContainer) {
                 toast.error('Modules cannot be edited inside an app');
               } else if (!isModalToCanvas) {
+                // A component pack's widget is named as the ToolJet widget it stands for (its manifest role).
                 toast.error(
-                  `${dragged.widgetType} is not compatible as a child component of ${getDropTargetLabel(
-                    target.widgetType,
+                  `${restrictedTypeOf(dragged.widget?.component) ?? dragged.widgetType} is not compatible as a child component of ${getDropTargetLabel(
+                    restrictedTypeOf(target.widget?.component) ?? target.widgetType,
                     target.slotType
                   )}`
                 );

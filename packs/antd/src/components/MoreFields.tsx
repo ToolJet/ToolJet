@@ -2,11 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Input, InputNumber, Progress, Select, Space, Spin } from 'antd';
 import type { InputRef } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
+import { boundsRule } from '../lib/typeRule';
 import { AntProvider, useTokenStyles, WithPopupTheme } from '../lib/AntProvider';
 import { ControlSkeleton, SpinOver } from '../lib/Loading';
 import { FormField, useControlLook, useFieldProps } from '../lib/FormField';
 import { controlOptions, exposedOption, keyForValue, str, toOptions, valueForKey, type Row } from '../lib/data';
 import { toNumber } from '../lib/format';
+import { parseLocaleNumber } from '../lib/numberText';
 import { useOwnedPopup } from '../lib/useOwnerGuard';
 import {
   countryOf,
@@ -105,6 +107,8 @@ export const Combobox = (props: Record<string, unknown>) => {
   const options = toOptions(rawOptions, 'Combobox');
   // Ant's control holds option keys; the value keeps its type (lib/data Option), so 1 and '1' are two choices.
   const key = value === '' ? '' : keyForValue(options, value);
+  // A value no option offers shows the placeholder, as in the Select: Ant drew it as bare text (QA AD-35).
+  const known = key !== '' && options.some((o) => o.value === key);
   const expose = (next: unknown) => {
     const k = next === '' ? '' : keyForValue(options, next);
     const opt = k === '' ? undefined : options.find((o) => o.value === k);
@@ -146,7 +150,7 @@ export const Combobox = (props: Record<string, unknown>) => {
               style={{ width: '100%' }}
               showSearch
               options={controlOptions(options)}
-              value={key !== '' ? key : undefined}
+              value={known ? key : undefined}
               placeholder={placeholder || undefined}
               notFoundContent={loading ? <Spin size="small" /> : notFoundContent || undefined}
               allowClear={allowClear}
@@ -336,7 +340,13 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
   const { disabled, loading } = ToolJet.useControlState();
   const fieldId = ToolJet.useFieldId();
   const n = toNumber(value);
-  const check = ToolJet.useValidation({ kind: 'text', value: n === null ? '' : String(n), present: n !== null });
+  const check = ToolJet.useValidation({
+    kind: 'text',
+    value: n === null ? '' : String(n),
+    present: n !== null,
+    // A default or setFieldValue outside Min and Max is not valid (Ant clamps only what is typed).
+    rule: boundsRule(n, toNumber(min), toNumber(max)),
+  });
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
     role: 'currencyinput',
@@ -371,16 +381,35 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
       return null;
     }
   }, [locale, cur, currencyDisplay, digits]);
+  // The field shows the amount as formattedValue does, in the locale's separators with Precision's decimals, less the
+  // currency (its sign stands before the field): it showed 1,234.5 for de-DE 1.234,50 € and 1,234,567 for en-IN
+  // ₹12,34,567.00 (QA AD-11). Typed text is read in the same locale.
+  const amountFormat = useMemo(() => {
+    const options = { minimumFractionDigits: digits, maximumFractionDigits: digits };
+    try {
+      return new Intl.NumberFormat(locale || undefined, options);
+    } catch {
+      return new Intl.NumberFormat(undefined, options);
+    }
+  }, [locale, digits]);
   useEffect(() => {
     setFormattedValue(n === null ? '' : fmt ? fmt.format(n) : String(n));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [n, fmt]);
   // A value it already has changes nothing and fires nothing (lib/sameValue).
   const valueSetter = useValueSetter<unknown>(value, (v) => setValue(v as never));
+  // Every value has Precision's decimals, as typed ones do: a default or setFieldValue of 12.345 stayed 12.345 while the
+  // field and formattedValue showed 12.35.
+  const toPrecision = (v: number | null) => (v === null ? null : Number(v.toFixed(digits)));
   const change = (v: number | null) => {
-    if (!valueSetter.set(v as number)) return;
+    if (!valueSetter.set(toPrecision(v) as number)) return;
     onChange();
   };
+  const fitted = toPrecision(n);
+  useEffect(() => {
+    if (fitted !== n) setValue(fitted as number);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fitted, n]);
   ToolJet.useAction(
     { name: 'setFieldValue', displayName: 'Set value', params: [{ handle: 'value', displayName: 'Value' }] },
     (v) => change(toNumber(v))
@@ -399,7 +428,6 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
   const choices = (Array.isArray(currencyOptions) ? currencyOptions : [])
     .map((c) => str(c && typeof c === 'object' ? ((c as Row).value ?? (c as Row).label) : c).toUpperCase())
     .filter(Boolean);
-  const group = (s: string) => s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return (
     <AntProvider tokens={tokens}>
       <FormField {...field} check={check} htmlFor={fieldId}>
@@ -434,11 +462,18 @@ export const CurrencyInput = (props: Record<string, unknown>) => {
             formatter={(v, info) =>
               info.userTyping
                 ? info.input
-                : v === undefined || v === null || v === ('' as never)
+                : v === undefined || v === null || v === ('' as never) || !Number.isFinite(Number(v))
                   ? ''
-                  : group(String(v))
+                  : amountFormat.format(Number(v))
             }
-            parser={(v) => Number(String(v ?? '').replace(/[^\d.-]/g, '')) as number}
+            parser={(v) => {
+              // An emptied field is no amount (null), as Ant's own parser gives: Number('') read it as 0, so clearing
+              // the field put 0 back in it and Required never caught it (QA AD-03). Text with no number in it yet (a
+              // minus sign) is not an amount either, and leaves the value as it is while typing goes on.
+              const text = String(v ?? '');
+              if (text.trim() === '') return '' as never;
+              return (parseLocaleNumber(text, locale) ?? NaN) as number;
+            }}
             disabled={disabled}
             variant={look.variant}
             size={look.size}
@@ -593,6 +628,8 @@ export const PhoneInput = (props: Record<string, unknown>) => {
                 <Select
                   value={picked.code}
                   disabled={disabled || !allowCountryChange}
+                  // One Tab stop, the number, as a ToolJet Phone input has: the country is picked with the pointer.
+                  tabIndex={-1}
                   showSearch
                   popupMatchSelectWidth={false}
                   optionFilterProp="search"

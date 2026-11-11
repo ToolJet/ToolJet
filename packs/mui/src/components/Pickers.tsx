@@ -16,8 +16,11 @@ import { FieldSkeleton, Loading } from '../lib/loading';
 import { useOwnerGuard } from '../lib/useOwnerGuard';
 import { useValueSetter } from '../lib/sameValue';
 
-// Always the desktop picker (a popper under the field): the mobile one is a full-screen dialog, wrong in a widget box.
-const DESKTOP = '@media (min-width: 0px)';
+// The desktop picker (a popper under the field) on a wide screen with a mouse; MUI's mobile picker (a dialog, the date
+// and the time one after another, in the popup layer) on a touch screen or a narrow one. MUI's default asks only for a
+// mouse, and the desktop DateTimePicker draws the calendar and the time columns side by side (~490px): at phone width
+// in a desktop browser its minutes, AM/PM and OK ran off the screen (QA item 22).
+const DESKTOP = '@media (pointer: fine) and (min-width: 600px)';
 const DATE = 'YYYY-MM-DD';
 const TIME = 'HH:mm';
 // The date-time value: local time, no zone (what the Ant pack's date-time picker writes too).

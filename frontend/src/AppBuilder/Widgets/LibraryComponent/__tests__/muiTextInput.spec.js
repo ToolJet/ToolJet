@@ -17,4 +17,30 @@ built('Material UI Text Input', () => {
   test('has no Max length property of its own', () => {
     expect(field().props.map((p) => p.name)).not.toContain('maxLength');
   });
+
+  test('[PackComponent-MUILOOK-001] the TextField family keeps its look (variant, size, color) under Styles, not Properties', () => {
+    // Break this catches: QA's report that a Material UI Text Field showed some of its styles (Variant, Size, Color) on
+    // the Properties tab. The fields drawn as MUI's TextField share that look.
+    const components = JSON.parse(fs.readFileSync(MANIFEST, 'utf8')).components;
+    const LOOK = ['variant', 'size', 'color'];
+    const FAMILY = [
+      'TextField',
+      'MultilineTextField',
+      'NumberField',
+      'Select',
+      'Autocomplete',
+      'AutocompleteMultiple',
+      'DatePicker',
+      'TimePicker',
+      'DateTimePicker',
+    ];
+    const look = (list) => LOOK.filter((name) => list.some((entry) => entry.name === name));
+    const placed = FAMILY.map((name) => ({
+      name,
+      props: look(components[name].props),
+      styles: look(components[name].styles),
+    }));
+
+    expect(placed).toEqual(FAMILY.map((name) => ({ name, props: [], styles: LOOK })));
+  });
 });

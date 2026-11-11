@@ -14,6 +14,8 @@ const LEGACY_UI2 = 'ui2';
 
 // What the first-party packs are called in the picker, in this order.
 const PACK_LABELS = { shadcn: 'Rocket 2.0', antd: 'Ant Design', mui: 'Material UI' };
+/** A pack's name as the Components panel shows it (Rocket 2.0 for shadcn), else its own display name, else its id. */
+export const packLabel = (pack, displayName) => PACK_LABELS[pack] ?? displayName ?? pack;
 
 // A page's components arrive keyed by id, each entry holding the component definition ({ component: { component } }).
 const componentType = (entry) => entry?.component?.component ?? entry?.component ?? entry?.type;

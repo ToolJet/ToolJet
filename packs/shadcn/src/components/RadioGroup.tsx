@@ -123,8 +123,13 @@ export const RadioGroup = () => {
   };
   ToolJet.useAction(
     { name: 'selectOption', displayName: 'Select option', params: [{ handle: 'value', displayName: 'Value' }] },
-    (v) =>
-      change(v === undefined || v === null || typeof v === 'object' ? '' : keyForValue(options, v, choiceKey), true)
+    // A value no option has is refused, leaving the choice as it was (it cleared it and fired onSelectionChange).
+    (v) => {
+      const next = v === undefined || v === null || typeof v === 'object' ? '' : keyForValue(options, v, choiceKey);
+      if (next !== '' && !byKey.has(next)) return;
+      if (next === '' && !(v === undefined || v === null || v === '')) return;
+      change(next, true);
+    }
   );
   ToolJet.useAction({ name: 'deselectOption', displayName: 'Deselect option' }, () => change('', true));
 

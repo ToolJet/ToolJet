@@ -552,17 +552,17 @@ export const DataTable = () => {
     }
   }, [serverPaging, paged.page, page, setPageIndex]);
 
+  // currentData is the rows the table shows, searched, filtered and sorted, across its pages (it was always the raw data).
   const publishRows = (rows: Entry[], pg: Paged) => {
     setFilteredData(rows.map((e) => e.row));
+    setCurrentData(rows.map((e) => e.row));
     setCurrentPageData(pg.items.map((e) => e.row));
   };
   useEffect(() => {
-    setCurrentData(data);
-  }, [data, setCurrentData]);
-  useEffect(() => {
     setFilteredData(processed.map((e) => e.row));
+    setCurrentData(processed.map((e) => e.row));
     setCurrentPageData(paged.items.map((e) => e.row));
-  }, [processed, paged.items, setFilteredData, setCurrentPageData]);
+  }, [processed, paged.items, setFilteredData, setCurrentData, setCurrentPageData]);
 
   // ---- selection --------------------------------------------------------------------------------------------------
   const allowSelection = allowSelectionProp !== false;
@@ -693,6 +693,8 @@ export const DataTable = () => {
   const exposedFilters = (list: TableFilter[]) =>
     list.map((f) => ({
       column: columns.find((c) => c.key === f.column)?.name ?? f.column,
+      // The key setFilters takes, beside the name shown, as sortApplied has it.
+      columnKey: f.column,
       condition: f.condition,
       value: f.value ?? '',
     }));
@@ -735,7 +737,7 @@ export const DataTable = () => {
     return () => clearTimeout(timer);
   }, [searchInput, searchText]);
 
-  const goTo = (target: unknown, fire = true) => {
+  const goTo = (target: unknown, fire = true, changedOnly = false) => {
     const n = Math.floor(Number(target));
     if (!Number.isFinite(n) || n < 1) return;
     // The rows as the last action left them, not as the last render drew them (the drawn ones when nothing changed).
@@ -743,10 +745,11 @@ export const DataTable = () => {
     const rows = current ? processed : process(searchRef.current, filtersRef.current, sortRef.current);
     const { pageCount } = pageFor(rows, 1);
     const next = pageCount ? Math.min(n, pageCount) : n;
+    const was = pageRef.current;
     setPage(next);
     setPageIndex(next);
     setCurrentPageData(pageFor(rows, next).items.map((e) => e.row));
-    if (fire) onPageChanged();
+    if (fire && (!changedOnly || next !== was)) onPageChanged();
   };
 
   const pressHeader = (column: TableColumn) => {
@@ -803,6 +806,16 @@ export const DataTable = () => {
   };
 
   // ---- component actions ------------------------------------------------------------------------------------------
+  // A selection set by an action fires onSelectionChanged when it changes the selection (it fired nothing). In single
+  // selection one row at most is selected (selectRows and selectAllRows selected several).
+  const single = allowSelection && !bulk;
+  const selectByAction = (keys: Set<string>, focus: string | null) => {
+    const before = live.current.selected;
+    const changed = keys.size !== before.size || [...keys].some((k) => !before.has(k));
+    select(keys, focus);
+    live.current.selected = keys;
+    if (changed) onSelectionChanged();
+  };
   const isKey = (key: unknown): key is string | number =>
     (typeof key === 'string' && key !== '') || typeof key === 'number';
   const byKeyValues = (key: unknown, values: unknown[]): Entry[] => {
@@ -812,14 +825,14 @@ export const DataTable = () => {
   };
   const asList = (values: unknown) => (Array.isArray(values) ? values : [values]);
 
-  // As on the native Table, setPage does not fire onPageChanged.
+  // setPage fires onPageChanged when the page changes, as setSort, setFilters and setSearchText fire theirs.
   ToolJet.useAction(
     {
       name: 'setPage',
       displayName: 'Set page',
       params: [{ handle: 'page', displayName: 'Page (1-based)', defaultValue: '{{1}}' }],
     },
-    (target: unknown) => goTo(target, false)
+    (target: unknown) => goTo(target, true, true)
   );
   ToolJet.useAction(
     {
@@ -832,10 +845,10 @@ export const DataTable = () => {
     },
     (key: unknown, value: unknown) => {
       const [match] = byKeyValues(key, [value]);
-      if (match) select(new Set([match.key]), match.key);
+      if (match) selectByAction(new Set([match.key]), match.key);
     }
   );
-  ToolJet.useAction({ name: 'deselectRow', displayName: 'Deselect row' }, () => select(new Set(), null));
+  ToolJet.useAction({ name: 'deselectRow', displayName: 'Deselect row' }, () => selectByAction(new Set(), null));
   ToolJet.useAction(
     {
       name: 'selectRows',
@@ -846,9 +859,14 @@ export const DataTable = () => {
       ],
     },
     (key: unknown, values: unknown) => {
+      const matches = byKeyValues(key, asList(values));
+      if (single) {
+        if (matches[0]) selectByAction(new Set([matches[0].key]), matches[0].key);
+        return;
+      }
       const keys = new Set(live.current.selected);
-      byKeyValues(key, asList(values)).forEach((e) => keys.add(e.key));
-      select(keys, live.current.focusKey);
+      matches.forEach((e) => keys.add(e.key));
+      selectByAction(keys, live.current.focusKey);
     }
   );
   ToolJet.useAction(
@@ -863,13 +881,17 @@ export const DataTable = () => {
     (key: unknown, values: unknown) => {
       const keys = new Set(live.current.selected);
       byKeyValues(key, asList(values)).forEach((e) => keys.delete(e.key));
-      select(keys, live.current.focusKey);
+      const focus = live.current.focusKey !== null && keys.has(live.current.focusKey) ? live.current.focusKey : null;
+      selectByAction(keys, single ? focus : live.current.focusKey);
     }
   );
-  ToolJet.useAction({ name: 'selectAllRows', displayName: 'Select all rows' }, () =>
-    select(toKeySet(live.current.processed), live.current.focusKey)
+  ToolJet.useAction({ name: 'selectAllRows', displayName: 'Select all rows' }, () => {
+    if (single) return;
+    selectByAction(toKeySet(live.current.processed), live.current.focusKey);
+  });
+  ToolJet.useAction({ name: 'deselectAllRows', displayName: 'Deselect all rows' }, () =>
+    selectByAction(new Set(), null)
   );
-  ToolJet.useAction({ name: 'deselectAllRows', displayName: 'Deselect all rows' }, () => select(new Set(), null));
   ToolJet.useAction(
     {
       name: 'setFilters',
@@ -921,14 +943,17 @@ export const DataTable = () => {
       displayName: 'Download table data',
       params: [{ handle: 'type', displayName: 'Type (csv or json)', defaultValue: 'csv' }],
     },
-    (type: unknown) =>
+    // Fires onTableDataDownload, as the toolbar's download does.
+    (type: unknown) => {
       runDownload(
         String(type ?? 'csv')
           .toLowerCase()
           .includes('json')
           ? 'json'
           : 'csv'
-      )
+      );
+      onTableDataDownload();
+    }
   );
 
   // ---- layout -----------------------------------------------------------------------------------------------------

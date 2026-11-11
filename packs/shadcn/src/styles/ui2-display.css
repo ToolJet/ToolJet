@@ -1002,3 +1002,11 @@ button.ui2-tag:focus-visible {
 .ui2-strip-caption.is-spacer {
   visibility: hidden;
 }
+
+/* Under Dynamic height a heading grows to its whole text: the line clamp worked out from its box at the first render
+   (one line in the default box) kept it at that many lines, so the widget never grew. */
+.tj-cc-root.tj-cc-fit:not(.tj-cc-stretch) .ui2-heading {
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  overflow: visible !important;
+}

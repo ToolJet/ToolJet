@@ -367,6 +367,7 @@ export const Dialog = () => {
     <MuiProvider overrides={overrides} fill className="tj-mui-center" rootRef={rootRef}>
       {showTrigger ? (
         <Button
+          className="tj-mui-fill"
           variant="contained"
           fullWidth
           disabled={disabled}
@@ -494,7 +495,11 @@ const DialogBody = (p: {
         if (reason === 'escapeKeyDown' && p.disableEscapeKeyDown) return;
         p.onClose();
       }}
-      slotProps={{ transition: { onEntered: p.onEntered } }}
+      // The host keeps Tab inside the open dialog (packFocus), in place of the trap disabled above.
+      slotProps={{
+        transition: { onEntered: p.onEntered },
+        paper: { 'data-tj-modal': p.open ? 'open' : 'closed' } as React.HTMLAttributes<HTMLDivElement>,
+      }}
     >
       {p.title ? <DialogTitle>{p.title}</DialogTitle> : null}
       <DialogContent ref={contentRef} dividers={p.scroll === 'paper' && p.bodyHeight > 0}>
@@ -625,7 +630,8 @@ export const List = () => {
   });
   ToolJet.useComponentSettings({
     role: 'listview',
-    fit: false,
+    // With Dynamic height the list draws all its rows instead of scrolling, and each row grows with its components.
+    fit: true,
     loading: 'own',
     usage:
       "MUI's List: items; renderItem 'listItemText' draws a ListItemButton with ListItemText from primaryField/secondaryField and an Avatar from avatarField (image URL, else initials), 'components' draws a row of ToolJet components reading {{listItem}} (rowHeight) on the same row surface. subheader, dense, divider (inset lines), pageSize (Pagination under the list), emptyText; style itemVariant (plain: rows in one Paper; outline: each row an outlined card). onItemClick with selectedItem exposed.",

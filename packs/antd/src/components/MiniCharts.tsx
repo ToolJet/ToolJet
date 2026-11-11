@@ -1,9 +1,10 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { RadialBar, Tiny } from '@ant-design/plots';
 import { Empty, Progress, Typography } from 'antd';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { AntProvider, useIsDark, useTokenStyles } from '../lib/AntProvider';
 import { ChartVeil, SpinOver } from '../lib/Loading';
+import { useElementClick } from '../lib/chartHighlight';
 import { tooltipInteraction, useChartTheme, useTooltipLayer } from '../lib/chartTheme';
 import { str, toArray, type Row } from '../lib/data';
 import { formatNumber, toNumber } from '../lib/format';
@@ -294,10 +295,19 @@ const RadialCategories = ({
   onPick: (d: Row) => void;
 }) => {
   const dark = useIsDark();
+  const onChartReady = useElementClick(onPick);
   // A legend at the right of a narrow box left the rings a sliver; under them, the rings keep the width (as the Pie's).
   const ref = useRef<HTMLDivElement>(null);
   const narrow = useNarrow(ref, 320);
-  const onReady = useChartFit(ref);
+  const fit = useChartFit(ref);
+  // One onReady for both: the chart re-fits its box (useChartFit) and a click on a ring picks it (useElementClick).
+  const onReady = useCallback(
+    (plot: unknown) => {
+      fit(plot as never);
+      onChartReady(plot);
+    },
+    [fit, onChartReady]
+  );
   // The box is drawn while empty too: it is measured once, on mount.
   return (
     <div ref={ref} className="tj-ant-chart-fill">
@@ -318,9 +328,6 @@ const RadialCategories = ({
           scale={{ color: { range: palette } }}
           legend={showLegend ? { color: { position: narrow ? 'bottom' : 'right' } } : false}
           style={{ radius: 26 }}
-          onEvent={(_c: unknown, e: { type?: string; data?: { data?: Row } }) => {
-            if (e?.type === 'element:click') onPick(e.data?.data ?? {});
-          }}
         />
       )}
     </div>

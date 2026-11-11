@@ -123,6 +123,8 @@ export const TimePicker = () => {
     kind: 'date',
     value: toHHmm(minutes),
     present: minutes !== null && !outOfRange,
+    // Its own out-of-range message makes isValid false, as the field shows it (isValid stayed true).
+    rule: problem,
   });
   const focus = useFocusEvents(onFocus, onBlur, check.touch);
   const openChange = (next: boolean) => {

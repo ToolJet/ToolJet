@@ -231,6 +231,13 @@ export const Combobox = () => {
                 disabled={disabled}
                 {...fieldAria(fieldId, check.error, check.required, !!description)}
                 {...focus.handlers}
+                // Backspace or Delete clears the choice, as in a ToolJet Dropdown: the x is no Tab stop.
+                onKeyDown={(e) => {
+                  if ((e.key === 'Backspace' || e.key === 'Delete') && showClear && !loading) {
+                    e.preventDefault();
+                    clear();
+                  }
+                }}
                 className={cn('ui-select-trigger uc-trigger', showClear && 'has-clear', loading && 'uc-is-loading')}
               >
                 <span className={cn('uc-trigger-value', !selected && 'ui-placeholder')}>

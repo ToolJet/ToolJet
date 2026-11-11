@@ -2,6 +2,7 @@
 // rows and their tones, popup lines, route lines, areas, the legend, heat points, the tile source and the geocoder
 // URLs. Every function takes whatever the author bound and never throws.
 
+import DOMPurify from 'dompurify';
 import { contentKey } from '../../contentKey';
 import { currencyCode, localeFor, moneyDigits, moneyStyle, numberFormat } from '../../locale';
 
@@ -516,6 +517,15 @@ export const SATELLITE = {
 // Tile and geocoder requests send the app's origin as Referer: OSM's servers block tiles requested without one.
 export const MAP_REFERRER_POLICY = 'strict-origin';
 
+// Leaflet draws the attribution as HTML, and the author's may come from query data: only text, links to web pages and
+// simple emphasis are kept (DOMPurify drops script, event handlers and javascript: links).
+const ATTRIBUTION_HTML = {
+  ALLOWED_TAGS: ['a', 'b', 'strong', 'i', 'em', 'span', 'small'],
+  ALLOWED_ATTR: ['href', 'target', 'rel', 'title'],
+};
+const cleanAttribution = (html: string): string =>
+  typeof window === 'undefined' ? '' : DOMPurify.sanitize(html, ATTRIBUTION_HTML);
+
 export interface TileSource {
   url: string;
   attribution: string;
@@ -528,7 +538,7 @@ export interface TileSource {
 export const tileSource = ({ tileUrl, tileAttribution, darkMode, mapStyle }: { tileUrl?: unknown; tileAttribution?: unknown; darkMode?: boolean; mapStyle?: string }): TileSource => {
   if (mapStyle === 'satellite') return { url: SATELLITE.url, attribution: SATELLITE.attribution, basemap: null, labels: SATELLITE.labels };
   const own = isText(tileUrl) && /^https?:\/\//i.test(tileUrl.trim()) && tileUrl.includes('{z}') && tileUrl.includes('{x}') && /\{-?y\}/.test(tileUrl) ? tileUrl.trim() : '';
-  const attribution = isText(tileAttribution) ? tileAttribution.trim() : '';
+  const attribution = isText(tileAttribution) ? cleanAttribution(tileAttribution.trim()) : '';
   if (own) return { url: own, attribution, basemap: null, labels: '' };
   const tone = mapStyle === 'dark' ? 'dark' : mapStyle === 'light' ? 'light' : darkMode ? 'dark' : 'light';
   return { url: OSM.url, attribution: attribution || OSM.attribution, basemap: tone, labels: '' };

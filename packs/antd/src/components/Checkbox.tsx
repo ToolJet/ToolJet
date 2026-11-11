@@ -78,7 +78,9 @@ export const Checkbox = (props: Record<string, unknown>) => {
             <AntCheckbox
               id={fieldId}
               checked={checked}
-              indeterminate={indeterminate}
+              // The dash only while unchecked, as the MUI Checkbox draws it: Ant draws it over a tick too, so a
+              // click changed nothing on screen (QA item 55).
+              indeterminate={!!indeterminate && !checked}
               disabled={disabled}
               onChange={(e) => change(e.target.checked)}
             >

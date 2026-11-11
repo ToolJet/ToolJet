@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Avatar, Button, Card as AntCard, List as AntList, Modal as AntModal, Space, Tabs as AntTabs, Tag } from 'antd';
 import { chipLabel, chipTone } from '../lib/ui2/display/lists/model';
 
@@ -15,6 +16,7 @@ import { SpinOver } from '../lib/Loading';
 import {
   followSelection,
   idGroup,
+  occurrenceKeys,
   readField,
   repeatedIds,
   rowIdOf,
@@ -71,6 +73,7 @@ export const Tabs = () => {
   });
   const onChange = ToolJet.useEventCallback({ name: 'onChange' });
   const onTabClick = ToolJet.useEventCallback({ name: 'onTabClick' });
+  const [, setClickedTab] = ToolJet.useStateString({ name: 'clickedTab', initialValue: '', inspector: 'hidden' });
   const { loading } = ToolJet.useControlState();
   const tokens = useTokenStyles();
   ToolJet.useComponentSettings({
@@ -119,7 +122,13 @@ export const Tabs = () => {
           centered={centered}
           tabPosition={tabPosition as 'top'}
           onChange={change}
-          onTabClick={() => onTabClick()}
+          // Ant fires its tab click before its change: the click's handlers read the tab clicked (clickedTab) and
+          // activeKey already on it (the first one saw the previous tab). onChange still follows, once.
+          onTabClick={(key) => {
+            setClickedTab(String(key));
+            change(String(key));
+            onTabClick();
+          }}
           items={items.map((t) => ({
             key: t.key,
             label: t.label,
@@ -280,7 +289,7 @@ export const Modal = () => {
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center" ownerRef={owner}>
       {showTrigger ? (
-        <Button type="primary" block disabled={disabled} onClick={() => setOpen(true)}>
+        <Button type="primary" block className="tj-ant-fill" disabled={disabled} onClick={() => setOpen(true)}>
           {triggerText}
         </Button>
       ) : null}
@@ -329,35 +338,35 @@ const ModalBody = ({
   okDisabled: boolean;
 }) => {
   const popup = usePopupTheme();
+  // The modal's own place in the popup layer, carrying the component's token values. antd puts the tj-ant class on the
+  // modal's root (rootClassName) but takes no style for that root: the values went on the wrapper inside it, after the
+  // root had worked out the colours, the radius and the modal's own tokens from stock Ant's, so Primary color, Text
+  // color, Container background and Border radius changed nothing on the open modal (QA AD-18). display: contents
+  // keeps it out of the layout.
+  const [scope, setScope] = useState<HTMLDivElement | null>(null);
   // Portal only once the popup layer is known: antd would otherwise mount the modal on document.body, unstyled.
   if (!popup.container) return null;
   return (
-    <AntModal
-      {...props}
-      getContainer={popup.container}
-      rootClassName={popup.className}
-      styles={{ wrapper: popup.style }}
-      okButtonProps={{ danger: okType === 'danger', disabled: okDisabled }}
-      footer={footer ? undefined : null}
-      forceRender
-    >
-      {content ? <p className="tj-ant-modal-content">{content}</p> : null}
-      {bodyHeight > 0 ? <ToolJet.PopupSlot name="body" style={{ height: bodyHeight }} /> : null}
-    </AntModal>
+    <>
+      {createPortal(<div ref={setScope} style={{ ...popup.style, display: 'contents' }} />, popup.container)}
+      {scope ? (
+        <AntModal
+          {...props}
+          getContainer={scope}
+          rootClassName={popup.className}
+          okButtonProps={{ danger: okType === 'danger', disabled: okDisabled }}
+          footer={footer ? undefined : null}
+          forceRender
+          // The host keeps Tab inside an open dialog (packFocus): antd's own trap reads document.activeElement, which a
+          // shadow root hides.
+          modalRender={(node) => <div data-tj-modal={props.open ? 'open' : 'closed'}>{node}</div>}
+        >
+          {content ? <p className="tj-ant-modal-content">{content}</p> : null}
+          {bodyHeight > 0 ? <ToolJet.PopupSlot name="body" style={{ height: bodyHeight }} /> : null}
+        </AntModal>
+      ) : null}
+    </>
   );
-};
-
-// Each row's own key: its id, a repeated id suffixed by its occurrence (1, then 1~1), so two records that share an id
-// are told apart: both drew selected, and a refresh moved the selection to the first of them.
-const occurrenceKeys = (rows: Row[], field: string) => {
-  const seen = new Set<string>();
-  return rows.map((r, i) => {
-    const base = rowKeyOf(r, field, i);
-    let key = base;
-    for (let n = 1; seen.has(key); n += 1) key = `${base}~${n}`;
-    seen.add(key);
-    return key;
-  });
 };
 
 const LIST_CHROME = ['.ant-list-header', '.ant-list-footer', '.ant-list-pagination'] as const;

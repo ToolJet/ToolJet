@@ -132,6 +132,8 @@ export const Select = (props: Record<string, unknown>) => {
     commit(stored);
   };
   const pick = (next: unknown) => {
+    // Ant empties the search box on a pick in multiple and tags modes; searchValue kept the typed text.
+    if (many) setSearchValue('');
     const picked = Array.isArray(next) ? next : next === undefined || next === null ? [] : [next];
     const stored = picked.map((k) => valueForKey(options, k));
     commit(many ? stored : (stored[0] ?? ''));
@@ -144,6 +146,26 @@ export const Select = (props: Record<string, unknown>) => {
     setSelectedOptions(picked.options);
     onChange();
   };
+  // The value takes the mode's shape and holds only what the options offer (tags: any text), however the mode or the
+  // options change: multiple to single kept an array that showed as an empty field, single to multiple kept text, and a
+  // value no option offers stayed exposed while nothing showed selected. Not while the options are empty or loading
+  // (a query not yet run), so a default waits for them. Fires no event, as a native Dropdown's does not.
+  const prune = options.length > 0 && !loading;
+  const offered = (v: unknown) => options.some((o) => o.value === keyForValue(options, v));
+  const single =
+    Array.isArray(value) || (typeof value === 'string' && value.trim().startsWith('[')) ? (values[0] ?? '') : value;
+  const shaped: unknown = many
+    ? mode === 'tags' || !prune
+      ? values
+      : values.filter(offered)
+    : single === '' || !prune || offered(single)
+      ? single
+      : '';
+  const shapedKey = JSON.stringify(shaped);
+  useEffect(() => {
+    if (JSON.stringify(value) !== shapedKey) setValue(shaped as string);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shapedKey, JSON.stringify(value)]);
   // The selected option(s) follow the value however it changes (a pick, a binding, a Form's clearForm emptying it) and
   // the options' labels: set only on a pick, a cleared Form kept exposing the old choice.
   const optionsKey = JSON.stringify(options);
