@@ -1,4 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Breadcrumb as AntBreadcrumb,
   Button,
@@ -27,6 +28,7 @@ import { boundedTree } from '../lib/tree';
 import { slotNames } from '../lib/slots';
 import { ownerAvailable, useOwnedPopup, useOwnerShown } from '../lib/useOwnerGuard';
 import { useValueSetter } from '../lib/sameValue';
+import { useMenuLookup } from '../lib/menuLookup';
 
 type MenuItem = {
   key: string;
@@ -35,6 +37,8 @@ type MenuItem = {
   disabled?: boolean;
   children?: MenuItem[];
   type?: 'divider';
+  popupClassName?: string;
+  popupStyle?: React.CSSProperties;
 };
 // Ant's menu items: [{ key, label, danger, disabled, children }] and { type: 'divider' }; strings become both.
 // Bounded by lib/tree (depth, size, cycles), as toTree is.
@@ -55,6 +59,21 @@ const toMenuItems = (raw: unknown): MenuItem[] =>
       ...(children.length ? { children } : {}),
     };
   });
+
+// A sub-menu's list pops out into the popup layer, outside the menu: it takes the component's theme (its class and token
+// values) as every other popup does, or it kept stock Ant's black on white under Text color and Container background
+// (QA AD-17). Each nested sub-menu pops out a list of its own.
+const withPopupTheme = (items: MenuItem[], popup: { className: string; style: React.CSSProperties }): MenuItem[] =>
+  items.map((item) =>
+    item.children
+      ? {
+          ...item,
+          popupClassName: popup.className,
+          popupStyle: popup.style,
+          children: withPopupTheme(item.children, popup),
+        }
+      : item
+  );
 
 // Ant's Collapse: items [{ key, label }], each panel a canvas of ToolJet components (slot panel_<key>); activeKey
 // (the open panels' keys), accordion (one open at a time), bordered, ghost, size; event onChange.
@@ -215,8 +234,27 @@ export const Dropdown = () => {
     defaultHeight: 4,
   });
   const list = useOwnedPopup(disabled);
-  const menu = {
-    items: toMenuItems(items) as never,
+  // rc-menu's own keys (the arrows, Enter) find the list's items through the document (lib/menuLookup).
+  const menuId = useMenuLookup(list.anchor);
+  // A list opened from the keyboard (Enter, Space or ArrowDown on the button) takes the focus, on its first item, so the
+  // arrows move through it and Enter picks, as on a menu button: it opened with the focus left on the button, where no
+  // key could pick (QA AD-16). One opened with the pointer leaves the focus where it was. ArrowDown on an open list goes
+  // into it.
+  const [focusList, setFocusList] = useState(false);
+  const triggerKeys = (container: HTMLElement | null) => ({
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowDown') return;
+      setFocusList(true);
+      if (e.key !== 'ArrowDown') return;
+      e.preventDefault();
+      if (!list.open) list.onOpenChange(true);
+      else container?.querySelector<HTMLElement>(`[data-menu-id^="${menuId}-"]`)?.focus();
+    },
+    onPointerDown: () => setFocusList(false),
+  });
+  const menu = (popup: ReturnType<typeof usePopupTheme>) => ({
+    id: menuId,
+    items: withPopupTheme(toMenuItems(items), popup) as never,
     onClick: ({ key }: { key: string }) => {
       // A pick in the instant the owner stopped taking input (before the guard closed the menu) is refused.
       if (!list.available()) return;
@@ -224,15 +262,15 @@ export const Dropdown = () => {
       onClick();
       list.onOpenChange(false);
     },
-  };
+  });
   const common = {
-    menu,
     open: list.open,
     onOpenChange: (next: boolean) => list.onOpenChange(next),
     trigger: [trigger as 'click'],
     placement: placement as 'bottomLeft',
     arrow,
     disabled,
+    autoFocus: focusList,
   };
   return (
     <AntProvider tokens={tokens} fill className="tj-ant-center tj-ant-start" ownerRef={list.anchor}>
@@ -241,6 +279,7 @@ export const Dropdown = () => {
           split ? (
             <AntDropdown.Button
               {...common}
+              menu={menu(popup)}
               className="tj-ant-fill"
               overlayClassName={popup.className}
               overlayStyle={popup.style}
@@ -248,17 +287,24 @@ export const Dropdown = () => {
               loading={loading}
               onClick={() => onButtonClick()}
               style={block ? { width: '100%' } : undefined}
+              buttonsRender={([button, arrowButton]) => [
+                button,
+                React.isValidElement(arrowButton)
+                  ? React.cloneElement(arrowButton as React.ReactElement, triggerKeys(popup.container))
+                  : arrowButton,
+              ]}
             >
               {children}
             </AntDropdown.Button>
           ) : (
-            <AntDropdown {...common} overlayClassName={popup.className} overlayStyle={popup.style}>
+            <AntDropdown {...common} menu={menu(popup)} overlayClassName={popup.className} overlayStyle={popup.style}>
               <Button
                 type={type as 'default'}
                 className="tj-ant-fill"
                 loading={loading}
                 disabled={disabled}
                 block={block}
+                {...triggerKeys(popup.container)}
               >
                 {children} <DownOutlined />
               </Button>
@@ -328,23 +374,47 @@ export const Menu = () => {
     { name: 'setSelectedKey', displayName: 'Select item', params: [{ handle: 'key', displayName: 'Key' }] },
     (k) => setSelectedKey(str(k))
   );
+  const anchor = useRef<HTMLElement | null>(null);
+  // rc-menu's own keys (the arrows, Enter) find the items through the document (lib/menuLookup).
+  const menuId = useMenuLookup(anchor);
   return (
-    <AntProvider tokens={tokens} fill className="tj-ant-menu">
+    <AntProvider tokens={tokens} fill className="tj-ant-menu" ownerRef={anchor}>
       <SpinOver loading={loading} as="fill">
-        <AntMenu
-          items={toMenuItems(items) as never}
-          mode={mode as 'inline'}
-          theme={theme as 'light'}
-          selectedKeys={selectedKey ? [selectedKey] : []}
-          onClick={({ key }) => {
-            setSelectedKey(key);
-            onClick();
-          }}
-          onSelect={() => onSelect()}
-        />
+        <WithPopupTheme>
+          {(popup) => (
+            <>
+              <ClassTokens scope={`${menuId}-more`} popup={popup} />
+              <AntMenu
+                id={menuId}
+                items={withPopupTheme(toMenuItems(items), popup) as never}
+                overflowedIndicatorPopupClassName={`${popup.className} ${menuId}-more`}
+                mode={mode as 'inline'}
+                theme={theme as 'light'}
+                selectedKeys={selectedKey ? [selectedKey] : []}
+                onClick={({ key }) => {
+                  setSelectedKey(key);
+                  onClick();
+                }}
+                onSelect={() => onSelect()}
+              />
+            </>
+          )}
+        </WithPopupTheme>
       </SpinOver>
     </AntProvider>
   );
+};
+
+// The component's token values for a popup that takes a class and no style (the Menu's overflow list, the '…' in
+// Horizontal mode): a rule for a class of the popup's own, drawn in the popup layer. Only the token values useTokenStyles
+// gives are written, and only ones with nothing in them that could end the rule.
+const ClassTokens = ({ scope, popup }: { scope: string; popup: ReturnType<typeof usePopupTheme> }) => {
+  const declarations = Object.entries(popup.style as Record<string, unknown>)
+    .filter(([name, value]) => name.startsWith('--tj-ant-') && /^[^;{}<>]*$/.test(String(value)))
+    .map(([name, value]) => `${name}:${String(value)}`)
+    .join(';');
+  if (!popup.container || !declarations) return null;
+  return createPortal(<style>{`.${scope}{${declarations}}`}</style>, popup.container);
 };
 
 // Ant's Breadcrumb: items [{ title, key }] (strings become titles), separator; event onClick for an item, its key
