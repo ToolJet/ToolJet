@@ -73,6 +73,7 @@ const databaseTests = describe;
 export type McpOAuthFlowContext = {
   db: DataSource;
   user: User;
+  settings: Record<string, string>;
   organizationId: string;
   mint: () => ReturnType<McpOAuthService['token']>;
   exchange: (token: string) => ReturnType<McpOAuthService['exchange']>;
@@ -243,6 +244,7 @@ export function oauthFlowTests(registerTests?: (context: () => McpOAuthFlowConte
         registerTests(() => ({
           db,
           user,
+          settings,
           organizationId,
           exchange,
           mint: async () => {
