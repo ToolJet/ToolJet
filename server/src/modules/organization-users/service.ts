@@ -4,7 +4,12 @@ import { User } from '../../entities/user.entity';
 import { EntityManager } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { BadRequestException } from '@nestjs/common';
-import { USER_STATUS, WORKSPACE_USER_SOURCE, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
+import {
+  BUILDER_ACCESS_LOST,
+  USER_STATUS,
+  WORKSPACE_USER_SOURCE,
+  WORKSPACE_USER_STATUS,
+} from '@modules/users/constants/lifecycle';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { GroupPermissionsUtilService } from '@modules/group-permissions/util.service';
@@ -146,6 +151,11 @@ export class OrganizationUsersService implements IOrganizationUsersService {
         status: WORKSPACE_USER_STATUS.ARCHIVED,
         invitationToken: null,
       });
+      await this.eventEmitter.emitAsync(BUILDER_ACCESS_LOST, {
+        userId: organizationUser.userId,
+        organizationId,
+        manager,
+      });
       const organization = await manager.findOne(Organization, {
         where: { id: organizationUser.organizationId },
       });
@@ -170,6 +180,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
         { status: WORKSPACE_USER_STATUS.ARCHIVED, invitationToken: null }
       );
       await this.organizationUsersUtilService.updateUserStatus(userId, USER_STATUS.ARCHIVED, manager);
+      await this.eventEmitter.emitAsync(BUILDER_ACCESS_LOST, { userId, organizationId: null, manager });
       const organizationIds = archivedUserWorkspaces.map((user) => user.organizationId);
       await this.onArchiveFromAll(userId, organizationIds, manager);
       const auditLogEntry = {

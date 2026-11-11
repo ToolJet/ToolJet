@@ -65,6 +65,9 @@ export class OrganizationAiCreditHistory extends BaseEntity {
   @Column({ name: 'organization_id', type: 'uuid' })
   organizationId: string;
 
+  @Column({ name: 'user_id', type: 'uuid', nullable: true })
+  userId: string | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 

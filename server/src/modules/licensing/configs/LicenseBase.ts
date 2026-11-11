@@ -579,6 +579,19 @@ export default class LicenseBase {
     return this._aiPlan || 'credits';
   }
 
+  /** The licence's raw `features.aiCreditLimits` value. */
+  protected get aiCreditLimitsFlag(): unknown {
+    return (this._features as any)?.aiCreditLimits;
+  }
+
+  /** Per-builder AI credit limits, self-hosted: Enterprise and trial; Team (business) and basic don't. */
+  // Strict opt-in, like mfa: the licence must set `features.aiCreditLimits: true`; a missing key is off.
+  // Cloud overrides this in OrganizationLicense.
+  public get aiCreditLimits(): boolean {
+    if (!this.aiFeature || this.IsBasicPlan || this.aiCreditLimitsFlag !== true) return false;
+    return this.licenseType === LICENSE_TYPE.ENTERPRISE || this.licenseType === LICENSE_TYPE.TRIAL;
+  }
+
   public get updatedAt(): Date {
     return this._updatedDate;
   }
@@ -634,6 +647,7 @@ export default class LicenseBase {
       workspaceEnv: this.workspaceEnv,
       customComponentLibraries: this.customComponentLibraries,
       aiPlan: this.aiPlan,
+      aiCreditLimits: this.aiCreditLimits,
       publicApp: this.publicApp,
     };
   }

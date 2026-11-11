@@ -25,6 +25,7 @@ const routes = [
   { path: '/settings/instance-login', breadcrumb: 'Settings' },
   { path: '/settings/llm-key', breadcrumb: 'Settings' },
   { path: '/settings/migrations', breadcrumb: 'Settings' },
+  { path: '/settings/ai-credits-usage', breadcrumb: 'Settings' },
   { path: '/:worspace_id/workflows', breadcrumb: 'Workflows', props: { beta: true } },
   { path: '/integrations/installed', breadcrumb: 'Integrations' },
   { path: '/integrations/marketplace', breadcrumb: 'Integrations' },

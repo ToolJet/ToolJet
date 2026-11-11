@@ -240,6 +240,7 @@ export const getRedirectURL = (path, isUserLoggingIn = false) => {
     '/instance-login',
     '/smtp',
     '/llm-key',
+    '/ai-credits-usage',
     '/license',
     '/security',
     '/migrations',
