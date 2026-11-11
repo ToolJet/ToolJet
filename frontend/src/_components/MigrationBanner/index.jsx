@@ -5,6 +5,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { migrationsService } from '@/_services/migrations.service';
 import { authenticationService } from '@/_services/authentication.service';
 import { getSubpath } from '@/_helpers/routes';
+import { MIGRATION_GATE_EVENT } from '@/_helpers/migrationGate';
 
 const DISMISS_KEY = 'migration-banner-dismissed';
 const POLL_MS = 30000;
@@ -53,19 +54,32 @@ export const MigrationBanner = ({ darkMode, onVisibilityChange, floating = false
     return () => subscription.unsubscribe();
   }, []);
 
+  // Asks once per page load, polls only while an upgrade is running or failed, and stops once idle.
+  // An upgrade that starts later shows up as the gate's 503 on a write, which wakes this.
   useEffect(() => {
-    let timer;
+    // Blocking mode migrates before the server starts: nothing to show.
+    if (window.public_config?.MIGRATION_ASYNC !== 'true') return;
+    let timer = null;
+    let busy = false;
     let cancelled = false;
     const poll = async () => {
+      busy = true;
+      timer = null;
       const next = await migrationsService.getStatus();
+      busy = false;
       if (cancelled) return;
       setStatus(next);
-      timer = setTimeout(poll, next.state === 'running' ? RUNNING_POLL_MS : POLL_MS);
+      if (next.state !== 'idle') timer = setTimeout(poll, next.state === 'running' ? RUNNING_POLL_MS : POLL_MS);
+    };
+    const wake = () => {
+      if (!busy && !timer) poll();
     };
     poll();
+    window.addEventListener(MIGRATION_GATE_EVENT, wake);
     return () => {
       cancelled = true;
       clearTimeout(timer);
+      window.removeEventListener(MIGRATION_GATE_EVENT, wake);
     };
   }, []);
 

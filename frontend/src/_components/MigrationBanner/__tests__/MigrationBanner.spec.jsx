@@ -4,6 +4,7 @@ import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
 import { act, render, screen, userEvent, waitFor } from '@/test/test-utils';
 import { authenticationService } from '@/_services/authentication.service';
+import { MIGRATION_GATE_EVENT } from '@/_helpers/migrationGate';
 import { MigrationBanner } from '../index';
 
 const STATUS_URL = 'http://localhost:3000/api/migration-status';
@@ -14,8 +15,14 @@ const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 20))
 
 const initialSession = authenticationService.currentSessionValue;
 
-beforeEach(() => sessionStorage.clear());
-afterEach(() => authenticationService.updateCurrentSession(initialSession));
+beforeEach(() => {
+  sessionStorage.clear();
+  window.public_config = { MIGRATION_ASYNC: 'true' };
+});
+afterEach(() => {
+  authenticationService.updateCurrentSession(initialSession);
+  delete window.public_config;
+});
 
 const asSuperAdmin = (superAdmin) =>
   act(() => authenticationService.updateCurrentSession({ ...initialSession, super_admin: superAdmin }));
@@ -122,6 +129,46 @@ describe('MigrationBanner', () => {
     expect(called).toBe(true);
     expect(visibleBanner()).toBeNull();
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
+  });
+
+  test('never asks in blocking mode, where migrations finish before the server starts', async () => {
+    window.public_config = { MIGRATION_ASYNC: 'false' };
+    let called = false;
+    server.use(
+      http.get(STATUS_URL, () => {
+        called = true;
+        return HttpResponse.json({ state: 'running' });
+      })
+    );
+    render(<MigrationBanner />);
+    await settle();
+
+    expect(called).toBe(false);
+  });
+
+  test('stops asking once idle, and asks again when the upgrade gate refuses a write', async () => {
+    jest.useFakeTimers({ advanceTimers: true });
+    try {
+      let calls = 0;
+      server.use(
+        http.get(STATUS_URL, () =>
+          HttpResponse.json(calls++ === 0 ? { state: 'idle' } : { state: 'running', startedAt: 'run-1' })
+        )
+      );
+      render(<MigrationBanner />);
+      await waitFor(() => expect(calls).toBe(1));
+
+      act(() => jest.advanceTimersByTime(60000));
+      await settle();
+      expect(calls).toBe(1);
+
+      act(() => window.dispatchEvent(new Event(MIGRATION_GATE_EVENT)));
+
+      await waitFor(() => expect(visibleBanner()).toHaveTextContent(/being upgraded/));
+      expect(calls).toBe(2);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   test('treats a non-200 response as idle', async () => {
