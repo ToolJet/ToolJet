@@ -1021,8 +1021,30 @@
   flex-direction: column;
   gap: 6px;
 }
+/* Row: the image beside the text, as the Material UI and Rocket card grids draw it. An Ant Card is a block box, so
+   flex-direction alone did nothing and Row drew as Stacked (QA AD-09). The image takes up to 220px, stretched to the
+   text's height (its aspect gives its least height), and the text takes the rest, its ellipsis kept. */
 .tj-ant-gridcard.is-row {
+  display: flex;
   flex-direction: row;
+}
+.tj-ant-gridcard.is-row > .ant-card-cover {
+  flex: 0 0 auto;
+  width: 38%;
+  min-width: 96px;
+  max-width: 220px;
+}
+.tj-ant-gridcard.is-row.ant-card-bordered > .ant-card-cover {
+  margin-inline-end: 0;
+  margin-block-end: -1px;
+}
+.tj-ant-gridcard.is-row > .ant-card-cover > img {
+  height: 100%;
+  border-radius: var(--ant-border-radius-lg) 0 0 var(--ant-border-radius-lg);
+}
+.tj-ant-gridcard.is-row > .ant-card-body {
+  flex: 1 1 0;
+  min-width: 0;
 }
 .tj-ant-progress-row.ant-list-item {
   display: flex;
