@@ -243,6 +243,7 @@ describe('MigrationGateMiddleware', () => {
       ['POST', '/api/workflow_executions/w1/trigger'],
       ['POST', '/api/v2/webhooks/workflows/w1/trigger'],
       ['POST', '/api/v2/webhooks/workflows/w1/trigger-async'],
+      ['POST', '/api/v2/resources/export'],
     ])('should let %s %s through', async (method, path) => {
       const { middleware } = buildMiddleware('running');
       const next = jest.fn() as NextFunction;
@@ -261,6 +262,7 @@ describe('MigrationGateMiddleware', () => {
       ['POST', '/api/data-queries/q1/run/extra'],
       ['PATCH', '/api/v2/webhooks/workflows/w1'],
       ['POST', '/api/workflow_executions/previewQueryNode'],
+      ['POST', '/api/v2/resources/import'],
     ])('should answer %s %s with 503', async (method, path) => {
       const { middleware } = buildMiddleware('running');
       const res = buildResponse();

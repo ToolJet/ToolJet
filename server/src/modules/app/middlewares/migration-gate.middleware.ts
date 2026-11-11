@@ -35,6 +35,8 @@ const ASYNC_MODE_WRITE_ALLOWLIST = [
   // Workflow runs only add rows to execution tables no data migration touches.
   /^\/workflow_executions(\/[^/]+\/trigger)?$/,
   /^\/v2\/webhooks\/workflows\/[^/]+\/trigger(-async)?$/,
+  // Read-only; POST only for the body size.
+  /^\/v2\/resources\/export$/,
 ];
 
 /** How often to repeat the "requests are being rejected" line. */
