@@ -298,6 +298,12 @@ button.ui2-tag:focus-visible {
   color: var(--ui-fg);
   overflow-wrap: anywhere;
 }
+/* Safe centring plus a scroll: text taller than a fixed box scrolls, not cut at the top and bottom (the host clips). */
+.ui-text-wrap.ui2-text-box {
+  align-items: safe center;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
 .ui2-text {
   white-space: pre-line;
 }

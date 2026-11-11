@@ -25,6 +25,13 @@ const JUSTIFY: Record<string, string> = {
   right: 'n2-justify-right',
 };
 
+// A bare host ("tooljet.com", "www.a.io/x?y") is a web address; the browser would read it as a path under the app.
+const HOST_ONLY = /^[a-z0-9-]+(\.[a-z0-9-]+)+(:\d+)?([/?#].*)?$/i;
+const linkHref = (target: unknown): string => {
+  const raw = typeof target === 'string' ? target.trim() : '';
+  return safeUrl(HOST_ONLY.test(raw) ? `https://${raw}` : raw);
+};
+
 // UI 2.0 Link: an anchor (a script URL is no link: the text shows as a button instead).
 export const Link = () => {
   const [linkText, setLinkText] = ToolJet.useStateString({
@@ -85,7 +92,7 @@ export const Link = () => {
   ToolJet.useComponentSettings({ role: 'link', fit: false, loading: 'own', defaultWidth: 6, defaultHeight: 3 });
 
   // setLinkTarget and setLinkText hold until the Link target and Text properties themselves change (the state hooks).
-  const href = safeUrl(linkTarget);
+  const href = linkHref(linkTarget);
   const label = String(linkText ?? '');
   const anchorRef = useRef<HTMLAnchorElement>(null);
   const busy = useRef(disabled);
