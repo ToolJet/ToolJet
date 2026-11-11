@@ -167,3 +167,13 @@ You can configure this feature at two levels:
 :::info
 If the data source-level configuration is enabled but a specific query has it disabled, the query-level setting takes precedence.
 :::
+
+## Request Timeout
+
+REST API requests that don't receive a response are cancelled after a timeout, so an unresponsive endpoint can't hold the request open indefinitely. The timeout is resolved in this order:
+
+1. **Query level**: the **Timeout (ms)** value set on the query.
+2. **Data source level**: the **Request timeout (ms)** field under **General settings** in the REST API data source configuration.
+3. **Default**: 120,000 ms (2 minutes).
+
+Set either value to `0` to disable the timeout. When **Retry on network errors** is enabled, the timeout applies to each attempt.
