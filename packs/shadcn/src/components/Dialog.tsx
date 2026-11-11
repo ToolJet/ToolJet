@@ -49,6 +49,8 @@ export const Dialog = () => {
   });
   // Exposed as show, UI 2.0's Modal name.
   const [open, setOpen] = ToolJet.useStateBoolean({ name: 'show', initialValue: false, inspector: 'hidden' });
+  // In the editor it is not modal, so the builder can use the panels and drop components into its body while it is open.
+  const editing = ToolJet.useEditing();
   // Built in: the body is a canvas of ToolJet components (a form, details), under the description.
   const [showBody] = ToolJet.useStateBoolean({ name: 'showBody', label: 'Components in the body', initialValue: true });
   const [showFooter] = ToolJet.useStateBoolean({
@@ -166,6 +168,7 @@ export const Dialog = () => {
         style={{ display: 'flex', alignItems: 'center', ...themeVars({ buttonColor, buttonText }) }}
       >
         <DialogPrimitive.Root
+          modal={!editing}
           open={open}
           onOpenChange={(next) => {
             if (next) show();
@@ -195,7 +198,8 @@ export const Dialog = () => {
                   ...(base === undefined ? {} : { zIndex: layer + 1 }),
                   [POPUP_LAYER as string]: layer + 2,
                 }}
-                onPointerDownOutside={keepUnlessBackdrop}
+                onPointerDownOutside={editing ? (e) => e.preventDefault() : keepUnlessBackdrop}
+                onFocusOutside={editing ? (e) => e.preventDefault() : undefined}
               >
                 <div>
                   <DialogPrimitive.Title className="ui-dialog-title">{title}</DialogPrimitive.Title>

@@ -86,6 +86,8 @@ export interface PackHost {
   submitForm?: () => void;
   /** The widget's component id. */
   widgetId?: string;
+  /** The app is open in the editor, not in a viewer or a released app. */
+  editing?: boolean;
 }
 
 export interface RowContext {
@@ -305,6 +307,8 @@ const v2Hooks = {
   },
   /** The widget's component id (what a Form's buttonToSubmit or an event's target names). */
   useWidgetId: (): string | undefined => useHost()?.widgetId,
+  /** True in the editor: a popup stays open while the builder uses the panels around the canvas. */
+  useEditing: (): boolean => !!useHost()?.editing,
   /** A drop area inside a popup (a dialog's body): a ToolJet canvas projected into the page's popup layer. */
   PopupSlot: ({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) => {
     const host = useHost();

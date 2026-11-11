@@ -407,6 +407,7 @@ export const usePackHost = (
   const { id, validate, validation, setExposedVariable, fireEvent, width, height, currentLayout, darkMode } = props;
   const { moduleId } = useModuleContext();
   const resolveRow = useRowResolve(moduleId);
+  const editing = useStore((state) => state.modeStore?.modules?.[moduleId]?.currentMode === 'edit');
   // The latest value of each variable the component exposed, and the value its validation last judged.
   const exposed = useRef(new Map());
   const judged = useRef({ key: null, value: undefined });
@@ -491,13 +492,14 @@ export const usePackHost = (
       markRowScoped,
       resolveRow,
       widgetId: id,
+      editing,
       // As the native Button: a click announces itself, and the Form whose buttonToSubmit it is submits.
       submitForm: () =>
         document.dispatchEvent(
           new CustomEvent('submitForm', { detail: { buttonComponentId: id, buttonModuleId: moduleId } })
         ),
     }),
-    [disabled, loading, id, setRows, registerPopupSlot, formField, markRowScoped, resolveRow, moduleId]
+    [disabled, loading, id, setRows, registerPopupSlot, formField, markRowScoped, resolveRow, moduleId, editing]
   );
   return { host, light, popupSlotNames, exposeVariable, fireHostEvent };
 };
