@@ -62,6 +62,22 @@ describe('MigrationsPage', () => {
     expect(screen.queryByRole('button', { name: /retry/i })).not.toBeInTheDocument();
   });
 
+  test('shows the steps a failed run undid as rolled back, not done', async () => {
+    server.use(
+      runs({
+        ...failedRun,
+        migrationsDone: 0,
+        migrations: [{ ...failedRun.migrations[0], status: 'rolled_back' }, failedRun.migrations[1]],
+      })
+    );
+
+    render(<MigrationsPage />);
+
+    expect(await screen.findByLabelText('Rolled back')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Done')).not.toBeInTheDocument();
+    expect(screen.getByText('0 of 2 done')).toBeInTheDocument();
+  });
+
   test('shows a running upgrade with overall and per-migration progress and keeps polling', async () => {
     let calls = 0;
     server.use(

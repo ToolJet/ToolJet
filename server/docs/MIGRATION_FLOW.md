@@ -235,7 +235,7 @@ A hard kill (OOM, node loss) leaves a dead run. The next runner marks it failed 
 
 ### Logs and banner
 
-- **Tables.** The service creates `migration_runs` and `migration_run_logs` itself; they are not migrations. It writes them on its own `pg` pool, so they update while the migration transaction is open. It keeps the last 50 runs.
+- **Tables.** The service creates `migration_runs` and `migration_run_logs` itself; they are not migrations. It writes them on its own `pg` pool, so they update while the migration transaction is open. So a step is marked done before its transaction commits; when a run fails, steps the `migrations` table does not record are rewritten as rolled back. It keeps the last 50 runs.
 - **Steps.** The run row is rebuilt from the runner's output (`migration-run-log.ts`): `[migrations] START <name>` / `DONE <name> <ms>` lines, data-migration `[PROGRESS] i/total` lines and `MigrationProgress` `<name> Progress N %` lines (one kept per percent).
 - **Logs.** Each kept line goes to `migration_run_logs`, tagged with its migration. The run row keeps the last 200 lines (`LOG_TAIL_LINES`). Query parameters, emails and connection URLs are redacted. TypeORM `query is slow:` and `execution time:` lines are dropped unless `ORM_LOGGING` is set. After a success, logs of earlier runs are deleted; their rows stay.
 - **Super-admin routes.** `GET {prefix}api/migration-runs` lists runs. `GET {prefix}api/migration-runs/:id/log[?migration=<name>]` returns a run's log, or one migration's lines. The page is `{prefix}settings/migrations`.

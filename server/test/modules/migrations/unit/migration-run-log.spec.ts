@@ -8,6 +8,7 @@ import {
   errorSummary,
   LOG_TAIL_LINES,
   markFailed,
+  markRolledBack,
   redactLogLine,
   RunProgress,
 } from 'src/migration-helpers/migration-run-log';
@@ -91,6 +92,15 @@ describe('migration-helpers/migration-run-log', () => {
         { name: 'AddIndex1700', status: 'done', durationMs: 12 },
         { name: 'BackfillX1800', status: 'failed', percent: 24 },
       ]);
+    });
+
+    it('should mark done steps the migrations table does not record as rolled back, keeping committed ones done', () => {
+      const failed = markFailed(run);
+      expect(markRolledBack(failed, new Set()).migrations).toEqual([
+        { name: 'AddIndex1700', status: 'rolled_back', durationMs: 12 },
+        { name: 'BackfillX1800', status: 'failed', percent: 24 },
+      ]);
+      expect(markRolledBack(failed, new Set(['AddIndex1700'])).migrations[0].status).toBe('done');
     });
 
     it('should keep only the last lines of output', () => {
