@@ -13,8 +13,10 @@ const PackComponent = ({ properties = {}, ...props }: { properties?: Record<stri
   const { pack: packId, componentName } = properties;
   const pack = useBuiltinPack(packId);
   const manifest = usePackManifest(packId);
+  const packsListed = useBuiltinPacksStore((state: { packs: unknown[] | null }) => state.packs !== null);
+  // Until the pack list arrives (or while it failed) nothing says the pack is missing: a neutral box, not the Slot.
+  const listing = !packsListed;
   // The packs are listed and this one is not among them (a pack this release doesn't ship): it never draws.
-  const packsListed = useBuiltinPacksStore((state: { packs: unknown }) => state.packs !== null);
   const unavailable = packsListed && (!pack || !componentName);
 
   const source =
@@ -35,6 +37,7 @@ const PackComponent = ({ properties = {}, ...props }: { properties?: Record<stri
       {...(props as any)}
       properties={properties}
       source={source}
+      pending={listing}
       metaKeys={META_KEYS}
       pack={pack?.pack}
       unavailable={unavailable}

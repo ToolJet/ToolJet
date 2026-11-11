@@ -59,6 +59,9 @@ interface SdkComponentHostProps {
   dataCy: string;
   /** null while the instance doesn't yet know what to draw: the Slot placeholder shows. */
   source: SdkComponentSource | null;
+  /** With no source: what to draw is still loading (a pack before the pack list arrives), so an empty box of the
+      widget's size shows instead of the Slot placeholder. */
+  pending?: boolean;
   /** The instance's own meta properties (which library or pack it draws), never passed to the component. */
   metaKeys: string[];
   /** Kept from being used (an expired plan): hidden when viewed, dimmed and inert in the editor. */
@@ -112,6 +115,7 @@ const SdkComponentHost = ({
   fireEvent,
   dataCy,
   source,
+  pending = false,
   metaKeys,
   blocked = false,
   badge = null,
@@ -560,6 +564,17 @@ const SdkComponentHost = ({
 
   if (blocked && currentMode === 'view') {
     return <></>;
+  }
+
+  if (!source && pending) {
+    return (
+      <div
+        data-cy={dataCy}
+        aria-busy="true"
+        className="tw-w-full"
+        style={{ height: safeHeight, display: exposedVariablesTemporaryState.isVisible ? 'block' : 'none' }}
+      />
+    );
   }
 
   if (!source) {

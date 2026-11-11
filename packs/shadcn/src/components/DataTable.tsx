@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Inbox } from 'lucide-react';
@@ -27,6 +27,7 @@ import { useRowResolver } from '../lib/ui2/table/rowResolver';
 import { TOKEN, useDrawnNumber, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
 import { useLiveState } from '../lib/useLiveState';
 import { sameValue } from '../lib/sameValue';
+import { useVirtualRows } from '../lib/virtualRows';
 import '../styles/ui2-table.css';
 
 // ToolJet UI 2.0's Table (ShadTable) in the pack: its property, style, event, action and exposed-value names and
@@ -956,7 +957,7 @@ export const DataTable = () => {
   );
 
   // ---- layout -----------------------------------------------------------------------------------------------------
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
   const [box, setBox] = useState({ width: 0, height: 0 });
   const boxWidth = box.width;
   const [edges, setEdges] = useState({ right: false, below: false });
@@ -1007,6 +1008,18 @@ export const DataTable = () => {
   }, []);
 
   const rowHeight = ROW_HEIGHT[cellSize] ?? ROW_HEIGHT.regular;
+  // A long page draws only the rows in view, as ToolJet 1.0's Table (lib/virtualRows): spacer rows keep the table its
+  // full height, so the sticky header, the scrollbar and the column layout stay as they are.
+  const virtualKey = useCallback((i: number) => paged.items[i]?.key ?? i, [paged.items]);
+  const virtual = useVirtualRows({ count: loading ? 0 : paged.items.length, estimate: rowHeight, getKey: virtualKey });
+  const { setScrollEl } = virtual;
+  const boxRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      scrollRef.current = el;
+      setScrollEl(el);
+    },
+    [setScrollEl]
+  );
   const striped = tableType === 'striped';
   const bordered = tableType === 'bordered';
   // Column widths are preferences: when they add up to more than the table's width, the table shares its width instead.
@@ -1097,10 +1110,13 @@ export const DataTable = () => {
       ) : null}
 
       <div
-        ref={scrollRef}
+        ref={boxRef}
         className={cn('t2-box', showBorder !== false && 'has-border', empty && 'is-empty', edges.right && 'more-right')}
       >
-        <table className={cn('t2-grid', bordered && 'is-bordered')}>
+        <table
+          className={cn('t2-grid', bordered && 'is-bordered')}
+          aria-rowcount={virtual.on ? paged.items.length + 1 : undefined}
+        >
           <thead className={cn(stickyHeader !== false && 'is-sticky')}>
             <tr>
               {bulk ? (
@@ -1161,8 +1177,14 @@ export const DataTable = () => {
                 </tr>
               ))
             ) : paged.items.length ? (
-              paged.items
-                .map((entry, i) => {
+              [
+                virtual.padTop > 0 ? (
+                  <tr key="t2-pad-top" aria-hidden="true" className="t2-plain">
+                    <td colSpan={colCount} style={{ height: virtual.padTop, padding: 0, border: 0 }} />
+                  </tr>
+                ) : null,
+                ...(virtual.on ? virtual.items.map((v) => v.index) : paged.items.map((_, i) => i)).map((i) => {
+                  const entry = paged.items[i];
                   const row = entry.row;
                   const isSelected = selected.has(entry.key);
                   // As natively, only a selectable table marks rows.
@@ -1170,6 +1192,9 @@ export const DataTable = () => {
                   return (
                     <tr
                       key={entry.key}
+                      ref={virtual.on ? virtual.measure : undefined}
+                      data-index={i}
+                      aria-rowindex={virtual.on ? i + 2 : undefined}
                       data-state={showSelected ? 'selected' : undefined}
                       className={cn(allowSelection && 'is-selectable', striped && i % 2 === 1 && 'is-striped')}
                       onClick={() => clickRow(entry)}
@@ -1246,18 +1271,23 @@ export const DataTable = () => {
                       })}
                     </tr>
                   );
-                })
-                .concat(
-                  // A short last page keeps the table a full page tall: the blank sits inside the table, under its rows,
-                  // instead of the table (and a card fitted to it) shrinking and leaving a gap below on the page.
-                  fillerRows > 0
-                    ? [
-                        <tr key="t2-page-filler" aria-hidden="true" className="t2-plain t2-page-filler">
-                          <td colSpan={colCount} style={{ height: rowHeight * fillerRows, padding: 0, border: 0 }} />
-                        </tr>,
-                      ]
-                    : []
-                )
+                }),
+                virtual.padBottom > 0 ? (
+                  <tr key="t2-pad-bottom" aria-hidden="true" className="t2-plain">
+                    <td colSpan={colCount} style={{ height: virtual.padBottom, padding: 0, border: 0 }} />
+                  </tr>
+                ) : null,
+              ].concat(
+                // A short last page keeps the table a full page tall: the blank sits inside the table, under its rows,
+                // instead of the table (and a card fitted to it) shrinking and leaving a gap below on the page.
+                fillerRows > 0
+                  ? [
+                      <tr key="t2-page-filler" aria-hidden="true" className="t2-plain t2-page-filler">
+                        <td colSpan={colCount} style={{ height: rowHeight * fillerRows, padding: 0, border: 0 }} />
+                      </tr>,
+                    ]
+                  : []
+              )
             ) : (
               <tr className="t2-plain">
                 {/* The empty state fills the body: in a short table the icon goes, then the description. */}

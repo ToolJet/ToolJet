@@ -944,9 +944,9 @@ export const Calendar = () => {
   });
   const parsed = value ? dayjs(value) : null;
   const shownValue = parsed && parsed.isValid() ? parsed : undefined;
-  // The date the grid shows, apart from the value: Ant's Calendar has one value for both, so a month picked in Year
-  // mode or in the header selects changed the value without onSelect. Only a day picked changes the value now; the
-  // header and Year mode move the grid. An emptied value (a cleared binding) starts again on today (SP-27).
+  // The date the grid shows: the value's, else today's with nothing picked. Every pick (a day, a month in Year mode or
+  // in the header selects) writes the value and fires On select (AD-08). An emptied value (a cleared binding) starts
+  // again on today (SP-27).
   const [panel, setPanel] = useState(() => shownValue ?? dayjs());
   useEffect(() => {
     setPanel(shownValue ?? dayjs());
@@ -989,9 +989,9 @@ export const Calendar = () => {
               </div>
             );
           }}
-          onSelect={(d, info) => {
+          // Every source (day, Year-mode month, header dropdowns) writes Value, so every one fires On select (AD-08).
+          onSelect={(d) => {
             setPanel(d);
-            if (info.source !== 'date') return;
             setValue(d.format('YYYY-MM-DD'));
             onSelect();
           }}

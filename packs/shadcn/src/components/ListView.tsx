@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ToolJet } from '@tooljet/custom-component-sdk';
 import { cn } from '../lib/cn';
 import {
@@ -17,6 +17,7 @@ import { LoadingBox, LoadingFrame, useLoadingLook } from '../lib/ui2/loading/loo
 import { useRecordSelection, type SelectableRecord } from '../lib/ui2/display/lists/useRecordSelection';
 import { ListSkel } from '../lib/ui2/loading/shapes';
 import { TOKEN, useDrawnNumber, useThemeColor, useThemeRadius } from '../lib/styleDefaults';
+import { useVirtualRows } from '../lib/virtualRows';
 import '../styles/ui2-display-lists.css';
 
 // UI 2.0's List view: items in a list or a grid, with selection, client or server-side paging and UI 2.0's item look.
@@ -269,6 +270,9 @@ export const ListView = () => {
       // Client-side paging: show the page the item is on, or the selection is invisible (team testing, 2026-10-29). As
       // setPage, this fires no onPageChanged.
       if (Number.isFinite(pageSize)) setPageIndex(Math.floor(at / pageSize) + 1);
+      // A long list scrolls the item into view (after the page change renders).
+      const local = Number.isFinite(pageSize) ? at % pageSize : at;
+      setTimeout(() => virtual.scrollToIndex(local), 0);
     }
   );
   ToolJet.useAction({ name: 'clearSelection', displayName: 'Clear selection' }, () => clearSelection());
@@ -287,6 +291,17 @@ export const ListView = () => {
   // in the middle of it; a bordered card is its own divider and keeps the gap between cards. The gap had no effect once
   // dividers were on (team testing, 2026-10-29).
   const dividers = !grid && showBorder && !framed;
+  // A long list of field items draws only the items in view (lib/virtualRows), as ToolJet 1.0's Table does. The grid
+  // and rows of ToolJet components draw every item: the host mounts every component row anyway.
+  const flat = !grid && !asRows;
+  const itemKey = useCallback((i: number) => keys[i] ?? i, [keys]);
+  const gapPx = dividers ? 0 : space;
+  const virtual = useVirtualRows({
+    count: flat && !ld.loading ? items.length : 0,
+    estimate: 64,
+    getKey: itemKey,
+    gap: gapPx,
+  });
   const vars = styleVars([
     [accent, '--ui-primary'],
     [accent, '--ui-ring', (v) => `color-mix(in srgb, ${String(v)} 35%, transparent)`],
@@ -324,6 +339,7 @@ export const ListView = () => {
           <div className="u2l-list-scroll">
             <div
               role="list"
+              ref={virtual.setScrollEl}
               className="u2l-list-items"
               style={{
                 gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
@@ -331,7 +347,14 @@ export const ListView = () => {
                 ...(dividers ? { ['--lv-divider-gap' as string]: `${space}px` } : {}),
               }}
             >
-              {items.map((item, i) => {
+              {/* The room around the window is spacer items, never padding on this scroll box: a box is not shorter than
+                  its own padding, so about 400,000px of padding grew it to the whole list. The grid's gap already sits
+                  between a spacer and its neighbour, hence the minus. */}
+              {virtual.on && virtual.padTop > 0 ? (
+                <div aria-hidden="true" style={{ gridColumn: '1 / -1', height: Math.max(0, virtual.padTop - gapPx) }} />
+              ) : null}
+              {(virtual.on ? virtual.items.map((v) => v.index) : items.map((_, i) => i)).map((i) => {
+                const item = items[i];
                 const row = (item && typeof item === 'object' ? item : {}) as Row;
                 const selected = highlightSelectedRow !== false && i === selectedIndex;
                 const cls = cn(
@@ -372,6 +395,10 @@ export const ListView = () => {
                 return (
                   <div
                     key={keys[i]}
+                    ref={virtual.on ? virtual.measure : undefined}
+                    data-index={i}
+                    aria-setsize={virtual.on ? items.length : undefined}
+                    aria-posinset={virtual.on ? i + 1 : undefined}
                     role="listitem"
                     tabIndex={0}
                     className={cn(cls, 'is-fields')}
@@ -410,6 +437,12 @@ export const ListView = () => {
                   </div>
                 );
               })}
+              {virtual.on && virtual.padBottom > 0 ? (
+                <div
+                  aria-hidden="true"
+                  style={{ gridColumn: '1 / -1', height: Math.max(0, virtual.padBottom - gapPx) }}
+                />
+              ) : null}
             </div>
           </div>
         )}
