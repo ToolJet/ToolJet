@@ -14,6 +14,8 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import PromoteConfirmationExtras from './PromoteConfirmationExtras';
 import { ReleaseScanGate } from '@/AppBuilder/_helpers/codeModeHooks';
+import { NESTED_WORKFLOW_PINS_BLOCKED } from '@/AppBuilder/Header/NestedWorkflowPinsBlockedDialog';
+import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 
 const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) => {
   const { moduleId } = useModuleContext();
@@ -149,8 +151,14 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
           error,
           `${versionToPromote.name} could not be promoted to ${data.target.name}. Please try again!`
         );
-        toast.error(errorMessage);
-        setPromoteError(errorMessage);
+        const rawError = error?.error || error?.message;
+        if (rawError?.code === NESTED_WORKFLOW_PINS_BLOCKED) {
+          useVersionManagerStore.getState().setPinsBlocked(rawError);
+          handleClose();
+        } else {
+          toast.error(errorMessage);
+          setPromoteError(errorMessage);
+        }
         useStore.getState().debugger.log({
           logLevel: 'error',
           type: 'component',

@@ -26,7 +26,8 @@ import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { v4 as uuid } from 'uuid';
 import { APP_TYPES } from '@modules/apps/constants';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from './module-ref.util';
-import { resolveAllWorkflowRefsForVersion, resolveWorkflowRef } from './workflow-ref.util';
+import { pinIsDraftSentinel, resolveAllWorkflowRefsForVersion, resolveWorkflowRef } from './workflow-ref.util';
+import { readWorkflowQueryRefs } from '@helpers/workflow_query_options.helper';
 import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import {
   assertGitSyncEditAllowedForOrg,
@@ -39,6 +40,8 @@ import { VersionSettingsWrite } from '@modules/app-validation/types';
 
 /** A table that resolves in the target environment but hasn't caught up on all its migrations yet. */
 export type TableBehindWarning = { tableId: string; tableName: string; missingCount: number };
+
+const NESTED_WORKFLOW_PINS_BLOCKED = 'NESTED_WORKFLOW_PINS_BLOCKED';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -702,6 +705,14 @@ export class VersionUtilService implements IVersionUtilService {
     }
   }
 
+  private async isWorkflowVersion(versionId: string, manager: EntityManager): Promise<boolean> {
+    const [app] = await manager.query(
+      `SELECT a.type FROM apps a JOIN app_versions av ON av.app_id = a.id WHERE av.id = $1`,
+      [versionId]
+    );
+    return app?.type === APP_TYPES.WORKFLOW;
+  }
+
   // Twin of checkDraftModulesInApp for embedded workflows. Blocks on what a pin RESOLVES TO,
   // never on what it says, so a future sentinel needs no change here.
   //
@@ -736,7 +747,7 @@ export class VersionUtilService implements IVersionUtilService {
       );
       const nameByCoRel = new Map(workflowApps.map((w) => [w.coRel, w.name]));
 
-      type Offender = { name: string; kind: 'no-row' | 'invalid-pin' | 'draft-pinned' };
+      type Offender = { name: string; kind: 'no-row' | 'invalid-pin' | 'draft-pinned'; followsDraft?: boolean };
       const offenders: Offender[] = [];
       const seenCoRel = new Set<string>();
 
@@ -757,7 +768,9 @@ export class VersionUtilService implements IVersionUtilService {
             defaultBranchId
           );
         } catch {
-          offenders.push({ name, kind: 'invalid-pin' });
+          // A draft-following pin throws once that draft has been saved; it is still pinned to a draft.
+          const { workflowVersionId } = readWorkflowQueryRefs(optionsByDataQueryId.get(ref.dataQueryId));
+          offenders.push({ name, kind: 'invalid-pin', followsDraft: pinIsDraftSentinel(workflowVersionId) });
           continue;
         }
 
@@ -785,6 +798,15 @@ export class VersionUtilService implements IVersionUtilService {
             : `Workflow "${o.name}" has a draft version pinned. Pin a saved version.`;
 
       const workflowList = offenders.map(formatEntry).join(' ');
+      const blockedDialog =
+        offenders.every((o) => o.kind === 'draft-pinned' || o.followsDraft) &&
+        (await this.isWorkflowVersion(versionId, manager))
+          ? {
+              code: NESTED_WORKFLOW_PINS_BLOCKED,
+              action: 'save',
+              workflows: offenders.map(({ name }) => ({ name })),
+            }
+          : {};
       throw new BadRequestException({
         message: {
           error:
@@ -792,6 +814,7 @@ export class VersionUtilService implements IVersionUtilService {
               ? `Save blocked - ${formatEntry(offenders[0])}`
               : `Save blocked - ${offenders.length} workflows need saving. ${workflowList}`,
           details: workflowList,
+          ...blockedDialog,
         },
       });
     } catch (error) {
@@ -1149,8 +1172,17 @@ export class VersionUtilService implements IVersionUtilService {
         offenders.length === 1
           ? `Promote blocked - ${formatEntry(offenders[0])}`
           : `Promote blocked - ${offenders.length} dependent workflows need attention. ${workflowList}`;
+      const blockedDialog =
+        offenders.every((o) => o.kind === 'not-promoted') && (await this.isWorkflowVersion(versionId, manager))
+          ? {
+              code: NESTED_WORKFLOW_PINS_BLOCKED,
+              action: 'promote',
+              environment: targetEnvironmentName,
+              workflows: offenders.map(({ name, versionName }) => ({ name, versionName })),
+            }
+          : {};
       throw new BadRequestException({
-        message: { error: message, details: workflowList },
+        message: { error: message, details: workflowList, ...blockedDialog },
       });
     } catch (error) {
       if (error instanceof BadRequestException) throw error;

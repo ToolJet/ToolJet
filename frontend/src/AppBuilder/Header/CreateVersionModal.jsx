@@ -9,6 +9,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Warning from '@/_ui/Icon/solidIcons/Warning';
+import NestedWorkflowPinsBlockedDialog, { NESTED_WORKFLOW_PINS_BLOCKED } from './NestedWorkflowPinsBlockedDialog';
 import '../../_styles/version-modal.scss';
 import { suggestVersionName } from '@/AppBuilder/_helpers/versionNames';
 import {
@@ -40,6 +41,7 @@ const CreateVersionModal = ({
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [buildingCode, setBuildingCode] = useState(false);
   const [codeBuildError, setCodeBuildError] = useState(null);
+  const [pinsBlocked, setPinsBlocked] = useState(null);
   const [versionName, setVersionName] = useState('');
   const [versionDescription, setVersionDescription] = useState('');
   const isGitSyncEnabled = orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
@@ -301,8 +303,13 @@ const CreateVersionModal = ({
         const rawError = error?.error || error?.message;
         const errorMessage = saveErrorMessage(error);
         const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
-        toast.error(errorMessage);
-        setCodeBuildError({ message: errorMessage, first: null, inline: true });
+        if (rawError?.code === NESTED_WORKFLOW_PINS_BLOCKED) {
+          setPinsBlocked(rawError);
+          setShowCreateAppVersion(false);
+        } else {
+          toast.error(errorMessage);
+          setCodeBuildError({ message: errorMessage, first: null, inline: true });
+        }
         useStore.getState().debugger.log({
           logLevel: 'error',
           type: 'component',
@@ -318,6 +325,9 @@ const CreateVersionModal = ({
       setIsCreatingVersion(false);
     }
   };
+
+  if (pinsBlocked)
+    return <NestedWorkflowPinsBlockedDialog blocked={pinsBlocked} onClose={() => setPinsBlocked(null)} />;
 
   return (
     <AlertDialog

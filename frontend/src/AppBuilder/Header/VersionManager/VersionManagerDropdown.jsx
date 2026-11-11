@@ -13,6 +13,7 @@ import VersionDropdownItem from './VersionDropdownItem';
 import CreateDraftButton from './CreateDraftButton';
 import VersionItemSkeleton from './VersionItemSkeleton';
 import { CreateVersionModal, CreateDraftVersionModal, EditVersionModal } from '.';
+import NestedWorkflowPinsBlockedDialog from '../NestedWorkflowPinsBlockedDialog';
 import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
@@ -76,6 +77,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     setSelectedEnvironmentFilter,
     fetchVersionsForEnvironment,
     refreshVersions,
+    pinsBlocked,
+    setPinsBlocked,
   } = useVersionManagerStore();
 
   const { currentBranch, pullApp: pullAppAction } = useWorkspaceBranchesStore(
@@ -857,6 +860,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
           </div>,
           document.body
         )}
+      <NestedWorkflowPinsBlockedDialog blocked={pinsBlocked} onClose={() => setPinsBlocked(null)} />
     </>
   );
 };
