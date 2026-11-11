@@ -254,7 +254,7 @@ export const OTP = (props: Record<string, unknown>) => {
               ref={ref as never}
               length={n}
               value={value}
-              mask={mask}
+               mask={mask ? '•' : false}
               disabled={disabled}
               variant={look.variant}
               size={look.size}
