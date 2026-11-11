@@ -12,6 +12,7 @@ import {
 } from './inlineRuntime';
 import { setActionRegistrySettled } from './actionRegistry';
 import { MODAL_ATTR, installModalFocusTrap, restoreFocusInside } from './packFocus';
+import { relayPointerEnter } from './pointerEnterRelay';
 import { POPUP_LAYER_CLASS, keepPopupTabOrder, rememberInnerFocus } from './popupTabOrder';
 import useStore from '@/AppBuilder/_stores/store';
 
@@ -348,6 +349,7 @@ const acquireLayer = (library: string, sheets: Sheets, widgetHost: HTMLElement) 
   container.appendChild(host);
   const release = isolateInteractiveEvents(host);
   const releaseTabOrder = keepPopupTabOrder(host, overlay);
+  const releaseEnter = relayPointerEnter(root, overlay);
   const layer: Layer = {
     overlay,
     host,
@@ -356,6 +358,7 @@ const acquireLayer = (library: string, sheets: Sheets, widgetHost: HTMLElement) 
     release: () => {
       release();
       releaseTabOrder();
+      releaseEnter();
       sheets.release(root);
       // A pack may keep the layer's root after it is gone (Ant's rc-util style cache is keyed by container): empty it,
       // so the popups and the listeners React put on the overlay go with the layer.
@@ -602,11 +605,13 @@ const InlineLibraryComponent = ({
     const releaseHost = isolateInteractiveEvents(el, pressOptions.current);
     const releaseFocus = restoreFocusInside(el, root);
     const releaseInnerFocus = rememberInnerFocus(el);
+    const releaseEnter = relayPointerEnter(root, mount);
     setShadow({ mount, popupHost: layer.host });
     return () => {
       releaseHost();
       releaseFocus();
       releaseInnerFocus();
+      releaseEnter();
       releaseLayer(layerKey);
       sheets.release(root);
       // A pack may keep the root after the unmount (Ant's icons register every shadow root in rc-util's style
