@@ -23,7 +23,11 @@ const buildAbility = async (
   const user = { id: 'u1', organizationId: OWN_WORKSPACE } as User;
   const request = {
     // Pre-computed permissions skip the DB lookup in AbilityFactory.createAbility.
-    tj_user_permissions: { isSuperAdmin: role === 'superAdmin', isAdmin: role !== 'builder', isBuilder: role === 'builder' },
+    tj_user_permissions: {
+      isSuperAdmin: role === 'superAdmin',
+      isAdmin: role !== 'builder',
+      isBuilder: role === 'builder',
+    },
     tj_workspace: opts.target ? { id: opts.target } : undefined,
     body: opts.body ?? {},
   };
