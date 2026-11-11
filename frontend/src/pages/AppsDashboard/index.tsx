@@ -14,12 +14,9 @@ import { useIsWorkspaceBranchLocked } from '@/pages/AppsDashboard/hooks/useIsWor
 import { useRootAppsQuery } from '@/pages/AppsDashboard/hooks/useRootAppsQuery';
 
 import { Separator } from '@/components/ui/Rocket/Separator/Separator';
-import Layout from '@/_ui/Layout';
 import WorkspaceLockedBanner from '@/_ui/WorkspaceLockedBanner';
 
 import { NoAppsExist } from './components/EmptyStates';
-import { useIsMobileView } from './MobileView/hooks/useIsMobileView';
-import MobileAppsDashboard from './MobileView/MobileAppsDashboard';
 import AddNewMenu from './components/AddNewMenu';
 import BuildWithAIButton from './components/BuildWithAIButton';
 import MoreActionsMenu from './components/MoreActionsMenu';
@@ -37,31 +34,11 @@ import {
 import { useLicenseStore } from '@/_stores/licenseStore';
 import type { ILicenseStore } from '@/_stores/types/licenseStore';
 
-const classes = { contentContainer: 'tw-h-dvh tw-flex tw-flex-col', contentBody: 'tw-pt-0' };
-
 interface AppsDashboardProps {
   appType: TAppType;
-  darkMode: boolean;
-  switchDarkMode: () => void;
 }
 
-// Only the front-end apps dashboard has a mobile layout; modules and workflows stay on the desktop one.
-export default function AppsDashboard(props: AppsDashboardProps) {
-  const isMobileView = useIsMobileView();
-
-  if (props.appType === 'front-end' && isMobileView) return <MobileAppsDashboard />;
-  return <DesktopAppsDashboard {...props} />;
-}
-
-function DesktopAppsDashboard({
-  appType,
-  darkMode,
-  switchDarkMode,
-}: {
-  appType: TAppType;
-  darkMode: boolean;
-  switchDarkMode: () => void;
-}) {
+export default function AppsDashboard({ appType }: AppsDashboardProps) {
   const navigate = useNavigate();
 
   useHeaderSearchConfig({ placeholder: searchPlaceholderByAppType[appType] });
@@ -151,13 +128,7 @@ function DesktopAppsDashboard({
   const hasItems = isRootAppsLoading || searchQuery.trim() !== '' || (rootApps?.total ?? 0) > 0;
 
   return (
-    <Layout
-      showNewHeader
-      classes={classes}
-      shouldWrapContentBody={false}
-      darkMode={darkMode}
-      switchDarkMode={switchDarkMode}
-    >
+    <>
       <WorkspaceLockedBanner showNewBanner pageContext={`${appTypeToDisplayNameMapping[appType]}s`} />
 
       <main className="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-4 tw-pt-10">
@@ -195,6 +166,6 @@ function DesktopAppsDashboard({
         limits={appsLimit?.appsCount ?? {}}
         hasCreatePermission={hasCreatePermission}
       />
-    </Layout>
+    </>
   );
 }

@@ -28,6 +28,7 @@ const MarketplacePlugins = React.lazy(
 const WorkspaceSettings = React.lazy(() => import('@/modules/WorkspaceSettings'));
 
 const WorkspaceConstants = React.lazy(() => import('@/WorkspaceConstants'));
+const AppsDashboard = React.lazy(() => import('@/pages/AppsDashboard'));
 
 import LayoutRouteWrapper from '@/_ui/Layout/LayoutRouteWrapper';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
@@ -71,7 +72,7 @@ import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
 import UpgradePlanModal from '@/modules/common/components/UpgradePlanModal';
-import AppsDashboard from '@/pages/AppsDashboard';
+import AppsDashboardRoute from '@/Routes/AppsDashboardRoute';
 import ReactQueryClientProvider from './ReactQueryClientProvider';
 
 const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
@@ -407,19 +408,6 @@ class AppComponent extends React.Component {
                     </PrivateRoute>
                   }
                 />
-                {isWorkflowsFeatureEnabled() && (
-                  <Route
-                    exact
-                    path="/:workspaceId/workflows/"
-                    element={
-                      <DesktopOnlyRoute darkMode={darkMode}>
-                        <PrivateRoute darkMode={darkMode}>
-                          <Workflows switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                        </PrivateRoute>
-                      </DesktopOnlyRoute>
-                    }
-                  />
-                )}
                 {/* EE renders migrations inside its instance settings shell (settings/*). */}
                 {fetchEdition() === 'ce' && (
                   <Route
@@ -500,26 +488,17 @@ class AppComponent extends React.Component {
                     </SwitchWorkspaceRoute>
                   }
                 />
-                <Route
-                  exact
-                  path="/:workspaceId/modules"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute>
-                        <AppsDashboard appType="module" switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
-                <Route
-                  exact
-                  path="/:workspaceId"
-                  element={
-                    <PrivateRoute>
-                      <AppsDashboard appType="front-end" switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </PrivateRoute>
-                  }
-                />
+
+                <Route element={<AppsDashboardRoute darkMode={darkMode} switchDarkMode={this.switchDarkMode} />}>
+                  <Route exact path="/:workspaceId" element={<AppsDashboard appType="front-end" />} />
+
+                  <Route exact path="/:workspaceId/modules" element={<AppsDashboard appType="module" />} />
+
+                  {isWorkflowsFeatureEnabled() && (
+                    <Route exact path="/:workspaceId/workflows" element={<AppsDashboard appType="workflow" />} />
+                  )}
+                </Route>
+
                 <Route
                   exact
                   path="/:workspaceId/home"

@@ -27,7 +27,7 @@ function Layout({
   enableCollapsibleSidebar = false,
   collapseSidebar = false,
   toggleCollapsibleSidebar = () => {},
-  classes = null,
+  classes,
   showNewHeader = false,
   shouldWrapContentBody = true,
 }) {

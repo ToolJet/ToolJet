@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 
-import { useIsMobileView } from '../hooks/useIsMobileView';
+import { useIsMobileView } from '../useIsMobileView';
 
 type Listener = (event: { matches: boolean }) => void;
 
@@ -31,6 +31,27 @@ describe('useIsMobileView', () => {
     renderHook(() => useIsMobileView());
 
     expect(matchMedia).toHaveBeenCalledWith('(max-width: 719.98px)');
+  });
+
+  test('uses a custom query when one is passed', () => {
+    const { matchMedia } = mockMatchMedia(true);
+
+    renderHook(() => useIsMobileView('(max-width: 480px)'));
+
+    expect(matchMedia).toHaveBeenCalledWith('(max-width: 480px)');
+    expect(matchMedia).not.toHaveBeenCalledWith('(max-width: 719.98px)');
+  });
+
+  test('re-subscribes when the query changes', () => {
+    const media = mockMatchMedia(false);
+    const { rerender } = renderHook(({ query }) => useIsMobileView(query), {
+      initialProps: { query: '(max-width: 480px)' },
+    });
+
+    rerender({ query: '(max-width: 600px)' });
+
+    expect(media.matchMedia).toHaveBeenLastCalledWith('(max-width: 600px)');
+    expect(media.listenerCount()).toBe(1);
   });
 
   test.each([true, false])('starts as %s when the media query matches that way', (matches) => {
