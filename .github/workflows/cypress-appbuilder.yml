@@ -431,6 +431,15 @@ jobs:
 
       - name: Seeding (Disable SSRF protection)
         run: |
+          # The SSRF settings API only exists on branches that have it; skip the step where it does not.
+          STATUS=$(curl --silent --output /dev/null --write-out '%{http_code}' \
+            -b /tmp/tj_cookies.txt \
+            'http://localhost:3000/api/instance-settings/ssrf' \
+            -H "tj-workspace-id: $TJ_ORG_ID")
+          if [ "$STATUS" = "404" ]; then
+            echo "SSRF settings API not found, skipping"
+            exit 0
+          fi
           curl --fail-with-body \
             -b /tmp/tj_cookies.txt \
             -X PUT \
