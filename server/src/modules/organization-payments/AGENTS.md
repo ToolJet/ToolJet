@@ -19,10 +19,10 @@ table. CE ships stubs only; everything real lives in `server/ee/organization-pay
 | `constants/feature.ts` | Feature config; `STRIPE_WEBHOOK` and `GET_PLAN_PRICES` are `isPublic` |
 | `ability/index.ts` | Admin-only for every route except the two public ones |
 | `guards/organizationLicenseAccess.guard.ts` | `:organizationId` in the path must be the caller's Workspace |
-| `guards/stripe-webhook.guard.ts` | Verifies the Stripe signature (`STRIPE_WEBHOOK_ENDPOINT_SECRET`) |
 | `organizationAiFeature.repository.ts` | AI credit wallet balances (recurring / top-up) |
 | `controller.ts`, `service.ts` | CE stubs (`Method not implemented`) |
 | `ee/organization-payments/service.ts` | Stripe calls, webhook handlers, license writes, `getPlanPrices()` |
+| `ee/organization-payments/guards/stripe-webhook.guard.ts` | Verifies the `Stripe-Signature` header against the raw body (`STRIPE_WEBHOOK_ENDPOINT_SECRET`) |
 | `ee/organization-payments/helpers/plan-prices.ts` | Pure conversion of Stripe prices into plan prices, plus the relay shape check |
 
 ## Edition split
