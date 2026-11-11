@@ -1,0 +1,19 @@
+{
+  "name": "Order management",
+  "description": "Take orders from placement through picking and packing to carrier handover.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "order-management",
+  "category": "inventory-orders-and-fleet"
+}

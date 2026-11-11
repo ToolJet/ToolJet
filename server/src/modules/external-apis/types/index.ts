@@ -59,6 +59,8 @@ interface Features {
   [FEATURE_KEY.ARCHIVE_WORKSPACE_USER_V2]: FeatureConfig;
   [FEATURE_KEY.UNARCHIVE_WORKSPACE_USER_V2]: FeatureConfig;
   [FEATURE_KEY.LIST_WORKSPACE_USER_GROUPS_V2]: FeatureConfig;
+  [FEATURE_KEY.LIST_WORKSPACE_USER_APPS_V2]: FeatureConfig;
+  [FEATURE_KEY.LIST_WORKSPACE_APP_USERS_V2]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

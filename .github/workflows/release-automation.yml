@@ -13,19 +13,7 @@ permissions:
   issues: read
 
 jobs:
-  release-vulnerability-gate:
-    if: |
-      github.event.pull_request.merged == true &&
-      startsWith(github.event.pull_request.head.ref, 'release/') &&
-      contains(github.event.pull_request.title, '|') &&
-      contains(github.event.pull_request.title, '[') &&
-      contains(github.event.pull_request.title, ']')
-    uses: ./.github/workflows/release-vulnerability-gate.yml
-    secrets:
-      DEPENDABOT_ALERTS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN }}
-
   release-automation:
-    needs: release-vulnerability-gate
     if: |
       github.event.pull_request.merged == true &&
       startsWith(github.event.pull_request.head.ref, 'release/') &&
@@ -41,9 +29,12 @@ jobs:
 
     steps:
       - name: Extract Branch Name and Base Branch
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
-          echo "BRANCH_NAME=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
-          echo "BASE_BRANCH=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
+          echo "BRANCH_NAME=$HEAD_REF" >> $GITHUB_ENV
+          echo "BASE_BRANCH=$BASE_REF" >> $GITHUB_ENV
 
       - name: Merge PR in ee-server (if exists)
         run: |
@@ -76,8 +67,9 @@ jobs:
 
       - name: Extract Version from PR Title
         id: extract-version
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
         run: |
-          TITLE="${{ github.event.pull_request.title }}"
           echo "PR Title: $TITLE"
           
           # Extract the complete tag from text after | character

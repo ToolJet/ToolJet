@@ -49,6 +49,11 @@ export const pageConfig = {
       displayName: 'Pill radius',
       type: 'numberInput',
     },
+    appTitleColor: {
+      accordion: 'container',
+      displayName: 'App title',
+      type: 'colorSwatches',
+    },
     backgroundColor: {
       accordion: 'container',
       displayName: 'Background',
@@ -102,6 +107,10 @@ export const pageConfig = {
       },
       pillRadius: {
         value: '6',
+      },
+      appTitleColor: {
+        value: 'var(--cc-primary-text)',
+        isDefault: false,
       },
       backgroundColor: {
         value: 'var(--cc-surface1-surface)',

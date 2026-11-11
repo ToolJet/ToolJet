@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "TypeSafe datasource",
+  "description": "A schema defining TypeSafe datasource",
+  "type": "api",
+  "defaults": {
+    "operation": "evaluate"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select an operation",
+      "list": [
+        {
+          "value": "evaluate",
+          "name": "Evaluate"
+        }
+      ]
+    },
+    "evaluate": {
+      "state": {
+        "label": "State",
+        "key": "state",
+        "type": "codehinter",
+        "className": "codehinter-plugins",
+        "description": "What to decide about: a ticket, a record, a message. Text is sent as text; JSON is sent as structured state.",
+        "height": "120px",
+        "mandatory": true,
+        "placeholder": "{{components.table1.selectedRow}}",
+        "tooltip": "Send the fields the questions need, not whole pages. Jev reads literally and large unrelated detail lowers accuracy."
+      },
+      "questions": {
+        "label": "Questions",
+        "key": "questions",
+        "type": "codehinter",
+        "className": "codehinter-plugins",
+        "description": "JSON map of question id to a typed question. Answers come back under the same ids as data.answers.<id>.",
+        "height": "220px",
+        "mandatory": true,
+        "placeholder": "{\n  \"route\": {\n    \"type\": \"choice\",\n    \"instructions\": \"Which team should handle this?\",\n    \"criteria\": { \"billing\": \"Payments, invoicing, refunds\", \"technical\": \"Bugs, outages\", \"sales\": \"Pricing, upgrades\" }\n  },\n  \"urgent\": { \"type\": \"noul\", \"instructions\": \"Is this time-sensitive?\" },\n  \"mood\": { \"type\": \"score\", \"instructions\": \"How frustrated is the customer?\", \"criteria\": [\"Calm\", \"Frustrated\", \"Very angry\"] }\n}",
+        "tooltip": "choice: criteria is a map of option to description. score: criteria is an ordered list of at least two levels. noul: a yes/no question, criteria optional {true, false}."
+      },
+      "model": {
+        "label": "Model",
+        "key": "model",
+        "type": "codehinter",
+        "className": "codehinter-plugins",
+        "description": "Blank uses jev-latest (TypeSafe) or typesafe/jev-1.13 (OpenRouter)",
+        "height": "36px",
+        "mandatory": false,
+        "placeholder": "jev-latest",
+        "editorType": "extendedSingleLine"
+      }
+    }
+  }
+}

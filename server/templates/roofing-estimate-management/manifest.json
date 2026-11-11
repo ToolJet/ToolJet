@@ -1,0 +1,16 @@
+{
+  "name": "Roofing estimate management",
+  "description": "Turn roof inspections into itemized estimates and track each job through delivery.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "roofing-estimate-management",
+  "category": "construction-and-installation"
+}

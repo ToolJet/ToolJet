@@ -13,6 +13,7 @@ interface Features {
   [FEATURE_KEY.UPDATE_SUBSCRIPTION]: FeatureConfig;
   [FEATURE_KEY.ADD_TOP_UP_CREDITS]: FeatureConfig;
   [FEATURE_KEY.GET_AI_CREDITS_BALANCE]: FeatureConfig;
+  [FEATURE_KEY.GET_PLAN_PRICES]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

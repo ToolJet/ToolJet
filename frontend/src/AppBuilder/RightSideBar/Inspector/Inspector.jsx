@@ -3,9 +3,9 @@ import { Table } from './Components/Table/Table.jsx';
 import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
 import Form from './Components/Form/index.js';
-import { renderElement, renderCustomStyles, goToModule } from './Utils';
+import { renderElement, renderCustomStyles, goToModule, getDocsLink, shouldClearLegacyInvalidDates } from './Utils';
 import { toast } from 'react-hot-toast';
-import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
+import { validateQueryName, resolveReferences } from '@/_helpers/utils';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
 import { PhoneInput } from './Components/PhoneInput/PhoneInput.jsx';
@@ -13,6 +13,7 @@ import { CurrencyInput } from './Components/CurrencyInput/CurrencyInput.jsx';
 import { Modal } from './Components/Modal';
 import { ModalV2 } from './Components/ModalV2';
 import { CustomComponent } from './Components/CustomComponent';
+import { LibraryComponentProperties } from './Components/LibraryComponent';
 import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
@@ -50,6 +51,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
+import { useCodeSearchReveal } from '@/AppBuilder/LeftSidebar/CodeSearch/useCodeSearchReveal';
 import { Cascader } from './Components/Cascader/Cascader';
 import { PencilRuler, SquareDashedMousePointer, SquarePen, Copy, LockKeyhole, Trash } from 'lucide-react';
 import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
@@ -175,6 +177,16 @@ export const Inspector = ({
   const setComponentPermission = useStore((state) => state.setComponentPermission);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const [tabsPropertiesPanelKey, setTabsPropertiesPanelKey] = useState(uuidv4());
+  // The Inspector isn't remounted on selection, so the tab is kept per component: selecting another
+  // component opens on Properties, as when the tabs were uncontrolled.
+  const [tab, setTab] = useState({ componentId: selectedComponentId, key: 'properties' });
+  const activeTab = tab.componentId === selectedComponentId ? tab.key : 'properties';
+  const setActiveTab = (key) => setTab({ componentId: selectedComponentId, key });
+  // Code search opens the tab (Properties / Styles) a field lives under.
+  useCodeSearchReveal('inspectorTab', selectedComponentId, (tabKey) => {
+    setActiveTab(tabKey);
+    return true;
+  });
   const dataQueries = useDataQueries();
 
   const currentState = useCurrentState();
@@ -338,6 +350,26 @@ export const Inspector = ({
       const skipResolve =
         component.component.component === 'CustomComponent' && param.name === 'code' && paramType === 'properties';
       setComponentProperty(selectedComponentId, param.name, value, paramType, attr, skipResolve);
+
+      // A legacy DaterangePicker (migrated with properties.legacyInvalidDates)
+      // opts into the corrected invalid-date exposure the moment its date data
+      // — Default start date, Default end date, or Format — is explicitly
+      // edited. The flag is only ever cleared, never set back.
+      if (
+        shouldClearLegacyInvalidDates({
+          componentType: component.component.component,
+          paramName: param.name,
+          paramType,
+          attr,
+          definition: newDefinition,
+        })
+      ) {
+        newDefinition.properties = {
+          ...newDefinition.properties,
+          legacyInvalidDates: { value: '{{false}}' },
+        };
+        setComponentProperty(selectedComponentId, 'legacyInvalidDates', '{{false}}', 'properties', 'value', false);
+      }
     }
 
     componentDefinitionChanged(newComponent, {
@@ -504,7 +536,12 @@ export const Inspector = ({
   const renderDocumentationLink = () => {
     return (
       <span className="widget-documentation-link">
-        <a href={getDocsLink(componentMeta)} target="_blank" rel="noreferrer" data-cy="widget-documentation-link">
+        <a
+          href={getDocsLink(componentMeta?.component)}
+          target="_blank"
+          rel="noreferrer"
+          data-cy="widget-documentation-link"
+        >
           <span>
             <Student width={13} fill={'#3E63DD'} />
             <small className="widget-documentation-link-text">
@@ -603,7 +640,7 @@ export const Inspector = ({
     }
 
     return (
-      <div className="input-icon">
+      <div data-param="name" className="input-icon">
         <input
           onChange={(e) => setNewComponentName(e.target.value)}
           type="text"
@@ -619,7 +656,7 @@ export const Inspector = ({
 
   const renderTabs = () => {
     return (
-      <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isModuleContainer}>
+      <Tabs activeKey={activeTab} onSelect={setActiveTab} id="inspector" hidden={isModuleContainer}>
         <Tab eventKey="properties" title="Properties">
           {propertiesTab}
         </Tab>
@@ -747,28 +784,6 @@ export const Inspector = ({
   );
 };
 
-const getDocsLink = (componentMeta) => {
-  const component = componentMeta?.component ?? '';
-  switch (component) {
-    case 'ToggleSwitchV2':
-      return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
-    case 'DropdownV2':
-      return 'https://docs.tooljet.com/docs/widgets/dropdown';
-    case 'DropDown':
-      return 'https://docs.tooljet.com/docs/widgets/dropdown';
-    case 'MultiselectV2':
-      return 'https://docs.tooljet.com/docs/widgets/multiselect';
-    case 'DaterangePicker':
-      return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
-    case 'RangeSliderV2':
-      return 'https://docs.tooljet.com/docs/widgets/range-slider';
-    case 'ModuleViewer':
-    case 'ModuleContainer':
-      return 'https://docs.tooljet.com/docs/app-builder/modules/overview';
-    default:
-      return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
-  }
-};
 const widgetsWithStyleConditions = {
   Modal: {
     conditions: [
@@ -977,6 +992,9 @@ const GetAccordion = React.memo(
 
       case 'CustomComponent':
         return <CustomComponent {...restProps} />;
+
+      case 'LibraryComponent':
+        return <LibraryComponentProperties {...restProps} />;
 
       case 'Icon':
         return <Icon {...restProps} />;

@@ -51,6 +51,10 @@ export class AppUpdateDto {
   @IsOptional()
   is_maintenance_on: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  workflow_enabled?: boolean;
+
   @IsString()
   @IsOptional()
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
@@ -157,6 +161,15 @@ export class AppListDto {
   @IsOptional()
   @IsIn(['picker'])
   context?: string;
+}
+
+@Exclude()
+export class RestrictedAccessInfoDto {
+  @Expose()
+  appName: string;
+
+  @Expose()
+  folderName: string | null;
 }
 
 export class VersionReleaseDto {

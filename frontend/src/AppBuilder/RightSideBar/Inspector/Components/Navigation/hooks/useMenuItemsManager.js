@@ -1,21 +1,41 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { validateStaticId, trimStaticId } from '../../../Utils';
 
 export const useMenuItemsManager = (component, paramUpdated) => {
   const [menuItems, setMenuItems] = useState([]);
   const [hoveredItemIndex, setHoveredItemIndex] = useState(null);
   const [expandedGroups, setExpandedGroups] = useState({});
   const lastLocalUpdateRef = useRef(null);
+  // Mirrors `menuItems` synchronously (unlike the state variable, which only reflects
+  // the latest value after React re-renders). Two edits dispatched in the same tick —
+  // e.g. the Id field committing on blur right as a toggle's click-driven onChange
+  // fires — must each build on the other's result instead of both reading the same
+  // stale `menuItems` closure and the second one clobbering the first. Every mutator
+  // below reads/writes this ref instead of `menuItems` directly.
+  const menuItemsRef = useRef(menuItems);
 
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
 
+  // `_key` is render-only identity; strip before persisting.
+  const stripInternalKeys = (items) =>
+    items.map(({ _key, ...item }) => {
+      if (item.children) {
+        return { ...item, children: stripInternalKeys(item.children) };
+      }
+      return item;
+    });
+
   // Helper function to update menu items
   const updateMenuItems = (newItems) => {
+    const itemsToPersist = stripInternalKeys(newItems);
     // Track that this update originated locally so the sync effect can skip it
-    lastLocalUpdateRef.current = JSON.stringify(newItems);
+    lastLocalUpdateRef.current = JSON.stringify(itemsToPersist);
+    menuItemsRef.current = newItems;
     setMenuItems(newItems);
-    paramUpdated({ name: 'menuItems' }, 'value', newItems, 'properties', false);
+    paramUpdated({ name: 'menuItems' }, 'value', itemsToPersist, 'properties', false);
   };
 
   // Helper function to construct menu items from component definition
@@ -24,8 +44,22 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     if (!Array.isArray(itemsValue)) {
       itemsValue = itemsValue ? Object.values(itemsValue) : [];
     }
+    // `_key` never round-trips from the store (stripped before persisting), so reusing an
+    // existing item's previous `_key` here keeps its row identity stable — otherwise a resync
+    // would re-key it, remounting the row and closing any popover open on it.
+    const previousKeyById = new Map();
+    const collectKeys = (items) => {
+      items.forEach((item) => {
+        if (item._key) previousKeyById.set(item.id, item._key);
+        if (item.children) collectKeys(item.children);
+      });
+    };
+    collectKeys(menuItemsRef.current);
+
     return itemsValue.map((item) => {
       const newItem = { ...item };
+      // Stable row identity, independent of the editable `id`; backfilled for legacy items.
+      newItem._key = item._key || previousKeyById.get(item.id) || uuidv4();
       Object.keys(item).forEach((key) => {
         if (typeof item[key]?.value === 'boolean') {
           newItem[key] = { ...item[key], value: `{{${item[key]?.value}}}` };
@@ -35,6 +69,7 @@ export const useMenuItemsManager = (component, paramUpdated) => {
       if (item.isGroup && item.children) {
         newItem.children = item.children.map((child) => {
           const newChild = { ...child };
+          newChild._key = child._key || previousKeyById.get(child.id) || uuidv4();
           Object.keys(child).forEach((key) => {
             if (typeof child[key]?.value === 'boolean') {
               newChild[key] = { ...child[key], value: `{{${child[key]?.value}}}` };
@@ -64,7 +99,7 @@ export const useMenuItemsManager = (component, paramUpdated) => {
         if (item.children) collectIds(item.children);
       });
     };
-    collectIds(menuItems);
+    collectIds(menuItemsRef.current);
 
     let counter = 1;
     let newId = `${prefix}${counter}`;
@@ -92,6 +127,7 @@ export const useMenuItemsManager = (component, paramUpdated) => {
 
     const baseItem = {
       id,
+      _key: uuidv4(),
       label: isGroup ? `Group ${id.replace('group', '')}` : `Item ${id.replace('item', '')}`,
       icon: { value: randomIcon },
       iconVisibility: true,
@@ -107,25 +143,86 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     return baseItem;
   };
 
+  // Validate a candidate item id against every other id in the tree (top-level + children).
+  // Stable identity (reads menuItemsRef, needs no deps): the Id field's `validationFn` is a
+  // dependency of SingleLineCodeEditor's value-reset effect, so a fresh function reference
+  // here on every render would wipe an in-progress edit on any unrelated re-render.
+  const validateItemId = useCallback((value, currentItemId) => {
+    const existingIds = [];
+    const collectIds = (items) => {
+      items.forEach((item) => {
+        existingIds.push(item.id);
+        if (item.children) collectIds(item.children);
+      });
+    };
+    collectIds(menuItemsRef.current);
+
+    return validateStaticId(value, existingIds, currentItemId);
+  }, []);
+
+  // Rename the `ref` on any events bound to this item so they follow the item's new id
+  const renameItemEventRefs = (oldId, newId) => {
+    const { getModuleEvents, updateAppVersionEventHandlers } = useStore.getState().eventsSlice;
+    const events = getModuleEvents('canvas').filter((e) => e.sourceId === component?.id && e.event?.ref === oldId);
+    if (events.length === 0) return;
+
+    const updatedEvents = events.map((e) => ({ ...e, event: { ...e.event, ref: newId } }));
+    updateAppVersionEventHandlers(
+      updatedEvents.map((e) => ({ event_id: e.id, diff: e })),
+      'update'
+    );
+  };
+
+  // Find the item a field's onChange is targeting, by its stable `_key` rather than
+  // its `id` — `id` is itself an editable field here, and every field in the popover
+  // shares the same closure's `item`, so a same-tick sibling call (e.g. a toggle firing
+  // right after the Id field's blur commit) must still resolve to the right item even
+  // after an earlier call in the same tick has already renamed it.
+  const findItemByKey = (items, itemKey, parentId) => {
+    if (parentId) {
+      const parent = items.find((item) => item.id === parentId);
+      return parent?.children?.find((child) => child._key === itemKey);
+    }
+    return items.find((item) => item._key === itemKey);
+  };
+
   // Event handlers
-  const handleItemChange = (propertyPath, value, itemId, parentId = null) => {
-    const newItems = menuItems.map((item) => {
+  const handleItemChange = (propertyPath, rawValue, itemKey, parentId = null) => {
+    const currentItems = menuItemsRef.current;
+    const oldId = findItemByKey(currentItems, itemKey, parentId)?.id;
+
+    // Store id trimmed, matching what was validated.
+    const value = propertyPath === 'id' ? trimStaticId(rawValue) : rawValue;
+
+    // Reject a colliding id outright, even locally — NavItemPopover already blocks
+    // this, but keep the hook itself safe against any other caller too.
+    if (propertyPath === 'id') {
+      const [isValid] = validateItemId(value, oldId);
+      if (!isValid) return;
+    }
+
+    const newItems = currentItems.map((item) => {
       if (parentId && item.id === parentId && item.children) {
         return {
           ...item,
           children: item.children.map((child) => {
-            if (child.id === itemId) {
+            if (child._key === itemKey) {
               return updateItemProperty(child, propertyPath, value);
             }
             return child;
           }),
         };
       }
-      if (item.id === itemId) {
+      if (item._key === itemKey) {
         return updateItemProperty(item, propertyPath, value);
       }
       return item;
     });
+
+    if (propertyPath === 'id') {
+      renameItemEventRefs(oldId, value);
+    }
+
     updateMenuItems(newItems);
   };
 
@@ -158,15 +255,18 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     });
   };
 
-  const handleDeleteItem = (itemId, parentId = null) => {
+  const handleDeleteItem = (itemKey, parentId = null) => {
+    const currentItems = menuItemsRef.current;
+    const deleted = findItemByKey(currentItems, itemKey, parentId);
+
     if (parentId) {
       // Child item: only its own events (children can't have their own children).
-      cleanupItemEvents([itemId]);
-      const newItems = menuItems.map((item) => {
+      if (deleted) cleanupItemEvents([deleted.id]);
+      const newItems = currentItems.map((item) => {
         if (item.id === parentId && item.children) {
           return {
             ...item,
-            children: item.children.filter((child) => child.id !== itemId),
+            children: item.children.filter((child) => child._key !== itemKey),
           };
         }
         return item;
@@ -174,27 +274,28 @@ export const useMenuItemsManager = (component, paramUpdated) => {
       updateMenuItems(newItems);
     } else {
       // Top-level: the item plus (if it's a group) every child that gets removed with it.
-      const deleted = menuItems.find((item) => item.id === itemId);
-      const affectedIds = [itemId, ...(deleted?.isGroup ? (deleted.children || []).map((c) => c.id) : [])];
+      const affectedIds = deleted
+        ? [deleted.id, ...(deleted.isGroup ? (deleted.children || []).map((c) => c.id) : [])]
+        : [];
       cleanupItemEvents(affectedIds);
-      const newItems = menuItems.filter((item) => item.id !== itemId);
+      const newItems = currentItems.filter((item) => item._key !== itemKey);
       updateMenuItems(newItems);
     }
   };
 
   const handleAddItem = () => {
     const newItem = generateNewItem(false);
-    updateMenuItems([...menuItems, newItem]);
+    updateMenuItems([...menuItemsRef.current, newItem]);
   };
 
   const handleAddGroup = () => {
     const newGroup = generateNewItem(true);
-    updateMenuItems([...menuItems, newGroup]);
+    updateMenuItems([...menuItemsRef.current, newGroup]);
   };
 
   const handleAddItemToGroup = (groupId) => {
     const newItem = generateNewItem(false);
-    const newItems = menuItems.map((item) => {
+    const newItems = menuItemsRef.current.map((item) => {
       if (item.id === groupId && item.isGroup) {
         return {
           ...item,
@@ -252,6 +353,7 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     if (lastLocalUpdateRef.current === definitionJson) return;
 
     const items = constructMenuItems();
+    menuItemsRef.current = items;
     setMenuItems(items);
     // Preserve existing expanded states, only add newly discovered groups
     setExpandedGroups((prev) => {
@@ -278,5 +380,6 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     handleAddItemToGroup,
     handleReorder,
     getResolvedValue,
+    validateItemId,
   };
 };

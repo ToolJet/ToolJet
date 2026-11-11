@@ -26,6 +26,8 @@ export const QueryPanel = ({ darkMode }) => {
   const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
+  // On mobile the query panel overlays the canvas via a higher z-index.
+  const isMobileLayout = useStore((state) => state.currentLayout === 'mobile', shallow);
   const selectedQueryId = useStore((state) => state.queryPanel?.selectedQuery?.id, shallow);
 
   const queryManagerPreferences = useRef(
@@ -151,7 +153,10 @@ export const QueryPanel = ({ darkMode }) => {
     setIsQueryPaneExpanded(newIsExpanded);
     localStorage.setItem(
       'queryManagerPreferences',
-      JSON.stringify({ isExpanded: newIsExpanded, queryPanelHeight: newIsExpanded ? height : 95 })
+      JSON.stringify({
+        isExpanded: newIsExpanded,
+        queryPanelHeight: newIsExpanded ? height : 95,
+      })
     );
     setQueryPanelHeight(newIsExpanded ? height : 95);
   }, [height, isQueryPaneExpanded, setQueryPanelHeight, setIsQueryPaneExpanded]);
@@ -159,7 +164,9 @@ export const QueryPanel = ({ darkMode }) => {
   return (
     <div className={cx({ 'dark-theme theme-dark': darkMode })}>
       <div
-        className={`query-pane ${isQueryPaneExpanded ? 'expanded' : 'collapsed'}`}
+        className={cx('query-pane', isQueryPaneExpanded ? 'expanded' : 'collapsed', {
+          'query-pane--mobile': isMobileLayout,
+        })}
         style={{
           height: 40,
           ...(isRightSidebarOpen && {
@@ -202,7 +209,7 @@ export const QueryPanel = ({ darkMode }) => {
       <div
         ref={queryPaneRef}
         onMouseDown={onMouseDown}
-        className="query-pane"
+        className={cx('query-pane', { 'query-pane--mobile': isMobileLayout })}
         id="query-manager"
         style={{
           height: `calc(100% - ${isQueryPaneExpanded ? height : 100}%)`,
@@ -214,7 +221,9 @@ export const QueryPanel = ({ darkMode }) => {
           ...(!isQueryPaneExpanded && {
             border: 'none',
           }),
-          ...((isTopOfQueryPanel || isDraggingQueryPane) && { borderColor: 'var(--border-accent-weak, #97AEFC)' }),
+          ...((isTopOfQueryPanel || isDraggingQueryPane) && {
+            borderColor: 'var(--border-accent-weak, #97AEFC)',
+          }),
           ...(isDraggingQueryPane && {
             zIndex: 11,
           }),

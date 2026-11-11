@@ -3,7 +3,7 @@
   "title": "Manifest schema",
   "description": "Tooljet manifest schema",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "$schema": {
       "type": "string",
@@ -18,50 +18,123 @@
       "description": "description of datasource"
     },
     "type": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/type"
-      }
+      "anyOf": [
+        {
+          "$ref": "#/definitions/pluginType"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pluginType"
+          }
+        }
+      ]
     },
     "defaults": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {}
+      "type": "object"
     },
     "source": {
       "type": "object",
-      "additionalProperties": false,
+      "required": [
+        "name",
+        "kind"
+      ],
       "properties": {
         "name": {
           "type": "string"
         },
         "kind": {
           "type": "string"
-        },
-        "exposedVariables": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "isLoading": {
-              "type": "string"
-            },
-            "data": {
-              "type": "string"
-            },
-            "rawData": {
-              "type": "string"
-            }
-          }
         }
+      }
+    },
+    "tj:source": {
+      "$ref": "#/properties/source"
+    },
+    "properties": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/node"
       }
     }
   },
+  "anyOf": [
+    {
+      "required": [
+        "source"
+      ]
+    },
+    {
+      "required": [
+        "tj:source"
+      ]
+    }
+  ],
   "definitions": {
-    "type": {
+    "node": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "array",
+                    "boolean",
+                    "dropdown",
+                    "dropdown-component-flip",
+                    "dynamic-selector",
+                    "number",
+                    "password",
+                    "react-component-google-sheets",
+                    "react-component-headers",
+                    "react-component-oauth",
+                    "react-component-oauth-authentication",
+                    "react-component-openapi-validator",
+                    "react-component-sharepoint",
+                    "react-component-slack",
+                    "react-component-zendesk",
+                    "react-form-component",
+                    "string",
+                    "text",
+                    "textarea",
+                    "toggle"
+                  ]
+                },
+                {
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/node"
+          }
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/node"
+          }
+        },
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        }
+      ]
+    },
+    "pluginType": {
       "enum": [
+        "ai",
         "api",
         "cloud-storage",
-        "database"
+        "database",
+        "object"
       ]
     }
   }

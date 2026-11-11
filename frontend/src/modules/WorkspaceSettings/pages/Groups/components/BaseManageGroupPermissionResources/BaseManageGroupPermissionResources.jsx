@@ -352,7 +352,7 @@ class BaseManageGroupPermissionResources extends React.Component {
           <SolidIcon name="informationcircle" fill="#3E63DD" /> {text}
           <a
             style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
-            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
+            href="https://docs.tooljet.com/docs/user-management/role-based-access/user-roles#permissions-for-user-roles"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -409,27 +409,7 @@ class BaseManageGroupPermissionResources extends React.Component {
         });
     };
 
-    if (selectedNewRole === 'end-user') {
-      groupPermissionV2Service
-        .getUserAdminGroups(updatingUserRole.id)
-        .then(({ groups }) => {
-          if (groups.length > 0) {
-            this.closeChangeRoleModal();
-            this.setState({
-              showAutoRoleChangeModal: true,
-              autoRoleChangeMessageType: 'DOWNGRADE_BLOCKED_BY_GROUP_ADMIN',
-              autoRoleChangeModalList: groups.map((g) => g.name),
-            });
-          } else {
-            proceedWithRoleChange();
-          }
-        })
-        .catch(() => {
-          proceedWithRoleChange();
-        });
-    } else {
-      proceedWithRoleChange();
-    }
+    proceedWithRoleChange();
   };
   closeChangeRoleModal = () =>
     this.setState({
@@ -548,12 +528,8 @@ class BaseManageGroupPermissionResources extends React.Component {
   };
 
   fetchAddableAdmins = () => {
-    const isBuilder = authenticationService.currentSessionValue?.user_permissions?.is_builder;
-
-    console.log('isBuilder', isBuilder);
-
-    // if the user is a builder, don't fetch addable admins as they won't have permissions to add any admins to the group
-    if (isBuilder === true) {
+    // only workspace admins can assign group admins, so group admins don't fetch the addable list
+    if (!authenticationService.currentSessionValue?.admin) {
       return;
     }
 
@@ -567,22 +543,14 @@ class BaseManageGroupPermissionResources extends React.Component {
       });
   };
 
-  searchAddableAdmins = (query) => {
-    const q = (query || '').toLowerCase();
-    const filtered = this.state.addableAdmins.filter((u) => {
-      const name = `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase();
-      return name.includes(q) || (u.email || '').toLowerCase().includes(q);
-    });
-    return Promise.resolve(
-      filtered.map((u) => ({
-        name: `${u.firstName || ''} ${u.lastName || ''} (${u.email})`.trim(),
-        value: u.id,
-        email: u.email,
-        first_name: u.firstName,
-        last_name: u.lastName,
-      }))
-    );
-  };
+  getAddableAdminOptions = () =>
+    this.state.addableAdmins.map((u) => ({
+      name: `${u.firstName || ''} ${u.lastName || ''} (${u.email})`.trim(),
+      value: u.id,
+      email: u.email,
+      first_name: u.firstName,
+      last_name: u.lastName,
+    }));
 
   addSelectedAdminsToGroup = () => {
     const { selectedAdminUsers } = this.state;
@@ -912,6 +880,100 @@ class BaseManageGroupPermissionResources extends React.Component {
     );
   };
 
+  renderDataSourceFolderPermissions = ({ groupPermission, isCE, isBasicPlan, disableNonPromoteReleasePermissions }) => {
+    const showConsolidated = isCE;
+    const dataSourceFolderCRUD = groupPermission.dataSourceFolderCreate || groupPermission.dataSourceFolderDelete;
+
+    if (showConsolidated) {
+      return (
+        <label className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={dataSourceFolderCRUD}
+            disabled={disableNonPromoteReleasePermissions}
+            onChange={() => {
+              const newValue = !dataSourceFolderCRUD;
+              this.updateGroupPermission(groupPermission.id, {
+                dataSourceFolderCreate: newValue,
+                dataSourceFolderDelete: newValue,
+              });
+              this.setState({
+                updateParam: { dataSourceFolderCreate: newValue, dataSourceFolderDelete: newValue },
+              });
+            }}
+            data-cy="data-source-folder-crud-checkbox"
+          />
+          <span className="form-check-label" data-cy="data-source-folder-crud-label">
+            {this.props.t(
+              'header.organization.menus.manageGroups.permissionResources.createUpdateDelete',
+              'Create/Update/Delete'
+            )}
+          </span>
+          <span
+            class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
+            data-cy="data-source-folder-crud-helper-text"
+          >
+            All operations on data source folders
+          </span>
+        </label>
+      );
+    }
+
+    return (
+      <>
+        <label className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={groupPermission.dataSourceFolderCreate}
+            disabled={disableNonPromoteReleasePermissions}
+            onChange={() => {
+              this.updateGroupPermission(groupPermission.id, {
+                dataSourceFolderCreate: !groupPermission.dataSourceFolderCreate,
+              });
+              this.setState({ updateParam: { dataSourceFolderCreate: !groupPermission.dataSourceFolderCreate } });
+            }}
+            data-cy="data-source-folder-create-checkbox"
+          />
+          <span className="form-check-label" data-cy="data-source-folder-create-label">
+            {this.props.t('header.organization.menus.manageGroups.permissionResources.create', 'Create')}
+          </span>
+          <span
+            class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
+            data-cy="data-source-folder-create-helper-text"
+          >
+            Create new data source folders in this workspace
+          </span>
+        </label>
+        <label className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={groupPermission.dataSourceFolderDelete}
+            disabled={disableNonPromoteReleasePermissions}
+            onChange={() => {
+              this.updateGroupPermission(groupPermission.id, {
+                dataSourceFolderDelete: !groupPermission.dataSourceFolderDelete,
+              });
+              this.setState({ updateParam: { dataSourceFolderDelete: !groupPermission.dataSourceFolderDelete } });
+            }}
+            data-cy="data-source-folder-delete-checkbox"
+          />
+          <span className="form-check-label" data-cy="data-source-folder-delete-label">
+            {this.props.t('header.organization.menus.manageGroups.permissionResources.delete', 'Delete')}
+          </span>
+          <span
+            class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
+            data-cy="data-source-folder-delete-helper-text"
+          >
+            Delete any data source folders in this workspace
+          </span>
+        </label>
+      </>
+    );
+  };
+
   render() {
     if (!this.props.groupPermissionId) return null;
 
@@ -944,15 +1006,17 @@ class BaseManageGroupPermissionResources extends React.Component {
 
     const { featureAccess } = this.props;
 
-    const { licenseStatus: { isExpired, isLicenseValid } = {}, plan } = featureAccess || {};
-    // Treat both basic and starter plans as restricted plans
+    const { licenseStatus: { isExpired, isLicenseValid, licenseType } = {}, plan } = featureAccess || {};
+    // Treat basic, starter and basicplus plans as restricted plans
     const isCE = fetchEdition() === 'ce';
-    const isBasicPlan = featureAccess === undefined ? false : isExpired || !isLicenseValid || plan === 'starter';
-    const isPaidPlan = featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter';
+    const isBasicPlan =
+      featureAccess === undefined ? false : isExpired || !isLicenseValid || plan === 'starter' || plan === 'basicplus';
+    const isPaidPlan =
+      featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter' && plan !== 'basicplus';
     const { customGroups: isFeatureEnabled, modulesEnabled: isModulesEnabled } = featureAccess || {};
 
-    // Workspace admin has full edit access; group-admin builders are read-only on permissions/granular tabs
-    // and cannot change user roles (but can still add/remove users).
+    // Workspace admin has full edit access; group admins (builders and end-users) see the permissions/granular
+    // tabs read-only and cannot change user roles (but can still add/remove users).
     const isAdmin = !!authenticationService.currentSessionValue?.admin;
 
     const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
@@ -1526,6 +1590,19 @@ class BaseManageGroupPermissionResources extends React.Component {
                                   </div>
                                 </div>
                                 <div className="manage-groups-permission-apps">
+                                  <div data-cy="resource-data-source-folders">Data source folder</div>
+                                  <div className="text-muted">
+                                    <div className="d-flex apps-permission-wrap flex-column">
+                                      {this.renderDataSourceFolderPermissions({
+                                        groupPermission,
+                                        isCE,
+                                        isBasicPlan,
+                                        disableNonPromoteReleasePermissions,
+                                      })}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="manage-groups-permission-apps">
                                   <div data-cy="resource-workspace-variable">
                                     {this.props.t('globals.environmentVar', 'Workspace constant/variable')}
                                   </div>
@@ -1608,6 +1685,55 @@ class BaseManageGroupPermissionResources extends React.Component {
                                     </div>
                                   </div>
                                 </div>
+                                {!isCE && (
+                                  <div className="manage-groups-permission-apps">
+                                    <div data-cy="resource-pat">Personal access token</div>
+                                    <div className="text-muted">
+                                      <div className="d-flex apps-permission-wrap flex-column">
+                                        {[
+                                          {
+                                            key: 'patCreate',
+                                            label: 'Create',
+                                            helper: 'Create a token in this workspace',
+                                          },
+                                          {
+                                            key: 'patRevoke',
+                                            label: 'Revoke',
+                                            helper: 'Revoke a token in this workspace',
+                                          },
+                                        ].map(({ key, label, helper }) => (
+                                          <label key={key} className="form-check form-check-inline">
+                                            <input
+                                              className="form-check-input"
+                                              type="checkbox"
+                                              onChange={() => {
+                                                this.updateGroupPermission(groupPermission.id, {
+                                                  [key]: !groupPermission[key],
+                                                });
+                                                this.setState({ updateParam: { [key]: !groupPermission[key] } });
+                                              }}
+                                              checked={!!groupPermission[key]}
+                                              disabled={disableNonPromoteReleasePermissions}
+                                              data-cy={`pat-${label.toLowerCase()}-checkbox`}
+                                            />
+                                            <span
+                                              className="form-check-label"
+                                              data-cy={`pat-${label.toLowerCase()}-label`}
+                                            >
+                                              {label}
+                                            </span>
+                                            <span
+                                              className={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
+                                              data-cy={`pat-${label.toLowerCase()}-helper-text`}
+                                            >
+                                              {helper}
+                                            </span>
+                                          </label>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
                               </>
                             )}
                           </div>
@@ -1679,7 +1805,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                     'not-found': `${searchSelectClass}__not-found`,
                                   }}
                                   onSelect={(val) => this.setState({ selectedAdminUsers: val })}
-                                  onSearch={this.searchAddableAdmins}
+                                  options={this.getAddableAdminOptions()}
                                   selectedValues={selectedAdminUsers}
                                   onReset={() => this.setState({ selectedAdminUsers: [] })}
                                   placeholder="Select users to assign as group admins"

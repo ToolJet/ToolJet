@@ -170,7 +170,7 @@ export abstract class AbilityGuard implements CanActivate {
           });
         }
 
-        if (app?.isPublic && !featureInfo.shouldNotSkipPublicApp) {
+        if (app?.isPublic && !featureInfo.shouldNotSkipPublicApp && !user?.oauthGrantId) {
           // No need to do validations if app is public
           return true;
         }

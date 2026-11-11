@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "{{PLUGIN_TITLE}} datasource",
+  "description": "A schema defining {{PLUGIN_TITLE}} datasource",
+  "type": "api",
+  "source": {
+    "name": "{{PLUGIN_NAME}}",
+    "kind": "{{PLUGIN_KIND}}",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "customTesting": false
+  },
+  "defaults": {
+    "api_key": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "api_key": {
+      "label": "API Key",
+      "key": "api_key",
+      "type": "password",
+      "description": "Enter your API key"
+    }
+  },
+  "required": [
+    "api_key"
+  ]
+}

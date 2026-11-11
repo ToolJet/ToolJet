@@ -2,7 +2,7 @@
   "version": 1,
   "boundary": {
     "include": "src/AppBuilder/**/*.{js,jsx,ts,tsx}",
-    "structuralExclusions": ["__tests__", "__mocks__", "stories", "test-fixtures", ".d.ts"]
+    "structuralExclusions": ["__tests__", "__mocks__", "stories", "test-fixtures", ".d.ts", "types"]
   },
   "target": { "lines": 80, "branches": 80, "enforcement": "report-only" },
   "editions": ["ce", "ee"],

@@ -23,7 +23,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  *                            'app_versions_default_branch_slug_unique'.
  * Both exception names are preserved verbatim — apps/util.service.ts's
  * catchDbException matches on these strings, and
- * workflow-slug-trigger.e2e-spec.ts asserts on /app_versions_workflow_slug_unique/.
+ * workflow-slug-trigger.spec.ts asserts on /app_versions_workflow_slug_unique/.
  *
  * Trigger column list is the superset (slug, branch_id, app_id) of the two
  * originals — trg_app_versions_workflow_slug_unique was slug-only, so this also

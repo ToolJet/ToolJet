@@ -37,6 +37,7 @@ import useWorkflowStore from '@/_stores/workflowStore';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
 import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
 import { completionLabelTooltip } from './completionLabelTooltip';
+import { codeSearchHighlight } from './codeSearchHighlight';
 
 // Hoisted to module scope so their identity never changes: anything fed into the
 // CodeMirror `extensions` prop must stay referentially stable, otherwise
@@ -149,7 +150,15 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
 
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   let newInitialValue = initialValue;
-  if (typeof initialValue === 'string' && (initialValue?.includes('components') || initialValue?.includes('queries'))) {
+  if (typeof initialValue === 'number' || typeof initialValue === 'boolean') {
+    // A code field can receive a raw scalar from a non-UI writer (MCP, REST API, app import). The editor
+    // only renders strings (the typeof guard in the effect below bails on anything else), so a raw
+    // number/boolean would otherwise render blank — coerce it to its string form so the value shows.
+    newInitialValue = String(initialValue);
+  } else if (
+    typeof initialValue === 'string' &&
+    (initialValue?.includes('components') || initialValue?.includes('queries'))
+  ) {
     newInitialValue = replaceIdsWithName(initialValue);
   }
 
@@ -494,8 +503,9 @@ const EditorInput = ({
             // rows. Enable wrapping so per-row selection rects
             // are generated.
             EditorView.lineWrapping,
+            codeSearchHighlight,
           ]
-        : [langExtension, tooltipExtension, EditorView.lineWrapping],
+        : [langExtension, tooltipExtension, EditorView.lineWrapping, codeSearchHighlight],
     [showSuggestions, langExtension, autoCompleteConfig, customTabKeymap]
   );
 
@@ -780,7 +790,7 @@ const DynamicEditorBridge = (props) => {
   };
 
   return (
-    <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
+    <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')} data-param={paramName}>
       <div className={cx('d-flex align-items-center justify-content-between code-flex-wrapper')}>
         {renderedLabel()}
         <div className={`${(paramType ?? 'code') === 'code' ? 'd-none' : ''} flex-grow-1`}>

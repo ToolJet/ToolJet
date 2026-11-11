@@ -9,6 +9,9 @@ export const commonSelectors = {
   workFlowNameInputField: '[data-cy="app-name-input"]',
   toastMessage: ".go4109123758",
   oldToastMessage: ".go318386747",
+  // Component delete confirmation (AppBuilder/Shared/EntityDelete/EntityDeleteDialog.tsx)
+  entityDeleteModal: '[data-cy="entity-delete-modal"]',
+  entityDeleteConfirm: '[data-cy="entity-delete-confirm"]',
   appSlugAccept: '[data-cy="app-slug-accepted-label"]',
   newToastMessage:
     '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > .go3958317564',
@@ -39,7 +42,6 @@ export const commonSelectors = {
   loginButton: '[data-cy="login-button"]',
   dropdown: "[data-cy=workspace-dropdown]",
   backButton: "[data-cy=left-sidebar-back-button]",
-  dashboardAppCreateButton: '[data-cy="button-new-application-from-scratch"]',
   appCreateButton: "[data-cy=create-new-apps-button]",
   createButton: "[data-cy=create-button]",
   appNameInput: "[data-cy=app-name-input]",
@@ -400,6 +402,10 @@ export const commonWidgetSelector = {
   inspectorIcon: '[data-cy="left-sidebar-inspector-button"]',
   tooltipInputField: "[data-cy='tooltip-input-field']",
   tooltipLabel: "[id=button-tooltip]",
+  togglrButton: (value) => `[data-cy="togglr-button-${value}"]`,
+  // Radix, not bootstrap's `.tooltip-inner`. Renders its content twice (once
+  // VisuallyHidden), so scope every match with .first() or `have.text` sees it doubled.
+  widgetTooltip: '[data-cy="widget-tooltip"]',
   homePageLogo: '[data-cy="home-page-logo"]',
 
   noEventHandlerMessage: "[data-cy='no-items-banner']",

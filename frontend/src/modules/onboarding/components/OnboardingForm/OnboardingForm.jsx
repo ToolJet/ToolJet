@@ -38,6 +38,14 @@ const OnboardingForm = ({
     prevStep();
   };
 
+  // Never let the browser submit the form natively: that reloads the page to `/setup?`. Steps
+  // without onSubmit (e.g. the trial step) have plain <button>s, which default to type="submit".
+  // Under React 18 the button's own disabled state no longer lands before the browser acts.
+  const handleSubmit = (e) => {
+    e?.preventDefault();
+    onSubmit?.(e);
+  };
+
   const disabledCondition = disabledBackButton || (initiatedInvitedUserOnboarding && currentStep === 1);
   const iconClasses = cx('steps__back', {
     disabled: disabledCondition,
@@ -55,7 +63,7 @@ const OnboardingForm = ({
           </div>
           <FormHeader>{title}</FormHeader>
           {description && <FormDescription>{description}</FormDescription>}
-          <form onSubmit={onSubmit} className="">
+          <form onSubmit={handleSubmit} className="">
             {children}
             {!hideSubmitBtn && (
               <SubmitButton

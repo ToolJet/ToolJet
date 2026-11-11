@@ -34,7 +34,7 @@ describe('Module embedded-in-editable-app view access', () => {
   let nestApp: INestApplication;
 
   beforeAll(async () => {
-    ({ app: nestApp } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+    ({ app: nestApp } = await initTestApp());
   });
 
   afterAll(async () => {

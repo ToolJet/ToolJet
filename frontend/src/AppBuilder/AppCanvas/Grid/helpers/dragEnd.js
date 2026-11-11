@@ -268,7 +268,32 @@ export const getDroppableSlotIdOnScreen = (event, widgets, excludeWidgetIds = []
         return DROPPABLE_PARENTS.has(widgetType);
       });
 
-    return slotId;
+    if (slotId) return slotId;
+
+    // Falls back to the source Modal when this search comes up empty but the
+    // cursor is still within the Modal's dialog bounds, avoiding a false
+    // "dragged out to canvas" block.
+    const sourceParentId = getWidgetById(widgets, event.target.id)?.parent;
+    const sourceParentBaseId = sourceParentId
+      ? sourceParentId.length > 36
+        ? sourceParentId.slice(0, 36)
+        : sourceParentId
+      : null;
+    const sourceParentWidget = sourceParentBaseId ? getWidgetById(widgets, sourceParentBaseId) : null;
+    if (sourceParentWidget?.component?.component === 'ModalV2') {
+      const dialogRect = document.querySelector(`.tj-modal-content-${sourceParentBaseId}`)?.getBoundingClientRect();
+      const isCursorWithinDialog =
+        dialogRect &&
+        event.clientX >= dialogRect.left &&
+        event.clientX <= dialogRect.right &&
+        event.clientY >= dialogRect.top &&
+        event.clientY <= dialogRect.bottom;
+      if (isCursorWithinDialog) {
+        return sourceParentId;
+      }
+    }
+
+    return undefined;
   }
 };
 

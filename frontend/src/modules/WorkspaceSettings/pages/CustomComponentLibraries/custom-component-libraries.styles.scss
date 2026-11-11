@@ -1,0 +1,166 @@
+
+.custom-component-libraries-page {
+  max-width: 55rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .libraries-count {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: var(--text-default, #11181c);
+    min-height: 20px; // keeps the card from jumping while the count loads
+    margin-bottom: 0;
+  }
+
+  .libraries-card {
+    flex: 1;
+    min-height: 0; // design's card fills the content area; body scrolls inside
+    display: flex;
+    flex-direction: column;
+    background: var(--surfaces-surface-01);
+    border: 1px solid var(--border-weak);
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+    overflow: hidden;
+  }
+
+  .libraries-table-header {
+    display: flex;
+    padding: 16px 36px 8px 16px;
+    border-bottom: 1px solid var(--border-weak, #f1f3f5);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 20px;
+    color: var(--text-placeholder, #7e868c);
+
+    .col-name {
+      width: 204px;
+    }
+
+    .col-version {
+      flex: 1;
+      padding: 0 10px;
+    }
+  }
+
+  .libraries-table-body {
+    padding: 0 16px;
+    overflow-y: auto;
+  }
+
+  .libraries-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--border-weak, #eceef0);
+    }
+
+    .col-name {
+      width: 180px;
+      margin-right: 24px;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--text-default, #11181c);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .col-version {
+      flex: 1;
+      padding: 10px;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--text-default, #11181c);
+    }
+
+    .library-kebab-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      border-radius: 4px;
+      background: var(--base, #fff);
+      border: 1px solid var(--border-default, #d7dbdf);
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+      color: var(--text-default, #11181c);
+      cursor: pointer;
+
+      &:hover {
+        background: var(--interactive-overlays-fill-hover, #f8f9fa);
+      }
+    }
+  }
+
+  .libraries-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 48px 16px;
+
+    .libraries-empty-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+      color: var(--text-default, #11181c);
+    }
+
+    .libraries-empty-subtitle {
+      margin: 0;
+      font-size: 12px;
+      line-height: 18px;
+      color: var(--text-placeholder, #7e868c);
+    }
+
+    .libraries-retry-link {
+      border: none;
+      background: none;
+      padding: 0;
+      font-size: 12px;
+      color: var(--indigo9, #4368e3);
+      cursor: pointer;
+    }
+  }
+}
+
+.library-kebab-menu {
+  .library-kebab-delete {
+    color: var(--tomato9, #e54d2e);
+    cursor: pointer;
+  }
+}
+
+.library-delete-modal {
+  .library-delete-confirm p {
+    margin: 0 0 1.5rem;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--text-default, #11181c);
+  }
+
+  .library-delete-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+#popover-ccl-menu {
+  border: 1px solid var(--border-weak, #eceef0);
+
+  .popover-body {
+    padding: 0.25rem;
+  }
+}

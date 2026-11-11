@@ -25,7 +25,7 @@ import {
   ValidationOptions,
   ValidationArguments,
 } from 'class-validator';
-import { Transform, Type, Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { USER_STATUS } from '@modules/users/constants/lifecycle';
 import { TjdbSchemaToLatestVersion } from '@dto/transformers/resource-transformer';
@@ -554,6 +554,12 @@ export class ExportTjdbTableAsCsvDto {
   @IsNumber()
   @Min(0)
   offset?: number;
+
+  // Which environment's relation to export from. Unset falls back to the resolver's own default
+  // (development) - same resolveEnvironment/getRelation seam the read routes use.
+  @IsOptional()
+  @IsUUID()
+  environmentId?: string;
 }
 
 export class ExportAppAdminDto {
@@ -605,6 +611,248 @@ export class UnbanWorkspaceDto {
   slug?: string;
 }
 
+export enum AppAccessPermission {
+  VIEW = 'view',
+  EDIT = 'edit',
+}
+
+class AppAccessListV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsEnum(AppAccessPermission)
+  permission?: AppAccessPermission;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+export class ListWorkspaceUserAppsV2QueryDto extends AppAccessListV2QueryDto {}
+
+export class ListWorkspaceAppUsersV2QueryDto extends AppAccessListV2QueryDto {}
+
+@Exclude()
+export class PaginationV2ResponseDto {
+  @Expose()
+  page: number;
+
+  @Expose({ name: 'per_page' })
+  perPage: number;
+
+  @Expose({ name: 'total_count' })
+  totalCount: number;
+}
+
+@Exclude()
+export class AppEnvironmentAccessV2ResponseDto {
+  @Expose()
+  development: boolean;
+
+  @Expose()
+  staging: boolean;
+
+  @Expose()
+  production: boolean;
+
+  @Expose()
+  released: boolean;
+}
+
+@Exclude()
+export class AppPermissionsV2ResponseDto {
+  @Expose({ name: 'can_view' })
+  canView: boolean;
+
+  @Expose({ name: 'can_edit' })
+  canEdit: boolean;
+
+  @Expose({ name: 'hidden_from_dashboard' })
+  hiddenFromDashboard: boolean;
+
+  @Expose()
+  @Type(() => AppEnvironmentAccessV2ResponseDto)
+  environments: AppEnvironmentAccessV2ResponseDto;
+}
+
+@Exclude()
+export class AccessSourceGroupV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  type: string;
+}
+
+@Exclude()
+export class AppAccessSourceV2ResponseDto {
+  @Expose()
+  type: 'group' | 'owner' | 'super_admin';
+
+  @Expose()
+  @Type(() => AccessSourceGroupV2ResponseDto)
+  group?: AccessSourceGroupV2ResponseDto;
+
+  @Expose()
+  scope?: 'all_apps' | 'selected_apps';
+
+  @Expose()
+  permission?: AppAccessPermission;
+
+  @Expose({ name: 'hidden_from_dashboard' })
+  hiddenFromDashboard?: boolean;
+}
+
+@Exclude()
+export class UserAppAccessV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  slug: string;
+
+  @Expose()
+  @Type(() => AppPermissionsV2ResponseDto)
+  permissions: AppPermissionsV2ResponseDto;
+
+  @Expose({ name: 'access_sources' })
+  @Type(() => AppAccessSourceV2ResponseDto)
+  accessSources: AppAccessSourceV2ResponseDto[];
+}
+
+@Exclude()
+export class AppUserAccessV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  email: string;
+
+  @Expose()
+  status: string;
+
+  @Expose()
+  role: string;
+
+  @Expose()
+  @Type(() => AppPermissionsV2ResponseDto)
+  permissions: AppPermissionsV2ResponseDto;
+
+  @Expose({ name: 'access_sources' })
+  @Type(() => AppAccessSourceV2ResponseDto)
+  accessSources: AppAccessSourceV2ResponseDto[];
+}
+
+@Exclude()
+export class ListWorkspaceUserAppsV2ResponseDto {
+  @Expose()
+  @Type(() => UserAppAccessV2ResponseDto)
+  data: UserAppAccessV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+@Exclude()
+export class ListWorkspaceAppUsersV2ResponseDto {
+  @Expose()
+  @Type(() => AppUserAccessV2ResponseDto)
+  data: AppUserAccessV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
+export class UpdateWorkspaceUserV2Dto {
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails?: UserDetailKeyValueDto[];
+}
+
+export class ListWorkspaceUsersV2QueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsEnum(Status)
+  status?: Status;
+
+  @IsOptional()
+  @IsEnum(USER_ROLE)
+  role?: USER_ROLE;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  per_page?: number = 20;
+}
+
+@Exclude()
+export class WorkspaceUserV2ResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  email: string;
+
+  @Expose()
+  role: string;
+
+  @Expose()
+  status: string;
+
+  @Expose({ name: 'userDetails' })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails: UserDetailKeyValueDto[];
+}
+
+@Exclude()
+export class ListWorkspaceUsersV2ResponseDto {
+  @Expose()
+  @Type(() => WorkspaceUserV2ResponseDto)
+  data: WorkspaceUserV2ResponseDto[];
+
+  @Expose()
+  @Type(() => PaginationV2ResponseDto)
+  pagination: PaginationV2ResponseDto;
+}
+
 export class UpdateUserV2Dto {
   @IsOptional()
   @IsString()
@@ -652,18 +900,6 @@ export class ListUserWorkspacesV2QueryDto {
   @Min(1)
   @Max(100)
   per_page?: number = 20;
-}
-
-@Exclude()
-export class PaginationV2ResponseDto {
-  @Expose()
-  page: number;
-
-  @Expose({ name: 'per_page' })
-  perPage: number;
-
-  @Expose({ name: 'total_count' })
-  totalCount: number;
 }
 
 @Exclude()
@@ -754,18 +990,6 @@ export class BulkCreateWorkspaceUsersV2Dto {
   users: CreateWorkspaceUserV2Dto[];
 }
 
-export class UpdateWorkspaceUserV2Dto {
-  @IsOptional()
-  @IsEnum(USER_ROLE)
-  role?: USER_ROLE;
-
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => UserDetailKeyValueDto)
-  userDetails?: UserDetailKeyValueDto[];
-}
-
 export class BulkUpdateWorkspaceUserEntryV2Dto {
   @IsString()
   @IsNotEmpty()
@@ -791,33 +1015,6 @@ export class BulkUpdateWorkspaceUsersV2Dto {
   users: BulkUpdateWorkspaceUserEntryV2Dto[];
 }
 
-export class ListWorkspaceUsersV2QueryDto {
-  @IsOptional()
-  @IsString()
-  search?: string;
-
-  @IsOptional()
-  @IsEnum(Status)
-  status?: Status;
-
-  @IsOptional()
-  @IsEnum(USER_ROLE)
-  role?: USER_ROLE;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number = 1;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  per_page?: number = 20;
-}
-
 export class ListWorkspaceUserGroupsV2QueryDto {
   @IsOptional()
   @Type(() => Number)
@@ -831,39 +1028,6 @@ export class ListWorkspaceUserGroupsV2QueryDto {
   @Min(1)
   @Max(100)
   per_page?: number = 20;
-}
-
-@Exclude()
-export class WorkspaceUserV2ResponseDto {
-  @Expose()
-  id: string;
-
-  @Expose()
-  name: string;
-
-  @Expose()
-  email: string;
-
-  @Expose()
-  role: string;
-
-  @Expose()
-  status: string;
-
-  @Expose({ name: 'userDetails' })
-  @Type(() => UserDetailKeyValueDto)
-  userDetails: UserDetailKeyValueDto[];
-}
-
-@Exclude()
-export class ListWorkspaceUsersV2ResponseDto {
-  @Expose()
-  @Type(() => WorkspaceUserV2ResponseDto)
-  data: WorkspaceUserV2ResponseDto[];
-
-  @Expose()
-  @Type(() => PaginationV2ResponseDto)
-  pagination: PaginationV2ResponseDto;
 }
 
 @Exclude()

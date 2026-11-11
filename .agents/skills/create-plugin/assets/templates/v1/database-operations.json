@@ -1,0 +1,33 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "{{PLUGIN_TITLE}} datasource",
+  "description": "A schema defining {{PLUGIN_TITLE}} datasource",
+  "type": "database",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "sql_mode",
+          "name": "SQL mode"
+        }
+      ]
+    },
+    "sql_mode": {
+      "query": {
+        "label": "Query",
+        "key": "query",
+        "type": "codehinter",
+        "description": "Enter SQL query",
+        "className": "codehinter-plugins",
+        "lineNumbers": true,
+        "height": "250px",
+        "placeholder": "SELECT * FROM table_name"
+      }
+    }
+  }
+}

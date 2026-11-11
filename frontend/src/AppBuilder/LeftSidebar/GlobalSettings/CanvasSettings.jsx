@@ -70,7 +70,7 @@ const CanvasSettings = ({ darkMode, isModuleEditor = false }) => {
     <>
       {/* Max canvas width row — hidden for modules: host app controls canvas width when embedded */}
       {!isModuleEditor && (
-        <div className="canvas-settings-row">
+        <div data-param="canvasMaxWidth" className="canvas-settings-row">
           <span className="canvas-settings-label" data-cy={`label-max-canvas-width`}>
             {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max canvas width')}
           </span>
@@ -88,6 +88,7 @@ const CanvasSettings = ({ darkMode, isModuleEditor = false }) => {
                 value={canvasMaxWidth}
               />
               <select
+                data-param="canvasMaxWidthType"
                 data-cy={`dropdown-max-canvas-width-type`}
                 className="canvas-width-type-select"
                 aria-label="Select canvas width type"
@@ -118,7 +119,7 @@ const CanvasSettings = ({ darkMode, isModuleEditor = false }) => {
       )}
 
       {/* Canvas background row */}
-      <div className="canvas-settings-row">
+      <div data-param="canvasBackgroundColor" className="canvas-settings-row">
         <span className="canvas-settings-label" data-cy={`label-bg-canvas`}>
           {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Canvas background')}
         </span>

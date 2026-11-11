@@ -28,7 +28,10 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   const { content: contentType, visibility, disabledState } = properties;
 
   // State
-  const [deviceLists, setDeviceLists] = useState({ cameras: [], microphones: [] });
+  const [deviceLists, setDeviceLists] = useState({
+    cameras: [],
+    microphones: [],
+  });
   const [selectedCameraId, setSelectedCameraId] = useState(null);
   const [facingMode, setFacingMode] = useState('environment');
   const [selectedMicrophoneId, setSelectedMicrophoneId] = useState(null);

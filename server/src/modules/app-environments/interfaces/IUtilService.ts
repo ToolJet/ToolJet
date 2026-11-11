@@ -7,7 +7,6 @@ import { AppVersion } from '@entities/app_version.entity';
 export interface IAppEnvironmentUtilService {
   getByPriority(organizationId: string, ASC?: boolean, manager?: EntityManager): Promise<AppEnvironment>;
   updateOptions(options: object, environmentId: string, dataSourceId: string, manager?: EntityManager): Promise<void>;
-  createDefaultEnvironments(organizationId: string, manager?: EntityManager): Promise<void>;
   getEnvironmentByName(name: string, organizationId: string, manager?: EntityManager): Promise<AppEnvironment>;
   getAllEnvironments(organizationId: string, manager?: EntityManager): Promise<AppEnvironment[]>;
   calculateButtonVisibility(
@@ -17,6 +16,11 @@ export interface IAppEnvironmentUtilService {
     versionId?: string,
     manager?: EntityManager
   ): Promise<{ shouldRenderPromoteButton: boolean; shouldRenderReleaseButton: boolean }>;
+  assertOwnedByOrganization(
+    organizationId: string,
+    ids: { appId?: string; environmentId?: string },
+    manager: EntityManager
+  ): Promise<void>;
   getSelectedVersion(selectedEnvironmentId: string, appId: string, manager?: EntityManager): Promise<any>;
   resolveEnvironmentId(
     organizationId: string,

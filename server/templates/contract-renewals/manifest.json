@@ -1,0 +1,21 @@
+{
+  "name": "Contract renewals",
+  "description": "Stay ahead of contract renewals. Track notice dates, commercial context and the work behind each renewal decision.",
+  "widgets": [
+    "Table",
+    "Listview",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "contract-renewals",
+  "category": "contracts"
+}

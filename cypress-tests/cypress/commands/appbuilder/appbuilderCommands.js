@@ -19,8 +19,14 @@ Cypress.Commands.add(
     widgetName2 = widgetName,
     canvas = null // null = auto-detect: #real-canvas, or ModuleContainer's sub-canvas if in module editor
   ) => {
-    // Open widget panel and search
-    cy.get('[data-cy="right-sidebar-components-button"]').click();
+    // Open widget panel and search. The sidebar button TOGGLES the panel and the
+    // panel can stay open after a drop, so only click it when the search box is
+    // not already showing — a blind click would close it.
+    cy.get("body").then(($body) => {
+      if (!$body.find(`${commonSelectors.searchField}:visible`).length) {
+        cy.get('[data-cy="right-sidebar-components-button"]').click();
+      }
+    });
     cy.get(commonSelectors.searchField)
       .should("be.visible")
       .first()
@@ -112,6 +118,27 @@ Cypress.Commands.add(
  */
 Cypress.Commands.add("forceClickOnCanvas", () => {
   cy.get(commonSelectors.canvas).click("topRight", { force: true });
+});
+
+/**
+ * @tjCmd   navigation · leave the editor for the app preview, in the SAME tab
+ * @tjUsage cy.openPreview()  ·  cy.openPreview(fileButtonSelector.button('filebutton1'))
+ */
+// Same tab, not a new one: the Preview control is a `target="_blank"` link
+// (HeaderActions.jsx), and a second tab would leave the rest of the test running against
+// the editor. openInCurrentTab strips the target before clicking.
+//
+// Widget selectors carry over unchanged — RenderWidget emits every widget `data-cy`
+// unconditionally (RenderWidget.jsx:323) and the viewer mounts the same AppCanvas; only
+// ConfigHandle, the Moveable classes and the grid are editor-only. What preview does NOT
+// have is the query panel, the Inspector, and the autosave indicator — so `cy.waitForAutoSave()`
+// after this will hang for its full timeout and fail.
+//
+// Pass `waitForSelector` to block until the app has actually rendered; navigation alone
+// resolves before the widgets mount.
+Cypress.Commands.add("openPreview", (waitForSelector) => {
+  cy.openInCurrentTab(commonWidgetSelector.previewButton);
+  if (waitForSelector) cy.waitForElement(waitForSelector);
 });
 
 /**
@@ -342,18 +369,11 @@ Cypress.Commands.add("hideTooltip", () => {
  * @tjUsage cy.createApp('My Test App')
  */
 Cypress.Commands.add("createApp", (appName) => {
-  const getAppButtonSelector = ($title) =>
-    $title.text().includes(commonText.introductionMessage)
-      ? commonSelectors.dashboardAppCreateButton
-      : commonSelectors.appCreateButton;
-
-  cy.get("body").then(($title) => {
-    cy.get(getAppButtonSelector($title))
-      .scrollIntoView()
-      .click({ force: true }); //workaround for cypress dashboard click issue
-    cy.clearAndType('[data-cy="app-name-input"]', appName);
-    cy.get('[data-cy="create-app"]').click();
-  });
+  cy.get(commonSelectors.appCreateButton)
+    .scrollIntoView()
+    .click({ force: true }); //workaround for cypress dashboard click issue
+  cy.clearAndType('[data-cy="app-name-input"]', appName);
+  cy.get('[data-cy="create-app"]').click();
   cy.waitForAppLoad();
   cy.skipEditorPopover();
 });

@@ -3,7 +3,13 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { Controller, UseGuards, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
 import { FeatureAbilityGuard } from '../ability/guard';
 import { IExternalApisUsersControllerV2 } from '../Interfaces/IController';
-import { UpdateUserV2Dto, ListUsersV2QueryDto, ListUserWorkspacesV2QueryDto } from '../dto';
+import {
+  UpdateUserV2Dto,
+  ListUsersV2QueryDto,
+  ListUserWorkspacesV2QueryDto,
+  ListWorkspaceAppUsersV2QueryDto,
+  ListWorkspaceUserAppsV2QueryDto,
+} from '../dto';
 
 @Controller({ path: 'ext', version: '2' })
 @InitModule(MODULES.EXTERNAL_APIS)
@@ -26,6 +32,20 @@ export class ExternalApisUsersControllerV2 implements IExternalApisUsersControll
     throw new Error('Method not implemented.');
   }
   listUserWorkspaces(userIdentifier: string, query: ListUserWorkspacesV2QueryDto): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+  listWorkspaceUserApps(
+    workspaceIdentifier: string,
+    userIdentifier: string,
+    query: ListWorkspaceUserAppsV2QueryDto
+  ): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+  listWorkspaceAppUsers(
+    workspaceIdentifier: string,
+    appIdentifier: string,
+    query: ListWorkspaceAppUsersV2QueryDto
+  ): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }

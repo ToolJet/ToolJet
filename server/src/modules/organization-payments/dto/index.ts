@@ -7,10 +7,6 @@ import { Stripe } from 'stripe';
 export class PortalDto {
   @IsString()
   @IsNotEmpty()
-  customerId: string;
-
-  @IsString()
-  @IsNotEmpty()
   returnUrl: string;
 }
 
@@ -18,6 +14,7 @@ enum PlanType {
   TEAM = 'team',
   PRO = 'pro',
   STARTER = 'starter',
+  BASICPLUS = 'basicplus',
 }
 
 export enum SubscriptionMode {
@@ -51,6 +48,7 @@ export enum Plans {
   TEAM = 'team',
   PRO = 'pro',
   STARTER = 'starter',
+  BASICPLUS = 'basicplus',
 }
 
 export class PaymentRedirectDto {

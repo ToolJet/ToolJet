@@ -132,7 +132,7 @@ Cypress.Commands.add("backToApps", () => {
   cy.get(commonSelectors.editorPageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
   cy.intercept("GET", API_ENDPOINT).as("library_apps");
-  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
+  cy.get(commonSelectors.homePageLogo);
   cy.wait("@library_apps");
   cy.wait(2000);
 });
@@ -242,7 +242,9 @@ Cypress.Commands.add(
     });
     cy.visit(`/${workspaceId}/apps/${workflowId}/${slug}`);
 
-    cy.wait("@getWorkflowData").then((interception) => {
+    // The editor fetches the workflow only once its bundle has loaded, which
+    // can take longer than the 10s default on a development build.
+    cy.wait("@getWorkflowData", { requestTimeout: 30000 }).then((interception) => {
       const responseData = interception.response.body;
 
       Cypress.env("editingVersionId", responseData.editing_version.id);

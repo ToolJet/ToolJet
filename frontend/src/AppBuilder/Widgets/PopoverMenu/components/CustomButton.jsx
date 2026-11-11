@@ -13,6 +13,8 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
     height,
     exposedVariablesTemporaryState,
     updateExposedVariablesState,
+    openPopoverOnHover,
+    scheduleClosePopoverOnHover,
     transformedOptions,
     trigger,
     label,
@@ -57,7 +59,11 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
       : textColor;
 
   const computedLoaderColor =
-    '#FFFFFF' === loaderColor ? (buttonType === 'primary' ? loaderColor : 'var(--cc-primary-brand)') : loaderColor;
+    'var(--cc-surface1-surface)' === loaderColor
+      ? buttonType === 'primary'
+        ? loaderColor
+        : 'var(--cc-primary-brand)'
+      : loaderColor;
 
   const computedBgColor =
     '#4368E3' === backgroundColor
@@ -142,17 +148,21 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
       style={{
         position: 'relative',
       }}
-      disabled={exposedVariablesTemporaryState.isDisabled || exposedVariablesTemporaryState.isLoading}
       ref={forwardedRef}
       {...(trigger === 'hover' && {
-        onMouseOver: () => {
-          updateExposedVariablesState('showPopover', true);
-        },
+        onMouseEnter: openPopoverOnHover,
+        onMouseLeave: scheduleClosePopoverOnHover,
       })}
     >
       <button
-        className={cx('overflow-hidden jet-btn')}
+        className={cx(
+          'overflow-hidden jet-btn',
+          'focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2'
+        )}
         style={computedStyles}
+        // native disabled on the real button — the trigger had no disabled semantics
+        // at all before (removes it from tab order + blocks Enter/Space/click)
+        disabled={exposedVariablesTemporaryState.isDisabled || exposedVariablesTemporaryState.isLoading}
         {...(trigger === 'click' && {
           onClick: () => {
             const newPopoverState = !exposedVariablesTemporaryState.showPopover;

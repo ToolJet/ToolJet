@@ -1,6 +1,5 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { dashboardSelector } from "Selectors/platform/dashboard";
 import { dataSourceSelector } from "Selectors/marketplace/dataSource";
 import { importSelectors } from "Selectors/platform/exportImport";
 import { groupsSelector } from "Selectors/platform/manageGroups";
@@ -176,7 +175,7 @@ describe("Manage Groups", () => {
                 cy.apiLogin(data.email);
                 cy.visit(data.workspaceSlug);
                 verifyUserPrivileges(
-                    buttonEnabled ? "be.enabled" : "be.disabled",
+                    buttonEnabled ? "be.enabled" : "not.exist",
                     to,
                     hasSettings
                 );
@@ -202,7 +201,7 @@ describe("Manage Groups", () => {
 
                 cy.intercept("GET", "/api/apps/*").as("getApp");
 
-                cy.get(dashboardSelector.importAppButton).click();
+                cy.get(importSelectors.dropDownMenu).should("be.visible").click();
                 cy.get(importSelectors.importOptionInput)
                     .eq(0)
                     .selectFile(appImportFile, { force: true });

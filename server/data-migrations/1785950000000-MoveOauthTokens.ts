@@ -124,6 +124,7 @@ export class MoveOauthTokens1785950000000 implements MigrationInterface {
               user_id: string;
               access_token: string;
               refresh_token: string;
+              [key: string]: unknown;
             }> = options.tokenData.value;
 
             // Deduplicate by user_id — last entry wins for corrupt data
@@ -137,6 +138,13 @@ export class MoveOauthTokens1785950000000 implements MigrationInterface {
 
             for (const tokenEntry of Object.values(deduplicatedTokenData)) {
               if (!tokenEntry.access_token && !tokenEntry.refresh_token) continue;
+
+              // Per-user connection details (e.g. salesforce's instance_url) are needed at query time
+              const moreDetails = Object.fromEntries(
+                Object.entries(tokenEntry).filter(
+                  ([key]) => !['user_id', 'access_token', 'refresh_token'].includes(key)
+                )
+              );
 
               const encryptedAccessToken = tokenEntry.access_token
                 ? await encryptionService.encryptColumnValue('credentials', 'value', tokenEntry.access_token)
@@ -160,9 +168,9 @@ export class MoveOauthTokens1785950000000 implements MigrationInterface {
                 INSERT INTO datasource_user_token_data
                   (id, user_id, data_source_version_option_id, auth_token, refresh_token, more_details, created_at, updated_at)
                 VALUES
-                  (gen_random_uuid(), $1::uuid, $2::uuid, $3, $4, '{}', now(), now())
+                  (gen_random_uuid(), $1::uuid, $2::uuid, $3, $4, $5::jsonb, now(), now())
                 `,
-                [tokenEntry.user_id, row.id, encryptedAccessToken, encryptedRefreshToken]
+                [tokenEntry.user_id, row.id, encryptedAccessToken, encryptedRefreshToken, JSON.stringify(moreDetails)]
               );
             }
 
@@ -198,17 +206,28 @@ export class MoveOauthTokens1785950000000 implements MigrationInterface {
             const accessTokenOption = options?.access_token;
             const refreshTokenOption = options?.refresh_token;
 
+            // Options can reference a credentials row that no longer exists; treat its token as absent.
+            const readCredentialValue = async (credentialId: string): Promise<string | null> => {
+              const [found] = await manager.query(`SELECT 1 FROM credentials WHERE id = $1`, [credentialId]);
+              if (!found) {
+                console.log(
+                  `MoveOauthTokens1785950000000: [SKIP] credential ${credentialId} referenced by data_source_version_option ${row.id} not found.`
+                );
+                return null;
+              }
+              credentialIdsToDelete.push(credentialId);
+              return credentialsService.getValue(credentialId, manager);
+            };
+
             let accessToken: string | null = null;
             let refreshToken: string | null = null;
 
             if (accessTokenOption?.credential_id) {
-              accessToken = await credentialsService.getValue(accessTokenOption.credential_id, manager);
-              credentialIdsToDelete.push(accessTokenOption.credential_id);
+              accessToken = await readCredentialValue(accessTokenOption.credential_id);
             }
 
             if (refreshTokenOption?.credential_id) {
-              refreshToken = await credentialsService.getValue(refreshTokenOption.credential_id, manager);
-              credentialIdsToDelete.push(refreshTokenOption.credential_id);
+              refreshToken = await readCredentialValue(refreshTokenOption.credential_id);
             }
 
             const encryptedAccessToken = accessToken

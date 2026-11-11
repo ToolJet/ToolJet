@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import cx from 'classnames';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -10,6 +10,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
+import { normalizePin } from '@/AppBuilder/Widgets/libraryComponentRevision';
 import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
 import { IconArrowBarToDown } from '@tabler/icons-react';
@@ -41,6 +42,7 @@ const VersionDropdownItem = ({
   const isEditorReadOnly = useStore((state) => state.isEditorReadOnly);
   const { appType } = useModuleContext();
   const { isGitSyncEnabled, defaultBranch } = useGitSyncConfig();
+  const customComponentLibraries = useStore((state) => state.globalSettings?.customComponentLibraries);
 
   const isDraft = version.status === 'DRAFT';
   const isPublished = version.status === 'PUBLISHED';
@@ -135,6 +137,19 @@ const VersionDropdownItem = ({
     (featureAccess?.multiEnvironment ? isInProduction : isPublished);
   const canCreateVersion = isDraft; // Show create version button for drafts
   const canOpenMoreMenu = !isEditorReadOnly; // Build-with: no-op edit/delete actions, hide entirely
+
+  const devPinnedLibrariesCount = useMemo(() => {
+    const pins = customComponentLibraries ?? {};
+    // normalizePin handles legacy pins stored as { revisionId: 'dev:...' } — without it,
+    // an imported/older object-shaped dev pin slips past this check and can be saved
+    // into an app version, defeating the dev-build guard below.
+    return Object.values(pins).filter((value) => {
+      const pin = normalizePin(value);
+      return typeof pin === 'string' && pin.startsWith('dev:');
+    }).length;
+  }, [customComponentLibraries]);
+
+  const isSaveVersionBlockedByDevPin = canCreateVersion && devPinnedLibrariesCount > 0;
 
   const renderMenu = (
     <Popover
@@ -412,20 +427,36 @@ const VersionDropdownItem = ({
 
                     {/* Create version button - shown for drafts */}
                     {canCreateVersion && (
-                      <Button
-                        variant="outline"
-                        size="small"
-                        disabled={isEditorReadOnly}
-                        className={cx('version-action-btn', { 'dark-theme theme-dark': darkMode })}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenMenuVersionId?.(null);
-                          onCreateVersion?.(version);
-                        }}
-                        data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-save-version-button`}
+                      <ToolTip
+                        message={
+                          isSaveVersionBlockedByDevPin
+                            ? `Cannot save: ${devPinnedLibrariesCount} custom component librar${
+                                devPinnedLibrariesCount === 1 ? 'y is' : 'ies are'
+                              } pinned to a developer preview build. Select a published revision before saving this version.`
+                            : ''
+                        }
+                        placement="bottom"
+                        show={isSaveVersionBlockedByDevPin}
+                        width="280px"
                       >
-                        Save version
-                      </Button>
+                        <span>
+                          <Button
+                            variant="outline"
+                            size="small"
+                            disabled={isEditorReadOnly || isSaveVersionBlockedByDevPin}
+                            className={cx('version-action-btn', { 'dark-theme theme-dark': darkMode })}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isSaveVersionBlockedByDevPin) return;
+                              setOpenMenuVersionId?.(null);
+                              onCreateVersion?.(version);
+                            }}
+                            data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-save-version-button`}
+                          >
+                            Save version
+                          </Button>
+                        </span>
+                      </ToolTip>
                     )}
 
                     {/* More menu */}

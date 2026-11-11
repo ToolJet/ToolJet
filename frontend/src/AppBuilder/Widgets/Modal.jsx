@@ -75,11 +75,11 @@ export const Modal = function Modal({
 
   const onShowModal = () => {
     openModal();
-    onShowSideEffects();
+    onShowSideEffects(id);
   };
 
   const onHideModal = () => {
-    onHideSideEffects();
+    onHideSideEffects(id);
     hideModal();
   };
 
@@ -109,7 +109,7 @@ export const Modal = function Modal({
 
   // Add debounced version of handleModalOpen
   const debouncedModalOpen = debounce(() => {
-    onShowSideEffects();
+    onShowSideEffects(id);
   }, 10);
 
   useEffect(() => {
@@ -120,6 +120,8 @@ export const Modal = function Modal({
 
     // Create a ResizeObserver
     const resizeObserver = new ResizeObserver(() => {
+      // Resize fires for every mounted modal, even closed ones.
+      if (!showModal) return;
       debouncedModalOpen();
     });
 
@@ -130,7 +132,7 @@ export const Modal = function Modal({
       // Cleanup observer on component unmount
       resizeObserver.disconnect();
     };
-  }, []);
+  }, [showModal]);
 
   useEffect(() => {
     if (showModal) {
@@ -192,7 +194,7 @@ export const Modal = function Modal({
         const modalRef = parentRef?.current?.parentElement?.parentElement?.parentElement;
 
         if (modalRef && modalRef === event.target) {
-          hideModal();
+          onHideModal();
         }
       };
 
@@ -219,7 +221,7 @@ export const Modal = function Modal({
       {useDefaultButton && visibility && (
         <button
           disabled={disabledState}
-          className="jet-button btn btn-primary p-1 overflow-hidden"
+          className="jet-button btn btn-primary p-1 overflow-hidden focus-visible:!tw-outline focus-visible:!tw-outline-2 focus-visible:!tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2"
           style={customStyles.buttonStyles}
           onClick={(event) => {
             /**** Start - Logic to reduce the zIndex of modal control box ****/
@@ -246,11 +248,24 @@ export const Modal = function Modal({
         }
         size={size}
         keyboard={true}
+        // Keep react-bootstrap's focus trap OFF: it continuously yanks focus back
+        // into the modal, which breaks Radix overlays (PopoverMenu/Select) that
+        // portal outside the modal DOM. A WAI-ARIA focus trap needs a Radix-safe
+        // boundary-Tab approach instead — deferred, tracked in #5307.
         enforceFocus={false}
         animation={false}
         onShow={() => onShowModal()}
         onHide={() => onHideModal()}
-        onEscapeKeyDown={() => hideOnEsc && onHideModal()}
+        onEscapeKeyDown={(e) => {
+          // A nested Radix overlay (PopoverMenu / Select) dismisses on Escape in the
+          // capture phase and calls preventDefault() on the same event; this handler
+          // runs later in the bubble phase, so `defaultPrevented` tells us the inner
+          // layer already consumed the keypress — bail so we don't also close the
+          // modal (see #5308).
+          if (e.defaultPrevented) return;
+          e.preventDefault();
+          hideOnEsc && onHideModal();
+        }}
         id="modal-container"
         component-id={id}
         backdrop={'static'}

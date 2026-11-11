@@ -1,0 +1,16 @@
+{
+  "name": "Pest control operations",
+  "description": "Schedule pest control treatments and keep inspection findings, treatment records and follow-up visits connected.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "pest-control-operations",
+  "category": "field-services"
+}

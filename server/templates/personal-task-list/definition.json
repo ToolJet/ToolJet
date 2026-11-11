@@ -1,0 +1,2138 @@
+{
+    "tooljet_database": [
+        {
+            "id": "e8018b20-1838-402d-9007-8a676fc0c681",
+            "table_name": "lumen_tasks",
+            "schema": {
+                "columns": [
+                    {
+                        "column_name": "id",
+                        "data_type": "integer",
+                        "column_default": "nextval(\"e8018b20-1838-402d-9007-8a676fc0c681_id_seq\"",
+                        "character_maximum_length": null,
+                        "numeric_precision": 32,
+                        "constraints_type": {
+                            "is_not_null": true,
+                            "is_primary_key": true,
+                            "is_unique": false
+                        },
+                        "keytype": "PRIMARY KEY",
+                        "configurations": {}
+                    },
+                    {
+                        "column_name": "title",
+                        "data_type": "character varying",
+                        "column_default": null,
+                        "character_maximum_length": null,
+                        "numeric_precision": null,
+                        "constraints_type": {
+                            "is_not_null": true,
+                            "is_primary_key": false,
+                            "is_unique": false
+                        },
+                        "keytype": "",
+                        "configurations": {}
+                    },
+                    {
+                        "column_name": "notes",
+                        "data_type": "character varying",
+                        "column_default": null,
+                        "character_maximum_length": null,
+                        "numeric_precision": null,
+                        "constraints_type": {
+                            "is_not_null": false,
+                            "is_primary_key": false,
+                            "is_unique": false
+                        },
+                        "keytype": "",
+                        "configurations": {}
+                    },
+                    {
+                        "column_name": "status",
+                        "data_type": "character varying",
+                        "column_default": "open",
+                        "character_maximum_length": null,
+                        "numeric_precision": null,
+                        "constraints_type": {
+                            "is_not_null": true,
+                            "is_primary_key": false,
+                            "is_unique": false
+                        },
+                        "keytype": "",
+                        "configurations": {}
+                    },
+                    {
+                        "column_name": "priority",
+                        "data_type": "character varying",
+                        "column_default": "medium",
+                        "character_maximum_length": null,
+                        "numeric_precision": null,
+                        "constraints_type": {
+                            "is_not_null": true,
+                            "is_primary_key": false,
+                            "is_unique": false
+                        },
+                        "keytype": "",
+                        "configurations": {}
+                    },
+                    {
+                        "column_name": "due_date",
+                        "data_type": "character varying",
+                        "column_default": null,
+                        "character_maximum_length": null,
+                        "numeric_precision": null,
+                        "constraints_type": {
+                            "is_not_null": false,
+                            "is_primary_key": false,
+                            "is_unique": false
+                        },
+                        "keytype": "",
+                        "configurations": {}
+                    },
+                    {
+                        "column_name": "created_at",
+                        "data_type": "timestamp with time zone",
+                        "column_default": "now()",
+                        "character_maximum_length": null,
+                        "numeric_precision": null,
+                        "constraints_type": {
+                            "is_not_null": true,
+                            "is_primary_key": false,
+                            "is_unique": false
+                        },
+                        "keytype": "",
+                        "configurations": {}
+                    },
+                    {
+                        "column_name": "completed_at",
+                        "data_type": "character varying",
+                        "column_default": null,
+                        "character_maximum_length": null,
+                        "numeric_precision": null,
+                        "constraints_type": {
+                            "is_not_null": false,
+                            "is_primary_key": false,
+                            "is_unique": false
+                        },
+                        "keytype": "",
+                        "configurations": {}
+                    }
+                ],
+                "foreign_keys": []
+            }
+        }
+    ],
+    "app": [
+        {
+            "definition": {
+                "appV2": {
+                    "id": "a440d4c1-13fe-4aa7-b45a-de4cb8c7822a",
+                    "type": "front-end",
+                    "name": "Lumen Tasks",
+                    "slug": "a440d4c1-13fe-4aa7-b45a-de4cb8c7822a",
+                    "isPublic": false,
+                    "isMaintenanceOn": false,
+                    "icon": null,
+                    "organizationId": "1bf0c363-80f7-4abd-8251-72e0fc98fdfe",
+                    "currentVersionId": null,
+                    "userId": "5d0e3769-e0c6-42cd-a7b9-a112e178296f",
+                    "workflowApiToken": null,
+                    "workflowEnabled": false,
+                    "isInitialisedFromPrompt": false,
+                    "appGeneratedFromPrompt": false,
+                    "buildCompletionEmailSentAt": null,
+                    "appBuilderMode": "visual",
+                    "aiGenerationMetadata": null,
+                    "createdAt": "2026-09-14T04:44:20.086Z",
+                    "creationMode": "DEFAULT",
+                    "updatedAt": "2026-09-14T04:44:20.084Z",
+                    "__loaded": true,
+                    "editingVersion": {
+                        "id": "1a2427fc-6435-403e-99db-d788e004fbab",
+                        "name": "v1",
+                        "definition": null,
+                        "globalSettings": {
+                            "appInMaintenance": false,
+                            "canvasMaxWidth": 100,
+                            "canvasMaxWidthType": "%",
+                            "canvasMaxHeight": 2400,
+                            "canvasBackgroundColor": "#FAFAFF",
+                            "backgroundFxQuery": "",
+                            "appMode": "light",
+                            "theme": {
+                                "name": "Indigo and white",
+                                "organizationId": "1bf0c363-80f7-4abd-8251-72e0fc98fdfe",
+                                "definition": {
+                                    "brand": {
+                                        "colors": {
+                                            "primary": {
+                                                "light": "#4F46E5",
+                                                "dark": "#818CF8"
+                                            },
+                                            "secondary": {
+                                                "light": "#3730A3",
+                                                "dark": "#A5B4FC"
+                                            },
+                                            "tertiary": {
+                                                "light": "#64748B",
+                                                "dark": "#CBD5E1"
+                                            }
+                                        }
+                                    },
+                                    "text": {
+                                        "font": "Inter",
+                                        "colors": {
+                                            "primary": {
+                                                "light": "#1E1B4B",
+                                                "dark": "#F8FAFC"
+                                            },
+                                            "placeholder": {
+                                                "light": "#64748B",
+                                                "dark": "#94A3B8"
+                                            },
+                                            "disabled": {
+                                                "light": "#94A3B8",
+                                                "dark": "#64748B"
+                                            }
+                                        }
+                                    },
+                                    "border": {
+                                        "radius": {
+                                            "default": 10,
+                                            "small": 6,
+                                            "large": 14
+                                        },
+                                        "colors": {
+                                            "default": {
+                                                "light": "#E2E8F0",
+                                                "dark": "#334155"
+                                            },
+                                            "weak": {
+                                                "light": "#EEF2FF",
+                                                "dark": "#1E293B"
+                                            },
+                                            "disabled": {
+                                                "light": "#CBD5E1",
+                                                "dark": "#475569"
+                                            }
+                                        }
+                                    },
+                                    "systemStatus": {
+                                        "colors": {
+                                            "success": {
+                                                "light": "#15803D",
+                                                "dark": "#4ADE80"
+                                            },
+                                            "error": {
+                                                "light": "#B91C1C",
+                                                "dark": "#F87171"
+                                            },
+                                            "warning": {
+                                                "light": "#B45309",
+                                                "dark": "#FBBF24"
+                                            }
+                                        }
+                                    },
+                                    "surface": {
+                                        "colors": {
+                                            "appBackground": {
+                                                "light": "#FAFAFF",
+                                                "dark": "#0F172A"
+                                            },
+                                            "surface1": {
+                                                "light": "#FFFFFF",
+                                                "dark": "#111827"
+                                            },
+                                            "surface2": {
+                                                "light": "#F1F5F9",
+                                                "dark": "#1E293B"
+                                            },
+                                            "surface3": {
+                                                "light": "#E0E7FF",
+                                                "dark": "#312E81"
+                                            }
+                                        }
+                                    }
+                                },
+                                "isDefault": false,
+                                "isBasic": false,
+                                "id": "e4f465d7-5922-46e2-8c11-6600231152a5",
+                                "createdAt": "2026-09-14T04:44:21.696Z",
+                                "updatedAt": "2026-09-14T04:44:21.696Z"
+                            }
+                        },
+                        "pageSettings": {
+                            "properties": {
+                                "hideHeader": true,
+                                "disableMenu": {
+                                    "value": "{{true}}",
+                                    "fxActive": false
+                                }
+                            }
+                        },
+                        "showViewerNavigation": true,
+                        "homePageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                        "appId": "a440d4c1-13fe-4aa7-b45a-de4cb8c7822a",
+                        "currentEnvironmentId": "15cd491e-31a4-419f-91dd-ab150c45a22f",
+                        "promotedFrom": null,
+                        "parentVersionId": null,
+                        "status": "DRAFT",
+                        "description": null,
+                        "publishedAt": null,
+                        "releasedAt": null,
+                        "createdAt": "2026-09-14T04:44:20.364Z",
+                        "updatedAt": "2026-09-18T18:06:39.238Z"
+                    },
+                    "components": [
+                        {
+                            "id": "c464844f-adf9-423b-97ca-32b6d3a352de",
+                            "name": "taskTitle",
+                            "type": "TextInput",
+                            "pageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "parent": null,
+                            "properties": {
+                                "label": {
+                                    "value": "New task"
+                                },
+                                "placeholder": {
+                                    "value": "What needs your attention?"
+                                },
+                                "showClearBtn": {
+                                    "value": "{{true}}"
+                                }
+                            },
+                            "general": null,
+                            "styles": {
+                                "alignment": {
+                                    "value": "top"
+                                },
+                                "labelFontSize": {
+                                    "value": "{{12}}"
+                                },
+                                "backgroundColor": {
+                                    "value": "#FFFFFF"
+                                },
+                                "borderColor": {
+                                    "value": "#E2E8F0"
+                                },
+                                "accentColor": {
+                                    "value": "#4F46E5"
+                                },
+                                "borderRadius": {
+                                    "value": "{{10}}"
+                                },
+                                "textColor": {
+                                    "value": "#1E1B4B"
+                                }
+                            },
+                            "generalStyles": null,
+                            "displayPreferences": {},
+                            "validation": {},
+                            "createdAt": "2026-09-14T04:48:06.375Z",
+                            "updatedAt": "2026-09-14T04:48:06.375Z",
+                            "layouts": [
+                                {
+                                    "id": "4908094b-8fe3-4606-852b-f0bdbc16624f",
+                                    "type": "desktop",
+                                    "top": 240,
+                                    "left": 2,
+                                    "width": 22,
+                                    "height": 40,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "c464844f-adf9-423b-97ca-32b6d3a352de",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-14T04:48:06.375Z"
+                                },
+                                {
+                                    "id": "85f31f8d-13a2-4a77-a396-b5faea257883",
+                                    "type": "mobile",
+                                    "top": 240,
+                                    "left": 2,
+                                    "width": 22,
+                                    "height": 40,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "c464844f-adf9-423b-97ca-32b6d3a352de",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-14T04:48:06.375Z"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "0b2db1bf-a0b1-4215-ab6d-c0aa632426cf",
+                            "name": "taskPriority",
+                            "type": "DropdownV2",
+                            "pageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "parent": null,
+                            "properties": {
+                                "label": {
+                                    "value": "Priority"
+                                },
+                                "placeholder": {
+                                    "value": "Priority"
+                                },
+                                "advanced": {
+                                    "value": "{{false}}"
+                                },
+                                "options": {
+                                    "value": [
+                                        {
+                                            "label": "Low",
+                                            "value": "low",
+                                            "caption": null,
+                                            "disable": {
+                                                "value": false
+                                            },
+                                            "visible": {
+                                                "value": true
+                                            },
+                                            "default": {
+                                                "value": false
+                                            }
+                                        },
+                                        {
+                                            "label": "Medium",
+                                            "value": "medium",
+                                            "caption": null,
+                                            "disable": {
+                                                "value": false
+                                            },
+                                            "visible": {
+                                                "value": true
+                                            },
+                                            "default": {
+                                                "value": true
+                                            }
+                                        },
+                                        {
+                                            "label": "High",
+                                            "value": "high",
+                                            "caption": null,
+                                            "disable": {
+                                                "value": false
+                                            },
+                                            "visible": {
+                                                "value": true
+                                            },
+                                            "default": {
+                                                "value": false
+                                            }
+                                        }
+                                    ],
+                                    "showClearBtn": {
+                                        "value": "{{false}}"
+                                    }
+                                }
+                            },
+                            "general": null,
+                            "styles": {
+                                "alignment": {
+                                    "value": "top"
+                                },
+                                "labelFontSize": {
+                                    "value": "{{12}}"
+                                },
+                                "fieldBackgroundColor": {
+                                    "value": "#FFFFFF"
+                                },
+                                "fieldBorderColor": {
+                                    "value": "#E2E8F0"
+                                },
+                                "accentColor": {
+                                    "value": "#4F46E5"
+                                },
+                                "fieldBorderRadius": {
+                                    "value": "10"
+                                }
+                            },
+                            "generalStyles": null,
+                            "displayPreferences": {},
+                            "validation": {},
+                            "createdAt": "2026-09-14T04:48:06.375Z",
+                            "updatedAt": "2026-09-14T04:48:06.375Z",
+                            "layouts": [
+                                {
+                                    "id": "8f80c14a-482a-4934-9c2d-747bde4e695e",
+                                    "type": "desktop",
+                                    "top": 240,
+                                    "left": 25,
+                                    "width": 6,
+                                    "height": 40,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "0b2db1bf-a0b1-4215-ab6d-c0aa632426cf",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-14T04:48:06.375Z"
+                                },
+                                {
+                                    "id": "032956dd-3516-43c3-bf5b-725c7a5386d4",
+                                    "type": "mobile",
+                                    "top": 240,
+                                    "left": 25,
+                                    "width": 6,
+                                    "height": 40,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "0b2db1bf-a0b1-4215-ab6d-c0aa632426cf",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-14T04:48:06.375Z"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "813bf365-6872-471c-af3d-ae4ca7e23a4a",
+                            "name": "taskDueDate",
+                            "type": "TextInput",
+                            "pageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "parent": null,
+                            "properties": {
+                                "label": {
+                                    "value": "Due"
+                                },
+                                "placeholder": {
+                                    "value": "YYYY-MM-DD"
+                                },
+                                "showClearBtn": {
+                                    "value": "{{true}}"
+                                }
+                            },
+                            "general": null,
+                            "styles": {
+                                "alignment": {
+                                    "value": "top"
+                                },
+                                "labelFontSize": {
+                                    "value": "{{12}}"
+                                },
+                                "backgroundColor": {
+                                    "value": "#FFFFFF"
+                                },
+                                "borderColor": {
+                                    "value": "#E2E8F0"
+                                },
+                                "accentColor": {
+                                    "value": "#4F46E5"
+                                },
+                                "borderRadius": {
+                                    "value": "{{10}}"
+                                },
+                                "textColor": {
+                                    "value": "#1E1B4B"
+                                }
+                            },
+                            "generalStyles": null,
+                            "displayPreferences": {},
+                            "validation": {},
+                            "createdAt": "2026-09-14T04:48:06.375Z",
+                            "updatedAt": "2026-09-14T04:48:06.375Z",
+                            "layouts": [
+                                {
+                                    "id": "0568314d-44b2-4021-9d38-394a8bac3355",
+                                    "type": "desktop",
+                                    "top": 240,
+                                    "left": 32,
+                                    "width": 6,
+                                    "height": 40,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "813bf365-6872-471c-af3d-ae4ca7e23a4a",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-14T04:48:06.375Z"
+                                },
+                                {
+                                    "id": "c9c3ba80-c81d-4d8a-81d0-a0274d7f10c1",
+                                    "type": "mobile",
+                                    "top": 240,
+                                    "left": 32,
+                                    "width": 6,
+                                    "height": 40,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "813bf365-6872-471c-af3d-ae4ca7e23a4a",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-14T04:48:06.375Z"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "b05de012-f170-4678-8d84-b4ae2d334426",
+                            "name": "addTaskBtn",
+                            "type": "Button",
+                            "pageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "parent": null,
+                            "properties": {
+                                "text": {
+                                    "value": ""
+                                },
+                                "disabledState": {
+                                    "value": "{{!(components.taskTitle.value || '').trim() || queries.createTask.isLoading === true}}"
+                                },
+                                "tooltip": {
+                                    "value": "Add task"
+                                }
+                            },
+                            "general": null,
+                            "styles": {
+                                "type": {
+                                    "value": "primary"
+                                },
+                                "backgroundColor": {
+                                    "value": "#4F46E5"
+                                },
+                                "textColor": {
+                                    "value": "#FFFFFF"
+                                },
+                                "borderColor": {
+                                    "value": "#4F46E5"
+                                },
+                                "borderRadius": {
+                                    "value": "{{10}}"
+                                },
+                                "icon": {
+                                    "value": "IconPlus"
+                                },
+                                "iconVisibility": {
+                                    "value": true
+                                },
+                                "fontWeight": {
+                                    "value": "bold"
+                                }
+                            },
+                            "generalStyles": null,
+                            "displayPreferences": {},
+                            "validation": {},
+                            "createdAt": "2026-09-14T04:48:06.375Z",
+                            "updatedAt": "2026-09-14T04:53:01.257Z",
+                            "layouts": [
+                                {
+                                    "id": "e283bbcd-774f-4193-a057-ebfc38cf0d79",
+                                    "type": "desktop",
+                                    "top": 260,
+                                    "left": 39,
+                                    "width": 2,
+                                    "height": 40,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "b05de012-f170-4678-8d84-b4ae2d334426",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-14T04:48:06.375Z"
+                                },
+                                {
+                                    "id": "5fc32241-b6c2-4a34-b6d7-970799b8beb9",
+                                    "type": "mobile",
+                                    "top": 260,
+                                    "left": 39,
+                                    "width": 2,
+                                    "height": 40,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "b05de012-f170-4678-8d84-b4ae2d334426",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-14T04:48:06.375Z"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "871aaeb3-47e9-4506-ad8c-596dc76a7450",
+                            "name": "taskNotes",
+                            "type": "TextArea",
+                            "pageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "parent": null,
+                            "properties": {
+                                "label": {
+                                    "value": "Notes (optional)"
+                                },
+                                "placeholder": {
+                                    "value": "Add a little context, if helpful…"
+                                }
+                            },
+                            "general": null,
+                            "styles": {
+                                "alignment": {
+                                    "value": "top"
+                                },
+                                "labelFontSize": {
+                                    "value": "{{12}}"
+                                },
+                                "backgroundColor": {
+                                    "value": "#FFFFFF"
+                                },
+                                "borderColor": {
+                                    "value": "#E2E8F0"
+                                },
+                                "accentColor": {
+                                    "value": "#4F46E5"
+                                },
+                                "borderRadius": {
+                                    "value": "{{10}}"
+                                },
+                                "textColor": {
+                                    "value": "#1E1B4B"
+                                }
+                            },
+                            "generalStyles": null,
+                            "displayPreferences": {},
+                            "validation": {},
+                            "createdAt": "2026-09-14T04:48:06.375Z",
+                            "updatedAt": "2026-09-14T04:48:06.375Z",
+                            "layouts": [
+                                {
+                                    "id": "22874837-94ef-448a-aa88-da0cd84dd6fe",
+                                    "type": "desktop",
+                                    "top": 310,
+                                    "left": 2,
+                                    "width": 39,
+                                    "height": 70,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "871aaeb3-47e9-4506-ad8c-596dc76a7450",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-14T04:48:06.375Z"
+                                },
+                                {
+                                    "id": "901e3d32-86d5-4d51-b40c-5417c2a05ed0",
+                                    "type": "mobile",
+                                    "top": 310,
+                                    "left": 2,
+                                    "width": 39,
+                                    "height": 70,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "871aaeb3-47e9-4506-ad8c-596dc76a7450",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-14T04:48:06.375Z"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "303dbb80-cfe2-4342-8e1e-0caf70e2a621",
+                            "name": "listIntro",
+                            "type": "Text",
+                            "pageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "parent": null,
+                            "properties": {
+                                "textFormat": {
+                                    "value": "html"
+                                },
+                                "text": {
+                                    "value": "<span style=\"font-size:22px;font-weight:700;color:#1E1B4B\">Your tasks</span><br><span style=\"font-size:13px;color:#64748B\">Keep the list light. Focus on the next useful thing.</span>"
+                                }
+                            },
+                            "general": null,
+                            "styles": {
+                                "textColor": {
+                                    "value": "#1E1B4B"
+                                },
+                                "lineHeight": {
+                                    "value": "{{1.35}}"
+                                }
+                            },
+                            "generalStyles": null,
+                            "displayPreferences": {},
+                            "validation": {},
+                            "createdAt": "2026-09-14T04:48:06.375Z",
+                            "updatedAt": "2026-09-14T04:48:06.375Z",
+                            "layouts": [
+                                {
+                                    "id": "220c3004-67d1-4571-9745-38844c624ea7",
+                                    "type": "desktop",
+                                    "top": 420,
+                                    "left": 2,
+                                    "width": 30,
+                                    "height": 52,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "303dbb80-cfe2-4342-8e1e-0caf70e2a621",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-14T04:48:06.375Z"
+                                },
+                                {
+                                    "id": "b3091136-d1aa-4002-960a-94192a4445cb",
+                                    "type": "mobile",
+                                    "top": 420,
+                                    "left": 2,
+                                    "width": 30,
+                                    "height": 52,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "303dbb80-cfe2-4342-8e1e-0caf70e2a621",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-14T04:48:06.375Z"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "e3ee4348-58bb-44aa-a5a9-6b9e184073e2",
+                            "name": "taskTable",
+                            "type": "Table",
+                            "pageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "parent": null,
+                            "properties": {
+                                "title": {
+                                    "value": "All tasks"
+                                },
+                                "dataSourceSelector": {
+                                    "value": "rawJson"
+                                },
+                                "data": {
+                                    "value": "{{(queries.listTasks.data || []).map(r => ({id:r.id,title:'<span style=\"display:block;font-weight:600;color:' + (r.status === 'completed' ? '#94A3B8' : '#1E1B4B') + ';text-decoration:' + (r.status === 'completed' ? 'line-through' : 'none') + '\">' + r.title + '</span>',priority:'<span style=\"display:inline-block;white-space:nowrap;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600;background:' + (r.priority === 'high' ? '#FEE2E2' : r.priority === 'medium' ? '#FEF3C7' : '#E0E7FF') + ';color:' + (r.priority === 'high' ? '#991B1B' : r.priority === 'medium' ? '#92400E' : '#3730A3') + '\">' + r.priority + '</span>',schedule:r.due_date || 'Anytime',status:'<span style=\"display:inline-block;white-space:nowrap;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600;background:' + (r.status === 'completed' ? '#DCFCE7' : '#E0E7FF') + ';color:' + (r.status === 'completed' ? '#166534' : '#3730A3') + '\">' + (r.status === 'completed' ? 'Completed' : 'Open') + '</span>',can_complete:r.status !== 'completed',actions:''})) }}"
+                                },
+                                "columns": {
+                                    "value": [
+                                        {
+                                            "id": "task-id",
+                                            "name": "ID",
+                                            "key": "id",
+                                            "columnType": "string",
+                                            "columnVisibility": false,
+                                            "autogenerated": false,
+                                            "columnSize": 30
+                                        },
+                                        {
+                                            "id": "task-title",
+                                            "name": "Task",
+                                            "key": "title",
+                                            "columnType": "html",
+                                            "autogenerated": false,
+                                            "columnSize": 260
+                                        },
+                                        {
+                                            "id": "task-priority",
+                                            "name": "Priority",
+                                            "key": "priority",
+                                            "columnType": "html",
+                                            "autogenerated": false,
+                                            "columnSize": 110
+                                        },
+                                        {
+                                            "id": "task-schedule",
+                                            "name": "When",
+                                            "key": "schedule",
+                                            "columnType": "string",
+                                            "autogenerated": false,
+                                            "columnSize": 120
+                                        },
+                                        {
+                                            "id": "task-status",
+                                            "name": "Status",
+                                            "key": "status",
+                                            "columnType": "html",
+                                            "autogenerated": false,
+                                            "columnSize": 110
+                                        },
+                                        {
+                                            "id": "task-can-complete",
+                                            "name": "can_complete",
+                                            "key": "can_complete",
+                                            "columnType": "boolean",
+                                            "columnVisibility": false,
+                                            "autogenerated": false,
+                                            "columnSize": 30
+                                        },
+                                        {
+                                            "id": "task-actions",
+                                            "name": "",
+                                            "key": "actions",
+                                            "columnType": "button",
+                                            "columnVisibility": true,
+                                            "autogenerated": false,
+                                            "columnSize": 100,
+                                            "pinPosition": "right",
+                                            "buttons": [
+                                                {
+                                                    "id": "complete-action",
+                                                    "buttonLabel": "Complete",
+                                                    "buttonTooltip": "Mark as complete",
+                                                    "disableButton": "{{!rowData.can_complete}}",
+                                                    "loadingState": false,
+                                                    "buttonVisibility": "{{rowData.can_complete}}",
+                                                    "buttonType": "outline",
+                                                    "buttonBackgroundColor": "#FFFFFF",
+                                                    "buttonLabelColor": "#3730A3",
+                                                    "buttonBorderColor": "#C7D2FE",
+                                                    "buttonBorderRadius": "8",
+                                                    "buttonLoaderColor": "#FFFFFF",
+                                                    "buttonIconName": "IconCheck",
+                                                    "buttonIconVisibility": true,
+                                                    "buttonIconColor": "#4F46E5",
+                                                    "buttonIconAlignment": "left"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "rowsPerPage": {
+                                    "value": "{{7}}"
+                                },
+                                "enablePagination": {
+                                    "value": "{{true}}"
+                                },
+                                "enableNextButton": {
+                                    "value": "{{true}}"
+                                },
+                                "enablePrevButton": {
+                                    "value": "{{true}}"
+                                },
+                                "enabledSort": {
+                                    "value": "{{true}}"
+                                },
+                                "displaySearchBox": {
+                                    "value": "{{true}}"
+                                },
+                                "showDownloadButton": {
+                                    "value": "{{false}}"
+                                },
+                                "showFilterButton": {
+                                    "value": "{{true}}"
+                                },
+                                "showBulkUpdateActions": {
+                                    "value": "{{false}}"
+                                },
+                                "allowSelection": {
+                                    "value": "{{false}}"
+                                },
+                                "showBulkSelector": {
+                                    "value": "{{false}}"
+                                },
+                                "highlightSelectedRow": {
+                                    "value": "{{false}}"
+                                },
+                                "showAddNewRowButton": {
+                                    "value": "{{false}}"
+                                },
+                                "showRefreshButton": {
+                                    "value": "{{true}}"
+                                },
+                                "autogenerateColumns": {
+                                    "value": "{{true}}"
+                                },
+                                "useDynamicColumn": {
+                                    "value": "{{false}}"
+                                },
+                                "columnData": {
+                                    "value": "{{[{name: 'email', key: 'email', id: '1'}, {name: 'Full name', key: 'name', id: '2', isEditable: true}]}}"
+                                },
+                                "defaultSelectedRow": {
+                                    "value": "{{{\"id\":1} }}"
+                                }
+                            },
+                            "general": null,
+                            "styles": {
+                                "columnTitleColor": {
+                                    "value": "#64748B"
+                                },
+                                "headerCasing": {
+                                    "value": "uppercase"
+                                },
+                                "columnBackgroundColor": {
+                                    "value": "#FFFFFF"
+                                },
+                                "textColor": {
+                                    "value": "#1E1B4B"
+                                },
+                                "tableType": {
+                                    "value": "table-bordered"
+                                },
+                                "borderRadius": {
+                                    "value": "{{14}}"
+                                },
+                                "borderColor": {
+                                    "value": "#E2E8F0"
+                                },
+                                "containerBackgroundColor": {
+                                    "value": "#FFFFFF"
+                                },
+                                "cellSize": {
+                                    "value": "regular"
+                                },
+                                "padding": {
+                                    "value": "default"
+                                }
+                            },
+                            "generalStyles": null,
+                            "displayPreferences": {},
+                            "validation": {},
+                            "createdAt": "2026-09-14T04:48:06.375Z",
+                            "updatedAt": "2026-09-14T04:52:47.019Z",
+                            "layouts": [
+                                {
+                                    "id": "68563092-368c-4757-850a-5155db082d82",
+                                    "type": "desktop",
+                                    "top": 480,
+                                    "left": 2,
+                                    "width": 39,
+                                    "height": 520,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "e3ee4348-58bb-44aa-a5a9-6b9e184073e2",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-14T04:48:06.375Z"
+                                },
+                                {
+                                    "id": "be6f853e-f0b1-4b63-b25a-f5c91cef3847",
+                                    "type": "mobile",
+                                    "top": 480,
+                                    "left": 2,
+                                    "width": 39,
+                                    "height": 520,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "e3ee4348-58bb-44aa-a5a9-6b9e184073e2",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-14T04:48:06.375Z"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "ccaeb21b-bd21-421c-adc0-614e6872d17d",
+                            "name": "lmTagline",
+                            "type": "Text",
+                            "pageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "parent": "f7ddd91b-9855-40a9-bce4-619dda583297",
+                            "properties": {
+                                "text": {
+                                    "value": "<span style='display:inline-block;width:8px;height:8px;border-radius:50%;background:#6366F1;vertical-align:middle;margin-right:10px;'></span>Small progress is still progress."
+                                },
+                                "textFormat": {
+                                    "value": "html"
+                                },
+                                "visibility": {
+                                    "value": "{{true}}"
+                                }
+                            },
+                            "general": null,
+                            "styles": {
+                                "textSize": {
+                                    "value": "{{12}}"
+                                },
+                                "fontWeight": {
+                                    "value": "normal"
+                                },
+                                "textColor": {
+                                    "value": "var(--cc-placeholder-text)"
+                                },
+                                "lineHeight": {
+                                    "value": "{{1.3}}"
+                                },
+                                "textAlign": {
+                                    "value": "left"
+                                },
+                                "verticalAlignment": {
+                                    "value": "center"
+                                },
+                                "isScrollRequired": {
+                                    "value": "disabled"
+                                }
+                            },
+                            "generalStyles": null,
+                            "displayPreferences": {},
+                            "validation": {},
+                            "createdAt": "2026-09-18T18:06:30.609Z",
+                            "updatedAt": "2026-09-18T18:06:30.609Z",
+                            "layouts": [
+                                {
+                                    "id": "5fbd9b81-6821-455f-84c3-0e3370d0722c",
+                                    "type": "desktop",
+                                    "top": 124,
+                                    "left": 1,
+                                    "width": 30,
+                                    "height": 25,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "ccaeb21b-bd21-421c-adc0-614e6872d17d",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-18T18:06:30.609Z"
+                                },
+                                {
+                                    "id": "2f29171b-2597-4272-94ef-08b2d29d67d8",
+                                    "type": "mobile",
+                                    "top": 124,
+                                    "left": 1,
+                                    "width": 30,
+                                    "height": 25,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "ccaeb21b-bd21-421c-adc0-614e6872d17d",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-18T18:06:30.609Z"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "f7ddd91b-9855-40a9-bce4-619dda583297",
+                            "name": "headerCard",
+                            "type": "Container",
+                            "pageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "parent": null,
+                            "properties": {
+                                "showHeader": {
+                                    "value": "{{false}}"
+                                },
+                                "visibility": {
+                                    "value": "{{true}}"
+                                }
+                            },
+                            "general": null,
+                            "styles": {
+                                "backgroundColor": {
+                                    "value": "var(--cc-weak-border)"
+                                },
+                                "borderColor": {
+                                    "value": "var(--cc-surface3-surface)"
+                                },
+                                "borderRadius": {
+                                    "value": "18"
+                                }
+                            },
+                            "generalStyles": null,
+                            "displayPreferences": {},
+                            "validation": {},
+                            "createdAt": "2026-09-18T18:06:30.609Z",
+                            "updatedAt": "2026-09-18T18:06:30.609Z",
+                            "layouts": [
+                                {
+                                    "id": "f78a24c7-c033-4b63-be9d-52babf8c3e53",
+                                    "type": "desktop",
+                                    "top": 30,
+                                    "left": 2,
+                                    "width": 39,
+                                    "height": 180,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "f7ddd91b-9855-40a9-bce4-619dda583297",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-18T18:06:30.609Z"
+                                },
+                                {
+                                    "id": "ba36ae64-363c-45f1-88a4-c9326e410d9e",
+                                    "type": "mobile",
+                                    "top": 30,
+                                    "left": 2,
+                                    "width": 39,
+                                    "height": 180,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "f7ddd91b-9855-40a9-bce4-619dda583297",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-18T18:06:30.609Z"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "b0a17cf7-2b7e-44dc-93a0-46048af58b2b",
+                            "name": "lmEyebrow",
+                            "type": "Text",
+                            "pageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "parent": "f7ddd91b-9855-40a9-bce4-619dda583297",
+                            "properties": {
+                                "text": {
+                                    "value": "LUMEN TASKS"
+                                },
+                                "textFormat": {
+                                    "value": "plainText"
+                                },
+                                "visibility": {
+                                    "value": "{{true}}"
+                                }
+                            },
+                            "general": null,
+                            "styles": {
+                                "textSize": {
+                                    "value": "{{11}}"
+                                },
+                                "fontWeight": {
+                                    "value": "bold"
+                                },
+                                "textColor": {
+                                    "value": "#6366F1"
+                                },
+                                "letterSpacing": {
+                                    "value": "{{2}}"
+                                },
+                                "lineHeight": {
+                                    "value": "{{1.3}}"
+                                },
+                                "textAlign": {
+                                    "value": "left"
+                                },
+                                "verticalAlignment": {
+                                    "value": "center"
+                                },
+                                "isScrollRequired": {
+                                    "value": "disabled"
+                                }
+                            },
+                            "generalStyles": null,
+                            "displayPreferences": {},
+                            "validation": {},
+                            "createdAt": "2026-09-18T18:06:30.609Z",
+                            "updatedAt": "2026-09-18T18:06:30.609Z",
+                            "layouts": [
+                                {
+                                    "id": "24179763-0aa8-41b0-81bc-b1fe57a8662b",
+                                    "type": "desktop",
+                                    "top": 16,
+                                    "left": 1,
+                                    "width": 20,
+                                    "height": 21,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "b0a17cf7-2b7e-44dc-93a0-46048af58b2b",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-18T18:06:30.609Z"
+                                },
+                                {
+                                    "id": "31939a09-eb48-4662-b0ae-ddda10a15a4a",
+                                    "type": "mobile",
+                                    "top": 16,
+                                    "left": 1,
+                                    "width": 20,
+                                    "height": 21,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "b0a17cf7-2b7e-44dc-93a0-46048af58b2b",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-18T18:06:30.609Z"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "73864e90-b3ac-48d5-9d21-e3dd6412643d",
+                            "name": "lmHeadline",
+                            "type": "Text",
+                            "pageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "parent": "f7ddd91b-9855-40a9-bce4-619dda583297",
+                            "properties": {
+                                "text": {
+                                    "value": "Make space for what matters."
+                                },
+                                "textFormat": {
+                                    "value": "plainText"
+                                },
+                                "visibility": {
+                                    "value": "{{true}}"
+                                }
+                            },
+                            "general": null,
+                            "styles": {
+                                "textSize": {
+                                    "value": "{{30}}"
+                                },
+                                "fontWeight": {
+                                    "value": "bold"
+                                },
+                                "textColor": {
+                                    "value": "var(--cc-primary-text)"
+                                },
+                                "lineHeight": {
+                                    "value": "{{1.15}}"
+                                },
+                                "textAlign": {
+                                    "value": "left"
+                                },
+                                "verticalAlignment": {
+                                    "value": "center"
+                                },
+                                "isScrollRequired": {
+                                    "value": "disabled"
+                                }
+                            },
+                            "generalStyles": null,
+                            "displayPreferences": {},
+                            "validation": {},
+                            "createdAt": "2026-09-18T18:06:30.609Z",
+                            "updatedAt": "2026-09-18T18:06:30.609Z",
+                            "layouts": [
+                                {
+                                    "id": "6fbdc0fe-8819-433f-bac3-a3e508198dfd",
+                                    "type": "desktop",
+                                    "top": 38,
+                                    "left": 1,
+                                    "width": 24,
+                                    "height": 41,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "73864e90-b3ac-48d5-9d21-e3dd6412643d",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-18T18:06:30.609Z"
+                                },
+                                {
+                                    "id": "5dc6a1b0-0174-4640-bc90-4ab3ac77428b",
+                                    "type": "mobile",
+                                    "top": 38,
+                                    "left": 1,
+                                    "width": 24,
+                                    "height": 41,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "73864e90-b3ac-48d5-9d21-e3dd6412643d",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-18T18:06:30.609Z"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "df919558-4d96-4bd5-ad5f-010e559163f1",
+                            "name": "lmSub",
+                            "type": "Text",
+                            "pageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "parent": "f7ddd91b-9855-40a9-bce4-619dda583297",
+                            "properties": {
+                                "text": {
+                                    "value": "A clear mind starts with one next step."
+                                },
+                                "textFormat": {
+                                    "value": "plainText"
+                                },
+                                "visibility": {
+                                    "value": "{{true}}"
+                                }
+                            },
+                            "general": null,
+                            "styles": {
+                                "textSize": {
+                                    "value": "{{14}}"
+                                },
+                                "fontWeight": {
+                                    "value": "normal"
+                                },
+                                "textColor": {
+                                    "value": "var(--cc-placeholder-text)"
+                                },
+                                "lineHeight": {
+                                    "value": "{{1.3}}"
+                                },
+                                "textAlign": {
+                                    "value": "left"
+                                },
+                                "verticalAlignment": {
+                                    "value": "center"
+                                },
+                                "isScrollRequired": {
+                                    "value": "disabled"
+                                }
+                            },
+                            "generalStyles": null,
+                            "displayPreferences": {},
+                            "validation": {},
+                            "createdAt": "2026-09-18T18:06:30.609Z",
+                            "updatedAt": "2026-09-18T18:06:30.609Z",
+                            "layouts": [
+                                {
+                                    "id": "8237eba0-80a9-463a-bd21-14facedb146e",
+                                    "type": "desktop",
+                                    "top": 86,
+                                    "left": 1,
+                                    "width": 26,
+                                    "height": 25,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "df919558-4d96-4bd5-ad5f-010e559163f1",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-18T18:06:30.609Z"
+                                },
+                                {
+                                    "id": "f97c265e-6785-466d-85b3-f73889c89ad7",
+                                    "type": "mobile",
+                                    "top": 86,
+                                    "left": 1,
+                                    "width": 26,
+                                    "height": 25,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "df919558-4d96-4bd5-ad5f-010e559163f1",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-18T18:06:30.609Z"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "40774548-6ded-4d7c-a8da-50ce2dc5a803",
+                            "name": "lmCount",
+                            "type": "Text",
+                            "pageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "parent": "f7ddd91b-9855-40a9-bce4-619dda583297",
+                            "properties": {
+                                "text": {
+                                    "value": "{{queries.listTasks.data?.length || 0}}"
+                                },
+                                "textFormat": {
+                                    "value": "plainText"
+                                },
+                                "visibility": {
+                                    "value": "{{true}}"
+                                }
+                            },
+                            "general": null,
+                            "styles": {
+                                "textSize": {
+                                    "value": "{{22}}"
+                                },
+                                "fontWeight": {
+                                    "value": "bold"
+                                },
+                                "textColor": {
+                                    "value": "var(--cc-secondary-brand)"
+                                },
+                                "lineHeight": {
+                                    "value": "{{1.3}}"
+                                },
+                                "textAlign": {
+                                    "value": "right"
+                                },
+                                "verticalAlignment": {
+                                    "value": "center"
+                                },
+                                "isScrollRequired": {
+                                    "value": "disabled"
+                                }
+                            },
+                            "generalStyles": null,
+                            "displayPreferences": {},
+                            "validation": {},
+                            "createdAt": "2026-09-18T18:06:30.609Z",
+                            "updatedAt": "2026-09-18T18:06:30.609Z",
+                            "layouts": [
+                                {
+                                    "id": "38a88276-1db6-4a51-960a-1e7a10bcbcc6",
+                                    "type": "desktop",
+                                    "top": 12,
+                                    "left": 30,
+                                    "width": 12,
+                                    "height": 35,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "40774548-6ded-4d7c-a8da-50ce2dc5a803",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-18T18:06:30.609Z"
+                                },
+                                {
+                                    "id": "616d04e8-968a-4a85-99f6-4e34d7133643",
+                                    "type": "mobile",
+                                    "top": 12,
+                                    "left": 30,
+                                    "width": 12,
+                                    "height": 35,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "40774548-6ded-4d7c-a8da-50ce2dc5a803",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-18T18:06:30.609Z"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "521f12d6-4a71-49e8-a259-2ab7741ce263",
+                            "name": "lmCountLabel",
+                            "type": "Text",
+                            "pageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "parent": "f7ddd91b-9855-40a9-bce4-619dda583297",
+                            "properties": {
+                                "text": {
+                                    "value": "total tasks"
+                                },
+                                "textFormat": {
+                                    "value": "plainText"
+                                },
+                                "visibility": {
+                                    "value": "{{true}}"
+                                }
+                            },
+                            "general": null,
+                            "styles": {
+                                "textSize": {
+                                    "value": "{{12}}"
+                                },
+                                "fontWeight": {
+                                    "value": "normal"
+                                },
+                                "textColor": {
+                                    "value": "var(--cc-placeholder-text)"
+                                },
+                                "lineHeight": {
+                                    "value": "{{1.7}}"
+                                },
+                                "textAlign": {
+                                    "value": "right"
+                                },
+                                "verticalAlignment": {
+                                    "value": "center"
+                                },
+                                "isScrollRequired": {
+                                    "value": "disabled"
+                                }
+                            },
+                            "generalStyles": null,
+                            "displayPreferences": {},
+                            "validation": {},
+                            "createdAt": "2026-09-18T18:06:30.609Z",
+                            "updatedAt": "2026-09-18T18:06:30.609Z",
+                            "layouts": [
+                                {
+                                    "id": "a3d7072d-ce78-482d-9c7b-be0640586ee9",
+                                    "type": "desktop",
+                                    "top": 47,
+                                    "left": 30,
+                                    "width": 12,
+                                    "height": 27,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "521f12d6-4a71-49e8-a259-2ab7741ce263",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-18T18:06:30.609Z"
+                                },
+                                {
+                                    "id": "c0dd8947-d16c-46a0-bea7-665ce5417664",
+                                    "type": "mobile",
+                                    "top": 47,
+                                    "left": 30,
+                                    "width": 12,
+                                    "height": 27,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "521f12d6-4a71-49e8-a259-2ab7741ce263",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-18T18:06:30.609Z"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "49002096-5fbe-41fc-b882-33a3eb3777b3",
+                            "name": "lmDate",
+                            "type": "Text",
+                            "pageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "parent": "f7ddd91b-9855-40a9-bce4-619dda583297",
+                            "properties": {
+                                "text": {
+                                    "value": "{{new Date().toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})}}"
+                                },
+                                "textFormat": {
+                                    "value": "plainText"
+                                },
+                                "visibility": {
+                                    "value": "{{true}}"
+                                }
+                            },
+                            "general": null,
+                            "styles": {
+                                "textSize": {
+                                    "value": "{{12}}"
+                                },
+                                "fontWeight": {
+                                    "value": "normal"
+                                },
+                                "textColor": {
+                                    "value": "var(--cc-disabled-text)"
+                                },
+                                "lineHeight": {
+                                    "value": "{{1.7}}"
+                                },
+                                "textAlign": {
+                                    "value": "right"
+                                },
+                                "verticalAlignment": {
+                                    "value": "center"
+                                },
+                                "isScrollRequired": {
+                                    "value": "disabled"
+                                }
+                            },
+                            "generalStyles": null,
+                            "displayPreferences": {},
+                            "validation": {},
+                            "createdAt": "2026-09-18T18:06:30.609Z",
+                            "updatedAt": "2026-09-18T18:06:30.609Z",
+                            "layouts": [
+                                {
+                                    "id": "8ad6ac3a-6c94-40a8-9b67-6d9ce6419169",
+                                    "type": "desktop",
+                                    "top": 82,
+                                    "left": 30,
+                                    "width": 12,
+                                    "height": 27,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "49002096-5fbe-41fc-b882-33a3eb3777b3",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-18T18:06:30.609Z"
+                                },
+                                {
+                                    "id": "798e559a-2f27-4d23-bd7d-a8bf751fdab1",
+                                    "type": "mobile",
+                                    "top": 82,
+                                    "left": 30,
+                                    "width": 12,
+                                    "height": 27,
+                                    "widthPx": null,
+                                    "fillWidth": null,
+                                    "componentId": "49002096-5fbe-41fc-b882-33a3eb3777b3",
+                                    "dimensionUnit": "count",
+                                    "updatedAt": "2026-09-18T18:06:30.609Z"
+                                }
+                            ]
+                        }
+                    ],
+                    "pages": [
+                        {
+                            "id": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "name": "Lumen Tasks",
+                            "handle": "home",
+                            "index": 1,
+                            "disabled": null,
+                            "hidden": null,
+                            "icon": "IconListCheck",
+                            "createdAt": "2026-09-14T04:44:20.084Z",
+                            "updatedAt": "2026-09-14T04:47:26.111Z",
+                            "autoComputeLayout": true,
+                            "appVersionId": "1a2427fc-6435-403e-99db-d788e004fbab",
+                            "pageGroupIndex": 1,
+                            "pageGroupId": null,
+                            "isPageGroup": false,
+                            "url": null,
+                            "openIn": "new_tab",
+                            "type": "default",
+                            "pageHeader": {
+                                "border": "var(--cc-weak-border)",
+                                "height": 60,
+                                "showOnMobile": false,
+                                "showOnDesktop": false,
+                                "backgroundColor": "var(--cc-surface1-surface)"
+                            },
+                            "pageFooter": {
+                                "border": "var(--cc-weak-border)",
+                                "height": 60,
+                                "showOnMobile": false,
+                                "showOnDesktop": false,
+                                "backgroundColor": "var(--cc-surface1-surface)"
+                            },
+                            "appId": ""
+                        }
+                    ],
+                    "events": [
+                        {
+                            "id": "7025c0eb-6dfc-43fc-bad2-8adaa3b66f3c",
+                            "name": "Create task",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onClick",
+                                "queryId": "3e1435f0-a9fb-4e83-a911-c3b8f28e3396",
+                                "actionId": "run-query",
+                                "queryName": "createTask"
+                            },
+                            "sourceId": "b05de012-f170-4678-8d84-b4ae2d334426",
+                            "target": "component",
+                            "appVersionId": "1a2427fc-6435-403e-99db-d788e004fbab",
+                            "createdAt": "2026-09-14T04:48:50.899Z",
+                            "updatedAt": "2026-09-14T04:48:50.899Z"
+                        },
+                        {
+                            "id": "cf64b1ee-41b0-488b-8890-bc0ce073e733",
+                            "name": "Complete task",
+                            "index": 0,
+                            "event": {
+                                "ref": "actions::complete-action",
+                                "eventId": "onClick",
+                                "queryId": "fec66789-8a52-4333-87de-28760e70b2d4",
+                                "actionId": "run-query",
+                                "queryName": "completeTask"
+                            },
+                            "sourceId": "e3ee4348-58bb-44aa-a5a9-6b9e184073e2",
+                            "target": "table_column",
+                            "appVersionId": "1a2427fc-6435-403e-99db-d788e004fbab",
+                            "createdAt": "2026-09-14T04:48:50.899Z",
+                            "updatedAt": "2026-09-14T04:48:50.899Z"
+                        },
+                        {
+                            "id": "e873ed95-2455-4a39-8117-1a60d11236e7",
+                            "name": "Refresh listTasks after createTask",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "queryId": "057a3854-5016-4b16-b394-ac7b3453fde5",
+                                "actionId": "run-query",
+                                "queryName": "listTasks"
+                            },
+                            "sourceId": "3e1435f0-a9fb-4e83-a911-c3b8f28e3396",
+                            "target": "data_query",
+                            "appVersionId": "1a2427fc-6435-403e-99db-d788e004fbab",
+                            "createdAt": "2026-09-14T04:49:02.477Z",
+                            "updatedAt": "2026-09-14T04:49:02.477Z"
+                        },
+                        {
+                            "id": "fe247eee-25c1-4d28-a5d8-7052997ee7d0",
+                            "name": "Clear taskTitle after createTask",
+                            "index": 1,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "actionId": "control-component",
+                                "componentId": "c464844f-adf9-423b-97ca-32b6d3a352de",
+                                "componentSpecificActionHandle": "clear",
+                                "componentSpecificActionParams": []
+                            },
+                            "sourceId": "3e1435f0-a9fb-4e83-a911-c3b8f28e3396",
+                            "target": "data_query",
+                            "appVersionId": "1a2427fc-6435-403e-99db-d788e004fbab",
+                            "createdAt": "2026-09-14T04:49:02.477Z",
+                            "updatedAt": "2026-09-14T04:49:02.477Z"
+                        },
+                        {
+                            "id": "79f07b66-204b-4fd2-a2d1-0962a961db7a",
+                            "name": "Clear taskNotes after createTask",
+                            "index": 2,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "actionId": "control-component",
+                                "componentId": "871aaeb3-47e9-4506-ad8c-596dc76a7450",
+                                "componentSpecificActionHandle": "clear",
+                                "componentSpecificActionParams": []
+                            },
+                            "sourceId": "3e1435f0-a9fb-4e83-a911-c3b8f28e3396",
+                            "target": "data_query",
+                            "appVersionId": "1a2427fc-6435-403e-99db-d788e004fbab",
+                            "createdAt": "2026-09-14T04:49:02.477Z",
+                            "updatedAt": "2026-09-14T04:49:02.477Z"
+                        },
+                        {
+                            "id": "a2782a6f-db08-48b4-aae9-07f7ba98e25b",
+                            "name": "Clear taskDueDate after createTask",
+                            "index": 3,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "actionId": "control-component",
+                                "componentId": "813bf365-6872-471c-af3d-ae4ca7e23a4a",
+                                "componentSpecificActionHandle": "clear",
+                                "componentSpecificActionParams": []
+                            },
+                            "sourceId": "3e1435f0-a9fb-4e83-a911-c3b8f28e3396",
+                            "target": "data_query",
+                            "appVersionId": "1a2427fc-6435-403e-99db-d788e004fbab",
+                            "createdAt": "2026-09-14T04:49:02.477Z",
+                            "updatedAt": "2026-09-14T04:49:02.477Z"
+                        },
+                        {
+                            "id": "82bbac83-bb69-4f79-96d3-34055ee07b84",
+                            "name": "Confirm createTask",
+                            "index": 4,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "message": "Task added to your list.",
+                                "actionId": "show-alert",
+                                "alertType": "success"
+                            },
+                            "sourceId": "3e1435f0-a9fb-4e83-a911-c3b8f28e3396",
+                            "target": "data_query",
+                            "appVersionId": "1a2427fc-6435-403e-99db-d788e004fbab",
+                            "createdAt": "2026-09-14T04:49:02.477Z",
+                            "updatedAt": "2026-09-14T04:49:02.477Z"
+                        },
+                        {
+                            "id": "5218fd70-a37b-45b0-bdb4-adb2285a35d3",
+                            "name": "createTask failed",
+                            "index": 5,
+                            "event": {
+                                "eventId": "onDataQueryFailure",
+                                "message": "Could not add that task. Please try again.",
+                                "actionId": "show-alert",
+                                "alertType": "error"
+                            },
+                            "sourceId": "3e1435f0-a9fb-4e83-a911-c3b8f28e3396",
+                            "target": "data_query",
+                            "appVersionId": "1a2427fc-6435-403e-99db-d788e004fbab",
+                            "createdAt": "2026-09-14T04:49:02.477Z",
+                            "updatedAt": "2026-09-14T04:49:02.477Z"
+                        },
+                        {
+                            "id": "2bef37f4-e025-4c8d-8e05-4f58d88e192a",
+                            "name": "Refresh listTasks after completeTask",
+                            "index": 0,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "queryId": "057a3854-5016-4b16-b394-ac7b3453fde5",
+                                "actionId": "run-query",
+                                "queryName": "listTasks"
+                            },
+                            "sourceId": "fec66789-8a52-4333-87de-28760e70b2d4",
+                            "target": "data_query",
+                            "appVersionId": "1a2427fc-6435-403e-99db-d788e004fbab",
+                            "createdAt": "2026-09-14T04:49:02.477Z",
+                            "updatedAt": "2026-09-14T04:49:02.477Z"
+                        },
+                        {
+                            "id": "3fc2fa7d-60a3-42da-8e4f-6e89bf6bb284",
+                            "name": "Confirm completeTask",
+                            "index": 1,
+                            "event": {
+                                "eventId": "onDataQuerySuccess",
+                                "message": "Nice work — task completed.",
+                                "actionId": "show-alert",
+                                "alertType": "success"
+                            },
+                            "sourceId": "fec66789-8a52-4333-87de-28760e70b2d4",
+                            "target": "data_query",
+                            "appVersionId": "1a2427fc-6435-403e-99db-d788e004fbab",
+                            "createdAt": "2026-09-14T04:49:02.477Z",
+                            "updatedAt": "2026-09-14T04:49:02.477Z"
+                        },
+                        {
+                            "id": "bff98d13-209d-4dc3-a44f-80d3f737ea62",
+                            "name": "completeTask failed",
+                            "index": 2,
+                            "event": {
+                                "eventId": "onDataQueryFailure",
+                                "message": "Could not update that task. Please try again.",
+                                "actionId": "show-alert",
+                                "alertType": "error"
+                            },
+                            "sourceId": "fec66789-8a52-4333-87de-28760e70b2d4",
+                            "target": "data_query",
+                            "appVersionId": "1a2427fc-6435-403e-99db-d788e004fbab",
+                            "createdAt": "2026-09-14T04:49:02.477Z",
+                            "updatedAt": "2026-09-14T04:49:02.477Z"
+                        }
+                    ],
+                    "dataQueries": [
+                        {
+                            "id": "057a3854-5016-4b16-b394-ac7b3453fde5",
+                            "name": "listTasks",
+                            "options": {
+                                "operation": "list_rows",
+                                "table_id": "e8018b20-1838-402d-9007-8a676fc0c681",
+                                "list_rows": {
+                                    "limit": 100,
+                                    "offset": 0,
+                                    "order_filters": {
+                                        "sort-created": {
+                                            "id": "sort-created",
+                                            "column": "created_at",
+                                            "order": "desc"
+                                        }
+                                    }
+                                },
+                                "runOnPageLoad": true
+                            },
+                            "dataSourceId": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
+                            "appVersionId": "1a2427fc-6435-403e-99db-d788e004fbab",
+                            "createdAt": "2026-09-14T04:48:31.781Z",
+                            "updatedAt": "2026-09-18T18:10:01.479Z"
+                        },
+                        {
+                            "id": "fec66789-8a52-4333-87de-28760e70b2d4",
+                            "name": "completeTask",
+                            "options": {
+                                "operation": "update_rows",
+                                "table_id": "e8018b20-1838-402d-9007-8a676fc0c681",
+                                "update_rows": {
+                                    "where_filters": {
+                                        "0": {
+                                            "column": "id",
+                                            "operator": "eq",
+                                            "value": "{{components.taskTable.selectedRow.id}}"
+                                        }
+                                    },
+                                    "columns": {
+                                        "0": {
+                                            "column": "status",
+                                            "value": "completed"
+                                        },
+                                        "1": {
+                                            "column": "completed_at",
+                                            "value": "{{moment().toISOString()}}"
+                                        }
+                                    }
+                                },
+                                "runOnPageLoad": false
+                            },
+                            "dataSourceId": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
+                            "appVersionId": "1a2427fc-6435-403e-99db-d788e004fbab",
+                            "createdAt": "2026-09-14T04:48:31.891Z",
+                            "updatedAt": "2026-09-14T04:48:31.891Z"
+                        },
+                        {
+                            "id": "3e1435f0-a9fb-4e83-a911-c3b8f28e3396",
+                            "name": "createTask",
+                            "options": {
+                                "operation": "create_row",
+                                "table_id": "e8018b20-1838-402d-9007-8a676fc0c681",
+                                "create_row": {
+                                    "0": {
+                                        "column": "title",
+                                        "value": "{{components.taskTitle.value}}"
+                                    },
+                                    "1": {
+                                        "column": "notes",
+                                        "value": "{{components.taskNotes.value}}"
+                                    },
+                                    "2": {
+                                        "column": "priority",
+                                        "value": "{{components.taskPriority.value || 'medium'}}"
+                                    },
+                                    "3": {
+                                        "column": "due_date",
+                                        "value": "{{components.taskDueDate.value}}"
+                                    },
+                                    "4": {
+                                        "column": "status",
+                                        "value": "open"
+                                    }
+                                },
+                                "runOnPageLoad": false
+                            },
+                            "dataSourceId": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
+                            "appVersionId": "1a2427fc-6435-403e-99db-d788e004fbab",
+                            "createdAt": "2026-09-14T04:48:31.995Z",
+                            "updatedAt": "2026-09-14T04:48:31.995Z"
+                        }
+                    ],
+                    "dataSources": [
+                        {
+                            "id": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
+                            "name": "tooljetdbdefault",
+                            "kind": "tooljetdb",
+                            "type": "static",
+                            "pluginId": null,
+                            "appVersionId": null,
+                            "organizationId": "1bf0c363-80f7-4abd-8251-72e0fc98fdfe",
+                            "scope": "global",
+                            "createdAt": "2026-09-13T05:53:56.408Z",
+                            "updatedAt": "2026-09-13T05:53:56.408Z"
+                        }
+                    ],
+                    "dataQueryFolders": [],
+                    "dataQueryFolderMappings": [
+                        {
+                            "id": "ba57e678-3339-4b4d-8317-02926d68654f",
+                            "parentId": null,
+                            "childId": "057a3854-5016-4b16-b394-ac7b3453fde5",
+                            "childType": "query",
+                            "index": 1,
+                            "createdAt": "2026-09-14T04:48:31.785Z",
+                            "updatedAt": "2026-09-14T04:48:31.785Z"
+                        },
+                        {
+                            "id": "e0c8cd76-c798-4d72-9000-f4f0bac7a34d",
+                            "parentId": null,
+                            "childId": "fec66789-8a52-4333-87de-28760e70b2d4",
+                            "childType": "query",
+                            "index": 0,
+                            "createdAt": "2026-09-14T04:48:31.894Z",
+                            "updatedAt": "2026-09-14T04:48:31.894Z"
+                        },
+                        {
+                            "id": "121cb54f-806d-4167-9ffd-2a026dcc54f9",
+                            "parentId": null,
+                            "childId": "3e1435f0-a9fb-4e83-a911-c3b8f28e3396",
+                            "childType": "query",
+                            "index": 0,
+                            "createdAt": "2026-09-14T04:48:32.001Z",
+                            "updatedAt": "2026-09-14T04:48:32.001Z"
+                        }
+                    ],
+                    "appVersions": [
+                        {
+                            "id": "1a2427fc-6435-403e-99db-d788e004fbab",
+                            "name": "v1",
+                            "definition": null,
+                            "globalSettings": {
+                                "appInMaintenance": false,
+                                "canvasMaxWidth": 100,
+                                "canvasMaxWidthType": "%",
+                                "canvasMaxHeight": 2400,
+                                "canvasBackgroundColor": "#FAFAFF",
+                                "backgroundFxQuery": "",
+                                "appMode": "light",
+                                "theme": {
+                                    "name": "Indigo and white",
+                                    "organizationId": "1bf0c363-80f7-4abd-8251-72e0fc98fdfe",
+                                    "definition": {
+                                        "brand": {
+                                            "colors": {
+                                                "primary": {
+                                                    "light": "#4F46E5",
+                                                    "dark": "#818CF8"
+                                                },
+                                                "secondary": {
+                                                    "light": "#3730A3",
+                                                    "dark": "#A5B4FC"
+                                                },
+                                                "tertiary": {
+                                                    "light": "#64748B",
+                                                    "dark": "#CBD5E1"
+                                                }
+                                            }
+                                        },
+                                        "text": {
+                                            "font": "Inter",
+                                            "colors": {
+                                                "primary": {
+                                                    "light": "#1E1B4B",
+                                                    "dark": "#F8FAFC"
+                                                },
+                                                "placeholder": {
+                                                    "light": "#64748B",
+                                                    "dark": "#94A3B8"
+                                                },
+                                                "disabled": {
+                                                    "light": "#94A3B8",
+                                                    "dark": "#64748B"
+                                                }
+                                            }
+                                        },
+                                        "border": {
+                                            "radius": {
+                                                "default": 10,
+                                                "small": 6,
+                                                "large": 14
+                                            },
+                                            "colors": {
+                                                "default": {
+                                                    "light": "#E2E8F0",
+                                                    "dark": "#334155"
+                                                },
+                                                "weak": {
+                                                    "light": "#EEF2FF",
+                                                    "dark": "#1E293B"
+                                                },
+                                                "disabled": {
+                                                    "light": "#CBD5E1",
+                                                    "dark": "#475569"
+                                                }
+                                            }
+                                        },
+                                        "systemStatus": {
+                                            "colors": {
+                                                "success": {
+                                                    "light": "#15803D",
+                                                    "dark": "#4ADE80"
+                                                },
+                                                "error": {
+                                                    "light": "#B91C1C",
+                                                    "dark": "#F87171"
+                                                },
+                                                "warning": {
+                                                    "light": "#B45309",
+                                                    "dark": "#FBBF24"
+                                                }
+                                            }
+                                        },
+                                        "surface": {
+                                            "colors": {
+                                                "appBackground": {
+                                                    "light": "#FAFAFF",
+                                                    "dark": "#0F172A"
+                                                },
+                                                "surface1": {
+                                                    "light": "#FFFFFF",
+                                                    "dark": "#111827"
+                                                },
+                                                "surface2": {
+                                                    "light": "#F1F5F9",
+                                                    "dark": "#1E293B"
+                                                },
+                                                "surface3": {
+                                                    "light": "#E0E7FF",
+                                                    "dark": "#312E81"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "isDefault": false,
+                                    "isBasic": false,
+                                    "id": "e4f465d7-5922-46e2-8c11-6600231152a5",
+                                    "createdAt": "2026-09-14T04:44:21.696Z",
+                                    "updatedAt": "2026-09-14T04:44:21.696Z"
+                                }
+                            },
+                            "pageSettings": {
+                                "properties": {
+                                    "hideHeader": true,
+                                    "disableMenu": {
+                                        "value": "{{true}}",
+                                        "fxActive": false
+                                    }
+                                }
+                            },
+                            "showViewerNavigation": true,
+                            "homePageId": "d16cb0c0-ddf1-4863-ac90-bafc1fdb0551",
+                            "appId": "a440d4c1-13fe-4aa7-b45a-de4cb8c7822a",
+                            "currentEnvironmentId": "15cd491e-31a4-419f-91dd-ab150c45a22f",
+                            "promotedFrom": null,
+                            "parentVersionId": null,
+                            "status": "DRAFT",
+                            "description": null,
+                            "publishedAt": null,
+                            "releasedAt": null,
+                            "createdAt": "2026-09-14T04:44:20.364Z",
+                            "updatedAt": "2026-09-18T18:06:39.238Z"
+                        }
+                    ],
+                    "appEnvironments": [
+                        {
+                            "id": "15cd491e-31a4-419f-91dd-ab150c45a22f",
+                            "organizationId": "1bf0c363-80f7-4abd-8251-72e0fc98fdfe",
+                            "name": "development",
+                            "isDefault": false,
+                            "priority": 1,
+                            "enabled": true,
+                            "createdAt": "2026-09-13T05:53:56.182Z",
+                            "updatedAt": "2026-09-13T05:53:56.182Z"
+                        },
+                        {
+                            "id": "c24284ff-f844-43d7-9f17-c581096590c4",
+                            "organizationId": "1bf0c363-80f7-4abd-8251-72e0fc98fdfe",
+                            "name": "staging",
+                            "isDefault": false,
+                            "priority": 2,
+                            "enabled": true,
+                            "createdAt": "2026-09-13T05:53:56.185Z",
+                            "updatedAt": "2026-09-13T05:53:56.185Z"
+                        },
+                        {
+                            "id": "affed816-1b54-4097-a6fb-fcd010064dfe",
+                            "organizationId": "1bf0c363-80f7-4abd-8251-72e0fc98fdfe",
+                            "name": "production",
+                            "isDefault": true,
+                            "priority": 3,
+                            "enabled": true,
+                            "createdAt": "2026-09-13T05:53:56.187Z",
+                            "updatedAt": "2026-09-13T05:53:56.187Z"
+                        }
+                    ],
+                    "dataSourceOptions": [
+                        {
+                            "id": "913e6a5e-072f-4980-8d1d-4ce3bc6c9f33",
+                            "dataSourceId": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
+                            "environmentId": "15cd491e-31a4-419f-91dd-ab150c45a22f",
+                            "options": null,
+                            "createdAt": "2026-09-13T05:53:56.411Z",
+                            "updatedAt": "2026-09-13T05:53:56.411Z"
+                        },
+                        {
+                            "id": "08427d4b-b0e3-40bc-81cf-21afb798a816",
+                            "dataSourceId": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
+                            "environmentId": "affed816-1b54-4097-a6fb-fcd010064dfe",
+                            "options": null,
+                            "createdAt": "2026-09-13T05:53:56.411Z",
+                            "updatedAt": "2026-09-13T05:53:56.411Z"
+                        },
+                        {
+                            "id": "5ddffcc6-027b-411a-a76c-fd8d78f7a62d",
+                            "dataSourceId": "59ef2b1d-e38d-4f69-83dd-dc63a173c407",
+                            "environmentId": "c24284ff-f844-43d7-9f17-c581096590c4",
+                            "options": null,
+                            "createdAt": "2026-09-13T05:53:56.411Z",
+                            "updatedAt": "2026-09-13T05:53:56.411Z"
+                        }
+                    ],
+                    "schemaDetails": {
+                        "multiPages": true,
+                        "multiEnv": true,
+                        "globalDataSources": true
+                    },
+                    "modules": []
+                }
+            }
+        }
+    ],
+    "tooljet_version": "3.20.233-cloud-lts"
+}

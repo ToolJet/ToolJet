@@ -135,6 +135,29 @@
     }
 }
 
+// Mobile edit frame: the canvas region (.tj-mobile-canvas-scroll) scrolls with a hidden scrollbar; the page
+// canvas overflows visibly (borders show on all sides) and the hover outline is drawn inside to avoid clipping.
+// Scoped to .tj-mobile-canvas-scroll, not .tj-canvas-area: the latter is also DesktopLayout's
+// root, so an #real-canvas override there outranks .real-canvas:not(.has-no-scroll) and kills
+// desktop canvas scrolling.
+.tj-canvas-area {
+    .tj-mobile-canvas-scroll {
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        #real-canvas {
+            overflow: visible;
+        }
+
+        .widget-target:hover {
+            outline-offset: -1px;
+        }
+    }
+}
+
 .real-canvas.flex-container-canvas:not(.has-no-scroll) {
     overflow: auto;
     // Flex children reflow when scrollbar width changes, so keep the gutter stable and only reveal colors on hover.
@@ -159,6 +182,11 @@
     // &:hover::-webkit-scrollbar-track {
     //     background: #e7eaef;
     // }
+}
+
+.canvas-content {
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
 }
 
 #main-editor-canvas.disable-moveable-line #real-canvas {
@@ -190,14 +218,16 @@
 }
 
 .scrollbar-hidden {
-    scrollbar-width: none;
-    /* Firefox */
-    -ms-overflow-style: none;
-    /* IE and Edge */
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
 
     &::-webkit-scrollbar {
-        width: 0;
-        height: 0;
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb,
+    &::-webkit-scrollbar-track {
+        background: transparent;
     }
 }
 

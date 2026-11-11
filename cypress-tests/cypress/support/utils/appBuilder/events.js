@@ -1,6 +1,7 @@
 // ┌─ AUTO-GENERATED from @tj annotations below — do not edit by hand ─┐
 // events.js
 //   selectEvent                      events               → events
+//   selectSearchableOption           -                    → events
 //   selectCSA                        csa                  → csa
 //   addSupportCSAData                -                    → csa
 //   selectSupportCSAData             -                    → csa
@@ -8,6 +9,7 @@
 //   addMultiEventsWithAlert          events               → events
 //   setCSAParam                      -                    → csa
 //   configureCSA                     csa                  → csa
+//   selectQueryForEvent              -                    → events
 // └──────────────────────────────────────────────────────────────────┘
 /**
  * MODULE — appBuilder/events: right-Inspector **Events tab** + Component-Specific
@@ -30,7 +32,55 @@
 
 // Alias /events requests. Handlers save via POST (create) and PATCH (update), so the
 // pattern is method-agnostic; call before any `cy.wait("@events")`.
-const interceptEvents = () => cy.intercept(/\/events(\/|\?|$)/).as("events");
+// Also tracks in-flight saves (by request id) so waitForEventSavesToSettle can hold
+// typing until a late autosave has landed and re-rendered the popover.
+const inFlightEventSaves = new Set();
+// Sets keyed by req.id: interceptEvents is registered by several helpers, so one
+// request runs every stacked handler and a plain counter would over-count.
+const completedEventSaves = new Set();
+const interceptEvents = () =>
+  cy
+    .intercept(/\/events(\/|\?|$)/, (req) => {
+      inFlightEventSaves.add(req.id);
+      req.on("after:response", () => {
+        inFlightEventSaves.delete(req.id);
+        completedEventSaves.add(req.id);
+      });
+    })
+    .as("events");
+
+// Run `change`, then soft-wait (up to ~10s) until a save that started after it has
+// completed. The editor queues event saves with requestIdleCallback and only shows
+// the new value once the response lands, so on a busy runner the save can start
+// well after any fixed grace — and a pick made before it lands races it.
+const afterEventSave = (change) => {
+  let since;
+  const poll = (attempts) =>
+    cy.wait(250).then(() => {
+      const saved = completedEventSaves.size > since && !inFlightEventSaves.size;
+      if (!saved && attempts > 1) poll(attempts - 1);
+    });
+  cy.then(() => {
+    since = completedEventSaves.size;
+  });
+  change();
+  cy.then(() => poll(40));
+};
+
+// Soft wait (never fails): poll until no /events save is in flight, giving up after
+// ~5s. A save that lands mid-type re-renders the popover's CodeHinter and detaches
+// the element being typed into ("page updated as a result of this command").
+// `graceMs` covers debounced saves that have not been sent yet when this is called.
+export const waitForEventSavesToSettle = (graceMs = 0, attempts = 20) => {
+  if (graceMs) cy.wait(graceMs);
+  cy.wait(250).then(() => {
+    if (inFlightEventSaves.size && attempts > 1) {
+      waitForEventSavesToSettle(0, attempts - 1);
+    } else {
+      inFlightEventSaves.clear();
+    }
+  });
+};
 
 // Blur the popover's active field so its value commits.
 const commitEventConfig = () =>
@@ -39,13 +89,27 @@ const commitEventConfig = () =>
 // Open a handler's config popover if it is closed. `index` is the card index, or
 // "last" for the most recently created handler. Force-click is required: an open Radix
 // popover sets `body { pointer-events: none }`.
+// A newly created handler auto-opens its popover (useNewEventAutoPopoverOpen) shortly
+// after its card renders, so: wait for the card to exist, give the auto-open up to ~2s,
+// and only click when it is still closed — clicking during the auto-open would toggle
+// it shut again.
+const handlerCardSelector = '[data-cy="event-handler-card"]';
 const ensureHandlerCardOpen = (index = 0) => {
-  const card = cy.get('[data-cy="event-handler-card"]');
-  return (index === "last" ? card.last() : card.eq(index)).then(($card) => {
-    if ($card.attr("data-state") !== "open") {
-      cy.wrap($card).click({ force: true });
-    }
-  });
+  if (index !== "last") {
+    cy.get(handlerCardSelector).should("have.length.greaterThan", index);
+  }
+  const pickCard = () => {
+    const $cards = Cypress.$(handlerCardSelector);
+    return index === "last" ? $cards.last() : $cards.eq(index);
+  };
+  const waitForOpen = (attempts) =>
+    cy.wait(200).then(() => {
+      if (pickCard().attr("data-state") === "open") return;
+      if (attempts > 1) return waitForOpen(attempts - 1);
+      const card = cy.get(handlerCardSelector);
+      (index === "last" ? card.last() : card.eq(index)).click({ force: true });
+    });
+  return waitForOpen(10);
 };
 
 // Add an event handler and set its action.
@@ -117,7 +181,12 @@ const selectListboxOption = (triggerSelector, label) => {
 // EXACT match (an inexact click can select a longer superset option).
 // The ComboboxInput nests more than one <input>, so typing is scoped to the first
 // visible one — `.find("input").type()` would throw "single element" here.
-const selectSearchableOption = (fieldSelector, label) => {
+/**
+ * @tjBlock  events
+ * @tjUsage  selectSearchableOption('[data-cy="query-selection-field"]', 'myquery')
+ * @tjDom    a searchable OptionCombobox: type to filter, click the exact match
+ */
+export const selectSearchableOption = (fieldSelector, label) => {
   cy.get(fieldSelector).scrollIntoView().click();
   cy.get(`${fieldSelector} input`)
     .filter(":visible")
@@ -145,15 +214,22 @@ export const selectCSA = (
 ) => {
   interceptEvents();
 
-  selectSearchableOption(
-    '[data-cy="action-options-component-selection-field"]',
-    component
+  // Let the component pick's save land first: a late response re-renders the popover
+  // and can reset an action picked in the meantime back to "Select...".
+  afterEventSave(() =>
+    selectSearchableOption(
+      '[data-cy="action-options-component-selection-field"]',
+      component
+    )
   );
-  selectSearchableOption(
-    '[data-cy="action-options-action-selection-field"]',
-    componentAction
-  );
-  cy.wait("@events");
+  const actionField = '[data-cy="action-options-action-selection-field"]';
+  const actionLabel = new RegExp(`^\\s*${componentAction}\\s*$`, "i");
+  afterEventSave(() => selectSearchableOption(actionField, componentAction));
+  cy.get(actionField)
+    .first()
+    .find("input:visible")
+    .first()
+    .should(($input) => expect($input.val()).to.match(actionLabel));
 
   cy.get('[data-cy="debounce-input-field"]')
     .click()
@@ -184,6 +260,7 @@ export const addSupportCSAData = (field, data) => {
       ensureHandlerCardOpen("last");
     }
   });
+  waitForEventSavesToSettle();
   cy.get(`[data-cy="${field}-input-field"]`)
     .should("be.visible")
     .click({ force: true })
@@ -225,6 +302,11 @@ export const changeEventType = (event, eventIndex = 0) => {
 };
 
 
+// Wire ONE trigger to Show Alert. Same isWait caveat as below.
+export const addEventWithAlert = (event, message, isWait = true) => {
+  addMultiEventsWithAlert([{ event, message }], isWait);
+};
+
 // Wire several triggers to Show Alert in one call: [{ event, message }, ...].
 // Leave isWait TRUE — see selectEvent; false drops the alert message and the handler
 // falls back to its default "Hello world!".
@@ -238,6 +320,7 @@ export const addMultiEventsWithAlert = (events, isWait = true) => {
   events.forEach((eventObj, index) => {
     selectEvent(eventObj.event, 'Show Alert', 0, '[data-cy="add-event-handler"]', index, isWait);
     addSupportCSAData("alert-message", eventObj.message);
+    cy.wait("@events");
   });
 };
 // ---------------------------------------------------------------------------
@@ -277,13 +360,22 @@ export const setCSAParam = (param) => {
   if (type === "toggle") {
     const desired = value !== false;
     const sel = `[data-cy="event-${label}-toggle-button"]`;
-    cy.get(sel)
-      .scrollIntoView()
-      .then(($el) => {
-        if ($el.prop("checked") !== desired) {
-          cy.wrap($el).click({ force: true });
-        }
-      });
+    const applyToggle = () =>
+      cy
+        .get(sel)
+        .scrollIntoView()
+        .then(($el) => {
+          if ($el.prop("checked") !== desired) {
+            cy.wrap($el).click({ force: true });
+          }
+        });
+    // A save still in flight from the action pick can land after the click and
+    // re-render the toggle with the old value; settle around the click and
+    // re-apply once if it was reverted.
+    waitForEventSavesToSettle(500);
+    applyToggle();
+    waitForEventSavesToSettle(800);
+    applyToggle();
     cy.get(sel).should(desired ? "be.checked" : "not.be.checked");
     return;
   }
@@ -311,5 +403,34 @@ export const configureCSA = (component, action, params = []) => {
   selectCSA(component, action);
   params.forEach(setCSAParam);
   cy.forceClickOnCanvas();
+  cy.waitForAutoSave();
+  // The blur above can send a debounced save; let it land before the caller fires
+  // the handler, or the CSA runs against the previous config.
+  waitForEventSavesToSettle(800);
+};
+
+// Picks the query for a "Run query" event action ("Run query" is the exact label,
+// ActionTypes.js — lowercase q; a different list, useCallbackActions.js, spells it
+// "Run Query").
+//
+// Delegates to selectSearchableOption rather than hand-rolling: this control is an
+// @base-ui/react Combobox with a real text input, NOT the Radix Select that
+// `action-selection` uses, and its ComboboxInput nests more than one <input>, so a plain
+// .find("input").click() throws "can only be called on a single element".
+//
+// The trailing assertion is the control: selectSearchableOption clicks an option but
+// asserts nothing, so without it a mis-click leaves the event pointing at no query and
+// the test fails later, somewhere less obvious.
+/**
+ * @tjBlock  events
+ * @tjUsage  selectEvent('On click', 'Run query'); selectQueryForEvent('mysquery')
+ * @tjDom    query-selection-field input → portalled [data-slot="combobox-item"]
+ */
+export const selectQueryForEvent = (queryName) => {
+  selectSearchableOption('[data-cy="query-selection-field"]', queryName);
+  cy.get('[data-cy="query-selection-field"] input')
+    .filter(":visible")
+    .first()
+    .should("have.value", queryName);
   cy.waitForAutoSave();
 };

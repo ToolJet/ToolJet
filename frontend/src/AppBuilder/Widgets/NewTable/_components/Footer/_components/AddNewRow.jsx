@@ -26,6 +26,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
   const headerCasing = useTableStore((state) => state.getTableStyles(id)?.headerCasing, shallow);
   const columnTitleColor = useTableStore((state) => state.getTableStyles(id)?.columnTitleColor, shallow);
   const columnBackgroundColor = useTableStore((state) => state.getTableStyles(id)?.columnBackgroundColor, shallow);
+  const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
   const getResolvedValue = useStore.getState().getResolvedValue;
   // header overflow set to wrap: let the header grow with the text instead of overflowing the fixed 32px height
   const isHeaderWrapped = getResolvedValue(columnHeaderWrap) === 'wrap';
@@ -105,8 +106,12 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
     ]
   );
 
+  // `data` must keep its identity between renders: table-core resets the page index (a state update)
+  // whenever `data` changes, so a fresh array per render re-renders this popup forever and freezes the tab.
+  const newRowsData = useMemo(() => [...addNewRowDetails.values()], [addNewRowDetails]);
+
   const table = useReactTable({
-    data: [...addNewRowDetails.values()],
+    data: newRowsData,
     columns: columns,
     getCoreRowModel: getCoreRowModel(),
   });
@@ -208,7 +213,15 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
           </thead>
           <tbody>
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} style={{ display: 'flex' }} className="table-row" data-cy={`add-new-row-${row.index}`}>
+              // min-height matches the main table body row. String cells only fill their row,
+              // so a row of empty string cells collapses to 0 without it; a min rather than a fixed
+              // height lets the row grow for multi-line text cells.
+              <tr
+                key={row.id}
+                style={{ display: 'flex', minHeight: cellHeight === 'condensed' ? '39px' : '45px' }}
+                className="table-row"
+                data-cy={`add-new-row-${row.index}`}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}

@@ -3,7 +3,7 @@
   "title": "Operations schema",
   "description": "Tooljet Operations schema",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "$schema": {
       "type": "string",
@@ -18,24 +18,86 @@
       "description": "description of datasource"
     },
     "type": {
-      "type": "string",
-      "items": {
-        "$ref": "#/definitions/type"
-      }
+      "anyOf": [
+        {
+          "$ref": "#/definitions/pluginType"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pluginType"
+          }
+        }
+      ]
     },
     "defaults": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {}
+      "type": "object"
     },
     "properties": {
       "type": "object",
-      "additionalProperties": false,
-      "properties": {}
+      "additionalProperties": {
+        "$ref": "#/definitions/node"
+      }
     }
   },
   "definitions": {
-    "type": {
+    "node": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "checkbox-group",
+                    "codehinter",
+                    "columns",
+                    "dropdown",
+                    "dropdown-component-flip",
+                    "dynamic-selector",
+                    "filters",
+                    "react-component-api-endpoint",
+                    "react-component-api-endpoint-old",
+                    "react-component-headers",
+                    "react-component-key-value-tabs",
+                    "react-component-sort",
+                    "react-component-sql-aggregate",
+                    "react-component-sql-columns",
+                    "react-component-sql-filters",
+                    "react-component-sql-groupby",
+                    "react-component-sql-sort",
+                    "sorts",
+                    "toggle"
+                  ]
+                },
+                {
+                  "type": "object"
+                }
+              ]
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/node"
+          }
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/node"
+          }
+        },
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        }
+      ]
+    },
+    "pluginType": {
       "enum": [
         "api",
         "cloud-storage",

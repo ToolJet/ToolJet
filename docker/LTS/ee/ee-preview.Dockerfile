@@ -1,4 +1,20 @@
-FROM node:22.15.1 AS builder
+# tooljet-mcp, for the self-hosted MCP-over-socket relay (ee-server#827). Same as ee-production,
+# but follows BRANCH_NAME like the submodules do, falling back to main.
+FROM node:22.23.4 AS mcp-builder
+WORKDIR /mcp
+ARG BRANCH_NAME
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    git clone https://github.com/ToolJet/tooljet-mcp.git . && \
+    if [ -n "${BRANCH_NAME}" ] && git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then \
+      git checkout "${BRANCH_NAME}"; \
+    else \
+      echo "Branch ${BRANCH_NAME} not found in tooljet-mcp, falling back to main"; \
+    fi
+RUN npm ci && npm run build:plugin
+
+FROM node:22.23.4 AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
@@ -47,69 +63,60 @@ RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools 
 RUN mkdir -p /app
 WORKDIR /app
 
-# Set GitHub token, branch and repository URL as build arguments
-ARG CUSTOM_GITHUB_TOKEN
+# GitHub token is a BuildKit secret (--secret id=github_token), mounted only for the steps that
+# fetch private repos and passed to git via env, so it never lands in a layer, the image config
+# or the build provenance like a build arg does.
 ARG BRANCH_NAME
 ARG REPO_URL=https://github.com/ToolJet/ToolJet.git
-
-# Clone and checkout the frontend repository
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
 RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
 RUN git clone ${REPO_URL} .
 
-# The branch name needs to be changed the branch with modularisation in CE repo
+# Checkout BRANCH_NAME if it exists, otherwise the LTS branch .gitmodules tracks in the build context
+COPY ./.gitmodules /tmp/context.gitmodules
 RUN if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
        git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
       git checkout ${BRANCH_NAME}; \
     else \
-      echo "Branch ${BRANCH_NAME} not found, falling back to lts-3.16"; \
-      git checkout lts-3.16; \
+      FALLBACK=$(git config -f /tmp/context.gitmodules submodule.server/ee.branch) || \
+        { echo "No branch set for server/ee in .gitmodules"; exit 1; }; \
+      echo "Branch ${BRANCH_NAME} not found, falling back to ${FALLBACK}"; \
+      git checkout "${FALLBACK}"; \
     fi
 
-# Handle submodules - try normal submodule update first, if it fails clone directly from base repo
-RUN if git submodule update --init --recursive; then \
+# Handle submodules - try normal submodule update first, if it fails clone directly from base repo.
+# On a fork, where the pinned commit is unreachable, the script takes the same-named branch, else the one .gitmodules tracks
+COPY ./docker/LTS/submodule-checkout.sh /tmp/submodule-checkout.sh
+RUN --mount=type=secret,id=github_token \
+    TOKEN=$(cat /run/secrets/github_token) && \
+    export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://x-access-token:${TOKEN}@github.com/.insteadOf" GIT_CONFIG_VALUE_0="https://github.com/" && \
+    if git submodule update --init --recursive; then \
   echo "Submodules initialized successfully"; \
-  # Checkout the same branch in submodules if it exists, otherwise fallback to lts-3.16
+  # Follow a same-named submodule branch only when it contains the pinned commit (HEAD after
+  # update), else keep the pin: a stale branch builds EE code older than this checkout.
   git submodule foreach " \
-    if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-       git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-      git checkout ${BRANCH_NAME}; \
+    if git fetch -q origin ${BRANCH_NAME} 2>/dev/null && \
+       git merge-base --is-ancestor HEAD FETCH_HEAD; then \
+      git checkout -B ${BRANCH_NAME} FETCH_HEAD; \
     else \
-      echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to lts-3.16'; \
-      git checkout lts-3.16; \
+      echo 'Submodule \$name: no ${BRANCH_NAME} branch containing the pinned commit, keeping the pin'; \
     fi"; \
 else \
   echo "Submodule update failed, likely a forked repo. Cloning EE submodules directly from base repo."; \
   # Clone frontend/ee submodule directly
   if [ ! -d "frontend/ee" ]; then \
     mkdir -p frontend/ee; \
-    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-frontend.git frontend/ee; \
+    git clone https://github.com/ToolJet/ee-frontend.git frontend/ee; \
   fi; \
-  # Clone server/ee submodule directly  
+  # Clone server/ee submodule directly
   if [ ! -d "server/ee" ]; then \
     mkdir -p server/ee; \
-    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-server.git server/ee; \
+    git clone https://github.com/ToolJet/ee-server.git server/ee; \
   fi; \
-  # Checkout the same branch in EE submodules if it exists, otherwise fallback to lts-3.16
-  cd frontend/ee && \
-  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-    git checkout ${BRANCH_NAME}; \
-  else \
-    echo "Branch ${BRANCH_NAME} not found in frontend/ee, falling back to lts-3.16"; \
-    git checkout lts-3.16; \
-  fi && \
-  cd ../../server/ee && \
-  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-    git checkout ${BRANCH_NAME}; \
-  else \
-    echo "Branch ${BRANCH_NAME} not found in server/ee, falling back to lts-3.16"; \
-    git checkout lts-3.16; \
-  fi && \
-  cd ../..; \
+  for sm in frontend/ee server/ee; do \
+    (cd "$sm" && name="$sm" toplevel=/app sha1=$(git -C /app rev-parse "HEAD:$sm") sh /tmp/submodule-checkout.sh) || exit 1; \
+  done; \
 fi
 
 # Scripts for building
@@ -117,8 +124,10 @@ COPY ./package.json ./package.json
 
 # Build plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
-# Pin ibm_db's clidriver to a build linked against glibc <=2.14, since the runtime
-# stage is bullseye (glibc 2.31) and the latest clidriver requires glibc 2.32+
+# Pin ibm_db's clidriver to a build linked against glibc <=2.14. The runtime stage
+# is now bookworm (glibc 2.36) so this pin is no longer strictly required, but the
+# older clidriver is forward-compatible and keeping it avoids re-testing ibm_db.
+# Safe to drop later if you want the current driver.
 ENV IBM_DB_INSTALLER_URL=https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/v11.5.9
 RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
@@ -126,6 +135,10 @@ RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
 ENV TOOLJET_EDITION=ee
+
+# Copy shared widget-definitions package (required by frontend + server file: dependency)
+COPY ./packages/widget-definitions/package.json ./packages/widget-definitions/package.json
+COPY ./packages/widget-definitions/src/ ./packages/widget-definitions/src/
 
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
@@ -141,11 +154,19 @@ ENV TOOLJET_EDITION=ee
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
 COPY ./server/ ./server/
+RUN node server/scripts/compress-templates.js
 RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
-FROM node:22.15.1-bullseye
+# ---------------------------------------------------------------------------
+# Runtime stage
+# Moved from node:22.15.1-bullseye to bookworm. Debian 11 reached end-of-life on
+# 31 Aug 2026, so bullseye-security no longer publishes a valid Release file and
+# apt-get update fails with exit 100. Bookworm also matches the builder stage,
+# which fixes the libprotobuf ABI mismatch for the copied nsjail binary.
+# ---------------------------------------------------------------------------
+FROM node:22.23.4-bookworm
 
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
@@ -155,13 +176,21 @@ RUN apt-get update -yq \
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
+# Node 22.15.1 ships tz 2025a, missing the Canada DST change of 1 Nov 2026; ICU 2026e files from unicode-org/icu-data. Remove when Node tz >= 2026e.
+COPY ./docker/icu-tz /usr/local/share/icu-tz
+ENV ICU_TIMEZONE_FILES_DIR=/usr/local/share/icu-tz
+RUN node -e "if (process.versions.tz < '2026e') throw new Error('stale tz data: ' + process.versions.tz)"
+
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 # Install Redis 7.x from official Redis repository for BullMQ compatibility
+# NOTE: repo suite changed bullseye -> bookworm
+# NOTE: libprotobuf23 (bullseye) -> libprotobuf32 (bookworm). This is the version
+# nsjail was actually linked against in the builder stage.
 RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bullseye main" | tee /etc/apt/sources.list.d/redis.list \
-    && apt-get update && apt-get install -y freetds-dev libaio1 libxml2 wget supervisor redis-server libprotobuf23 libnl-route-3-200 python3 python3-pip
+    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bookworm main" | tee /etc/apt/sources.list.d/redis.list \
+    && apt-get update && apt-get install -y freetds-dev libaio1 libxml2 wget supervisor redis-server libprotobuf32 libnl-route-3-200 python3 python3-pip
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -173,7 +202,8 @@ RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketpla
     cd /opt/oracle/instantclient_11_2 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
 # Set the Instant Client library paths
-ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
+# NOTE: LD_LIBRARY_PATH given an explicit default to silence the UndefinedVar warning
+ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10"
 
 # Copy nsjail and Python runtime from builder
 COPY --from=builder /build-nsjail/nsjail/nsjail /usr/local/bin/nsjail
@@ -196,6 +226,8 @@ COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
 COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
 # copy frontend build
 COPY --from=builder /app/frontend/build ./app/frontend/build
+# copy widget-definitions (server node_modules symlinks to this)
+COPY --from=builder /app/packages/widget-definitions ./app/packages/widget-definitions
 # copy server build
 COPY --from=builder /app/server/package.json ./app/server/package.json
 COPY --from=builder /app/server/.version ./app/server/.version
@@ -206,14 +238,26 @@ COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 # Copy nsjail configuration for Python sandboxing
 COPY --from=builder /app/server/ee/workflows/nsjail/python-execution.cfg /etc/nsjail/python-execution.cfg
+# tooljet-mcp bundle for the socket relay. data/ must sit next to mcp/, not inside it (bundle
+# resolves it as ../data); package.json ships for its "type":"module". Copy all of bundle/:
+# index.js imports its chunk-*.js siblings.
+COPY --from=mcp-builder /mcp/bundle/ ./app/mcp/
+COPY --from=mcp-builder /mcp/package.json ./app/mcp/package.json
+COPY --from=mcp-builder /mcp/data ./app/data
 
 WORKDIR /app
 
 # Install PostgreSQL
+# NOTE: apt-key is deprecated on bookworm and removed in trixie. Switched to the
+# signed-by keyring pattern already used above for Redis.
+# NOTE: repo suite changed bullseye-pgdg -> bookworm-pgdg. postgresql-13 is
+# published for bookworm-pgdg, so the major version and all paths stay at 13.
 USER root
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor --fix-missing
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+      | gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg
+RUN echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" \
+      | tee /etc/apt/sources.list.d/pgdg.list
+RUN apt-get update && apt-get -y install postgresql-13 postgresql-client-13 supervisor --fix-missing
 
 
 # Explicitly create PG main directory with correct ownership

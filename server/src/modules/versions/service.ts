@@ -15,6 +15,7 @@ import { PageService } from '@modules/apps/services/page.service';
 import { EventsService } from '@modules/apps/services/event.service';
 import { AppsUtilService } from '@modules/apps/util.service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { VIEWER_LICENSE_FIELDS } from '@modules/apps/app-data-revision';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { OrganizationThemesUtilService } from '@modules/organization-themes/util.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
@@ -126,26 +127,41 @@ export class VersionService implements IVersionService {
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
-  async getAllVersions(app: App, branchId?: string): Promise<{ versions: Array<AppVersion> }> {
-    const effectiveBranchId = app.type === 'workflow' ? undefined : branchId;
-    let gitEnabled = false;
-    let defaultBranchId: string | null = null;
-    if (app.type !== APP_TYPES.WORKFLOW) {
-      const details = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
-      gitEnabled = details.isEnabled;
-      defaultBranchId = details.options.defaultBranch?.id ?? null;
-    }
+  async getAllVersions(
+    app: App,
+    branchId?: string,
+    includeDefaultBranchVersions = false
+  ): Promise<{ versions: Array<AppVersion> }> {
+    const effectiveBranchId = branchId;
+    const details = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
+    const gitEnabled = details.isEnabled;
+    const defaultBranchId = details.options.defaultBranch?.id ?? null;
     let result =
       app.type === APP_TYPES.MODULE
         ? await listModuleVersions(this.versionRepository.manager, app, branchId, defaultBranchId)
         : await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
+
+    // The fetch above is already branch-scoped, so skipping the filter below is not enough to
+    // surface default-branch rows — fetch them explicitly. Appended, so `result[0]` stays the
+    // current editing version. Modules already span branches via listModuleVersions.
+    if (
+      includeDefaultBranchVersions &&
+      app.type !== APP_TYPES.MODULE &&
+      effectiveBranchId &&
+      defaultBranchId &&
+      effectiveBranchId !== defaultBranchId
+    ) {
+      const defaultBranchRows = await this.versionRepository.getVersionsInApp(app.id, defaultBranchId);
+      const seen = new Set(result.map((v) => v.id));
+      result = [...result, ...defaultBranchRows.filter((v) => !seen.has(v.id))];
+    }
 
     // On non-default branches, only show the branch's own version(s).
     // Saved versions (VERSION-type) are only relevant on the default branch — but
     // NOT for modules: listModuleVersions intentionally returns saved versions on
     // all branches so the ModuleViewer inspector can detect pinned states and avoid
     // showing "Current branch" when the pin is valid.
-    if (effectiveBranchId && app.type !== APP_TYPES.MODULE) {
+    if (effectiveBranchId && app.type !== APP_TYPES.MODULE && !includeDefaultBranchVersions) {
       const branch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
         where: { id: effectiveBranchId },
         select: ['id', 'isDefault'],
@@ -218,6 +234,11 @@ export class VersionService implements IVersionService {
     });
   }
 
+  // License terms the released-app cache key depends on (see getAppDataRevision).
+  getViewerLicenseTerms(organizationId: string): Promise<unknown> {
+    return this.licenseTermsService.getLicenseTerms(VIEWER_LICENSE_FIELDS, organizationId);
+  }
+
   async getVersion(app: App, user: User, mode?: string): Promise<any> {
     const prepareResponse = async (app: App, versionId: string) => {
       let appVersion,
@@ -233,15 +254,19 @@ export class VersionService implements IVersionService {
       const pagesForVersion = await this.pageService.findPagesForVersion(updatedVersionId);
       const eventsForVersion = await this.eventsService.findEventsForVersion(updatedVersionId);
 
-      const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
-
-      if (
-        appCurrentEditingVersion &&
-        !(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, app.organizationId))
-      ) {
-        const developmentEnv = await this.appEnvironmentUtilService.getByPriority(user.organizationId);
-        appCurrentEditingVersion['currentEnvironmentId'] = developmentEnv.id;
-      }
+      /*
+        Data-query contains `options` which are a free-form, mixed-case blob (snake_case alongside camelCase keys).
+        Pull dataQueries out and serialize them separately, before the clone below — `camelizeKeys` recurses
+        deeply and would silently break queries if they stayed on the version object. Excluding dataQueries
+        from the clone also skips serializing the (already-decoded) plugin manifest/icon blobs findVersion
+        eagerly loads onto appVersion — they'd just be dropped again a few lines down, so there's no reason
+        to pay JSON.stringify/parse cost on them. serializeDataQueries doesn't mutate its input, so this is
+        safe to do straight off the entity before cloning.
+      */
+      const serializedDataQueries = serializeDataQueries(appVersion.dataQueries);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { dataQueries: _dataQueries, ...appVersionWithoutDataQueries } = appVersion;
+      const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersionWithoutDataQueries));
 
       let shouldFreezeEditor = false;
       if (appCurrentEditingVersion) {
@@ -273,14 +298,6 @@ export class VersionService implements IVersionService {
       };
 
       delete appData['editingVersion'];
-
-      /*
-        Data-query contains `options` which are a free-form, mixed-case blob (snake_case alongside camelCase keys).
-        Strip them here so the rest of the version envelope can be camelized safely below.
-        `camelizeKeys` recurses deeply and would silently break queries if they stayed on the version object.
-      */
-      const serializedDataQueries = serializeDataQueries(appCurrentEditingVersion?.dataQueries);
-      delete appCurrentEditingVersion['dataQueries'];
 
       const editingVersion = camelizeKeys(appCurrentEditingVersion);
 
@@ -396,6 +413,7 @@ export class VersionService implements IVersionService {
       ) {
         if (app.type !== 'module') {
           await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, user.organizationId, manager);
+          await this.versionsUtilService.checkDraftWorkflowsInApp(appVersion.id, user.organizationId, manager);
         }
         return this.versionsUtilService.createPublishedVersionFromBranchDraft(
           app,
@@ -412,6 +430,7 @@ export class VersionService implements IVersionService {
 
       if (appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED && app.type !== 'module') {
         await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, user.organizationId, manager);
+        await this.versionsUtilService.checkDraftWorkflowsInApp(appVersion.id, user.organizationId, manager);
       }
 
       if (appVersion.status !== AppVersionStatus.DRAFT) {

@@ -1,0 +1,60 @@
+name: 🧩 Marketplace plugin request
+description: Request or propose a new data source or API connector for the marketplace
+title: "[Marketplace] Add <service> plugin"
+type: Feature
+labels: ["marketplace", "feature request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search [existing plugins](https://docs.tooljet.com/docs/marketplace/marketplace-overview) and [issues](../issues?q=is%3Aissue+label%3Amarketplace) first.
+        Building it yourself? The plugin layout is in [`marketplace/AGENTS.md`](../blob/main/marketplace/AGENTS.md), and coding agents can use the [`create-plugin`](../tree/main/.agents/skills/create-plugin) skill.
+  - type: input
+    id: service
+    attributes:
+      label: Service
+      placeholder: Freshservice
+    validations:
+      required: true
+  - type: input
+    id: docs
+    attributes:
+      label: API documentation
+      placeholder: https://api.freshservice.com/
+    validations:
+      required: true
+  - type: dropdown
+    id: auth
+    attributes:
+      label: Authentication
+      multiple: true
+      options:
+        - API key or token
+        - OAuth 2.0
+        - Basic (username and password)
+        - Connection string
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: operations
+    attributes:
+      label: Operations needed
+      description: The queries users should be able to run. One per line.
+      placeholder: |
+        List tickets
+        Create a ticket
+        Update a ticket's status
+    validations:
+      required: true
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Use case
+      description: What would you build in ToolJet with it?
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I'd like to build this plugin
