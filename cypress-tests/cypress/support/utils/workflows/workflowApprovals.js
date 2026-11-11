@@ -5,6 +5,8 @@ import {
   executionsSelector,
 } from "Selectors/platform/workflows";
 import { humanWorkflowDefinition } from "Support/utils/workflows/workFlows";
+import { humanText } from "Texts/platform/workflows";
+import { cleanEmailBody } from "Support/utils/whitelabel";
 
 export const createHumanWorkflow = (workflowName, options = {}) => {
   cy.apiCreateWorkflowApp(workflowName);
@@ -122,3 +124,121 @@ export const dragSidebarNodeToCanvas = (sidebarSelector, x = 650, y = 420) => {
     .trigger("dragover", { dataTransfer, clientX: x, clientY: y })
     .trigger("drop", { dataTransfer, clientX: x, clientY: y });
 };
+
+export const uniqueEmail = (label) =>
+  `hitl-${label}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
+
+export const getUserIdByEmail = (email) =>
+  cy
+    .task("dbConnection", {
+      dbconfig: Cypress.env("app_db"),
+      sql: `SELECT id FROM users WHERE email = '${email}'`,
+    })
+    .then((result) => result.rows[0].id);
+
+export const createApproverGroup = (groupName, userIds) =>
+  cy.getAuthHeaders().then((headers) => {
+    const base = `${Cypress.env("server_host")}/api/v2/group-permissions`;
+    return cy
+      .request({ method: "POST", url: base, headers, body: { name: groupName } })
+      .then(({ body }) => {
+        return cy
+          .request({
+            method: "POST",
+            url: `${base}/${body.id}/users`,
+            headers,
+            body: { userIds, groupId: body.id },
+          })
+          .its("status")
+          .should("be.within", 200, 201)
+          .then(() => body.id);
+      });
+  });
+
+export const deleteApproverGroup = (groupId) =>
+  cy.getAuthHeaders().then((headers) =>
+    cy.request({
+      method: "DELETE",
+      url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}`,
+      headers,
+      failOnStatusCode: false,
+    })
+  );
+
+const MAIL_POLL_ATTEMPTS = 20;
+const MAIL_POLL_DELAY_MS = 1500;
+
+const pause = (ms) =>
+  cy.wrap(null, { log: false }).then(() => new Promise((resolve) => setTimeout(resolve, ms)));
+
+const mailHogBase = () =>
+  (Cypress.env("mailHogUrl") || "http://localhost:8025/").replace(/\/+$/, "");
+
+// The shared MailHog holds megabytes of mail; /messages is too slow, the search endpoint is not.
+export const approvalMailsFor = (email, workflowName) => {
+  const auth = Cypress.env("mailHogAuth");
+  const [user, pass] = auth ? String(auth).split(":") : [];
+  return cy
+    .request({
+      method: "GET",
+      url: `${mailHogBase()}/api/v2/search`,
+      qs: { kind: "to", query: email, limit: 50 },
+      ...(user ? { auth: { user, pass } } : {}),
+      timeout: 60000,
+      log: false,
+    })
+    .then(({ body }) =>
+      (body.items || []).filter((mail) =>
+        (mail.Content?.Headers?.Subject || [])
+          .join(" ")
+          .includes(humanText.approvalEmailSubject(workflowName))
+      )
+    );
+};
+
+export const waitForApprovalMails = (email, workflowName, attempt = 1) =>
+  approvalMailsFor(email, workflowName).then((mails) => {
+    if (mails.length) return mails;
+    if (attempt >= MAIL_POLL_ATTEMPTS) {
+      throw new Error(`No approval email for ${email} after ${attempt} attempts`);
+    }
+    return pause(MAIL_POLL_DELAY_MS).then(() =>
+      waitForApprovalMails(email, workflowName, attempt + 1)
+    );
+  });
+
+export const approvalMailBody = (mail) => {
+  const headers = mail.Content?.Headers || {};
+  const encoding = (headers["Content-Transfer-Encoding"] || []).join("").toLowerCase();
+  const raw = mail.Content?.Body || "";
+  const decoded = encoding === "base64" ? atob(raw.replace(/\s+/g, "")) : raw;
+  return cleanEmailBody(decoded);
+};
+
+export const approvalMailLink = (cleanedBody) =>
+  cleanedBody.match(/href=["']?(https?:\/\/[^"'\s>]*\/workflows\/approvals)/i)?.[1];
+
+export const archiveApproverUser = (email) =>
+  cy
+    .task("dbConnection", {
+      dbconfig: Cypress.env("app_db"),
+      sql: `SELECT ou.id FROM organization_users ou JOIN users u ON u.id = ou.user_id WHERE u.email = '${email}'`,
+    })
+    .then((result) =>
+      cy.getAuthHeaders().then((headers) =>
+        cy
+          .request({
+            method: "POST",
+            url: `${Cypress.env("server_host")}/api/organization-users/${result.rows[0].id}/archive`,
+            headers,
+            body: {},
+          })
+          .its("status")
+          .should("be.within", 200, 201)
+      )
+    );
+
+export const deleteApproverUsers = (emails) =>
+  cy.runSqlQueryOnDB(
+    `CALL delete_users(ARRAY['${emails.join("','")}']::text[]);`
+  );

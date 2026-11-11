@@ -123,4 +123,6 @@ export const humanText = {
   missingInputError: (name) => `Missing required input "${name}"`,
   notAuthorizedError: "Not authorized to resolve this approval request",
   setupError: "requires at least one outcome",
+  approvalEmailSubject: (workflowName) => `Approval requested: ${workflowName}`,
+  approvalEmailCta: "Open approval dashboard",
 };
