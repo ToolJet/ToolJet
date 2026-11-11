@@ -1,3 +1,7 @@
+/**
+ * @group working
+ * @group security
+ */
 import 'reflect-metadata';
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';

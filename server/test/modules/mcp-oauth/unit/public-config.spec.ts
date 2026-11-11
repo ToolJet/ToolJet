@@ -1,4 +1,7 @@
-import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
+/**
+ * @group working
+ * @group security
+ */
 import { ConfigService } from '@modules/configs/service';
 import { getMcpOAuthPublicConfig } from '@modules/configs/mcp-oauth-public-config';
 
@@ -57,13 +60,21 @@ test.each(['localhost', '127.0.0.1', '[::1]'])('supports HTTP loopback developme
 
 describe('public config integration', () => {
   const originalEnv = process.env;
-  const cache = new InMemoryCacheService();
   const settings = {
     getSettings: jest.fn(async () => ({ ENABLE_SIGNUP: 'false' })),
   };
 
+  const service = (): ConfigService =>
+    Object.assign(Object.create(ConfigService.prototype), {
+      instanceSettingsUtilService: settings,
+      inMemoryCacheService: {
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+      },
+    });
+
   beforeEach(() => {
-    cache.clear();
     process.env = {
       ...originalEnv,
       ...enabled,
@@ -72,12 +83,11 @@ describe('public config integration', () => {
     delete process.env.ALLOWED_CLIENT_CONFIG_VARS;
   });
   afterEach(() => {
-    cache.clear();
     process.env = originalEnv;
   });
 
   test('includes public OAuth settings without publishing the exchange secret or issuer', async () => {
-    const result = await new ConfigService(settings as any, cache).public_config();
+    const result = await service().public_config();
     expect(result).toMatchObject({
       MCP_OAUTH_ENABLED: 'true',
       MCP_OAUTH_RESOURCE_URL: 'https://mcp.example.test/tools/mcp',
@@ -89,7 +99,7 @@ describe('public config integration', () => {
 
   test('keeps capability available with a custom client-config allowlist', async () => {
     process.env.ALLOWED_CLIENT_CONFIG_VARS = 'TOOLJET_HOST';
-    const result = await new ConfigService(settings as any, cache).public_config();
+    const result = await service().public_config();
     expect(result.MCP_OAUTH_ENABLED).toBe('true');
     expect(result.MCP_OAUTH_RESOURCE_URL).toBe('https://mcp.example.test/tools/mcp');
   });
@@ -97,6 +107,6 @@ describe('public config integration', () => {
   test('does not let raw allowlisted OAuth flags bypass Cloud-only gating', async () => {
     process.env.TOOLJET_EDITION = 'ee';
     process.env.ALLOWED_CLIENT_CONFIG_VARS = 'MCP_OAUTH_ENABLED,MCP_OAUTH_RESOURCE_URL';
-    expect(await new ConfigService(settings as any, cache).public_config()).toMatchObject(disabled);
+    expect(await service().public_config()).toMatchObject(disabled);
   });
 });

@@ -1,0 +1,23 @@
+{
+  "server": {
+    "lines": {
+      "ce": 39.8,
+      "ee": 27.8
+    },
+    "files": {
+      "src/modules/ai/services/ai-attachment-cleanup.listener.ts": 95,
+      "ee/ai/helpers/component-type-validator.ts": 95,
+      "ee/ai/ai-cache.ts": 80
+    }
+  },
+  "frontend": {
+    "lines": {
+      "ce": 70.9,
+      "ee": 57.3
+    },
+    "files": {
+      "src/_services/ai.service.js": 65,
+      "ee/modules/AiBuilder/helpers/notificationPreferences.js": 95
+    }
+  }
+}

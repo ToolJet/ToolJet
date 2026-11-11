@@ -1,3 +1,7 @@
+/**
+ * @group working
+ * @group security
+ */
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { DataSource } from 'typeorm';

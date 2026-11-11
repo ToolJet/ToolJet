@@ -1,3 +1,7 @@
+/**
+ * @group working
+ * @group security
+ */
 import 'reflect-metadata';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';

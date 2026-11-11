@@ -1,3 +1,7 @@
+// Normal transaction setup imports services before spec mocks; load a fresh
+// module graph so the Cloud fixture and every call site share the same mocks.
+jest.resetModules();
+import { createOAuthTestFixture } from '../../helpers/oauth-test-fixture';
 jest.mock('@octokit/rest', () => ({ Octokit: class {} }));
 jest.mock('ormconfig', () => ({}), { virtual: true });
 import {
@@ -65,11 +69,11 @@ jest.mock('@modules/users/repositories/repository', () => ({ UserRepository: cla
 import { McpOAuthService } from '@modules/mcp-oauth/service';
 import { hash, DELEGATION_AUDIENCE } from '@modules/mcp-oauth/protocol';
 
-const connection = process.env.MCP_OAUTH_TEST_DATABASE_URL;
-const databaseTests = connection ? describe : describe.skip;
+const databaseTests = describe;
 export type McpOAuthFlowContext = {
   db: DataSource;
   user: User;
+  settings: Record<string, string>;
   organizationId: string;
   mint: () => ReturnType<McpOAuthService['token']>;
   exchange: (token: string) => ReturnType<McpOAuthService['exchange']>;
@@ -80,6 +84,7 @@ export function oauthFlowTests(registerTests?: (context: () => McpOAuthFlowConte
     registerTests ? 'MCP OAuth application call sites' : 'MCP OAuth with real PostgreSQL and the OAuth engine',
     () => {
       let db: DataSource;
+      let fixture: Awaited<ReturnType<typeof createOAuthTestFixture>>;
       let oauth: McpOAuthService;
       let user: any;
       let organizationId: string;
@@ -167,13 +172,8 @@ export function oauthFlowTests(registerTests?: (context: () => McpOAuthFlowConte
         );
 
       beforeAll(async () => {
-        const url = new URL(connection);
-        if (
-          !['127.0.0.1', 'localhost'].includes(url.hostname) ||
-          !/^\/tooljet_oauth_test_[a-z0-9_]+$/.test(url.pathname)
-        ) {
-          throw new Error('Use a dedicated local database named tooljet_oauth_test_*');
-        }
+        fixture = await createOAuthTestFixture();
+        const connection = fixture.connection;
         db = new DataSource({
           type: 'postgres',
           url: connection,
@@ -183,14 +183,15 @@ export function oauthFlowTests(registerTests?: (context: () => McpOAuthFlowConte
         });
         await db.initialize();
         setConnectionInstance(db);
-        // npm run test:mcp-oauth applies the real migration chain before Jest starts.
+        // The normal E2E fixture applies the real migration chain before assertions.
         const [{ total }] = await db.query('SELECT count(*)::int AS total FROM migrations');
         expect(total).toBeGreaterThan(200);
-      });
+      }, 180000);
       afterAll(async () => {
         if (db?.isInitialized) {
           await db.destroy();
         }
+        await fixture?.destroy();
       });
       beforeEach(async () => {
         jest.mocked(getTooljetEdition).mockReturnValue('cloud');
@@ -243,6 +244,7 @@ export function oauthFlowTests(registerTests?: (context: () => McpOAuthFlowConte
         registerTests(() => ({
           db,
           user,
+          settings,
           organizationId,
           exchange,
           mint: async () => {

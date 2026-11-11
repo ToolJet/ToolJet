@@ -1,3 +1,7 @@
+/**
+ * @group working
+ * @group security
+ */
 jest.mock('@modules/users/repositories/repository', () => ({ UserRepository: class {} }));
 import { ConfigService } from '@nestjs/config';
 import { McpOAuthThrottleGuard, OAuthRateWindows, oauthAddressBucket } from '@modules/mcp-oauth/throttle.guard';

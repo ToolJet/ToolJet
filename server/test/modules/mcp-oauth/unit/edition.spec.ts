@@ -1,3 +1,4 @@
+/** @group working */
 jest.mock('@modules/users/repositories/repository', () => ({ UserRepository: class {} }));
 import 'reflect-metadata';
 import { ConfigService } from '@nestjs/config';

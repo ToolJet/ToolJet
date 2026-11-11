@@ -1,3 +1,7 @@
+/**
+ * @group working
+ * @group security
+ */
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';

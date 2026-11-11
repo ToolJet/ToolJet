@@ -1,3 +1,7 @@
+/**
+ * @group working
+ * @group security
+ */
 import { sanitizeOAuthRequest, sanitizeOAuthUrl, sanitizeTraceObject } from '@otel/sanitize';
 
 const mockInfo = jest.fn();
@@ -9,7 +13,6 @@ jest.mock('@modules/request-context/service', () => ({
     getStartTime: () => Date.now(),
   },
 }));
-import { TransactionLogger } from '@modules/logging/service';
 
 const body = { ticket: 'synthetic-bootstrap-ticket', nonce: 'synthetic-browser-nonce', safe: 'metadata' };
 test('request traces and HTTP log serialization redact bootstrap credentials without mutating the request', () => {
@@ -31,7 +34,11 @@ test('nested bootstrap values and redirect fragments are redacted', () => {
 });
 
 test('transaction logging removes bootstrap credentials before stringifying objects', () => {
-  new TransactionLogger().log('Synthetic bootstrap attempt', { body });
+  jest.isolateModules(() => {
+    const { TransactionLogger } =
+      jest.requireActual<typeof import('@modules/logging/service')>('@modules/logging/service');
+    new TransactionLogger().log('Synthetic bootstrap attempt', { body });
+  });
   const logged = JSON.stringify(mockInfo.mock.calls);
   expect(logged).not.toContain('synthetic-bootstrap-ticket');
   expect(logged).not.toContain('synthetic-browser-nonce');

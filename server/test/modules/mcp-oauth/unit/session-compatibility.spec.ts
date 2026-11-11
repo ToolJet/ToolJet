@@ -1,3 +1,7 @@
+/**
+ * @group working
+ * @group security
+ */
 jest.mock('@modules/mcp-oauth/service', () => ({ McpOAuthService: class {} }));
 import 'reflect-metadata';
 import { ConfigService } from '@nestjs/config';
