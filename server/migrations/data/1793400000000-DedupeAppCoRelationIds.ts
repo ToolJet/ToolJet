@@ -342,8 +342,11 @@ export class DedupeAppCoRelationIds1793400000000 implements MigrationInterface {
           `refusing to create the unique index. First: ${JSON.stringify(remaining[0])}`
       );
     }
+  }
 
-    // Step 4: the invariant every pull lookup already assumed.
+  // Step 4: the invariant every pull lookup already assumed. SHARE lock on apps until commit, so built
+  // last: 3.21.58 pods keep creating apps meanwhile.
+  public async beforeCommit(queryRunner: QueryRunner): Promise<void> {
     // migration-lint: allow-destructive one apps row per git identity is the invariant the pull
     // lookups assume; step 2 above guarantees the data satisfies it before this runs
     console.log(`${MIGRATION_NAME}: [START] creating the co_relation_id unique index: 1`);

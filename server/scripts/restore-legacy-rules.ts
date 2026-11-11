@@ -1,6 +1,7 @@
 /**
  * Adds back the old rules a failed async upgrade from 3.21.58 dropped, so the 3.21.58 image can run again. For when
  * the pod running the upgrade was killed before it restored them. Run it from the new image, then deploy 3.21.58.
+ * legacy-3.21.58: delete with legacy-3-21-58-upgrade.ts.
  */
 import dataDataSource from '../src/migration-helpers/data-datasource';
 import { getLockWaitOptions, withMigrationAdvisoryLock } from '../src/migration-helpers/migration-locks';

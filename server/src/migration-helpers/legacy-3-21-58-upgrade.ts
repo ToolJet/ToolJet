@@ -6,7 +6,7 @@ import { withShortLock } from './with-short-lock';
  * Async upgrade of a 3.21.58 database. Its data would break a few old rules, and the original migrations drop
  * them inside the data phase transaction, holding ACCESS EXCLUSIVE to the end. Instead: drop them first, each in its
  * own short transaction (loosen); run lock-free variants; on failure add them back (restore), so 3.21.58 runs again.
- * Delete this module when upgrades from 3.21.58 are no longer supported.
+ * legacy-3.21.58: delete this module once 3.21.58 upgrades run blocking-only.
  */
 /** The 3.21.58 data migration that gives every row a branch. Still pending = the database is on 3.21.58. */
 export const LEGACY_BRANCH_MIGRATION = 'MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000';
@@ -222,7 +222,7 @@ export const LEGACY_VARIANTS: ReadonlyMap<string, LegacyVariant> = new Map<strin
         // data. The SET NULL key goes in the same statement that makes branch_id required, so deleting a branch
         // never sets NULL into a required column. The CHECK rides this lock; cleanup validates both and its
         // setNotNull turns the CHECK into NOT NULL.
-        // ponytail: must stay the last beforeCommit() statement; a later data with a beforeCommit() would run under this lock.
+        // Must stay the last beforeCommit() statement: BeforeCommitSteps.run orders this migration's step last.
         run(
           "SET LOCAL lock_timeout = '2s'",
           `ALTER TABLE app_versions

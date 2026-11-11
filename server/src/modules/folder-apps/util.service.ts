@@ -1,9 +1,10 @@
 import { Folder } from '@entities/folder.entity';
 import { User } from '@entities/user.entity';
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { EntityManager, Equal, In, IsNull, Or, SelectQueryBuilder } from 'typeorm';
 import { IFolderAppsUtilService } from './interfaces/IUtilService';
 import { AppBase } from '@entities/app_base.entity';
+import { App } from '@entities/app.entity';
 import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
 import { onBranch } from '@helpers/branch_scope.helper';
 import { FolderApp } from '@entities/folder_app.entity';
@@ -118,7 +119,10 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       // Branch creation copies every membership, including apps that never reach the branch;
       // count only apps on it, as the folder's app list does.
       query.andWhere(
-        'EXISTS (SELECT 1 FROM app_versions av_on_branch WHERE av_on_branch.app_id = folder_apps.app_id AND av_on_branch.branch_id = :searchBranchId)'
+        `EXISTS (SELECT 1 FROM app_versions av_on_branch WHERE av_on_branch.app_id = folder_apps.app_id AND ${onBranch(
+          'av_on_branch.branch_id',
+          'searchBranchId'
+        )})`
       );
     } else {
       query.leftJoin(
@@ -300,13 +304,32 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     return { branchId: matchNullAsDefaultBranch ? Or(Equal(branchId), IsNull()) : branchId };
   }
 
+  // Defense in depth: when the caller's workspace is known (controller path, threaded from the
+  // service), every target app must belong to it. folder_apps has no organization_id and the
+  // create/bulkCreate sinks move a binding by app_id alone, so without this an un-guarded caller
+  // could bind or hijack another workspace's app. Internal git-sync / branch callers pass no
+  // organizationId and keep the original, unscoped behavior.
+  private async assertAppsInOrganization(
+    manager: EntityManager,
+    appIds: string[],
+    organizationId: string
+  ): Promise<void> {
+    const uniqueIds = Array.from(new Set(appIds));
+    const inOrgCount = await manager.count(App, { where: { id: In(uniqueIds), organizationId } });
+    if (inOrgCount !== uniqueIds.length) {
+      throw new ForbiddenException('One or more apps do not belong to the organization');
+    }
+  }
+
   async bulkCreate(
     folderId: string,
     appIds: string[],
     branchId?: string,
-    matchNullAsDefaultBranch = false
+    matchNullAsDefaultBranch = false,
+    organizationId?: string
   ): Promise<FolderApp[]> {
     return dbTransactionWrap(async (manager: EntityManager) => {
+      if (organizationId) await this.assertAppsInOrganization(manager, appIds, organizationId);
       const branchFilter = this.buildBranchFilter(branchId, matchNullAsDefaultBranch);
       const existing = await manager.find(FolderApp, { where: { appId: In(appIds), ...branchFilter } });
       const alreadyInFolder = new Set(existing.filter((fa) => fa.folderId === folderId).map((fa) => fa.appId));
@@ -330,9 +353,11 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     folderId: string,
     appId: string,
     branchId?: string,
-    matchNullAsDefaultBranch = false
+    matchNullAsDefaultBranch = false,
+    organizationId?: string
   ): Promise<FolderApp> {
     return dbTransactionWrap(async (manager: EntityManager) => {
+      if (organizationId) await this.assertAppsInOrganization(manager, [appId], organizationId);
       const branchFilter = this.buildBranchFilter(branchId, matchNullAsDefaultBranch);
       const existingFolderApp = await manager.findOne(FolderApp, {
         where: { appId, ...branchFilter },
@@ -342,8 +367,6 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       if (existingFolderApp?.folderId === folderId) return existingFolderApp;
       // app is in a different folder on this branch — move it
       if (existingFolderApp) await manager.delete(FolderApp, { id: existingFolderApp.id });
-
-      // TODO: check if folder under user.organizationId and user has edit permission on app
 
       const newFolderApp = manager.create(FolderApp, {
         folderId,

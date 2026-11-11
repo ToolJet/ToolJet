@@ -138,8 +138,12 @@ export class TjdbRolloutMigrationASubstrate1793250000800 implements MigrationInt
 
     // No SET NOT NULL: the previous release creates tables without a co_relation_id, so it would
     // break a rollback. The schema migration's default gives those tables one. Lock it down a release later.
-    // Live tables only, like organization_id_table_name_unique: drop_table soft-deletes the row and it
-    // keeps its co_relation_id, which a later import or git pull of the same table reuses.
+  }
+
+  // SHARE lock on internal_tables until commit, so built last: old pods keep creating tables meanwhile.
+  // Live tables only, like organization_id_table_name_unique: drop_table soft-deletes the row and it
+  // keeps its co_relation_id, which a later import or git pull of the same table reuses.
+  public async beforeCommit(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE UNIQUE INDEX IF NOT EXISTS organization_id_co_relation_id_unique
       ON internal_tables (organization_id, co_relation_id)

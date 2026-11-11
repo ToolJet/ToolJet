@@ -131,6 +131,9 @@ export function isPreCutoffMigration(name: string): boolean {
  * runs in one transaction before the server starts.
  *
  * Add a name here only after repeating that check for it.
+ *
+ * legacy-3.21.58: to retire the path, empty this list (3.21.58 upgrades go blocking) and run a pending
+ * CleanupLegacyBranchModel before boot; then delete every other legacy-3.21.58: site.
  */
 export const ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS: ReadonlySet<string> = new Set([
   'ConsolidatedBranchModelSetup1773500000000',

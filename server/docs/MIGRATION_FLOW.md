@@ -117,7 +117,7 @@ In async mode the server serves while migrations run. The upgrade gate answers u
 
 | Situation | Status | Refused |
 |---|---|---|
-| A migration is running | `running` | Writes (`MIGRATION_IN_PROGRESS`). Sign-in and query runs still pass |
+| A migration is running | `running` | Writes (`MIGRATION_IN_PROGRESS`). Sign-in, query runs and workflow runs still pass |
 | The last migration failed | `failed` | Writes (`MIGRATION_FAILED`), until a server boot reruns it with success |
 
 The client gets `503`, `Retry-After: 30`, body `{ statusCode, code, message, timestamp, path }`.
@@ -178,13 +178,13 @@ So that 3.21.58 can split, old schema steps it cannot run on were changed:
 2. Runs **lock-free variants** (`LEGACY_VARIANTS`) in place of the originals. Each reuses its original's statements verbatim: row changes and function bodies in `up()`, index builds and new triggers in `beforeCommit()`. An old trigger function the original drops gets an empty body instead (`CREATE OR REPLACE FUNCTION`: no table lock, invisible to other sessions until commit). The last `beforeCommit()` statement swaps `fk_app_versions_branch` from `SET NULL` to `CASCADE` and adds the `branch_id IS NOT NULL` CHECK, both `NOT VALID`, under a 2s `lock_timeout`. That is the only ACCESS EXCLUSIVE lock, held until the commit right after it. A timeout retries the data phase. Migrations without a variant run as written. Single-transaction runs always use the originals.
 3. **Restores** the saved rules if the data phase fails, still holding the migration lock: CHECKs `NOT VALID`, then `VALIDATE`; indexes rebuilt. A rule that no longer validates stays `NOT VALID` and is logged. `npm run db:legacy-upgrade:restore` does the same after a killed run. It refuses once the data phase committed.
 
-Removals wait for the cleanup migration `CleanupLegacyBranchModel`, one upgrade later. It first reruns the branch fixes (`branchlessRowFixes`) for rows 3.21.58 pods wrote without a branch during the rollout. Then it validates the key, sets the branch columns NOT NULL, drops the dead columns, table, triggers and functions, and recreates three `app_versions` triggers. Until then, reads treat a row with no branch as on the default branch (`branch_scope.helper.ts`). The final schema and rows match a single-transaction run. Once the data phase commits, only the pre-upgrade backup brings 3.21.58 back.
+Removals wait for the cleanup migration `CleanupLegacyBranchModel`, one upgrade later. It first reruns the branch fixes (`branchlessRowFixes`) for rows 3.21.58 pods wrote without a branch during the rollout. Then it validates the key, sets the branch columns NOT NULL, drops the dead columns, table, triggers and functions, and recreates three `app_versions` triggers. Until then, reads treat a row with no branch as on the default branch (`branch_scope.helper.ts`). The final schema and rows match a single-transaction run. Once the data phase commits, only the pre-upgrade backup brings 3.21.58 back. Code that exists only for this path is tagged `legacy-3.21.58:`. To retire it: empty `ASYNC_SAFE_PRE_CUTOFF_MIGRATIONS`, so 3.21.58 upgrades run blocking, and run a pending `CleanupLegacyBranchModel` before boot; then grep the tag and delete.
 
 ### Data phase
 
 - Runs as a child of the server (`MIGRATION_PHASE=data`), started at boot or by the dead-run check.
 - All data migrations run in one transaction. A failure undoes the data changes only. The schema additions stay, and the next run does the data migrations again.
-- **`beforeCommit()`** (`DataMigration`, `migration-mode.ts`) runs after every data migration's `up()`, just before commit. Lock-taking steps placed there hold their SHARE locks for seconds, not the whole run, so sign-in writes that pass the gate wait only that long. A single-transaction run calls the same steps at the same point.
+- **`beforeCommit()`** (`DataMigration`, `migration-mode.ts`) runs after every data migration's `up()`, just before commit. Lock-taking steps placed there hold their SHARE locks for seconds, not the whole run, so sign-in writes that pass the gate wait only that long. A single-transaction run calls the same steps at the same point. Steps run in migration order, except the 3.21.58 branch key swap, which always runs last: its ACCESS EXCLUSIVE lock would otherwise cover every later step.
 - **Retries.** A deadlock (`40P01`), serialization failure (`40001`) or lock timeout (`55P03`) rolls the data phase back and runs it again, up to 3 attempts, 2s apart. Any other error fails the run at once.
 
 ### Cleanup phase
@@ -197,7 +197,7 @@ Removals wait for the cleanup migration `CleanupLegacyBranchModel`, one upgrade 
 
 ### Serving during a run
 
-- **What passes.** Reads, sign-in, session, OAuth/SSO and query runs (`ASYNC_MODE_WRITE_ALLOWLIST`). Other writes get 503.
+- **What passes.** Reads (including app export, a POST), sign-in, session, OAuth/SSO, query runs, and workflow runs and webhook triggers (`ASYNC_MODE_WRITE_ALLOWLIST`). Other writes get 503, including changes to a workflow's webhook settings. Async workflow runs (`trigger-async`) are accepted but wait in Redis, because workers pause (below).
 - **New pods wait for their own data phase.** From boot until its data phase takes the active lock, exits or fails to start, a pod reports `running`. So new code never writes before its data migrations ran. On a plain restart this lasts as long as the child takes to start, on that pod only.
 - **Requests that pass can still wait, but not long.** A row a data migration changed stays locked until commit. In async mode the server's pool sets `lock_timeout` to 5s (`ASYNC_MODE_LOCK_TIMEOUT_MS`, `app/loader.ts`), so such a request fails after 5s instead of holding a pool connection. `/api/health` stays free, so the pod is not killed. The limit applies to every main-pool query while async mode is on, not only during a run.
 - **Other runners count too.** A held active lock reads as `running` even without a run row, for example a manual `db:migrate` or a blocking-mode server on the same database.
@@ -235,7 +235,7 @@ A hard kill (OOM, node loss) leaves a dead run. The next runner marks it failed 
 
 ### Logs and banner
 
-- **Tables.** The service creates `migration_runs` and `migration_run_logs` itself; they are not migrations. It writes them on its own `pg` pool, so they update while the migration transaction is open. It keeps the last 50 runs.
+- **Tables.** The service creates `migration_runs` and `migration_run_logs` itself; they are not migrations. It writes them on its own `pg` pool, so they update while the migration transaction is open. So a step is marked done before its transaction commits; when a run fails, steps the `migrations` table does not record are rewritten as rolled back. It keeps the last 50 runs.
 - **Steps.** The run row is rebuilt from the runner's output (`migration-run-log.ts`): `[migrations] START <name>` / `DONE <name> <ms>` lines, data-migration `[PROGRESS] i/total` lines and `MigrationProgress` `<name> Progress N %` lines (one kept per percent).
 - **Logs.** Each kept line goes to `migration_run_logs`, tagged with its migration. The run row keeps the last 200 lines (`LOG_TAIL_LINES`). Query parameters, emails and connection URLs are redacted. TypeORM `query is slow:` and `execution time:` lines are dropped unless `ORM_LOGGING` is set. After a success, logs of earlier runs are deleted; their rows stay.
 - **Super-admin routes.** `GET {prefix}api/migration-runs` lists runs. `GET {prefix}api/migration-runs/:id/log[?migration=<name>]` returns a run's log, or one migration's lines. The page is `{prefix}settings/migrations`.

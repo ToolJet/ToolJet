@@ -42,6 +42,17 @@ export class ConsolidatedBranchModelSetup1773500000000 implements MigrationInter
 
     await queryRunner.query(`SET LOCAL statement_timeout = 0`);
 
+    // 0. Backfill NULL data source names. data_sources.name was created NOT NULL, but drifted
+    //    databases can hold NULL names, and data_source_versions.name (Step 8) is NOT NULL.
+    //    now() is fixed for the transaction, so rows in one org share a name; Step 8's
+    //    per-org dedup then suffixes them (_1, _2, ...).
+    const [, nullNamedDataSources] = await queryRunner.query(`
+      UPDATE data_sources SET name = to_char(now(), 'YYYYMMDDHH24MISS') WHERE name IS NULL
+    `);
+    if (nullNamedDataSources) {
+      console.log(`${MIGRATION_NAME}: backfilled ${nullNamedDataSources} data source(s) with a NULL name.`);
+    }
+
     // 1. Wipe git-sync configuration (customers reconfigure post-upgrade)
     console.log(`${MIGRATION_NAME}: [START] Step 1/12 - wiping git-sync configuration.`);
     await queryRunner.query(`DELETE FROM organization_git_https`);

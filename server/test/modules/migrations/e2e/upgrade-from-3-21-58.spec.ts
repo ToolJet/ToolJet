@@ -16,7 +16,7 @@ import {
 } from 'src/migration-helpers/legacy-3-21-58-upgrade';
 import { classifyLocks, MigrationPart } from 'src/migration-helpers/lock-probe';
 import { LOCK_SENTINEL_MIGRATION_NAMES } from 'src/migration-helpers/migration-locks';
-import { isPreCutoffMigration, MigrationPhase } from 'src/migration-helpers/migration-mode';
+import { MigrationPhase } from 'src/migration-helpers/migration-mode';
 import { UserAppsPermissions, UserPermissions } from 'src/modules/ability/types';
 import { MODULES } from 'src/modules/app/constants/modules';
 import { APP_TYPES } from 'src/modules/apps/constants';
@@ -114,10 +114,9 @@ describe('Upgrading a 3.21.58 database', () => {
       })
     );
     const lastStatement = Math.max(...allLocks.map(({ statement }) => statement));
-    // Later migrations follow the authoring rules and are lock-probed in CI.
-    const locks = allLocks.filter(
-      ({ migration, table }) => isPreCutoffMigration(migration) && tablesBeforeData.has(table)
-    );
+    // Every migration, not only pre-cutoff ones: CI lock-probes only the migrations a PR adds, so one that
+    // arrives through a merge is checked here.
+    const locks = allLocks.filter(({ table }) => tablesBeforeData.has(table));
     const stalling = locks.filter(
       ({ part, table, mode }) => classifyLocks('data', part, [{ table, mode, existed: true }]).length > 0
     );

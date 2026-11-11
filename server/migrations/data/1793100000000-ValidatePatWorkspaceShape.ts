@@ -13,6 +13,10 @@ export class ValidatePatWorkspaceShape1793100000000 implements MigrationInterfac
       `DELETE FROM user_personal_access_tokens WHERE scope = 'workspace' AND organization_id IS NULL`
     );
     console.log(`${MIGRATION_NAME}: [START] Validate workspace PAT shape: ${deleted ?? 0} old workspace PATs deleted`);
+  }
+
+  // SHARE UPDATE EXCLUSIVE: held until commit, so take it last.
+  public async beforeCommit(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `ALTER TABLE user_personal_access_tokens VALIDATE CONSTRAINT check_user_pat_workspace_shape`
     );

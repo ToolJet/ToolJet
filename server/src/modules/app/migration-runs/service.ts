@@ -10,6 +10,7 @@ import {
   emptyRunProgress,
   errorSummary,
   markFailed,
+  markRolledBack,
   MigrationStep,
   RunProgress,
 } from '../../../migration-helpers/migration-run-log';
@@ -431,6 +432,10 @@ export class MigrationRunsService implements OnApplicationShutdown {
         await saveLines();
         // Stopped by shutdown: DEAD_RUN_ERROR lets the dead-run check on another server restart it.
         if (!succeeded) {
+          const applied = await this.query<{ name: string }>('SELECT name FROM migrations WHERE name = ANY($1)', [
+            run.migrations.map(({ name }) => name),
+          ]);
+          run = markRolledBack(run, new Set(applied.map(({ name }) => name)));
           await this.updateRun(runId, run, 'failed', this.shuttingDown ? DEAD_RUN_ERROR : errorSummary(run));
           return;
         }

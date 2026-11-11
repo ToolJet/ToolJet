@@ -264,19 +264,19 @@ export class VersionRepository extends Repository<AppVersion> {
     return m.delete(AppVersion, { id: versionId });
   }
 
-  async findAppFromVersion(id: string, organizationId: string, manager?: EntityManager): Promise<App> {
+  async findAppFromVersion(id: string, organizationId: string, manager?: EntityManager): Promise<App | null> {
     const m = manager ?? this.manager;
-    const appVersion = await m.findOneOrFail(AppVersion, {
+    const appVersion = await m.findOne(AppVersion, {
       where: { id, app: { organizationId } },
       relations: ['app'],
     });
-    const app = appVersion.app;
+    const app = appVersion?.app;
     // Every app type, including workflows, carries metadata on the version row.
     // The version is already in scope — overlay its own metadata directly.
     if (app) {
       this.overlayMetadata(app, appVersion);
     }
-    return app;
+    return app ?? null;
   }
 
   // Returns the workspace's default branch id, or null when git-sync is off.
@@ -324,7 +324,7 @@ export class VersionRepository extends Repository<AppVersion> {
       .getOne();
   }
 
-  overlayMetadata(app: App, version: AppVersion | null): void {
+  overlayMetadata(app: Pick<App, 'name' | 'slug' | 'icon' | 'isPublic'>, version: AppVersion | null): void {
     if (!version) return;
     app.name = version.appName ?? app.name;
     app.slug = version.slug ?? app.slug;

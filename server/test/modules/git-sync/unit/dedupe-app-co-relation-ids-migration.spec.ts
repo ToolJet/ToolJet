@@ -161,7 +161,9 @@ describe('DedupeAppCoRelationIds1793400000000', () => {
         [keeper.id, loser.id, `loser-main-2-${stamp}`]
       );
 
-      await new DedupeAppCoRelationIds1793400000000().up(queryRunner);
+      const migration = new DedupeAppCoRelationIds1793400000000();
+      await migration.up(queryRunner);
+      await migration.beforeCommit(queryRunner);
 
       const loserRows: LoserRow[] = await queryRunner.query(
         `SELECT app_name, slug, is_synced, branch_id FROM app_versions WHERE app_id = $1`,
@@ -307,7 +309,9 @@ describe('DedupeAppCoRelationIds1793400000000', () => {
 
       await queryRunner.query(`ALTER TABLE app_versions ENABLE TRIGGER USER`);
 
-      await new DedupeAppCoRelationIds1793400000000().up(queryRunner);
+      const migration = new DedupeAppCoRelationIds1793400000000();
+      await migration.up(queryRunner);
+      await migration.beforeCommit(queryRunner);
 
       // Nothing of the detached copy still carries the kept app's identity, on any branch.
       const loserRows: { app_name: string; slug: string; is_stub: boolean; branch_id: string }[] =
