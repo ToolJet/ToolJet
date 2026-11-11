@@ -50,6 +50,7 @@ beforeEach(() => {
   authenticationService.getSignupOrganizationSlug.mockReturnValue('stale-signup');
   authenticationService.getInviteFlowIndetifier.mockReturnValue('stale-invite');
   authenticationService.signInViaOAuth.mockResolvedValue({ current_organization_id: 'orchard-workspace' });
+  aiOnboardingService.signInViaOAuth.mockResolvedValue({ current_organization_id: 'orchard-workspace' });
   interactionRequests = [];
   server.use(
     http.get(interactionUrl, ({ request }) => {
@@ -99,6 +100,23 @@ test('an expired or wrong-browser interaction never reaches SSO sign-in or onboa
   expect(aiOnboardingService.signInViaOAuth).not.toHaveBeenCalled();
 });
 
+test.each(['google', 'git'])('%s can return a general login to the unselected workspace chooser', async (provider) => {
+  mockQuery = {
+    origin: provider,
+    code: 'synthetic-code',
+    state: encodeURIComponent(JSON.stringify({ redirectTo: consentPath })),
+  };
+  const fragment =
+    provider === 'google' ? `#${new URLSearchParams({ state: mockQuery.state, id_token: 'synthetic-id-token' })}` : '';
+  window.history.replaceState({}, '', `/tools/sso/${provider}${fragment}`);
+  server.use(http.get(interactionUrl, () => HttpResponse.json({ organizationId: null })));
+  const navigate = jest.fn();
+  render(<Authorize navigate={navigate} />);
+  await waitFor(() => expect(onLoginSuccess).toHaveBeenCalledWith(expect.anything(), navigate, consentPath));
+  expect(aiOnboardingService.signInViaOAuth).toHaveBeenCalledWith(provider, expect.anything(), expect.anything());
+  expect(authenticationService.signInViaOAuth).not.toHaveBeenCalled();
+});
+
 test.each(['openid', 'saml'])('%s uses its same-origin consent return cookie', async (provider) => {
   mockQuery = {
     origin: provider,
@@ -129,4 +147,21 @@ test('ordinary cloud onboarding retains its existing route without an interactio
   await waitFor(() => expect(aiOnboardingService.signInViaOAuth).toHaveBeenCalled());
   expect(interactionRequests).toHaveLength(0);
   expect(authenticationService.signInViaOAuth).not.toHaveBeenCalled();
+});
+
+test('a cancelled shared SSO returns to general login with the intact OAuth return', async () => {
+  authenticationService.getLoginOrganizationSlug.mockReturnValue(null);
+  mockQuery = {
+    origin: 'git',
+    error: 'access_denied',
+    state: encodeURIComponent(JSON.stringify({ redirectTo: consentPath })),
+  };
+  window.history.replaceState({}, '', '/tools/sso/git');
+  render(<Authorize navigate={jest.fn()} />);
+  await waitFor(() => expect(Navigate).toHaveBeenCalled());
+  const target = new URL(Navigate.mock.calls.at(-1)[0].to, window.location.origin);
+  expect(target.pathname).toBe('/login');
+  expect(target.searchParams.get('redirectTo')).toBe(consentPath);
+  expect(target.searchParams.get('oauth_reauthenticate')).toBe('1');
+  expect(aiOnboardingService.signInViaOAuth).not.toHaveBeenCalled();
 });

@@ -12,6 +12,11 @@
     background-color: var(--cc-surface1-surface) !important;
 }
 
+.tj-table-datepicker .react-datepicker__day--selected:not([aria-disabled=true]),
+.tj-table-datepicker .react-datepicker__day--selected:not([aria-disabled=true]):hover {
+    background-color: var(--cc-primary-brand) !important;
+}
+
 .daterangepicker-header {
     .react-select__menu .react-select__menu-list {
         background-color: var(--cc-surface1-surface) !important;
