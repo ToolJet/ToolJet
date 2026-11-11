@@ -168,6 +168,20 @@ const tabPastOpenSelect = (e: React.KeyboardEvent) => {
     e.stopPropagation();
 };
 
+// Escape in a Select, AutoComplete, Cascader or TreeSelect: antd closes the list, but its field is an <input
+// type="search">, which the browser empties on Escape. antd took the emptying as typing and opened the list again with
+// every option, and an AutoComplete, whose text is its value, lost what was typed (QA AD-07). The browser's emptying is
+// refused; antd still takes the key and closes the list.
+const keepSearchOnEscape = (e: React.KeyboardEvent) => {
+  if (e.key === 'Escape' && (e.target as HTMLElement).matches?.('.ant-select-selection-search-input'))
+    e.preventDefault();
+};
+
+const onFieldKeyDown = (e: React.KeyboardEvent) => {
+  tabPastOpenSelect(e);
+  keepSearchOnEscape(e);
+};
+
 // Every pack component renders inside this: antd's ConfigProvider with popups portalled into ToolJet's popup layer, and
 // a root that declares antd's token variables (the `.tj-ant` rule in antd.css), dark when the app is.
 export const AntProvider = ({
@@ -206,7 +220,7 @@ export const AntProvider = ({
         .join(' ')
         .trim()}
       style={{ ...tokens, ...style }}
-      onKeyDownCapture={tabPastOpenSelect}
+      onKeyDownCapture={onFieldKeyDown}
     >
       <StyleProvider cache={cache} container={sinkElement()}>
         <ConfigProvider
