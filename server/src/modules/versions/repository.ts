@@ -324,7 +324,7 @@ export class VersionRepository extends Repository<AppVersion> {
       .getOne();
   }
 
-  overlayMetadata(app: App, version: AppVersion | null): void {
+  overlayMetadata(app: Pick<App, 'name' | 'slug' | 'icon' | 'isPublic'>, version: AppVersion | null): void {
     if (!version) return;
     app.name = version.appName ?? app.name;
     app.slug = version.slug ?? app.slug;

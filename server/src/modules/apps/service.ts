@@ -612,10 +612,8 @@ export class AppsService implements IAppsService {
             unresolvedAppIds.push(app.id);
             continue;
           }
-          app.name = branchVersion.appName;
-          app.slug = branchVersion.slug;
-          app.icon = branchVersion.icon;
-          app.isPublic = branchVersion.isPublic;
+          // Falls back to apps.*: a 3.21.58 workflow's version has no name until the data phase.
+          this.versionRepository.overlayMetadata(app, branchVersion);
         }
       } else {
         unresolvedAppIds.push(...apps.map((a) => a.id));
