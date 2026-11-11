@@ -1,162 +1,50 @@
 /**
- * SPEC — Number Input Component Tests.
- * FOR AI: 1 case — should verify all the exposed values on inspector.
- * Helpers: addCSA, verifyCSA, addMultiEventsWithAlert, openAndVerifyNode, openNode, verifyfunctions, verifyNodes.
+ * SPEC — Number Input — basics facet.
+ * FOR AI: 2 cases — the component's core field behaviour:
+ *   1. renders the default label + value and reflects a typed value.
+ *   2. step controls increment / decrement the value.
+ * (Inspector surface → inspector.cy.js · device visibility → contexts.cy.js ·
+ *  events → events.cy.js · CSA → csa.cy.js.)
+ * Pattern mirrors the Modal V2 basics facet (PR #17848) — the core lifecycle of the widget.
+ * Helpers: none (direct BaseInput DOM assertions).
  */
 import { fake } from "Fixtures/fake";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import {
-    addCSA,
-    verifyCSA
-} from "Support/utils/appBuilder/csa";
-import { addMultiEventsWithAlert } from "Support/utils/appBuilder/events";
-import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeData } from "Support/utils/appBuilder/inspector";
 
-
-// testIsolation:false — cypress-real-dnd caches its CDP client for the spec
-// run; testIsolation's per-test AUT reset leaves that client stale, so 2nd+
-// test drags throw "No dragIntercepted". Keeping the AUT stable across tests
-// keeps the drag intercept valid. Each test still re-logs-in + creates its own
-// app in beforeEach, so shared browser state is not relied upon.
-describe('Number Input Component Tests', { testIsolation: false }, () => {
-    const functions = [
-
-        {
-            "key": "setText",
-            "type": "Function"
-        },
-        {
-            "key": "clear",
-            "type": "Function"
-        },
-        {
-            "key": "setFocus",
-            "type": "Function"
-        },
-        {
-            "key": "setBlur",
-            "type": "Function"
-        },
-        {
-            "key": "setVisibility",
-            "type": "Function"
-        },
-        {
-            "key": "setDisable",
-            "type": "Function"
-        },
-        {
-            "key": "setLoading",
-            "type": "Function"
-        }
-    ]
-    const exposedValues = [{
-        "key": "value",
-        "type": "Number",
-        "value": "0"
-    },
-    {
-        "key": "isMandatory",
-        "type": "Boolean",
-        "value": "false"
-    },
-    {
-        "key": "isVisible",
-        "type": "Boolean",
-        "value": "true"
-    },
-    {
-        "key": "isDisabled",
-        "type": "Boolean",
-        "value": "false"
-    },
-    {
-        "key": "isLoading",
-        "type": "Boolean",
-        "value": "false"
-    },
-    {
-        "key": "label",
-        "type": "String",
-        "value": "\"Label\""
-    },
-    {
-        "key": "isValid",
-        "type": "Boolean",
-        "value": "true"
-    },
-        // {
-        //     "key": "id",
-        //     "type": "String",
-        //     "value": "\"d9f805c-a8d9-4c5a-ad09-badd6c2216ba\""
-        // }
-    ]
+describe('Number Input — basics facet', { testIsolation: false }, () => {
+    const W = 'numberinput1';
+    const INPUT = `[data-cy="${W}-input"]`;
 
     beforeEach(() => {
         cy.apiLogin();
-        cy.apiCreateApp(`${fake.companyName}-Numberinput-App`);
+        cy.apiCreateApp(`${fake.companyName}-NIBasics-${Cypress._.uniqueId()}`);
         cy.openApp();
-        cy.dragAndDropWidget("Number Input", 500, 100);
+        cy.dragAndDropWidget('Number Input', 500, 100);
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
-    it('should verify all the exposed values on inspector', () => {
-        cy.get(commonWidgetSelector.sidebarinspector).click();
-        cy.hideTooltip();
-
-        openNode("components");
-        openAndVerifyNode("numberinput1", exposedValues, verifyNodeData);
-        verifyNodes(functions, verifyNodeData);
-        //id is pending
-
+    afterEach(() => {
+        cy.apiDeleteApp();
     });
 
-    it.skip('should verify all the events from the number input', () => {
-        const events = [
-            { event: "On Focus", message: "On Focus Event" },
-            { event: "On Blur", message: "On Blur Event" },
-            { event: "On Change", message: "On Change Event" },
-            { event: "On Enter", message: "On Enter Event" }
-        ];
-
-        addMultiEventsWithAlert(events);
-        const inputSelector = '[data-cy="draggable-widget-numberinput1"]';
-
-        const inputEvents = (selector) => {
-            cy.get(selector).click();
-            cy.verifyToastMessage(commonSelectors.toastMessage, 'On Focus Event', false);
-
-            cy.get(selector).type('1');
-            cy.verifyToastMessage(commonSelectors.toastMessage, 'On Change Event', false);
-
-            cy.get(selector).type('{enter}');
-            cy.verifyToastMessage(commonSelectors.toastMessage, 'On Enter Event', false);
-
-            cy.forceClickOnCanvas();
-            cy.verifyToastMessage(commonSelectors.toastMessage, 'On Blur Event', false);
-        };
-
-        inputEvents(inputSelector);
+    // Core field behaviour: default label + value render, and typing updates the field.
+    it('renders defaults and reflects a typed value', () => {
+        cy.get(`[data-cy="${W}-label"]`).should('have.text', 'Label'); // default label. source: numberinput.js:22
+        cy.get(INPUT).should('have.value', '0');                        // default value. source: numberinput.js:27
+        cy.get(INPUT).clear().type('42').should('have.value', '42');    // typing reflects
     });
 
-    it.skip('should verify all the CSA from number input', () => {
-        const actions = [
-            { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, //b1
-            { event: "On click", action: "Set visibility", valueToggle: "{{true}}" },//b2
-            { event: "On click", action: "Set disable", valueToggle: "{{true}}" },//b3
-            { event: "On click", action: "Set disable", valueToggle: "{{false}}" },//b4
-            { event: "On click", action: "Set text", value: "1199999" },//b5
-            { event: "On click", action: "Clear" },//b6
-            { event: "On click", action: "Set focus" },//b7
-            { event: "On click", action: "Set blur" },//b8
-            { event: "On click", action: "Set loading", valueToggle: "{{true}}" },//b9
-        ];
-        addCSA("numberinput1", actions);
-        verifyCSA('numberinput1');
+    // Step controls are the defining behaviour of a number field (present by default).
+    // First .number-input-arrow = increment (+1), second = decrement (-1).
+    // source: NumberInput.jsx:80 (increment) / NumberInput.jsx:87 (decrement)
+    it('step controls increment and decrement the value', () => {
+        const arrows = `[data-cy="draggable-widget-${W}"] .number-input-arrow`;
+        cy.get(INPUT).clear().type('5').blur();
+        cy.get(INPUT).should('have.value', '5');
+
+        cy.get(arrows).eq(0).click({ force: true }); // increment → 6
+        cy.get(INPUT).should('have.value', '6');
+
+        cy.get(arrows).eq(1).click({ force: true }); // decrement → 5
+        cy.get(INPUT).should('have.value', '5');
     });
-
-    // afterEach(() => {
-    //     cy.apiDeleteApp();
-    // });
-
 });

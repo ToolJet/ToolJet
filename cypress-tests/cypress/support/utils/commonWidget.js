@@ -82,6 +82,7 @@ export {
   verifyWidgetColorCss,
   verifyLoaderColor,
   verifyAndModifyStylePickerFx,
+  verifyAndModifyStyleNumberFx,
   verifyStylesGeneralAccordion,
   checkPaddingOfContainer,
   openStyleAccordion,
