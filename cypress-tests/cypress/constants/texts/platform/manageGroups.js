@@ -95,7 +95,7 @@ export const groupsText = {
   folderViewAppHelperText: "View apps in the folder",
 
   endUserToBuilderMessage: Cypress.env('environment') === 'Community'
-    ? "Changing the user role from end-user to builder will grant access the user access to all resources.Are you sure you want to continue?"
+    ? "Changing user role from end-user to builder will grant the user access to all resources.Are you sure you want to continue?"
     : "Changing user default group from end-user to builder will affect the count of users covered by your plan.Are you sure you want to continue?",
 
   endUserToAdminMessage: Cypress.env('environment') === 'Community'
@@ -110,7 +110,7 @@ export const groupsText = {
     ? "Changing user role from builder to admin will grant access to all resources.Are you sure you want to continue?"
     : "Changing user role from builder to admin will grant access to all resources and settings.Are you sure you want to continue?",
 
-  adminToBuilderMessage: "Changing your user default group from admin to builder will revoke your access to settings.Are you sure you want to continue?",
+  adminToBuilderMessage: "Changing the user's role from admin to builder will revoke their access to settings.Are you sure you want to continue?",
 
   adminToEnduserMessage: Cypress.env('environment') === 'Community'
     ? "Changing the user role from admin to end-user will revoke their access to edit all resources and settings.Are you sure you want to continue?"
