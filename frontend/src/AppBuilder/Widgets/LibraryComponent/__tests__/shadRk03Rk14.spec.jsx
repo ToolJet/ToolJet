@@ -82,7 +82,7 @@ describe('RK-03: a typed value that fails the field own check', () => {
     ['Input', { inputType: 'email' }, 'bad', 'Enter a valid email address'],
     ['PhoneInput', {}, '123', 'Enter a valid phone number'],
     ['OtpInput', { length: 6 }, '12', 'Enter all 6 characters'],
-  ])('%s: isValid is false with the message shown', async (name, props, text, message) => {
+  ])('[LibraryComponent-VALID-001] %s: isValid is false with the message shown', async (name, props, text, message) => {
     // Break this catches: the host's event-time judge republishing isValid true over the field's own rule.
     const { exposed, root } = await mount(name, props);
     type(root, text);
